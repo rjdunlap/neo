@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { bestDig, distance, dugAt, type FarDig, ruledOutBy, stillFits, stepsWord, type Square, type Card, cardDone, cardFor, cardReason, EMPTY_CARD, nextCount, nextWay, planFor, walkCard, CELL, cellCenter, clueDirection, clueEnd, COLUMN_COLORS, compare, digSpot, directions, DOODLES, dressingFor, firstDirection, firstLeg, headersFor, makeFinds, name, PLANS, ROW_PICTURES, squareAt, TINTS } from './logic';
+import { flagWalk, sameCells, slideWords, bestDig, distance, dugAt, type FarDig, ruledOutBy, stillFits, stepsWord, type Square, type Card, cardDone, cardFor, cardReason, EMPTY_CARD, nextCount, nextWay, planFor, walkCard, CELL, cellCenter, clueDirection, clueEnd, COLUMN_COLORS, compare, digSpot, directions, DOODLES, dressingFor, firstDirection, firstLeg, headersFor, makeFinds, name, PLANS, ROW_PICTURES, squareAt, TINTS } from './logic';
 
 describe('Treasure Map', () => {
   it('names squares by column letter and row number, counting rows from the bottom', () => {
@@ -333,5 +333,78 @@ describe('Treasure Map level 6, write the card', () => {
       expect(dugAt({ col: 3, row: 0 }, digs)).toBe(digs[1]);
       expect(dugAt({ col: 2, row: 1 }, digs)).toBeNull();
     });
+  });
+});
+
+describe('Treasure Map level 8, Slide it', () => {
+  const plan = planFor(8);
+  const all = (seeds = 400) => Array.from({ length: seeds }, (_, i) => makeFinds(plan, new Rng(i + 1))).flat();
+  const onMap = (cells: Square[]) => cells.every((s) => s.col >= 0 && s.row >= 0 && s.col < plan.size && s.row < plan.size);
+  const moved = (cells: Square[], r: number, u: number) => cells.map((s) => ({ col: s.col + r, row: s.row + u }));
+
+  it('is plan 8, a 5 by 5 map of three rafts', () => {
+    expect(PLANS).toHaveLength(8);
+    expect(plan.mode).toBe('slide');
+    expect(plan.size).toBe(5);
+    expect(plan.finds).toBe(3);
+  });
+
+  it('slides an L of three squares 1 to 3 across and 1 to 3 up or down, on the map before and after, never onto itself', () => {
+    for (const f of all()) {
+      expect(f.raft).toHaveLength(3);
+      expect(f.raft!.some((s) => s.col === f.from!.col && s.row === f.from!.row)).toBe(true);
+      // An L: two squares beside its corner, one across and one up or down.
+      const cols = new Set(f.raft!.map((s) => s.col));
+      const rows = new Set(f.raft!.map((s) => s.row));
+      expect(cols.size).toBe(2);
+      expect(rows.size).toBe(2);
+      for (const v of [f.right!, f.up!]) {
+        expect(Math.abs(v)).toBeGreaterThanOrEqual(1);
+        expect(Math.abs(v)).toBeLessThanOrEqual(3);
+      }
+      expect(f.square).toEqual({ col: f.from!.col + f.right!, row: f.from!.row + f.up! });
+      const slid = moved(f.raft!, f.right!, f.up!);
+      expect(onMap(f.raft!)).toBe(true);
+      expect(onMap(slid)).toBe(true);
+      expect(slid.some((s) => f.raft!.some((t) => sameCells([s], [t])))).toBe(false);
+      expect(slideWords(f.right!, f.up!)).toMatch(/^\d (right|left) and \d (up|down)$/);
+    }
+  });
+
+  it('offers three distinct outlines on the map: the raft plus the slide, the raft turned over, and one slid the wrong amount', () => {
+    for (const f of all()) {
+      const outlines = f.outlines!;
+      expect(outlines.map((o) => o.kind).sort()).toEqual(['far', 'flipped', 'right']);
+      for (const o of outlines) {
+        expect(o.cells).toHaveLength(3);
+        expect(onMap(o.cells)).toBe(true);
+      }
+      for (let i = 0; i < 3; i++) for (let j = i + 1; j < 3; j++) expect(sameCells(outlines[i].cells, outlines[j].cells)).toBe(false);
+      const slid = moved(f.raft!, f.right!, f.up!);
+      // Exactly one card is the raft plus the slide.
+      expect(outlines.filter((o) => sameCells(o.cells, slid)).map((o) => o.kind)).toEqual(['right']);
+      // The turned-over raft keeps the flag where she tapped it, so the flag alone cannot pick the card.
+      const flipped = outlines.find((o) => o.kind === 'flipped')!;
+      expect(flipped.cells.some((s) => s.col === f.square.col && s.row === f.square.row)).toBe(true);
+      // The wrong amount is the same raft moved one square too far or too short on one way only, the same way round.
+      const far = outlines.find((o) => o.kind === 'far')!;
+      expect(sameCells(far.cells, moved(f.raft!, far.right, far.up))).toBe(true);
+      expect(Math.abs(far.right - f.right!) + Math.abs(far.up - f.up!)).toBe(1);
+      expect(Math.sign(far.right)).toBe(Math.sign(f.right!));
+      expect(Math.sign(far.up)).toBe(Math.sign(f.up!));
+    }
+  });
+
+  it('puts the right card in every place across seeds', () => {
+    const places = new Set(all(100).map((f) => f.outlines!.findIndex((o) => o.kind === 'right')));
+    expect(places).toEqual(new Set([0, 1, 2]));
+  });
+
+  it("lights the flag's walk from beside its square to where it lands", () => {
+    for (const f of all(100)) {
+      const walk = flagWalk(f, plan.size);
+      expect(walk).toHaveLength(Math.abs(f.right!) + Math.abs(f.up!));
+      expect(walk[walk.length - 1]).toEqual(f.square);
+    }
   });
 });

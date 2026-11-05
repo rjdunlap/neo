@@ -4,9 +4,10 @@ import type { Rng } from '../../engine/random';
  * Treasure Map: a grid map where things are found by row and column. First rows and columns
  * are pictures (the red column, the apple row); then letters and numbers ("B3"); then the child
  * places something at a named square; then directions from a square ("3 right, 1 up"); then she writes
- * the directions card herself; then she hunts a hidden chest by how far away each dig says it is.
+ * the directions card herself; then she hunts a hidden chest by how far away each dig says it is; then she
+ * slides a raft by "2 right and 1 up", first its flag, then picking the whole raft's outline.
  */
-export type MapMode = 'pictures' | 'letters' | 'place' | 'steps' | 'clues' | 'write' | 'far';
+export type MapMode = 'pictures' | 'letters' | 'place' | 'steps' | 'clues' | 'write' | 'far' | 'slide';
 
 export interface MapPlan {
   mode: MapMode;
@@ -23,6 +24,7 @@ export const PLANS: MapPlan[] = [
   { mode: 'clues', size: 5, finds: 4, name: 'Use two landmark clues to find the square where they meet' },
   { mode: 'write', size: 5, finds: 4, name: 'Write the card: set how far across and which way, then up or down, to walk the pet to the chest' },
   { mode: 'far', size: 4, finds: 3, name: 'How far? A hidden chest: each dig says how many steps away it is, across plus up, and she digs where every distance still fits' },
+  { mode: 'slide', size: 5, finds: 3, name: 'Slide it: a three-square raft slides "2 right and 1 up"; tap where its flag lands, then pick the outline of the whole slid raft' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -75,6 +77,18 @@ export interface Find {
   thing?: 'tree' | 'house' | 'boat' | 'flag';
   /** Two landmark relations: one fixes the target column, one fixes its row. */
   clues?: [Clue, Clue];
+  /** Slide levels: the raft's three squares before the slide (`from`, its flag's square, is one of them), and the outline cards. */
+  raft?: Square[];
+  outlines?: Outline[];
+}
+
+/** One outline card on the slide level: the raft slid right, turned over, or slid the wrong amount. */
+export interface Outline {
+  kind: 'right' | 'flipped' | 'far';
+  cells: Square[];
+  /** How far this outline moved the raft; for 'flipped', the true slide, before it turned over. */
+  right: number;
+  up: number;
 }
 
 export const THINGS = ['tree', 'house', 'boat', 'flag'] as const;
@@ -119,6 +133,12 @@ export function makeFinds(plan: MapPlan, rng: Rng): Find[] {
         { landmark: hLandmark, thing: clueThings[0], delta: h, axis: 'horizontal' },
         { landmark: vLandmark, thing: clueThings[1], delta: v, axis: 'vertical' },
       ] });
+      continue;
+    }
+    if (plan.mode === 'slide') {
+      const f = makeSlide(square, plan.size, rng);
+      if (!f) continue;
+      out.push(f);
       continue;
     }
     if (plan.mode === 'steps' || plan.mode === 'write') {
@@ -322,3 +342,44 @@ export function bestDig(digs: readonly FarDig[], size: number): Square {
   }
   return best;
 }
+
+const onMap = (cells: readonly Square[], size: number) => cells.every((s) => s.col >= 0 && s.row >= 0 && s.col < size && s.row < size);
+const shift = (cells: readonly Square[], right: number, up: number) => cells.map((s) => ({ col: s.col + right, row: s.row + up }));
+/** Two outlines cover the same squares. */
+export const sameCells = (a: readonly Square[], b: readonly Square[]) => a.length === b.length && a.every((s) => b.some((t) => same(s, t)));
+
+/**
+ * One slide find for the flag landing on `square`: an L of three squares (its corner, one beside it, one above or
+ * below), the flag on one of them, a slide of 1–3 across and 1–3 up or down, every square on the map before and
+ * after and none shared, and three outline cards in a seeded order. Null when this landing cannot fit the draw.
+ */
+function makeSlide(square: Square, size: number, rng: Rng): Find | null {
+  const right = rng.pick([-3, -2, -1, 1, 2, 3]);
+  const up = rng.pick([-3, -2, -1, 1, 2, 3]);
+  const from = { col: square.col - right, row: square.row - up };
+  const dx = rng.pick([-1, 1]);
+  const dy = rng.pick([-1, 1]);
+  const shape = [{ col: 0, row: 0 }, { col: dx, row: 0 }, { col: 0, row: dy }];
+  const flagAt = shape[rng.int(0, 2)];
+  const raft = shape.map((s) => ({ col: from.col + s.col - flagAt.col, row: from.row + s.row - flagAt.row }));
+  const slid = shift(raft, right, up);
+  if (!onMap(raft, size) || !onMap(slid, size) || raft.some((s) => slid.some((t) => same(s, t)))) return null;
+  // Turned over: the slid raft mirrored across its flag's column, so the flag is still where she tapped it.
+  const flipped = slid.map((s) => ({ col: 2 * square.col - s.col, row: s.row }));
+  if (!onMap(flipped, size)) return null;
+  // Slid the wrong amount: one way one square too far or too short, never to nothing and never the other way.
+  const wrongs: Outline[] = [];
+  for (const [r, u] of [[right + Math.sign(right), up], [right - Math.sign(right), up], [right, up + Math.sign(up)], [right, up - Math.sign(up)]]) {
+    const cells = shift(raft, r, u);
+    if (r && u && Math.abs(r) <= MOST_STEPS + 1 && Math.abs(u) <= MOST_STEPS + 1 && onMap(cells, size) && !sameCells(cells, flipped)) wrongs.push({ kind: 'far', cells, right: r, up: u });
+  }
+  if (!wrongs.length) return null;
+  const outlines = rng.shuffle<Outline>([{ kind: 'right', cells: slid, right, up }, { kind: 'flipped', cells: flipped, right, up }, rng.pick(wrongs)]);
+  return { square, from, right, up, raft, outlines };
+}
+
+/** "2 right and 1 up", for the voice and the sign. */
+export const slideWords = (right: number, up: number) => `${Math.abs(right)} ${right > 0 ? 'right' : 'left'} and ${Math.abs(up)} ${up > 0 ? 'up' : 'down'}`;
+
+/** The squares the flag passes on its slide, across then up or down, as the hint lights them. */
+export const flagWalk = (f: Find, size: number) => walkCard(f.from!, cardFor(f), size).legs.flat();

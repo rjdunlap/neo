@@ -1930,6 +1930,54 @@ async function woodsBatch() {
     log('Treasure Map 7 (far): two fitting digs free with their footprint stacks, a re-dig free, two ruled-out digs as misses, the still-fits glow, saved score and sticker passed');
   }
 
+  if ((!only || only === 'map') && fromLevel <= 8 && Number(process.env.TO_LEVEL || 8) >= 8) {
+    // Level 8, Slide it: tap where the raft's flag lands, then pick the slid raft's outline card.
+    await launch('treasure-map', 8);
+    const settle = async () => {
+      await page.waitForTimeout(250);
+      await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 20000 });
+      await page.waitForTimeout(300);
+    };
+    const dig = async (s) => {
+      await page.evaluate((s) => { const g = neo.scene.game; const p = g.grid.toGlobal(g.cellAt(s)); kit.tap(p.x, p.y); }, s);
+      await settle();
+    };
+    const pick = async (kind) => {
+      const i = await page.evaluate((kind) => neo.scene.game.find.outlines.findIndex((o) => o.kind === kind), kind);
+      await tap(`neo.scene.game.outlineCards[${i}]`);
+      await settle();
+    };
+    for (let n = 0; n < 3; n++) {
+      await idle(n);
+      const { col, row } = await page.evaluate(() => ({ ...neo.scene.game.find.square }));
+      if (n === 0) {
+        // A square in the right column but the wrong row: a miss.
+        await dig({ col, row: row === 0 ? 1 : row - 1 });
+        assert.deepEqual(await counts(), [1, 0], 'a wrong landing square is a miss');
+      }
+      await dig({ col, row });
+      assert.equal(await page.evaluate(() => neo.scene.game.part), 'cards', 'the right square moves the question to the cards');
+      if (n === 0) {
+        // A map tap during the cards is nothing; the turned-over raft is the second miss and lights the flag's walk.
+        await dig({ col, row });
+        assert.deepEqual(await counts(), [1, 0], 'a map tap while the cards ask is free');
+        await pick('flipped');
+        assert.deepEqual(await counts(), [2, 1], 'the turned-over outline is a miss, and the second lights the walk');
+        await pick('flipped');
+        assert.deepEqual(await counts(), [2, 1], 'a tried card repeats its reason, not a second miss');
+        await page.setViewportSize({ width: 768, height: 1024 });
+        await page.waitForTimeout(400);
+        await screenshot('treasure-map-8-outline-cards-portrait');
+        await page.setViewportSize({ width: 1024, height: 768 });
+        await page.waitForTimeout(400);
+      }
+      await pick('right');
+    }
+    await finished('treasure-map');
+    assert.deepEqual(await score('treasure-map'), [2, 1]);
+    log('Treasure Map 8 (slide): a wrong landing square and a turned-over outline as misses, a free map tap and re-tap, the flag-walk glow, three rafts slid, saved score and sticker passed');
+  }
+
   if (!only || only === 'opp') for (let level = fromLevel; level <= 5; level++) {
     await launch('opposites', level);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
