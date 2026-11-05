@@ -2875,7 +2875,7 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--secret-code-level-9-
 
 [PR #1244](https://github.com/rjdunlap/neo/pull/1244), `claude/shape-buddies-down-and-catch`: [dive slice 2](../deep-dives/shape-buddies.md#build-slices-in-order). `PLANS[4] = { bridges: ['slope'], drop: 50, joined: true }`: level 3's wide gap with the near half raised 50 like level 2. Accepted: exactly Slope at the near half and Cup at the far half, either friend. `failureLine` takes the step into account: a flat near half gives `buddies.downFlat`, no near half or a plain or cup one gives `buddies.downPath`, and the far half reuses `joinShort` and `joinCup`; new lines `buddies.start4`, `downPath`, `downFlat`. The scene draws the raised near bank, a stepped dashed outline, a sloped clasp and step-aware seed paths, with the carried handle staying up the step; heading "A spoon that slopes down". `LEVELS` pre-K and school are now 1-4, `DESCRIPTIONS[4]`, a how-to step `{ from: 4, to: 4 }`. Misses stay 0, two failed Tries for a role charge one hint, and the bot is unchanged (it follows guidance). The browser suite `buddies` gained `BUDDIES_ONLY=4`.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--shape-buddies-level-4-down-and-catch-shape-buddies-batch-2).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-04.md#2026-11-04--shape-buddies-level-4-down-and-catch-shape-buddies-batch-2).
 
 ## Shape Buddies level 5 A cup on the ledge (shape-buddies batch 3, 2026-11-05)
 
@@ -2918,3 +2918,9 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--sudoku-garden-fill-m
 [PR #1253](https://github.com/rjdunlap/neo/pull/1253), `claude/shape-buddies-which-way-round`: [dive slice 4](../deep-dives/shape-buddies.md#build-slices-in-order). School only (school window 1–6; pre-K stays 1–5). Level 2 mirrored: chute on the right, pot on the left, far bank one step lower. `Friend` gains a facing; a fourth button **Turn ↔** (level 6 only) turns the selected friend; only a Slope turned to run down toward the low bank plus a Cup at the catch is caught (4 constructions). An unturned slope says `buddies.turnSlope`, a flat one `buddies.stepFlat`; new lines `buddies.start6`, `buddies.turnSlope`, `buddies.turn`. A Turn is free and undoable, misses stay 0, the hint glow rings Turn instead of the Slope tool when only a turn is needed, and the bot taps Turn. How-to step `{from:6,to:6}` added and the Undo step mentions turns; the `buddies` browser suite gained `BUDDIES_ONLY=6`. A review fix tips the cup toward the pot on the mirrored stream.
 
 Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--shape-buddies-level-6-which-way-round-shape-buddies-batch-4).
+
+## Shape Buddies level 7 One friend, one job (shape-buddies batch 5, 2026-11-05)
+
+[PR #1256](https://github.com/rjdunlap/neo/pull/1256), `claude/shape-buddies-one-friend`: [dive slice 5](../deep-dives/shape-buddies.md#build-slices-in-order). The preschool opening: one friend, a fixed wooden plank already spanning the gap (scenery, not selectable or draggable) and a cup at the catch. Flat or Slope at the catch says `buddies.oneRoll`; plain or empty says `buddies.cup`; the start line is `buddies.start7`. Misses always 0, at most one hint. Bands are now preschool `{7, 7}`, pre-K `{min 1, max 7, order [7, 1, 2, 3, 4, 5]}` with `entryLevels [7]`, school 1–6 unchanged; Shape Buddies joins Tinker Lab's preschool page (page 2, fits). The how-to card's goal reads "Change paper friends…" with a from-7-to-7 step and the note "Two friends can swap jobs." Four rule tests for level 7 and a registry test for bands, order, entry and landing.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--shape-buddies-level-7-one-friend-one-job-shape-buddies-batch-5).
