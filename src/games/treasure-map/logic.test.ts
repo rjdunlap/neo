@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { CELL, cellCenter, clueDirection, clueEnd, COLUMN_COLORS, compare, digSpot, directions, DOODLES, dressingFor, firstDirection, firstLeg, headersFor, makeFinds, name, PLANS, ROW_PICTURES, squareAt, TINTS } from './logic';
+import { type Card, cardDone, cardFor, cardReason, EMPTY_CARD, nextCount, nextWay, planFor, walkCard, CELL, cellCenter, clueDirection, clueEnd, COLUMN_COLORS, compare, digSpot, directions, DOODLES, dressingFor, firstDirection, firstLeg, headersFor, makeFinds, name, PLANS, ROW_PICTURES, squareAt, TINTS } from './logic';
 
 describe('Treasure Map', () => {
   it('names squares by column letter and row number, counting rows from the bottom', () => {
@@ -163,5 +163,103 @@ describe('Treasure Map', () => {
         expect(directions(f).startsWith(firstDirection(f))).toBe(true);
       }
     }
+  });
+});
+
+describe('Treasure Map level 6, write the card', () => {
+  const plan = planFor(6);
+  const ways = [-1, 1] as const;
+  const allCards: Card[] = [];
+  for (let a = 1; a <= 3; a++) for (const aw of ways) for (let u = 1; u <= 3; u++) for (const uw of ways) allCards.push({ across: a, acrossWay: aw, upDown: u, upDownWay: uw });
+
+  it('is plan 6 on a 5 by 5 map', () => {
+    expect(PLANS[5].mode).toBe('write');
+    expect(plan).toBe(PLANS[5]);
+    expect(plan.size).toBe(5);
+  });
+
+  it('has exactly one complete card that reaches the chest, and it is cardFor', () => {
+    expect(allCards).toHaveLength(36);
+    for (let seed = 1; seed <= 150; seed++) {
+      for (const f of makeFinds(plan, new Rng(seed))) {
+        const winners = allCards.filter((c) => {
+          const w = walkCard(f.from!, c, plan.size);
+          return !w.edge && w.end.col === f.square.col && w.end.row === f.square.row;
+        });
+        expect(winners).toEqual([cardFor(f)]);
+        expect(cardDone(cardFor(f))).toBe(true);
+        for (const c of allCards) {
+          const isTheOne = JSON.stringify(c) === JSON.stringify(cardFor(f));
+          expect(cardReason(c, f) === null).toBe(isTheOne);
+        }
+      }
+    }
+  });
+
+  it('names the line that was off and says why', () => {
+    for (let seed = 1; seed <= 100; seed++) {
+      for (const f of makeFinds(plan, new Rng(seed))) {
+        const good = cardFor(f);
+        expect(cardReason(good, f)).toBeNull();
+        const leg = f.up! > 0 ? 'up' : 'down';
+        for (const c of allCards) {
+          const r = cardReason(c, f);
+          if (!r) continue;
+          const acrossOff = c.across * c.acrossWay !== f.right!;
+          const upOff = c.upDown * c.upDownWay !== f.up!;
+          expect(r.slots.leg).toBe(leg);
+          expect(r.line).toBe(acrossOff && upOff ? 'map.cardboth' : acrossOff ? 'map.cardacross' : 'map.cardupdown');
+          const lineWhy = (got: number, want: number) =>
+            Math.sign(got) !== Math.sign(want) ? 'goes the wrong way' : Math.abs(got) > Math.abs(want) ? 'is ' + ['', 'one', 'two'][Math.abs(got) - Math.abs(want)] + ' too many' : 'is ' + ['', 'one', 'two'][Math.abs(want) - Math.abs(got)] + ' too few';
+          const wantWhy = r.line === 'map.cardacross' ? lineWhy(c.across * c.acrossWay, f.right!) : lineWhy(c.upDown * c.upDownWay, f.up!);
+          expect(r.slots.why).toBe(wantWhy);
+          if (r.line === 'map.cardacross') expect(r.slots.across).toBe(r.slots.why);
+        }
+      }
+    }
+    const f = { square: { col: 3, row: 3 }, from: { col: 1, row: 1 }, right: 2, up: 2 };
+    expect(cardReason({ across: 3, acrossWay: 1, upDown: 2, upDownWay: 1 }, f)!.slots.why).toBe('is one too many');
+    expect(cardReason({ across: 1, acrossWay: 1, upDown: 2, upDownWay: 1 }, f)!.slots.why).toBe('is one too few');
+    expect(cardReason({ across: 2, acrossWay: 1, upDown: 2, upDownWay: -1 }, f)!.slots.why).toBe('goes the wrong way');
+    expect(cardReason({ across: 2, acrossWay: -1, upDown: 1, upDownWay: 1 }, f)!.line).toBe('map.cardboth');
+  });
+
+  it('walks stop at the map edge and never leave the map', () => {
+    for (let col = 0; col < 5; col++) for (let row = 0; row < 5; row++) for (const c of allCards) {
+      const w = walkCard({ col, row }, c, 5);
+      for (const s of [...w.legs[0], ...w.legs[1], w.end]) {
+        expect(s.col).toBeGreaterThanOrEqual(0);
+        expect(s.col).toBeLessThan(5);
+        expect(s.row).toBeGreaterThanOrEqual(0);
+        expect(s.row).toBeLessThan(5);
+      }
+      const wantEdge = col + c.across * c.acrossWay < 0 || col + c.across * c.acrossWay > 4 ? true : row + c.upDown * c.upDownWay < 0 || row + c.upDown * c.upDownWay > 4;
+      expect(w.edge).toBe(wantEdge);
+    }
+    const w = walkCard({ col: 3, row: 0 }, { across: 3, acrossWay: 1, upDown: 1, upDownWay: 1 }, 5);
+    expect(w.edge).toBe(true);
+    expect(w.legs[0]).toEqual([{ col: 4, row: 0 }]);
+    expect(w.end).toEqual({ col: 4, row: 1 });
+  });
+
+  it('walks nothing for an unset across line, and the up line waits for it', () => {
+    const from = { col: 2, row: 2 };
+    const w = walkCard(from, { across: 0, acrossWay: 0, upDown: 2, upDownWay: 1 }, 5);
+    expect(w.legs).toEqual([[], []]);
+    expect(w.end).toEqual(from);
+    expect(w.edge).toBe(false);
+    expect(walkCard(from, EMPTY_CARD, 5).end).toEqual(from);
+    expect(walkCard(from, { across: 2, acrossWay: 0, upDown: 1, upDownWay: 1 }, 5).legs).toEqual([[], []]);
+    const half = walkCard(from, { across: 2, acrossWay: 1, upDown: 0, upDownWay: 0 }, 5);
+    expect(half.legs[0]).toHaveLength(2);
+    expect(half.legs[1]).toEqual([]);
+    expect(cardDone({ across: 2, acrossWay: 1, upDown: 0, upDownWay: 0 })).toBe(false);
+  });
+
+  it('cycles the tiles', () => {
+    expect([0, 1, 2, 3].map(nextCount)).toEqual([1, 2, 3, 1]);
+    expect(nextWay(0)).toBe(1);
+    expect(nextWay(1)).toBe(-1);
+    expect(nextWay(-1)).toBe(1);
   });
 });

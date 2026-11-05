@@ -3,9 +3,10 @@ import type { Rng } from '../../engine/random';
 /**
  * Treasure Map: a grid map where things are found by row and column. First rows and columns
  * are pictures (the red column, the apple row); then letters and numbers ("B3"); then the child
- * places something at a named square; finally directions from a square ("3 right, 1 up").
+ * places something at a named square; then directions from a square ("3 right, 1 up"); then she writes
+ * the directions card herself.
  */
-export type MapMode = 'pictures' | 'letters' | 'place' | 'steps' | 'clues';
+export type MapMode = 'pictures' | 'letters' | 'place' | 'steps' | 'clues' | 'write';
 
 export interface MapPlan {
   mode: MapMode;
@@ -20,6 +21,7 @@ export const PLANS: MapPlan[] = [
   { mode: 'place', size: 5, finds: 4, name: 'Put things on the map at named squares: "a tree at D2"' },
   { mode: 'steps', size: 5, finds: 4, name: 'Follow directions from the start: "3 right, then 1 up"' },
   { mode: 'clues', size: 5, finds: 4, name: 'Use two landmark clues to find the square where they meet' },
+  { mode: 'write', size: 5, finds: 4, name: 'Write the card: set how far across and which way, then up or down, to walk the pet to the chest' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -118,7 +120,7 @@ export function makeFinds(plan: MapPlan, rng: Rng): Find[] {
       ] });
       continue;
     }
-    if (plan.mode === 'steps') {
+    if (plan.mode === 'steps' || plan.mode === 'write') {
       const right = rng.int(-3, 3);
       const up = rng.int(-3, 3);
       if (right === 0 || up === 0) continue;
@@ -187,4 +189,84 @@ export function compare(guess: Square, want: Square): 'column' | 'row' | 'neithe
   const c = guess.col === want.col;
   const r = guess.row === want.row;
   return c && r ? 'right' : c ? 'column' : r ? 'row' : 'neither';
+}
+
+/**
+ * Level 6's directions card: two lines, each a count (1–3, 0 while unset) and an arrow (+1 right or up,
+ * -1 left or down, 0 while unset). The first line goes across, the second up or down, as level 4 reads them.
+ */
+export interface Card {
+  across: number;
+  acrossWay: -1 | 0 | 1;
+  upDown: number;
+  upDownWay: -1 | 0 | 1;
+}
+
+export const EMPTY_CARD: Card = { across: 0, acrossWay: 0, upDown: 0, upDownWay: 0 };
+
+/** The most squares one line of the card can say. */
+export const MOST_STEPS = 3;
+
+/** A count tile's next number: blank, then 1, 2, 3 and round to 1 again. */
+export const nextCount = (n: number) => (n % MOST_STEPS) + 1;
+
+/** An arrow tile's next way: blank, then right (or up), then left (or down), and back. */
+export const nextWay = (w: -1 | 0 | 1): -1 | 1 => (w === 1 ? -1 : 1);
+
+export const cardDone = (c: Card) => c.across > 0 && c.acrossWay !== 0 && c.upDown > 0 && c.upDownWay !== 0;
+
+/** The card a find needs: exactly one fits, the across line first. */
+export const cardFor = (f: Find): Card => ({ across: Math.abs(f.right!), acrossWay: Math.sign(f.right!) as 1 | -1, upDown: Math.abs(f.up!), upDownWay: Math.sign(f.up!) as 1 | -1 });
+
+export interface CardWalk {
+  /** The squares stepped onto by each line, after the pet's square; a line still unset walks nothing, and the up line waits for the across line. */
+  legs: [Square[], Square[]];
+  end: Square;
+  /** A line would have stepped off the map, so the walk stops at the edge. */
+  edge: boolean;
+}
+
+/** Where the card walks the pet from `from`: square by square, stopping at the edge of the map. */
+export function walkCard(from: Square, c: Card, size: number): CardWalk {
+  let at = { ...from };
+  let edge = false;
+  const leg = (n: number, dc: number, dr: number) => {
+    const out: Square[] = [];
+    for (let i = 0; i < n; i++) {
+      const next = { col: at.col + dc, row: at.row + dr };
+      if (next.col < 0 || next.row < 0 || next.col >= size || next.row >= size) {
+        edge = true;
+        break;
+      }
+      out.push(next);
+      at = next;
+    }
+    return out;
+  };
+  const across = c.across && c.acrossWay ? leg(c.across, c.acrossWay, 0) : [];
+  const upDown = c.across && c.acrossWay && c.upDown && c.upDownWay ? leg(c.upDown, 0, c.upDownWay) : [];
+  return { legs: [across, upDown], end: at, edge };
+}
+
+const AMOUNTS = ['', 'one', 'two', 'three', 'four', 'five'];
+
+/** What one line of the card got wrong, said after "Across" or "Up": "is one too many", "goes the wrong way". */
+function lineReason(got: number, want: number): string | null {
+  if (got === want) return null;
+  if (Math.sign(got) !== Math.sign(want)) return 'goes the wrong way';
+  const off = Math.abs(got) - Math.abs(want);
+  return `is ${AMOUNTS[Math.abs(off)]} too ${off > 0 ? 'many' : 'few'}`;
+}
+
+/**
+ * Why a finished card misses the chest, naming the line that was off: the voice line and its slots.
+ * The up-or-down line is called by the way the chest lies ("up" or "down"), so the reason points the right way.
+ */
+export function cardReason(c: Card, f: Find): { line: 'map.cardacross' | 'map.cardupdown' | 'map.cardboth'; slots: { across: string; leg: string; why: string } } | null {
+  const across = lineReason(c.across * c.acrossWay, f.right!);
+  const upDown = lineReason(c.upDown * c.upDownWay, f.up!);
+  if (!across && !upDown) return null;
+  const leg = f.up! > 0 ? 'up' : 'down';
+  if (across && upDown) return { line: 'map.cardboth', slots: { across, leg, why: upDown } };
+  return across ? { line: 'map.cardacross', slots: { across, leg, why: across } } : { line: 'map.cardupdown', slots: { across: '', leg, why: upDown! } };
 }

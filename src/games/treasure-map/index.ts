@@ -11,14 +11,15 @@ import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { finish, spring, squash } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { CELL, cellCenter, clueDirection, compare, digSpot, directions, dressingFor, firstDirection, firstLeg, headersFor, makeFinds, name, planFor, squareAt, type Doodle, type Find, type Headers, type MapPlan, type RowPicture, type Square } from './logic';
+import { cardDone, cardFor, cardReason, CELL, cellCenter, clueDirection, compare, digSpot, directions, dressingFor, EMPTY_CARD, firstDirection, firstLeg, headersFor, makeFinds, name, nextCount, nextWay, planFor, squareAt, walkCard, type Card, type Doodle, type Find, type Headers, type MapPlan, type RowPicture, type Square } from './logic';
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 2 },
-  school: { min: 1, max: 5 },
+  school: { min: 1, max: 6 },
 };
 
 const PARCHMENT = 0xf3e2b8;
@@ -93,6 +94,28 @@ function thingArt(thing: Find['thing']): Graphics {
   return g;
 }
 
+/** A card tile's size: a little bigger than a square, and small enough to sit beside the map in landscape. */
+const TILE = 110;
+const GAP = 12;
+type TileKind = 'across' | 'acrossWay' | 'upDown' | 'upDownWay' | 'go';
+
+/** An arrow pointing right (`dx` 1), left (-1), up (`dy` -1 in screen units) or down, centered on (0, 0). */
+function arrowArt(dx: number, dy: number): Graphics {
+  const g = new Graphics();
+  const a = Math.atan2(dy, dx);
+  const pt = (x: number, y: number) => [x * Math.cos(a) - y * Math.sin(a), x * Math.sin(a) + y * Math.cos(a)];
+  const shaft = [[-30, -8], [6, -8], [6, -22], [34, 0], [6, 22], [6, 8], [-30, 8]].flatMap(([x, y]) => pt(x, y));
+  return g.poly(shaft).fill(ink);
+}
+
+/** One footprint, toes towards `angle`, on the left or right foot. */
+function footprint(g: Graphics, x: number, y: number, angle: number, side: number) {
+  const px = x + Math.cos(angle + Math.PI / 2) * 10 * side;
+  const py = y + Math.sin(angle + Math.PI / 2) * 10 * side;
+  g.ellipse(px, py, 9, 6).fill({ color: wood.line, alpha: 0.5 });
+  g.circle(px + Math.cos(angle) * 11, py + Math.sin(angle) * 11, 3.5).fill({ color: wood.line, alpha: 0.5 });
+}
+
 function chestArt(): Graphics {
   return new Graphics().roundRect(-30, -10, 60, 34, 6).fill(wood.fill).stroke({ width: 4, color: wood.line }).roundRect(-30, -28, 60, 22, 10).fill(wood.light).stroke({ width: 4, color: wood.line }).rect(-6, -12, 12, 14).fill(swatch.yellow.fill).circle(0, -30, 6).fill(swatch.yellow.light);
 }
@@ -125,6 +148,12 @@ class TreasureMap implements Game {
   private couchOn = false;
   private readonly ring = new Graphics();
   private botWait = 1.5;
+  // Level 6: the card she writes, its tiles, and the footprints it leaves on the map.
+  card: Card = { ...EMPTY_CARD };
+  private readonly cardBox = new Container();
+  private readonly tiles = new Map<TileKind, Container>();
+  private readonly prints = new Graphics();
+  private atEdge = false;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -141,7 +170,17 @@ class TreasureMap implements Game {
     this.grid.addChild(this.paper, this.headerArt, this.marks, this.landmarks, this.glow);
     this.grid.eventMode = 'static';
     onTap(this.grid, (e) => void this.tapGrid(e), { cooldown: 250 });
-    if (this.plan.mode === 'steps') {
+    this.prints.eventMode = 'none';
+    if (this.plan.mode === 'write') {
+      this.grid.addChild(this.prints);
+      for (const kind of ['across', 'acrossWay', 'upDown', 'upDownWay', 'go'] as const) {
+        const tile = new Container();
+        onTap(tile, () => this.pressTile(kind), { cooldown: 200 });
+        this.tiles.set(kind, tile);
+        this.cardBox.addChild(tile);
+      }
+    }
+    if (this.plan.mode === 'steps' || this.plan.mode === 'write') {
       this.pirate = ctx.companion();
       this.pirate.scale.set(0.3);
       this.pirate.eventMode = 'none';
@@ -150,7 +189,7 @@ class TreasureMap implements Game {
     }
     // Last, so the ring sits over the pet and the dig marks.
     this.grid.addChild(this.ring);
-    ctx.stage.addChild(new Graphics().rect(0, 0, 4000, 4000).fill(0x9fd3e8), this.grid, this.sign);
+    ctx.stage.addChild(new Graphics().rect(0, 0, 4000, 4000).fill(0x9fd3e8), this.grid, this.sign, this.cardBox);
   }
 
   get find() {
@@ -171,6 +210,7 @@ class TreasureMap implements Game {
     const n = this.plan.size;
     const w = n * CELL;
     this.grid.position.set(Math.max(240, (v.w - w) / 2 + 40), Math.max(this.plan.mode === 'clues' ? 220 : 150, (v.h - w) / 2 + 40));
+    if (this.plan.mode === 'write') this.layoutCard(v, w);
     this.grid.hitArea = new Rectangle(0, 0, w, w);
     const g = this.paper.clear();
     g.roundRect(-90, -80, w + 110, w + 100, 26).fill(TINT_COLORS[this.dressing.tint]).stroke({ width: 6, color: wood.line });
@@ -190,6 +230,7 @@ class TreasureMap implements Game {
       this.headerArt.addChild(col, row);
     }
     this.sign.position.set(v.w / 2 + 40, this.plan.mode === 'clues' ? 75 : 50);
+    this.sign.visible = this.plan.mode !== 'write';
     if (this.pirate && this.find?.from) {
       const p = this.cellAt(this.find.from);
       this.pirate.position.set(p.x, p.y + 36);
@@ -216,7 +257,7 @@ class TreasureMap implements Game {
       }
       return;
     }
-    if (this.plan.mode === 'steps' && this.find.from) {
+    if ((this.plan.mode === 'steps' || this.plan.mode === 'write') && this.find.from) {
       // The first leg lights up from the pet to the turning square, so she still counts the walk.
       for (const sq of firstLeg(this.find)) {
         const c = this.cellAt(sq);
@@ -232,6 +273,12 @@ class TreasureMap implements Game {
   /** The ghost finger digs in the middle of the square asked for, once the last dig has finished. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.find) return null;
+    if (this.plan.mode === 'write') {
+      const want = cardFor(this.find);
+      const c = this.card;
+      const kind: TileKind = c.across !== want.across ? 'across' : c.acrossWay !== want.acrossWay ? 'acrossWay' : c.upDown !== want.upDown ? 'upDown' : c.upDownWay !== want.upDownWay ? 'upDownWay' : 'go';
+      return { tap: { on: this.tiles.get(kind)!, x: 0, y: 0 } };
+    }
     const at = digSpot(this.find, this.plan.size);
     return { tap: { on: this.grid, x: at.x, y: at.y } };
   }
@@ -239,7 +286,8 @@ class TreasureMap implements Game {
   /** Couch play: the stick or the arrows move the ring a square at a time; the bottom button digs where it is. */
   control(input: CouchControls) {
     this.couchOn = true;
-    if (this.busy || this.finished || !this.find) return;
+    // The couch's trips stop at level 5; the card has no ring to set it.
+    if (this.busy || this.finished || !this.find || this.plan.mode === 'write') return;
     const last = this.plan.size - 1;
     for (const p of input.players) {
       const c = this.cursor;
@@ -282,7 +330,10 @@ class TreasureMap implements Game {
     const f = this.find;
     // Following directions starts where the pet stands, so the ring walks the same steps.
     if (f.from) this.cursor = { ...f.from };
+    this.card = { ...EMPTY_CARD };
+    this.atEdge = false;
     this.resize(this.view);
+    this.drawCard();
     this.drawLandmarks(f);
     this.drawSign(f);
     this.busy = false;
@@ -290,12 +341,21 @@ class TreasureMap implements Game {
     if (mode === 'pictures') return this.ctx.instruct('map.pictures', { pic: this.headers.rows[f.square.row], color: this.headers.cols[f.square.col] });
     if (mode === 'letters') return this.ctx.instruct('map.letters', { sq: name(f.square), col: String.fromCharCode(65 + f.square.col), row: f.square.row + 1 });
     if (mode === 'place') return this.ctx.instruct('map.place', { thing: f.thing!, sq: name(f.square) });
+    if (mode === 'write') return this.ctx.instruct('map.write');
     if (mode === 'clues') return this.ctx.instruct('map.clues', { first: clueDirection(f.clues![0]), firstThing: f.clues![0].thing, second: clueDirection(f.clues![1]), secondThing: f.clues![1].thing });
     return this.ctx.instruct('map.steps', { dirs: directions(f) });
   }
 
   private drawLandmarks(f: Find) {
     this.landmarks.removeChildren().forEach((c) => c.destroy({ children: true }));
+    if (this.plan.mode === 'write') {
+      // The chest waits on its square; she writes the way there.
+      const at = this.cellAt(f.square);
+      const chest = chestArt();
+      chest.position.set(at.x, at.y + 6);
+      chest.scale.set(0.9);
+      this.landmarks.addChild(chest);
+    }
     for (const clue of f.clues ?? []) {
       const at = this.cellAt(clue.landmark);
       const art = thingArt(clue.thing);
@@ -343,7 +403,7 @@ class TreasureMap implements Game {
   }
 
   private tapGrid(e: FederatedPointerEvent) {
-    if (this.busy || this.finished) return;
+    if (this.busy || this.finished || this.plan.mode === 'write') return;
     const p = this.grid.toLocal(e.global);
     const guess = squareAt(p.x, p.y, this.plan.size);
     if (guess) return this.dig(guess);
@@ -380,7 +440,7 @@ class TreasureMap implements Game {
     this.hinting = false;
     const f = this.find;
     const at = this.cellAt(f.square);
-    if (this.pirate && f.from) {
+    if (this.pirate && f.from && this.plan.mode === 'steps') {
       // The pet walks the directions, step by step: across, then up or down.
       const tw = this.ctx.tw;
       const mid = this.cellAt({ col: f.square.col, row: f.from.row });
@@ -393,6 +453,7 @@ class TreasureMap implements Game {
         }
       }
     }
+    if (this.plan.mode === 'write') this.landmarks.removeChildren().forEach((c) => c.destroy({ children: true }));
     const art = this.plan.mode === 'place' ? thingArt(f.thing) : chestArt();
     art.position.set(at.x, at.y);
     art.scale.set(0);
@@ -404,6 +465,135 @@ class TreasureMap implements Game {
     this.ctx.pet.cheer();
     await this.ctx.say(this.plan.mode === 'place' ? 'map.placed' : 'map.found');
     await this.next();
+  }
+
+  /** Level 6's card beside the map in landscape, under it when the screen is upright. */
+  private layoutCard(v: View, w: number) {
+    const cardW = TILE * 2 + GAP;
+    // The map keeps its 240 from the left (the corner buttons and the pet); the card sits just past the parchment.
+    const side = v.w >= 240 + w + 34 + cardW + 10;
+    if (side) {
+      this.grid.x = Math.max(240, (v.w - (w + 34 + cardW)) / 2);
+      this.cardBox.position.set(this.grid.x + w + 34 + cardW / 2, this.grid.y + w / 2);
+      const y = [-TILE - GAP, 0, TILE + GAP];
+      this.placeTile('across', -(TILE + GAP) / 2, y[0]);
+      this.placeTile('acrossWay', (TILE + GAP) / 2, y[0]);
+      this.placeTile('upDown', -(TILE + GAP) / 2, y[1]);
+      this.placeTile('upDownWay', (TILE + GAP) / 2, y[1]);
+      this.placeTile('go', 0, y[2]);
+    } else {
+      this.grid.y = 150;
+      this.cardBox.position.set(v.w / 2, this.grid.y + w + 50 + TILE / 2);
+      // One row: the across line, then the up-or-down line, with a wider gap between the lines; Go under them.
+      const step = TILE + GAP;
+      const lineGap = 40;
+      const total = TILE * 4 + GAP * 2 + lineGap;
+      const x0 = -total / 2 + TILE / 2;
+      this.placeTile('across', x0, 0);
+      this.placeTile('acrossWay', x0 + step, 0);
+      this.placeTile('upDown', x0 + step * 2 + lineGap - GAP, 0);
+      this.placeTile('upDownWay', x0 + step * 3 + lineGap - GAP, 0);
+      this.placeTile('go', 0, TILE + GAP + 10);
+    }
+  }
+
+  private placeTile(kind: TileKind, x: number, y: number) {
+    this.tiles.get(kind)!.position.set(x, y);
+  }
+
+  /** Redraws the card's tiles from `card`, and the footprints it walks on the map. */
+  private drawCard() {
+    if (this.plan.mode !== 'write') return;
+    const c = this.card;
+    const ready = cardDone(c);
+    for (const [kind, tile] of this.tiles) {
+      tile.removeChildren().forEach((ch) => ch.destroy({ children: true }));
+      const go = kind === 'go';
+      const sw = go ? (ready ? swatch.green : swatch.white) : swatch.white;
+      const w = go ? TILE * 2 : TILE;
+      tile.addChild(finish({ w, h: TILE * (go ? 0.85 : 1), corner: 24 }, sw, go ? undefined : 0xfffaf0));
+      tile.hitArea = new Rectangle(-w / 2, -TILE / 2, w, TILE);
+      if (go) tile.addChild(label('Go', 44, ready ? 0xffffff : 0xb9ad94));
+      else if (kind === 'across' || kind === 'upDown') {
+        const n = kind === 'across' ? c.across : c.upDown;
+        tile.addChild(label(n ? String(n) : '?', 56, n ? ink : 0xb9ad94));
+      } else {
+        const way = kind === 'acrossWay' ? c.acrossWay : c.upDownWay;
+        if (!way) tile.addChild(label('?', 56, 0xb9ad94));
+        else tile.addChild(kind === 'acrossWay' ? arrowArt(way, 0) : arrowArt(0, -way));
+      }
+    }
+    // Footprints from the pet along the card so far: two to a square, left and right.
+    const g = this.prints.clear();
+    const f = this.find;
+    if (!f?.from) return;
+    let prev = this.cellAt(f.from);
+    let side = 1;
+    for (const sq of walkCard(f.from, c, this.plan.size).legs.flat()) {
+      const to = this.cellAt(sq);
+      const angle = Math.atan2(to.y - prev.y, to.x - prev.x);
+      for (const t of [0.35, 0.75]) {
+        footprint(g, prev.x + (to.x - prev.x) * t, prev.y + (to.y - prev.y) * t, angle, side);
+        side = -side;
+      }
+      prev = to;
+    }
+  }
+
+  /** A tap on a card tile: a count steps 1, 2, 3; an arrow turns; Go walks the card. Changing the card is free. */
+  private pressTile(kind: TileKind) {
+    if (this.busy || this.finished || this.plan.mode !== 'write') return;
+    const tile = this.tiles.get(kind)!;
+    squash(tile);
+    spring(tile, 90);
+    if (kind === 'go') return void this.go();
+    sfx.tick();
+    const c = this.card;
+    if (kind === 'across') c.across = nextCount(c.across);
+    else if (kind === 'upDown') c.upDown = nextCount(c.upDown);
+    else if (kind === 'acrossWay') c.acrossWay = nextWay(c.acrossWay);
+    else c.upDownWay = nextWay(c.upDownWay);
+    this.drawCard();
+    // Running off the map is said once as it happens, and is not a miss: only Go is a try.
+    const edge = walkCard(this.find.from!, c, this.plan.size).edge;
+    if (edge && !this.atEdge) void this.ctx.say('map.edge');
+    this.atEdge = edge;
+  }
+
+  /** Go: the pet walks the card, counting; the chest if it ends there, otherwise a miss that names the line that was off. */
+  private async go() {
+    const f = this.find;
+    if (!cardDone(this.card)) return void this.ctx.say('map.cardfill');
+    this.busy = true;
+    const card = { ...this.card };
+    const walk = walkCard(f.from!, card, this.plan.size);
+    const pet = this.pirate!;
+    for (const leg of walk.legs) {
+      for (let k = 0; k < leg.length; k++) {
+        const to = this.cellAt(leg[k]);
+        pet.hop(0.5);
+        await this.ctx.tw.to(pet, { x: to.x, y: to.y + 36 }, { duration: 0.28 });
+        void this.ctx.say('count', { n: k + 1 });
+      }
+    }
+    const reason = cardReason(card, f);
+    if (!reason) return void this.found();
+    this.misses++;
+    this.wrongs++;
+    sfx.boing();
+    const at = this.cellAt(walk.end);
+    this.marks.addChild(new Graphics().moveTo(at.x - 14, at.y - 14).lineTo(at.x + 14, at.y + 14).moveTo(at.x + 14, at.y - 14).lineTo(at.x - 14, at.y + 14).stroke({ width: 6, color: wood.line, alpha: 0.6, cap: 'round' }));
+    await this.ctx.say(reason.line, reason.slots);
+    // Back to the start; the card stays as she wrote it, to mend.
+    const start = this.cellAt(f.from!);
+    pet.hop(0.5);
+    await this.ctx.tw.to(pet, { x: start.x, y: start.y + 36 }, { duration: 0.4 });
+    if (this.wrongs >= 2 && !this.hinting) {
+      this.hinting = true;
+      this.hints++;
+      void this.ctx.say('map.stepshint', { first: firstDirection(f) });
+    }
+    this.busy = false;
   }
 
   private async finale() {
