@@ -90,7 +90,8 @@ class ShapeBuddies implements Game {
   private readonly shared: boolean;
   readonly together = new RoundButton(twoArt(), swatch.white, 56, () => this.choose('two'));
   readonly alone = new RoundButton(oneArt(), swatch.white, 56, () => this.choose('solo'));
-  /** Whether the friend being dragged has left its spot, so a plain tap never counts as a drop that passes the turn. */
+  /** Whether the friend being dragged has left its spot, so a plain tap never counts as a drop that passes the turn. A picked-up friend rides 40 units
+   * above the finger, so the threshold sits past that lift plus a finger's jitter. */
   private moved = false;
   private clasped = false;
   readonly friends = [new Container(), new Container()];
@@ -152,7 +153,7 @@ class ShapeBuddies implements Game {
       });
       this.handles.push(draggable(node, ctx.tw, {
         onPick: () => { this.moved = false; this.round.select(i); this.drawRings(); },
-        onMove: (x, y) => { const home = this.handles[i].home; if (Math.hypot(x - home.x, y - home.y) > 30) this.moved = true; },
+        onMove: (x, y) => { const home = this.handles[i].home; if (Math.hypot(x - home.x, y - home.y) > 70) this.moved = true; },
         onDrop: (x, y) => this.drop(i, x, y),
       }));
     });
@@ -209,7 +210,8 @@ class ShapeBuddies implements Game {
   /** Level 8 with two seats: a new turn says the holder's colour. */
   private announce(before: number) {
     if (this.dead || !this.round.locked || this.round.holder === before) return Promise.resolve();
-    return this.ctx.say(TURN_LINES[this.colors[this.round.holder]] ?? 'buddies.start8');
+    const line = TURN_LINES[this.colors[this.round.holder]];
+    return line ? this.ctx.say(line) : Promise.resolve();
   }
   /** The dimmed friend wobbles and the turn is repeated: not a miss, a boing or a hint. */
   private wobble(i: number) {
@@ -219,7 +221,7 @@ class ShapeBuddies implements Game {
       await this.ctx.tw.to(node, { rotation: -0.15 }, { duration: 0.15 });
       if (!this.dead) void this.ctx.tw.to(node, { rotation: 0 }, { duration: 0.1 });
     });
-    void this.ctx.say(TURN_LINES[this.colors[this.round.holder]] ?? 'buddies.start8');
+    void this.announce(-1);
   }
   private place() { return layout(this.view.w, this.view.h, this.level); }
   private canEdit() { return !this.dead && !this.busy && this.round.editable && !this.handles.some(h => h.dragging); }
@@ -260,7 +262,7 @@ class ShapeBuddies implements Game {
       node.hitArea = new Rectangle(wide ? -90 : -70, -55, wide ? 180 : 140, 110);
       const p = place === 'park' ? l.parks[i] : l[place];
       this.handles[i].home = { ...p };
-      if (!this.busy && !this.handles[i].dragging) { this.ctx.tw.kill(node); node.position.set(p.x, p.y); }
+      if (!this.busy && !this.handles[i].dragging) { this.ctx.tw.kill(node); node.position.set(p.x, p.y); node.rotation = 0; }
       this.handles[i].enabled = !this.busy && this.round.editable && i < friendCount(this.level) && (!this.round.locked || i === this.round.holder);
     });
     this.drawJoin(l);
