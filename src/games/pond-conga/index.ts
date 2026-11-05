@@ -14,8 +14,8 @@ import { COURSES, courseMinimum, coursePonds, isCongaCourse } from './course';
 import { DX, DY, firstCrumbs, foodAt, groupOf, openCrumbs, pondLook, headAfter, hintDir, hintPath, makePond, nextCrumb, opposite, planFor, startState, step, stepDue, STEP_GLIDE, swipeDir, SWIPE, type Cell, type Conga, type Dir, type Food, type Pond, type PondLook } from './logic';
 
 /** Grown-up play only: this game lives in Lantern Lake, played by touch or on the couch. */
-/** Level 8, Step by step, is the easy way in: first by `order` and a new player's entry. */
-const LEVELS: BandLevels = { grownup: { min: 1, max: 8, order: [8, 1, 2, 3, 4, 5, 6, 7] } };
+/** Level 8, Step by step, is the easy way in: first by `order` and a new player's entry. Level 9, A long conga, is the top. */
+const LEVELS: BandLevels = { grownup: { min: 1, max: 9, order: [8, 1, 2, 3, 4, 5, 6, 7, 9] } };
 
 const WATER = 0xa9e0f2;
 const WATER_LINE = 0x4f9fbf;
