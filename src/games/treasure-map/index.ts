@@ -15,16 +15,19 @@ import { finish, spring, squash } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { flagWalk, slideWords, bestDig, distance, dugAt, ruledOutBy, stepsWord, stillFits, type FarDig, cardDone, cardFor, cardReason, CELL, cellCenter, clueDirection, compare, digSpot, directions, dressingFor, EMPTY_CARD, firstDirection, firstLeg, headersFor, inLine, lineSquares, makeFinds, name, ONE_LINE, nextCount, nextWay, planFor, squareAt, walkCard, type Card, type Doodle, type Find, type Headers, type MapPlan, type RowPicture, type Square } from './logic';
+import { riverWords, acrossWords, HALF, mirrorPath, mirrorReason, riverReason, upDownWords, type Mirror, flagWalk, slideWords, bestDig, distance, dugAt, ruledOutBy, stepsWord, stillFits, type FarDig, cardDone, cardFor, cardReason, CELL, cellCenter, clueDirection, compare, digSpot, directions, dressingFor, EMPTY_CARD, firstDirection, firstLeg, headersFor, inLine, lineSquares, makeFinds, name, ONE_LINE, nextCount, nextWay, planFor, squareAt, walkCard, type Card, type Doodle, type Find, type Headers, type MapPlan, type RowPicture, type Square } from './logic';
 
 const LEVELS: BandLevels = {
   // Level 9 (One line) is the preschool opening, appended after 8 and played first.
   preschool: { min: 1, max: ONE_LINE, order: [ONE_LINE, 1] },
   prek: { min: 1, max: ONE_LINE, order: [ONE_LINE, 1, 2] },
-  school: { min: 1, max: 8 },
+  // Level 9 is younger than school's window; 10 and 11 follow 8.
+  school: { min: 1, max: 11, order: [1, 2, 3, 4, 5, 6, 7, 8, 10, 11] },
 };
 /** Level 9's squares are bigger: 120 units on screen. */
 const LINE_SCALE = 1.2;
+/** Levels 10 and 11 put the sign above the map when the view has this much height to spare (portrait), else beside it. */
+const RIVER_SIGN_ABOVE = 400;
 
 const PARCHMENT = 0xf3e2b8;
 /** The three parchment tints a round's map is drawn on. */
@@ -131,6 +134,46 @@ function plankArt(): Graphics {
   return g;
 }
 
+/** Levels 10 and 11: the river and road cross on the map's own sign as little strips. */
+function riverStrip(w: number): Graphics {
+  const g = new Graphics().roundRect(-w / 2, -12, w, 24, 10).fill(swatch.blue.light);
+  g.moveTo(-w / 2 + 6, 0);
+  for (let x = -w / 2 + 6; x < w / 2 - 6; x += 16) g.quadraticCurveTo(x + 4, -6, x + 8, 0).quadraticCurveTo(x + 12, 6, x + 16, 0);
+  return g.stroke({ width: 3, color: swatch.blue.line, alpha: 0.8 });
+}
+
+function roadStrip(h: number): Graphics {
+  const g = new Graphics().rect(-12, -h / 2, 24, h).fill(SAND);
+  for (let y = -h / 2 + 6; y < h / 2 - 10; y += 22) g.moveTo(0, y).lineTo(0, y + 10);
+  return g.stroke({ width: 3, color: wood.line, alpha: 0.5 });
+}
+
+const SAND = 0xe8c98a;
+
+/** A small number tile as on level 6's card. */
+function countTile(n: number): Container {
+  const c = new Container();
+  c.addChild(finish({ w: 56, h: 56, corner: 14 }, swatch.white, 0xfffaf0), label(String(n), 38, ink));
+  return c;
+}
+
+/** The mirror mark: two arrows meeting at a line, across (the road) or up and down (the river). */
+function mirrorMark(line: Mirror): Container {
+  const c = new Container();
+  const bar = new Graphics();
+  if (line === 'road') bar.rect(-3, -26, 6, 52).fill(ink);
+  else bar.rect(-26, -3, 52, 6).fill(ink);
+  const a = arrowArt(line === 'road' ? 1 : 0, line === 'road' ? 0 : 1);
+  const b = arrowArt(line === 'road' ? -1 : 0, line === 'road' ? 0 : -1);
+  for (const [arrow, k] of [[a, -1], [b, 1]] as const) {
+    arrow.scale.set(0.42);
+    arrow.position.set(line === 'road' ? k * 22 : 0, line === 'road' ? 0 : k * 22);
+    c.addChild(arrow);
+  }
+  c.addChild(bar);
+  return c;
+}
+
 function chestArt(): Graphics {
   return new Graphics().roundRect(-30, -10, 60, 34, 6).fill(wood.fill).stroke({ width: 4, color: wood.line }).roundRect(-30, -28, 60, 22, 10).fill(wood.light).stroke({ width: 4, color: wood.line }).rect(-6, -12, 12, 14).fill(swatch.yellow.fill).circle(0, -30, 6).fill(swatch.yellow.light);
 }
@@ -184,6 +227,8 @@ class TreasureMap implements Game {
   private raftArt: Container | null = null;
   /** Level 8: a pulsing ring around the right outline card once the hint is on in the cards part. */
   private readonly cardGlow = new Graphics();
+  /** Level 11: the line a thing mirrors across shimmers. */
+  private readonly shimmer = new Graphics();
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -197,7 +242,9 @@ class TreasureMap implements Game {
     this.sign.eventMode = 'none';
     this.landmarks.eventMode = 'none';
     this.ring.eventMode = 'none';
-    this.grid.addChild(this.paper, this.headerArt, this.marks, this.landmarks, this.glow);
+    this.headerArt.eventMode = 'none';
+    this.shimmer.eventMode = 'none';
+    this.grid.addChild(this.paper, this.headerArt, this.shimmer, this.marks, this.landmarks, this.glow);
     this.grid.eventMode = 'static';
     onTap(this.grid, (e) => void this.tapGrid(e), { cooldown: 250 });
     this.prints.eventMode = 'none';
@@ -256,6 +303,7 @@ class TreasureMap implements Game {
     if (this.plan.mode === 'write') this.layoutCard(v, w);
     if (this.plan.mode === 'slide') this.layoutOutlines(w);
     this.grid.hitArea = new Rectangle(0, 0, w, w);
+    if (this.crossed) return this.layoutRiver(v, w);
     const g = this.paper.clear();
     g.roundRect(-90, -80, w + 110, w + 100, 26).fill(TINT_COLORS[this.dressing.tint]).stroke({ width: 6, color: wood.line });
     for (let i = 0; i <= n; i++) g.moveTo(i * CELL, 0).lineTo(i * CELL, w).moveTo(0, i * CELL).lineTo(w, i * CELL).stroke({ width: 3, color: wood.line, alpha: 0.5 });
@@ -281,8 +329,50 @@ class TreasureMap implements Game {
     }
   }
 
+  /** Levels 10 and 11: the river and the road name the squares. */
+  private get crossed() {
+    return this.plan.mode === 'river' || this.plan.mode === 'mirror';
+  }
+
+  /**
+   * Levels 10 and 11: no headers, so the paper keeps a 20-unit margin. In landscape the map sits right and the two-row
+   * sign stands to its left between the help button and the pet; where the view is tall enough, the sign sits above.
+   */
+  private layoutRiver(v: View, w: number) {
+    const above = v.h - w >= RIVER_SIGN_ABOVE;
+    if (above) {
+      this.grid.position.set((v.w - w) / 2, Math.max(330, (v.h - w) / 2 + 60));
+      this.sign.position.set(v.w / 2, this.grid.y - 145);
+    } else {
+      this.grid.position.set(v.w - w - 60, (v.h - w) / 2);
+      this.sign.position.set(Math.max(240, this.grid.x - 130), v.h / 2);
+    }
+    this.sign.visible = true;
+    const g = this.paper.clear();
+    g.roundRect(-20, -20, w + 40, w + 40, 26).fill(TINT_COLORS[this.dressing.tint]).stroke({ width: 6, color: wood.line });
+    for (let i = 0; i <= this.plan.size; i++) g.moveTo(i * CELL, 0).lineTo(i * CELL, w).moveTo(0, i * CELL).lineTo(w, i * CELL).stroke({ width: 3, color: wood.line, alpha: 0.5 });
+    this.headerArt.removeChildren().forEach((c) => c.destroy({ children: true }));
+    // Both sit on grid lines, drawn over them: a tap there still digs the square under the finger.
+    const mid = HALF * CELL;
+    const road = roadStrip(w);
+    road.position.set(mid, w / 2);
+    const river = riverStrip(w);
+    river.position.set(w / 2, mid);
+    const bridge = new Graphics().roundRect(mid - 22, mid - 18, 44, 36, 6).fill(wood.light).stroke({ width: 4, color: wood.line });
+    for (const x of [-10, 0, 10]) bridge.moveTo(mid + x, mid - 14).lineTo(mid + x, mid + 14);
+    bridge.stroke({ width: 2, color: wood.line, alpha: 0.6 });
+    this.headerArt.addChild(road, river, bridge);
+  }
+
   update(dt: number) {
     this.clock += dt;
+    const sh = this.shimmer.clear();
+    if (this.plan.mode === 'mirror' && this.find?.across && !this.finished) {
+      const w = this.plan.size * CELL;
+      const a = 0.45 + 0.25 * Math.sin(this.clock * 4);
+      if (this.find.across === 'river') sh.roundRect(-6, HALF * CELL - 26, w + 12, 52, 20).fill({ color: swatch.yellow.light, alpha: a });
+      else sh.roundRect(HALF * CELL - 26, -6, 52, w + 12, 20).fill({ color: swatch.yellow.light, alpha: a });
+    }
     const ring = this.ring.clear();
     if (this.couchOn && !this.busy && !this.finished) {
       const at = this.cellAt(this.cursor);
@@ -331,6 +421,14 @@ class TreasureMap implements Game {
       }
       return;
     }
+    if (this.plan.mode === 'mirror' && this.find.stands) {
+      // From the thing to the line, then just as many across: she counts both halves.
+      for (const sq of mirrorPath(this.find.stands, this.find.across!)) {
+        const c = this.cellAt(sq);
+        g.roundRect(c.x - CELL / 2 + 4, c.y - CELL / 2 + 4, CELL - 8, CELL - 8, 12).fill({ color: swatch.yellow.fill, alpha: pulse });
+      }
+      return;
+    }
     if (this.plan.mode === 'line' && this.find.line) {
       // Only the line asked for lights up: any square on it is right.
       for (const sq of lineSquares(this.find.line, n)) {
@@ -339,7 +437,7 @@ class TreasureMap implements Game {
       }
       return;
     }
-    // The target's column and row light up.
+    // The target's column and row light up (level 10 too: they cross where she digs).
     g.rect(s.col * CELL, 0, CELL, n * CELL).fill({ color: swatch.yellow.fill, alpha: pulse * 0.6 });
     g.rect(0, (n - 1 - s.row) * CELL, n * CELL, CELL).fill({ color: swatch.yellow.fill, alpha: pulse * 0.6 });
   }
@@ -366,7 +464,7 @@ class TreasureMap implements Game {
   control(input: CouchControls) {
     this.couchOn = true;
     // The couch's trips stop at level 5; the card and the outlines have no ring to pick them.
-    if (this.busy || this.finished || !this.find || this.plan.mode === 'write' || this.plan.mode === 'slide') return;
+    if (this.busy || this.finished || !this.find || this.plan.mode === 'write' || this.plan.mode === 'slide' || this.crossed) return;
     const last = this.plan.size - 1;
     for (const p of input.players) {
       const c = this.cursor;
@@ -416,7 +514,7 @@ class TreasureMap implements Game {
     this.part = 'flag';
     this.tried.clear();
     // The card names one chest, each hunt hides a new one and each raft is a new raft, so the last find's marks are cleared.
-    if (this.plan.mode === 'write' || this.plan.mode === 'far' || this.plan.mode === 'slide' || this.plan.mode === 'line') this.marks.removeChildren().forEach((c) => c.destroy({ children: true }));
+    if (this.plan.mode === 'write' || this.plan.mode === 'far' || this.plan.mode === 'slide' || this.plan.mode === 'line' || this.crossed) this.marks.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.resize(this.view);
     this.drawCard();
     this.drawLandmarks(f);
@@ -424,6 +522,11 @@ class TreasureMap implements Game {
     this.drawOutlines();
     this.busy = false;
     const mode = this.plan.mode;
+    if (mode === 'river') {
+      if (this.index === 0) await this.ctx.say('map.riverintro');
+      return this.ctx.instruct('map.river', { across: acrossWords(f.square), updown: upDownWords(f.square) });
+    }
+    if (mode === 'mirror') return this.ctx.instruct('map.mirror', { thing: f.thing!, across: acrossWords(f.stands!), updown: upDownWords(f.stands!), line: f.across! });
     if (mode === 'line') return f.line!.axis === 'col' ? this.ctx.instruct('map.linecol', { color: this.headers.cols[f.line!.at] }) : this.ctx.instruct('map.linerow', { pic: this.headers.rows[f.line!.at] });
     if (mode === 'pictures') return this.ctx.instruct('map.pictures', { pic: this.headers.rows[f.square.row], color: this.headers.cols[f.square.col] });
     if (mode === 'letters') return this.ctx.instruct('map.letters', { sq: name(f.square), col: String.fromCharCode(65 + f.square.col), row: f.square.row + 1 });
@@ -461,6 +564,13 @@ class TreasureMap implements Game {
       chest.scale.set(0.9);
       this.landmarks.addChild(chest);
     }
+    if (this.plan.mode === 'mirror') {
+      const at = this.cellAt(f.stands!);
+      const art = thingArt(f.thing);
+      art.position.set(at.x, at.y);
+      art.scale.set(0.9);
+      this.landmarks.addChild(art);
+    }
     for (const clue of f.clues ?? []) {
       const at = this.cellAt(clue.landmark);
       const art = thingArt(clue.thing);
@@ -476,6 +586,7 @@ class TreasureMap implements Game {
     const bg = new Graphics().roundRect(-130, -42, 260, 84, 22).fill(0xffffff).stroke({ width: 5, color: wood.line });
     this.sign.addChild(bg);
     const mode = this.plan.mode;
+    if (mode === 'river' || mode === 'mirror') return this.drawRiverSign(f, bg);
     if (mode === 'pictures') {
       const pic = rowPicture(this.headers.rows[f.square.row]);
       pic.x = -40;
@@ -530,6 +641,38 @@ class TreasureMap implements Game {
     }
   }
 
+  /** Levels 10 and 11's two-row sign: road and river with a count and an arrow, or the thing above its mirror line. */
+  private drawRiverSign(f: Find, bg: Graphics) {
+    bg.clear().roundRect(-90, -110, 180, 220, 22).fill(0xffffff).stroke({ width: 5, color: wood.line });
+    if (this.plan.mode === 'river') {
+      const w = riverWords(f.square);
+      const road = roadStrip(70);
+      road.position.set(-58, -52);
+      const river = riverStrip(44);
+      river.position.set(-58, 52);
+      const n1 = countTile(w.across.n);
+      n1.position.set(2, -52);
+      const n2 = countTile(w.upDown.n);
+      n2.position.set(2, 52);
+      const a1 = arrowArt(w.across.side === 'right' ? 1 : -1, 0);
+      a1.scale.set(0.6);
+      a1.position.set(58, -52);
+      const a2 = arrowArt(0, w.upDown.side === 'above' ? -1 : 1);
+      a2.scale.set(0.6);
+      a2.position.set(58, 52);
+      this.sign.addChild(road, river, n1, n2, a1, a2);
+      return;
+    }
+    const thing = thingArt(f.thing);
+    thing.position.set(0, -50);
+    thing.scale.set(0.9);
+    const line = f.across === 'river' ? riverStrip(44) : roadStrip(60);
+    line.position.set(-40, 55);
+    const mark = mirrorMark(f.across!);
+    mark.position.set(38, 55);
+    this.sign.addChild(thing, line, mark);
+  }
+
   private tapGrid(e: FederatedPointerEvent) {
     // Level 8's second part is on the cards: a tap on the map then is nothing.
     if (this.plan.mode === 'slide' && this.part !== 'flag' && !this.busy) sfx.tick();
@@ -544,6 +687,7 @@ class TreasureMap implements Game {
     if (this.busy || this.finished) return;
     if (this.plan.mode === 'far') return this.digFar(guess);
     if (this.plan.mode === 'line') return this.digLine(guess);
+    if (this.crossed) return this.digCrossed(guess);
     const { col, row } = guess;
     const want = this.find.square;
     const result = compare(guess, want);
@@ -566,6 +710,48 @@ class TreasureMap implements Game {
       else void this.ctx.say(mode === 'clues' ? 'map.cluehint' : 'map.hint');
     }
     this.busy = false;
+  }
+
+  /** Levels 10 and 11: a right dig opens the chest or draws the twin; a wrong one names the first part that was off. */
+  private async digCrossed(guess: Square) {
+    const f = this.find;
+    const mirror = this.plan.mode === 'mirror';
+    const reason = mirror ? mirrorReason(guess, f.stands!, f.across!) : riverReason(guess, f.square);
+    if (!reason) return void (mirror ? this.mirrored() : this.found());
+    this.busy = true;
+    this.misses++;
+    this.wrongs++;
+    sfx.boing();
+    const at = this.cellAt(guess);
+    this.marks.addChild(new Graphics().moveTo(at.x - 14, at.y - 14).lineTo(at.x + 14, at.y + 14).moveTo(at.x + 14, at.y - 14).lineTo(at.x - 14, at.y + 14).stroke({ width: 6, color: wood.line, alpha: 0.6, cap: 'round' }));
+    await this.ctx.say(reason.line, { ...reason.slots, thing: f.thing ?? '' });
+    if (this.wrongs >= 2 && !this.hinting) {
+      this.hinting = true;
+      this.hints++;
+      if (mirror) void this.ctx.say('map.mirrorhint', { thing: f.thing!, line: f.across! });
+      else void this.ctx.say('map.riverhint', { across: acrossWords(f.square), updown: upDownWords(f.square) });
+    }
+    this.busy = false;
+  }
+
+  /** Level 11's right tap: the twin appears turned over, upside down across the river and flipped across the road. */
+  private async mirrored() {
+    this.busy = true;
+    this.hinting = false;
+    const f = this.find;
+    const at = this.cellAt(f.square);
+    const twin = thingArt(f.thing);
+    twin.position.set(at.x, at.y);
+    twin.scale.set(0);
+    this.marks.addChild(twin);
+    const k = 0.9;
+    await this.ctx.tw.to(twin.scale, { x: f.across === 'road' ? -k : k, y: f.across === 'river' ? -k : k }, { duration: 0.35, ease: ease.outBack });
+    sfx.sparkle();
+    const g = this.ctx.stage.toLocal(this.grid.toGlobal(at));
+    this.ctx.particles.burst(g.x, g.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.yellow.fill], count: 16, speed: [100, 260], gravity: 0, life: [0.5, 0.9] });
+    this.ctx.pet.cheer();
+    await this.ctx.say('map.mirrored');
+    await this.next();
   }
 
   /** Level 9's dig: any square in the line asked for is right; a dig elsewhere names the line it was in. */

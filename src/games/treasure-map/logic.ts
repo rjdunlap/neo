@@ -6,13 +6,15 @@ import type { Rng } from '../../engine/random';
  * places something at a named square; then directions from a square ("3 right, 1 up"); then she writes
  * the directions card herself; then she hunts a hidden chest by how far away each dig says it is; then she
  * slides a raft by "2 right and 1 up", first its flag, then picking the whole raft's outline. Level 9, the
- * preschool opening, asks for one whole row or column on a 3 by 3 map: any square in it is right.
+ * preschool opening, asks for one whole row or column on a 3 by 3 map: any square in it is right. Levels 10 and 11 cross a
+ * river and a road over a 6 by 6 map, so every square is named in words ("2 squares right of the road and 1 below the
+ * river"), then mirror a thing across one of them.
  */
-export type MapMode = 'pictures' | 'letters' | 'place' | 'steps' | 'clues' | 'write' | 'far' | 'slide' | 'line';
+export type MapMode = 'pictures' | 'letters' | 'place' | 'steps' | 'clues' | 'write' | 'far' | 'slide' | 'line' | 'river' | 'mirror';
 
 export interface MapPlan {
   mode: MapMode;
-  size: 3 | 4 | 5;
+  size: 3 | 4 | 5 | 6;
   finds: number;
   name: string;
 }
@@ -27,6 +29,8 @@ export const PLANS: MapPlan[] = [
   { mode: 'far', size: 4, finds: 3, name: 'How far? A hidden chest: each dig says how many steps away it is, across plus up, and she digs where every distance still fits' },
   { mode: 'slide', size: 5, finds: 3, name: 'Slide it: a three-square raft slides "2 right and 1 up"; tap where its flag lands, then pick the outline of the whole slid raft' },
   { mode: 'line', size: 3, finds: 4, name: 'One line: a 3 by 3 map; dig anywhere in "the red column" or "the fish row", rows and columns taking turns' },
+  { mode: 'river', size: 6, finds: 4, name: 'Across the river: a river and a road cross the map; dig "2 squares right of the road and 1 below the river", one find in each quarter' },
+  { mode: 'mirror', size: 6, finds: 4, name: "Mirror twin: tap where a thing's twin goes across the river or the road, just as far on the other side" },
 ];
 
 /** Level 9, the preschool opening: appended after 8 (`planFor` reads by position) and played first through each band's `order`. */
@@ -57,6 +61,8 @@ export interface Headers {
  * Other maps keep letters and numbers, so their headers stay in the plain order.
  */
 export function headersFor(plan: MapPlan, rng: Rng): Headers {
+  // The river maps have no headers: the river and the road name every square.
+  if (plan.mode === 'river' || plan.mode === 'mirror') return { cols: [], rows: [] };
   if (plan.mode !== 'pictures' && plan.mode !== 'line') return { cols: COLUMN_COLORS.slice(0, plan.size), rows: ROW_PICTURES.slice(0, plan.size) };
   return { cols: rng.shuffle([...COLUMN_COLORS]).slice(0, plan.size), rows: rng.shuffle([...ROW_PICTURES]).slice(0, plan.size) };
 }
@@ -87,6 +93,9 @@ export interface Find {
   outlines?: Outline[];
   /** Line levels: the whole column or row asked for; any square in it is right, and `square` is just one of them (where the finger digs). */
   line?: Line;
+  /** Level 11: where the thing (`thing`) stands, and the line its twin (`square`) mirrors across. */
+  stands?: Square;
+  across?: Mirror;
 }
 
 /** One whole column (`at` = its column) or row (`at` = its row, 0 at the bottom). */
@@ -143,6 +152,8 @@ export interface Clue {
 /** Finds on a level: all different squares; on step levels, moves of 1–3 that stay on the map, with a turn. */
 export function makeFinds(plan: MapPlan, rng: Rng): Find[] {
   if (plan.mode === 'line') return makeLines(plan, rng);
+  if (plan.mode === 'river') return makeRiver(plan, rng);
+  if (plan.mode === 'mirror') return makeMirror(plan, rng);
   const out: Find[] = [];
   const things = rng.shuffle([...THINGS]);
   const landmarks: Square[] = [];
@@ -422,3 +433,127 @@ export const slideWords = (right: number, up: number) => `${Math.abs(right)} ${r
 
 /** The squares the flag passes on its slide, across then up or down, as the hint lights them. */
 export const flagWalk = (f: Find, size: number) => walkCard(f.from!, cardFor(f), size).legs.flat();
+
+/**
+ * Levels 10 and 11: the river runs across the map on the grid line below row 3 (rows 0 to 2 below it, 3 to 5 above) and
+ * the road runs up it on the line left of column 3, so no square sits on either; the square touching one is 1 from it.
+ */
+export const HALF = 3;
+
+export type Mirror = 'river' | 'road';
+
+export interface RiverWords {
+  across: { n: number; side: 'right' | 'left' };
+  upDown: { n: number; side: 'above' | 'below' };
+}
+
+/** How far a square is from the road and the river, and on which side of each. */
+export function riverWords(s: Square): RiverWords {
+  return {
+    across: s.col >= HALF ? { n: s.col - HALF + 1, side: 'right' } : { n: HALF - s.col, side: 'left' },
+    upDown: s.row >= HALF ? { n: s.row - HALF + 1, side: 'above' } : { n: HALF - s.row, side: 'below' },
+  };
+}
+
+/** The square those words name: the inverse of `riverWords`. */
+export function riverSquare(w: RiverWords): Square {
+  return {
+    col: w.across.side === 'right' ? HALF - 1 + w.across.n : HALF - w.across.n,
+    row: w.upDown.side === 'above' ? HALF - 1 + w.upDown.n : HALF - w.upDown.n,
+  };
+}
+
+/** "1 square" or "2 squares", for the voice. */
+export const squaresWord = (n: number) => `${n} ${n === 1 ? 'square' : 'squares'}`;
+
+/** "2 squares right" and "1 square below", said before "of the road" and "the river". */
+export const acrossWords = (s: Square) => `${squaresWord(riverWords(s).across.n)} ${riverWords(s).across.side}`;
+export const upDownWords = (s: Square) => `${squaresWord(riverWords(s).upDown.n)} ${riverWords(s).upDown.side}`;
+/** "right of the road" or "below the river": the side alone. */
+const sideWords = (s: Square, line: Mirror) => (line === 'road' ? `${riverWords(s).across.side} of the road` : `${riverWords(s).upDown.side} the river`);
+/** "2 squares right of the road" or "1 square below the river". */
+const countWords = (s: Square, line: Mirror) => (line === 'road' ? `${acrossWords(s)} of the road` : `${upDownWords(s)} the river`);
+
+/** The square across a line, just as far on the other side. */
+export const mirrorOf = (s: Square, line: Mirror): Square => (line === 'river' ? { col: s.col, row: 2 * HALF - 1 - s.row } : { col: 2 * HALF - 1 - s.col, row: s.row });
+
+const QUADRANTS = [
+  { right: true, above: true },
+  { right: false, above: true },
+  { right: false, above: false },
+  { right: true, above: false },
+];
+
+/** Level 10's finds: one in each quarter of the map in a seeded order, each 1 to 3 from the road and from the river. */
+function makeRiver(plan: MapPlan, rng: Rng): Find[] {
+  return rng.shuffle([...QUADRANTS]).slice(0, plan.finds).map((q) => ({
+    square: riverSquare({ across: { n: rng.int(1, HALF), side: q.right ? 'right' : 'left' }, upDown: { n: rng.int(1, HALF), side: q.above ? 'above' : 'below' } }),
+  }));
+}
+
+/** Level 11's finds: four different things, two mirrored across the river and two across the road in a seeded order, no twin twice. */
+function makeMirror(plan: MapPlan, rng: Rng): Find[] {
+  const things = rng.shuffle([...THINGS]);
+  const lines = rng.shuffle<Mirror>(['river', 'river', 'road', 'road']);
+  const out: Find[] = [];
+  for (let i = 0; i < plan.finds; i++) {
+    for (;;) {
+      const stands = { col: rng.int(0, plan.size - 1), row: rng.int(0, plan.size - 1) };
+      const square = mirrorOf(stands, lines[i % lines.length]);
+      if (out.some((f) => same(f.square, square))) continue;
+      out.push({ square, stands, thing: things[i % things.length], across: lines[i % lines.length] });
+      break;
+    }
+  }
+  return out;
+}
+
+export type RiverLine = 'map.riverside' | 'map.rivercount';
+
+/** Why a level 10 dig missed, naming the first wrong part: the side of the road, the count from it, then the same for the river. */
+export function riverReason(guess: Square, want: Square): { line: RiverLine; slots: Record<string, string> } | null {
+  const g = riverWords(guess);
+  const w = riverWords(want);
+  for (const line of ['road', 'river'] as const) {
+    const [gs, ws] = line === 'road' ? [g.across, w.across] : [g.upDown, w.upDown];
+    if (gs.side !== ws.side) return { line: 'map.riverside', slots: { got: sideWords(guess, line), want: sideWords(want, line) } };
+    if (gs.n !== ws.n) return { line: 'map.rivercount', slots: { line, want: countWords(want, line) } };
+  }
+  return null;
+}
+
+export type MirrorLine = 'map.mirrorside' | 'map.mirrorslid' | 'map.mirrorcount';
+
+/**
+ * Why a level 11 tap missed, naming the first wrong part: still on the thing's side of the line (its own square too),
+ * then moved along the line, then the wrong distance across it.
+ */
+export function mirrorReason(guess: Square, stands: Square, line: Mirror): { line: MirrorLine; slots: Record<string, string> } | null {
+  const twin = mirrorOf(stands, line);
+  if (same(guess, twin)) return null;
+  const g = riverWords(guess);
+  const t = riverWords(stands);
+  const sameSide = line === 'river' ? g.upDown.side === t.upDown.side : g.across.side === t.across.side;
+  if (sameSide) return { line: 'map.mirrorside', slots: { line } };
+  const other: Mirror = line === 'river' ? 'road' : 'river';
+  const slid = line === 'river' ? guess.col !== stands.col : guess.row !== stands.row;
+  if (slid) return { line: 'map.mirrorslid', slots: { line, keep: countWords(stands, other) } };
+  return { line: 'map.mirrorcount', slots: { line, n: squaresWord(line === 'river' ? t.upDown.n : t.across.n) } };
+}
+
+/** Level 11's hint path: from the thing to the line, then the same number of squares on the other side, ending on the twin. */
+export function mirrorPath(stands: Square, line: Mirror): Square[] {
+  const n = line === 'river' ? riverWords(stands).upDown.n : riverWords(stands).across.n;
+  const out: Square[] = [];
+  for (let k = n; k >= 1; k--) out.push(stepFrom(stands, line, k));
+  for (let k = 1; k <= n; k++) out.push(mirrorOf(stepFrom(stands, line, k), line));
+  return out;
+}
+
+/** The square k from the line on the thing's side, in the thing's own column (river) or row (road). */
+function stepFrom(s: Square, line: Mirror, k: number): Square {
+  const w = riverWords(s);
+  return line === 'river'
+    ? riverSquare({ across: w.across, upDown: { n: k, side: w.upDown.side } })
+    : riverSquare({ across: { n: k, side: w.across.side }, upDown: w.upDown });
+}

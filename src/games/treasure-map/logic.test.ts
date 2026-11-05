@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { flagWalk, sameCells, slideWords, bestDig, distance, dugAt, type FarDig, ruledOutBy, stillFits, stepsWord, type Square, type Card, cardDone, cardFor, cardReason, EMPTY_CARD, nextCount, nextWay, planFor, walkCard, CELL, cellCenter, clueDirection, clueEnd, COLUMN_COLORS, compare, digSpot, directions, DOODLES, dressingFor, firstDirection, firstLeg, headersFor, inLine, lineSquares, makeFinds, name, ONE_LINE, PLANS, ROW_PICTURES, squareAt, TINTS } from './logic';
+import { riverWords, riverSquare, mirrorOf, riverReason, mirrorReason, mirrorPath, acrossWords, upDownWords, squaresWord, HALF, flagWalk, sameCells, slideWords, bestDig, distance, dugAt, type FarDig, ruledOutBy, stillFits, stepsWord, type Square, type Card, cardDone, cardFor, cardReason, EMPTY_CARD, nextCount, nextWay, planFor, walkCard, CELL, cellCenter, clueDirection, clueEnd, COLUMN_COLORS, compare, digSpot, directions, DOODLES, dressingFor, firstDirection, firstLeg, headersFor, inLine, lineSquares, makeFinds, name, ONE_LINE, PLANS, ROW_PICTURES, squareAt, TINTS } from './logic';
 
 describe('Treasure Map', () => {
   it('names squares by column letter and row number, counting rows from the bottom', () => {
@@ -126,7 +126,7 @@ describe('Treasure Map', () => {
         dressingFor(rng);
         expect(dressed).toEqual(plain);
       }
-      if (plan.mode !== 'pictures' && plan.mode !== 'line') expect(headersFor(plan, new Rng(1)).rows).toEqual(ROW_PICTURES.slice(0, plan.size));
+      if (plan.mode !== 'pictures' && plan.mode !== 'line' && plan.mode !== 'river' && plan.mode !== 'mirror') expect(headersFor(plan, new Rng(1)).rows).toEqual(ROW_PICTURES.slice(0, plan.size));
     }
   });
 
@@ -415,7 +415,7 @@ describe('Treasure Map level 9, One line', () => {
 
   it('is appended as plan 9, a 3 by 3 map of four finds, right after plan 8', () => {
     expect(ONE_LINE).toBe(9);
-    expect(PLANS).toHaveLength(9);
+    expect(PLANS).toHaveLength(11);
     expect(PLANS[8]).toBe(plan);
     expect(plan.mode).toBe('line');
     expect(plan.size).toBe(3);
@@ -457,7 +457,7 @@ describe('Treasure Map level 9, One line', () => {
     expect(mod.entryLevels).toEqual([ONE_LINE]);
     expect(levelsInOrder(mod.levels('preschool'))).toEqual([9, 1]);
     expect(levelsInOrder(mod.levels('prek'))).toEqual([9, 1, 2]);
-    expect(levelsInOrder(mod.levels('school'))).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+    expect(levelsInOrder(mod.levels('school'))).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 10, 11]);
     expect(nextLevelOffer(9, mod.levels('prek'))).toBe(1);
     expect(stepLevel(1, -1, mod.levels('prek'))).toBe(9);
     expect(landing(9, mod.levels('school'), mod.entryLevels)).toBe(1);
@@ -476,5 +476,103 @@ describe('Treasure Map level 9, One line', () => {
       seen.add(cols.join() + rows.join());
     }
     expect(seen.size).toBeGreaterThan(20);
+  });
+});
+
+describe('Treasure Map levels 10–11, across the river', () => {
+  const squares: Square[] = Array.from({ length: 36 }, (_, i) => ({ col: i % 6, row: Math.floor(i / 6) }));
+  const rounds = (id: number, n = 200) => Array.from({ length: n }, (_, i) => makeFinds(planFor(id), new Rng(i + 1)));
+  const key = (s: Square) => `${s.col},${s.row}`;
+
+  it('words the 36 squares distinctly and reads them back', () => {
+    const seen = new Set(squares.map((s) => JSON.stringify(riverWords(s))));
+    expect(seen.size).toBe(36);
+    for (const s of squares) {
+      expect(riverSquare(riverWords(s))).toEqual(s);
+      const w = riverWords(s);
+      expect(w.across.n).toBeGreaterThanOrEqual(1);
+      expect(w.across.n).toBeLessThanOrEqual(HALF);
+    }
+    expect(acrossWords({ col: 3, row: 0 })).toBe('1 square right');
+    expect(upDownWords({ col: 0, row: 0 })).toBe('3 squares below');
+    expect(squaresWord(2)).toBe('2 squares');
+  });
+
+  it('level 10 digs one find per quadrant, counts 1 to 3, distinct squares', () => {
+    for (const finds of rounds(10)) {
+      expect(finds).toHaveLength(4);
+      expect(new Set(finds.map((f) => key(f.square))).size).toBe(4);
+      expect(new Set(finds.map((f) => `${riverWords(f.square).across.side}${riverWords(f.square).upDown.side}`)).size).toBe(4);
+      for (const f of finds) {
+        const w = riverWords(f.square);
+        for (const n of [w.across.n, w.upDown.n]) { expect(n).toBeGreaterThanOrEqual(1); expect(n).toBeLessThanOrEqual(3); }
+      }
+    }
+  });
+
+  it('mirrorOf stays on the map, is an involution, never the own square, and keeps the count from the line', () => {
+    for (const s of squares) for (const line of ['river', 'road'] as const) {
+      const t = mirrorOf(s, line);
+      expect(t.col).toBeGreaterThanOrEqual(0); expect(t.col).toBeLessThan(6);
+      expect(t.row).toBeGreaterThanOrEqual(0); expect(t.row).toBeLessThan(6);
+      expect(mirrorOf(t, line)).toEqual(s);
+      expect(t).not.toEqual(s);
+      const [a, b] = [riverWords(s), riverWords(t)];
+      if (line === 'river') { expect(b.upDown.n).toBe(a.upDown.n); expect(b.upDown.side).not.toBe(a.upDown.side); expect(t.col).toBe(s.col); }
+      else { expect(b.across.n).toBe(a.across.n); expect(b.across.side).not.toBe(a.across.side); expect(t.row).toBe(s.row); }
+    }
+  });
+
+  it('level 11 has two finds per line, four different things, and the twin is the answer', () => {
+    for (const finds of rounds(11)) {
+      expect(finds).toHaveLength(4);
+      expect(finds.filter((f) => f.across === 'river')).toHaveLength(2);
+      expect(finds.filter((f) => f.across === 'road')).toHaveLength(2);
+      expect(new Set(finds.map((f) => f.thing)).size).toBe(4);
+      expect(new Set(finds.map((f) => key(f.square))).size).toBe(4);
+      for (const f of finds) expect(f.square).toEqual(mirrorOf(f.stands!, f.across!));
+    }
+  });
+
+  it('riverReason names the first wrong part in order, and nothing when right', () => {
+    const want = { col: 4, row: 1 }; // 2 right of the road, 2 below the river
+    expect(riverReason(want, want)).toBeNull();
+    expect(riverReason({ col: 1, row: 1 }, want)).toEqual({ line: 'map.riverside', slots: { got: 'left of the road', want: 'right of the road' } });
+    // wrong side of both: the road comes first
+    expect(riverReason({ col: 1, row: 4 }, want)?.slots.got).toBe('left of the road');
+    expect(riverReason({ col: 5, row: 1 }, want)).toEqual({ line: 'map.rivercount', slots: { line: 'road', want: '2 squares right of the road' } });
+    // wrong count on both: the road comes first
+    expect(riverReason({ col: 3, row: 2 }, want)?.slots.line).toBe('road');
+    expect(riverReason({ col: 4, row: 4 }, want)).toEqual({ line: 'map.riverside', slots: { got: 'above the river', want: 'below the river' } });
+    expect(riverReason({ col: 4, row: 0 }, want)).toEqual({ line: 'map.rivercount', slots: { line: 'river', want: '2 squares below the river' } });
+  });
+
+  it('mirrorReason names side, then slide, then distance, and nothing on the twin', () => {
+    const stands = { col: 4, row: 1 }; // 2 right of the road, 2 below the river
+    const twin = mirrorOf(stands, 'river'); // col 4, row 4
+    expect(mirrorReason(twin, stands, 'river')).toBeNull();
+    expect(mirrorReason(stands, stands, 'river')).toEqual({ line: 'map.mirrorside', slots: { line: 'river' } });
+    expect(mirrorReason({ col: 0, row: 0 }, stands, 'river')?.line).toBe('map.mirrorside');
+    expect(mirrorReason({ col: 5, row: 4 }, stands, 'river')).toEqual({ line: 'map.mirrorslid', slots: { line: 'river', keep: '2 squares right of the road' } });
+    expect(mirrorReason({ col: 4, row: 3 }, stands, 'river')).toEqual({ line: 'map.mirrorcount', slots: { line: 'river', n: '2 squares' } });
+    const road = mirrorOf(stands, 'road'); // col 1, row 1
+    expect(mirrorReason(road, stands, 'road')).toBeNull();
+    expect(mirrorReason({ col: 5, row: 1 }, stands, 'road')?.line).toBe('map.mirrorside');
+    expect(mirrorReason({ col: 1, row: 2 }, stands, 'road')).toEqual({ line: 'map.mirrorslid', slots: { line: 'road', keep: '2 squares below the river' } });
+    expect(mirrorReason({ col: 2, row: 1 }, stands, 'road')).toEqual({ line: 'map.mirrorcount', slots: { line: 'road', n: '2 squares' } });
+  });
+
+  it('mirrorPath has 2n squares, starts on the thing, ends on the twin, half on each side', () => {
+    for (const s of squares) for (const line of ['river', 'road'] as const) {
+      const path = mirrorPath(s, line);
+      const w = riverWords(s);
+      const n = line === 'river' ? w.upDown.n : w.across.n;
+      expect(path).toHaveLength(2 * n);
+      expect(path[0]).toEqual(s);
+      expect(path[path.length - 1]).toEqual(mirrorOf(s, line));
+      const side = (q: Square) => (line === 'river' ? riverWords(q).upDown.side : riverWords(q).across.side);
+      expect(path.slice(0, n).every((q) => side(q) === side(s))).toBe(true);
+      expect(path.slice(n).every((q) => side(q) !== side(s))).toBe(true);
+    }
   });
 });

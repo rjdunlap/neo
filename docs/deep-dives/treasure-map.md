@@ -168,7 +168,7 @@ None. By the [standing rules](../archive/DECISIONS-2026-10-23.md#standing-rules)
 4. **Level 8 *Slide it*** (built 2026-11-05; batch treasure-map 4), after batch 1: new-interaction tier: typecheck, rule tests, one play with one wrong square and one wrong outline (named reason), then right; one portrait screenshot of the outline cards; `fingerdemo` at 8.
 5. **Level 9 *One line*, the preschool opening** (built 2026-11-05; batch treasure-map 5), after batches 1–4 (shares the headers; its ID follows 8): new-band tier: typecheck, unit tests including the lands, registry band and order/entry tests, one play of level 9 at preschool with one wrong line then two right, `fingerdemo` at 9, the preschool Rainbow Meadow page screenshot.
 6. **Define *Across the river*, levels 10–11** (defined 2026-11-05, [above](#levels-1011-across-the-river-defined-2026-11-05)).
-7. **Levels 10–11 *Across the river* and *Mirror twin*** (batch treasure-map 6), after batches 1–5 (IDs follow 9): new-interaction tier as in the definition's check tier.
+7. **Levels 10–11 *Across the river* and *Mirror twin*** (built 2026-11-05; batch treasure-map 6, [PR #1260](https://github.com/rjdunlap/neo/pull/1260); the sign sits above the map when the view height minus 600 is at least 400, not the definition's `v.w` rule, since `v.w` is 1024 in both orientations), after batches 1–5 (IDs follow 9): new-interaction tier as in the definition's check tier.
 
 ## What was built in this session
 
