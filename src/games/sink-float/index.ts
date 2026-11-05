@@ -567,7 +567,7 @@ class SinkFloat implements Game {
       const at = Math.min(this.current, this.items.length - 1);
       const pairEnd = at - (at % 2) + 1;
       this.items.forEach((item, i) => {
-        item.node.visible = pairing ? i >= pairEnd - 1 && i <= pairEnd : i <= this.current || item.done;
+        item.node.visible = pairing ? (i >= pairEnd - 1 && i <= pairEnd) || this.wet.some((w) => w.node === item.node) : i <= this.current || item.done;
         if (item.done) return;
         if (pairing) item.node.position.set(v.w * 0.86, v.h * (item.pair?.big ? 0.3 : 0.5));
         else if (i === this.current) item.node.position.set(v.w * 0.86, v.h * 0.38);
