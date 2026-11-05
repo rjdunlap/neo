@@ -17,7 +17,7 @@ import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseBoards, courseMinimum, isLightCourse } from './course';
-import { beamEnd, boardWith, cloudCells, DROP_TILT, findLines, flowerCount, freeCells, hintMirror, hintThing, LEVELS, makePuzzle, materialPuzzle, materialsRound, meetsGoal, minTurns, mirrorAt, nearestPlacement, outcome, owlCell, placeHint, planFor, predictionChoices, shadowCells, solved, THING_WORDS, trace, whyNot, whyNotMaterial, type BeamEnd, type LightPlan, type LightPuzzle, type MaterialRound, type Outcome, type Placed, type Stuff, type ThingName, type Tilt, type Tint } from './logic';
+import { beamEnd, boardWith, cloudCells, DROP_TILT, findLines, flowerCount, freeCells, hintMirror, hintThing, LEVELS, makePuzzle, materialPuzzle, materialsRound, meetsGoal, minTurns, mirrorAt, nearestPlacement, outcome, owlCell, placeHint, planFor, predictionChoices, shadowCells, solved, THING_WORDS, trace, traceAll, whyNot, whyNotMaterial, type BeamEnd, type LightPlan, type LightPuzzle, type MaterialRound, type Outcome, type Placed, type Stuff, type ThingName, type Tilt, type Tint } from './logic';
 
 const CELL = 100;
 /** The tray under the board on levels 8–9: its gap below the board, height and slot spacing. */
@@ -55,6 +55,18 @@ function mirrorArt(): Container {
   c.addChild(new Graphics().circle(0, 0, 40).fill({ color: 0xffffff, alpha: 0.5 }).stroke({ width: 3, color: swatch.white.line, alpha: 0.6 }));
   const glass = new Graphics().roundRect(-8, -42, 16, 84, 6).fill(0xdff3ff).stroke({ width: 5, color: swatch.blue.line });
   glass.moveTo(-2, -32).lineTo(-2, 30).stroke({ width: 3, color: 0xffffff, alpha: 0.9 });
+  glass.rotation = Math.PI / 4;
+  c.addChild(glass);
+  return c;
+}
+
+/** Level 12's half-mirror: the mirror's bar as pale glass with a silver stripe and two glints, so it reads as glass and mirror at once. */
+function halfMirrorArt(): Container {
+  const c = new Container();
+  c.addChild(new Graphics().circle(0, 0, 40).fill({ color: 0xffffff, alpha: 0.5 }).stroke({ width: 3, color: swatch.white.line, alpha: 0.6 }));
+  const glass = new Graphics().roundRect(-10, -42, 20, 84, 7).fill({ color: swatch.blue.light, alpha: 0.35 }).stroke({ width: 4, color: swatch.blue.line, alpha: 0.8 });
+  glass.moveTo(0, -36).lineTo(0, 36).stroke({ width: 5, color: 0x9aa8b6 });
+  glass.circle(-4, -24, 3).circle(4, 22, 2.5).fill(0xffffff);
   glass.rotation = Math.PI / 4;
   c.addChild(glass);
   return c;
@@ -492,6 +504,7 @@ class LightLab implements Game {
     if (this.plan.mode === 'find') return this.ctx.instruct('light.find');
     if (this.plan.tray) return this.ctx.instruct(this.plan.tray > 1 ? 'light.place.two' : 'light.place');
     if (this.plan.mode === 'predict') return this.ctx.instruct('light.predict');
+    if (this.plan.split) return this.ctx.instruct('light.split');
     if (this.plan.glass) return this.ctx.instruct('light.color');
     if (this.plan.flowers === 2) return this.ctx.instruct('light.two');
     return this.ctx.instruct(this.plan.mode === 'live' ? 'light.live' : 'light.plan');
@@ -516,7 +529,7 @@ class LightLab implements Game {
       this.spots = choices.map((end, i) => ({ x: end.targetX, y: end.targetY, thing: -2 - i }));
       this.focus = 0;
     } else {
-      this.spots = p.things.flatMap((t, i) => (t.kind === 'mirror' ? [{ x: t.x, y: t.y, thing: i }] : []));
+      this.spots = p.things.flatMap((t, i) => (t.kind === 'mirror' || t.kind === 'half' ? [{ x: t.x, y: t.y, thing: i }] : []));
       if (this.planning) this.spots.push({ x: p.sunCol, y: p.sunRow, thing: -1 });
       this.focus = Math.max(0, this.spots.findIndex((sp) => sp.thing === p.pathMirrors[0]));
     }
@@ -533,8 +546,8 @@ class LightLab implements Game {
     p.things.forEach((t, i) => {
       const c = this.at(t.x, t.y);
       let node: Container;
-      if (t.kind === 'mirror') {
-        node = mirrorArt();
+      if (t.kind === 'mirror' || t.kind === 'half') {
+        node = t.kind === 'half' ? halfMirrorArt() : mirrorArt();
         node.hitArea = new Circle(0, 0, CELL / 2);
         onTap(node, () => this.turn(i), { cooldown: 200 });
         node.children[1].rotation = this.tilts[i] === 0 ? Math.PI / 4 : -Math.PI / 4;
@@ -823,24 +836,28 @@ class LightLab implements Game {
     } else this.beam.clear();
   }
 
-  /** The beam as far as it gets: full on live levels, or `upTo` cells while it is shining. */
+  /** The beam as far as it gets: full on live levels, or `upTo` steps from the sun while it is shining (every arm of a split beam together). */
   private drawBeam(upTo = Infinity) {
-    const t = trace(...this.current());
+    const [board, tilts] = this.current();
+    const t = traceAll(board, tilts);
     const g = this.beam.clear();
-    // One line per color, so the soft glow doesn't stack up where segments meet.
-    const shown = t.cells.slice(0, upTo);
-    let from = this.at(this.puzzle.sunCol, this.puzzle.sunRow);
-    for (let i = 0; i < shown.length; ) {
-      const { tint, dim } = shown[i];
-      const run = [from];
-      while (i < shown.length && shown[i].tint === tint && !!shown[i].dim === !!dim) run.push(this.at(shown[i].x, shown[i].y)), i++;
-      // Level 11's cloudy things let a paler, thinner beam through.
-      for (const [width, alpha] of dim ? [[14, 0.2], [5, 0.5]] : [[22, 0.35], [8, 1]]) {
-        g.moveTo(run[0].x, run[0].y);
-        for (const p of run.slice(1)) g.lineTo(p.x, p.y);
-        g.stroke({ width, color: TINT_COLOR[tint], alpha, cap: 'round', join: 'round' });
+    for (const arm of t.arms) {
+      // One line per color, so the soft glow doesn't stack up where segments meet.
+      const shown = arm.cells.filter((c) => c.step <= upTo);
+      const start = arm.from < 0 ? { x: this.puzzle.sunCol, y: this.puzzle.sunRow } : board.things[arm.from];
+      let from = this.at(start.x, start.y);
+      for (let i = 0; i < shown.length; ) {
+        const { tint, dim } = shown[i];
+        const run = [from];
+        while (i < shown.length && shown[i].tint === tint && !!shown[i].dim === !!dim) run.push(this.at(shown[i].x, shown[i].y)), i++;
+        // Level 11's cloudy things, and level 12's half-mirror, let a paler, thinner beam through.
+        for (const [width, alpha] of dim ? [[14, 0.2], [5, 0.5]] : [[22, 0.35], [8, 1]]) {
+          g.moveTo(run[0].x, run[0].y);
+          for (const p of run.slice(1)) g.lineTo(p.x, p.y);
+          g.stroke({ width, color: TINT_COLOR[tint], alpha, cap: 'round', join: 'round' });
+        }
+        from = run[run.length - 1];
       }
-      from = run[run.length - 1];
     }
     // Live levels wake flowers as the light reaches them.
     for (const [i, b] of this.blooms) {
@@ -859,14 +876,23 @@ class LightLab implements Game {
     this.sun.scale.set(1);
     sfx.whoosh();
     const [board, tilts] = this.current();
-    const t = trace(board, tilts);
-    for (let n = 1; n <= t.cells.length; n++) {
+    const t = traceAll(board, tilts);
+    const cells = t.arms.flatMap((a) => a.cells);
+    const steps = Math.max(0, ...cells.map((c) => c.step));
+    for (let n = 1; n <= steps; n++) {
       this.drawBeam(n);
-      const c = t.cells[n - 1];
-      const i = board.things.findIndex((x) => x.x === c.x && x.y === c.y);
-      if (i >= 0 && t.woken.includes(i)) {
-        this.blooms.get(i)?.wake(this.ctx.tw);
-        sfx.bell(7 + n % 5, 0.25);
+      for (const c of cells.filter((c) => c.step === n)) {
+        const i = board.things.findIndex((x) => x.x === c.x && x.y === c.y);
+        if (i >= 0 && t.woken.includes(i)) {
+          this.blooms.get(i)?.wake(this.ctx.tw);
+          sfx.bell(7 + n % 5, 0.25);
+        }
+      }
+      // The split: a little burst of sparkle where both arms leave the half-mirror.
+      for (const arm of t.arms) {
+        if (arm.from < 0 || arm.cells[0]?.step !== n + 1) continue;
+        const h = this.ctx.stage.toLocal(this.pieces.toGlobal(this.at(board.things[arm.from].x, board.things[arm.from].y)));
+        this.ctx.particles.burst(h.x, h.y, { kind: 'star', colors: [0xffffff, 0xfff3a0], count: 10, speed: [80, 200], gravity: 0, life: [0.3, 0.6] });
       }
       await this.ctx.tw.wait(0.09);
     }
@@ -877,7 +903,8 @@ class LightLab implements Game {
     this.report();
     sfx.boing();
     const why = whyNot(board, tilts);
-    await this.ctx.say(why === 'color' ? 'light.miss.color' : why === 'sleeping' ? 'light.miss.sleeping' : why === 'rock' ? 'light.miss.rock' : 'light.miss.edge');
+    const lines = { color: 'light.miss.color', sleeping: 'light.miss.sleeping', rock: 'light.miss.rock', unsplit: 'light.miss.unsplit', split: 'light.miss.split' } as const;
+    await this.ctx.say(why in lines ? lines[why as keyof typeof lines] : 'light.miss.edge');
     if (this.wrongs >= 2 && this.puzzle.tray.length && !this.hintCell && !this.hintTray && this.hinted < 0) this.hintPlace();
     else if (this.wrongs >= 2 && !this.puzzle.tray.length && this.hinted < 0) {
       this.hinted = hintMirror(this.puzzle, this.tilts);
@@ -885,7 +912,7 @@ class LightLab implements Game {
         this.hints++;
         this.assisted = true;
         this.report();
-        void this.ctx.say('light.hint');
+        void this.ctx.say(this.puzzle.things[this.hinted].kind === 'half' ? 'light.hint.split' : 'light.hint');
       }
     }
     await this.ctx.tw.wait(0.6);
@@ -1103,7 +1130,7 @@ class LightLab implements Game {
     // A course moves straight on after a short score; ordinary play praises.
     if (this.course) await this.boardScore();
     else {
-      await this.ctx.say('light.yay');
+      await this.ctx.say(this.plan.split && this.index === 0 ? 'light.split.yay' : 'light.yay');
       await this.ctx.tw.wait(0.5);
     }
     await this.ctx.tw.to(this.board, { alpha: 0 }, { duration: 0.3 });

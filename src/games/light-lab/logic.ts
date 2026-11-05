@@ -12,6 +12,7 @@ import type { BandLevels } from '../../progress/difficulty';
  * she drags them onto the board, and no answer works without every one of them. At level 10 a cloud hides the one
  * mirror, and she finds it from where the beam goes in and where it comes out. Level 11 puts one everyday thing in a
  * straight beam: she guesses what the light will do, then picks a thing to wake a flower, shade an owl or bounce the light.
+ * Level 12 adds a half-mirror that sends the light both straight on and turned, so one beam becomes two dimmer arms.
  */
 export type LightMode = 'live' | 'plan' | 'predict' | 'find' | 'materials';
 
@@ -36,6 +37,8 @@ export interface LightPlan {
   eitherSide: boolean;
   /** Path mirrors taken off the board into a tray for her to place (levels 8–9); 0 elsewhere. */
   tray: number;
+  /** A half-mirror splits the beam into two arms, one flower on each (level 12). */
+  split?: boolean;
   name: string;
 }
 
@@ -53,12 +56,13 @@ export const PLANS: LightPlan[] = [
   { mode: 'find', cols: 6, rows: 4, turns: 1, decoys: 0, rocks: 0, flowers: 1, glass: false, puzzles: 3, startWrong: 0, startDark: false, eitherSide: true, tray: 0, name: "Where's the mirror? A cloud hides one mirror: tap where it must be, from where the beam goes in and comes out" },
   // Three free guesses, then two judged choices: five boards, built together by `materialsRound`.
   { mode: 'materials', cols: 6, rows: 4, turns: 0, decoys: 0, rocks: 0, flowers: 1, glass: false, puzzles: 5, startWrong: 0, startDark: false, eitherSide: false, tray: 0, name: 'Through, bounce or stop: guess what a clear, cloudy, blocking or shiny thing does to the beam, then pick one to wake a flower or shade an owl (a toy rule: each thing shows its main effect)' },
+  { mode: 'plan', cols: 7, rows: 5, turns: 1, decoys: 2, rocks: 1, flowers: 2, glass: false, puzzles: 2, startWrong: 2, startDark: true, eitherSide: true, tray: 0, split: true, name: 'Split the sunbeam: a half-mirror sends the light straight on and bounces it too; plan both beams to wake two flowers (a toy rule: each beam is dimmer, but still wakes a flower)' },
 ];
 
-/** Pre-K reaches level 11 straight after 4, skipping the planning levels; school meets it before pink glass. */
+/** Pre-K reaches level 11 straight after 4, skipping the planning levels; school meets it before pink glass, and ends on the split. */
 export const LEVELS: BandLevels = {
   prek: { min: 1, max: 11, order: [1, 2, 3, 4, 11] },
-  school: { min: 2, max: 11, order: [2, 3, 4, 11, 5, 6, 7, 8, 9, 10] },
+  school: { min: 2, max: 12, order: [2, 3, 4, 11, 5, 6, 7, 8, 9, 10, 12] },
 };
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -86,6 +90,8 @@ export type Tint = 'sun' | 'pink' | 'blue';
 
 export type Thing =
   | { kind: 'mirror'; x: number; y: number }
+  /** Level 12: tilts like a mirror, but the light both passes and turns. */
+  | { kind: 'half'; x: number; y: number }
   | { kind: 'rock'; x: number; y: number }
   | { kind: 'flower'; x: number; y: number; wants: Tint }
   | { kind: 'glass'; x: number; y: number; tint: Tint }
@@ -173,13 +179,94 @@ export function trace(p: LightPuzzle, tilts: Tilt[]): Trace {
       if (t.material === 'shiny') dir = reflect(dir, t.tilt);
     } else if (t.kind === 'mirror') dir = reflect(dir, tilts[i]);
     else if (t.kind === 'glass') tint = t.tint;
-    else if (t.wants === tint) woken.add(i);
-    else wrongColor.add(i);
+    else if (t.kind === 'flower') (t.wants === tint ? woken : wrongColor).add(i);
   }
 }
 
+/** One beam of a split board: the sun's beam (arm 0, carried straight through any half-mirror) or a bounced one. */
+export interface Arm {
+  /** Cells this arm passes through, in order; the last is where it stops or leaves. `step` counts cells from the sun. */
+  cells: { x: number; y: number; tint: Tint; dim?: boolean; step: number }[];
+  end: 'edge' | 'rock' | 'loop';
+  /** The arm it split from (-1 for the sun's beam) and the half-mirror's thing index where it began (-1 for the sun). */
+  parent: number;
+  from: number;
+}
+
+export interface SplitTrace {
+  arms: Arm[];
+  woken: number[];
+  wrongColor: number[];
+  /** Whether the light reached a half-mirror. */
+  split: boolean;
+}
+
+/**
+ * Every beam, for boards with a half-mirror: the light passes it and also turns by the mirror's rule, and both arms go on
+ * dimmer. A bounced arm is queued and walked after the one it left. One seen-set of cell and direction is shared by every arm,
+ * so an arm entering a cell the way any arm already did ends there as a loop, and the walk always finishes.
+ */
+export function traceAll(p: LightPuzzle, tilts: Tilt[]): SplitTrace {
+  const at = new Map(p.things.map((t, i) => [`${t.x},${t.y}`, i]));
+  const woken = new Set<number>();
+  const wrongColor = new Set<number>();
+  const seen = new Set<string>();
+  const arms: Arm[] = [];
+  const queue: { x: number; y: number; dir: Dir; tint: Tint; dim: boolean; step: number; parent: number; from: number }[] = [
+    { x: p.sunCol, y: p.sunRow, dir: p.sunDir, tint: 'sun', dim: false, step: 0, parent: -1, from: -1 },
+  ];
+  let split = false;
+  for (let a = 0; a < queue.length; a++) {
+    let { x, y, dir, tint, dim, step } = queue[a];
+    const cells: Arm['cells'] = [];
+    const cell = () => cells.push(dim ? { x, y, tint, dim, step } : { x, y, tint, step });
+    let end: Arm['end'];
+    for (;;) {
+      x += DX[dir];
+      y += DY[dir];
+      step++;
+      if (x < 0 || y < 0 || x >= p.cols || y >= p.rows) {
+        cell();
+        end = 'edge';
+        break;
+      }
+      const key = `${x},${y},${dir}`;
+      if (seen.has(key)) {
+        end = 'loop';
+        break;
+      }
+      seen.add(key);
+      cell();
+      const i = at.get(`${x},${y}`);
+      if (i === undefined) continue;
+      const t = p.things[i];
+      if (t.kind === 'rock' || (t.kind === 'object' && t.material === 'solid')) {
+        end = 'rock';
+        break;
+      }
+      if (t.kind === 'object') {
+        if (t.material === 'cloudy') dim = true;
+        if (t.material === 'shiny') dir = reflect(dir, t.tilt);
+      } else if (t.kind === 'mirror') dir = reflect(dir, tilts[i]);
+      else if (t.kind === 'half') {
+        split = true;
+        dim = true;
+        queue.push({ x, y, dir: reflect(dir, tilts[i]), tint, dim, step, parent: a, from: i });
+      } else if (t.kind === 'glass') tint = t.tint;
+      else (t.wants === tint ? woken : wrongColor).add(i);
+    }
+    arms.push({ cells, end, parent: queue[a].parent, from: queue[a].from });
+  }
+  return { arms, woken: [...woken], wrongColor: [...wrongColor], split };
+}
+
+export const hasHalf = (p: LightPuzzle) => p.things.some((t) => t.kind === 'half');
+/** Things she can tilt: mirrors and half-mirrors. */
+export const tiltable = (p: LightPuzzle) => p.things.flatMap((t, i) => (t.kind === 'mirror' || t.kind === 'half' ? [i] : []));
+const tiltsAt = (t: Thing) => t.kind === 'mirror' || t.kind === 'half';
+
 export const flowerCount = (p: LightPuzzle) => p.things.filter((t) => t.kind === 'flower').length;
-export const solved = (p: LightPuzzle, tilts: Tilt[]) => trace(p, tilts).woken.length === flowerCount(p);
+export const solved = (p: LightPuzzle, tilts: Tilt[]) => (hasHalf(p) ? traceAll(p, tilts) : trace(p, tilts)).woken.length === flowerCount(p);
 
 export function beamEnd(p: LightPuzzle, tilts: Tilt[]): BeamEnd {
   const result = trace(p, tilts);
@@ -222,7 +309,7 @@ export function makePuzzle(plan: LightPlan, rng: Rng): LightPuzzle {
   if (plan.mode === 'materials') throw new Error('level 11 boards come from materialsRound');
   if (plan.mode === 'find') return findPuzzle(plan, rng);
   for (let attempt = 0; attempt < 500; attempt++) {
-    const p = tryPuzzle(plan, rng);
+    const p = plan.split ? trySplit(plan, rng) : tryPuzzle(plan, rng);
     if (p) return p;
   }
   throw new Error('no light puzzle');
@@ -323,6 +410,111 @@ function tryPuzzle(plan: LightPlan, rng: Rng): LightPuzzle | null {
     return plan.eitherSide && rng.chance(0.5) ? mirrorPuzzle(result) : result;
   }
   return null;
+}
+
+/** Whether any tilts of the board's mirrors and half-mirrors wake every flower. */
+export function anySolution(p: LightPuzzle): boolean {
+  const turnable = tiltable(p);
+  for (let mask = 0; mask < 2 ** turnable.length; mask++) {
+    const tilts = [...p.solution];
+    turnable.forEach((index, bit) => { tilts[index] = ((mask >> bit) & 1) as Tilt; });
+    if (solved(p, tilts)) return true;
+  }
+  return false;
+}
+
+/** The board with thing `i` swapped for a full mirror, or taken away (`null`). */
+export function replaceThing(p: LightPuzzle, i: number, kind: 'mirror' | null): LightPuzzle {
+  if (kind) return { ...p, things: p.things.map((t, k) => (k === i ? { kind, x: t.x, y: t.y } : t)) };
+  const keep = (_: unknown, k: number) => k !== i;
+  return { ...p, things: p.things.filter(keep), solution: p.solution.filter(keep), start: p.start.filter(keep), pathMirrors: p.pathMirrors.filter((k) => k !== i).map((k) => (k > i ? k - 1 : k)) };
+}
+
+/**
+ * Level 12, built backwards: a trunk from the sun through `plan.turns` mirrors to a half-mirror, then a straight arm and a
+ * bounced arm, each with zero or one mirror, ending on a flower. Kept only when the known answer wakes both (one per arm, no
+ * loop), no answer works with the half-mirror swapped for a mirror or taken away, and the start is dark and two turns off.
+ */
+function trySplit(plan: LightPlan, rng: Rng): LightPuzzle | null {
+  const { cols, rows } = plan;
+  const sunRow = rng.int(0, rows - 1);
+  const used = new Set<string>([`0,${sunRow}`]);
+  const things: Thing[] = [];
+  const solution: Tilt[] = [];
+  const pathMirrors: number[] = [];
+  /** Runs `turns` quarter turns from (x, y) heading `dir`, then lays `last` on the final cell; null when it can't fit. */
+  const walk = (x: number, y: number, dir: Dir, turns: number, last: (x: number, y: number, dir: Dir) => void): boolean => {
+    for (let turn = 0; turn <= turns; turn++) {
+      let room = 0;
+      while (true) {
+        const nx = x + DX[dir] * (room + 1);
+        const ny = y + DY[dir] * (room + 1);
+        if (nx < 1 || ny < 0 || nx >= cols || ny >= rows || used.has(`${nx},${ny}`)) break;
+        room++;
+      }
+      if (room < 1) return false;
+      const run = rng.int(1, Math.min(room, 3));
+      for (let k = 1; k <= run; k++) used.add(`${x + DX[dir] * k},${y + DY[dir] * k}`);
+      x += DX[dir] * run;
+      y += DY[dir] * run;
+      if (turn === turns) {
+        last(x, y, dir);
+        return true;
+      }
+      const next = (rng.chance(0.5) ? (dir + 1) % 4 : (dir + 3) % 4) as Dir;
+      pathMirrors.push(things.length);
+      things.push({ kind: 'mirror', x, y });
+      solution.push(tiltFor(dir, next));
+      dir = next;
+    }
+    return false;
+  };
+  const flower = (x: number, y: number) => {
+    things.push({ kind: 'flower', x, y, wants: 'sun' });
+    solution.push(0);
+  };
+  let half: { x: number; y: number; dir: Dir } | null = null;
+  if (!walk(0, sunRow, 0, plan.turns, (x, y, dir) => (half = { x, y, dir }))) return null;
+  const h = half as unknown as { x: number; y: number; dir: Dir };
+  const bounce = (rng.chance(0.5) ? (h.dir + 1) % 4 : (h.dir + 3) % 4) as Dir;
+  const halfIndex = things.length;
+  pathMirrors.push(halfIndex);
+  things.push({ kind: 'half', x: h.x, y: h.y });
+  solution.push(tiltFor(h.dir, bounce));
+  if (!walk(h.x, h.y, h.dir, rng.int(0, 1), flower)) return null;
+  if (!walk(h.x, h.y, bounce, rng.int(0, 1), flower)) return null;
+  const free: { x: number; y: number }[] = [];
+  for (let cx = 1; cx < cols; cx++) for (let cy = 0; cy < rows; cy++) if (!used.has(`${cx},${cy}`)) free.push({ x: cx, y: cy });
+  const extras = rng.shuffle(free);
+  for (const c of extras.splice(0, plan.decoys)) {
+    things.push({ kind: 'mirror', ...c });
+    solution.push(rng.chance(0.5) ? 0 : 1);
+  }
+  for (const c of extras.splice(0, plan.rocks)) {
+    things.push({ kind: 'rock', ...c });
+    solution.push(0);
+  }
+  const puzzle: LightPuzzle = { cols, rows, sunRow, sunCol: 0, sunDir: 0, things, solution, start: [], pathMirrors, tray: [] };
+  const known = traceAll(puzzle, solution);
+  if (known.woken.length !== flowerCount(puzzle) || known.arms.some((a) => a.end === 'loop')) return null;
+  if (!flowersOnTwoArms(puzzle, solution)) return null;
+  if (anySolution(replaceThing(puzzle, halfIndex, 'mirror')) || anySolution(replaceThing(puzzle, halfIndex, null))) return null;
+  for (let tries = 0; tries < 20; tries++) {
+    const flip = new Set(rng.shuffle([...pathMirrors]).slice(0, plan.startWrong));
+    const start = solution.map((t, i) => (tiltsAt(things[i]) && (flip.has(i) || rng.chance(0.5)) ? ((1 - t) as Tilt) : t));
+    const result = { ...puzzle, start };
+    if (solved(result, start) || minTurns(result, start) < plan.startWrong) continue;
+    if (plan.startDark && traceAll(result, start).woken.length) continue;
+    return plan.eitherSide && rng.chance(0.5) ? mirrorPuzzle(result) : result;
+  }
+  return null;
+}
+
+/** Whether the two flowers are first reached by different arms. */
+export function flowersOnTwoArms(p: LightPuzzle, tilts: Tilt[]): boolean {
+  const arms = traceAll(p, tilts).arms;
+  const armOf = p.things.flatMap((t) => (t.kind === 'flower' ? [arms.findIndex((a) => a.cells.some((c) => c.x === t.x && c.y === t.y))] : []));
+  return armOf.length === 2 && armOf.every((a) => a >= 0) && armOf[0] !== armOf[1];
 }
 
 /**
@@ -516,7 +708,7 @@ export function placeHint(p: LightPuzzle, tilts: Tilt[], placed: Placed[]): Plac
 
 /** Every mirror arrangement that wakes all the flowers and is fewest turns from `tilts` (the known answer first when it is one). */
 export function nearestSolutions(p: LightPuzzle, tilts: Tilt[]): Tilt[][] {
-  const mirrors = p.things.flatMap((t, i) => (t.kind === 'mirror' ? [i] : []));
+  const mirrors = tiltable(p);
   let best = Infinity;
   let found: Tilt[][] = [];
   for (let mask = 0; mask < 2 ** mirrors.length; mask++) {
@@ -540,26 +732,37 @@ export function nearestSolutions(p: LightPuzzle, tilts: Tilt[]): Tilt[][] {
 /** The fewest mirror turns from `tilts` to any answer: the couch par and the fair-start floor. */
 export function minTurns(p: LightPuzzle, tilts: Tilt[]): number {
   const [nearest] = nearestSolutions(p, tilts);
-  return nearest ? p.things.reduce((n, t, i) => n + (t.kind === 'mirror' && nearest[i] !== tilts[i] ? 1 : 0), 0) : Infinity;
+  return nearest ? p.things.reduce((n, t, i) => n + (tiltsAt(t) && nearest[i] !== tilts[i] ? 1 : 0), 0) : Infinity;
 }
 
 /**
- * Where a hint points: the first mirror along the nearest answer's beam that is tilted the other way (the known
- * answer when it is among the nearest), so following hints takes the fewest turns there are.
+ * Where a hint points: the first mirror (or half-mirror) along the nearest answer's beams that is tilted the other way (the
+ * known answer when it is among the nearest), so following hints takes the fewest turns there are. Split beams are read in
+ * step order, the straight arm first on a tie.
  */
 export function hintMirror(p: LightPuzzle, tilts: Tilt[]): number {
   const [nearest] = nearestSolutions(p, tilts);
   if (!nearest) return -1;
   const at = new Map(p.things.map((t, i) => [`${t.x},${t.y}`, i]));
-  for (const c of trace(p, nearest).cells) {
+  const cells = traceAll(p, nearest).arms.flatMap((a, arm) => a.cells.map((c) => ({ ...c, arm }))).sort((a, b) => a.step - b.step || a.arm - b.arm);
+  for (const c of cells) {
     const i = at.get(`${c.x},${c.y}`);
-    if (i !== undefined && p.things[i].kind === 'mirror' && tilts[i] !== nearest[i]) return i;
+    if (i !== undefined && tiltsAt(p.things[i]) && tilts[i] !== nearest[i]) return i;
   }
   return -1;
 }
 
-/** Why a shine didn't wake everything: for the spoken explanation. */
-export function whyNot(p: LightPuzzle, tilts: Tilt[]): 'color' | 'sleeping' | 'rock' | 'edge' | 'loop' | 'none' {
+/**
+ * Why a shine didn't wake everything: for the spoken explanation. On a split board: `unsplit` when the light never reached the
+ * half-mirror, `sleeping` when one flower woke after the split, `split` when none did.
+ */
+export function whyNot(p: LightPuzzle, tilts: Tilt[]): 'color' | 'sleeping' | 'rock' | 'edge' | 'loop' | 'none' | 'unsplit' | 'split' {
+  if (hasHalf(p)) {
+    const all = traceAll(p, tilts);
+    if (all.woken.length === flowerCount(p)) return 'none';
+    if (!all.split) return 'unsplit';
+    return all.woken.length ? 'sleeping' : 'split';
+  }
   const t = trace(p, tilts);
   if (t.woken.length === flowerCount(p)) return 'none';
   if (t.wrongColor.length) return 'color';
