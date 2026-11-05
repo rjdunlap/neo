@@ -11,11 +11,19 @@ import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { drawClay, floatIcon, sameWeightIcon, sinkIcon, thingArt } from './art';
-import { ALL_SHAPES, CLAY_SHAPES, floats, rightBasket, shapesFor, sinkPlan, thingsFor, thingWord, type ClayExperiment, type ClayShape, type SinkPlan, type Thing } from './logic';
+import { drawClay, floatIcon, sameWeightIcon, sinkIcon, smallArt, thingArt } from './art';
+import { rangeFor } from '../../progress/difficulty';
+import { ALL_SHAPES, CLAY_SHAPES, floats, PAIRS, pairsFor, shapesFor, SINK_LEVELS, sinkPlan, thingsFor, thingWord, type ClayExperiment, type ClayShape, type PairKind, type SinkPlan, type Thing } from './logic';
 
 interface Item {
-  thing: Thing;
+  /** The thing as the journal knows it; null for the small one of a Big and small pair, which files nothing. */
+  thing: Thing | null;
+  floats: boolean;
+  word: string;
+  /** The scale it is shown at while waiting: 1.2, or a Big and small member's size. */
+  size: number;
+  /** Big and small: the pair it belongs to, and whether it is the big one (shown going in) or the small one (guessed). */
+  pair?: { kind: PairKind; big: boolean };
   node: Container;
   drag: DragHandle | null;
   /** Dropped in the water or sorted into a basket. */
@@ -29,6 +37,8 @@ interface Wet {
   slot: number;
   phase: number;
   settled: boolean;
+  /** How far above the bottom it rests if it sinks. */
+  rest: number;
 }
 
 class SinkFloat implements Game {
@@ -89,26 +99,45 @@ class SinkFloat implements Game {
     this.plan = sinkPlan(ctx.level);
     ctx.stage.addChild(this.background, this.tankBack, this.tray, this.baskets);
     if (this.plan.mode === 'shape') this.buildClay();
-    for (const thing of this.plan.mode === 'shape' ? [] : thingsFor(this.plan, ctx.rng)) {
+    for (const thing of this.plan.mode === 'shape' || this.plan.mode === 'pair' ? [] : thingsFor(this.plan, ctx.rng)) {
       const node = new Container();
       node.addChild(thingArt(thing));
       node.hitArea = new Rectangle(-60, -60, 120, 120);
-      const item: Item = { thing, node, drag: null, done: false };
+      const item: Item = { thing, floats: floats(thing), word: thingWord(thing), size: 1.2, node, drag: null, done: false };
       if (this.plan.mode === 'sort') item.drag = draggable(node, ctx.tw, { onPick: () => sfx.tick(), onDrop: (x, y) => this.sort(item, x, y) });
       else if (this.plan.mode !== 'guess') onTap(node, () => this.tapDrop(item));
       this.items.push(item);
       ctx.stage.addChild(node);
+    }
+    if (this.plan.mode === 'pair') {
+      // Big and small: each pair's big one, then its small one, so they sit side by side in the tank.
+      for (const kind of pairsFor(this.plan, ctx.rng)) {
+        const p = PAIRS[kind];
+        for (const big of [true, false]) {
+          const node = new Container();
+          node.addChild(big ? thingArt(p.big.thing) : smallArt(p.small.art));
+          node.visible = false;
+          node.scale.set(0);
+          this.items.push({ thing: big ? p.big.thing : null, floats: p.floats, word: big ? p.big.word : p.small.word, size: big ? p.big.size : p.small.size, pair: { kind, big }, node, drag: null, done: false });
+          ctx.stage.addChild(node);
+        }
+      }
     }
     for (const [button, icon, guess] of [[this.floatButton, floatIcon(), true], [this.sinkButton, sinkIcon(), false]] as const) {
       button.addChild(tile(150, 130), icon);
       icon.scale.set(1.3);
       button.hitArea = new Rectangle(-85, -75, 170, 150);
       onTap(button, () => this.guess(guess));
-      button.visible = this.plan.mode === 'guess';
+      button.visible = this.guessMode;
       ctx.stage.addChild(button);
     }
     this.ring.eventMode = 'none';
     ctx.stage.addChild(this.tankFront, this.glow, this.ring);
+  }
+
+  /** Guess levels and Big and small both guess with the two buttons. */
+  get guessMode() {
+    return this.plan.mode === 'guess' || this.plan.mode === 'pair';
   }
 
   private buildClay() {
@@ -134,7 +163,7 @@ class SinkFloat implements Game {
 
   start() {
     if (this.plan.mode === 'shape') void this.nextExperiment();
-    else if (this.plan.mode === 'guess') void this.nextGuess();
+    else if (this.guessMode) void this.nextGuess();
     else void this.ctx.instruct(this.plan.mode === 'sort' ? 'sink.sort' : 'sink.drop');
   }
 
@@ -145,14 +174,14 @@ class SinkFloat implements Game {
   autotouch(): TouchIntent | null {
     if (this.finished || this.busy) return null;
     if (this.plan.mode === 'shape') return this.choosing ? { tap: { on: this.tileFor('boat').node } } : null;
-    if (this.plan.mode === 'guess') {
+    if (this.guessMode) {
       if (!this.guessing) return null;
-      return { tap: { on: rightBasket(this.items[this.current].thing) === 'float' ? this.floatButton : this.sinkButton } };
+      return { tap: { on: this.items[this.current].floats ? this.floatButton : this.sinkButton } };
     }
     const item = this.items.find((i) => !i.done && !i.node.destroyed && !i.drag?.dragging);
     if (!item) return null;
     if (this.plan.mode !== 'sort') return { tap: { on: item.node } };
-    return { drag: { on: item.node }, to: { on: this.baskets, x: this.view.w * 0.87, y: this.basketY(rightBasket(item.thing)) } };
+    return { drag: { on: item.node }, to: { on: this.baskets, x: this.view.w * 0.87, y: this.basketY(item.floats ? 'float' : 'sink') } };
   }
 
   // Dropping things in ----------------------------------------------------------------
@@ -161,7 +190,7 @@ class SinkFloat implements Game {
     if (item.done || this.finished) return;
     item.done = true;
     void this.splash(item).then(() => {
-      if (this.plan.mode === 'say') void this.ctx.say(floats(item.thing) ? 'sink.floats' : 'sink.sinks');
+      if (this.plan.mode === 'say') void this.ctx.say(item.floats ? 'sink.floats' : 'sink.sinks');
       if (this.items.every((i) => i.done)) void this.end();
     });
   }
@@ -170,7 +199,8 @@ class SinkFloat implements Game {
   private async splash(item: Item) {
     const t = this.tank;
     const tw = this.ctx.tw;
-    this.seen.add(item.thing);
+    // Big and small files no discoveries: the big things already have their pages, and a pair adds nothing.
+    if (item.thing && this.plan.mode !== 'pair') this.seen.add(item.thing);
     // Reserve the spot now: several things can be in the air at once.
     const slot = this.nextSlot++;
     const x = this.slotX(slot);
@@ -181,7 +211,7 @@ class SinkFloat implements Game {
     await tw.to(node, { y: t.surface }, { duration: 0.25, ease: ease.inQuad });
     sfx.splash();
     this.ctx.particles.burst(x, t.surface, { colors: [swatch.blue.fill, swatch.blue.light], count: 14, speed: [150, 320], gravity: 700, angle: -Math.PI / 2, spread: 1.4, size: [0.3, 0.5] });
-    const wet: Wet = { node, floats: floats(item.thing), slot, phase: this.ctx.rng.range(0, 6), settled: false };
+    const wet: Wet = { node, floats: item.floats, slot, phase: this.ctx.rng.range(0, 6), settled: false, rest: this.restGap(item) };
     this.wet.push(wet);
     if (wet.floats) {
       await tw.to(node, { y: t.surface - 8 }, { duration: 0.3, ease: ease.outBack });
@@ -189,14 +219,21 @@ class SinkFloat implements Game {
     } else {
       for (let i = 0; i < 3; i++) void tw.wait(0.2 + i * 0.25).then(() => sfx.pop(3 - i));
       this.ctx.particles.burst(x, t.surface + 40, { kind: 'ring', colors: [swatch.white.fill], count: 6, speed: [20, 60], gravity: -120, angle: -Math.PI / 2, spread: 0.6, life: [0.8, 1.2] });
-      await tw.to(node, { y: t.bottom - 38 }, { duration: 1.1, ease: ease.inOutSine });
+      await tw.to(node, { y: t.bottom - wet.rest }, { duration: 1.1, ease: ease.inOutSine });
       sfx.clunk();
     }
     wet.settled = true;
   }
 
+  /** How far above the bottom a sinker rests: a Big and small member by its size, everything else as before. */
+  private restGap(item: Item) {
+    return item.pair ? 32 * item.size : 38;
+  }
+
   private slotX(slot: number) {
     const t = this.tank;
+    // Big and small has only the pair under test in the water: the big one at the left third, the small one at the right.
+    if (this.plan.mode === 'pair') return t.l + ((t.r - t.l) * (slot % 2 ? 2 : 1)) / 3;
     const n = Math.max(this.items.length, 5);
     return t.l + 60 + ((t.r - t.l - 120) * (slot % n)) / Math.max(1, n - 1);
   }
@@ -206,11 +243,40 @@ class SinkFloat implements Game {
   private async nextGuess() {
     const item = this.items[this.current];
     if (!item) return void this.end();
+    if (item.pair?.big) return void this.showBig(item);
     this.guessing = true;
     const node = item.node;
+    if (item.pair) {
+      // The small one has waited beside the big one: a little hop says it is its turn.
+      void this.ctx.tw.to(node.scale, { x: item.size * 1.25, y: item.size * 1.25 }, { duration: 0.2, ease: ease.outQuad }).then(() => this.ctx.tw.to(node.scale, { x: item.size, y: item.size }, { duration: 0.3, ease: ease.outBack }));
+      return void this.ctx.instruct('sink.pair-guess', { thing: item.word });
+    }
     node.scale.set(0);
-    void this.ctx.tw.to(node.scale, { x: 1.2, y: 1.2 }, { duration: 0.35, ease: ease.outBack });
-    void this.ctx.instruct('sink.guess', { thing: thingWord(item.thing) });
+    void this.ctx.tw.to(node.scale, { x: item.size, y: item.size }, { duration: 0.35, ease: ease.outBack });
+    void this.ctx.instruct('sink.guess', { thing: item.word });
+  }
+
+  /** Big and small: the pair appears together, and the big one goes in by itself while she watches. */
+  private async showBig(item: Item) {
+    const small = this.items[this.current + 1];
+    const tw = this.ctx.tw;
+    this.busy = true;
+    // The last pair leaves the water so the new one has the tank to itself.
+    const old = this.wet.splice(0);
+    for (const w of old) void tw.to(w.node, { alpha: 0 }, { duration: 0.3 });
+    if (old.length) await tw.wait(0.3);
+    this.resize(this.view);
+    for (const it of [item, small]) {
+      it.node.scale.set(0);
+      void tw.to(it.node.scale, { x: it.size, y: it.size }, { duration: 0.35, ease: ease.outBack });
+    }
+    await this.ctx.say('sink.pair-big', { thing: item.word });
+    item.done = true;
+    await this.splash(item);
+    await this.ctx.say(item.floats ? 'sink.floats' : 'sink.sinks');
+    this.busy = false;
+    this.current++;
+    void this.nextGuess();
   }
 
   private guess(floatsGuess: boolean) {
@@ -222,7 +288,7 @@ class SinkFloat implements Game {
     void this.ctx.tw.to((floatsGuess ? this.floatButton : this.sinkButton).scale, { x: 1, y: 1 }, { duration: 0.3, ease: ease.outBack });
     // A guess is never a wrong answer: the water shows what happens, and surprises are celebrated too.
     void this.splash(item).then(async () => {
-      const result = floats(item.thing);
+      const result = item.floats;
       await this.ctx.say(result ? 'sink.floats' : 'sink.sinks');
       if (result === floatsGuess) {
         this.ctx.pet.cheer();
@@ -231,6 +297,8 @@ class SinkFloat implements Game {
         sfx.sparkle();
         await this.ctx.say('sink.surprise');
       }
+      // Big and small: the stuff's rule, whichever way the guess went. Size never changed it.
+      if (item.pair) await this.ctx.say(PAIRS[item.pair.kind].line);
       this.current++;
       this.resize(this.view);
       void this.nextGuess();
@@ -256,7 +324,7 @@ class SinkFloat implements Game {
     if (this.busy || this.finished || item.done) return false;
     const basket = this.basketAt(x, y);
     if (!basket) return false;
-    const right = (basket === 'float') === floats(item.thing);
+    const right = (basket === 'float') === item.floats;
     item.done = true;
     item.drag!.enabled = false;
     if (right) {
@@ -274,10 +342,10 @@ class SinkFloat implements Game {
     void this.ctx.say('sink.oops');
     this.busy = true;
     void this.splash(item).then(async () => {
-      await this.ctx.say(floats(item.thing) ? 'sink.floats' : 'sink.sinks');
+      await this.ctx.say(item.floats ? 'sink.floats' : 'sink.sinks');
       if (this.wrong >= 2) void this.ctx.say('sink.hint');
       this.wet.splice(this.wet.findIndex((w) => w.node === item.node), 1);
-      this.toBasket(item, floats(item.thing) ? 'float' : 'sink');
+      this.toBasket(item, item.floats ? 'float' : 'sink');
       this.busy = false;
       this.after();
     });
@@ -457,7 +525,7 @@ class SinkFloat implements Game {
     const counter = v.h * 0.74;
     this.background.clear().rect(0, 0, v.w, v.h).fill(swatch.teal.light).rect(0, counter, v.w, v.h - counter).fill(wood.light).rect(0, counter - 8, v.w, 12).fill(wood.fill);
     const sorting = this.plan.mode === 'sort';
-    const guessing = this.plan.mode === 'guess';
+    const guessing = this.guessMode;
     const shaping = this.plan.mode === 'shape';
     const l = 190;
     const r = sorting || guessing || shaping ? v.w * 0.72 : v.w - 60;
@@ -493,17 +561,23 @@ class SinkFloat implements Game {
         }
       });
     } else {
-      // The thing to guess about waits on the right, with the two guess buttons below the tank.
+      // The thing to guess about waits on the right, with the two guess buttons below the tank. Big and small shows the
+      // pair together there, the big one above the small one.
+      const pairing = this.plan.mode === 'pair';
+      const at = Math.min(this.current, this.items.length - 1);
+      const pairEnd = at - (at % 2) + 1;
       this.items.forEach((item, i) => {
-        item.node.visible = i <= this.current || item.done;
-        if (i === this.current && !item.done) item.node.position.set(v.w * 0.86, v.h * 0.38);
+        item.node.visible = pairing ? i >= pairEnd - 1 && i <= pairEnd : i <= this.current || item.done;
+        if (item.done) return;
+        if (pairing) item.node.position.set(v.w * 0.86, v.h * (item.pair?.big ? 0.3 : 0.5));
+        else if (i === this.current) item.node.position.set(v.w * 0.86, v.h * 0.38);
       });
       this.floatButton.position.set(v.w * 0.36, v.h - 85);
       this.sinkButton.position.set(v.w * 0.62, v.h - 85);
     }
     for (const w of this.wet) {
       w.node.x = this.slotX(w.slot);
-      if (w.settled) w.node.y = w.floats ? t.surface - 8 : t.bottom - 38;
+      if (w.settled) w.node.y = w.floats ? t.surface - 8 : t.bottom - w.rest;
     }
     this.drawGlow();
   }
@@ -549,7 +623,7 @@ class SinkFloat implements Game {
     if (this.wrong < 2 || this.finished || this.plan.mode !== 'sort') return;
     const next = this.items.find((i) => !i.done);
     if (!next) return;
-    const y = this.basketY(floats(next.thing) ? 'float' : 'sink');
+    const y = this.basketY(next.floats ? 'float' : 'sink');
     g.roundRect(this.view.w * 0.87 - 108, y - 78, 216, 156, 30).stroke({ width: 8, color: swatch.yellow.line });
     if (next.drag) g.roundRect(next.drag.home.x - 66, next.drag.home.y - 66, 132, 132, 24).stroke({ width: 8, color: swatch.yellow.line });
   }
@@ -566,7 +640,7 @@ class SinkFloat implements Game {
       }
       return;
     }
-    if (this.plan.mode !== 'guess' || !this.guessing || this.finished) return;
+    if (!this.guessMode || !this.guessing || this.finished) return;
     for (const p of input.players) {
       if (p.direction === 0) this.pick = 1;
       else if (p.direction === 2) this.pick = 0;
@@ -588,7 +662,7 @@ class SinkFloat implements Game {
       return out;
     }
     if (!this.guessing || this.finished || this.botWait > 0) return out;
-    const want = floats(this.items[this.current].thing) ? 0 : 1;
+    const want = this.items[this.current].floats ? 0 : 1;
     if (want === this.pick) {
       out.players[0].action = true;
       this.botWait = 1.2;
@@ -663,7 +737,7 @@ export const sinkFloat: GameModule = {
   challenge: 'noticing',
   skills: ['science', 'prediction', 'sorting'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
-  levels: (b) => (b === 'school' ? { min: 5, max: 7 } : b === 'prek' ? { min: 4, max: 6 } : b === 'preschool' ? { min: 3, max: 5 } : b === 'toddler' ? { min: 2, max: 4 } : { min: 1, max: 2 }),
+  levels: (b) => rangeFor(SINK_LEVELS, b),
   describeLevel: (l) => sinkPlan(l).name,
   music: STYLES.bubbles,
   coplayHint: 'Before each splash, ask {name}: will it float or sink? Every guess is a good guess.',

@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { SCRIPT, type LineId } from '../../content/voice-script';
-import { ALL_SHAPES, ALL_THINGS, CLAY_SHAPES, floats, rightBasket, shapesFor, SINK_PLANS, sinkPlan, THINGS, thingsFor, thingWord, type Thing } from './logic';
+import { levelsInOrder, rangeFor } from '../../progress/difficulty';
+import { ALL_PAIRS, ALL_SHAPES, ALL_THINGS, CLAY_SHAPES, floats, PAIRS, pairsFor, rightBasket, shapesFor, SINK_IDS, SINK_LEVELS, SINK_PLANS, sinkPlan, THINGS, thingsFor, thingWord, type Thing } from './logic';
 
-const THING_PLANS = SINK_PLANS.filter((p) => p.mode !== 'shape');
+const THING_PLANS = Object.values(SINK_PLANS).filter((p) => p.mode !== 'shape' && p.mode !== 'pair');
 
 describe('Sink or Float', () => {
   it('always mixes floaters and sinkers, with surprises only where the level asks for them', () => {
@@ -71,11 +72,51 @@ describe('Sink or Float', () => {
     }
   });
 
-  it('makes level 7 the shape experiment, and clamps above it', () => {
-    expect(SINK_PLANS).toHaveLength(7);
+  it('keys the plans by level ID: 7 is the shape experiment, 8 stays reserved for Garden Raft, 9 is Big and small', () => {
+    expect(SINK_IDS).toEqual([1, 2, 3, 4, 5, 6, 7, 9]);
     expect(sinkPlan(7).mode).toBe('shape');
-    expect(sinkPlan(99)).toBe(sinkPlan(7));
-    for (let l = 1; l <= 6; l++) expect(sinkPlan(l).mode).not.toBe('shape');
+    expect(sinkPlan(9).mode).toBe('pair');
+    for (let l = 1; l <= 6; l++) expect(sinkPlan(l).mode).not.toMatch(/shape|pair/);
+    // An unbuilt or out-of-range ID falls to the nearest built one below it.
+    expect(sinkPlan(8)).toBe(sinkPlan(7));
+    expect(sinkPlan(99)).toBe(sinkPlan(9));
+    expect(sinkPlan(0)).toBe(sinkPlan(1));
+  });
+
+  it('places Big and small between 5 and 6 for pre-K and between 6 and 7 at school, and never plays the reserved 8', () => {
+    expect(levelsInOrder(rangeFor(SINK_LEVELS, 'prek'))).toEqual([4, 5, 9, 6]);
+    expect(levelsInOrder(rangeFor(SINK_LEVELS, 'school'))).toEqual([5, 6, 9, 7]);
+    for (const band of ['lap', 'toddler', 'preschool'] as const) expect(levelsInOrder(rangeFor(SINK_LEVELS, band))).not.toContain(9);
+    for (const band of Object.keys(SINK_LEVELS) as (keyof typeof SINK_LEVELS)[]) {
+      const order = levelsInOrder(rangeFor(SINK_LEVELS, band));
+      expect(order, band).not.toContain(8);
+      for (const id of order) expect(SINK_IDS, band).toContain(id);
+    }
+  });
+
+  it('pairs one stuff at two sizes: one result per pair, the small one shown at most 1/1.6 of the big', () => {
+    for (const kind of ALL_PAIRS) {
+      const p = PAIRS[kind];
+      expect(floats(p.big.thing), kind).toBe(p.floats);
+      expect(p.big.size / p.small.size, kind).toBeGreaterThanOrEqual(1.6);
+      expect(SCRIPT[p.line][0], kind).toMatch(/^Big or small/);
+      expect(p.small.word, kind).toMatch(/^[a-z]+$/);
+    }
+    expect(new Set(ALL_PAIRS.map((k) => PAIRS[k].floats))).toEqual(new Set([true, false]));
+    for (const id of ['sink.pair-big', 'sink.pair-guess'] as const) expect(SCRIPT[id]).toBeDefined();
+  });
+
+  it('deals three different pairs a round, in a seeded order that varies', () => {
+    const plan = sinkPlan(9);
+    const orders = new Set<string>();
+    for (let seed = 1; seed <= 100; seed++) {
+      const pairs = pairsFor(plan, new Rng(seed));
+      expect(pairs).toHaveLength(3);
+      expect(new Set(pairs).size).toBe(3);
+      expect(pairsFor(plan, new Rng(seed))).toEqual(pairs);
+      orders.add(pairs.join(','));
+    }
+    expect(orders.size).toBe(6);
   });
 
   it('floats only the hollow boat, and explains every shape with a real line', () => {
