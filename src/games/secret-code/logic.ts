@@ -21,10 +21,12 @@ export interface CodePlan {
   /** Whether a color may appear twice in the code. */
   repeats: boolean;
   codes: number;
+  /** *Be the door*: she makes the code and marks the pet's tries; the pet does the cracking. */
+  maker?: boolean;
   name: string;
 }
 
-/** Plans by level ID. IDs 9 and 10 are reserved for *Be the door* and the preschool *One slot* (not built yet). */
+/** Plans by level ID. ID 10 is reserved for the preschool *One slot* (not built yet). */
 export const PLANS: Readonly<Record<number, CodePlan>> = {
   1: { slots: 2, colors: 3, yellow: false, repeats: false, codes: 3, name: 'Two slots, three colors; each slot says yes or no' },
   2: { slots: 3, colors: 4, yellow: false, repeats: false, codes: 3, name: 'Three slots, four colors; each slot says yes or no' },
@@ -34,6 +36,7 @@ export const PLANS: Readonly<Record<number, CodePlan>> = {
   6: { slots: 3, colors: 4, yellow: true, repeats: true, codes: 2, name: 'A color can be used twice in the code' },
   7: { slots: 3, colors: 4, yellow: true, repeats: false, codes: 2, detective: true, clues: { min: 2, max: 3 }, name: 'Detective door: work out the one code that fits the shown guesses' },
   8: { slots: 4, colors: 5, yellow: true, repeats: true, codes: 2, name: 'Four slots, five colors, and one color used twice' },
+  9: { slots: 3, colors: 4, yellow: true, repeats: true, codes: 2, maker: true, name: 'Be the door: she makes a code and marks the pet’s tries green, yellow or gray' },
   11: { slots: 4, colors: 5, yellow: true, repeats: false, codes: 2, detective: true, clues: { min: 3, max: 3 }, name: 'A bigger detective door: four slots, five colors, and three shown guesses' },
 };
 
@@ -194,4 +197,49 @@ export type DoorKind = (typeof DOORS)[number];
 export function doorKinds(rng: Rng, count: number): DoorKind[] {
   const start = new Rng(rng.clone().int(1, 2 ** 31 - 1) ^ 0x5eed).int(0, DOORS.length - 1);
   return Array.from({ length: count }, (_, i) => DOORS[(start + i) % DOORS.length]);
+}
+
+/** *Be the door*: a code she might make (any stones, repeats allowed); the how-to card's ghost finger makes this one. */
+export const madeCode = (plan: CodePlan, rng: Rng): number[] => Array.from({ length: plan.slots }, () => rng.int(0, plan.colors - 1));
+
+/** The pet's next try on *Be the door*: a seeded pick among the codes that fit every mark she has given so far. */
+export function petTry(plan: CodePlan, history: Guess[], rng: Rng): number[] {
+  const all = candidates(plan, history);
+  return all[rng.int(0, all.length - 1)];
+}
+
+/** Tapping a mark disc: blank, then gray, yellow, green and round again. */
+export const nextMark = (mark: Mark | null): Mark => (mark === 'gray' ? 'yellow' : mark === 'yellow' ? 'green' : 'gray');
+
+/** Slots where her mark is not the one the pet's stone earns (`score`); each Show with any is one miss. Her code is never wrong. */
+export function wrongMarks(code: number[], stones: number[], marks: readonly (Mark | null)[]): number[] {
+  const right = score(code, stones, true);
+  return right.map((m, i) => (marks[i] === m ? -1 : i)).filter((i) => i >= 0);
+}
+
+/** How many tries the pet takes on this code with right marks, drawing its picks from `rng`. */
+export function petTries(plan: CodePlan, code: number[], rng: Rng): number {
+  const history: Guess[] = [];
+  for (;;) {
+    const stones = petTry(plan, history, rng);
+    const marks = score(code, stones, true);
+    history.push({ stones, marks });
+    if (marks.every((m) => m === 'green')) return history.length;
+  }
+}
+
+/**
+ * The how-to card's ghost finger makes a code the pet cracks quickly, so the demonstration fits its time: of a few seeded
+ * codes, the one the pet would crack in the fewest tries from the round's generator as it stands. It reads clones only.
+ */
+export function demoCode(plan: CodePlan, rng: Rng): number[] {
+  const draw = rng.clone();
+  let best: number[] = [];
+  let fewest = Infinity;
+  for (let k = 0; k < 12; k++) {
+    const code = madeCode(plan, draw);
+    const tries = petTries(plan, code, rng.clone());
+    if (tries < fewest) { best = code; fewest = tries; }
+  }
+  return best;
 }

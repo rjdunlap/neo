@@ -363,8 +363,63 @@ async function woodsBatch() {
     log(`Peekaround Island ${level} (${mode}): turning, hiding, picture card, placing by direction, misses, hints, saved score and sticker passed`);
   }
 
-  if (!only || only === 'code') for (const level of [1, 2, 3, 4, 5, 6, 7, 8, 11].filter((l) => l >= fromLevel)) {
+  if (!only || only === 'code') for (const level of [1, 2, 3, 4, 5, 6, 7, 8, 9, 11].filter((l) => l >= fromLevel && l <= Number(process.env.TO_LEVEL || 11))) {
     await launch('secret-code', level);
+    if (level === 9) {
+      // Be the door, in portrait: she makes a code with a repeat (an unfilled check is only a reminder), then marks the pet's tries.
+      await page.setViewportSize({ width: 768, height: 1024 });
+      const ready = () => page.waitForFunction(() => neo.scene.finished || !neo.scene.game.busy, null, { timeout: 20000 }).then(() => page.waitForTimeout(150));
+      const right = () => page.evaluate(async () => {
+        const g = neo.scene.game; const C = await import('/src/games/secret-code/logic.ts'); return C.score(g.code, g.petStones, true);
+      });
+      const markAs = async (want) => {
+        for (let i = 0; i < want.length; i++) for (let k = 0; k < 4; k++) {
+          if (await page.evaluate((i) => neo.scene.game.marks[i], i) === want[i]) break;
+          await tap(`neo.scene.game.discs[${i}]`);
+        }
+      };
+      for (let n = 0; n < 2; n++) {
+        await idle(n);
+        const made = n === 0 ? [0, 0, 2] : [3, 1, 2];
+        await tap(`neo.scene.game.tray[${made[0]}]`);
+        if (n === 0) {
+          await tap('neo.scene.game.ready');
+          await page.waitForTimeout(200);
+          assert.equal(await page.evaluate(() => neo.scene.game.phase), 'make', 'a part-made code waits');
+        }
+        for (const c of made.slice(1)) await tap(`neo.scene.game.tray[${c}]`);
+        await tap('neo.scene.game.ready');
+        await page.waitForFunction(() => neo.scene.game.phase === 'mark' && !neo.scene.game.busy, null, { timeout: 20000 });
+        await page.waitForTimeout(150);
+        assert.deepEqual(await page.evaluate(() => neo.scene.game.code), made, 'her code is the one she made');
+        if (n === 0) {
+          const r = await right();
+          const wrong = [r[0] === 'green' ? 'gray' : 'green', ...r.slice(1)];
+          await markAs(wrong);
+          for (let k = 0; k < 2; k++) {
+            await tap('neo.scene.game.show');
+            await page.waitForTimeout(300);
+            await ready();
+          }
+          assert.deepEqual(await counts(), [2, 1], 'two wrong marks: two misses, one glow');
+          await screenshot('secret-code-9-portrait');
+        }
+        for (let k = 0; k < 10; k++) {
+          if (await page.evaluate((n) => neo.scene.finished || neo.scene.game.index !== n, n)) break;
+          await markAs(await right());
+          await tap('neo.scene.game.show');
+          await page.waitForTimeout(300);
+          await ready();
+          await page.waitForFunction((n) => neo.scene.finished || neo.scene.game.index !== n || (neo.scene.game.phase === 'mark' && !neo.scene.game.busy), n, { timeout: 20000 });
+          await page.waitForTimeout(150);
+        }
+      }
+      await finished('secret-code');
+      assert.deepEqual(await score('secret-code'), [2, 1]);
+      await page.setViewportSize({ width: 1024, height: 768 });
+      log('Secret Code 9: made codes, an unfilled check, two wrong marks (misses) and the glow, right marks until the pet cracked both, saved score and sticker passed');
+      continue;
+    }
     if (level === 4 || level === 7 || level === 11) await page.setViewportSize({ width: 768, height: 1024 });
     const codes = await page.evaluate(() => neo.scene.game.plan.codes);
     // Empty the slots like a finger, tap the stones in order, then the key.
