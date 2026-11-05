@@ -5,7 +5,7 @@ import type { Rng } from '../../engine/random';
  * that rhyme with each other, then the odd one out of a rhyming group. Rhymes are grouped by
  * sound family, so a distractor is never accidentally a rhyme.
  */
-export type RhymeMode = 'match' | 'pair' | 'odd' | 'riddle' | 'riddle2' | 'make' | 'scene';
+export type RhymeMode = 'match' | 'pair' | 'odd' | 'riddle' | 'riddle2' | 'make' | 'scene' | 'baskets';
 
 export interface RhymePlan {
   mode: RhymeMode;
@@ -26,7 +26,10 @@ export const PLANS: RhymePlan[] = [
   { mode: 'scene', choices: 3, questions: 4, name: 'Silly pairs: who rides in the truck? The rider that rhymes hops in' },
 ];
 
-export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+/** Level 10 sits on its own ID: level 9 (the preschool opening) is not built yet, and takes the ninth place in `PLANS` when it is. */
+export const BASKETS: RhymePlan = { mode: 'baskets', choices: 6, questions: 2, name: 'Rhyme baskets: drag six pictures into three baskets by rhyme, two trays' };
+
+export const planFor = (level: number) => (level >= 10 ? BASKETS : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1]);
 
 /** Rhyme families of words we can draw. */
 export const FAMILIES: Record<string, string[]> = {
@@ -133,6 +136,44 @@ function makeScenes(plan: RhymePlan, rng: Rng): RhymeQuestion[] {
     return { prompt: s.place, words: rng.shuffle([s.rider, ...others]), answer: [s.rider] };
   });
 }
+
+// Rhyme baskets (level 10) -------------------------------------------------------------
+
+/** One tray: three baskets, each with its key picture on the front, and the six pictures to sort, two rhyming with each key. */
+export interface Tray {
+  keys: string[];
+  words: string[];
+}
+
+/**
+ * A round of trays. Each takes three different three-word families (the big ones, so every key has two mates), one word as
+ * the key and the other two in the tray; across the round's two trays no family repeats, so the second tray is fresh.
+ */
+export function makeTrays(plan: RhymePlan, rng: Rng): Tray[] {
+  const big = rng.shuffle(Object.keys(FAMILIES).filter((f) => FAMILIES[f].length >= 3));
+  const out: Tray[] = [];
+  for (let i = 0; i < plan.questions; i++) {
+    const fams = big.slice(i * 3, i * 3 + 3);
+    const keys: string[] = [];
+    const words: string[] = [];
+    for (const f of fams) {
+      const [key, ...rest] = rng.shuffle([...FAMILIES[f]]);
+      keys.push(key);
+      words.push(...rest);
+    }
+    out.push({ keys, words: rng.shuffle(words) });
+  }
+  return out;
+}
+
+/** The basket a picture belongs in: the index of the key it rhymes with (-1 if none). */
+export const basketFor = (word: string, keys: readonly string[]) => keys.findIndex((k) => rhymes(k, word));
+
+/** A basket's family as the baskets sing it at the end of a tray: the key first, then the two pictures that went in. */
+export const familySong = (key: string) => [key, ...FAMILIES[familyOf(key)].filter((w) => w !== key)];
+
+/** Says a list with "and": "cat, star and bug". */
+export const andList = (words: readonly string[]) => `${words.slice(0, -1).join(', ')} and ${words[words.length - 1]}`;
 
 // Rhyme Riddles (levels 5–7) -----------------------------------------------------------
 
