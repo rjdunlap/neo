@@ -403,8 +403,11 @@ export class ThirdShow implements Game {
     if (result === 'served' || result === 'done') this.serve(result === 'done');
     else if (result === 'over' || result === 'help') {
       void this.ctx.say(result === 'help' ? 'tricks.cup-slow' : 'tricks.cup-over');
-    } else if (result === 'more' && this.cups.unders === 1) void this.ctx.say('tricks.cup-more');
-    else if (this.cups.jug <= 1e-9 && this.cups.tray > 0) void this.ctx.say('tricks.cup-tray');
+    } else if (result === 'more' || result === 'none') {
+      // Not enough left in the jug for this cup: the tray pours it back.
+      if (this.cups.tray > 0 && this.cups.jug + 1e-9 < cupTarget(this.cups) - this.cups.cup) void this.ctx.say('tricks.cup-tray');
+      else if (result === 'more' && this.cups.unders === 1) void this.ctx.say('tricks.cup-more');
+    }
     if (!this.gone) this.drawCups();
   }
 
@@ -506,10 +509,13 @@ export class ThirdShow implements Game {
   private async closeLoop(points: Point[]) {
     const free = this.free;
     const { verdict, got } = judgeLoop(this.ctx.band, points, free.map((f) => f.position), this.score, this.loopTrick);
-    if (verdict === 'small') return void this.trail.clear();
+    if (verdict === 'small') {
+      this.trail.clear();
+      return void this.ctx.say('tricks.loop-small');
+    }
     this.drawTrail(points, true);
     void this.ctx.tw.wait(0.5).then(() => !this.gone && this.trail.clear());
-    if (verdict === 'free') return void this.ctx.say(this.band === 'toddler' ? 'tricks.loop' : 'tricks.loop-small');
+    if (verdict === 'free') return void this.instruct();
     const caught = got.map((i) => free[i]);
     if (verdict === 'miss') {
       this.busy = true;
@@ -722,5 +728,7 @@ export class ThirdShow implements Game {
     window.removeEventListener('blur', this.stopAll);
     document.removeEventListener('visibilitychange', this.stopAll);
     for (const c of [this.handle, this.jug, this.sky]) c.removeAllListeners();
+    // The kept holders may be off the stage between steps, so they are freed here.
+    for (const c of [this.box, this.handle, this.jug, this.cup, this.tray, this.sky, this.jar, this.stream, this.trail]) if (!c.destroyed) c.destroy({ children: true });
   }
 }

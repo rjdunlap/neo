@@ -169,7 +169,7 @@ describe('Quick Tricks, the third show', () => {
       }
     });
 
-    it('help resets for the next cup, which can be helped again', () => {
+    it('help resets for the next cup, which can be helped again without a second hint', () => {
       const s = startCups('preschool', new Rng(1));
       const score = { hints: 0 };
       for (let i = 0; i < 2; i++) {
@@ -182,6 +182,14 @@ describe('Quick Tricks, the third show', () => {
       expect(releaseCup(s, 'preschool', true, score)).toBe('served');
       expect(s.helped).toBe(false);
       expect(s.overfills).toBe(0);
+      for (let i = 0; i < 2; i++) {
+        pour(s, 0.9);
+        releaseCup(s, 'preschool', true, score);
+        emptyCup(s);
+        recoverTray(s);
+      }
+      expect(s.helped).toBe(true);
+      expect(score.hints).toBe(1);
     });
 
     it('at toddler any water serves and nothing is ever helped', () => {

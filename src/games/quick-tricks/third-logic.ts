@@ -94,13 +94,15 @@ export interface CupsState {
   /** Overfilled releases on this cup; the second brings the glowing line and the slow pour. */
   overfills: number;
   helped: boolean;
+  /** The trick's one hint has been counted (the help itself still comes on any cup). */
+  hinted: boolean;
   /** Releases under the target on this cup (the first brings "a little more"). */
   unders: number;
 }
 export function startCups(band: Band, rng: Rng): CupsState {
   const b = thirdBand(band);
   const targets = b === 'prek' || b === 'school' ? [POUR_TARGETS[0], ...rng.shuffle([POUR_TARGETS[1], POUR_TARGETS[2]])] : [0.5, 0.5, 0.5];
-  return { jug: 3, cup: 0, tray: 0, done: false, targets, round: 0, overfills: 0, helped: false, unders: 0 };
+  return { jug: 3, cup: 0, tray: 0, done: false, targets, round: 0, overfills: 0, helped: false, hinted: false, unders: 0 };
 }
 export const cupTarget = (s: CupsState) => s.targets[Math.min(s.round, s.targets.length - 1)];
 export const atLine = (s: CupsState) => Math.abs(s.cup - cupTarget(s)) <= POUR_TOLERANCE + 1e-9;
@@ -133,7 +135,9 @@ export function releaseCup(s: CupsState, band: Band, poured: boolean, score: { h
   s.overfills++;
   if (s.overfills >= 2 && !s.helped) {
     s.helped = true;
-    score.hints++;
+    // At most one hint per trick, as in the earlier shows.
+    if (!s.hinted) score.hints++;
+    s.hinted = true;
     return 'help';
   }
   return 'over';
