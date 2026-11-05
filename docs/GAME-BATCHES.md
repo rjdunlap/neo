@@ -1043,7 +1043,7 @@ Proof: new-interaction tier: typecheck and rule tests; one scripted play of leve
 
 ### habitat-helpers 3: The rocky shore
 
-**Built 2026-11-04 ([PR #1216](https://github.com/rjdunlap/neo/pull/1216)):** checks in [VERIFICATION](VERIFICATION.md#2026-11-04--habitat-helpers-levels-89-the-rocky-shore-habitat-helpers-batch-3); [build note](archive/COMPLETED-2026-10-09.md#habitat-helpers-levels-89-the-rocky-shore-habitat-helpers-3-2026-11-04). No longer eligible for dispatch. Scope retained for reference.
+**Built 2026-11-04 ([PR #1216](https://github.com/rjdunlap/neo/pull/1216)):** checks in [VERIFICATION](archive/VERIFICATION-2026-11-04.md#2026-11-04--habitat-helpers-levels-89-the-rocky-shore-habitat-helpers-batch-3); [build note](archive/COMPLETED-2026-10-09.md#habitat-helpers-levels-89-the-rocky-shore-habitat-helpers-3-2026-11-04). No longer eligible for dispatch. Scope retained for reference.
 
 - **`habitat-helpers`, levels 8–9 The rocky shore (dive slice 3, after batch 2)** (new interaction; school 4–9): who lives high and who lives low on a rocky shore, decided by needs rather than trivia; shares the level table and the bot rule with batch 2. [Dive](deep-dives/habitat-helpers.md#build-slices-in-order)
 
@@ -1205,7 +1205,7 @@ Proof: new-interaction tier: typecheck, rule tests, one play of level 7 with one
 
 ### peekaround-island 5: Level 8 From the sky
 
-- **`peekaround-island`, level 8 *From the sky* (dive slice 5)**, after batch 4 (school only, school range 4–8, pre-K unchanged at 7; new interaction): she chooses which of three top-down maps shows the island from above (friends as coloured dots around the tree). [Definition](definitions/peekaround-from-the-sky.md), [dive](deep-dives/peekaround-island.md#build-slices-in-order)
+- **`peekaround-island`, level 8 *From the sky* (dive slice 5)** (**built 2026-11-04**, [PR #1231](https://github.com/rjdunlap/neo/pull/1231)), after batch 4 (school only, school range 4–8, pre-K unchanged at 7; new interaction): she chooses which of three top-down maps shows the island from above (friends as coloured dots around the tree). [Definition](definitions/peekaround-from-the-sky.md), [dive](deep-dives/peekaround-island.md#build-slices-in-order)
 
 Files expected: `src/games/peekaround-island/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
 
