@@ -63,7 +63,7 @@ The game is complete, tested and has a bot; what it lacks is **fairness on long 
 - **One slot** (level 10) opens preschool: three stones, one slot; a gray cross dims that stone in the tray, so "not this one" is visible. Pre-K keeps level 1 as its entry.
 - **A bigger detective door** (level 11): four slots, five colours, three shown tries (built; a fourth row would not fit above the door at `doorY` 430). `detectiveDoor` scans every candidate per clue (about 600 by 625 scores per clue at 5^4), well under the 250 ms the rule test allows.
 
-Not here: the two-seat maker and breaker (chunk 23 owns its definition; level 9 is the solo half it can build on), counts-only feedback (Bulls and Cows), Word Code (its own [IDEAS](../IDEAS.md) row), five slots or six colours (portrait's 768-unit short side fits four slots and the key; a fifth slot puts the key's 56-unit radius off the screen, and `MARKS` has five shapes).
+Not here: counts-only feedback (Bulls and Cows), Word Code (its own [IDEAS](../IDEAS.md) row), five slots or six colours (portrait's 768-unit short side fits four slots and the key; a fifth slot puts the key's 56-unit radius off the screen, and `MARKS` has five shapes).
 
 **Long-term arc:** a preschooler finds the one stone behind a door; pre-K cracks two and three slots with yes/no marks; at school she meets yellow, four slots and repeats, marks the pet's tries on her own code, then solves detective doors from shown evidence; a family pair later swaps maker and breaker; a grown-up plays a fixed-par course on the couch.
 
@@ -108,9 +108,64 @@ Level 10 opens preschool, then level 1 (two slots). Pre-K keeps 1 as its entry; 
 
 Level 9 sits between 4 and 5 in school's order (marking yellow before four slots); level 10 is appended with `entryLevels: [10]`. No ID is renumbered and no pin moves; the couch's `level(stop)` (4, 5, 6) is unchanged.
 
+### Level 12 *Swap seats*: maker and breaker (defined 2026-11-05)
+
+Chunk 23's [one shared job](../FAMILY-EXPERIENCE.md#w3-one-shared-job), built on level 9. It follows the October 23 [second-seat contract](../archive/DECISIONS-2026-10-23.md#standing-rules) (S5: the second seat is anonymous and uncredited, only seat 1's play is read by `difficulty.ts`, and a role-swapped round counts as supported completion). The turns are sequential, so it needs no simultaneous input and no hidden personal screen.
+
+- **Fun action and learning.** She hides a code from a real person and marks that person's tries. Then they swap seats, and she cracks a code the person made. Both seats make a real decision: the grown-up reasons from her marks, and she reasons from the island's marks. The grown-up never answers for her. Marking a person's try is level 9's skill, now with a reason to get it right: a wrong mark would mislead someone she is playing with.
+- **Plan.** `12: { slots: 3, colors: 4, yellow: true, repeats: true, codes: 1, maker: true, swap: true }`, the same 64 codes as level 9. Neither seat can make a code bigger or longer than the plan allows, so every code a grown-up makes is fair, with no rule about which code is allowed. School only. A pre-K form (level 2's yes/no marks) waits until a pre-K child is seen marking.
+- **Who is playing.** The round opens on two round buttons, at least 112 units each, side by side above the tray. One shows two figures (**Two of us**); the other shows the pet's face (**Just me**). `code.seats` asks the question aloud, so she needs no reading. The choice lasts for the round.
+- **Two of us, first half: she makes and marks.**
+  1. `code.lookaway` asks the grown-up to shut their eyes. She makes a code from the tray and taps the check, exactly as on level 9; her code is never wrong.
+  2. A wooden lid (a `wood.fill` panel the size of level 9's 400 by 124 code panel) closes over her code. `code.grownupbreak` tells the grown-up to open their eyes, put stones in the door and turn the key. Seat 2 uses the breaker's tray, slots and key from levels 3–6, but the island gives no marks.
+  3. When the key turns, the lid opens. Her mark discs appear (level 9's `cycle`; `code.markgrownup`, then `code.nopeek` the first time, asking the grown-up to look away while she marks). She taps the arrow. `wrongMarks` checks her marks, and a wrong one wobbles and plays `code.sure` (a miss). The right marks move up beside the try, the lid closes, and the grown-up tries again.
+  4. The half ends when the grown-up's try is all green. If seat 2 has made `slots + 4` tries, faint stones (`suggestion`) appear for them, and they are not counted.
+- **Two of us, second half: they swap.** `code.swap` asks her to shut her eyes while the grown-up makes a code from the same tray and taps the check. The lid closes over it. `code.crackit` tells her to open her eyes and crack the grown-up's code. She then breaks it with levels 3–6's rules and the island's marks (repeat-aware `ruledOut`, misses from rows on screen only). The door opens and the lid lifts to show the grown-up's code. This is one sticker; the round ends after the two halves, one code each.
+- **Just me** (the solo fallback; nothing new is built for it). The pet takes seat 2: the first half is level 9's pet breaking her code (`petTry`), and the second half is a seeded `makeCode` door she breaks, with no lid and no look-away lines.
+- **Accounting.**
+  - Every miss and hint is hers. In the first half, a wrong mark is a miss and the glow after two wrong marks on one try is a hint (level 9). In the second half, an ignored clue is a miss and the faint stones after two misses or `slots + 4` tries are a hint (levels 1–6).
+  - Seat 2's tries and their faint stones never count.
+  - A **Two of us** round finishes through a pure `swapResult(twoSeats, misses, hints)` in `logic.ts`, which returns `hints: Math.max(hints, 1)` when two seats played. The round is therefore never smooth (it cannot step her up on a grown-up's easy code or play), but a struggle still reads her own misses.
+  - **Just me** passes her result unchanged.
+  - There is no shell change and no new `RoundResult` field.
+- **Placement.** School `order` becomes `[2, 3, 4, 9, 12, 5, 6, 7, 8, 11]` with max 12. It comes right after level 9 because it uses level 9's plan. A pin, or the how-to card's arrows, take a family straight to it.
+  - A child who steps up into 12 alone meets the seat question and plays **Just me** at level 9's difficulty, so adaptation never strands her in a mode that needs a second person.
+  - Placing it at the top (after 11) was rejected: a two-seat mode is not harder than 11, and a solo round there would be easier than the level below it.
+  - No ID is renumbered. Not on the couch.
+  - The "two seats" mark on a game's icon (decided under S8) is shell work for its own slice and is not part of this level.
+- **Voice** (7 new `code.*` lines):
+  - `code.seats` (who is playing with you?)
+  - `code.lookaway` (grown-up, shut your eyes while she makes a code)
+  - `code.grownupbreak` (open your eyes, put stones in the door and turn the key)
+  - `code.markgrownup` (give each of the grown-up's stones its mark)
+  - `code.nopeek` (no peeking while she marks)
+  - `code.swap` (swap seats: you shut your eyes while the grown-up makes a code)
+  - `code.crackit` (open your eyes and crack the grown-up's code)
+
+  `code.sure`, `code.markall`, `code.makefill` and `code.open` are reused. The lines speak to "the grown-up" and use no seat-2 name.
+- **Bot (`autotouch`).** It plays **Two of us** end to end:
+  - taps the two figures;
+  - makes `demoCode` and taps the check;
+  - plays seat 2's tries with `nextMove` (against her code), then gives the right marks;
+  - makes a seeded `madeCode` as seat 2;
+  - breaks it with `nextMove`.
+- **The networks pointer** ("a code everyone guesses first time is no lock", [networks study](subjects/networks-citizenship.md)) is declined here. Showing a code's strength as a count of guesses is a score shown to the child, and level 9 already cut the pet's tally recap. The pointer stays with the networks study.
+- **Rule tests.**
+  - `swapResult` is never smooth with two seats, whatever the misses and hints, and is unchanged for **Just me**.
+  - Seat 2's tries never produce a miss (`ignoredClues` is read only on her breaker half).
+  - Every code either seat can make fits the plan (3 slots, 4 colours).
+  - With right marks, `nextMove` cracks every one of the 64 codes, which bounds the bot's first half.
+  - The school `order` test lists 12 after 9.
+- **Check tier: new interaction.**
+  - Typecheck and the unit tests above.
+  - One scripted play of level 12 with **Two of us**: one wrong mark in the first half, then the second half with one ignored clue, to the sticker. Assert `misses >= 2` and `hints >= 1`.
+  - One portrait screenshot of the seat question and one of the lid closed over her code.
+  - `fingerdemo` at 12.
+  - `npm run build` only if shared files change.
+- **Needs a person:** whether a six-year-old marks a grown-up's tries honestly and enjoys it, and whether the look-away moments feel like a game or a chore. Both go in [DEVICE-CHECKS](../DEVICE-CHECKS.md) when it is built.
+
 ### Left out on purpose
 
-- **Two-seat maker and breaker:** owned by [chunk 23](../ROADMAP.md#next-up) and the [family experience review](../FAMILY-EXPERIENCE.md); queued here only as its docs-only definition, built on level 9's marking. The [networks study](subjects/networks-citizenship.md)'s "a code everyone guesses" pointer belongs in that definition.
 - **Which try tells more?** (Knuth's minimax as a choice between two offered tries, every tie accepted): a good school-top idea that needs its own definition of how a non-best pick is shown without being a miss.
 - **Counts-only marks, a row limit, a timer, a score shown to the child.**
 - **Five slots or six colours** (portrait width and the five shapes).
@@ -127,7 +182,8 @@ None. Placement, band openings and accounting follow the stated leans (S8); the 
 4. **Level 10 One slot, the preschool opening (batch secret-code 4),** after batch 1. *Check:* new-band tier: typecheck, unit tests including the lands and registry band tests, one play of level 10 at preschool with one crossed-out stone tried, `fingerdemo` at 10, the preschool Puzzle Peaks page screenshot. Built 2026-11-05 ([PR #1249](https://github.com/rjdunlap/neo/pull/1249); [checks](../VERIFICATION.md#2026-11-05--secret-code-level-10-one-slot-secret-code-batch-4)): preschool `order` [10, 1], four new `code.*` lines, Secret Code on the preschool Puzzle Peaks page; couch unchanged. *Check (passed as planned).*
 5. **Level 11 A bigger detective door (batch secret-code 5),** after batch 2 (shares the order). *Check:* new-level tier with a layout check: typecheck, rule tests (uniqueness and the time bound), one play of level 11 with one contradicting try, one portrait screenshot of the shown rows, `fingerdemo` at 11. Built 2026-11-04 ([PR #1243](https://github.com/rjdunlap/neo/pull/1243); [checks](../VERIFICATION.md#2026-11-04--secret-code-level-11-a-bigger-detective-door-secret-code-batch-5)): the clue cap is three, not four, so all rows fit at the highest door place; the school `order` is 2–8 then 11 until level 9 is built. *Check (passed as planned, three clues).*
 6. **Couch course The Code Doors (batch secret-code 6),** after batch 1: five frozen codes at levels 4–6, par from the fixed reference solver (`nextMove`) per the October 23 rule. *Check:* couch catalog tier: course tests, `BROWSER_SUITE=couchgames` filtered to Secret Code.
-7. **Define Secret Code maker and breaker** (docs only; chunk 23), after level 9 (built), now unblocked.
+7. **Define Secret Code maker and breaker** (docs only; chunk 23). Defined 2026-11-05: [level 12 *Swap seats*](#level-12-swap-seats-maker-and-breaker-defined-2026-11-05).
+8. **Level 12 Swap seats (batch secret-code 7),** after batch secret-code 3 (built; it reuses level 9's mark discs). *Check:* new-interaction tier as stated in [its definition](#level-12-swap-seats-maker-and-breaker-defined-2026-11-05).
 
 ## What was built in this session
 
