@@ -1475,6 +1475,8 @@ Proof: new-band tier: typecheck, unit tests including the lands and registry ban
 
 ### secret-code 5: Level 11 A bigger detective door
 
+Built 2026-11-04, [PR #1243](https://github.com/rjdunlap/neo/pull/1243); [build note](archive/COMPLETED-2026-10-09.md#secret-code-level-11-a-bigger-detective-door-secret-code-batch-5-2026-11-04). No longer eligible for dispatch.
+
 - **`secret-code`, Level 11 *A bigger detective door* (dive slice 5)**, after batch secret-code 2 (shares the order; new level): a larger deduction door built on level 8's four slots. [Dive](deep-dives/secret-code.md#build-slices-in-order)
 
 Files expected: `src/games/secret-code/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
