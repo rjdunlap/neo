@@ -553,7 +553,7 @@ class PondConga implements Game {
     const heading = r.state.heading;
     this.tries++;
     this.ticks++;
-    if (r.held) this.refused();
+    if (r.held) this.refused(want ?? this.state.heading);
     else if (r.event === 'bonk') {
       this.misses++;
       this.before = r.state.body.map((c) => ({ ...c }));
@@ -587,7 +587,7 @@ class PondConga implements Game {
    * A bump at school: a refused step. The line stays where it was with a boing and a shake of the leader; it counts as a miss,
    * and the second on a pond shows the dots to the next bite without counting a hint.
    */
-  private refused() {
+  private refused(to: Dir) {
     this.misses++;
     this.bumps++;
     this.onRoute = false;
@@ -596,7 +596,7 @@ class PondConga implements Game {
     this.before = this.state.body.map((c) => ({ ...c }));
     sfx.boing();
     this.ctx.pet.hop(0.5);
-    const lead = this.state.body[0], to = this.state.heading;
+    const lead = this.state.body[0];
     this.bonkAt({ x: lead.x + DX[to] * 0.5, y: lead.y + DY[to] * 0.5 });
     this.shakeUntil = this.clock + SHAKE;
     if (this.bumps === 2 && !this.hinted) this.hinted = true;
