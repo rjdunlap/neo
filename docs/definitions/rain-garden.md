@@ -1,5 +1,7 @@
 # Rain Garden, levels 1–3 (definition)
 
+**Admitted to the build queue 2026-11-05** ([READY](../READY.md#queued)): the developer asked for the recommendations to be made without waiting, so the build uses this packet's defaults (settled in the [October 23 record](../archive/DECISIONS-2026-10-23.md#decisions)). Its source check and the lands test still run at build time.
+
 Defined 2026-10-22 as slice 1 of the [weather-and-water study](../deep-dives/subjects/weather-water.md#build-slices-in-order), from its [first game's ladder](../deep-dives/subjects/weather-water.md#a-first-games-ladder-rain-garden) and the [recommendation row](../deep-dives/subjects/RECOMMENDATIONS.md#weather-and-water-recommendations). Docs only: no game, ID registration, voice line, art or save field exists yet.
 
 **Status: build waits on the developer (`decision`).** The [collected decision](../WAITING-ON-DEVELOPER.md) lists a new-game registration for this subject as unapproved, and study decision 1 asks the developer to confirm the comparison action, band windows and land before registration. The packet below gives a default for every one of those, so the build (the study's slices 2–3) can start the day they are confirmed. A science reader for the spoken explanation is recommended before implementation ([decision 2](#open-decisions)); it is not a gate on this screen-only toy, and it is required before any realistic claim (soaking rates, wet ground, the water cycle).

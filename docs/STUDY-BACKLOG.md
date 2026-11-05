@@ -107,6 +107,27 @@ These are existing games awaiting research, not new game implementations. One do
 
 | Game | Status | Source |
 | --- | --- | --- |
+| Draw the Pattern (`draw-the-pattern`) | not started, wave 5 | [Tracker](deep-dives/README.md#tracker) |
+| Swing Pals (`swing-pals`) | not started, wave 5 | [Tracker](deep-dives/README.md#tracker) |
+| Bolt Boards (`bolt-boards`) | not started, wave 5 | [Tracker](deep-dives/README.md#tracker) |
+| Puddle Gobble (`puddle-gobble`) | not started, wave 5 | [Tracker](deep-dives/README.md#tracker) |
+| Fruit Slice (`fruit-slice`) | not started, wave 5 | [Tracker](deep-dives/README.md#tracker) |
+| Cut Along (`cut-along`) | not started, wave 5 | [Tracker](deep-dives/README.md#tracker) |
+| Domino Run (`domino-run`) | not started, wave 5 | [Tracker](deep-dives/README.md#tracker) |
+| Number Trails (`number-trails`) | not started, wave 6 | [Tracker](deep-dives/README.md#tracker) |
+| Mossy Path (`mossy-path`) | not started, wave 6 | [Tracker](deep-dives/README.md#tracker) |
+| Fruit Sums (`fruit-sums`) | not started, wave 6 | [Tracker](deep-dives/README.md#tracker) |
+| Jar Sort (`jar-sort`) | not started, wave 6 | [Tracker](deep-dives/README.md#tracker) |
+| Pile Match (`pile-match`) | not started, wave 6 | [Tracker](deep-dives/README.md#tracker) |
+| Lift It (`lift-it`) | not started, wave 6 | [Tracker](deep-dives/README.md#tracker) |
+| Block Garden (`block-garden`) | not started, wave 6 | [Tracker](deep-dives/README.md#tracker) |
+| Gem Swap (`gem-swap`) | not started, wave 7 | [Tracker](deep-dives/README.md#tracker) |
+| Log Roll (`log-roll`) | not started, wave 7 | [Tracker](deep-dives/README.md#tracker) |
+| Marble Jump (`marble-jump`) | not started, wave 7 | [Tracker](deep-dives/README.md#tracker) |
+| Number Nook (`number-nook`) | not started, wave 7 | [Tracker](deep-dives/README.md#tracker) |
+| Pyramid Solitaire (`pyramid-solitaire`) | not started, wave 7 | [Tracker](deep-dives/README.md#tracker) |
+| Snowball Merge (`snowball-merge`) | not started, wave 7 | [Tracker](deep-dives/README.md#tracker) |
+| Tile Pairs (`tile-pairs`) | not started, wave 7 | [Tracker](deep-dives/README.md#tracker) |
 | Pixel Pictures (`pixel-pictures`) | designed | [Dive](deep-dives/pixel-pictures.md) |
 | Ferry Jam (`ferry-jam`) | designed | [Dive](deep-dives/ferry-jam.md) |
 | Garden Rows (`garden-rows`) | designed | [Dive](deep-dives/garden-rows.md) |

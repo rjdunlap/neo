@@ -1,5 +1,7 @@
 # Seed Travelers, levels 1–3 (definition)
 
+**Admitted to the build queue 2026-11-05** ([READY](../READY.md#queued)): the developer asked for the recommendations to be made without waiting, so the build uses this packet's defaults (settled in the [October 23 record](../archive/DECISIONS-2026-10-23.md#decisions)). Its source check and the lands test still run at build time.
+
 Defined 2026-10-21 as slice **1** of the [life-science study](../deep-dives/subjects/life-science.md#build-slices-in-order), from its [proposed ladder](../deep-dives/subjects/life-science.md#seed-travelers-first-games-proposed-ladder), [experience notes](../deep-dives/subjects/life-science.md#experience-and-presentation) and [recommendation row](../deep-dives/subjects/RECOMMENDATIONS.md#life-science-recommendations). Docs only: no game, ID registration, voice line or save field exists yet.
 
 **Status: defined; the build (slice 2) waits on one developer call.** The [life-science row in WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md) asks the developer to confirm the new-game identity and land fit before implementation. This packet gives a default for both ([decisions 1 and 2](#open-decisions)). Once the developer accepts them, slice 2 is a ready new-game build. The named-species review in that row does not gate these three levels, because their voice, card and art name no species ([decision 3](#open-decisions)).

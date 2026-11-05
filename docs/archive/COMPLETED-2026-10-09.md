@@ -2923,7 +2923,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-05.md#2026-11-05--read--do-lev
 
 [PR #1249](https://github.com/rjdunlap/neo/pull/1249), `claude/secret-code-one-slot`: [dive slice 4](../deep-dives/secret-code.md#build-slices-in-order). Plan 10: one slot, three stones, yes/no marks, three doors (`oneSlot`). A gray crosses that stone out: it dims in the tray under a small gray cross. Tapping a crossed-out stone is the level's only miss (the stone wobbles, a boing and `code.crossed`, and it stays in the tray); after two such misses on a door comes one hint: the hidden stone glows in the tray, a faint stone shows in the slot and `code.onehint` plays (the glow is cleared when the round ends). A gray try says `code.notthis`; the first instruction is `code.oneslot`. Secret Code now has a preschool band: `order` [10, 1] (min 1, max 10), `entryLevels` [10]; a carried 10 lands on 1 at pre-K and on 2 at school; `planFor` falls back below 1 to 1 and above 11 to 11. The how-to card has level-10 step, finish and note entries and the yellow step now reads 3–9 and 11. Couch unchanged (`level(stop)` still 4–6). Secret Code shows on the preschool Puzzle Peaks page. Open: whether a three-to-four-year-old reads the gray cross without the card (DEVICE-CHECKS).
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--secret-code-level-10-one-slot-secret-code-batch-4).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-05.md#2026-11-05--secret-code-level-10-one-slot-secret-code-batch-4).
 
 ## Secret Code couch course The Code Doors (secret-code batch 6, 2026-11-05)
 
