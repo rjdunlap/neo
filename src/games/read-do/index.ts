@@ -13,9 +13,9 @@ import type { LineId } from '../../content/voice-script';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { act, actionOf, answerIndex, hintFor, makeSigns, makeTasks, makeWishes, matches, MAX_SLOTS, meaning, missing, planFor, printed, sameAct, signLayout, stepFor, type Box, type Choice, type Hint, type Marks, type Outcome, type Sign, type SignLayout, type SlotWord, type Step, type Wish, type WishSign, type Word } from './logic';
+import { act, actionOf, answerIndex, hintFor, makeMendSigns, makeSigns, makeTasks, makeWishes, matches, MAX_SLOTS, meaning, missing, planFor, printed, resolveDrop, sameAct, signLayout, stepFor, type Box, type Choice, type Drop, type Hint, type Marks, type Outcome, type Sign, type SignLayout, type SlotWord, type Step, type Wish, type WishSign, type Word } from './logic';
 
-const LEVELS: BandLevels = { prek: { min: 1, max: 5, order: [1, 2, 4, 5] }, school: { min: 1, max: 7 } };
+const LEVELS: BandLevels = { prek: { min: 1, max: 5, order: [1, 2, 4, 5] }, school: { min: 1, max: 9 } };
 export const WORD_LINES: Record<Word, LineId> = {
   red: 'read.red', blue: 'read.blue', yellow: 'read.yellow', green: 'read.green', pink: 'read.pink', big: 'read.big', small: 'read.small',
   duck: 'read.duck', cat: 'read.cat', pig: 'read.pig', dog: 'read.dog', the: 'read.the', can: 'read.can', jump: 'read.jump', sleep: 'read.sleep', jumps: 'read.jumps', sleeps: 'read.sleeps',
@@ -487,6 +487,8 @@ const centre = (b: Box) => ({ x: b.x + b.w / 2, y: b.y + b.h / 2 });
 /**
  * Level 7 (WC3, *Make the sign*): the pet's wish is a picture; she drags word tiles between a locked *The* and stop
  * (insert, move and take out are free), Show it acts the sign as written, and Send judges it against the wish.
+ * Levels 8–9 (KE1, *Mend the sign*) start from an authored broken sign that the animals act out first; level 9 adds
+ * the swap, a tray tile dropped onto a slot word.
  */
 class MakeDo implements Game {
   readonly wishes: WishSign[];
@@ -514,6 +516,10 @@ class MakeDo implements Game {
   private toldFull = false;
   private clock = 0;
   private hover: number | null = null;
+  /** Level 9: the slot word a held tray tile would replace, and that word's tile (dimmed and wobbling). */
+  private held: Drop | null = null;
+  private swapNode: Container | null = null;
+  private readonly level: number;
   /** Where the finger went down and where it is now, in stage units: a short travel is a tap that says the word. */
   private finger = { x: 0, y: 0, travel: 0 };
   private critters: Critter[] = [];
@@ -524,8 +530,9 @@ class MakeDo implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
-    this.L = signLayout(ctx.view);
-    this.wishes = makeWishes(ctx.rng);
+    this.level = ctx.level;
+    this.L = signLayout(ctx.view, this.level);
+    this.wishes = this.level >= 8 ? makeMendSigns(ctx.rng, this.level) : makeWishes(ctx.rng);
     this.backdrop = new Backdrop({ sky: [swatch.green.light, cream], hills: [swatch.green.fill, swatch.teal.light], horizon: 0.72, clouds: 2, sun: false, seed: 47 }, ctx.view);
     this.actors.eventMode = this.glow.eventMode = this.outlines.eventMode = this.socket.eventMode = this.gapMark.eventMode = 'none';
     this.socket.addChild(socketArt());
@@ -539,6 +546,9 @@ class MakeDo implements Game {
     ctx.stage.addChild(this.backdrop, this.actors, this.card, this.outlines, this.socket, this.the, this.stop, this.replay, this.show, this.send, this.gapMark, this.glow);
   }
   get round() { return this.wishes[this.index]; }
+  private get instruction(): LineId {
+    return this.level >= 9 ? 'read.mend.swap.instruction' : this.level === 8 ? 'read.mend.instruction' : 'read.make.instruction';
+  }
   start() { void this.next(); }
   destroy() {
     this.alive = false;
@@ -547,7 +557,7 @@ class MakeDo implements Game {
   resize(v: View) {
     this.view = v;
     this.backdrop.resize(v);
-    this.L = signLayout(v);
+    this.L = signLayout(v, this.level);
     const at = (node: Container, b: Box) => node.position.copyFrom(centre(b));
     at(this.the, this.L.row[0]);
     at(this.stop, this.L.row[4]);
@@ -577,11 +587,8 @@ class MakeDo implements Game {
     }
     this.socket.visible = this.sign.length === 0;
   }
-  /** The gap nearest x among `words` (0 = before the first), by the row's slot centres. */
-  private gapAt(x: number, words: number) {
-    const first = centre(this.L.row[1]).x - 58;
-    return Math.max(0, Math.min(words, Math.round((x - first) / 116)));
-  }
+  /** The centres of `words` slot words at rest, with nothing spread open. */
+  private rest(words: number) { return this.L.row.slice(1, 1 + words).map(b => centre(b).x); }
   private gapX(gap: number) { return centre(this.L.row[1]).x - 58 + gap * 116; }
   private overSign(x: number, y: number) {
     const d = this.L.drop;
@@ -591,27 +598,31 @@ class MakeDo implements Game {
     this.clock += dt;
     this.glow.clear();
     this.gapMark.visible = false;
+    if (this.swapNode && !this.swapNode.destroyed) this.swapNode.rotation = Math.sin(this.clock * 14) * 0.07;
     if (!this.hinted || this.busy || this.finished || !this.round || this.tiles.some(t => t.drag.dragging)) return;
-    const hint = hintFor(this.sign, this.round);
-    const target = this.hintTarget(hint);
+    const hint = hintFor(this.sign, this.round, this.level);
     if (hint.kind === 'add') this.gapMark.visible = true;
-    const wide = target === this.send ? 170 : 128;
-    this.glow.roundRect(target.x - wide / 2, target.y - 62, wide, 124, 26).stroke({ width: 6 + Math.sin(this.clock * 5), color: swatch.yellow.fill });
+    for (const target of this.hintTargets(hint)) {
+      const wide = target === this.send ? 170 : 128;
+      this.glow.roundRect(target.x - wide / 2, target.y - 62, wide, 124, 26).stroke({ width: 6 + Math.sin(this.clock * 5), color: swatch.yellow.fill });
+    }
   }
-  /** The control the hint points at; for a word to add, also sets the dotted mark at its gap. */
-  private hintTarget(hint: Hint): Container {
-    if (hint.kind === 'send') return this.send;
-    if (hint.kind === 'out') return this.tileOf(this.sign[hint.index]).node;
+  /** What the hint points at, the thing to move first; for a word to add, also sets the dotted mark at its gap; a swap glows the tray word and the word it replaces. */
+  private hintTargets(hint: Hint): Container[] {
+    if (hint.kind === 'send') return [this.send];
+    if (hint.kind === 'out') return [this.tileOf(this.sign[hint.index]).node];
+    if (hint.kind === 'swap') return [this.tileOf(hint.word).node, this.tileOf(this.sign[hint.index]).node];
     this.gapMark.position.set(this.gapX(hint.gap), centre(this.L.row[1]).y);
-    return this.tileOf(hint.word).node;
+    return [this.tileOf(hint.word).node];
   }
   private tileOf(word: SlotWord) { return this.tiles.find(t => t.word === word)!; }
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.round || this.tiles.some(t => t.drag.dragging)) return null;
-    const hint = hintFor(this.sign, this.round);
-    const target = this.hintTarget(hint);
+    const hint = hintFor(this.sign, this.round, this.level);
+    const [target, onto] = this.hintTargets(hint);
     if (hint.kind === 'send') return { tap: { on: this.send } };
     if (hint.kind === 'add') return { drag: { on: target }, to: { on: this.gapMark } };
+    if (hint.kind === 'swap') return { drag: { on: target }, to: { on: onto } };
     return { drag: { on: target }, to: { on: this.outlines.children[this.tileOf(this.sign[hint.index]).slot] as Container } };
   }
   private lock(on: boolean) {
@@ -673,9 +684,19 @@ class MakeDo implements Game {
     this.card.addChild(new Graphics().poly([-60, 70, -100, 110, -30, 78]).fill(cream).stroke({ width: 4, color: wood.line })
       .roundRect(-100, -80, 200, 160, 30).fill(cream).stroke({ width: 4, color: wood.line }), wishArt(this.round.wish));
     this.card.hitArea = new Rectangle(-100, -80, 200, 160);
+    this.sign = 'start' in this.round ? [...(this.round.start as SlotWord[])] : [];
     this.cast();
     this.resize(this.view);
-    await this.ctx.instruct('read.make.instruction');
+    if (this.level >= 8) {
+      // The broken sign acts itself out first, as Show it would: she sees what is wrong before she is asked to fix it.
+      await this.ctx.say('read.mend.watch');
+      if (!this.alive) return;
+      await this.speakSign();
+      if (!this.alive) return;
+      await this.perform(act(this.sign, this.round.stage));
+      if (!this.alive) return;
+    }
+    await this.ctx.instruct(this.instruction);
     if (this.alive) this.lock(false);
   }
   /** Puts the stage's animals in their places: one in the middle, or the big one left and the small one right. */
@@ -690,9 +711,26 @@ class MakeDo implements Game {
       return critter;
     });
   }
-  private hovering(tile: MakeTile, x: number, y: number) {
+  /** Where a held tile would land; only a tray tile can swap (a sign word moves to a gap, as at level 7). */
+  private landing(tile: MakeTile, x: number, y: number): Drop | null {
+    if (!this.overSign(x, y)) return null;
     const others = this.sign.filter(w => w !== tile.word).length;
-    const gap = this.overSign(x, y) && (others < MAX_SLOTS) ? this.gapAt(x, others) : null;
+    return resolveDrop(x, this.rest(others), others === this.sign.length ? this.level : 7, this.held);
+  }
+  /** Dims and wobbles the slot word a held tile would replace (null: none). */
+  private setSwap(drop: Drop | null) {
+    const node = drop?.kind === 'swap' ? this.tileOf(this.sign[drop.index]).node : null;
+    this.held = drop?.kind === 'swap' ? drop : null;
+    if (node === this.swapNode) return;
+    if (this.swapNode && !this.swapNode.destroyed) { this.swapNode.alpha = 1; this.swapNode.rotation = 0; }
+    this.swapNode = node;
+    if (node) { node.alpha = 0.55; sfx.pop(1); }
+  }
+  private hovering(tile: MakeTile, x: number, y: number) {
+    const drop = this.landing(tile, x, y);
+    this.setSwap(drop);
+    const others = this.sign.filter(w => w !== tile.word).length;
+    const gap = drop?.kind === 'gap' && others < MAX_SLOTS ? drop.gap : null;
     if (gap === this.hover) return;
     this.hover = gap;
     // Spread the words around the gap she is over, as if she had taken hers out.
@@ -703,15 +741,21 @@ class MakeDo implements Game {
   }
   private dropTile(tile: MakeTile, x: number, y: number) {
     this.hover = null;
+    const drop = this.landing(tile, x, y);
+    this.setSwap(null);
     const tapped = this.finger.travel < 30;
     const others = this.sign.filter(w => w !== tile.word);
     if (this.busy) { /* never changes a sign mid-read */ }
     else if (tapped) { sfx.pop(2); void this.ctx.say(WORD_LINES[tile.word]); }
-    else if (this.overSign(x, y)) {
+    else if (drop?.kind === 'swap') {
+      // The tray word takes the slot word's place; the replaced word floats to its home slot.
+      this.sign = this.sign.map((w, i) => (i === drop.index ? tile.word : w));
+      sfx.marimba(drop.index + 3, 0.2);
+    } else if (drop) {
       if (others.length >= MAX_SLOTS) {
         if (!this.toldFull) { this.toldFull = true; void this.ctx.say('read.make.full'); }
       } else {
-        const gap = this.gapAt(x, others.length);
+        const gap = drop.gap;
         this.sign = [...others.slice(0, gap), tile.word, ...others.slice(gap)];
         sfx.marimba(this.sign.length + 2, 0.25);
       }
@@ -775,7 +819,7 @@ class MakeDo implements Game {
     if (!this.sign.length) {
       // Nothing to judge yet: the instruction again, never a miss.
       this.lock(true);
-      await this.ctx.instruct('read.make.instruction');
+      await this.ctx.instruct(this.instruction);
       if (this.alive) this.lock(false);
       return;
     }
@@ -804,8 +848,9 @@ class MakeDo implements Game {
     if (!this.alive) return;
     if (this.wrongs >= 2 && !this.hinted) { this.hinted = true; this.hints++; }
     if (this.hinted) {
-      const hint = hintFor(this.sign, this.round);
+      const hint = hintFor(this.sign, this.round, this.level);
       if (hint.kind === 'add') { await this.ctx.say('read.make.hint.add'); if (this.alive) await this.ctx.say(WORD_LINES[hint.word]); }
+      else if (hint.kind === 'swap') { await this.ctx.say('read.mend.hint.swap'); if (this.alive) await this.ctx.say(WORD_LINES[hint.word]); }
       else if (hint.kind === 'out') await this.ctx.say('read.make.hint.out');
     }
     if (this.alive) this.lock(false);

@@ -1,6 +1,6 @@
 # Read & Do — Mend the sign (levels 8–9, KE1): fix a sign that does the wrong thing
 
-KE1 definition, 2026-11-04, branch `claude/define-read-do-mend-the-sign`. This is dive slice 4 of the [Read & Do dive](../deep-dives/read-do.md#build-slices-in-order), from the [keyboarding and editing study](../deep-dives/subjects/keyboarding-editing.md). **Docs only:** no game change, code or device evidence. It settles what the dive left open: the authored broken signs, the delete and swap gestures, the drop-on-word versus gap rule, the hints, the bot and the check tier. Everything not restated here is as in the [level-7 definition](read-do-make-the-sign.md), which these levels extend.
+KE1 definition, 2026-11-04, branch `claude/define-read-do-mend-the-sign`. This is dive slice 4 of the [Read & Do dive](../deep-dives/read-do.md#build-slices-in-order), from the [keyboarding and editing study](../deep-dives/subjects/keyboarding-editing.md). **Built 2026-11-05 (batch read-do 4, [PR #1247](https://github.com/rjdunlap/neo/pull/1247)) with no deviations; device checks are in [DEVICE-CHECKS](../DEVICE-CHECKS.md).** Written as **docs only:** no game change, code or device evidence. It settles what the dive left open: the authored broken signs, the delete and swap gestures, the drop-on-word versus gap rule, the hints, the bot and the check tier. Everything not restated here is as in the [level-7 definition](read-do-make-the-sign.md), which these levels extend.
 
 ## Scope and identity
 
@@ -253,7 +253,7 @@ In `logic.test.ts`:
 
 ## Device and person checks
 
-Added to [DEVICE-CHECKS.md](../DEVICE-CHECKS.md) when the levels are built, not claimed now:
+Added to [DEVICE-CHECKS.md](../DEVICE-CHECKS.md) on 2026-11-05 (still open):
 - swap versus insert comfort in portrait on an iPad (the 54- and 62-unit drop zones with their preview);
 - whether the opening act-out of a broken sign reads as a funny mistake to fix, not as her failure;
 - iPad speech for the `read.mend.*` lines.

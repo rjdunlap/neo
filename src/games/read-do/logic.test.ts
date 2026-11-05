@@ -3,7 +3,7 @@ import { Rng } from '../../engine/random';
 import { SCRIPT } from '../../content/voice-script';
 import { WORD_LINES, readDo } from './index';
 import { computeView } from '../../engine/view';
-import { accepts, acceptedSigns, act, type Actor, follow, hintFor, makeWishes, MAX_SLOTS, type SlotWord, signLayout, type Box } from './logic';
+import { accepts, acceptedSigns, act, type Actor, DELETES, type Drop, follow, hintFor, INSERTS, makeMendSigns, type MendSign, resolveDrop, SWAPS, makeWishes, MAX_SLOTS, type SlotWord, signLayout, type Box } from './logic';
 import { actionOf, ANIMALS, answerIndex, COLORS, makeSigns, makeTasks, type Marks, matches, meaning, missing, PLANS, planFor, printed, stepFor, VERBS, WORDS } from './logic';
 
 describe('Read & Do', () => {
@@ -69,7 +69,7 @@ describe('Read & Do', () => {
   it('replays every printed word through the voice script and opens gently at pre-K', () => {
     for (const word of WORDS) expect(SCRIPT[WORD_LINES[word]]).toEqual([word]);
     expect(readDo.levels('prek')).toEqual({ min: 1, max: 5, order: [1, 2, 4, 5] });
-    expect(readDo.levels('school')).toEqual({ min: 1, max: 7 });
+    expect(readDo.levels('school')).toEqual({ min: 1, max: 9 });
   });
 });
 
@@ -225,8 +225,8 @@ describe('Read & Do, Make the sign (level 7)', () => {
   it('lays level 7 out at the four views: 100-unit targets, no overlaps, inside the view, clear of home, help and the pet', () => {
     const views = [computeView(1024, 768), computeView(1024, 1365), computeView(1662, 768), computeView(1561, 768, { top: 0, right: 47, bottom: 21, left: 47 })];
     const hit = (a: Box, b: Box) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
-    for (const v of views) {
-      const L = signLayout(v);
+    for (const level of [7, 8, 9]) for (const v of views) {
+      const L = signLayout(v, level);
       const targets = [...L.row, L.speaker, L.wish, L.show, L.send, ...L.tray];
       const shell: Box[] = [{ x: 12, y: 12, w: 100, h: 100 }, { x: 12, y: 110, w: 100, h: 100 }, { x: 0, y: v.h - 160, w: 150, h: 160 }];
       for (const b of targets) {
@@ -240,6 +240,142 @@ describe('Read & Do, Make the sign (level 7)', () => {
   });
   it('has every Make the sign line', () => {
     for (const id of ['read.make.instruction', 'read.make.yes', 'read.make.other', 'read.make.which', 'read.make.none', 'read.make.mixed', 'read.make.full', 'read.make.hint.add', 'read.make.hint.out', 'read.make.wish'] as const)
+      expect(SCRIPT[id]).toBeDefined();
+  });
+});
+
+describe('Read & Do, Mend the sign (levels 8–9)', () => {
+  const rounds = (level: number, n = 200) => Array.from({ length: n }, (_, i) => makeMendSigns(new Rng(i + 1), level));
+  const signs = (level: number, n = 200) => rounds(level, n).flat();
+  /** Every sign one insert (from the tray) or one delete away from `sign`, within three slot words. */
+  const oneEdit = (sign: SlotWord[], tray: SlotWord[]): SlotWord[][] => [
+    ...sign.map((_, i) => sign.filter((_, j) => j !== i)),
+    ...(sign.length < MAX_SLOTS ? tray.filter(w => !sign.includes(w)).flatMap(w => [0, 1, 2, 3].slice(0, sign.length + 1).map(g => [...sign.slice(0, g), w, ...sign.slice(g)])) : []),
+  ];
+  const fixOf = (m: MendSign): SlotWord[] => {
+    const X = m.wish.actor.animal, a = m.wish.verb, s = m.wish.actor.size;
+    return m.stage.length === 2 ? [s, X, a] : [X, a];
+  };
+  it('extends school to level 9 with a plan for each new level', () => {
+    expect(readDo.levels('school')).toEqual({ min: 1, max: 9 });
+    expect(readDo.levels('prek')).toEqual({ min: 1, max: 5, order: [1, 2, 4, 5] });
+    expect(planFor(8).name).toMatch(/one word in or taking one out/);
+    expect(planFor(9).name).toMatch(/swapping/);
+    expect(planFor(12)).toBe(PLANS[8]);
+  });
+  it('prints each pattern with the outcome its table gives, never already right', () => {
+    const want: Record<string, string> = { I1: 'which', I2: 'unreadable', I3: 'unreadable', D1: 'none', D2: 'unreadable', D3: 'unreadable', S1: 'act', S2: 'none', S3: 'act' };
+    for (const m of [...signs(8), ...signs(9)]) {
+      expect(act(m.start, m.stage).kind, m.pattern).toBe(want[m.pattern]);
+      expect(accepts(m.start, m), m.pattern).toBe(false);
+    }
+  });
+  it('fixes each level-8 sign with its one intended insert or delete, and no level-9 sign with one', () => {
+    for (const m of signs(8)) {
+      const fixed = oneEdit(m.start, m.tray).filter(f => accepts(f, m));
+      expect(fixed.length, m.pattern).toBeGreaterThan(0);
+      expect(fixed, m.pattern).toContainEqual(fixOf(m));
+      expect(Math.abs(fixOf(m).length - m.start.length)).toBe(1);
+    }
+    for (const m of signs(9)) {
+      expect(oneEdit(m.start, m.tray).some(f => accepts(f, m)), m.pattern).toBe(false);
+      const diff = fixOf(m).flatMap((w, i) => (w === m.start[i] ? [] : [i]));
+      expect(fixOf(m)).toHaveLength(m.start.length);
+      expect(diff).toHaveLength(1);
+      expect(m.start).not.toContain(fixOf(m)[diff[0]]);
+    }
+  });
+  it('splits the six words between sign and tray, each once, with the fix always a tray word', () => {
+    for (const m of [...signs(8), ...signs(9)]) {
+      const X = m.wish.actor.animal;
+      expect(m.tray).toHaveLength(6);
+      expect(new Set(m.tray).size).toBe(6);
+      expect(m.tray).toEqual(expect.arrayContaining(['big', 'small', 'jumps', 'sleeps', X]));
+      const decoy = m.tray.find(w => ANIMALS.includes(w as Actor['animal']) && w !== X)!;
+      expect(m.stage.some(a => a.animal === decoy)).toBe(false);
+      expect(new Set(m.start).size).toBe(m.start.length);
+      for (const w of m.start) expect(m.tray).toContain(w);
+      expect(m.start.length).toBeGreaterThan(0);
+      expect(m.start.length).toBeLessThanOrEqual(MAX_SLOTS);
+      if (m.stage.length === 1) expect(m.stage[0]).toEqual(m.wish.actor);
+    }
+  });
+  it('composes seeded rounds: level 8 opens with I1 and holds an insert and a delete; level 9 holds each swap once', () => {
+    for (const [level, all] of [[8, rounds(8)], [9, rounds(9)]] as const) for (const r of all) {
+      expect(r).toHaveLength(3);
+      expect(new Set(r.map(m => m.wish.actor.animal)).size).toBe(3);
+      expect(new Set(r.map(m => m.wish.verb))).toEqual(new Set(VERBS));
+      const ps = r.map(m => m.pattern);
+      if (level === 8) {
+        expect(ps[0]).toBe('I1');
+        expect((DELETES as readonly string[]).includes(ps[1])).toBe(true);
+        expect(ps[2]).not.toBe(ps[1]);
+        expect(ps.some(p => (INSERTS as readonly string[]).includes(p))).toBe(true);
+        expect(ps.every(p => !(SWAPS as readonly string[]).includes(p))).toBe(true);
+      } else expect([...ps].sort()).toEqual([...SWAPS]);
+    }
+    expect(makeMendSigns(new Rng(7), 8)).toEqual(makeMendSigns(new Rng(7), 8));
+    expect(makeMendSigns(new Rng(7), 9)).toEqual(makeMendSigns(new Rng(7), 9));
+    const seen = new Set(signs(8, 300).map(m => m.pattern));
+    expect(seen).toEqual(new Set([...INSERTS, ...DELETES]));
+  });
+  it('glows the intended fix first: the insert or take-out at level 8, never a swap; the swap at level 9', () => {
+    for (const m of signs(8)) {
+      const hint = hintFor(m.start, m, 8);
+      expect(hint.kind).toBe(m.pattern.startsWith('I') ? 'add' : 'out');
+      expect(follow(m.start, hint)).toEqual(fixOf(m));
+    }
+    for (const m of signs(9)) {
+      const hint = hintFor(m.start, m, 9);
+      expect(hint.kind).toBe('swap');
+      expect(follow(m.start, hint)).toEqual(fixOf(m));
+      expect(hintFor(m.start, m, 8).kind).not.toBe('swap');
+    }
+  });
+  it('follows the glow from every reachable sign to an accepted one, within six steps and three slots, using tray words', () => {
+    const signsFrom = (tray: SlotWord[]): SlotWord[][] => {
+      const out: SlotWord[][] = [[]];
+      const grow = (sign: SlotWord[]) => {
+        if (sign.length === MAX_SLOTS) return;
+        for (const w of tray) if (!sign.includes(w)) { out.push([...sign, w]); grow([...sign, w]); }
+      };
+      grow([]);
+      return out;
+    };
+    for (const level of [8, 9]) for (const m of signs(level, 30)) for (const start of signsFrom(m.tray)) {
+      let sign = start;
+      let steps = 0;
+      for (let hint = hintFor(sign, m, level); hint.kind !== 'send'; hint = hintFor(sign, m, level)) {
+        if (level === 8) expect(hint.kind).not.toBe('swap');
+        if (hint.kind === 'add' || hint.kind === 'swap') { expect(m.tray).toContain(hint.word); expect(sign).not.toContain(hint.word); }
+        sign = follow(sign, hint);
+        expect(sign.length).toBeLessThanOrEqual(MAX_SLOTS);
+        expect(++steps, start.join(' ')).toBeLessThanOrEqual(6);
+      }
+      expect(accepts(sign, m)).toBe(true);
+    }
+  });
+  it('resolves a held tile: a swap near a word at level 9 only, kept until 40 away, otherwise the nearest gap', () => {
+    const rest = [400, 516, 632];
+    expect(resolveDrop(410, rest, 8)).toEqual({ kind: 'gap', gap: 1 });
+    expect(resolveDrop(390, rest, 8)).toEqual({ kind: 'gap', gap: 0 });
+    expect(resolveDrop(400, rest, 9)).toEqual({ kind: 'swap', index: 0 });
+    expect(resolveDrop(516 + 27, rest, 9)).toEqual({ kind: 'swap', index: 1 });
+    expect(resolveDrop(516 + 28, rest, 9)).toEqual({ kind: 'gap', gap: 2 });
+    const held: Drop = { kind: 'swap', index: 1 };
+    expect(resolveDrop(516 + 40, rest, 9, held)).toEqual(held);
+    expect(resolveDrop(516 - 40, rest, 9, held)).toEqual(held);
+    expect(resolveDrop(516 + 41, rest, 9, held)).toEqual({ kind: 'gap', gap: 2 });
+    expect(resolveDrop(458, rest, 9)).toEqual({ kind: 'gap', gap: 1 });
+    expect(resolveDrop(700, rest, 9)).toEqual({ kind: 'gap', gap: 3 });
+    // `The` (284) and the stop (748) are never slot words, so a tile over them goes in a gap.
+    expect(resolveDrop(284, rest, 9)).toEqual({ kind: 'gap', gap: 0 });
+    expect(resolveDrop(748, rest, 9)).toEqual({ kind: 'gap', gap: 3 });
+    expect(resolveDrop(500, [], 9)).toEqual({ kind: 'gap', gap: 0 });
+    expect(resolveDrop(632, rest.slice(0, 2), 9, { kind: 'swap', index: 2 })).toEqual({ kind: 'gap', gap: 2 });
+  });
+  it('has every Mend the sign line', () => {
+    for (const id of ['read.mend.watch', 'read.mend.instruction', 'read.mend.swap.instruction', 'read.mend.hint.swap'] as const)
       expect(SCRIPT[id]).toBeDefined();
   });
 });

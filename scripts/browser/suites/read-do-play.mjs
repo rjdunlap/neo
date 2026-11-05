@@ -131,9 +131,74 @@ async function makePlay() {
   await page.setViewportSize({ width: 1024, height: 768 });
   log('Read & Do 7: free empty Send and Show it, two "which" Sends, one hint, a real drag into a spread row, completion and sticker passed');
 }
+// Levels 8–9, Mend the sign: the printed sign acts itself out first. At 8, two Sends of the unchanged sign are two
+// misses and raise the glow; at 9, a real portrait drag holds a tray tile on a slot word (the swap preview), then
+// swaps it. The bot finishes from the glow either way.
+async function mendPlay(level) {
+  await launch('read-do', level);
+  await page.waitForFunction(() => neo.scene.game?.busy === false);
+  log(`Read & Do ${level} signs: ${await page.evaluate(() => neo.scene.game.wishes.map(w => `${w.pattern} "${w.start.join(' ')}" -> ${w.wish.actor.size} ${w.wish.actor.animal} ${w.wish.verb}`).join(' / '))}`);
+  assert.deepEqual(await page.evaluate(() => neo.scene.game.sign), await page.evaluate(() => neo.scene.game.round.start));
+  const botFinish = () => page.evaluate(async () => {
+    const g = neo.scene.game;
+    for (let guard = 0; guard < 600 && !g.finished; guard++) {
+      const intent = g.autotouch();
+      if (intent?.tap) kit.tapOn(intent.tap.on);
+      else if (intent?.drag) { const to = intent.to.on.getGlobalPosition(); await kit.dragTo(intent.drag.on, { x: to.x, y: to.y + 40 * neo.view.scale }); }
+      await kit.sleep(150);
+    }
+  });
+  if (level === 8) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      await tap('neo.scene.game.send');
+      await page.waitForFunction(() => neo.scene.game.busy === false);
+    }
+    assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints, neo.scene.game.hinted, neo.scene.game.index]), [2, 1, true, 0]);
+    await screenshot('read-do-8-hint');
+    await botFinish();
+    await finished('read-do');
+    assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('read-do').history.at(-1); return [r.misses, r.hints]; }), [2, 1]);
+    log('Read & Do 8: opening act-out, two unchanged Sends (2 misses, 1 hint, the glow), completion and sticker passed');
+    return;
+  }
+  await page.setViewportSize({ width: 768, height: 1024 });
+  await page.waitForTimeout(400);
+  const before = await page.evaluate(() => [...neo.scene.game.sign]);
+  // Hold the glow's tray word over the slot word it replaces, so the target dims and wobbles without the row spreading.
+  const word = await page.evaluate(async () => {
+    const g = neo.scene.game, s = neo.view.scale, cv = document.querySelector('canvas');
+    const intent = g.autotouch();
+    const from = intent.drag.on.getGlobalPosition(), onto = intent.to.on.getGlobalPosition();
+    const to = { x: onto.x, y: onto.y + 40 * s };
+    const ev = (type, x, y) => cv.dispatchEvent(new PointerEvent(type, { clientX: x, clientY: y, pointerId: 1, pointerType: 'touch', isPrimary: true, bubbles: true, cancelable: true, buttons: 1 }));
+    ev('pointerdown', from.x, from.y);
+    for (let i = 1; i <= 12; i++) { ev('pointermove', from.x + (to.x - from.x) * i / 12, from.y + (to.y - from.y) * i / 12); await kit.sleep(16); }
+    await kit.sleep(400);
+    window.__swapTo = to;
+    return g.tiles.find(t => t.node === intent.drag.on).word;
+  });
+  assert.equal(await page.evaluate(() => neo.scene.game.held?.kind), 'swap');
+  await screenshot('read-do-9-portrait-swap');
+  await page.evaluate(async () => {
+    const to = window.__swapTo;
+    document.querySelector('canvas').dispatchEvent(new PointerEvent('pointerup', { clientX: to.x, clientY: to.y, pointerId: 1, pointerType: 'touch', bubbles: true }));
+    await kit.sleep(500);
+  });
+  const after = await page.evaluate(() => [...neo.scene.game.sign]);
+  assert.equal(after.length, before.length);
+  assert.ok(after.includes(word), `swapped in ${word}: ${after.join(' ')}`);
+  assert.equal(after.filter((w, i) => w !== before[i]).length, 1);
+  assert.equal(await page.evaluate(() => neo.scene.game.held), null);
+  await botFinish();
+  await finished('read-do');
+  assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('read-do').history.at(-1); return [r.misses, r.hints]; }), [0, 0]);
+  await page.setViewportSize({ width: 1024, height: 768 });
+  log('Read & Do 9: opening act-out, a real held swap with its preview in portrait, completion and sticker passed');
+}
 async function readDoPlay() {
   const levels = (process.env.READ_LEVELS || '1,2,3').split(',').map(Number);
   for (const level of levels) {
+    if (level >= 8) { await mendPlay(level); continue; }
     if (level >= 7) { await makePlay(); continue; }
     if (level >= 4) { await signPlay(level); continue; }
     await launch('read-do', level);
