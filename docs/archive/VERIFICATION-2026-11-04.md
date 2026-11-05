@@ -265,3 +265,9 @@
 - Ran: typecheck; `npx vitest run src/games/secret-code src/content src/games/registry` 20 files, 216 tests pass; `BROWSER_SUITE=woods WOODS_ONLY=code FROM_LEVEL=11` pass (two contradicting tries: misses 2, hint 1, both doors, sticker; portrait screenshot of three full-strength clue rows); `BROWSER_SUITE=fingerdemo FINGER_ONLY=secret-code FINGER_LEVELS=11` pass in 17.8 s.
 - Gap: the clue cap then changed from four to three, which gave identical doors (all 300 seeds already gave three); rule tests were rerun, the browser checks were not.
 - Not run: `npm run build`, full `npm test`, `couchgames` (couch unchanged), levels 1–8 regression play, an iPad or a child ([device check](../DEVICE-CHECKS.md)).
+
+## 2026-11-04 — Shape Buddies level 4 Down and catch (shape-buddies batch 2)
+
+- [PR #1244](https://github.com/rjdunlap/neo/pull/1244) (tested at the branch head, `claude/shape-buddies-down-and-catch`; Vite `http://localhost:5812`): pre-K and school level 4, level 3's wide gap with a raised near half, only a slope-then-cup spoon catches; three new voice lines; `game-reviewer` found no defects.
+- Ran: typecheck; `npx vitest run src/games/shape-buddies src/content src/games/registry` 226 pass; `BROWSER_SUITE=buddies BUDDIES_ONLY=4` pass (flat path explained with `buddies.downFlat` twice, near half glows, slope catches, one sticker, misses 0, hints 1; portrait screenshot reviewed); `BROWSER_SUITE=fingerdemo FINGER_ONLY=shape-buddies FINGER_LEVELS=4` pass in 14.3 s (pre-K).
+- Also ran `npm run build` (passed). Not run: the buddies suite at levels 1–3 (unchanged; level 3 paths reduce to the old values at drop 0), an iPad, device speech or a child ([device check](../DEVICE-CHECKS.md)).
