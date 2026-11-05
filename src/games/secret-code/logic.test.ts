@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { contradictsClues, detectiveDoor, candidates, DOORS, doorKinds, ignoredClues, makeCode, nextMove, PLANS, rowsThatFit, ruledOut, score, suggestion, visibleRows, type Guess } from './logic';
+import { contradictsClues, detectiveDoor, candidates, DOORS, doorKinds, ignoredClues, makeCode, nextMove, PLANS, planFor, rowsThatFit, ruledOut, score, suggestion, visibleRows, type Guess } from './logic';
 
 describe('Secret Code', () => {
   it('marks right places green, misplaced stones yellow (never more than are missing), and the rest gray', () => {
@@ -84,6 +84,30 @@ describe('Secret Code', () => {
         }
         expect(history.at(-1)?.marks.every((m) => m === 'green'), `${plan.name} seed ${seed}`).toBe(true);
       }
+    }
+  });
+
+  it('level 8: four slots and five colors, every code holds a repeat, and reasoning cracks each within six tries', () => {
+    const plan = planFor(8);
+    expect(plan).toMatchObject({ slots: 4, colors: 5, yellow: true, repeats: true });
+    for (let seed = 1; seed <= 300; seed++) {
+      const code = makeCode(plan, new Rng(seed));
+      expect(new Set(code).size).toBeLessThan(4);
+      const history: Guess[] = [];
+      let guess: (number | null)[] = Array(4).fill(null);
+      while (history.length < 6) {
+        const move = nextMove(plan, history, code, guess);
+        if ('stone' in move) {
+          guess[guess.indexOf(null)] = move.stone;
+          continue;
+        }
+        const stones = guess as number[];
+        expect(ignoredClues(plan, visibleRows(history, 3), stones)).toEqual([]);
+        history.push({ stones: [...stones], marks: score(code, stones, plan.yellow) });
+        if (history.at(-1)!.marks.every((m) => m === 'green')) break;
+        guess = Array(4).fill(null);
+      }
+      expect(history.at(-1)!.stones, `seed ${seed}`).toEqual(code);
     }
   });
 });

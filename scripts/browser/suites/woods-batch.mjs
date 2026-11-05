@@ -363,7 +363,7 @@ async function woodsBatch() {
     log(`Peekaround Island ${level} (${mode}): turning, hiding, picture card, placing by direction, misses, hints, saved score and sticker passed`);
   }
 
-  if (!only || only === 'code') for (let level = fromLevel; level <= 7; level++) {
+  if (!only || only === 'code') for (let level = fromLevel; level <= 8; level++) {
     await launch('secret-code', level);
     if (level === 4 || level === 7) await page.setViewportSize({ width: 768, height: 1024 });
     const codes = await page.evaluate(() => neo.scene.game.plan.codes);
