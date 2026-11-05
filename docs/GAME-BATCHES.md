@@ -1633,7 +1633,7 @@ Proof: new rule on the existing tap: typecheck, rule tests, one play of level 8 
 
 ### sudoku-garden 4: Patchwork beds
 
-- **`sudoku-garden`, level 9 Patchwork beds (dive slice 4)** (new bed drawing; grown-up): shares the `order` and the per-size geometry with the built level 7 (batch 1); patch layouts in `geometry`, the borders and tints, the patch hint wording. [Dive](deep-dives/sudoku-garden.md#build-slices-in-order)
+- **`sudoku-garden`, level 9 Patchwork beds (dive slice 4)** (built 2026-11-05; new bed drawing; grown-up): shares the `order` and the per-size geometry with the built level 7 (batch 1); patch layouts in `geometry`, the borders and tints, the patch hint wording. [Dive](deep-dives/sudoku-garden.md#build-slices-in-order)
 
 Files expected: `src/games/sudoku-garden/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`. The shared geometry changes, so the couch suite follows.
 

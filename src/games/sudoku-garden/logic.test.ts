@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
   candidateMask, candidates, conflicts, digitsOf, fillMarks, fillMarksRow, offersFillMarks, countSolutions, deadEnds, formatGrid, geometry, gradeOf, hintFor, isSolved, makePuzzle, parseGrid, parsePuzzle, PLANS,
-  placements, planFor, randomBed, remaining, shortBed, solve, techniqueSolve, WING_BEDS, type Grid, type Hint, type Puzzle, type Size,
+  placements, planFor, patchGeometry, patchTints, PATCH_LAYOUTS, randomBed, shapeOf, houseName, remaining, shortBed, solve, techniqueSolve, WING_BEDS, type Grid, type Hint, type Puzzle, type Size,
 } from './logic';
 
 /** A well-known 9 by 9 with one solution, for checks that should not depend on the generator. */
@@ -88,7 +88,7 @@ describe('sudoku rules', () => {
 
 /** Every step the technique solver takes is sound: placements match the solution, and nothing ruled out is in it. */
 function expectSound(puzzle: Puzzle, label: string) {
-  const work = techniqueSolve(puzzle.start, puzzle.size);
+  const work = techniqueSolve(puzzle.start, shapeOf(puzzle));
   expect(work.solved, label).toBe(true);
   expect(work.grid, label).toEqual(puzzle.solution);
   for (const s of work.steps) {
@@ -138,7 +138,7 @@ describe('solving the way a person does', () => {
 
   it('places lone numbers and only places that are right', () => {
     const p = makePuzzle(PLANS[2], new Rng(11));
-    const found = placements(p.start, p.size);
+    const found = placements(p.start, shapeOf(p));
     expect(found.length).toBeGreaterThan(0);
     for (const f of found) expect(f.digit).toBe(p.solution[f.cell]);
   });
@@ -155,10 +155,10 @@ describe('sudoku beds', () => {
         expect(p.blanks, label).toBe(plan.blanks);
         expect(p.start.filter((d) => !d), label).toHaveLength(plan.blanks);
         expect(p.grade, label).toBe(plan.tier);
-        expect(countSolutions(p.start, p.size), label).toBe(1);
-        expect(isSolved(p.solution, p.size), label).toBe(true);
+        expect(countSolutions(p.start, shapeOf(p)), label).toBe(1);
+        expect(isSolved(p.solution, shapeOf(p)), label).toBe(true);
         p.start.forEach((d, c) => { if (d) expect(d, label).toBe(p.solution[c]); });
-        expect(gradeOf(p.start, p.size), label).toBe(plan.tier);
+        expect(gradeOf(p.start, shapeOf(p)), label).toBe(plan.tier);
       }
     });
   });
@@ -171,7 +171,7 @@ describe('sudoku beds', () => {
       expect(s.solution, plan.name).toEqual(p.solution);
       p.start.forEach((d, c) => { if (d) expect(s.start[c], plan.name).toBe(d); });
       s.start.forEach((d, c) => { if (d) expect(d, plan.name).toBe(p.solution[c]); });
-      expect(countSolutions(s.start, s.size), plan.name).toBe(1);
+      expect(countSolutions(s.start, shapeOf(s)), plan.name).toBe(1);
     }
   });
 
@@ -182,9 +182,9 @@ describe('sudoku beds', () => {
   });
 
   it('climbs: more blanks as the levels rise within a size, and 9 by 9 after 6 by 6, with the 4 by 4 entry and the crossing-rows top appended', () => {
-    expect(PLANS.map((p) => p.size)).toEqual([6, 6, 6, 9, 9, 9, 4, 9]);
+    expect(PLANS.map((p) => p.size)).toEqual([6, 6, 6, 9, 9, 9, 4, 9, 6]);
     for (const size of [4, 6, 9] as Size[]) {
-      const blanks = PLANS.filter((p) => p.size === size).map((p) => p.blanks);
+      const blanks = PLANS.filter((p) => p.size === size && !p.patchwork).map((p) => p.blanks);
       expect([...blanks].sort((a, b) => a - b)).toEqual(blanks);
     }
     expect(planFor(0)).toBe(PLANS[0]);
@@ -210,8 +210,8 @@ describe('sudoku hints', () => {
     const grid = p.start.slice();
     for (const w of wrong) grid[w.cell] = w.digit;
     const used: Hint[] = [];
-    for (let guard = 0; guard < 200 && !isSolved(grid, p.size); guard++) {
-      const h = hintFor(grid, given(p), p.solution, p.size);
+    for (let guard = 0; guard < 200 && !isSolved(grid, shapeOf(p)); guard++) {
+      const h = hintFor(grid, given(p), p.solution, shapeOf(p));
       expect(h, 'a hint while the bed is unfinished').not.toBeNull();
       used.push(h!);
       if (h!.kind === 'fix') {
@@ -225,7 +225,7 @@ describe('sudoku hints', () => {
         grid[h!.cell] = h!.digit;
       }
     }
-    expect(isSolved(grid, p.size)).toBe(true);
+    expect(isSolved(grid, shapeOf(p))).toBe(true);
     return used;
   }
 
@@ -440,5 +440,115 @@ describe('level 8, a crossing pair of rows', () => {
     const seen = new Set(Array.from({ length: 40 }, (_, s) => makePuzzle(plan, new Rng(s + 1)).start.join('')));
     expect(seen.size).toBe(40);
     expect(makePuzzle(plan, new Rng(5))).toEqual(makePuzzle(plan, new Rng(5)));
+  });
+});
+
+describe('level 9, patchwork beds', () => {
+  const plan = planFor(9);
+
+  it('is a 6 by 6 patchwork bed of the only-place-left grade', () => {
+    expect(plan.size).toBe(6);
+    expect(plan.patchwork).toBe(true);
+    expect(plan.tier).toBe(2);
+  });
+
+  it('every layout has six connected patches of six, none a line, at most one a plain box, and admits a full bed', () => {
+    expect(PATCH_LAYOUTS.length).toBeGreaterThanOrEqual(6);
+    expect(new Set(PATCH_LAYOUTS.map((l) => l.join(''))).size).toBe(PATCH_LAYOUTS.length);
+    for (const layout of PATCH_LAYOUTS) {
+      const g = patchGeometry(layout), label = layout.join('/');
+      expect(g.houses, label).toHaveLength(18);
+      const patches = g.houses.filter((h) => h.word === 'patch');
+      expect(patches, label).toHaveLength(6);
+      let plain = 0;
+      for (const h of patches) {
+        expect(h.kind, label).toBe('box');
+        expect(h.cells, label).toHaveLength(6);
+        // Connected: a walk across shared edges from one square reaches all six.
+        const seen = new Set([h.cells[0]]), todo = [h.cells[0]];
+        while (todo.length) {
+          const c = todo.pop()!;
+          for (const d of h.cells) if (!seen.has(d) && Math.abs(g.rowOf[c] - g.rowOf[d]) + Math.abs(g.colOf[c] - g.colOf[d]) === 1) { seen.add(d); todo.push(d); }
+        }
+        expect(seen.size, label).toBe(6);
+        const rows = new Set(h.cells.map((c) => g.rowOf[c])).size, cols = new Set(h.cells.map((c) => g.colOf[c])).size;
+        expect(rows > 1 && cols > 1, `${label}: a patch is a straight line`).toBe(true);
+        if (rows * cols === 6) plain++;
+      }
+      expect(plain, label).toBeLessThanOrEqual(1);
+      const full = randomBed(g, new Rng(7));
+      expect(isSolved(full, g), label).toBe(true);
+      // The soil tints: no two patches sharing an edge alike.
+      const tint = patchTints(g);
+      for (let i = 0; i < 36; i++)
+        for (const j of [i + 6, g.colOf[i] < 5 ? i + 1 : -1])
+          if (j >= 0 && j < 36 && g.boxOf[i] !== g.boxOf[j]) expect(tint[g.boxOf[i]], label).not.toBe(tint[g.boxOf[j]]);
+    }
+  });
+
+  it('peers come from the patch, not a 2 by 3 box, and the hints call it a patch', () => {
+    const g = patchGeometry(PATCH_LAYOUTS[0]);
+    // Square 3 shares the first patch with 6 and 7 below; square 10 is in another patch, though a 2 by 3 box would hold both.
+    expect(g.peers[3]).toContain(7);
+    expect(g.peers[3]).not.toContain(10);
+    expect(geometry(6).peers[3]).toContain(10);
+    const patch = g.housesOf[3][2];
+    expect(houseName(patch)).toBe('patch');
+    expect(houseName(geometry(6).housesOf[3][2])).toBe('box');
+    // A number in a square's patch rules it out there, even across a 2 by 3 box line.
+    const grid = Array<number>(36).fill(0);
+    grid[6] = 4;
+    expect(candidates(grid, g, 3)).not.toContain(4);
+    expect(candidates(grid, 6, 3)).toContain(4);
+  });
+
+  it('over 300 seeds, every bed has one solution, its blanks, grade at most 2, and a layout from the list', () => {
+    const keys = new Set(PATCH_LAYOUTS.map((l) => l.join(''))), used = new Set<string>();
+    let two = 0;
+    for (let s = 1; s <= 300; s++) {
+      const p = makePuzzle(plan, new Rng(s * 131 + 9)), label = `seed ${s}`;
+      expect(p.patchwork, label).toBeDefined();
+      expect(keys.has(p.patchwork!.patches!), label).toBe(true);
+      used.add(p.patchwork!.patches!);
+      expect(p.blanks, label).toBe(plan.blanks);
+      expect(countSolutions(p.start, shapeOf(p)), label).toBe(1);
+      expect(isSolved(p.solution, shapeOf(p)), label).toBe(true);
+      // The bed obeys its patches; read as a bed of regular boxes it would clash somewhere on most layouts.
+      p.start.forEach((d, c) => { if (d) expect(d, label).toBe(p.solution[c]); });
+      const grade = gradeOf(p.start, shapeOf(p));
+      expect(grade, label).toBeGreaterThanOrEqual(1);
+      expect(grade, label).toBeLessThanOrEqual(2);
+      if (grade === 2) two++;
+    }
+    expect(used.size).toBe(PATCH_LAYOUTS.length);
+    expect(two).toBe(300);
+  });
+
+  it('following the hints finishes a bed, and an only-place hint can name a patch', () => {
+    let patchHint = false;
+    for (let s = 1; s <= 30; s++) {
+      const p = makePuzzle(plan, new Rng(s)), grid = p.start.slice();
+      for (let guard = 0; guard < 60 && !isSolved(grid, shapeOf(p)); guard++) {
+        const h = hintFor(grid, p.start, p.solution, shapeOf(p))!;
+        if (h.kind !== 'lone' && h.kind !== 'place') throw new Error(`seed ${s}: a ${h.kind} hint on a grade-2 bed`);
+        expect(h.digit, `seed ${s}`).toBe(p.solution[h.cell]);
+        if (h.kind === 'place' && houseName(h.house) === 'patch') patchHint = true;
+        grid[h.cell] = h.digit;
+      }
+      expect(isSolved(grid, shapeOf(p)), `seed ${s}`).toBe(true);
+    }
+    expect(patchHint).toBe(true);
+  });
+
+  it('the bot finds a right next number on a patchwork bed', () => {
+    const p = makePuzzle(plan, new Rng(3)), found = placements(p.start, shapeOf(p));
+    expect(found.length).toBeGreaterThan(0);
+    for (const f of found) expect(f.digit).toBe(p.solution[f.cell]);
+  });
+
+  it('keeps the patches in the short demonstration bed', () => {
+    const p = makePuzzle(plan, new Rng(4)), s = shortBed(p, 10);
+    expect(s.patchwork).toBe(p.patchwork);
+    expect(countSolutions(s.start, shapeOf(s))).toBe(1);
   });
 });

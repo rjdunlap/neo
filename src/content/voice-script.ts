@@ -2671,6 +2671,8 @@ export const SCRIPT = {
   'lantern.done': ['A pond full of light.'],
   'sudoku.go': ['Every row, column and box needs each number once. Press the bottom button on a square to choose one.'],
   'sudoku.go-touch': ['Every row, column and box needs each number once. Tap a square, then tap a number.'],
+  'sudoku.go-patch': ['Every row, column and patch needs each number once. The patches are the outlined shapes. Press the bottom button on a square to choose one.'],
+  'sudoku.go-patch-touch': ['Every row, column and patch needs each number once. The patches are the outlined shapes. Tap a square, then tap a number.'],
   'sudoku.clash': ['That number is already in the same {house}.'],
   'sudoku.wrong': ['The {n} does not belong in that square. Take it out and try another number.', 'That square needs a different number than the {n}.'],
   'sudoku.stuck': ['Some square has no number left that fits, so one of the numbers you placed has to come out.'],
