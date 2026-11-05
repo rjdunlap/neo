@@ -2947,7 +2947,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-05.md#2026-11-05--secret-code-
 
 [PR #1258](https://github.com/rjdunlap/neo/pull/1258), `claude/secret-code-swap-seats`: [dive slice 8](../deep-dives/secret-code.md#build-slices-in-order). School only: a seat question (Two of us / Just me), she makes a code and marks the other seat's tries under a lid, then swaps and breaks the other seat's code with levels 3–6 rules; Just me puts the pet in seat 2. Two-seat rounds finish through `swapResult` (never smooth, at least one hint). School `order` [2, 3, 4, 9, 12, 5, 6, 7, 8, 11]; new logic exports `swapResult` and `quickCode`. Deviations from the definition: in Two of us the code panel and lid sit at the upper right (center `v.w-224`, `doorY-210`, full size kept) because the tray and the lidded code show together; `code.sure` and `code.markall` were reworded to fit a pet or a grown-up, plus seven new lines; no spoken cue between seat-2 tries. Side fix: level 9's tray stays hidden while she marks (a resize used to re-show it); Just me's second half instructs `code.repeat`.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--secret-code-level-12-swap-seats-secret-code-batch-7).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-05.md#2026-11-05--secret-code-level-12-swap-seats-secret-code-batch-7).
 
 ## Sudoku Garden, Fill marks on big beds (batch sudoku-garden 2, 2026-11-05)
 
