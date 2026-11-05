@@ -56,6 +56,33 @@ async function buddiesPlay() {
     assert.deepEqual(errors, []);
     log('Shape Buddies level 4: a flat path explained with downFlat twice, the near half glows, a slope catches, one sticker, misses 0 and hints 1, portrait passed');
   };
+  // Level 6, which way round (school): the stream runs right to left; an unturned slope goes up the wrong way twice (the second failure glows Turn), Turn reaches the cup.
+  const turned = async () => {
+    await launch('shape-buddies', 6); await wait();
+    const before = await page.evaluate(() => { const g = neo.scene.game, say = g.ctx.say; g.spoken = []; g.ctx.say = (id, ...args) => { g.spoken.push(id); return say(id, ...args); }; return kit.store.data.stickers.length; });
+    assert.deepEqual(await page.evaluate(() => { const g = neo.scene.game; return [g.pot.x < g.docks.receiver.x && g.docks.receiver.x < g.docks.bridge.x, g.turnButton.parent === g.ctx.stage]; }), [true, true], 'the stream is mirrored and Turn is on screen');
+    await tap('neo.scene.game.tools[2]'); await drag(0, 'bridge');
+    await tap('neo.scene.game.friends[1]'); await tap('neo.scene.game.tools[1]'); await drag(1, 'receiver');
+    assert.deepEqual(await page.evaluate(() => neo.scene.game.round.state.friends.map(f => f.place)), ['bridge', 'receiver'], 'both docks take a friend');
+    for (let n = 0; n < 2; n++) { await tap('neo.scene.game.tryButton'); await wait(); }
+    assert.deepEqual(await page.evaluate(() => [neo.scene.game.round.phase, neo.scene.game.spoken.filter(id => id === 'buddies.turnSlope').length, neo.scene.game.misses, neo.scene.game.hints, neo.scene.game.round.shown.has('bridge')]), ['edit', 2, 0, 1, true], 'an unturned slope is explained twice and the bridge glows');
+    await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300);
+    await screenshot('shape-buddies-6-portrait');
+    await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
+    await tap('neo.scene.game.friends[0]'); await tap('neo.scene.game.turnButton');
+    assert.deepEqual(await page.evaluate(() => [neo.scene.game.round.state.friends[0].facing, neo.scene.game.spoken.includes('buddies.turn'), neo.scene.game.hints]), [-1, true, 1], 'Turn is free and faces the slope down to the low bank');
+    await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300);
+    await screenshot('shape-buddies-6-turned-portrait');
+    await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
+    await tap('neo.scene.game.tryButton'); await wait();
+    assert.equal(await page.evaluate(() => neo.scene.game.round.phase), 'caught', 'a turned slope down to the cup catches');
+    await tap('neo.scene.game.pot'); await finished('shape-buddies');
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1);
+    assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('shape-buddies').history.at(-1); return [r.level, r.misses, r.hints]; }), [6, 0, 1]);
+    assert.deepEqual(errors, []);
+    log('Shape Buddies level 6: the mirrored stream, an unturned slope explained with turnSlope twice, the bridge glows, Turn then a catch, one sticker, misses 0 and hints 1, portrait passed');
+  };
+  if (process.env.BUDDIES_ONLY === '6') return turned();
   if (process.env.BUDDIES_ONLY === '4') return down();
   if (process.env.BUDDIES_ONLY === '3') return joined();
   await launch('shape-buddies', 1); await wait();

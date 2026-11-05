@@ -5,21 +5,26 @@ export const SHAPES = ['plain', 'flatten', 'scoop', 'slope'] as const;
 export type Shape = typeof SHAPES[number];
 export type Dock = 'bridge' | 'receiver';
 export type Place = Dock | 'park';
-export interface Friend { shape: Shape; place: Place }
+/** `facing` is which way a friend's paper points: 1 as drawn (a slope runs down to the right), -1 turned round. Only level 6 offers Turn. */
+export interface Friend { shape: Shape; place: Place; facing?: 1 | -1 }
 export interface Construction { friends: [Friend, Friend]; selected: number }
 export type Failure = Dock;
-export const initial = (): Construction => ({ friends: [{ shape: 'plain', place: 'park' }, { shape: 'plain', place: 'park' }], selected: 0 });
+export const initial = (): Construction => ({ friends: [{ shape: 'plain', place: 'park', facing: 1 }, { shape: 'plain', place: 'park', facing: 1 }], selected: 0 });
 export const copy = (s: Construction): Construction => ({ friends: s.friends.map(f => ({ ...f })) as [Friend, Friend], selected: s.selected });
 /** Which bridge shapes reach the far bank, how far below the chute's bank it sits, whether the two docks join over a wide gap,
- * and whether a rocky ledge inside the gap holds up a cup at the bridge dock. */
-export const PLANS: Record<number, { bridges: readonly Shape[]; drop: number; joined?: boolean; ledge?: boolean }> = {
+ * whether a rocky ledge inside the gap holds up a cup at the bridge dock, and which way the stream runs (`flow` -1: chute on the right, pot on the left). */
+export const PLANS: Record<number, { bridges: readonly Shape[]; drop: number; joined?: boolean; ledge?: boolean; flow?: 1 | -1 }> = {
   1: { bridges: ['flatten', 'slope'], drop: 0 },
   2: { bridges: ['slope'], drop: 50 },
   3: { bridges: ['flatten'], drop: 0, joined: true },
   4: { bridges: ['slope'], drop: 50, joined: true },
   5: { bridges: ['flatten', 'slope'], drop: 0, ledge: true },
+  6: { bridges: ['slope'], drop: 50, flow: -1 },
 };
 export const planFor = (level: number) => PLANS[level] ?? PLANS[1];
+const flowOf = (level: number) => planFor(level).flow ?? 1;
+/** A friend at the bridge dock carries the seed when its shape suits the plan and, if it is a slope, it runs down the way the stream goes. */
+const bridges = (f: Friend | undefined, level: number) => !!f && planFor(level).bridges.includes(f.shape) && (f.shape !== 'slope' || (f.facing ?? 1) === flowOf(level));
 /** What grows: a round's seed is a bean, a sunflower seed or an acorn. Only the art changes; the rules never read it. */
 export const SEEDS = ['bean', 'sunflower', 'acorn'] as const;
 export type SeedKind = typeof SEEDS[number];
@@ -32,22 +37,23 @@ export function looks(rng: Rng): { colors: ColorName[]; seed: SeedKind } {
 export function catcher(s: Construction, level = 1): Dock | null {
   const bridge = s.friends.find(f => f.place === 'bridge');
   if (planFor(level).ledge && bridge?.shape === 'scoop') return 'bridge';
-  if (!bridge || !planFor(level).bridges.includes(bridge.shape)) return null;
+  if (!bridges(bridge, level)) return null;
   return s.friends.find(f => f.place === 'receiver')?.shape === 'scoop' ? 'receiver' : null;
 }
 export function trace(s: Construction, level = 1): Failure | 'caught' {
   if (catcher(s, level)) return 'caught';
   const bridge = s.friends.find(f => f.place === 'bridge');
-  return !bridge || !planFor(level).bridges.includes(bridge.shape) ? 'bridge' : 'receiver';
+  return bridges(bridge, level) ? 'receiver' : 'bridge';
 }
-export function guidance(s: Construction, level = 1): { friend: number; shape: Shape; dock: Dock } | null {
+/** The next useful friend, shape and dock; over a stream that runs the other way, a bridge also names the way it must face. */
+export function guidance(s: Construction, level = 1): { friend: number; shape: Shape; dock: Dock; facing?: 1 | -1 } | null {
   const failure = trace(s, level);
   if (failure === 'caught') return null;
   const occupant = s.friends.findIndex(f => f.place === failure);
   const friend = occupant >= 0 ? occupant : s.friends.findIndex(f => f.place === 'park');
   // On the ledge an empty or plain gap is finished by a cup there; a bridge already at the gap leads to a cup at the catch instead.
   const shape = failure === 'receiver' || planFor(level).ledge ? 'scoop' : planFor(level).bridges[0];
-  return { friend, shape, dock: failure };
+  return planFor(level).flow && failure === 'bridge' ? { friend, shape, dock: failure, facing: flowOf(level) } : { friend, shape, dock: failure };
 }
 /** The spoken explanation of a failing construction, or null once the seed is caught. Levels 3 and 4 name how the joined spoon failed; over level 4's step the handle must slope down. */
 export function failureLine(s: Construction, level = 1): LineId | null {
@@ -62,6 +68,7 @@ export function failureLine(s: Construction, level = 1): LineId | null {
   if (failure === 'receiver') return 'buddies.cup';
   if (plan.ledge) return 'buddies.ledgeNeed';
   if (!plan.drop) return 'buddies.bridge';
+  if (plan.flow && bridge?.shape === 'slope') return 'buddies.turnSlope';
   return bridge?.shape === 'flatten' ? 'buddies.stepFlat' : 'buddies.stepBridge';
 }
 /** Exploration never counts as a miss. Hint support belongs to the unresolved role, not the number of taps. */
@@ -87,6 +94,15 @@ export class SeedRound {
     if (place) this.state.friends[i].place = place;
     return true;
   }
+  /** Turns the selected friend round (level 6 only). Free, and undoable like any edit. */
+  turn(): boolean {
+    if (!this.editable || !planFor(this.level).flow) return false;
+    this.previous = copy(this.state);
+    this.phase = 'edit';
+    const f = this.state.friends[this.state.selected];
+    f.facing = (f.facing ?? 1) === 1 ? -1 : 1;
+    return true;
+  }
   undo(): boolean {
     if (!this.editable || !this.previous) return false;
     this.state = copy(this.previous); this.previous = null; this.phase = 'edit'; return true;
@@ -110,14 +126,16 @@ export class SeedRound {
   carry(): boolean { if (this.phase !== 'caught') return false; this.phase = 'carrying'; return true; }
   finish(): boolean { if (this.phase !== 'carrying') return false; this.phase = 'done'; return true; }
 }
-/** Level 2 raises only the chute's bank, so the bridge dock moves up with it. Level 3 widens the stream: the docks become a near and a far half, side by side. Level 4 does both: the near half sits up on the raised bank. */
+/** Level 2 raises only the chute's bank, so the bridge dock moves up with it. Level 3 widens the stream: the docks become a near and a far half, side by side. Level 4 does both: the near half sits up on the raised bank.
+ * Level 6 is level 2 mirrored about left + 545, so the pot clears the pet's corner, and gains a fourth button, Turn. */
 export function layout(w: number, h: number, level = 1) {
-  const left = (w - 1024) / 2, plan = planFor(level);
+  const left = (w - 1024) / 2, plan = planFor(level), flow = plan.flow ?? 1;
+  const at = (x: number) => left + (flow === 1 ? x : 1090 - x);
   return {
-    bridge: { x: left + (plan.joined ? 380 : 400), y: 300 - plan.drop }, receiver: { x: left + (plan.joined ? 580 : 630), y: 300 }, pot: { x: left + 870, y: 300 },
+    bridge: { x: at(plan.joined ? 380 : 400), y: 300 - plan.drop }, receiver: { x: at(plan.joined ? 580 : 630), y: 300 }, pot: { x: at(870), y: 300 },
     receiverWidth: plan.joined ? 180 : 110,
     parks: [{ x: left + 250, y: 485 }, { x: left + 420, y: 485 }],
     tools: [{ x: left + 590, y: 485 }, { x: left + 740, y: 485 }, { x: left + 890, y: 485 }],
-    buttons: [{ x: left + 340, y: h - 118 }, { x: left + 520, y: h - 118 }, { x: left + 700, y: h - 118 }],
+    buttons: [{ x: left + 340, y: h - 118 }, { x: left + 520, y: h - 118 }, { x: left + 700, y: h - 118 }, ...plan.flow ? [{ x: left + 880, y: h - 118 }] : []],
   };
 }
