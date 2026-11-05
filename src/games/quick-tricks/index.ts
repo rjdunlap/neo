@@ -24,6 +24,7 @@ import {
   ISLAND,
   judgeLeaf,
   leafDrop,
+  leafLands,
   leafMiss,
   leavesFor,
   makeSocks,
@@ -40,7 +41,8 @@ import {
   sameSock,
   stillWet,
   STRETCH_TO,
-  TRICKS,
+  stretchReaches,
+  tricksFor,
   twoPlankLengths,
   type Cast,
   type Crosser,
@@ -54,8 +56,9 @@ import {
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
-  toddler: { min: 1, max: 1 },
-  preschool: { min: 1, max: 4 },
+  // A tiny show (8) comes first for the youngest: two tricks, nothing counted.
+  toddler: { min: 1, max: 8, order: [8, 1] },
+  preschool: { min: 1, max: 8, order: [8, 1, 2, 3, 4] },
   prek: { min: 2, max: 7 },
   school: { min: 5, max: 7 },
 };
@@ -190,7 +193,9 @@ class QuickTricks implements Game {
   readonly plan: TricksPlan;
   /** The round's friends in the rain, the bridge's crosser and the monster's colour, who all bow at the end. */
   readonly cast: Cast;
-  /** Which trick is showing (an index into TRICKS); 3 is the finale. */
+  /** The show's tricks in order (all three, or two at a tiny show). */
+  readonly tricks: Trick[];
+  /** Which trick is showing (an index into `tricks`); past the last is the finale. */
   index = -1;
   misses = 0;
   hints = 0;
@@ -239,11 +244,14 @@ class QuickTricks implements Game {
   private view: View;
   private clock = 0;
   private waitClock = 0;
+  /** A tiny show: quiet time on a trick with nothing moving, before the pet says the instruction again. */
+  private quietClock = 0;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
     this.cast = castFor(this.plan, ctx.rng);
+    this.tricks = tricksFor(this.plan);
     this.next = new RoundButton(arrowIcon(1), swatch.green, 56, () => void this.advance());
     this.next.visible = false;
     // Drawings over the scene must not catch touches meant for what is under them (a hint glow sits on the answer).
@@ -253,7 +261,7 @@ class QuickTricks implements Game {
   }
 
   get trick(): Trick | 'finale' {
-    return TRICKS[this.index] ?? 'finale';
+    return this.tricks[this.index] ?? 'finale';
   }
 
   /** The middle of the stage, where friends stand. */
@@ -266,7 +274,7 @@ class QuickTricks implements Game {
   }
 
   start() {
-    void this.ctx.say('tricks.start').then(() => this.advance());
+    void this.ctx.say(this.plan.tiny ? 'tricks.start-two' : 'tricks.start').then(() => this.advance());
   }
 
   resize(v: View) {
@@ -446,7 +454,7 @@ class QuickTricks implements Game {
     if (this.busy || this.waiting) return false;
     if (this.plan.two) return this.dropLeafTwo(item, x, y);
     const { top, sky } = this.rainSpan;
-    const result = judgeLeaf(item.leaf, x - this.cx, y, friendsFor(this.plan), top, sky);
+    const result = leafLands(this.plan, judgeLeaf(item.leaf, x - this.cx, y, friendsFor(this.plan), top, sky));
     if (result === 'away') return false;
     if (result === 'below') {
       // In front of the friends, not over them. At the first level that is a free try: the rain shows it.
@@ -460,11 +468,12 @@ class QuickTricks implements Game {
       void this.ctx.say('tricks.still-wet');
       return false;
     }
-    // Up it goes, over everyone: the rain rolls off onto the flower, which opens an umbrella of its own.
-    const at = { x, y: top - 40 };
+    // Up it goes, over everyone: the rain rolls off onto the flower, which opens an umbrella of its own. A tiny show's leaf
+    // (perhaps dropped in front) floats up right over the friend.
+    const at = { x: this.plan.tiny ? this.cx + friendsFor(this.plan)[0] : x, y: top - 40 };
     void this.ctx.tw.to(item.node, at, { duration: 0.2, ease: ease.outQuad });
     item.drag.enabled = false;
-    this.leafAt = [{ x, y: at.y, width: item.leaf.width }];
+    this.leafAt = [{ x: at.x, y: at.y, width: item.leaf.width }];
     this.allDry();
     return true;
   }
@@ -717,7 +726,7 @@ class QuickTricks implements Game {
     if (this.busy || this.waiting) return false;
     const [l] = this.banks;
     const length = x - l;
-    if (reaches(length)) {
+    if (stretchReaches(this.plan, length)) {
       this.bridgeLength = GAP + 40;
       this.handle!.node.position.set(l + this.bridgeLength, this.bankY);
       this.handle!.drag.enabled = false;
@@ -817,7 +826,21 @@ class QuickTricks implements Game {
         void this.ctx.say('tricks.next');
       }
     }
+    if (this.plan.tiny) this.sayAgainWhenQuiet(dt);
     this.drawGlow();
+  }
+
+  /** A tiny show has no misses and so no hint: after ten quiet seconds on a trick the pet says what to do again instead. */
+  private sayAgainWhenQuiet(dt: number) {
+    const t = this.trick;
+    if (this.busy || this.waiting || this.finished || this.springing || this.items.some((i) => i.drag.dragging) || (t !== 'umbrella' && t !== 'bridge')) {
+      this.quietClock = 0;
+      return;
+    }
+    this.quietClock += dt;
+    if (this.quietClock < 10) return;
+    this.quietClock = 0;
+    void this.ctx.say(t === 'umbrella' ? `tricks.umbrella-${this.cast.friends[0]}` : `tricks.bridge-${this.cast.crosser}`);
   }
 
   private drawGlow() {
@@ -882,11 +905,12 @@ class QuickTricks implements Game {
       f.setMood('happy');
       return f;
     });
-    const m = monsterArt(this.cast.monster);
-    m.scale.set(0.7);
+    // Only those who were in this show bow (a tiny show has no sock monster).
+    const monster = this.tricks.includes('socks') ? [monsterArt(this.cast.monster)] : [];
+    for (const m of monster) m.scale.set(0.7);
     const crosser = CROSSER_ART[this.cast.crosser]();
     crosser.scale.set(1.4);
-    cast.push(...friends, m, crosser);
+    cast.push(...friends, ...monster, crosser);
     cast.forEach((c, i) => {
       c.position.set(v.w * (0.5 + (i - (cast.length - 1) / 2) * (0.66 / cast.length)), this.groundY + 20);
       this.layer.addChild(c);
@@ -983,6 +1007,7 @@ export const quickTricks: GameModule = {
   skills: ['spatial-words', 'matching', 'length', 'problem-solving'],
   bands: ['toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: [8],
   describeLevel: (level) => (level >= 4 && level <= 6 ? encoreFor(level).name : planFor(level).name),
   music: STYLES.stickers,
   touchDemo: true,

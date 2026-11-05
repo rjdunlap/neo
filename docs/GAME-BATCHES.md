@@ -1345,7 +1345,7 @@ Proof: new-rule tier: typecheck, rule tests, one play of level 7 with one leaf o
 
 ### quick-tricks 3: A tiny show, the toddler entry
 
-- **`quick-tricks`, Level 8, *A tiny show*, the toddler entry (dive slice 3)**, after batch quick-tricks 1 (new level with `order`): an easy toddler opening. [Dive](deep-dives/quick-tricks.md#build-slices-in-order)
+- **`quick-tricks`, Level 8, *A tiny show*, the toddler entry (dive slice 3)** (**built 2026-11-04**, [PR #1232](https://github.com/rjdunlap/neo/pull/1232)), after batch quick-tricks 1 (new level with `order`): an easy toddler opening. [Dive](deep-dives/quick-tricks.md#build-slices-in-order)
 
 Files expected: `src/games/quick-tricks/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
 

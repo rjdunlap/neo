@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { bumpLine, CROSSERS, castFor, friendsFor, GAPS, idleLeaves, judgeLeaf, leafDrop, leafMiss, leafPlan, leavesFor, makeSocks, makeTwoSocks, MONSTER_COLORS, nextLeaf, nextPlank, partnerOf, RAIN_FRIENDS, SOCK_COLORS, partnerSock, planFor, plankLengths, plankPlan, plankToPlace, PLANS, reaches, reachesGap, sameSock, shelters, stillWet, STRETCH_TO, twoPlankLengths, type LeafUp, type OnGaps } from './logic';
+import { levelsInOrder, stepLevel } from '../../progress/difficulty';
+import { quickTricks } from './index';
+import { bumpLine, CROSSERS, castFor, friendsFor, GAP, GAPS, idleLeaves, judgeLeaf, leafDrop, leafMiss, leafPlan, leavesFor, makeSocks, makeTwoSocks, MONSTER_COLORS, nextLeaf, nextPlank, partnerOf, RAIN_FRIENDS, SOCK_COLORS, partnerSock, planFor, plankLengths, plankPlan, plankToPlace, PLANS, reaches, reachesGap, leafLands, sameSock, shelters, stillWet, stretchReaches, STRETCH_TO, tricksFor, TRICKS, twoPlankLengths, type LeafUp, type OnGaps } from './logic';
 
-/** The first show's single-step levels, 1 to 3; Two at once (level 7) is tested on its own. */
-const ONE = PLANS.filter((p) => !p.two);
+/** The first show's single-step levels, 1 to 3; Two at once (level 7) and A tiny show (level 8) are tested on their own. */
+const ONE = PLANS.filter((p) => !p.two && !p.tiny);
 const TWO = planFor(7);
+const TINY = planFor(8);
 
 describe('Quick Tricks', () => {
   it('a leaf held too low is a free try at level 1 and a miss from level 2; a partly covering leaf always counts', () => {
@@ -241,6 +244,59 @@ describe('Quick Tricks', () => {
         const cast = castFor(TWO, new Rng(seed));
         expect(new Set(cast.friends).size).toBe(3);
       }
+    });
+  });
+
+  describe('A tiny show (level 8)', () => {
+    const [top, sky] = [768 - 110 - 125, 200];
+
+    it('is level 8 only: two tricks, the leaf and the bridge, one friend in the rain', () => {
+      expect(PLANS.filter((p) => p.tiny)).toEqual([TINY]);
+      expect(tricksFor(TINY)).toEqual(['umbrella', 'bridge']);
+      expect(TINY.friends).toBe(1);
+      expect(TINY.bridge).toBe('stretch');
+      for (const plan of PLANS.filter((p) => !p.tiny)) expect(tricksFor(plan)).toEqual(TRICKS);
+    });
+
+    it('nothing she does with the leaf counts: above or in front of the friend keeps them dry, anywhere else floats home', () => {
+      const leaf = leavesFor(TINY)[0];
+      const friends = friendsFor(TINY);
+      let dry = 0;
+      for (let x = -400; x <= 400; x += 10)
+        for (let y = 0; y <= 900; y += 10) {
+          const drop = leafLands(TINY, judgeLeaf(leaf, x, y, friends, top, sky));
+          expect(leafMiss(TINY, drop)).toBe(false);
+          expect(['dry', 'away']).toContain(drop);
+          if (drop === 'dry') dry++;
+        }
+      expect(dry).toBeGreaterThan(0);
+      // In front of the friend (below their heads, in their column) is dry here, where level 1 says "up high".
+      expect(leafLands(TINY, judgeLeaf(leaf, 0, top + 100, friends, top, sky))).toBe('dry');
+      expect(leafLands(planFor(1), judgeLeaf(leaf, 0, top + 100, friends, top, sky))).toBe('below');
+    });
+
+    it('a stretch past halfway snaps across, a shorter one springs back free, and the full stretch of the other levels still needs the far bank', () => {
+      expect(TINY.countShort).toBe(false);
+      expect(stretchReaches(TINY, GAP / 2 + 1)).toBe(true);
+      expect(stretchReaches(TINY, GAP / 2 - 1)).toBe(false);
+      expect(stretchReaches(planFor(1), GAP / 2 + 1)).toBe(false);
+      expect(stretchReaches(TINY, STRETCH_TO)).toBe(true);
+    });
+
+    it("the demonstration's moves finish both tricks", () => {
+      const drop = leafDrop(TINY, top);
+      expect(leafLands(TINY, judgeLeaf(leavesFor(TINY)[drop.leaf], drop.x, drop.y, friendsFor(TINY), top, sky))).toBe('dry');
+      expect(stretchReaches(TINY, STRETCH_TO)).toBe(true);
+    });
+
+    it('comes first for toddler and preschool (8 then 1), is an entry level, and is out of the older ladders', () => {
+      expect(quickTricks.entryLevels).toEqual([8]);
+      expect(levelsInOrder(quickTricks.levels('toddler'))).toEqual([8, 1]);
+      expect(levelsInOrder(quickTricks.levels('preschool'))).toEqual([8, 1, 2, 3, 4]);
+      expect(stepLevel(8, 1, quickTricks.levels('toddler'))).toBe(1);
+      expect(levelsInOrder(quickTricks.levels('prek'))).not.toContain(8);
+      expect(levelsInOrder(quickTricks.levels('school'))).not.toContain(8);
+      expect(quickTricks.describeLevel(8)).toMatch(/tiny show/i);
     });
   });
 });
