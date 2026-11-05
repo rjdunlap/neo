@@ -1353,7 +1353,7 @@ Proof: new-level tier with `order`: typecheck, unit tests including the registry
 
 ### quick-tricks 4: The third show
 
-- **`quick-tricks`, Level 9, *The third show* (dive slice 5)**, after batch quick-tricks 1 (independent of batches 2 and 3): music box crank, fill the cups, loop the fireflies. [Dive](deep-dives/quick-tricks.md#build-slices-in-order), [definition](definitions/quick-tricks-third-show.md)
+- **`quick-tricks`, Level 9, *The third show* (dive slice 5)** (**built 2026-11-04**, [PR #1235](https://github.com/rjdunlap/neo/pull/1235)), after batch quick-tricks 1 (independent of batches 2 and 3): music box crank, fill the cups, loop the fireflies. [Dive](deep-dives/quick-tricks.md#build-slices-in-order), [definition](definitions/quick-tricks-third-show.md)
 
 Files expected: `src/games/quick-tricks/third-logic.ts`, `third-logic.test.ts`, `third-show.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
 
