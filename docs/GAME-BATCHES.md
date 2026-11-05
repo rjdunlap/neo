@@ -1371,7 +1371,9 @@ Proof: existing-interaction tier: typecheck, the game's rule tests, one filtered
 
 ### read-do 2: Capital and stop
 
-- **`read-do`, Levels 4–6, *Capital and stop* (dive slice 2; SS1 A–C)**, after batch read-do 1 (adds *pig* and *dog*; new interaction): capital, full stop, Send and Show it, *jumps/sleeps* and pre-K's `order`. [Dive](deep-dives/read-do.md#build-slices-in-order), [definition](definitions/read-do-capital-stop.md#build-order-for-the-dive) **Claimed 2026-11-04 by branch `claude/read-do-capital-stop`.**
+Built 2026-11-04, [PR #1234](https://github.com/rjdunlap/neo/pull/1234); [build note](archive/COMPLETED-2026-10-09.md#read--do-capital-and-stop-levels-46-read-do-batch-2-2026-11-04). No longer eligible for dispatch.
+
+- **`read-do`, Levels 4–6, *Capital and stop* (dive slice 2; SS1 A–C)**, after batch read-do 1 (adds *pig* and *dog*; new interaction): capital, full stop, Send and Show it, *jumps/sleeps* and pre-K's `order`. [Dive](deep-dives/read-do.md#build-slices-in-order), [definition](definitions/read-do-capital-stop.md#build-order-for-the-dive)
 
 Files expected: `src/games/read-do/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, a `scripts/browser-check.mjs` case, the README row and `docs/GAMES.md`.
 

@@ -136,3 +136,9 @@
 - Ran (Vite dev `http://localhost:5797/classic/`): typecheck; `npm test` 303 files pass (a first run had four failing files under load from a parallel session, the rerun passed all 303 and the couch, light-lab and content subset passed alone); `BROWSER_SUITE=couchsunbeams` PASS (shelf par 15, course page, a counted turn and turn-back, two missed shines with the glow and run helped, reload resume with tries kept, a perfect bot run of 15 with one sticker and both badges); `BROWSER_SUITE=couchgames COUCH_ONLY=light-lab` PASS.
 - Not run: the other couch course suites (only their list assertion changed), `npm run build` (no shared assets), offline, a TV or real controller.
 - Open: no "Start this board again" or "Watch the best routes" in Sunbeam Run (possible follow-ups).
+
+## 2026-11-04 — Peekaround Island level 5 Who will be in front? (peekaround-island batch 2)
+
+- Built [PR #1219](https://github.com/rjdunlap/neo/pull/1219) at c6fc384f: a free picture-card guess of who will be in front before level 5's half turn (no miss, hint or glow), `frontAfterHalfTurn`, a bot branch, and the picture card spaced by count (fixes level 3's four-picture overlap on narrow screens).
+- Ran (`GAME_URL` http://localhost:5193, `VITE_SPEECH=off`): typecheck; `npx vitest run src/games/peekaround-island src/content` 180 passed; `BROWSER_SUITE=fingerdemo FINGER_ONLY=peekaround-island FINGER_LEVELS=5` pass (18.2 s, pre-K); `BROWSER_SUITE=woods WOODS_ONLY=peek FROM_LEVEL=3` levels 3, 4, 5 pass (level 5 in portrait: one wrong guess leaves counts unchanged, then a right one, tiles do not overlap, both cards screenshotted); `game-reviewer` no blockers.
+- Not run: build (no shared files or assets), other suites, device speech of `around.predict` and `around.cameround` (no clips, device speech fallback). Open: the pet's repeatable instruction stays "who will be in front?" after the guess until the next pair.
