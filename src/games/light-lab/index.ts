@@ -65,7 +65,7 @@ function halfMirrorArt(): Container {
   const c = new Container();
   c.addChild(new Graphics().circle(0, 0, 40).fill({ color: 0xffffff, alpha: 0.5 }).stroke({ width: 3, color: swatch.white.line, alpha: 0.6 }));
   const glass = new Graphics().roundRect(-10, -42, 20, 84, 7).fill({ color: swatch.blue.light, alpha: 0.35 }).stroke({ width: 4, color: swatch.blue.line, alpha: 0.8 });
-  glass.moveTo(0, -36).lineTo(0, 36).stroke({ width: 3, color: 0xc8d2dc });
+  glass.moveTo(0, -36).lineTo(0, 36).stroke({ width: 5, color: 0x9aa8b6 });
   glass.circle(-4, -24, 3).circle(4, 22, 2.5).fill(0xffffff);
   glass.rotation = Math.PI / 4;
   c.addChild(glass);
