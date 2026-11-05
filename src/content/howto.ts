@@ -2010,6 +2010,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 4, to: 6, text: 'At the picnic the last bowl finishes that trick by itself; only the berries are checked with the yellow arrow.' },
       { from: 7, to: 7, text: 'Two of each: two leaves for three friends, two lost socks, two gaps to bridge. A leaf over only some friends stays up, and a leaf or plank already placed can be dragged off again for free.' },
       { from: 7, to: 7, text: 'If both leaves are up and someone is still wet, the pet says a leaf can move and the glow shows which; that counts as the hint.' },
+      { from: 9, to: 9, text: 'The third show: turn the handle round and round, pour from the jug and let go at the line (too much is tipped out, never a mistake), then draw a loop around the fireflies asked for.' },
     ],
     finish: 'The round ends after the last trick, when everyone in the show takes a bow.',
     note: 'There is at most one hint per trick.',

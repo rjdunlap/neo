@@ -37,9 +37,10 @@ async function encoreTricks() {
     assert.deepEqual(await page.evaluate(()=>{const r=kit.store.stats('quick-tricks').history.at(-1);return [r.level,r.misses,r.hints];}),[level,4,2]);
     await page.setViewportSize({width:1024,height:768});log(`Quick Tricks ${level}: parcel turns, picnic places with no yellow arrow, berry totals, undo, hints, the bow and one saved sticker passed`);
   }
-  const from=Number(process.env.FROM_LEVEL||1),to=Number(process.env.TO_LEVEL||8);
+  const from=Number(process.env.FROM_LEVEL||1),to=Number(process.env.TO_LEVEL||9);
   if(from<=7&&to>=7)await twoAtOnce();
-  if(to>=8)await tinyShow();
+  if(from<=8&&to>=8)await tinyShow();
+  if(to>=9)await thirdShow();
 }
 
 // Level 7, Two at once (portrait): leaves kept partly up, both up with someone wet (the move line and the glow, one hint), the fix;
@@ -136,6 +137,61 @@ async function tinyShow() {
   assert.deepEqual(await page.evaluate(()=>{const r=kit.store.stats('quick-tricks').history.at(-1);return [r.level,r.misses,r.hints];}),[8,0,0]);
   await page.setViewportSize({width:1024,height:768});
   log('Quick Tricks 8: a leaf dropped in front of the friend kept them dry, a short stretch sprang back free, one past halfway snapped across, no misses, the bow and one saved sticker passed');
+}
+
+// Level 9, The third show (pre-K, portrait): the crank let go mid-turn keeps its progress, then pops the friend at three turns;
+// an overfilled cup is no miss and is tipped out; two loops around the wrong number are two misses and bring the glow; the bow.
+async function thirdShow() {
+  await page.setViewportSize({width:768,height:1024});await page.waitForTimeout(350);
+  await launch('quick-tricks',9,'Mia','prek');
+  await page.evaluate(async()=>{
+    const g=neo.scene.game;
+    const {halfTurns,cupTarget}=await import('/src/games/quick-tricks/third-logic.ts');
+    const {demoLoop}=await import('/src/games/lasso-loops/logic.ts');
+    if(g.constructor.name!=='ThirdShow'||g.amounts.halves!==6)throw new Error('Level 9 at pre-K is not the third show asking three turns');
+    const turn=async(turns,from)=>{const pts=[];for(let i=0;i<=Math.round(turns*36);i++){const a=from+i*Math.PI*2/36;pts.push(g.handle.toGlobal({x:130*Math.cos(a),y:130*Math.sin(a)}));}
+      await kit.drag(pts.map(p=>[p.x,p.y]),1,24);await kit.sleep(300);};
+    await turn(1.3,g.armAngle);
+    if(g.popped||halfTurns(g.crank)<2)throw new Error(`Crank let go mid-turn: ${halfTurns(g.crank)} half turns, popped ${g.popped}`);
+    window.__qt9=halfTurns(g.crank);
+  });
+  await screenshot('quick-tricks-third-crank');
+  await page.evaluate(async()=>{
+    const g=neo.scene.game;
+    const {halfTurns,cupTarget}=await import('/src/games/quick-tricks/third-logic.ts');
+    const {demoLoop}=await import('/src/games/lasso-loops/logic.ts');
+    const turn=async(turns,from)=>{const pts=[];for(let i=0;i<=Math.round(turns*36);i++){const a=from+i*Math.PI*2/36;pts.push(g.handle.toGlobal({x:130*Math.cos(a),y:130*Math.sin(a)}));}
+      await kit.drag(pts.map(p=>[p.x,p.y]),1,24);await kit.sleep(300);};
+    // The let-go progress is still there: the rest of the three turns pops the friend.
+    await turn(1.9,g.armAngle);
+    if(!await kit.until(()=>g.popped&&g.next.visible,10000))throw new Error(`No pop after three turns (${halfTurns(g.crank)} half turns)`);
+    kit.tapOn(g.next);await kit.sleep(700);
+    // The cups: one overfill (no miss), tipped out, then each cup poured to its line.
+    const pourBy=async(dx)=>{const a=g.jug.getGlobalPosition(),b=g.jug.parent.toGlobal({x:g.jug.x+dx,y:g.jug.y});await kit.drag(kit.line([a.x,a.y],[b.x,b.y],16),1,24);await kit.sleep(400);};
+    await pourBy((cupTarget(g.cups)+0.2)*240);
+    if(g.score.misses!==0||g.cups.overfills!==1||g.cups.round!==0)throw new Error(`Overfill scored ${g.score.misses}, overfills ${g.cups.overfills}`);
+    kit.tapOn(g.cup,0,-100);await kit.sleep(400);
+    if(g.cups.cup!==0||Math.abs(g.cups.jug+g.cups.tray-3)>1e-6)throw new Error('Tipping out lost water');
+    for(let k=0;k<8&&!g.waiting;k++){
+      if(g.cups.jug<cupTarget(g.cups)-g.cups.cup&&g.cups.tray>0){kit.tapOn(g.tray);await kit.sleep(400);continue;}
+      await pourBy((cupTarget(g.cups)-g.cups.cup)*240);
+    }
+    if(!g.waiting||g.score.misses!==0||g.score.hints!==0)throw new Error(`Cups: waiting ${g.waiting}, ${g.score.misses}/${g.score.hints}`);
+    kit.tapOn(g.next);await kit.sleep(700);
+    // The fireflies: two loops around four (we need three) are two misses; the second brings the glow.
+    const loopAround=async(n)=>{const free=g.flies.filter(f=>!f.caught);const m=demoLoop(free.map(f=>({x:f.x,y:f.y})),n,34);if(!m)throw new Error(`No loop around ${n}`);
+      const c=[...m.loop,m.loop[0]].map(p=>g.layer.toGlobal(p));const pts=[];for(let i=1;i<c.length;i++)pts.push(...kit.line([c[i-1].x,c[i-1].y],[c[i].x,c[i].y],12));
+      await kit.drag(pts,1,16);await kit.until(()=>!g.busy,8000);await kit.sleep(300);};
+    await loopAround(4);await loopAround(4);
+    if(g.score.misses!==2||g.score.hints!==1||g.hinted.length!==3)throw new Error(`Loops: ${g.score.misses}/${g.score.hints}, glow ${g.hinted.length}`);
+    await loopAround(3);
+    if(!await kit.until(()=>g.waiting,8000))throw new Error('Three fireflies did not go into the jar');
+  });
+  await page.waitForFunction(()=>neo.scene.game.next.visible,null,{timeout:10000});await tap('neo.scene.game.next');
+  await finished('quick-tricks');
+  assert.deepEqual(await page.evaluate(()=>{const r=kit.store.stats('quick-tricks').history.at(-1);return [r.level,r.misses,r.hints];}),[9,2,1]);
+  await page.setViewportSize({width:1024,height:768});
+  log('Quick Tricks 9: the crank let go mid-turn kept its progress and popped the friend at three turns, an overfilled cup was no miss and tipped out, two wrong loops and the glow, the bow and one saved sticker passed');
 }
 
 return { encoreTricks };

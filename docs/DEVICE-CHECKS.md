@@ -57,6 +57,12 @@
 - [ ] **The hidden yellow arrow.** At Picnic Places, does a four-year-old notice that only the green arrow shows, or look for the yellow one?
 - [ ] **Show two's critters on an iPad.** Do the seeded picnic friends, the mailbox flag and the cast bow read at picnic size?
 
+## Quick Tricks level 9 (batch quick-tricks 4, built 2026-11-04)
+
+- [ ] **The crank on an iPad.** Does a toddler or preschooler keep a finger on the crank through a whole turn, and does a release mid-turn that keeps progress feel fine?
+- [ ] **The pour near the line.** Can a small hand stop the pour near the line, and is the half-speed help after two overfills enough?
+- [ ] **Closing a loop.** Does a toddler close a loop around the fireflies, or only wave over them (a short trail is free)?
+
 ## Picture Graph (batch picture-graph 1, built 2026-11-03)
 
 - [ ] **The lift on "which two are the same?"** Does a pre-K or school child read the lifted, outlined bar as "picked", and put it back by tapping it again?

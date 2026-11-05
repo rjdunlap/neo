@@ -291,8 +291,8 @@ describe('Quick Tricks', () => {
 
     it('comes first for toddler and preschool (8 then 1), is an entry level, and is out of the older ladders', () => {
       expect(quickTricks.entryLevels).toEqual([8]);
-      expect(levelsInOrder(quickTricks.levels('toddler'))).toEqual([8, 1]);
-      expect(levelsInOrder(quickTricks.levels('preschool'))).toEqual([8, 1, 2, 3, 4]);
+      expect(levelsInOrder(quickTricks.levels('toddler'))).toEqual([8, 1, 9]);
+      expect(levelsInOrder(quickTricks.levels('preschool'))).toEqual([8, 1, 2, 3, 4, 9]);
       expect(stepLevel(8, 1, quickTricks.levels('toddler'))).toBe(1);
       expect(levelsInOrder(quickTricks.levels('prek'))).not.toContain(8);
       expect(levelsInOrder(quickTricks.levels('school'))).not.toContain(8);
