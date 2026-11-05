@@ -6,7 +6,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **`vine-snip`, slice 2: levels 4–5** (new-rules tier: typecheck, rule tests, one play of level 5 with one wrong-side keep and Grow back, one portrait screenshot at level 4, `fingerdemo` at 5): [definition](definitions/vine-snip.md#check-tier).
+- **`vine-snip`, slice 2: levels 4–5** (new-rules tier: typecheck, rule tests, one play of level 5 with one wrong-side keep and Grow back, one portrait screenshot at level 4, `fingerdemo` at 5): [definition](definitions/vine-snip.md#check-tier). Claimed 2026-11-05 by branch `claude/vine-snip-4-5` (files: `src/games/vine-snip/`, `src/content/howto.ts`, `src/content/voice-script.ts`, `scripts/browser/suites/vine-snip-play.mjs`).
 - **`block-topple`, slice 2: levels 4–5** (slice 1 built; new-rules tier: typecheck, rule tests, one play of level 4 with a thump then a high hit and level 5 with one wrong count, one portrait screenshot at level 4, `fingerdemo` at 5): [definition](definitions/block-topple.md#check-tier).
 - **`brain-break`, levels 4–6 Sums in order** (new levels on an existing interaction: typecheck, rule tests, one play of level 6 with one wrong stone and the outline then to its sticker, one portrait screenshot of level 6, `fingerdemo` at 6): [definition](definitions/brain-break.md#sums-in-order-levels-46-definition-2026-11-03). Grownup only; stones show sums, from level 6 take-aways; same search, accounting and bot.
 - **`far-lights`, levels 1–4, a new game** (admitted 2026-11-05; see Queued) (lap 1 up; one control, distance, and how bright a light looks; Tinker Lab, else Music Mountain): [definition](definitions/far-lights.md#check-tier).
