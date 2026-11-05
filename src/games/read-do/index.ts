@@ -514,7 +514,8 @@ class MakeDo implements Game {
   private toldFull = false;
   private clock = 0;
   private hover: number | null = null;
-  private picked = { x: 0, y: 0 };
+  /** Where the finger went down and where it is now, in stage units: a short travel is a tap that says the word. */
+  private finger = { x: 0, y: 0, travel: 0 };
   private critters: Critter[] = [];
   private L: SignLayout;
   private readonly glow = new Graphics();
@@ -652,12 +653,18 @@ class MakeDo implements Game {
       const tile: MakeTile = { word, node, slot, drag: undefined as unknown as DragHandle };
       tile.drag = draggable(node, this.ctx.tw, {
         onPick: () => {
-          this.picked = { x: node.x, y: node.y };
           this.ctx.stage.addChildAt(node, this.ctx.stage.getChildIndex(this.gapMark));
           sfx.pop(4);
         },
         onMove: (x, y) => this.hovering(tile, x, y),
         onDrop: (x, y) => this.dropTile(tile, x, y),
+      });
+      tile.drag.enabled = false;
+      node.on('pointerdown', e => { const p = this.ctx.stage.toLocal(e.global); this.finger = { x: p.x, y: p.y, travel: 0 }; });
+      node.on('globalpointermove', e => {
+        if (!tile.drag.dragging) return;
+        const p = this.ctx.stage.toLocal(e.global);
+        this.finger.travel = Math.max(this.finger.travel, Math.hypot(p.x - this.finger.x, p.y - this.finger.y));
       });
       this.tiles.push(tile);
       this.ctx.stage.addChildAt(node, this.ctx.stage.getChildIndex(this.gapMark));
@@ -696,7 +703,7 @@ class MakeDo implements Game {
   }
   private dropTile(tile: MakeTile, x: number, y: number) {
     this.hover = null;
-    const tapped = Math.hypot(x - this.picked.x, y - this.picked.y) < 50;
+    const tapped = this.finger.travel < 30;
     const others = this.sign.filter(w => w !== tile.word);
     if (this.busy) { /* never changes a sign mid-read */ }
     else if (tapped) { sfx.pop(2); void this.ctx.say(WORD_LINES[tile.word]); }
