@@ -7,7 +7,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 ## Next ten
 
 - **`block-topple`, level 5 *Count the basket*** (school 2–5; fruit on level 4's lines, a running total in the fruit tray, three number pads; existing interaction plus pads: typecheck, unit tests, one `TOPPLE_LEVELS=5` play with two wrong counts on one line then to the sticker, one portrait screenshot of the tray and pads, `fingerdemo` at 5): [redefinition](definitions/block-topple.md#level-5-redefined-2026-11-05-count-the-basket), [check tier](definitions/block-topple.md#check-tier).
-- **`seed-travelers`, levels 1–3, a new game** (admitted 2026-11-05; see Queued) (toddler 1–2, preschool 1–3, pre-K 2–3; a seed sent by a puff of air or carried in a critter's fur; Rainbow Meadow, else Barnyard): [definition](definitions/seed-travelers.md#check-tier).
+- **`seed-travelers`, levels 1–3, a new game** (admitted 2026-11-05; claimed 2026-11-05 by branch `claude/seed-travelers-1-3`) (toddler 1–2, preschool 1–3, pre-K 2–3; a seed sent by a puff of air or carried in a critter's fur; Rainbow Meadow, else Barnyard): [definition](definitions/seed-travelers.md#check-tier).
 - **Dive `draw-the-pattern`** (Draw the Pattern; lap to pre-K, 8 levels; docs only): [procedure](deep-dives/README.md#one-session-one-game), [definition](definitions/draw-the-pattern.md).
 - **Define Puddle Lens 5–6** (`cells-microbes`; docs only, with a session source check of the biology model): [definition so far](definitions/puddle-lens.md), [study](deep-dives/subjects/cells-microbes.md).
 - **Define Sense Detective 3–5, B3 ambiguity** (`body-health`; docs only): [definition so far](definitions/sense-detective.md), [study](deep-dives/subjects/body-health.md).
