@@ -1,27 +1,30 @@
-import { Circle, Container, Graphics, type FederatedPointerEvent } from 'pixi.js';
+import { Circle, Container, Graphics, Rectangle, Text, type FederatedPointerEvent } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
-import { swatch, wood } from '../../art/palette';
+import { ink, swatch, wood } from '../../art/palette';
+import { prop } from '../../art/props';
 import { Backdrop } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import type { LineId } from '../../content/voice-script';
-import { palmOnGlass } from '../../engine/input';
+import { onTap, palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { FONT } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
-  allStanding, arc, BALL_R, BOARD_H, BOARD_W, boardLayout, fallFootprint, flight, GRAB_R, GRASS, isMiss, nearestWorking, NET_X, planFor,
-  positionAt, tipLine, pullFrom, pulledBall, roundLines, SLING, solve, type Block, type Flight, type Line, type Plan, type Pt, type Pull, type Stack, type Standing,
+  allStanding, arc, BALL_R, basketAfter, BOARD_H, BOARD_W, boardLayout, countPads, fallFootprint, flight, GRAB_R, GRASS, isMiss, nearestWorking, NET_X,
+  padLayout, planFor, positionAt, tipLine, pullFrom, pulledBall, roundLines, SLING, solve, trayLayout, type Block, type Flight, type Line, type Plan, type Pt,
+  type Pull, type Stack, type Standing,
 } from './logic';
 
-/** Levels 1–4 are built; level 5 (counting what fell) waits on a redefinition (docs/definitions/block-topple.md). */
+/** Level 5 (counting the fruit tray) is school only (docs/definitions/block-topple.md). */
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 1, max: 4 },
-  school: { min: 2, max: 4 },
+  school: { min: 2, max: 5 },
 };
 
 const INSTRUCT: Record<Plan['kind'], LineId> = {
@@ -29,7 +32,9 @@ const INSTRUCT: Record<Plan['kind'], LineId> = {
   far: 'block-topple.instruct-far',
   hill: 'block-topple.instruct-hill',
   high: 'block-topple.instruct-high',
+  count: 'block-topple.instruct-count',
 };
+const FRUIT_SCALE = 0.42;
 const FRIEND_SCALE = 0.3;
 /** Seconds for the tipped part to turn onto its cushion. */
 const FALL_TIME = 0.6;
@@ -52,6 +57,29 @@ function blockArt(b: Block): Graphics {
   return g;
 }
 
+function fruitArt(): Container {
+  const f = prop('apple', 'red');
+  f.scale.set(FRUIT_SCALE);
+  f.eventMode = 'none';
+  return f;
+}
+
+/** A number pad: a big wooden tile with its number, and a glow behind it for the second wrong count. */
+class CountPad extends Container {
+  readonly glow = new Graphics();
+  constructor(readonly value: number) {
+    super();
+    const half = 55;
+    this.glow.roundRect(-half - 12, -half - 12, 2 * half + 24, 2 * half + 24, 28).fill({ color: 0xfff3a0, alpha: 0.95 });
+    this.glow.visible = false;
+    const tile = new Graphics().roundRect(-half, -half, 2 * half, 2 * half, 22).fill(wood.light).stroke({ width: 5, color: wood.line });
+    const n = new Text({ text: String(value), style: { fontFamily: FONT, fontSize: 64, fontWeight: '700', fill: ink } });
+    n.anchor.set(0.5);
+    this.addChild(this.glow, tile, n);
+    this.hitArea = new Rectangle(-half, -half, 2 * half, 2 * half);
+  }
+}
+
 function bellArt(): Graphics {
   return new Graphics()
     .moveTo(-14, 0).quadraticCurveTo(-14, -26, 0, -28).quadraticCurveTo(14, -26, 14, 0).closePath()
@@ -62,6 +90,8 @@ function bellArt(): Graphics {
 interface StackNode {
   stack: Stack;
   blocks: Container[];
+  /** Level 5: each fruit and the block it sits on. */
+  fruit: { block: number; art: Container }[];
   friend: Critter;
   bell: Graphics;
   wiggle: number[];
@@ -82,6 +112,17 @@ class BlockTopple implements Game {
   private readonly bandFront = new Graphics();
   private readonly ball = ballArt();
   private readonly grabber = new Container();
+  /** Level 5: the woven tray, the fruit in it (kept across lines) and the number pads. */
+  private readonly trayG = new Graphics();
+  private readonly trayFruit = new Container();
+  private readonly padLayer = new Container();
+  /** Level 5's count question: the tray's running total, the pads shown (empty while there is no question), and its help. */
+  total = 0;
+  pads: CountPad[] = [];
+  private countMissed = false;
+  private countHinted = false;
+  private counting = false;
+  private answered: (() => void) | null = null;
   private readonly plan: Plan;
   private readonly lines: Line[];
   private lineIndex = 0;
@@ -109,7 +150,7 @@ class BlockTopple implements Game {
     if (ctx.demo) this.lines = this.lines.slice(0, 1);
     this.back = ctx.track(new Backdrop({ sky: [0xbfe6f7, 0xfff6e0], hills: [0xc5e7a8, 0xa8dc8f, 0x8fcf73], horizon: 0.72, clouds: 3, sun: true, seed: 157 }, ctx.view));
     this.back.eventMode = 'none';
-    for (const g of [this.scenery, this.cushions, this.highG, this.trail, this.hintG, this.ghost, this.bandBack, this.bandFront, this.ball]) g.eventMode = 'none';
+    for (const g of [this.scenery, this.cushions, this.highG, this.trail, this.hintG, this.ghost, this.bandBack, this.bandFront, this.ball, this.trayG, this.trayFruit]) g.eventMode = 'none';
     this.ghost.visible = false;
     this.grabber.eventMode = 'static';
     this.grabber.cursor = 'grab';
@@ -122,7 +163,8 @@ class BlockTopple implements Game {
     this.grabber.on('pointercancel', this.cancel);
     window.addEventListener('pointerup', this.release);
     window.addEventListener('pointercancel', this.cancel);
-    this.board.addChild(this.scenery, this.cushions, this.stacksLayer, this.highG, this.trail, this.hintG, this.ghost, this.bandBack, this.ball, this.bandFront, this.grabber);
+    this.board.addChild(this.scenery, this.trayG, this.trayFruit, this.cushions, this.stacksLayer, this.highG, this.trail, this.hintG, this.ghost, this.bandBack, this.ball, this.bandFront, this.grabber, this.padLayer);
+    if (this.plan.kind === 'count') this.drawTray();
     ctx.stage.addChild(this.back, this.board);
     this.resize(ctx.view);
   }
@@ -167,6 +209,7 @@ class BlockTopple implements Game {
     window.removeEventListener('pointercancel', this.cancel);
     this.grab = null;
     this.flying = null;
+    this.answered = null;
     this.finished = true;
   }
 
@@ -178,6 +221,11 @@ class BlockTopple implements Game {
 
   /** The ghost finger: put a finger on the ball, pull back along the reverse of the solver's shot, and let go. */
   autotouch(): TouchIntent | null {
+    // Level 5: tap the pad with the running total (never a wrong count).
+    if (this.pads.length && !this.counting && !this.finished) {
+      const pad = this.pads.find((p) => p.value === this.total);
+      return pad ? { tap: { on: pad, x: 0, y: 0 } } : null;
+    }
     if (this.busy || this.finished || this.grab) return null;
     const pull = this.solution();
     if (!pull) return null;
@@ -231,6 +279,13 @@ class BlockTopple implements Game {
       return c;
     });
     const top = stack.blocks[stack.blocks.length - 1];
+    const fruit = (stack.fruit ?? []).map((k) => {
+      const b = stack.blocks[k];
+      const art = fruitArt();
+      art.position.set((b.x0 + b.x1) / 2, (b.y0 + b.y1) / 2 + 4);
+      blocks[k].addChild(art);
+      return { block: k, art };
+    });
     const friend = new Critter(CRITTERS[stack.friend]);
     friend.scale.set(FRIEND_SCALE);
     friend.position.set((top.x0 + top.x1) / 2 - 8, top.y0);
@@ -241,7 +296,7 @@ class BlockTopple implements Game {
     bell.pivot.set(0, -28);
     bell.y -= 28;
     this.stacksLayer.addChild(...blocks, friend, bell);
-    return { stack, blocks, friend, bell, wiggle: blocks.map(() => 0) };
+    return { stack, blocks, fruit, friend, bell, wiggle: blocks.map(() => 0) };
   }
 
   private drawScenery() {
@@ -408,15 +463,131 @@ class BlockTopple implements Game {
     n.friend.cheer();
     void this.ctx.say('block-topple.tipped');
     await this.ctx.tw.wait(1.4);
+    if (this.finished) return;
     if (this.standing.some((_, k) => this.standing[k] === this.line.stacks[k].blocks.length)) {
       this.busy = false;
       return;
     }
+    // Level 5: the fruit hop into the tray, and she counts the tray before the next stack appears.
+    if (this.plan.kind === 'count') await this.askCount();
+    if (this.finished) return;
     if (this.lineIndex + 1 < this.lines.length) return this.showLine(this.lineIndex + 1);
     await this.finish();
   }
 
+  // ---- Level 5: the fruit tray and the count ----
+
+  private drawTray() {
+    const t = trayLayout();
+    const g = this.trayG.clear();
+    g.roundRect(t.x0, t.y0, t.x1 - t.x0, t.y1 - t.y0, 22).fill(wood.light).stroke({ width: 5, color: wood.line });
+    // Weave.
+    for (let x = t.x0 + 20; x < t.x1 - 10; x += 24) g.moveTo(x, t.y0 + 8).lineTo(x, t.y1 - 8);
+    g.stroke({ width: 3, color: wood.line, alpha: 0.35 });
+  }
+
+  /** How many fruit the tray held before this line's. */
+  private get before() {
+    return this.lineIndex ? basketAfter(this.lines, this.lineIndex - 1) : 0;
+  }
+
+  /** The tipped stack's fruit hop into the next slots, one by one, then the question and the pads. Resolves on the right total. */
+  private async askCount() {
+    const t = trayLayout();
+    let k = this.before;
+    for (const n of this.nodes)
+      for (const f of n.fruit) {
+        const p = this.trayFruit.toLocal(f.art.getGlobalPosition());
+        this.trayFruit.addChild(f.art);
+        f.art.position.copyFrom(p);
+        f.art.rotation = 0;
+        const slot = t.slot(k++, this.lineIndex);
+        sfx.pop();
+        void this.ctx.tw.to(f.art, { x: slot.x, y: slot.y }, { duration: 0.45, ease: ease.inOutSine });
+        await this.ctx.tw.to(f.art.scale, { x: FRUIT_SCALE * 1.2, y: FRUIT_SCALE * 1.2 }, { duration: 0.2, ease: ease.outQuad });
+        await this.ctx.tw.to(f.art.scale, { x: FRUIT_SCALE, y: FRUIT_SCALE }, { duration: 0.25, ease: ease.inQuad });
+        if (this.finished) return;
+      }
+    this.total = basketAfter(this.lines, this.lineIndex);
+    this.countMissed = false;
+    this.countHinted = false;
+    const done = new Promise<void>((resolve) => (this.answered = resolve));
+    this.showPads();
+    void this.ctx.say(this.lineIndex ? 'block-topple.how-many-now' : 'block-topple.how-many');
+    await done;
+  }
+
+  private showPads() {
+    const values = countPads(this.total, this.ctx.rng);
+    this.pads = padLayout().map((box, i) => {
+      const pad = new CountPad(values[i]);
+      pad.position.set((box.x0 + box.x1) / 2, (box.y0 + box.y1) / 2);
+      onTap(pad, () => void this.tapPad(pad));
+      pad.scale.set(0);
+      void this.ctx.tw.to(pad.scale, { x: 1, y: 1 }, { duration: 0.3, delay: i * 0.06, ease: ease.outBack });
+      this.padLayer.addChild(pad);
+      return pad;
+    });
+  }
+
+  private async tapPad(pad: CountPad) {
+    if (this.counting || this.finished || !this.pads.length) return;
+    pad.scale.set(0.9);
+    void this.ctx.tw.to(pad.scale, { x: 1, y: 1 }, { duration: 0.2, ease: ease.outBack });
+    if (pad.value === this.total) {
+      sfx.sparkle();
+      const pads = this.pads;
+      this.pads = [];
+      for (const f of this.trayFruit.children) this.pulse(f);
+      await this.ctx.say('block-topple.counted', { n: this.total });
+      for (const p of pads) p.destroy({ children: true });
+      const done = this.answered;
+      this.answered = null;
+      done?.();
+      return;
+    }
+    sfx.boing();
+    if (this.countMissed && !this.countHinted) {
+      // A second wrong count on this line: the right pad glows, one hint.
+      this.countHinted = true;
+      this.hints++;
+      const right = this.pads.find((p) => p.value === this.total);
+      if (right) right.glow.visible = true;
+      void this.ctx.say('block-topple.hint-count');
+      return;
+    }
+    if (this.countMissed) return;
+    this.countMissed = true;
+    this.misses++;
+    await this.countAloud();
+  }
+
+  /** Support after a wrong count (never a hint): the earlier group as one quick number, then each new fruit in turn. */
+  private async countAloud() {
+    this.counting = true;
+    const fruit = this.trayFruit.children;
+    const before = this.before;
+    if (before) {
+      for (const f of fruit.slice(0, before)) this.pulse(f);
+      void this.ctx.say('block-topple.count-before', { n: before });
+    } else void this.ctx.say('block-topple.count-again');
+    await this.ctx.tw.wait(1.4);
+    for (let k = before; k < this.total && !this.finished; k++) {
+      this.pulse(fruit[k]);
+      sfx.marimba(k % 5);
+      void this.ctx.say('count', { n: k + 1 });
+      await this.ctx.tw.wait(0.8);
+    }
+    this.counting = false;
+  }
+
+  private pulse(f: Container) {
+    void this.ctx.tw.to(f.scale, { x: FRUIT_SCALE * 1.3, y: FRUIT_SCALE * 1.3 }, { duration: 0.18, ease: ease.outQuad }).then(() =>
+      this.ctx.tw.to(f.scale, { x: FRUIT_SCALE, y: FRUIT_SCALE }, { duration: 0.25, ease: ease.inQuad }));
+  }
+
   private async finish() {
+    if (this.finished) return;
     this.finished = true;
     for (const [k, n] of this.nodes.entries()) {
       sfx.bell(5 + k * 2);

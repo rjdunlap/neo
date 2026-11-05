@@ -6,6 +6,7 @@ import {
   ANGLES, BALL_R, BOARD_W, FALL_MAX, GRAB_R, GRASS, LENGTHS, MAX_ANGLE, MAX_PULL, MIN_ANGLE, MIN_PULL, NET_X, PLANS, SLING,
   authoredLine, boardLayout, contactOf, entryTime, fallFootprint, flatPullsBlocked, flight, fits, isMiss, largestWindow, launch, makeLine,
   meetsPlan, MIN_THUMP_SHARE, nearestWorking, TALL_X, thumpShare, tipLine, WIDE_BASE, planFor, positionAt, pulledBall, pullFrom, roundLines, share, solve, targetBox, tips, windows, works,
+  BASKET_TOTAL, PAD, TRAY, TRAY_SLOTS, basketAfter, countPads, fruitOn, padLayout, trayLayout,
   type Block, type Line, type Pull, type Stack,
 } from './logic';
 
@@ -31,11 +32,11 @@ describe('determinism', () => {
     for (const plan of PLANS) for (const seed of SEEDS.slice(0, 30)) {
       expect(makeLine(plan, new Rng(seed))).toEqual(makeLine(plan, new Rng(seed)));
     }
-    for (const level of [1, 2, 3, 4]) expect(roundLines(level, new Rng(7))).toEqual(roundLines(level, new Rng(7)));
+    for (const level of [1, 2, 3, 4, 5]) expect(roundLines(level, new Rng(7))).toEqual(roundLines(level, new Rng(7)));
   });
 
-  it('plans map levels 1 to 4 in order', () => {
-    expect([1, 2, 3, 4].map((l) => planFor(l).kind)).toEqual(['close', 'far', 'hill', 'high']);
+  it('plans map levels 1 to 5 in order', () => {
+    expect([1, 2, 3, 4, 5].map((l) => planFor(l).kind)).toEqual(['close', 'far', 'hill', 'high', 'count']);
   });
 
   it('flights are finite over the pull grid for authored and seeded lines', () => {
@@ -308,6 +309,111 @@ describe('level 4: hit it high', () => {
   });
 });
 
+describe('level 5: count the basket', () => {
+  const plan = planFor(5);
+  const rounds = CHEAP_SEEDS.map((seed) => roundLines(5, new Rng(seed)));
+  const noFruit = (line: Line): Line => ({ ...line, stacks: line.stacks.map(({ fruit: _f, ...s }) => s) });
+
+  it('fruit never change a contact or an outcome', () => {
+    const pulls = gridPulls(4, 6);
+    for (const lines of rounds) for (const line of lines) {
+      const bare = noFruit(line);
+      for (const pull of pulls) {
+        const a = flight(line, pull);
+        const b = flight(bare, pull);
+        expect(a.contact).toEqual(b.contact);
+        expect(a.outcome).toEqual(b.outcome);
+      }
+    }
+  });
+
+  it('every line meets level 4 filter and reuses its stacks', () => {
+    for (const lines of rounds) {
+      expect(lines).toHaveLength(plan.lines);
+      for (const line of lines) expect(meetsPlan(plan, line)).toBe(true);
+      expect(lines.map((l) => l.stacks[0].blocks.length)).toEqual([2, 3, 2]);
+    }
+  });
+
+  it('fruit: 1 to 3 per line, one per block at most, none above the top, wide 1-2, tall 1-3, authored 2', () => {
+    for (const lines of rounds) {
+      expect(fruitOn(lines[0])).toHaveLength(2);
+      for (const line of lines) {
+        const n = fruitOn(line).length;
+        expect(n).toBeGreaterThanOrEqual(1);
+        expect(n).toBeLessThanOrEqual(3);
+        for (const s of line.stacks) {
+          const f = s.fruit ?? [];
+          expect(new Set(f).size).toBe(f.length);
+          for (const k of f) {
+            expect(Number.isInteger(k)).toBe(true);
+            expect(k).toBeGreaterThanOrEqual(0);
+            expect(k).toBeLessThan(s.blocks.length);
+          }
+          expect(f.length).toBeLessThanOrEqual(s.blocks.length);
+          if (s.blocks.length === 2) expect(f.length).toBeLessThanOrEqual(2);
+        }
+      }
+    }
+  });
+
+  it('running totals strictly rise and end in the basket range, within the tray', () => {
+    for (const lines of rounds) {
+      let prev = 0;
+      lines.forEach((_, i) => {
+        const t = basketAfter(lines, i);
+        expect(t).toBeGreaterThan(prev);
+        prev = t;
+      });
+      expect(prev).toBeGreaterThanOrEqual(BASKET_TOTAL.min);
+      expect(prev).toBeLessThanOrEqual(BASKET_TOTAL.max);
+      expect(prev).toBeLessThanOrEqual(TRAY_SLOTS);
+    }
+  });
+
+  it('pads: three distinct values, at least 1, containing the total, within one of it, seeded', () => {
+    for (const total of [1, 2, 3, 4, 5, 6, 7, 8]) for (const seed of SEEDS) {
+      const pads = countPads(total, new Rng(seed));
+      expect(new Set(pads).size).toBe(3);
+      expect(pads).toContain(total);
+      for (const n of pads) expect(n).toBeGreaterThanOrEqual(1);
+      if (total === 1) expect([...pads].sort()).toEqual([1, 2, 3]);
+      else for (const n of pads) expect(Math.abs(n - total)).toBeLessThanOrEqual(1);
+      expect(countPads(total, new Rng(seed))).toEqual(pads);
+    }
+  });
+
+  it('the tray holds 8 slots and the pads are at least 110 square', () => {
+    expect(TRAY_SLOTS).toBe(8);
+    expect(PAD).toBeGreaterThanOrEqual(110);
+    for (const p of padLayout()) {
+      expect(p.x1 - p.x0).toBeGreaterThanOrEqual(110);
+      expect(p.y1 - p.y0).toBeGreaterThanOrEqual(110);
+    }
+  });
+
+  it('the tray and pads are clear of the grab circle, the pulled ball, stacks and falls', () => {
+    const hit = (a: { x0: number; y0: number; x1: number; y1: number }, b: { x0: number; y0: number; x1: number; y1: number }) =>
+      a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
+    const grab = { x0: SLING.x - GRAB_R, y0: SLING.y - GRAB_R, x1: SLING.x + GRAB_R, y1: SLING.y + GRAB_R };
+    const balls = gridPulls(1, 1).map((pull) => {
+      const p = pulledBall(pull);
+      return { x0: p.x - BALL_R, y0: p.y - BALL_R, x1: p.x + BALL_R, y1: p.y + BALL_R };
+    });
+    expect(hit(TRAY, grab)).toBe(false);
+    for (const b of balls) expect(hit(TRAY, b)).toBe(false);
+    for (const p of padLayout()) {
+      expect(hit(p, grab)).toBe(false);
+      for (const b of balls) expect(hit(p, b)).toBe(false);
+    }
+    for (const lines of rounds.slice(0, 50)) for (const line of lines) for (const s of line.stacks) {
+      for (const b of s.blocks) expect(hit(TRAY, b)).toBe(false);
+      expect(hit(TRAY, targetBox(s, s.blocks.length))).toBe(false);
+      expect(hit(TRAY, fallFootprint(s, 0))).toBe(false);
+    }
+  });
+});
+
 describe('falls', () => {
   it('a toppled stack rests in front of the net and clear of other stacks', () => {
     for (const { line } of everyLine) line.stacks.forEach((s, i) => {
@@ -391,6 +497,17 @@ describe('layout', () => {
         check('fall', sq(f.x0, f.y0, f.x1, f.y1));
       }
       if (line.hill) check('hill', sq(line.hill.x0, line.hill.top, line.hill.x1, GRASS));
+    }
+    const tray = trayLayout();
+    check('tray', sq(TRAY.x0, TRAY.y0, TRAY.x1, TRAY.y1));
+    for (const p of padLayout()) check('pad', sq(p.x0, p.y0, p.x1, p.y1));
+    for (const group of [0, 1, 2]) for (let k = 0; k < TRAY_SLOTS; k++) {
+      const c = tray.slot(k, group);
+      expect(c.x - tray.slotR).toBeGreaterThanOrEqual(TRAY.x0);
+      expect(c.x + tray.slotR).toBeLessThanOrEqual(TRAY.x1);
+      expect(c.y - tray.slotR).toBeGreaterThanOrEqual(TRAY.y0);
+      expect(c.y + tray.slotR).toBeLessThanOrEqual(TRAY.y1);
+      check('tray slot', sq(c.x - tray.slotR, c.y - tray.slotR, c.x + tray.slotR, c.y + tray.slotR));
     }
     for (const angle of [MIN_ANGLE, 45, MAX_ANGLE]) {
       const p = pulledBall({ angle, length: MAX_PULL });

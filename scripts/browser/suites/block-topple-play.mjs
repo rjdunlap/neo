@@ -16,8 +16,8 @@ async function blockTopplePlay() {
     await kit.drag(kit.line([from.x, from.y], [to.x, to.y], 12));
   }, pull);
   await page.evaluate(() => { kit.store.data.settings.howToCards = false; });
-  // TOPPLE_LEVELS=4 plays only level 4 (the default plays 1, 3 and 4).
-  const levels = (process.env.TOPPLE_LEVELS ?? '1,3,4').split(',').map(Number);
+  // TOPPLE_LEVELS=5 plays only level 5 (the default plays 1, 3, 4 and 5).
+  const levels = (process.env.TOPPLE_LEVELS ?? '1,3,4,5').split(',').map(Number);
 
   // Level 1: the solver's pull tips each of the three towers; nothing counts.
   if (levels.includes(1)) {
@@ -88,8 +88,47 @@ async function blockTopplePlay() {
   await finished('block-topple');
   assert.deepEqual(await score(), [0, 1], 'level 4 saved 0 misses, 1 hint');
   }
+
+  // Level 5 in portrait: tip the wide stack, then two wrong counts on line 1 (one miss and the counting aloud, then the
+  // glowing pad and one hint), the right count, and the right counts for the other two lines to the sticker.
+  if (levels.includes(5)) {
+  await launch('block-topple', 5, 'Mia', 'school');
+  const pads = () => page.waitForFunction(() => { const g = neo.scene.game; return g.pads.length === 3 && g.pads.every((p) => p.scale.x > 0.99) && !g.counting; }, null, { timeout: 20000 });
+  const count = () => page.evaluate(() => { const g = neo.scene.game; return { total: g.total, values: g.pads.map((p) => p.value), glow: g.pads.map((p) => p.glow.visible), misses: g.misses, hints: g.hints, tray: g.trayFruit.children.length }; });
+  const tapPad = (v) => page.evaluate((v) => { const g = neo.scene.game; kit.tapOn(g.pads.find((p) => p.value === v)); }, v);
+  const totals = [];
+  for (let i = 0; i < 3; i++) {
+    await ready(i);
+    if (i === 0) assert.equal((await state()).friend, 'pig', 'the authored first line has the pig on the wide stack');
+    await shoot(null);
+    await pads();
+    let c = await count();
+    totals.push(c.total);
+    assert.equal(c.tray, c.total, 'every fruit so far is in the tray, one per slot');
+    assert.ok(c.values.includes(c.total), 'the pads hold the total');
+    if (i === 0) {
+      assert.equal(c.total, 2, 'the authored line holds two fruit');
+      const wrong = c.values.filter((v) => v !== c.total);
+      await tapPad(wrong[0]);
+      await pads();
+      c = await count();
+      assert.deepEqual([c.misses, c.hints, c.glow.some(Boolean)], [1, 0, false], 'a wrong count is one miss, and the pet counts aloud');
+      await tapPad(wrong[1]);
+      await page.waitForTimeout(300);
+      c = await count();
+      assert.deepEqual([c.misses, c.hints, c.glow[c.values.indexOf(c.total)]], [1, 1, true], 'a second wrong count lights the right pad, one hint');
+      await page.waitForTimeout(300);
+      await screenshot('block-topple-5-portrait-tray');
+    }
+    await tapPad(c.total);
+    await page.waitForFunction((i) => neo.scene.game.lineIndex > i || neo.scene.game.finished, i, { timeout: 15000 });
+  }
+  assert.ok(totals[0] < totals[1] && totals[1] < totals[2] && totals[2] >= 4 && totals[2] <= 8, `running totals rise to 4–8: ${totals}`);
+  await finished('block-topple');
+  assert.deepEqual(await score(), [1, 1], 'level 5 saved 1 miss, 1 hint');
+  }
   await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(400);
-  const done = { 1: 'level 1 three solver pulls tipped every tower 0/0', 3: 'level 3 portrait, a short shot and a hill shot missed, the dotted path showed, then three tips 2/1', 4: 'level 4 portrait, two thumps (no miss) showed the golden band, then three tips 0/1' };
+  const done = { 1: 'level 1 three solver pulls tipped every tower 0/0', 3: 'level 3 portrait, a short shot and a hill shot missed, the dotted path showed, then three tips 2/1', 4: 'level 4 portrait, two thumps (no miss) showed the golden band, then three tips 0/1', 5: 'level 5 portrait, two wrong counts (count aloud, glowing pad), then three tips and right counts 1/1' };
   log(`Block Topple ${levels.join(', ')}: ${levels.map((l) => done[l]).join('; ')}; passed`);
 }
 return { blockTopplePlay };
