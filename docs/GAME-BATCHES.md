@@ -1497,6 +1497,14 @@ Files expected: `src/games/secret-code/logic.ts`, `logic.test.ts`, `index.ts`, `
 
 Proof: couch catalog tier: course tests, `BROWSER_SUITE=couchgames` filtered to Secret Code.
 
+### secret-code 7: Level 12 Swap seats
+
+- **`secret-code`, Level 12 *Swap seats* (dive slice 8)**, after batch secret-code 3 (built; reuses level 9's mark discs; new interaction): school only; a seat question (Two of us / Just me), she makes a code and marks a grown-up's tries under a lid, then swaps and breaks the grown-up's code with levels 3–6 rules; Just me puts the pet in seat 2; two-seat rounds finish through `swapResult` with at least one hint (supported completion); school `order` becomes [2,3,4,9,12,5,6,7,8,11]; seven new `code.*` voice lines. [Dive](deep-dives/secret-code.md#level-12-swap-seats-maker-and-breaker-defined-2026-11-05)
+
+Files expected: `src/games/secret-code/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+
+Proof: new-interaction tier: typecheck, unit tests including `swapResult` never smooth with two seats and `order`, one scripted Two of us play of level 12 with one wrong mark and one ignored clue to the sticker, portrait screenshots of the seat question and the lid, `fingerdemo` at 12.
+
 ### shape-buddies 1: What grows
 
 - **`shape-buddies`, What grows: three seeds and sprouts (dive slice 1; built 2026-11-03, PR #1145)** (extends the built game; no new level): a seeded bean, sunflower or acorn with its own code-drawn sprout, and the guidance test over every `PLANS` level. [Dive](deep-dives/shape-buddies.md#build-slices-in-order)

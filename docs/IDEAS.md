@@ -829,7 +829,7 @@ No second row for the same game. [Buddy Delivery](#candidates), Complementary jo
 | Bowser Party's one seat as the weather; Bluey's Keepy Uppy†, where the father's fans make the balloon harder | **Keepy Uppy**, Bounce Back | The **breeze seat** seed |
 | Twenty questions; Guess Who? (**recalled**) | **Who Is It?** (board games table) | **Mystery Friend**, below this table |
 | Wii Party's Friend Connection and Buddy Quiz; Match! That! Item! | None | **Same Pick** |
-| Mastermind's maker and breaker | **Secret Code** | A mode: seat 1 sets the code, the machine marks each guess, seat 2 breaks it, then swap (**Make One for Me**); level 9 *Be the door* is the solo half ([dive](deep-dives/secret-code.md#build-slices-in-order)) |
+| Mastermind's maker and breaker | **Secret Code** | A mode: seat 1 sets the code, the machine marks each guess, seat 2 breaks it, then swap (**Make One for Me**); level 9 *Be the door* is the solo half ([dive](deep-dives/secret-code.md#build-slices-in-order)); defined 2026-11-05 as level 12 *Swap seats*, where she marks the grown-up's tries rather than the machine ([definition](deep-dives/secret-code.md#level-12-swap-seats-maker-and-breaker-defined-2026-11-05)); proposal, not built |
 | Wii Party's Hide and Hunt | Peekaboo Barn, Photo Safari | The hider is a person: the **Chime Hunt** seed, and **Count and Hide**, where the screen counts |
 | Wii Party's Time Bomb and Word Bomb; Pass the Parcel (Bluey†) | **Pet Says** (its freeze dance) | **Pass the Pet**, for a circle of three or more |
 | Wii Party U's Lost-and-Found Square | Peekaround Island (position words) | **Where Am I?**, a variant of Mission Cards |
