@@ -1,6 +1,6 @@
 # Vine Snip, levels 1–5 (definition)
 
-Defined 2026-11-03 for [chunks 25 and 27](../ROADMAP.md#chunks) (dexterity; physics games), from the [sketch](../vine-snip.md) and its [IDEAS row](../IDEAS.md#candidates). Levels 1–3 built 2026-11-04 (slice 1, PR #1213); levels 4–5 are slice 2, not built. **Ready to build:** every call below has a default the build uses under the [October 23 standing rules](../archive/DECISIONS-2026-10-23.md#standing-rules) (S4 physics, S8 identity, land, band and accounting). None needs a content reviewer or the developer. Proposed game ID `vine-snip`.
+Defined 2026-11-03 for [chunks 25 and 27](../ROADMAP.md#chunks) (dexterity; physics games), from the [sketch](../vine-snip.md) and its [IDEAS row](../IDEAS.md#candidates). Levels 1–3 built 2026-11-04 (slice 1, PR #1213); levels 4–5 built 2026-11-05 (slice 2, PR #1270). **Ready to build:** every call below has a default the build uses under the [October 23 standing rules](../archive/DECISIONS-2026-10-23.md#standing-rules) (S4 physics, S8 identity, land, band and accounting). None needs a content reviewer or the developer. Proposed game ID `vine-snip`.
 
 **Fun action and purpose:** fruit hangs from vines on a branch and a hungry friend waits below. She snips a vine with a tap or a swipe, and the fruit drops, or swings and flies, into the friend's mouth with a munch and a note. The learning goal is **cause and effect, then using a pattern of motion to predict where a thing will go.** A fruit held by one vine swings back and forth under it, a fruit let go keeps moving the way it was going while it falls, and the vine she keeps decides which way it swings. There are no bombs, spikes, lives, stars or clock. The fruit is never lost, and a swinging fruit keeps swinging until she acts.
 
@@ -119,7 +119,7 @@ All lengths are in **board units**. The board is a fixed 720 × 600 box, transla
 ## Build slices
 
 1. **Levels 1–3 as a registered game (built 2026-11-04, PR #1213)** (new-game tier): `logic.ts` with the model, solver and layout, their rule tests, the scene, art, sound, voice lines, how-to card with ghost finger, registry and land, plus a `browser-check.mjs` case and its README row. Its `BandLevels` uses the table's ranges capped at 3 (`prek: { min: 2, max: 3 }`, `school: { min: 3, max: 3 }`).
-2. **Levels 4–5** (new rules on the existing interaction): keeps, the straight-above vine, the wrong-side line, two fruits and the full ranges above.
+2. **Levels 4–5 (built 2026-11-05, PR #1270)** (new rules on the existing interaction): keeps, the straight-above vine, the wrong-side line, two fruits and the full ranges above.
 
 Later, as proposals only: a bubble that lifts a fruit, a bounce leaf, a spider that is gently shooed (not a hazard), and a "which vine stays" round with a pre-snipped choice to predict before trying (unscored).
 
@@ -140,3 +140,11 @@ Device checks stay open: whether a toddler connects a tap on the vine with the d
 3. **Accounting:** levels 1–2 record no misses; from level 3 a missed drop is one miss.
 4. **Home land:** Tinker Lab. The alternative is Rainbow Meadow, which already holds Swing Pals and Lift It.
 5. **Journal:** nothing filed. The alternative is "the fruit keeps going as it falls", filed once level 3 has shown a caught swing.
+
+**Build decisions, slice 2 (2026-11-05):**
+
+- Finger spacing: the definition's 140 units cannot fit three vines or two two-vine fruits on the 720-wide board, because both keeps' swings must stay on it (anchors sum to at most 312 apart). Levels 4–5 use `KEEP_GAP = 100` at 0.15 and 0.3 of the way down (the 100-unit target minimum); level 2 keeps 140.
+- Timing fairness at 4–5: the top on the friend's side feeds and the start misses; level 3's straight-below rule is dropped there, since with a short fall the low fruit's bottom snip lands in the band. The authored level 4 window is 0.417 s, just over the 0.4 floor.
+- Level 5 inner vines are nearly upright (44–54 off) so keeping them barely swings the fruit; fruits sit at different heights (high about 180–205, low about 290–320 below the branch).
+- The bot taps rather than swipes the vines to snip at 4–5.
+- Open device checks: whether a four-to-five-year-old reads which vine stays, and two simultaneous fruits on an iPad.
