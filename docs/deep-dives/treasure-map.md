@@ -14,8 +14,9 @@ A parchment grid with row 1 at the bottom, as on maps and graphs. A sign at the 
 | 4 | `steps`, 5 by 5, 4 finds | school | Where the pet ends after "3 right, then 1 up" from where it stands; on a right dig the pet walks it, counting |
 | 5 | `clues`, 5 by 5, 4 finds | school | The square where two landmark clues meet ("the tree is 2 right", "the boat is 1 up") |
 | 6 | `card`, 5 by 5, 4 finds | school | The two-line card (count and way across, then count and up or down) that walks the pet from where it stands to the chest; a miss names the line that was off |
+| 7 | `far`, 4 by 4, 3 finds | school | A hidden chest found from how far each dig is (footprint stacks and a spoken distance); a dig the distances rule out is a miss with a reason |
 
-`LEVELS` is a plain `BandLevels` table (pre-K 1–2, school 1–6); there is no `order` or `entryLevels`.
+`LEVELS` is a plain `BandLevels` table (pre-K 1–2, school 1–7); there is no `order` or `entryLevels`.
 
 **Content pools.** Column colours are `COLUMN_COLORS` (red, yellow, blue, green, purple) and row pictures `ROW_PICTURES` (apple, fish, star, flower, shell), always **in that order**, so level 1 shows the same four rows and four columns every round; only the four target squares vary. Places come from `THINGS` (tree, house, boat, flag). Squares, step vectors (1–3 each way, always a turn) and clue landmarks are seeded; the map itself (parchment, blue sea) never changes.
 
@@ -112,7 +113,7 @@ None. By the [standing rules](../archive/DECISIONS-2026-10-23.md#standing-rules)
 
 1. **Fresh maps and true hints** (batch treasure-map 1): above. Existing-game fix tier: typecheck, rule tests, one filtered regression play of levels 1 and 4 with two wrong digs each, one portrait screenshot of level 1, one build for the voice lines; bot unchanged, no `fingerdemo`.
 2. **Level 6 *Write the card*** (built 2026-11-04; batch treasure-map 2), after batch 1 (shares the footprints and the step hint): new-interaction tier: typecheck, rule tests, one scripted play with one card whose up leg is one too many (a miss and its reason), a second wrong card for the glow, then the right card; one portrait screenshot with the card tiles; `fingerdemo` at 6. The couch is unchanged.
-3. **Level 7 *How far?*** (batch treasure-map 3), after batch 1 (shares the footprints): new-rule tier: typecheck, rule tests including the five-dig bound for fitting digs over every hiding square, one play of level 7 with two fitting digs, a ruled-out dig (a miss), then to the sticker; `fingerdemo` at 7; one portrait screenshot of the footprints.
+3. **Level 7 *How far?*** (built 2026-11-05; batch treasure-map 3), after batch 1 (shares the footprints): new-rule tier: typecheck, rule tests including the five-dig bound for fitting digs over every hiding square, one play of level 7 with two fitting digs, a ruled-out dig (a miss), then to the sticker; `fingerdemo` at 7; one portrait screenshot of the footprints.
 4. **Level 8 *Slide it*** (batch treasure-map 4), after batch 1: new-interaction tier: typecheck, rule tests, one play with one wrong square and one wrong outline (named reason), then right; one portrait screenshot of the outline cards; `fingerdemo` at 8.
 5. **Level 9 *One line*, the preschool opening** (batch treasure-map 5), after batches 1–4 (shares the headers; its ID follows 8): new-band tier: typecheck, unit tests including the lands, registry band and order/entry tests, one play of level 9 at preschool with one wrong line then two right, `fingerdemo` at 9, the preschool Rainbow Meadow page screenshot.
 6. **Define *Across the river*, levels 10–11** (docs only; status `define`): a map split by a river (the horizontal axis) and a road (the vertical axis) with the squares named in words ("2 right of the road, 1 below the river"; level 10), then the mirror across the river or the road (level 11); the 6 by 6 geometry at 100-unit squares within the 768-unit short side with the sign, the spoken lines, accounting, hints, the bot and the check tier. Words only; signed numbers stay with the integers study.
@@ -121,4 +122,4 @@ None. By the [standing rules](../archive/DECISIONS-2026-10-23.md#standing-rules)
 
 Nothing: research and ideation only. Checks: Markdown links and `git diff --check`.
 
-Slice 2 (level 6) was built later; the build note is in the [completed-work archive](../archive/COMPLETED-2026-10-09.md#treasure-map-level-6-write-the-card-treasure-map-batch-2-2026-11-04).
+Slice 2 (level 6) and slice 3 (level 7) were built later; the build notes are in the [completed-work archive](../archive/COMPLETED-2026-10-09.md#treasure-map-level-6-write-the-card-treasure-map-batch-2-2026-11-04) and [here for level 7](../archive/COMPLETED-2026-10-09.md#treasure-map-level-7-how-far-treasure-map-batch-3-2026-11-05).
