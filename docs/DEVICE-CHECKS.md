@@ -2,6 +2,7 @@
 
 - [ ] **Light Lab level 12 *Split the sunbeam* (2026-11-04):** do the two dim arms read clearly on an iPad screen? Is the half-mirror distinct from a mirror at arm's length? Does device speech say "half-mirror" clearly?
 - [ ] **Light Lab level 11 *Through, bounce or stop?* (2026-11-04):** do a four-year-old's guesses look considered rather than random (this decides whether pre-K keeps level 11)? Does the dim beam through the cloudy thing read as "some light" on an iPad screen? Does device speech say "wax paper" and "tin lid" clearly?
+- [ ] **Block Topple (levels 1–5, 2026-11-05):** at level 5, does a six-year-old count on from the earlier group in the tray or recount from one, and do the number pads after every line slow the shooting too much?
 - [ ] **Block Topple (levels 1–4, 2026-11-05):** can a four-year-old aim by angle as well as length from the trail the pull draws, and is a full-stretch pull comfortable on an iPad (the ball can reach toward the pet corner when held sideways)? Whether "high up tips it" reads from the thumps and the golden band at level 4?
 - [ ] **Lantern Lights Show me a short way and the named hints (2026-11-04):** does a grown-up notice the purple replay button after a pond is lit, and are `lantern.hint-one` / `lantern.hint-many` ("only one short way" against "a few short ways") understood without reading?
 - [ ] **Lantern Lights school opening: can a seven-year-old finish a level-1 pond?** From the spoken instruction and the card alone, does she finish and notice a press also flips its neighbours (built 2026-11-04)?

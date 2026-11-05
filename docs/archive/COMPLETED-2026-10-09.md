@@ -2547,7 +2547,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--sing-along-b
 
 ## Sing-Along Barn, level 7 Finish the line (batch sing-along-barn 2, 2026-11-05)
 
-Branch `claude/sing-along-barn-finish-line`, PR #1259: [dive slice 2](../deep-dives/sing-along-barn.md#build-slices-in-order). `GAPS` in `logic.ts` names the last word and picture for Hot Cross Buns, Rain, Itsy Bitsy and Twinkle; level 7 draws one of them, pauses before each friend's last note and waits for a touch after a 0.8 s hold (`GAP_HOLD`); `order` toddler [1,2,3,7], preschool [2,3,7]. A pause counter keeps a finished word's hide from collapsing the next pause's picture. Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--sing-along-barn-level-7-finish-the-line-sing-along-barn-batch-2).
+Branch `claude/sing-along-barn-finish-line`, PR #1259: [dive slice 2](../deep-dives/sing-along-barn.md#build-slices-in-order). `GAPS` in `logic.ts` names the last word and picture for Hot Cross Buns, Rain, Itsy Bitsy and Twinkle; level 7 draws one of them, pauses before each friend's last note and waits for a touch after a 0.8 s hold (`GAP_HOLD`); `order` toddler [1,2,3,7], preschool [2,3,7]. A pause counter keeps a finished word's hide from collapsing the next pause's picture. Checks are in [VERIFICATION](VERIFICATION-2026-11-05.md#2026-11-05--sing-along-barn-level-7-finish-the-line-sing-along-barn-batch-2).
 
 ## Sing-Along Barn, level 8 Which one finishes it? (batch sing-along-barn 3, 2026-11-05)
 
@@ -2790,6 +2790,12 @@ Checks are in [VERIFICATION](../VERIFICATION.md) (entry "Block Topple levels 1�
 [PR #1271](https://github.com/rjdunlap/neo/pull/1271), [as built](../definitions/block-topple.md#slice-2-as-built-2026-11-05-level-4-built-level-5-not-built). Level 4 *Hit it high*: three lines, one stack each (a short wide stack, a tall thin tower, a seeded wide stack) where a wide stack tips only from a push at least 150 high; after two thumps a golden band (a hint) shows the tipping height at every level. Bands pre-K 1–4, school 2–4. Level 5 *Count what fell* is not built and is a define item in READY.
 
 Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--block-topple-level-4-hit-it-high-block-topple-slice-2).
+
+### Block Topple level 5 (slice 3, built 2026-11-05)
+
+[PR #1277](https://github.com/rjdunlap/neo/pull/1277), [as built](../definitions/block-topple.md#slice-3-as-built-2026-11-05-level-5-count-the-basket). Level 5 *Count the basket*: red fruit drawn on level 4's blocks hop into a tray after each tip, and she taps one of three number pads (total±1) for how many are in the tray; a wrong count is one miss per line with the pet counting aloud, a second wrong tap glows the right pad. School range 2–5.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--block-topple-level-5-count-the-basket-block-topple-slice-3).
 
 ## Ferry Jam levels 9 and 10 Pre-K entry and who's in the way (ferry-jam 4, 2026-11-04)
 
