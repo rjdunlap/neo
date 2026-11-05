@@ -4,7 +4,8 @@
 
 - **What changed (docs only):** the deep-dive tracker covered only the 85 games registered by mid-October. Of the 81 registered since, most have a subject study that plans their next slice; 21 have neither, so they gained tracker rows as waves 5–7 (lap/toddler first) and rows in the study backlog. READY gained five game dives, five study follow-up definitions and two builds that were ready but unlisted (Helper House level 4, Hat Band 1–3).
 - **Ran:** `node scripts/check-links.mjs` (links ok) and `git diff --check`. No code checks (docs tier).
-- **Open:** waves 6–7 dives queue only through the tracker; the other defined new games (Circuit Garden, Measuring Post, Far Lights, Rain Garden, Seed Travelers, Playdate Workshop, Weights Case) keep their admission, capacity or developer gates.
+- **Follow-up, same day:** the developer asked for the recommendations to be made without waiting. Six defined new games were admitted on their October 23 defaults (Far Lights, Seed Travelers, Rain Garden, Playdate Workshop, Circuit Garden, Measuring Post). Next ten was filled to ten.
+- **Open:** waves 6–7 dives queue only through the tracker; Weights Case still waits on Box Balance; each new game's source check and lands test run at build time.
 
 ## 2026-11-05 — Sudoku Garden level 9 Patchwork beds (sudoku-garden batch 4)
 

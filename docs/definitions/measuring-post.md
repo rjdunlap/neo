@@ -1,5 +1,7 @@
 # Measuring Post 1–4 (measurement M3–M4)
 
+**Admitted to the build queue 2026-11-05** ([READY](../READY.md#queued)): the developer asked for the recommendations to be made without waiting, so the build uses this packet's defaults (settled in the [October 23 record](../archive/DECISIONS-2026-10-23.md#decisions)). Its source check and the lands test still run at build time.
+
 Documentation packet, 2026-10-23, [PR #911](https://github.com/rjdunlap/neo/pull/911), branch `codex/measurement-m3-m5`, source base `236d8a22`. [Study and decisions](../deep-dives/subjects/measurement-units.md#decisions-for-the-developer). Proposed game `measuring-post`; nothing registered or implemented. Scope is school levels 1–4, default 1; level 4 is upper school, about 10 and up, accessible without a new band or age gate. Pre-K trial and precision/“Too big to tell” remain outside this packet.
 
 The fun is running a measuring counter for friends: take a question, choose a tool, watch it measure, and send back a useful answer. Learning: select an attribute/tool, relate unit size to count, compare only after establishing a common unit, and use an observed equivalence to complete a conversion table. No estimating, recipe scaling, elapsed time, torque or new mastery claim. Inchworm owns laying units; Seesaw owns balancing unknowns; Fill and Dump owns pouring. Here the tools animate a measurement automatically after selection. All results are authored pretend measurements, not estimates from screen pixels or real-world dimensions.
