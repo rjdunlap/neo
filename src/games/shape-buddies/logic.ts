@@ -1,6 +1,7 @@
 import type { ColorName } from '../../art/palette';
 import type { LineId } from '../../content/voice-script';
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 export const SHAPES = ['plain', 'flatten', 'scoop', 'slope'] as const;
 export type Shape = typeof SHAPES[number];
 export type Dock = 'bridge' | 'receiver';
@@ -13,8 +14,9 @@ export const initial = (): Construction => ({ friends: [{ shape: 'plain', place:
 export const copy = (s: Construction): Construction => ({ friends: s.friends.map(f => ({ ...f })) as [Friend, Friend], selected: s.selected });
 /** Which bridge shapes reach the far bank, how far below the chute's bank it sits, whether the two docks join over a wide gap,
  * whether a rocky ledge inside the gap holds up a cup at the bridge dock, which way the stream runs (`flow` -1: chute on the right, pot on the left),
- * and whether a fixed wooden plank already spans the gap (`plank`: level 7 has one friend, whose only job is the cup). */
-export const PLANS: Record<number, { bridges: readonly Shape[]; drop: number; joined?: boolean; ledge?: boolean; flow?: 1 | -1; plank?: boolean }> = {
+ * whether a fixed wooden plank already spans the gap (`plank`: level 7 has one friend, whose only job is the cup),
+ * and whether the round first asks who is building (`shared`: level 8 is level 3's spoon, one friend each with turns, or one player). */
+export const PLANS: Record<number, { bridges: readonly Shape[]; drop: number; joined?: boolean; ledge?: boolean; flow?: 1 | -1; plank?: boolean; shared?: boolean }> = {
   1: { bridges: ['flatten', 'slope'], drop: 0 },
   2: { bridges: ['slope'], drop: 50 },
   3: { bridges: ['flatten'], drop: 0, joined: true },
@@ -22,7 +24,10 @@ export const PLANS: Record<number, { bridges: readonly Shape[]; drop: number; jo
   5: { bridges: ['flatten', 'slope'], drop: 0, ledge: true },
   6: { bridges: ['slope'], drop: 50, flow: -1 },
   7: { bridges: [], drop: 0, plank: true },
+  8: { bridges: ['flatten'], drop: 0, joined: true, shared: true },
 };
+/** Level 8 plays level 3's spoon, so it sits right after 3; preschool keeps level 7 only, and 7 stays out of school. */
+export const LEVELS: BandLevels = { preschool: { min: 7, max: 7 }, prek: { min: 1, max: 8, order: [7, 1, 2, 3, 8, 4, 5] }, school: { min: 1, max: 8, order: [1, 2, 3, 8, 4, 5, 6] } };
 export const planFor = (level: number) => PLANS[level] ?? PLANS[1];
 const flowOf = (level: number) => planFor(level).flow ?? 1;
 /** How many friends she can use: one over level 7's plank (the second stays parked and hidden), otherwise two. */
@@ -77,25 +82,47 @@ export function failureLine(s: Construction, level = 1): LineId | null {
   if (plan.flow && bridge?.shape === 'slope') return 'buddies.turnSlope';
   return bridge?.shape === 'flatten' ? 'buddies.stepFlat' : 'buddies.stepBridge';
 }
-/** Exploration never counts as a miss. Hint support belongs to the unresolved role, not the number of taps. */
+/**
+ * Level 8's finish with two seats: the second seat is uncredited, so a hint on the partner's friend never counts against her,
+ * and the round is never smooth, so a grown-up's play cannot step her up. Playing alone passes the round's hints unchanged.
+ * The same rule as Secret Code's `swapResult`.
+ */
+export function sharedResult(twoSeats: boolean, hintsOnHers: number): { misses: number; hints: number } {
+  return { misses: 0, hints: twoSeats ? Math.max(hintsOnHers, 1) : hintsOnHers };
+}
+/** Exploration never counts as a miss. Hint support belongs to the unresolved role, not the number of taps.
+ * Level 8 with two seats (`twoSeats`): friend 0 is hers and friend 1 the partner's; only the turn holder (`holder`) can be chosen or changed. */
 export class SeedRound {
   state = initial();
   previous: Construction | null = null;
+  /** Level 8: null until she answers who is building, then whether two people take one friend each. */
+  seats: 'two' | 'solo' | null = null;
+  holder = 0;
+  private previousHolder = 0;
+  /** Hints charged to her friend (friend 0): the friend `guidance` named when the hint was given. */
+  hintsOnHers = 0;
   phase: 'edit' | 'running' | 'caught' | 'carrying' | 'done' = 'edit';
   readonly shown = new Set<Failure>();
   readonly failures: Record<Failure, number> = { bridge: 0, receiver: 0 };
   hints = 0;
   misses = 0;
   constructor(readonly level = 1) {}
-  get editable() { return this.phase === 'edit' || this.phase === 'caught'; }
-  select(i: number) { if (this.editable && Number.isInteger(i) && i >= 0 && i < friendCount(this.level)) this.state.selected = i; }
+  get editable() { return (this.phase === 'edit' || this.phase === 'caught') && (!planFor(this.level).shared || this.seats !== null); }
+  /** Whether turns are enforced: level 8 with two seats. */
+  get locked() { return this.seats === 'two'; }
+  /** Level 8's seat question; the answer lasts for the round. */
+  choose(seats: 'two' | 'solo') { if (planFor(this.level).shared && this.seats === null) this.seats = seats; }
+  select(i: number) { if (this.editable && Number.isInteger(i) && i >= 0 && i < friendCount(this.level) && (!this.locked || i === this.holder)) this.state.selected = i; }
+  private handTo(i: number) { if (this.locked) { this.holder = i; this.state.selected = i; } }
+  private remember() { this.previous = copy(this.state); this.previousHolder = this.holder; }
   edit(shape?: Shape, place?: Place): boolean {
     if (!this.editable) return false;
     const i = this.state.selected;
+    if (this.locked && i !== this.holder) return false;
     if (place === 'bridge' && planFor(this.level).plank) return false;
     if (place && place !== 'park' && this.state.friends.some((f, j) => j !== i && f.place === place)) return false;
     if ((!shape || shape === this.state.friends[i].shape) && (!place || place === this.state.friends[i].place)) return false;
-    this.previous = copy(this.state);
+    this.remember();
     this.phase = 'edit';
     if (shape) this.state.friends[i].shape = shape;
     if (place) this.state.friends[i].place = place;
@@ -104,22 +131,46 @@ export class SeedRound {
   /** Turns the selected friend round (level 6 only). Free, and undoable like any edit. */
   turn(): boolean {
     if (!this.editable || !planFor(this.level).flow) return false;
-    this.previous = copy(this.state);
+    this.remember();
     this.phase = 'edit';
     const f = this.state.friends[this.state.selected];
     f.facing = (f.facing ?? 1) === 1 ? -1 : 1;
     return true;
   }
+  /**
+   * Level 8 with two seats: the turn holder dropped its friend on a dock or back in its park, changed or not, so the turn passes.
+   * A drop back where it was is how a player says "mine is fine", so it is remembered for Undo like any edit. False if not her turn's friend.
+   */
+  drop(place: Place): boolean {
+    if (!this.editable || !this.locked) return this.edit(undefined, place);
+    const i = this.holder;
+    if (place !== 'park' && this.state.friends.some((f, j) => j !== i && f.place === place)) return false;
+    if (place === 'bridge' && planFor(this.level).plank) return false;
+    this.remember();
+    this.phase = 'edit';
+    this.state.friends[i].place = place;
+    this.handTo(1 - i);
+    return true;
+  }
   undo(): boolean {
     if (!this.editable || !this.previous) return false;
-    this.state = copy(this.previous); this.previous = null; this.phase = 'edit'; return true;
+    this.state = copy(this.previous); this.previous = null; this.phase = 'edit';
+    if (this.locked) this.holder = this.previousHolder;
+    return true;
   }
-  replay() { if (this.phase === 'caught') this.phase = 'edit'; }
+  /** Replay returns the turn to her friend. */
+  replay() { if (this.phase === 'caught') { this.phase = 'edit'; this.handTo(0); } }
   help(): Failure | null {
     const role = trace(this.state, this.level);
     if (role === 'caught') return null;
-    if (!this.shown.has(role)) { this.shown.add(role); this.hints++; }
+    const friend = guidance(this.state, this.level)?.friend ?? 0;
+    if (!this.shown.has(role)) { this.shown.add(role); this.hints++; if (friend === 0) this.hintsOnHers++; }
+    this.handTo(friend);
     return role;
+  }
+  /** What the round reports: level 8's seat rule, otherwise its own misses and hints. */
+  result(): { misses: number; hints: number } {
+    return planFor(this.level).shared && this.locked ? sharedResult(true, this.hintsOnHers) : { misses: this.misses, hints: this.hints };
   }
   trySeed(): Failure | 'caught' | null {
     if (this.phase !== 'edit') return null;
@@ -129,6 +180,8 @@ export class SeedRound {
     if (this.phase !== 'running') return;
     this.phase = result === 'caught' ? 'caught' : 'edit';
     if (result !== 'caught' && ++this.failures[result] >= 2) this.help();
+    // After a failed Try the turn goes to the friend whose role the line just named, or the parked friend.
+    if (result !== 'caught') this.handTo(guidance(this.state, this.level)?.friend ?? this.holder);
   }
   carry(): boolean { if (this.phase !== 'caught') return false; this.phase = 'carrying'; return true; }
   finish(): boolean { if (this.phase !== 'carrying') return false; this.phase = 'done'; return true; }
@@ -143,6 +196,8 @@ export function layout(w: number, h: number, level = 1) {
     receiverWidth: plan.joined ? 180 : 110,
     parks: [{ x: left + 250, y: 485 }, { x: left + 420, y: 485 }],
     tools: [{ x: left + 590, y: 485 }, { x: left + 740, y: 485 }, { x: left + 890, y: 485 }],
+    // Level 8's seat question: two round buttons (112 across) over the stream, shown alone while the friends, tools and docks are hidden.
+    seats: [{ x: left + 420, y: 330 }, { x: left + 620, y: 330 }],
     buttons: [{ x: left + 340, y: h - 118 }, { x: left + 520, y: h - 118 }, { x: left + 700, y: h - 118 }, ...plan.flow ? [{ x: left + 880, y: h - 118 }] : []],
   };
 }

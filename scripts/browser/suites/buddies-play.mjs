@@ -82,6 +82,39 @@ async function buddiesPlay() {
     assert.deepEqual(errors, []);
     log('Shape Buddies level 6: the mirrored stream, an unturned slope explained with turnSlope twice, the bridge glows, Turn then a catch, one sticker, misses 0 and hints 1, portrait passed');
   };
+  // Level 8, your friend, my friend (pre-K, Two of us): the seat question, a tap on the dimmed friend (a wobble, no miss), turns pass on a drop,
+  // a plain far half fails and hands the turn to friend 1, a cup there catches; the result is never smooth.
+  const shared = async () => {
+    await launch('shape-buddies', 8, 'Mia', 'prek'); await page.waitForTimeout(400);
+    const before = await page.evaluate(() => { const g = neo.scene.game, say = g.ctx.say; g.spoken = []; g.ctx.say = (id, ...args) => { g.spoken.push(id); return say(id, ...args); }; return kit.store.data.stickers.length; });
+    assert.deepEqual(await page.evaluate(() => { const g = neo.scene.game; return [g.together.visible, g.alone.visible, g.friends[0].visible, g.tools[0].visible, g.together.radius]; }), [true, true, false, false, 56], 'the seat question stands alone');
+    await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300);
+    await screenshot('shape-buddies-8-seats-portrait');
+    await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
+    await tap('neo.scene.game.together'); await page.waitForTimeout(300);
+    assert.deepEqual(await page.evaluate(() => { const g = neo.scene.game; return [g.round.seats, g.round.holder, g.friends[1].alpha, g.handles[1].enabled]; }), ['two', 0, 0.55, false], 'Two of us: her friend first, the other dimmed');
+    await tap('neo.scene.game.friends[1]');
+    assert.deepEqual(await page.evaluate(() => { const g = neo.scene.game; return [g.round.holder, g.round.state.selected, g.misses, g.hints, g.spoken.some(id => id.startsWith('buddies.turn'))]; }), [0, 0, 0, 0, true], 'the dimmed friend wobbles and repeats the turn, no miss or hint');
+    await tap('neo.scene.game.tools[0]');
+    assert.equal(await page.evaluate(() => neo.scene.game.round.holder), 0, 'a shape change keeps the turn');
+    await drag(0, 'bridge');
+    assert.deepEqual(await page.evaluate(() => [neo.scene.game.round.state.friends[0].place, neo.scene.game.round.holder]), ['bridge', 1], 'a drop passes the turn');
+    await drag(1, 'receiver');
+    assert.deepEqual(await page.evaluate(() => [neo.scene.game.round.state.friends[1].place, neo.scene.game.round.state.friends[1].shape, neo.scene.game.round.holder]), ['receiver', 'plain', 0], 'a plain far half passes back');
+    await tap('neo.scene.game.tryButton'); await wait(); await page.waitForTimeout(300);
+    assert.deepEqual(await page.evaluate(() => [neo.scene.game.round.phase, neo.scene.game.round.holder, neo.scene.game.misses]), ['edit', 1, 0], 'a failed Try hands the turn to the far half');
+    await tap('neo.scene.game.tools[1]');
+    await tap('neo.scene.game.tryButton'); await wait();
+    assert.equal(await page.evaluate(() => neo.scene.game.round.phase), 'caught', 'the cup at the far half catches');
+    await tap('neo.scene.game.pot'); await finished('shape-buddies');
+    assert.equal(await page.evaluate(() => neo.scene.game.spoken.includes('buddies.shared')), true);
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1);
+    const r = await page.evaluate(() => { const r = kit.store.stats('shape-buddies').history.at(-1); return [r.level, r.misses, r.hints]; });
+    assert.ok(r[0] === 8 && r[1] === 0 && r[2] >= 1, `two seats are never smooth: ${r}`);
+    assert.deepEqual(errors, []);
+    log(`Shape Buddies level 8 (pre-K, Two of us): seat question, dimmed-friend wobble with no miss, drops pass the turn, a failed Try hands it to the far half, a cup catches, buddies.shared, one sticker, saved ${r}, portrait seat screenshot passed`);
+  };
+  if (process.env.BUDDIES_ONLY === '8') return shared();
   if (process.env.BUDDIES_ONLY === '6') return turned();
   if (process.env.BUDDIES_ONLY === '4') return down();
   if (process.env.BUDDIES_ONLY === '3') return joined();

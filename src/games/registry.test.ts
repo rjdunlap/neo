@@ -56,14 +56,16 @@ describe('game registry', () => {
     const g = gameById('shape-buddies')!;
     expect(g.bands).toEqual(['preschool', 'prek', 'school']);
     expect(g.levels('preschool')).toEqual({ min: 7, max: 7 });
-    expect(g.levels('prek')).toEqual({ min: 1, max: 7, order: [7, 1, 2, 3, 4, 5] });
-    expect(g.levels('school')).toEqual({ min: 1, max: 6 });
+    expect(g.levels('prek')).toEqual({ min: 1, max: 8, order: [7, 1, 2, 3, 8, 4, 5] });
+    expect(g.levels('school')).toEqual({ min: 1, max: 8, order: [1, 2, 3, 8, 4, 5, 6] });
     expect(g.entryLevels).toEqual([7]);
     expect(stepLevel(7, 1, g.levels('prek'))).toBe(1);
     expect(stepLevel(1, -1, g.levels('prek'))).toBe(7);
     expect(landing(7, g.levels('prek'), g.entryLevels)).toBe(7);
     expect(landing(7, g.levels('school'), g.entryLevels)).toBe(1);
     for (const level of [1, 2, 3, 4, 5]) expect(landing(level, g.levels('prek'), g.entryLevels)).toBe(level);
+    // Your friend, my friend (8) plays level 3's spoon, so both bands reach it right after 3; it is not an entry.
+    for (const band of ['prek', 'school'] as const) { expect(stepLevel(3, 1, g.levels(band))).toBe(8); expect(stepLevel(8, 1, g.levels(band))).toBe(4); expect(landing(8, g.levels(band), g.entryLevels)).toBe(8); }
   });
 
   it('opens Picture Graph at pre-K with Line them up (8), an entry school plays after level 2, then A key of five (9), Two pictures, one meadow (10) and What the graph can say (11) at the top of school, without moving levels 1–7', () => {

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { ColorName } from '../../art/palette';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
-import { catcher, copy, failureLine, friendCount, guidance, initial, layout, looks, PLANS, SeedRound, SEEDS, SHAPES, trace, type Construction, type Place } from './logic';
+import { catcher, copy, failureLine, friendCount, guidance, initial, layout, LEVELS, looks, PLANS, SeedRound, SEEDS, SHAPES, sharedResult, trace, type Construction, type Place } from './logic';
 
 describe('Shape Buddies', () => {
   it('accepts both identities and both bridge shapes, with exactly the functional roles required', () => {
@@ -383,6 +383,133 @@ describe('Shape Buddies', () => {
       expect(r.hints).toBe(1); r.help(); expect(r.hints).toBe(1);
       r.edit('scoop'); expect(r.trySeed()).toBe('caught'); r.settle('caught');
       expect(r.carry()).toBe(true); expect(r.finish()).toBe(true); expect(r.misses).toBe(0);
+    });
+  });
+  describe('level 8, your friend, my friend', () => {
+    const PLACES = ['park', 'bridge', 'receiver'] as const;
+    const legal = () => SHAPES.flatMap(a => SHAPES.flatMap(b => PLACES.flatMap(p => PLACES.filter(q => p === 'park' || p !== q).map(q => {
+      const s = initial(); s.friends = [{ shape: a, place: p, facing: 1 }, { shape: b, place: q, facing: 1 }]; return s;
+    }))));
+    const fresh = (seats: 'two' | 'solo', s?: Construction, holder = 0) => {
+      const r = new SeedRound(8); r.choose(seats); if (s) r.state = copy(s); r.holder = holder; r.state.selected = holder; return r;
+    };
+    /** A player pair under the turn rule: returns the tries and how many were only hand-offs. */
+    const play = (r: SeedRound) => {
+      let tries = 0, handOffs = 0, edits = 0;
+      for (let n = 0; n < 20 && r.phase !== 'caught'; n++) {
+        const g = guidance(r.state, 8);
+        if (!g || g.friend !== r.holder) {
+          tries++; if (g) handOffs++;
+          expect(r.trySeed()).not.toBeNull(); r.settle(trace(r.state, 8)); continue;
+        }
+        if (r.state.friends[g.friend].shape !== g.shape && r.edit(g.shape)) edits++;
+        expect(r.drop(g.dock)).toBe(true); edits++;
+      }
+      return { tries, handOffs, edits };
+    };
+    it('accepts exactly level 3\'s set', () => {
+      for (const s of legal()) {
+        expect(trace(s, 8)).toBe(trace(s, 3)); expect(catcher(s, 8)).toBe(catcher(s, 3));
+        expect(failureLine(s, 8)).toBe(failureLine(s, 3)); expect(guidance(s, 8)).toEqual(guidance(s, 3));
+      }
+    });
+    it('is not editable until the seat question is answered, and the answer lasts', () => {
+      const r = new SeedRound(8), before = copy(r.state);
+      r.select(1); expect(r.edit('flatten', 'bridge')).toBe(false); expect(r.drop('bridge')).toBe(false); expect(r.trySeed()).toBe('bridge');
+      expect(r.state).toEqual(before);
+      const q = new SeedRound(8); expect(q.editable).toBe(false); q.choose('two'); expect(q.editable).toBe(true);
+      q.choose('solo'); expect(q.seats).toBe('two');
+      expect(new SeedRound(3).editable).toBe(true);
+    });
+    it('two of us: only the holder can be chosen or changed', () => {
+      const r = fresh('two'), before = copy(r.state);
+      r.select(1); expect(r.state).toEqual(before);
+      r.state.selected = 1; expect(r.edit('flatten', 'bridge')).toBe(false);
+      r.state.selected = 0; expect(r.state).toEqual({ ...before, selected: 0 });
+      r.edit('flatten'); r.edit('flatten', 'bridge'); expect(r.state.friends[0]).toMatchObject({ shape: 'flatten', place: 'bridge' });
+    });
+    it('just me: never refused, behaves like level 3', () => {
+      const r = fresh('solo'), c = new SeedRound(3);
+      for (const x of [r, c]) { x.select(1); expect(x.state.selected).toBe(1); x.edit('scoop', 'receiver'); expect(x.trySeed()).toBe('bridge'); x.settle('bridge'); }
+      expect(r.state).toEqual(c.state); expect(r.holder).toBe(0); expect(r.state.selected).toBe(1); expect(r.locked).toBe(false);
+      expect(r.drop('bridge')).toBe(true); expect(r.state.selected).toBe(1);
+      expect(r.holder).toBe(0);
+    });
+    it('two of us: a shape change keeps the turn, every drop passes it, a blocked drop does not', () => {
+      const r = fresh('two');
+      expect(r.edit('flatten')).toBe(true); expect(r.holder).toBe(0);
+      expect(r.drop('bridge')).toBe(true); expect([r.holder, r.state.selected]).toEqual([1, 1]);
+      expect(r.drop('bridge')).toBe(false); expect(r.holder).toBe(1);
+      expect(r.drop('receiver')).toBe(true); expect([r.holder, r.state.selected]).toEqual([0, 0]);
+      expect(r.drop('bridge')).toBe(true); expect(r.holder).toBe(1);
+      expect(r.drop('receiver')).toBe(true); expect(r.holder).toBe(0);
+      expect(r.drop('park')).toBe(true); expect(r.holder).toBe(1);
+      expect(r.drop('park')).toBe(true); expect(r.holder).toBe(0);
+    });
+    it('the turn follows a failed Try and a hint to the friend guidance names; Undo and Replay restore it', () => {
+      for (const s of legal()) {
+        if (!guidance(s, 8)) continue;
+        const r = fresh('two', s, 0), want = guidance(s, 8)!.friend;
+        r.trySeed(); r.settle(trace(s, 8)); expect(r.holder).toBe(want); expect(r.state.selected).toBe(want);
+        const h = fresh('two', s, 1); h.help(); expect(h.holder).toBe(want);
+      }
+      const r = fresh('two'); r.edit('flatten'); r.drop('bridge');
+      expect(r.holder).toBe(1); expect(r.undo()).toBe(true);
+      expect(r.holder).toBe(0); expect(r.state.friends[0].place).toBe('park'); expect(r.state.friends[0].shape).toBe('flatten');
+      r.drop('park'); r.undo(); expect(r.holder).toBe(0);
+      const c = fresh('two'); play(c); c.settle('caught');
+      expect(c.phase).toBe('caught'); c.state.selected = 1; c.holder = 1; c.replay(); expect(c.holder).toBe(0); expect(c.state.selected).toBe(0);
+    });
+    it('a pair obeying the turn rule finishes: four edits and one Try from the start, two Tries from every legal construction', () => {
+      const r = fresh('two'); const out = play(r);
+      expect(out).toEqual({ tries: 1, handOffs: 0, edits: 4 });
+      for (const s of legal()) for (const holder of [0, 1]) {
+        const x = fresh('two', s, holder), o = play(x);
+        expect(x.phase === 'caught' || trace(x.state, 8) === 'caught').toBe(true);
+        expect(o.tries).toBeLessThanOrEqual(2);
+      }
+    });
+    it('sharedResult is never smooth with two seats and unchanged for Just me; her friend\'s hints alone count', () => {
+      for (const h of [0, 1, 2, 5]) {
+        expect(sharedResult(true, h)).toEqual({ misses: 0, hints: Math.max(h, 1) });
+        expect(sharedResult(false, h)).toEqual({ misses: 0, hints: h });
+      }
+      for (const s of legal()) for (const seats of ['two', 'solo'] as const) {
+        const r = fresh(seats, s, 0);
+        for (let n = 0; n < 6 && trace(r.state, 8) !== 'caught'; n++) {
+          r.help(); const g = guidance(r.state, 8)!; if (!g) break;
+          r.state.friends[g.friend] = { shape: g.shape, place: g.dock, facing: 1 };
+        }
+        expect(r.hints).toBeLessThanOrEqual(2);
+        if (seats === 'solo') expect(r.result()).toEqual({ misses: r.misses, hints: r.hints });
+        else { expect(r.result().misses).toBe(0); expect(r.result().hints).toBeGreaterThanOrEqual(1); expect(r.result().hints).toBe(Math.max(r.hintsOnHers, 1)); }
+      }
+      const r = fresh('two'); r.help(); expect(r.hints).toBe(1); expect(r.hintsOnHers).toBe(0 + (guidance(initial(), 8)!.friend === 0 ? 1 : 0));
+      const p = fresh('two', (() => { const s = initial(); s.friends[0] = { shape: 'flatten', place: 'bridge', facing: 1 }; return s; })(), 0);
+      p.help(); expect(guidance(p.state, 8)!.friend).toBe(1); expect(p.hints).toBe(1); expect(p.hintsOnHers).toBe(0); expect(p.result()).toEqual({ misses: 0, hints: 1 });
+    });
+    it('levels: 8 follows 3 in prek and school, school drops 7, preschool is 7 only', () => {
+      const order = (b: 'prek' | 'school') => (LEVELS[b] as { order?: number[] }).order!;
+      for (const b of ['prek', 'school'] as const) expect(order(b)[order(b).indexOf(3) + 1]).toBe(8);
+      expect(order('school')).not.toContain(7); expect(order('prek')).toContain(7);
+      expect(LEVELS.preschool).toEqual({ min: 7, max: 7 });
+    });
+    it('the two seat buttons (radius 56, tap margin 14) keep clear of everything and inside the view', () => {
+      const hit = (c: { x: number; y: number }, b: { x: number; y: number; w: number; h: number }, r: number) => {
+        const dx = Math.max(Math.abs(c.x - b.x) - b.w / 2, 0), dy = Math.max(Math.abs(c.y - b.y) - b.h / 2, 0);
+        return dx * dx + dy * dy < r * r;
+      };
+      for (const [w, h] of [[1024, 768], [768, 1024], [844, 390], [750, 369]]) {
+        const v = computeView(w, h), l = layout(v.w, v.h, 8), R = 70;
+        expect(l.seats).toHaveLength(2);
+        const boxes = [{ ...l.pot, w: 120, h: 120 }, ...l.parks.map(p => ({ ...p, w: 140, h: 110 })), ...l.tools.map(p => ({ ...p, w: 130, h: 110 })), ...l.buttons.map(p => ({ ...p, w: 150, h: 110 }))];
+        for (const [i, c] of l.seats.entries()) {
+          expect(c.x - R).toBeGreaterThan(150); expect(c.x + R).toBeLessThan(v.w);
+          expect(c.y - R).toBeGreaterThan(100); expect(c.y + R).toBeLessThan(v.h);
+          for (const b of boxes) expect(hit(c, b, R)).toBe(false);
+          for (const o of l.seats.slice(i + 1)) expect(Math.hypot(c.x - o.x, c.y - o.y)).toBeGreaterThanOrEqual(2 * R);
+        }
+      }
     });
   });
   it('draws the seed kind after the friend colours, so every seed keeps its colours, and over seeds grows all three kinds', () => {
