@@ -1443,6 +1443,8 @@ Proof: existing-game fix tier: typecheck, the game's rule tests including the hi
 
 ### secret-code 2: Level 8 Four slots, a repeat
 
+Built 2026-11-04, [PR #1238](https://github.com/rjdunlap/neo/pull/1238); [build note](archive/COMPLETED-2026-10-09.md#secret-code-level-8-four-slots-a-repeat-secret-code-batch-2-2026-11-04). No longer eligible for dispatch.
+
 - **`secret-code`, Level 8 *Four slots, a repeat* (dive slice 2)**, after batch secret-code 1 (shares the plan table and the visible-rows rule; new level): four slots with a repeated colour. [Dive](deep-dives/secret-code.md#build-slices-in-order)
 
 Files expected: `src/games/secret-code/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.

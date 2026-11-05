@@ -16,7 +16,7 @@ import { contradictsClues, detectiveDoor, doorKinds, ignoredClues, makeCode, nex
 
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 3 },
-  school: { min: 2, max: 7 },
+  school: { min: 2, max: 8 },
 };
 
 /** Each stone has a shape as well as a color, so colors never have to be told apart by hue alone. */

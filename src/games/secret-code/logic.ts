@@ -30,6 +30,7 @@ export const PLANS: CodePlan[] = [
   { slots: 4, colors: 5, yellow: true, repeats: false, codes: 2, name: 'Four slots and five colors' },
   { slots: 3, colors: 4, yellow: true, repeats: true, codes: 2, name: 'A color can be used twice in the code' },
   { slots: 3, colors: 4, yellow: true, repeats: false, codes: 2, detective: true, name: 'Detective door: work out the one code that fits the shown guesses' },
+  { slots: 4, colors: 5, yellow: true, repeats: true, codes: 2, name: 'Four slots, five colors, and one color used twice' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
