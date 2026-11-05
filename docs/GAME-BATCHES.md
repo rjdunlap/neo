@@ -1567,7 +1567,7 @@ Proof: existing-interaction tier plus layout: typecheck, the game's rule tests (
 
 ### sing-along-barn 2: Level 7 Finish the line
 
-- **`sing-along-barn`, Level 7 *Finish the line* (dive slice 2)**, after batch sing-along-barn 1 (shares the tune tables; Twinkle's gap word; new level): the tune stops before the rhyming word and a picture waits at the door; any touch sings it. [Dive](deep-dives/sing-along-barn.md#build-slices-in-order)
+- **`sing-along-barn`, Level 7 *Finish the line* (dive slice 2)** (**built 2026-11-05**, branch `claude/sing-along-barn-finish-line`, PR #1259), after batch sing-along-barn 1 (shares the tune tables; Twinkle's gap word; new level): the tune stops before the rhyming word and a picture waits at the door; any touch sings it. [Dive](deep-dives/sing-along-barn.md#build-slices-in-order)
 
 Files expected: `src/games/sing-along-barn/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`, and the lands and registry tests only if their expectations change.
 

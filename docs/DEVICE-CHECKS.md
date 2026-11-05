@@ -92,7 +92,7 @@
 
 ## Sing-Along Barn (dive, 2026-11-01; proposed, new tunes and levels not yet built)
 
-- [ ] Once level 7 is built: does a pause read as "your turn" to a two-year-old?
+- [ ] Level 7 *Finish the line* (built 2026-11-05): does a pause read as "your turn" to a two-year-old, and does a toddler fill the word or just mash through (the first 0.8 s only hums)?
 - [ ] Does fa (Twinkle's F) sound right on the iPad marimba, and does a grown-up singing along match both Twinkle and Wheels on the Bus? (batch 1 built; ti is not used)
 - [ ] Once level 8 is built: does a pre-K child hear the rhyme between two spoken pictures?
 - [ ] Does Wheels on the Bus's 13-note verse (and Twinkle's 14-note verse) hold a toddler?
