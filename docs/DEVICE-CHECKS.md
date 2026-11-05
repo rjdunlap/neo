@@ -1009,3 +1009,4 @@ Performed on the built levels (PR #1043; [definition](definitions/water-road.md#
 - [ ] **Read & Do levels 8–9 broken-sign act-out with a child.** Does the opening act-out read as a funny mistake to fix rather than as her failure?
 - [ ] **Read & Do levels 8–9 device speech.** Do the `read.mend.*` lines (watch, instruction, swap instruction, swap hint) sound natural on iPad speech (no rendered clips)?
 - [ ] **Sudoku Garden's Fill marks on an iPad (2026-11-05).** On a 9 by 9 bed (level 4), tap Fill marks: does the row-by-row pencilling feel like a tool that spares clerical work or like the game playing for her, and does the third button row sit clear of the pet and easy to reach in both orientations.
+- [ ] **Sudoku Garden level 8 X-Wing hint on an iPad (2026-11-05).** On a level 8 bed, ask for hints until the X-Wing one: are the lit lines, the four ringed corners and the spoken line clear to a grown-up who does not know the technique?
