@@ -89,7 +89,12 @@ class SeedTravelers implements Game {
 
   private build() {
     if (this.critter) this.ctx.untrack(this.critter);
-    for (const c of this.world.removeChildren()) if (c !== this.glow && c !== this.ring) c.destroy({ children: true });
+    for (const c of this.world.removeChildren()) {
+      if (c === this.glow || c === this.ring) continue;
+      this.ctx.tw.kill(c);
+      this.ctx.tw.kill(c.scale);
+      c.destroy({ children: true });
+    }
     this.seeds = {};
     this.critter = null;
     this.basket = null;
@@ -322,6 +327,7 @@ class SeedTravelers implements Game {
     this.world.addChild(bubble);
     const e = this.epoch;
     void this.ctx.tw.to(bubble.scale, { x: 1, y: 1 }, { duration: 0.3, ease: ease.outBack }).then(async () => {
+      if (bubble.destroyed) return;
       await this.ctx.tw.wait(1.4);
       if (!this.alive || e !== this.epoch || bubble.destroyed) return;
       await this.ctx.tw.to(bubble, { alpha: 0 }, { duration: 0.4 });
@@ -385,8 +391,9 @@ class SeedTravelers implements Game {
       ? t.carrier === 'breeze' ? 'seeds.arrived.breeze' : 'seeds.arrived.fur'
       : t.carrier === 'breeze' ? 'seeds.stayed.breeze' : 'seeds.stayed.fur';
     if (!t.arrived) sfx.squish();
+    const e = this.epoch;
     const said = this.say(line).then(() => {
-      if (this.alive && this.level === 1 && first && t.arrived) void this.ctx.instruct('seeds.finish');
+      if (this.alive && e === this.epoch && this.level === 1 && first && t.arrived) void this.ctx.instruct('seeds.finish');
     });
     if (wait) await said;
     return said;
