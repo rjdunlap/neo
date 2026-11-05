@@ -38,18 +38,25 @@ async function sudokuTouchPlay() {
   // Level 8 (9 by 9, the top): a bed that needs a crossing pair of rows. Hints are asked for, and each hinted number placed,
   // until the hint is the X-Wing one (two lines lit, four corners ringed); then the bed is filled to its sticker. `SUDOKU_ONLY=8`.
   if (process.env.SUDOKU_ONLY === '8') {
+    // About a quarter of beds free every square through a later pair or pointing line, so their hints name that step instead:
+    // such a bed is played to its sticker and another is opened, up to three.
+    let wing = null, asked = 0, stickers = 0;
+    for (let bed = 0; bed < 3 && !wing; bed++) {
+    await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
     await launch('sudoku-garden', 8); await idle();
-    const stickers = await page.evaluate(() => kit.store.data.stickers.length);
+    stickers = await page.evaluate(() => kit.store.data.stickers.length);
     assert.deepEqual(await page.evaluate(() => [neo.scene.game.n, neo.scene.game.puzzle.blanks, neo.scene.game.puzzle.grade]), [9, 55, 4]);
     await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(500);
     assert.deepEqual(await targets('level 8 portrait'), []);
-    let wing = null, asked = 0;
-    for (; asked < 55 && !wing; asked++) {
+    asked = 0;
+    for (; asked < 55 && !wing && !(await page.evaluate(() => neo.scene.finished)); asked++) {
       await idle(); await tapSlot({ kind: 'hint' }); await page.waitForTimeout(300);
       const h = await page.evaluate(() => { const h = neo.scene.game.hinted; return h && { kind: h.kind, cell: h.cell, digit: h.digit, tech: h.via?.tech, corners: h.via?.pattern?.length, lines: h.via?.lines?.length }; });
       assert.ok(h && h.kind !== 'fix' && h.kind !== 'few', `hint ${asked + 1} names a reason`);
       if (h.tech === 'xwing') { wing = h; break; }
       await tapCell(h.cell); await page.waitForTimeout(60); await tapSlot({ kind: 'digit', d: h.digit }); await page.waitForTimeout(120);
+    }
+    if (!wing) await finished('sudoku-garden');
     }
     assert.ok(wing, 'a hint explains the crossing pair of rows');
     assert.deepEqual([wing.corners, wing.lines], [4, 2]);

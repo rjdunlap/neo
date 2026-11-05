@@ -2671,7 +2671,7 @@ export const SCRIPT = {
   'sudoku.hint-place': ['In this {house}, the {n} has only one square left. It is the ringed one.'],
   'sudoku.hint-pair': ['Two squares in this {house} can only hold a {a} and a {b} between them, so no other square there can. That leaves just the {n} for the ringed square.'],
   'sudoku.hint-locked': ['The {n} in this {house} has to go in the marked squares, which rules it out of the rest of their line. That leaves just the {m} for the ringed square.'],
-  'sudoku.hint-xwing': ['In these two {lines}, the {n} can only go in the ringed corners, so it sits in two of them. That rules it out of the rest of those {across}. That leaves just the {m} for the ringed square.'],
+  'sudoku.hint-xwing': ['In these two {lines}, the {n} can only go in the ringed corners, so it sits in two opposite ones. That rules it out of the rest of those {across}. That leaves just the {m} for the ringed square.'],
   'sudoku.hint-few': ['Try the ringed square. It has the fewest numbers that could go there.'],
   'sudoku.fill-marks': ['Every number that still fits is pencilled into the empty squares. The marks are yours to change.'],
   'sudoku.hint-fix': ['One number you placed cannot be right. Take out the ringed one.'],

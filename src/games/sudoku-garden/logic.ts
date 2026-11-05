@@ -484,9 +484,11 @@ export function hintFor(grid: Grid, given: Grid, solution: Grid, size: Size): Hi
   if (last && last.cell >= 0) {
     // Easier steps are always taken first, so a pair or a pointing line only shows up when nothing simpler was left.
     // The step that ruled numbers out last is the one that made this number the only one left, unless a crossing pair
-    // of rows ruled something out of this square or its row, column or box on the way: that is the step the level is about.
-    const outs = work.steps.filter((s) => s.cell < 0), near = new Set([last.cell, ...geometry(size).peers[last.cell]]);
-    const via = outs.find((s) => s.tech === 'xwing' && s.removed!.some((r) => near.has(r.cell))) ?? outs[outs.length - 1];
+    // of rows ruled another number out of this square, or this number out of its row, column or box, on the way: that is the
+    // step the level is about.
+    const outs = work.steps.filter((s) => s.cell < 0), peers = geometry(size).peers[last.cell];
+    const freed = (r: { cell: number; digit: number }) => r.cell === last.cell || (r.digit === last.digit && peers.includes(r.cell));
+    const via = outs.find((s) => s.tech === 'xwing' && s.removed!.some(freed)) ?? outs[outs.length - 1];
     if (via) return { kind: 'rules-out', cell: last.cell, digit: last.digit, via };
     if (last.tech === 'lone') return { kind: 'lone', cell: last.cell, digit: last.digit };
     return { kind: 'place', cell: last.cell, digit: last.digit, house: last.house! };
