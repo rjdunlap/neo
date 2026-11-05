@@ -30,7 +30,7 @@ scripted play with mistakes and help, portrait screenshot, and filtered finger d
 
 ## Sums in order: levels 4–6 (definition, 2026-11-03)
 
-Status: **ready** (docs-only definition; the build is queued in [READY](../READY.md#queued)). This is roadmap step 9's "finite quick-sum round".
+Status: **built** 2026-11-05 ([PR #1272](https://github.com/rjdunlap/neo/pull/1272)). This is roadmap step 9's "finite quick-sum round".
 
 **Fun action and skill.** The same pond and the same search: light the stones in order from 1 up. Each stone now shows a short sum (from level 6, a sum or a take-away) instead of its number, so finding "the one that makes 7" means working out each candidate in one's head. Grown-up wording names the task: *adding and taking away within 30 while searching in order*. It claims practice on this task only; no brain-training, attention or school benefit.
 

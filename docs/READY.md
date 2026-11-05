@@ -7,7 +7,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 ## Next ten
 
 - **Define `block-topple` level 5** (*Count what fell*; docs only): the slice-2 definition cannot fit (see [slice 2 as built](definitions/block-topple.md#slice-2-as-built-2026-11-05-level-4-built-level-5-not-built)); redefine to one stepped stack per line on a wide pedestal, fruit counted across lines, or a different fall cosmetic.
-- **`brain-break`, levels 4–6 Sums in order** (new levels on an existing interaction: typecheck, rule tests, one play of level 6 with one wrong stone and the outline then to its sticker, one portrait screenshot of level 6, `fingerdemo` at 6): [definition](definitions/brain-break.md#sums-in-order-levels-46-definition-2026-11-03). Grownup only; stones show sums, from level 6 take-aways; same search, accounting and bot.
 - **`far-lights`, levels 1–4, a new game** (admitted 2026-11-05; see Queued) (lap 1 up; one control, distance, and how bright a light looks; Tinker Lab, else Music Mountain): [definition](definitions/far-lights.md#check-tier).
 - **`seed-travelers`, levels 1–3, a new game** (admitted 2026-11-05; see Queued) (toddler 1–2, preschool 1–3, pre-K 2–3; a seed sent by a puff of air or carried in a critter's fur; Rainbow Meadow, else Barnyard): [definition](definitions/seed-travelers.md#check-tier).
 - **Dive `draw-the-pattern`** (Draw the Pattern; lap to pre-K, 8 levels; docs only): [procedure](deep-dives/README.md#one-session-one-game), [definition](definitions/draw-the-pattern.md).

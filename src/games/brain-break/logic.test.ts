@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { hintIndex, judge, layoutFor, makeBoard, planFor } from './logic';
+import { evaluate, hintIndex, judge, layoutFor, makeBoard, makeLabels, MINUS, planFor } from './logic';
 
 describe('Brain Break number order', () => {
   it('gives every number exactly once and always has a next-number hint', () => {
@@ -28,5 +28,58 @@ describe('Brain Break number order', () => {
         expect(Math.abs(p.x - layout.hint.x) >= 116 || Math.abs(p.y - layout.hint.y) >= 100).toBe(true);
       }
     }
+  });
+});
+
+describe('Brain Break sums in order (levels 4–6)', () => {
+  const parts = (text: string) => /^(\d+)([+\u2212])(\d+)$/.exec(text)!;
+  it('clamps the ladder to 1..6', () => {
+    expect(planFor(0)).toBe(planFor(1));
+    expect(planFor(7)).toBe(planFor(6));
+    expect([4, 5, 6].map(l => planFor(l).side)).toEqual([3, 4, 5]);
+  });
+  it('labels every stone with a short sum or take-away that makes its total, within the operand bounds', () => {
+    for (let level = 4; level <= 6; level++) for (let seed = 1; seed <= 200; seed++) {
+      const rng = new Rng(seed), board = makeBoard(level, rng), labels = makeLabels(board, level, rng);
+      const count = planFor(level).side ** 2;
+      expect([...board].sort((a, b) => a - b)).toEqual(Array.from({ length: count }, (_, i) => i + 1));
+      let sums = 0, takes = 0;
+      labels.forEach((text, i) => {
+        expect(evaluate(text)).toBe(board[i]);
+        expect(text.length).toBeLessThanOrEqual(4);
+        const [, a, op, b] = parts(text), x = Number(a), y = Number(b);
+        if (op === '+') {
+          sums++;
+          if (board[i] === 1) expect(text).toBe('1+0');
+          else {
+            expect(Math.min(x, y)).toBeGreaterThanOrEqual(1);
+            if (level === 4) expect(Math.max(x, y)).toBeLessThanOrEqual(8);
+            else expect(Math.min(x, y)).toBeLessThanOrEqual(9);
+          }
+        } else {
+          takes++;
+          expect(op).toBe(MINUS);
+          expect(y).toBeGreaterThanOrEqual(1); expect(y).toBeLessThanOrEqual(9);
+          expect(x).toBeLessThanOrEqual(30);
+        }
+      });
+      if (level < 6) expect(takes).toBe(0);
+      else { expect(sums).toBeGreaterThanOrEqual(10); expect(takes).toBeGreaterThanOrEqual(10); }
+      for (let next = 1; next <= count; next++) expect(evaluate(labels[hintIndex(board, next)])).toBe(next);
+    }
+  });
+  it('varies the addends on a 4×4 board, rather than all +1', () => {
+    for (let seed = 1; seed <= 100; seed++) {
+      const rng = new Rng(seed), board = makeBoard(5, rng), labels = makeLabels(board, 5, rng);
+      const small = new Set(labels.filter((_, i) => board[i] > 1).map(t => { const [, a, , b] = parts(t); return Math.min(+a, +b); }));
+      expect(small.size).toBeGreaterThanOrEqual(3);
+    }
+  });
+  it('keeps plain numbers at levels 1–3 and is seeded', () => {
+    const board = makeBoard(2, new Rng(3));
+    expect(makeLabels(board, 2, new Rng(3))).toEqual(board.map(String));
+    const deal = (seed: number) => { const rng = new Rng(seed), b = makeBoard(6, rng); return makeLabels(b, 6, rng); };
+    expect(deal(9)).toEqual(deal(9));
+    expect(deal(9)).not.toEqual(deal(10));
   });
 });
