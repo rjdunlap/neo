@@ -13,6 +13,8 @@ import { arrowIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import { SecondShow } from './second-show';
 import { encoreFor } from './second-logic';
+import { ThirdShow } from './third-show';
+import { showFor, THIRD_NAME } from './third-logic';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   bumpLine,
@@ -57,10 +59,11 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const LEVELS: BandLevels = {
   // A tiny show (8) comes first for the youngest: two tricks, nothing counted.
-  toddler: { min: 1, max: 8, order: [8, 1] },
-  preschool: { min: 1, max: 8, order: [8, 1, 2, 3, 4] },
-  prek: { min: 2, max: 7 },
-  school: { min: 5, max: 7 },
+  // The third show (9) comes last at every band; its amounts follow the band.
+  toddler: { min: 1, max: 9, order: [8, 1, 9] },
+  preschool: { min: 1, max: 9, order: [8, 1, 2, 3, 4, 9] },
+  prek: { min: 2, max: 9, order: [2, 3, 4, 5, 6, 7, 9] },
+  school: { min: 5, max: 9, order: [5, 6, 7, 9] },
 };
 
 const line = (color: number, width = 6) => ({ width, color, join: 'round' as const, cap: 'round' as const });
@@ -1008,12 +1011,12 @@ export const quickTricks: GameModule = {
   bands: ['toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
   entryLevels: [8],
-  describeLevel: (level) => (level >= 4 && level <= 6 ? encoreFor(level).name : planFor(level).name),
+  describeLevel: (level) => (showFor(level) === 'second' ? encoreFor(level).name : showFor(level) === 'third' ? THIRD_NAME : planFor(level).name),
   music: STYLES.stickers,
   touchDemo: true,
   coplayHint: 'Be the audience! Clap after each trick and ask {name} what happened.',
   offScreen: 'Put on a tiny show: keep a toy dry under a leaf, match a pair of socks, make a bridge from a book.',
   hubIcon: () => new WigglyIcon(showArt(1)),
   sticker: (seed) => showArt(seed),
-  create: (ctx) => (ctx.level >= 4 && ctx.level <= 6 ? new SecondShow(ctx) : new QuickTricks(ctx)),
+  create: (ctx) => (showFor(ctx.level) === 'second' ? new SecondShow(ctx) : showFor(ctx.level) === 'third' ? new ThirdShow(ctx) : new QuickTricks(ctx)),
 };
