@@ -105,7 +105,7 @@
 - [ ] On the iPad: does device speech read the new Shape Buddies lines clearly?
 - [ ] On the iPad: do the bean, sunflower seed and acorn (and their sprouts) read as different at a glance (built 2026-11-03)?
 
-## Secret Code (dive, 2026-11-01; levels 8–11 built)
+## Secret Code (dive, 2026-11-01; proposed, levels not yet built)
 
 - [ ] Level 10 is built (2026-11-05): does a three-to-four-year-old read the gray cross as "not this one" without the card?
 - [ ] Level 9 is built: does marking the pet's try feel like being the boss of the door, or like a test?
