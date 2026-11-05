@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
   candidateMask, candidates, conflicts, digitsOf, fillMarks, fillMarksRow, offersFillMarks, countSolutions, deadEnds, formatGrid, geometry, gradeOf, hintFor, isSolved, makePuzzle, parseGrid, parsePuzzle, PLANS,
-  placements, planFor, randomBed, remaining, shortBed, solve, techniqueSolve, type Grid, type Hint, type Puzzle, type Size,
+  placements, planFor, randomBed, remaining, shortBed, solve, techniqueSolve, WING_BEDS, type Grid, type Hint, type Puzzle, type Size,
 } from './logic';
 
 /** A well-known 9 by 9 with one solution, for checks that should not depend on the generator. */
@@ -181,8 +181,8 @@ describe('sudoku beds', () => {
     expect(a.start).not.toEqual(c.start);
   });
 
-  it('climbs: more blanks as the levels rise within a size, and 9 by 9 after 6 by 6, with the 4 by 4 entry appended', () => {
-    expect(PLANS.map((p) => p.size)).toEqual([6, 6, 6, 9, 9, 9, 4]);
+  it('climbs: more blanks as the levels rise within a size, and 9 by 9 after 6 by 6, with the 4 by 4 entry and the crossing-rows top appended', () => {
+    expect(PLANS.map((p) => p.size)).toEqual([6, 6, 6, 9, 9, 9, 4, 9]);
     for (const size of [4, 6, 9] as Size[]) {
       const blanks = PLANS.filter((p) => p.size === size).map((p) => p.blanks);
       expect([...blanks].sort((a, b) => a - b)).toEqual(blanks);
@@ -327,9 +327,9 @@ describe('level 7, a 4 by 4 bed to start', () => {
 });
 
 describe('Fill marks on big beds', () => {
-  it('is offered on the 9 by 9 plans (levels 4 to 6) and on no 4 by 4 or 6 by 6 plan', () => {
+  it('is offered on the 9 by 9 plans (levels 4 to 6 and 8) and on no 4 by 4 or 6 by 6 plan', () => {
     const levels = PLANS.map((p, i) => (offersFillMarks(p.size) ? i + 1 : 0)).filter(Boolean);
-    expect(levels).toEqual([4, 5, 6]);
+    expect(levels).toEqual([4, 5, 6, 8]);
     for (const p of PLANS) expect(offersFillMarks(p.size)).toBe(p.size === 9);
   });
 
@@ -377,5 +377,68 @@ describe('Fill marks on big beds', () => {
     notes[cell] = 0;
     for (const q of geo.peers[cell]) notes[q] &= ~(1 << (digit - 1));
     grid.forEach((d, i) => { if (!d) expect(notes[i]).toBe(candidateMask(grid, 9, i)); });
+  });
+});
+
+describe('level 8, a crossing pair of rows', () => {
+  const plan = planFor(8);
+
+  it('is the top of the ladder: a 9 by 9 bed of tier 4', () => {
+    expect(plan).toMatchObject({ size: 9, tier: 4, blanks: 55 });
+    expect(PLANS.slice(0, 7).every((p) => p.tier <= 3)).toBe(true);
+  });
+
+  it('over 300 seeds, every bed has one solution, 55 blanks, grade 4 (tier 3 alone fails) and a sound X-Wing', () => {
+    for (let s = 1; s <= 300; s++) {
+      const p = makePuzzle(plan, new Rng(s * 6151)), label = `seed ${s}`;
+      expect(p.blanks, label).toBe(55);
+      expect(p.grade, label).toBe(4);
+      expect(techniqueSolve(p.start, 9, 3).solved, label).toBe(false);
+      expect(countSolutions(p.start, 9), label).toBe(1);
+      expectSound(p, label);
+      const wings = techniqueSolve(p.start, 9, 4).steps.filter((st) => st.tech === 'xwing');
+      expect(wings.length, label).toBeGreaterThan(0);
+      const g = geometry(9);
+      for (const w of wings) {
+        // Four corners, two on each of its two lines, in the same two crossing lines.
+        expect(w.pattern, label).toHaveLength(4);
+        expect(w.lines, label).toHaveLength(2);
+        for (const line of w.lines!) expect(w.pattern!.filter((c) => line.cells.includes(c)), label).toHaveLength(2);
+        const across = (c: number) => (w.lines![0].kind === 'row' ? g.colOf[c] : g.rowOf[c]);
+        expect(new Set(w.pattern!.map(across)).size, label).toBe(2);
+        for (const r of w.removed!) expect(w.pattern!.map(across), label).toContain(across(r.cell));
+      }
+    }
+  });
+
+  it('following the hints finishes every bed, and on most beds one of them explains the crossing pair of rows', () => {
+    const without: number[] = [];
+    for (let s = 1; s <= 40; s++) {
+      const p = makePuzzle(plan, new Rng(s * 53)), grid = p.start.slice();
+      let wing = false;
+      for (let k = 0; k < 55; k++) {
+        const h = hintFor(grid, p.start, p.solution, 9);
+        expect(h && h.kind !== 'fix' && h.kind !== 'few', `seed ${s}`).toBe(true);
+        if (h!.kind === 'rules-out' && h!.via.tech === 'xwing') wing = true;
+        expect((h as { digit: number }).digit, `seed ${s}`).toBe(p.solution[(h as { cell: number }).cell]);
+        grid[(h as { cell: number }).cell] = (h as { digit: number }).digit;
+      }
+      expect(isSolved(grid, 9), `seed ${s}`).toBe(true);
+      if (!wing) without.push(s);
+    }
+    // A bed where the crossing pair only frees a square through a later pair or pointing line names that last step instead.
+    expect(without.length, without.join(' ')).toBeLessThanOrEqual(10);
+  });
+
+  it('grows from a list of beds the solver checks, each seen many ways', () => {
+    for (const rows of WING_BEDS) {
+      const p = parsePuzzle(rows);
+      expect(p.blanks).toBe(55);
+      expect(p.grade).toBe(4);
+      expect(countSolutions(p.start, 9)).toBe(1);
+    }
+    const seen = new Set(Array.from({ length: 40 }, (_, s) => makePuzzle(plan, new Rng(s + 1)).start.join('')));
+    expect(seen.size).toBe(40);
+    expect(makePuzzle(plan, new Rng(5))).toEqual(makePuzzle(plan, new Rng(5)));
   });
 });

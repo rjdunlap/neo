@@ -35,6 +35,34 @@ async function sudokuTouchPlay() {
     if (bed.x < 0 || bed.y < 0 || bed.x + bed.w > neo.view.w || bed.y + bed.h > neo.view.h) out.push('bed off screen');
     return out.map((m) => `${label}: ${m} (${neo.view.w}x${neo.view.h}, scale ${scale})`);
   }, label);
+  // Level 8 (9 by 9, the top): a bed that needs a crossing pair of rows. Hints are asked for, and each hinted number placed,
+  // until the hint is the X-Wing one (two lines lit, four corners ringed); then the bed is filled to its sticker. `SUDOKU_ONLY=8`.
+  if (process.env.SUDOKU_ONLY === '8') {
+    await launch('sudoku-garden', 8); await idle();
+    const stickers = await page.evaluate(() => kit.store.data.stickers.length);
+    assert.deepEqual(await page.evaluate(() => [neo.scene.game.n, neo.scene.game.puzzle.blanks, neo.scene.game.puzzle.grade]), [9, 55, 4]);
+    await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(500);
+    assert.deepEqual(await targets('level 8 portrait'), []);
+    let wing = null, asked = 0;
+    for (; asked < 55 && !wing; asked++) {
+      await idle(); await tapSlot({ kind: 'hint' }); await page.waitForTimeout(300);
+      const h = await page.evaluate(() => { const h = neo.scene.game.hinted; return h && { kind: h.kind, cell: h.cell, digit: h.digit, tech: h.via?.tech, corners: h.via?.pattern?.length, lines: h.via?.lines?.length }; });
+      assert.ok(h && h.kind !== 'fix' && h.kind !== 'few', `hint ${asked + 1} names a reason`);
+      if (h.tech === 'xwing') { wing = h; break; }
+      await tapCell(h.cell); await page.waitForTimeout(60); await tapSlot({ kind: 'digit', d: h.digit }); await page.waitForTimeout(120);
+    }
+    assert.ok(wing, 'a hint explains the crossing pair of rows');
+    assert.deepEqual([wing.corners, wing.lines], [4, 2]);
+    await page.waitForTimeout(400); await screenshot('sudoku-touch-8-xwing-portrait');
+    await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(500);
+    await fillAll(); await finished('sudoku-garden');
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.length), stickers + 1, 'one sticker for the crossing-rows bed');
+    const r = await page.evaluate(() => { const r = kit.store.stats('sudoku-garden').history.at(-1); return [r.level, r.misses, r.hints]; });
+    assert.deepEqual(r, [8, 0, asked + 1]);
+    assert.deepEqual(errors, []);
+    log(`Sudoku Garden touch level 8: the X-Wing hint on hint ${asked + 1} (four corners, two lines), 64-unit targets upright, one sticker passed`);
+    return;
+  }
   // Level 7 (4 by 4, the entry): 2 by 2 boxes, a wrong number is a miss, one hint, filled to its sticker. `SUDOKU_ONLY=7` plays just this bed.
   await launch('sudoku-garden', 7); await idle();
   const before = await page.evaluate(() => kit.store.data.stickers.length);
