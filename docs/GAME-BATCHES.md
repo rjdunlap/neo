@@ -1557,6 +1557,14 @@ Files expected: `src/games/shape-buddies/logic.ts`, `logic.test.ts`, `index.ts`,
 
 Proof: new-band tier: typecheck, unit tests including the lands, registry band and order/entry tests, one play of level 7 at preschool with a Flat friend at the catch first, `fingerdemo` at 7, the preschool Tinker Lab page screenshot.
 
+### shape-buddies 6: Level 8 Your friend, my friend
+
+- **`shape-buddies`, Level 8 *Your friend, my friend* (dive slice 7)** (batch shape-buddies 5 built; shares `LEVELS` and the pre-K `order`; new interaction): a seat question, then level 3's spoon built by two people taking turns with one friend each (a drop passes the turn, a failed Try hands it to the friend whose role broke); **Just me** is level 3's solo switch. Pre-K `order: [7, 1, 2, 3, 8, 4, 5]`, school `order: [1, 2, 3, 8, 4, 5, 6]`. [Definition](deep-dives/shape-buddies.md#level-8-your-friend-my-friend-shared-roles-defined-2026-11-05)
+
+Files expected: `src/games/shape-buddies/logic.ts`, `logic.test.ts`, `index.ts`, `src/art/seats.ts` (new, Secret Code's `twoArt()` moved), `src/games/secret-code/index.ts` (the import only), `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+
+Proof: new-interaction tier: typecheck, unit tests including the turn rule, `sharedResult` and both orders, one play of level 8 at pre-K in Two of us with a tap on the dimmed friend and a failed Try that hands the turn over, then to the sticker, one portrait screenshot of the seat question, `fingerdemo` at 8, one build, one filtered Secret Code play of level 12 to its seat question.
+
 ### sing-along-barn 1: Tunes with their own notes
 
 - **`sing-along-barn`, Twinkle and Wheels on the Bus (dive slice 1)** (**built 2026-11-03**, branch `claude/sing-along-barn-1`, PR #1146; extends the built game; two new tunes): the test-guarded exception for tunes with their own notes, the two tunes, the name placeholder, the two-row chooser and the voice lines; the notes source-checked from a score and cited in GAMES. [Dive](deep-dives/sing-along-barn.md#build-slices-in-order)
