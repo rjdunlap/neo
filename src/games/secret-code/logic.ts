@@ -25,6 +25,8 @@ export interface CodePlan {
   maker?: boolean;
   /** *One slot*: a gray crosses that stone out in the tray, and trying a crossed-out stone is the only miss. */
   oneSlot?: boolean;
+  /** *Swap seats*: two halves, one code each. She makes and marks (a grown-up or the pet breaks it), then she breaks a code. */
+  swap?: boolean;
   name: string;
 }
 
@@ -41,10 +43,11 @@ export const PLANS: Readonly<Record<number, CodePlan>> = {
   9: { slots: 3, colors: 4, yellow: true, repeats: true, codes: 2, maker: true, name: 'Be the door: she makes a code and marks the pet’s tries green, yellow or gray' },
   10: { slots: 1, colors: 3, yellow: false, repeats: false, codes: 3, oneSlot: true, name: 'One slot, three stones: which stone is behind the door? A gray cross rules a stone out' },
   11: { slots: 4, colors: 5, yellow: true, repeats: false, codes: 2, detective: true, clues: { min: 3, max: 3 }, name: 'A bigger detective door: four slots, five colors, and three shown guesses' },
+  12: { slots: 3, colors: 4, yellow: true, repeats: true, codes: 1, maker: true, swap: true, name: 'Swap seats: she makes a code and marks a grown-up’s tries, then cracks the code they make (or plays it with the pet)' },
 };
 
-/** The plan for a level; an out-of-range ID falls back to the nearest end (below 1, to 1; above 11, to 11). */
-export const planFor = (level: number): CodePlan => PLANS[level] ?? (level > 11 ? PLANS[11] : PLANS[1]);
+/** The plan for a level; an out-of-range ID falls back to an end (below 1, to 1; above 12, to 11, the top of the school order, never the two-seat 12). */
+export const planFor = (level: number): CodePlan => PLANS[level] ?? (level > 12 ? PLANS[11] : PLANS[1]);
 
 export const STONES: ColorName[] = ['red', 'blue', 'yellow', 'green', 'purple'];
 
@@ -257,6 +260,31 @@ export function demoCode(plan: CodePlan, rng: Rng): number[] {
   for (let k = 0; k < 12; k++) {
     const code = madeCode(plan, draw);
     const tries = petTries(plan, code, rng.clone());
+    if (tries < fewest) { best = code; fewest = tries; }
+  }
+  return best;
+}
+
+/**
+ * *Swap seats*: the round's result. Every miss and hint is hers (seat 2's tries never count), but a round played with a
+ * second person is supported completion: never smooth, so a grown-up's easy code or play cannot step her up. A struggle
+ * still reads her own misses. Playing with the pet (*Just me*) passes her result unchanged.
+ */
+export function swapResult(twoSeats: boolean, misses: number, hints: number): { misses: number; hints: number } {
+  return { misses, hints: twoSeats ? Math.max(hints, 1) : hints };
+}
+
+/**
+ * The how-to card's ghost finger on *Swap seats*: of a few seeded codes, the one the reasoning player (`nextMove`) cracks
+ * in the fewest tries, so both halves fit the demonstration's time. It reads a salted clone, so it never changes the round.
+ */
+export function quickCode(plan: CodePlan, rng: Rng, salt: number): number[] {
+  const draw = new Rng(rng.clone().int(1, 2 ** 31 - 1) ^ salt);
+  let best: number[] = [];
+  let fewest = Infinity;
+  for (let k = 0; k < 12; k++) {
+    const code = madeCode(plan, draw);
+    const tries = solverTries(plan, code);
     if (tries < fewest) { best = code; fewest = tries; }
   }
   return best;
