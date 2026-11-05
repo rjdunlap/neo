@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { ColorName } from '../../art/palette';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
-import { copy, failureLine, guidance, initial, layout, looks, PLANS, SeedRound, SEEDS, SHAPES, trace, type Construction, type Place } from './logic';
+import { catcher, copy, failureLine, guidance, initial, layout, looks, PLANS, SeedRound, SEEDS, SHAPES, trace, type Construction, type Place } from './logic';
 
 describe('Shape Buddies', () => {
   it('accepts both identities and both bridge shapes, with exactly the functional roles required', () => {
@@ -216,6 +216,66 @@ describe('Shape Buddies', () => {
           expect(a.x - a.w / 2).toBeGreaterThan(150); expect(a.y - a.h / 2).toBeGreaterThan(100); expect(a.y + a.h / 2).toBeLessThan(v.h);
           for (const b of boxes.slice(i + 1)) expect(Math.abs(a.x - b.x) >= (a.w + b.w) / 2 || Math.abs(a.y - b.y) >= (a.h + b.h) / 2).toBe(true);
         }
+      }
+    });
+  });
+  describe('level 5, a cup on the ledge', () => {
+    const build = (a: Construction['friends'][number], b: Construction['friends'][number]) => { const s = initial(); s.friends = [a, b]; return s; };
+    const PLACES: Place[] = ['park', 'bridge', 'receiver'];
+    const all = function* () {
+      for (const a of SHAPES) for (const b of SHAPES) for (const p of PLACES) for (const q of PLACES) {
+        if (p !== 'park' && p === q) continue;
+        yield build({ shape: a, place: p }, { shape: b, place: q });
+      }
+    };
+    const working = (s: Construction, i: number) => {
+      const f = s.friends[i];
+      return (f.place === 'bridge' && ['flatten', 'slope'].includes(f.shape)) || (f.place === 'receiver' && f.shape === 'scoop');
+    };
+    it('catches exactly the two families: a bridge and a cup at the catch, or a cup on the ledge with the other friend anything', () => {
+      let ledge = 0, bridged = 0;
+      for (const s of all()) {
+        const gap = s.friends.find(f => f.place === 'bridge')?.shape, end = s.friends.find(f => f.place === 'receiver')?.shape;
+        const expected = gap === 'scoop' ? 'bridge' : (gap === 'flatten' || gap === 'slope') && end === 'scoop' ? 'receiver' : null;
+        expect(catcher(s, 5)).toBe(expected);
+        expect(trace(s, 5)).toBe(expected ? 'caught' : gap === 'flatten' || gap === 'slope' ? 'receiver' : 'bridge');
+        expect(failureLine(s, 5)).toBe(expected ? null : gap === 'flatten' || gap === 'slope' ? 'buddies.cup' : 'buddies.ledgeNeed');
+        if (expected === 'bridge') ledge++; else if (expected === 'receiver') bridged++;
+      }
+      // A cup on the ledge with the other friend parked in any shape, or at the catch in any shape, in either identity.
+      expect(ledge).toBe(2 * SHAPES.length * 2); expect(bridged).toBe(2 * 2);
+    });
+    it('a cup over level 1 open water still falls, and two cups catch in the gap first', () => {
+      const cupInGap = build({ shape: 'scoop', place: 'bridge' }, { shape: 'plain', place: 'park' });
+      expect(trace(cupInGap, 1)).toBe('bridge'); expect(catcher(cupInGap, 1)).toBeNull(); expect(trace(cupInGap, 5)).toBe('caught');
+      expect(catcher(build({ shape: 'scoop', place: 'bridge' }, { shape: 'scoop', place: 'receiver' }), 5)).toBe('bridge');
+      expect(catcher(build({ shape: 'slope', place: 'bridge' }, { shape: 'scoop', place: 'receiver' }), 5)).toBe('receiver');
+      for (const level of [1, 2, 3, 4]) for (const s of all()) expect(catcher(s, level)).toBe(trace(s, level) === 'caught' ? 'receiver' : null);
+    });
+    it('guidance finishes what she started and never changes a friend already in a working role', () => {
+      for (const s of all()) {
+        const g = guidance(s, 5); if (!g) continue;
+        expect(working(s, g.friend)).toBe(false);
+        const gapBridge = s.friends.some(f => f.place === 'bridge' && ['flatten', 'slope'].includes(f.shape));
+        expect(g).toMatchObject(gapBridge ? { shape: 'scoop', dock: 'receiver' } : { shape: 'scoop', dock: 'bridge' });
+        s.friends[g.friend] = { shape: g.shape, place: g.dock };
+        expect(trace(s, 5)).toBe('caught');
+      }
+      expect(guidance(initial(), 5)).toEqual({ friend: 0, shape: 'scoop', dock: 'bridge' });
+    });
+    it('the carry starts from whichever dock caught, with no miss and the hint charged once', () => {
+      const r = new SeedRound(5); r.edit('plain', 'bridge');
+      r.edit('flatten');
+      for (let n = 0; n < 2; n++) { expect(r.trySeed()).toBe('receiver'); r.settle('receiver'); }
+      expect(r.hints).toBe(1);
+      r.select(1); r.edit('scoop', 'receiver'); expect(r.trySeed()).toBe('caught'); r.settle('caught');
+      expect(catcher(r.state, 5)).toBe('receiver');
+      const s = new SeedRound(5); s.edit('scoop', 'bridge'); expect(s.trySeed()).toBe('caught'); s.settle('caught');
+      expect(catcher(s.state, 5)).toBe('bridge'); expect(s.carry()).toBe(true); expect(s.finish()).toBe(true); expect([s.misses, s.hints]).toEqual([0, 0]);
+    });
+    it('keeps level 1 geometry, so every box stays separate and at least 100 units', () => {
+      for (const [w, h] of [[1024, 768], [768, 1024], [844, 390], [750, 369]]) {
+        const v = computeView(w, h); expect(layout(v.w, v.h, 5)).toEqual(layout(v.w, v.h, 1));
       }
     });
   });
