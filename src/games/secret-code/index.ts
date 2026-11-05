@@ -12,11 +12,13 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { contradictsClues, detectiveDoor, demoCode, doorKinds, ignoredClues, makeCode, nextMark, nextMove, petTry, planFor, rowsThatFit, score, STONES, suggestion, visibleRows, wrongMarks, type CodePlan, type DoorKind, type Guess, type Mark } from './logic';
+import { contradictsClues, crossedOut, detectiveDoor, demoCode, doorKinds, ignoredClues, makeCode, nextMark, nextMove, petTry, planFor, rowsThatFit, score, STONES, suggestion, visibleRows, wrongMarks, type CodePlan, type DoorKind, type Guess, type Mark } from './logic';
 
 const LEVELS: BandLevels = {
+  // Level 10, One slot, opens preschool before level 1's two slots.
+  preschool: { min: 1, max: 10, order: [10, 1] },
   prek: { min: 1, max: 3 },
-  // ID 10 is reserved for the preschool opening (not built yet); level 9, Be the door, marks yellow before four slots.
+  // Level 9, Be the door, marks yellow before four slots.
   school: { min: 2, max: 11, order: [2, 3, 4, 9, 5, 6, 7, 8, 11] },
 };
 
@@ -127,6 +129,8 @@ class SecretCode implements Game {
   private readonly mine = new Container();
   private readonly bubble = new Graphics();
   private readonly glow = new Graphics();
+  /** One slot: the gray crosses over ruled-out tray stones. */
+  private readonly crosses = new Container();
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -141,6 +145,7 @@ class SecretCode implements Game {
     this.mine.eventMode = 'none';
     this.bubble.eventMode = 'none';
     this.glow.eventMode = 'none';
+    this.crosses.eventMode = 'none';
     ctx.stage.addChild(this.door, this.leaf, this.past, this.slotLayer, this.ghost, this.key, this.ring);
     this.key.visible = !this.plan.maker;
     this.ready.visible = this.show.visible = false;
@@ -162,6 +167,7 @@ class SecretCode implements Game {
       this.tray.push(b);
       ctx.stage.addChild(b);
     }
+    if (this.plan.oneSlot) ctx.stage.addChild(this.crosses, this.glow);
   }
 
   start() {
@@ -193,7 +199,22 @@ class SecretCode implements Game {
     this.drawGlow();
     const xs = spread(this.tray.length, 190, v.w - 110, 124);
     this.tray.forEach((b, i) => b.position.set(xs[i], v.h - 90));
+    this.drawCrosses();
     this.layoutPast();
+  }
+
+  /** One slot: each stone a gray has ruled out dims in the tray under a gray cross, so "not this one" stays visible. */
+  private drawCrosses() {
+    if (!this.plan.oneSlot) return;
+    const out = crossedOut(this.plan, this.history);
+    this.crosses.removeChildren().forEach((c) => c.destroy());
+    this.tray.forEach((b, c) => {
+      b.alpha = out.has(c) ? 0.4 : 1;
+      if (!out.has(c)) return;
+      const m = markArt('gray', 22);
+      m.position.set(b.x + 34, b.y - 34);
+      this.crosses.addChild(m);
+    });
   }
 
   update() {
@@ -285,6 +306,7 @@ class SecretCode implements Game {
     this.resize(this.view);
     this.busy = false;
     if (this.index > 0) return;
+    if (this.plan.oneSlot) return this.ctx.instruct('code.oneslot');
     if (this.plan.detective) return this.ctx.instruct('code.detective');
     if (this.plan.repeats) return this.ctx.instruct('code.repeat');
     return this.ctx.instruct(this.plan.yellow ? 'code.yellow' : 'code.yesno');
@@ -293,6 +315,7 @@ class SecretCode implements Game {
   /** Tap a stone in the tray: it goes into the first empty slot. */
   private add(color: number) {
     if (this.busy || this.finished || this.phase === 'mark') return;
+    if (crossedOut(this.plan, this.history).has(color)) return void this.crossed(color);
     const i = this.guess.indexOf(null);
     if (i < 0) {
       sfx.boing();
@@ -357,7 +380,8 @@ class SecretCode implements Game {
       sfx.boing();
       if (this.plan.detective) await this.ctx.say('code.contradiction');
       else await this.ctx.say('code.ignored', { color: STONES[stones[ignored[0]]] });
-    } else if (this.plan.yellow) await this.ctx.say('code.marks', { g: green, y: marks.filter((m) => m === 'yellow').length });
+    } else if (this.plan.oneSlot) await this.ctx.say('code.notthis');
+    else if (this.plan.yellow) await this.ctx.say('code.marks', { g: green, y: marks.filter((m) => m === 'yellow').length });
     else await this.ctx.say('code.green', { g: green });
     await this.ctx.tw.wait(0.4);
     badges.forEach((b) => b.destroy());
@@ -366,9 +390,22 @@ class SecretCode implements Game {
     marks.forEach((m, i) => {
       if (m !== 'green') this.clear0(i);
     });
+    this.drawCrosses();
     if (!this.hinted && (this.wrongs >= 2 || this.history.length >= this.plan.slots + 4)) this.hint();
     else if (this.hinted) this.showIdea();
     this.busy = false;
+  }
+
+  /** One slot: a crossed-out stone stays in the tray. Trying it is the level's only miss; after two, the hidden stone glows. */
+  private crossed(color: number) {
+    this.misses++;
+    this.wrongs++;
+    sfx.boing();
+    const b = this.tray[color];
+    // A wobble on the pivot, so a resize mid-wobble keeps the tray in place.
+    void this.ctx.tw.to(b.pivot, { x: -10 }, { duration: 0.06 }).then(() => this.ctx.tw.to(b.pivot, { x: 10 }, { duration: 0.08 })).then(() => this.ctx.tw.to(b.pivot, { x: 0 }, { duration: 0.06 }));
+    if (!this.hinted && this.wrongs >= 2) this.hint();
+    else void this.ctx.say('code.crossed');
   }
 
   private clear0(i: number) {
@@ -382,13 +419,13 @@ class SecretCode implements Game {
     this.hinted = true;
     this.hints++;
     this.showIdea();
-    void this.ctx.say('code.hint');
+    void this.ctx.say(this.plan.oneSlot ? 'code.onehint' : 'code.hint');
   }
 
   /** Draw the faint stones from every clue so far; after each later try on a hinted door they are redrawn, with no new hint counted. */
   private showIdea() {
     this.ghost.removeChildren().forEach((c) => c.destroy({ children: true }));
-    suggestion(this.plan, this.history, this.code).forEach((c) => {
+    (this.plan.oneSlot ? this.code : suggestion(this.plan, this.history, this.code)).forEach((c) => {
       const s = stoneArt(c, 40);
       s.alpha = 0.4;
       this.ghost.addChild(s);
@@ -532,6 +569,12 @@ class SecretCode implements Game {
   /** After two wrong marks on one try, the right mark glows around each disc still wrong (one hint). */
   private drawGlow() {
     const g = this.glow.clear();
+    if (this.plan.oneSlot) {
+      // After two crossed-out stones tried, the stone behind the door glows in the tray.
+      const b = this.tray[this.code[0]];
+      if (this.hinted && b && !this.finished) g.circle(b.x, b.y, 62).stroke({ width: 10, color: swatch.yellow.fill, alpha: 0.9 });
+      return;
+    }
     if (!this.plan.maker || !this.hinted || this.phase !== 'mark') return;
     const right = score(this.code, this.petStones, true);
     for (const i of wrongMarks(this.code, this.petStones, this.marks)) {
@@ -657,7 +700,8 @@ export const secretCode: GameModule = {
   region: 'puzzle-peaks',
   challenge: 'logic',
   skills: ['deduction', 'using-evidence', 'colors', 'reasoning'],
-  bands: ['prek', 'school'],
+  bands: ['preschool', 'prek', 'school'],
+  entryLevels: [10],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
