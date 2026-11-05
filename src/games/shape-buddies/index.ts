@@ -12,11 +12,12 @@ import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { failureLine, guidance, layout, looks, planFor, SeedRound, type Dock, type SeedKind, type Shape } from './logic';
 
-const LEVELS: BandLevels = { prek: { min: 1, max: 3 }, school: { min: 1, max: 3 } };
+const LEVELS: BandLevels = { prek: { min: 1, max: 4 }, school: { min: 1, max: 4 } };
 const DESCRIPTIONS: Record<number, string> = {
   1: 'Reshape a bridge and cup; test and plant one seed',
   2: 'A step down: only a slope bridge reaches the low bank; test and plant one seed',
   3: 'Two make one: a flat friend and a cup friend make a spoon; test and plant one seed',
+  4: 'Down and catch: a slope friend and a cup friend make a spoon down to a low bank; test and plant one seed',
 };
 const TOOLS = ['flatten', 'scoop', 'slope'] as const;
 function paper(shape: Shape, color: ColorName): Graphics {
@@ -69,7 +70,7 @@ class ShapeBuddies implements Game {
   readonly round: SeedRound;
   readonly level: number;
   private readonly step: number;
-  /** Level 3: the two docks are halves of one wide gap, and the friends hold hands. */
+  /** Levels 3 and 4: the two docks are halves of one wide gap, and the friends hold hands. */
   private readonly joined: boolean;
   private clasped = false;
   readonly friends = [new Container(), new Container()];
@@ -143,11 +144,11 @@ class ShapeBuddies implements Game {
     const potLabel = label('Plant', 22); potLabel.y = 80; this.pot.addChild(potLabel);
     onTap(this.pot, () => { void this.carry(); });
     for (const node of [this.scenery, this.join, this.seed, this.sprout, this.rings, this.heading, this.caption]) node.eventMode = 'none';
-    if (this.joined) this.heading.text = 'Two friends make one spoon';
+    if (this.joined) this.heading.text = this.step ? 'A spoon that slopes down' : 'Two friends make one spoon';
     ctx.stage.addChild(this.scenery, ...this.parks, this.docks.bridge, this.docks.receiver, this.join, this.pot, ...this.friends, ...this.tools, this.tryButton, this.undoButton, this.helpButton, this.seed, this.sprout, this.heading, this.caption, this.rings);
     this.resize(ctx.view); this.sync();
   }
-  start() { void this.ctx.instruct(this.joined ? 'buddies.start3' : this.step ? 'buddies.start2' : 'buddies.start'); }
+  start() { void this.ctx.instruct(this.joined ? this.step ? 'buddies.start4' : 'buddies.start3' : this.step ? 'buddies.start2' : 'buddies.start'); }
   private place() { return layout(this.view.w, this.view.h, this.level); }
   private canEdit() { return !this.dead && !this.busy && this.round.editable && !this.handles.some(h => h.dragging); }
   private drop(i: number, x: number, y: number) {
@@ -189,21 +190,22 @@ class ShapeBuddies implements Game {
     if (!this.busy) this.seed.position.set(this.round.phase === 'caught' ? l.receiver.x : l.bridge.x - 180, this.round.phase === 'caught' ? l.receiver.y + 5 : l.bridge.y - 48);
     this.drawRings();
   }
-  /** Level 3 only: a dashed outline makes the two halves one thing, and two filled halves hold hands with a soft clasp. */
+  /** Levels 3 and 4: a dashed outline makes the two halves one thing, and two filled halves hold hands with a soft clasp. Over a step, both follow it down. */
   private drawJoin(l: ReturnType<typeof layout>) {
     this.join.clear();
     if (!this.joined) return;
-    const x0 = l.bridge.x - 96, x1 = l.receiver.x + l.receiverWidth / 2 + 6, y0 = l.bridge.y - 61, y1 = l.bridge.y + 61;
-    for (let x = x0; x < x1; x += 24) this.join.moveTo(x, y0).lineTo(Math.min(x + 12, x1), y0).moveTo(x, y1).lineTo(Math.min(x + 12, x1), y1);
+    const x0 = l.bridge.x - 96, x1 = l.receiver.x + l.receiverWidth / 2 + 6, a = l.bridge.x + 90, b = l.receiver.x - l.receiverWidth / 2;
+    const at = (x: number) => l.bridge.y + (l.receiver.y - l.bridge.y) * Math.min(1, Math.max(0, (x - a) / (b - a)));
+    for (let x = x0; x < x1; x += 24) { const e = Math.min(x + 12, x1); this.join.moveTo(x, at(x) - 61).lineTo(e, at(e) - 61).moveTo(x, at(x) + 61).lineTo(e, at(e) + 61); }
     this.join.stroke({ width: 3, color: swatch.teal.line, alpha: 0.6 });
     const both = this.round.state.friends.every(f => f.place !== 'park');
     if (both && !this.clasped) sfx.bell(9);
     this.clasped = both;
     if (!both || this.round.phase === 'carrying' || this.finished) return;
     // Hands reach from the end of the near friend to the far friend's near edge and overlap there.
-    const y = l.bridge.y + 2, from = l.bridge.x + 70, to = l.receiver.x - 40;
-    for (const i of [0, 1]) this.join.moveTo(i ? to : from, y).lineTo((from + to) / 2 + (i ? 5 : -5), y).stroke({ width: 6, color: swatch[this.colors[i]].line, cap: 'round' });
-    this.join.circle((from + to) / 2 - 5, y, 8).fill(swatch[this.colors[0]].fill).circle((from + to) / 2 + 5, y, 8).fill(swatch[this.colors[1]].fill);
+    const from = l.bridge.x + 70, to = l.receiver.x - 40, y0 = l.bridge.y + 2 + this.step * 0.5, y1 = l.receiver.y + 2, mid = (from + to) / 2, y = (y0 + y1) / 2;
+    for (const i of [0, 1]) this.join.moveTo(i ? to : from, i ? y1 : y0).lineTo(mid + (i ? 5 : -5), y).stroke({ width: 6, color: swatch[this.colors[i]].line, cap: 'round' });
+    this.join.circle(mid - 5, y, 8).fill(swatch[this.colors[0]].fill).circle(mid + 5, y, 8).fill(swatch[this.colors[1]].fill);
   }
   private drawRings() {
     this.rings.clear();
@@ -233,9 +235,12 @@ class ShapeBuddies implements Game {
     await move(-85, -25, 0.45); if (this.dead) return;
     if (this.joined) {
       // Along the handle into the bowl, or the way the spoon fell short: near water, the slope's dip, the gap, or right across.
-      const line = failureLine(this.round.state, this.level);
-      const path = line === 'buddies.joinPath' ? [[-30, 112]] : line === 'buddies.joinSlope' ? [[0, 15], [30, 112]]
-        : line === 'buddies.joinShort' ? [[90, -25], [150, 112]] : line === 'buddies.joinCup' ? [[far + 90, -25], [far + 200, 112]] : [[110, -25], [far, 5]];
+      // Over level 4's step the handle runs down a slope (or a flat path stops short high up) and the bowl sits `d` lower.
+      const line = failureLine(this.round.state, this.level), handle = d ? [75, 20] : [90, -25];
+      const path = line === 'buddies.joinPath' || line === 'buddies.downPath' ? [[-30, 112 + d]] : line === 'buddies.joinSlope' ? [[0, 15], [30, 112]]
+        : line === 'buddies.downFlat' ? [[55, -25], [45, 112 + d]]
+        : line === 'buddies.joinShort' ? [handle, [150, 112 + d]] : line === 'buddies.joinCup' ? [...d ? [handle] : [], [far + 90, -25 + d], [far + 200, 112 + d]]
+        : [d ? handle : [110, -25], [far, 5 + d]];
       for (const [x, y] of path) { await move(x, y, 0.45); if (this.dead) return; }
     } else if (flat) { await move(55, -25, 0.4); if (this.dead) return; await move(45, 112 + d, 0.5); if (this.dead) return; }
     else { await move(result === 'bridge' ? 0 : 90, result === 'bridge' ? 112 + d : -20 + d, 0.6); if (this.dead) return; }
@@ -280,7 +285,7 @@ class ShapeBuddies implements Game {
         const i = this.round.state.friends.findIndex(f => f.place === 'receiver');
         this.friends[i].position.set(this.seed.x, this.seed.y - 5);
         // Both friends carry the spoon: the handle walks at its place behind the bowl.
-        if (this.joined) this.friends[1 - i].position.set(this.seed.x - (l.receiver.x - l.bridge.x), this.seed.y - 5);
+        if (this.joined) this.friends[1 - i].position.set(this.seed.x - (l.receiver.x - l.bridge.x), this.seed.y - 5 - (l.receiver.y - l.bridge.y));
       }
     }
     this.drawRings();
@@ -288,9 +293,9 @@ class ShapeBuddies implements Game {
   resize(view: View) {
     this.view = view; const l = layout(view.w, view.h, this.level), x = l.bridge.x, d = this.step;
     this.scenery.clear().rect(0, 0, view.w, view.h).fill(cream);
-    // The wide gap: the near bank ends at left + 290 and the far bank starts at left + 690. Cushions sit under
+    // The wide gap: the near bank ends at left + 290 (raised by the step at level 4) and the far bank starts at left + 690. Cushions sit under
     // the near half (no path, or a slope's dip), in the gap between the halves, and on the far bank past the spoon.
-    if (this.joined) this.scenery.roundRect(x - 230, 340, 140, 75, 20).roundRect(x + 310, 340, 270, 75, 20).fill(grass)
+    if (this.joined) this.scenery.roundRect(x - 230, 340 - d, 140, 75 + d, 20).roundRect(x + 310, 340, 270, 75, 20).fill(grass)
       .roundRect(x - 50, 397, 120, 22, 10).roundRect(x + 110, 397, 80, 22, 10).roundRect(x + 350, 397, 100, 22, 10).fill(swatch.pink.light);
     else {
       this.scenery.roundRect(x - 250, 340 - d, 175, 75 + d, 20).roundRect(x + 75, 340, 485, 75, 20).fill(grass)
