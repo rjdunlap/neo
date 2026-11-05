@@ -3,8 +3,10 @@ import { Rng } from '../../engine/random';
 import { SCRIPT } from '../../content/voice-script';
 import {
   allRiddles, ARGUABLE, chipsFor, fails, familyOf, FAMILIES, fitsBoth, guessFor, holds, makeQuestions, makeRiddles, makeTap, mateTags,
-  PLANS, rhymes, spokenList, TAG_IDS, TAGS, wordToTap,
+  PLANS, rhymes, SCENES, sceneFor, spokenList, TAG_IDS, TAGS, wordToTap,
 } from './logic';
+import { rhymeTime } from './index';
+import { levelsInOrder, stepLevel } from '../../progress/difficulty';
 
 describe('Rhyme Time', () => {
   it('never lists a word in two families', () => {
@@ -187,5 +189,66 @@ describe('Rhyme Riddles (levels 5-7)', () => {
   it('has every riddle voice line', () => {
     const ids = ['rhyme.riddle', 'rhyme.riddle2', 'rhyme.riddleClues', 'rhyme.riddleNoMeaning', 'rhyme.riddleNoRhyme', 'rhyme.riddleYes', 'rhyme.riddleHint', 'rhyme.make', 'rhyme.chipSound', 'rhyme.chipMeaning', 'rhyme.makeGuess', 'rhyme.makeWrong', 'rhyme.makeNone', 'rhyme.makeBoth', 'rhyme.makeHint'];
     for (const id of ids) expect(Object.keys(SCRIPT)).toContain(id);
+  });
+});
+
+describe('Silly pairs (level 8)', () => {
+  const plan = PLANS[7];
+
+  it('is level 8: three riders, four scenes', () => {
+    expect(plan.mode).toBe('scene');
+    expect(plan.choices).toBe(3);
+    expect(plan.questions).toBe(4);
+  });
+
+  it('pairs every place with a rider that rhymes, each drawn, with an anchor and a preposition', () => {
+    const family = new Set(Object.values(FAMILIES).flat());
+    for (const s of SCENES) {
+      expect(family.has(s.place) && family.has(s.rider)).toBe(true);
+      expect(rhymes(s.place, s.rider)).toBe(true);
+      expect(['in', 'on']).toContain(s.prep);
+      expect(Number.isFinite(s.anchor.x) && Number.isFinite(s.anchor.y)).toBe(true);
+    }
+    expect(new Set(SCENES.map((s) => familyOf(s.place))).size).toBe(SCENES.length);
+    expect(SCENES).toHaveLength(12);
+  });
+
+  it('never lets a distractor rhyme with the place or another distractor, and never repeats a place in a round', () => {
+    for (let seed = 1; seed <= 300; seed++) {
+      const qs = makeQuestions(plan, new Rng(seed));
+      expect(qs).toHaveLength(4);
+      expect(new Set(qs.map((q) => q.prompt)).size).toBe(4);
+      for (const q of qs) {
+        const scene = sceneFor(q.prompt!);
+        expect(q.answer).toEqual([scene.rider]);
+        expect(q.words).toHaveLength(3);
+        expect(q.words).toContain(scene.rider);
+        const others = q.words.filter((w) => w !== scene.rider);
+        for (const w of others) expect(rhymes(w, q.prompt!) || w === q.prompt).toBe(false);
+        expect(familyOf(others[0])).not.toBe(familyOf(others[1]));
+        expect(wordToTap(plan, q, null)).toBe(scene.rider);
+      }
+    }
+  });
+
+  it('shows every scene across seeds, and the same seed gives the same round', () => {
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 100; seed++) for (const q of makeQuestions(plan, new Rng(seed))) seen.add(q.prompt!);
+    expect(seen.size).toBe(SCENES.length);
+    expect(makeQuestions(plan, new Rng(9))).toEqual(makeQuestions(plan, new Rng(9)));
+  });
+
+  it('sits second on both ladders, which still start where they did', () => {
+    expect(levelsInOrder(rhymeTime.levels('prek'))).toEqual([1, 8, 2, 3, 5]);
+    expect(levelsInOrder(rhymeTime.levels('school'))).toEqual([2, 8, 3, 4, 5, 6, 7]);
+    expect(stepLevel(1, 1, rhymeTime.levels('prek'))).toBe(8);
+    expect(stepLevel(8, 1, rhymeTime.levels('prek'))).toBe(2);
+    expect(stepLevel(2, 1, rhymeTime.levels('school'))).toBe(8);
+    expect(stepLevel(8, -1, rhymeTime.levels('school'))).toBe(2);
+    expect(rhymeTime.describeLevel(8)).toMatch(/Silly pairs/);
+  });
+
+  it('has its voice lines', () => {
+    for (const id of ['rhyme.scene', 'rhyme.sceneYes', 'rhyme.sceneNo']) expect(Object.keys(SCRIPT)).toContain(id);
   });
 });

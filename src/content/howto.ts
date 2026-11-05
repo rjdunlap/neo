@@ -2903,15 +2903,18 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 5, to: 5, text: 'Listen to both clues, a sound ("it rhymes with bear") and then a meaning ("you can sit on it"), and tap the one picture of three that fits both.' },
       { from: 6, to: 6, text: 'Listen to both clues, a meaning ("you can sit on it") and then a sound ("it rhymes with bear"), and tap the one picture of four that fits both.' },
       { from: 7, to: 7, text: 'The pet stars a picture. Tap a sound chip and a meaning chip that lead to it, then tap the pet\'s mouth to let it guess. A chip can be changed.' },
+      { from: 8, to: 8, text: 'A place stands in the middle ("Who goes in the truck?"). Tap the one of three pictures below that rhymes with it, and it hops in: a duck in a truck.' },
     ],
     finish: [
       { to: 6, text: 'The round ends when the rhyme question or riddle is answered.' },
       { from: 7, to: 7, text: 'Each of three riddles ends when the pet finds the starred picture from her clues.' },
+      { from: 8, to: 8, text: 'The round ends after four silly scenes.' },
     ],
     note: [
       { to: 4, text: 'Tapping a picture replays its word.' },
       { from: 5, to: 6, text: 'A picture that fails a clue is told which clue it fails; after two, the right one glows. The music note repeats the riddle for free.' },
       { from: 7, to: 7, text: 'No mistakes are counted: a clue pair that finds another picture or nothing is part of the game. After two, the working chips glow.' },
+      { from: 8, to: 8, text: 'A picture that does not rhyme hops in, the pet giggles that the two do not rhyme, and it hops back out; after two, the right one glows. The music note repeats the question for free.' },
     ],
   },
   'stop-and-go': {
