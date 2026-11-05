@@ -174,6 +174,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 5, to: 5, text: 'The gap is a rocky crack: a bridge and a cup at the catch work, or one cup on its ledge.' },
       { from: 6, to: 6, text: 'The stream runs the other way: make a slope, tap Turn so it runs down to the low bank, then add a cup.' },
       { from: 7, to: 7, text: 'A wooden plank already crosses the stream. Make the one friend a cup and drag it to the catching dock.' },
+      { from: 8, to: 8, text: 'Two of us: one friend each; only the glowing friend moves, and a drop passes the turn. Just me: use both.' },
       'Tap Try to release the seed. After it is caught, tap the pot to carry and plant it.',
       'Use Replay to return a caught seed to the chute. Undo restores the last shape, placement or turn. Drag a friend to its own parking spot to free a dock.',
     ],

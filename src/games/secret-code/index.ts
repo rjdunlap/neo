@@ -1,5 +1,6 @@
 import { Circle, Container, Graphics } from 'pixi.js';
 import { ink, swatch, wood } from '../../art/palette';
+import { twoArt } from '../../art/seats';
 import { shapePath, type ShapeKind } from '../../art/shapes';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
@@ -71,13 +72,6 @@ function discArt(mark: Mark | null, r: number): Graphics {
   if (mark) return markArt(mark, r);
   const g = new Graphics().circle(0, 0, r).fill(0xffffff).stroke({ width: 5, color: 0xc9ccd6 });
   return g.circle(0, 0, r * 0.12).fill(0xc9ccd6);
-}
-
-/** Swap seats: the "Two of us" button, a grown-up and a child side by side. */
-function twoArt(): Graphics {
-  const g = new Graphics();
-  g.circle(-14, -20, 11).fill(swatch.blue.fill).roundRect(-28, -6, 28, 34, 12).fill(swatch.blue.fill);
-  return g.circle(16, -6, 9).fill(swatch.green.fill).roundRect(5, 6, 22, 22, 10).fill(swatch.green.fill);
 }
 
 /** Swap seats: the "Just me" button, the pet's face. */
