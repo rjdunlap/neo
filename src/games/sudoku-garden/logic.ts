@@ -13,6 +13,8 @@ export interface House {
   kind: HouseKind;
   index: number;
   cells: readonly number[];
+  /** What the spoken hints call it when not its kind: a patchwork bed's boxes are patches. */
+  word?: 'patch';
 }
 
 export interface Geometry {
@@ -29,24 +31,50 @@ export interface Geometry {
   boxOf: readonly number[];
   /** The three houses each square belongs to: its row, column and box. */
   housesOf: readonly (readonly [House, House, House])[];
+  /** A patchwork bed's layout (one letter a square, row by row), or null for a bed of regular boxes. */
+  patches: string | null;
+}
+
+/** A bed's shape: its size for a bed of regular boxes, or its geometry (a patchwork bed's comes from `patchGeometry`). */
+export type Shape = Size | Geometry;
+export const geo = (s: Shape): Geometry => (typeof s === 'number' ? geometry(s) : s);
+
+function build(size: Size, boxOf: readonly number[], br: number, bc: number, patches: string | null): Geometry {
+  const n = size, cells = n * n;
+  const rowOf = Array.from({ length: cells }, (_, i) => Math.floor(i / n));
+  const colOf = Array.from({ length: cells }, (_, i) => i % n);
+  const houses: House[] = [];
+  for (let k = 0; k < n; k++) houses.push({ kind: 'row', index: k, cells: Array.from({ length: n }, (_, c) => k * n + c) });
+  for (let k = 0; k < n; k++) houses.push({ kind: 'column', index: k, cells: Array.from({ length: n }, (_, r) => r * n + k) });
+  for (let k = 0; k < n; k++) houses.push({ kind: 'box', index: k, cells: Array.from({ length: cells }, (_, i) => i).filter((i) => boxOf[i] === k), ...(patches ? { word: 'patch' as const } : {}) });
+  const peers = Array.from({ length: cells }, (_, i) => Array.from({ length: cells }, (_, j) => j).filter((j) => j !== i && (rowOf[j] === rowOf[i] || colOf[j] === colOf[i] || boxOf[j] === boxOf[i])));
+  const housesOf = Array.from({ length: cells }, (_, i) => [houses[rowOf[i]], houses[n + colOf[i]], houses[2 * n + boxOf[i]]] as const);
+  return { size, br, bc, cells, houses, peers, rowOf, colOf, boxOf, housesOf, patches };
 }
 
 const geometries = new Map<Size, Geometry>();
 export function geometry(size: Size): Geometry {
   let g = geometries.get(size);
   if (g) return g;
-  const n = size, br = size === 9 ? 3 : 2, bc = size === 4 ? 2 : 3, cells = n * n;
-  const rowOf = Array.from({ length: cells }, (_, i) => Math.floor(i / n));
-  const colOf = Array.from({ length: cells }, (_, i) => i % n);
-  const boxOf = Array.from({ length: cells }, (_, i) => Math.floor(rowOf[i] / br) * (n / bc) + Math.floor(colOf[i] / bc));
-  const houses: House[] = [];
-  for (let k = 0; k < n; k++) houses.push({ kind: 'row', index: k, cells: Array.from({ length: n }, (_, c) => k * n + c) });
-  for (let k = 0; k < n; k++) houses.push({ kind: 'column', index: k, cells: Array.from({ length: n }, (_, r) => r * n + k) });
-  for (let k = 0; k < n; k++) houses.push({ kind: 'box', index: k, cells: Array.from({ length: cells }, (_, i) => i).filter((i) => boxOf[i] === k) });
-  const peers = Array.from({ length: cells }, (_, i) => Array.from({ length: cells }, (_, j) => j).filter((j) => j !== i && (rowOf[j] === rowOf[i] || colOf[j] === colOf[i] || boxOf[j] === boxOf[i])));
-  const housesOf = Array.from({ length: cells }, (_, i) => [houses[rowOf[i]], houses[n + colOf[i]], houses[2 * n + boxOf[i]]] as const);
-  g = { size, br, bc, cells, houses, peers, rowOf, colOf, boxOf, housesOf };
+  const n = size, br = size === 9 ? 3 : 2, bc = size === 4 ? 2 : 3;
+  g = build(size, Array.from({ length: n * n }, (_, i) => Math.floor(Math.floor(i / n) / br) * (n / bc) + Math.floor((i % n) / bc)), br, bc, null);
   geometries.set(size, g);
+  return g;
+}
+
+/**
+ * A patchwork bed's geometry from its layout: one row of letters a line, each letter one patch. The patches take the
+ * place of the boxes (as houses of kind `box`, called patches when spoken), numbered by first appearance.
+ */
+const patchworks = new Map<string, Geometry>();
+export function patchGeometry(rows: readonly string[]): Geometry {
+  const key = rows.join('');
+  let g = patchworks.get(key);
+  if (g) return g;
+  const size = rows.length as Size, ids = [...new Set(key)];
+  if (key.length !== size * size || ids.length !== size) throw new Error('a patchwork bed has one patch a row');
+  g = build(size, [...key].map((ch) => ids.indexOf(ch)), 0, 0, key);
+  patchworks.set(key, g);
   return g;
 }
 
@@ -61,16 +89,16 @@ export const parseGrid = (rows: readonly string[]): number[] => rows.join('').sp
 export const formatGrid = (grid: Grid, size: Size): string[] => Array.from({ length: size }, (_, r) => grid.slice(r * size, r * size + size).map((d) => (d ? String(d) : '.')).join(''));
 
 /** Digits that fit a square: not already in its row, column or box. */
-export function candidates(grid: Grid, size: Size, cell: number): number[] {
-  const g = geometry(size);
+export function candidates(grid: Grid, shape: Shape, cell: number): number[] {
+  const g = geo(shape), size = g.size;
   let used = 0;
   for (const p of g.peers[cell]) if (grid[p]) used |= bit(grid[p]);
   return digitsOf(fullMask(size) & ~used);
 }
 
 /** Squares holding a number that another square in the same row, column or box also holds. */
-export function conflicts(grid: Grid, size: Size): number[] {
-  const g = geometry(size), out = new Set<number>();
+export function conflicts(grid: Grid, shape: Shape): number[] {
+  const g = geo(shape), out = new Set<number>();
   for (const h of g.houses) {
     const seen = new Map<number, number>();
     for (const c of h.cells) {
@@ -85,21 +113,21 @@ export function conflicts(grid: Grid, size: Size): number[] {
 }
 
 /** Empty squares where no number fits any more: something placed earlier has to come out. */
-export function deadEnds(grid: Grid, size: Size): number[] {
+export function deadEnds(grid: Grid, shape: Shape): number[] {
   const out: number[] = [];
-  for (let i = 0; i < grid.length; i++) if (!grid[i] && candidates(grid, size, i).length === 0) out.push(i);
+  for (let i = 0; i < grid.length; i++) if (!grid[i] && candidates(grid, shape, i).length === 0) out.push(i);
   return out;
 }
 
 export const isFull = (grid: Grid) => grid.every((d) => d > 0);
-export const isSolved = (grid: Grid, size: Size) => isFull(grid) && conflicts(grid, size).length === 0;
+export const isSolved = (grid: Grid, shape: Shape) => isFull(grid) && conflicts(grid, shape).length === 0;
 
 /**
  * Depth-first search over the empty square with the fewest choices. Counts solutions up to `limit`; with an
  * `rng` it tries digits in random order, which is how a full bed is grown. `first` keeps the first solution found.
  */
-function search(grid: Grid, size: Size, limit: number, rng?: Rng): { count: number; first: number[] | null } {
-  const g = geometry(size), n = size, full = fullMask(size);
+function search(grid: Grid, shape: Shape, limit: number, rng?: Rng): { count: number; first: number[] | null } {
+  const g = geo(shape), n = g.size, full = fullMask(n);
   const work = grid.slice();
   const row = Array<number>(n).fill(0), col = Array<number>(n).fill(0), box = Array<number>(n).fill(0);
   for (let i = 0; i < work.length; i++) {
@@ -137,11 +165,11 @@ function search(grid: Grid, size: Size, limit: number, rng?: Rng): { count: numb
 }
 
 /** How many ways the grid can be finished, counting no further than `limit`. */
-export const countSolutions = (grid: Grid, size: Size, limit = 2): number => search(grid, size, limit).count;
+export const countSolutions = (grid: Grid, shape: Shape, limit = 2): number => search(grid, shape, limit).count;
 /** One way to finish the grid, or null. For a puzzle with a unique solution, the way. */
-export const solve = (grid: Grid, size: Size): number[] | null => search(grid, size, 1).first;
+export const solve = (grid: Grid, shape: Shape): number[] | null => search(grid, shape, 1).first;
 /** A random full bed. */
-export const randomBed = (size: Size, rng: Rng): number[] => search(emptyGrid(size), size, 1, rng).first!;
+export const randomBed = (shape: Shape, rng: Rng): number[] => search(emptyGrid(geo(shape).size), shape, 1, rng).first!;
 
 /* ------------------------------------------------------------------------------------------------ */
 /* Solving the way a person does                                                                      */
@@ -188,8 +216,8 @@ export interface TechResult {
  * Work a grid out with the techniques up to `maxTier`, always taking the easiest step first. `stopAtPlacement`
  * ends as soon as one number has been placed, which is what a hint needs.
  */
-export function techniqueSolve(start: Grid, size: Size, maxTier: Tier = 4, stopAtPlacement = false): TechResult {
-  const g = geometry(size), full = fullMask(size);
+export function techniqueSolve(start: Grid, shape: Shape, maxTier: Tier = 4, stopAtPlacement = false): TechResult {
+  const g = geo(shape), size = g.size, full = fullMask(size);
   const grid = start.slice();
   const cand = Array<number>(grid.length).fill(0);
   const steps: Step[] = [];
@@ -204,7 +232,7 @@ export function techniqueSolve(start: Grid, size: Size, maxTier: Tier = 4, stopA
     if (!cand[i]) return result(false);
   }
   // A grid that already breaks the rules is not worked on.
-  if (conflicts(start, size).length) return result(false);
+  if (conflicts(start, g).length) return result(false);
 
   const place = (cell: number, digit: number) => {
     grid[cell] = digit;
@@ -309,8 +337,8 @@ export function techniqueSolve(start: Grid, size: Size, maxTier: Tier = 4, stopA
 }
 
 /** The easiest set of techniques that finishes the grid by itself: 1 to 4, or 0 if these are not enough. */
-export function gradeOf(grid: Grid, size: Size): 0 | Tier {
-  for (const tier of [1, 2, 3, 4] as const) if (techniqueSolve(grid, size, tier).solved) return tier;
+export function gradeOf(grid: Grid, shape: Shape): 0 | Tier {
+  for (const tier of [1, 2, 3, 4] as const) if (techniqueSolve(grid, shape, tier).solved) return tier;
   return 0;
 }
 
@@ -328,6 +356,8 @@ export interface SudokuPlan {
   blanks: number;
   /** Beds in one round. */
   beds: number;
+  /** A patchwork bed: irregular patches from `PATCH_LAYOUTS` in place of the boxes. */
+  patchwork?: boolean;
 }
 
 /**
@@ -335,7 +365,7 @@ export interface SudokuPlan {
  * needs the only-place-left trick, then the same climb on a 9 by 9 bed, ending with one that needs a pair or a pointing
  * line. (A 6 by 6 bed almost never needs a pair, so it has no third rung.) Level 7 is the easy entry appended above them: a 4 by 4
  * bed of 2 by 2 boxes that lone numbers finish, played first by `order`. Level 8 is the top, played last: a 9 by 9 bed that
- * needs a crossing pair of rows (an X-Wing).
+ * needs a crossing pair of rows (an X-Wing). Level 9 is played after level 3: a 6 by 6 bed whose boxes are irregular patches.
  */
 export const PLANS: SudokuPlan[] = [
   { name: 'A 6 by 6 bed with a few numbers to find', size: 6, tier: 1, blanks: 14, beds: 1 },
@@ -346,7 +376,39 @@ export const PLANS: SudokuPlan[] = [
   { name: 'A 9 by 9 bed with a pair or a pointing line to find', size: 9, tier: 3, blanks: 55, beds: 1 },
   { name: 'A 4 by 4 bed to start', size: 4, tier: 1, blanks: 10, beds: 1 },
   { name: 'A 9 by 9 bed with a crossing pair of rows', size: 9, tier: 4, blanks: 55, beds: 1 },
+  { name: 'A 6 by 6 patchwork bed of odd-shaped patches', size: 6, tier: 2, blanks: 20, beds: 1, patchwork: true },
 ];
+
+/**
+ * Level 9's patch layouts, one letter a patch. Each has six connected patches of six squares, none a straight line and
+ * at most one a plain 2 by 3 box, admits a full bed, and its patches take three soil tints with no two neighbours alike.
+ */
+export const PATCH_LAYOUTS: readonly (readonly string[])[] = [
+  ['aaaabb', 'aaccbb', 'cccdbb', 'eecdff', 'eddddf', 'eeefff'],
+  ['aaaabc', 'dabbbc', 'dabbcc', 'ddeccf', 'ddefff', 'eeeeff'],
+  ['aaaabc', 'ddaabc', 'dddbbc', 'eedbbc', 'eeefcc', 'efffff'],
+  ['abbccc', 'aabcdd', 'abbcdd', 'abecdf', 'aeefdf', 'eeefff'],
+  ['aabccd', 'aabccd', 'abbccd', 'abbedd', 'eeeefd', 'efffff'],
+  ['aaabcc', 'aaabbc', 'ddbbec', 'ddfbec', 'dfffec', 'dffeee'],
+  ['aabbbb', 'aabbcd', 'aacccd', 'eeccdd', 'eeeddf', 'efffff'],
+  ['aaabcc', 'aadbcc', 'addbbc', 'eddbbc', 'edefff', 'eeefff'],
+];
+
+/**
+ * A soil tint (0, 1 or 2) for each patch of a patchwork bed, so that no two patches sharing an edge look alike:
+ * the first such colouring in counting order.
+ */
+export function patchTints(g: Geometry): number[] {
+  const n = g.size, near = Array.from({ length: n }, () => new Set<number>());
+  for (let i = 0; i < g.cells; i++)
+    for (const j of [i + n, g.colOf[i] < n - 1 ? i + 1 : -1])
+      if (j >= 0 && j < g.cells && g.boxOf[i] !== g.boxOf[j]) { near[g.boxOf[i]].add(g.boxOf[j]); near[g.boxOf[j]].add(g.boxOf[i]); }
+  for (let m = 0; m < 3 ** n; m++) {
+    const tint = Array.from({ length: n }, (_, k) => Math.floor(m / 3 ** k) % 3);
+    if (near.every((s, a) => [...s].every((b) => tint[a] !== tint[b]))) return tint;
+  }
+  return Array.from({ length: n }, (_, k) => k % 3);
+}
 
 export const planFor = (level: number): SudokuPlan => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
@@ -371,7 +433,12 @@ export interface Puzzle {
   blanks: number;
   /** The hardest technique needed to finish it without guessing. */
   grade: Tier;
+  /** A patchwork bed's geometry; absent for a bed of regular boxes. */
+  patchwork?: Geometry;
 }
+
+/** The shape the rules read a puzzle with: its patchwork geometry, or its size. */
+export const shapeOf = (p: Puzzle): Shape => p.patchwork ?? p.size;
 
 /**
  * A bed with exactly one solution that techniques up to the plan's tier can finish, with as many empty squares as the
@@ -381,22 +448,24 @@ export interface Puzzle {
  */
 export function makePuzzle(plan: SudokuPlan, rng: Rng): Puzzle {
   if (plan.tier === 4) return shuffleBed(rng.pick(WING_BEDS), rng);
+  // A patchwork bed is never shuffled like `shuffleBed` does: reordering bands would tear its patches apart.
+  const patchwork = plan.patchwork ? patchGeometry(rng.pick(PATCH_LAYOUTS)) : undefined, shape: Shape = patchwork ?? plan.size;
   const n = plan.size * plan.size;
   let best: Puzzle | null = null;
   for (let attempt = 0; attempt < 400; attempt++) {
-    const solution = randomBed(plan.size, rng);
+    const solution = randomBed(shape, rng);
     const start = solution.slice();
     let blanks = 0;
     for (const cell of rng.shuffle(Array.from({ length: n }, (_, i) => i))) {
       if (blanks >= plan.blanks) break;
       const was = start[cell];
       start[cell] = 0;
-      if (countSolutions(start, plan.size) === 1 && techniqueSolve(start, plan.size, plan.tier).solved) blanks++;
+      if (countSolutions(start, shape) === 1 && techniqueSolve(start, shape, plan.tier).solved) blanks++;
       else start[cell] = was;
     }
-    const grade = gradeOf(start, plan.size);
+    const grade = gradeOf(start, shape);
     if (!grade) continue;
-    const puzzle: Puzzle = { start, solution, size: plan.size, blanks, grade };
+    const puzzle: Puzzle = { start, solution, size: plan.size, blanks, grade, ...(patchwork ? { patchwork } : {}) };
     if (blanks === plan.blanks && grade === plan.tier) return puzzle;
     // Keep the closest bed in case nothing matches exactly: more blanks first, then the right grade.
     if (!best || blanks > best.blanks || (blanks === best.blanks && Math.abs(grade - plan.tier) < Math.abs(best.grade - plan.tier))) best = puzzle;
@@ -473,20 +542,21 @@ export type Hint =
  * Where a hint should point. First a number she placed that does not belong, preferring one that clashes with another;
  * otherwise the next number the techniques can place from where the bed stands now, with the reason.
  */
-export function hintFor(grid: Grid, given: Grid, solution: Grid, size: Size): Hint | null {
+export function hintFor(grid: Grid, given: Grid, solution: Grid, shape: Shape): Hint | null {
+  const size = geo(shape).size;
   const wrong = grid.map((d, i) => (d && !given[i] && d !== solution[i] ? i : -1)).filter((i) => i >= 0);
   if (wrong.length) {
-    const clashing = new Set(conflicts(grid, size));
+    const clashing = new Set(conflicts(grid, shape));
     return { kind: 'fix', cell: wrong.find((i) => clashing.has(i)) ?? wrong[0] };
   }
-  const work = techniqueSolve(grid, size, 4, true);
+  const work = techniqueSolve(grid, shape, 4, true);
   const last = work.steps[work.steps.length - 1];
   if (last && last.cell >= 0) {
     // Easier steps are always taken first, so a pair or a pointing line only shows up when nothing simpler was left.
     // The step that ruled numbers out last is the one that made this number the only one left, unless a crossing pair
     // of rows ruled another number out of this square, or this number out of its row, column or box, on the way: that is the
     // step the level is about.
-    const outs = work.steps.filter((s) => s.cell < 0), peers = geometry(size).peers[last.cell];
+    const outs = work.steps.filter((s) => s.cell < 0), peers = geo(shape).peers[last.cell];
     const freed = (r: { cell: number; digit: number }) => r.cell === last.cell || (r.digit === last.digit && peers.includes(r.cell));
     const via = outs.find((s) => s.tech === 'xwing' && s.removed!.some(freed)) ?? outs[outs.length - 1];
     if (via) return { kind: 'rules-out', cell: last.cell, digit: last.digit, via };
@@ -496,25 +566,25 @@ export function hintFor(grid: Grid, given: Grid, solution: Grid, size: Size): Hi
   let few = -1, fewest = size + 1;
   for (let i = 0; i < grid.length; i++) {
     if (grid[i]) continue;
-    const k = candidates(grid, size, i).length;
+    const k = candidates(grid, shape, i).length;
     if (k < fewest) { few = i; fewest = k; }
   }
   return few >= 0 ? { kind: 'few', cell: few, digit: solution[few] } : null;
 }
 
 /** Every number the two easiest techniques can place right now: what a person (or a demo) could do next. */
-export function placements(grid: Grid, size: Size): { cell: number; digit: number }[] {
-  const g = geometry(size), out = new Map<number, number>();
+export function placements(grid: Grid, shape: Shape): { cell: number; digit: number }[] {
+  const g = geo(shape), size = g.size, out = new Map<number, number>();
   for (let i = 0; i < grid.length; i++) {
     if (grid[i]) continue;
-    const c = candidates(grid, size, i);
+    const c = candidates(grid, g, i);
     if (c.length === 1) out.set(i, c[0]);
   }
   for (const h of g.houses) {
     const placed = new Set(h.cells.map((c) => grid[c]).filter(Boolean));
     for (let d = 1; d <= size; d++) {
       if (placed.has(d)) continue;
-      const spots = h.cells.filter((c) => !grid[c] && candidates(grid, size, c).includes(d));
+      const spots = h.cells.filter((c) => !grid[c] && candidates(grid, g, c).includes(d));
       if (spots.length === 1) out.set(spots[0], d);
     }
   }
@@ -529,7 +599,7 @@ export function remaining(grid: Grid, size: Size): number[] {
 }
 
 /** The house names the spoken hints use. */
-export const houseName = (h: House) => (h.kind === 'column' ? 'column' : h.kind);
+export const houseName = (h: House): string => h.word ?? h.kind;
 
 /* ------------------------------------------------------------------------------------------------ */
 /* Fill marks                                                                                         */
@@ -539,26 +609,26 @@ export const houseName = (h: House) => (h.kind === 'column' ? 'column' : h.kind)
 export const offersFillMarks = (size: Size) => size === 9;
 
 /** Every number that still fits a square, as a mark bitmask (bit 0 is the digit 1). It reads only the rules on the board, never the answer. */
-export const candidateMask = (grid: Grid, size: Size, cell: number): number =>
-  candidates(grid, size, cell).reduce((m, d) => m | (1 << (d - 1)), 0);
+export const candidateMask = (grid: Grid, shape: Shape, cell: number): number =>
+  candidates(grid, shape, cell).reduce((m, d) => m | (1 << (d - 1)), 0);
 
 /**
  * Fill marks for one row of the bed: each empty square with no marks of her own gets every number that still fits.
  * Squares she has marked keep her marks. Returns the squares it filled.
  */
-export function fillMarksRow(grid: Grid, size: Size, notes: number[], row: number): number[] {
-  const filled: number[] = [];
+export function fillMarksRow(grid: Grid, shape: Shape, notes: number[], row: number): number[] {
+  const size = geo(shape).size, filled: number[] = [];
   for (let cell = row * size; cell < (row + 1) * size; cell++) {
     if (grid[cell] || notes[cell]) continue;
-    notes[cell] = candidateMask(grid, size, cell);
+    notes[cell] = candidateMask(grid, shape, cell);
     filled.push(cell);
   }
   return filled;
 }
 
 /** Fill marks over the whole bed, row by row. */
-export function fillMarks(grid: Grid, size: Size, notes: number[]): number[] {
+export function fillMarks(grid: Grid, shape: Shape, notes: number[]): number[] {
   const filled: number[] = [];
-  for (let row = 0; row < size; row++) filled.push(...fillMarksRow(grid, size, notes, row));
+  for (let row = 0; row < geo(shape).size; row++) filled.push(...fillMarksRow(grid, shape, notes, row));
   return filled;
 }
