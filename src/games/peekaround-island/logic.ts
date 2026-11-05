@@ -10,7 +10,7 @@ import type { Rng } from '../../engine/random';
  * 0 is in front of the tree, 2 behind it, and 1 and 3 next to it. "In front" and "behind" are
  * always from the child's side, so turning the island changes who is where.
  */
-export type PeekMode = 'find' | 'named' | 'who' | 'place' | 'two' | 'see' | 'view';
+export type PeekMode = 'find' | 'named' | 'who' | 'place' | 'two' | 'see' | 'view' | 'sky';
 
 export interface PeekPlan {
   mode: PeekMode;
@@ -27,6 +27,7 @@ export const PLANS: PeekPlan[] = [
   { mode: 'two', rounds: 2, name: 'Two directions at once, then before the island turns around: who will be in front?' },
   { mode: 'see', rounds: 3, name: "A picture stands on the island: who can't see it, with the tree in the way?" },
   { mode: 'view', rounds: 3, name: 'Three pictures of the island from three sides: which one shows what the duck sees from where it stands?' },
+  { mode: 'sky', rounds: 3, name: 'From the sky: which map shows the island from above?' },
 ];
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
@@ -141,6 +142,72 @@ export function viewFrom(from: number, friends: readonly { name: CritterName; sp
   };
 }
 
+/**
+ * Level 8: three little maps show the island from the sky, her side (the boat) at the bottom. The true map is
+ * the island as it stands; the mirror swaps left and right (facings 1 and 3 trade), the classic copying error;
+ * the turned map is the island a quarter turn round (`k`), a true view from a wrong side. Flowers (facings i + 0.5)
+ * move with each map like the friends.
+ */
+export type SkyKind = 'true' | 'mirror' | 'turned';
+
+/** Where something facing `facing` from her side appears on a map of `kind` (facings may be fractional). */
+export function skyFacing(kind: SkyKind, facing: number, k: number): number {
+  if (kind === 'mirror') return mod4(-facing);
+  if (kind === 'turned') return mod4(facing + k);
+  return mod4(facing);
+}
+
+/** A facing's place on a map of radius `r`, seen from above with her side at the bottom: `at()`'s projection on a circle. */
+export function mapPoint(facing: number, r: number) {
+  const a = facing * (Math.PI / 2);
+  return { x: Math.sin(a) * r, y: Math.cos(a) * r };
+}
+
+export interface SkyScene {
+  friends: CritterName[];
+  /** The direction each friend faces from the child (0 front, 1 right, 2 behind, 3 left). */
+  facing: number[];
+  /** Index of the friend behind the tree, or null when everyone is in sight (scene 1). */
+  hidden: number | null;
+  /** The turned map's quarter turns: 1 or 3. */
+  k: number;
+  /** The three maps, shuffled. */
+  maps: SkyKind[];
+}
+
+/** Two friends of one body colour would read as the same dot on a small map. */
+const LOOKALIKES: [CritterName, CritterName][] = [['cow', 'bunny'], ['dog', 'bear']];
+export const lookalike = (a: CritterName, b: CritterName) => LOOKALIKES.some(([x, y]) => (x === a && y === b) || (x === b && y === a));
+
+/**
+ * Scene `index` of level 8: everyone in sight on front and both sides (0), three with one behind the tree and
+ * a side empty (1), then four with one behind (2). The friend behind never repeats back to back.
+ */
+export function makeSkyScene(index: number, rng: Rng, lastHider?: CritterName): SkyScene {
+  const facing = index === 0 ? [0, 1, 3] : index === 1 ? [2, 0, rng.pick([1, 3])] : [2, 0, 1, 3];
+  const hidden = index === 0 ? null : 0;
+  const friends: CritterName[] = [];
+  if (hidden !== null) friends.push(rng.pick(FRIENDS.filter((f) => f !== lastHider)));
+  for (const f of rng.shuffle([...FRIENDS])) {
+    if (friends.length === facing.length) break;
+    if (!friends.some((x) => x === f || lookalike(x, f))) friends.push(f);
+  }
+  return { friends, facing, hidden, k: rng.pick([1, 3]), maps: rng.shuffle<SkyKind>(['true', 'mirror', 'turned']) };
+}
+
+/** What a map shows: each friend's place and each flower's (flower i at facing i + 0.5 + turns), as map facings. */
+export function skyArrangement(kind: SkyKind, k: number, friends: readonly { name: CritterName; facing: number }[], turns = 0) {
+  return {
+    friends: Object.fromEntries(friends.map((f) => [f.name, skyFacing(kind, f.facing, k)])) as Record<string, number>,
+    flowers: [0, 1, 2, 3].map((i) => skyFacing(kind, i + 0.5 + turns, k)),
+  };
+}
+
+/** The island's own arrangement seen from above: friends on island spots after `turns`, with no map transform. */
+export function islandArrangement(friends: readonly { name: CritterName; spot: number }[], turns: number) {
+  return skyArrangement('true', 0, friends.filter((f) => f.spot >= 0).map((f) => ({ name: f.name, facing: mod4(f.spot + turns) })), turns);
+}
+
 /** The quarter turns that bring island spot `spot` round to the front, the short way (2 from behind). */
 export function turnToFront(spot: number, turns: number): number {
   const d = mod4(-spot - turns);
@@ -242,14 +309,19 @@ export type PeekTouch =
   | { kind: 'turn'; dir: 1 }
   | { kind: 'friend'; name: CritterName }
   | { kind: 'tile'; name: CritterName }
-  | { kind: 'place'; name: CritterName; spot: number };
+  | { kind: 'place'; name: CritterName; spot: number }
+  | { kind: 'map'; index: number };
 
 /**
  * The next visible control a capable child uses for each perspective mode (in `see`, `hider` is the friend
  * who cannot see the picture; in `view`, the friend whose picture to choose). While level 5 asks
- * for a prediction (`predicting`), that is the picture of the friend behind the tree.
+ * for a prediction (`predicting`), that is the picture of the friend behind the tree. In `sky`, the true map of `maps`.
  */
-export function peekTouch(mode: PeekMode, turns: number, hider: CritterName | null, friends: readonly PeekTouchFriend[], predicting = false): PeekTouch | null {
+export function peekTouch(mode: PeekMode, turns: number, hider: CritterName | null, friends: readonly PeekTouchFriend[], predicting = false, maps: readonly SkyKind[] = []): PeekTouch | null {
+  if (mode === 'sky') {
+    const index = maps.indexOf('true');
+    return index < 0 ? null : { kind: 'map', index };
+  }
   if (predicting) {
     const front = frontAfterHalfTurn(friends, turns);
     return front ? { kind: 'tile', name: front.name } : null;
