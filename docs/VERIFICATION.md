@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-11-05 — Backlog audit: dives for games built from definitions
+
+- **What changed (docs only):** the deep-dive tracker covered only the 85 games registered by mid-October. Of the 81 registered since, most have a subject study that plans their next slice; 21 have neither, so they gained tracker rows as waves 5–7 (lap/toddler first) and rows in the study backlog. READY gained five game dives, five study follow-up definitions and two builds that were ready but unlisted (Helper House level 4, Hat Band 1–3).
+- **Ran:** `node scripts/check-links.mjs` (links ok) and `git diff --check`. No code checks (docs tier).
+- **Open:** waves 6–7 dives queue only through the tracker; the other defined new games (Circuit Garden, Measuring Post, Far Lights, Rain Garden, Seed Travelers, Playdate Workshop, Weights Case) keep their admission, capacity or developer gates.
+
 ## 2026-11-05 — Sudoku Garden level 9 Patchwork beds (sudoku-garden batch 4)
 
 - [PR #1266](https://github.com/rjdunlap/neo/pull/1266) (branch `claude/sudoku-garden-patchwork-beds`): grown-up level 9, a 6 by 6 bed of irregular six-square patches from eight authored `PATCH_LAYOUTS`, with outlined and tinted patches, patch-first only-place hints, voice lines `sudoku.go-patch` and `sudoku.go-patch-touch`, and a how-to step; order now `[7, 1, 2, 3, 9, 4, 5, 6, 8]`.

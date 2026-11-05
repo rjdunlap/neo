@@ -48,6 +48,7 @@ The waves are a suggestion; the grown-up can name any game.
 - **Wave 2: her own band soon.** Lap and toddler favorites for a child about to turn one: Bubble Pop, Peekaboo Barn, Animal Snack, Splish Splash, Jelly Drums, Rainbow Fingers, Stamp Studio and Pet Says. Easier appended entries can now use `order` and `entryLevels`; follow each write-up's remaining content and band decisions.
 - **Wave 3: the school core.** Counting, number and letter ladders that carry her longest: Duck Pond, Frog Hop, Market Stall, Word Monsters, Letter Trails, Pattern Train, Memory Match and Clock Tower.
 - **Wave 4: everything else**, in any order.
+- **Waves 5–7: games built from definitions (added 2026-11-05).** The tracker first covered the 85 games registered by mid-October; most games since were built from a definition or a subject study, and that study's packet plans their next slices. The 21 below have neither a dive nor a study row with next steps, so their ladder ends where the first definition stopped. Top level here is the plan on 2026-11-05. **Wave 5**, her own band first: the lap and toddler games Draw the Pattern, Swing Pals, Bolt Boards, Puddle Gobble, Fruit Slice, Cut Along and Domino Run. **Wave 6**, the shortest ladders: Number Trails, Mossy Path and Fruit Sums (three levels each), then Jar Sort, Pile Match, Lift It and Block Garden. **Wave 7**, the grown-up couch puzzles with touch (Gem Swap, Log Roll, Marble Jump, Number Nook, Pyramid Solitaire, Snowball Merge, Tile Pairs): read `src/couch/catalog.ts` and [COUCH-PLAY](../COUCH-PLAY.md) first, since couch levels may already be planned there.
 
 ## Routine dispatch
 
@@ -145,4 +146,26 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school, G grown-up. "Top level"
 | Weather Wardrobe | `weather-wardrobe` | LTPK | 10 | 6 | building (slices 1–6 and 8 built; level 10 Two friends two places; wind separately claimed, later scope remains in the dive) | `claude/dive-weather-wardrobe` ([PR #538](https://github.com/rjdunlap/neo/pull/538)) | [weather-wardrobe.md](weather-wardrobe.md) |
 | Word Monsters | `word-monsters` | LTPKS | 8 | 3 | designed | `claude/roadmap-item-14-game-content-msedsy` ([PR 120](https://github.com/rjdunlap/neo/pull/120)) | [word-monsters.md](word-monsters.md) |
 | Word Search | `word-search` | G | 4 | 4 | designed (slices 1–4 ready: fresh themes and root families, A small grid to start, A message in the leftovers, Just the theme; school opening to define) | `claude/dive-word-search` ([PR #1104](https://github.com/rjdunlap/neo/pull/1104)) | [word-search.md](word-search.md) |
+| Draw the Pattern | `draw-the-pattern` | LTPK | 8 | 5 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
+| Swing Pals | `swing-pals` | LTPKS | 6 | 5 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
+| Bolt Boards | `bolt-boards` | TPKS | 7 | 5 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
+| Puddle Gobble | `puddle-gobble` | TPKS | 8 | 5 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
+| Fruit Slice | `fruit-slice` | TPKS | 8 | 5 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
+| Cut Along | `cut-along` | TPKS | 8 | 5 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
+| Domino Run | `domino-run` | TPKS | 8 | 5 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
+| Number Trails | `number-trails` | PK | 3 | 6 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
+| Mossy Path | `mossy-path` | S | 3 | 6 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
+| Fruit Sums | `fruit-sums` | S | 3 | 6 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
+| Jar Sort | `jar-sort` | PKS | 8 | 6 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
+| Pile Match | `pile-match` | PKS | 8 | 6 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
+| Lift It | `lift-it` | PKS | 6 | 6 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
+| Block Garden | `block-garden` | KSG | 8 | 6 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
+| Gem Swap | `gem-swap` | G | 4 | 7 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
+| Log Roll | `log-roll` | G | 3 | 7 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
+| Marble Jump | `marble-jump` | G | 6 | 7 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
+| Number Nook | `number-nook` | G | 3 | 7 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
+| Pyramid Solitaire | `pyramid-solitaire` | G | 3 | 7 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
+| Snowball Merge | `snowball-merge` | G | 3 | 7 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
+| Tile Pairs | `tile-pairs` | G | 6 | 7 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
+
 The six grown-up puzzles (Sudoku Garden, Lantern Lights, Picture Logic, Word Search, Pond Conga and Island Bridges) are island games for the `grownup` band (G) in Lantern Lake as of 2026-10-13, so they are in this table. All six support island touch; a deep dive extends their existing interactions and ladder.

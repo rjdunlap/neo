@@ -27,15 +27,32 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 - **`word-search`, school opening: level 8 four picture words (batch word-search 5)**, after batch word-search 2 (built) (new band entry with a layout change and a new list drawing: typecheck, rule tests, the registry, lands and how-to tests, one scripted school play of level 8 with two wrong lines (the second shows the ring without counting a hint), a tile tap, one Hint, to the sticker, one portrait screenshot, the logged 1024×768 and 1024×1365 sizes, `fingerdemo` at school 8, one build; no `couchgames`): [definition](definitions/word-search-school-opening.md), [dive](deep-dives/word-search.md#build-slices-in-order), [batch](GAME-BATCHES.md#word-search-5-school-opening).
 
 
+- **`helper-house`, level 4 (RA3)**, defined with levels 1–3, which are built (new levels on an existing interaction: typecheck, rule tests, one play of level 4 with a day that misses the goal twice and one Show me, one portrait screenshot, `fingerdemo` at 4): [definition](definitions/helper-house.md#check-tier), [study](deep-dives/subjects/robots-automation.md).
+- **`hat-band`, levels 1–3, a new Music Mountain game** (defined 2026-10-22 as M5; identity and placement settled 2026-10-23, Music Mountain holds 8 games). The building session does the source check and the actual Music Mountain capacity check first (new-game tier with a build, as the definition's check tier sets it): [definition](definitions/hat-band.md#check-tier), [study](deep-dives/subjects/music-instruments.md).
+
 ### Study follow-ups (docs-only definitions)
 
 Each line is selected for routine dispatch; claim one packet, then enqueue its unblocked builds. [Scope and cadence](STUDY-BACKLOG.md#dispatch-and-closeout).
+
+Refilled 2026-11-05 from the [study backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build) rows whose next action is a definition with no person or device gate:
+
+- **Define Puddle Lens 5–6** (`cells-microbes`; docs only, with a session source check of the biology model): [definition so far](definitions/puddle-lens.md), [study](deep-dives/subjects/cells-microbes.md).
+- **Define Bond Beads 5–8** (`chemistry`; docs only, with a session source check of the molecule list): [definition so far](definitions/bond-beads.md), [study](deep-dives/subjects/chemistry.md).
+- **Define Sense Detective 3–5, B3 ambiguity** (`body-health`; docs only): [definition so far](definitions/sense-detective.md), [study](deep-dives/subjects/body-health.md).
+- **Define Welcome Ways 5–7** (`engineering-design`; space limits, a conflict and a repair for a new friend; docs only): [definition so far](definitions/welcome-ways.md), [study](deep-dives/subjects/engineering-design.md).
+- **Define Gadget Bench 4** (`inventions`; a three-condition path with a conflict, revise one part; docs only): [definition so far](definitions/gadget-bench.md#what-comes-next), [study](deep-dives/subjects/inventions.md).
 
 ### Subject research (docs only)
 
 ### Game research (docs only)
 
-None left: Orchard Rows (2026-11-03) was the last unstarted game dive, and no unstarted subject research remains ([backlog](STUDY-BACKLOG.md#unstarted-game-deep-dives)). The research slot stays empty until a new game or subject is added.
+Added 2026-11-05: 21 games built from definitions have no dive and no study row that plans their next levels ([tracker waves 5–7](deep-dives/README.md#suggested-order-non-binding), [backlog](STUDY-BACKLOG.md#unstarted-game-deep-dives)). Her own band first; one game per docs-only session, queuing its first build slice at closeout. No unstarted subject research remains.
+
+- **Dive `draw-the-pattern`** (Draw the Pattern; lap to pre-K, 8 levels; docs only): [procedure](deep-dives/README.md#one-session-one-game), [definition](definitions/draw-the-pattern.md).
+- **Dive `swing-pals`** (Swing Pals; lap to school, 6 levels; docs only): [procedure](deep-dives/README.md#one-session-one-game), [definition](definitions/swing-pals.md).
+- **Dive `bolt-boards`** (Bolt Boards; toddler to school, 7 levels; docs only): [procedure](deep-dives/README.md#one-session-one-game), [definition](definitions/bolt-boards.md).
+- **Dive `puddle-gobble`** (Puddle Gobble; toddler to school, 8 levels; docs only): [procedure](deep-dives/README.md#one-session-one-game), [definition](definitions/puddle-gobble.md).
+- **Dive `number-trails`** (Number Trails; preschool and pre-K, 3 levels, numeral writing; docs only): [procedure](deep-dives/README.md#one-session-one-game). The rest of waves 5–7 follow in the tracker's order.
 
 ## Blocked work (not routine picks)
 
