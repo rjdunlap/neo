@@ -125,7 +125,7 @@ export const LANDS: readonly Land[] = [
   },
   {
     // The grown-up puzzles, so everyone younger sees them behind the signpost. A grown-up puzzle that opens its smallest
-    // levels to school (Island Bridges, Lantern Lights) keeps this home; Wonder Woods lists it by subject.
+    // levels to school (Island Bridges, Lantern Lights, Pond Conga) keeps this home; Wonder Woods lists it by subject.
     id: 'lantern-lake',
     name: 'Lantern Lake',
     line: 'land.lantern-lake',

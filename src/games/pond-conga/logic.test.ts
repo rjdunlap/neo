@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
-  DX, DY, FOODS, LONG_START, PLANS, TAIL_LEGS, longStart, tailInWay, tailLegs, STEP_GLIDE, stepDue, bestStarts, groupCosts, groupOf, openCrumbs, orderMatters, restBound, SWIPE, distances, foodAt, firstCrumbs, headAfter, hintDir, hintPath, lowerBound, makePond, pondLook, nextCrumb, opposite, parsePond, pictureOf, planFor, solveRoute, startState, step, swipeDir, turnsIn,
+  DX, DY, FOODS, LONG_START, PLANS, TAIL_LEGS, longStart, tailInWay, tailLegs, STEP_GLIDE, stepDue, bestStarts, groupCosts, groupOf, openCrumbs, orderMatters, restBound, SWIPE, distances, foodAt, firstCrumbs, headAfter, hintDir, hintPath, lowerBound, makePond, pondLook, nextCrumb, opposite, parsePond, pictureOf, planFor, solveRoute, startState, step, swipeDir, turnsIn, schoolStep, tapToward,
   type Board, type Cell, type Conga, type Dir,
 } from './logic';
 
@@ -348,7 +348,7 @@ describe('swiping to steer by touch', () => {
     for (let level = 1; level <= PLANS.length; level++) {
       const pond = makePond(planFor(level), new Rng(300 + level));
       // Whole groups only: level 7's demo eats one group of three.
-      const n = groupOf(pond) > 1 ? 3 : 4;
+      const n = groupOf(pond) > 1 ? 3 : Math.min(4, pond.crumbs.length);
       const short = firstCrumbs(pond, 4);
       expect(short.crumbs).toEqual(pond.crumbs.slice(0, n));
       expect(short.par).toBe(lowerBound(short));
@@ -531,7 +531,7 @@ describe('level 8, step by step', () => {
   it('is the first rung and a new player\'s entry', async () => {
     const { pondConga } = await import('./index');
     expect(pondConga.levels('grownup')).toMatchObject({ min: 1, max: 9, order: [8, 1, 2, 3, 4, 5, 6, 7, 9] });
-    expect(pondConga.entryLevels).toEqual([8]);
+    expect(pondConga.entryLevels).toEqual([8, 10, 11]);
     expect(pondConga.describeLevel(8)).toMatch(/Step by step/);
   });
 });
@@ -580,5 +580,93 @@ describe('level 9, a long conga', () => {
     // The last duckling leaves its cell before the leader could get there: not in the way.
     const short = parsePond(['1..', 's..', 'sS.']);
     expect(tailInWay(short, startState(short), { x: 0, y: 0 })).toBe(false);
+  });
+});
+
+describe('the school opening, levels 10 and 11 step by step', () => {
+  it('opens two small ponds to school and leaves the grown-up ladder as it was', async () => {
+    const { pondConga } = await import('./index');
+    const { landing } = await import('../../progress/difficulty');
+    expect(pondConga.bands).toEqual(['school', 'grownup']);
+    expect(pondConga.levels('school')).toEqual({ min: 10, max: 11 });
+    const grown = pondConga.levels('grownup');
+    expect(grown.order).not.toContain(10);
+    expect(grown.order).not.toContain(11);
+    expect(grown.max).toBe(9);
+    // A birthday or pin carrying a school pond into grown-up starts at the grown-up order's first level, Step by step.
+    for (const l of [10, 11]) expect(landing(l, grown, pondConga.entryLevels)).toBe(8);
+    for (const l of [10, 11]) expect(pondConga.describeLevel(l)).toMatch(/one step at a time/);
+  });
+
+  for (const [level, cols, pads, crumbs] of [[10, 6, 0, 3], [11, 7, 2, 4]] as const) {
+    it(`level ${level}: every pond is ${cols} by 4 with ${pads} lily pads and ${crumbs} bites, step by step, with a bonk-free route at par`, () => {
+      const plan = planFor(level);
+      expect(plan.paced).toBe(false);
+      for (let seed = 1; seed <= 300; seed++) {
+        const p = makePond(plan, new Rng(seed));
+        expect([p.cols, p.rows, p.pads.length, p.crumbs.length], `seed ${seed}`).toEqual([cols, 4, pads, crumbs]);
+        expect(p.par, `seed ${seed}`).toBe(lowerBound(p));
+        expect(p.start.length).toBe(3);
+      }
+    });
+  }
+
+  it('a tap steps toward where it lands, the larger distance winning', () => {
+    const lead = { x: 2, y: 1 }, c = 100, mid = { x: 250, y: 150 };
+    expect(tapToward(lead, mid.x + 100, mid.y, c, 0)).toBe(0);
+    expect(tapToward(lead, mid.x, mid.y + 100, c, 0)).toBe(1);
+    expect(tapToward(lead, mid.x, mid.y - 100, c, 0)).toBe(3);
+    expect(tapToward(lead, mid.x - 100, mid.y, c, 1)).toBe(2);
+    expect(tapToward(lead, mid.x + 160, mid.y - 90, c, 0)).toBe(0);
+    expect(tapToward(lead, mid.x + 60, mid.y + 140, c, 0)).toBe(1);
+    // On the leader's own cell, or straight back: nothing.
+    expect(tapToward(lead, mid.x + 30, mid.y - 40, c, 0)).toBeNull();
+    expect(tapToward(lead, mid.x - 100, mid.y, c, 0)).toBeNull();
+    expect(tapToward(lead, mid.x, mid.y - 100, c, 1)).toBeNull();
+  });
+
+  it('a bump is a refused step: the line stays exactly where it was while another way is open', () => {
+    // The leader faces the bank on the right; up and down are open.
+    const b = parsePond(['......', '...ssS', '......']);
+    const s = startState(b);
+    const r = schoolStep(b, s, null);
+    expect(r.event).toBe('bonk');
+    expect(r.held).toBe(true);
+    expect(r.state).toEqual(s);
+    // An open way is an ordinary step.
+    const ok = schoolStep(b, s, 3);
+    expect([ok.event, ok.held, at(ok.state.body[0])]).toEqual(['move', false, '5,0']);
+  });
+
+  it('turns about only when every way but back is shut, and then a way on is open', () => {
+    // A lily pad ahead of the leader and one above and below it.
+    const board = parsePond(['...#.', '.ssS#', '...#.']);
+    const s = startState(board);
+    for (const d of [0, 1, 3] as Dir[]) {
+      const r = schoolStep(board, s, d);
+      expect([r.event, r.held], `dir ${d}`).toEqual(['bonk', false]);
+      expect(r.state).toEqual(step(board, s, d).state);
+      expect(r.state.body[0]).toEqual(s.body.at(-1));
+      expect(([0, 1, 2, 3] as Dir[]).some((w) => step(board, r.state, w).event !== 'bonk')).toBe(true);
+    }
+    // With the pad above gone, a bump ahead is only refused.
+    const open = parsePond(['.....', '.ssS#', '...#.']);
+    expect(schoolStep(open, startState(open), 0).held).toBe(true);
+  });
+
+  it('following the hint one step at a time eats every bite in exactly par steps with no bump', () => {
+    for (const level of [10, 11]) {
+      for (let seed = 1; seed <= 100; seed++) {
+        const p = makePond(planFor(level), new Rng(seed));
+        let s = startState(p), steps = 0, bonks = 0;
+        while (s.eaten < p.crumbs.length && steps < 200) {
+          const r = schoolStep(p, s, hintDir(p, s));
+          if (r.event === 'bonk') bonks++;
+          s = r.state;
+          steps++;
+        }
+        expect([s.eaten, bonks, steps], `level ${level} seed ${seed}`).toEqual([p.crumbs.length, 0, p.par]);
+      }
+    }
   });
 });
