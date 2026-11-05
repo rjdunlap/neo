@@ -2650,6 +2650,7 @@ export const SCRIPT = {
   'sudoku.hint-pair': ['Two squares in this {house} can only hold a {a} and a {b} between them, so no other square there can. That leaves just the {n} for the ringed square.'],
   'sudoku.hint-locked': ['The {n} in this {house} has to go in the marked squares, which rules it out of the rest of their line. That leaves just the {m} for the ringed square.'],
   'sudoku.hint-few': ['Try the ringed square. It has the fewest numbers that could go there.'],
+  'sudoku.fill-marks': ['Every number that still fits is pencilled into the empty squares. The marks are yours to change.'],
   'sudoku.hint-fix': ['One number you placed cannot be right. Take out the ringed one.'],
   'sudoku.bloom': ['The bed is in bloom!', 'Every number is in its place!'],
   'sudoku.done': ['A whole garden of numbers.'],

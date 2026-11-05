@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
-  candidates, conflicts, countSolutions, deadEnds, formatGrid, geometry, gradeOf, hintFor, isSolved, makePuzzle, parseGrid, parsePuzzle, PLANS,
+  candidateMask, candidates, conflicts, digitsOf, fillMarks, fillMarksRow, offersFillMarks, countSolutions, deadEnds, formatGrid, geometry, gradeOf, hintFor, isSolved, makePuzzle, parseGrid, parsePuzzle, PLANS,
   placements, planFor, randomBed, remaining, shortBed, solve, techniqueSolve, type Grid, type Hint, type Puzzle, type Size,
 } from './logic';
 
@@ -323,5 +323,59 @@ describe('level 7, a 4 by 4 bed to start', () => {
     const p = parsePuzzle(['1...', '..1.', '.2..', '...4']);
     expect(p.size).toBe(4);
     expect(isSolved(p.solution, 4)).toBe(true);
+  });
+});
+
+describe('Fill marks on big beds', () => {
+  it('is offered on the 9 by 9 plans (levels 4 to 6) and on no 4 by 4 or 6 by 6 plan', () => {
+    const levels = PLANS.map((p, i) => (offersFillMarks(p.size) ? i + 1 : 0)).filter(Boolean);
+    expect(levels).toEqual([4, 5, 6]);
+    for (const p of PLANS) expect(offersFillMarks(p.size)).toBe(p.size === 9);
+  });
+
+  it('leaves every empty square holding exactly the numbers that still fit', () => {
+    for (let s = 1; s <= 10; s++) {
+      const p = makePuzzle(planFor(4 + (s % 3)), new Rng(s * 271));
+      const notes = p.start.map(() => 0);
+      const filled = fillMarks(p.start, 9, notes);
+      expect(filled).toHaveLength(p.blanks);
+      p.start.forEach((d, i) => {
+        if (d) expect(notes[i]).toBe(0);
+        else expect(digitsOf(notes[i])).toEqual(candidates(p.start, 9, i));
+      });
+    }
+  });
+
+  it('never rules out the answer while every placed number is right', () => {
+    const p = parsePuzzle(NINE);
+    const grid = p.start.slice();
+    const notes = grid.map(() => 0);
+    fillMarks(grid, 9, notes);
+    grid.forEach((d, i) => { if (!d) expect(notes[i] & (1 << (p.solution[i] - 1))).not.toBe(0); });
+  });
+
+  it('keeps her own marks and skips squares with a number', () => {
+    const grid = parseGrid(NINE);
+    const notes = grid.map(() => 0);
+    const mine = grid.findIndex((d) => !d);
+    notes[mine] = 0b1;
+    const filled = fillMarksRow(grid, 9, notes, Math.floor(mine / 9));
+    expect(notes[mine]).toBe(0b1);
+    expect(filled).not.toContain(mine);
+    for (const c of filled) {
+      expect(grid[c]).toBe(0);
+      expect(notes[c]).toBe(candidateMask(grid, 9, c));
+    }
+  });
+
+  it('a placement after Fill marks leaves the marks equal to what still fits in its peers', () => {
+    const p = parsePuzzle(NINE);
+    const grid = p.start.slice(), notes = grid.map(() => 0), geo = geometry(9);
+    fillMarks(grid, 9, notes);
+    const cell = grid.findIndex((d) => !d), digit = p.solution[cell];
+    grid[cell] = digit;
+    notes[cell] = 0;
+    for (const q of geo.peers[cell]) notes[q] &= ~(1 << (digit - 1));
+    grid.forEach((d, i) => { if (!d) expect(notes[i]).toBe(candidateMask(grid, 9, i)); });
   });
 });
