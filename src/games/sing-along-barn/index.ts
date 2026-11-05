@@ -75,6 +75,9 @@ class SingAlongBarn implements Game {
   /** The rhyming picture's side at each pause (0 left, 1 right), from the seed; wrong picks at this pause and in the round; glows shown. */
   private sides: (0 | 1)[] = [];
   private wrongHere = 0;
+  /** When the last wrong pick and the last spoken line were, so a mashed picture or sky does not pile them up. */
+  private wrongAt = -Infinity;
+  private lineAt = -Infinity;
   private misses = 0;
   private hints = 0;
 
@@ -546,7 +549,7 @@ class SingAlongBarn implements Game {
       card.scale.set(0);
       void this.ctx.tw.to(card.scale, { x: PAIR_SCALE, y: PAIR_SCALE }, { duration: 0.35, ease: ease.outBack });
     }
-    void this.ctx.say(`barn.rhyme.line.${this.tune.id as 'rain' | 'twinkle' | 'ring'}`);
+    this.sayLine();
   }
 
   /**
@@ -595,6 +598,9 @@ class SingAlongBarn implements Game {
     }
     if (hit === 1) {
       const wrong = this.pair[1];
+      // A second touch on it while it is still bouncing is the same pick, not another miss.
+      if (this.clock - this.wrongAt < 0.6) return;
+      this.wrongAt = this.clock;
       this.misses++;
       this.wrongHere++;
       sfx.boing();
@@ -610,6 +616,11 @@ class SingAlongBarn implements Game {
       return;
     }
     this.wobble = 1;
+    if (this.clock - this.lineAt > 2.5) this.sayLine();
+  }
+
+  private sayLine() {
+    this.lineAt = this.clock;
     void this.ctx.say(`barn.rhyme.line.${this.tune.id as 'rain' | 'twinkle' | 'ring'}`);
   }
 
