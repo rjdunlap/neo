@@ -51,10 +51,44 @@ async function wordSearchTouchPlay() {
     g.setScroll(0, 0);
     return out.map((m) => `${label}: ${m} (${V.w}x${V.h}, scale ${V.scale})`);
   }, label);
+  // Level 5 (6 by 6, the small grid that comes first): all in view at squares of 96 or more both ways, a wrong line, a hint, a drag, to the sticker.
+  await launch('word-search', 5); await idle();
+  const small = () => page.evaluate(() => { const g = neo.scene.game, V = neo.view; return { n: g.n, cell: g.cell, slides: g.maxX + g.maxY, words: g.grid.words.map((p) => [p.word.length, p.dr, p.dc]), titleRight: Math.round(g.title.x + g.title.width), view: `${V.w}x${V.h}` }; });
+  let sm = await small();
+  assert.equal(sm.n, 6); assert.equal(sm.slides, 0, 'a 6 by 6 grid is all in view');
+  assert.ok(sm.cell >= 96, `landscape squares ${sm.cell} at ${sm.view}`);
+  assert.equal(sm.words.length, 4);
+  assert.ok(sm.titleRight <= Number(sm.view.split('x')[0]), `the theme title ends at ${sm.titleRight}, inside the view`);
+  for (const [len, dr, dc] of sm.words) { assert.ok(len >= 3 && len <= 6); assert.ok((dr === 0 && dc === 1) || (dr === 1 && dc === 0), 'across or down'); }
+  assert.deepEqual(await targets('level 5 landscape'), []);
+  log(`level 5 landscape: ${sm.cell}-unit squares at ${sm.view}`);
+  const startStickers = await page.evaluate(() => kit.store.data.stickers.length);
+  let st = await state();
+  const wrong = await page.evaluate(async () => { const g = neo.scene.game, L = await import('/src/games/word-search/logic.ts'); for (let a = 0; a < 36; a++) for (const b of [a + 1, a + 6]) if (b < 36 && (b !== a + 1 || b % 6) && L.wordAt(g.grid, L.lineBetween(6, a, b), new Set()) < 0) return [a, b]; return null; });
+  await tapCell(wrong[0]); await tapCell(wrong[1]); st = await state();
+  assert.equal(st.misses, 1, 'a wrong line is one miss');
+  await tapButton('hint'); st = await state(); assert.deepEqual([st.hints, st.hinted], [1, true]);
+  await screenshot('wordsearch-touch-5-landscape');
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(500);
+  sm = await small(); assert.equal(sm.slides, 0); assert.ok(sm.cell >= 96, `portrait squares ${sm.cell} at ${sm.view}`);
+  assert.deepEqual(await targets('level 5 portrait'), []);
+  log(`level 5 portrait: ${sm.cell}-unit squares at ${sm.view}`);
+  await screenshot('wordsearch-touch-5-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(500);
+  const dragged = await page.evaluate(async () => {
+    const g = neo.scene.game, L = await import('/src/games/word-search/logic.ts'), k = g.grid.words.findIndex((_, i) => !g.found.has(i)), cells = L.cellsOfWord(g.n, g.grid.words[k]);
+    const a = g.board.toGlobal(g.center(cells[0])), b = g.board.toGlobal(g.center(cells[cells.length - 1]));
+    await kit.drag(kit.line([a.x, a.y], [b.x, b.y], 8)); await kit.sleep(300);
+    return g.found.has(k);
+  });
+  assert.ok(dragged, 'a drag along a word finds it on the small grid');
+  await solve(); await finished('word-search');
+  assert.equal(await page.evaluate(() => kit.store.data.stickers.length), startStickers + 1, 'one sticker');
+  assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('word-search').history.at(-1); return [r.level, r.misses, r.hints]; }), [5, 1, 1]);
   // Level 1 (8 by 8, all in view): a wrong line counts, a crooked mark costs nothing, a drag across a word finds it, one hint, start over.
   await launch('word-search', 1); await idle();
   const stickers = await page.evaluate(() => kit.store.data.stickers.length);
-  let st = await state();
+  st = await state();
   assert.equal(st.n, 8); assert.equal(st.maxX + (await state()).maxY, 0, 'an 8 by 8 grid is all in view');
   assert.deepEqual(await targets('level 1 landscape'), []);
   await tapCell(0); await tapCell(1); st = await state();
@@ -102,7 +136,7 @@ async function wordSearchTouchPlay() {
   await page.evaluate(() => neo.go.game('word-search', 'grownup', undefined, false, { land: 'lantern-lake' })); await scene('GameScene'); await idle();
   await page.evaluate(() => neo.go.land('lantern-lake')); await scene('LandScene'); await page.waitForTimeout(500);
   assert.deepEqual(errors, []);
-  log('Word Search touch: first and last level, wrong line, crooked mark, drag across a word, hint, start over, sliding to every square, 64-unit targets upright and sideways, one sticker each passed');
+  log('Word Search touch: the small grid (level 5, 96+ squares both ways), first and last level, wrong line, crooked mark, drag across a word, hint, start over, sliding to every square, 64-unit targets upright and sideways, one sticker each passed');
 }
 
 return { wordSearchTouchPlay };
