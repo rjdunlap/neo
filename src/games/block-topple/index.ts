@@ -531,9 +531,12 @@ class BlockTopple implements Game {
   }
 
   private async tapPad(pad: CountPad) {
-    if (this.counting || this.finished || !this.pads.length) return;
+    if (this.finished || !this.pads.length) return;
+    // Touch-down feedback on every tap, even while the pet is counting aloud (that tap does nothing else).
+    this.ctx.tw.kill(pad.scale);
     pad.scale.set(0.9);
     void this.ctx.tw.to(pad.scale, { x: 1, y: 1 }, { duration: 0.2, ease: ease.outBack });
+    if (this.counting) return;
     if (pad.value === this.total) {
       sfx.sparkle();
       const pads = this.pads;
