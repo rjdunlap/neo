@@ -288,7 +288,8 @@ export const COUCH_INFO: Record<CouchId, CouchInfo> = {
     play: 'turns',
     faceoff: 'twin',
     score: { better: 'lower', unit: 'wrong digs' },
-    // School's range (1–5) holds every mode; trips start at grid names, after the picture level.
+    // School's range (1–6) holds every dig mode; trips start at grid names, after the picture level, and stop before
+    // level 6's card, which the ring cannot set.
     band: 'school',
     demoLevel: 2,
     level: (stop) => [2, 3, 3, 4, 4, 5][stop] ?? 5,

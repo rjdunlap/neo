@@ -1680,7 +1680,7 @@ async function woodsBatch() {
     log('Egg Catch 6: locked gates, bins tapped as predictions, wrong guesses as misses, glowing path hint, saved score and sticker passed');
   }
 
-  if (!only || only === 'map') for (let level = fromLevel; level <= 5; level++) {
+  if (!only || only === 'map') for (let level = fromLevel; level <= Math.min(5, Number(process.env.TO_LEVEL || 6)); level++) {
     await launch('treasure-map', level);
     const mode = await page.evaluate(() => neo.scene.game.plan.mode);
     const dig = async (col, row) => {
@@ -1715,6 +1715,52 @@ async function woodsBatch() {
     await finished('treasure-map');
     assert.deepEqual(await score('treasure-map'), [2, 1]);
     log(`Treasure Map ${level} (${mode}): squares tapped on the grid, row and column hints spoken, ${mode === 'clues' ? 'two landmark lines glowing, ' : mode === 'steps' ? 'the first leg glowing, ' : 'glowing column and row, '}${mode === 'steps' ? 'the pet walking the directions, ' : ''}saved score and sticker passed`);
+  }
+
+  if ((!only || only === 'map') && fromLevel <= 6 && Number(process.env.TO_LEVEL || 6) >= 6) {
+    // Level 6, Write the card: tiles set the two lines, footprints follow, Go walks the pet.
+    await launch('treasure-map', 6);
+    const KINDS = ['across', 'acrossWay', 'upDown', 'upDownWay'];
+    const setCard = async (want) => {
+      for (const kind of KINDS) {
+        for (let i = 0; i < 4 && (await page.evaluate((k) => neo.scene.game.card[k], kind)) !== want[kind]; i++) await tap(`neo.scene.game.tiles.get('${kind}')`);
+        assert.equal(await page.evaluate((k) => neo.scene.game.card[k], kind), want[kind]);
+      }
+    };
+    const go = async () => {
+      await tap(`neo.scene.game.tiles.get('go')`);
+      await page.waitForTimeout(250);
+      await page.waitForFunction(() => !neo.scene.game.busy || neo.scene.finished, null, { timeout: 20000 });
+      await page.waitForTimeout(300);
+    };
+    for (let n = 0; n < 4; n++) {
+      await idle(n);
+      const want = await page.evaluate(() => { const f = neo.scene.game.find; return { across: Math.abs(f.right), acrossWay: Math.sign(f.right), upDown: Math.abs(f.up), upDownWay: Math.sign(f.up) }; });
+      if (n === 0) {
+        // Go on an unfinished card asks for both lines and is not a try.
+        await go();
+        assert.deepEqual(await counts(), [0, 0]);
+        // The up-or-down line one too many (or one too few at three): a miss with its reason.
+        await setCard({ ...want, upDown: want.upDown < 3 ? want.upDown + 1 : want.upDown - 1 });
+        await go();
+        assert.deepEqual(await counts(), [1, 0]);
+        // Across the wrong way: the second miss, and the across line glows from the pet.
+        await setCard({ ...want, acrossWay: -want.acrossWay });
+        await go();
+        assert.deepEqual(await counts(), [2, 1]);
+        await page.setViewportSize({ width: 768, height: 1024 });
+        await page.waitForTimeout(400);
+        await screenshot('treasure-map-6-card-portrait');
+        await page.setViewportSize({ width: 1024, height: 768 });
+        await page.waitForTimeout(400);
+        await screenshot('treasure-map-6-card-landscape');
+      }
+      await setCard(want);
+      await go();
+    }
+    await finished('treasure-map');
+    assert.deepEqual(await score('treasure-map'), [2, 1]);
+    log('Treasure Map 6 (write): an unfinished Go free, an up line one off and a wrong-way across as misses, the across glow, the pet walking each card, saved score and sticker passed');
   }
 
   if (!only || only === 'opp') for (let level = fromLevel; level <= 5; level++) {
