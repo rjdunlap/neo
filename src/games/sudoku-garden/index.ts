@@ -14,7 +14,7 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseBeds, courseMinimum, isBedCourse } from './course';
 import {
-  conflicts, deadEnds, geometry, hintFor, houseName, isSolved, makeBeds, placements, planFor, remaining, shortBed, type Hint, type Puzzle, type SudokuPlan,
+  conflicts, deadEnds, fillMarksRow, geometry, hintFor, offersFillMarks, houseName, isSolved, makeBeds, placements, planFor, remaining, shortBed, type Hint, type Puzzle, type SudokuPlan,
 } from './logic';
 
 /** Grown-up play only: this game lives on the couch, not on the child's island. */
@@ -32,8 +32,10 @@ type Mode = 'board' | 'tray';
 
 /** The smallest touch target in a grown-up game, in logical units. */
 const MIN_TOUCH = 64;
-/** Touch play: the number tiles, then Marks, Erase, Hint and Start over, each a target of its own. */
-type SlotKind = 'digit' | 'marks' | 'erase' | 'hint' | 'again';
+/** Touch play: the number tiles, then Marks, Erase, Hint and Start over (and Fill marks on a 9 by 9 bed), each a target of its own. */
+type SlotKind = 'digit' | 'marks' | 'erase' | 'hint' | 'again' | 'fill';
+/** Seconds between rows of the Fill marks sweep. */
+const SWEEP_ROW = 0.07;
 interface Slot { kind: SlotKind; d: number; x: number; y: number; w: number; h: number }
 
 class SudokuGarden implements Game {
@@ -105,6 +107,9 @@ class SudokuGarden implements Game {
   private assisted = false;
   private spoken = false;
   private settled = false;
+  /** Fill marks pencilling the bed in, one row at a time: the next row and when it goes in. */
+  private sweep: { row: number; at: number } | null = null;
+  private toldFill = false;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -182,7 +187,7 @@ class SudokuGarden implements Game {
    * so every square and every button is at least 64 across at 6 by 6 and 9 by 9, upright or sideways.
    */
   private resizeTouch(v: View) {
-    const n = this.n, LEFT = 172;
+    const n = this.n, LEFT = 172, fill = offersFillMarks(this.puzzle.size);
     const trayAt = (tile: number) => COLS * tile + (COLS - 1) * 10;
     const tile = n > 6 ? MIN_TOUCH : 72;
     const side = Math.min(96, Math.floor((v.h - 150) / n), Math.floor((v.w - LEFT - 20 - 44 - trayAt(tile)) / n));
@@ -190,7 +195,7 @@ class SudokuGarden implements Game {
     const rowLeft = 140, margin = 12, top = 128;
     const tw = Math.max(MIN_TOUCH, Math.min(88, Math.floor((v.w - margin - rowLeft - (n - 1) * 5) / n)));
     // The bed keeps clear of the home and help buttons at the left, so it is no wider than the view less that margin on both sides.
-    const stack = Math.min(96, Math.floor((v.w - 2 * rowLeft) / n), Math.floor((v.h - top - 16 - 20 - tw - 10 - 72 - 20) / n));
+    const stack = Math.min(96, Math.floor((v.w - 2 * rowLeft) / n), Math.floor((v.h - top - 16 - 20 - tw - 10 - 72 - 20 - (fill ? 82 : 0)) / n));
     this.tray.position.set(0, 0);
     this.tray.alpha = 1;
     this.slots = [];
@@ -204,7 +209,8 @@ class SudokuGarden implements Game {
       const pair = (a: SlotKind, b: SlotKind, py: number) => { [a, b].forEach((kind, k) => this.slots.push({ kind, d: 0, x: tx + k * (half + 10), y: py, w: half, h: tile })); };
       pair('marks', 'erase', ty + rows);
       pair('hint', 'again', ty + rows + tile + 10);
-      const bottom = ty + rows + 2 * (tile + 10);
+      if (fill) this.slots.push({ kind: 'fill', d: 0, x: tx, y: ty + rows + 2 * (tile + 10), w: trayW, h: tile });
+      const bottom = ty + rows + (fill ? 3 : 2) * (tile + 10);
       this.bannerBox.position.set(tx, bottom + 8);
       (this.banner.style as { wordWrapWidth: number }).wordWrapWidth = Math.max(180, v.w - tx - 36);
     } else {
@@ -217,6 +223,8 @@ class SudokuGarden implements Game {
       for (let d = 1; d <= n; d++) this.slots.push({ kind: 'digit', d, x: dx + (d - 1) * (tw + 5), y: dy, w: tw, h: tw });
       const kinds: SlotKind[] = ['marks', 'erase', 'hint', 'again'], bx = 150, bw = Math.floor((v.w - margin - bx - 30) / 4);
       kinds.forEach((kind, k) => this.slots.push({ kind, d: 0, x: bx + k * (bw + 10), y: dy + tw + 10, w: bw, h: 72 }));
+      // Fill marks under Hint and Start over, at the right, away from the pet in the corner.
+      if (fill) this.slots.push({ kind: 'fill', d: 0, x: bx + 2 * (bw + 10), y: dy + tw + 10 + 82, w: 2 * bw + 10, h: 72 });
       // The hint's words sit above the bed, beside the home button.
       this.bannerBox.position.set(140, 8);
       (this.banner.style as { wordWrapWidth: number }).wordWrapWidth = Math.max(230, v.w - 140 - 36);
@@ -356,6 +364,7 @@ class SudokuGarden implements Game {
       } else if (s.kind === 'marks') { sw = swatch.yellow; face = this.noting ? sw.fill : sw.light; text = this.noting ? 'Marks: on' : 'Marks'; }
       else if (s.kind === 'erase') { sw = swatch.pink; face = sw.light; text = 'Erase'; }
       else if (s.kind === 'hint') { sw = swatch.blue; face = sw.light; text = 'Hint ◇'; }
+      else if (s.kind === 'fill') { sw = swatch.green; face = this.sweep ? sw.fill : sw.light; text = 'Fill marks ✎'; }
       else { sw = swatch.teal; face = sw.light; text = 'Start over ↺'; }
       g.roundRect(s.x, s.y + 4, s.w, s.h, 14).fill(sw.line);
       g.roundRect(s.x, s.y + down, s.w, s.h, 14).fill(face).stroke({ width: 3, color: sw.line });
@@ -383,6 +392,7 @@ class SudokuGarden implements Game {
     if (!this.puzzle) return;
     if (this.dirty) this.paint();
     if (this.pressed && this.clock >= this.pressed.until) { this.pressed = null; this.paintTray(); }
+    if (this.sweep && this.clock >= this.sweep.at) this.sweepRow();
     const g = this.glow.clear(), ring = this.trayRing.clear();
     if (this.finished || this.busy) return;
     const cell = this.cell;
@@ -427,6 +437,7 @@ class SudokuGarden implements Game {
     this.mode = 'board';
     this.noting = false;
     this.botPick = null;
+    this.sweep = null;
     this.told = { clash: false, stuck: false };
     this.wrongQuietUntil = 0;
     this.cursor = Math.max(0, this.grid.findIndex((d) => !d));
@@ -479,6 +490,7 @@ class SudokuGarden implements Game {
 
   private async bloom() {
     this.busy = true;
+    this.sweep = null;
     this.hinted = null;
     this.flash = null;
     this.mode = 'board';
@@ -547,6 +559,7 @@ class SudokuGarden implements Game {
     else if (s.kind === 'erase') this.back();
     else if (s.kind === 'hint') this.askForHint();
     else if (s.kind === 'again') this.restart();
+    else if (s.kind === 'fill') this.fillMarks();
     else if (this.given[this.cursor]) sfx.squeak();
     else { this.lastDigit = s.d; if (this.noting) this.mark(s.d); else this.enter(s.d); }
     this.paintTray();
@@ -639,6 +652,25 @@ class SudokuGarden implements Game {
     if (this.given[i]) return;
     if (this.grid[i]) this.clear(i);
     else if (this.notes[i]) { this.notes[i] = 0; this.dirty = true; sfx.pop(2); }
+  }
+
+  /**
+   * Fill marks: pencil every number that still fits into each empty square without marks of her own, a row at a time.
+   * It reads only the rules on the board, never the answer, so it is free: not a hint, not a miss, not an entry.
+   */
+  private fillMarks() {
+    if (this.sweep) return;
+    if (!this.grid.some((d, i) => !d && !this.notes[i])) return void sfx.tick();
+    this.sweep = { row: 0, at: this.clock };
+    if (!this.toldFill) { this.toldFill = true; void this.ctx.say('sudoku.fill-marks'); }
+  }
+
+  private sweepRow() {
+    const sweep = this.sweep!;
+    if (fillMarksRow(this.grid, this.puzzle.size, this.notes, sweep.row).length) { sfx.pop(3 + (sweep.row % 6)); this.dirty = true; }
+    sweep.row++;
+    sweep.at = this.clock + SWEEP_ROW;
+    if (sweep.row >= this.n) { this.sweep = null; this.paintTray(); }
   }
 
   private mark(digit: number) {
@@ -764,6 +796,7 @@ class SudokuGarden implements Game {
     this.mode = 'board';
     this.noting = false;
     this.botPick = null;
+    this.sweep = null;
     this.dismissHint();
     this.flash = null;
     this.dirty = true;

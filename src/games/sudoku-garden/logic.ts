@@ -459,3 +459,35 @@ export function remaining(grid: Grid, size: Size): number[] {
 
 /** The house names the spoken hints use. */
 export const houseName = (h: House) => (h.kind === 'column' ? 'column' : h.kind);
+
+/* ------------------------------------------------------------------------------------------------ */
+/* Fill marks                                                                                         */
+/* ------------------------------------------------------------------------------------------------ */
+
+/** Fill marks is offered only on 9 by 9 beds: on smaller beds, marks would read the lone numbers out for her. */
+export const offersFillMarks = (size: Size) => size === 9;
+
+/** Every number that still fits a square, as a mark bitmask (bit 0 is the digit 1). It reads only the rules on the board, never the answer. */
+export const candidateMask = (grid: Grid, size: Size, cell: number): number =>
+  candidates(grid, size, cell).reduce((m, d) => m | (1 << (d - 1)), 0);
+
+/**
+ * Fill marks for one row of the bed: each empty square with no marks of her own gets every number that still fits.
+ * Squares she has marked keep her marks. Returns the squares it filled.
+ */
+export function fillMarksRow(grid: Grid, size: Size, notes: number[], row: number): number[] {
+  const filled: number[] = [];
+  for (let cell = row * size; cell < (row + 1) * size; cell++) {
+    if (grid[cell] || notes[cell]) continue;
+    notes[cell] = candidateMask(grid, size, cell);
+    filled.push(cell);
+  }
+  return filled;
+}
+
+/** Fill marks over the whole bed, row by row. */
+export function fillMarks(grid: Grid, size: Size, notes: number[]): number[] {
+  const filled: number[] = [];
+  for (let row = 0; row < size; row++) filled.push(...fillMarksRow(grid, size, notes, row));
+  return filled;
+}
