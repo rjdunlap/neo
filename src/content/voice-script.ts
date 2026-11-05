@@ -4783,6 +4783,11 @@ export const SCRIPT = {
   'sink.clay-boat': ['A hollow boat pushes away lots of water. The water holds it up!'],
   'sink.clay-same': ['Same clay, same weight. Only the shape changed!'],
   'sink.clay-hint': ['Try a hollow shape that keeps the water out.'],
+  'sink.pair-big': ['Watch the big {thing}!', 'Here goes the big {thing}!'],
+  'sink.pair-guess': ['Now a little {thing}. Will it float or sink? Tap your guess!'],
+  'sink.pair-wood': ['Big or small, wood floats.'],
+  'sink.pair-stone': ['Big or small, stone sinks.'],
+  'sink.pair-ball': ['Big or small, a ball full of air floats.'],
 
   'color.red': ['Red!'],
   'color.orange': ['Orange!'],

@@ -1,6 +1,7 @@
 import type { swatch } from '../../art/palette';
 import type { LineId } from '../../content/voice-script';
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Things to drop in the water. `obvious` ones behave the way a toddler expects; the others
@@ -35,28 +36,63 @@ export const thingWord = (t: Thing) => WORDS[t] ?? t;
 /** The basket or button that is right for a thing (the how-to card's ghost finger sorts and guesses with it). */
 export const rightBasket = (t: Thing): 'float' | 'sink' => (floats(t) ? 'float' : 'sink');
 
-export type SinkMode = 'drop' | 'say' | 'guess' | 'sort' | 'shape';
+export type SinkMode = 'drop' | 'say' | 'guess' | 'sort' | 'shape' | 'pair';
 
 export interface SinkPlan {
   mode: SinkMode;
-  /** Things in the round, or experiments in shape mode. */
+  /** Things in the round, experiments in shape mode, or pairs in pair mode. */
   count: number;
   /** Include the surprising things. */
   surprises: boolean;
   name: string;
 }
 
-export const SINK_PLANS: SinkPlan[] = [
-  { mode: 'drop', count: 5, surprises: false, name: 'Tap things to drop them in the water and watch' },
-  { mode: 'say', count: 5, surprises: false, name: 'Drop things in and hear whether they float or sink' },
-  { mode: 'guess', count: 5, surprises: false, name: 'Guess float or sink, then test it (guesses are never wrong answers)' },
-  { mode: 'sort', count: 5, surprises: false, name: 'Sort familiar things into float and sink baskets' },
-  { mode: 'sort', count: 6, surprises: true, name: 'Sort things including surprises, like a floating apple' },
-  { mode: 'guess', count: 6, surprises: true, name: 'Guess and test surprising things' },
-  { mode: 'shape', count: 2, surprises: false, name: 'Make the clay float: change its shape and test it' },
-];
+/**
+ * The plans by level ID. ID 8 is reserved for Garden Raft, so level 9 sits between 5 and 6 (pre-K) and between 6 and 7
+ * (school) through the bands' `order` in `SINK_LEVELS`.
+ */
+export const SINK_PLANS: Record<number, SinkPlan> = {
+  1: { mode: 'drop', count: 5, surprises: false, name: 'Tap things to drop them in the water and watch' },
+  2: { mode: 'say', count: 5, surprises: false, name: 'Drop things in and hear whether they float or sink' },
+  3: { mode: 'guess', count: 5, surprises: false, name: 'Guess float or sink, then test it (guesses are never wrong answers)' },
+  4: { mode: 'sort', count: 5, surprises: false, name: 'Sort familiar things into float and sink baskets' },
+  5: { mode: 'sort', count: 6, surprises: true, name: 'Sort things including surprises, like a floating apple' },
+  6: { mode: 'guess', count: 6, surprises: true, name: 'Guess and test surprising things' },
+  7: { mode: 'shape', count: 2, surprises: false, name: 'Make the clay float: change its shape and test it' },
+  9: { mode: 'pair', count: 3, surprises: false, name: 'Big and small: watch the big one, guess the small one of the same stuff, then test it' },
+};
+export const SINK_IDS = Object.keys(SINK_PLANS).map(Number);
 
-export const sinkPlan = (level: number) => SINK_PLANS[Math.max(0, Math.min(SINK_PLANS.length - 1, level - 1))];
+export const SINK_LEVELS: BandLevels = {
+  lap: { min: 1, max: 2 },
+  toddler: { min: 2, max: 4 },
+  preschool: { min: 3, max: 5 },
+  prek: { min: 4, max: 9, order: [4, 5, 9, 6] },
+  school: { min: 5, max: 9, order: [5, 6, 9, 7] },
+};
+
+/** A built level's plan; an unbuilt ID (8, Garden Raft) or one above the top falls to the nearest built ID below it. */
+export const sinkPlan = (level: number): SinkPlan => {
+  const below = SINK_IDS.filter((id) => id <= level);
+  return SINK_PLANS[below.length ? below[below.length - 1] : SINK_IDS[0]];
+};
+
+/**
+ * Big and small (level 9): two things of one stuff at two sizes. The big one is shown going in; she guesses the small one.
+ * Size never changes it. The small members are kept out of `THINGS` so the seeded pools of levels 1 to 6 and the journal
+ * stay as they were. `size` is the scale each is drawn at.
+ */
+export const PAIRS = {
+  wood: { floats: true, big: { thing: 'log', word: 'log', size: 1.3 }, small: { art: 'twig', word: 'twig', size: 0.75 }, line: 'sink.pair-wood' },
+  stone: { floats: false, big: { thing: 'rock', word: 'rock', size: 1.3 }, small: { art: 'pebble', word: 'pebble', size: 0.75 }, line: 'sink.pair-stone' },
+  ball: { floats: true, big: { thing: 'ball', word: 'ball', size: 1.4 }, small: { art: 'little-ball', word: 'ball', size: 0.6 }, line: 'sink.pair-ball' },
+} as const satisfies Record<string, { floats: boolean; big: { thing: Thing; word: string; size: number }; small: { art: string; word: string; size: number }; line: LineId }>;
+export type PairKind = keyof typeof PAIRS;
+export type SmallArt = (typeof PAIRS)[PairKind]['small']['art'];
+export const ALL_PAIRS = Object.keys(PAIRS) as PairKind[];
+
+/** The round's pairs: distinct, in a seeded order. */
+export const pairsFor = (plan: SinkPlan, rng: Rng): PairKind[] => rng.shuffle([...ALL_PAIRS]).slice(0, Math.min(plan.count, ALL_PAIRS.length));
 
 /** The things for a round: always some floaters and some sinkers, surprises included when asked for. */
 export function thingsFor(plan: SinkPlan, rng: Rng): Thing[] {

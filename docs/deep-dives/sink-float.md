@@ -107,7 +107,7 @@ None new. Garden Raft keeps level ID 8 as decided 2026-10-23; this dive builds l
 ## Build slices, in order
 
 1. **Fresh things** (**built 2026-11-03**, batch sink-float 1; existing-interaction tier plus art): typecheck, the game's rule tests and the journal tests, one filtered regression play of level 4 on a seed with a new thing and of level 6 with a new surprise, one portrait screenshot of the new art in the tank, `npm run build` (journal and voice lines are shared). Bot unchanged.
-2. **Level 9 *Big and small*** (batch sink-float 2), after batch 1 (the log and pebble art; new-level tier with `order`: typecheck, unit tests including order, lands and the keyed-plan clamp, one play of level 9 at school with a surprise guess, `fingerdemo` at 9, one portrait screenshot).
+2. **Level 9 *Big and small*** (batch sink-float 2; **built 2026-11-05**, branch `claude/sink-float-big-small`, PR #1261), after batch 1 (the log and pebble art; new-level tier with `order`: typecheck, unit tests including order, lands and the keyed-plan clamp, one play of level 9 at school with a surprise guess, `fingerdemo` at 9, one portrait screenshot).
 3. **Define Sink or Float 10 *Salty or fresh*** (docs only; status `define`): the stated model and its how-to note, the two-tank portrait layout, the egg, part 2's accounting and hint, the check tier.
 4. **Define Sink or Float 11 *How much can it carry?*** (docs only), after engineering's Garden Raft definition: one load and waterline model shared with level 8.
 5. Garden Raft (level 8) stays engineering design's slice 3.

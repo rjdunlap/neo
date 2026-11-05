@@ -2,7 +2,7 @@ import { Container, Graphics } from 'pixi.js';
 import { ink, swatch, wood } from '../../art/palette';
 import { prop } from '../../art/props';
 import { starPoints } from '../../art/shapes';
-import type { ClayColor, ClayShape, Thing } from './logic';
+import type { ClayColor, ClayShape, SmallArt, Thing } from './logic';
 
 const line = (color: number, width = 5) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 
@@ -116,6 +116,26 @@ export function floatIcon(): Graphics {
   g.ellipse(0, -6, 26, 16).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 4)).circle(14, -24, 12).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 4));
   g.moveTo(-44, 10).quadraticCurveTo(-30, 0, -16, 10).quadraticCurveTo(-2, 20, 12, 10).quadraticCurveTo(26, 0, 40, 10).stroke(line(swatch.blue.fill, 6));
   return g;
+}
+
+/**
+ * The small one of a Big and small pair, drawn about 90 units across like `thingArt` and shown smaller (`PAIRS` sizes): a
+ * thin twig of the log's wood, a smooth pebble of the rock's stone, and the same beach ball.
+ */
+export function smallArt(art: SmallArt): Container {
+  if (art === 'little-ball') return thingArt('ball');
+  const c = new Container();
+  const g = new Graphics();
+  if (art === 'twig') {
+    g.moveTo(-46, 10).quadraticCurveTo(0, -4, 46, -6).stroke(line(swatch.brown.line, 14)).moveTo(-46, 10).quadraticCurveTo(0, -4, 46, -6).stroke(line(swatch.brown.fill, 8));
+    g.moveTo(8, -2).lineTo(26, -26).stroke(line(swatch.brown.line, 10)).moveTo(8, -2).lineTo(26, -26).stroke(line(swatch.brown.fill, 5));
+    g.moveTo(26, -26).quadraticCurveTo(44, -40, 48, -24).quadraticCurveTo(36, -14, 26, -26).closePath().fill(swatch.green.fill).stroke(line(swatch.green.line, 3));
+  } else {
+    g.ellipse(0, 4, 44, 28).fill(swatch.white.line).stroke(line(ink, 4));
+    g.ellipse(-14, -6, 14, 6).fill({ color: swatch.white.fill, alpha: 0.35 });
+  }
+  c.addChild(g);
+  return c;
 }
 
 /** The picture on the "sinks" basket: a rock resting at the bottom, bubbles rising. */
