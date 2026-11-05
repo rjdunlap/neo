@@ -7,7 +7,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 ## Next ten
 
 - **Define `block-topple` level 5** (*Count what fell*; docs only): the slice-2 definition cannot fit (see [slice 2 as built](definitions/block-topple.md#slice-2-as-built-2026-11-05-level-4-built-level-5-not-built)); redefine to one stepped stack per line on a wide pedestal, fruit counted across lines, or a different fall cosmetic.
-- **`far-lights`, levels 1–4, a new game** (admitted 2026-11-05; see Queued) (lap 1 up; one control, distance, and how bright a light looks; Tinker Lab, else Music Mountain): [definition](definitions/far-lights.md#check-tier).
 - **`seed-travelers`, levels 1–3, a new game** (admitted 2026-11-05; see Queued) (toddler 1–2, preschool 1–3, pre-K 2–3; a seed sent by a puff of air or carried in a critter's fur; Rainbow Meadow, else Barnyard): [definition](definitions/seed-travelers.md#check-tier).
 - **Dive `draw-the-pattern`** (Draw the Pattern; lap to pre-K, 8 levels; docs only): [procedure](deep-dives/README.md#one-session-one-game), [definition](definitions/draw-the-pattern.md).
 - **Define Puddle Lens 5–6** (`cells-microbes`; docs only, with a session source check of the biology model): [definition so far](definitions/puddle-lens.md), [study](deep-dives/subjects/cells-microbes.md).
@@ -47,6 +46,7 @@ Refilled 2026-11-05 from the [study backlog](STUDY-BACKLOG.md#completed-studies-
 - **Define Bond Beads 5–8** (`chemistry`; docs only, with a session source check of the molecule list): [definition so far](definitions/bond-beads.md), [study](deep-dives/subjects/chemistry.md).
 - **Define Welcome Ways 5–7** (`engineering-design`; space limits, a conflict and a repair for a new friend; docs only): [definition so far](definitions/welcome-ways.md), [study](deep-dives/subjects/engineering-design.md).
 - **Define Gadget Bench 4** (`inventions`; a three-condition path with a conflict, revise one part; docs only): [definition so far](definitions/gadget-bench.md#what-comes-next), [study](deep-dives/subjects/inventions.md).
+- **Define Far Lights 5–8** (`astronomy`; docs only, with the parallax wording reviewed or held and levels 7–8 placed at the top of `school`): [Far Lights 1–4 as built](definitions/far-lights.md#what-comes-next), [study](deep-dives/subjects/astronomy.md#build-slices-in-order).
 
 ### Subject research (docs only)
 
