@@ -33,6 +33,12 @@ import {
   GAPS,
   GAP_TUNES,
   pickGapTune,
+  RHYMES,
+  RHYME_TUNES,
+  RIMES,
+  pickRhymeTune,
+  rhymeSides,
+  rhymes,
   type Tune,
 } from './logic';
 import { singAlongBarn } from './index';
@@ -92,14 +98,15 @@ describe('the song', () => {
 
 describe('the plans', () => {
   it('grow from one animal to three, with her choosing all at once and then one verse at a time', () => {
-    expect(PLANS.map((p) => p.verses)).toEqual([1, 2, 2, 3, 3, 2, 2]);
-    expect(PLANS.map((p) => p.invite)).toEqual([false, false, true, true, true, true, false]);
-    expect(PLANS.map((p) => p.each)).toEqual([false, false, false, true, true, true, false]);
-    expect(PLANS.map((p) => p.chooseTune)).toEqual([false, false, false, false, true, true, false]);
-    expect(PLANS.map((p) => p.full)).toEqual([false, false, false, false, false, true, false]);
-    expect(PLANS.map((p) => p.gap)).toEqual([false, false, false, false, false, false, true]);
+    expect(PLANS.map((p) => p.verses)).toEqual([1, 2, 2, 3, 3, 2, 2, 2]);
+    expect(PLANS.map((p) => p.invite)).toEqual([false, false, true, true, true, true, false, false]);
+    expect(PLANS.map((p) => p.each)).toEqual([false, false, false, true, true, true, false, false]);
+    expect(PLANS.map((p) => p.chooseTune)).toEqual([false, false, false, false, true, true, false, false]);
+    expect(PLANS.map((p) => p.full)).toEqual([false, false, false, false, false, true, false, false]);
+    expect(PLANS.map((p) => p.gap)).toEqual([false, false, false, false, false, false, true, false]);
+    expect(PLANS.map((p) => p.rhyme)).toEqual([false, false, false, false, false, false, false, true]);
     expect(planFor(0)).toBe(PLANS[0]);
-    expect(planFor(99)).toBe(PLANS[6]);
+    expect(planFor(99)).toBe(PLANS[7]);
   });
 
   it('keeps the longest song short enough for a small child and for the how-to demonstration', () => {
@@ -427,8 +434,8 @@ describe('The Wheels on the Bus', () => {
 describe('Finish the line (level 7)', () => {
   it('is placed after choosing friends for toddler and preschool by order, and pre-K does not play it', () => {
     expect(singAlongBarn.levels('toddler')).toEqual({ min: 1, max: 7, order: [1, 2, 3, 7] });
-    expect(singAlongBarn.levels('preschool')).toEqual({ min: 2, max: 7, order: [2, 3, 7] });
-    expect(singAlongBarn.levels('prek')).toEqual({ min: 3, max: 6 });
+    expect(singAlongBarn.levels('preschool')).toEqual({ min: 2, max: 8, order: [2, 3, 7, 8] });
+    expect(singAlongBarn.levels('prek')).toEqual({ min: 3, max: 8, order: [3, 4, 5, 6, 8] });
     expect(singAlongBarn.levels('lap')).toEqual({ min: 1, max: 2 });
     expect(planFor(7).gap).toBe(true);
     expect(planFor(7).invite).toBe(false);
@@ -472,5 +479,91 @@ describe('Finish the line (level 7)', () => {
 
   it('describes the level for grown-ups', () => {
     expect(singAlongBarn.describeLevel(7)).toMatch(/stops before the last word/);
+  });
+});
+
+describe('Which one finishes it? (level 8)', () => {
+  it('follows Finish the line for preschool and tops the pre-K ladder, by order', () => {
+    expect(planFor(8).rhyme).toBe(true);
+    expect(planFor(8).gap).toBe(false);
+    expect(planFor(8).invite).toBe(false);
+    expect(singAlongBarn.levels('toddler').max).toBe(7);
+    expect(singAlongBarn.levels('lap').max).toBe(2);
+  });
+
+  it('sings Rain, Twinkle and Ring, each with its own two pictures', () => {
+    expect(RHYME_TUNES.map((t) => t.id)).toEqual(['rain', 'ring', 'twinkle']);
+    for (const t of RHYME_TUNES) {
+      const r = RHYMES[t.id]!;
+      expect(r.decoy.picture).not.toBe(r.picture);
+      expect(r.decoy.word).not.toBe(r.word);
+    }
+  });
+
+  it('has exactly one rhyming picture: the gap word rhymes with the earlier word and the other picture rhymes with neither', () => {
+    for (const t of RHYME_TUNES) {
+      const r = RHYMES[t.id]!;
+      for (const w of [r.word, r.earlier.word, r.decoy.word]) expect(RIMES[w]).toBeDefined();
+      expect(rhymes(r.word, r.earlier.word)).toBe(true);
+      expect(rhymes(r.decoy.word, r.earlier.word)).toBe(false);
+      expect(rhymes(r.decoy.word, r.word)).toBe(false);
+    }
+    // The checker itself: high and sky share no spelling but rhyme; play and apple do not.
+    expect(rhymes('high', 'sky')).toBe(true);
+    expect(rhymes('play', 'apple')).toBe(false);
+    expect(rhymes('rosie', 'posies')).toBe(true);
+  });
+
+  it('the earlier word is really sung just before, and the gap is really on the rhyming word', () => {
+    for (const t of RHYME_TUNES) {
+      const r = RHYMES[t.id]!;
+      const section = r.where === 'verse' ? t.verse : t.opening;
+      // The earlier word ends the section's first phrase; the gap word ends its last.
+      expect(section[0].syllables.slice(-r.earlier.syllables.length)).toEqual([...r.earlier.syllables]);
+      expect(section.at(-1)!.syllables.slice(-r.syllables.length)).toEqual([...r.syllables]);
+    }
+  });
+
+  it('gaps once per friend in Rain and Twinkle and once in Ring\'s opening, on the first syllable of the word, changing nothing else', () => {
+    const friends = ANIMALS.slice(0, 2);
+    for (const t of RHYME_TUNES) {
+      const r = RHYMES[t.id]!;
+      const song = makeSong(friends, t, 'rhyme');
+      const gaps = song.flatMap((n, i) => (n.gap ? [i] : []));
+      expect(gaps.length).toBe(r.where === 'verse' ? friends.length : 1);
+      for (const i of gaps) {
+        const word = song.slice(i, i + r.syllables.length);
+        expect(word.map((n) => n.syllable)).toEqual([...r.syllables]);
+        // The word finishes its section: its last syllable ends the opening or a verse.
+        expect(word.at(-1)!.verseEnd).toBe(true);
+        expect(song[i].animal === null).toBe(r.where === 'opening');
+        expect(i).toBeGreaterThan(0);
+      }
+      expect(song.map(({ gap: _, ...n }) => n)).toEqual(makeSong(friends, t).map(({ gap: _, ...n }) => n));
+    }
+    // Twinkle is the tune with its own notes; Rain and Ring stay pentatonic.
+    expect(RAIN.verse.every((p) => !p.semitones)).toBe(true);
+  });
+
+  it('never gaps a tune without a rhyme, and Finish the line keeps its own gaps', () => {
+    for (const t of TUNES.filter((x) => !RHYMES[x.id])) expect(makeSong(ANIMALS.slice(0, 2), t, 'rhyme').some((n) => n.gap)).toBe(false);
+    expect(makeSong(ANIMALS.slice(0, 2), TWINKLE, true).filter((n) => n.gap).map((n) => n.syllable)).toEqual(['sky', 'sky']);
+  });
+
+  it('draws the tune and the sides from the seed: the same for the same seed, every tune and both sides turn up', () => {
+    expect(pickRhymeTune(new Rng(9)).id).toBe(pickRhymeTune(new Rng(9)).id);
+    expect(rhymeSides(new Rng(9), 2)).toEqual(rhymeSides(new Rng(9), 2));
+    const tunes = new Set<string>();
+    const sides = new Set<number>();
+    for (let seed = 1; seed <= 40; seed++) {
+      tunes.add(pickRhymeTune(new Rng(seed)).id);
+      for (const s of rhymeSides(new Rng(seed), 2)) sides.add(s);
+    }
+    expect([...tunes].sort()).toEqual(['rain', 'ring', 'twinkle']);
+    expect([...sides].sort()).toEqual([0, 1]);
+  });
+
+  it('describes the level for grown-ups', () => {
+    expect(singAlongBarn.describeLevel(8)).toMatch(/rhym/);
   });
 });
