@@ -224,6 +224,11 @@ export function tips(stack: Stack, block: number, h: number): number | null {
   return null;
 }
 
+/** The lowest push that tips anything: the golden band's bottom edge, as a height above the grass. */
+export function tipLine(stack: Stack): number {
+  return Math.min(...stack.blocks.map((_, j) => baseOf(stack, j) + widthOf(stack, j)));
+}
+
 /** What one shot does. */
 export function flight(line: Line, pull: Pull, standing: Standing = allStanding(line)): Flight {
   const contact = contactOf(line, pull, standing);
@@ -348,7 +353,7 @@ export function fallFootprint(stack: Stack, from: number) {
 
 // ---- Levels ----
 
-export type PlanKind = 'close' | 'far' | 'hill';
+export type PlanKind = 'close' | 'far' | 'hill' | 'high';
 export interface Plan {
   kind: PlanKind;
   name: string;
@@ -363,6 +368,7 @@ export const PLANS: Plan[] = [
   { kind: 'close', name: 'Big and close: pull back and let go to tip a big tower', lines: 3, counts: false, trail: false },
   { kind: 'far', name: 'Farther: how hard to pull, from the last arc', lines: 3, counts: true, trail: true },
   { kind: 'hill', name: 'Over the hill: aim high enough to clear it', lines: 3, counts: true, trail: true },
+  { kind: 'high', name: 'Hit it high: a short wide stack only tips from a bump high up', lines: 3, counts: true, trail: true },
 ];
 export const planFor = (level: number): Plan => PLANS[Math.min(PLANS.length, Math.max(1, Math.round(level))) - 1];
 
@@ -373,6 +379,27 @@ function tower(x0: number, width: number, count: number, friend: Friend, colors:
     blocks: Array.from({ length: count }, (_, k) => ({ x0, x1: x0 + width, y0: GRASS - BLOCK_H * (k + 1), y1: GRASS - BLOCK_H * k, color: colors[k % colors.length] })),
   };
 }
+
+/**
+ * Level 4's short wide stack: a 150-wide base with a 100-wide block centred on top, 200 high in all. Only a push at
+ * least 150 high (the top block's upper half, or the friend) tips it; lower hits thump.
+ */
+export const WIDE_BASE = 150;
+function wideStack(x0: number, friend: Friend, colors: BlockColor[]): Stack {
+  const inset = (WIDE_BASE - BLOCK_H) / 2;
+  return {
+    friend,
+    blocks: [
+      { x0, x1: x0 + WIDE_BASE, y0: GRASS - BLOCK_H, y1: GRASS, color: colors[0] },
+      { x0: x0 + inset, x1: x0 + inset + BLOCK_H, y0: GRASS - 2 * BLOCK_H, y1: GRASS - BLOCK_H, color: colors[1] },
+    ],
+  };
+}
+/** Level 4's left edges: the wide stack's base and the tall tower's, so every fall ends inside the portrait view. */
+export const WIDE_X = { min: 400, max: 460 };
+export const TALL_X = { min: 380, max: 410 };
+/** At level 4, at least this share of the pulls that reach a wide stack only thump it. */
+export const MIN_THUMP_SHARE = 0.2;
 
 /** The level 1 tower's left edge, for level 2's "farther" rule. */
 export const CLOSE_X = { min: 380, max: 400 };
@@ -389,10 +416,12 @@ export function authoredLine(plan: Plan): Line {
       return { stacks: [tower(530, 100, 2, 'bear', ['green', 'orange'])], hill: null };
     case 'hill':
       return { stacks: [tower(540, 100, 2, 'duck', ['purple', 'yellow'])], hill: { x0: HILL_X.x0, x1: HILL_X.x1, top: HILL_TOP } };
+    case 'high':
+      return { stacks: [wideStack(430, 'pig', ['orange', 'blue'])], hill: null };
   }
 }
 
-function seededLine(plan: Plan, rng: Rng): Line {
+function seededLine(plan: Plan, rng: Rng, shape: number): Line {
   const colors = () => rng.shuffle(BLOCK_COLORS.slice()).slice(0, 3);
   const friend = rng.pick(FRIENDS);
   switch (plan.kind) {
@@ -404,7 +433,25 @@ function seededLine(plan: Plan, rng: Rng): Line {
       const shift = rng.int(-10, 10);
       return { stacks: [tower(rng.int(520, 550), 100, 2, friend, colors())], hill: { x0: HILL_X.x0 + shift, x1: HILL_X.x1 + shift, top: HILL_TOP } };
     }
+    case 'high':
+      // Two shapes by line: a tall thin tower (only its first block thumps), then another short wide stack.
+      return shape % 2 === 1
+        ? { stacks: [tower(rng.int(TALL_X.min, TALL_X.max), 100, 3, friend, colors())], hill: null }
+        : { stacks: [wideStack(rng.int(WIDE_X.min, WIDE_X.max), friend, colors())], hill: null };
   }
+}
+
+/** Of the grid pulls whose first contact is a stack, the share that only thump it. */
+export function thumpShare(line: Line): number {
+  let reach = 0;
+  let thump = 0;
+  for (const angle of ANGLES)
+    for (const length of LENGTHS) {
+      const o = flight(line, { angle, length }).outcome;
+      if (o.kind === 'tip' || o.kind === 'thump') reach++;
+      if (o.kind === 'thump') thump++;
+    }
+  return reach ? thump / reach : 0;
 }
 
 /** Whether a line meets its plan's filter (the table in the definition). */
@@ -419,6 +466,8 @@ export function meetsPlan(plan: Plan, line: Line): boolean {
       return line.stacks[0].blocks[0].x0 >= CLOSE_X.max + FAR_GAP && !works(line, { angle: 45, length: 60 }) && flight(line, { angle: 45, length: 60 }).outcome.kind === 'short' && LENGTHS.some((length) => length > 60 && works(line, { angle: 45, length })) && fits(w, 8, 20);
     case 'hill':
       return flatPullsBlocked(line) && fits(w, 8, 20);
+    case 'high':
+      return fits(w, 8, 20) && (line.stacks[0].blocks.length > 2 || thumpShare(line) >= MIN_THUMP_SHARE);
   }
 }
 
@@ -435,10 +484,10 @@ export function flatPullsBlocked(line: Line): boolean {
 const overlapsX = (a: { x0: number; x1: number }, b: { x0: number; x1: number }) => a.x0 < b.x1 && b.x0 < a.x1;
 
 export const MAX_TRIES = 50;
-/** A seeded line that meets its plan, or (never needed, a test checks) the authored one. */
-export function makeLine(plan: Plan, rng: Rng): { line: Line; fallback: boolean } {
+/** A seeded line that meets its plan (`shape` picks level 4's stack: odd a tall tower, even a wide stack), or (never needed, a test checks) the authored one. */
+export function makeLine(plan: Plan, rng: Rng, shape = 0): { line: Line; fallback: boolean } {
   for (let i = 0; i < MAX_TRIES; i++) {
-    const line = seededLine(plan, rng);
+    const line = seededLine(plan, rng, shape);
     if (meetsPlan(plan, line)) return { line, fallback: false };
   }
   return { line: authoredLine(plan), fallback: true };
@@ -447,7 +496,7 @@ export function makeLine(plan: Plan, rng: Rng): { line: Line; fallback: boolean 
 /** A round's lines: the authored first line, then seeded ones. */
 export function roundLines(level: number, rng: Rng): Line[] {
   const plan = planFor(level);
-  return [authoredLine(plan), ...Array.from({ length: plan.lines - 1 }, () => makeLine(plan, rng).line)];
+  return [authoredLine(plan), ...Array.from({ length: plan.lines - 1 }, (_, i) => makeLine(plan, rng, i + 1).line)];
 }
 
 // ---- Layout ----

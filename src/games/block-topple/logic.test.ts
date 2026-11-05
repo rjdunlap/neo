@@ -5,7 +5,7 @@ import { landButtons, overlaps, petCorner, type Rect } from '../../content/lands
 import {
   ANGLES, BALL_R, BOARD_W, FALL_MAX, GRAB_R, GRASS, LENGTHS, MAX_ANGLE, MAX_PULL, MIN_ANGLE, MIN_PULL, NET_X, PLANS, SLING,
   authoredLine, boardLayout, contactOf, entryTime, fallFootprint, flatPullsBlocked, flight, fits, isMiss, largestWindow, launch, makeLine,
-  meetsPlan, nearestWorking, planFor, positionAt, pulledBall, pullFrom, roundLines, share, solve, targetBox, tips, windows, works,
+  meetsPlan, MIN_THUMP_SHARE, nearestWorking, TALL_X, thumpShare, tipLine, WIDE_BASE, planFor, positionAt, pulledBall, pullFrom, roundLines, share, solve, targetBox, tips, windows, works,
   type Block, type Line, type Pull, type Stack,
 } from './logic';
 
@@ -31,11 +31,11 @@ describe('determinism', () => {
     for (const plan of PLANS) for (const seed of SEEDS.slice(0, 30)) {
       expect(makeLine(plan, new Rng(seed))).toEqual(makeLine(plan, new Rng(seed)));
     }
-    for (const level of [1, 2, 3]) expect(roundLines(level, new Rng(7))).toEqual(roundLines(level, new Rng(7)));
+    for (const level of [1, 2, 3, 4]) expect(roundLines(level, new Rng(7))).toEqual(roundLines(level, new Rng(7)));
   });
 
-  it('plans map levels 1 to 3 in order', () => {
-    expect([1, 2, 3].map((l) => planFor(l).kind)).toEqual(['close', 'far', 'hill']);
+  it('plans map levels 1 to 4 in order', () => {
+    expect([1, 2, 3, 4].map((l) => planFor(l).kind)).toEqual(['close', 'far', 'hill', 'high']);
   });
 
   it('flights are finite over the pull grid for authored and seeded lines', () => {
@@ -166,6 +166,18 @@ describe('the tipping rule', () => {
     expect(tips(s, 1, 199)).toBeNull();
     expect(tips(s, 1, 200)).toBe(1);
   });
+
+  it('a uniform thin tower never tips in part: any push on an upper block tips it whole', () => {
+    // Why level 5 (count what fell) needs redefining: a partial tip needs a lower block wider than the hit height.
+    const t = tower(100, 4);
+    for (let k = 1; k < 4; k++) for (let h = 100 * k; h <= 100 * (k + 1); h += 5) expect(tips(t, k, h)).toBe(0);
+  });
+
+  it('tipLine is the lowest push that tips anything', () => {
+    expect(tipLine(tower(100, 3))).toBe(100);
+    expect(tipLine(tower(140, 3))).toBe(140);
+    expect(tipLine(authoredLine(planFor(4)).stacks[0])).toBe(150);
+  });
 });
 
 describe('plans, windows and filters', () => {
@@ -230,6 +242,68 @@ describe('plans, windows and filters', () => {
       const close = (planFor(1) && makeLine(planFor(1), new Rng(seed))).line;
       expect(close.stacks[0].blocks[0].x0).toBeGreaterThanOrEqual(380);
       expect(close.stacks[0].blocks[0].x0).toBeLessThanOrEqual(400);
+    }
+  });
+});
+
+describe('level 4: hit it high', () => {
+  const plan = planFor(4);
+  const talls = SEEDS.map((seed) => makeLine(plan, new Rng(seed), 1));
+
+  it('the authored line is the short wide stack: a 150 base with a 100 block on top, a pig asleep', () => {
+    const s = authoredLine(plan).stacks[0];
+    expect(s.friend).toBe('pig');
+    expect(s.blocks.map((b) => b.x1 - b.x0)).toEqual([WIDE_BASE, 100]);
+    expect(s.blocks[1].x0 - s.blocks[0].x0).toBe((WIDE_BASE - 100) / 2);
+    expect(s.blocks[1].y1).toBe(s.blocks[0].y0);
+  });
+
+  it('a round is a wide stack, a tall tower, then another wide stack', () => {
+    for (const seed of SEEDS.slice(0, 10)) {
+      const lines = roundLines(4, new Rng(seed));
+      expect(lines.map((l) => l.stacks[0].blocks.length)).toEqual([2, 3, 2]);
+      expect(lines.map((l) => l.stacks[0].blocks[0].x1 - l.stacks[0].blocks[0].x0)).toEqual([WIDE_BASE, 100, WIDE_BASE]);
+      for (const l of lines) expect(l.hill).toBeNull();
+    }
+  });
+
+  it('every wide stack thumps for at least a fifth of the pulls that reach it, and keeps an 8 by 20 window', () => {
+    for (const line of [authoredLine(plan), ...generated[3].made.slice(0, 12).map((m) => m.line)]) {
+      expect(line.stacks[0].blocks).toHaveLength(2);
+      expect(thumpShare(line)).toBeGreaterThanOrEqual(MIN_THUMP_SHARE);
+      expect(fits(largestWindow(windows(line)), 8, 20)).toBe(true);
+    }
+  });
+
+  it('a hit low on the wide stack thumps and a hit high on it tips it, at many shared angles', () => {
+    const line = authoredLine(plan);
+    const both = ANGLES.filter((angle) => {
+      const kinds = LENGTHS.map((length) => flight(line, { angle, length }).outcome.kind);
+      return kinds.includes('thump') && kinds.includes('tip');
+    });
+    expect(both.length).toBeGreaterThanOrEqual(10);
+  });
+
+  it('seeded tall towers meet the plan without falling back, and only their first block thumps', () => {
+    for (const m of talls) {
+      expect(m.fallback).toBe(false);
+      expect(m.line.stacks[0].blocks).toHaveLength(3);
+      expect(m.line.stacks[0].blocks[0].x0).toBeGreaterThanOrEqual(TALL_X.min);
+      expect(m.line.stacks[0].blocks[0].x0).toBeLessThanOrEqual(TALL_X.max);
+    }
+    for (const m of talls.slice(0, 8)) {
+      expect(meetsPlan(plan, m.line)).toBe(true);
+      for (const pull of gridPulls(3, 4)) {
+        const o = flight(m.line, pull).outcome;
+        if (o.kind === 'thump') expect(o.block).toBe(0);
+      }
+    }
+  });
+
+  it('every level 4 fall ends inside a 768-wide portrait view', () => {
+    const v = computeView(768, 1024);
+    for (const line of [authoredLine(plan), ...generated[3].made.map((m) => m.line), ...talls.map((m) => m.line)]) {
+      expect(boardLayout(v).x + fallFootprint(line.stacks[0], 0).x1).toBeLessThanOrEqual(v.w);
     }
   });
 });

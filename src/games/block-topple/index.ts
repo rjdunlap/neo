@@ -14,20 +14,21 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   allStanding, arc, BALL_R, BOARD_H, BOARD_W, boardLayout, fallFootprint, flight, GRAB_R, GRASS, isMiss, nearestWorking, NET_X, planFor,
-  positionAt, pullFrom, pulledBall, roundLines, SLING, solve, type Block, type Flight, type Line, type Plan, type Pt, type Pull, type Stack, type Standing,
+  positionAt, tipLine, pullFrom, pulledBall, roundLines, SLING, solve, type Block, type Flight, type Line, type Plan, type Pt, type Pull, type Stack, type Standing,
 } from './logic';
 
-/** Slice 1 builds levels 1–3; levels 4–5 (the wide stack and counting what fell) come in slice 2. */
+/** Levels 1–4 are built; level 5 (counting what fell) waits on a redefinition (docs/definitions/block-topple.md). */
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
-  prek: { min: 1, max: 3 },
-  school: { min: 2, max: 3 },
+  prek: { min: 1, max: 4 },
+  school: { min: 2, max: 4 },
 };
 
 const INSTRUCT: Record<Plan['kind'], LineId> = {
   close: 'block-topple.instruct-pull',
   far: 'block-topple.instruct-far',
   hill: 'block-topple.instruct-hill',
+  high: 'block-topple.instruct-high',
 };
 const FRIEND_SCALE = 0.3;
 /** Seconds for the tipped part to turn onto its cushion. */
@@ -74,6 +75,8 @@ class BlockTopple implements Game {
   private readonly stacksLayer = new Container();
   private readonly trail = new Graphics();
   private readonly hintG = new Graphics();
+  /** After two thumps on a line: a golden band on the stack from its tipping line up. */
+  private readonly highG = new Graphics();
   private readonly ghost = ballArt(0.35);
   private readonly bandBack = new Graphics();
   private readonly bandFront = new Graphics();
@@ -94,6 +97,8 @@ class BlockTopple implements Game {
   private hints = 0;
   private lineFails = 0;
   private hinted = false;
+  private thumps = 0;
+  private highHinted = false;
   private lastPull: Pull | null = null;
   private solved: Pull | null = null;
   private clock = 0;
@@ -104,7 +109,7 @@ class BlockTopple implements Game {
     if (ctx.demo) this.lines = this.lines.slice(0, 1);
     this.back = ctx.track(new Backdrop({ sky: [0xbfe6f7, 0xfff6e0], hills: [0xc5e7a8, 0xa8dc8f, 0x8fcf73], horizon: 0.72, clouds: 3, sun: true, seed: 157 }, ctx.view));
     this.back.eventMode = 'none';
-    for (const g of [this.scenery, this.cushions, this.trail, this.hintG, this.ghost, this.bandBack, this.bandFront, this.ball]) g.eventMode = 'none';
+    for (const g of [this.scenery, this.cushions, this.highG, this.trail, this.hintG, this.ghost, this.bandBack, this.bandFront, this.ball]) g.eventMode = 'none';
     this.ghost.visible = false;
     this.grabber.eventMode = 'static';
     this.grabber.cursor = 'grab';
@@ -117,7 +122,7 @@ class BlockTopple implements Game {
     this.grabber.on('pointercancel', this.cancel);
     window.addEventListener('pointerup', this.release);
     window.addEventListener('pointercancel', this.cancel);
-    this.board.addChild(this.scenery, this.cushions, this.stacksLayer, this.trail, this.hintG, this.ghost, this.bandBack, this.ball, this.bandFront, this.grabber);
+    this.board.addChild(this.scenery, this.cushions, this.stacksLayer, this.highG, this.trail, this.hintG, this.ghost, this.bandBack, this.ball, this.bandFront, this.grabber);
     ctx.stage.addChild(this.back, this.board);
     this.resize(ctx.view);
   }
@@ -153,6 +158,7 @@ class BlockTopple implements Game {
         void this.land(f.flight);
       }
     }
+    if (this.highHinted) this.highG.alpha = 0.75 + 0.25 * Math.sin(this.clock * 4);
     if (this.ghost.visible) this.ghost.alpha = 0.6 + 0.3 * Math.sin(this.clock * 5);
   }
 
@@ -198,6 +204,9 @@ class BlockTopple implements Game {
     this.solved = null;
     this.lineFails = 0;
     this.hinted = false;
+    this.thumps = 0;
+    this.highHinted = false;
+    this.highG.clear();
     this.lastPull = null;
     this.trail.clear();
     this.clearHint();
@@ -344,7 +353,9 @@ class BlockTopple implements Game {
       sfx.marimba(4 - o.block);
       sfx.knock();
       this.nodes[o.stack].wiggle[o.block] = 0.8;
-      void this.ctx.say('block-topple.thump');
+      this.thumps++;
+      if (this.thumps >= 2 && !this.highHinted) this.showHighBand(o.stack);
+      else void this.ctx.say('block-topple.thump');
     } else if (isMiss(o)) {
       sfx.boing();
       if (this.plan.counts) this.misses++;
@@ -375,6 +386,7 @@ class BlockTopple implements Game {
     part.addChild(...n.blocks.slice(from), n.friend, n.bell);
     this.standing[i] = from;
     this.clearHint();
+    this.highG.clear();
     n.friend.setMood('surprised', 1);
     await this.ctx.tw.to(part, { rotation: Math.PI / 2 }, { duration: FALL_TIME, ease: ease.inQuad });
     sfx.marimba(1);
@@ -450,6 +462,22 @@ class BlockTopple implements Game {
     const at = pulledBall(pull);
     this.ghost.position.set(at.x, at.y);
     this.ghost.visible = true;
+  }
+
+  /** After two thumps that tip nothing (never a miss): a golden band from the lowest push that tips the stack up to its top. */
+  private showHighBand(i: number) {
+    this.highHinted = true;
+    this.hints++;
+    void this.ctx.say('block-topple.hint-high');
+    const stack = this.line.stacks[i];
+    const top = stack.blocks[stack.blocks.length - 1].y0;
+    const y = GRASS - tipLine(stack);
+    const x0 = Math.min(...stack.blocks.map((b) => b.x0)) - 16;
+    const x1 = Math.max(...stack.blocks.map((b) => b.x1)) + 16;
+    this.highG.clear()
+      .roundRect(x0, top - 10, x1 - x0, y - top + 10, 14).fill({ color: swatch.yellow.fill, alpha: 0.5 })
+      .roundRect(x0, top - 10, x1 - x0, y - top + 10, 14).stroke({ width: 6, color: swatch.yellow.line });
+    for (let x = x0; x < x1; x += 24) this.highG.moveTo(x, y).lineTo(Math.min(x1, x + 12), y).stroke({ width: 6, color: swatch.yellow.line });
   }
 
   private clearHint() {

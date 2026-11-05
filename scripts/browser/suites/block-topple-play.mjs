@@ -16,8 +16,11 @@ async function blockTopplePlay() {
     await kit.drag(kit.line([from.x, from.y], [to.x, to.y], 12));
   }, pull);
   await page.evaluate(() => { kit.store.data.settings.howToCards = false; });
+  // TOPPLE_LEVELS=4 plays only level 4 (the default plays 1, 3 and 4).
+  const levels = (process.env.TOPPLE_LEVELS ?? '1,3,4').split(',').map(Number);
 
   // Level 1: the solver's pull tips each of the three towers; nothing counts.
+  if (levels.includes(1)) {
   await launch('block-topple', 1, 'Mia', 'preschool');
   for (let i = 0; i < 3; i++) {
     await ready(i);
@@ -27,9 +30,11 @@ async function blockTopplePlay() {
   }
   await finished('block-topple');
   assert.deepEqual(await score(), [0, 0], 'level 1 saved 0 misses, 0 hints');
+  }
 
   // Level 3 in portrait: a short shot and a flat shot into the hill are two misses, the dotted path shows, then the tip.
   await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(600);
+  if (levels.includes(3)) {
   await launch('block-topple', 3, 'Mia', 'school');
   await ready(0);
   let s = await state();
@@ -51,8 +56,41 @@ async function blockTopplePlay() {
   }
   await finished('block-topple');
   assert.deepEqual(await score(), [2, 1], 'level 3 saved 2 misses, 1 hint');
+  }
+
+  // Level 4 in portrait: a bump on the wide stack's base and one low on its top block thump (never misses); the second shows
+  // the golden band (one hint); then the solver tips the wide stack, the tall tower and the second wide stack.
+  if (levels.includes(4)) {
+  await launch('block-topple', 4, 'Mia', 'school');
+  await ready(0);
+  let s = await state();
+  assert.equal(s.friend, 'pig', 'the authored first line has the pig on the wide stack');
+  const high = () => page.evaluate(() => { const g = neo.scene.game; return { thumps: g.thumps, band: g.highHinted, drawn: g.highG.bounds.width > 0 }; });
+  await shoot({ angle: 30, length: 84 });
+  await settled();
+  s = await state();
+  assert.deepEqual([s.misses, s.hints, (await high()).thumps, s.standing], [0, 0, 1, [2]], 'a bump on the base thumps: no miss, nothing falls');
+  await shoot({ angle: 30, length: 124 });
+  await settled();
+  s = await state();
+  const h = await high();
+  assert.deepEqual([s.misses, s.hints, h.thumps, h.band, h.drawn], [0, 1, 2, true, true], 'a second thump shows the golden band, one hint');
+  await page.waitForTimeout(400);
+  await screenshot('block-topple-4-portrait-band');
+  const shapes = [];
+  for (let i = 0; i < 3; i++) {
+    await ready(i);
+    shapes.push(await page.evaluate(() => neo.scene.game.line.stacks[0].blocks.length));
+    await shoot(null);
+    await page.waitForFunction((i) => neo.scene.game.lineIndex > i || neo.scene.game.finished, i, { timeout: 15000 });
+  }
+  assert.deepEqual(shapes, [2, 3, 2], 'a wide stack, a tall tower, then a wide stack');
+  await finished('block-topple');
+  assert.deepEqual(await score(), [0, 1], 'level 4 saved 0 misses, 1 hint');
+  }
   await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(400);
-  log('Block Topple 1 and 3: level 1 three solver pulls tipped every tower 0/0; level 3 portrait, a short shot and a hill shot missed, the dotted path showed, then three tips 2/1; passed');
+  const done = { 1: 'level 1 three solver pulls tipped every tower 0/0', 3: 'level 3 portrait, a short shot and a hill shot missed, the dotted path showed, then three tips 2/1', 4: 'level 4 portrait, two thumps (no miss) showed the golden band, then three tips 0/1' };
+  log(`Block Topple ${levels.join(', ')}: ${levels.map((l) => done[l]).join('; ')}; passed`);
 }
 return { blockTopplePlay };
 }
