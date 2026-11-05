@@ -2865,6 +2865,7 @@ export const SCRIPT = {
   'vine-snip.instruct-keep': ['Which vine should stay so it swings to {friend}?'],
   'vine-snip.instruct-both': ['Feed both friends, one fruit each.'],
   'vine-snip.wrong-side': ["That vine swings it the other way. Keep the vine on {friend}'s side."],
+  'vine-snip.straight': ["It dropped straight down. Keep the vine on {friend}'s side so it swings."],
   'vine-snip.swings': ['It swings!'],
   'vine-snip.still': ['It hangs still.'],
   'vine-snip.early': ['Too soon. Wait until it swings toward {friend}.'],

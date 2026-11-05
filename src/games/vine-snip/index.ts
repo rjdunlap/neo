@@ -421,7 +421,8 @@ class VineSnip implements Game {
     }
     h.fall = { landing: l, s: 0, friendFrom: h.friendX, friendTo };
     h.phase = 'fall';
-    this.glowOn = false;
+    // At level 5 the glow stays for the other fruit until it is fed too.
+    this.glowOn = this.glowOn && this.keeps && this.hangs.some((x) => x !== h && x.phase !== 'fed');
     h.friend.setMood('surprised', l.time + 0.3);
   }
 
@@ -471,8 +472,10 @@ class VineSnip implements Game {
     }
     h.float = { from: { ...h.at }, t0: this.clock, bubble: null };
     // At levels 4–5, a vine that could never reach the friend gets its own reason.
-    const wrong = this.keeps && (!h.swing || !windows(h.swing, h.pair.friend.x).length);
-    void this.say(wrong ? 'vine-snip.wrong-side' : f.landing.side === 'late' ? 'vine-snip.late' : 'vine-snip.early', this.vars(h));
+    const straight = this.keeps && !h.swing;
+    const wrong = this.keeps && !!h.swing && !windows(h.swing, h.pair.friend.x).length;
+    const id = straight ? 'vine-snip.straight' : wrong ? 'vine-snip.wrong-side' : f.landing.side === 'late' ? 'vine-snip.late' : 'vine-snip.early';
+    void this.say(id, this.vars(h));
   }
 
   /** A missed fruit bounces once on the leaf, then floats back up on a bubble and its vines grow back. */
