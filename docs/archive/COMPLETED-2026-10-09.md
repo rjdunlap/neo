@@ -2466,7 +2466,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-04.md#2026-11-04--peekaround-i
 
 [PR #1231](https://github.com/rjdunlap/neo/pull/1231), [dive slice 5](../deep-dives/peekaround-island.md#build-slices-in-order), [definition](../definitions/peekaround-from-the-sky.md). New mode `sky`, school range 4–8 (pre-K stays 3–7). Three map cards (true, mirror, quarter-turned) show the island from above with a boat on her side; a mirror miss names the swapped friends, a turned miss turns the island to match and back, a wrong map counts once, two misses ring the right map. Three scenes a round (all in sight, one hidden of three, one hidden of four); bird's-view cloud and birds on the right map. Voice ids `around.sky`, `.hidden`, `.right`, `.mirror`, `.mirror.one`, `.turned`, `.hint`; how-to step from level 8.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--peekaround-island-level-8-from-the-sky-peekaround-island-batch-5).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-04.md#2026-11-04--peekaround-island-level-8-from-the-sky-peekaround-island-batch-5).
 
 ## Picture Graph, fair meadows, a visible first pick and hints that show why (picture-graph batch 1, 2026-11-03)
 
@@ -2870,3 +2870,9 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--shape-buddies-level-
 [PR #1240](https://github.com/rjdunlap/neo/pull/1240), `claude/word-search-small-grid`: [dive slice 2](../deep-dives/word-search.md#build-slices-in-order). `SMALL_GRID` plan in `logic.ts`: 6 by 6, four words of three to six letters, across and down, always in view; `ORDER` `[5, 1, 2, 3, 4]`, `entryLevels: [5]`, `planFor` of a level past the top plays level 4. Squares are 98 units at 1024 by 768 (word list column narrowed from 262 to 222) and 132 at 1024 by 1365 (small-grid squares at least 96, capped at 132). *Words that carry* can be drawn at level 5; *Words that look* cannot. How-to card has a level-5 line. Couch trip and courses unchanged.
 
 Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-04--word-search-level-5-a-small-grid-to-start-word-search-batch-2).
+
+## Read & Do levels 8–9 Mend the sign (read-do batch 4, 2026-11-05)
+
+[PR #1247](https://github.com/rjdunlap/neo/pull/1247), `claude/read-do-mend-the-sign`: [dive slice 4](../deep-dives/read-do.md#build-slices-in-order), built to the [definition](../definitions/read-do-mend-the-sign.md) with no deviations. School range is now 1–9. Level 8: three authored broken signs per round, each acted out first (free), fixed by one insert or take-out. Level 9: a swap by dropping a tray tile on a slot word, with a held preview and a level-gated swap hint that glows the tile and the target. Four new voice lines (`read.mend.*`), how-to lines for both levels, and a bot that follows `hintFor` including the swap. The `readdo` browser suite gained `READ_LEVELS=8,9`.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--read--do-levels-89-mend-the-sign-read-do-batch-4).

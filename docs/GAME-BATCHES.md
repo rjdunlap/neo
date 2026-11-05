@@ -1391,6 +1391,8 @@ Proof: new-interaction tier: typecheck, unit tests including registry, lands, ho
 
 ### read-do 4: Mend the sign
 
+Built 2026-11-05, [PR #1247](https://github.com/rjdunlap/neo/pull/1247); [build note](archive/COMPLETED-2026-10-09.md#read--do-mend-the-sign-levels-89-read-do-batch-4-2026-11-05). No longer eligible for dispatch.
+
 - **`read-do`, levels 8–9 *Mend the sign* (dive slice 4; KE1)**, after batch read-do 3 (level 8 new levels on level 7's interaction; level 9 a new interaction): the printed sign acted out, one insert or delete at level 8, one swap at level 9. [Dive](deep-dives/read-do.md#build-slices-in-order), [definition](definitions/read-do-mend-the-sign.md#build-order-and-check-tier)
 
 Files expected: `src/games/read-do/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, a `readdo` case in the browser check script, the README row and `docs/GAMES.md`.
