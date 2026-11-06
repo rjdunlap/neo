@@ -132,6 +132,8 @@ export class GameScene extends Scene {
     private readonly startLevel?: number,
   ) {
     super(app);
+    // An upright-ready game (chunk 31) lays out on the upright area on a phone held upright; any other keeps the turn prompt.
+    this.upright = this.uprightArea = mod.upright === true;
     if (this.app.creatureWorld) {
       // At the root a house always goes Home; this goes back to the round's origin, its story's page or the mix's next stop.
       this.home.setIcon(this.story ? basketIcon() : backArt(this.origin, 44, ink));

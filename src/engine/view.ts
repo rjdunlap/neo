@@ -1,6 +1,13 @@
 /** Every scene is laid out in logical units on a 4:3 landscape design area. */
 export const DESIGN_W = 1024;
 export const DESIGN_H = 768;
+/**
+ * A phone held upright lays out on the same area turned on its side (chunk 31, docs/definitions/phone-portrait.md), so its
+ * targets are as large as sideways (about 51 CSS pixels for 100 units on a 390 × 844 phone). Only scenes that are
+ * upright-ready get it; iPads and desktop windows keep 1024 × 768 whatever their shape.
+ */
+export const UPRIGHT_W = 768;
+export const UPRIGHT_H = 1024;
 
 /**
  * The visible area in logical units. The 1024×768 design area always fits;
@@ -11,6 +18,8 @@ export interface View {
   h: number;
   /** CSS pixels per logical unit. */
   scale: number;
+  /** Laid out on the upright 768 × 1024 area (an upright phone over an upright-ready scene); absent on the usual 1024 × 768. */
+  upright?: true;
 }
 
 /** CSS pixels at each edge of the window that a notch, rounded corner or home indicator covers. */
@@ -31,14 +40,21 @@ export function clampInsets(i: Insets, pxW: number, pxH: number): Insets {
 
 /**
  * The view for a window of `pxW` × `pxH` CSS pixels. With insets, the view is the safe rectangle
- * inside them (the app puts its root at `left`, `top`); the cream behind it fills the rest.
+ * inside them (the app puts its root at `left`, `top`); the cream behind it fills the rest. `upright` picks the
+ * 768 × 1024 design area (the app passes it only for an upright phone over an upright-ready scene).
  */
-export function computeView(pxW: number, pxH: number, insets: Insets = NO_INSETS): View {
+export function computeView(pxW: number, pxH: number, insets: Insets = NO_INSETS, upright = false): View {
   const safe = clampInsets(insets, pxW, pxH);
   const w = pxW - safe.left - safe.right;
   const h = pxH - safe.top - safe.bottom;
-  const scale = Math.min(w / DESIGN_W, h / DESIGN_H);
-  return { w: w / scale, h: h / scale, scale };
+  const area = designArea(upright);
+  const scale = Math.min(w / area.w, h / area.h);
+  return upright ? { w: w / scale, h: h / scale, scale, upright: true } : { w: w / scale, h: h / scale, scale };
+}
+
+/** The design area a view was laid out on. */
+export function designArea(upright: boolean | undefined) {
+  return upright ? { w: UPRIGHT_W, h: UPRIGHT_H } : { w: DESIGN_W, h: DESIGN_H };
 }
 
 /** A phone held upright is taller than anything the layouts were checked at (an iPad is at most 1.5 times taller than wide). */
@@ -61,9 +77,10 @@ export function textBoost(scale: number): number {
   return Math.min(1.5, Math.max(1, 0.72 / Math.max(scale, 0.01)));
 }
 
-/** The guaranteed-visible design rectangle, centered in the view. */
+/** The guaranteed-visible design rectangle (whichever area the view was laid out on), centered in the view. */
 export function safeArea(view: View) {
-  return { x: (view.w - DESIGN_W) / 2, y: (view.h - DESIGN_H) / 2, w: DESIGN_W, h: DESIGN_H };
+  const { w, h } = designArea(view.upright);
+  return { x: (view.w - w) / 2, y: (view.h - h) / 2, w, h };
 }
 
 /**

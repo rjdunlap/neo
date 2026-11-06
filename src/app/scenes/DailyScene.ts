@@ -42,6 +42,9 @@ export interface DailyCard {
  * tiles button opens All games, so nothing outside the six is out of reach. Nothing is owed: no streak, no count across days.
  */
 export class DailyScene extends Scene {
+  /** Laid out for a phone held upright as well (chunk 31). */
+  upright = true;
+  uprightArea = true;
   private readonly backdrop = homeBackdrop();
   readonly back = new RoundButton(arrowIcon(-1), swatch.white, CORNER_RADIUS, () => this.leave(() => this.app.go.hub(), voice.say('nav.back'))).means('back');
   readonly all = new RoundButton(fitArt(tilesIcon(), 56), swatch.white, CORNER_RADIUS, () => this.leave(() => this.app.go.explore('all', 0, false), voice.say('explore.all')));

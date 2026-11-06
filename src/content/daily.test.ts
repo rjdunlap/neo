@@ -151,3 +151,37 @@ describe("today's six", () => {
     expect(playedOn(undefined, '2026-10-31')).toBe(false);
   });
 });
+
+describe("today's six on a phone held upright (chunk 31)", () => {
+  /** The catalog with `ids` marked upright-ready, so the test does not depend on how many games are converted yet. */
+  const withReady = (ids: readonly string[]) => GAMES.map((m) => (ids.includes(m.id) ? { ...m, upright: true as const } : m));
+  const ids = (picks: ReturnType<typeof dailySix>) => picks.map((p) => p.mod.id);
+
+  it('is exactly the usual six when the phone is not upright', () => {
+    for (const band of BANDS) for (const day of days.slice(0, 5)) expect(ids(dailySix(day, band, GAMES, undefined, false)), `${band} ${day}`).toEqual(ids(dailySix(day, band, GAMES)));
+  });
+
+  it('draws upright-ready games first, then fills from the rest of the band', () => {
+    const ready = ['word-search', 'sudoku-garden', 'island-bridges', 'pond-conga', 'brain-break', 'number-nook'];
+    const games = withReady(ready);
+    for (const day of days) {
+      const six = ids(dailySix(day, 'grownup', games, undefined, true));
+      expect(six, day).toHaveLength(DAILY_COUNT);
+      expect([...six].sort(), day).toEqual([...ready].sort());
+    }
+    // Two ready games: both are in the six, which is still six.
+    for (const day of days) {
+      const six = ids(dailySix(day, 'grownup', withReady(['word-search', 'number-nook']), undefined, true));
+      expect(six.slice(0, 2).sort(), day).toEqual(['number-nook', 'word-search']);
+      expect(new Set(six).size, day).toBe(DAILY_COUNT);
+    }
+  });
+
+  it("still leads a grown-up's six with games made for grown-ups when none is ready", () => {
+    for (const day of days) {
+      const six = dailySix(day, 'grownup', GAMES, undefined, true);
+      expect(six.slice(0, GROWNUP_FIRST).every((p) => p.mod.bands.includes('grownup')), day).toBe(true);
+      expect(six, day).toHaveLength(DAILY_COUNT);
+    }
+  });
+});
