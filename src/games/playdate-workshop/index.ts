@@ -74,6 +74,7 @@ class PlaydateWorkshop implements Game {
   /** The table shown while Watch again replays (null: the live trace). */
   private shown: Table | null = null;
   private alive = true;
+  private relayout = false;
   private started = false;
   private epoch = 0;
   private clock = 0;
@@ -137,7 +138,14 @@ class PlaydateWorkshop implements Game {
   resize(v: View) {
     this.view = v;
     this.backdrop.resize(v);
-    if (this.started && !this.busy) this.build();
+    if (!this.started) return;
+    if (this.busy) { this.relayout = true; return; }
+    this.build();
+  }
+
+  /** A resize arrived while the pet or Watch again was busy: lay out again now. */
+  private takeRelayout() {
+    if (this.relayout && !this.busy && !this.finished) { this.relayout = false; this.build(); }
   }
 
   // ——— Building the scene ———
@@ -288,7 +296,7 @@ class PlaydateWorkshop implements Game {
     const ch = this.companion.getLocalBounds().height || 300;
     this.companion.scale.set(120 / ch);
     this.companion.position.set(pb.x + pb.w + 60, pb.y + pb.h);
-    if (this.companion.x + 60 > this.view.w) this.companion.position.set(pb.x - 70, pb.y + pb.h);
+    if (this.companion.x + 60 > this.view.w) this.companion.position.set(pb.x + pb.w / 2, pb.y - 10);
     this.board.addChild(this.companion, this.glow);
     this.refresh(false);
   }
@@ -386,6 +394,7 @@ class PlaydateWorkshop implements Game {
   private select(id: PlanId) {
     if (this.busy || this.finished) return;
     this.selected = id;
+    this.petPicked = false;
     sfx.tick();
     this.refresh();
   }
@@ -444,7 +453,7 @@ class PlaydateWorkshop implements Game {
 
   private nudgeCards() {
     for (const c of this.cardNodes.values()) void this.ctx.tw.to(c, { rotation: 0.04 }, { duration: 0.1 }).then(() => this.alive ? this.ctx.tw.to(c, { rotation: 0 }, { duration: 0.15 }) : undefined);
-    void this.ctx.say('playdate.hint.plan');
+    void this.ctx.say('playdate.hint.pick');
   }
 
   // ——— The Make phase ———
@@ -588,9 +597,9 @@ class PlaydateWorkshop implements Game {
   /** The lightbulb: the next useful card or step glows and its line is spoken; one hint for the current decision, the first time. */
   askForHint() {
     if (this.busy || this.finished || this.done) return;
-    this.tally.help(decisionNow(this.level, this.phase, this.trace));
     const h = hintFor(this.spec, this.own, this.phase, this.selected, this.plan, this.trace);
     if (!h) return;
+    this.tally.help(decisionNow(this.level, this.phase, this.trace));
     if ('card' in h) {
       this.hintCard = h.card;
       this.selected = h.card;
@@ -598,7 +607,8 @@ class PlaydateWorkshop implements Game {
       void this.ctx.say('playdate.hint.plan');
     } else {
       this.hintAction = h.action;
-      void this.ctx.say(`playdate.hint.${h.action.k}` as LineId);
+      const a = h.action;
+      void this.ctx.say(a.k === 'give' && a.tool === 'roller' ? 'playdate.hint.giveRoller' : (`playdate.hint.${a.k}` as LineId));
     }
   }
 
@@ -649,6 +659,7 @@ class PlaydateWorkshop implements Game {
     }
     this.busy = false;
     this.refresh();
+    this.takeRelayout();
   }
 
   /** Start again: a blank table (the cards at levels 2–3), keeping the round's hints. */
@@ -699,6 +710,7 @@ class PlaydateWorkshop implements Game {
     this.shown = null;
     this.busy = false;
     this.refresh();
+    this.takeRelayout();
   }
 
   // ——— Glow and ghost finger ———
