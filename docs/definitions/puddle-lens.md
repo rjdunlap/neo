@@ -302,3 +302,126 @@ None of them names a microbe, germ, species, size or number.
 New interaction on an existing game: typecheck, unit tests (above, plus registry, lands, how-to and voice), and one scripted play through the existing Puddle Lens `browser-check.mjs` case extended to levels 5 and 6. At level 5: one free early guess, one miss at the deciding stop, Show a hint, to the sticker. At level 6: one wrong tray and to the sticker. Also one portrait and one landscape screenshot of level 5's two button groups, `fingerdemo` at levels 5 and 6, and `npm run build` (voice and how-to change).
 
 Device and person checks stay open: whether a six-year-old waits for the evidence or guesses, whether "can't tell yet" feels like a real answer, and how the iPad says the button names. Browser automation establishes none of these.
+
+## Levels 7–8 (definition, 2026-11-06)
+
+Defined 2026-11-06 as slice 4 of the [cells-and-microbes study](../deep-dives/subjects/cells-microbes.md#build-slices-in-order), from its [proposed levels](../deep-dives/subjects/cells-microbes.md#proposed-levels-and-bands) and the [recommendation row](../deep-dives/subjects/RECOMMENDATIONS.md#cells-and-microbes-recommendations). Docs only: no code, voice line or save field changes. It was written against the built game (`src/games/puddle-lens/logic.ts` at `f7424c88`: `CANDIDATES`, `judgeLife`, `SORT_SAMPLES`, `helpFor`, and `lensLayout`'s three-button group for `level >= 5`). The [October 23 decision](#open-decisions) applies: this session's source check (below) stands in for a named biology reviewer, and it places levels 7–8 at the top of `school`.
+
+**Fun action and purpose.** **Level 7, *Wall clue*:** one slide at a time sits under the lens. She turns the dial and answers with one of three picture buttons: **plant cells**, **animal cells** or **can't tell yet**. **Level 8, *Why green?*:** a drop of green water sits under the lens. The companion asks "Why is this water green?", and she turns the dial and answers **tiny green living things**, **green all through the water** or **can't tell yet**. The purpose is the study's upper-school claim. Plant cells have a firm wall that keeps their shape, so **the wall is the plant clue, not the colour** (an onion's skin cells are plant cells with no green parts). For colour, **choose the view that decides** whether the green is in tiny living things or spread through the water itself. Colour stays drawn and is never evidence, as at levels 5–6.
+
+**What these levels do not claim.** They never say microbe, bacteria, germ, illness, dirty or clean. They never name an alga, a species, a size or a number. The study's [level 5–6 simplification](#levels-56-definition-2026-11-05) stands: everything drawn in these fresh samples that shows a cell is alive. Level 8's "all through the water" answer claims only what the closest view shows. It shows **no edges anywhere, even this close**. It never claims nothing is alive there, because some living things are too small for the closest stop. Slide Files takes that limit.
+
+### Source check (this session)
+
+| Claim the tables rely on | Source | How it was read |
+| --- | --- | --- |
+| Onion skin cells are plant cells with no green parts (no chloroplasts) | [Wikipedia, *Onion epidermal cell*](https://en.wikipedia.org/wiki/Onion_epidermal_cell) | Opened in the [5–6 session](#source-check-this-session); not re-opened |
+| The school comparison uses shape and the wall: onion cells are regular, joined together with a wall, while cheek cells are irregular, rounder and separate, with no wall; both show a nucleus | Search summaries of the [Cambridge International resource](https://learning.cambridgeinternational.org/classroom/mod/resource/view.php?id=137084), the [Eduqas practical sheet](https://resource.download.wjec.co.uk/vtc/2016-17/Eduqas%20roundup/Biology/teacher%20sheets/Examination%20of%20animal%20and%20plant%20cells%20using%20a%20light%20microscope.pdf) and school lab write-ups | **Known from search summaries only.** The Eduqas PDF was opened, but its text did not extract. The wording "regular / irregular" and "wall / no wall" is the common mark-scheme pair the summaries agree on |
+| A thin water-plant leaf (Elodea) shows cell walls and chloroplasts under a school microscope | [Carolina LabSheets, Elodea](https://knowledge.carolina.com/?p=17486) | Opened: students "will see cell walls and chloroplasts". No magnification is given. The built leaf table (boxes from stop 3, green beads at 4) already fits |
+| Green pond water is most often microscopic algae floating in the water, and the colour is in the cells. Natural *dissolved* colour (tannins from soaking leaves) is tea-brown, not green | Search summaries of [MSU Extension, *What is that color in my pond?*](https://canr.msu.edu/news/what-is-that-color-in-my-pond) and the [USGS colour page](https://www.usgs.gov/media/images/natural-water-never-really-clear-sediment-and-tannin-cause-color) (filtering removes suspended colour; dissolved colour stays) | **Known from search summaries only.** It decides the framing below: the "all through" green drop is coloured water, not a natural puddle |
+| Spirogyra-like threads show boxes end to end, each with a green spiral, near 100×; a Chlorella-like green ball is only a dot until the closest stop | [Sierra College](https://biosci.sierracollege.edu/resources/mslides-2016/mslides-bio4-pages2016/spirogyra.html), [Freshwater Biodiversity of Bangladesh](https://freshwaterbiodiversity.org.bd/?p=12292) | Opened in the 5–6 session; not re-opened. Used at level 8 only as "tiny green living things", never as plant cells (below) |
+
+### Who is in, who is out
+
+- **Level 7 uses only true plant and animal cells.** The swimmer is neither a plant nor an animal. The green thread and the green ball are algae, which are not plants. Calling any of them "plant" or "animal" would be false, so **none of them appears at level 7**. They stay at levels 5, 6 and 8, where the claim is only "alive" or "living things".
+- **The animal sample is cheek cells, as a prepared slide.** It is the school standard beside onion skin, and no other animal tissue was source-checked. Boundary (decision 5): it is drawn as a ready-made slide. No line, card or tip says where it came from, or mentions a mouth, a swab, scraping or how to make one. Its spoken name is never used (below), so the word "cheek" appears only on the grown-ups' how-to card. If the developer would rather no human sample appear, level 7 ships with plants only plus can't tell yet ([open item 1](#open-items-for-levels-78)).
+- **Samples are never named aloud at levels 7–8.** "Onion skin" or "a leaf" would give away "plant". The companion asks "Plant cells or animal cells?" about "this slide", and the how-to card names the slides for the grown-up.
+
+### The model, added to `logic.ts`
+
+- **Two new evidence marks**, kept apart from level 6's `boxes`: `wall` (thick, straight edges that fit together like bricks and keep their shape) and `soft-edge` (a thin edge, a rounded uneven outline, each one lying on its own). `boxes` means "many cells sharing edges" at level 6. Accepting it as the plant proof would teach that many cells means plant, so level 7 judges `wall` against `soft-edge` only. `inside` (a dot inside each one) shows on both kinds and decides nothing at level 7. Colour and movement are never evidence (a test).
+- **Level-7 slides** (one at a time; the slide stays put while the dial turns):
+
+| Slide | Kind | Stop 1 | Stop 2 | Stop 3 | Stop 4 | Colour | Deciding stop |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `onion-skin` (built level-6 art) | plant | a thin clear piece | a thin clear piece | wall (long boxes) | wall, inside (a faint dot in each) | none | 3 |
+| `leaf` (built level-1–6 tables) | plant | the whole leaf | the leaf, edge hairs | wall (the built boxes) | wall, green beads | green | 3 |
+| `cheek-cells` (new art) | animal | a faint smear | a faint smear, a few specks | soft-edge, inside (flat rounded shapes, a dot in each, lying apart or overlapping) | soft-edge, inside, larger | pale (no stain is drawn or named) | 3 |
+
+  Below stop 3 the wall cannot be judged, so that is the "can't tell at this power" range. At stop 2 the leaf is green and the others are not; a green-only answer there is still the free prompt.
+- **`judgeWall(slide, stop, answer)`**, with `answer` one of `'plant' | 'animal' | 'cant-tell'`, mirrors `judgeLife`:
+  - **Below the deciding stop:** `'cant-tell'` gives `'right-for-now'` (the built `lens.right-for-now`). `'plant'` or `'animal'` gives `'could-be'`, free and **the same line for a true and a false guess** (the built `lens.could-be`). An early answer is never an answer key.
+  - **At or above it:** the true kind is `'right'` (`wall.yes.plant` or `wall.yes.animal`) and finishes the slide. `'cant-tell'` is a miss, `wall.can-tell-now` ("We can tell now. Look at the edges."). The false kind is a miss with the evidence line for what the view shows, never the verdict. On a plant slide that line is `wall.see.wall` ("Look: thick, straight walls, fitted together like bricks."). On the onion skin, which has no green, it is `wall.see.no-green` ("No green here. But look at the walls: thick and straight."). On the cheek cells it is `wall.see.soft` ("Look: thin, soft edges, and each one lies on its own.").
+  - **Truth:** plant exactly when the evidence includes `wall`, and animal exactly when it includes `soft-edge`. A test checks this against the Kind column at every deciding-or-higher stop.
+- **Level-8 drops** (one at a time; all three are the same green at stops 1–2, so colour can never separate them):
+
+| Drop | Answer | Stop 1 | Stop 2 | Stop 3 | Stop 4 | Deciding stop |
+| --- | --- | --- | --- | --- | --- | --- |
+| `green-threads` (built level-6 green thread art, several threads) | living | an even green drop | thin green wisps in paler water | boxes end to end, each with a green spiral, clear water between | the same, larger | 3 |
+| `green-balls` (built green-ball art, many) | living | an even green drop | an even green drop | tiny green dots in clearer water | green balls, each with an edge and parts inside, clear water between | 4 |
+| `green-water` (coloured water; new art) | all through | an even green drop | an even green drop | an even pale green, nothing in it | an even pale green, no edges anywhere | 4 |
+
+  **Evidence:** `edge`, `inside` and `boxes` (as built), plus a new `even` (colour spread evenly with no edges), drawn only at stop 4 on `green-water`. At stop 3, "no dots" on the green water is **not** evidence, because the green balls are only dots there and smaller things would show nothing. So stop 3 is free on two drops out of three.
+  **Framing (from the source check):** natural dissolved puddle colour is tea-brown, not green. So the third drop is **green-coloured water**, drawn as a drop from a small cup on the table at stop 1. No line says how it was coloured, and no tip asks her to colour water ([open item 2](#open-items-for-levels-78)). The question is always "Why is this water green?", never "this puddle".
+- **`judgeGreen(drop, stop, answer)`**, with `answer` one of `'living' | 'all-through' | 'cant-tell'`, mirrors `judgeLife`. Below the deciding stop, `'cant-tell'` is right-for-now and either verdict is the same free `lens.could-be`. At or above it, the true answer is `'right'`: `green.yes.living` ("Tiny green living things, lots of them!") or `green.yes.through` ("No edges, even this close. The green is all through the water."). `'cant-tell'` is a miss, `green.can-tell-now`. The false answer is a miss with an evidence line: `green.see.threads` ("Look: little boxes in a thread, each with green inside."), `green.see.balls` ("Look: little green balls, each with an edge and parts inside.") or `green.see.even` ("Look: no edges anywhere, even this close."). **Truth:** living exactly when the evidence shows cells (`boxes`, or `edge` and `inside`), and all through exactly when it shows `even`.
+- **Coordination, not duplication.** **Dissolving** belongs to the matter study's proposed [Stir and See](../deep-dives/subjects/matter.md#candidates-and-recommended-order) (and chemistry's [study](../deep-dives/subjects/chemistry.md)). No `lens.*` line says dissolve, mix or particle, explains where the colour went, or draws particle dots (those belong to Particle Lens). **Producers** belong to the ecosystems study and [Food Web Workshop](food-web-workshop.md). Level 8 says only "tiny green living things", never food, sunlight, energy or a food-web role.
+- **Motion:** nothing moves at level 7. At level 8 the threads and balls drift with the water under the built rule (at most 30 units a second, still while any finger is down). Nothing is tapped on the slide.
+- **Variety:** seeded from `ctx.rng`: the slide or drop order, the leaf kind, cell outlines and overlaps on the cheek slide, thread and ball positions, and wall angles.
+- **Rounds:** **Level 7:** three slides, one of each, in seeded order. **Level 8:** three drops, one of each, in seeded order. Neither level shows a sample twice. Both kinds of answer and a stop-4 decider (level 8) come up in every round, so there is no elimination shortcut inside a round beyond the last slide. That is accepted: the last slide still needs its deciding stop.
+
+### Screen and controls
+
+- **Buttons:** the four built stop buttons (110) and `lensLayout`'s three-button group (120 each, picture-only, speaking their name on touch-down). It already serves `level >= 5`, so no layout change is needed, and it stays null rather than shrink at the four views. **Level 7:** **plant cells** (a leaf drawn over a small brick grid), **animal cells** (the companion's paw print) and **can't tell yet** (the built lens with its "?" curl). **Level 8:** **tiny green living things** (three small green balls with a dot in each), **green all through the water** (a cup filled evenly green) and **can't tell yet**.
+- **No ring** at levels 7–8: the question is about the whole slide or drop. The paw reference stays on the table edge as at levels 2–6.
+- **Music, pause sheet:** as levels 5–6 (Start again replays the seeded round from its first slide; Show a hint).
+
+### Ranges
+
+`school` changes from `{4,6}` to `{4,8}` (the [October 23 decision](#open-decisions): no middle band, Slide Files on `grownup`). Every other band is unchanged, and nothing is renumbered, so saved levels and pins keep their meaning.
+
+### First rounds (authored)
+
+- **Level 7:** onion skin, cheek cells, then the leaf. Onion skin starts at stop 2: a thin clear piece. "Plant cells or animal cells?" She presses **animal** (no green): "Could be. What would show it?" (free). She turns to stop 3: long boxes with thick, straight walls. She presses **animal** again: a boing and "No green here. But look at the walls: thick and straight." (one miss). She presses **plant**: "Thick walls that keep their shape. Plant cells!" Cheek cells at stop 3: thin soft edges, each on its own. **Can't tell yet** is a miss ("We can tell now. Look at the edges."). **Animal**: "Thin, soft edges and no walls. Animal cells!" The leaf: Show a hint turns the dial to 3 and says the wall line, and **plant** is right.
+- **Level 8:** green balls, the green water, then the threads. The green balls at stop 3 are tiny dots. She presses **living**: "Could be. What would show it?" (free). Then **can't tell yet**: "Right, we can't tell yet." She turns to 4: balls with edges and parts inside, and **living** is right. The green water at stop 4: she presses **living**, a miss ("Look: no edges anywhere, even this close."), then **all through** is right. The threads: at stop 3 **living** is right.
+
+### Accounting, help and finishing
+
+As levels 5–6, unchanged:
+- **Misses:** only a committed wrong answer (or *can't tell yet*) at or above the deciding stop, one per press. Turning the dial and every answer below the deciding stop are free.
+- **Glow:** after two misses on one slide or drop, the right button glows. It counts nothing extra.
+- **Hints:** at most one per slide or drop, from Show a hint. `helpFor(7 | 8, { slide | drop })` returns `{ do: 'turn', stop }` at the deciding stop, and the companion says that stop's evidence line. She still presses the answer. If the dial is already there, the hint only speaks the line.
+- **Supported completion, adaptation, finish:** a hint plus the glow leave one press; nothing times out. The shell's rule steps within `{4,8}`, and assisted finishes are not mastery. After the third slide or drop, `ctx.finish({ misses, hints })` gives one sticker. There is still no journal entry or discovery (decision 7).
+
+### Speech (`voice-script.ts`)
+
+New `lens.*` lines (the built keys keep their wording; `lens.could-be` and `lens.right-for-now` are reused):
+- `instruct.wall` ("Plant cells or animal cells? Look closer, then choose!") and `instruct.green` ("Why is this water green? Look closer, then choose!")
+- the button names `say.plant`, `say.animal`, `say.living` ("Tiny green living things") and `say.through` ("Green all through the water")
+- level 7: `wall.can-tell-now`, `wall.see.wall`, `wall.see.no-green`, `wall.see.soft`, `wall.yes.plant` ("Thick walls that keep their shape. Plant cells!") and `wall.yes.animal` ("Thin, soft edges and no walls. Animal cells!")
+- level 8: `green.can-tell-now`, `green.see.threads`, `green.see.balls`, `green.see.even`, `green.yes.living` and `green.yes.through`
+
+None names a sample, microbe, germ, species, size or number, or says dissolve, mix, particle, food or sunlight.
+
+### Rule tests (`logic.test.ts`)
+
+- **Tables:** every level-7 slide and level-8 drop has evidence at stops 1–4, and evidence never shrinks as the stop rises. Colour and movement are in no evidence set. Level 7 holds no swimmer, green thread or green ball (the exclusion is a test). `boxes` is never what decides level 7.
+- **No oracle:** at every stop below each deciding stop, `judgeWall` and `judgeGreen` give the same free verdict for both non-*can't-tell* answers, and `'cant-tell'` is right-for-now there and only there.
+- **Colour never decides:** every way of answering level 7 by colour alone (green means plant, no green means animal) is free or a miss at some slide, never right on all three. At level 8 all three drops have identical evidence at stops 1–2.
+- **Truth rules:** `wall` agrees with plant and `soft-edge` with animal at deciding-or-higher stops, and level 8's cells/`even` rule agrees with its Answer column. The deciding stop is the lowest stop where the truth rule holds.
+- **Rounds:** across 500 seeds, both levels have three distinct samples, one of each. The authored rounds match their stories.
+- **Help:** `helpFor` names each deciding stop. A scripted slide (wrong kind, Show a hint, Show a hint again, right kind) counts one miss and one hint. Two wrong presses light the right button.
+- **Layout and registration:** `lensLayout` at levels 7 and 8 passes the four `lands.test.ts` views (as 5–6). Registry, lands, how-to and voice tests pass with school `{4,8}`.
+
+### Ghost finger and how-to card
+
+- **Ghost finger:** `autotouch()` at levels 7–8 follows `helpFor`. For each slide or drop in turn, it taps the deciding stop, then the right button (truth read from `logic.ts`).
+- **How-to card** (added to the existing card):
+  - Steps: "Turn the dial until the edges show, then choose plant cells, animal cells or can't tell yet. The slides are onion skin, a leaf and cheek cells" `{ from: 7, to: 7 }`; "Turn the dial until you can tell why the water is green: tiny green living things, or green all through the water. One drop is just coloured water" `{ from: 8, to: 8 }`.
+  - Finish: "All three slides answered" `{ from: 7, to: 7 }`; "All three drops answered" `{ from: 8, to: 8 }`.
+  - Notes: "The wall is the plant clue, not the colour: onion skin has no green" `{ from: 7, to: 7 }`; "No edges even at the closest look means the green is in the water itself. It doesn't prove nothing is alive there" `{ from: 8, to: 8 }`. Extend the built "Moving or being green never proves…", "Answering before the view can show it…" and Show-a-hint notes to `to: 8`.
+- **Co-play:** "Guess first" at level 7: before each turn of the dial, the grown-up and she both say plant, animal or can't tell yet. **Off-screen** (spoken tip, no equipment): "Look at a leaf and a piece of lettuce. Which bends, and which stays stiff? Plants are stiff because of their walls." No microscope, water-collecting, colouring, culturing or body-sample instruction (decision 5).
+- **Couch:** none. **Rework couplings:** none.
+
+### Check tier (the build)
+
+New interaction on an existing game (two new judge rules, three new drawings, new buttons in the built group): typecheck, unit tests (above, plus registry, lands, how-to and voice), and one scripted play through the existing Puddle Lens `browser-check.mjs` case extended to levels 7 and 8. At level 7: one free early answer, one miss at the deciding stop, Show a hint, to the sticker. At level 8: one wrong verdict at stop 4 and to the sticker. Also one portrait screenshot of the level-7 cheek slide and level-8 green water at stop 4, `fingerdemo` at levels 7 and 8, and `npm run build` (voice and how-to change).
+
+Device and person checks stay open: whether an eight-to-ten-year-old uses the wall rather than the green, whether "green all through the water" reads as a real answer, and how the iPad says the button names. Browser automation establishes none of these.
+
+### Open items for levels 7–8
+
+Defaults are set so the build can proceed; each is a reversible content call, not a gate.
+
+1. **Cheek cells.** Default: drawn as a prepared slide with no origin story, named only on the grown-ups' card. Alternative: plants only at level 7 (onion skin, leaf, and a can't-tell-yet slide), losing the animal half of the comparison.
+2. **Coloured water.** Default: a drop from a small cup of green-coloured water, with no line about how it was coloured. Alternative: replace it with tea-brown leaf water and ask "Why is this water coloured?". That only works if a brown living case (for example diatoms) is source-checked, so that colour still never decides.
+3. **A second animal sample**, a red-onion decoy or a dead-cell case: none defined. They go to Slide Files, with their own source check.
