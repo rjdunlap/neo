@@ -86,3 +86,7 @@ Open: whether a six-year-old reads the jar as fewer clicks, and whether the gues
 - Ran (server http://localhost:5448, `VITE_SPEECH=off`): `npm run typecheck`; `npx vitest run src/games src/content` (all pass; `mossy-path` logic tests 14/14, 11 new); `BROWSER_SUITE=mossypath` PASS (levels 1 and 3 unchanged; level 4 one slide, 0 misses; level 7 wrong-branch miss, free re-entry, Hint counted once, berry then pond, sticker; portrait cell at least 100 and screenshot; land launch/home return); `BROWSER_SUITE=fingerdemo FINGER_ONLY=mossy-path FINGER_LEVELS=4,7` PASS (6.2 s toddler, 16.2 s school).
 - Not run: `npm run build` (no shared files or assets), the offline check, other suites.
 - Open: iPad drag feel, device speech, a child's play ([DEVICE-CHECKS](../DEVICE-CHECKS.md)); the turtle's head-turn toward a far tap is not drawn.
+
+## 2026-11-06 — Rain Garden level 4 definition (docs only)
+
+Changed: `docs/definitions/rain-garden.md` (new "Level 4, two-socket downhill route" section), READY (definition line replaced by the level 4 build), the weather-water dive and STUDY-BACKLOG (PR #1313). Source check: EPA green-infrastructure types and USGS runoff pages, opened this session. Ran: `node scripts/check-links.mjs` and `git diff --check`. No code checks (docs tier). Open: nothing built; the level 4 build is next.

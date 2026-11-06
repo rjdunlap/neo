@@ -7,6 +7,11 @@
 - [ ] **Hat Band speech of "the drum hat" and "the tune hat":** check actual device speech.
 - [ ] **Hat Band:** does a school child still enjoy it, and does it feel like more than Beat Builder? This decides whether M6 (an older arrangement) is worth building.
 - [ ] **Hat Band, a music educator's reading of *drum*, *tune* and *alone/together*:** before any claim about musical roles (recommended; did not block the screen-only build).
+- [ ] **Hat Band level 4 (2026-11-06, #1329):** is the low hat audible and clearly lower than the tune hat on an iPad speaker (one octave down, pluck voice)? The alternative is two octaves down (decision L4-3).
+- [ ] **Hat Band level 4:** can a school child hear the tune alone in part 1 as different from the full band in part 3, so the brief can be judged by ear and by the picture?
+- [ ] **Hat Band level 4 speech of "low hat" and "part":** check actual device speech (the word "bass" is not spoken on purpose).
+- [ ] **Hat Band level 4:** does a school child or grown-up stay interested through seven accepted songs, or is one brief too thin (a level 5 candidate)?
+- [ ] **Hat Band level 4, a music educator's reading of *tune*, *low*, *part* and *together*:** the definition's source check was not done at the build; no grown-up note claims more than that she arranges who plays when until it is.
 
 - [ ] **Sense Detective level 5 (2026-11-05):** does *Can't tell yet* read as a good answer rather than giving up, and does the quilt read as "can't hear it" without speech?
 - [ ] **Sense Detective levels 3–4 (2026-11-05):** does a five-year-old read "tap every toy it could be" as several taps, and does the level 4 ear sliding in after the tick's yes read as "now listen"?
