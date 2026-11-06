@@ -305,6 +305,11 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 - [ ] On the iPad's voice, are "ammonia" and "carbon dioxide" and the `bondbeads.named.*` lines clear?
 - [ ] With a 10–13-year-old: does she read the tally, and do the model-limits note and the N bead (triangle mark) make sense?
 
+## Bond Beads level 7 (chemistry slice 4, 2026-11-06)
+
+- [ ] With a 10–13-year-old: after the two-waters card, does she say the same atoms were rearranged and nothing was added or lost (the before/now tally), and is a Check at the unchanged opening read as "break a link first" rather than a mistake?
+- [ ] On an iPad: is a card of three pictures comfortable beside the table in landscape and portrait?
+
 ## Story Weaver levels 1–3 (writing-composition WC1, 2026-10-24)
 
 - [ ] With a six-year-old: does she understand that the owl cannot see the pictures, and does the owl's question read as a suggestion she may decline?

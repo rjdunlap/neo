@@ -128,7 +128,7 @@ Device and person checks stay open: whether a school-age child reads the nubs as
 
 ## Levels 5–8 (definition)
 
-Defined 2026-11-06 from the study's [ladder](../deep-dives/subjects/chemistry.md#a-first-games-ladder-bond-beads) and [model](../deep-dives/subjects/chemistry.md#the-model-stated-once). **Levels 5–6 built 2026-11-06 ([PR #1317](https://github.com/rjdunlap/neo/pull/1317)); levels 7–8 not built.** Levels 5–8 sit at the top of `school` (the study's M rungs, about 11–14; decided 2026-10-23). They add, in order: real names from a checked list and the word "atom" (5), a fourth bead kind N (5), double holds (6), and a reaction shown as rearrangement with the tally as proof (7–8). The fun action stays the same: link, break, rebuild until the tray empties.
+Defined 2026-11-06 from the study's [ladder](../deep-dives/subjects/chemistry.md#a-first-games-ladder-bond-beads) and [model](../deep-dives/subjects/chemistry.md#the-model-stated-once). **Levels 5–6 built 2026-11-06 ([PR #1317](https://github.com/rjdunlap/neo/pull/1317)); level 7 built 2026-11-06 ([PR #1322](https://github.com/rjdunlap/neo/pull/1322)); level 8 cut ([record](#level-8-cut-2026-11-06)), the `school` range stops at 7.** Levels 5–8 sit at the top of `school` (the study's M rungs, about 11–14; decided 2026-10-23). They add, in order: real names from a checked list and the word "atom" (5), a fourth bead kind N (5), double holds (6), and a reaction shown as rearrangement with the tally as proof (7–8). The fun action stays the same: link, break, rebuild until the tray empties.
 
 ### Source check (this session, 2026-11-06)
 
@@ -182,8 +182,12 @@ Brute-forced the same way as the table above (connected pieces, every hand held)
 - **Level 5** reuses level 2's card-and-Check flow with a name: the pet says the name and what it is made of ("Water! One O bead and two H beads."). Each tray has one valid build, so the decision is composition, read from the card and counted on the tally; a Check with a free hand is the only possible miss. The first round introduces "atom" once (`named.atoms`).
 - **Level 6** cards picture a double as two parallel bars. The third card is the level's real decision: `O2 H2` also makes the single-link H–O–O–H, which gets the neutral line, and the card's hydrogen and oxygen need a double.
 - **Level 7** opens with the starting pieces built (level 3's flow), the card picturing every product piece, and the before/now tally; the second puzzle is the reverse, so she sees the same atoms go both ways. Either order of identical pieces matches (canonical keys).
-- **Level 8** is the study's 9-bead case, and **gated on layout** (below). If the build's layout audit fails, level 8 is **cut and recorded**, the `school` range stops at 7, and no substitute reaction is used (within 7 beads and no triple holds, the only listed reaction is level 7's pair).
-- **Bands:** `school` `{ min: 1, max: 8 }` (or `max: 7` if level 8 is cut). `describeLevel` for grown-ups: 5 "Build named shapes: water, ammonia, methane (N joins)", 6 "Double holds: oxygen and carbon dioxide", 7 "Rearrange hydrogen and oxygen into water, and back", 8 "Rearrange methane and oxygen into carbon dioxide and water (9 beads)".
+- **Level 8 (cut 2026-11-06, not built)** was the study's 9-bead case, **gated on layout** (below). If the build's layout audit fails, level 8 is **cut and recorded**, the `school` range stops at 7, and no substitute reaction is used (within 7 beads and no triple holds, the only listed reaction is level 7's pair).
+- **Bands:** built as `school` `{ min: 1, max: 7 }` (level 8 cut). `describeLevel` for grown-ups: 5 "Build named shapes: water, ammonia, methane (N joins)", 6 "Double holds: oxygen and carbon dioxide", 7 "Rearrange hydrogen and oxygen into water, and back", 8 "Rearrange methane and oxygen into carbon dioxide and water (9 beads)".
+
+### Level 8 cut (2026-11-06)
+
+The build's layout audit failed, so by the rule above level 8 is cut, the `school` range stops at 7 and no substitute reaction is used. Numbers: every iPad collapses to the 1024×768 logical view; in landscape the table is 524×638, a bead ring of rx 190 × ry 247 whose perimeter (about 1380) is below the 1440 nine beads 160 apart (`BEAD_GAP`) need. Narrowing the card column to 248 (two buttons side by side) gives about 1426; 200 or 180 (stacked buttons, a card about 200×250 for three pictures) passes the bead gap only barely, and a random search of jitter and nudge found no 9-bead ring keeping link midpoints `MID_GAP` 30 apart (best 26.6 at 200, 28.4 at 180). Portrait 1024×1366 fits 9. Eight beads fails everywhere because the 7-entry `JITTER` and `RADIAL` tables wrap; not needed with 8 cut. A future level 8 would need a non-ring layout with a link-midpoint-clear-of-beads check; that is an idea in [IDEAS.md](../IDEAS.md), not a ready slice.
 
 ### Screen, controls and the 9-bead layout
 
@@ -221,7 +225,7 @@ New lines under `bondbeads.named.*`, the only keys that may say "atom" or a name
 Two build sessions, one same-game batch each:
 
 1. **Levels 5–6** (new interaction: N and double holds): typecheck and the unit tests above; one scripted play through the `bond-beads` browser case at levels 5 and 6 with one wrong Check and one hint; one portrait screenshot of level 6's carbon dioxide card; `fingerdemo` at 5 and 6; `npm run build` (voice and how-to change).
-2. **Levels 7–8** (new levels plus the layout work): typecheck and rule tests, the widened layout test; one browser play of the top built level; `fingerdemo` at 7 and 8; a portrait and a landscape screenshot of level 8's nine beads (or the recorded cut); `npm run build` for voice.
+2. **Levels 7–8** (level 7 built, level 8 cut; the audit was the layout work): typecheck and rule tests, the widened layout test; one browser play of the top built level; `fingerdemo` at 7 and 8; a portrait and a landscape screenshot of level 8's nine beads (or the recorded cut); `npm run build` for voice.
 
 Device and person checks: whether a 10–13-year-old reads the tally as "nothing added, nothing lost"; whether two parallel bars read as a double hold and are tappable on an iPad; how device speech says "ammonia" and "carbon dioxide".
 

@@ -277,6 +277,16 @@ export const SETS: TwoWays[] = [
   },
 ];
 
+/**
+ * Level 7: the same atoms rearranged, both ways. Hydrogen, hydrogen and oxygen are built on the table and become two
+ * waters (authored first); then two waters become hydrogen, hydrogen and oxygen. Every piece is pictured on its own
+ * (two waters are two pictures), never as a number or a formula.
+ */
+export const REARRANGEMENTS: Puzzle[] = [
+  { id: 'h2o2-water', from: [HYDROGEN, HYDROGEN, OXYGEN], to: [WATER, WATER] },
+  { id: 'water-h2o2', from: [WATER, WATER], to: [HYDROGEN, HYDROGEN, OXYGEN] },
+];
+
 export interface Plan { level: number; name: string; rounds: number }
 
 export const PLANS: Plan[] = [
@@ -286,6 +296,7 @@ export const PLANS: Plan[] = [
   { level: 4, name: 'The same beads, two ways: build one pictured shape, then rearrange it into the other', rounds: 2 },
   { level: 5, name: 'Build named shapes: water, ammonia, methane (N joins)', rounds: 3 },
   { level: 6, name: 'Double holds: oxygen and carbon dioxide', rounds: 3 },
+  { level: 7, name: 'Rearrange hydrogen and oxygen into water, and back', rounds: 2 },
 ];
 
 export function planFor(level: number): Plan {
@@ -314,11 +325,18 @@ export function rotateTray(kinds: readonly Kind[], links: readonly Link[], off: 
 /**
  * A round: level 1 three distinct trays, level 2 two distinct cards, level 3 the authored puzzle then the other pair in
  * either direction, level 4 both sets with the seven-bead set first, level 5 water then ammonia and methane in either
- * order, level 6 oxygen, carbon dioxide, then hydrogen and oxygen from the same four beads that also make H–O–O–H; each
- * level opens with its authored first.
+ * order, level 6 oxygen, carbon dioxide, then hydrogen and oxygen from the same four beads that also make H–O–O–H,
+ * level 7 hydrogen and oxygen into two waters and back, each tray turned; each level opens with its authored first.
  */
 export function roundFor(level: number, rng: Rng): Step[] {
   const lv = planFor(level).level;
+  if (lv === 7) {
+    return REARRANGEMENTS.map((p) => {
+      const tray = joinShapes(p.from);
+      const turned = rotateTray(tray.kinds, tray.links, rng.int(0, tray.kinds.length - 1), rng.chance(0.5));
+      return { kinds: turned.kinds, opening: turned.links, requests: [p.to], twoWays: false, doubles: true };
+    });
+  }
   if (lv === 5 || lv === 6) {
     const cards: Shape[][] = lv === 5 ? [[WATER], ...rng.shuffle([[AMMONIA], [METHANE]])] : [[OXYGEN], [CARBON_DIOXIDE], [HYDROGEN, OXYGEN]];
     return cards.map((req) => ({ kinds: rng.shuffle(joinShapes(req).kinds), opening: [], requests: [req], twoWays: false, doubles: lv === 6 }));

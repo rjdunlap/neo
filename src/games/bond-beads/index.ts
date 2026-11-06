@@ -17,15 +17,15 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
 import { beadBody, beadTrio, cardArt, drawHands, drawLinks, LINK_COLOR, shapePicture, tableArt } from './art';
 import {
-  allHeld, BEAD_R, beadAt, beadLayout, Bench, canLink, centre, CheckTally, helpFor, linkAt, linkCount, namesOf, nextMove, planFor, roundFor, shapeKey, tally,
+  allHeld, BEAD_R, beadAt, beadLayout, Bench, canLink, centre, CheckTally, helpFor, linkAt, linkCount, linkState, namesOf, nextMove, planFor, roundFor, shapeKey, tally,
   type BeadLayout, type Help, type Kind, type Link, type Plan, type Pt, type Shape, type Step,
 } from './logic';
 
 const LEVELS: BandLevels = {
-  school: { min: 1, max: 6 },
+  school: { min: 1, max: 7 },
 };
 
-/** The shapes a step's card pictures: one (level 2), the two to build (level 3), or the two ways (level 4). */
+/** The shapes a step's card pictures: one (level 2), the pieces to build (levels 3 and 7), or the two ways (level 4). */
 function cardShapes(s: Step): Shape[] {
   if (!s.requests) return [];
   return s.twoWays ? s.requests.map((r) => r[0]) : s.requests[0];
@@ -94,6 +94,7 @@ class BondBeads implements Game {
       case 4: return 'bondbeads.instruct.twoways';
       case 5: return 'bondbeads.named.instruct.name';
       case 6: return 'bondbeads.named.instruct.double';
+      case 7: return 'bondbeads.named.instruct.rearrange';
       default: return 'bondbeads.instruct.hold';
     }
   }
@@ -103,7 +104,7 @@ class BondBeads implements Game {
     void this.intro();
   }
 
-  /** The instruction; at level 5 the word "atom" once; then (levels 5–6) the first card's name. */
+  /** The instruction; at level 5 the word "atom" once; then (levels 5 and up) the first card's names. */
   private async intro() {
     await this.ctx.instruct(this.instruction());
     if (!this.alive || this.plan.level < 5) return;
@@ -111,7 +112,7 @@ class BondBeads implements Game {
     if (this.alive) void this.sayNames();
   }
 
-  /** Levels 5–6: the pet names the card's shapes and what each is made of. Nothing else is ever named. */
+  /** Levels 5 and up: the pet names the card's shapes and what each is made of. Nothing else is ever named. */
   private async sayNames() {
     if (this.plan.level < 5) return;
     const index = this.index;
@@ -441,9 +442,13 @@ class BondBeads implements Game {
     if (h) void this.pulse(h);
   }
 
-  /** One fact about the build: a free hand, a bead left over, or a link the card does not have. */
+  /**
+   * One fact about the build: a free hand, a bead left over, or a link the card does not have. At level 7, while the
+   * opening is unchanged and every hand is held, it is the link to break first.
+   */
   private factLine(h: Help | null): LineId {
     if (!h) return this.first ? 'bondbeads.other' : this.instruction();
+    if (this.plan.level >= 7 && h.kind === 'break' && this.bench.state === linkState(this.bench.opening)) return 'bondbeads.named.breakfirst';
     if (h.kind === 'free') return 'bondbeads.free';
     if (h.kind === 'left') return 'bondbeads.left';
     if (h.kind === 'double') return 'bondbeads.named.double';
@@ -541,6 +546,7 @@ class BondBeads implements Game {
   private stepLine(): LineId {
     switch (this.plan.level) {
       case 2: case 5: case 6: return 'bondbeads.match';
+      case 7: return 'bondbeads.named.rearranged';
       case 3: return 'bondbeads.rebuilt';
       case 4: return 'bondbeads.twoways';
       default: return 'bondbeads.held';

@@ -6,7 +6,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **`bond-beads`, levels 7–8** (`chemistry`; school; a reaction as rearrangement, plus the 9-bead layout fix or cut level 8's 9-bead case; levels 1–6 built): [definition](definitions/bond-beads.md#levels-58-definition), [check tier](definitions/bond-beads.md#check-tier-levels-58).
 - **Define Far Lights 5–8** (`astronomy`; docs only, with the parallax wording reviewed or held and levels 7–8 placed at the top of `school`): [Far Lights 1–4 as built](definitions/far-lights.md#what-comes-next), [study](deep-dives/subjects/astronomy.md#build-slices-in-order).
 - **Define Puddle Lens 7–8** (`cells-microbes`; the wall clue and *Why green?* with enumerated candidate views, coordinated with ecosystems producers and chemistry dissolving; docs only): [Puddle Lens 5–6 as built](definitions/puddle-lens.md#what-comes-next), [study](deep-dives/subjects/cells-microbes.md#build-slices-in-order).
 - **Define Hat Band 4+ (M6)** (`music-instruments`; the older three-role, three-phrase arrangement brief with all accepted states, trace, undo and truthful repair, older placement resolved; docs only): [Hat Band 1–3 as built](definitions/hat-band.md), [study](deep-dives/subjects/music-instruments.md#build-slices-in-order).

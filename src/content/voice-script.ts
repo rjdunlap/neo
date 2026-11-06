@@ -1580,7 +1580,7 @@ export const SCRIPT = {
   'bondbeads.stuck': ['No free hands can reach each other. Tap a link to break it.'],
   'bondbeads.hint': ['Look at the glowing one.'],
   'bondbeads.done': ['Every hand is held. Nothing added, nothing lost!'],
-  // Levels 5–6: the only bondbeads lines that may say "atom" or a name (the six checked in the definition's source check).
+  // Levels 5 and up: the only bondbeads lines that may say "atom" or a name (the six checked in the definition's source check).
   'bondbeads.named.atoms': ['Each bead stands for an atom, a piece too tiny to see.'],
   'bondbeads.named.instruct.name': ['Build the one on the card! Then tap Check.'],
   'bondbeads.named.instruct.double': ['Some beads hold two hands together! Build the one on the card, then tap Check.'],
@@ -1591,6 +1591,9 @@ export const SCRIPT = {
   'bondbeads.named.hydrogen': ['Hydrogen! Two H, holding hands.'],
   'bondbeads.named.oxygen': ['Oxygen! Two O, holding two hands together.'],
   'bondbeads.named.carbon-dioxide': ['Carbon dioxide! One C and two O, holding two hands together on each side.'],
+  'bondbeads.named.instruct.rearrange': ['Rearrange these into the ones on the card! Use every bead, then tap Check.'],
+  'bondbeads.named.breakfirst': ['Every hand is held. Break a link to free some hands.'],
+  'bondbeads.named.rearranged': ['The atoms rearranged. Nothing added, nothing lost!'],
   'game.puddle-lens': ['Puddle lens!'],
   'game.melt-freeze': ['Melt and freeze!'],
   'game.tide-line': ['Tide Line!'],
