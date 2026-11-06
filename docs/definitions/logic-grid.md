@@ -1,0 +1,102 @@
+# Mystery Grid, levels 1–8 (definition)
+
+Documentation packet, 2026-11-05, branch `claude/define-logic-grid`, [PR #1291](https://github.com/rjdunlap/neo/pull/1291), source base `8744d578`. Queued by the developer the same day ([READY](../READY.md#next-ten)); design notes from the [puzzle-pages study](../deep-dives/subjects/puzzle-pages.md#logic-grid-whodunit). Proposed game `logic-grid`; nothing is registered or implemented. **Docs only; each level's build is its own session**, and that session writes and reviews only its own level's cast pictures and clue wording.
+
+The fun is a little mystery that comes out right: a snack or toy has gone missing, a few clues are spoken, and she marks a grid of yes and no squares until only one answer is left, then says who has it. Nobody is in trouble; the pie was borrowed for a surprise picnic. The learning is deduction: what one clue rules out, what is left when everything else is ruled out, and how two clues together decide a square neither decides alone.
+
+**Where the READY line and the study differ, the READY line wins**, since the developer wrote it on 2026-11-05 after the study: marking a square that a shown clue already rules out is a gentle miss (the study counted only a wrong answer), a hint points at the clue that decides the next square, and the younger opening is a 2 by 3 grid (the IDEAS row said 3 by 3).
+
+## Identity and overlap
+
+- **Who Am I?** (pre-K–school) rules friends out of one line-up with feature clues. The grid adds what only a grid gives: matching *two or three kinds of thing* at once (friend to place to thing), so a clue about one pair also decides others through the rows and columns.
+- **Secret Code**'s detective doors (school 7 and 11) find one code consistent with shown tries; the grid uses the same miss idea (ignoring a clue still on screen) on a different board. Its rule is the precedent for the miss below.
+- **Sense Detective** and **Attic Finds**' Household Casebook (levels 7–9) weigh evidence from senses and sources, with *can't tell* answers. The grid's clues are always true and always enough; nothing here is a source to doubt.
+- **Picture Logic** (grown-up) and **Sudoku Garden** (grown-up) are the nearest boards: one tap marks a square, nothing is refused, a line can be judged from clues alone. Reuse is listed under [Screen and controls](#screen-and-controls).
+- **Not here:** truth-and-lie clues (the study's decision 2 default: left out), crimes or punishment, timers, a mistake cap, daily cases, an open text parser.
+
+## Levels
+
+Each level names its own cast (the pictures on the grid's headers), its categories and its clue kinds. Clue **wording** for each kind is written as templates with slots (`{friend}`, `{place}`, `{thing}`) in that level's build session and reviewed there; no session writes another level's wording. Every cast picture already exists in `src/art/` unless the row says it is drawn in that build.
+
+| Level | Bands | Mystery | Cast and categories | Grid | Clue kinds (new in bold) | Clues a board | Answer |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 *Who is where?* | preschool | The missing pie | Friends: two of cat, duck, bear (`FRIENDS` in `src/art/picnic.ts`). Places: pond (drawn in this build: a blue oval with reeds), tree (`treeArt`), bush (`bushArt`) | 2 friends × 3 places; one place stays empty | **Direct** ("Cat is at the pond") | 2 | The event clue ("The pie is by the bush"); she taps who is there |
+| 2 *Not there* | preschool, pre-K | The missing pie | Friends: two of dog, bunny, pig (`CRITTERS`). Places: pond, tree, bush | 2 × 3 | Direct, **negative** ("Bunny is not at the tree") | 2 (one of each) | As level 1 |
+| 3 *Three friends* | pre-K, school | The missing ball | Friends: three of cat, duck, bear, dog. Places: three of pond, tree, bush, blanket (`blanketArt`). Thing: a ball (drawn: a striped circle) | 3 × 3 | Direct, negative | 3–4, at most one direct | Event clue, then tap who |
+| 4 *The friend in the red hat* | school | The missing ball | Three friends wearing hats of three colours, each colour also a pattern (stripes, spots, stars; `strawHat` recoloured), so colour never works alone. Places as level 3 | 3 × 3 | Negative, **picture-card lookup** ("The friend in the red hat was at the tree"; the hat is on the friend's header card, so it needs no reading) | 3–4, no direct | As level 3 |
+| 5 *Who, where and what* | school | The lost kite | Friends: three of cat, duck, bear, dog, bunny. Places: three of pond, tree, bush, blanket. Things: three of apple, balloon, flower (`prop()` in `src/art/props.ts`) | Friend × place and friend × thing, side by side (3 × 3 + 3 × 3) | Direct, negative, lookup, **different-person** ("The friend at the pond is not the one with the balloon") | 4–5 | Event clue on a thing or place ("The kite string was tied to the balloon"); she taps who |
+| 6 *This one or that one* | school | The lost kite | Four friends of the six critters. Four places (pond, tree, bush, blanket) | 4 × 4 | Negative, lookup, **either-or** ("Pig was at the pond or the bush"), **neither-nor** ("Neither Cat nor Dog was at the tree") | 4–6 | As level 3 |
+| 7 *Case file* | grown-up | The missing picnic basket | Four friends (written names beside the pictures). Four places. Four snacks (apple, orange, lemon, pear) | All three pairings: friend × place, friend × snack, snack × place (the L of three 4 × 4 blocks) | Every kind above, written | 5–8 | Event clue; she taps who, then the reveal names where and with what |
+| 8 *Who came first?* | grown-up | The missing picnic basket | Five friends, five places, and a **time row** of five (morning to evening: a sun climbing and setting) | Friend × place, friend × time, time × place (three 5 × 5 blocks) | All above, **ordering** ("Bear came before Duck"; "Pig came two after Cat") and **unaligned pair** ("Of Cat and the friend at the pond, one came in the morning and one at noon") | 7–10 | As level 7 |
+
+- **Ranges (`BandLevels`):** `preschool: { min: 1, max: 2 }`, `prek: { min: 2, max: 3 }`, `school: { min: 3, max: 6 }`, `grownup: { min: 7, max: 8 }`. No lap or toddler: a goal and a rule are the whole game, and the study gives those ages none. Upper school (9–12) plays school's top levels; a 4 by 4 with ordering at 100-unit squares is a later definition.
+- **Why these steps:** levels 1–2 follow the either-or finding (the empty bucket at 2½, 58% at three, 64% at four; [study table](../deep-dives/subjects/puzzle-pages.md#what-people-can-do-by-age)): level 1 asks only to put each clue on the grid, level 2 adds the one exclusion. Each later level adds one decision (a third friend, a lookup, a third category, an either-or, a written clue, an order), never speed or clutter. *Murdle*'s Elementary case is level 5's three categories of three.
+- **Rounds:** levels 1–2 play two boards a round; levels 3–6 and 7–8 play one.
+- **Generation (all levels, `logic.ts`, after [ZebraLogic](https://arxiv.org/html/2502.01100v2) as the study notes):** with the seeded RNG, draw the level's cast, permute a solution per category, list every true clue of the level's kinds, then remove clues in random order while an exact solver still finds one solution. Then a **human gate**: a rule solver that knows only elimination (a yes crosses its row and column; a row with one square left is a yes) and the level's clue kinds, never trial and error, must finish, or the board is rejected and redrawn. Reject a board with more clues than the level's cap, with fewer than its minimum, or (levels 3–4) with more than one direct clue. The **event clue** names a place or thing, never a friend, and alone decides nothing on the grid. Keep the rule solver's steps (square, mark, and the clue or clues that decide it) for the hint, the glow and the bot.
+
+## Screen and controls
+
+**One interaction at every level:** tap a square to mark it, cycling **empty → yes → no → empty**. A yes is a green check with the row friend's face; a no is a soft cross. A yes automatically crosses the other squares in its row and column within that block (a lighter cross, which is the matching rule rather than a deduction, and which lifts again if the yes is taken away). Nothing is ever refused. The square lifts under the finger at once, a yes settles with a pentatonic step, and a cross is a soft pencil sound, as the study's presentation notes ask. Taps use `onTap` from `src/engine/input.ts`; no drags.
+
+**Clue cards** sit beside the grid: each is a picture card (a friend, an arrow or a cross, a place) that speaks its clue when tapped; from level 5 the written clue is printed on the card too, and at levels 7–8 it is the main content, still read aloud on request. A card whose every square is now marked dims (grey, like Picture Logic's finished line), but stays tappable.
+
+**The answer:** when every block has one yes in each row and they match the solution, the grid is solved, the friends cheer and the event clue is spoken with its picture (the pie by the bush); the friend cards then hop and she taps who has it. A grid filled with a yes in every row that does not match the solution is judged once (see below).
+
+**Reuse, checked against the code:** the mark constants `EMPTY`, `FILLED` and `CROSSED` and the `knowledge()` reading of marks in `src/games/picture-logic/logic.ts` (import them; Picture Logic's Fill/Cross tool buttons, sliding window and 64-unit rendering stay grown-up there and do not carry to children's 100-unit squares); Sudoku Garden's square-and-tray board shows how to judge a placed mark without refusing it (its red ring and once-every-four-seconds spoken line are the model for the miss here); Secret Code's shape-plus-colour stones for the hat patterns; critters from `src/art/critter.ts`. Build nothing shared until a second game needs it.
+
+**Layout plan** (logical units from `view`; the build proves it, these are not screenshot proof). The shell keeps the top 140; the pet's corner is x0–160, y548–768 in landscape (x0–160, y804–1024 in portrait). Squares and header cards are 100 by 100 with 4-unit gaps at levels 1–6, 64 with header strips 80 deep at 7–8; Help is 120 by 100.
+
+| Levels | Grid size (headers included) | Landscape 1024 × 768 | Portrait 768 × 1024 |
+| --- | --- | --- | --- |
+| 1–2 (2 × 3) | 412 × 308 | Grid x180–592, y160–468; clue cards in one column at x660–760 from y160; Help x850–970, y600–700 | Grid centred at y160–468; clue cards in a row at y500–600; Help x600–720, y860–960 |
+| 3–4 (3 × 3) | 412 × 412 | Grid x180–592, y150–562; clues in a column (two wide past three) at x640–848; Help x870–990, y600–700 | Grid at y150–562; clues in a row at y590–690; Help as above |
+| 5 (two 3 × 3 sharing the friend headers) | 100 + 6 × 104 + a 12-unit gap = 736 wide, 412 tall | Grid x180–916, y150–562; clues in one row y600–700 from x180 (five cards to x700); Help x870–990, y600–700 | Grid x16–752, y150–562; clues in two rows y590–690, y700–800; Help x600–720, y860–960 |
+| 6 (4 × 4) | 516 × 516 | Grid x170–686, y150–666 (right of the pet's corner); clues two wide at x720–928, y150–462, up to six; Help x720–840, y560–660 | Grid centred at y150–666; clues in two rows of three at y690–790, y800–900 from x180; Help x600–720, y910–1010 |
+| 7 (three 4 × 4 at 64) | 80 + 8 × 64 + 8 = 600 square | Grid x170–770, y146–746; written clues listed at x790–1004, 64 tall each, scrolling past seven; Help under the list | Grid x84–684, y146–746; clues in two columns below at x180–748 from y760, scrolling past six; Help beside them |
+| 8 (three 5 × 5 at 64) | 80 + 10 × 64 + 8 = 728 square | Taller than the 622 left below the shell, so the grid slides as Picture Logic's does (headers pinned, Slide by a drag on a header strip); clues as level 7 | Fits across (x20–748) but its bottom rows would reach the pet's corner, so it slides here too; clues scroll in a strip below |
+
+Every child target stays at 100 units clear of the pet and the corner buttons; nothing shrinks to fit. Levels 7–8 use the grown-up 64-unit rule and scroll or slide what cannot fit, as AGENTS allows on the `grownup` band.
+
+## Accounting, help and finishing
+
+- **Marks are free unless a clue on screen decides them alone.** A mark is **one miss** only when it contradicts a square that a single shown clue decides by itself: a yes where a negative, neither-nor or either-or clue says no, a no or a yes elsewhere in the row against a direct or lookup clue's yes, or (level 8) a time an ordering clue rules out by itself ("Bear came before Duck": Bear is not last). Each clue kind lists its own squares in `logic.ts`. Anything that needs two clues together, or a clue plus her other marks, is exploration and never counted, as AGENTS asks for experimental predictions. Automatic crosses never count, and the same square against the same clue counts once a board. The mark still goes down (nothing is refused); a soft boing plays, the clue card glows and speaks again ("Bunny is not at the tree"), and the square gets a soft ring until it is changed.
+- **A full wrong grid** (a yes in every row that does not match the solution) is **one miss** unless every wrong yes already counted under the rule above: the pet speaks one clue the grid breaks and lights it, and the wrong yes squares and their automatic crosses lift.
+- **A wrong answer** (tapping a friend who does not have it) is **one miss**: the boing, and the event clue is spoken again with its place or thing and that friend's row lit.
+- **After two misses on a board**, the rule solver's next square glows softly (automatic, not a hint), and the glow never blocks a touch.
+- **Help** (the pet or the Help button) points at the clue that decides the next square: the clue card lights and speaks, and that square pulses. It counts **one hint**. Pressing Help again while the same step is pointed at places the mark for her, with no second hint counted. If the next step needs two clues, both light. When the grid is solved, Help speaks the event clue and lights the friend who has it.
+- **Adaptation:** levels 1–2 play two boards, so their misses add up across the round; a smooth round is at most one miss and no hints, as everywhere.
+- **Finishing:** the right answer finishes the round (after the last board at levels 1–2) with `ctx.finish({ misses, hints })`, once; one sticker, including with help. There is no give-up path to fail; Help can always solve the next square, so repeated Help finishes any board.
+
+## Speech (`voice-script.ts`)
+
+Instructions by level (`ctx.instruct`, which the pet repeats): "Listen to the clues. Tap where each friend is." / "Some clues say *not*. Find where everyone is." / "Mark yes and no until each friend has one place." / "Look at the hats to know who the clue means." / "Find who, where and what. Then say who has the kite." / "This one or that one: mark what the clue leaves out." / "Mark the grid until one answer is left, then name who has the basket." / (level 8 adds) "Some clues say who came first." Each clue is a slotted line built from its template (`logic.clue.direct`, `logic.clue.not`, and so on) with each friend, place, thing and time name as a replayable line; the event clue, the cheer, the miss reminder ("That clue says Bunny is not at the tree") and the reveal ("Bear had the pie. It was for the surprise picnic!") are lines too. Slotted speech uses device speech until clips exist; an iPad listen of the slotted clues is a person check.
+
+## Rule tests (`logic.test.ts`)
+
+For every level, across many seeds: the board has exactly one solution (exact solver); the human rule solver finishes it using only elimination and the level's clue kinds; removing any one clue leaves the rule solver unable to finish (no clue is redundant to it); the clue count is within the level's minimum and cap, and levels 3–4 have at most one direct clue; the event clue names a place or thing, alone decides nothing on the empty grid, and with the solution names exactly one friend; every clue is true of the solution. Each clue kind's own squares are exactly those it decides alone on an empty grid, so the miss rule fires on a single-clue contradiction and never on a mark only chained deduction rules out, nor on an automatic cross. A full wrong grid breaks at least one clue, and the named clue is one it breaks. Every hint's square and mark agree with the solution, its clue (or clues) decide it from the current marks, and repeated Help finishes the board from any marks. The lookup level's hats differ in both colour and pattern. Every grid and clue column fits at the supported views at 100 units (64 at 7–8), clear of the pet.
+
+## Ghost finger, how-to card, registration
+
+- **`autotouch()`** replays the rule solver's steps by tapping squares through the real controls (once for a yes, twice for a no), then taps the friend who has it; it never edits the grid or calls `finish`.
+- **How-to card** steps scoped by level: 1 tap where each friend is, then tap who has the pie; 2 a *not* clue means that square is a no; 3–4 mark yes and no until each friend has one place (4: the hat on the card tells you who); 5–6 two grids at once, or a this-or-that clue; 7–8 mark the three blocks from written clues, then name who has it (8: the time row). Grown-up wording names ruling out and putting clues together, with no "brain" or school claim.
+- **Registration (default):** ID `logic-grid`, name "Mystery Grid", spoken title `game.logic-grid`. Region `puzzle-peaks`, `challenge: 'logic'`, as Secret Code and Picture Logic. Skills `['deduction', 'reasoning', 'using-evidence']` (free strings; Secret Code's set). Home land **Puzzle Peaks**, after Secret Code: its lowest band is preschool, so it belongs on the island rather than Lantern Lake. Puzzle Peaks holds 15 games, past `LAND_SPOTS` (13), so it already pages, which the lands contract allows. Hub icon: a 3 by 3 grid of checks and crosses with a pie at the corner. Sticker: a seeded friend holding the found thing.
+- **Music:** the land's style stays (she does not make music). **Co-play:** a grown-up reads a clue aloud while she marks, and asks her why a square is a no; at 7–8 the child taps the squares while the grown-up reads. **Off-screen** (spoken tip): "Hide a toy and give one clue at a time until someone finds it."
+- **Couch:** none in these builds. A couch version of levels 7–8 (a cursor on the grid, as Picture Logic's) is a later definition and needs `COUCH_IDS`, `UNLOCK_TIERS`, a catalog entry and a `control()` bot. **Saves:** nothing new.
+
+## Check tier
+
+Each build is its own session: **levels 1–2 together** first (the new game, its generator and rule solver, the tap-cycle grid, clue cards, the answer step; preschool's whole range), at new-game tier: typecheck and unit tests (the properties above plus registry, lands and how-to tests), one scripted play through a new `browser-check.mjs` case at levels 1 and 2 with one counted wrong mark and one Help, one portrait screenshot, `fingerdemo` at 1 and 2, and `npm run build`. Then **levels 3–4** and **level 6** as new levels on an existing interaction; **level 5** with its two-block layout (new levels plus one landscape and one portrait screenshot of the wide grid); and **levels 7–8 together**, a new interaction (written clue list, 64-unit blocks, the sliding window). Device speech of slotted clues, and whether a three-year-old follows a spoken *not* on a grid, stay open for a person.
+
+## What comes next
+
+Queue **levels 1–2's build** in READY. Later definitions: an upper-school rung (4 by 4 with ordering at 100-unit squares) and the couch version of levels 7–8.
+
+## Defaults (October 23 standing rules)
+
+Each default stands under the [October 23 standing rules](../archive/DECISIONS-2026-10-23.md#standing-rules) unless the developer says otherwise:
+
+1. **Register Mystery Grid** as above (preschool 1–2, pre-K 2–3, school 3–6, grown-up 7–8), home Puzzle Peaks. *Murdle*, the zebra puzzle and Dell are references only.
+2. **The miss is a single-clue contradiction**, per the READY line; chained deductions stay free.
+3. **No truth-and-lie clues** (the study's decision 2 default).
+4. **No couch in the first builds**; touch only.
+5. **Clue wording is written per level**, in that level's build session, as the READY line requires.
