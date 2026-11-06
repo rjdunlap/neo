@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 export function createSuite({ page, log, scene, screenshot, launch, finished }) {
 /** Sense Detective: level 1 (a not-yet, a wrong tick, then found); level 2 in portrait (a look, a not-yet, a listen, a wrong tick, a requested hint); level 3 in portrait over two parcels (one more, a miss); level 4 (so far, a listen, a miss, a requested hint). */
 async function senseDetectivePlay() {
+  if (process.env.SENSE_LEVEL === '5') return senseLevel5();
   const score = () => page.evaluate(() => { const r = kit.store.stats('sense-detective').history.at(-1); return [r.misses, r.hints]; });
   const settle = async () => { await page.waitForTimeout(300); await page.waitForFunction(() => neo.scene.finished || !neo.scene.game.busy, null, { timeout: 25000 }); await page.waitForTimeout(250); };
   const tapCard = async (own) => { await page.evaluate((own) => { const g = neo.scene.game; kit.tapOn(g.cards.find((c) => (c.id === g.round.hidden) === own).node); }, own); await page.waitForTimeout(250); };
@@ -81,6 +82,47 @@ async function senseDetectivePlay() {
   await finished('sense-detective');
   assert.deepEqual(await score(), [1, 1]);
   log('Sense Detective 3 and 4: one more, a ruled-out miss, two parcels, so far, listen, miss, requested hint, saved scores passed');
+  await senseLevel5();
+}
+
+/** Level 5 (the authored round): both fit, Can't tell yet, the eye miss, the ear's reveal; then the rattle parcel in portrait, Can't tell yet as a miss, the rattle. */
+async function senseLevel5() {
+  const score = () => page.evaluate(() => { const r = kit.store.stats('sense-detective').history.at(-1); return [r.misses, r.hints]; });
+  const settle = async () => { await page.waitForTimeout(300); await page.waitForFunction(() => neo.scene.finished || !neo.scene.game.busy, null, { timeout: 25000 }); await page.waitForTimeout(250); };
+  const tapNode = async (name) => { await page.evaluate((name) => kit.tapOn(neo.scene.game[name]), name); await settle(); };
+  const tapToy = async (id) => { await page.evaluate((id) => kit.tapOn(neo.scene.game.cards.find((c) => c.id === id).node), id); await page.waitForTimeout(300); };
+  const tapSense = async (ch) => { await page.evaluate((ch) => kit.tapOn(neo.scene.game.choiceCards.find((c) => c.ch === ch).node), ch); await page.waitForTimeout(300); };
+  const misses = () => page.evaluate(() => neo.scene.game.misses);
+  await page.evaluate(() => { kit.store.data.settings.howToCards = false; });
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await launch('sense-detective', 5);
+  await settle();
+  assert.deepEqual(await page.evaluate(() => neo.scene.game.round.parcels), ['drum', 'rattle'], 'the authored first round');
+  await tapNode('lookBtn');
+  await tapToy('bell'); await tapNode('checkBtn');
+  assert.equal(await misses(), 0, 'one toy when two fit is free');
+  await page.evaluate(() => kit.tapOn(neo.scene.game.cantTellCard)); await page.waitForTimeout(300);
+  await screenshot('sense-detective-5-cant-tell-landscape');
+  await tapNode('checkBtn');
+  assert.equal(await page.evaluate(() => neo.scene.game.stage), 'sense', "can't tell yet opens the eye or ear choice");
+  assert.equal(await misses(), 0);
+  await tapSense('view'); await tapNode('checkBtn');
+  assert.equal(await misses(), 1, 'the eye is a miss');
+  await tapSense('sound'); await tapNode('checkBtn');
+  await page.waitForFunction(() => neo.scene.game.parcelIndex === 1 && !neo.scene.game.busy, null, { timeout: 25000 });
+  assert.equal(await page.evaluate(() => neo.scene.game.stage), 'answer', 'the next parcel starts at stage A');
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(400);
+  await tapNode('lookBtn');
+  await page.evaluate(() => kit.tapOn(neo.scene.game.cantTellCard)); await page.waitForTimeout(300);
+  await screenshot('sense-detective-5-cant-tell-portrait');
+  await tapNode('checkBtn');
+  assert.equal(await misses(), 2, "can't tell yet when the look decides is a miss");
+  assert.equal(await page.evaluate(() => neo.scene.game.hints), 0, 'one miss per parcel never glows');
+  await tapToy('rattle'); await tapNode('checkBtn');
+  await finished('sense-detective');
+  assert.deepEqual(await score(), [2, 0]);
+  await page.setViewportSize({ width: 1024, height: 768 });
+  log("Sense Detective 5: both fit, can't tell yet, the eye miss, the ear's reveal, the rattle parcel in portrait, saved score passed");
 }
 
 return { senseDetectivePlay };
