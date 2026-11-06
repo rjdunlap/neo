@@ -37,6 +37,13 @@ Changed: `docs/definitions/helper-house.md` (new "Levels 5–7 (RA4)" section), 
 - Not run: `npm run build` (no shared files or assets), other levels' browser plays (unchanged), a real iPad.
 - Open: a four-year-old's finger on the short slanting lines ([DEVICE-CHECKS](DEVICE-CHECKS.md)).
 
+## 2026-11-06 — Mystery Grid (logic-grid) level 7
+
+- [PR #1307](https://github.com/rjdunlap/neo/pull/1307): level 7 *Case file* (grown-up): three linked 4 x 4 blocks, written clue list, a 'link' step in the rule solver, `lg.*` voice lines, how-to step; `LOGICGRID_FROM=7`.
+- Ran (tested commit `6aed60f0`, base `c03bbc74`; port 5236, Vite dev): `npm run typecheck`; `npm test` (315 files, 5555 tests, 11 new level-7 rule tests, 80 in the game's file); `npm run build`; `BROWSER_SUITE=logicgrid LOGICGRID_FROM=7` PASS (48 cells, one ruled-out yes counted, one Help hint, landscape and portrait fit at least 64 units clear of the pet, bot to the sticker, saved 1 miss 1 hint); `BROWSER_SUITE=fingerdemo FINGER_ONLY=logic-grid` PASS (levels 1 and 7, 10.1 s and 22.3 s). game-reviewer found no defects.
+- Not run: level 8, the offline check, a real iPad. Note: landscape needs 1008 units across, so a side safe-area inset would push the clue column off the edge (not reachable at the 1024 minimum view).
+- Open: device speech of slotted written clues (person check).
+
 ## 2026-11-06 — Mystery Grid (logic-grid) level 6
 
 - [PR #1304](https://github.com/rjdunlap/neo/pull/1304): level 6 *This one or that one* (school): one 4 x 4 block with not, either-or and neither-nor clues, a fourth hat, `told()` in the rule solver, `lg.*` voice lines, how-to step; `LOGICGRID_FROM=6`.
@@ -90,17 +97,13 @@ Changed: level 5 *Can we tell?* (quilted parcels, `checkTell`, *Can't tell yet*,
 Changed: the 768 × 1024 upright design area, `Scene.uprightArea` and `GameModule.upright`, Today's six upright-first, `resultSpots`, both manifests `any`, and six upright-ready grown-up games (word-search, sudoku-garden, island-bridges, pond-conga, brain-break, number-nook) (PR #1293). Ran: typecheck; `npm test` (305 of 312 files first run, the 7 load timeouts passed alone, one real daily-test stub fixed); `npm run build`; `BROWSER_SUITE=phonefit` with the new upright root pass (dev server port 5366; Home, Today's six, island-bridges, result screenshots); a one-off probe of all six games at their top level at 390 × 844 (no off-screen targets or errors); `npm run test:offline` on a preview of the current build (root and classic passed); `game-reviewer` (no blockers, the iPad-portrait finding fixed).
 Open: `fingerdemo` not run (the bots tap game objects, not positions); no real phone (the [upright device check](DEVICE-CHECKS.md) is open; feedback picks batch 2); `world` not run.
 
-## 2026-11-05 — Logic grid definition (docs only)
-
-Changed: a new `docs/definitions/logic-grid.md` (Mystery Grid, levels 1–8, Puzzle Peaks), READY (the definition line replaced by the levels 1–2 build), the puzzle-pages dive and IDEAS (PR #1291). Ran: `node scripts/check-links.mjs` and `git diff --check`, both passed. No code checks (docs tier). Open: nothing built; the levels 1–2 build is queued.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| `logic-grid` (`logicgrid`), `fingerdemo` (`logic-grid`) | 2026-11-06 (`0f0a23ed`): typecheck, logic-grid, content and registry units (276 passed); `logicgrid` with `LOGICGRID_FROM=6` (either-or-ruled-out yes 1 miss, Help 1 hint, landscape and portrait fit, sticker 1/1); `fingerdemo` at 6; level 5 last passed at `a99772bd`, levels 3-4 at `49bce450`, levels 1-2 at `9e9d79db` | [Entry](VERIFICATION.md#2026-11-06--mystery-grid-logic-grid-level-6) | No build or offline check; speech of slotted clues, hat clues and either/neither clues and a child's grasp of "not" are open |
+| `logic-grid` (`logicgrid`), `fingerdemo` (`logic-grid`) | 2026-11-06 (`6aed60f0`): typecheck, full unit tests (5555), build; `logicgrid` with `LOGICGRID_FROM=7` (48 cells, ruled-out yes 1 miss, Help 1 hint, landscape and portrait fit, sticker, saved 1/1); `fingerdemo` at 1 and 7; level 6 last passed at `0f0a23ed`, level 5 at at `a99772bd`, levels 3-4 at `49bce450`, levels 1-2 at `9e9d79db` | [Entry](VERIFICATION.md#2026-11-06--mystery-grid-logic-grid-level-7) | No offline check; speech of slotted clues, hat clues and either/neither clues and a child's grasp of "not" are open |
 | `crossword`, `fingerdemo` (`crossword`) | 2026-11-06 (branch tip before docs, base `42dc4dc0`): typecheck, full units (5,448); `crossword` `FROM_LEVEL=4` (speaker tap free, Show me 1 hint once, wrong word 1 miss, layout clear in both orientations); `fingerdemo` at 4 (33.9 s); levels 1-3 from `3ccf3cb2` | [Entry](VERIFICATION.md#2026-11-06--crossword-level-4-say-what-it-is) | No build or offline check for level 4; speech of the riddles, spelled non-words and a child's grasp of the shared letter are open |
 | Grown-ups' page off-screen lines (`src/content/offscreen.test.ts`) | 2026-10-26: typecheck, full 3465 units, build; 7 rule tests (under-3 word list, wording, resolution, `{name}`) | [Off-screen lines](archive/VERIFICATION-2026-10-26.md#2026-10-26--off-screen-lines-per-band) | No browser look at the page; Bumper Garden school line held; no reader evidence |
 | `seeds`, `fingerdemo`, `smoke` (`seed-travelers`) | 2026-11-05 (`dc3eb856`): typecheck, full `npm test` (5232; 58 rule tests), build; `seeds` (level 1 bellows, Replay, basket 0/0; level 3 portrait stays, one hint counted once, 0/1); `fingerdemo` levels 1, 3; `smoke` levels 1–3 | [Seed Travelers levels 1–3](archive/VERIFICATION-2026-11-05.md#2026-11-05--seed-travelers-levels-13-life-science-slice-2) | Level 2 only in smoke and rule tests; no offline, couch or `world` run; no iPad or device speech |
