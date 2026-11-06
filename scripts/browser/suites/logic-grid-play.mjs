@@ -13,14 +13,17 @@ async function logicGridPlay() {
       await idle();
       await page.waitForTimeout(300);
       if (await page.evaluate(() => neo.scene.finished === true)) return;
+      // Level 8's bot may slide the grid first; hit-testing reads the last frame, so the tap waits a frame or two.
+      await page.evaluate(() => { window.__lgIntent = neo.scene.game.autotouch(); });
+      await page.waitForTimeout(80);
       await page.evaluate(() => {
-        const intent = neo.scene.game.autotouch();
+        const intent = window.__lgIntent;
         if (intent?.tap) kit.tapOn(intent.tap.on, intent.tap.x * neo.view.scale, intent.tap.y * neo.view.scale);
       });
     }
   };
   await page.evaluate(() => { kit.store.data.settings.howToCards = false; });
-  // LOGICGRID_FROM=3 skips the level 1–2 plays; LOGICGRID_FROM=5 plays levels 5–6; LOGICGRID_FROM=6 plays levels 6–7; LOGICGRID_FROM=7 plays level 7 alone.
+  // LOGICGRID_FROM=3 skips the level 1–2 plays; LOGICGRID_FROM=5 plays levels 5–6; LOGICGRID_FROM=6 plays levels 6–7; LOGICGRID_FROM=7 plays levels 7–8; LOGICGRID_FROM=8 plays level 8 alone.
   const from = Number(process.env.LOGICGRID_FROM ?? 1);
   // Every target's bounds in logical units, the smallest side, and whether any reaches the pet's corner (x < 160, bottom 220).
   const fitNow = () => page.evaluate(() => {
@@ -178,6 +181,7 @@ async function logicGridPlay() {
   log('Mystery Grid 6: a 4 by 4 with either-or and neither-nor clues, a ruled-out yes is one miss, Help one hint, landscape and portrait fit clear of the pet, to the sticker, passed');
   }
 
+  if (from <= 7) {
   // Level 7 (grown-up): the case file, three linked 4 by 4 blocks at 64 units and a written clue list; a ruled-out yes is one
   // miss, Help one hint, landscape and portrait fit clear of the pet at 64, then the bot plays it out to the sticker.
   await launch('logic-grid', 7);
@@ -204,6 +208,57 @@ async function logicGridPlay() {
   await finished('logic-grid');
   assert.deepEqual(await score(), [1, 1], 'level 7 saved 1 miss, 1 hint');
   log('Mystery Grid 7: the case file, three linked blocks at 64 and written clues, a ruled-out yes is one miss, Help one hint, landscape and portrait fit clear of the pet, to the sticker, passed');
+  }
+
+  // Level 8 (grown-up): three 5 by 5 blocks with a time row, under a sliding window. The window and its visible targets fit
+  // clear of the pet at 64 in both orientations; a drag on a header slides the grid; a ruled-out yes is one miss; Help is one
+  // hint and slides its square into view; the bot plays it out.
+  await launch('logic-grid', 8);
+  await idle(); await page.waitForTimeout(400);
+  s = await page.evaluate(() => { const g = neo.scene.game, b = g.current; return { cells: g.cells.length, items: b.items, n: b.clues.length, cs: g.cs, kinds: b.clues.map((c) => c.kind) }; });
+  assert.equal(s.cells, 75); assert.equal(s.cs, 64);
+  assert.deepEqual(s.items, ['dawn', 'morning', 'noon', 'afternoon', 'evening']);
+  assert.ok(s.n >= 7 && s.n <= 9 && s.kinds.includes('order') && s.kinds.includes('pair'), `level 8: 7–9 clues with order and pair clues (${JSON.stringify(s)})`);
+  // Only what the window shows is a target: the visible squares, the clue list and Help.
+  const fit8 = () => page.evaluate(() => {
+    const g = neo.scene.game, v = neo.view;
+    const boxes = [...g.cells.filter((_, i) => g.inView(i)), ...g.clueCards, g.help].map((o) => { const b = o.getBounds(); return { x: b.x / v.scale, y: b.y / v.scale, w: b.width / v.scale, h: b.height / v.scale }; });
+    return {
+      shown: g.cells.filter((_, i) => g.inView(i)).length, min: Math.min(...boxes.map((b) => Math.min(b.w, b.h))), bottom: Math.max(...boxes.map((b) => b.y + b.h)), right: Math.max(...boxes.map((b) => b.x + b.w)), w: v.w, h: v.h,
+      pet: boxes.some((b) => b.x < 160 && b.y + b.h > v.h - 220),
+      overlap: g.clueCards.some((c, i) => i > 0 && c.y < g.clueCards[i - 1].y + 64 && c.x === g.clueCards[i - 1].x),
+    };
+  });
+  let f8 = await fit8();
+  assert.ok(f8.shown >= 25 && f8.shown < 75 && f8.min >= 63 && f8.bottom <= f8.h && f8.right <= f8.w && !f8.pet && !f8.overlap, `level 8 fits landscape clear of the pet (${JSON.stringify(f8)})`);
+  // A tap on a hidden square does nothing; a drag on the first friend's header slides the grid.
+  const hidden = await page.evaluate(() => neo.scene.game.cells.findIndex((_, i) => !neo.scene.game.inView(i)));
+  await page.evaluate((i) => neo.scene.game.tapSquare(i), hidden);
+  assert.equal(await page.evaluate((i) => neo.scene.game.marks[i], hidden), 0, 'a square outside the window takes no mark');
+  await page.evaluate(async () => { const g = neo.scene.game; const p = g.friendCards[0].getGlobalPosition(); const s = neo.view.scale; await kit.drag(kit.line([p.x + 50 * s, p.y + 30 * s], [p.x + 50 * s, p.y - 200 * s], 12)); });
+  await page.waitForTimeout(300);
+  const slid = await page.evaluate(() => [neo.scene.game.scrollX, neo.scene.game.scrollY]);
+  assert.ok(slid[1] > 0, `a drag up on a friend header slides the grid down (${slid})`);
+  await page.evaluate(() => neo.scene.game.setScroll(0, 0));
+  const wrong8 = await page.evaluate(() => neo.scene.game.wrongYes());
+  assert.ok(wrong8 >= 0, 'a square a clue rules out');
+  await page.evaluate((i) => neo.scene.game.reveal(i), wrong8);
+  await page.evaluate((i) => { const g = neo.scene.game; kit.tapOn(g.cells[i], 32 * neo.view.scale, 32 * neo.view.scale); }, wrong8);
+  await page.waitForTimeout(3100);
+  assert.deepEqual(await tally(), [1, 0], 'level 8: a ruled-out yes is one miss once it rests');
+  await page.evaluate(() => kit.tapOn(neo.scene.game.help)); await page.waitForTimeout(400);
+  assert.deepEqual(await tally(), [1, 1], 'level 8: Help counts one hint');
+  assert.ok(await page.evaluate(() => { const g = neo.scene.game; return g.inView(g.next().square); }), 'Help slides its square into view');
+  await screenshot('logic-grid-8-landscape');
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(800);
+  f8 = await fit8();
+  assert.ok(f8.shown >= 25 && f8.min >= 63 && f8.bottom <= f8.h && f8.right <= f8.w && !f8.pet && !f8.overlap, `level 8 fits upright clear of the pet (${JSON.stringify(f8)})`);
+  await screenshot('logic-grid-8-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(500);
+  await playOut();
+  await finished('logic-grid');
+  assert.deepEqual(await score(), [1, 1], 'level 8 saved 1 miss, 1 hint');
+  log('Mystery Grid 8: three 5 by 5 blocks with a time row under a sliding window, a header drag slides it, a ruled-out yes is one miss, Help one hint in view, landscape and portrait fit clear of the pet, to the sticker, passed');
 }
 return { logicGridPlay };
 }
