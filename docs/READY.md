@@ -6,7 +6,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **`puddle-lens`, levels 7–8** (school `{4,6}`→`{4,8}`; *Wall clue* and *Why green?*; new interaction on the existing game, `fingerdemo` at 7 and 8): [definition](definitions/puddle-lens.md#levels-78-definition-2026-11-06), [check tier](definitions/puddle-lens.md#check-tier-the-build-1).
+- **`puddle-lens`, levels 7–8** (school `{4,6}`→`{4,8}`; *Wall clue* and *Why green?*; new interaction on the existing game, `fingerdemo` at 7 and 8; claimed by `claude/puddle-lens-7-8`): [definition](definitions/puddle-lens.md#levels-78-definition-2026-11-06), [check tier](definitions/puddle-lens.md#check-tier-the-build-1).
 - **`hat-band`, level 4 *Build a song*** (`music-instruments` M6; school `{2,4}`, grownup `{4,4}`; new interaction on the existing game, a third (low) role, `fingerdemo` at 4): [definition](definitions/hat-band.md#level-4-build-a-song-m6-definition-2026-11-06), [check tier](definitions/hat-band.md#check-tier-the-build).
 - **`gadget-bench`, level 4 *Fix-It Day*** (`inventions`; school; the first conflict: paddle wheels do two jobs; new level on the existing interaction, `fingerdemo` at 4): [definition](definitions/gadget-bench.md#level-4-fix-it-day-definition), [check tier](definitions/gadget-bench.md#check-tier-level-4).
 - **Dive `bolt-boards`** (Bolt Boards; toddler to school, 7 levels; docs only): [procedure](deep-dives/README.md#one-session-one-game), [definition](definitions/bolt-boards.md).
