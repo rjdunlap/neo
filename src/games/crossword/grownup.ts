@@ -40,7 +40,7 @@ export class GrownCrossword implements Game {
 
   private readonly backdrop: Backdrop;
   private readonly board = new Container();
-  private readonly squares = new Map<string, { bg: Graphics; letter: Text }>();
+  private readonly squares = new Map<string, { box: Container; bg: Graphics; letter: Text }>();
   private readonly marks = new Graphics();
   private readonly keys = new Container();
   private readonly keyMap = new Map<string, Container>();
@@ -128,7 +128,7 @@ export class GrownCrossword implements Game {
       sq.hitArea = new Rectangle(0, 0, SQ, SQ);
       onTap(sq, () => this.tapSquare(k), { cooldown: 200 });
       this.board.addChild(sq);
-      this.squares.set(k, { bg, letter });
+      this.squares.set(k, { box: sq, bg, letter });
     }
   }
 
@@ -337,10 +337,11 @@ export class GrownCrossword implements Game {
     const next = this.nextWrong();
     if (!next) return null;
     if (this.cursor.key !== next.key) {
-      const [r, c] = next.key.split(',').map(Number);
-      return { tap: { on: this.board, x: c * SQ + SQ / 2, y: r * SQ + SQ / 2 } };
+      // The ghost touches the square itself (it emits on its target, without a hit test).
+      return { tap: { on: this.squares.get(next.key)!.box, x: SQ / 2, y: SQ / 2 }, pause: 0.25 };
     }
-    return { tap: { on: this.keyMap.get(next.letter.toUpperCase())! } };
+    // Keys typed along a word belong together, so the finger hardly rests between them.
+    return { tap: { on: this.keyMap.get(next.letter.toUpperCase())! }, pause: 0.1 };
   }
 
   /** Whether every square is filled (for scripted checks). */
