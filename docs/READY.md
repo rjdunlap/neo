@@ -6,7 +6,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **`logic-grid`, levels 7–8 *Case file* and *Who came first?*** (grown-up; a new interaction: written clue list, 64-unit blocks, the sliding window; new-interaction tier, see the check tier in the definition): [definition](definitions/logic-grid.md#levels), levels 1–6 built.
+- **`logic-grid`, level 8 *Who came first?*** (grown-up; a new interaction: five by five, a time row, ordering and unaligned-pair clues, the sliding window; new-interaction tier, see the check tier in the definition): [definition](definitions/logic-grid.md#levels), levels 1–7 built.
 - **`crossword`, levels 5–6 *Written clues* and *The mini*** (grown-up; a new interaction: the A–Z keyboard and frozen 5 by 5 minis; new-interaction tier, see the check tier in the definition): [definition](definitions/crossword.md#levels), levels 1–4 built.
 - **Define Mossy Path 4–7 *find the way*, a maze opening (PP1)** (`puzzle-pages`; toddler to school; docs only, with the session's source check of the maze-planning studies): [ladder](deep-dives/subjects/puzzle-pages.md#a-first-games-ladder-mossy-path-find-the-way), [study](deep-dives/subjects/puzzle-pages.md), [Mossy Path](GAMES.md#mossy-path).
 - **`helper-house`, levels 6–7 *The comfy line* and *Calm heater*** (school; a new interaction: line handles on a warmth gauge; level 5 is built; new-interaction tier as the [definition's check tier](definitions/helper-house.md#check-tier-for-57) sets): [definition](definitions/helper-house.md#levels-57-ra4).

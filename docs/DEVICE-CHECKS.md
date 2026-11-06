@@ -1083,3 +1083,8 @@ Performed on the built levels (PR #1043; [definition](definitions/water-road.md#
 
 - [ ] On an iPad, listen to device speech of the either-or and neither-nor clues ("Pig is at the pond or the bush", "Neither Cat nor Dog is at the tree") and the hat versions.
 - [ ] Watch a seven- or eight-year-old at level 6: do the stacked either card and the two-friend neither card read, and does the caption help?
+
+## Mystery Grid level 7 (2026-11-06)
+
+- [ ] On an iPad, check that the 64-unit squares and the 212 × 64 written clue cards are comfortable for a grown-up finger in both orientations, and that the clue column clears the screen edge on the device's safe area.
+- [ ] Listen to device speech of the written case-file clues ("The friend at the pond did not bring the pear", "The friend in the yellow starry hat brought the pear or the orange").

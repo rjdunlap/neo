@@ -250,3 +250,7 @@ Changed: school level 10 (`salt.ts` `SaltTanks`, `SALT_DEPTHS`/`floatsIn`/`saltR
 ## 2026-11-05 — Crossword definition (docs only)
 
 Changed: a new `docs/definitions/crossword.md` (levels 1–6, Story Grove), READY (the definition line replaced by the levels 1–2 build), the puzzle-pages dive, STUDY-BACKLOG, roadmap, IDEAS and the recommendations packet (PR #1290). Ran: `node scripts/check-links.mjs` and `git diff --check`. No code checks (docs tier). Open: nothing built; device speech of letter names and whether a four-year-old sees one letter serve two words stay for a person.
+
+## 2026-11-05 — Logic grid definition (docs only)
+
+Changed: a new `docs/definitions/logic-grid.md` (Mystery Grid, levels 1–8, Puzzle Peaks), READY (the definition line replaced by the levels 1–2 build), the puzzle-pages dive and IDEAS (PR #1291). Ran: `node scripts/check-links.mjs` and `git diff --check`, both passed. No code checks (docs tier). Open: nothing built; the levels 1–2 build is queued.
