@@ -147,7 +147,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school, G grown-up. "Top level"
 | Word Monsters | `word-monsters` | LTPKS | 8 | 3 | designed | `claude/roadmap-item-14-game-content-msedsy` ([PR 120](https://github.com/rjdunlap/neo/pull/120)) | [word-monsters.md](word-monsters.md) |
 | Word Search | `word-search` | G | 4 | 4 | designed (slices 1–4 ready: fresh themes and root families, A small grid to start, A message in the leftovers, Just the theme; school opening to define) | `claude/dive-word-search` ([PR #1104](https://github.com/rjdunlap/neo/pull/1104)) | [word-search.md](word-search.md) |
 | Draw the Pattern | `draw-the-pattern` | LTPK | 8 | 5 | designed (slice 1 fresh pictures built; slices 2–3 ready: level 9 Slanting lines, level 10 Dot to dot; 11 spiral/eight and 12 Your pattern need decisions) | `claude/dive-draw-the-pattern` ([PR #1276](https://github.com/rjdunlap/neo/pull/1276)) | [draw-the-pattern.md](draw-the-pattern.md) |
-| Swing Pals | `swing-pals` | LTPKS | 6 | 5 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
+| Swing Pals | `swing-pals` | LTPKS | 6 | 5 | in progress | `claude/dive-swing-pals` | — |
 | Bolt Boards | `bolt-boards` | TPKS | 7 | 5 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
 | Puddle Gobble | `puddle-gobble` | TPKS | 8 | 5 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
 | Fruit Slice | `fruit-slice` | TPKS | 8 | 5 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
