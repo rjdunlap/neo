@@ -7,13 +7,16 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 ## Next ten
 
 - **`logic-grid`, levels 7–8 *Case file* and *Who came first?*** (grown-up; a new interaction: written clue list, 64-unit blocks, the sliding window; new-interaction tier, see the check tier in the definition): [definition](definitions/logic-grid.md#levels), levels 1–6 built.
-- **`draw-the-pattern`, slice 3 level 10 *Dot to dot***, on decision 1's default (lap plays 1 and 10) (new interaction: typecheck, unit tests, one scripted play at lap and of toddler's order step from 10 to 2, one portrait screenshot, `fingerdemo` at 10): [dive](deep-dives/draw-the-pattern.md#build-slices-in-order).
 - **`crossword`, levels 5–6 *Written clues* and *The mini*** (grown-up; a new interaction: the A–Z keyboard and frozen 5 by 5 minis; new-interaction tier, see the check tier in the definition): [definition](definitions/crossword.md#levels), levels 1–4 built.
 - **Define Mossy Path 4–7 *find the way*, a maze opening (PP1)** (`puzzle-pages`; toddler to school; docs only, with the session's source check of the maze-planning studies): [ladder](deep-dives/subjects/puzzle-pages.md#a-first-games-ladder-mossy-path-find-the-way), [study](deep-dives/subjects/puzzle-pages.md), [Mossy Path](GAMES.md#mossy-path).
+- **`helper-house`, levels 6–7 *The comfy line* and *Calm heater*** (school; a new interaction: line handles on a warmth gauge; level 5 is built; new-interaction tier as the [definition's check tier](definitions/helper-house.md#check-tier-for-57) sets): [definition](definitions/helper-house.md#levels-57-ra4).
+- **Define Rain Garden level 4 *two-socket downhill route*** (`weather-water`; school; docs only, with the session's source check of runoff and storage sources): [what comes next](definitions/rain-garden.md#what-comes-next), levels 1–3 built, [study](deep-dives/subjects/weather-water.md).
+- **Define Bond Beads 5–8** (`chemistry`; docs only, with a session source check of the molecule list): [definition so far](definitions/bond-beads.md), [study](deep-dives/subjects/chemistry.md).
+- **Define Welcome Ways 5–7** (`engineering-design`; space limits, a conflict and a repair for a new friend; docs only): [definition so far](definitions/welcome-ways.md), [study](deep-dives/subjects/engineering-design.md).
+- **Dive `swing-pals`** (Swing Pals; lap to school, 6 levels; docs only): [procedure](deep-dives/README.md#one-session-one-game), [definition](definitions/swing-pals.md).
 
 ## Queued
 
-- **`helper-house`, levels 6–7 *The comfy line* and *Calm heater*** (school; a new interaction: line handles on a warmth gauge; level 5 is built; new-interaction tier as the [definition's check tier](definitions/helper-house.md#check-tier-for-57) sets): [definition](definitions/helper-house.md#levels-57-ra4).
 - **Phone held upright, after shell slice 1** (chunk 31; slice 1 and batch 1 landed, so all of these are ready now; one session each; after each batch the developer plays the upright six on the phone and the feedback picks the next batch): shell slice 2, the rest of the root upright (shell tier, a layout test and one screenshot per scene); batch 2 (`picture-logic`, `lantern-lights`, `block-garden`, `gem-swap`, `tile-pairs`, `pyramid-solitaire`); batch 3, the lap and toddler six (`bubble-pop`, `sing-along-barn`, `animal-snack`, `size-parade`, `far-lights`, `stamp-studio`); batch 4 (`log-roll`, `marble-jump`, `snowball-merge`, `species-comeback` and two early-school games from feedback). Batch tier: `upright: true`, layout tests at the upright fixture for first and top level, one upright screenshot per game: [definition](definitions/phone-portrait.md#game-batches-six-games-each-ready-batch-1-built).
 
 - **Better voice V1 (remaining): render the rest of the slot-free script** (assets tier, offline check; status `person`): waits on the iPad listening check of the first 215 clips passes ([device check](DEVICE-CHECKS.md)), add more line-id prefixes to `scripts/voice-clips/clips.mjs` and render them locally; device speech stays the fallback. Slotted lines (V3) and Word Monsters' phonemes stay later. [A better voice](ROADMAP.md#a-better-voice)
@@ -39,9 +42,6 @@ Each line is selected for routine dispatch; claim one packet, then enqueue its u
 
 Refilled 2026-11-05 from the [study backlog](STUDY-BACKLOG.md#completed-studies-next-definition-or-existing-build) rows whose next action is a definition with no person or device gate:
 
-- **Define Rain Garden level 4 *two-socket downhill route*** (`weather-water`; school; docs only, with the session's source check of runoff and storage sources): [what comes next](definitions/rain-garden.md#what-comes-next), levels 1–3 built, [study](deep-dives/subjects/weather-water.md).
-- **Define Bond Beads 5–8** (`chemistry`; docs only, with a session source check of the molecule list): [definition so far](definitions/bond-beads.md), [study](deep-dives/subjects/chemistry.md).
-- **Define Welcome Ways 5–7** (`engineering-design`; space limits, a conflict and a repair for a new friend; docs only): [definition so far](definitions/welcome-ways.md), [study](deep-dives/subjects/engineering-design.md).
 - **Define Gadget Bench 4** (`inventions`; a three-condition path with a conflict, revise one part; docs only): [definition so far](definitions/gadget-bench.md#what-comes-next), [study](deep-dives/subjects/inventions.md).
 - **Define Far Lights 5–8** (`astronomy`; docs only, with the parallax wording reviewed or held and levels 7–8 placed at the top of `school`): [Far Lights 1–4 as built](definitions/far-lights.md#what-comes-next), [study](deep-dives/subjects/astronomy.md#build-slices-in-order).
 - **Define Puddle Lens 7–8** (`cells-microbes`; the wall clue and *Why green?* with enumerated candidate views, coordinated with ecosystems producers and chemistry dissolving; docs only): [Puddle Lens 5–6 as built](definitions/puddle-lens.md#what-comes-next), [study](deep-dives/subjects/cells-microbes.md#build-slices-in-order).
@@ -52,7 +52,6 @@ Refilled 2026-11-05 from the [study backlog](STUDY-BACKLOG.md#completed-studies-
 
 Added 2026-11-05: 21 games built from definitions have no dive and no study row that plans their next levels ([tracker waves 5–7](deep-dives/README.md#suggested-order-non-binding), [backlog](STUDY-BACKLOG.md#unstarted-game-deep-dives)). Her own band first; one game per docs-only session, queuing its first build slice at closeout. No unstarted subject research remains.
 
-- **Dive `swing-pals`** (Swing Pals; lap to school, 6 levels; docs only): [procedure](deep-dives/README.md#one-session-one-game), [definition](definitions/swing-pals.md).
 - **Dive `bolt-boards`** (Bolt Boards; toddler to school, 7 levels; docs only): [procedure](deep-dives/README.md#one-session-one-game), [definition](definitions/bolt-boards.md).
 - **Dive `puddle-gobble`** (Puddle Gobble; toddler to school, 8 levels; docs only): [procedure](deep-dives/README.md#one-session-one-game), [definition](definitions/puddle-gobble.md).
 - **Dive `number-trails`** (Number Trails; preschool and pre-K, 3 levels, numeral writing; docs only): [procedure](deep-dives/README.md#one-session-one-game). The rest of waves 5–7 follow in the tracker's order.

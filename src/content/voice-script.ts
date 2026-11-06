@@ -3008,6 +3008,7 @@ export const SCRIPT = {
   'draw.instruct.ring': ['Start on the green ring and keep going to the end.'],
   'draw.instruct.down': ['Start at the top and go down.'],
   'draw.instruct.slant': ['Start at the top and slide down the slant, like the rain.'],
+  'draw.instruct.dots': ['Tap the shiny dot!'],
   'draw.instruct.memory': ['Keep the pattern going. The dots show where it turns.'],
   'draw.instruct.shape': ['Start on the green ring and follow the arrow.'],
   'draw.instruct.next': ['What comes next? Draw it.'],
