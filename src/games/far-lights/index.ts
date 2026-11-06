@@ -472,6 +472,7 @@ class FarLights implements Game {
     else if (did === 'cleared') sfx.pop(4);
     else this.bob(this.windowLights[i]);
     this.drawMarks();
+    this.showGlow();
   }
 
   private async pullTassel() {
@@ -496,9 +497,9 @@ class FarLights implements Game {
     t.glow.visible = false;
     const e = this.epoch;
     sfx.sparkle();
-    await this.lift(e);
-    if (!this.alive || e !== this.epoch) return;
     await this.say('far.order-right');
+    if (!this.alive || e !== this.epoch) return;
+    await this.lift(e);
     if (!this.alive || e !== this.epoch) return;
     await this.ctx.tw.wait(1.2);
     if (this.alive && e === this.epoch) this.next();
