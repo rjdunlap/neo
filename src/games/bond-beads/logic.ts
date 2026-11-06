@@ -211,8 +211,8 @@ export const WATER: Shape = { ...TRIO, id: 'water' };
 export const AMMONIA: Shape = { id: 'ammonia', kinds: k('NHHH'), links: L([0, 1], [0, 2], [0, 3]), pic: [{ x: 0, y: -0.15 }, { x: -1, y: 0.55 }, { x: 0, y: 1 }, { x: 1, y: 0.55 }] };
 export const METHANE: Shape = { ...CARDS[1], id: 'methane' };
 export const HYDROGEN: Shape = { ...PAIR, id: 'hydrogen' };
-export const OXYGEN: Shape = { id: 'oxygen', kinds: k('OO'), links: L([0, 1], [0, 1]), pic: [{ x: -0.55, y: 0 }, { x: 0.55, y: 0 }] };
-export const CARBON_DIOXIDE: Shape = { id: 'carbon-dioxide', kinds: k('OCO'), links: L([0, 1], [0, 1], [1, 2], [1, 2]), pic: [{ x: -1.1, y: 0 }, { x: 0, y: 0 }, { x: 1.1, y: 0 }] };
+export const OXYGEN: Shape = { id: 'oxygen', kinds: k('OO'), links: L([0, 1], [0, 1]), pic: [{ x: -0.7, y: 0 }, { x: 0.7, y: 0 }] };
+export const CARBON_DIOXIDE: Shape = { id: 'carbon-dioxide', kinds: k('OCO'), links: L([0, 1], [0, 1], [1, 2], [1, 2]), pic: [{ x: -1.35, y: 0 }, { x: 0, y: 0 }, { x: 1.35, y: 0 }] };
 
 /** The named shapes by build key; the name is the shape's id, which the voice line `bondbeads.named.<id>` says. */
 export const NAMED_SHAPES: readonly Shape[] = [WATER, AMMONIA, METHANE, HYDROGEN, OXYGEN, CARBON_DIOXIDE];
