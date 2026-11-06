@@ -83,10 +83,20 @@ class HatPiece extends Container {
   readonly glow = new Graphics();
   readonly hintGlow = new Graphics();
   handle!: DragHandle;
-  /** Where a pick started, to tell a tap from a drag. */
-  pickedAt = { x: 0, y: 0 };
-  constructor(readonly id: HatId) {
+  /** How far the finger has travelled since it went down, in the stage's units: a tap barely moves it. */
+  travel = 0;
+  private downAt: { x: number; y: number } | null = null;
+  constructor(readonly id: HatId, stage: Container) {
     super();
+    // Judge a tap by the finger, not the hat: the drag lifts the hat 40 units above the finger as soon as it moves.
+    this.on('pointerdown', (e) => { this.downAt = stage.toLocal(e.global); this.travel = 0; });
+    this.on('globalpointermove', (e) => {
+      if (!this.downAt) return;
+      const p = stage.toLocal(e.global);
+      this.travel = Math.max(this.travel, Math.hypot(p.x - this.downAt.x, p.y - this.downAt.y));
+    });
+    this.on('pointerup', () => { this.downAt = null; });
+    this.on('pointerupoutside', () => { this.downAt = null; });
     this.glow.roundRect(-HAT / 2 - 6, -HAT / 2 - 6, HAT + 12, HAT + 12, 30).fill({ color: 0xfff3a0, alpha: 0.95 }).stroke({ width: 5, color: ink });
     this.glow.visible = false;
     this.hintGlow.roundRect(-HAT / 2 - 12, -HAT / 2 - 12, HAT + 24, HAT + 24, 34).fill({ color: 0xffe066, alpha: 0.9 });
@@ -154,6 +164,7 @@ class HatBand implements Game {
   private hintFor = 0;
   private hintStar: Friend | null = null;
   private hintHat: HatId | null = null;
+  private readonly named = new Set<HatId>();
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
@@ -179,7 +190,7 @@ class HatBand implements Game {
     this.done = new RoundButton(checkArt(), swatch.green, 60, () => this.tapDone());
     ctx.stage.addChild(this.done);
     for (const id of this.round.rack) {
-      const piece = new HatPiece(id);
+      const piece = new HatPiece(id, ctx.stage);
       piece.handle = draggable(piece, ctx.tw, {
         onPick: () => this.pick(piece),
         onDrop: (x, y) => this.drop(piece, x, y),
@@ -259,12 +270,13 @@ class HatBand implements Game {
   private get open() { return this.ready && !this.performing && !this.finished; }
 
   private pick(piece: HatPiece) {
-    piece.pickedAt = { x: piece.x, y: piece.y };
     sfx.tick();
     this.clearHint();
     // Touch-down feedback: the hat lifts (the drag does that) and glows.
     piece.glow.visible = true;
-    if (this.band.worn.includes(piece.id)) return;
+    // Each hat names its job the first time she lifts it, so handling hats never keeps the band ducked.
+    if (this.band.worn.includes(piece.id) || this.named.has(piece.id)) return;
+    this.named.add(piece.id);
     void this.speak(HATS[piece.id].role === 'drum' ? 'hat-band.drum' : 'hat-band.tune');
   }
 
@@ -277,7 +289,7 @@ class HatBand implements Game {
   private drop(piece: HatPiece, x: number, y: number): boolean {
     const id = piece.id;
     const wornBy = this.band.worn.indexOf(id);
-    const tapped = Math.hypot(x - piece.pickedAt.x, y - piece.pickedAt.y) < 30;
+    const tapped = piece.travel < 24;
     if (!this.open) {
       this.placeHats(true);
       return true;
@@ -415,6 +427,8 @@ class HatBand implements Game {
     for (const [id, piece] of this.hats) {
       piece.glow.visible = piece.handle.dragging || this.selected === id;
       piece.hintGlow.visible = this.hintHat === id;
+      // A worn hat dims with its friend under the other's spotlight (below); on the rack it is always bright.
+      piece.alpha = 1;
     }
     const waiting = waitLeft(b);
     this.friends.forEach((f, i) => {
