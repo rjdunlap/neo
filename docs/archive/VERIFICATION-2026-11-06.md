@@ -53,3 +53,7 @@
 ## 2026-11-06 — Helper House levels 5–7 definition (docs only)
 
 Changed: `docs/definitions/helper-house.md` (new "Levels 5–7 (RA4)" section), READY (the definition line replaced by the level 5 build and a queued levels 6–7 line), the robots-automation dive and STUDY-BACKLOG (PR #1302). Ran: `node scripts/check-links.mjs` and `git diff --check`. No code checks (docs tier). Open: nothing built; the level 5 build is next.
+
+## 2026-11-06 — Rain Garden levels 1–3 (weather-water slices 2–3)
+
+Changed: new game `rain-garden` (Tinker Lab's 26th; PR #1303, commit b2121326 on base 94612892), its `raingarden` browser suite, pinned land-count tests. Source check: EPA CADDIS "Urbanization – stormwater runoff" (impervious surfaces cut infiltration and raise runoff) and USGS Water Science School runoff and infiltration pages (soil like a sponge, saturated or paved ground sheds water downhill) support the toy model; real soaking is slower and depends on wetness, as the how-to note says. Ran: typecheck; full `npm test` 315 files / 5,508 tests before the reviewer-fix commit (afterwards 45 rain-garden rule tests and typecheck); `npm run build`; `BROWSER_SUITE=raingarden` (levels 1 toddler, 2 in portrait, 3; 0/0, 0/4 bookmark, leaf 0/1); `fingerdemo` `FINGER_ONLY=rain-garden` (level 1 toddler 6.6 s, level 3 school 17.3 s); one portrait screenshot at level 2; game-reviewer pass, fixes applied. Not run: offline check, other suites. Open: four device and person checks ([DEVICE-CHECKS](../DEVICE-CHECKS.md#rain-garden-levels-13-weather-water-slices-23-2026-11-06)).

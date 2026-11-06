@@ -1,6 +1,6 @@
 # Puddle Lens, levels 1–4 (definition)
 
-**Levels 5–6 are defined below ([2026-11-05](#levels-56-definition-2026-11-05)) and built 2026-11-05 ([PR #1281](https://github.com/rjdunlap/neo/pull/1281)).** Known gaps against the definition: the level-5 co-play pointing and off-screen tip are not built (the game has one co-play and one off-screen string for all levels, so the existing strings stay); "no two copies of a sample" was read as no pair twice at level 5, since pairs A and B share the swimmer.
+**Levels 7–8 are defined 2026-11-06 ([below](#levels-78-definition-2026-11-06)); the build is next.** **Levels 5–6 are defined below ([2026-11-05](#levels-56-definition-2026-11-05)) and built 2026-11-05 ([PR #1281](https://github.com/rjdunlap/neo/pull/1281)).** Known gaps against the definition: the level-5 co-play pointing and off-screen tip are not built (the game has one co-play and one off-screen string for all levels, so the existing strings stay); "no two copies of a sample" was read as no pair twice at level 5, since pairs A and B share the swimmer.
 
 Defined 2026-10-22 as slice 1 of the [cells-and-microbes study](../deep-dives/subjects/cells-microbes.md#build-slices-in-order), from its [proposed ladder](../deep-dives/subjects/cells-microbes.md#a-first-games-ladder-puddle-lens) and the [recommendation row](../deep-dives/subjects/RECOMMENDATIONS.md#cells-and-microbes-recommendations). Docs only: no game, ID registration, voice line, save field or band exists yet.
 
@@ -155,7 +155,7 @@ Device and person checks stay open: whether a lap child links her tap to the swe
 
 ## What comes next
 
-**Puddle Lens 5–6** is [defined](#levels-56-definition-2026-11-05) (2026-11-05); built 2026-11-05. Next is the study's slice 4 (define 7–8, Wall clue and Why green?) and slice 5 (Slide Files, which also takes the dead-cell and clump cases set aside in 5–6).
+**Puddle Lens 5–6** is [defined](#levels-56-definition-2026-11-05) (2026-11-05); built 2026-11-05. **Puddle Lens 7–8** is [defined](#levels-78-definition-2026-11-06) (2026-11-06). Next is its build (the study's slice 4b), then slice 5 (Slide Files, which also takes the dead-cell, clump, second-animal and red-onion cases set aside in 5–8).
 
 ## Open decisions
 
