@@ -116,3 +116,16 @@
 - Ran: typecheck; `npm test` 305 files, 5122 tests (sudoku-garden rule tests 49); one-off Playwright probe `test-results/sg9-probe.mjs` (portrait 768 by 1024, Vite on port 5956 with `VITE_SPEECH=off`): one wrong number (1 miss), hints until "In this patch, the 5 has only one square left", the bed finished, no page errors, one portrait screenshot; `BROWSER_SUITE=fingerdemo FINGER_ONLY=sudoku-garden FINGER_LEVELS=9` pass in 32.8 s; `BROWSER_SUITE=couchgames COUCH_ONLY=sudoku-garden` pass.
 - Not run: `npm run build` (no shared files or assets changed), the `sudokutouch` suite at level 9 (the probe played it), the other levels' regression plays, rendered voice clips for the two new lines (device speech fallback), an iPad.
 - Open: whether patch borders and tints read on an iPad at 64-unit squares (person check, [DEVICE-CHECKS](../DEVICE-CHECKS.md)).
+
+## 2026-11-05 — Sink or Float level 10 Salty or fresh, definition (docs only)
+
+- [PR #1267](https://github.com/rjdunlap/neo/pull/1267): new [definition](../definitions/salty-or-fresh.md) for level 10 (school, salt mode, two tanks); READY, dive, batch plan and study backlog updated.
+- Ran: `node scripts/check-links.mjs` and `git diff --check`. No code checks (docs only).
+- Open: the build (batch sink-float 3) is queued; no play or device check yet.
+
+## 2026-11-05 — Backlog audit: dives for games built from definitions
+
+- **What changed (docs only):** the deep-dive tracker covered only the 85 games registered by mid-October. Of the 81 registered since, most have a subject study that plans their next slice; 21 have neither, so they gained tracker rows as waves 5–7 (lap/toddler first) and rows in the study backlog. READY gained five game dives, five study follow-up definitions and two builds that were ready but unlisted (Helper House level 4, Hat Band 1–3).
+- **Ran:** `node scripts/check-links.mjs` (links ok) and `git diff --check`. No code checks (docs tier).
+- **Follow-up, same day:** the developer asked for the recommendations to be made without waiting. Six defined new games were admitted on their October 23 defaults (Far Lights, Seed Travelers, Rain Garden, Playdate Workshop, Circuit Garden, Measuring Post). Next ten was filled to ten.
+- **Open:** waves 6–7 dives queue only through the tracker; Weights Case still waits on Box Balance; each new game's source check and lands test run at build time.

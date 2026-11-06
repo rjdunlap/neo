@@ -36,11 +36,11 @@ export const thingWord = (t: Thing) => WORDS[t] ?? t;
 /** The basket or button that is right for a thing (the how-to card's ghost finger sorts and guesses with it). */
 export const rightBasket = (t: Thing): 'float' | 'sink' => (floats(t) ? 'float' : 'sink');
 
-export type SinkMode = 'drop' | 'say' | 'guess' | 'sort' | 'shape' | 'pair';
+export type SinkMode = 'drop' | 'say' | 'guess' | 'sort' | 'shape' | 'pair' | 'salt';
 
 export interface SinkPlan {
   mode: SinkMode;
-  /** Things in the round, experiments in shape mode, or pairs in pair mode. */
+  /** Things in the round, experiments in shape mode, pairs in pair mode, or part 2's questions in salt mode. */
   count: number;
   /** Include the surprising things. */
   surprises: boolean;
@@ -60,6 +60,7 @@ export const SINK_PLANS: Record<number, SinkPlan> = {
   6: { mode: 'guess', count: 6, surprises: true, name: 'Guess and test surprising things' },
   7: { mode: 'shape', count: 2, surprises: false, name: 'Make the clay float: change its shape and test it' },
   9: { mode: 'pair', count: 3, surprises: false, name: 'Big and small: watch the big one, guess the small one of the same stuff, then test it' },
+  10: { mode: 'salt', count: 4, surprises: false, name: 'Salty or fresh: compare two tanks, then test to find the salty one' },
 };
 export const SINK_IDS = Object.keys(SINK_PLANS).map(Number);
 
@@ -68,7 +69,7 @@ export const SINK_LEVELS: BandLevels = {
   toddler: { min: 2, max: 4 },
   preschool: { min: 3, max: 5 },
   prek: { min: 4, max: 9, order: [4, 5, 9, 6] },
-  school: { min: 5, max: 9, order: [5, 6, 9, 7] },
+  school: { min: 5, max: 10, order: [5, 6, 9, 7, 10] },
 };
 
 /** A built level's plan; an unbuilt ID (8, Garden Raft) or one above the top falls to the nearest built ID below it. */
@@ -132,4 +133,42 @@ export interface ClayExperiment {
 export function shapesFor(plan: SinkPlan, rng: Rng): ClayExperiment[] {
   const colors = rng.shuffle([...CLAY_COLORS]);
   return Array.from({ length: plan.count }, (_, i) => ({ order: rng.shuffle([...ALL_SHAPES]), color: colors[i % colors.length] }));
+}
+
+/**
+ * Salty or fresh (level 10): the same thing in two waters. Salt mixed into water makes the same amount of water heavier, so
+ * it pushes up harder: a duck sits higher, and an egg that sinks in plain water floats. The egg and the shaker are kept out
+ * of `THINGS` so the seeded pools of levels 1 to 6 and the journal stay as they were.
+ */
+export type Water = 'fresh' | 'salty';
+export type SaltTest = 'duck' | 'egg';
+export type Side = 'left' | 'right';
+
+/** How far each thing sits under the surface in logical units, or null where it sinks. The duck's rise is drawn bigger than life. */
+export const SALT_DEPTHS: Record<SaltTest, Record<Water, number | null>> = {
+  duck: { fresh: 26, salty: 6 },
+  egg: { fresh: null, salty: 40 },
+};
+export const floatsIn = (test: SaltTest, water: Water) => SALT_DEPTHS[test][water] !== null;
+
+export interface SaltQuestion {
+  salty: Side;
+  test: SaltTest;
+}
+export interface SaltRound {
+  /** Part 1: the tank the shaker stands beside. */
+  shown: Side;
+  /** Part 2: the egg first, the duck last. */
+  questions: SaltQuestion[];
+}
+
+/** A round: both sides salty at least once in part 2, never three of the same side in a row. */
+export function saltRoundFor(plan: SinkPlan, rng: Rng): SaltRound {
+  const shown: Side = rng.pick(['left', 'right'] as Side[]);
+  for (;;) {
+    const sides = Array.from({ length: plan.count }, () => rng.pick(['left', 'right'] as Side[]));
+    if (new Set(sides).size < 2 && plan.count > 1) continue;
+    if (sides.some((s, i) => i >= 2 && s === sides[i - 1] && s === sides[i - 2])) continue;
+    return { shown, questions: sides.map((salty, i) => ({ salty, test: i === plan.count - 1 ? 'duck' : 'egg' })) };
+  }
 }

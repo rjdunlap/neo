@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 export function createSuite({ page, log, ready, scene, tap, screenshot, launch, finished, useCompanion }) {
 async function fourth() {
   const only = process.env.FOURTH_ONLY;
-  if (only !== undefined) selectValue(only, ['song', 'puzzle', 'weather', 'sink', 'sink7', 'sink-fresh'], 'FOURTH_ONLY');
+  if (only !== undefined) selectValue(only, ['song', 'puzzle', 'weather', 'sink', 'sink7', 'sink-fresh', 'sink10'], 'FOURTH_ONLY');
   // Song Maker: free play loops, copying by shadows, a card, a pattern, and by ear.
   if (!only || only === 'song') for (let level = 1; level <= 7; level++) {
     await launch('song-maker', level);
@@ -178,6 +178,70 @@ async function fourth() {
     const r = await page.evaluate(() => { const r = kit.store.stats('sink-float').history.at(-1); return [r.misses, r.hints]; });
     assert.deepEqual(r, level === 4 || level === 5 ? [2, 1] : level === 7 ? [0, 1] : [0, 0], `sink ${level} score`);
     log(`Sink or Float ${level}: splashes, guesses, sorting, saved round and sticker passed`);
+  }
+
+  // Sink or Float 10, Salty or fresh (FOURTH_ONLY=sink10 alone): part 1 watched, then a tank tap before the eggs settle is
+  // ignored, two wrong tanks on the first egg question bring the glow (one hint), the other questions answered right, the
+  // last (the duck) through the two-tank ring by direct control() calls. Portrait with the eggs settled, then landscape.
+  if (only === 'sink10') {
+    await launch('sink-float', 10);
+    await page.waitForTimeout(700);
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      for (let i = 0; i < 3; i++) { await kit.until(() => g.phase === 'shake' && !g.busy, 20000); kit.tapOn(g.shaker); await kit.sleep(200); }
+      await kit.until(() => g.phase === 'duck' && !g.busy && g.tray.visible, 30000); kit.tapOn(g.tray);
+      await kit.until(() => g.wet.length === 2 && g.wet.every((w) => w.settled), 10000);
+    });
+    await screenshot('sink-float-10-ducks');
+    await page.evaluate(async () => {
+      const g = neo.scene.game;
+      await kit.until(() => g.phase === 'egg' && !g.busy && g.tray.visible, 30000); kit.tapOn(g.tray); await kit.sleep(300);
+      await kit.until(() => g.phase === 'test' && !g.busy && g.tray.visible, 40000);
+      if (g.misses || g.hints) throw new Error(`part 1 scored: ${g.misses} misses, ${g.hints} hints`);
+    });
+    const early = await page.evaluate(async () => {
+      const g = neo.scene.game;
+      kit.tapOn(g.tray); await kit.sleep(500);
+      // The eggs are still falling: a tank tap now does nothing.
+      const wrongTank = g.round.questions[0].salty === 'left' ? 1 : 0;
+      const a = g.areas[wrongTank].hitArea;
+      const p = g.areas[wrongTank].toGlobal({ x: a.x + a.width / 2, y: a.y + a.height / 2 });
+      if (g.phase !== 'test') throw new Error(`eggs settled too soon: ${g.phase}`);
+      kit.tap(p.x, p.y); await kit.sleep(300);
+      return { before: { phase: g.phase, misses: g.misses } };
+    });
+    assert.equal(early.before.misses, 0, 'an early tank tap is ignored');
+    await page.waitForFunction(() => neo.scene.game.phase === 'answer' && !neo.scene.game.busy, null, { timeout: 20000 });
+    await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(600);
+    await screenshot('sink-float-10-portrait');
+    await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(600);
+    await screenshot('sink-float-10-landscape');
+    const r = await page.evaluate(async () => {
+      const g = neo.scene.game;
+      const tapTank = (i) => { const a = g.areas[i].hitArea; const p = g.areas[i].toGlobal({ x: a.x + a.width / 2, y: a.y + a.height / 2 }); kit.tap(p.x, p.y); };
+      const sideIndex = () => (g.round.questions[g.question].salty === 'left' ? 0 : 1);
+      for (let k = 0; k < 2; k++) { tapTank(1 - sideIndex()); await kit.sleep(300); await kit.until(() => !g.explaining, 15000); await kit.sleep(300); }
+      const afterWrong = { misses: g.misses, hints: g.hints };
+      for (let q = 0; q < g.round.questions.length; q++) {
+        await kit.until(() => g.phase === 'answer' && !g.busy && g.question === q, 40000);
+        if (q === g.round.questions.length - 1) {
+          // The duck question, through the two-tank ring.
+          const { idle } = await import('/src/engine/controller.ts');
+          const press = (f) => { const c = idle(); f(c.players[0]); g.control(c, 0.016); };
+          press((p) => (p.direction = sideIndex() === 1 ? 0 : 2));
+          press((p) => (p.action = true));
+        } else tapTank(sideIndex());
+        await kit.sleep(400);
+        if (q < g.round.questions.length - 1) { await kit.until(() => (g.phase === 'test' && g.tray.visible && !g.busy) || g.finished, 40000); if (!g.finished) { kit.tapOn(g.tray); } }
+      }
+      return afterWrong;
+    });
+    assert.deepEqual(r, { misses: 2, hints: 1 }, 'two wrong tanks: two misses and one hint');
+    await finished('sink-float');
+    const score = await page.evaluate(() => { const r = kit.store.stats('sink-float').history.at(-1); return [r.misses, r.hints]; });
+    assert.deepEqual(score, [2, 1], 'sink 10 score');
+    log('Sink or Float 10: part 1, an ignored early tap, two misses and the glow, the ring on the duck question, to the sticker passed');
+    return;
   }
 
   if (only) return;
