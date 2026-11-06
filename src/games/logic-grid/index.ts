@@ -28,7 +28,7 @@ const SQ = 100;
 const PITCH = 104;
 const CARD_W = 220;
 /** A mark is judged once it rests this long, so the yes on the way to a no is never counted. */
-const SETTLE = 1.2;
+const SETTLE = 2.5;
 
 const nameOf = (f: CritterName) => f[0].toUpperCase() + f.slice(1);
 
@@ -245,7 +245,8 @@ class MysteryGrid implements Game {
     const s = shapeOf(b);
     for (const c of this.critters) this.ctx.untrack(c);
     this.critters = [];
-    this.board.removeChildren().forEach((c) => c.destroy({ children: true }));
+    const keep = new Set<Container>([this.glowLayer, this.markLayer, this.faces]);
+    this.board.removeChildren().forEach((c) => !keep.has(c) && c.destroy({ children: true }));
     this.clueRow.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.cells.length = 0;
     this.friendCards.length = 0;
