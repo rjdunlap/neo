@@ -358,7 +358,7 @@ Definition packets recommended by the [subject studies](deep-dives/subjects.md) 
 | Life science | 2026-10-14 | [study](deep-dives/subjects/life-science.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#life-science-recommendations) |
 | Cells and microbes | 2026-10-17 | [study](deep-dives/subjects/cells-microbes.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#cells-and-microbes-recommendations) |
 | Space science | 2026-10-17 | [study](deep-dives/subjects/space.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#space-science-recommendations) |
-| Astronomy | 2026-10-17; Far Lights 1–4 built 2026-11-05; 5–8 defined 2026-11-06 (build 5–6 next, then 7–8) | [study](deep-dives/subjects/astronomy.md), [Far Lights 1–4](definitions/far-lights.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#astronomy-recommendations) |
+| Astronomy | 2026-10-17; Far Lights 1–6 built (1–4 on 2026-11-05, 5–6 on 2026-11-06); 7–8 defined 2026-11-06, build next | [study](deep-dives/subjects/astronomy.md), [Far Lights 1–4](definitions/far-lights.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#astronomy-recommendations) |
 | Chemistry | 2026-10-17 | [study](deep-dives/subjects/chemistry.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#chemistry-recommendations) |
 | Matter | 2026-10-17 | [study](deep-dives/subjects/matter.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#matter-recommendations) |
 | Programming | 2026-10-14 | [study](deep-dives/subjects/programming.md) | [packet](deep-dives/subjects/RECOMMENDATIONS.md#programming-recommendations); Cue Studio 1–3 is built; next is the separate P4 event/repeat/message definition |

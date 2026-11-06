@@ -3103,7 +3103,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-06.md#2026-11-06--mystery-grid
 ## Mossy Path levels 4–7 find the way (2026-11-06)
 
 [PR #1312](https://github.com/rjdunlap/neo/pull/1312), PP1 from the puzzle-pages study ([definition](../definitions/mossy-path.md#levels-47-find-the-way-definition-pp1)). Three frozen hedge mazes per level (`MAZES`, a seeded pick plus a left–right or top–bottom flip, no transpose); tree logic in `logic.ts` (`routeBetween`, `mainline`, `nextToward`, `mazeTouch`); one grid touch pad for taps and drag stepping at levels 4–7 (the first finger owns the slide; levels 1–3 stay tap-only); walk-back to any earlier trail tile at 0.15 s a step; faint paw prints; a level 4–5 pace cue after 4 s (not a hint); no buttons at 4–5; a wrong-branch miss once per branch per round at 6–7; the berry-less pond refusal counted once per round at 7; Hint lights `nextToward`, counted once per trail. Bands: toddler 4, preschool 4–5, pre-K 5–6, school 1–7 in order 6, 1, 7, 2, 3; `entryLevels` 4, 5, 6; skills gain `maze-planning`. Not drawn: the turtle's head turn toward a far tap.
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-06--mossy-path-levels-47-find-the-way-pp1).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-06.md#2026-11-06--mossy-path-levels-47-find-the-way-pp1).
 
 ## Rain Garden level 4, two-socket downhill route (weather-water slice 4, 2026-11-06)
 
