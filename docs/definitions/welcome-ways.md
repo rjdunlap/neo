@@ -1,6 +1,6 @@
-# Welcome Ways 1–4
+# Welcome Ways 1–7
 
-Defined 2026-10-24 from the [engineering-design study](../deep-dives/subjects/engineering-design.md#a-first-games-ladder-welcome-ways) and its [recommendations](../deep-dives/subjects/RECOMMENDATIONS.md#engineering-design-recommendations), under the [2026-10-23 decisions](../archive/DECISIONS-2026-10-23.md#decisions). **Levels 1–4 built in [PR #951](https://github.com/rjdunlap/neo/pull/951).** This remains the scope/rules contract; browser proof is in [VERIFICATION](../archive/VERIFICATION-2026-10-24.md#2026-10-24--welcome-ways-levels-14). Device fit and learning outcomes remain unobserved. [PR #944](https://github.com/rjdunlap/neo/pull/944).
+Defined 2026-10-24 from the [engineering-design study](../deep-dives/subjects/engineering-design.md#a-first-games-ladder-welcome-ways) and its [recommendations](../deep-dives/subjects/RECOMMENDATIONS.md#engineering-design-recommendations), under the [2026-10-23 decisions](../archive/DECISIONS-2026-10-23.md#decisions). **Levels 1–4 built in [PR #951](https://github.com/rjdunlap/neo/pull/951).** **Levels 5–7 [defined](#levels-57-definition) 2026-11-06 ([PR #1315](https://github.com/rjdunlap/neo/pull/1315)), not built.** This remains the scope/rules contract; browser proof is in [VERIFICATION](../archive/VERIFICATION-2026-10-24.md#2026-10-24--welcome-ways-levels-14). Device fit and learning outcomes remain unobserved. [PR #944](https://github.com/rjdunlap/neo/pull/944).
 
 Fun action: put big wooden parts into an entrance, tap Try and watch friends hop or roll into the house. Learning purpose: test a design against the stated needs of everyone who will use it, notice the first blocking part and revise it. The parade, door chimes and friends waving from the window supply the payoff. No timer or minimum-parts score.
 
@@ -132,3 +132,117 @@ Required meaningful rule tests in `logic.test.ts`:
 Build tier: typecheck and unit tests; one filtered scripted play covering first/last levels, a step that blocks Roly, narrow door that blocks Bear, hint and supported finish; demonstrate each new layout/level with `fingerdemo`; one portrait screenshot of level 4 and a landscape inspection. Build because registration/content files change. Add the suite/filter to the existing browser harness and README. Navigation/assets/persistence checks follow only what the implementation actually changes, under AGENTS' budget; do not claim offline fit from this document.
 
 Definition proof was Markdown links and `git diff --check` only. Build checks are recorded in [VERIFICATION](../archive/VERIFICATION-2026-10-24.md#2026-10-24--welcome-ways-levels-14). iPad drag/tap comfort, spoken reasons on device, whether the child notices two visitors' needs, and human access representation review remain **not run**. No unresolved developer decision gates levels 1–4; later human representation, practical access cards and later geometry retain their study gates.
+
+## Levels 5–7 (definition)
+
+Defined 2026-11-06 from the engineering-design study's [ladder](../deep-dives/subjects/engineering-design.md#proposed-levels-and-bands), build slice 2: a **constraint** (5), a **conflict** between two friends' needs (6) and a **repair for a new friend** (7). Docs only; nothing here is built. The levels 1–4 rules above stay the contract for 1–4 and must not change.
+
+Fun action, unchanged: fill the entrance, tap Try, watch the parade. New learning: the space can force the shape of a design (a turn), a part that helps one friend can block another (a rail where a perch must go), and a working entrance can be changed for a new friend while keeping what still works.
+
+### Departures from the study
+
+- **No steep ramp.** The study's level 5 puts a one-cell steep ramp in a short straight row. The 1–4 build made every rise socket a two-cell slot so every choice shares one footprint; a one-cell part would need free-length rows, a new interaction. Its lesson (a part fits but stops Roly) is already the step's. The steep ramp stays with Plaza Cases (8–9) if free-length rows are ever defined.
+- **Bear, not River, needs the big landing.** River is a rework species not yet drawn; the [2026-10-23 cast decision](../archive/DECISIONS-2026-10-23.md#decisions) uses today's critters first. Bear's body fact grows by one consistent clause: big friends need a wide door and a big landing to turn.
+- **The switchback is a fixed L, not a back row she lays out.** The turn is one corner socket in a fixed path. She chooses what goes in it, not where the path runs.
+- **"Wobble" becomes Teeter.** "Wobble" would collide with Wobble Works in speech. Teeter is a small pig critter (`CRITTERS.pig` at a smaller scale, swaying walk). The glider is Duck (`CRITTERS.duck`, wings): it flaps up to a perch. Both are fictional bodies, as in 1–4.
+- **Level 7's new friend is Roly, with the old friends Teeter and Duck**, so the repair sets off a chain (ramps for Roly mean a rail for Teeter, and the rail must not take Duck's perch side). This replaces the study's open "a third arrives".
+
+### The model, levels 5–7
+
+Sockets get a **kind**: `rise` (two-cell, `gentle` or `step`, as in 1–4), `turn` (the corner, `small` or `big` landing), `door`, and `side` (`near` or `far`, beside a straight run of rises, `rail` or `perch`). A plan lists its path sockets in walking order, then its door, then its sides, and carries its own **start design** (1–4: empty rises and the narrow door, as now). Socket order is this list order everywhere: `parts()`, hint ties, enumeration and the pulsed stop.
+
+| Part ID | Socket | Property |
+| --- | --- | --- |
+| `small` | turn | a one-cell landing; the path turns on it |
+| `big` | turn | a two-cell landing (same 160 touch socket, wider art); the path turns on it |
+| `rail` | side | runs beside the whole straight run of rises on that side |
+| `perch` | side | a ledge at door height on that side |
+
+| Visitor | Art | Fictional body fact | Pass rule |
+| --- | --- | --- | --- |
+| Roly, Bunny | as 1–4 | as 1–4 | as 1–4; any landing; sides don't matter |
+| Bear | as 1–4 | “Bear is big. Bear needs a wide door and a big landing to turn.” | as 1–4, and the turn holds `big` |
+| Teeter | small pig, sways | “Teeter is little and wobbly. Teeter holds a rail on two ramps in a row.” | steps, landings and a single ramp pass; a run of two or more `gentle` rises in one straight row passes only if either side holds `rail`. A turn ends a run |
+| Duck | duck, flaps | “Duck flies up. Duck needs a perch by the door.” | does not use the path; passes if either side holds `perch`. A side holds one part, so a rail and a perch never share a side |
+
+**Where a visitor stops** (this is the pulsed socket and the repeat-detector key): Roly, Bunny and Bear as in 1–4, at the first blocking path socket or the door; Bear at a `small` turn stops at the turn, reason `needsBig`; an empty turn is `gap`. Teeter's `needsRail` stop is the **first empty side** (near, then far), else the near side. Duck's `needsPerch` stop is the **first empty side**, else (both rails) the far side. These choices make the stop socket the socket the hint glows, below. A rise run of two `gentle` with no rail lets Teeter walk the first ramp, wobble at the second and step back; the side slot pulses.
+
+### Levels
+
+Visitors, door and the start design are fixed per level; `ctx.rng` varies only house colours, tray order and decorations, as in 1–4. Tray choices stay unlimited (two ramps never run out).
+
+| Level | Board (path, door, sides) and start | Tray | Visitors, in order | Accepted designs |
+| --- | --- | --- | --- | --- |
+| 5, Turn at the pond | rise, turn, rise; fixed **wide** door two steps up; no sides. Start: empty rises, `small` in the turn | gentle, step, small, big | Roly, Bear | `[gentle, big, gentle]` only |
+| 6, A rail and a perch | rise, rise; fixed narrow door two up; near and far sides. Start empty | gentle, step, rail, perch | Roly, Teeter, Duck | `[gentle, gentle]` with near `rail`/far `perch`, or near `perch`/far `rail` |
+| 7, Fix it for Roly | as 6. Start: `[step, step]`, near `perch`, far empty (welcomes Teeter and Duck, stops Roly) | gentle, step, rail, perch | Teeter, Duck, Roly | the same two as 6; the nearest keeps the perch (three changes) |
+
+Level 5's pond fills the ground in front of the door, so the path must turn. Its single accepted design still passes the study's Habitat Helpers overlap test: both friends use every part (shared ramps and one shared corner), and the corner must suit the biggest friend, not one piece per visitor. Level 6 is the conflict: both rails stop Duck, both perches stop Teeter, steps everywhere stop Roly. Level 7 is the repair: Try at the start lets Teeter and Duck in and stops Roly at the first step; ramps then stop Teeter (two in a row), and a rail on the near side takes Duck's perch. Changing more parts than needed is never wrong; keeping the perch is praised after success (`ww.kept`), never required or scored.
+
+### Accounting, help and finishing
+
+Unchanged from 1–4: `misses` always 0; Try, edits, undo, removal and replays are free; two identical stops since the last edit trigger one suggestion; manual Show me gives the same suggestion; each distinct `{socket, part}` counts one hint per round; finish once after a fully successful parade. Level 7's start design is not an edit: undo starts empty, and no hint is recorded for it.
+
+**Hint selection, widened:** take the accepted design nearest by differing sockets, ties broken by enumeration order (each socket's values in the order `null`, gentle, step, small, big, narrow, wide, rail, perch, with the first socket outermost). If the current design's stop socket differs from that design, suggest the stop socket; otherwise the first differing socket. For 1–4 this gives exactly the current suggestions (the first blocking socket there is always the first difference), and the 1–4 tests must still pass unchanged. A hint can replace a wrong part (a step, a perch where the rail goes, a small landing).
+
+### Speech (`voice-script.ts`)
+
+Proposed lines; instructions through `ctx.instruct`, the rest `ctx.say`.
+
+| ID | Text |
+| --- | --- |
+| `ww.five` | The pond is in the way, so the path turns. Make a way for Roly and Bear. |
+| `ww.six` | Make a way for Roly, Teeter and Duck. |
+| `ww.seven` | Teeter and Duck can come in. Roly is new. Change the way so Roly can come in too. |
+| `ww.bear5` | Bear is big. Bear needs a wide door and a big landing to turn. (Bear's card at 5) |
+| `ww.teeter` | Teeter is little and wobbly. Teeter holds a rail on two ramps in a row. |
+| `ww.duck` | Duck flies up. Duck needs a perch by the door. |
+| `ww.corner` | The path turns here. Put a landing here. (a `gap` at the turn) |
+| `ww.big` | This landing is too small for Bear to turn. Try the big landing. |
+| `ww.rail` | Two ramps in a row. Teeter needs a rail on this side. |
+| `ww.perch` | Duck has nowhere to land. Put a perch on this side. |
+| `ww.perchRail` | Rails on both sides. Duck needs a perch on this side. |
+| `ww.hintBig` | Put the big landing in the glowing corner. |
+| `ww.hintRail` | Put a rail on the glowing side. |
+| `ww.hintPerch` | Put a perch on the glowing side. |
+| `ww.hintSwap` | Put a ramp here instead of the step. |
+| `ww.kept` | You kept Duck's perch. Duck still lands there. |
+| `ww.partSmall`, `ww.partBig`, `ww.partRail`, `ww.partPerch` | Small landing. / Big landing. / Rail. / Perch. |
+
+`ww.ramp`, `ww.gap`, `ww.done` and the 1–4 lines are reused. The current `showSuggestion` speaks `ww.hintDoor` for anything that is not a ramp; it must pick the line by part and socket kind.
+
+### Input, layout and presentation
+
+The same input: drag or tap-a-part then tap-a-socket, Remove for the selected socket, Undo, Try, Show me, visitor replay. Side slots are wide strips covering the whole run (one socket each, near below the run and far above it, drawn as the run's front and back edges); the turn socket is a 160 square at the corner. No board scaling; every target at least 100 after transforms; no target selectable through another's hit area.
+
+Proposed geometry, **not verified fit**, on the 1024-wide safe area:
+
+- **Level 5, landscape:** lower row y≈560 with the first rise at x≈430; the turn at x≈630 between rows (y≈470); the second rise on the upper row x≈430, y≈380 going back left; the wide door at x≈230, y≈340 (clear of the bottom-left guide). Tray at y≈690 or a right-hand column (x≈930) if the row collides. Portrait moves rows down into the extra height (lower row y≈760, upper y≈580, tray y≈920).
+- **Levels 6–7, landscape:** visitor cards in a row y≈150–260 (three cards, at least 110 square), far side strip y≈300–404 (x≈370–690), rises y≈420–580, near strip y≈590–694; the tray moves to a right-hand column of 120-unit choices (x≈930, y≈200–680) and Try sits above it. Portrait: cards y≈240, far strip y≈480, rises y≈620, near strip y≈760, tray y≈900, Try/Undo/Remove/Show me y≈1090 as now.
+
+If this does not fit the harness's four standard views with safe insets and pet/navigation clearance, reflow (move the tray, stack cards) before shipping; never shrink targets. Code-drawn art from `palette.ts`: landings as flat planks (the big one visibly two cells deep), the rail as posts and a bar along the strip, the perch as a ledge with a little peg at door height. Teeter wobbles and steps back at an unrailed second ramp; Duck circles once over an empty side, then lands on the perch and hops in. Silhouettes and motion carry each rule without colour or sound.
+
+### Rule tests (`logic.test.ts`)
+
+1. **1–4 unchanged:** enumeration counts 2, 3, 3, 27, the same accepted sets, and the existing tests pass untouched.
+2. **Enumeration:** level 5 has 27 designs, exactly one accepted; level 6 has 81, exactly the two listed; level 7 has 81 and the same two. Every tray part is in an accepted design or is a distractor with a named visitor it stops (step: Roly; small: Bear; at 6, rail on both sides: Duck; perch on both sides: Teeter).
+3. **Walker cases:** level 5 start with ramps → Roly arrives, Bear stops at the turn, `needsBig`; empty turn → `gap` at the turn. Level 6 `[gentle, gentle]` with no sides → Teeter stops at the near side, `needsRail`; near rail, far empty → Duck stops at far, `needsPerch`; both rails → Duck at far. `[gentle, step]` passes Teeter (one ramp) and stops Roly. A turn breaks a run (no Teeter rule at 5). Level 7's start: Teeter and Duck arrive, Roly stops at the first rise, `needsRamp`.
+4. **Hints:** for every non-accepted design at levels 1–7, the suggestion is legal, reduces distance to an accepted design by one, and, when the design stops, is at the stop socket. Repeated suggestions reach success from every design without a restart.
+5. **Accounting:** level 7's start leaves undo empty and hints 0; all edits keep misses 0; a perch replaced by a rail and a repeat-help on one socket count as the 1–4 rules say.
+6. **Bot:** `autotouch()` reaches success at 5, 6 and 7 from the start design with any tray order.
+
+### Code the builder must widen
+
+The 1–4 code finds the door by `socket === p.rises` (in `evaluate`, `compatible` and `Round.edit`), `initial()` hard-codes empty rises plus a narrow door, `planFor` clamps to 4, `presentation`, `designs` and `FOOTPRINT` know only four parts, and `layout()` knows one or two rises. Levels 5–7 need kind-tagged sockets, a per-plan start design, the widened `repair()`, two new boards in `layout.ts`, Teeter and Duck actors, and the speech choice by part and socket kind. `LEVELS.school` becomes `{ min: 3, max: 7 }`; other bands, saved levels and pins are unchanged (no renumbering).
+
+### Ghost finger, how-to card and registration
+
+- **Ghost finger:** places the hint-solver path from the start design, taps Try between steps where the demonstration teaches: at 5, two ramps then Try (Bear stops at the small landing), then the big landing and Try; at 6, two ramps, Try (Teeter stops), a rail, Try (Duck stops), a perch, Try; at 7, Try (Roly stops), two ramps, Try (Teeter stops), a rail on the far side, Try.
+- **How-to card**, level-scoped: 5 "The path turns at the pond. Fill both ramp gaps and choose a landing for the corner. Bear is big and needs the big landing to turn. Tap Try." 6 "Roly needs ramps. Two ramps in a row need a rail for Teeter, and Duck needs a perch. Put a rail on one side and a perch on the other, then tap Try." 7 "Teeter and Duck can already come in. Change the entrance so Roly can come in too, keeping any part that still works. Tap Try after each change."
+- **Registration:** no new game, land or save field; Tinker Lab is unchanged. `describeLevel` gains 5–7 ("Turn at the pond", "A rail and a perch", "Fix it for Roly"). Add `FINGER_LEVELS=5,6,7` and level 5/7 cases to the `welcomeways` browser case and its README row.
+
+### Levels 5–7 check tier
+
+New-interaction tier (new boards and part kinds on the existing drag/tap interaction), one build session in three substeps: (1) widened logic and rule tests; (2) the level 5 corner board; (3) the level 6–7 side strips with Teeter, Duck, voice, how-to and demo. If the session cannot finish, split after (2): level 5 lands alone and 6–7 follow. Checks: typecheck and the rule tests; layout tests for both new boards at the four standard views; one scripted play of the `welcomeways` case filtered to levels 5 and 7 (a stopped Bear at the small landing, a stopped Teeter, one hint, the supported finish); `fingerdemo` at 5, 6 and 7; one portrait screenshot of level 6 and a landscape look at 5 and 6. `npm run build`, since voice and how-to content change. Levels 1–4 evidence is reused if their tests pass unchanged.
+
+Not established by any of this: whether a six-year-old reads the rail/perch conflict from the pictures, iPad speech for "Teeter" and "perch", and drag comfort on the wider strips. Definition proof: Markdown links and `git diff --check` only.
