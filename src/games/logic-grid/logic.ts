@@ -7,9 +7,10 @@ export { CROSSED, EMPTY, FILLED };
 /**
  * Mystery Grid rules (docs/definitions/logic-grid.md). A little mystery on a grid of friends (rows) by places (columns): spoken
  * clues say where friends are or are not, she marks each square yes or no until every friend has one place, then taps who is
- * by the missing pie (levels 3–4: the ball, 5: the kite). Levels 1–5 are built here; each level's build writes only its own cast
- * and clue kinds. From level 3 there are as many places as friends, so every place has someone and a column can be closed too.
- * Level 5 adds a second block beside the first, sharing its friend rows: what each friend has (apple, balloon, flower).
+ * by the missing pie (levels 3–4: the ball, 5–6: the kite). Levels 1–6 are built here; each level's build writes only its own
+ * cast and clue kinds. From level 3 there are as many places as friends, so every place has someone and a column can be closed
+ * too. Level 5 adds a second block beside the first, sharing its friend rows: what each friend has (apple, balloon, flower).
+ * Level 6 is one 4 by 4 block with this-or-that clues: either-or ("Pig is at the pond or the bush") and neither-nor.
  *
  * A grid's marks are a flat array, block by block and row by row (`block * rows * cols + friend * cols + col`), of Picture
  * Logic's `EMPTY`, `FILLED` (a yes) and `CROSSED` (a no). Only her own marks are stored; the lighter crosses a yes puts across
@@ -19,18 +20,19 @@ export { CROSSED, EMPTY, FILLED };
 export type Place = 'pond' | 'tree' | 'bush' | 'blanket';
 export const PLACES: readonly Place[] = ['pond', 'tree', 'bush', 'blanket'];
 
-/** The missing thing: the pie at levels 1–2, the ball at 3–4, the kite at 5. */
+/** The missing thing: the pie at levels 1–2, the ball at 3–4, the kite at 5–6. */
 export type Thing = 'pie' | 'ball' | 'kite';
 
 /** Level 5's second block: what each friend has. */
 export type Item = 'apple' | 'balloon' | 'flower';
 export const ITEMS: readonly Item[] = ['apple', 'balloon', 'flower'];
 
-/** Level 4's hats: each colour has its own pattern too, so colour never has to work alone. */
+/** Level 4's hats: each colour has its own pattern too, so colour never has to work alone. Level 6's fourth friend wears green. */
 export const HATS = [
   { color: 'red', pattern: 'stripes' },
   { color: 'blue', pattern: 'spots' },
   { color: 'yellow', pattern: 'stars' },
+  { color: 'green', pattern: 'zigzag' },
 ] as const;
 
 export type Mark = typeof EMPTY | typeof FILLED | typeof CROSSED;
@@ -43,9 +45,16 @@ export type Marks = readonly Mark[];
 export type GridClue = { kind: 'direct' | 'not'; friend: number; place: number; hat?: true; block?: 1 };
 /** Level 5's different-person clue: "The friend at the pond is not the one with the balloon". Alone it decides no square. */
 export type ApartClue = { kind: 'apart'; place: number; item: number };
-export type Clue = GridClue | ApartClue;
+/** Level 6: "Pig is at the pond or the bush" (one of the two is true). Alone it crosses the friend's other places. */
+export type EitherClue = { kind: 'either'; friend: number; place: number; or: number; hat?: true };
+/** Level 6: "Neither Cat nor Dog is at the tree". Alone it crosses both squares. */
+export type NeitherClue = { kind: 'neither'; friend: number; nor: number; place: number };
+export type Clue = GridClue | ApartClue | EitherClue | NeitherClue;
 export type Kind = Clue['kind'];
-export const onGrid = (c: Clue): c is GridClue => c.kind !== 'apart';
+/** A clue on one square (direct or not). */
+export const onGrid = (c: Clue): c is GridClue => c.kind === 'direct' || c.kind === 'not';
+/** Names its friend by hat. */
+export const hatted = (c: Clue) => (onGrid(c) || c.kind === 'either') && !!c.hat;
 
 export interface Board {
   friends: CritterName[];
@@ -80,11 +89,11 @@ export interface Plan {
   each?: Partial<Record<Kind, number>>;
   /** At most this many direct clues (levels 3–4: one). */
   maxDirect?: number;
-  /** Every clue names its friend by hat (level 4: true), or some do, at least one (level 5: 'some'). */
+  /** Every clue names its friend by hat (level 4: true), or some do, at least one (levels 5–6: 'some'). */
   hats?: boolean | 'some';
   /** Level 5: the second block's items. */
   items?: readonly Item[];
-  /** At least this many of a kind (level 5: one different-person clue). */
+  /** At least this many of a kind (level 5: one different-person clue; level 6: one either-or and one neither-nor). */
   atLeast?: Partial<Record<Kind, number>>;
   thing: Thing;
   boards: number;
@@ -98,6 +107,7 @@ export const PLANS: readonly Plan[] = [
   { level: 3, name: 'Three friends (3 friends, 3 places, mostly "not" clues)', cast: ['cat', 'duck', 'bear', 'dog'], friends: 3, placePool: PLACES, places: 3, kinds: ['direct', 'not'], clues: 3, maxClues: 4, maxDirect: 1, thing: 'ball', boards: 1 },
   { level: 4, name: 'The friend in the red hat (clues name a friend by the hat they wear)', cast: ['cat', 'duck', 'bear', 'dog'], friends: 3, placePool: PLACES, places: 3, kinds: ['not'], clues: 3, maxClues: 4, maxDirect: 0, hats: true, thing: 'ball', boards: 1 },
   { level: 5, name: 'Who, where and what (two grids side by side: where each friend is and what each has; "not the one with" clues)', cast: ['cat', 'duck', 'bear', 'dog', 'bunny'], friends: 3, placePool: PLACES, places: 3, items: ITEMS, kinds: ['direct', 'not', 'apart'], clues: 4, maxClues: 5, maxDirect: 1, hats: 'some', atLeast: { apart: 1 }, thing: 'kite', boards: 1 },
+  { level: 6, name: 'This one or that one (4 friends, 4 places; "or" and "neither…nor" clues)', cast: ['cat', 'duck', 'bear', 'dog', 'bunny', 'pig'], friends: 4, placePool: PLACES, places: 4, kinds: ['not', 'either', 'neither'], clues: 4, maxClues: 6, maxDirect: 0, hats: 'some', atLeast: { either: 1, neither: 1 }, thing: 'kite', boards: 1 },
 ];
 
 export const planFor = (level: number): Plan => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
@@ -124,6 +134,8 @@ const sameLine = (s: Shape, i: number, j: number) => blockOf(s, i) === blockOf(s
 /** True of an assignment (friend → place, and at level 5 friend → item)? */
 export function holds(c: Clue, a: readonly number[], h: readonly number[] = []): boolean {
   if (c.kind === 'apart') return a.indexOf(c.place) !== h.indexOf(c.item);
+  if (c.kind === 'either') return a[c.friend] === c.place || a[c.friend] === c.or;
+  if (c.kind === 'neither') return a[c.friend] !== c.place && a[c.nor] !== c.place;
   const at = (c.block ? h : a)[c.friend];
   return c.kind === 'direct' ? at === c.place : at !== c.place;
 }
@@ -151,14 +163,23 @@ export function solutions(s: Shape, clues: readonly Clue[]): number[][] {
 }
 
 /**
- * The squares one clue decides by itself on an empty grid, with the matching rule: a direct clue is a yes on its square and a
- * no on the rest of its row and its column in its block; a negative clue is a no on its square; a different-person clue names
- * no friend, so none. The miss rule and the tests both use this.
+ * The marks a clue puts on the grid as told: a direct clue's yes, a negative clue's no, an either-or clue's noes on the friend's
+ * other places, a neither-nor clue's two noes; a different-person clue names no friend, so none.
+ */
+export function told(s: Shape, c: Clue): { square: number; mark: Mark }[] {
+  if (c.kind === 'apart') return [];
+  if (c.kind === 'either') return [...Array(s.cols).keys()].filter((p) => p !== c.place && p !== c.or).map((p) => ({ square: sq(s, c.friend, p), mark: CROSSED }));
+  if (c.kind === 'neither') return [c.friend, c.nor].map((f) => ({ square: sq(s, f, c.place), mark: CROSSED }));
+  return [{ square: clueSquare(s, c), mark: c.kind === 'direct' ? FILLED : CROSSED }];
+}
+
+/**
+ * The squares one clue decides by itself on an empty grid, with the matching rule: what it tells, and for a direct clue the
+ * no on the rest of its row and its column in its block. The miss rule and the tests both use this.
  */
 export function decides(s: Shape, c: Clue): { square: number; mark: Mark }[] {
-  if (c.kind === 'apart') return [];
+  if (c.kind !== 'direct') return told(s, c);
   const k = c.block ?? 0;
-  if (c.kind === 'not') return [{ square: clueSquare(s, c), mark: CROSSED }];
   const out = [{ square: clueSquare(s, c), mark: FILLED as Mark }];
   for (let p = 0; p < s.cols; p++) if (p !== c.place) out.push({ square: sq(s, c.friend, p, k), mark: CROSSED });
   for (let f = 0; f < s.rows; f++) if (f !== c.friend) out.push({ square: sq(s, f, c.place, k), mark: CROSSED });
@@ -219,11 +240,11 @@ export function solveSteps(s: Shape, clues: readonly Clue[]): { steps: Step[]; d
       }
     }
     if (keys(B).every((k) => keys(s.rows).every((f) => rowDone(f, k)))) return { steps, done: true };
-    // Then the next clue not yet on the grid.
-    const i = clues.findIndex((c) => onGrid(c) && !known.has(clueSquare(s, c)));
+    // Then the next clue not yet on the grid, a square at a time.
+    const i = clues.findIndex((c) => told(s, c).some((t) => !known.has(t.square)));
     if (i >= 0) {
-      const c = clues[i] as GridClue;
-      put(clueSquare(s, c), c.kind === 'direct' ? FILLED : CROSSED, new Set([i]), 'clue');
+      const t = told(s, clues[i]).find((t) => !known.has(t.square))!;
+      put(t.square, t.mark, new Set([i]), 'clue');
       continue;
     }
     let found = false;
@@ -284,8 +305,8 @@ export function fits(plan: Plan, b: Board): boolean {
   for (const [k, n] of Object.entries(plan.each ?? {})) if (b.clues.filter((c) => c.kind === k).length !== n) return false;
   if (b.clues.filter((c) => c.kind === 'direct').length > (plan.maxDirect ?? Infinity)) return false;
   for (const [k, n] of Object.entries(plan.atLeast ?? {})) if (b.clues.filter((c) => c.kind === k).length < n) return false;
-  const hatted = b.clues.filter((c) => onGrid(c) && c.hat).length;
-  if (plan.hats === 'some' ? hatted < 1 : b.clues.some((c) => onGrid(c) && !!c.hat !== !!plan.hats)) return false;
+  const hats = b.clues.filter(hatted).length;
+  if (plan.hats === 'some' ? hats < 1 : b.clues.some((c) => onGrid(c) && !!c.hat !== !!plan.hats)) return false;
   if (!!b.hats !== !!plan.hats || !!b.items !== !!plan.items) return false;
   if (b.clues.some((c) => !plan.kinds.includes(c.kind) || !holds(c, b.solution, b.having))) return false;
   if (solutions(s, b.clues).length !== 1) return false;
@@ -319,6 +340,13 @@ export function makeBoard(plan: Plan, rng: Rng): Board {
         }
       }
     }
+    const hat = () => (plan.hats === true || (plan.hats === 'some' && rng.chance(0.5)) ? { hat: true as const } : {});
+    if (plan.kinds.includes('either')) {
+      for (let f = 0; f < s.rows; f++) for (let p = 0; p < s.cols; p++) if (p !== solution[f]) clues.push({ kind: 'either', friend: f, ...(rng.chance(0.5) ? { place: p, or: solution[f] } : { place: solution[f], or: p }), ...hat() });
+    }
+    if (plan.kinds.includes('neither')) {
+      for (let p = 0; p < s.cols; p++) for (let f = 0; f < s.rows; f++) for (let g = f + 1; g < s.rows; g++) if (solution[f] !== p && solution[g] !== p) clues.push({ kind: 'neither', ...(rng.chance(0.5) ? { friend: f, nor: g } : { friend: g, nor: f }), place: p });
+    }
     if (having && plan.kinds.includes('apart')) {
       for (let p = 0; p < s.cols; p++) for (let t = 0; t < s.cols; t++) if (solution.indexOf(p) !== having.indexOf(t)) clues.push({ kind: 'apart', place: p, item: t });
     }
@@ -326,12 +354,12 @@ export function makeBoard(plan: Plan, rng: Rng): Board {
       const rest = clues.filter((x) => x !== c);
       if (solutions(s, rest).length === 1) clues = rest;
     }
-    const order: Record<Kind, number> = { direct: 0, not: 1, apart: 2 };
+    const order: Record<Kind, number> = { direct: 0, not: 1, apart: 2, either: 3, neither: 4 };
     clues.sort((a, b) => order[a.kind] - order[b.kind]);
     const eventItem = !!having && rng.chance(0.5);
     const board: Board = { friends, places, solution, clues, event: rng.pick(eventItem ? having! : solution), thing: plan.thing };
     if (items) Object.assign(board, { items, having }, eventItem ? { eventItem: true } : {});
-    if (plan.hats) board.hats = rng.shuffle([...HATS.keys()]).slice(0, friends.length);
+    if (plan.hats) board.hats = rng.shuffle([...HATS.keys()].slice(0, friends.length));
     if (fits(plan, board)) return board;
   }
   throw new Error(`logic-grid: no board for level ${plan.level}`);

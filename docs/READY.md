@@ -6,7 +6,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **`logic-grid`, level 6 *This one or that one*** (school; new level on an existing interaction: the 4 × 4 grid with either-or and neither-nor clues, one browser play of level 6 and `fingerdemo` at 6; see the check tier in the definition): [definition](definitions/logic-grid.md#levels), levels 1–5 built; levels 7–8 follow as a later build.
+- **`logic-grid`, levels 7–8 *Case file* and *Who came first?*** (grown-up; a new interaction: written clue list, 64-unit blocks, the sliding window; new-interaction tier, see the check tier in the definition): [definition](definitions/logic-grid.md#levels), levels 1–6 built.
 - **`helper-house`, level 5 *Where does it look?*** (school; new levels on an existing interaction: typecheck, rule tests, one browser play of level 5 via the `helperhouse` filter, `fingerdemo` at 5): [definition](definitions/helper-house.md#levels-57-ra4), levels 1–4 built; levels 6–7 follow after level 5.
 - **`draw-the-pattern`, slice 3 level 10 *Dot to dot***, on decision 1's default (lap plays 1 and 10) (new interaction: typecheck, unit tests, one scripted play at lap and of toddler's order step from 10 to 2, one portrait screenshot, `fingerdemo` at 10): [dive](deep-dives/draw-the-pattern.md#build-slices-in-order).
 - **`crossword`, levels 5–6 *Written clues* and *The mini*** (grown-up; a new interaction: the A–Z keyboard and frozen 5 by 5 minis; new-interaction tier, see the check tier in the definition): [definition](definitions/crossword.md#levels), levels 1–4 built.

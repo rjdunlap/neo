@@ -232,3 +232,10 @@ Changed: school level 10 (`salt.ts` `SaltTanks`, `SALT_DEPTHS`/`floatsIn`/`saltR
 - Ran (commit `86b614b1`, dev server port 5715): `npm run typecheck`; `npx vitest run src/games/sudoku-garden src/content src/games/registry.test.ts` (267 pass, 13 new level-10 rule tests); `BROWSER_SUITE=sudokutouch SUDOKU_ONLY=10` PASS (new case: 92-unit squares, a wrong number, marks, a two-square cage filled off its sum red and spoken with no extra miss, Start over, a cage-last hint, portrait and landscape 64-unit targets, one sticker); `BROWSER_SUITE=fingerdemo FINGER_ONLY=sudoku-garden FINGER_LEVELS=10` PASS (30.9 s); `npm run build`.
 - Not run: `couchgames` (geometry unchanged for non-cage beds); controller play of level 10; a real iPad.
 - Open: whether sum labels and dashes read on an iPad at 92 units, and whether a grown-up new to cage puzzles finds the first cage without the card ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
+
+## 2026-11-05 — Word Search school opening, level 8 (word-search batch 5)
+
+- [PR #1288](https://github.com/rjdunlap/neo/pull/1288): school band added; level 8 is a 6 by 6 grid with four picture words across (100-unit squares, picture tiles and buttons), a free tile tap, a ring from the second miss, new lines `wordsearch.go-school`, `miss-school` and `word`.
+- Ran (tested at `b6a4356a`, Vite on port 5197, `VITE_SPEECH=off`): `npm run typecheck`; `npm test` (308 files, 5318 pass); `npm run build`; a one-off scripted school play at 1024×768 and 1024×1365 (squares 600×600 at cell 100, tiles and buttons 100 units, two wrong lines, ring after the second, a tile tap counting nothing, one Hint, all words, sticker; history misses 2, hints 1; no page errors; screenshots in ignored `test-results/`); `BROWSER_SUITE=fingerdemo FINGER_ONLY=word-search FINGER_LEVELS=8 FINGER_BAND=school` PASS (11.4 s). The game-reviewer's one suggestion (fewer repeated ring lines) landed in `9dbe5497`, speech-only and not re-played.
+- Not run: `couchgames` (couch untouched), device speech, a real iPad.
+- Open: the three school-opening checks in [DEVICE-CHECKS](../DEVICE-CHECKS.md); a second school level.

@@ -1074,3 +1074,8 @@ Performed on the built levels (PR #1043; [definition](definitions/water-road.md#
 
 - [ ] On an iPad, listen to device speech of the different-person clue ("The friend at the pond is not the one with the balloon") and the kite event lines.
 - [ ] Watch a six- or seven-year-old at level 5: do the small clue cards and the caption strip read, and does the two-block grid make sense?
+
+## Mystery Grid level 6 (2026-11-06)
+
+- [ ] On an iPad, listen to device speech of the either-or and neither-nor clues ("Pig is at the pond or the bush", "Neither Cat nor Dog is at the tree") and the hat versions.
+- [ ] Watch a seven- or eight-year-old at level 6: do the stacked either card and the two-friend neither card read, and does the caption help?
