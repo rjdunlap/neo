@@ -1762,6 +1762,20 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 8, to: 8, text: 'Any landing on the star cloud counts. A landing short or long is a spoken try again; after two, the flight path and a ring show how far back to pull. A short or wrong-way pull gets a nudge that is not a miss. After two clearly different pulls, the bigger-pull observation is added to her discovery journal.' },
     ],
   },
+  crossword: {
+    goal: 'Fill the little crossword: each word belongs to the picture at its head.',
+    steps: [
+      { to: 1, text: 'Drag the letter that fits both words into the empty square where they cross.' },
+      { from: 2, to: 2, text: 'Fill the crossing squares and each word\'s first letter; the letters a word needs wait at the side.' },
+      'Tap a picture or a square to choose its word and hear it. Tap a crossing square again for the other word.',
+      'A tile in a square can be dragged back out. Help (?) puts one right letter in.',
+    ],
+    finish: [
+      { to: 1, text: 'The round ends after three little crosswords.' },
+      { from: 2, text: 'The round ends after two crosswords.' },
+    ],
+    note: 'Moving tiles is never judged. A full word that is wrong is one miss and its wrong tiles hop back; after two on a word, the next letter glows. Help counts as a hint.',
+  },
   'word-monsters': {
     goal: 'Meet the letter monsters and hear their sounds.',
     steps: [

@@ -68,7 +68,7 @@ Each build is new-game tier for its first slice: **levels 1–2 together** (the 
 
 ## What comes next
 
-Queue **levels 1–2's build** in READY. Later definitions: an upper-school rung (a 5 by 5 with written clues read aloud, at 100-unit squares) and the couch version of levels 5–6.
+**Levels 1–2 are built** (2026-11-05, [PR #1294](https://github.com/rjdunlap/neo/pull/1294); [build note](../archive/COMPLETED-2026-10-09.md#crossword-levels-1-2-2026-11-05)); level 3 is queued in READY. Later definitions: an upper-school rung (a 5 by 5 with written clues read aloud, at 100-unit squares) and the couch version of levels 5–6.
 
 ## Defaults (October 23 standing rules)
 
