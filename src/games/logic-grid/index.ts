@@ -3,10 +3,11 @@ import { Critter, CRITTERS, type CritterName } from '../../art/critter';
 import { cream, ink, swatch } from '../../art/palette';
 import { blanketArt, bushArt, treeArt } from '../../art/picnic';
 import { prop } from '../../art/props';
-import { Backdrop } from '../../art/scenery';
+import { Backdrop, drawFarBarn } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
-import { onTap } from '../../engine/input';
+import { onTap, palmOnGlass } from '../../engine/input';
+import type { FederatedPointerEvent } from 'pixi.js';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { safeArea, type View } from '../../engine/view';
@@ -16,17 +17,17 @@ import { WigglyIcon } from '../shared';
 import { SCRIPT, type LineId } from '../../content/voice-script';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
-  answerOf, applyStep, blockOf, brokenClue, colOf, contradicts, CROSSED, cycle, EMPTY, emptyMarks, FILLED, fullWrong, HATS, makeRound, nextStep,
+  answerOf, applyStep, blockOf, brokenClue, colOf, contradicts, CROSSED, cycle, EMPTY, emptyMarks, FILLED, fullWrong, HATS, isTime, makeRound, nextStep, TIMES, type Time,
   planFor, rowOf, shapeOf, shown, sizeOf, solved, solveSteps, wrongSquares, type Board, type Clue, type Item, type Mark, type Place, type Plan, type Step,
   type Thing,
 } from './logic';
 
-/** Preschool's, pre-K's and school's whole ranges, and grown-up's level 7 (level 8 comes in a later build). */
+/** Preschool's, pre-K's and school's whole ranges, and grown-up's levels 7–8. */
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 2, max: 3 },
   school: { min: 3, max: 6 },
-  grownup: { min: 7, max: 7 },
+  grownup: { min: 7, max: 8 },
 };
 
 const SQ = 100;
@@ -51,6 +52,10 @@ const GUT = 8;
 /** A written clue's card in the case file's list: 212 by 64, so the column fits beside the L at 1024 across. */
 const LINE_H = 64;
 const CASE_W = 212;
+/** Level 8's written clues are longer (an unaligned pair names two times), so its list cards are wider, in a smaller type. */
+const CASE_W8 = 264;
+/** A finger on a level-8 header that moves this far slides the grid instead of naming the header. */
+const SLIDE_SLOP = 14;
 /** A mark is judged once it rests this long, so the yes on the way to a no is never counted. */
 const SETTLE = 2.5;
 
@@ -83,6 +88,10 @@ function placeArt(p: Place): Container {
     const g = bushArt(84);
     g.position.set(0, 30);
     c.addChild(g);
+  } else if (p === 'barn') {
+    const g = new Graphics();
+    drawFarBarn(g, 0, 36, 64);
+    c.addChild(g);
   } else {
     const g = blanketArt('checks', 76, 44);
     g.position.set(0, 8);
@@ -90,6 +99,19 @@ function placeArt(p: Place): Container {
   }
   return c;
 }
+
+/** Level 8's time row: a small hill with the sun climbing from dawn to noon and setting by evening. */
+function timeArt(t: number): Graphics {
+  const g = new Graphics();
+  const a = Math.PI * (1 - t / (TIMES.length - 1));
+  const low = t === 0 || t === TIMES.length - 1;
+  g.circle(Math.cos(a) * 34, 18 - Math.sin(a) * 38, 14).fill(low ? swatch.orange.fill : swatch.yellow.fill).stroke({ width: 4, color: low ? swatch.orange.line : swatch.yellow.line });
+  g.ellipse(0, 26, 46, 14).fill(swatch.green.fill);
+  return g;
+}
+
+/** How a time is said in a clue: "at dawn", "in the morning". */
+const WHEN: Record<Time, string> = { dawn: 'at dawn', morning: 'in the morning', noon: 'at noon', afternoon: 'in the afternoon', evening: 'in the evening' };
 
 /** The missing ball (levels 3–4): a striped circle. */
 function ballArt(): Graphics {
@@ -130,6 +152,11 @@ const ITEM_COLOR = { apple: 'red', balloon: 'blue', flower: 'purple', orange: 'o
 
 /** Level 5's items and level 7's snacks, from `prop()`, about 60 across. */
 function itemArt(i: Item): Container {
+  if (isTime(i)) {
+    const t = new Container();
+    t.addChild(timeArt(TIMES.indexOf(i)));
+    return t;
+  }
   const c = prop(i, ITEM_COLOR[i]);
   c.scale.set(i === 'balloon' ? 0.56 : 0.62);
   return c;
@@ -150,6 +177,7 @@ const written = (id: LineId, vars: Record<string, string>) => SCRIPT[id][0].repl
 function caseLine(c: Clue, b: Board): [LineId, Record<string, string>] {
   const friend = (f: number, hat?: true): Record<string, string> => (hat && b.hats ? { hat: HAT_NAME[HATS[b.hats[f]].color] } : { friend: nameOf(b.friends[f]) });
   if (c.kind === 'apart') return ['lg.case.without', { place: b.places[c.place], item: b.items![c.item] }];
+  if (b.times || c.kind === 'order' || c.kind === 'pair') return timeLine(c, b, friend);
   const has = c.block === 1;
   const what = (i: number) => (has ? b.items![i] : b.places[i]);
   const by = (hat?: true) => (hat && b.hats ? 'hat.' : '');
@@ -160,8 +188,35 @@ function caseLine(c: Clue, b: Board): [LineId, Record<string, string>] {
   return [`lg.case.${by(c.hat)}${kind}` as LineId, { ...friend(c.friend, c.hat), [has ? 'item' : 'place']: what(c.place) }];
 }
 
-const HAT_COLOR = { red: swatch.red, blue: swatch.blue, yellow: swatch.yellow, green: swatch.green } as const;
-const HAT_NAME = { red: 'red striped', blue: 'blue spotty', yellow: 'yellow starry', green: 'green zigzag' } as const;
+/**
+ * Level 8's written clues: places as level 7's, times with "came" ("Cat came at noon"; "Whoever was at the pond came in the
+ * evening"), order ("Bear came before Duck"; "Pig came right after Cat"; "Pig came two steps after Cat") and the unaligned
+ * pair ("Of Cat and the friend at the pond, one came at dawn and one at noon").
+ */
+function timeLine(c: Exclude<Clue, { kind: 'apart' }>, b: Board, friend: (f: number, hat?: true) => Record<string, string>): [LineId, Record<string, string>] {
+  const when = (t: number) => WHEN[b.items![t] as Time];
+  const name = (f: number) => nameOf(b.friends[f]);
+  const by = (hat?: true) => (hat && b.hats ? 'hat.' : '');
+  if (c.kind === 'order') {
+    if (!c.by) return ['lg.case.before', { friend: name(c.friend), later: name(c.later) }];
+    return [c.by === 1 ? 'lg.case.after1' : 'lg.case.after2', { friend: name(c.friend), later: name(c.later) }];
+  }
+  if (c.kind === 'pair') return ['lg.case.pair', { friend: name(c.friend), place: b.places[c.place], when: when(c.time), or: when(c.or) }];
+  if (c.kind === 'neither') {
+    if (c.block === 1) return ['lg.case.neither.came', { friend: name(c.friend), nor: name(c.nor), when: when(c.place) }];
+    return ['lg.case.neither', { friend: name(c.friend), nor: name(c.nor), place: b.places[c.place] }];
+  }
+  if (c.kind === 'either') {
+    if (c.block === 1) return [`lg.case.${by(c.hat)}either.came` as LineId, { ...friend(c.friend, c.hat), when: when(c.place), or: when(c.or) }];
+    return [`lg.case.${by(c.hat)}either` as LineId, { ...friend(c.friend, c.hat), place: b.places[c.place], or: b.places[c.or] }];
+  }
+  if (c.block === 2) return [c.kind === 'direct' ? 'lg.case.whenat' : 'lg.case.whenatnot', { when: when(c.friend), place: b.places[c.place] }];
+  if (c.block === 1) return [`lg.case.${by(c.hat)}${c.kind === 'direct' ? 'came' : 'camenot'}` as LineId, { ...friend(c.friend, c.hat), when: when(c.place) }];
+  return [`lg.case.${by(c.hat)}${c.kind}` as LineId, { ...friend(c.friend, c.hat), place: b.places[c.place] }];
+}
+
+const HAT_COLOR = { red: swatch.red, blue: swatch.blue, yellow: swatch.yellow, green: swatch.green, purple: swatch.purple } as const;
+const HAT_NAME = { red: 'red striped', blue: 'blue spotty', yellow: 'yellow starry', green: 'green zigzag', purple: 'purple checked' } as const;
 
 /**
  * Level 4's hat, in critter body coordinates (as `strawHat` sits): a brimmed dome in the hat's colour with its own pattern in
@@ -175,6 +230,7 @@ function hatArt(h: number): Graphics {
   if (pattern === 'stripes') for (const x of [-34, 0, 34]) g.roundRect(x - 7, -286 + Math.abs(x) * 0.5, 14, 44 - Math.abs(x) * 0.5, 6).fill(0xffffff);
   else if (pattern === 'spots') for (const [x, y] of [[-30, -254], [0, -282], [30, -254]]) g.circle(x, y, 13).fill(0xffffff);
   else if (pattern === 'stars') for (const [x, y] of [[-32, -258], [0, -280], [32, -258]]) g.star(x, y, 5, 18, 8).fill(0xffffff);
+  else if (pattern === 'checks') for (const [x, y] of [[-36, -262], [-12, -284], [12, -262], [36, -284], [-12, -244], [36, -244]]) g.rect(x - 9, y - 9, 18, 18).fill(0xffffff);
   else g.moveTo(-48, -256).lineTo(-30, -280).lineTo(-12, -256).lineTo(6, -280).lineTo(24, -256).lineTo(42, -280).stroke({ width: 10, color: 0xffffff, cap: 'round', join: 'round' });
   g.ellipse(0, -236, 104, 20).fill(sw.fill).stroke({ width: 6, color: sw.line });
   return g;
@@ -241,6 +297,8 @@ class ClueCard extends Container {
       this.drawThisOrThat(clue, b, k);
       return;
     }
+    // Level 8's order and pair clues are only ever written (its cards take the text path above).
+    if (clue.kind === 'order' || clue.kind === 'pair') return;
     let who: Container;
     if (clue.kind === 'apart') {
       who = placeArt(b.places[clue.place]);
@@ -415,7 +473,7 @@ class MysteryGrid implements Game {
 
   /** A clue's line and its slots: `lg.clue.not`, `lg.clue.hat.has`, `lg.clue.apart` and so on (`remind` for the miss reminder). */
   private clueLine(c: Clue, b: Board, id: 'clue' | 'remind'): [LineId, Record<string, string>] {
-    if (b.case) return caseLine(c, b);
+    if (b.case || c.kind === 'order' || c.kind === 'pair') return caseLine(c, b);
     if (c.kind === 'apart') return [`lg.${id}.apart`, { place: b.places[c.place], item: b.items![c.item] }];
     if (c.kind === 'neither') return [`lg.${id}.neither`, { friend: nameOf(b.friends[c.friend]), nor: nameOf(b.friends[c.nor]), place: b.places[c.place] }];
     if (c.kind === 'either') {
