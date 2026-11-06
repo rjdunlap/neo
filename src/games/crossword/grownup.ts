@@ -4,6 +4,7 @@ import { Backdrop } from '../../art/scenery';
 import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
 import { safeArea, type View } from '../../engine/view';
+import { isParentPanelOpen } from '../../parent/panel';
 import { FONT, label } from '../../ui/text';
 import type { Game, GameContext, TouchIntent } from '../types';
 import {
@@ -52,6 +53,8 @@ export class GrownCrossword implements Game {
   private readonly letters: Map<string, string>;
   private view: View;
   private readonly onKey = (e: KeyboardEvent) => this.hardwareKey(e);
+  /** When the shell last ran a frame of the game: it stops while paused or while the how-to card covers it. */
+  private lastFrame = 0;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -81,7 +84,8 @@ export class GrownCrossword implements Game {
   start() {
     this.resize(this.view);
     this.draw();
-    window.addEventListener('keydown', this.onKey);
+    // The how-to card's demonstration copy never takes the grown-up's keys.
+    if (!this.ctx.demo) window.addEventListener('keydown', this.onKey);
     this.board.alpha = 0;
     void this.ctx.tw.to(this.board, { alpha: 1 }, { duration: 0.35 }).then(() => (this.busy = false));
     void this.intro();
@@ -92,7 +96,9 @@ export class GrownCrossword implements Game {
     void this.ctx.instruct(this.plan.grown === 'mini' ? 'cw.six' : 'cw.five');
   }
 
-  update() {}
+  update() {
+    this.lastFrame = performance.now();
+  }
 
   destroy() {
     window.removeEventListener('keydown', this.onKey);
@@ -300,6 +306,9 @@ export class GrownCrossword implements Game {
 
   private hardwareKey(e: KeyboardEvent) {
     if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
+    // Keys belong to something else while the game is paused, under the how-to card, or behind the grown-ups' page.
+    if (performance.now() - this.lastFrame > 250 || isParentPanelOpen()) return;
+    if (e.target instanceof HTMLElement && e.target.closest('input, textarea, select, [contenteditable]')) return;
     if (/^[a-zA-Z]$/.test(e.key)) {
       e.preventDefault();
       this.type(e.key.toLowerCase());
