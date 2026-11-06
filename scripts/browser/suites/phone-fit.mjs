@@ -112,12 +112,65 @@ async function phoneFit() {
     }
   } finally { await phone.close(); }
   assert.deepEqual(phoneErrors, []);
+  await uprightRoot();
   // A mouse is never asked, whatever the window's shape (the shared context has no touch screen).
   await page.setViewportSize({ width: 390, height: 844 }); await page.waitForTimeout(300);
   assert.equal(await page.evaluate(() => neo.turning), false, 'a narrow desktop window is not asked to turn');
   await page.setViewportSize({ width: 1024, height: 768 });
   assert.deepEqual(errors, []);
   log('Phone fit: a faked notch and home indicator (island inside them, UI uncovered, tap, the gear and panel reachable), the turn prompt for an upright phone only, and the tablet shapes left alone passed');
+}
+
+/**
+ * Chunk 31: at the root an upright phone lays Home, Today's six and an upright-ready game out on the 768 × 1024 area with no
+ * prompt; the round finishes and goes back to the six with a tick; a game that is not ready yet keeps the prompt.
+ */
+async function uprightRoot() {
+  const phone = await createTestContext(browser, { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2, reducedMotion: 'reduce' });
+  const p = await phone.newPage();
+  const bad = [];
+  p.on('pageerror', (error) => bad.push(error.message));
+  const at = (name) => p.waitForFunction((n) => neo.scene.constructor.name === n && !neo.switching, name, { timeout: 15000 });
+  const asked = () => p.evaluate(() => ({ turning: neo.turning, upright: !!neo.view.upright, w: Math.round(neo.view.w), scene: neo.scene.constructor.name }));
+  try {
+    await p.goto(new URL('/', process.env.GAME_URL || 'http://127.0.0.1:5173').href);
+    await p.waitForFunction(() => window.neo?.scene && !neo.switching && window.kit);
+    await p.evaluate(() => {
+      kit.store.data.settings.howToCards = false; kit.store.data.creatures = { owned: [{ id: 'pip0', species: 'sprout', name: 'Mia', look: { color: 'pink' }, metAt: 'start' }], companion: 'pip0' }; kit.store.data.profile.band = 'grownup';
+      kit.store.save(); neo.go.start();
+    });
+    await at('ChooserScene');
+    await p.locator('.chooser__play').first().tap();
+    await at('HomeScene'); await p.waitForTimeout(400);
+    assert.deepEqual(await asked(), { turning: false, upright: true, w: 768, scene: 'HomeScene' }, 'Home lays out upright with no prompt');
+    await p.screenshot({ path: `${output}/upright-home.png` });
+    await p.evaluate(() => neo.go.daily());
+    await at('DailyScene'); await p.waitForTimeout(400);
+    assert.deepEqual(await asked(), { turning: false, upright: true, w: 768, scene: 'DailyScene' }, "Today's six lays out upright with no prompt");
+    const six = await p.evaluate(() => neo.scene.cards.map((c) => ({ id: c.pick.mod.id, upright: !!c.pick.mod.upright, badge: c.node.getChildByLabel('turn').visible })));
+    assert.equal(six.length, 6);
+    assert.ok(six.every((c) => c.upright && !c.badge), `a grown-up's upright six is all upright-ready, with no turn badge (${JSON.stringify(six)})`);
+    await p.screenshot({ path: `${output}/upright-daily.png` });
+    const id = six[0].id;
+    await p.evaluate(() => kit.tapOn(neo.scene.cards[0].node));
+    await at('GameScene'); await p.waitForTimeout(800);
+    assert.deepEqual(await asked(), { turning: false, upright: true, w: 768, scene: 'GameScene' }, `${id} plays upright with no prompt`);
+    await p.screenshot({ path: `${output}/upright-${id}.png` });
+    await p.evaluate(() => neo.scene.finish({ misses: 0, hints: 0 }));
+    await p.waitForFunction(() => neo.scene.after?.home && !neo.scene.navigating, null, { timeout: 15000 }); await p.waitForTimeout(900);
+    const off = await p.evaluate(() => Object.entries(neo.scene.after).filter(([, b]) => b).map(([k, b]) => { const r = b.getBounds(); return { k, x0: r.minX, x1: r.maxX }; }).filter((b) => b.x0 < -0.5 || b.x1 > innerWidth + 0.5));
+    assert.deepEqual(off, [], "the result's buttons stay on an upright screen");
+    await p.screenshot({ path: `${output}/upright-result.png` });
+    await p.evaluate(() => neo.scene.after.home.press());
+    await at('DailyScene'); await p.waitForTimeout(400);
+    assert.equal(await p.evaluate((g) => neo.scene.cards.find((c) => c.pick.mod.id === g).node.getChildByLabel('tick').visible, id), true, 'back on the six, the card has its tick');
+    // A game that is not upright-ready yet keeps the prompt, and the view stays on the wide area.
+    await p.evaluate(() => neo.go.game('bubble-pop', 'lap'));
+    await at('GameScene'); await p.waitForTimeout(400);
+    assert.deepEqual(await asked(), { turning: true, upright: false, w: 1024, scene: 'GameScene' }, 'a game not yet upright-ready keeps the turn prompt');
+  } finally { await phone.close(); }
+  assert.deepEqual(bad, []);
+  log('Upright root: Home, Today\'s six, an upright round and its result laid out at 768 wide with no prompt, back to the six with a tick, and a not-ready game still asked to turn passed');
 }
 
 return { phoneFit };
