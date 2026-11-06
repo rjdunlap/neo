@@ -1776,6 +1776,17 @@ export const HOW_TO: Record<string, GameHowTo> = {
     ],
     note: 'Moving tiles is never judged. A full word that is wrong is one miss and its wrong tiles hop back; after two on a word, the next letter glows. Help counts as a hint.',
   },
+  'logic-grid': {
+    goal: 'Mark where each friend is, then tap who has the missing pie.',
+    steps: [
+      'Tap a square once for yes, twice for no, again to clear. A yes crosses its row and column.',
+      { to: 1, text: 'Each clue card says where a friend is; tap it to hear it again.' },
+      { from: 2, to: 2, text: 'A *not* clue makes its square a no; the friend\'s one place left is the yes.' },
+      'When all are placed, the pie appears by one place: tap the friend there. Help (?) points at the clue for the next square; again marks it.',
+    ],
+    finish: 'The round ends after two mysteries.',
+    note: 'A mark one clue rules out by itself is one miss (judged once it rests), as are a full grid that breaks a clue and the wrong friend. After two misses the next square glows. Help is a hint; the press that marks is not.',
+  },
   'word-monsters': {
     goal: 'Meet the letter monsters and hear their sounds.',
     steps: [

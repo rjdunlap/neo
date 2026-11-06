@@ -65,6 +65,7 @@ import { peekaroundIsland } from './peekaround-island';
 import { lightLab } from './light-lab';
 import { penguinSlide } from './penguin-slide';
 import { secretCode } from './secret-code';
+import { logicGrid } from './logic-grid';
 import { frogHop } from './frog-hop';
 import { marketStall } from './market-stall';
 import { gardenGrow } from './garden-grow';
@@ -234,6 +235,7 @@ export const GAMES: GameModule[] = [
   lightLab,
   penguinSlide,
   secretCode,
+  logicGrid,
   frogHop,
   marketStall,
   gardenGrow,
