@@ -7,7 +7,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 ## Next ten
 
 - **`mossy-path`, levels 4–7 *find the way*** (toddler to school; a new interaction: walk-back and drag stepping on hedge mazes, new bands with school's order and entry levels; new-interaction tier as the [definition's check tier](definitions/mossy-path.md#check-tier) sets): [definition](definitions/mossy-path.md#levels-47-find-the-way-definition-pp1), levels 1–3 built.
-- **`helper-house`, levels 6–7 *The comfy line* and *Calm heater*** (school; a new interaction: line handles on a warmth gauge; level 5 is built; new-interaction tier as the [definition's check tier](definitions/helper-house.md#check-tier-for-57) sets): [definition](definitions/helper-house.md#levels-57-ra4).
 - **Define Rain Garden level 4 *two-socket downhill route*** (`weather-water`; school; docs only, with the session's source check of runoff and storage sources): [what comes next](definitions/rain-garden.md#what-comes-next), levels 1–3 built, [study](deep-dives/subjects/weather-water.md).
 - **Define Bond Beads 5–8** (`chemistry`; docs only, with a session source check of the molecule list): [definition so far](definitions/bond-beads.md), [study](deep-dives/subjects/chemistry.md).
 - **Define Welcome Ways 5–7** (`engineering-design`; space limits, a conflict and a repair for a new friend; docs only): [definition so far](definitions/welcome-ways.md), [study](deep-dives/subjects/engineering-design.md).

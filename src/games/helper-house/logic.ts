@@ -1,6 +1,7 @@
 /**
  * Helper House's rules: a house with a helper (the door at level 1, the lamp at levels 2–3 and 5, the nook's heater at
- * level 4), a sensor that reads a picture, rule rows that turn a reading into an action, and a twelve-step day the
+ * levels 4 and 6–7), a sensor that reads a picture, rule rows that turn a reading into an action (at levels 6–7, lines
+ * on the warmth gauge), and a twelve-step day the
  * house runs by itself. The board space is tiny and fully enumerated; a day never counts a miss, and the same unmet
  * goal twice lights a fix. Everything here is pure; the scene draws it. Definition: docs/definitions/helper-house.md.
  */
@@ -28,8 +29,10 @@ export type SensorKind = 'eye' | 'sun' | 'thermo';
 export type Socket = 'door' | 'window' | 'post' | 'nook' | 'lamp' | 'roof' | 'shed';
 export type Action = 'open' | 'on' | 'off';
 export type Helper = 'door' | 'lamp' | 'heater';
-/** A piece the board can change: the sensor, or an editable row by its index. */
-export type Piece = 'sensor' | number;
+/** A piece the board can change: the sensor, an editable row by its index, or a line on the gauge (levels 6–7). */
+export type Piece = 'sensor' | number | LinePiece;
+/** Level 6's one line, or level 7's on line and off line. */
+export type LinePiece = 'line' | 'on-line' | 'off-line';
 
 export interface Row {
   reading: Reading | null;
@@ -44,6 +47,12 @@ export interface Board {
   sensor: { kind: SensorKind | null; socket: Socket | null };
   /** In screen order; a later matching row wins. */
   rows: Row[];
+  /**
+   * Levels 6–7: the gauge's lines, as gaps 1–6 (gap k lies between warmth k−1 and k). Warmth below the on line turns
+   * the heater on, warmth at or above the off line turns it off, and between them no row matches. Level 6 keeps them
+   * together: one line.
+   */
+  lines?: { on: number; off: number };
 }
 
 export const STEPS = 12;
@@ -61,8 +70,33 @@ export const WARMTH_MAX = 6;
 export function zoneOf(warmth: number): Zone {
   return warmth <= 2 ? 'cool' : warmth <= 4 ? 'warm' : 'hot';
 }
-/** Level 4's comfy band, from step 2 on. */
+/** Level 4's comfy band, from step 2 on (levels 6–7 too). */
 export const COMFY = { min: 2, max: 4, from: 2 };
+/** The gauge's six gaps between its seven marks. */
+export const GAPS = 6;
+/** Level 7: the click jar's cups; one more switch rolls a pebble out. */
+export const JAR = 8;
+
+/** Levels whose rows are lines on the warmth gauge. */
+export function onGauge(level: number): boolean {
+  return level === 6 || level === 7;
+}
+
+/** The row a warmth matches on a gauge board: 0 (on) below the on line, 1 (off) at or above the off line, else none. */
+export function lineMatch(lines: { on: number; off: number }, warmth: number): number | null {
+  return warmth <= lines.on - 1 ? 0 : warmth >= lines.off ? 1 : null;
+}
+
+/** A switch is a step whose heater state after the rules differs from before them; the heater starts off. */
+export function switches(trace: readonly Trace[]): number {
+  let was = false;
+  let n = 0;
+  for (const t of trace) {
+    if (t.helperOn !== was) n++;
+    was = t.helperOn;
+  }
+  return n;
+}
 
 export interface Trace {
   step: number;
@@ -85,7 +119,7 @@ export interface Trace {
   warmth: number;
 }
 
-export type Failure = 'friend-waiting' | 'sensor-blind' | 'lamp-flickers' | 'lamp-on-at-morning' | 'lamp-off-at-night' | 'never-warms' | 'too-warm';
+export type Failure = 'friend-waiting' | 'sensor-blind' | 'lamp-flickers' | 'lamp-on-at-morning' | 'lamp-off-at-night' | 'never-warms' | 'too-warm' | 'heater-busy';
 
 export interface Outcome {
   trace: Trace[];
@@ -95,7 +129,7 @@ export interface Outcome {
 
 /** The helper a level's rules drive. */
 export function helperFor(level: number): Helper {
-  return level === 1 ? 'door' : level === 4 ? 'heater' : 'lamp';
+  return level === 1 ? 'door' : level === 4 || onGauge(level) ? 'heater' : 'lamp';
 }
 
 /** Levels whose one choice is where the sensor goes (or which one): the rows are given. */
@@ -133,7 +167,8 @@ export function runDay(board: Board, day: Day): Outcome {
     if (arrived) waiting++;
     const reading = read(board, day, step, waiting, warmth, helperOn);
     let matched: number | null = null;
-    board.rows.forEach((r, i) => {
+    if (board.lines) matched = lineMatch(board.lines, warmth);
+    else board.rows.forEach((r, i) => {
       if (r.reading !== null && r.reading === reading) matched = i;
     });
     if (matched !== null) {
@@ -159,10 +194,11 @@ export function runDay(board: Board, day: Day): Outcome {
 export function judge(level: number, trace: Trace[], day: Day): Failure | null {
   const last = trace[trace.length - 1];
   if (level === 1) return last.inside >= day.arrivals.length ? null : 'friend-waiting';
-  if (level === 4) {
-    // The first step out of the comfy band names the failure.
+  if (level === 4 || onGauge(level)) {
+    // The first step out of the comfy band names the failure; level 7 then counts the heater's switches.
     const off = trace.find((t) => t.step >= COMFY.from && (t.warmth < COMFY.min || t.warmth > COMFY.max));
-    return !off ? null : off.warmth > COMFY.max ? 'too-warm' : 'never-warms';
+    if (off) return off.warmth > COMFY.max ? 'too-warm' : 'never-warms';
+    return level === 7 && switches(trace) > JAR ? 'heater-busy' : null;
   }
   const darkOff = trace.some((t) => t.sun === 'dark' && !t.helperOn);
   if (level === 2) return darkOff ? 'sensor-blind' : null;
@@ -196,7 +232,7 @@ export const START_WARMTH = 1;
 /** The day a seed picks for a level; the seed never changes a rule. Level 4 has one day: only the friend and colours vary; level 5 reuses level 3's scripts. */
 export function dayFor(level: number, rng: Rng): Day {
   if (level === 1) return { sun: SUN_SCRIPTS[0].slice(), arrivals: rng.pick(ARRIVALS).slice(), warmth: 0 };
-  if (level === 4) return { sun: SUN_SCRIPTS[0].slice(), arrivals: [], warmth: START_WARMTH };
+  if (level === 4 || onGauge(level)) return { sun: SUN_SCRIPTS[0].slice(), arrivals: [], warmth: START_WARMTH };
   return { sun: rng.pick(SUN_SCRIPTS).slice(), arrivals: [], warmth: 0 };
 }
 
@@ -205,8 +241,8 @@ export function dayFor(level: number, rng: Rng): Day {
 export interface Plan {
   level: number;
   name: string;
-  /** What the bench holds: sensors to place (levels 1–2 and 5) or reading chips for the empty rows (levels 3–4). */
-  bench: 'sensors' | 'chips';
+  /** What the bench holds: sensors to place (levels 1–2 and 5), reading chips for the empty rows (levels 3–4), or nothing: the lines sit on the gauge (levels 6–7). */
+  bench: 'sensors' | 'chips' | 'lines';
 }
 
 const PLANS: readonly Plan[] = [
@@ -215,6 +251,8 @@ const PLANS: readonly Plan[] = [
   { level: 3, name: 'On and off', bench: 'chips' },
   { level: 4, name: 'Chilly nook', bench: 'chips' },
   { level: 5, name: 'Where does it look?', bench: 'sensors' },
+  { level: 6, name: 'The comfy line', bench: 'lines' },
+  { level: 7, name: 'Calm heater', bench: 'lines' },
 ];
 export const MAX_LEVEL = PLANS.length;
 
@@ -246,6 +284,11 @@ export function startBoard(level: number): Board {
   if (level === 4) return { level: 4, sensor: { kind: 'thermo', socket: 'nook' }, rows: [{ reading: null, action: 'on', given: false }, { reading: null, action: 'off', given: false }] };
   // Level 3's answer, fixed; only the sensor's place is open, and it starts under the lamp.
   if (level === 5) return { level: 5, sensor: { kind: 'sun', socket: 'lamp' }, rows: [{ reading: 'dark', action: 'on', given: true }, { reading: 'bright', action: 'off', given: true }] };
+  // The gauge's given rows: below the line → on, above it → off. Level 6's line starts at the top; level 7's two lines start together at level 6's lower answer.
+  if (onGauge(level)) {
+    const gap = level === 6 ? GAPS : 3;
+    return { level, sensor: { kind: 'thermo', socket: 'nook' }, rows: [{ reading: null, action: 'on', given: true }, { reading: null, action: 'off', given: true }], lines: { on: gap, off: gap } };
+  }
   return { level: 3, sensor: { kind: 'sun', socket: 'post' }, rows: [{ reading: 'dark', action: 'on', given: true }, { reading: null, action: 'off', given: false }] };
 }
 
@@ -269,7 +312,7 @@ export function briefFor(level: number, rng: Rng): Brief {
     board: startBoard(plan.level),
     sensors: plan.level === 1 ? ['eye'] : plan.level === 2 ? rng.shuffle<SensorKind>(['eye', 'sun']) : plan.level === 5 ? ['sun'] : [],
     chips: plan.level === 3 ? rng.shuffle<Chip>([...SUN_LEVELS]) : plan.level === 4 ? [...ZONES] : [],
-    sockets: plan.level === 1 ? ['door', 'window'] : plan.level === 4 ? ['nook'] : plan.level === 5 ? ['lamp', 'roof', 'shed'] : ['post'],
+    sockets: plan.level === 1 ? ['door', 'window'] : plan.level === 4 ? ['nook'] : plan.level === 5 ? ['lamp', 'roof', 'shed'] : onGauge(plan.level) ? [] : ['post'],
     friend,
     house,
   };
@@ -291,6 +334,19 @@ export function setRow(board: Board, index: number, reading: Reading | null): Bo
   return { ...board, rows };
 }
 
+/**
+ * The board with a line moved to a gap (1–6). Level 6's one line moves both; at level 7 the two lines cannot cross: a
+ * line stops at the other's gap.
+ */
+export function setLine(board: Board, piece: LinePiece, gap: number): Board {
+  if (!board.lines) return board;
+  const g = Math.max(1, Math.min(GAPS, Math.round(gap)));
+  const { on, off } = board.lines;
+  if (piece === 'line') return { ...board, lines: { on: g, off: g } };
+  if (piece === 'on-line') return { ...board, lines: { on: Math.min(g, off), off } };
+  return { ...board, lines: { on, off: Math.max(g, on) } };
+}
+
 /** The editable rows' indexes. */
 export function openRows(board: Board): number[] {
   return board.rows.map((r, i) => (r.given ? -1 : i)).filter((i) => i >= 0);
@@ -298,7 +354,8 @@ export function openRows(board: Board): number[] {
 
 export function sameBoard(a: Board, b: Board): boolean {
   return a.level === b.level && a.sensor.kind === b.sensor.kind && a.sensor.socket === b.sensor.socket
-    && a.rows.length === b.rows.length && a.rows.every((r, i) => r.reading === b.rows[i].reading && r.action === b.rows[i].action);
+    && a.rows.length === b.rows.length && a.rows.every((r, i) => r.reading === b.rows[i].reading && r.action === b.rows[i].action)
+    && a.lines?.on === b.lines?.on && a.lines?.off === b.lines?.off;
 }
 
 // ——— The board space ———
@@ -309,6 +366,12 @@ export function candidateBoards(brief: Brief): Board[] {
   if (brief.level === 1) return [null, ...brief.sockets].map((s) => placeSensor(start, 'eye', s));
   if (brief.level === 2) return [null, ...brief.sensors].map((k) => placeSensor(start, k, 'post'));
   if (brief.level === 5) return [null, ...brief.sockets].map((s) => placeSensor(start, 'sun', s));
+  if (brief.level === 6) return Array.from({ length: GAPS }, (_, i) => ({ ...start, lines: { on: i + 1, off: i + 1 } }));
+  if (brief.level === 7) {
+    const out: Board[] = [];
+    for (let on = 1; on <= GAPS; on++) for (let off = on; off <= GAPS; off++) out.push({ ...start, lines: { on, off } });
+    return out;
+  }
   let out: Board[] = [start];
   for (const row of openRows(start)) {
     out = out.flatMap((b) => [null, ...chipsFor(brief.level)].map((r) => setRow(b, row, r)));
@@ -318,6 +381,7 @@ export function candidateBoards(brief: Brief): Board[] {
 
 /** Complete boards: every piece placed. */
 export function complete(board: Board): boolean {
+  if (board.lines) return true;
   if (placesSensor(board.level)) return board.sensor.kind !== null && board.sensor.socket !== null;
   return board.rows.every((r) => r.reading !== null);
 }
@@ -326,6 +390,9 @@ export function complete(board: Board): boolean {
 export function solutions(brief: Brief): Board[] {
   return candidateBoards(brief).filter((b) => meetsGoal(b, brief.day));
 }
+
+/** Level 7's one accepted board: the on line at gap 3, the off line at gap 4. */
+export const CALM = { on: 3, off: 4 } as const;
 
 /** Level 4's one accepted board (its day never changes): cool → on, warm → off. */
 function nookBoard(): Board {
@@ -345,6 +412,17 @@ function wrongRows(board: Board, right: Board): number[] {
  * points at the on row and a nook that gets too warm at the off row, unless that row is already right; then the other.
  */
 export function glowFor(board: Board, failure: Failure): Piece {
+  if (board.lines) {
+    if (board.level === 6) return 'line';
+    // Level 7: the line whose gap differs from the accepted board's (on 3, off 4); too cold points at the on line first.
+    const right = CALM;
+    const wrongOn = board.lines.on !== right.on;
+    const wrongOff = board.lines.off !== right.off;
+    const prefer: LinePiece = failure === 'never-warms' ? 'on-line' : 'off-line';
+    const preferWrong = prefer === 'on-line' ? wrongOn : wrongOff;
+    if (preferWrong || (!wrongOn && !wrongOff)) return prefer;
+    return prefer === 'on-line' ? 'off-line' : 'on-line';
+  }
   // Level 5 has no open rows: every failure points at where the sensor is.
   if (placesSensor(board.level) || failure === 'sensor-blind' || failure === 'friend-waiting') return 'sensor';
   const open = openRows(board);
@@ -367,6 +445,7 @@ export interface Help {
  * 1–3 and 5 one piece completes the board, so a later press changes nothing and the pet says so; level 4 has two rows.
  */
 export function helpFor(board: Board, brief: Brief, _presses: number): Help {
+  if (board.lines) return lineHelp(board, brief);
   const right = solutions(brief)[0];
   if (!right) return { board, placed: null };
   if (placesSensor(board.level)) {
@@ -377,6 +456,22 @@ export function helpFor(board: Board, brief: Brief, _presses: number): Help {
   const [row] = wrongRows(board, right);
   if (row === undefined) return { board, placed: null };
   return { board: setRow(board, row, right.rows[row].reading), placed: row };
+}
+
+/**
+ * The gauge's Show me. Level 6: one press moves the line to the nearer accepted gap (4 from above, 3 from below).
+ * Level 7: the first press sets the off line (or the one line that differs), the second the other.
+ */
+function lineHelp(board: Board, brief: Brief): Help {
+  if (meetsGoal(board, brief.day)) return { board, placed: null };
+  const { on, off } = board.lines!;
+  if (board.level === 6) return { board: setLine(board, 'line', on >= 4 ? 4 : 3), placed: 'line' };
+  if (off !== CALM.off) {
+    // The off line first; if the on line sits above where the off line goes, it comes down with it, and the next press sets it.
+    const next = { ...board, lines: { on: Math.min(on, CALM.off), off: CALM.off } };
+    return { board: next, placed: 'off-line' };
+  }
+  return { board: setLine(board, 'on-line', CALM.on), placed: 'on-line' };
 }
 
 // ——— Accounting ———
@@ -434,7 +529,7 @@ export function offersSetup(t: Tally): boolean {
 
 // ——— The ghost finger ———
 
-export type Move = { place: { kind: SensorKind; socket: Socket } } | { chip: Chip; row: number } | { watch: true };
+export type Move = { place: { kind: SensorKind; socket: Socket } } | { chip: Chip; row: number } | { line: LinePiece; gap: number } | { watch: true };
 
 /**
  * What a capable child does next: place the piece the goal needs, then Watch. At level 3 the first Watch runs the day
@@ -442,6 +537,14 @@ export type Move = { place: { kind: SensorKind; socket: Socket } } | { chip: Chi
  * off row, then Watch. At level 5 the first Watch shows the lamp flicker before the sensor goes up to the roof.
  */
 export function nextMove(brief: Brief, board: Board, daysPlayed: number): Move {
+  if (board.lines) {
+    // Level 6: the line from the top down to gap 4 (Watch skips the guess). Level 7: Watch first (a pebble rolls out), then the off line up.
+    if (brief.level === 6) return board.lines.on === 4 ? { watch: true } : { line: 'line', gap: 4 };
+    if (daysPlayed === 0 && !meetsGoal(board, brief.day)) return { watch: true };
+    if (board.lines.off !== CALM.off) return { line: 'off-line', gap: CALM.off };
+    if (board.lines.on !== CALM.on) return { line: 'on-line', gap: CALM.on };
+    return { watch: true };
+  }
   const right = solutions(brief)[0];
   if (brief.level === 5 && daysPlayed === 0 && !meetsGoal(board, brief.day)) return { watch: true };
   if (placesSensor(brief.level)) {
@@ -494,6 +597,44 @@ export interface HouseLayout {
   watch: Rect;
   step: Rect;
   undo: Rect;
+  /** Levels 6–7: the warmth gauge, its handle lanes and the click jar. */
+  gauge: GaugeLayout | null;
+}
+
+/** The gauge's tall column of seven warmth cells (0 at the bottom), a handle lane each side, and level 7's jar. */
+export interface GaugeLayout {
+  column: Rect;
+  /** Height of one warmth cell; the gaps between cells are this far apart. */
+  pitch: number;
+  /** The on line's handles (level 6's one line) ride in the left lane, the off line's in the right. */
+  left: Rect;
+  right: Rect;
+  jar: Rect | null;
+}
+
+/** One warmth cell's height on the gauge: gaps at least 60 apart, so the gauge is at least 420 tall. */
+export const PITCH = 64;
+export const JAR_BOX = { w: 200, h: 120 };
+
+/** The y of gap k (1–6) on the gauge: the boundary between warmth k−1 and k. */
+export function gapY(g: GaugeLayout, gap: number): number {
+  return g.column.y + g.column.h - gap * g.pitch;
+}
+
+/** The y of a warmth cell's middle. */
+export function warmthY(g: GaugeLayout, warmth: number): number {
+  return g.column.y + g.column.h - (warmth + 0.5) * g.pitch;
+}
+
+/** The gap nearest a y on the gauge, 1–6. */
+export function gapAt(g: GaugeLayout, y: number): number {
+  return Math.max(1, Math.min(GAPS, Math.round((g.column.y + g.column.h - y) / g.pitch)));
+}
+
+/** A line's handle tab, centred on its gap in its lane. */
+export function handleRect(g: GaugeLayout, piece: LinePiece, gap: number): Rect {
+  const lane = piece === 'off-line' ? g.right : g.left;
+  return { x: lane.x, y: gapY(g, gap) - TILE / 2, w: TILE, h: TILE };
 }
 
 /**
@@ -513,6 +654,7 @@ const button = (cx: number, cy: number, r = BUTTON_R): Rect => ({ x: cx - r, y: 
  * the view cannot hold full-size targets (nothing shrinks).
  */
 export function houseLayout(brief: Brief, v: View): HouseLayout | null {
+  if (onGauge(brief.level)) return gaugeHouseLayout(brief, v);
   const wide = v.w >= v.h;
   const nRows = brief.board.rows.length;
   const nBench = planFor(brief.level).bench === 'chips' ? brief.chips.length : brief.sensors.length;
@@ -569,5 +711,66 @@ export function houseLayout(brief: Brief, v: View): HouseLayout | null {
   if (parts.some((p) => corners(v).some((q) => overlaps(p, q)))) return null;
   if (parts.some((p, i) => parts.some((q, j) => i < j && overlaps(p, q)))) return null;
   if (sockets.some((s) => !inside(s, v) || sockets.some((t) => t !== s && overlaps(s, t)))) return null;
-  return { house, sockets, rows, bench, watch, step, undo };
+  return { house, sockets, rows, bench, watch, step, undo, gauge: null };
+}
+
+/**
+ * Levels 6–7. Landscape: the house left with the two rule rows under it, the gauge (handle lanes either side) and the
+ * jar under it at the right. Portrait: the house above, then the gauge beside the rule rows with the jar under them.
+ */
+function gaugeHouseLayout(brief: Brief, v: View): HouseLayout | null {
+  const wide = v.w >= v.h;
+  const colH = (GAPS + 1) * PITCH;
+  const blockW = 3 * TILE;
+  const by = v.h - M - WATCH.h / 2;
+  const rightX = v.w - M;
+  const rowsH = 2 * CARD.h + GAP;
+  const rowW = CARD.w + ARROW + CARD.w;
+  let house: Rect;
+  let gx: number;
+  let gy: number;
+  let rowX: number;
+  let rowY: number;
+  let jar: Rect;
+  if (wide) {
+    const houseX = PET_CORNER.w + M;
+    const houseW = Math.round(v.w * 0.42);
+    house = { x: houseX, y: M, w: houseW, h: v.h - 2 * M - rowsH - M };
+    rowX = houseX;
+    rowY = house.y + house.h + M;
+    gx = Math.max(house.x + house.w + M, rightX - blockW - (v.w > 1100 ? JAR_BOX.w + M : 0));
+    gy = M;
+    // The jar under the gauge, or beside it when the view is wide enough.
+    jar = v.w > 1100 ? { x: gx + blockW + M, y: gy + colH / 2 - JAR_BOX.h / 2, ...JAR_BOX } : { x: gx, y: gy + colH + M, ...JAR_BOX };
+  } else {
+    gx = M;
+    gy = v.h - PET_CORNER.h - M - colH;
+    house = { x: HOME_CORNER.w + M, y: M, w: v.w - HOME_CORNER.w - 2 * M, h: Math.min(820, gy - 2 * M) };
+    rowX = gx + blockW + 2 * M;
+    rowY = gy;
+    jar = { x: rowX, y: rowY + rowsH + M + 8, ...JAR_BOX };
+  }
+  const column = { x: gx + TILE, y: gy, w: TILE, h: colH };
+  const gauge: GaugeLayout = {
+    column,
+    pitch: PITCH,
+    left: { x: gx, y: gy, w: TILE, h: colH },
+    right: { x: gx + 2 * TILE, y: gy, w: TILE, h: colH },
+    jar: brief.level === 7 ? jar : null,
+  };
+  const rows = [0, 1].map((i) => {
+    const y = rowY + i * (CARD.h + GAP);
+    return { reading: { x: rowX, y, w: CARD.w, h: CARD.h }, action: { x: rowX + CARD.w + ARROW, y, w: CARD.w, h: CARD.h } };
+  });
+  const undo = button(rightX - BUTTON_R, by);
+  const step = button(undo.x - GAP - BUTTON_R, by);
+  const watch = { x: step.x - GAP - WATCH.w, y: by - WATCH.h / 2, w: WATCH.w, h: WATCH.h };
+  const block = { x: gx, y: gy, w: blockW, h: colH };
+  const rowBox = { x: rowX, y: rowY, w: rowW, h: rowsH };
+  const parts = [house, block, rowBox, ...(gauge.jar ? [gauge.jar] : []), watch, step, undo];
+  if (house.h < 320 || house.w < 360) return null;
+  if (!parts.every((p) => inside(p, v))) return null;
+  if (parts.some((p) => corners(v).some((q) => overlaps(p, q)))) return null;
+  if (parts.some((p, i) => parts.some((q, j) => i < j && overlaps(p, q)))) return null;
+  return { house, sockets: [], rows, bench: [], watch, step, undo, gauge };
 }

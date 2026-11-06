@@ -524,6 +524,12 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 
 - [ ] On an iPad, check that the flicker reads as the lamp's own fault (the lamp lighting, the sensor seeing bright, the lamp going off), and that a five-year-old can tell the roof, shed and lamp-post sockets apart in portrait with the pet clear.
 
+## Helper House levels 6–7
+
+- [ ] Watch a six-year-old at level 7: does she read the click jar as "fewer clicks" rather than a score?
+- [ ] On an iPad, check that the hare and flames guess and the truth line land, that the faint climb strip on the gauge reads, and that the two line tabs are easy to drag apart in portrait with the pet clear.
+- [ ] The science-educator read of the warmth wording stays open (see level 4 above).
+
 ## Sorting Machine levels 1–2
 
 - [ ] On an iPad, check that the sign's door pictures (property to open door) read without words, and that the star, hollow ring and dotted ring with "?" are clear in portrait with the pet clear.
