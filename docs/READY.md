@@ -6,7 +6,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **Define Puddle Lens 5–6** (`cells-microbes`; docs only, with a session source check of the biology model): [definition so far](definitions/puddle-lens.md), [study](deep-dives/subjects/cells-microbes.md).
+- **Define Puddle Lens 5–6** (`cells-microbes`; docs only, with a session source check of the biology model; claimed by `claude/define-puddle-lens-5-6`): [definition so far](definitions/puddle-lens.md), [study](deep-dives/subjects/cells-microbes.md).
 - **Define Sense Detective 3–5, B3 ambiguity** (`body-health`; docs only): [definition so far](definitions/sense-detective.md), [study](deep-dives/subjects/body-health.md).
 - **`sink-float`, level 10 *Salty or fresh* (batch sink-float 3)**, after batch sink-float 2 (built; new-interaction tier: typecheck, unit tests including the registry, lands, how-to and voice tests, one play of school level 10 through part 1, two wrong tanks on one egg question (glow, one hint), the duck question, to the sticker, one portrait and one landscape screenshot, `fingerdemo` at 10, one direct `control()` call for the two-tank ring, one build; no `couchgames`): [definition](definitions/salty-or-fresh.md), [dive](deep-dives/sink-float.md#build-slices-in-order), [batch](GAME-BATCHES.md#sink-float-3-salty-or-fresh).
 - **`word-search`, level 7 *Just the theme* (batch word-search 4)**, after batch word-search 3 (built; new-interaction tier: typecheck, rule tests, one play of level 7 with a free non-theme line and two hints on one word, then to the sticker, one portrait screenshot of the blanks, `fingerdemo` at 7): [dive](deep-dives/word-search.md#build-slices-in-order), [batch](GAME-BATCHES.md#word-search-4-just-the-theme).
