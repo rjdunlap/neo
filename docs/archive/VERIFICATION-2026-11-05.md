@@ -185,3 +185,7 @@
 - Ran (Vite on port 5732, `VITE_SPEECH=off`, at `dc3eb856` or its parent with only guard edits after): `npm run typecheck`; full `npm test` 5232 pass (two failures, the clip manifest and the toddler off-screen line, fixed afterwards; one Secret Code timing flake passed alone); rule tests 58; `npm run build`; `BROWSER_SUITE=seeds` (level 1 bellows, one Replay, basket 0/0; level 3 portrait: plume and critter stay, Show a hint twice counted once, both delivered 0/1, one screenshot); `BROWSER_SUITE=fingerdemo FINGER_ONLY=seed-travelers` (levels 1 and 3); `BROWSER_SUITE=smoke SMOKE_ONLY=seed-travelers` (levels 1–3).
 - Not run: `world`, couch, the offline check; level 2 only in smoke and the rule tests; an iPad and device speech.
 - Open: [device checks](../DEVICE-CHECKS.md#seed-travelers-levels-13-life-science-slice-2-2026-11-05).
+
+## 2026-11-05 — Draw the Pattern deep dive (docs only)
+
+Changed: the dive `docs/deep-dives/draw-the-pattern.md`, the tracker row, READY, WAITING-ON-DEVELOPER, STUDY-BACKLOG and the GAMES.md lap wording. Ran: `node scripts/check-links.mjs` and `git diff --check`. Nothing else run (no code touched). Open: nothing.
