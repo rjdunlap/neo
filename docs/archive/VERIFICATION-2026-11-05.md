@@ -90,3 +90,10 @@
 - [PR #1261](https://github.com/rjdunlap/neo/pull/1261) (base `a68c4fb3` plus the branch; Vite `http://localhost:5789`, `VITE_SPEECH=off`): `SINK_PLANS` keyed by level ID, `order` bands (pre-K 4, 5, 9, 6; school 5, 6, 9, 7), level 9 with three seeded size pairs, twig and pebble art, how-to `from: 9` steps. `game-reviewer` found no defects; its cosmetic note (the last pair's fade) was fixed.
 - Ran: typecheck; full `npm test` (305 files, 5,093 tests) including the keyed-plan, order, pair and seeded-pair rule tests; a scripted school play of level 9 in 768×1024 portrait (one surprise guess on the first pair, then right guesses; 0/0, no discoveries, no page errors) with portrait screenshots; `BROWSER_SUITE=fingerdemo FINGER_ONLY=sink-float FINGER_LEVELS=9` PASS at pre-K (19.8 s); `npm run build`.
 - Not run: `couchgames` (outside the tier), an iPad or a child ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
+
+## 2026-11-05 — Sudoku Garden level 8 A crossing pair of rows (sudoku-garden batch 3)
+
+- [PR #1263](https://github.com/rjdunlap/neo/pull/1263) (branch `claude/sudoku-garden-crossing-rows`): grown-up top level 8, the `xwing` technique (tier 4) on 12 authored, solver-checked `WING_BEDS` shown a new way per round; hint rings the four corners and lights the two lines; voice line `sudoku.hint-xwing`; how-to step.
+- Ran: typecheck; full `npm test` 305 files, 5097 tests (before a last hint-rule tweak; afterwards the sudoku-garden and content tests, 215, and typecheck); `npm run build`; `BROWSER_SUITE=sudokutouch SUDOKU_ONLY=8` (X-Wing hint on hint 35, one sticker; an earlier run failed when a bed never named the X-Wing, hence the three-bed retry); `BROWSER_SUITE=fingerdemo FINGER_ONLY=sudoku-garden FINGER_LEVELS=8` pass in 34.2 s; portrait screenshot `test-results/browser/sudokutouch/sudoku-touch-8-xwing-portrait.png`.
+- Not run: `couchgames` (couch untouched), offline check, an iPad or a person.
+- Open: whether the X-Wing hint is clear to a grown-up (person check, [DEVICE-CHECKS](../DEVICE-CHECKS.md)); on about 30% of beds the hint path never names the X-Wing.

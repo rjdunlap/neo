@@ -1,6 +1,6 @@
 # Word Search deep dive
 
-*ID `word-search` · band grown-up · levels 1–6 (6 built 2026-11-05, 5 on 2026-11-04; first four on 2026-11-01) · session `claude/dive-word-search`, [PR #1104](https://github.com/rjdunlap/neo/pull/1104)*
+*ID `word-search` · band grown-up · levels 1–7 (7 and 6 built 2026-11-05, 5 on 2026-11-04; first four on 2026-11-01) · session `claude/dive-word-search`, [PR #1104](https://github.com/rjdunlap/neo/pull/1104)*
 
 ## The game today
 
@@ -14,8 +14,9 @@ A grid of letters hides the words of a themed list, shown beside it with the the
 | 4 | 14 by 14, twelve words, every direction | grown-up | As 3 on a grid that slides in a window on every view |
 | 5 | 6 by 6, four words of three to six letters, across and down (`SMALL_GRID`) | grown-up entry | As 1 on a grid that is always all in view: squares 98 units at 1024×768, 132 at 1024×1365, so a drag works |
 | 6 | 8 by 8, nine words across, down and down-right, up to eight stones (`#`) | grown-up | As 2 with the leftover letters spelling a themed message, read out when the last word is found |
+| 7 | 10 by 10, six hidden words in every direction (`HIDDEN_GRID`, plan `hidden: true`) | grown-up | Which words the theme could hold: the list shows only the theme and a blank with a length per word |
 
-`LEVELS` is `{ grownup: { min: 1, max: 6 } }` with `order` `[5, 1, 2, 3, 4, 6]` (`ORDER`) and `entryLevels: [5]`; `planFor` of a level past the top plays level 4. The word list column narrows from 262 to 222 for the small grid. Root families can be drawn at level 5 (*Words that carry*; *Words that look* cannot, only ASPECT fits). Every plan has `grids: 1`.
+`LEVELS` is `{ grownup: { min: 1, max: 7 } }` with `order` `[5, 1, 2, 3, 4, 6, 7]` (`ORDER`) and `entryLevels: [5]`; `planFor` of a level past the top plays level 7 (it played level 4 before level 7). The word list column narrows from 262 to 222 for the small grid. Root families can be drawn at level 5 (*Words that carry*; *Words that look* cannot, only ASPECT fits). Every plan has `grids: 1`.
 
 **Content pools.** Fifteen everyday themes in `words.ts` (pond, garden, kitchen, weather, farm, bakery, sea, woods, cozy evening, and since batch 1 orchard, birds, market, night sky, toolbox, music), 12–16 words each, three to eight letters, plus two seven-word root-family themes (*Words that carry*, *Words that look*) that `themesFor(plan)` draws only for plans they can fill (levels 1–2). A seed picks the theme and the words; `makeGrid` places them longest first (half the time crossing a word already there), redraws only the filler until every listed word occurs exactly once in all eight directions and no word in `blocked.ts` can be read. Couch: a trip stop on levels 1–3 (face-off `twin`), and two frozen puzzle-shelf courses in `course.ts` (*Pond Words*, *The Big Hunt*) with versions.
 
@@ -24,7 +25,7 @@ A grid of letters hides the words of a themed list, shown beside it with the the
 **Known gaps.**
 - (Fixed in batch 1) `weather` no longer lists RAIN, and a test says no theme word contains another, forwards or backwards.
 - (Fixed in batch 2) The smallest grid was 8 by 8 at 64-unit squares; level 5 is the gentler way in, a 6 by 6 at 96 units or more.
-- Every grid shows its full word list, so the game never asks for recall, only search; a theme title is decoration.
+- (Addressed by level 7, 2026-11-05) Levels 1–6 show their full word list, so they ask for search only; level 7 shows just the theme and blanks.
 - Found words and hints speak the word through a `{word}` slot (`wordsearch.found`, `wordsearch.hint`), so those lines use device speech until slotted clips (V3).
 - Replay varies the theme and positions only; fifteen everyday themes is a wider shelf, still small for a grown-up who plays daily.
 - The root-family lists (VW6 first step) are built; the root meaning is spoken through device speech (`wordsearch.root-port`, `wordsearch.root-spect`), no clip, and "spect" is not yet heard on a device.
@@ -110,10 +111,10 @@ None. By the [standing rules](../archive/DECISIONS-2026-10-23.md#standing-rules)
 1. **Fresh themes and root families** (batch word-search 1, built 2026-11-03): above. Existing-interaction tier: typecheck, the game's rule tests, one filtered regression play of level 1 with a root theme forced by seed, one build for the voice line; bot unchanged, no `fingerdemo`.
 2. **Level 5, A small grid to start** (batch word-search 2, built 2026-11-04): new level on the existing interaction: typecheck, rule tests including order and entry, one browser play of level 5 with one wrong line and one hint, one portrait and one landscape screenshot (the square size is the point), `fingerdemo` at 5.
 3. **Level 6, A message in the leftovers** (batch word-search 3, built 2026-11-05), after batch 2 (its ID follows 5): new-rule tier with a new grid drawing (stones): typecheck, rule tests, one play of level 6 with one wrong line, one hint, then to the message reveal, one portrait screenshot of the revealed message, `fingerdemo` at 6, and `BROWSER_SUITE=couchgames` filtered to Word Search, since `makeGrid` changes.
-4. **Level 7, Just the theme** (batch word-search 4), after batch 3: new-interaction tier (the blanks and the two-step hint): typecheck, rule tests, one play of level 7 with a free non-theme line, two hints on one word, then to the sticker, one portrait screenshot of the blanks, `fingerdemo` at 7.
+4. **Level 7, Just the theme** (batch word-search 4, built 2026-11-05, [PR #1279](https://github.com/rjdunlap/neo/pull/1279)), after batch 3: new-interaction tier (the blanks and the two-step hint): typecheck, rule tests, one play of level 7 with a free non-theme line, two hints on one word, then to the sticker, one portrait screenshot of the blanks, `fingerdemo` at 7.
 5. *Define:* **Word Search school opening** (**defined 2026-11-04**, [definition](../definitions/word-search-school-opening.md), [PR #1211](https://github.com/rjdunlap/neo/pull/1211); docs only): above.
 6. **School opening, level 8** (batch word-search 5), after batch 2: new band entry with a layout change and a new list drawing: typecheck, rule tests and the registry, lands and how-to tests, one scripted school play of level 8 with two wrong lines (the second shows the ring without counting a hint), a tile tap, one Hint, to the sticker; one portrait screenshot; logged 1024×768 and 1024×1365 sizes; `fingerdemo` at school 8; one build; no `couchgames`.
 
 ## What was built in this session
 
-Batch word-search 1 (2026-11-03, PR #1150): six themes, two root families, RAIN out of weather; the rest is research and ideation. Build note: [archive](../archive/COMPLETED-2026-10-09.md#word-search-fresh-themes-and-root-families-word-search-batch-1-2026-11-03). Batch word-search 2 (2026-11-04, PR #1240): level 5 *A small grid to start*; build note: [archive](../archive/COMPLETED-2026-10-09.md#word-search-level-5-a-small-grid-to-start-word-search-batch-2-2026-11-04). Batch word-search 3 (2026-11-05, PR #1269): level 6 *A message in the leftovers*; build note: [archive](../archive/COMPLETED-2026-10-09.md#word-search-level-6-a-message-in-the-leftovers-word-search-batch-3-2026-11-05). Slices 4 and 6 are unbuilt.
+Batch word-search 1 (2026-11-03, PR #1150): six themes, two root families, RAIN out of weather; the rest is research and ideation. Build note: [archive](../archive/COMPLETED-2026-10-09.md#word-search-fresh-themes-and-root-families-word-search-batch-1-2026-11-03). Batch word-search 2 (2026-11-04, PR #1240): level 5 *A small grid to start*; build note: [archive](../archive/COMPLETED-2026-10-09.md#word-search-level-5-a-small-grid-to-start-word-search-batch-2-2026-11-04). Batch word-search 3 (2026-11-05, PR #1269): level 6 *A message in the leftovers*; build note: [archive](../archive/COMPLETED-2026-10-09.md#word-search-level-6-a-message-in-the-leftovers-word-search-batch-3-2026-11-05). Batch word-search 4 (2026-11-05, PR #1279): level 7 *Just the theme*; build note: [archive](../archive/COMPLETED-2026-10-09.md#word-search-level-7-just-the-theme-word-search-batch-4-2026-11-05). Slice 6 is unbuilt.
