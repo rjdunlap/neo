@@ -107,7 +107,7 @@ class MossyPath implements Game {
   };
   private readonly onMove = (e: FederatedPointerEvent) => {
     const d = this.drag;
-    if (!d || e.pointerId !== d.id || !this.alive) return;
+    if (!d || e.pointerId !== d.id || !this.alive || this.walkTo >= 0) return;
     const cell = this.cellAt(e.global);
     if (cell === d.cell || cell < 0) return;
     d.cell = cell; this.lift(cell);
