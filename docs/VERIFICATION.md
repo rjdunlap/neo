@@ -45,6 +45,13 @@ Changed: `docs/definitions/helper-house.md` (new "Levels 5–7 (RA4)" section), 
 - Not run: `npm run build` (no shared files or assets), other levels' browser plays (unchanged), a real iPad.
 - Open: a four-year-old's finger on the short slanting lines ([DEVICE-CHECKS](DEVICE-CHECKS.md)).
 
+## 2026-11-06 — Mystery Grid (logic-grid) level 8
+
+- [PR #1310](https://github.com/rjdunlap/neo/pull/1310): level 8 *Who came first?* (grown-up): three 5 x 5 blocks, a time row, 'order' and 'pair' solver steps, the sliding window; `LOGICGRID_FROM=8`.
+- Ran (tested commit `e7536148`, base `734291c2`; port 5743, Vite dev): `npm run typecheck`; `npm test` (316 files, 5605 tests, 8 new level-8 rule tests); `npm run build`; `BROWSER_SUITE=logicgrid LOGICGRID_FROM=8` PASS (75 squares, 7-9 clues with order and pair, landscape and portrait fit at 64 clear of the pet, a header drag slides, a hidden square takes no mark, one counted miss, one Help hint in view, bot to the sticker, saved 1 miss 1 hint); `BROWSER_SUITE=fingerdemo FINGER_ONLY=logic-grid FINGER_LEVELS=8` clean in 27.2 s. Screenshots `test-results/browser/logicgrid/logic-grid-8-landscape.png` and `-portrait.png`.
+- Not run: levels 1-7 browser plays (their code moved cells into a body container and headers into strips at zero offset with no mask; unit tests cover rules), the offline check.
+- Open: device speech of the slotted level-8 clues and a real iPad slide (person/device, in [DEVICE-CHECKS](DEVICE-CHECKS.md#mystery-grid-level-8-2026-11-06)).
+
 ## 2026-11-06 — Mystery Grid (logic-grid) level 7
 
 - [PR #1307](https://github.com/rjdunlap/neo/pull/1307): level 7 *Case file* (grown-up): three linked 4 x 4 blocks, written clue list, a 'link' step in the rule solver, `lg.*` voice lines, how-to step; `LOGICGRID_FROM=7`.
@@ -93,20 +100,13 @@ Changed: level 5 *Can we tell?* (quilted parcels, `checkTell`, *Can't tell yet*,
 - Not run: a landscape screenshot (layout asserted in portrait only; landscape clearance computed by the reviewer), the offline check, other suites, a real iPad.
 - Open: device speech of slotted clue lines and whether a three-year-old follows a spoken "not" ([DEVICE-CHECKS](DEVICE-CHECKS.md#mystery-grid-levels-1-2-2026-11-05)).
 
-## 2026-11-05 — Crossword levels 1-2
-
-- [PR #1294](https://github.com/rjdunlap/neo/pull/1294): the new game `crossword` (Story Grove; pre-K 1-2, school 2), 14 rule tests, how-to card with ghost finger, `cw.*` voice lines and one rendered clip, new `crossword` browser case.
-- Ran (commit `2110069a` plus review fixes; port 5477): `npm run typecheck`; `npm test` (309 files, 5359 tests, before the review fixes; crossword rule tests 14/14 after); `npm run build`; `BROWSER_SUITE=crossword` PASS (level 1 wrong crossing tile 1 miss and Help 1 hint to the sticker; level 2 768 x 1024 portrait screenshot with the bank and Help at least 100 units, to the sticker 0/0); `BROWSER_SUITE=fingerdemo FINGER_ONLY=crossword FINGER_LEVELS=1,2` PASS (12.5 s, 20.5 s).
-- Not run: the offline check, other suites, a real iPad.
-- Open: device speech of letter names and spelled non-words, and whether a four-year-old sees one letter serve two words ([DEVICE-CHECKS](DEVICE-CHECKS.md#crossword-levels-1-2-2026-11-05)).
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| `logic-grid` (`logicgrid`), `fingerdemo` (`logic-grid`) | 2026-11-06 (`6aed60f0`): typecheck, full unit tests (5555), build; `logicgrid` with `LOGICGRID_FROM=7` (48 cells, ruled-out yes 1 miss, Help 1 hint, landscape and portrait fit, sticker, saved 1/1); `fingerdemo` at 1 and 7; level 6 last passed at `0f0a23ed`, level 5 at at `a99772bd`, levels 3-4 at `49bce450`, levels 1-2 at `9e9d79db` | [Entry](VERIFICATION.md#2026-11-06--mystery-grid-logic-grid-level-7) | No offline check; speech of slotted clues, hat clues and either/neither clues and a child's grasp of "not" are open |
+| `logic-grid` (`logicgrid`), `fingerdemo` (`logic-grid`) | 2026-11-06 (`e7536148`): typecheck, full unit tests (5605), build; `logicgrid` with `LOGICGRID_FROM=8` (75 squares, order and pair clues, header drag slides, ruled-out yes 1 miss, Help 1 hint in view, landscape and portrait fit, sticker, saved 1/1); `fingerdemo` at 8 (27.2 s); level 7 last passed at `6aed60f0`, level 6 at `0f0a23ed`, level 5 at at `a99772bd`, levels 3-4 at `49bce450`, levels 1-2 at `9e9d79db` | [Entry](VERIFICATION.md#2026-11-06--mystery-grid-logic-grid-level-8) | No offline check; levels 1-7 not re-played after the strip refactor; speech of slotted clues, the iPad slide, hat clues and either/neither clues and a child's grasp of "not" are open |
 | `crossword`, `fingerdemo` (`crossword`) | 2026-11-06 (tip `2bdbc023`): typecheck, full units (5,594); a one-off probe at levels 5 and 6 (landscape and upright, 1 miss, re-check, Help, hardware keys); `fingerdemo` at 5 and 6 (37.0 s, 51.3 s); `crossword` `FROM_LEVEL=4` and levels 1-3 from earlier passes | [Entry](VERIFICATION.md#2026-11-06--crossword-levels-5-6-written-clues-and-the-mini) | No build or offline check; no browser-suite case for levels 5-6; speech of riddles and clues, hardware keyboard on an iPad and a child's grasp of the shared letter are open |
 | Grown-ups' page off-screen lines (`src/content/offscreen.test.ts`) | 2026-10-26: typecheck, full 3465 units, build; 7 rule tests (under-3 word list, wording, resolution, `{name}`) | [Off-screen lines](archive/VERIFICATION-2026-10-26.md#2026-10-26--off-screen-lines-per-band) | No browser look at the page; Bumper Garden school line held; no reader evidence |
 | `seeds`, `fingerdemo`, `smoke` (`seed-travelers`) | 2026-11-05 (`dc3eb856`): typecheck, full `npm test` (5232; 58 rule tests), build; `seeds` (level 1 bellows, Replay, basket 0/0; level 3 portrait stays, one hint counted once, 0/1); `fingerdemo` levels 1, 3; `smoke` levels 1–3 | [Seed Travelers levels 1–3](archive/VERIFICATION-2026-11-05.md#2026-11-05--seed-travelers-levels-13-life-science-slice-2) | Level 2 only in smoke and rule tests; no offline, couch or `world` run; no iPad or device speech |
