@@ -106,11 +106,11 @@ class Crossword implements Game {
 
   start() {
     this.setPuzzle();
-    void this.start2();
+    void this.intro();
   }
 
   /** A themed round says its title first. */
-  private async start2() {
+  private async intro() {
     const theme = this.puzzle?.theme;
     if (theme) await this.ctx.say('cw.theme', { theme: theme.name });
     void this.ctx.instruct(INSTRUCT[Math.min(INSTRUCT.length, this.plan.level) - 1]);
