@@ -20,7 +20,7 @@ async function logicGridPlay() {
     }
   };
   await page.evaluate(() => { kit.store.data.settings.howToCards = false; });
-  // LOGICGRID_FROM=3 skips the level 1–2 plays; LOGICGRID_FROM=5 plays level 5 alone.
+  // LOGICGRID_FROM=3 skips the level 1–2 plays; LOGICGRID_FROM=5 plays levels 5–6; LOGICGRID_FROM=6 plays level 6 alone.
   const from = Number(process.env.LOGICGRID_FROM ?? 1);
   // Every target's bounds in logical units, the smallest side, and whether any reaches the pet's corner (x < 160, bottom 220).
   const fitNow = () => page.evaluate(() => {
@@ -116,6 +116,7 @@ async function logicGridPlay() {
   log('Mystery Grid 3 and 4: 3 by 3 with the ball, a ruled-out yes is one miss, Help one hint, landscape and portrait fit clear of the pet, hat clues, both to the sticker, passed');
   }
 
+  if (from <= 5) {
   // Level 5: two blocks (where and what) sharing the friend rows; a ruled-out yes is one miss, Help one hint, landscape and
   // portrait fit clear of the pet, then the bot plays it out (including a "not the one with" step) to the sticker.
   await launch('logic-grid', 5);
@@ -142,6 +143,38 @@ async function logicGridPlay() {
   await finished('logic-grid');
   assert.deepEqual(await score(), [1, 1], 'level 5 saved 1 miss, 1 hint');
   log('Mystery Grid 5: two blocks with the kite, a ruled-out yes is one miss, Help one hint, landscape and portrait fit clear of the pet, to the sticker, passed');
+  }
+
+  // Level 6: one 4 by 4 with either-or and neither-nor clues; a yes an either-or clue rules out by itself is one miss, Help one
+  // hint, landscape and portrait fit clear of the pet, then the bot plays it out to the sticker.
+  await launch('logic-grid', 6);
+  await idle(); await page.waitForTimeout(400);
+  s = await page.evaluate(() => { const g = neo.scene.game, b = g.current; return { cells: g.cells.length, thing: b.thing, n: b.clues.length, kinds: b.clues.map((c) => c.kind), hats: b.hats?.length, hat: b.clues.some((c) => c.hat) }; });
+  assert.equal(s.cells, 16); assert.equal(s.thing, 'kite'); assert.equal(s.hats, 4);
+  assert.ok(s.n >= 4 && s.n <= 6 && s.kinds.includes('either') && s.kinds.includes('neither') && !s.kinds.includes('direct') && s.hat, `level 6: 4–6 clues with either-or, neither-nor and a hat clue (${JSON.stringify(s)})`);
+  let fit6 = await fitNow();
+  assert.ok(fit6.min >= 96 && fit6.bottom <= fit6.h && fit6.right <= fit6.w && !fit6.pet, `level 6 fits landscape clear of the pet (${JSON.stringify(fit6)})`);
+  // A square only an either-or clue rules out: the friend's place outside its two.
+  const wrong6 = await page.evaluate(() => {
+    const b = neo.scene.game.current, c = b.clues.find((x) => x.kind === 'either');
+    const p = [0, 1, 2, 3].find((p) => p !== c.place && p !== c.or);
+    return c.friend * 4 + p;
+  });
+  await tapSquare(wrong6);
+  await page.waitForTimeout(3100);
+  assert.deepEqual(await tally(), [1, 0], 'level 6: a yes an either-or clue rules out is one miss once it rests');
+  await page.evaluate(() => kit.tapOn(neo.scene.game.help)); await page.waitForTimeout(400);
+  assert.deepEqual(await tally(), [1, 1], 'level 6: Help counts one hint');
+  await screenshot('logic-grid-6-landscape');
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(800);
+  fit6 = await fitNow();
+  assert.ok(fit6.min >= 96 && fit6.bottom <= fit6.h && fit6.right <= fit6.w && !fit6.pet, `level 6 fits upright clear of the pet (${JSON.stringify(fit6)})`);
+  await screenshot('logic-grid-6-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(500);
+  await playOut();
+  await finished('logic-grid');
+  assert.deepEqual(await score(), [1, 1], 'level 6 saved 1 miss, 1 hint');
+  log('Mystery Grid 6: a 4 by 4 with either-or and neither-nor clues, a ruled-out yes is one miss, Help one hint, landscape and portrait fit clear of the pet, to the sticker, passed');
 }
 return { logicGridPlay };
 }

@@ -1808,6 +1808,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 3, to: 5, text: 'Three friends, three places, *not* clues: rule out till each friend and place has one yes.' },
       { from: 4, to: 4, text: 'Clues name a friend by the hat on their card (red stripes, blue spots, yellow stars).' },
       { from: 5, to: 5, text: 'Two grids, where and what; some clues use hats. Place ✗ thing: who is there lacks it.' },
+      { from: 6, to: 6, text: 'Four friends, four places. *Or* clues: the friend is in one of two places, so the other two are no. *Neither…nor*: both are no there. Some use hats (green zigzag too).' },
       'When all are placed, the missing thing appears by its place or thing: tap who has it. Help (?) points at the next clue to use; again marks it.',
     ],
     finish: [{ to: 2, text: 'The round ends after two mysteries.' }, { from: 3, text: 'The round ends after one mystery.' }],
