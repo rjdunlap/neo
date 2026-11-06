@@ -246,3 +246,7 @@ Changed: school level 10 (`salt.ts` `SaltTanks`, `SALT_DEPTHS`/`floatsIn`/`saltR
 - Ran (commit `b401e617` plus `f9949ecc`'s one-token glow fix, covered by a new unit test; port 5332): `npm run typecheck`; `npm test` (308 files, 5338 tests); Helper House rule tests (36); `BROWSER_SUITE=helperhouse HH_LEVELS=4` PASS (cool dragged, hot tapped, two too-warm days, off-row glow with one hint, portrait screenshot, Show me to warm, finish 0 misses/2 hints); `BROWSER_SUITE=fingerdemo FINGER_ONLY=helper-house FINGER_LEVELS=4` (11.5 s); `npm run build`.
 - Not run: the on-row (never-warms) glow in the browser (unit-tested only); the offline check; other suites; a real iPad.
 - Open: thermometer, heater and friend moods on an iPad, and the science-educator read of the warmth wording ([DEVICE-CHECKS](../DEVICE-CHECKS.md#helper-house-level-4)).
+
+## 2026-11-05 — Crossword definition (docs only)
+
+Changed: a new `docs/definitions/crossword.md` (levels 1–6, Story Grove), READY (the definition line replaced by the levels 1–2 build), the puzzle-pages dive, STUDY-BACKLOG, roadmap, IDEAS and the recommendations packet (PR #1290). Ran: `node scripts/check-links.mjs` and `git diff --check`. No code checks (docs tier). Open: nothing built; device speech of letter names and whether a four-year-old sees one letter serve two words stay for a person.
