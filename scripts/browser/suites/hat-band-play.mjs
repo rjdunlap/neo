@@ -11,11 +11,18 @@ async function hatBandPlay() {
   const settled = (n = 4) => page.waitForFunction((n) => { const b = neo.scene.game.band; return b.heardMix >= n && b.worn[0] === b.sounding.worn[0] && b.worn[1] === b.sounding.worn[1] && b.solo === b.sounding.solo; }, n, { timeout: 15000 });
   const hatOf = (rack, role) => rack.find((h) => (role === 'drum' ? ['steady', 'skippy'] : ['cuckoo', 'rain']).includes(h));
   const record = () => page.evaluate(() => { const r = kit.store.stats('hat-band').history.at(-1); return [r.level, r.misses, r.hints, kit.store.data.stickers.length]; });
+  // HAT_LEVELS=1,4 plays only those levels (level 4 is Build a song).
+  const only = (process.env.HAT_LEVELS ?? '').split(',').filter(Boolean).map(Number);
+  const wants = (level) => only.length === 0 || only.includes(level);
+  let before = 0;
+  let s;
+
+  if (wants(1)) {
 
   await launch('hat-band', 1);
   await page.waitForFunction(() => neo.scene.game.ready, null, { timeout: 20000 });
-  let before = await page.evaluate(() => kit.store.data.stickers.length);
-  let s = await state();
+  before = await page.evaluate(() => kit.store.data.stickers.length);
+  s = await state();
   // Done on an empty stage: a reminder, nothing counted.
   await tap('neo.scene.game.done');
   assert.equal((await state()).performing, false);
@@ -43,7 +50,9 @@ async function hatBandPlay() {
   await finished('hat-band');
   assert.deepEqual(await record(), [1, 0, 0, before + 1]);
   log('Hat Band 1: early Done, drag, tap-then-tap, the heard gate, the bow and one sticker passed');
+  }
 
+  if (wants(3)) {
   await page.setViewportSize({ width: 768, height: 1024 });
   await launch('hat-band', 3);
   await page.waitForFunction(() => neo.scene.game.ready, null, { timeout: 20000 });
@@ -79,6 +88,67 @@ async function hatBandPlay() {
   assert.deepEqual(await record(), [3, 0, 0, before + 1]);
   log('Hat Band 3 (portrait): replace, both spotlights, alone then together, the bow and one sticker passed');
   await page.setViewportSize({ width: 1024, height: 768 });
+  }
+
+  if (wants(4)) {
+  // Level 4, Build a song (portrait): Undo, an empty part, two wrong Checks (the second glows a hint), Play, the accepted Check.
+  await page.setViewportSize({ width: 768, height: 1024 });
+  await launch('hat-band', 4);
+  await page.waitForFunction(() => neo.scene.game.ready, null, { timeout: 20000 });
+  before = await page.evaluate(() => kit.store.data.stickers.length);
+  const song = () => page.evaluate(() => { const g = neo.scene.game; const a = g.arrange; return { song: [...a.song], selected: a.selected, playing: a.playing, misses: g.misses, hints: g.hints, heard: g.heardSong, performing: g.performing, undo: a.undo.length }; });
+  const who = await page.evaluate(() => neo.scene.game.singers.map((x) => x.role));
+  const friend = async (role) => { await page.evaluate((i) => kit.tapOn(neo.scene.game.spots[i], 50, 100), who.indexOf(role)); await page.waitForTimeout(250); };
+  const part = (p) => tap(`neo.scene.game.parts[${p}]`);
+  const loop = () => page.waitForFunction(() => neo.scene.game.arrange.playing === 'loop', null, { timeout: 20000 });
+  let t = await song();
+  assert.deepEqual(t.song, [7, 7, 7]);
+  assert.equal(t.selected, 0);
+  // Undo with nothing to undo does nothing; a toggle then Undo restores the song exactly.
+  await tap('neo.scene.game.undo');
+  assert.deepEqual((await song()).song, [7, 7, 7]);
+  await friend('drum');
+  assert.deepEqual((await song()).song, [6, 7, 7]);
+  await tap('neo.scene.game.undo');
+  t = await song();
+  assert.deepEqual([t.song, t.undo], [[7, 7, 7], 0]);
+  // Empty the middle and Check: the pet asks for somebody there; nothing counted, nothing plays.
+  await part(1);
+  await friend('drum'); await friend('tune'); await friend('bass');
+  assert.deepEqual((await song()).song, [7, 0, 7]);
+  await tap('neo.scene.game.checkBtn');
+  t = await song();
+  assert.deepEqual([t.playing, t.misses, t.selected], ['loop', 0, 1]);
+  // A middle with the tune, but the start is not the tune alone: two wrong Checks.
+  await friend('tune');
+  await tap('neo.scene.game.checkBtn');
+  assert.equal((await song()).playing, 'check');
+  // Edits are ignored while Check plays.
+  await friend('drum');
+  assert.deepEqual((await song()).song, [7, 2, 7]);
+  await loop();
+  t = await song();
+  assert.deepEqual([t.misses, t.hints, t.selected], [1, 0, 0]);
+  await tap('neo.scene.game.checkBtn');
+  await loop();
+  t = await song();
+  assert.deepEqual([t.misses, t.hints, t.selected], [2, 1, 0]);
+  // The hint glows the start's card and the friend to take out.
+  assert.equal(await page.evaluate(() => neo.scene.game.hintPart), 0);
+  // Fix the start: the tune alone. Play it whole, then Check.
+  await friend('drum'); await friend('bass');
+  assert.deepEqual((await song()).song, [2, 2, 7]);
+  await tap('neo.scene.game.play');
+  assert.equal((await song()).playing, 'song');
+  await screenshot('hat-band-4-portrait');
+  await page.waitForFunction(() => neo.scene.game.heardSong, null, { timeout: 20000 });
+  await tap('neo.scene.game.checkBtn');
+  await page.waitForFunction(() => neo.scene.game.performing, null, { timeout: 20000 });
+  await finished('hat-band');
+  assert.deepEqual(await record(), [4, 2, 1, before + 1]);
+  log('Hat Band 4 (portrait): Undo, an empty part, two wrong Checks with a hint, Play, the accepted Check, the bow and one sticker passed');
+  await page.setViewportSize({ width: 1024, height: 768 });
+  }
 }
 
 return { hatBandPlay };
