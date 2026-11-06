@@ -125,6 +125,12 @@ export interface GameModule {
    */
   levelCard?: (level: number) => LevelCard;
   music: MusicStyle;
+  /**
+   * Upright-ready (chunk 31, docs/definitions/phone-portrait.md): every level lays out on the upright 768 × 1024 area, its
+   * targets at least 100 units, inside the view and clear of the pet and corners, so a phone held upright plays it without
+   * the turn prompt. A registry test lists these games.
+   */
+  upright?: true;
   /** A prompt for the grown-up in early bands. `{name}` is the child's name. */
   coplayHint?: string;
   /**

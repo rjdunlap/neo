@@ -8,7 +8,7 @@ import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { goal, makeBoard, planFor, slide, solutionStep, solved } from './logic';
+import { goal, makeBoard, nookLayout, planFor, slide, solutionStep, solved } from './logic';
 
 function numberArt(value: number, size: number, correct = false): Container {
   const c = new Container();
@@ -114,15 +114,16 @@ class NumberNook implements Game {
   }
   resize(v: View) {
     this.view = v;
-    this.cell = Math.min(136, (v.h - 340) / this.plan.rows, (v.w - 420) / this.plan.cols);
-    this.grid.position.set(v.w / 2 - this.plan.cols * this.cell / 2 + this.cell / 2 - 30, 180 + this.cell / 2);
+    const l = nookLayout(v.w, v.h, this.plan.rows, this.plan.cols);
+    this.cell = l.cell;
+    this.grid.position.set(l.grid.x, l.grid.y);
     this.nodes.forEach((node, i) => {
       node.position.set(i % this.plan.cols * this.cell, Math.floor(i / this.plan.cols) * this.cell);
       node.hitArea = new Rectangle(-this.cell / 2, -this.cell / 2, this.cell, this.cell);
     });
     this.heading.position.set(v.w / 2, 112);
     this.status.position.set(v.w / 2, 155);
-    const tx = this.grid.x + (this.plan.cols - 0.5) * this.cell + 120;
+    const tx = l.target.x;
     this.targetLabel.position.set(tx, 205);
     this.target.position.set(tx - (this.plan.cols - 1) * 25, 250);
     this.target.removeChildren().forEach(c => c.destroy({ children: true }));
@@ -131,7 +132,7 @@ class NumberNook implements Game {
       art.position.set(i % this.plan.cols * 50, Math.floor(i / this.plan.cols) * 50);
       this.target.addChild(art);
     });
-    [this.undoButton, this.hintButton, this.againButton].forEach((node, i) => node.position.set(v.w / 2 + (i - 1) * 184, v.h - 110));
+    [this.undoButton, this.hintButton, this.againButton].forEach((node, i) => node.position.set(l.buttons[i].x, l.buttons[i].y));
     this.draw();
   }
   autotouch(): TouchIntent | null {
@@ -155,7 +156,7 @@ export const numberNook: GameModule = {
   id: 'number-nook', name: 'Number Nook', titleLine: 'game.number-nook', region: 'puzzle-peaks', challenge: 'numbers',
   skills: ['spatial-reasoning', 'planning', 'number-order'], bands: ['grownup'], touchDemo: true,
   levels: band => rangeFor({ grownup: { min: 1, max: 3 } }, band),
-  describeLevel: level => planFor(level).name, music: STYLES.lullaby,
+  describeLevel: level => planFor(level).name, music: STYLES.lullaby, upright: true,
   coplayHint: 'Plan together: which tile needs the empty space next? A green tile can still move.',
   offScreen: 'Arrange numbered paper squares on a tray with one empty space. Slide one neighbour into the gap at a time.',
   hubIcon: () => new WigglyIcon(iconArt()),

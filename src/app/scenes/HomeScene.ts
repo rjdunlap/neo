@@ -32,6 +32,9 @@ export const youngHome = () => store.data.profile.band === 'lap' || store.data.p
  * island's map throws it (RW08 slice 2).
  */
 export class HomeScene extends Scene {
+  /** Laid out for a phone held upright as well (chunk 31). */
+  upright = true;
+  uprightArea = true;
   private readonly backdrop = homeBackdrop();
   readonly young = youngHome();
   readonly pet: Companion = this.track(makeCompanion());

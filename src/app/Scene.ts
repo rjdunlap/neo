@@ -20,8 +20,16 @@ export abstract class Scene {
   readonly particles = new Particles();
   readonly ui = new Container();
   readonly tw = new Tweener();
-  /** A plain-HTML scene that already suits a phone held upright, so it is never covered by the turn prompt. */
+  /**
+   * Never covered by the turn prompt on a phone held upright: plain HTML that already suits it ("Who's playing?", couch
+   * play), or a scene with `uprightArea`.
+   */
   upright = false;
+  /**
+   * Lays out on the upright 768 × 1024 design area when a phone is held upright (chunk 31, docs/definitions/phone-portrait.md):
+   * Home, Today's six and a round of an upright-ready game. Implies `upright`. Couch play keeps the wide area.
+   */
+  uprightArea = false;
   /** Whether Esc holds this scene still behind the pause sheet. Off where the scene has its own way to the grown-ups' page or its own Esc. */
   canPause = true;
   private readonly tracked = new Set<Updatable>();

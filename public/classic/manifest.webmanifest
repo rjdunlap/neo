@@ -8,7 +8,7 @@
   "theme_color": "#FFF4E3",
   "lang": "en",
   "scope": "../",
-  "orientation": "landscape",
+  "orientation": "any",
   "icons": [
     {
       "src": "../pwa-64x64.png",

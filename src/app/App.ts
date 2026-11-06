@@ -186,10 +186,16 @@ export class App {
     }
     this.scene = next;
     next.init();
+    // An upright phone lays an upright-ready scene out on the upright area (chunk 31): the view can change with the scene.
+    const before = this.view;
+    this.applyView();
+    const reshaped = before.w !== this.view.w || before.h !== this.view.h;
+    // The old picture was drawn at the old scale; it keeps its size on the glass, and only a crossfade suits two areas.
+    if (picture && reshaped) picture.scale.set(before.scale / this.view.scale);
     next.resize(this.view);
     this.root.addChild(next.root);
     this.refreshTurn();
-    const how = picture ? chooseTransition(from, key ? next.returnBox(key) : null, this.view) : ({ kind: 'fade' } as const);
+    const how = picture && !reshaped ? chooseTransition(from, key ? next.returnBox(key) : null, this.view) : ({ kind: 'fade' } as const);
     // A grow draws the new screen over the old picture; a shrink or fade draws the old picture over the new screen.
     if (picture) this.root.addChildAt(picture, how.kind === 'grow' ? this.root.getChildIndex(next.root) : this.root.children.length);
     const layer = how.kind === 'grow' ? next.root : picture ?? next.root;
@@ -282,11 +288,12 @@ export class App {
     const w = window.innerWidth, h = window.innerHeight;
     const insets = clampInsets(this.readInsets(), w, h);
     // A window resize and the probe's observer both land here; lay out once per change.
-    const key = [w, h, insets.top, insets.right, insets.bottom, insets.left].join();
+    const upright = this.uprightPhone() && !!this.scene?.uprightArea;
+    const key = [w, h, insets.top, insets.right, insets.bottom, insets.left, upright].join();
     if (key === this.layoutKey) return;
     this.layoutKey = key;
     this.insets = insets;
-    this.view = computeView(w, h, this.insets);
+    this.view = computeView(w, h, this.insets, upright);
     this.root.scale.set(this.view.scale);
     // The island sits inside the cutouts; the cream behind it shows in the strips they leave.
     this.root.position.set(this.insets.left, this.insets.top);
@@ -318,10 +325,15 @@ export class App {
     return { top: px(style.paddingTop), right: px(style.paddingRight), bottom: px(style.paddingBottom), left: px(style.paddingLeft) };
   }
 
-  /** An upright phone gets the turn prompt, unless the scene is plain HTML that already suits it. */
-  private refreshTurn() {
+  /** A touch screen held upright (a phone): the turn prompt's condition, and the upright design area's for a ready scene. */
+  uprightPhone(): boolean {
     const touch = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
-    const on = needsTurn(window.innerWidth, window.innerHeight, touch) && !this.scene?.upright;
+    return needsTurn(window.innerWidth, window.innerHeight, touch);
+  }
+
+  /** An upright phone gets the turn prompt, unless the scene suits it (plain HTML, or a layout of its own for the upright area). */
+  private refreshTurn() {
+    const on = this.uprightPhone() && !this.scene?.upright;
     if (on === this.turning) return;
     this.turning = on;
     this.turn.visible = on;

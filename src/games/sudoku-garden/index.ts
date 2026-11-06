@@ -16,6 +16,7 @@ import { courseBeds, courseMinimum, isBedCourse } from './course';
 import {
   cageLabelCell, conflicts, deadEnds, fillMarksRow, geo, hintFor, patchTints, shapeOf, offersFillMarks, houseName, isSolved, makeBeds, placements, planFor, remaining, shortBed, wrongSums, type Hint, type Puzzle, type SudokuPlan,
 } from './logic';
+import { COLS, touchLayout, type Slot } from './layout';
 
 /** Grown-up play only: this game lives on the couch, not on the child's island. */
 /** Level 7, a 4 by 4 bed, is the easy entry played first; the ladder then climbs 1 to 6, with patchwork (9) and cage (10) beds after 3. */
@@ -27,7 +28,6 @@ const DIGIT_COLORS: ColorName[] = ['red', 'orange', 'yellow', 'green', 'teal', '
 const PATCH_TINTS = [swatch.green.fill, swatch.yellow.fill, swatch.brown.fill];
 const ENTERED = 0x2f78c9;
 const CLASH = 0xc23a40;
-const COLS = 3;
 const NOTE_POSITIONS = (d: number) => ({ x: 0.2 + 0.3 * ((d - 1) % 3), y: 0.2 + 0.3 * Math.floor((d - 1) / 3) });
 /** On a cage bed the sum label takes the top third of a square, so the six marks sit in two lower rows. */
 const CAGE_NOTE_POSITIONS = (d: number) => ({ x: 0.2 + 0.3 * ((d - 1) % 3), y: d <= 3 ? 0.52 : 0.8 });
@@ -36,13 +36,8 @@ const CAGE_DROP = 0.06;
 
 type Mode = 'board' | 'tray';
 
-/** The smallest touch target in a grown-up game, in logical units. */
-const MIN_TOUCH = 64;
-/** Touch play: the number tiles, then Marks, Erase, Hint and Start over (and Fill marks on a 9 by 9 bed), each a target of its own. */
-type SlotKind = 'digit' | 'marks' | 'erase' | 'hint' | 'again' | 'fill';
 /** Seconds between rows of the Fill marks sweep. */
 const SWEEP_ROW = 0.07;
-interface Slot { kind: SlotKind; d: number; x: number; y: number; w: number; h: number }
 
 class SudokuGarden implements Game {
   readonly plan: SudokuPlan;
@@ -199,48 +194,15 @@ class SudokuGarden implements Game {
    * so every square and every button is at least 64 across at 6 by 6 and 9 by 9, upright or sideways.
    */
   private resizeTouch(v: View) {
-    const n = this.n, LEFT = 172, fill = offersFillMarks(this.puzzle.size);
-    const trayAt = (tile: number) => COLS * tile + (COLS - 1) * 10;
-    const tile = n > 6 ? MIN_TOUCH : 72;
-    const side = Math.min(96, Math.floor((v.h - 150) / n), Math.floor((v.w - LEFT - 20 - 44 - trayAt(tile)) / n));
-    // The view is never smaller than 1024 by 768, so the bed always fits beside the tray; under it wins only on a tall view, where it is bigger.
-    const rowLeft = 140, margin = 12, top = 128;
-    const tw = Math.max(MIN_TOUCH, Math.min(88, Math.floor((v.w - margin - rowLeft - (n - 1) * 5) / n)));
-    // The bed keeps clear of the home and help buttons at the left, so it is no wider than the view less that margin on both sides.
-    const stack = Math.min(96, Math.floor((v.w - 2 * rowLeft) / n), Math.floor((v.h - top - 16 - 20 - tw - 10 - 72 - 20 - (fill ? 82 : 0)) / n));
+    const n = this.n, fit = touchLayout(n, v.w, v.h, offersFillMarks(this.puzzle.size));
     this.tray.position.set(0, 0);
     this.tray.alpha = 1;
-    this.slots = [];
-    if (side >= MIN_TOUCH && side + 8 > stack) {
-      this.cell = side;
-      this.trayTile = tile;
-      const w = n * side, trayW = trayAt(tile), x = Math.max(LEFT, (v.w - (w + 44 + trayW)) / 2), y = Math.max(100, Math.floor((v.h - w) / 2)), tx = x + w + 44, ty = y + 6;
-      this.board.position.set(x, y);
-      for (let d = 1; d <= n; d++) this.slots.push({ kind: 'digit', d, x: tx + ((d - 1) % COLS) * (tile + 10), y: ty + Math.floor((d - 1) / COLS) * (tile + 10), w: tile, h: tile });
-      const half = (trayW - 10) / 2, rows = Math.ceil(n / COLS) * (tile + 10);
-      const pair = (a: SlotKind, b: SlotKind, py: number) => { [a, b].forEach((kind, k) => this.slots.push({ kind, d: 0, x: tx + k * (half + 10), y: py, w: half, h: tile })); };
-      pair('marks', 'erase', ty + rows);
-      pair('hint', 'again', ty + rows + tile + 10);
-      if (fill) this.slots.push({ kind: 'fill', d: 0, x: tx, y: ty + rows + 2 * (tile + 10), w: trayW, h: tile });
-      const bottom = ty + rows + (fill ? 3 : 2) * (tile + 10);
-      this.bannerBox.position.set(tx, bottom + 8);
-      (this.banner.style as { wordWrapWidth: number }).wordWrapWidth = Math.max(180, v.w - tx - 36);
-    } else {
-      // A tall view: the bed centred, the numbers in a row under it and four buttons under them, clear of the pet in the corner.
-      this.cell = Math.max(MIN_TOUCH, stack);
-      this.trayTile = tw;
-      const w = n * this.cell, rowW = n * tw + (n - 1) * 5;
-      this.board.position.set((v.w - w) / 2, top);
-      const dx = Math.max(rowLeft, (v.w - rowW) / 2), dy = top + w + 16 + 20;
-      for (let d = 1; d <= n; d++) this.slots.push({ kind: 'digit', d, x: dx + (d - 1) * (tw + 5), y: dy, w: tw, h: tw });
-      const kinds: SlotKind[] = ['marks', 'erase', 'hint', 'again'], bx = 150, bw = Math.floor((v.w - margin - bx - 30) / 4);
-      kinds.forEach((kind, k) => this.slots.push({ kind, d: 0, x: bx + k * (bw + 10), y: dy + tw + 10, w: bw, h: 72 }));
-      // Fill marks under Hint and Start over, at the right, away from the pet in the corner.
-      if (fill) this.slots.push({ kind: 'fill', d: 0, x: bx + 2 * (bw + 10), y: dy + tw + 10 + 82, w: 2 * bw + 10, h: 72 });
-      // The hint's words sit above the bed, beside the home button.
-      this.bannerBox.position.set(140, 8);
-      (this.banner.style as { wordWrapWidth: number }).wordWrapWidth = Math.max(230, v.w - 140 - 36);
-    }
+    this.cell = fit.cell;
+    this.trayTile = fit.tile;
+    this.slots = fit.slots;
+    this.board.position.set(fit.x, fit.y);
+    this.bannerBox.position.set(fit.banner.x, fit.banner.y);
+    (this.banner.style as { wordWrapWidth: number }).wordWrapWidth = fit.banner.wrap;
     this.showBanner(this.banner.text);
     this.tally.visible = false;
     const w = n * this.cell;
@@ -1033,6 +995,7 @@ export const sudokuGarden: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
+  upright: true,
   hubIcon: () => new SudokuIcon(),
   sticker,
   create: (ctx) => new SudokuGarden(ctx),

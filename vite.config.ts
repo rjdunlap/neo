@@ -26,7 +26,7 @@ export default defineConfig({
         short_name: 'Puddle Island',
         description: 'Little learning games, made at home.',
         display: 'fullscreen',
-        orientation: 'landscape',
+        orientation: 'any',
         background_color: '#FFF4E3',
         theme_color: '#FFF4E3',
         start_url: './',

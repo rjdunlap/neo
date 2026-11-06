@@ -75,8 +75,11 @@ export function hardLevels(mod: GameModule, band: Band): number[] {
  * when they must. Each pick gets a seeded level from its game's ladder at the band it plays (`presetLevels`; a grown-up's from
  * `hardLevels`), unless `pinned` names a grown-up's pin for that game inside the ladder, which wins. A preset level is the
  * day's choice, not her progress: the round records with `adapt` off (`dailyOrigin`).
+ *
+ * On a phone held upright (`upright`, chunk 31) the same pick runs over the upright-ready games first (`upright: true`), then
+ * fills from the rest of the pool if fewer than six are ready; the seed is unchanged, so a sideways day is exactly as before.
  */
-export function dailySix(day: string, band: Band, games: readonly GameModule[], pinned: (id: string) => number | null = () => null): DailyPick[] {
+export function dailySix(day: string, band: Band, games: readonly GameModule[], pinned: (id: string) => number | null = () => null, upright = false): DailyPick[] {
   const rng = new Rng(daySeed(day, band));
   const pool = rng.shuffle([...dailyPool(band, games)]);
   const chosen: GameModule[] = [];
@@ -95,7 +98,14 @@ export function dailySix(day: string, band: Band, games: readonly GameModule[], 
     }
   };
   // A grown-up's six lead with two of the games made for grown-ups, so the day is not all early-school play.
-  if (band === 'grownup') take(pool.filter((m) => m.bands.includes('grownup')), GROWNUP_FIRST);
+  const grown = (from: readonly GameModule[]) => from.filter((m) => m.bands.includes('grownup'));
+  const ready = upright ? pool.filter((m) => m.upright) : pool;
+  if (band === 'grownup') take(grown(ready), GROWNUP_FIRST);
+  if (upright) {
+    take(ready, DAILY_COUNT);
+    // Too few ready grown-up games still leaves a grown-up two of theirs.
+    if (band === 'grownup') take(grown(pool), GROWNUP_FIRST);
+  }
   take(pool, DAILY_COUNT);
   return chosen.map((mod) => {
     const at = playBand(mod.bands, band);
