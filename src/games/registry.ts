@@ -157,6 +157,7 @@ import { wordGlue } from './word-glue';
 import { sandTable } from './sand-table';
 import { sortingMachine } from './sorting-machine';
 import { gadgetBench } from './gadget-bench';
+import { playdateWorkshop } from './playdate-workshop';
 import { helperHouse } from './helper-house';
 import { timelineTrail } from './timeline-trail';
 import { sproutShuffle } from './sprout-shuffle';
@@ -315,6 +316,7 @@ export const GAMES: GameModule[] = [
   sandTable,
   sortingMachine,
   gadgetBench,
+  playdateWorkshop,
   helperHouse,
   timelineTrail,
   sproutShuffle,
