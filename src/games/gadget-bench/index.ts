@@ -1,7 +1,8 @@
 /**
  * Gadget Bench: a neighbor shows what its cart must get through; she tries two finished gadgets and gives the one that works
  * (level 1), changes one part of the pet's cart for a new friend (level 2), or builds one from parts into the sockets where
- * they work (level 3). A Try is free and shows where the cart stops; a Give that fails is a miss. Rules: ./logic.ts;
+ * they work (level 3), or fixes yesterday's cart for a longer path where two needs want one socket (level 4). A Try is free
+ * and shows where the cart stops; a Give that fails is a miss. Rules: ./logic.ts;
  * definition: docs/definitions/gadget-bench.md.
  */
 import { Container, Graphics, Rectangle } from 'pixi.js';
@@ -20,16 +21,16 @@ import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
-import { boardArt, gadgetArt, handArt, iconArt, miniCart, partInSocket, requestArt, socketArt, standingCritter, stickerArt, stripPicture, conditionTile, tryArt } from './art';
+import { boardArt, gadgetArt, handArt, iconArt, miniCart, partInSocket, requestArt, socketArt, sparkleArt, standingCritter, stickerArt, stripPicture, conditionTile, tryArt } from './art';
 import {
-  applyHelp, benchLayout, briefFor, centre, helpFor, NEIGHBORS, need, nextMove, PARTS, planFor, runPath, sameGadget, socketAt, SOCKET, SOCKET_WORDS, SOCKETS, STRIP, Tally,
+  applyHelp, benchLayout, briefFor, centre, helpFor, helpSteps, NEIGHBORS, newCondition, nextMove, PARTS, planFor, runPath, sameGadget, socketAt, SOCKET, SOCKET_WORDS, SOCKETS, STRIP, Tally,
   type BenchLayout, type Brief, type Condition, type Gadget, type PartId, type Pt, type Round, type Socket,
 } from './logic';
 
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 1 },
   prek: { min: 1, max: 3 },
-  school: { min: 2, max: 3 },
+  school: { min: 2, max: 4 },
 };
 
 /** Seconds the runner takes between two tiles. */
@@ -65,7 +66,7 @@ class GadgetBench implements Game {
   strip: StripEntry[] = [];
   busy = false;
   finished = false;
-  /** Level 2's opening: the pet builds the first neighbor's cart. */
+  /** The round's opening: the pet builds the first neighbor's cart (level 2), or yesterday's cart rolls in (level 4). */
   showing = false;
   private alive = true;
   private started = false;
@@ -119,6 +120,7 @@ class GadgetBench implements Game {
   }
 
   private get shownPath(): Condition[] {
+    if (this.showing && this.round.yesterday) return this.round.yesterday.path;
     return this.showing && this.round.shown ? this.round.shown.path : this.round.path;
   }
 
@@ -128,7 +130,7 @@ class GadgetBench implements Game {
   }
 
   private instruction(): LineId {
-    return this.level === 1 ? 'bench.instruct.pick' : this.level === 2 ? 'bench.instruct.change' : 'bench.instruct.build';
+    return this.level === 1 ? 'bench.instruct.pick' : this.level === 2 ? 'bench.instruct.change' : this.level === 4 ? 'bench.instruct.fix' : 'bench.instruct.build';
   }
 
   /** The model for a round's start (the demo's cart stays as the pet built it at level 2). */
@@ -137,21 +139,25 @@ class GadgetBench implements Game {
     this.tried = [false, false];
     this.okGadget = null;
     this.strip = [];
-    this.showing = this.level === 2 && !!this.round.shown;
-    if (this.showing) this.gadget = { ...this.round.shown!.gadget };
+    this.showing = (this.level === 2 && !!this.round.shown) || !!this.round.yesterday;
+    if (this.showing) this.gadget = { ...(this.round.shown?.gadget ?? this.round.yesterday!.gadget) };
     this.pending = null;
     this.startUnmet = this.round.pair ? 1 : this.unmet();
   }
 
-  /** How many of the round's conditions the bench's cart does not meet yet. */
+  /** How many sockets help would change on the bench's cart (the unmet conditions; level 4, the parts to swap). */
   private unmet(): number {
-    return this.round.path.filter((c) => { const n = need(c); return n && this.gadget[n.socket] !== n.part; }).length;
+    return helpSteps(this.gadget, this.round);
+  }
+
+  private help() {
+    return helpFor(this.gadget, this.round.path, this.round);
   }
 
   start() {
     this.started = true;
     this.build();
-    if (this.showing) void this.showFirst();
+    if (this.showing) this.opening();
     else void this.ctx.instruct(this.instruction(), { neighbor: this.round.neighbor.name });
   }
 
@@ -204,9 +210,12 @@ class GadgetBench implements Game {
     this.requestCritter = this.ctx.track(req.critter);
 
     // The path.
+    const fresh = this.showing ? null : newCondition(round);
     this.shownPath.forEach((c, i) => {
       const t = new Container();
       t.addChild(conditionTile(c, l.tiles[i].w));
+      if (c === fresh) t.addChild(sparkleArt(l.tiles[i].w));
+      if (this.showing && round.yesterday) t.alpha = 0.6;
       t.position.copyFrom(centre(l.tiles[i]));
       t.eventMode = 'none';
       this.board.addChild(t);
@@ -424,8 +433,13 @@ class GadgetBench implements Game {
         if (!live()) return;
         await this.ctx.say(`bench.fail.${failedAt}` as LineId);
         if (!live()) return;
-        if (snapshot[result.socket]) {
+        if (snapshot[result.socket] && (!this.round.yesterday || PARTS[snapshot[result.socket]!].socket !== result.socket)) {
           await this.ctx.say('bench.place.wrong');
+          if (!live()) return;
+        }
+        // Level 4: the first time this round's stops have been at both the bump and the puddle (uncounted).
+        if (this.round.yesterday && !this.showing && this.tally.stopped(failedAt)) {
+          await this.ctx.say('bench.conflict');
           if (!live()) return;
         }
         break;
@@ -491,7 +505,7 @@ class GadgetBench implements Game {
       await this.ctx.say('bench.ok');
       return;
     }
-    const lit = this.tally.tryFail(result.at, snapshot[result.socket]);
+    const lit = this.tally.tryFail(result.at, snapshot[result.socket], this.round.yesterday ? snapshot : undefined);
     if (lit && this.alive && epoch === this.epoch) await this.sayGlow();
   }
 
@@ -513,7 +527,7 @@ class GadgetBench implements Game {
   /** The glow: the responsible socket (level 1: the passing gadget) lights and the pet names the part. */
   private async sayGlow() {
     if (this.round.pair) { await this.ctx.say('bench.hint.give'); return; }
-    const h = helpFor(this.gadget, this.round.path);
+    const h = this.help();
     if (h.kind !== 'install') return;
     await this.ctx.say('bench.glow', { part: PARTS[h.part].name });
   }
@@ -529,7 +543,7 @@ class GadgetBench implements Game {
       return;
     }
     void which;
-    const h = helpFor(this.gadget, this.round.path);
+    const h = this.help();
     if (h.kind !== 'install') return;
     await this.install(h.part, h.socket);
     if (!this.alive || epoch !== this.epoch) return;
@@ -614,8 +628,41 @@ class GadgetBench implements Game {
     this.beginRound();
     this.busy = false;
     this.build();
-    if (this.showing) void this.showFirst();
+    if (this.showing) this.opening();
     else void this.ctx.instruct(this.instruction(), { neighbor: this.round.neighbor.name });
+  }
+
+  /** Level 4's opening: the neighbor rolls yesterday's cart onto the bench under yesterday's faded path, then today's longer path fills in. */
+  private async arrive() {
+    const l = this.layoutNow;
+    if (!l) { this.showing = false; return; }
+    this.busy = true;
+    this.setDrags(false);
+    const epoch = this.epoch;
+    const live = () => this.alive && epoch === this.epoch;
+    const cart = [this.boardNodes[0], ...this.socketNodes.values(), ...this.parts.filter((p) => p.at).map((p) => p.node)];
+    const dx = this.view.w;
+    for (const n of cart) n.x -= dx;
+    void this.ctx.say('bench.yesterday', { neighbor: this.round.neighbor.name });
+    sfx.whoosh();
+    await Promise.all(cart.map((n) => this.ctx.tw.to(n, { x: n.x + dx }, { duration: 0.8, ease: ease.outQuad })));
+    if (!live()) return;
+    this.requestCritter?.hop(0.9);
+    await this.ctx.tw.wait(1.2);
+    if (!live()) return;
+    this.showing = false;
+    this.build();
+    sfx.sparkle();
+    this.busy = false;
+    this.setDrags(true);
+    this.takePending();
+    void this.ctx.instruct(this.instruction(), { neighbor: this.round.neighbor.name });
+  }
+
+  /** The round's opening, at levels 2 and 4. */
+  private opening() {
+    if (this.round.yesterday) void this.arrive();
+    else void this.showFirst();
   }
 
   /** Level 2's opening: the pet's part slides into its socket, the cart crosses the first neighbor's path, then the new friend arrives. */
@@ -666,14 +713,14 @@ class GadgetBench implements Game {
     this.epoch++;
     this.beginRound();
     this.build();
-    if (this.showing) void this.showFirst();
+    if (this.showing) this.opening();
   }
 
   // ——— Help ———
 
   /** What help would do next on the bench's cart (a scripted check reads it). */
   nextHelp() {
-    return helpFor(this.gadget, this.round.path);
+    return this.help();
   }
 
   hintLabel = 'Show a hint';
@@ -689,7 +736,7 @@ class GadgetBench implements Game {
       if (hand) void this.wiggle(hand);
       return;
     }
-    const h = helpFor(this.gadget, this.round.path);
+    const h = this.help();
     if (h.kind !== 'install') { void this.ctx.say('bench.hint.done'); return; }
     this.tally.help(this.startUnmet);
     void this.ctx.say('bench.hint.part', { part: PARTS[h.part].name, where: SOCKET_WORDS[h.socket] });
@@ -717,7 +764,7 @@ class GadgetBench implements Game {
       if (b) this.glow.roundRect(b.x - rect.w / 2 - 8 * r, b.y - rect.h / 2 - 8 * r, rect.w + 16 * r, rect.h + 16 * r, 30).stroke({ width: 8, color: swatch.yellow.fill });
       return;
     }
-    const h = helpFor(this.gadget, this.round.path);
+    const h = this.help();
     if (h.kind !== 'install') return;
     const c = this.socketCentre(h.socket);
     this.glow.circle(c.x, c.y, (SOCKET / 2 + 10) * r).stroke({ width: 8, color: swatch.yellow.fill });

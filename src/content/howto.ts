@@ -828,12 +828,14 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 1, to: 1, text: 'Tap each gadget to try it, then tap the hand under the one that works.' },
       { from: 2, to: 2, text: 'Change one part so the cart works for the new friend, then tap Try.' },
       { from: 3, to: 3, text: 'Drag each part to the socket where it works, then tap Try.' },
-      { from: 2, to: 3, text: 'Tap the hand to give it when it gets all the way along.' },
+      { from: 4, to: 4, text: 'Try the cart, see where it stops, then swap in a part from the shelf and Try again.' },
+      { from: 2, to: 4, text: 'Tap the hand to give it when it gets all the way along.' },
     ],
     finish: 'The neighbor loves the gadget, and two more friends make one too.',
     note: [
       { from: 1, to: 2, text: 'Trying is never wrong: it shows where the cart stops. A Give that does not work counts as a miss; the glow and Show a hint each count as a hint.' },
       { from: 3, to: 3, text: 'A part works in only one place: the umbrella has to go on top. Trying is never wrong; a Give that does not work counts as a miss, and the glow and Show a hint each count as a hint.' },
+      { from: 4, to: 4, text: 'When two needs want the same socket, one part has to do both jobs. Trying is never wrong; a Give that does not work counts as a miss, and the glow and Show a hint each count as a hint.' },
     ],
   },
   'sorting-machine': {

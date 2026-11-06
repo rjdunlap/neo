@@ -1,7 +1,8 @@
 /**
- * Gadget Bench rules: five invented parts with one right socket each, a path of pictured conditions, and the authored
- * check `runPath` that stops a cart at the first condition its gadget cannot handle. Levels 1–3 from
- * docs/definitions/gadget-bench.md: compare two finished gadgets, change one part of a shown cart, build one from parts.
+ * Gadget Bench rules: invented parts with one right socket each, a path of pictured conditions, and the authored
+ * check `runPath` that stops a cart at the first condition its gadget cannot handle. Levels 1–4 from
+ * docs/definitions/gadget-bench.md: compare two finished gadgets, change one part of a shown cart, build one from parts,
+ * and fix yesterday's cart for a longer path where two needs pull on one socket (the paddle wheels do both jobs).
  * Nothing here is a real device, and the run is a rule, never a simulation.
  */
 import type { CritterName } from '../../art/critter';
@@ -9,55 +10,68 @@ import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 
 export type Socket = 'under' | 'top' | 'front';
-export type PartId = 'wheels' | 'float' | 'umbrella' | 'lantern' | 'flag';
+export type PartId = 'wheels' | 'float' | 'umbrella' | 'lantern' | 'flag' | 'paddles';
 export type Condition = 'smooth' | 'bump' | 'puddle' | 'rain' | 'dark';
 /** A gadget: each socket empty or holding one part. */
 export type Gadget = Partial<Record<Socket, PartId>>;
 
 export const SOCKETS: readonly Socket[] = ['under', 'top', 'front'];
+/** The five parts of levels 1–3. The paddle wheels appear only on level 4's reuse shelf. */
 export const PART_IDS: readonly PartId[] = ['wheels', 'float', 'umbrella', 'lantern', 'flag'];
 
 export interface PartSpec {
   /** The one socket it works in; the flag is a decoy that works nowhere. */
   socket: Socket | null;
-  fixes: Condition | null;
+  /** The conditions it handles in that socket: one for most parts, two for the paddle wheels, none for the flag. */
+  fixes: readonly Condition[];
   /** Spoken, with its article. */
   name: string;
 }
 
 export const PARTS: Record<PartId, PartSpec> = {
-  wheels: { socket: 'under', fixes: 'bump', name: 'the big wheels' },
-  float: { socket: 'under', fixes: 'puddle', name: 'the float' },
-  umbrella: { socket: 'top', fixes: 'rain', name: 'the umbrella' },
-  lantern: { socket: 'front', fixes: 'dark', name: 'the lantern' },
-  flag: { socket: null, fixes: null, name: 'the flag' },
+  wheels: { socket: 'under', fixes: ['bump'], name: 'the big wheels' },
+  float: { socket: 'under', fixes: ['puddle'], name: 'the float' },
+  umbrella: { socket: 'top', fixes: ['rain'], name: 'the umbrella' },
+  lantern: { socket: 'front', fixes: ['dark'], name: 'the lantern' },
+  flag: { socket: null, fixes: [], name: 'the flag' },
+  paddles: { socket: 'under', fixes: ['bump', 'puddle'], name: 'the paddle wheels' },
 };
 
 /** Where a socket is, in words. */
 export const SOCKET_WORDS: Record<Socket, string> = { under: 'underneath', top: 'on top', front: 'at the front' };
 
-/** What a condition needs: the one part in its one socket; `smooth` needs nothing. */
+/** What a condition needs: the single-job part in its one socket (never the paddle wheels); `smooth` needs nothing. */
 export function need(c: Condition): { part: PartId; socket: Socket } | null {
   for (const id of PART_IDS) {
     const p = PARTS[id];
-    if (p.fixes === c && p.socket) return { part: id, socket: p.socket };
+    if (p.fixes.length === 1 && p.fixes[0] === c && p.socket) return { part: id, socket: p.socket };
   }
   return null;
 }
 
+/** Does part `id` handle condition `c` when it sits in socket `s`? */
+export function handles(id: PartId | undefined, s: Socket, c: Condition): boolean {
+  if (!id) return false;
+  const p = PARTS[id];
+  return p.socket === s && p.fixes.includes(c);
+}
+
 export type RunResult = { ok: true } | { ok: false; at: Condition; socket: Socket; part: PartId };
 
-/** The first condition whose needed part is not in its socket, and the socket responsible. Parts elsewhere never help or hurt. */
+/**
+ * The first condition the part in its responsible socket does not handle, and that socket; `part` names the single-job
+ * part. Parts elsewhere never help or hurt.
+ */
 export function runPath(g: Gadget, path: readonly Condition[]): RunResult {
   for (const c of path) {
     const n = need(c);
     if (!n) continue;
-    if (g[n.socket] !== n.part) return { ok: false, at: c, socket: n.socket, part: n.part };
+    if (!handles(g[n.socket], n.socket, c)) return { ok: false, at: c, socket: n.socket, part: n.part };
   }
   return { ok: true };
 }
 
-/** True when two conditions of the path would need the same socket (never at levels 1–3). */
+/** True when two conditions of the path would need the same socket (never at levels 1–3, always at level 4). */
 export function socketConflict(path: readonly Condition[]): boolean {
   const seen = new Set<Socket>();
   for (const c of path) {
@@ -123,6 +137,11 @@ export interface Round {
   pair?: { gadgets: [Gadget, Gadget]; passing: 0 | 1 };
   /** Level 2: the first neighbor, its one-condition path and the cart the pet builds for it. */
   shown?: { neighbor: Neighbor; path: Condition[]; gadget: Gadget };
+  /**
+   * Level 4: yesterday's shorter path and the cart that passed it, which starts on the bench. The tray then holds the
+   * reuse shelf's two parts first, then a home slot for each part on the cart.
+   */
+  yesterday?: { path: Condition[]; gadget: Gadget };
 }
 
 export interface Brief {
@@ -139,9 +158,11 @@ export const PLANS: Record<number, Plan> = {
   1: { name: 'Which one works?', describe: 'Which one works? Try two finished gadgets, give the one that works' },
   2: { name: 'Change one part', describe: 'Change one part: the shown cart works for one friend; change it for the next' },
   3: { name: 'Build it', describe: 'Build it: two open sockets, four parts, a path of two' },
+  4: { name: 'Fix-It Day', describe: "Fix-It Day: yesterday's cart meets a longer path, and one part has to do two jobs" },
 };
 
-export const planFor = (level: number): Plan => PLANS[Math.max(1, Math.min(3, level))];
+export const TOP_LEVEL = 4;
+export const planFor = (level: number): Plan => PLANS[Math.max(1, Math.min(TOP_LEVEL, level))];
 
 const LEVEL1_CONDITIONS: readonly Condition[] = ['rain', 'dark', 'bump', 'puddle'];
 /** Level 3's pairs, the first authored. */
@@ -153,9 +174,22 @@ export const LEVEL2_STEPS: readonly { first: Condition; then: Condition }[] = [
   { first: 'dark', then: 'bump' },
 ];
 
+/** Level 4's carts in round order: the condition `under` met yesterday, the new one today, and the third part's condition (null: seeded rain or dark). */
+export const LEVEL4_CARTS: readonly { old: 'bump' | 'puddle'; third: 'rain' | 'dark' | null }[] = [
+  { old: 'bump', third: 'dark' },
+  { old: 'puddle', third: null },
+  { old: 'bump', third: 'rain' },
+];
+
+/** Level 4: the condition on today's path that yesterday's did not have (the sparkled tile). */
+export function newCondition(round: Round): Condition | null {
+  if (!round.yesterday) return null;
+  return round.path.find((c) => !round.yesterday!.path.includes(c)) ?? null;
+}
+
 /** The three rounds of a level, seeded. The first round of each level is authored so the how-to demonstration matches. */
 export function briefFor(level: number, rng: Rng): Brief {
-  const l = Math.max(1, Math.min(3, level));
+  const l = Math.max(1, Math.min(TOP_LEVEL, level));
   const rounds: Round[] = [];
   const pool = rng.shuffle([...NEIGHBORS]);
   const neighborAt = (i: number) => pool[i % pool.length];
@@ -185,6 +219,25 @@ export function briefFor(level: number, rng: Rng): Brief {
       if (neighbor === firstNeighbor) neighbor = neighborAt(i * 2 + 2);
       rounds.push({ neighbor, path, open: [...SOCKETS], tray, shown: { neighbor: firstNeighbor, path: ['smooth', step.first], gadget: shownGadget } });
     });
+  } else if (l === 4) {
+    const later = rng.shuffle(NEIGHBORS.slice(1));
+    LEVEL4_CARTS.forEach((cart, i) => {
+      const first = i === 0;
+      const fresh: Condition = cart.old === 'bump' ? 'puddle' : 'bump';
+      const third: Condition = cart.third ?? (rng.chance(0.5) ? 'rain' : 'dark');
+      const oldPart = need(cart.old)!.part;
+      const thirdNeed = need(third)!;
+      const gadget: Gadget = { under: oldPart, [thirdNeed.socket]: thirdNeed.part };
+      const yesterdayPath: Condition[] = ['smooth', ...(first ? [cart.old, third] : rng.shuffle([cart.old, third]))];
+      const path: Condition[] = ['smooth', ...(first ? [cart.old, fresh, third] : rng.shuffle([cart.old, fresh, third]))];
+      const freshPart = need(fresh)!.part;
+      const shelf: PartId[] = first ? [freshPart, 'paddles'] : rng.shuffle([freshPart, 'paddles'] as PartId[]);
+      rounds.push({
+        neighbor: first ? NEIGHBORS[0] : later[i - 1],
+        path, open: [...SOCKETS], tray: [...shelf, oldPart, thirdNeed.part],
+        yesterday: { path: yesterdayPath, gadget },
+      });
+    });
   } else {
     const order = [LEVEL3_PAIRS[0], ...rng.shuffle(LEVEL3_PAIRS.slice(1))].slice(0, 3);
     order.forEach((pair, i) => {
@@ -208,11 +261,40 @@ export type Help =
   /** Nothing is unmet: the gadget passes. */
   | { kind: 'done' };
 
-/** What help does next for a built gadget: the part the first unmet condition needs, in its socket. Correct work stays. */
-export function helpFor(gadget: Gadget, path: readonly Condition[]): Help {
+/**
+ * Level 4's help target: the passing design (over every socket and the round's parts) that keeps the most of her placed
+ * parts, ties going to the one that differs from her gadget in the fewest sockets.
+ */
+export function targetDesign(gadget: Gadget, round: Round): Gadget | null {
+  let best: { g: Gadget; kept: number; diff: number } | null = null;
+  for (const d of passingDesigns(round.path, round.tray, round.open)) {
+    const kept = SOCKETS.filter((s) => gadget[s] && d[s] === gadget[s]).length;
+    const diff = SOCKETS.filter((s) => d[s] !== gadget[s]).length;
+    if (!best || kept > best.kept || (kept === best.kept && diff < best.diff)) best = { g: d, kept, diff };
+  }
+  return best?.g ?? null;
+}
+
+/** How many sockets help has to change: level 4 counts against its target design, other levels the unmet conditions. */
+export function helpSteps(gadget: Gadget, round: Round): number {
+  if (round.yesterday) {
+    const d = targetDesign(gadget, round);
+    return d ? SOCKETS.filter((s) => d[s] !== gadget[s]).length : 0;
+  }
+  return round.path.filter((c) => { const n = need(c); return n && !handles(gadget[n.socket], n.socket, c); }).length;
+}
+
+/**
+ * What help does next for a built gadget: the part the first unmet condition needs, in its socket. Correct work stays.
+ * Level 4 (`round` with a yesterday) follows its target design instead, so at the conflict it installs the paddle wheels
+ * rather than swapping the big wheels and the float back and forth.
+ */
+export function helpFor(gadget: Gadget, path: readonly Condition[], round?: Round): Help {
   const r = runPath(gadget, path);
   if (r.ok) return { kind: 'done' };
-  return { kind: 'install', part: r.part, socket: r.socket, replaces: gadget[r.socket] ?? null, at: r.at };
+  const d = round?.yesterday ? targetDesign(gadget, round) : null;
+  const part = d?.[r.socket] ?? r.part;
+  return { kind: 'install', part, socket: r.socket, replaces: gadget[r.socket] ?? null, at: r.at };
 }
 
 /** The gadget after help: the part moves in (from the tray or another socket) and whatever was there goes back to the tray. */
@@ -234,6 +316,10 @@ export class Tally {
   counted = 0;
   private roundMisses = 0;
   private lastFail: { at: Condition; part: PartId | undefined } | null = null;
+  /** Level 4: the assemblies of this round's failing Trys, and where its failing Trys and Gives stopped. */
+  private failedTries: Gadget[] = [];
+  private stops = new Set<Condition>();
+  private conflictSaid = false;
 
   /** A new round: the glow and the same-condition memory reset; misses and hints carry on. */
   nextRound() {
@@ -241,6 +327,9 @@ export class Tally {
     this.counted = 0;
     this.roundMisses = 0;
     this.lastFail = null;
+    this.failedTries = [];
+    this.stops.clear();
+    this.conflictSaid = false;
   }
 
   /** A failing Give. Returns what the shell does now: light the glow, install the part (a supported finish), or nothing more. */
@@ -252,12 +341,27 @@ export class Tally {
     return 'none';
   }
 
-  /** A failing Try at `at` with `part` in the responsible socket. Two in a row at the same condition with that socket unchanged light the glow. */
-  tryFail(at: Condition, part: PartId | undefined): boolean {
-    const same = this.lastFail && this.lastFail.at === at && this.lastFail.part === part;
+  /**
+   * A failing Try at `at` with `part` in the responsible socket. Two in a row at the same condition with that socket
+   * unchanged light the glow; with `gadget` (level 4), so does repeating any earlier failing assembly of the round.
+   */
+  tryFail(at: Condition, part: PartId | undefined, gadget?: Gadget): boolean {
+    let same = !!this.lastFail && this.lastFail.at === at && this.lastFail.part === part;
+    if (gadget) {
+      if (this.failedTries.some((g) => sameGadget(g, gadget))) same = true;
+      this.failedTries.push({ ...gadget });
+    }
     this.lastFail = { at, part };
     if (same && !this.glowing) { this.light(); return true; }
     return false;
+  }
+
+  /** Level 4: a failing Try or Give stopped at `at`. True once a round, when the stops have now been at both the bump and the puddle (the conflict line, uncounted). */
+  stopped(at: Condition): boolean {
+    this.stops.add(at);
+    if (this.conflictSaid || !this.stops.has('bump') || !this.stops.has('puddle')) return false;
+    this.conflictSaid = true;
+    return true;
   }
 
   /** A Try that passes clears the same-condition memory. */
@@ -426,8 +530,8 @@ export type Move =
   | { giveCart: true };
 
 /**
- * What a capable child does next. Level 1: Try the failing gadget, Try the passing one, Give it. Levels 2–3: Try the shown
- * cart once (level 2, a free look at where it stops), put in what help names, Try, Give.
+ * What a capable child does next. Level 1: Try the failing gadget, Try the passing one, Give it. Levels 2–4: Try the shown
+ * cart once (levels 2 and 4, a free look at where it stops), put in what help names, Try, Give.
  */
 export function nextMove(round: Round, gadget: Gadget, tried: readonly boolean[], triedOk: boolean, level: number): Move {
   if (round.pair) {
@@ -436,8 +540,8 @@ export function nextMove(round: Round, gadget: Gadget, tried: readonly boolean[]
     if (!tried[round.pair.passing]) return { tryGadget: round.pair.passing };
     return { give: round.pair.passing };
   }
-  if (level === 2 && !tried[0] && !triedOk) return { tryCart: true };
-  const h = helpFor(gadget, round.path);
+  if ((level === 2 || level === 4) && !tried[0] && !triedOk) return { tryCart: true };
+  const h = helpFor(gadget, round.path, round);
   if (h.kind === 'install') return { drag: h.part, to: h.socket };
   if (!triedOk) return { tryCart: true };
   return { giveCart: true };
