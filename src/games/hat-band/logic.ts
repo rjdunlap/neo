@@ -9,8 +9,8 @@ import type { Rng } from '../../engine/random';
  * returns the beats to voice and `index.ts` plays them.
  */
 
-export type Role = 'drum' | 'tune';
-export type HatId = 'steady' | 'skippy' | 'cuckoo' | 'rain';
+export type Role = 'drum' | 'tune' | 'bass';
+export type HatId = 'steady' | 'skippy' | 'cuckoo' | 'rain' | 'thump' | 'walk';
 export const BEATS = 4;
 /** Fixed pace: pace belongs to Little Conductor. A bar (one loop) is 3 seconds. */
 export const BPM = 80;
@@ -23,6 +23,8 @@ export interface Hat {
   hits?: readonly boolean[];
   /** A tune loop: a note of the major pentatonic (semitones above C, inside one octave) or a rest each beat. */
   notes?: readonly (number | null)[];
+  /** A low loop (level 4): a scale step in middle C's octave (`stepToMidi`: 0 = C4, 2 = E4) or a rest each beat. */
+  low?: readonly (number | null)[];
 }
 
 export const HATS: Record<HatId, Hat> = {
@@ -30,17 +32,22 @@ export const HATS: Record<HatId, Hat> = {
   skippy: { id: 'skippy', role: 'drum', hits: [true, false, true, true] },
   cuckoo: { id: 'cuckoo', role: 'tune', notes: [7, 4, 7, null] },
   rain: { id: 'rain', role: 'tune', notes: [2, 4, 7, 4] },
+  thump: { id: 'thump', role: 'bass', low: [0, null, 2, null] },
+  walk: { id: 'walk', role: 'bass', low: [0, 1, 2, 1] },
 };
-export const HAT_IDS = Object.keys(HATS) as HatId[];
+/** The hats of levels 1–3. The low hats belong to level 4 only and never join their rack. */
+export const HAT_IDS: HatId[] = ['steady', 'skippy', 'cuckoo', 'rain'];
+export const LOW_IDS: HatId[] = ['thump', 'walk'];
 
 /** A pentatonic note (semitones above C) as a scale step in the octave above middle C, for `sfx.marimba`. */
 export const noteStep = (semitones: number): number => 5 + PENTATONIC.indexOf(semitones);
 
-export interface Plan { level: number; name: string; mode: 'put' | 'swap' | 'alone' }
+export interface Plan { level: number; name: string; mode: 'put' | 'swap' | 'alone' | 'arrange' }
 const PLANS: Plan[] = [
   { level: 1, name: 'Put on a hat: a drum hat and a tune hat; put one on a friend to hear their part, then make a band', mode: 'put' },
   { level: 2, name: 'Swap a hat: four hats; swap, spotlight one friend, hear two different bands, then finish with the one she likes', mode: 'swap' },
   { level: 3, name: 'Alone, then together: both friends play; hear each one alone with the spotlight, then the two together', mode: 'alone' },
+  { level: 4, name: 'Build a song: three friends (drum, tune and a low part) and a three-part song; start with the tune alone, end with everybody, the middle is hers; Check plays it through', mode: 'arrange' },
 ];
 export const planFor = (level: number): Plan => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 
@@ -148,6 +155,10 @@ export interface BeatEvent {
 function partOn(hat: HatId, step: number): { pitch: number | null } | null {
   const h = HATS[hat];
   if (h.role === 'drum') return h.hits![step] ? { pitch: null } : null;
+  if (h.role === 'bass') {
+    const n = h.low![step];
+    return n === null ? null : { pitch: n };
+  }
   const n = h.notes![step];
   return n === null ? null : { pitch: noteStep(n) };
 }
@@ -205,6 +216,8 @@ const settled = (band: Band) => !pending(band) && band.heardMix >= BEATS && mixK
 export function canFinish(band: Band, level: number): boolean {
   if (!settled(band)) return false;
   const mode = planFor(level).mode;
+  // Level 4 is judged by `check` on its song, never by this gate (its scene has no Done of this kind).
+  if (mode === 'arrange') return false;
   if (mode === 'put') return true;
   if (mode === 'swap') return band.mixes.length >= 2;
   return band.worn[0] !== null && band.worn[1] !== null && band.solo === null && band.worn.every((h) => band.heardAlone.includes(h!));
@@ -309,4 +322,227 @@ export function hatBandLayout(view: { w: number; h: number }, level: number, hat
   }
   const done: Disc = { x: view.w - DONE - 40, y: view.h - DONE - 50, r: DONE };
   return { stage, friends, spots, rack, stars, done };
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Level 4, *Build a song* (music M6, docs/definitions/hat-band.md#level-4-build-a-song-m6-definition-2026-11-06): three
+// friends, each with one hat (a drum, a tune and a low part), and a song of three parts. Each part is the set of roles
+// playing in it, kept as a bit mask. The brief asks for the tune alone first and everybody last; the middle is hers.
+
+export type Part = 0 | 1 | 2;
+export const PARTS: Part[] = [0, 1, 2];
+export const ROLE_BIT: Record<Role, number> = { drum: 1, tune: 2, bass: 4 };
+/** The order roles are tried in when a repair picks one: drum, tune, low. */
+export const ROLE_ORDER: Role[] = ['drum', 'tune', 'bass'];
+export const EVERYBODY = 7;
+/** A song: which roles play in each of its three parts. */
+export type Song = readonly [number, number, number];
+/** The song she starts from: everybody in every part, so the first move is making space. */
+export const START_SONG: Song = [EVERYBODY, EVERYBODY, EVERYBODY];
+export const UNDO_LIMIT = 20;
+
+export const has = (mask: number, role: Role): boolean => (mask & ROLE_BIT[role]) !== 0;
+export const rolesIn = (mask: number): Role[] => ROLE_ORDER.filter((r) => has(mask, r));
+
+/** The brief's two pictured clauses, judged in this order. "Every part has somebody" is a precondition, not a clause. */
+export type Clause = 'first' | 'last';
+export const CLAUSES: { clause: Clause; part: Part; target: number }[] = [
+  { clause: 'first', part: 0, target: ROLE_BIT.tune },
+  { clause: 'last', part: 2, target: EVERYBODY },
+];
+
+export type Verdict = 'empty' | 'ok' | Clause;
+/** Judge a song: a part with nobody in it, accepted, or the first clause it breaks. */
+export function check(song: Song): Verdict {
+  if (song.some((m) => m === 0)) return 'empty';
+  for (const c of CLAUSES) if (song[c.part] !== c.target) return c.clause;
+  return 'ok';
+}
+
+const bits = (m: number) => (m & 1) + ((m >> 1) & 1) + ((m >> 2) & 1);
+/** How many hat toggles the song is from the nearest accepted one (any nonempty middle is accepted). */
+export const distance = (song: Song): number => bits(song[0] ^ ROLE_BIT.tune) + (song[1] === 0 ? 1 : 0) + bits(song[2] ^ EVERYBODY);
+
+export interface Repair { clause: 'empty' | Clause; part: Part; role: Role }
+/**
+ * One toggle toward an accepted song, inside the part that is wrong: the first empty part (an empty middle gets the
+ * tune), else the first broken clause's part, the first role (drum, tune, low) that differs from its target. Never
+ * touches another part, so her middle is never discarded. Null for an accepted song.
+ */
+export function repair(song: Song): Repair | null {
+  const v = check(song);
+  if (v === 'ok') return null;
+  if (v === 'empty') {
+    const part = song.findIndex((m) => m === 0) as Part;
+    if (part === 1) return { clause: v, part, role: 'tune' };
+    const target = CLAUSES.find((c) => c.part === part)!.target;
+    return { clause: v, part, role: ROLE_ORDER.find((r) => has(target, r))! };
+  }
+  const c = CLAUSES.find((x) => x.clause === v)!;
+  return { clause: v, part: c.part, role: ROLE_ORDER.find((r) => has(song[c.part], r) !== has(c.target, r))! };
+}
+
+export const toggle = (song: Song, part: Part, role: Role): Song =>
+  song.map((m, i) => (i === part ? m ^ ROLE_BIT[role] : m)) as unknown as Song;
+
+export interface SongRound {
+  cast: [CritterName, CritterName, CritterName];
+  /** Each friend's hat for the whole round, in stage order. */
+  hats: [HatId, HatId, HatId];
+}
+
+/** A seeded level 4 round: three friends, one drum, one tune and one low hat, in a seeded order on the stage. */
+export function makeSongRound(rng: Rng): SongRound {
+  const friends = rng.shuffle([...FRIENDS]);
+  const hats = rng.shuffle([rng.pick(['steady', 'skippy'] as HatId[]), rng.pick(['cuckoo', 'rain'] as HatId[]), rng.pick(LOW_IDS)]);
+  return { cast: [friends[0], friends[1], friends[2]], hats: [hats[0], hats[1], hats[2]] };
+}
+
+/** Which friend wears a role's hat. */
+export const friendFor = (round: SongRound, role: Role): number => round.hats.findIndex((h) => HATS[h].role === role);
+
+export type Playing = 'loop' | 'song' | 'check';
+export interface Arrange {
+  beat: number;
+  /** Whole beats sounded so far, which is the index of the next one. */
+  played: number;
+  song: Song;
+  selected: Part;
+  /** Loop: the selected part over and over. Song (Play) and Check: parts 1, 2, 3 once each, then back to the loop. */
+  playing: Playing;
+  /** The beat the current bar counting started on: a played song starts a fresh bar. */
+  origin: number;
+  undo: Song[];
+  /** The part heard on the last beat (the playhead), and who played in it. */
+  now: Part | null;
+  mask: number;
+}
+
+export const newArrange = (): Arrange => ({ beat: 0, played: 0, song: START_SONG, selected: 0, playing: 'loop', origin: 0, undo: [], now: null, mask: 0 });
+
+/** Tap a part card: free, not undone. During Play it stops the song so she hears the part she picked; during Check, ignored. */
+export function select(a: Arrange, part: Part): Arrange {
+  if (a.playing === 'check') return a;
+  return { ...a, selected: part, playing: 'loop' };
+}
+
+/** Tap a friend: their hat goes on or off in the selected part. An edit stops a played song; Check ignores edits. */
+export function toggleRole(a: Arrange, role: Role): Arrange {
+  if (a.playing === 'check') return a;
+  const undo = [...a.undo, a.song].slice(-UNDO_LIMIT);
+  return { ...a, song: toggle(a.song, a.selected, role), undo, playing: 'loop' };
+}
+
+/** Undo: the song before the last toggle, exactly. Nothing to undo, or during Check, leaves it as it is. */
+export function undoStep(a: Arrange): Arrange {
+  if (a.playing === 'check' || a.undo.length === 0) return a;
+  return { ...a, song: a.undo[a.undo.length - 1], undo: a.undo.slice(0, -1), playing: 'loop' };
+}
+
+/** Play (or Check) the whole song from the next beat. */
+export const playSong = (a: Arrange, how: 'song' | 'check'): Arrange => ({ ...a, playing: how, origin: a.played });
+
+export interface SongEvent {
+  index: number;
+  step: number;
+  part: Part;
+  friend: number;
+  hat: HatId;
+  role: Role;
+  /** The marimba's step for a tune note, the pluck's for a low note; null for a drum hit. */
+  pitch: number | null;
+  at: number;
+}
+
+/**
+ * Moves the song's clock on by `dt` seconds, returning every whole beat crossed, each once and in order, and `ended`
+ * when a played or checked song finished its third part (then it loops the selected part again).
+ */
+export function advanceSong(round: SongRound, arrange: Arrange, dt: number): { arrange: Arrange; events: SongEvent[]; ended: 'song' | 'check' | null } {
+  const a: Arrange = { ...arrange };
+  const events: SongEvent[] = [];
+  let ended: 'song' | 'check' | null = null;
+  let left = Math.max(0, dt);
+  let at = 0;
+  for (;;) {
+    const toNext = (a.played - a.beat) * PER_BEAT;
+    if (toNext > left + 1e-9) {
+      a.beat += left / PER_BEAT;
+      break;
+    }
+    left -= Math.max(0, toNext);
+    at += Math.max(0, toNext);
+    a.beat = a.played;
+    let k = a.played - a.origin;
+    if (a.playing !== 'loop' && k >= BEATS * PARTS.length) {
+      ended = a.playing;
+      a.playing = 'loop';
+      a.origin = a.played;
+      k = 0;
+    }
+    const part: Part = a.playing === 'loop' ? a.selected : (Math.floor(k / BEATS) as Part);
+    const step = ((k % BEATS) + BEATS) % BEATS;
+    a.now = part;
+    a.mask = a.song[part];
+    round.hats.forEach((hat, friend) => {
+      const role = HATS[hat].role;
+      if (!has(a.mask, role)) return;
+      const p = partOn(hat, step);
+      if (p) events.push({ index: a.played, step, part, friend, hat, role, pitch: p.pitch, at });
+    });
+    a.played++;
+  }
+  return { arrange: a, events, ended };
+}
+
+export type SongMove = { part: Part } | { friend: number } | 'play' | 'check';
+/**
+ * The ghost finger's next tap at level 4, reading the brief and part strip: the repair's part card, then the friend
+ * whose hat it toggles; once the song fits, Play to hear it whole, then Check. Waits (null) while a song is playing.
+ */
+export function songBotMove(round: SongRound, a: Arrange, heardSong: boolean): SongMove | null {
+  if (a.playing !== 'loop') return null;
+  const r = repair(a.song);
+  if (r) return a.selected === r.part ? { friend: friendFor(round, r.role) } : { part: r.part };
+  return heardSong ? 'check' : 'play';
+}
+
+export interface SongLayout {
+  /** The brief: the first clause's card, the open middle, the last clause's card. */
+  brief: Rect[];
+  stage: Rect;
+  friends: { x: number; y: number }[];
+  spots: Rect[];
+  /** The part strip, the song as it stands. */
+  parts: Rect[];
+  undo: Disc;
+  play: Disc;
+  check: Disc;
+}
+
+export const BRIEF_W = 120;
+export const BRIEF_H = 100;
+export const PART_W = 150;
+export const PART_H = 120;
+export const SONG_SPOT = 150;
+
+/** Level 4's screen from the view: brief strip, stage of three, part strip, then Undo, Play and Check, clear of the pet. */
+export function songLayout(view: { w: number; h: number }): SongLayout {
+  const portrait = view.h > view.w;
+  const cx = view.w / 2;
+  const top = portrait ? Math.max(110, view.h * 0.1) : 14;
+  const brief = [-1, 0, 1].map((i) => ({ x: cx + i * (BRIEF_W + 40) - BRIEF_W / 2, y: top, w: BRIEF_W, h: BRIEF_H }));
+  const stageW = Math.min(view.w - 120, 700);
+  const stage: Rect = { x: cx - stageW / 2, y: top + BRIEF_H + 14, w: stageW, h: portrait ? 300 : 250 };
+  const feet = stage.y + stage.h - 30;
+  const friends = [-1, 0, 1].map((i) => ({ x: cx + i * 200, y: feet }));
+  const spotH = 210;
+  const spots = friends.map((f) => ({ x: f.x - SONG_SPOT / 2, y: f.y - spotH + 20, w: SONG_SPOT, h: spotH }));
+  const partsY = stage.y + stage.h + (portrait ? 40 : 18);
+  const parts = [-1, 0, 1].map((i) => ({ x: cx + i * (PART_W + 30) - PART_W / 2, y: partsY, w: PART_W, h: PART_H }));
+  const rowY = portrait ? partsY + PART_H + 120 : Math.min(view.h - 70, partsY + PART_H + 74);
+  const undo: Disc = { x: cx - 200, y: rowY, r: 50 };
+  const play: Disc = { x: cx, y: rowY, r: 60 };
+  const check: Disc = { x: view.w - 100, y: rowY, r: 60 };
+  return { brief, stage, friends, spots, parts, undo, play, check };
 }

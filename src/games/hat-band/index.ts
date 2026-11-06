@@ -1,6 +1,6 @@
 import { Container, Graphics, Rectangle } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
-import { ink, swatch, wood, type Swatch } from '../../art/palette';
+import { ink, swatch, wood } from '../../art/palette';
 import { musicNote, starPoints } from '../../art/shapes';
 import { Backdrop } from '../../art/scenery';
 import { silenced, STYLES } from '../../audio/music';
@@ -15,68 +15,18 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { advance, BEATS, botMove, canFinish, earlyDone, HAT, HATS, hatBandLayout, makeRound, newBand, nextStep, PER_BEAT, planFor, spotlight, STAR, takeOff, voices, waitLeft, wear, type Band, type BeatEvent, type Friend, type HatBandLayout, type HatId, type Plan, type Round } from './logic';
+import { barsArt, checkArt, drumArt, HEAD, hatArt, line, WORN_SCALE } from './art';
+import { advance, BEATS, botMove, canFinish, earlyDone, HAT, HATS, hatBandLayout, makeRound, newBand, nextStep, PER_BEAT, planFor, spotlight, STAR, takeOff, voices, waitLeft, wear, type Band, type BeatEvent, type Friend, type HatBandLayout, type HatId, type Plan, type Round, HAT_IDS } from './logic';
+import { SongBand } from './song';
 
-// Lap and toddler stay with Jelly Drums and Little Conductor; school starts at swapping (decision 2's default).
+// Lap and toddler stay with Jelly Drums and Little Conductor; school starts at swapping (decision 2's default). Building a
+// song (level 4) tops the school range and is the grown-ups' level (the 2026-10-23 placement, no new band).
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 1, max: 3 },
-  school: { min: 2, max: 3 },
+  school: { min: 2, max: 4 },
+  grownup: { min: 4, max: 4 },
 };
-
-const line = (color: number, width = 6) => ({ width, color, cap: 'round' as const, join: 'round' as const });
-const HAT_COLORS: Record<HatId, Swatch> = { steady: swatch.red, skippy: swatch.orange, cuckoo: swatch.blue, rain: swatch.purple };
-/** A worn hat sits a little smaller on a friend's head. */
-const WORN_SCALE = 0.8;
-/** How far above a friend's feet the worn hat sits. */
-const HEAD = 166;
-
-/** A little drum, the drum hats' badge and the drummer's prop. */
-function drumArt(scale = 1): Graphics {
-  const g = new Graphics()
-    .roundRect(-26, -8, 52, 34, 8).fill(swatch.red.fill).stroke(line(swatch.red.line, 4))
-    .ellipse(0, -8, 26, 9).fill(0xfff4e3).stroke(line(swatch.red.line, 4))
-    .moveTo(-20, 2).lineTo(20, 20).moveTo(20, 2).lineTo(-20, 20).stroke({ width: 3, color: swatch.yellow.line });
-  g.scale.set(scale);
-  return g;
-}
-
-/** A small set of bars, the tune player's prop. */
-function barsArt(): Graphics {
-  const g = new Graphics().roundRect(-56, 12, 112, 14, 5).fill(wood.fill).stroke(line(wood.line, 4));
-  [swatch.red, swatch.orange, swatch.yellow, swatch.green].forEach((b, i) => g.roundRect(-50 + i * 26, -20 + i * 4, 22, 34 - i * 4, 5).fill(b.fill).stroke(line(b.line, 3)));
-  return g;
-}
-
-/** A hat: a crown and brim in the hat's colour, with a drum or a note on its band so the role never rests on colour. */
-function hatArt(id: HatId): Container {
-  const c = new Container();
-  const sw = HAT_COLORS[id];
-  const g = new Graphics();
-  if (HATS[id].role === 'drum') {
-    // A tall band-leader's hat with a plume.
-    g.moveTo(10, -48).quadraticCurveTo(34, -78, 22, -40).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 3));
-    g.roundRect(-34, -44, 68, 70, 12).fill(sw.fill).stroke(line(sw.line, 5));
-    g.roundRect(-50, 22, 100, 16, 8).fill(sw.fill).stroke(line(sw.line, 5));
-  } else {
-    // A round cap with a bobble.
-    g.circle(0, -42, 10).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 3));
-    g.moveTo(-44, 22).bezierCurveTo(-44, -54, 44, -54, 44, 22).closePath().fill(sw.fill).stroke(line(sw.line, 5));
-    g.roundRect(-54, 18, 108, 16, 8).fill(sw.fill).stroke(line(sw.line, 5));
-  }
-  g.circle(0, -6, 22).fill(0xffffff).stroke({ width: 3, color: sw.line });
-  c.addChild(g);
-  if (HATS[id].role === 'drum') {
-    const d = drumArt(0.55);
-    d.y = -10;
-    c.addChild(d);
-  } else {
-    const n = musicNote(new Graphics(), 24, ink);
-    n.y = -6;
-    c.addChild(n);
-  }
-  return c;
-}
 
 /** A hat she can lift: drag it onto a friend, or tap it and then tap the friend. */
 class HatPiece extends Container {
@@ -134,9 +84,6 @@ function starArt(on: boolean): Graphics {
   return new Graphics().poly(starPoints(30, 13)).fill(on ? 0xffffff : swatch.yellow.light).stroke({ width: 4, color: ink, join: 'round' });
 }
 
-function checkArt(): Graphics {
-  return new Graphics().moveTo(-22, 0).lineTo(-6, 18).lineTo(24, -18).stroke({ width: 11, color: 0xffffff, cap: 'round', join: 'round' });
-}
 
 class HatBand implements Game {
   readonly plan: Plan;
@@ -516,7 +463,7 @@ function sticker(seed: number): Container {
   friend.alive = false;
   friend.scale.set(0.5);
   friend.position.set(-20, 80);
-  const id = rng.pick(Object.keys(HATS) as HatId[]);
+  const id = rng.pick(HAT_IDS);
   const hat = hatArt(id);
   hat.scale.set(0.7);
   hat.position.set(-20, 80 - 145);
@@ -533,7 +480,7 @@ export const hatBand: GameModule = {
   region: 'music-mountain',
   challenge: 'music',
   skills: ['listening', 'musical roles', 'texture', 'cause and effect'],
-  bands: ['preschool', 'prek', 'school'],
+  bands: ['preschool', 'prek', 'school', 'grownup'],
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   // The band is the music; the island's loop stays silent so it never competes.
@@ -543,5 +490,5 @@ export const hatBand: GameModule = {
   hubIcon: () => new HatBandIcon(),
   touchDemo: true,
   sticker,
-  create: (ctx) => new HatBand(ctx),
+  create: (ctx) => (planFor(ctx.level).mode === 'arrange' ? new SongBand(ctx) : new HatBand(ctx)),
 };

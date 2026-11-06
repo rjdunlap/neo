@@ -6,11 +6,11 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **`hat-band`, level 4 *Build a song*** (`music-instruments` M6; school `{2,4}`, grownup `{4,4}`; new interaction on the existing game, a third (low) role, `fingerdemo` at 4): [definition](definitions/hat-band.md#level-4-build-a-song-m6-definition-2026-11-06), [check tier](definitions/hat-band.md#check-tier-the-build).
 - **`gadget-bench`, level 4 *Fix-It Day*** (`inventions`; school; the first conflict: paddle wheels do two jobs; new level on the existing interaction, `fingerdemo` at 4): [definition](definitions/gadget-bench.md#level-4-fix-it-day-definition), [check tier](definitions/gadget-bench.md#check-tier-level-4).
 - **Dive `bolt-boards`** (Bolt Boards; toddler to school, 7 levels; docs only): [procedure](deep-dives/README.md#one-session-one-game), [definition](definitions/bolt-boards.md).
 - **`swing-pals`, more friends and leaf goals** (riders cat, dog, pig and, if it clears the short hook, cow; seeded leaf goals beside the bell; fresh-content tier, no `fingerdemo`): [fresh content inside existing levels](deep-dives/swing-pals.md#fresh-content-inside-existing-levels).
 - **`far-lights`, levels 7–8** (`astronomy`; school; the opening look, Both could fit and the sideways step; new-interaction tier, the school range becomes {4,8}, `fingerdemo` at 8; the held parallax wording is checked against a cited source): [definition](definitions/far-lights.md#levels-58-definition), [build slice 2](definitions/far-lights.md#build-slices-levels-58).
+- **`circuit-garden`, levels 1–2, then 3** (pre-K and school; a visible way back closes the loop; Tinker Lab; new-game tier, promoted from Queued 2026-11-06): [definition](definitions/circuit-garden.md).
 
 ## Queued
 
@@ -28,7 +28,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 
 - **New games admitted 2026-11-05** (the developer asked for the recommendations to be made without waiting; identity, bands, land and accounting use the defaults settled in the [October 23 record](archive/DECISIONS-2026-10-23.md#decisions)). Each building session still does its own source check and the lands test at build time, since a full land pages rather than shrinks. They are in order of her age first, one game per session, new-game tier as each definition's check tier sets it:
-  - **`circuit-garden`, levels 1–2, then 3** (pre-K and school; a visible way back closes the loop; Tinker Lab): [definition](definitions/circuit-garden.md).
   - **`measuring-post`, levels 1–4** (school; choose the tool for the question, and compare counts only in the same unit; Tinker Lab or Cozy Village): [definition](definitions/measuring-post.md).
 
 - **`swing-pals`, three slices in the dive's order** (`physics`; lap to school; [build slices](deep-dives/swing-pals.md#build-slices-in-order)):

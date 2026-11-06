@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { PENTATONIC } from '../../audio/notes';
+import { PENTATONIC, stepToMidi } from '../../audio/notes';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
   advance, BEATS, botMove, canFinish, earlyDone, HAT_IDS, HATS, hatBandLayout, makeRound, mixKey, newBand, nextStep,
   noteStep, onRack, PER_BEAT, spotlight, takeOff, wear,
   type Band, type BeatEvent, type Friend, type HatId, type Mix,
+  advanceSong, check, distance, EVERYBODY, friendFor, makeSongRound, newArrange, playSong, repair, ROLE_BIT, ROLE_ORDER,
+  select, songBotMove, songLayout, START_SONG, toggle, toggleRole, undoStep, UNDO_LIMIT,
+  type Arrange, type Part, type Role, type Song, type SongEvent, type SongRound,
 } from './logic';
 
 /** Runs the clock in small frames until `n` more beats have been sounded (rests included). */
@@ -391,4 +394,314 @@ describe('Hat Band layout', () => {
         for (let i = 0; i < targets.length; i++)
           for (let j = i + 1; j < targets.length; j++) expect(overlap(targets[i], targets[j])).toBe(false);
       });
+});
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Level 4, Build a song
+
+const ALL_SONGS: Song[] = [];
+for (let a = 0; a < 8; a++) for (let b = 0; b < 8; b++) for (let c = 0; c < 8; c++) ALL_SONGS.push([a, b, c]);
+const TUNE = ROLE_BIT.tune;
+
+describe('Hat Band level 4 judging', () => {
+  it('enumerates 512 songs; empty iff some part is empty', () => {
+    expect(ALL_SONGS).toHaveLength(512);
+    for (const s of ALL_SONGS) expect(check(s) === 'empty').toBe(s.some((m) => m === 0));
+  });
+  it('accepts exactly seven songs, all {tune} - X - everybody, with the implied conditions true', () => {
+    const ok = ALL_SONGS.filter((s) => check(s) === 'ok');
+    expect(ok).toHaveLength(7);
+    for (const s of ok) {
+      expect(s[0]).toBe(2);
+      expect(s[2]).toBe(7);
+      expect(s[1]).toBeGreaterThanOrEqual(1);
+      // every role sounds somewhere
+      for (const r of ROLE_ORDER) expect(s.some((m) => (m & ROLE_BIT[r]) !== 0)).toBe(true);
+      // the low part enters exactly once and stays
+      const low = s.map((m) => (m & ROLE_BIT.bass) !== 0);
+      const first = low.indexOf(true);
+      expect(first).toBeGreaterThan(0);
+      for (let i = first; i < 3; i++) expect(low[i]).toBe(true);
+    }
+    expect(check([2, 6, 7])).toBe('ok');
+    expect(check([2, 3, 7])).toBe('ok');
+    expect(check(START_SONG)).not.toBe('ok');
+  });
+  it('names a clause that is really false, with the earlier clause true', () => {
+    for (const s of ALL_SONGS) {
+      const v = check(s);
+      if (v === 'ok' || v === 'empty') continue;
+      expect(s.every((m) => m !== 0)).toBe(true);
+      if (v === 'first') expect(s[0]).not.toBe(TUNE);
+      else {
+        expect(v).toBe('last');
+        expect(s[0]).toBe(TUNE);
+        expect(s[2]).not.toBe(EVERYBODY);
+      }
+    }
+  });
+  it('repair reaches an accepted song from every song in at most 7 toggles, each lowering distance by one in one part', () => {
+    let worst = 0;
+    for (const start of ALL_SONGS) {
+      let s = start;
+      let n = 0;
+      while (check(s) !== 'ok') {
+        const r = repair(s)!;
+        expect(r).not.toBeNull();
+        const before = distance(s);
+        const next = toggle(s, r.part, r.role);
+        expect(distance(next)).toBe(before - 1);
+        for (let i = 0; i < 3; i++) if (i !== r.part) expect(next[i]).toBe(s[i]);
+        expect(next[r.part]).not.toBe(s[r.part]);
+        s = next;
+        n++;
+        expect(n).toBeLessThanOrEqual(7);
+      }
+      expect(repair(s)).toBeNull();
+      expect(distance(s)).toBe(0);
+      worst = Math.max(worst, n);
+    }
+    expect(worst).toBe(7);
+  });
+});
+
+describe('Hat Band level 4 undo', () => {
+  it('restores earlier songs exactly back to the 20-step bound; selecting is not recorded', () => {
+    for (let seed = 1; seed <= 20; seed++) {
+      const rng = new Rng(seed);
+      let a = newArrange();
+      const history: Song[] = [];
+      const n = rng.int(1, 25);
+      for (let i = 0; i < n; i++) {
+        if (rng.int(0, 1) === 0) {
+          const before = a.undo.length;
+          a = select(a, rng.int(0, 2) as Part);
+          expect(a.undo.length).toBe(before);
+        }
+        history.push(a.song);
+        a = toggleRole(a, ROLE_ORDER[rng.int(0, 2)]);
+      }
+      expect(a.undo.length).toBe(Math.min(n, UNDO_LIMIT));
+      const steps = Math.min(n, UNDO_LIMIT);
+      for (let k = 1; k <= steps; k++) {
+        a = undoStep(a);
+        expect(a.song).toEqual(history[n - k]);
+      }
+      const rest = a.song;
+      a = undoStep(a);
+      expect(a.song).toEqual(rest);
+    }
+  });
+  it('bounds history at 20 even after 25 toggles', () => {
+    let a = newArrange();
+    for (let i = 0; i < 25; i++) a = toggleRole(a, 'drum');
+    expect(a.undo).toHaveLength(UNDO_LIMIT);
+  });
+});
+
+describe('Hat Band level 4 clock', () => {
+  const round: SongRound = { cast: ['cat', 'dog', 'fox'] as unknown as SongRound['cast'], hats: ['steady', 'cuckoo', 'walk'] };
+  /** Runs small frames until `until` says stop; returns the events, the final state and what ended. */
+  function run(a: Arrange, stop: (a: Arrange, ended: 'song' | 'check' | null) => boolean, edit?: (a: Arrange, ev: SongEvent[]) => Arrange) {
+    const events: SongEvent[] = [];
+    let ended: 'song' | 'check' | null = null;
+    let cur = a;
+    for (let g = 0; g < 100000; g++) {
+      const r = advanceSong(round, cur, 1 / 60);
+      cur = r.arrange;
+      events.push(...r.events);
+      if (r.ended) ended = r.ended;
+      if (edit) cur = edit(cur, events);
+      if (stop(cur, r.ended)) break;
+    }
+    return { a: cur, events, ended };
+  }
+  const full = (): Arrange => ({ ...newArrange(), song: [EVERYBODY, EVERYBODY, EVERYBODY] });
+
+  it('Song plays parts 0, 1, 2 in order, a bar each, each beat once, then loops', () => {
+    let a = full();
+    a = { ...a, song: [2, 3, 7], selected: 1 };
+    a = advanceSong(round, a, 0).arrange; // beat 0 in loop
+    a = playSong(a, 'song');
+    const startIdx = a.played;
+    const { events, ended, a: end } = run(a, (_, e) => e === 'song');
+    expect(ended).toBe('song');
+    expect(end.playing).toBe('loop');
+    const song = events.filter((e) => e.index < startIdx + 12);
+    const idxs = [...new Set(song.map((e) => e.index))];
+    for (let i = 1; i < idxs.length; i++) expect(idxs[i]).toBeGreaterThan(idxs[i - 1]);
+    for (const e of song) {
+      const k = e.index - startIdx;
+      expect(e.part).toBe(Math.floor(k / 4));
+      expect(e.step).toBe(k % 4);
+      expect(has(e)).toBe(true);
+    }
+    expect(new Set(song.map((e) => e.part))).toEqual(new Set([0, 1, 2]));
+    // each (index, friend) once
+    const keys = events.map((e) => `${e.index}|${e.friend}`);
+    expect(new Set(keys).size).toBe(keys.length);
+    // part 0 is the tune alone, part 2 includes the drum
+    expect(song.filter((e) => e.part === 0).every((e) => e.role === 'tune')).toBe(true);
+    expect(song.filter((e) => e.part === 2).some((e) => e.role === 'drum')).toBe(true);
+    // after the song, it loops the selected part (1)
+    const after = events.filter((e) => e.index >= startIdx + 12);
+    expect(after.every((e) => e.part === 1)).toBe(true);
+    function has(e: SongEvent) { return ((end.song[e.part] & ROLE_BIT[e.role]) !== 0); }
+  });
+
+  it('ticks every beat index exactly once, in order, with rests as gaps only', () => {
+    let a = playSong(full(), 'song');
+    const seen: number[] = [];
+    for (let g = 0; g < 2000; g++) {
+      const r = advanceSong(round, a, 1 / 60);
+      a = r.arrange;
+      for (const e of r.events) seen.push(e.index);
+    }
+    for (let i = 1; i < seen.length; i++) expect(seen[i]).toBeGreaterThanOrEqual(seen[i - 1]);
+    expect(a.played).toBeGreaterThan(12);
+  });
+
+  it('an edit during Song returns to Loop and applies from the next beat', () => {
+    let a = playSong({ ...full(), song: [2, 3, 7] }, 'song');
+    a = advanceSong(round, a, 0.01).arrange;
+    a = advanceSong(round, a, PER_BEAT * 5).arrange; // into part 1
+    expect(a.playing).toBe('song');
+    a = select(a, 0);
+    a = toggleRole(a, 'tune'); // remove the tune from part 0
+    expect(a.playing).toBe('loop');
+    expect(a.song[0]).toBe(0);
+    const r = advanceSong(round, a, PER_BEAT * 2);
+    expect(r.ended).toBeNull();
+    expect(r.events.every((e) => e.part === 0 && e.role !== 'tune')).toBe(true);
+    expect(r.arrange.playing).toBe('loop');
+  });
+
+  it('Check ignores toggleRole, select and undoStep, and ends after 12 beats', () => {
+    const base = toggleRole(full(), 'drum');
+    let a = playSong(base, 'check');
+    expect(toggleRole(a, 'bass')).toBe(a);
+    expect(select(a, 2)).toBe(a);
+    expect(undoStep(a)).toBe(a);
+    const startIdx = a.played;
+    let ended: 'song' | 'check' | null = null;
+    let endIdx = -1;
+    for (let g = 0; g < 5000 && !ended; g++) {
+      const r = advanceSong(round, a, 1 / 60);
+      a = r.arrange;
+      ended = r.ended;
+      if (ended) endIdx = a.played - 1;
+    }
+    expect(ended).toBe('check');
+    expect(endIdx - startIdx).toBe(12);
+    expect(a.playing).toBe('loop');
+  });
+
+  it('low-hat pitches sit at least 10 semitones below every tune pitch; drums are pitchless', () => {
+    const lows = (['thump', 'walk'] as HatId[]).flatMap((h) => HATS[h].low!.filter((n): n is number => n !== null).map(stepToMidi));
+    const tunes = (['cuckoo', 'rain'] as HatId[]).flatMap((h) => HATS[h].notes!.filter((n): n is number => n !== null).map((n) => stepToMidi(noteStep(n))));
+    expect(lows.length).toBeGreaterThan(0);
+    expect(Math.min(...tunes) - Math.max(...lows)).toBeGreaterThanOrEqual(10);
+    for (let seed = 1; seed <= 30; seed++) {
+      const r = makeSongRound(new Rng(seed));
+      let a = playSong({ ...newArrange(), song: [EVERYBODY, EVERYBODY, EVERYBODY] }, 'song');
+      const events: SongEvent[] = [];
+      for (let g = 0; g < 1500; g++) {
+        const x = advanceSong(r, a, 1 / 30);
+        a = x.arrange;
+        events.push(...x.events);
+      }
+      expect(events.some((e) => e.role === 'bass')).toBe(true);
+      for (const e of events) {
+        if (e.role === 'drum') expect(e.pitch).toBeNull();
+        else expect(e.pitch).not.toBeNull();
+        if (e.role === 'bass') for (const t of events.filter((x) => x.role === 'tune')) expect(stepToMidi(t.pitch!) - stepToMidi(e.pitch!)).toBeGreaterThanOrEqual(10);
+      }
+    }
+  });
+});
+
+describe('Hat Band level 4 round', () => {
+  it('has one hat of each role and is seed-stable', () => {
+    for (let seed = 1; seed <= 60; seed++) {
+      const r = makeSongRound(new Rng(seed));
+      expect(r).toEqual(makeSongRound(new Rng(seed)));
+      expect(r.hats.map((h) => HATS[h].role).sort()).toEqual(['bass', 'drum', 'tune']);
+      expect(new Set(r.cast).size).toBe(3);
+      for (const role of ROLE_ORDER) expect(HATS[r.hats[friendFor(r, role)]].role).toBe(role);
+    }
+  });
+  it('keeps the low hats out of levels 1 to 3', () => {
+    for (let seed = 1; seed <= 200; seed++)
+      for (const level of [1, 2, 3]) {
+        const r = makeRound(new Rng(seed), level);
+        expect(r.rack).not.toContain('thump');
+        expect(r.rack).not.toContain('walk');
+        expect(r.rack.length).toBe(level === 1 ? 2 : 4);
+      }
+  });
+});
+
+describe('Hat Band level 4 bot', () => {
+  it('reaches a Check on an accepted song through the real moves', () => {
+    for (let seed = 1; seed <= 30; seed++) {
+      const round = makeSongRound(new Rng(seed));
+      let a = newArrange();
+      let heard = false;
+      let verdict: string | null = null;
+      for (let g = 0; g < 60000 && verdict === null; g++) {
+        const m = songBotMove(round, a, heard);
+        if (m === 'check') {
+          expect(heard).toBe(true);
+          a = playSong(a, 'check');
+        } else if (m === 'play') a = playSong(a, 'song');
+        else if (m && 'part' in m) a = select(a, m.part);
+        else if (m && 'friend' in m) {
+          expect(m.friend).toBeGreaterThanOrEqual(0);
+          const role = HATS[round.hats[m.friend]].role as Role;
+          a = toggleRole(a, role);
+        }
+        const r = advanceSong(round, a, 1 / 30);
+        a = r.arrange;
+        if (r.ended === 'song') heard = true;
+        if (r.ended === 'check') verdict = check(a.song);
+      }
+      expect(verdict).toBe('ok');
+    }
+  });
+});
+
+describe('Hat Band level 4 layout', () => {
+  const VIEWS: [number, number][] = [[1024, 768], [768, 1024], [1366, 768], [1194, 834]];
+  type R = { x: number; y: number; w: number; h: number };
+  const overlap = (a: R, b: R) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+  const box = (d: { x: number; y: number; r: number }): R => ({ x: d.x - d.r, y: d.y - d.r, w: 2 * d.r, h: 2 * d.r });
+  for (const [pw, ph] of VIEWS)
+    it(`keeps every target large, apart, on screen and clear of the pet at ${pw}x${ph}`, () => {
+      const view = computeView(pw, ph);
+      const l = songLayout(view);
+      expect(l.brief).toHaveLength(3);
+      expect(l.spots).toHaveLength(3);
+      expect(l.parts).toHaveLength(3);
+      const targets: R[] = [...l.brief, ...l.spots, ...l.parts, box(l.undo), box(l.play), box(l.check)];
+      const pet: R = { x: 0, y: view.h - 220, w: 220, h: 220 };
+      for (const t of targets) {
+        expect(Math.min(t.w, t.h)).toBeGreaterThanOrEqual(100);
+        expect(t.x).toBeGreaterThanOrEqual(0);
+        expect(t.y).toBeGreaterThanOrEqual(0);
+        expect(t.x + t.w).toBeLessThanOrEqual(view.w);
+        expect(t.y + t.h).toBeLessThanOrEqual(view.h);
+        expect(overlap(t, pet)).toBe(false);
+      }
+      for (let i = 0; i < targets.length; i++)
+        for (let j = i + 1; j < targets.length; j++) expect(overlap(targets[i], targets[j])).toBe(false);
+    });
+});
+
+describe('Hat Band level 4 registry', () => {
+  it('school runs 2 to 4 and grownup 4 to 4', async () => {
+    const { hatBand } = await import('./index');
+    expect(hatBand.levels('school')).toEqual({ min: 2, max: 4 });
+    expect(hatBand.levels('grownup')).toEqual({ min: 4, max: 4 });
+    expect(hatBand.bands).toContain('grownup');
+  });
 });
