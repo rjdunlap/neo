@@ -153,8 +153,8 @@ describe("today's six", () => {
 });
 
 describe("today's six on a phone held upright (chunk 31)", () => {
-  /** The catalog with `ids` marked upright-ready, so the test does not depend on how many games are converted yet. */
-  const withReady = (ids: readonly string[]) => GAMES.map((m) => (ids.includes(m.id) ? { ...m, upright: true as const } : m));
+  /** The catalog with exactly `ids` marked upright-ready, so the test does not depend on how many games are converted yet. */
+  const withReady = (ids: readonly string[]) => GAMES.map((m) => ({ ...m, upright: ids.includes(m.id) ? (true as const) : undefined }));
   const ids = (picks: ReturnType<typeof dailySix>) => picks.map((p) => p.mod.id);
 
   it('is exactly the usual six when the phone is not upright', () => {
