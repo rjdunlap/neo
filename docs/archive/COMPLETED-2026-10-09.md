@@ -3015,7 +3015,7 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--sense-detective-leve
 
 [PR #1286](https://github.com/rjdunlap/neo/pull/1286), `claude/draw-the-pattern-fresh-pictures`: [dive](../deep-dives/draw-the-pattern.md#build-slices-in-order). Seeded piece pools of three per stroke (`POOLS`, `SHAPE_SETS` in `logic.ts`) for levels 1–4 and 6 (level 5 reuses the zigzag, wave and loop pools); 20 new `draw.picture.*` lines. Pieces underneath (house, present, cabin, sail) now draw first, so the house no longer covers its window. The level-2 "Start at the top and go down" instruction is keyed on the stroke kind. Strokes, rules and the bot are unchanged. The GAMES.md "Lap 1–2" wording is resolved.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--draw-the-pattern-fresh-pictures-slice-1).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-05.md#2026-11-05--draw-the-pattern-fresh-pictures-slice-1).
 
 ## Sudoku Garden, level 10 Cage beds (batch sudoku-garden 5, 2026-11-05)
 

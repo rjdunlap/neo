@@ -103,3 +103,55 @@ export function checkButtonArt(): Container {
 export function cardBack(w: number, h: number): Graphics {
   return new Graphics().roundRect(-w / 2, -h / 2, w, h, 22).fill(swatch.white.fill).stroke({ width: 5, color: wood.line });
 }
+
+/** Level 5's thick patchwork quilt over the parcel, with the peephole flap left open. */
+export function quiltArt(): Container {
+  const g = new Graphics();
+  const colors = [swatch.blue.light, swatch.pink.light, swatch.green.light, swatch.yellow.light];
+  const cols = 6;
+  const rows = 4;
+  const w = 264 / cols;
+  const h = 170 / rows;
+  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+    g.rect(-132 + c * w, -80 + r * h, w, h).fill(colors[(r + c) % colors.length]);
+  }
+  g.roundRect(-132, -80, 264, 170, 26).stroke({ width: 7, color: wood.line });
+  for (let c = 1; c < cols; c++) g.moveTo(-132 + c * w, -80).lineTo(-132 + c * w, 90).stroke({ width: 2, color: wood.light });
+  for (let r = 1; r < rows; r++) g.moveTo(-132, -80 + r * h).lineTo(132, -80 + r * h).stroke({ width: 2, color: wood.light });
+  // The flap folded back from the peephole.
+  g.circle(0, -30, 42).fill(cream).stroke({ width: 4, color: wood.line });
+  g.circle(0, -30, 32).fill(ink).stroke({ width: 6, color: wood.line });
+  g.moveTo(26, -64).quadraticCurveTo(58, -78, 60, -44).lineTo(36, -46).closePath().fill(swatch.pink.light).stroke({ width: 3, color: wood.line });
+  const q = new Container();
+  q.addChild(g);
+  return q;
+}
+
+/** The *Can't tell yet* card: two round badges side by side under a soft question mark. */
+export function cantTellArt(size = 170): Container {
+  const c = new Container();
+  c.addChild(cardBack(size, size));
+  const q = new Graphics();
+  q.arc(0, -46, 20, Math.PI * 1.05, Math.PI * 2.45).stroke({ width: 9, color: swatch.purple.line, cap: 'round' });
+  q.moveTo(0, -18 + 2).lineTo(0, -12).stroke({ width: 9, color: swatch.purple.line, cap: 'round' });
+  q.circle(0, 4, 6).fill(swatch.purple.line);
+  q.alpha = 0.75;
+  c.addChild(q);
+  for (const x of [-36, 36]) {
+    const plate = new Graphics().circle(x, 46, 30).fill(swatch.white.light).stroke({ width: 3, color: wood.light });
+    const badge = outlineArt('round', 50);
+    badge.position.set(x, 46 + badge.y);
+    c.addChild(plate, badge);
+  }
+  return c;
+}
+
+/** Stage B's choice cards: a look (the eye window) or a listen (the ear), on a shelf card. */
+export function senseChoiceArt(channel: 'view' | 'sound'): Container {
+  const c = new Container();
+  c.addChild(cardBack(200, 220));
+  const b = channel === 'view' ? lookButtonArt() : listenButtonArt();
+  b.scale.set(1.2);
+  c.addChild(b);
+  return c;
+}

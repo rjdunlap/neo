@@ -1,5 +1,6 @@
 # Needs a person or a device
 
+- [ ] **Sense Detective level 5 (2026-11-05):** does *Can't tell yet* read as a good answer rather than giving up, and does the quilt read as "can't hear it" without speech?
 - [ ] **Sense Detective levels 3–4 (2026-11-05):** does a five-year-old read "tap every toy it could be" as several taps, and does the level 4 ear sliding in after the tick's yes read as "now listen"?
 - [ ] **Light Lab level 12 *Split the sunbeam* (2026-11-04):** do the two dim arms read clearly on an iPad screen? Is the half-mirror distinct from a mirror at arm's length? Does device speech say "half-mirror" clearly?
 - [ ] **Light Lab level 11 *Through, bounce or stop?* (2026-11-04):** do a four-year-old's guesses look considered rather than random (this decides whether pre-K keeps level 11)? Does the dim beam through the cloudy thing read as "some light" on an iPad screen? Does device speech say "wax paper" and "tin lid" clearly?
