@@ -679,6 +679,7 @@ class MysteryGrid implements Game {
     if (this.scrollX < full - w) g.roundRect(HW + w - 8, HH, 8, h, 4).fill(bar);
     if (this.scrollY > 0) g.roundRect(HW, HH, w, 8, 4).fill(bar);
     if (this.scrollY < full - h) g.roundRect(HW, HH + h - 8, w, 8, 4).fill(bar);
+    if (this.pie.parent) this.placePie();
   }
 
   /** Is this square wholly inside the window? */
@@ -990,7 +991,9 @@ class MysteryGrid implements Game {
 
   private tapSquare(i: number) {
     const b = this.current;
-    if (!b || this.busy || this.finished || this.phase !== 'grid' || !this.inView(i)) return;
+    if (!b || this.busy || this.finished || this.phase !== 'grid') return;
+    // Level 8: a square cut by the window's edge slides into view instead of taking the mark.
+    if (!this.inView(i)) return void this.reveal(i);
     if (this.pending && this.pending.square !== i) this.settle();
     if (this.phase !== 'grid' || this.busy) return;
     const was = this.marks[i];
@@ -1050,6 +1053,10 @@ class MysteryGrid implements Game {
   private miss() {
     this.misses++;
     this.boardMisses++;
+    // Level 8: the glow after two misses slides into view.
+    const b = this.current;
+    const next = b && this.boardMisses >= 2 ? nextStep(b, this.marks) : null;
+    if (next) this.reveal(next.square);
   }
 
   private tapClue(c: ClueCard) {
@@ -1099,7 +1106,10 @@ class MysteryGrid implements Game {
 
   private placePie() {
     const b = this.current!;
-    this.pie.position.set(this.board.x + this.colX(b.event, b.eventItem ? 1 : 0) - this.scrollX + this.cs / 2, this.board.y - 6);
+    const x = this.colX(b.event, b.eventItem ? 1 : 0) - this.scrollX;
+    this.pie.position.set(this.board.x + x + this.cs / 2, this.board.y - 6);
+    // Level 8: hidden while its column is slid out of the window.
+    this.pie.visible = !this.slides || (x >= HW && x + C <= HW + this.win.w);
   }
 
   private async solvedBoard() {
