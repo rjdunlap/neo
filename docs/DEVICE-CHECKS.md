@@ -1056,3 +1056,8 @@ Performed on the built levels (PR #1043; [definition](definitions/water-road.md#
 
 - [ ] On an iPad, listen to device speech of the slotted clue lines ("Cat is at the pond", "Bunny is not at the tree") and the pie line.
 - [ ] Watch a three- or four-year-old at level 2: does she follow a spoken "not" on the grid, and does the yes-then-no tap make sense?
+
+## Mystery Grid levels 3-4 (2026-11-05)
+
+- [ ] On an iPad, listen to device speech of the slotted hat clues ("The friend in the red hat was not at the tree") and the ball line.
+- [ ] Watch a five- or six-year-old at level 4: do the hat patterns (stripes, spots, stars) read apart, and does she find the friend by hat on the header card?

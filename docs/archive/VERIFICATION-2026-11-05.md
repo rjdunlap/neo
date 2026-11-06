@@ -199,3 +199,7 @@ Changed: the dive `docs/deep-dives/draw-the-pattern.md`, the tracker row, READY,
 ## 2026-11-05 — Puddle Lens levels 5–6 definition (docs only)
 
 Changed: a levels 5–6 section in `docs/definitions/puddle-lens.md`, the cells-microbes dive row, READY and STUDY-BACKLOG. Ran: `node scripts/check-links.mjs` and `git diff --check`, both passed. No code checks. The biology model had a session source check only, with no separate biology reviewer (2026-10-23 decision). Open: whether a six-year-old waits for the evidence or guesses, and how the iPad says the button names (device speech).
+
+## 2026-11-05 — Sense Detective levels 3–5 definition (docs only)
+
+Changed: a levels 3–5 section in `docs/definitions/sense-detective.md` (with build slices B4a and B4b), the body-health dive rows, READY and STUDY-BACKLOG. Ran: `node scripts/check-links.mjs` and `git diff --check`, both clean. No code checks (docs tier). Open: nothing built or registered; the build checks are written in the definition's build slices.
