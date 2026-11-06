@@ -8,6 +8,75 @@ async function lensPlay() {
   const turn = async (stop) => { await page.evaluate((stop) => kit.tapOn(neo.scene.game.stopButtons[stop - 1]), stop); await page.waitForFunction((stop) => neo.scene.game.stop === stop, stop, { timeout: 5000 }); await page.waitForTimeout(400); };
   const show = async () => { await page.evaluate(() => kit.tapOn(neo.scene.game.answer)); await page.waitForTimeout(300); };
   await page.evaluate(() => { kit.store.data.settings.howToCards = false; });
+  const choose = async (i) => { await page.evaluate((i) => kit.tapOn(neo.scene.game.choiceButtons[i]), i); await settle(); };
+  const auto = async () => {
+    for (let i = 0; i < 40 && !(await page.evaluate(() => neo.scene.finished)); i++) {
+      await settle();
+      await page.evaluate(() => { const t = neo.scene.game.autotouch(); if (t) kit.tapOn(t.tap.on); });
+      await page.waitForTimeout(500);
+    }
+  };
+  const portrait = async (name) => {
+    await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(800);
+    await screenshot(name);
+    await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(800);
+  };
+  // LENS_LEVELS=7,8 plays only the wall-clue and why-green levels.
+  const only = (process.env.LENS_LEVELS ?? '').split(',').filter(Boolean).map(Number);
+  if (!only.length || only.some((l) => l <= 6)) await early();
+  // Level 7: plant cells, animal cells, can't tell yet; the wall is the clue.
+  if (!only.length || only.includes(7)) {
+    await launch('puddle-lens', 7);
+    await settle();
+    assert.deepEqual(await page.evaluate(() => neo.scene.game.walls), ['onion-skin', 'cheek-cells', 'leaf'], 'the authored slides');
+    assert.equal(await page.evaluate(() => neo.scene.game.stop), 2, 'level 7 starts at the hand lens');
+    await choose(1);
+    assert.deepEqual(await tally(), [0, 0], 'animal before the walls show is free');
+    await turn(3); await choose(1);
+    assert.deepEqual(await tally(), [1, 0], 'animal for the onion skin at stop 3: a miss');
+    await choose(0);
+    await page.waitForFunction(() => neo.scene.game.index === 1, null, { timeout: 8000 }); await settle();
+    await turn(3); await choose(2);
+    assert.deepEqual(await tally(), [2, 0], "can't tell yet once the edges show: a miss");
+    await turn(4);
+    await portrait('puddle-lens-7-cheek-portrait');
+    await choose(1);
+    await page.waitForFunction(() => neo.scene.game.index === 2, null, { timeout: 8000 }); await settle();
+    await page.evaluate(() => neo.scene.game.askForHint());
+    await page.waitForFunction(() => neo.scene.game.stop === 3, null, { timeout: 5000 }); await settle();
+    assert.deepEqual(await tally(), [2, 1], 'Show a hint turns the leaf to stop 3 and counts one');
+    await choose(0);
+    await finished('puddle-lens');
+    assert.deepEqual(await score(), [2, 1], 'level 7 saved two misses and one hint');
+    log("Puddle Lens 7: a free early answer, a wrong kind and a can't-tell miss at stop 3, a counted hint to stop 3, cheek portrait, saved 2/1");
+  }
+  // Level 8: tiny green living things, green all through the water, can't tell yet.
+  if (!only.length || only.includes(8)) {
+    await launch('puddle-lens', 8);
+    await settle();
+    assert.deepEqual(await page.evaluate(() => neo.scene.game.greens), ['green-balls', 'green-water', 'green-threads'], 'the authored drops');
+    await turn(3); await choose(0); await choose(2);
+    assert.deepEqual(await tally(), [0, 0], 'dots at stop 3 decide nothing: both answers free');
+    await turn(4); await choose(0);
+    await page.waitForFunction(() => neo.scene.game.index === 1, null, { timeout: 8000 }); await settle();
+    await turn(3); await turn(4);
+    await portrait('puddle-lens-8-water-portrait');
+    await choose(0);
+    assert.deepEqual(await tally(), [1, 0], 'living for the coloured water at stop 4: a miss');
+    await choose(1);
+    await page.waitForFunction(() => neo.scene.game.index === 2, null, { timeout: 8000 }); await settle();
+    await auto();
+    await finished('puddle-lens');
+    assert.deepEqual(await score(), [1, 0], 'level 8 saved one miss');
+    log('Puddle Lens 8: free answers at stop 3, a wrong verdict on the coloured water at stop 4, portrait, saved 1/0');
+  }
+}
+async function early() {
+  const score = () => page.evaluate(() => { const r = kit.store.stats('puddle-lens').history.at(-1); return [r.misses, r.hints]; });
+  const tally = () => page.evaluate(() => [neo.scene.game.tally.misses, neo.scene.game.tally.hints]);
+  const settle = async () => { await page.waitForTimeout(250); await page.waitForFunction(() => neo.scene.finished || !neo.scene.game.busy, null, { timeout: 20000 }); await page.waitForTimeout(200); };
+  const turn = async (stop) => { await page.evaluate((stop) => kit.tapOn(neo.scene.game.stopButtons[stop - 1]), stop); await page.waitForFunction((stop) => neo.scene.game.stop === stop, stop, { timeout: 5000 }); await page.waitForTimeout(400); };
+  const show = async () => { await page.evaluate(() => kit.tapOn(neo.scene.game.answer)); await page.waitForTimeout(300); };
   await launch('puddle-lens', 1);
   await settle();
   for (let i = 0; i < 3; i++) {

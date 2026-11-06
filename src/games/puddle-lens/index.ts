@@ -15,7 +15,7 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   answerIcon, buttonFace, candidateArt, candidateReach, drawRing, handLensArt, leafArt, lensFrame, lensShine, miniSlide, noneIcon, pawArt, ringArt, showIcon, sortLayer, stopPicture,
-  swimmerArt, thingArt, trayIcon, viewLayer, waterLayer,
+  swimmerArt, thingArt, trayIcon, viewLayer, waterLayer, wallLayer, greenLayer, plantIcon, livingIcon, throughIcon,
 } from './art';
 import {
   ART_R, clampGlass, DECIDING, dropScale, dropsFor, GLASS_R, helpFor, judgeSwimmers, judgeView, lensLayout, LensTally, LookTracker, looksFor,
@@ -23,6 +23,8 @@ import {
   CANDIDATES, CLASSES, decidingStop, judgeLife, judgeSort, lifeDropsFor, lookLine, PAIRS, rightLife, seeLine, SORT_SAMPLES, sortRoundFor,
   type CellClass, type Drop, type LensLayout, type LifeAnswer, type LifeDrop, type Looks, type PlanInfo, type Question, type SampleId,
   type SortSampleId, type Stop, type SwimmerShape, type SwimmerVerdict,
+  greenDeciding, greenDriftAt, greenRoundFor, GREEN_DROPS, greenSeeLine, judgeGreen, judgeWall, looks78For, wallDeciding, wallRoundFor, WALL_SLIDES, wallSeeLine,
+  type GreenAnswer, type GreenDropId, type Looks78, type WallAnswer, type WallSlideId,
 } from './logic';
 
 const LEVELS: BandLevels = {
@@ -30,7 +32,7 @@ const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 3 },
   prek: { min: 3, max: 4 },
-  school: { min: 4, max: 6 },
+  school: { min: 4, max: 8 },
 };
 
 /** Each level's authored first round leads its first round of a session, and every demonstration. */
@@ -43,11 +45,17 @@ const HOLD = 2;
 /** Level 5: drop units to art units at each stop (nothing separate shows at stop 1, where the view is the whole drop). */
 const LIFE_SCALE = [30, 100, ART_R, dropScale(4)];
 const LIFE_ANSWERS: readonly LifeAnswer[] = ['alive', 'not-alive', 'cant-tell'];
-type Choice = LifeAnswer | CellClass;
+const WALL_ANSWERS: readonly WallAnswer[] = ['plant', 'animal', 'cant-tell'];
+const GREEN_ANSWERS: readonly GreenAnswer[] = ['living', 'all-through', 'cant-tell'];
+type Choice = LifeAnswer | CellClass | WallAnswer | GreenAnswer;
 const CHOICE_NAME: Record<Choice, LineId> = {
   alive: 'lens.say.alive', 'not-alive': 'lens.say.not-alive', 'cant-tell': 'lens.say.cant-tell',
   one: 'lens.say.one-cell', many: 'lens.say.many-cells', not: 'lens.say.not-cells',
+  plant: 'lens.say.plant', animal: 'lens.say.animal', living: 'lens.say.living', 'all-through': 'lens.say.through',
 };
+/** Levels 5, 7 and 8 start at the hand lens: at the eyes the drop or slide is all there is to see. */
+const firstStop = (level: number): Stop => (level === 5 || level >= 7 ? 2 : 1);
+const INSTRUCT: Record<number, LineId> = { 5: 'lens.instruct.alive', 7: 'lens.instruct.wall', 8: 'lens.instruct.green' };
 
 class StopButton extends Container {
   readonly glow = new Graphics();
@@ -88,6 +96,10 @@ class PuddleLens implements Game {
   readonly sorts: SortSampleId[];
   readonly sorted: Record<CellClass, SortSampleId[]> = { one: [], many: [], not: [] };
   private readonly slideShape: SwimmerShape;
+  /** Level 7's slides and level 8's drops, and their seeded looks. */
+  readonly walls: WallSlideId[];
+  readonly greens: GreenDropId[];
+  private readonly looks78: Looks78 | null;
   index = 0;
   stop: Stop = 1;
   finished = false;
@@ -124,6 +136,8 @@ class PuddleLens implements Game {
   /** Levels 5–6: the three answers or trays. */
   choiceButtons: StopButton[] = [];
   private lifeNodes: Container[][] = [];
+  /** Level 8: each stop's threads or balls, drifting with the water. */
+  private driftNodes: (Container | null)[] = [];
   private ring: Graphics | null = null;
   private ringR = 0;
   /** Level 6: the slide on its way into a tray (its scale tween is stopped if the board is rebuilt under it). */
@@ -150,8 +164,10 @@ class PuddleLens implements Game {
     this.lifeDrops = level === 5 ? lifeDropsFor(ctx.rng, authored) : [];
     this.sorts = level === 6 ? sortRoundFor(ctx.rng, authored) : [];
     this.slideShape = level === 6 ? ctx.rng.pick(['round', 'long', 'bean'] as const) : 'round';
-    // Level 5 starts at the hand lens: at the eyes the drop is all there is to see.
-    if (level === 5) this.stop = 2;
+    this.walls = level === 7 ? wallRoundFor(ctx.rng, authored) : [];
+    this.greens = level === 8 ? greenRoundFor(ctx.rng, authored) : [];
+    this.looks78 = level >= 7 ? looks78For(ctx.rng) : null;
+    this.stop = firstStop(level);
     this.backdrop = new Backdrop({ sky: [0x9fd8f5, 0xfff6e0], hills: [0x9fd8f5, 0x7cc7ec, 0xffe7a3], horizon: 0.42, clouds: 2, sun: true, seed: 131 }, ctx.view);
     ctx.stage.addChild(this.backdrop, this.board);
     window.addEventListener('pointerdown', this.down);
@@ -163,7 +179,7 @@ class PuddleLens implements Game {
     this.build();
     const level = this.plan.level;
     if (level === 4) void this.ctx.say('lens.instruct.enough').then(() => { if (this.alive) void this.askQuestion(); });
-    else void this.instruct(level === 1 ? 'lens.instruct.tap' : level === 2 ? 'lens.instruct.over' : level === 5 ? 'lens.instruct.alive' : level === 6 ? 'lens.instruct.cells' : 'lens.instruct.anyone');
+    else void this.instruct(level === 1 ? 'lens.instruct.tap' : level === 2 ? 'lens.instruct.over' : level === 6 ? 'lens.instruct.cells' : INSTRUCT[level] ?? 'lens.instruct.anyone');
   }
 
   destroy() {
@@ -215,20 +231,40 @@ class PuddleLens implements Game {
     return this.sorts[this.index];
   }
 
-  /** The stop that decides the speck or slide in hand (levels 5–6). */
-  get deciding(): Stop | null {
-    const d = this.lifeDrop;
-    if (this.plan.level === 5 && d) return decidingStop(d.pair);
-    const s = this.slide;
-    return this.plan.level === 6 && s ? SORT_SAMPLES[s].deciding : null;
+  get wall(): WallSlideId | undefined {
+    return this.walls[this.index];
   }
 
-  /** The answer or tray that finishes the speck or slide in hand. */
-  get rightChoice(): Choice | null {
+  get green(): GreenDropId | undefined {
+    return this.greens[this.index];
+  }
+
+  /** The stop that decides the speck, slide or drop in hand (levels 5–8). */
+  get deciding(): Stop | null {
+    const level = this.plan.level;
     const d = this.lifeDrop;
-    if (this.plan.level === 5 && d) return rightLife(d.pair, d.ringed, 4);
+    if (level === 5 && d) return decidingStop(d.pair);
     const s = this.slide;
-    return this.plan.level === 6 && s ? SORT_SAMPLES[s].cls : null;
+    if (level === 6 && s) return SORT_SAMPLES[s].deciding;
+    if (level === 7 && this.wall) return wallDeciding(this.wall);
+    return level === 8 && this.green ? greenDeciding(this.green) : null;
+  }
+
+  /** The answer or tray that finishes the speck, slide or drop in hand. */
+  get rightChoice(): Choice | null {
+    const level = this.plan.level;
+    const d = this.lifeDrop;
+    if (level === 5 && d) return rightLife(d.pair, d.ringed, 4);
+    const s = this.slide;
+    if (level === 6 && s) return SORT_SAMPLES[s].cls;
+    if (level === 7 && this.wall) return WALL_SLIDES[this.wall].kind;
+    return level === 8 && this.green ? GREEN_DROPS[this.green].answer : null;
+  }
+
+  /** How many specks, slides or drops the round holds (levels 5–8). */
+  private get rounds(): number {
+    const level = this.plan.level;
+    return level === 5 ? this.lifeDrops.length : level === 6 ? this.sorts.length : level === 7 ? this.walls.length : this.greens.length;
   }
 
   private instruct(id: LineId, vars?: LineVars) {
@@ -251,6 +287,7 @@ class PuddleLens implements Game {
     this.lensHit = this.lensView = this.pointer = this.glass = this.under = this.underMask = this.answer = this.ring = null;
     this.layers = [];
     this.lifeNodes = [];
+    this.driftNodes = [];
     this.choiceButtons = [];
     this.swimmerNodes = [];
     this.stopButtons = [];
@@ -284,7 +321,15 @@ class PuddleLens implements Game {
     const life = level === 5 ? this.lifeDrop : undefined;
     for (const stop of STOPS) {
       const slide = this.slide;
-      const layer = level === 5 ? waterLayer(stop) : level === 6 && slide ? sortLayer(slide, stop, this.looks, this.slideShape) : viewLayer(this.sample, stop, this.looks);
+      let layer: Container;
+      if (level === 5) layer = waterLayer(stop);
+      else if (level === 6 && slide) layer = sortLayer(slide, stop, this.looks, this.slideShape);
+      else if (level === 7 && this.wall && this.looks78) layer = wallLayer(this.wall, stop, this.looks, this.looks78.wallAngle, this.looks78.seed);
+      else if (level === 8 && this.green && this.looks78) {
+        const g = greenLayer(this.green, stop, this.looks78.seed);
+        layer = g.layer;
+        this.driftNodes.push(g.drift);
+      } else layer = viewLayer(this.sample, stop, this.looks);
       if (life && stop >= 2) {
         const nodes = PAIRS[life.pair].map((id, k) => candidateArt(id, stop, life.paths[k].shape));
         layer.addChild(...nodes);
@@ -339,10 +384,10 @@ class PuddleLens implements Game {
         this.board.addChild(b);
         this.stopButtons.push(b);
       });
-      const kinds: readonly Choice[] = level === 5 ? LIFE_ANSWERS : level === 6 ? CLASSES : [];
+      const kinds: readonly Choice[] = level === 5 ? LIFE_ANSWERS : level === 6 ? CLASSES : level === 7 ? WALL_ANSWERS : level === 8 ? GREEN_ANSWERS : [];
       l.choices.forEach((rect, i) => {
         const kind = kinds[i];
-        const b = new StopButton(kind, rect.w, level === 5 ? answerIcon(kind as LifeAnswer) : trayIcon(kind as CellClass), () => void this.choose(kind));
+        const b = new StopButton(kind, rect.w, this.choiceIcon(kind), () => void this.choose(kind));
         b.position.set(rect.x + rect.w / 2, rect.y + rect.h / 2);
         if (level === 6) this.sorted[kind as CellClass].forEach((id, k, all) => {
           const m = miniSlide(id);
@@ -372,6 +417,15 @@ class PuddleLens implements Game {
       this.ring = ring;
     }
     this.placeSwimmers();
+  }
+
+  private choiceIcon(kind: Choice): Container {
+    if (kind === 'cant-tell' || kind === 'alive' || kind === 'not-alive') return answerIcon(kind);
+    if (kind === 'plant') return plantIcon();
+    if (kind === 'animal') return pawArt(this.petColor, 34);
+    if (kind === 'living') return livingIcon();
+    if (kind === 'all-through') return throughIcon();
+    return trayIcon(kind);
   }
 
   private get petColor(): ColorName {
@@ -481,6 +535,12 @@ class PuddleLens implements Game {
   private placeSwimmers() {
     const life = this.plan.level === 5 ? this.lifeDrop : undefined;
     if (life) return this.placeLife(life);
+    if (this.plan.level === 8 && this.looks78) {
+      // Level 8: the threads or balls drift with the water, still while any finger is down.
+      const p = greenDriftAt(this.looks78.phase, this.swimT);
+      for (const n of this.driftNodes) n?.position.set(p.x, p.y);
+      return;
+    }
     const drop = this.drop;
     if (!drop) return;
     this.swimmerNodes.forEach((nodes, i) => {
@@ -693,17 +753,18 @@ class PuddleLens implements Game {
   /** The next drop or question: the dial goes back to the eyes and the slide changes (level 3) or stays (level 4). */
   private nextView() {
     this.turnId++;
-    this.stop = this.plan.level === 5 ? 2 : 1;
+    this.stop = firstStop(this.plan.level);
     this.movingSaid = false;
     this.relayout = false;
     this.build();
     sfx.whoosh();
     this.busy = false;
     if (this.plan.level === 4) void this.askQuestion();
-    if (this.plan.level === 5) void this.instruct('lens.instruct.alive');
+    const again = INSTRUCT[this.plan.level];
+    if (again) void this.instruct(again);
   }
 
-  // ----- levels 5–6: answers and trays -----
+  // ----- levels 5–8: answers and trays -----
 
   /** A press says the answer's name first (no reading needed), then the answer is judged. */
   private async choose(kind: Choice) {
@@ -711,12 +772,18 @@ class PuddleLens implements Game {
     const level = this.plan.level;
     const d = this.lifeDrop;
     const s = this.slide;
-    if (level === 5 ? !d : !s) return;
+    const w = this.wall;
+    const g = this.green;
+    if (this.deciding === null) return;
     this.busy = true;
     const e = this.epoch;
     await this.say(CHOICE_NAME[kind]);
     if (!this.alive || e !== this.epoch) return;
-    const v = level === 5 ? judgeLife(d!.pair, d!.ringed, this.stop, kind as LifeAnswer) : judgeSort(s!, this.stop, kind as CellClass);
+    const v =
+      level === 5 ? judgeLife(d!.pair, d!.ringed, this.stop, kind as LifeAnswer)
+      : level === 6 ? judgeSort(s!, this.stop, kind as CellClass)
+      : level === 7 ? judgeWall(w!, this.stop, kind as WallAnswer)
+      : judgeGreen(g!, this.stop, kind as GreenAnswer);
     if (v.result === 'free') {
       this.settle();
       return void this.say(v.line);
@@ -736,7 +803,7 @@ class PuddleLens implements Game {
     if (level === 6) this.sorted[kind as CellClass].push(s!);
     this.index++;
     this.tally.next();
-    if (this.index >= (level === 5 ? this.lifeDrops.length : this.sorts.length)) return void this.finale();
+    if (this.index >= this.rounds) return void this.finale();
     this.nextView();
   }
 
@@ -792,10 +859,10 @@ class PuddleLens implements Game {
     if (this.finished || this.busy || this.drag?.dragging) return;
     const l = this.layout;
     const level = this.plan.level;
-    const help = helpFor(level, { glass: this.glass?.position, things: l?.things, looked: this.tracker.looked, question: this.question, pair: this.lifeDrop?.pair, sample: this.slide });
+    const help = helpFor(level, { glass: this.glass?.position, things: l?.things, looked: this.tracker.looked, question: this.question, pair: this.lifeDrop?.pair, sample: this.slide, wall: this.wall, green: this.green });
     if (!help) return;
     this.tally.hint();
-    if ((level === 5 || level === 6) && help.do === 'turn') return void this.hintLook(help.stop);
+    if (level >= 5 && help.do === 'turn') return void this.hintLook(help.stop);
     void this.say('lens.hint');
     if (help.do === 'tap-lens') {
       if (!this.swollen) void this.swell();
@@ -814,7 +881,7 @@ class PuddleLens implements Game {
     } else if (help.do === 'turn') void this.turnTo(help.stop);
   }
 
-  /** Levels 5–6: turn to the deciding stop if the dial is below it, then say what that view shows. */
+  /** Levels 5–8: turn to the deciding stop if the dial is below it, then say what that view shows. */
   private async hintLook(stop: Stop) {
     const e = this.epoch;
     if (this.stop < stop) await this.turnTo(stop);
@@ -822,6 +889,8 @@ class PuddleLens implements Game {
     const d = this.lifeDrop;
     const s = this.slide;
     if (this.plan.level === 5 && d) void this.say(lookLine(PAIRS[d.pair][d.ringed], Math.max(this.stop, stop) as Stop));
+    else if (this.plan.level === 7 && this.wall) void this.say(wallSeeLine(this.wall));
+    else if (this.plan.level === 8 && this.green) void this.say(greenSeeLine(this.green));
     else if (s) void this.say(seeLine(s));
   }
 
@@ -832,7 +901,7 @@ class PuddleLens implements Game {
     if (this.finished) return;
     this.epoch++;
     this.index = 0;
-    this.stop = this.plan.level === 5 ? 2 : 1;
+    this.stop = firstStop(this.plan.level);
     for (const c of CLASSES) this.sorted[c] = [];
     this.turnId++;
     this.swollen = false;
@@ -843,7 +912,8 @@ class PuddleLens implements Game {
     this.busy = false;
     this.build();
     if (this.plan.level === 4) void this.askQuestion();
-    if (this.plan.level === 5) void this.instruct('lens.instruct.alive');
+    const again = INSTRUCT[this.plan.level];
+    if (again) void this.instruct(again);
   }
 
   private async finale() {
@@ -937,8 +1007,8 @@ export const puddleLens: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.bubbles,
   touchDemo: true,
-  coplayHint: 'Slide and lens: ask {name} for a view ("show me the little boxes!"), then check it together.',
-  offScreen: 'Look at a leaf with just your eyes. What would a lens show?',
+  coplayHint: 'Slide and lens: ask {name} for a view ("show me the little boxes!"), then check it together. At the plant-or-animal slides, guess first: before each turn of the dial, both of you say plant, animal or can\'t tell yet.',
+  offScreen: 'Look at a leaf with just your eyes. What would a lens show? Then look at a leaf and a piece of lettuce: which bends, and which stays stiff? Plants are stiff because of their walls.',
   hubIcon: () => new LensIcon(),
   sticker,
   create: (ctx) => new PuddleLens(ctx),
