@@ -64,3 +64,10 @@ Changed: `helper-house` level 5 (school only, range 2–5; sun sensor under the 
 Ran: `npm run typecheck`; `npm test` (315 files, 5530 tests; Helper House `logic.test.ts` 45 tests, 9 new for level 5: per-socket readings, hand-run traces, exactly roof accepted over 4 boards, overlap, failures, glow and help, ghost finger, socket spacing at least 140); `GAME_URL=http://localhost:5206 BROWSER_SUITE=helperhouse HH_LEVELS=5` (flicker twice, one hint and sensor glow, drag to shed, portrait screenshot, Show me to roof, finish 0 misses/2 hints); `FINGER_ONLY=helper-house FINGER_LEVELS=5 FINGER_BAND=school` (19.1 s). `game-reviewer`: no blocking findings.
 Not run: `npm run build` (CI runs it), other suites, `world`, offline check.
 Open: whether the flicker reads as the lamp's own fault on an iPad ([DEVICE-CHECKS](../DEVICE-CHECKS.md#helper-house-level-5)).
+
+## 2026-11-06 — Helper House levels 6–7 The comfy line and Calm heater (RA4)
+
+Changed: `helper-house` levels 6–7 (school range 2–7; the gauge line, the guess and truth line, the two lines and the click jar), voice lines `hh.*`, how-to steps, ghost finger, `HH_LEVELS=6,7` in the `helperhouse` case ([PR #1311](https://github.com/rjdunlap/neo/pull/1311), tip `813c0c0b`).
+Ran: `npm run typecheck`; `npm test` (316 files, 5619 tests; Helper House `logic.test.ts` 59 tests, which also corrected two claims in the definition); `GAME_URL=http://localhost:5981 BROWSER_SUITE=helperhouse HH_LEVELS=6,7` (level 6 hare guess, glow, one hint, drag to gap 2, Show me to 3, finish 0/2; level 7 eleven pebbles, off line glows, a tap above, a portrait screenshot, Show me to off 4, finish 0/2; rerun after the review fixes); `FINGER_ONLY=helper-house FINGER_LEVELS=6,7` (6 in 10.8 s, 7 in 18.7 s); `npm run build`. `game-reviewer`: three fixes applied (truth line awaited, glow redraws yellow at once, the guess closes when the line moves).
+Not run: other suites, the offline check.
+Open: whether a six-year-old reads the jar as fewer clicks, and whether the guess, truth line and climb strip land on an iPad ([DEVICE-CHECKS](../DEVICE-CHECKS.md#helper-house-levels-67)); the science-educator read of the warmth wording.
