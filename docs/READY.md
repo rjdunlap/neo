@@ -6,7 +6,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **`far-lights`, levels 5–6** (`astronomy`; school; the curtain, three-light ordering and the tassel; new-interaction tier, the school range becomes {4,6}, `fingerdemo` at 6): [definition](definitions/far-lights.md#levels-58-definition), [build slice 1](definitions/far-lights.md#build-slices-levels-58).
+- **`far-lights`, levels 5–6** (`astronomy`; school; the curtain, three-light ordering and the tassel; new-interaction tier, the school range becomes {4,6}, `fingerdemo` at 6): [definition](definitions/far-lights.md#levels-58-definition), [build slice 1](definitions/far-lights.md#build-slices-levels-58). Claimed 2026-11-06 on `claude/far-lights-5-6`.
 - **`hat-band`, level 4 *Build a song*** (`music-instruments` M6; school `{2,4}`, grownup `{4,4}`; new interaction on the existing game, a third (low) role, `fingerdemo` at 4): [definition](definitions/hat-band.md#level-4-build-a-song-m6-definition-2026-11-06), [check tier](definitions/hat-band.md#check-tier-the-build).
 - **`gadget-bench`, level 4 *Fix-It Day*** (`inventions`; school; the first conflict: paddle wheels do two jobs; new level on the existing interaction, `fingerdemo` at 4): [definition](definitions/gadget-bench.md#level-4-fix-it-day-definition), [check tier](definitions/gadget-bench.md#check-tier-level-4).
 - **Dive `bolt-boards`** (Bolt Boards; toddler to school, 7 levels; docs only): [procedure](deep-dives/README.md#one-session-one-game), [definition](definitions/bolt-boards.md).
