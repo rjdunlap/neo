@@ -1,5 +1,9 @@
 # Puddle Island verification
 
+## 2026-11-06 — Define Bond Beads 5–8 (docs only)
+
+Changed: `docs/definitions/bond-beads.md` (new "Levels 5–8" section), chemistry dive slice 4, RECOMMENDATIONS row, READY (definition line replaced by the levels 5–6 build, levels 7–8 queued) and STUDY-BACKLOG (PR #1314). Source check: PubChem CIDs 962, 222, 297, 783, 977 and 280 via PUG REST; reactions from Wikipedia as secondary sources (Methane page read in part). Ran: `node scripts/check-links.mjs`, `git diff --check`, and a throwaway vitest layout probe (not committed): `beadLayout` fits 6–7 beads everywhere, 8 nowhere, 9 only in portrait. Open: nothing built; level 8's 9-bead case needs a layout fix or is cut; no device or person check.
+
 ## 2026-11-06 — Rain Garden level 4 definition (docs only)
 
 Changed: `docs/definitions/rain-garden.md` (new "Level 4, two-socket downhill route" section), READY (definition line replaced by the level 4 build), the weather-water dive and STUDY-BACKLOG (PR #1313). Source check: EPA green-infrastructure types and USGS runoff pages, opened this session. Ran: `node scripts/check-links.mjs` and `git diff --check`. No code checks (docs tier). Open: nothing built; the level 4 build is next.
@@ -90,13 +94,6 @@ Changed: `docs/definitions/helper-house.md` (new "Levels 5–7 (RA4)" section), 
 - Ran (branch tip `a99772bd` on base `54979a97`; port 5580, Vite dev): `npm run typecheck`; `npm test` (all passed after a how-to length fix; logic-grid and how-to tests 72 passed); `BROWSER_SUITE=logicgrid LOGICGRID_FROM=5` PASS (ruled-out yes 1 miss, Help 1 hint, 1024 x 768 and 768 x 1024 fit with targets at least 96 and clear of the pet, bot to the sticker, 1/1 saved); `BROWSER_SUITE=fingerdemo FINGER_ONLY=logic-grid FINGER_LEVELS=5` PASS (24.1 s). The browser play ran just before the final review fix (caption limited to one clue, how-to wording), which was re-checked by unit tests only.
 - Not run: `npm run build` (no shared files or assets), levels 1-4 of the suite (unchanged), the offline check, a real iPad.
 - Open: device speech of slotted level-5 lines ([DEVICE-CHECKS](DEVICE-CHECKS.md#mystery-grid-level-5-2026-11-06)).
-
-## 2026-11-05 — Mystery Grid (logic-grid) levels 3-4
-
-- [PR #1298](https://github.com/rjdunlap/neo/pull/1298): level 3 *Three friends* (pre-K, school) and level 4 *The friend in the red hat* (school); a column step in the rule solver, hat art, `lg.*` voice lines, how-to card, `LOGICGRID_FROM=3` filter in the `logicgrid` case.
-- Ran (commits `35496f34`, `49bce450` on base `8cdaacc7`; port 5803, Vite dev): `npm run typecheck`; `npm test` (all pass after a how-to wording fix; 38 logic-grid rule tests incl. level 3-4 properties and a hand-made column-step test); `BROWSER_SUITE=logicgrid LOGICGRID_FROM=3` PASS (level 3 ruled-out yes 1 miss, Help 1 hint, 1024 x 768 and 768 x 1024 fit with targets at least 96 and clear of the pet corner, bot to the sticker saved [1,1]; level 4 hats distinct and every clue a hat clue, bot to the sticker [0,0]); `BROWSER_SUITE=fingerdemo FINGER_ONLY=logic-grid FINGER_LEVELS=3,4` PASS (level 4 again after the not-only change); `game-reviewer` found one issue (level 4 allowed a direct clue), fixed.
-- Not run: `npm run build` (no shared assets), levels 1-2 of the suite (unchanged), the offline check, a real iPad.
-- Open: device speech of slotted hat clues and a child's reaction ([DEVICE-CHECKS](DEVICE-CHECKS.md#mystery-grid-levels-3-4-2026-11-05)).
 
 ## Coverage summary
 

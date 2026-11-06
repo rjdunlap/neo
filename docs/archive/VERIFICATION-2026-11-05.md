@@ -286,3 +286,10 @@ Changed: level 5 *Can we tell?* (quilted parcels, `checkTell`, *Can't tell yet*,
 - Ran (commit `3ccf3cb2` on base `5b047d80`; `c0228b2c` is a method rename; port 5702): `npm run typecheck`; `npx vitest run src/games src/content` (237 files, 4,612 tests); `BROWSER_SUITE=crossword` PASS (level 3 one wrong full word 1 miss, one Help 1 hint, bank/Help/grid non-overlapping and on screen at 1024 x 768 and 768 x 1024, saved [1,1]); `BROWSER_SUITE=fingerdemo FINGER_ONLY=crossword FINGER_LEVELS=3` PASS (28.5 s). game-reviewer: no defects.
 - Not run: build (no shared assets), the offline check, a real iPad.
 - Open: device speech of the theme names; Animal friends has only 2 distinct grids.
+
+## 2026-11-05 — Mystery Grid (logic-grid) levels 3-4
+
+- [PR #1298](https://github.com/rjdunlap/neo/pull/1298): level 3 *Three friends* (pre-K, school) and level 4 *The friend in the red hat* (school); a column step in the rule solver, hat art, `lg.*` voice lines, how-to card, `LOGICGRID_FROM=3` filter in the `logicgrid` case.
+- Ran (commits `35496f34`, `49bce450` on base `8cdaacc7`; port 5803, Vite dev): `npm run typecheck`; `npm test` (all pass after a how-to wording fix; 38 logic-grid rule tests incl. level 3-4 properties and a hand-made column-step test); `BROWSER_SUITE=logicgrid LOGICGRID_FROM=3` PASS (level 3 ruled-out yes 1 miss, Help 1 hint, 1024 x 768 and 768 x 1024 fit with targets at least 96 and clear of the pet corner, bot to the sticker saved [1,1]; level 4 hats distinct and every clue a hat clue, bot to the sticker [0,0]); `BROWSER_SUITE=fingerdemo FINGER_ONLY=logic-grid FINGER_LEVELS=3,4` PASS (level 4 again after the not-only change); `game-reviewer` found one issue (level 4 allowed a direct clue), fixed.
+- Not run: `npm run build` (no shared assets), levels 1-2 of the suite (unchanged), the offline check, a real iPad.
+- Open: device speech of slotted hat clues and a child's reaction ([DEVICE-CHECKS](../DEVICE-CHECKS.md#mystery-grid-levels-3-4-2026-11-05)).
