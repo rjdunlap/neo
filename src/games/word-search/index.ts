@@ -11,11 +11,11 @@ import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseGrids, courseMinimum, isWordCourse } from './course';
-import { cellsOfWord, hintFor, lineBetween, makeGrids, ORDER, planFor, SMALL_GRID, STONE, wordAt, type WordGrid, type WordPlan } from './logic';
+import { blankFor, cellsOfWord, hiddenHint, hintFor, judgeLine, lineBetween, makeGrids, ORDER, planFor, SMALL_GRID, STONE, type WordGrid, type WordPlan } from './logic';
 import { themeById } from './words';
 
-/** Grown-up play only: the island's Lantern Lake holds it, with touch or a controller. The small grid (5) comes first, the message grid (6) last. */
-const LEVELS: BandLevels = { grownup: { min: 1, max: 6, order: ORDER } };
+/** Grown-up play only: the island's Lantern Lake holds it, with touch or a controller. The small grid (5) comes first, then 1–4, the message grid (6), and just the theme (7) last. */
+const LEVELS: BandLevels = { grownup: { min: 1, max: 7, order: ORDER } };
 
 const PAPER = 0xfffdf6;
 const BAND_COLORS: ColorName[] = ['pink', 'blue', 'green', 'orange', 'purple', 'teal', 'yellow', 'red'];
@@ -70,6 +70,9 @@ class WordSearch implements Game {
   /** Lines marked and checked on this grid, right or wrong: every one counts, a cancelled mark does not. */
   guesses = 0;
   hinted: { word: number; cell: number } | null = null;
+  /** Level 7: how much the hint has shown of each hidden word (1: its first letter, 2: its start ringed too), and the word it last showed. */
+  clues = new Map<number, 1 | 2>();
+  clueWord: number | null = null;
 
   /** Touch play (every play outside the couch): tap a word's first letter, then its last. Couch play drives the same grid with a controller. */
   touch: boolean;
@@ -121,7 +124,7 @@ class WordSearch implements Game {
   private dirty = true;
   private readonly held = new HeldDirection();
   private botWait = 0.8;
-  private told = { miss: false, root: false };
+  private told = { miss: false, root: false, free: false };
   /** Couch challenge course: fixed grids in a row. Null in ordinary play, where grids are drawn from the seed. */
   private readonly course: { minimum: number } | null;
   private done: number[] = [];
@@ -358,7 +361,12 @@ class WordSearch implements Game {
   private buildList() {
     for (const c of this.list.removeChildren()) if (c !== this.listMarks) c.destroy();
     this.list.addChild(this.listMarks);
-    this.entries = this.grid.words.map((p) => { const t = label(spoken(p.word), 26, ink); t.anchor.set(0, 0.5); t.eventMode = 'none'; this.list.addChild(t); return t; });
+    this.entries = this.grid.words.map((p) => { const t = label(this.entryText(p.word, false, 0), 26, ink); t.anchor.set(0, 0.5); t.eventMode = 'none'; this.list.addChild(t); return t; });
+  }
+
+  /** A list entry: the word itself, or on a hidden grid its blanks and length until it is found. */
+  private entryText(word: string, found: boolean, stage: number) {
+    return this.plan.hidden && !this.course ? (found ? spoken(word) : blankFor(word, false, stage)) : spoken(word);
   }
 
   /** Where word `i` sits in the list: down a column, then across to the next. */
@@ -379,7 +387,16 @@ class WordSearch implements Game {
     this.grid.words.forEach((_, i) => {
       const { x, y } = this.entryAt(i), t = this.entries[i], done = this.found.has(i);
       t.style.fill = done ? 0x9a948a : ink;
-      if (this.hinted?.word === i && !done) g.roundRect(x - 42, y - step / 2 + 2, Math.min(220, colW - 16), step - 4, 10).fill({ color: swatch.yellow.light, alpha: 0.95 }).stroke({ width: 2, color: swatch.yellow.line });
+      if (this.plan.hidden) {
+        // Blanks stand apart, so a word's length can be counted at a glance; a found word reads as a word.
+        t.text = this.entryText(this.grid.words[i].word, done, this.clues.get(i) ?? 0);
+        t.style.letterSpacing = done ? 0 : 4;
+        // A long word's blanks pull closer, then shrink, so they stay inside their column.
+        const room = colW - 50;
+        if (t.width > room) t.style.letterSpacing = 1;
+        if (t.width > room) t.style.fontSize = Math.max(18, Math.floor(Number(t.style.fontSize) * room / t.width));
+      }
+      if ((this.hinted?.word === i || this.clueWord === i) && !done) g.roundRect(x - 42, y - step / 2 + 2, Math.min(220, colW - 16), step - 4, 10).fill({ color: swatch.yellow.light, alpha: 0.95 }).stroke({ width: 2, color: swatch.yellow.line });
       const col = swatch[BAND_COLORS[i % BAND_COLORS.length]];
       g.circle(x - 24, y, 7).fill(done ? col.fill : swatch.white.light).stroke({ width: 2, color: done ? col.line : 0xb9b0a0 });
       if (done) g.moveTo(x - 8, y).lineTo(x + t.width + 6, y).stroke({ width: 3, color: 0x7a746a, cap: 'round' });
@@ -495,7 +512,9 @@ class WordSearch implements Game {
     this.carry = 0;
     this.anchor = null;
     this.hinted = null;
-    this.told = { miss: false, root: false };
+    this.told = { miss: false, root: false, free: false };
+    this.clues = new Map();
+    this.clueWord = null;
     this.cursor = Math.floor(this.n / 2) * this.n + Math.floor(this.n / 2);
     this.scrollX = 0;
     this.scrollY = 0;
@@ -515,6 +534,7 @@ class WordSearch implements Game {
     if (this.spokenGo) return;
     this.spokenGo = true;
     if (this.grid.message) return this.ctx.instruct(this.touch ? 'wordsearch.go-message' : 'wordsearch.go-message-keys');
+    if (this.plan.hidden && !this.course) return this.ctx.instruct(this.touch ? 'wordsearch.go-hidden' : 'wordsearch.go-hidden-keys');
     return this.ctx.instruct(!this.touch ? 'wordsearch.go' : this.maxX > 0 || this.maxY > 0 ? 'wordsearch.go-slide' : 'wordsearch.go-touch');
   }
 
@@ -774,9 +794,21 @@ class WordSearch implements Game {
     // A crooked mark cannot be checked: it is neither right nor wrong, and costs nothing.
     if (!line) return void sfx.squeak();
     this.anchor = null;
-    this.guesses++;
-    const hit = wordAt(this.grid, line, this.found);
-    if (hit < 0) {
+    const result = judgeLine(this.grid, line, this.found, !!this.plan.hidden && !this.course);
+    // Free lines and repeats on a hidden grid cost nothing, so they are not guesses either.
+    if (result.kind === 'found' || result.kind === 'miss') this.guesses++;
+    const hit = result.kind === 'found' ? result.word : -1;
+    if (result.kind === 'again') {
+      // A word already found, marked again: nothing to learn and nothing counted.
+      sfx.pop(3);
+    } else if (result.kind === 'free') {
+      // On a hidden grid, trying a word that might be there is an experiment, never a miss.
+      sfx.pop(2);
+      if (!this.told.free) {
+        this.told.free = true;
+        void this.ctx.say('wordsearch.free');
+      }
+    } else if (hit < 0) {
       this.misses++;
       sfx.boing();
       if (!this.told.miss) {
@@ -787,6 +819,7 @@ class WordSearch implements Game {
       this.found.add(hit);
       this.dirty = true;
       if (this.hinted?.word === hit) this.hinted = null;
+      if (this.clueWord === hit) this.clueWord = null;
       line.forEach((_, k) => sfx.bell(3 + (k % 7), 0.12));
       const said = this.ctx.say('wordsearch.found', { word: spoken(this.grid.words[hit].word) });
       // A root family: on its first word found, the pet says what the root means, once a grid.
@@ -815,6 +848,7 @@ class WordSearch implements Game {
   /** Couch pause menu's "Show a hint": the first letter of a word not found yet, with the word named. Marks the run helped. */
   askForHint() {
     if (this.busy || this.finished || !this.grid) return;
+    if (this.plan.hidden && !this.course) return this.hiddenHint();
     const h = hintFor(this.grid, this.found, this.cursor);
     if (!h) return;
     this.hinted = h;
@@ -827,6 +861,28 @@ class WordSearch implements Game {
     this.report();
     this.paintList();
     void this.ctx.say('wordsearch.hint', { word: spoken(this.grid.words[h.word].word) });
+  }
+
+  /**
+   * Level 7's hint, which never names the word: first the first letter of the shortest word not found yet, in its blank, then its
+   * start ringed in the grid. Each step counts as help.
+   */
+  private hiddenHint() {
+    const h = hiddenHint(this.grid, this.found, this.clues);
+    if (!h) return;
+    this.hints++;
+    this.assisted = true;
+    this.anchor = null;
+    this.clueWord = h.word;
+    this.clues.set(h.word, h.stage);
+    if (h.stage === 2) {
+      this.hinted = { word: h.word, cell: h.cell };
+      this.cursor = h.cell;
+      this.showCell(h.cell);
+    }
+    this.report();
+    this.paintList();
+    void this.ctx.say(h.stage === 1 ? 'wordsearch.hidden-letter' : 'wordsearch.hidden-ring');
   }
 
   /** Couch pause menu: forget what was found and look again. Guesses already made keep counting, so a restart never improves a score. */

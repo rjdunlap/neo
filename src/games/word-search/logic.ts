@@ -85,6 +85,11 @@ export interface WordPlan {
   grids: number;
   /** Level 6: the letters left over spell a message, revealed when the last word is found. */
   message?: boolean;
+  /**
+   * Level 7: the list shows only the theme and a blank for each word, with its length. No other word of the theme can be read in
+   * the grid, so every theme word she finds is a hidden one; a line that spells none is free.
+   */
+  hidden?: boolean;
 }
 
 /**
@@ -99,16 +104,19 @@ export const PLANS: WordPlan[] = [
   { name: 'A 14 by 14 grid with twelve words, in every direction', size: 14, words: 12, dirs: ALL_DIRS, grids: 1 },
   { name: 'A small 6 by 6 grid with four words, across and down, big letters', size: 6, words: 4, dirs: ALL_DIRS.slice(0, 2), grids: 1 },
   { name: 'An 8 by 8 grid with nine words, across, down and slanting; the letters left over spell a message', size: 8, words: 9, dirs: ALL_DIRS.slice(0, 3), grids: 1, message: true },
+  { name: 'A 10 by 10 grid with six hidden words in every direction; the list shows only the theme and how long each word is', size: 10, words: 6, dirs: ALL_DIRS, grids: 1, hidden: true },
 ];
 
 /** The small grid that starts the ladder, by its ID. */
 export const SMALL_GRID = 5;
 /** The message grid, by its ID. */
 export const MESSAGE_GRID = 6;
-/** The levels easiest first: the small grid, then 1 to 4, then the message in the leftovers. */
-export const ORDER = [SMALL_GRID, 1, 2, 3, 4, MESSAGE_GRID];
+/** The grid whose words are hidden behind the theme, by its ID. */
+export const HIDDEN_GRID = 7;
+/** The levels easiest first: the small grid, then 1 to 4, then the message in the leftovers, then just the theme. */
+export const ORDER = [SMALL_GRID, 1, 2, 3, 4, MESSAGE_GRID, HIDDEN_GRID];
 
-/** A level's plan; a level past the top plays the hardest grid, not the small one. */
+/** A level's plan; a level past the top plays the last in the ladder, not the small one. */
 export const planFor = (level: number): WordPlan => PLANS[(level > PLANS.length ? ORDER[ORDER.length - 1] : Math.max(1, level)) - 1];
 
 /** Filler letters, weighted a little toward the common ones, so the grid does not look like a list of the listed words' letters. */
@@ -158,11 +166,15 @@ export function makeGrid(plan: WordPlan, theme: Theme, rng: Rng): WordGrid {
     const fixed = letters.map((l) => l !== '');
     for (let fill = 0; fill < 60; fill++) {
       for (let i = 0; i < letters.length; i++) if (!fixed[i]) letters[i] = rng.pick([...FILL]);
-      if (placed.every((p) => occurrences(size, letters, p.word).length === 1) && !hasBlocked(size, letters, placed.map((p) => p.word))) return { size, letters, words: placed, theme: theme.id };
+      if (placed.every((p) => occurrences(size, letters, p.word).length === 1) && !hasBlocked(size, letters, placed.map((p) => p.word)) && (!plan.hidden || !strayThemeWord(size, letters, theme, placed))) return { size, letters, words: placed, theme: theme.id };
     }
   }
   throw new Error(`could not make a grid for ${plan.name}`);
 }
+
+/** Level 7: whether a word of the theme that is not hidden can be read in the grid, so finding it would look right and count for nothing. */
+export const strayThemeWord = (size: number, letters: readonly string[], theme: Theme, placed: readonly Placed[]) =>
+  theme.words.some((w) => !placed.some((p) => p.word === w) && occurrences(size, letters, w).length > 0);
 
 /** A message's letters, in the order they fill the open squares. */
 export const lettersOf = (message: string) => message.replace(/[^A-Z]/g, '');
@@ -201,7 +213,9 @@ export function leftovers(grid: Pick<WordGrid, 'size' | 'letters' | 'words'>): s
 }
 
 /** The themes a plan can draw: those with enough words that fit its grid. Every everyday theme fits every plan; a root family fits only the small ones. */
-export const themesFor = (plan: Pick<WordPlan, 'size' | 'words' | 'message'>): Theme[] => THEMES.filter((t) => t.words.filter((w) => w.length <= plan.size).length >= plan.words && (!plan.message || !!t.messages?.length));
+export const themesFor = (plan: Pick<WordPlan, 'size' | 'words' | 'message' | 'hidden'>): Theme[] =>
+  // A hidden grid asks her to think of the theme's words: an everyday theme, not a root family, which is a short list to learn from.
+  THEMES.filter((t) => t.words.filter((w) => w.length <= plan.size).length >= plan.words && (!plan.message || !!t.messages?.length) && (!plan.hidden || !t.root));
 
 export const makeGrids = (plan: WordPlan, rng: Rng): WordGrid[] => Array.from({ length: plan.grids }, () => makeGrid(plan, rng.pick(themesFor(plan)), rng));
 
@@ -236,3 +250,45 @@ export function hintFor(grid: WordGrid, found: ReadonlySet<number>, near = 0): {
 }
 
 export { themeById };
+
+/**
+ * What a checked line is. `found`: a word not found yet. `miss`: no word (or a found word again) on a grid that shows its list. On a
+ * hidden grid, where trying a word that might be there is an experiment, `free` is no word and `again` a found word marked once more:
+ * neither costs anything.
+ */
+export type LineResult = { kind: 'found'; word: number } | { kind: 'again'; word: number } | { kind: 'miss' } | { kind: 'free' };
+
+export function judgeLine(grid: WordGrid, line: readonly number[], found: ReadonlySet<number>, hidden = false): LineResult {
+  const hit = wordAt(grid, line, found);
+  if (hit >= 0) return { kind: 'found', word: hit };
+  if (!hidden) return { kind: 'miss' };
+  const again = wordAt(grid, line, new Set());
+  return again >= 0 ? { kind: 'again', word: again } : { kind: 'free' };
+}
+
+/** Level 7: how much a hint has shown of each word. 1: its first letter is in its blank. 2: its start is ringed in the grid too. */
+export type ClueStages = ReadonlyMap<number, 1 | 2>;
+
+/** The word a hidden grid's hint is about: the shortest one not found yet (the first in the list among equals). */
+export function shortestUnfound(grid: WordGrid, found: ReadonlySet<number>): number {
+  let best = -1;
+  grid.words.forEach((p, i) => { if (!found.has(i) && (best < 0 || p.word.length < grid.words[best].word.length)) best = i; });
+  return best;
+}
+
+/**
+ * Level 7's hint, two steps a word: first the first letter of the shortest unfound word, in its blank, then the ring on its start in
+ * the grid. A word fully hinted and still unfound stays the one the hint is about (it rings again), so the button never goes dead.
+ */
+export function hiddenHint(grid: WordGrid, found: ReadonlySet<number>, stages: ClueStages): { word: number; stage: 1 | 2; letter: string; cell: number } | null {
+  const word = shortestUnfound(grid, found);
+  if (word < 0) return null;
+  const p = grid.words[word], stage = stages.get(word) ? 2 : 1;
+  return { word, stage, letter: p.word[0], cell: cellOf(grid.size, p.r, p.c) };
+}
+
+/** A hidden word's entry in the list: a blank for each letter (the first filled once a hint shows it) and its length; the word once found. */
+export function blankFor(word: string, found: boolean, stage = 0): string {
+  if (found) return word;
+  return [...word].map((ch, k) => (k === 0 && stage > 0 ? ch : '_')).join('') + ` (${word.length})`;
+}
