@@ -49,3 +49,7 @@
 - Ran (branch tip before docs, base `42dc4dc0`; port 5684): `npm run typecheck`; `npm test` (314 files, 5448 tests); `BROWSER_SUITE=crossword FROM_LEVEL=4` PASS (speaker tap free, Show me 1 hint once, wrong full word 1 miss, Show me, bank and Help clear in landscape and portrait, sticker with 1 miss, 1 hint; screenshot `crossword-4-portrait`); `BROWSER_SUITE=fingerdemo FINGER_ONLY=crossword FINGER_LEVELS=4` PASS (33.9 s). game-reviewer fixes: three ambiguous riddles (moon, hen, boat); a dimmed Show me repeats the word.
 - Not run: build (no assets), levels 1-3 replay (unchanged), the offline check, a real iPad.
 - Open: device speech of the riddles ([device check](../DEVICE-CHECKS.md)); riddles are mostly animal-sound clues, so the difficulty is the spelling.
+
+## 2026-11-06 — Helper House levels 5–7 definition (docs only)
+
+Changed: `docs/definitions/helper-house.md` (new "Levels 5–7 (RA4)" section), READY (the definition line replaced by the level 5 build and a queued levels 6–7 line), the robots-automation dive and STUDY-BACKLOG (PR #1302). Ran: `node scripts/check-links.mjs` and `git diff --check`. No code checks (docs tier). Open: nothing built; the level 5 build is next.
