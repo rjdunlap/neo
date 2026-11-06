@@ -796,10 +796,13 @@ class SudokuGarden implements Game {
     if (off && !this.told.sum && this.clock >= this.wrongQuietUntil) {
       this.told.sum = true;
       this.wrongQuietUntil = this.clock + 4;
-      sfx.boing();
       void this.ctx.say('sudoku.cage-sum', { have: off.cells.reduce((t, c) => t + this.grid[c], 0), sum: off.sum });
-      if (wrong) this.flash = { cells: [i], color: swatch.red.fill, until: this.clock + 1.4 };
-      return;
+      // A right number in a cage some other number has put off its sum still pops below; only a wrong one boings.
+      if (wrong) {
+        sfx.boing();
+        this.flash = { cells: [i], color: swatch.red.fill, until: this.clock + 1.4 };
+        return;
+      }
     }
     if (wrong) {
       this.flash = { cells: [i], color: swatch.red.fill, until: this.clock + 1.4 };
