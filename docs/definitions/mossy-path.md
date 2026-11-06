@@ -11,3 +11,7 @@ Built 2026-10-13 on `codex/mossy-path`; [PR #285](https://github.com/rjdunlap/ne
 **Revision and help:** Undo takes back one step; Start over restores the same board. Both preserve misses and hints. An exact search finds a completing route from the current path. If none exists, help outlines Undo until a completing prefix is restored, then outlines the next tile. Repeating help on the same path counts once. The ghost finger uses the same tap controls, including undo for recovery.
 
 **Verification:** test seeded solvability, every tile/end constraint, alternative routes, dead-end recovery and hint progress. Run typecheck/unit tests/build, the filtered `mossypath` scripted play at levels 1 and 3 (misses, hint, undo, reward, land/home and portrait), `fingerdemo` filtered to this game, and filtered navigation/offline checks because catalog navigation changes. Real iPad feel, device speech and child play remain open.
+
+## Levels 4–7, *find the way* (claimed)
+
+Being defined on `claude/define-mossy-path-4-7` (docs only): PP1 from the [puzzle-pages study](../deep-dives/subjects/puzzle-pages.md#a-first-games-ladder-mossy-path-find-the-way).
