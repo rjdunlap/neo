@@ -544,3 +544,159 @@ export function drawRing(g: Graphics, r: number): Graphics {
   }
   return g.stroke({ width: 7, color: 0xffd23f, cap: 'round' });
 }
+
+// ----- levels 7–8 -----
+
+const CHEEK = { fill: 0xf6efe9, line: 0xc7b3a6, dot: 0xb79a8c };
+const GREEN_DROP = 0x7fcf6a;
+const PALE_GREEN = 0xc6e9b2;
+
+/** Rotates a layer's drawn walls (its second child) by the seeded angle, so the bricks are not always level. */
+function tilt(c: Container, angle: number): Container {
+  const walls = c.children[1];
+  if (walls) walls.rotation = angle;
+  return c;
+}
+
+/** A flat, rounded, uneven cell with a thin soft edge and a dot inside, `r` across its middle. */
+function softCellArt(g: Graphics, x: number, y: number, r: number, rng: Rng) {
+  const n = 18;
+  const a0 = rng.range(0, Math.PI * 2);
+  const pts: Pt[] = Array.from({ length: n }, (_, i) => {
+    const a = (i / n) * Math.PI * 2;
+    const k = r * (0.8 + 0.2 * Math.sin(a * 2 + a0) + rng.range(-0.06, 0.06));
+    return { x: x + Math.cos(a) * k, y: y + Math.sin(a) * k * 0.85 };
+  });
+  poly(g, pts);
+  g.fill({ color: CHEEK.fill, alpha: 0.85 }).stroke(line(CHEEK.line, Math.max(1.5, r * 0.03)));
+  g.circle(x + rng.range(-0.15, 0.15) * r, y + rng.range(-0.15, 0.15) * r, r * 0.13).fill(CHEEK.dot);
+}
+
+/** The cheek-cell slide at stops 3–4: soft cells, each lying on its own or overlapping a little, `r` across. */
+function cheekCellsArt(r: number, seed: number): Graphics {
+  const g = new Graphics();
+  const rng = new Rng(seed);
+  const n = r < 60 ? 9 : 4;
+  const spots: Pt[] = [];
+  for (let tries = 0; spots.length < n && tries < 400; tries++) {
+    const p = { x: rng.range(-1.05, 1.05) * ART_R, y: rng.range(-1.05, 1.05) * ART_R };
+    // Mostly apart, an overlap now and then.
+    if (spots.every((q) => Math.hypot(q.x - p.x, q.y - p.y) > r * 1.5)) spots.push(p);
+  }
+  for (const p of spots) softCellArt(g, p.x, p.y, r, rng);
+  return g;
+}
+
+/** A faint pale smear on the slide (stops 1–2), `d` across; `specks` adds a few. */
+function smearArt(d: number, specks: boolean, seed: number): Graphics {
+  const g = new Graphics();
+  g.ellipse(0, 0, d / 2, d * 0.32).fill({ color: CHEEK.fill, alpha: 0.9 }).stroke(line(0xe2d6cc, Math.max(2, d * 0.01)));
+  if (specks) {
+    const rng = new Rng(seed);
+    for (let i = 0; i < 6; i++) g.circle(rng.range(-0.35, 0.35) * d, rng.range(-0.2, 0.2) * d, d * 0.012).fill(CHEEK.dot);
+  }
+  return g;
+}
+
+/** One stop's view of a level-7 slide. Nothing at stops 1–2 shows the walls. */
+export function wallLayer(id: 'onion-skin' | 'leaf' | 'cheek-cells', stop: Stop, looks: Looks, angle: number, seed: number): Container {
+  if (id === 'onion-skin') return stop >= 3 ? tilt(sortLayer('onion-skin', stop, looks, 'round'), angle) : sortLayer('onion-skin', stop, looks, 'round');
+  if (id === 'leaf') return stop >= 3 ? tilt(viewLayer('leaf', stop, looks), angle) : viewLayer('leaf', stop, looks);
+  const c = new Container();
+  c.addChild(new Graphics().circle(0, 0, ART_R + 4).fill(SLIDE));
+  if (stop <= 2) c.addChild(smearArt(stop === 1 ? 120 : 360, stop === 2, seed));
+  else c.addChild(cheekCellsArt(stop === 3 ? 42 : 80, seed));
+  return c;
+}
+
+/** An even green drop, `d` across (all three level-8 drops at stops 1–2, except the threads' wisps at 2). */
+function greenDropArt(d: number, pale: boolean): Graphics {
+  const g = new Graphics();
+  g.circle(0, 0, d / 2).fill({ color: pale ? PALE_GREEN : GREEN_DROP, alpha: 0.95 }).stroke(line(0x5aa94c, Math.max(3, d * 0.02)));
+  g.ellipse(-d * 0.18, -d * 0.2, d * 0.12, d * 0.06).fill({ color: 0xffffff, alpha: 0.6 });
+  return g;
+}
+
+/**
+ * One stop's view of a level-8 drop, and the part that drifts with the water (the threads or the balls), or null. Positions are
+ * seeded; the coloured water has nothing in it at any stop.
+ */
+export function greenLayer(id: 'green-threads' | 'green-balls' | 'green-water', stop: Stop, seed: number): { layer: Container; drift: Container | null } {
+  const c = new Container();
+  const rng = new Rng(seed + stop * 101);
+  if (stop === 1) {
+    c.addChild(new Graphics().circle(0, 0, ART_R + 4).fill(SLIDE), greenDropArt(120, false));
+    return { layer: c, drift: null };
+  }
+  if (stop === 2) {
+    c.addChild(new Graphics().circle(0, 0, ART_R + 4).fill(SLIDE), greenDropArt(370, id === 'green-threads'));
+    if (id === 'green-threads') {
+      for (let i = 0; i < 4; i++) {
+        const w = wispArt(rng.range(150, 230), 4);
+        w.position.set(rng.range(-80, 80), -105 + i * 70);
+        w.rotation = rng.range(-0.4, 0.4);
+        c.addChild(w);
+      }
+    }
+    return { layer: c, drift: null };
+  }
+  if (id === 'green-water') {
+    // An even pale green right across the view, with no edges anywhere.
+    c.addChild(new Graphics().circle(0, 0, ART_R + 4).fill(PALE_GREEN));
+    return { layer: c, drift: null };
+  }
+  c.addChild(new Graphics().circle(0, 0, ART_R + 4).fill(WATER));
+  const drift = new Container();
+  if (id === 'green-threads') {
+    const t = threadArt(stop === 3 ? 90 : 170, stop === 3 ? [rng.range(-90, -40), rng.range(50, 100)] : [rng.range(-30, 30)]);
+    t.rotation = rng.range(-0.35, 0.35);
+    drift.addChild(t);
+  } else {
+    const g = new Graphics();
+    const n = stop === 3 ? 22 : 5;
+    const spots: Pt[] = [];
+    for (let tries = 0; spots.length < n && tries < 400; tries++) {
+      const p = { x: rng.range(-1.1, 1.1) * ART_R, y: rng.range(-1.1, 1.1) * ART_R };
+      if (spots.every((q) => Math.hypot(q.x - p.x, q.y - p.y) > (stop === 3 ? 30 : 110))) spots.push(p);
+    }
+    drift.addChild(g);
+    for (const p of spots) {
+      if (stop === 3) g.circle(p.x, p.y, 5).fill(BALL.cup);
+      else {
+        const b = greenBallArt(40);
+        b.position.set(p.x, p.y);
+        drift.addChild(b);
+      }
+    }
+  }
+  c.addChild(drift);
+  return { layer: c, drift };
+}
+
+/** Level 7's plant cells: a leaf over a small brick grid. */
+export function plantIcon(): Graphics {
+  const g = new Graphics();
+  for (let r = 0; r < 3; r++) for (let k = 0; k < 3; k++) g.rect(-36 + k * 24 + (r % 2) * 6, -4 + r * 14, 22, 14).fill(0xc9eeb0).stroke(line(LEAF.line, 3));
+  g.moveTo(0, -40).quadraticCurveTo(26, -26, 0, 2).quadraticCurveTo(-26, -26, 0, -40).fill(LEAF.fill).stroke(line(LEAF.line, 4));
+  g.moveTo(0, -34).lineTo(0, -2).stroke(line(LEAF.vein, 3));
+  return g;
+}
+
+/** Level 8's tiny green living things: three small green balls, a dot in each. */
+export function livingIcon(): Graphics {
+  const g = new Graphics();
+  for (const [x, y] of [[-20, 12], [20, 12], [0, -20]]) {
+    g.circle(x, y, 17).fill(BALL.fill).stroke(line(BALL.line, 4));
+    g.circle(x + 3, y + 2, 6).fill(BALL.cup);
+  }
+  return g;
+}
+
+/** Level 8's green all through the water: a cup filled evenly green. */
+export function throughIcon(): Graphics {
+  const g = new Graphics();
+  g.moveTo(-30, -26).lineTo(-22, 32).lineTo(22, 32).lineTo(30, -26).closePath().fill(0xeaf6fb).stroke(line(0x7d97a8, 4));
+  g.moveTo(-28, -14).lineTo(-22, 28).lineTo(22, 28).lineTo(28, -14).closePath().fill(GREEN_DROP);
+  g.moveTo(-30, -26).lineTo(-22, 32).lineTo(22, 32).lineTo(30, -26).stroke(line(0x7d97a8, 4));
+  return g;
+}

@@ -263,7 +263,7 @@ export class LookTracker {
  * What a candidate shows at a stop that can decide something. Moving and colour are drawn but are never evidence: a drifting bubble
  * and a swimmer both move, and a green ball and a brown speck differ only in colour until the closest stop.
  */
-export type Evidence = 'edge' | 'inside' | 'hairs' | 'empty' | 'ragged' | 'boxes' | 'cracks';
+export type Evidence = 'edge' | 'inside' | 'hairs' | 'empty' | 'ragged' | 'boxes' | 'cracks' | 'wall' | 'soft-edge' | 'even';
 export type CandidateId = 'swimmer' | 'green-ball' | 'mud-speck' | 'silt' | 'bubble';
 export type Motion = 'swims' | 'drifts' | 'still';
 
@@ -438,16 +438,135 @@ export function sortRoundFor(rng: Rng, authored: boolean): SortSampleId[] {
   return rng.shuffle(chosen);
 }
 
+// ----- levels 7–8: the wall clue, and why the water is green -----
+
+/** Level 7's slides: true plant and animal cells only (no swimmer, thread or green ball, which are neither). */
+export type WallSlideId = 'onion-skin' | 'leaf' | 'cheek-cells';
+export type WallKind = 'plant' | 'animal';
+export type WallAnswer = WallKind | 'cant-tell';
+
+export interface WallSlide {
+  id: WallSlideId;
+  kind: WallKind;
+  /** Evidence at stops 1–4 (index 0 is stop 1). Colour is drawn but is never evidence. */
+  evidence: readonly (readonly Evidence[])[];
+  colour: 'none' | 'green' | 'pale';
+}
+
+/** The level-7 slides (the definition's table, row for row). `wall` and `soft-edge` decide; `inside` shows on both and decides nothing. */
+export const WALL_SLIDES: Record<WallSlideId, WallSlide> = {
+  'onion-skin': { id: 'onion-skin', kind: 'plant', evidence: [[], [], ['wall'], ['wall', 'inside']], colour: 'none' },
+  leaf: { id: 'leaf', kind: 'plant', evidence: [[], [], ['wall'], ['wall']], colour: 'green' },
+  'cheek-cells': { id: 'cheek-cells', kind: 'animal', evidence: [[], [], ['soft-edge', 'inside'], ['soft-edge', 'inside']], colour: 'pale' },
+};
+export const WALL_IDS = Object.keys(WALL_SLIDES) as WallSlideId[];
+
+/** Plant exactly when a wall shows, animal exactly when soft edges show, otherwise not yet. */
+export const wallKindOf = (ev: readonly Evidence[]): WallKind | null => (ev.includes('wall') ? 'plant' : ev.includes('soft-edge') ? 'animal' : null);
+export const wallEvidenceAt = (s: WallSlideId, stop: Stop): readonly Evidence[] => WALL_SLIDES[s].evidence[stop - 1];
+/** The lowest stop where the truth rule can tell. */
+export const wallDeciding = (s: WallSlideId): Stop => STOPS.find((stop) => wallKindOf(wallEvidenceAt(s, stop)) !== null) ?? 4;
+
+export type WallSeeLine = 'lens.wall.see.wall' | 'lens.wall.see.no-green' | 'lens.wall.see.soft';
+/** What the view shows (a wrong kind, and Show a hint), never the verdict. */
+export const wallSeeLine = (s: WallSlideId): WallSeeLine =>
+  WALL_SLIDES[s].kind === 'animal' ? 'lens.wall.see.soft' : WALL_SLIDES[s].colour === 'none' ? 'lens.wall.see.no-green' : 'lens.wall.see.wall';
+
+export type WallVerdict =
+  | { result: 'free'; line: 'lens.could-be' | 'lens.right-for-now' }
+  | { result: 'right'; line: 'lens.wall.yes.plant' | 'lens.wall.yes.animal' }
+  | { result: 'miss'; line: 'lens.wall.can-tell-now' | WallSeeLine };
+
+/** Below the deciding stop both kinds get the same free line (never an answer key); at or above it the true kind finishes the slide. */
+export function judgeWall(s: WallSlideId, stop: Stop, answer: WallAnswer): WallVerdict {
+  if (stop < wallDeciding(s)) return answer === 'cant-tell' ? { result: 'free', line: 'lens.right-for-now' } : { result: 'free', line: 'lens.could-be' };
+  if (answer === 'cant-tell') return { result: 'miss', line: 'lens.wall.can-tell-now' };
+  const kind = wallKindOf(wallEvidenceAt(s, stop))!;
+  if (answer === kind) return { result: 'right', line: `lens.wall.yes.${kind}` };
+  return { result: 'miss', line: wallSeeLine(s) };
+}
+
+/** Level 8's drops: all the same even green at stops 1–2. */
+export type GreenDropId = 'green-threads' | 'green-balls' | 'green-water';
+export type GreenKind = 'living' | 'all-through';
+export type GreenAnswer = GreenKind | 'cant-tell';
+
+export interface GreenDrop {
+  id: GreenDropId;
+  answer: GreenKind;
+  evidence: readonly (readonly Evidence[])[];
+}
+
+/** The level-8 drops (the definition's table). Tiny dots, or nothing, at stop 3 decide nothing: smaller things would show nothing there too. */
+export const GREEN_DROPS: Record<GreenDropId, GreenDrop> = {
+  'green-threads': { id: 'green-threads', answer: 'living', evidence: [[], [], ['boxes'], ['boxes']] },
+  'green-balls': { id: 'green-balls', answer: 'living', evidence: [[], [], [], ['edge', 'inside']] },
+  'green-water': { id: 'green-water', answer: 'all-through', evidence: [[], [], [], ['even']] },
+};
+export const GREEN_IDS = Object.keys(GREEN_DROPS) as GreenDropId[];
+
+/** Living exactly when cells show (boxes, or an edge with parts inside); all through exactly when the colour is even with no edges. */
+export const greenKindOf = (ev: readonly Evidence[]): GreenKind | null =>
+  ev.includes('boxes') || looksAlive(ev) ? 'living' : ev.includes('even') ? 'all-through' : null;
+export const greenEvidenceAt = (d: GreenDropId, stop: Stop): readonly Evidence[] => GREEN_DROPS[d].evidence[stop - 1];
+export const greenDeciding = (d: GreenDropId): Stop => STOPS.find((stop) => greenKindOf(greenEvidenceAt(d, stop)) !== null) ?? 4;
+
+export type GreenSeeLine = 'lens.green.see.threads' | 'lens.green.see.balls' | 'lens.green.see.even';
+export const greenSeeLine = (d: GreenDropId): GreenSeeLine =>
+  d === 'green-threads' ? 'lens.green.see.threads' : d === 'green-balls' ? 'lens.green.see.balls' : 'lens.green.see.even';
+
+export type GreenVerdict =
+  | { result: 'free'; line: 'lens.could-be' | 'lens.right-for-now' }
+  | { result: 'right'; line: 'lens.green.yes.living' | 'lens.green.yes.through' }
+  | { result: 'miss'; line: 'lens.green.can-tell-now' | GreenSeeLine };
+
+export function judgeGreen(d: GreenDropId, stop: Stop, answer: GreenAnswer): GreenVerdict {
+  if (stop < greenDeciding(d)) return answer === 'cant-tell' ? { result: 'free', line: 'lens.right-for-now' } : { result: 'free', line: 'lens.could-be' };
+  if (answer === 'cant-tell') return { result: 'miss', line: 'lens.green.can-tell-now' };
+  const kind = greenKindOf(greenEvidenceAt(d, stop))!;
+  if (answer === kind) return { result: 'right', line: kind === 'living' ? 'lens.green.yes.living' : 'lens.green.yes.through' };
+  return { result: 'miss', line: greenSeeLine(d) };
+}
+
+/** Three slides (level 7) or drops (level 8), one of each in a seeded order. Authored: onion skin, cheek cells, leaf; green balls, green water, threads. */
+export function wallRoundFor(rng: Rng, authored: boolean): WallSlideId[] {
+  return authored ? ['onion-skin', 'cheek-cells', 'leaf'] : rng.shuffle([...WALL_IDS]);
+}
+export function greenRoundFor(rng: Rng, authored: boolean): GreenDropId[] {
+  return authored ? ['green-balls', 'green-water', 'green-threads'] : rng.shuffle([...GREEN_IDS]);
+}
+
+/** Level 8: the threads and balls drift with the water as one, in art units, at most this far from the middle. */
+export const GREEN_DRIFT = 18;
+/** The drift's angular speed: at the largest lens its fastest is under `MAX_SPEED` screen units a second. */
+export const GREEN_DRIFT_W = (MAX_SPEED * 0.8) / (GREEN_DRIFT * Math.SQRT2 * MAX_ART_SCALE);
+
+/** Seeded looks for levels 7–8: an angle for the walls, a seed for cheek outlines, threads and balls, and the drift's phase. */
+export interface Looks78 {
+  wallAngle: number;
+  seed: number;
+  phase: number;
+}
+export const looks78For = (rng: Rng): Looks78 => ({ wallAngle: rng.range(-0.5, 0.5), seed: rng.int(1, 9999), phase: rng.range(0, Math.PI * 2) });
+
+/** Where the drifting level-8 contents sit at time `t`, in art units. */
+export const greenDriftAt = (phase: number, t: number) => ({
+  x: GREEN_DRIFT * Math.sin(GREEN_DRIFT_W * t + phase),
+  y: GREEN_DRIFT * Math.sin(GREEN_DRIFT_W * 0.8 * t + phase * 1.7),
+});
+
 // ----- help -----
 
 export type Help = { do: 'tap-lens' } | { do: 'glide'; to: number } | { do: 'turn'; stop: Stop };
 
 /**
- * What Show a hint does: tap the lens (1), glide to the nearest thing not yet looked at (2), turn to the stop that decides (3, 5 and 6)
+ * What Show a hint does: tap the lens (1), glide to the nearest thing not yet looked at (2), turn to the stop that decides (3 and 5–8)
  * or the lowest that shows the asked thing (4).
  */
-export function helpFor(level: number, s: { glass?: { x: number; y: number }; things?: readonly { x: number; y: number }[]; looked?: ReadonlySet<number>; question?: Question; pair?: PairId; sample?: SortSampleId }): Help | null {
+export function helpFor(level: number, s: { glass?: { x: number; y: number }; things?: readonly { x: number; y: number }[]; looked?: ReadonlySet<number>; question?: Question; pair?: PairId; sample?: SortSampleId; wall?: WallSlideId; green?: GreenDropId }): Help | null {
   if (level === 1) return { do: 'tap-lens' };
+  if (level === 7) return s.wall ? { do: 'turn', stop: wallDeciding(s.wall) } : null;
+  if (level === 8) return s.green ? { do: 'turn', stop: greenDeciding(s.green) } : null;
   if (level === 5) return s.pair ? { do: 'turn', stop: decidingStop(s.pair) } : null;
   if (level === 6) return s.sample ? { do: 'turn', stop: SORT_SAMPLES[s.sample].deciding } : null;
   if (level === 3) return { do: 'turn', stop: DECIDING };
@@ -508,7 +627,7 @@ const GAP = 12;
 export interface LensLayout {
   /** The lens view (levels 1, 3 and 4). */
   lens: Ring;
-  /** Levels 3–6: the four stop buttons; levels 3–4: the answer button; levels 5–6: the three answers or trays. */
+  /** Levels 3–8: the four stop buttons; levels 3–4: the answer button; levels 5–8: the three answers or trays. */
   stops: Rect[];
   answer: Rect | null;
   choices: Rect[];
@@ -654,7 +773,7 @@ export class LensTally {
 }
 
 export interface PlanInfo {
-  level: 1 | 2 | 3 | 4 | 5 | 6;
+  level: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
   name: string;
 }
 export const PLANS: readonly PlanInfo[] = [
@@ -664,5 +783,7 @@ export const PLANS: readonly PlanInfo[] = [
   { level: 4, name: 'Just enough: set the dial to just the view asked for' },
   { level: 5, name: "Alive or can't tell yet: look closer, then say if the ringed speck is alive" },
   { level: 6, name: 'One cell or many: look closer, then sort each slide into one cell, many cells or not cells' },
+  { level: 7, name: "Wall clue: look closer, then say plant cells, animal cells or can't tell yet; the wall is the clue, not the colour" },
+  { level: 8, name: "Why green? Look closer, then say if the green is tiny living things, all through the water, or can't tell yet" },
 ];
 export const planFor = (level: number): PlanInfo => PLANS[Math.min(PLANS.length, Math.max(1, Math.round(level))) - 1];
