@@ -62,7 +62,7 @@ How the puzzle page maps onto what exists. "Row" means an [IDEAS](../../IDEAS.md
 | Puzzle-page genre | On the island | State |
 | --- | --- | --- |
 | Crossword, mini crossword | `crossword` | [Defined](../../definitions/crossword.md) 2026-11-05; levels 1–4 built by 2026-11-06, levels 5–6 queued; [notes below](#crossword) |
-| Logic grid (Murdle, Dell logic problems, zebra puzzle) | `logic-grid` | [Defined](../../definitions/logic-grid.md) 2026-11-05; levels 1–2 built 2026-11-05, levels 3–4 queued; [notes below](#logic-grid-whodunit) |
+| Logic grid (Murdle, Dell logic problems, zebra puzzle) | `logic-grid` | [Defined](../../definitions/logic-grid.md) 2026-11-05; levels 1–5 built 2026-11-05/06, level 6 queued; [notes below](#logic-grid-whodunit) |
 | Word search, themed word search (Strands) | [Word Search](../../GAMES.md#word-search) | Built (grown-up; school opening queued). A Strands-style "theme covers the board" level is a possible later mode |
 | Sudoku, mini sudoku, killer sudoku | [Sudoku Garden](../../GAMES.md#sudoku-garden), [Garden Rows](../../GAMES.md#garden-rows) | Built; cage sums (level 10) in READY |
 | KenKen / Calcudoku | Sudoku Garden | Proposal: a cage mode with + − × ÷ after level 10 ([garden-rows dive](../garden-rows.md) filed it as a proposal) |
