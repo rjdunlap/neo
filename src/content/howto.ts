@@ -2985,6 +2985,22 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 3, to: 3, text: 'A check that does not match the sign counts as a miss; after two on one half the right pad glows, which counts as a hint. The sign is a picture to follow, not a sound to judge.' },
     ],
   },
+  'hat-band': {
+    goal: 'Put hats on the friends to make a band: each hat plays its own part.',
+    steps: [
+      'Drag a hat onto a friend, or tap the hat and then tap the friend; the part joins at the next beat.',
+      'Tap a worn hat to take it off.',
+      { from: 1, to: 1, text: 'Listen to your band play the whole loop, then tap the green check.' },
+      { from: 2, to: 2, text: "Swap hats, tap a friend's star to hear just them, hear two different bands, then tap the green check." },
+      { from: 3, to: 3, text: "Put a hat on both friends, tap each friend's star to hear them alone, then hear them together and tap the green check." },
+    ],
+    finish: 'The band plays your tune once more and takes a bow.',
+    note: [
+      { text: 'Every hat on every friend sounds good; nothing is a mistake, and nothing is counted.' },
+      { from: 2, to: 3, text: 'The tune hats play notes; the drum hats play a beat.' },
+      { text: 'Moving up a level here means she is ready for the next thing to try, not that she can tell parts apart.' },
+    ],
+  },
   'beat-builder': {
     goal: 'Arrange percussion sounds in a repeating beat.',
     steps: [
