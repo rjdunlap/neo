@@ -287,7 +287,7 @@ export class RainRoute implements Game {
 
   private tapBed(i: number) {
     if (this.busy || this.finished || this.s.passed) return;
-    this.flipTo(flipBed(this.s, i), i);
+    this.flipTo(flipBed(this.s, i, this.round.bed), i);
   }
 
   /** Show a flipped bed: its new ground, a squash and its sound; a board with drops on it wipes to fresh. */
@@ -332,13 +332,13 @@ export class RainRoute implements Game {
     }
     sfx.boing();
     this.wobble(verdict.cause!);
+    // The drops have settled; she can change a bed while the pet explains.
+    this.idle();
     await this.ctx.say(verdict.cause === 'dry' ? 'rain.miss.dry' : 'rain.miss.pond');
     if (this.finished) return;
     await this.ctx.say(this.routeLine());
     if (this.finished) return;
     if (this.s.glow !== null && this.s.glow !== before) await this.ctx.say('rain.glow');
-    if (this.finished) return;
-    this.idle();
   }
 
   /** The unmet need's sign wobbles. */

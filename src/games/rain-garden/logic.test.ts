@@ -424,21 +424,23 @@ describe('level 4 route', () => {
     expect([s.misses, s.hints, s.glow, s.current?.stored]).toEqual([1, 0, null, [2, 0]]);
     c = check(s, r);
     expect(c.verdict.result).toBe('again');
-    s = flipBed(flipBed(c.state, 1), 1);
+    s = flipBed(flipBed(c.state, 1, r.bed), 1, r.bed);
     expect(check(s, r).verdict.result).toBe('again');
     expect([s.misses, s.current]).toEqual([1, null]);
     // A second, different failing arrangement: the glow lights on the bed to change (one hint).
-    s = flipBed(s, 1); // soil/soil: the pond gets none
+    s = flipBed(s, 1, r.bed); // soil/soil: the pond gets none
     c = check(s, r);
     s = c.state;
     expect([c.verdict.cause, s.misses, s.hints, s.glow]).toEqual(['pond', 2, 1, 0]);
     // A third failure moves the glow without counting again.
-    s = flipBed(s, 0); s = flipBed(s, 1); // stone/stone
-    expect(s.glow).toBe(null);
+    s = flipBed(s, 0, r.bed);
+    expect(s.glow).toBe(null); // stone/soil passes: nothing left to change
+    s = flipBed(s, 1, r.bed); // stone/stone
+    expect(s.glow).toBe(1);
     s = check(s, r).state;
     expect([s.misses, s.hints, s.glow]).toEqual([3, 1, 1]);
     // Passing.
-    s = flipBed(s, 1);
+    s = flipBed(s, 1, r.bed);
     c = check(s, r);
     expect(c.verdict.result).toBe('pass');
     expect([c.state.passed, c.state.misses, c.state.hints, c.state.glow]).toEqual([true, 3, 1, null]);
@@ -448,7 +450,7 @@ describe('level 4 route', () => {
   it('fresh starts: a flip resets the run; Start again restores the start and keeps the counts', () => {
     const r = round4(1, ['soil', 'stone']);
     let s = check(tryRoute(routeFresh(r)), r).state;
-    s = flipBed(s, 0);
+    s = flipBed(s, 0, r.bed);
     expect([s.sockets, s.current]).toEqual([['stone', 'stone'], null]);
     s = tryRoute(s);
     const back = routeRestart(s, r);
@@ -463,7 +465,7 @@ describe('level 4 route', () => {
       for (; taps < 8 && !s.passed; taps++) {
         const n = routeNext(s, r);
         if (n.kind === 'cloud') s = tryRoute(s);
-        else if (n.kind === 'bed') s = flipBed(s, n.bed);
+        else if (n.kind === 'bed') s = flipBed(s, n.bed, r.bed);
         else { const c = check(s, r); s = c.state; expect(c.verdict.result).toBe('pass'); }
       }
       expect(s.passed).toBe(true);
@@ -476,7 +478,7 @@ describe('level 4 route', () => {
     while (!s.passed) {
       const n = routeNext(s, r);
       seq.push(n.kind === 'bed' ? `bed${n.bed}` : n.kind);
-      s = n.kind === 'cloud' ? tryRoute(s) : n.kind === 'bed' ? flipBed(s, n.bed) : check(s, r).state;
+      s = n.kind === 'cloud' ? tryRoute(s) : n.kind === 'bed' ? flipBed(s, n.bed, r.bed) : check(s, r).state;
     }
     expect(seq).toEqual(['cloud', 'bed0', 'bed1', 'cloud', 'check']);
   });

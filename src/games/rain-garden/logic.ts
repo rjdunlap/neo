@@ -328,11 +328,11 @@ export function routeFresh(round: RouteRound): RouteState {
 /** The cloud: a free, unscored trial of the current arrangement. */
 export function tryRoute(s: RouteState): RouteState { return { ...s, current: runRoute(s.sockets) }; }
 
-/** Flip one bed's ground. Both beds and the pond go back to fresh; a glow on that bed has done its job. */
-export function flipBed(s: RouteState, i: number): RouteState {
+/** Flip one bed's ground. Both beds and the pond go back to fresh; a lit glow moves to the bed the new arrangement still needs changed. */
+export function flipBed(s: RouteState, i: number, bed: 0 | 1): RouteState {
   const sockets = s.sockets.slice();
   sockets[i] = flip(sockets[i]);
-  return { ...s, sockets, current: null, pointing: false, glow: s.glow === i ? null : s.glow };
+  return { ...s, sockets, current: null, pointing: false, glow: s.glowShown ? stepBed(sockets, bed) : null };
 }
 
 export type Cause = 'dry' | 'pond';
@@ -367,7 +367,7 @@ export function routeHint(s: RouteState, round: RouteRound): { state: RouteState
   if (s.passed) return { state: s, hint: { kind: 'check' } };
   const i = stepBed(s.sockets, round.bed);
   if (i === null) return { state: { ...s, pointing: true, hints: s.pointing ? s.hints : s.hints + 1 }, hint: { kind: 'check' } };
-  return { state: flipBed({ ...s, hints: s.hints + 1 }, i), hint: { kind: 'flip', bed: i } };
+  return { state: flipBed({ ...s, hints: s.hints + 1 }, i, round.bed), hint: { kind: 'flip', bed: i } };
 }
 
 /** Start again: the starting arrangement from fresh. Misses and hints already made keep counting; the glow follows the new arrangement. */
