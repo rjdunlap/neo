@@ -1,8 +1,8 @@
-# Sense Detective, levels 1–2 (definition)
+# Sense Detective, levels 1–5 (definition)
 
 Defined 2026-10-22 as slice **B1** of the [body-health study](../deep-dives/subjects/body-health.md#build-slices-in-order), from its [proposed ladder](../deep-dives/subjects/body-health.md#first-games-proposed-ladder-sense-detective), its [overlap table](../deep-dives/subjects/body-health.md#on-the-island-today-and-overlap), its [presentation notes](../deep-dives/subjects/body-health.md#experience-and-presentation) and the [recommendation row](../deep-dives/subjects/RECOMMENDATIONS.md#body-and-health-recommendations). Docs only: no game, ID registration, voice line, art or save field exists yet.
 
-**Status: built 2026-10-23 (B2, PR #861; levels 1–2 on the defaults below).** The study's B1 gate asks this packet to settle identity beside Photo Safari, accounting for free reveals, the K/S window and the land; each has a default here ([open decisions](#open-decisions)) that the build uses and the developer can still change. Nothing here is clinical or practical health content: the three toys are invented island instruments, the clues are an authored toy table rather than a rule about real objects, and no reviewer is needed before this slice. The study's reviewer gates (body models, practical care, real-object cards) stay on its later slices. Levels 3–5 (several toys still possible, "can we tell?") are the separate definition B3, because multi-select is a new interaction.
+**Status: built 2026-10-23 (B2, PR #861; levels 1–2 on the defaults below).** The study's B1 gate asks this packet to settle identity beside Photo Safari, accounting for free reveals, the K/S window and the land; each has a default here ([open decisions](#open-decisions)) that the build uses and the developer can still change. Nothing here is clinical or practical health content: the three toys are invented island instruments, the clues are an authored toy table rather than a rule about real objects, and no reviewer is needed before this slice. The study's reviewer gates (body models, practical care, real-object cards) stay on its later slices. Levels 3–5 (several toys still possible, "can we tell?") are B3, [defined 2026-11-05 below](#levels-35-definition-2026-11-05) and not yet built, because multi-select is a new interaction.
 
 **Fun action and purpose:** a wrapped parcel has arrived at the island's little toy museum, and something inside it belongs on the empty shelf. Beside the parcel are two **investigation buttons**: a round **Look** window (a peephole that shows the toy's outline from above) and a **Listen** ear (a gentle shake of the parcel that plays the toy's sound and shows a matching sound picture). She chooses how to find out, sees and hears what it tells her, taps the toy on the shelf the clues point to, and presses the big **Check** card. The parcel's paper falls away and the toy plays. The learning goal is **choosing an observation that answers the question, and knowing when the evidence is enough**: at level 1 a look decides it; at level 2 a look leaves two toys possible, so she has to choose the other sense. This is the pre-K observation-and-evidence work in the study's [audience table](../deep-dives/subjects/body-health.md#an-answer-for-every-audience) (K row) and the information-from-the-senses strand of its NGSS anchor, at a scale a four-year-old can act on.
 
@@ -114,3 +114,117 @@ Each has a default the build uses; none blocks B2.
 4. **Not-yet guidance.** Default: a not-yet Check and the bobbing button it brings are free. Alternative: the second not-yet counts as a hint, so a round where the game had to point at Listen is not a smooth round.
 5. **Level 1's toys.** Default bell and rattle, as the study's ladder. Alternative: a seeded pair from all three toys whenever the look decides it (rattle with either round toy).
 6. **Journal.** Default: nothing filed. Alternative: a discovery "a look can't tell a bell from a drum, but listening can" after the first level-2 round that showed it.
+
+## Levels 3–5 definition (2026-11-05)
+
+Defined 2026-11-05 as slice **B3** of the [body-health study](../deep-dives/subjects/body-health.md#build-slices-in-order), from its [proposed ladder](../deep-dives/subjects/body-health.md#first-games-proposed-ladder-sense-detective) rows 3–5 and its "rules to freeze". Docs only: nothing below is registered or built. Levels 1–2 above keep their rules, verdicts, tests and how-to lines unchanged; everything here is appended (IDs 3, 4, 5), so no saved level or pin moves.
+
+**What is new:** at levels 3–5 the answer is no longer "the toy" but **what the clues allow**. At 3 she selects **every** toy a look leaves possible; at 4 she then listens and **narrows** that set; at 5 the parcel cannot be heard, and she says whether a look **can tell** which toy it is and, if not, **which sense would**. The learning goal is the study's S row: ambiguity is a valid answer, and a new clue can narrow a set. Same three toys, same table, same art; the only new pictures are the quilt, the *Can't tell yet* card and two evidence-choice cards.
+
+### Levels
+
+| Level | Name | Bands (default) | Parcels, shelf and channels | What she decides | Finish of one parcel |
+| --- | --- | --- | --- | --- | --- |
+| 3 | **Which could it be?** | pre-K, school | Two parcels; shelf bell, rattle, drum; **Look** only | Select every toy the look allows (two after a plain circle, one after a handle) | Check the exact set |
+| 4 | **Narrow it down** | school | One parcel (bell or drum); shelf bell, rattle, drum; **Look**, then **Listen** | Select the look's set; then listen and keep only the toy that still fits | Check the exact set twice: after the look, then after the listen |
+| 5 | **Can we tell?** | school | Two parcels; shelf bell, rattle, drum; the parcels are wrapped in a thick quilt, so **Look** only; a *Can't tell yet* card | Whether the look decides it; if not, which sense would tell the two apart | Check the one fitting toy, or *Can't tell yet* and then the Listen card |
+
+Bands become pre-K 1–3 and school 2–5 (ranges are contiguous appends, so no `order`; [decision 7](#levels-35-open-decisions)). `describeLevel` returns the names above.
+
+### The model, added to `logic.ts`
+
+- **Parcels.** `makeRound(level, rng, first)` gains `parcels: ToyId[]` (levels 1, 2 and 4 hold one). Levels 3 and 5 take the first two of `rng.shuffle(TOY_IDS)`: two different toys, so every round holds **at least one round toy** (only one of the three is handled), so at least one parcel is genuinely ambiguous, and about two rounds in three also hold the rattle, which a look decides, so "always pick two" never works. Level 4 takes `rng.pick(['bell', 'drum'])`, so its look always leaves two. The shelf is `rng.shuffle(TOY_IDS)`. Each level's **first round of a session** is authored: level 3 parcels drum then rattle; level 4 bell; level 5 drum then rattle. The **record is cleared between parcels**; the shelf stays.
+- **A set verdict.** A new `checkSet(shelf, record, selected: ToyId[], stage)` sits beside the built single-card `check`, which stays as it is for levels 1–2. With `left = possible(shelf, record)`:
+  - nothing selected: **empty** (the instruction repeats);
+  - nothing revealed: **look first** (free, as level 1);
+  - a selected toy outside `left`: **miss**, `ruledOut` is the first such toy in shelf order with the observation that rules it out; every ruled-out selected card half-turns and deselects;
+  - every selected toy is in `left`, but one of `left` is not selected: **one more** (free), `missing` is the first such toy in shelf order;
+  - selected equals `left`: **right**. At level 3 that finishes the parcel. At level 4's first stage (Listen not yet run) it is **so far**: the parcel stays, the Listen ear slides in and the instruction becomes "now listen, and keep only the toys that still fit". After the listen, **right** finishes the parcel.
+- **The tell verdict (level 5).** Stage A has single selection among the three toy cards and the *Can't tell yet* card (tapping one selects it and deselects the rest). `checkTell(shelf, record, answer)`:
+  - a toy outside `left`: **miss** with its reason (as level 1);
+  - a toy in `left` while another fits too: **both fit**. This is free, as Trackway Tales' `both-fit`: the other toy's from-above badge pulses and the pet says "The bell fits, but so does the drum. Can we tell which one?";
+  - the only toy in `left`: **right**, and the parcel opens;
+  - *Can't tell yet* when `left` has two or more: **right**, to stage B;
+  - *Can't tell yet* when `left` has one: **miss** (as Trackway Tales' `cant-tell-wrong`), with the reason "The peephole shows a handle. Only the rattle has a handle, so we can tell."
+- **Stage B (level 5).** The toy cards slide back and two choice cards take the first two shelf slots: an **eye window** and an **ear**, tapped to select (free) and judged by Check. `distinguishing(shelf, record)` is the channel that would leave one toy whichever toy of `left` is inside. With this table that is always `sound`. The ear is **right**: the quilt slides off, the parcel wobbles and plays its sound, the sound card drops into the strip, the remaining toy's card glows and the parcel opens on its own; that last part is a reveal, not another task. The eye is a **miss**: "A look shows a plain circle for the bell and the drum. It can't tell them apart." The quilt is a property of this exhibit: the pet says "This parcel is wrapped in a thick quilt, so shaking it makes no sound." Nothing suggests a listener who cannot hear.
+- **Unchanged resubmits.** `countsAsMiss` keys on the parcel index, the stage, the sorted selection and the record length, so pressing Check again with nothing changed repeats the reason and counts nothing more.
+- **Reasons and names.** The built reason lines cover every ruled-out pair; the new lines below add the set and tell responses. Two names in one line come from the possible set in shelf order.
+
+### Screen and controls
+
+- **Selection at 3–4 toggles:** touch-down lifts a card; a tap adds it to the selection (the soft ring, and the toy plays its sound once with its sound picture); tapping a selected card again puts it back (ring off, no sound). Selecting is never counted. Levels 1–2 keep single selection, and so does level 5's stage A.
+- **The quilt (level 5):** a patchwork cover over the parcel with the peephole flap left open; there is no ear button. In stage B the Listen ear is a choice card, not an investigation, until the reveal.
+- **Layout:** `exhibitLayout(view, cards, channels, cantTell = false)` gains `cantTell: Rect | null`, a 170×170 card. In landscape it sits directly above Check, in the column right of the shelf; in portrait it sits left of Check on Check's row. The built four-view layout test extends to `cantTell` true and false with three cards. It asserts every target is at least 100 units, nothing overlaps, the pet's corner and home button stay clear and everything fits inside `view`; nothing is hand-placed outside `exhibitLayout`. Stage B reuses the first two shelf rectangles.
+- **The *Can't tell yet* card:** a museum label showing the two round badges side by side under a soft question mark. A tap selects it and the pet says "Can't tell yet", so it is spoken, never read.
+- **Between parcels (3 and 5):** the found toy hops onto the empty shelf spot beside its card, a short rise plays, the strip clears and a new parcel slides in ("Here comes another parcel!"). The round finishes after the last parcel.
+
+### First rounds
+
+- **Level 3 (shelf: rattle, bell, drum; parcels drum, rattle):** "Two parcels today. Look, then tap every toy it could be." She taps Look: a plain circle. She taps the bell, then Check: "Another toy could fit too. Look at the clue again." The circle card and the round badges pulse (one more; free). She taps the rattle too, then Check: boing, the rattle half-turns and deselects, "The peephole shows a plain circle. The rattle has a handle." (one miss). She taps the drum, then Check: "It could be the bell or the drum!" The paper unfolds: "It was the drum!" Second parcel: she taps Look (a handle), taps the rattle, then Check: the rattle hops out. The round finishes with misses 1, hints 0.
+- **Level 4 (shelf: bell, rattle, drum; parcel bell):** "Look, then tap every toy it could be." She looks (a circle), selects the bell and the drum, then Check: "Yes, it could be the bell or the drum. Now listen, and keep only the toys that still fit." The ear slides in and bobs. She taps Listen: a ring. She presses Check with both still selected: boing, the drum deselects, "We heard a ring. The drum goes boom." (one miss). Check with the bell alone: the bell hops out.
+- **Level 5 (shelf: drum, bell, rattle; parcels drum, rattle):** "This parcel is wrapped in a thick quilt, so shaking it makes no sound. Look, then: can we tell which toy it is?" She looks (a circle), taps the bell, then Check: "The bell fits, but so does the drum. Can we tell which one?" The drum's badge pulses (free). She taps *Can't tell yet*, then Check: "That's right, we can't tell yet. What would tell the bell and the drum apart?" The eye and ear cards appear. She taps the eye, then Check: boing, "A look shows a plain circle for the bell and the drum. It can't tell them apart." (one miss). She taps the ear, then Check: "Yes! Listening would tell them apart." The quilt slides off, a boom plays, and the drum hops out. Second parcel: she looks (a handle), taps *Can't tell yet*, then Check: boing, "The peephole shows a handle. Only the rattle has a handle, so we can tell." (second miss in the round, but the first on this parcel, so no glow). She taps the rattle, then Check: found.
+
+### Accounting, help and finishing
+
+- **Never a miss** (as levels 1–2): looking, listening, replays, a tap on a strip card, selecting or deselecting, Check with nothing selected or nothing revealed, **one more** (an undersized but consistent set), **so far**, **both fit**, an unchanged resubmit, a tap during a reveal.
+- **A miss:** a Check that includes a toy the clues rule out (3–5), *Can't tell yet* when a look decides it (5), or the eye card in stage B (5).
+- **Help counts per parcel:** after two misses **on one parcel** the useful edit glows and `hints++` once for that parcel; Show a hint (pause sheet) does the same, still once per parcel. A two-parcel round can therefore count two hints, which the ordinary rule reads as a struggling round. This matches the built game, where a round is one parcel, and the study's "per task".
+- **The useful edit** ("hints strictly improve a wrong set"): if a ruled-out toy is selected, it glows with a small shake (take it out); otherwise, if a fitting toy is missing, it glows (put it in); otherwise Check glows. At level 5 stage A the glow is on the fitting toy or *Can't tell yet*, and in stage B on the ear. Show a hint first runs the investigation the current stage needs: the look if none has been made, or level 4's listen after **so far**. Then it glows the edit. Asked again on the same parcel, it repeats the instruction.
+- **The second one more** on a parcel also pulses the strip card and the shelf badges that match it. This is free guidance, as the built not-yet bob, and never names the missing toy.
+- **Adaptation:** the ordinary rule. A zero-miss level-3 or level-4 round shows she selected exactly what the look allowed, without being told which toy was missing; a zero-miss level-5 round shows she told a decidable parcel from an undecidable one, and named the deciding sense, without a prompt. None of it is a mastery claim, and the grown-ups' card does not make one.
+- **Start again** rebuilds the same seeded round from its first parcel, with the record cleared and misses and hints kept. **Finish:** `ctx.finish({ misses, hints })` after the last parcel opens: one ordinary sticker, nothing saved or filed.
+
+### Rule tests (`logic.test.ts`, added)
+
+- **Rounds, over 500 seeds per level:** levels 3 and 5 have two different parcels, both on the shelf, and **at least one is round**; over the seeds, both one-toy (rattle) and two-toy rounds occur, and each toy is a parcel at least once. Level 4's parcel is always bell or drum, and a look leaves exactly two. The shelf is all three toys, the first rounds are as authored, and the same seed gives the same round.
+- **Set verdict:** for every shelf, every record from `observe(parcel, …)` and every subset of the shelf, `checkSet` is **right** exactly when the subset equals `possible`; **miss** exactly when it contains a ruled-out toy; **one more** exactly when it is a proper non-empty subset of `possible`. A miss's `ruledOut` really is ruled out by its named observation.
+- **Narrowing (level 4):** after the look, the right set has two toys and **so far** never finishes; adding the listen narrows it to exactly the parcel; the look's set checked after the listen is a miss.
+- **Tell verdict (level 5):** a round parcel gives *Can't tell yet* → right, either round toy → both fit (never found, never a miss), the rattle → miss; a rattle parcel gives the rattle → right, *Can't tell yet* → miss. `distinguishing` returns `sound` for every two-toy possible set, and observing the parcel's sound then leaves exactly the parcel.
+- **Guesses are not knowledge:** two parcels with different toys but the same record (bell and drum after a look) give the same verdict for every selection and answer.
+- **Hints strictly improve:** for every wrong selection, applying the glowed edit reduces the difference from `possible` by one; repeated, the glow always reaches **right**.
+- **Accounting scripts:** the three first rounds above give misses 1 and hints 0 (level 3), misses 1 and hints 0 (level 4), and misses 2 and hints 0 (level 5: one miss on each parcel, so no glow). A level-3 parcel with two misses glows once and counts one hint, and Show a hint after that leaves it at one. An unchanged resubmit after a miss adds nothing.
+- **Layout:** the four views with three cards, one and two channels, and `cantTell` true and false.
+- **Levels 1–2 untouched:** the built tests pass unchanged.
+
+### Ghost finger, how-to card and voice
+
+- **Bot (`senseTouch` extended by level):** it always investigates before a Check and never taps straight to the answer. Level 3: look; select each possible toy in shelf order; Check. Level 4: look; select both possible toys; Check (so far); listen; deselect the toy the sound rules out; Check. Level 5: look; if one toy fits, select it and Check; otherwise select *Can't tell yet*, Check, select the ear, Check. The same bot drives the scripted play and `fingerdemo`.
+- **How-to card:** the built lines keep their `{ from: 1, to: 2 }` and `{ from: 2, to: 2 }` scopes. Added steps:
+  - "Tap the window to peek at the toy's shape." `{ from: 3, to: 5 }`, the built first step widened rather than duplicated.
+  - "Tap every toy it could be; tap one again to put it back." `{ from: 3, to: 4 }`
+  - "When the tick says yes, tap the ear and keep only the toys that still fit." `{ from: 4, to: 4 }`
+  - "The parcel is wrapped in a quilt, so choose the one toy it must be, or the 'can't tell yet' card when two could fit." `{ from: 5, to: 5 }`
+  - "If she chose 'can't tell yet', choose the eye or the ear: which would tell them apart?" `{ from: 5, to: 5 }`
+  - "Press the green tick to check." `{ from: 3, to: 5 }`
+
+  Notes added:
+  - "Peeking, listening and changing her mind are never counted." `{ from: 3, to: 5 }`, widened.
+  - "Leaving out a toy that fits is not a miss: the tick asks for one more. Keeping in a toy the clues rule out is a miss, with the reason spoken." `{ from: 3, to: 4 }`
+  - "Choosing one toy when two still fit is not a miss: the pet shows the other. Choosing 'can't tell yet' when the look decides it, or the eye when only listening would help, is a miss." `{ from: 5, to: 5 }`
+  - "After two misses on one parcel, the card to change glows, which counts as a hint." `{ from: 3, to: 5 }`
+
+  The finish becomes "Each parcel opens and its toy jumps onto the shelf." These are level-scoped lines with no relative wording.
+- **Voice lines (`sense.*`, added):** `instruct-all` ("Look, then tap every toy it could be."), `two-parcels`, `one-more`, `could-be` (`{a}`, `{b}`), `it-was` (`{name}`), `so-far` (`{a}`, `{b}`), `instruct-narrow`, `quilt`, `instruct-tell`, `both-fit` (`{name}`, `{other}`), `can-tell` (`{name}`, `{seen}`), `cant-tell-right` (`{a}`, `{b}`), `what-would` (`{a}`, `{b}`), `look-cant` (`{a}`, `{b}`), `listen-would`, `card.cant-tell`, `card.look`, `card.listen`, `next-parcel`. Nothing is written as text to read.
+- **Co-play:** a grown-up asks "which toys could it still be?" before the tick, or holds up fingers for how many toys still fit. **Off-screen:** the built tip stays.
+- **Sources (study decision 2):** the only sense language is "look", "listen", "peek" and "hear". The building session checks it against reputable sources, lists them in the study and records the check in its VERIFICATION entry. No body content is added.
+
+### Build slices
+
+B4 splits into two new-interaction builds, so that each fits one session:
+
+- **B4a: levels 3–4** (`checkSet`, toggling selection, parcels, level 4's so-far step, the bands pre-K 1–3 and school 2–4). Tier: typecheck and unit tests (the properties above, plus the registry, lands, how-to and voice tests); one scripted play of level 3 (one more, one miss, to the sticker over both parcels) and of level 4 (so far, a listen, one miss, a requested hint, to the sticker); one portrait screenshot at level 3 with two cards selected; `fingerdemo` at 3 and 4; `npm run build` (voice and how-to change).
+- **B4b: level 5** (after B4a: the quilt, `checkTell`, *Can't tell yet*, stage B, school 2–5). Tier: typecheck and unit tests including the layout with `cantTell`; one scripted play of level 5 (both fit, *Can't tell yet*, the eye miss, the ear, then the rattle parcel to the sticker); one portrait and one landscape screenshot with the *Can't tell yet* card; `fingerdemo` at 5; `npm run build`.
+
+Device and person checks stay open: whether a five-year-old reads "every toy it could be" as several taps; whether *Can't tell yet* reads as a good answer rather than giving up; whether the quilt reads as "can't hear it" without speech.
+
+### Levels 3–5 open decisions
+
+Each has a default that B4 uses; none blocks the build.
+
+1. **An undersized set.** Default: free (**one more**), as the built not-yet, Attic Finds level 5 and the 2026-10-23 decision 4 ("only an explicit wrong Check counts"). This **departs from the study's frozen line** "Check of an incorrect final set is one miss", which would count it. Alternative: the study's rule.
+2. **A ruled-out toy left selected after level 4's listen.** Default: a miss, since the instruction is to keep only the toys that still fit. Alternative: cards the new clue rules out turn grey on their own, and level 4 asks only for the look's set.
+3. **Overclaiming at level 5** (one toy when two fit). Default: free **both fit**, as Trackway Tales. Alternative: a miss, since the level's question is whether we can tell.
+4. **Help per parcel**, so a two-parcel round can count two hints. Alternative: once per round.
+5. **Two parcels at levels 3 and 5.** Alternative: one parcel, alternating seeded kinds across rounds.
+6. **Level 5's stage B.** Default: a choice between the eye and the ear, followed by the reveal. Alternative: stage B goes, and *Can't tell yet* finishes the parcel with the reveal.
+7. **Bands.** Default pre-K 1–3 and school 2–5. Alternative: pre-K stays 1–2, and level 3 is school-only.

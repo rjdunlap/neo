@@ -97,3 +97,9 @@
 - Ran: typecheck; full `npm test` 305 files, 5097 tests (before a last hint-rule tweak; afterwards the sudoku-garden and content tests, 215, and typecheck); `npm run build`; `BROWSER_SUITE=sudokutouch SUDOKU_ONLY=8` (X-Wing hint on hint 35, one sticker; an earlier run failed when a bed never named the X-Wing, hence the three-bed retry); `BROWSER_SUITE=fingerdemo FINGER_ONLY=sudoku-garden FINGER_LEVELS=8` pass in 34.2 s; portrait screenshot `test-results/browser/sudokutouch/sudoku-touch-8-xwing-portrait.png`.
 - Not run: `couchgames` (couch untouched), offline check, an iPad or a person.
 - Open: whether the X-Wing hint is clear to a grown-up (person check, [DEVICE-CHECKS](../DEVICE-CHECKS.md)); on about 30% of beds the hint path never names the X-Wing.
+
+## 2026-11-05 — Sing-Along Barn level 8 Which one finishes it? (sing-along-barn batch 3)
+
+- [PR #1264](https://github.com/rjdunlap/neo/pull/1264) (base `a626368d` plus the branch; Vite `http://localhost:5598`): preschool and pre-K level 8, a seeded rhyming-picture pick at the pause (`RHYMES`, `RIMES`, `rhymeSides`), a miss and a second-miss glow, `finish()` now reports misses and hints. `game-reviewer` found no blocking issues; its two minor points were fixed.
+- Ran: typecheck; full `npm test` (305 files, 5,105 tests); one-off probe `test-results/barn8.mjs` (not a suite): preschool with two wrong picks (misses 2, hints 1, glow, sky and in-hold taps not counted, sides as seeded, to the sticker) and pre-K clean (0/0), on Rain and on Ring (two-syllable "posies"); one portrait screenshot of the glow; `BROWSER_SUITE=fingerdemo FINGER_ONLY=sing-along-barn FINGER_LEVELS=8` pass in 40.6 s; `npm run build`.
+- Not run: the `singalong` suite (unchanged parts), Twinkle at level 8 in the browser (unit-tested), device speech of the rhyme lines, an iPad or a child ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
