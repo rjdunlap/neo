@@ -628,16 +628,22 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 2, to: 2, text: 'Drag each light along its path to the window.' },
       { from: 3, to: 3, text: 'Tap the light that looks brighter in the window.' },
       { from: 4, to: 4, text: 'Drag the loose light until both look the same in the window, then press the tick.' },
+      { from: 5, to: 5, text: 'Tap the light that is farther away, then watch the curtain lift.' },
+      { from: 6, to: 6, text: 'Tap the lights from nearest to farthest, then pull the tassel.' },
     ],
     finish: [
       { from: 1, to: 1, text: 'Three taps.' },
       { from: 2, to: 2, text: 'Both lights at the window.' },
       { from: 3, to: 3, text: 'Two pairs.' },
       { from: 4, to: 4, text: 'Two lights matched.' },
+      { from: 5, to: 5, text: 'Two pairs.' },
+      { from: 6, to: 6, text: 'Two boards.' },
     ],
     note: [
       { from: 1, to: 2, text: "Every light here is the same; the halo shows how bright it looks, not how big it is. Nothing here is ever wrong: this is for looking, not a sign of what she knows. A toy model: real stars also differ in their own brightness." },
       { from: 3, to: 4, text: 'Every light here is the same; the halo shows how bright it looks, not how big it is. Moving a light is never wrong; only a tap on the dimmer light, or a tick that does not match, counts. Show a hint counts once per pair or board. A toy model: real stars also differ in their own brightness.' },
+      { from: 5, to: 5, text: 'Every light here is the same, so the dimmer one is farther; the curtain hides where they are until she answers. Only a tap on the nearer, brighter light counts. Show a hint counts once per pair. A toy model: real stars also differ in their own brightness.' },
+      { from: 6, to: 6, text: 'Each tap gives a light the next mark of one, two or three dots; tapping a marked light takes off its mark and every mark after it. Changing a mark is never wrong; only pulling the tassel with the wrong order counts, and then the marks from the first wrong one come off. Show a hint marks the next light for her and keeps it, counted once per board. A toy model: real stars also differ in their own brightness.' },
     ],
   },
   'seed-travelers': {
