@@ -76,7 +76,7 @@ export const PLANS: readonly Plan[] = [
   { level: 1, name: 'Who is where? (2 friends, 3 places, clues that say where)', cast: ['cat', 'duck', 'bear'], friends: 2, placePool: OPENING, places: 3, kinds: ['direct'], clues: 2, thing: 'pie', boards: 2 },
   { level: 2, name: 'Not there (a clue that says where, and one that says not)', cast: ['dog', 'bunny', 'pig'], friends: 2, placePool: OPENING, places: 3, kinds: ['direct', 'not'], clues: 2, each: { direct: 1, not: 1 }, thing: 'pie', boards: 2 },
   { level: 3, name: 'Three friends (3 friends, 3 places, mostly "not" clues)', cast: ['cat', 'duck', 'bear', 'dog'], friends: 3, placePool: PLACES, places: 3, kinds: ['direct', 'not'], clues: 3, maxClues: 4, maxDirect: 1, thing: 'ball', boards: 1 },
-  { level: 4, name: 'The friend in the red hat (clues name a friend by the hat they wear)', cast: ['cat', 'duck', 'bear', 'dog'], friends: 3, placePool: PLACES, places: 3, kinds: ['direct', 'not'], clues: 3, maxClues: 4, maxDirect: 1, hats: true, thing: 'ball', boards: 1 },
+  { level: 4, name: 'The friend in the red hat (clues name a friend by the hat they wear)', cast: ['cat', 'duck', 'bear', 'dog'], friends: 3, placePool: PLACES, places: 3, kinds: ['not'], clues: 3, maxClues: 4, maxDirect: 0, hats: true, thing: 'ball', boards: 1 },
 ];
 
 export const planFor = (level: number): Plan => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
