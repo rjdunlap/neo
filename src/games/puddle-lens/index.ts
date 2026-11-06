@@ -14,7 +14,7 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
-  answerIcon, buttonFace, candidateArt, handLensArt, leafArt, lensFrame, lensShine, miniSlide, noneIcon, pawArt, ringArt, showIcon, sortLayer, stopPicture,
+  answerIcon, buttonFace, candidateArt, candidateReach, drawRing, handLensArt, leafArt, lensFrame, lensShine, miniSlide, noneIcon, pawArt, ringArt, showIcon, sortLayer, stopPicture,
   swimmerArt, thingArt, trayIcon, viewLayer, waterLayer,
 } from './art';
 import {
@@ -125,6 +125,7 @@ class PuddleLens implements Game {
   choiceButtons: StopButton[] = [];
   private lifeNodes: Container[][] = [];
   private ring: Graphics | null = null;
+  private ringR = 0;
   glass: Container | null = null;
   private drag: DragHandle | null = null;
   private under: Container | null = null;
@@ -360,7 +361,8 @@ class PuddleLens implements Game {
     }
     if (life) {
       // The companion's ring round the speck it asks about; it never takes a tap.
-      const ring = ringArt(Math.max(60, r * 0.22));
+      this.ringR = this.ringRadius(life, r);
+      const ring = ringArt(this.ringR);
       ring.eventMode = 'none';
       this.board.addChild(ring);
       this.ring = ring;
@@ -500,7 +502,19 @@ class PuddleLens implements Game {
       const p = swimmerAt(life.paths[life.ringed], this.swimT);
       const k = (LIFE_SCALE[this.stop - 1] * l.lens.r) / ART_R;
       this.ring.position.set(l.lens.x + p.x * k, l.lens.y + p.y * k);
+      const q = swimmerAt(life.paths[1 - life.ringed], this.swimT);
+      const want = this.ringRadius(life, l.lens.r, Math.hypot(p.x - q.x, p.y - q.y) * k);
+      if (Math.abs(want - this.ringR) >= 4) drawRing(this.ring, (this.ringR = want));
     }
+  }
+
+  /** The ring wraps the asked speck at the stop in view, stops short of the other one, and is never under 120 across. */
+  private ringRadius(life: LifeDrop, lensR: number, apart = Infinity) {
+    const k = lensR / ART_R;
+    const other = candidateReach(PAIRS[life.pair][1 - life.ringed], this.stop) * k;
+    const want = candidateReach(PAIRS[life.pair][life.ringed], this.stop) * k + 16;
+    // Stop short of the other speck, but never under 120 across.
+    return Math.max(60, Math.round(Math.min(want, apart - other - 10)));
   }
 
   /** Swimmers' centres now, in screen units from the lens's centre, at the current stop. */

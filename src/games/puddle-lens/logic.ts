@@ -151,9 +151,8 @@ export const SWIMMER_FIELD = 0.55;
 export const MAX_ART_SCALE = 1.75;
 const MAX_DROP_SPEED = MAX_SPEED / (ART_R * STOP4_ZOOM * MAX_ART_SCALE);
 
-function makeSwimmer(rng: Rng, shape: SwimmerShape, i: number, n: number): Swimmer {
+function makeSwimmer(rng: Rng, shape: SwimmerShape, i: number, n: number, r = 0.28): Swimmer {
   const a = (Math.PI * 2 * i) / n + rng.range(-0.4, 0.4);
-  const r = 0.28;
   const amp = SWIMMER_FIELD - r;
   const rx = rng.range(0.1, amp);
   const ry = rng.range(0.1, amp);
@@ -332,6 +331,9 @@ export function judgeLife(pair: PairId, ringed: 0 | 1, stop: Stop, answer: LifeA
 export const rightLife = (pair: PairId, ringed: 0 | 1, stop: Stop): LifeAnswer =>
   stop < decidingStop(pair) ? 'cant-tell' : looksAlive(evidenceAt(PAIRS[pair][ringed], stop)) ? 'alive' : 'not-alive';
 
+/** How far each level-5 speck's spot is from the middle of the drop. */
+export const LIFE_SPOT = 0.4;
+
 /** A level-5 drop: a pair, which one the companion rings, and each one's path (a still one's amplitudes are zero). */
 export interface LifeDrop {
   pair: PairId;
@@ -341,14 +343,15 @@ export interface LifeDrop {
 
 function makePath(rng: Rng, id: CandidateId, i: number): Swimmer {
   const motion = CANDIDATES[id].motion;
-  if (motion === 'swims') return makeSwimmer(rng, rng.pick(['round', 'long', 'bean'] as const), i, 2);
-  const a = Math.PI * i + rng.range(-0.5, 0.5);
-  const r = 0.3;
+  // The two sit well apart, on opposite sides of the drop, so the ring round one never takes in the other.
+  const r = LIFE_SPOT;
+  if (motion === 'swims') return makeSwimmer(rng, rng.pick(['round', 'long', 'bean'] as const), i, 2, r);
+  const a = Math.PI * i + rng.range(-0.4, 0.4);
   const base: Swimmer = { shape: 'round', cx: Math.cos(a) * r, cy: Math.sin(a) * r, ax: 0, ay: 0, wx: 0, wy: 0, px: 0, py: 0 };
   if (motion === 'still') return base;
   // A slow straight drift with the water, back and forth along one line.
   const d = rng.range(0, Math.PI * 2);
-  const amp = rng.range(0.1, SWIMMER_FIELD - r);
+  const amp = rng.range(0.06, SWIMMER_FIELD - r);
   const w = (MAX_DROP_SPEED * 0.8) / amp;
   const p = rng.range(0, Math.PI * 2);
   return { ...base, ax: Math.cos(d) * amp, ay: Math.sin(d) * amp, wx: w, wy: w, px: p, py: p };

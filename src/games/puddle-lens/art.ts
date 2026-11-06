@@ -384,6 +384,16 @@ export function candidateArt(id: 'swimmer' | 'green-ball' | 'mud-speck' | 'silt'
   return bubbleArt(26 * z * k);
 }
 
+/** About how far a candidate reaches from its centre at a stop, in art units (for the ring round it). */
+export function candidateReach(id: 'swimmer' | 'green-ball' | 'mud-speck' | 'silt' | 'bubble', stop: Stop): number {
+  const z = stop === 4 ? 1.7 : 1;
+  if (stop <= 2) return 6;
+  if (id === 'swimmer') return 65 * z * (stop === 4 ? 1.07 : 1);
+  if (id === 'green-ball') return stop === 3 ? 6 : 44;
+  if (id === 'silt') return stop === 3 ? 6 : 30;
+  return (id === 'mud-speck' ? 24 : 26) * z;
+}
+
 /** The water behind levels 5–6's drops: the whole drop (1), the drop with faint specks (2), clear water (3–4). */
 export function waterLayer(stop: Stop): Container {
   const c = new Container();
@@ -521,7 +531,12 @@ export function miniSlide(id: string): Graphics {
 
 /** The companion's ring round the speck it asks about: a soft dashed circle, `r` in screen units. */
 export function ringArt(r: number): Graphics {
-  const g = new Graphics();
+  return drawRing(new Graphics(), r);
+}
+
+/** Redraws a ring at a new size. */
+export function drawRing(g: Graphics, r: number): Graphics {
+  g.clear();
   const n = 16;
   for (let i = 0; i < n; i++) {
     const a = (i / n) * Math.PI * 2;
