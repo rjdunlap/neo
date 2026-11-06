@@ -16,7 +16,7 @@ export const STRIP_W = 3.4;
 /** Sample spacing along a stroke, in strip units: about 5–7 logical units on the strip. */
 export const SPACING = 0.025;
 
-export type Mode = 'mark' | 'trace' | 'choose';
+export type Mode = 'mark' | 'trace' | 'choose' | 'dots';
 
 export interface Plan {
   mode: Mode;
@@ -35,11 +35,13 @@ export const PLANS: readonly Plan[] = [
   { mode: 'choose', name: 'What comes next? Two kinds take turns; draw the one that continues', count: 2 },
   { mode: 'choose', name: 'Two, then one: patterns like hill, hill, dip; draw what comes next', count: 2 },
   { mode: 'trace', name: 'Slanting lines: rain from a cloud, then an X, each line from its own ring', count: 2 },
+  { mode: 'dots', name: 'Dot to dot: tap the shining dot and the crayon draws to it; a line, then a zigzag', count: 2 },
 ];
 
 export const LEVELS: BandLevels = {
-  lap: { min: 1, max: 1 },
-  toddler: { min: 1, max: 3 },
+  // Level 10's dot to dot is a tap entry: it comes straight after the free marks, before any drag along the dashes.
+  lap: { min: 1, max: 10, order: [1, 10] },
+  toddler: { min: 1, max: 10, order: [1, 10, 2, 3] },
   preschool: { min: 3, max: 5 },
   // Level 9's slanting lines come between memory (5) and the shapes (6), whose triangle is made of them.
   prek: { min: 5, max: 9, order: [5, 9, 6, 7, 8] },
@@ -48,10 +50,10 @@ export const LEVELS: BandLevels = {
 export const levelOf = (level: number): number => Math.max(1, Math.min(PLANS.length, Math.floor(level)));
 export const planFor = (level: number): Plan => PLANS[levelOf(level) - 1];
 
-/** Half the corridor's width, in strip units. It narrows by level and never widens. */
+/** Half the corridor's width, in strip units. It narrows by level and never widens (level 10, an entry, is as wide as 2). */
 export function tolerance(level: number): number {
   const l = levelOf(level);
-  return l <= 3 ? 0.18 : l === 4 ? 0.16 : 0.15;
+  return l <= 3 || l === 10 ? 0.18 : l === 4 ? 0.16 : 0.15;
 }
 
 /** Level 1 has no wrong touch: four lifted touches finish a strip. */
@@ -194,6 +196,8 @@ export interface Stroke {
   kinds?: UnitKind[];
   /** Units in the pattern stroke, for the pet's spoken words (levels 3–5). */
   units?: UnitKind[];
+  /** Level 10: the checkpoints that are dots, left to right; a tap on the next one draws the crayon there. */
+  dots?: number[];
 }
 
 export interface Strip {
@@ -227,6 +231,23 @@ export function patternStroke(kinds: readonly UnitKind[], shown: number, x0: num
 
 /** Five units along the strip, starting at x 0.2, end at 3.2. */
 const X0 = 0.2;
+
+/** Level 10: six dots a unit apart (120 logical units at the smallest strip); the pet draws from the first to the second. */
+export const DOT_COUNT = 6;
+/** A tap this close to the shining dot (in logical units) draws the crayon to it: half the gap between two dots. */
+export const DOT_HIT = 60;
+
+/** A stroke through the dots, in order, its checkpoints marked; the pet draws the first gap. A zigzag turns at its dots. */
+export function dotStroke(kind: 'line' | 'zig', dots: readonly Point[]): Stroke {
+  const pts = sampleStroke([...dots], SPACING);
+  const at = dots.map((d) => pts.indexOf(d));
+  return { kind, orders: [pts], lead: at[1], corners: kind === 'zig' ? dots.slice(1, -1) : [], dots: at };
+}
+
+/** The dot the crayon goes to next: the first one past where it waits, or null once it has reached the last. */
+export function nextDot(stroke: Stroke, progress: number): number | null {
+  return stroke.dots?.find((i) => i > progress) ?? null;
+}
 
 /** The two candidates for one chosen unit at x0: the kind that continues the pattern and the other kind of the pair. */
 export function choiceStroke(right: UnitKind, wrong: UnitKind, x0: number, w: number, rng: Rng): Stroke {
@@ -318,6 +339,14 @@ export function stripsFor(level: number, rng: Rng): Strip[] {
       return [
         { piece: 'rain', strokes: rain },
         { piece: rng.pick(X_PIECES), strokes: [single('x-back', [[cx - 0.45, 0.14], [cx + 0.45, 0.86]]), single('x-fwd', [[cx + 0.45, 0.14], [cx - 0.45, 0.86]])] },
+      ];
+    }
+    case 10: {
+      // Dots along a long line, then on a zigzag's peaks and troughs, a unit apart across the strip.
+      const xs = Array.from({ length: DOT_COUNT }, (_, i) => X0 + i * UNIT_W);
+      return [
+        { piece: rng.pick(POOLS.line), strokes: [dotStroke('line', xs.map((x): Point => [x, BASE]))] },
+        { piece: rng.pick(POOLS.zig), strokes: [dotStroke('zig', xs.map((x, i): Point => [x, i % 2 ? 0.2 : 0.8]))] },
       ];
     }
     default: {

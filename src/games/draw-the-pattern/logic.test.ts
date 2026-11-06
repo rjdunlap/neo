@@ -5,7 +5,7 @@ import { advanceTrace, traceWaypoints, type Point } from '../letter-trails/strok
 import { offTrail } from '../letter-trails/logic';
 import {
   LEVELS, PAIRS, PLANS, POOLS, SHAPE_SETS, RING_R, STRIP_W, botRoute, chooseOrder, core, divergence, hintStretch, homeCorner, layoutFor, lengthTo,
-  markCount, nextUnit, onPaper, pathOf, petCorner, planFor, stones, stripsFor, tolerance, wrongReached, type Rect, type Stroke,
+  markCount, nextDot, nextUnit, DOT_COUNT, DOT_HIT, onPaper, pathOf, petCorner, planFor, stones, stripsFor, tolerance, wrongReached, type Rect, type Stroke,
 } from './logic';
 import { SCRIPT as LINES } from '../../content/voice-script';
 import { rangeFor, stepLevel } from '../../progress/difficulty';
@@ -39,16 +39,18 @@ function walk(points: readonly Point[], tol: number, from = 0): number {
 }
 
 describe('Draw the Pattern ladder', () => {
-  it('has nine levels and the defined bands', () => {
-    expect(PLANS).toHaveLength(9);
-    expect(LEVELS).toEqual({ lap: { min: 1, max: 1 }, toddler: { min: 1, max: 3 }, preschool: { min: 3, max: 5 }, prek: { min: 5, max: 9, order: [5, 9, 6, 7, 8] } });
+  it('has ten levels and the defined bands', () => {
+    expect(PLANS).toHaveLength(10);
+    expect(LEVELS).toEqual({ lap: { min: 1, max: 10, order: [1, 10] }, toddler: { min: 1, max: 10, order: [1, 10, 2, 3] }, preschool: { min: 3, max: 5 }, prek: { min: 5, max: 9, order: [5, 9, 6, 7, 8] } });
     expect(markCount(planFor(1))).toBe(4);
     expect(planFor(1).mode).toBe('mark');
     expect(planFor(7).mode).toBe('choose');
   });
 
   it('never widens the corridor as the level rises', () => {
-    for (let l = 2; l <= PLANS.length; l++) expect(tolerance(l)).toBeLessThanOrEqual(tolerance(l - 1));
+    for (let l = 2; l <= 9; l++) expect(tolerance(l)).toBeLessThanOrEqual(tolerance(l - 1));
+    // Level 10 is an easy tap entry, as wide as level 2.
+    expect(tolerance(10)).toBe(tolerance(2));
   });
 
   for (const [name, v] of Object.entries(VIEWS)) {
@@ -456,3 +458,112 @@ function selfCrossings(points: readonly Point[]): [number, number][] {
   }
   return out;
 }
+
+describe('Draw the Pattern level 10, dot to dot', () => {
+  it('is the dots mode, with a line then a zigzag from their own pools', () => {
+    expect(planFor(10).mode).toBe('dots');
+    const seen = { line: new Set<string>(), zig: new Set<string>() };
+    for (let seed = 1; seed <= 200; seed++) {
+      const [line, zig] = stripsFor(10, new Rng(seed));
+      expect(line.strokes).toHaveLength(1);
+      expect(zig.strokes).toHaveLength(1);
+      expect(line.strokes[0].kind).toBe('line');
+      expect(zig.strokes[0].kind).toBe('zig');
+      expect(POOLS.line).toContain(line.piece);
+      expect(POOLS.zig).toContain(zig.piece);
+      seen.line.add(line.piece); seen.zig.add(zig.piece);
+    }
+    expect([...seen.line].sort()).toEqual([...POOLS.line].sort());
+    expect([...seen.zig].sort()).toEqual([...POOLS.zig].sort());
+  });
+
+  it('gives each stroke six ordered dots from the first checkpoint to the last, the pet drawing 1 to 2', () => {
+    for (const seed of SEEDS) {
+      for (const strip of stripsFor(10, new Rng(seed))) {
+        const s = strip.strokes[0], pts = s.orders[0], dots = s.dots!;
+        expect(dots).toHaveLength(DOT_COUNT);
+        expect(dots[0]).toBe(0);
+        expect(dots.at(-1)).toBe(pts.length - 1);
+        expect(s.lead).toBe(dots[1]);
+        for (let i = 1; i < dots.length; i++) {
+          expect(dots[i]).toBeGreaterThan(dots[i - 1]);
+          expect(pts[dots[i]][0]).toBeGreaterThan(pts[dots[i - 1]][0]);
+        }
+      }
+    }
+  });
+
+  it('alternates the zigzag’s dots low and high, and keeps the line’s dots level', () => {
+    for (const seed of SEEDS.slice(0, 10)) {
+      const [line, zig] = stripsFor(10, new Rng(seed));
+      const ys = (s: Stroke) => s.dots!.map((i) => s.orders[0][i][1]);
+      const ly = ys(line.strokes[0]), zy = ys(zig.strokes[0]);
+      for (const y of ly) expect(y).toBeCloseTo(ly[0], 9);
+      for (let i = 1; i < zy.length; i++) {
+        expect(Math.abs(zy[i] - zy[i - 1])).toBeGreaterThanOrEqual(0.4);
+      }
+      // Peaks and troughs: every inner dot is a turning point.
+      for (let i = 1; i < zy.length - 1; i++) expect((zy[i] - zy[i - 1]) * (zy[i + 1] - zy[i])).toBeLessThan(0);
+    }
+  });
+
+  it('walks the dots with nextDot: dot 3 first, then on to the end, then null', () => {
+    for (const seed of SEEDS.slice(0, 10)) {
+      for (const strip of stripsFor(10, new Rng(seed))) {
+        const s = strip.strokes[0], dots = s.dots!;
+        let progress = s.lead, taps = 0, next = nextDot(s, progress);
+        expect(next).toBe(dots[2]);
+        while (next !== null) {
+          expect(next).toBeGreaterThan(progress);
+          progress = next; taps++;
+          next = nextDot(s, progress);
+        }
+        expect(taps).toBe(DOT_COUNT - 2);
+        expect(progress).toBe(s.orders[0].length - 1);
+        expect(nextDot(s, progress)).toBeNull();
+        // From anywhere between dots it names the one ahead.
+        expect(nextDot(s, dots[1] + 1)).toBe(dots[2]);
+      }
+    }
+  });
+
+  for (const [name, v] of Object.entries(VIEWS)) {
+    it(`keeps dots 120 units apart, tap circles clear of each other and in the clear in the ${name} view`, () => {
+      const { strip, picture } = layoutFor(v);
+      const inView = (r: Rect) => r.x >= 0 && r.y >= 0 && r.x + r.w <= v.w && r.y + r.h <= v.h;
+      for (const seed of SEEDS.slice(0, 10)) {
+        for (const st of stripsFor(10, new Rng(seed))) {
+          const s = st.strokes[0], at = s.dots!.map((i) => s.orders[0][i]);
+          for (let i = 1; i < at.length; i++) {
+            const gap = dist(at[i - 1], at[i]) * strip.s;
+            expect(gap).toBeGreaterThanOrEqual(120);
+            expect(gap).toBeGreaterThanOrEqual(2 * DOT_HIT);
+          }
+          for (const d of at) {
+            const hit = { x: strip.x + d[0] * strip.s - DOT_HIT, y: strip.y + d[1] * strip.s - DOT_HIT, w: 2 * DOT_HIT, h: 2 * DOT_HIT };
+            expect(inView(hit)).toBe(true);
+            for (const keep of [homeCorner(), petCorner(v), picture]) expect(overlaps(hit, keep)).toBe(false);
+          }
+        }
+      }
+    });
+  }
+
+  it('has the spoken lines: the instruction and a name for every piece', () => {
+    expect(LINES['draw.instruct.dots']).toBeTruthy();
+    for (const p of [...POOLS.line, ...POOLS.zig]) expect(LINES[`draw.picture.${p}` as keyof typeof LINES], p).toBeTruthy();
+  });
+
+  it('steps between 10 and the rest of each band’s order', () => {
+    const toddler = rangeFor(LEVELS, 'toddler'), lap = rangeFor(LEVELS, 'lap');
+    expect(stepLevel(10, 1, toddler)).toBe(2);
+    expect(stepLevel(10, -1, toddler)).toBe(1);
+    expect(stepLevel(1, 1, lap)).toBe(10);
+    expect(stepLevel(10, 1, lap)).toBe(10);
+    expect(stepLevel(10, -1, lap)).toBe(1);
+  });
+
+  it('draws the same dots for the same seed', () => {
+    expect(stripsFor(10, new Rng(7))).toEqual(stripsFor(10, new Rng(7)));
+  });
+});

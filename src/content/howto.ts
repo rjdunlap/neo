@@ -2596,6 +2596,7 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 6, to: 6, text: 'Each shape has its own ring and arrow; draw them in order.' },
       { from: 7, to: 8, text: 'Two faint paths are shown. Draw the one that continues the pattern.' },
       { from: 9, to: 9, text: 'Slanting lines start at the top and slide down. An X is two of them, one from each ring, in order.' },
+      { from: 10, to: 10, text: 'Tap the shining dot and the crayon draws a line to it; sliding a finger along the dashes works too. A tap anywhere else is never wrong.' },
     ],
     finish: 'The picture is complete when every strip is drawn.',
     note: [

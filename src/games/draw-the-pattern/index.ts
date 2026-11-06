@@ -12,8 +12,8 @@ import type { Point } from '../letter-trails/strokes';
 import { WigglyIcon, tile } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
-  LEVELS, REVEAL, RING_R, SCRATCH_EVERY, STRIP_W, botRoute, chooseOrder, hintStretch, layoutFor, lengthTo, levelOf, markCount,
-  onPaper, pathOf, planFor, stickerKind, stickerPath, stones, stripsFor, tolerance, wrongReached,
+  DOT_HIT, LEVELS, REVEAL, RING_R, SCRATCH_EVERY, STRIP_W, botRoute, chooseOrder, hintStretch, layoutFor, lengthTo, levelOf, markCount,
+  nextDot, onPaper, pathOf, planFor, stickerKind, stickerPath, stones, stripsFor, tolerance, wrongReached,
   type Layout, type PieceId, type Rect, type Strip, type Stroke,
 } from './logic';
 
@@ -50,6 +50,8 @@ function slotsFor(level: number, strips: readonly Strip[]): Slot[] {
   };
   // Level 5's two strips, whatever they are, stack one above the other, a sky piece on top when only the second is one.
   if (l === 5) return SKY.has(strips[1].piece) && !SKY.has(strips[0].piece) ? [low, top] : [top, low];
+  // Level 10's zigzag stands above its line, whichever ground, road or washing line that is.
+  if (l === 10) return strips.map((s) => at[s.piece] ?? top);
   return strips.map((s, i) => at[s.piece] ?? (i === 0 ? top : low));
 }
 
@@ -357,6 +359,8 @@ class DrawThePattern implements Game {
   private reveal = -1;
 
   private drag: Drag | null = null;
+  /** Level 10: the crayon is drawing itself to a tapped dot. */
+  private tapping = false;
   private busy = true;
   private finished = false;
   private misses = 0;
@@ -409,6 +413,7 @@ class DrawThePattern implements Game {
   private instructLine(): LineId {
     if (this.plan.mode === 'mark') return 'draw.instruct.mark';
     if (this.plan.mode === 'choose') return 'draw.instruct.next';
+    if (this.plan.mode === 'dots') return 'draw.instruct.dots';
     if (this.strip.memory) return 'draw.instruct.memory';
     if (this.level === 6) return 'draw.instruct.shape';
     if (this.strip.strokes[0].kind === 'post') return 'draw.instruct.down';
@@ -477,6 +482,8 @@ class DrawThePattern implements Game {
         return;
       }
       this.dashes(g, pts.slice(t.progress), width, 0.7);
+      // Level 10: the dots still to reach (the shining one is drawn by the cue).
+      for (const d of st.dots ?? []) if (d > t.progress) g.circle(...this.pts(pts[d]), 16).fill(ink);
     });
   }
 
@@ -664,8 +671,14 @@ class DrawThePattern implements Game {
     }
     // A touch on the crayon (or its ring) carries on; anywhere else the crayon wiggles to show where it is.
     const t = this.track;
-    if (!t) return;
+    if (!t || this.tapping) return;
     const at = pathOf(t.stroke, t.order)[t.progress];
+    // Level 10: a tap on the shining dot draws the crayon to it.
+    const dot = nextDot(t.stroke, t.progress);
+    if (dot !== null) {
+      const d = pathOf(t.stroke, t.order)[dot];
+      if (Math.hypot(p[0] - d[0], p[1] - d[1]) <= DOT_HIT / this.s) return void this.drawToDot(t, dot);
+    }
     if (Math.hypot(p[0] - at[0], p[1] - at[1]) > (RING_R + 12) / this.s) { this.wiggle = 0.5; sfx.tick(); return; }
     this.drag = { id: e.pointerId, prev: at, missed: false, stopped: false, travel: 0, outside: false, mark: null };
     // The tip dents the paper.
@@ -762,6 +775,8 @@ class DrawThePattern implements Game {
 
   /** A drag that wanders off: one miss, the crayon stays, and at level 5 the dashes come back for the next stretch. */
   private stray() {
+    // Level 10 counts nothing as wrong: the crayon just waits.
+    if (this.plan.mode === 'dots') return void sfx.tick();
     this.misses++; this.wrong++;
     sfx.boing();
     void this.ctx.say('draw.back-to-crayon');
@@ -785,6 +800,22 @@ class DrawThePattern implements Game {
     t.progress = 0; t.order = null;
     this.busy = false;
     this.drawGuide(); this.drawInk();
+  }
+
+  /** Level 10: the crayon draws itself from where it waits to the tapped dot, then the next dot shines. */
+  private async drawToDot(t: Track, dot: number) {
+    this.tapping = true;
+    const before = t.progress, anim = { k: 0 };
+    sfx.pop(5);
+    this.ticker = () => {
+      t.progress = before + Math.floor(anim.k * (dot - before));
+      this.drawGuide(); this.drawInk();
+    };
+    await this.ctx.tw.to(anim, { k: 1 }, { duration: 0.4, ease: ease.inOutSine });
+    this.ticker = null;
+    this.tapping = false;
+    t.progress = dot;
+    this.advanced(t, before);
   }
 
   /** A stroke is finished: on to the next one, carrying a drag on when it starts where this one ended. */
@@ -893,6 +924,15 @@ class DrawThePattern implements Game {
     const t = this.track;
     if (this.busy || this.finished || !t) return;
     const pulse = 1 + 0.05 * Math.sin(this.clock * 4);
+    const dot = nextDot(t.stroke, t.progress);
+    if (dot !== null) {
+      // Level 10: the next dot shines, as big as a tap that reaches it.
+      if (this.tapping) return;
+      const [x, y] = this.pts(pathOf(t.stroke, t.order)[dot]);
+      g.circle(x, y, (DOT_HIT - 6) * pulse).fill({ color: swatch.yellow.light, alpha: 0.7 }).stroke({ width: 6, color: swatch.yellow.fill })
+        .circle(x, y, 20 * pulse).fill(swatch.yellow.line);
+      return;
+    }
     if (t.progress === t.stroke.lead && !this.drag) {
       const pts = t.stroke.orders[0].slice(t.stroke.lead);
       const [x, y] = this.pts(pts[0]);
@@ -910,11 +950,11 @@ class DrawThePattern implements Game {
 
   askForHint() {
     if (this.busy || this.finished) return;
-    if (this.plan.mode === 'mark') return void this.ctx.say(this.instructLine());
+    if (this.plan.mode === 'mark' || this.plan.mode === 'dots') return void this.ctx.say(this.instructLine());
     if (!this.glow) { this.glow = true; this.hints++; this.sparkShown = false; this.drawGuide(); }
   }
 
-  /** The ghost finger: a short wave at level 1; otherwise the stroke from where the crayon waits (circles counterclockwise, the continuing candidate). */
+  /** The ghost finger: a short wave at level 1, a tap on the shining dot at 10; otherwise the stroke from where the crayon waits (circles counterclockwise, the continuing candidate). */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.drag) return null;
     const spot = (p: Point) => ({ on: this.paper, x: p[0] * this.s, y: p[1] * this.s });
@@ -924,7 +964,9 @@ class DrawThePattern implements Game {
       return { trace: spot(wave[0]), via: wave.slice(1).map(spot), receiver: this.layer, pause: 0.35 };
     }
     const t = this.track;
-    if (!t) return null;
+    if (!t || this.tapping) return null;
+    const dot = nextDot(t.stroke, t.progress);
+    if (dot !== null) return { tap: spot(pathOf(t.stroke, t.order)[dot]), receiver: this.layer, pause: 0.5 };
     const o = t.stroke.right ?? t.order ?? 0;
     // A wrong start on a candidate is drawn again from the unit's start.
     const pts = t.stroke.orders[o];
@@ -968,7 +1010,7 @@ function sticker(seed: number): Container {
 export const drawThePattern: GameModule = {
   id: 'draw-the-pattern', name: 'Draw the Pattern', titleLine: 'game.draw-the-pattern', region: 'treehouse', challenge: 'hands',
   skills: ['fine-motor', 'writing', 'patterns'], bands: ['lap', 'toddler', 'preschool', 'prek'],
-  levels: (b) => rangeFor(LEVELS, b), describeLevel: (l) => planFor(l).name,
+  levels: (b) => rangeFor(LEVELS, b), entryLevels: [10], describeLevel: (l) => planFor(l).name,
   music: STYLES.paint,
   coplayHint: 'Draw the first part of a line with your finger and let {name} carry it on, then swap.',
   offScreen: 'On a long strip of paper, draw big zigzags, waves and loops together with fat crayons, or with a finger in sand.',

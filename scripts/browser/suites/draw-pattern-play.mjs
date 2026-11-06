@@ -118,6 +118,62 @@ async function drawPatternPlay() {
   assert.ok(['kite', 'treasure'].includes(await page.evaluate(() => neo.scene.game.strips[1].piece)));
   await screenshot('draw-the-pattern-9-picture');
   }
+  if (!only || only.includes(10)) {
+  // Level 10 at lap: dot to dot. A tap beside the shining dot and a drag that wanders off are never wrong; taps on the
+  // shining dots draw the line, a drag along the dashes carries one gap of the zigzag, and the round ends with no misses.
+  // Then a smooth toddler round steps the saved level along toddler's order, 10 to 2. One portrait screenshot.
+  const dotAt = () => page.evaluate(async () => {
+    const L = await import('/src/games/draw-the-pattern/logic.ts');
+    const g = neo.scene.game, t = g.tracks[g.cur];
+    const i = L.nextDot(t.stroke, t.progress), p = t.stroke.orders[0][i];
+    const q = g.paper.toGlobal({ x: p[0] * g.s, y: p[1] * g.s });
+    return [q.x, q.y];
+  });
+  const tapDots = async (stop = () => false) => {
+    for (let guard = 0; guard < 20 && !(await done()) && !(await stop()); guard++) {
+      await idle(); if (await done()) break;
+      await page.waitForFunction(() => !neo.scene.game.tapping);
+      const [x, y] = await dotAt();
+      await page.evaluate(([x, y]) => kit.tap(x, y), [x, y]);
+      await page.waitForTimeout(600);
+    }
+  };
+  await page.setViewportSize({ width: 768, height: 1024 });
+  await launch('draw-the-pattern', 10, 'Mia', 'lap'); await idle();
+  n = await stickers();
+  const before = await page.evaluate(() => neo.scene.game.tracks[0].progress);
+  const [dx, dy] = await dotAt();
+  await page.evaluate(([x, y]) => kit.tap(x, y + 160), [dx, dy]);
+  await page.waitForTimeout(300);
+  await stray();
+  st = await state(); assert.deepEqual([st.misses, st.hints], [0, 0], 'a tap off the dot and a stray drag are not misses');
+  await page.waitForFunction(() => !neo.scene.game.tapping);
+  const after = await page.evaluate(() => neo.scene.game.tracks[0].progress);
+  await page.evaluate(([x, y]) => kit.tap(x, y), [dx, dy]);
+  await page.waitForTimeout(700);
+  const dot = await page.evaluate(() => { const t = neo.scene.game.tracks[0]; return { progress: t.progress, dots: t.stroke.dots }; });
+  assert.ok(after >= before && dot.progress === dot.dots[2], 'a tap on the shining dot draws the crayon to it');
+  await tapDots(() => page.evaluate(() => neo.scene.game.index > 0));
+  await idle();
+  assert.equal(await page.evaluate(() => neo.scene.game.strip.strokes[0].kind), 'zig', 'the second strip is the zigzag');
+  await screenshot('draw-the-pattern-10-portrait');
+  await drawOn();
+  assert.ok(await page.evaluate(() => { const t = neo.scene.game.tracks[0]; return t.progress > t.stroke.lead; }), 'a drag along the dashes carries on too');
+  await tapDots();
+  await sticker(n);
+  st = await state(); assert.deepEqual([st.misses, st.hints], [0, 0]);
+  await page.setViewportSize({ width: 1024, height: 768 });
+  // The lap round was one smooth round at 10; a smooth toddler round at 10 makes two, and toddler's order steps to 2.
+  await launch('draw-the-pattern', 10, 'Mia', 'toddler');
+  await page.evaluate(() => { delete kit.store.stats('draw-the-pattern').pinned; });
+  await idle(); n = await stickers();
+  await tapDots();
+  await sticker(n);
+  await page.evaluate(() => neo.go.game('draw-the-pattern', 'toddler'));
+  await page.waitForFunction(() => !neo.switching && neo.scene.mod?.id === 'draw-the-pattern' && !neo.scene.finished && neo.scene.level !== 10, null, { timeout: 15000 });
+  assert.equal(await page.evaluate(() => neo.scene.level), 2, 'the next toddler round opens at level 2');
+  assert.equal(await page.evaluate(() => kit.store.stats('draw-the-pattern').level), 2, 'two smooth rounds at 10 step toddler up to 2');
+  }
   assert.deepEqual(errors, [], 'page errors');
   log(`Draw the Pattern: ${only ? `levels ${only.join(', ')}` : 'level 1 by marks, two strays and the glow at 3, the level-4 circle both ways, level 5 upright, a wrong candidate at 8, two strays and the picture at 9'}`);
 }
