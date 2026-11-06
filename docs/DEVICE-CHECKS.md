@@ -252,6 +252,7 @@
 - [ ] On an iPad with a small hand: does the socket snap forgive a drop that is near but not on the socket, in both orientations?
 - [ ] Does level 3 feel like building (choosing and placing parts) or like a guess among four tray parts?
 - [ ] On the iPad, how are "umbrella" and "lantern" spoken (device speech or the rendered clips)?
+- [ ] Level 4 Fix-It Day (2026-11-06): does a six-year-old read two stops at one socket as a conflict rather than a failed build, and how does the iPad say "paddle wheels"?
 
 ## Illustrated Rainbow Meadow (RW14 slice 4, 2026-10-26)
 
