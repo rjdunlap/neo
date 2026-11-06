@@ -981,6 +981,7 @@ Completion with spoken support is not evidence of independent understanding of t
 | **PP2 Domino Pond 1–3** · pre-K–grown-up · new game | define after PP1 | Lay dominoes so patches meet their signs: matching dots, then sums, then < > ≠; any valid placement is accepted |
 | **PP3 Bunny Patches 1–3** (IDEAS *Garden Queens*) · pre-K/school–grown-up · new game | define after PP2 | One bunny per row, column and patch, none touching; 4×4 to 6×6, grown-up 8×8 at par later |
 | **PP4 Garden Rows, *the bee counts tall flowers*** · school | define after Garden Rows' queued levels | Skyscrapers on 3×3 with every clue, then 4×4 with clues removed |
+| **PP9 Word Code 1–3** (IDEAS row) · school–grown-up · new game | define (closest to ready: Secret Code's feedback, par rule decided 2026-10-23) | Letters on Secret Code's marks with shapes as well as colours; unlimited tries, no daily word; a reviewed list and block list per level |
 | **PP5 Sum Crates**, **PP6 Campsite**, **PP7 Silly Scene** | sketches | Kakuro, Tents and *What's Wrong?*; define after PP2 or PP3 is built, checking Fruit Sums, Not Always and Who Am I |
 | **PP8 A puzzle page at the table** · grown-ups' page | write after the first build | Draw mazes for each other, a spoken word ladder, counting domino dots; plain HTML; no learning claim |
 

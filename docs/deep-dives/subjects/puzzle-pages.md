@@ -12,6 +12,7 @@
 2. **Domino Pond**, after NYT's Pips and Tatham's Dominosa: lay dominoes so each patch meets its sign. It is counting dots at pre-K and sums and inequalities for grown-ups, and any valid placement is accepted.
 3. **Bunny Patches**, the notebook's Garden Queens renamed: Star Battle or Queens, one bunny per row, column and patch, none touching. It reaches young children (a beginner version written for pre-K to grade 2) and grown-ups at 8 by 8.
 4. **"The bee counts tall flowers"** in Garden Rows (Skyscrapers), already filed by its dive. A primary lesson for ages 6–9 builds it with cubes.
+5. **Word Code**, the notebook's Wordle-style sibling of Secret Code: the closest of all to ready, since it reuses Secret Code's feedback and its par rule was decided on 2026-10-23. It is school and grown-up play, so it follows the younger openings.
 
 Every board comes from a seeded generator with a solver in `logic.ts`. **Nothing is daily**: the newspaper's Monday-to-Saturday ramp becomes the level ladder, and the bank never expires.
 
@@ -154,8 +155,9 @@ The newspaper format is built on one puzzle a day, a streak and tomorrow's answe
 | PP5 | **Sum Crates** | Kakuro | Fill runs of fruit crates so each run adds to its label, no repeats | Which partition of the sum fits both crossing runs | S–G | new game (check Fruit Sums first) | M | Small boards searched exhaustively |
 | PP6 | **Campsite** | Tents (Tatham) | Pitch each critter's tent beside its own tree, no two touching, matching the row counts | Which tree a tent belongs to | S–G | new game | M | Tatham's generator needs no guessing |
 | PP7 | **Silly Scene** | Highlights' *What's Wrong?* | Tap the impossible thing (a fish in a tree); the pet laughs and says why | What cannot be true | P–S | new small game, or a mode (check Not Always and Who Am I) | S | Authored scenes |
+| PP9 | **Word Code** (IDEAS row) | Wordle, Secret Code | Guess a word; each letter is marked right, elsewhere or absent, with shapes as well as colours | Which letters the marks still allow | S–G | new game beside Secret Code (Puzzle Peaks or Lantern Lake) | M | Secret Code's feedback rule on letters; a reviewed word list and block list per level; the decided par (a fixed reference solver's guess count) |
 | PP8 | **A puzzle page at the table** | Unplugged | — | — | G | grown-ups' page | S | None |
-| — | Re-ranked rows | Sort Four (picture form), Letter Pond, Decoder Ring (also a logic-grid clue kind), Word Code, KenKen cages, Lamp Lighter, Two-flower beds | as their rows say | | | existing rows | | |
+| — | Re-ranked rows | Sort Four (picture form), Letter Pond, Decoder Ring (also a logic-grid clue kind), KenKen cages, Lamp Lighter, Two-flower beds | as their rows say | | | existing rows | | |
 
 Sort Four's picture form stays high: it reaches preschool with no reading and needs a uniqueness test that its row already names.
 
@@ -212,7 +214,7 @@ Each has a default under the [October 23 standing rules](../../archive/DECISIONS
 1. **Where the maze lives.** Default: a Mossy Path opening (PP1), because the stepping action is the same. The alternative is a new maze game, with its own drawn corridors and a dragged pet.
 2. **Truth-and-lie clues in the logic grid.** Default: left out. The alternative is grown-up levels only, worded as "one friend remembers it wrong".
 3. **Names.** Default: Bunny Patches for the notebook's *Garden Queens* (Queens is LinkedIn's name), Domino Pond, Sum Crates and Campsite. Trademarked product names (Wordle, Connections, Spelling Bee, Pips, Queens, Murdle, Jumble, KenKen) appear only as references.
-4. **How many to queue now.** Default: this study queues PP1 only, as the procedure asks (its first eligible definition); PP2–PP7 wait in the [packet](RECOMMENDATIONS.md#puzzle-pages-recommendations) until the developer admits more.
+4. **How many to queue now.** Default: this study queues PP1 only, as the procedure asks (its first eligible definition); PP2–PP9 wait in the [packet](RECOMMENDATIONS.md#puzzle-pages-recommendations) until the developer admits more.
 
 ## Build slices, in order
 
@@ -224,8 +226,9 @@ Each is one session; definitions are docs only.
 4. **PP2: define Domino Pond 1–3** (pre-K: match a patch's dots; then sums; then signs).
 5. **PP3: define Bunny Patches 1–3** (pre-K or school 4×4, 5×5, 6×6; grown-up 8×8 at par as a later rung).
 6. **PP4: define Garden Rows' *bee counts tall flowers*** after Garden Rows' queued levels.
-7. **PP5–PP7** (Sum Crates, Campsite, Silly Scene): define once the first of PP2–PP3 is built, checking Fruit Sums, Not Always and Who Am I for overlap.
-8. **PP8: the *puzzle page at the table* card**, written after the first of these games is built.
+7. **PP9: define Word Code 1–3** (school: three- and four-letter picture words with spoken support; grown-up: five letters at the decided par). Unlimited tries, no daily word, Secret Code's rule that ignoring a still-visible mark is the miss, and a reviewed list and block list as data.
+8. **PP5–PP7** (Sum Crates, Campsite, Silly Scene): define once the first of PP2–PP3 is built, checking Fruit Sums, Not Always and Who Am I for overlap.
+9. **PP8: the *puzzle page at the table* card**, written after the first of these games is built.
 
 ## What was built and what ran
 
