@@ -524,7 +524,8 @@ class MysteryGrid implements Game {
   private lightClues(ids: number[]) {
     this.clueCards.forEach((c, i) => (c.glow.visible = ids.includes(i)));
     const b = this.current;
-    if (b?.items && ids.length) this.caption.text = ids.map((i) => written(...this.clueLine(b.clues[i], b, 'clue'))).join(' ');
+    // One written clue at a time, so a step behind several clues never runs the caption off the screen.
+    if (b?.items && ids.length) this.caption.text = written(...this.clueLine(b.clues[ids[0]], b, 'clue'));
   }
 
   // Taps ---------------------------------------------------------------------------------
