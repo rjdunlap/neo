@@ -1250,7 +1250,7 @@ Roadmap step 9, [PR #284](https://github.com/rjdunlap/neo/pull/284), base `dee14
 
 Typecheck, all 1,237 tests in 144 files with two workers, 30 focused rules/catalog tests, build, filtered first/last play and clean demos passed; [verification](VERIFICATION-2026-10-13.md#2026-10-13--brain-break-number-order-first-slice). The timed personal-best notebook proposal became finite untimed practice, with no saved score or general cognition claim. Color words and quick sums remain proposals. No controller/couch entry, new persistence field or navigation behavior. Device touch/speech and grown-up enjoyment remain [open](../DEVICE-CHECKS.md#needs-a-person-or-a-device).
 
-Levels 4–6 *Sums in order* built 2026-11-05 ([PR #1272](https://github.com/rjdunlap/neo/pull/1272), grownup only): stones show sums `a+b` (levels 4–5, 3×3 and 4×4) and, at level 6 (5×5), sums or take-aways `a−b` (at least ten of each); a lit stone shows its total; voice `brain.sums.start/try/hint`; how-to card scoped by level; ladder 1–6. [Verification](../VERIFICATION.md#2026-11-05--brain-break-levels-46-sums-in-order).
+Levels 4–6 *Sums in order* built 2026-11-05 ([PR #1272](https://github.com/rjdunlap/neo/pull/1272), grownup only): stones show sums `a+b` (levels 4–5, 3×3 and 4×4) and, at level 6 (5×5), sums or take-aways `a−b` (at least ten of each); a lit stone shows its total; voice `brain.sums.start/try/hint`; how-to card scoped by level; ladder 1–6. [Verification](VERIFICATION-2026-11-05.md#2026-11-05--brain-break-levels-46-sums-in-order).
 
 ## Mossy Path first slice (2026-10-13)
 

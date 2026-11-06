@@ -164,3 +164,10 @@
 - Ran (first implementation commit on base `5d66c487`; a later commit only adds pad press feedback and rule tests): `npm run typecheck`; `npm test` 307 files, 5241 tests pass (43 rule tests); `GAME_URL=http://localhost:5274 BROWSER_SUITE=blocktopple TOPPLE_LEVELS=5`: portrait, two wrong counts on line 1 (1 miss, counted aloud), glowing pad (1 hint), three tips with right counts, saved 1/1, screenshot `block-topple-5-portrait-tray`; `BROWSER_SUITE=fingerdemo FINGER_ONLY=block-topple FINGER_LEVELS=5` in 7.9 s.
 - Not run: `npm run build` (no shared assets), landscape screenshot, levels 1–4 replay (unchanged), an iPad.
 - Open: whether a six-year-old counts on or recounts, and whether the pads slow the shooting ([device checks](../DEVICE-CHECKS.md)).
+
+## 2026-11-05 — Brain Break levels 4–6 Sums in order
+
+- [PR #1272](https://github.com/rjdunlap/neo/pull/1272): grownup ladder 1–6; levels 4–5 show sums, level 6 sums and take-aways (at least ten each); a lit stone shows its total; voice `brain.sums.start/try/hint`; how-to card scoped by level. Base `origin/main` `09ad4ad6`.
+- Ran: `npm run typecheck`; full `npm test` passed; `GAME_URL=http://localhost:5313 BROWSER_SUITE=brainbreak` (levels 1 and 6: two wrong taps then outline and hint, Hint, lit stone shows its total, every label at most 88 wide, portrait screenshot, one sticker); `BROWSER_SUITE=fingerdemo FINGER_ONLY=brain-break FINGER_LEVELS=6` passed in 42.6 s.
+- Not run: `npm run build` (no shared assets); device speech of the new lines; an iPad.
+- Open: the spoken lines `brain.sums.*` are unheard on a device; no device check was added by this slice.
