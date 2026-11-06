@@ -129,9 +129,11 @@ Device and person checks stay open: whether a four-year-old reads the failure fr
 
 ## What comes next
 
-**Gadget Bench 4** (study slice 3) is defined [below](#level-4-fix-it-day-definition) as *Fix-It Day*: yesterday's cart on a longer path, the first conflict, one part revised. **Levels 5–6** add a size constraint (the garden gate) and the new-kit transfer round, each with an enumeration test. **Level 7** gives two neighbors different criteria with several accepted designs. **Workshop Cases** (older/family case) is defined after its registration decision. None of those is defined here.
+**Gadget Bench 4** (study slice 3) is defined and built [below](#level-4-fix-it-day-definition) as *Fix-It Day*: yesterday's cart on a longer path, the first conflict, one part revised. **Levels 5–6** add a size constraint (the garden gate) and the new-kit transfer round, each with an enumeration test. **Level 7** gives two neighbors different criteria with several accepted designs. **Workshop Cases** (older/family case) is defined after its registration decision. None of those is defined here.
 
 ## Level 4, Fix-It Day (definition)
+
+**Built 2026-11-06** ([PR #1330](https://github.com/rjdunlap/neo/pull/1330)): paddle wheels, yesterday's cart, the uncounted conflict line and the same-condition glow as defined; the school range is now 2–4.
 
 Defined 2026-11-06 as slice 3 of the [inventions study](../deep-dives/subjects/inventions.md#build-slices-in-order) (*a path of three conditions; build, Try, read the first failure, change one part, Try again*, 3-5-ETS1-3) and, in the same level, the [engineering-design study](../deep-dives/subjects/engineering-design.md)'s **Fix-It Day** (*a neighbor's gadget worked yesterday but not on today's path; Try, find the part, swap one from the reuse shelf*). Docs only: written against the code as built (`src/games/gadget-bench/`, Painted Canyon, levels 1–3), not the original packet above. Like levels 1–3 it uses invented toy parts with stated properties and names no real invention, inventor or tool, so no reviewer gates it. The study's worn-or-broken-part repair is not in this level: nothing on the cart wears out.
 

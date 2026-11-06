@@ -1,7 +1,8 @@
-/** Gadget Bench's code-drawn pieces: the cart and its cargo, sockets, the five toy parts, path tiles, the request card, icons. */
+/** Gadget Bench's code-drawn pieces: the cart and its cargo, sockets, the six toy parts, path tiles, the request card, icons. */
 import { Container, Graphics } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
 import { cream, ink, shadow, swatch, wood } from '../../art/palette';
+import { starPoints } from '../../art/shapes';
 import { checkIcon, crossIcon } from '../../ui/icons';
 import { need, socketAt, SOCKET, SOCKETS, type Cargo, type Condition, type Gadget, type Neighbor, type PartId, type Socket } from './logic';
 
@@ -11,6 +12,7 @@ export const WHEEL = { fill: 0xf2545b, line: 0xc23a40, hub: 0xffd54a };
 export const FLOAT = { fill: 0x7cc7ff, line: 0x3a8fd6, stripe: 0xffffff };
 export const UMBRELLA = { fill: 0xffd54a, line: 0xd9a520, handle: 0x9c6b3c };
 export const LANTERN = { fill: 0x8fd48a, line: 0x4f9c4a, glow: 0xfff3a6 };
+export const PADDLES = { fill: swatch.teal.fill, line: swatch.teal.line, blade: swatch.teal.light };
 export const FLAG = { fill: 0xb98ae8, line: 0x7d55b5, pole: 0x9c6b3c };
 export const ROAD = { fill: 0xd9d4c7, line: 0xa89f8e };
 export const NIGHT = { fill: 0x2f3560, line: 0x1c2040, star: 0xfff3a6 };
@@ -116,6 +118,20 @@ export function partArt(id: PartId, size = 100): Graphics {
       g.roundRect(-22 * s, -20 * s, 44 * s, 44 * s, 8 * s).fill(LANTERN.glow).stroke(line(LANTERN.line, 5 * s));
       g.circle(0, 2 * s, 11 * s).fill(swatch.yellow.fill);
       g.roundRect(-18 * s, 24 * s, 36 * s, 8 * s, 3 * s).fill(LANTERN.line);
+      break;
+    case 'paddles':
+      // Two tall wheels with flat blades round the rim, on one axle.
+      for (const x of [-22, 22]) {
+        for (let i = 0; i < 8; i++) {
+          const a = (i * Math.PI) / 4;
+          const cx = x * s + Math.cos(a) * 30 * s;
+          const cy = 2 * s + Math.sin(a) * 36 * s;
+          g.circle(cx, cy, 7 * s).fill(PADDLES.blade).stroke(line(PADDLES.line, 3 * s));
+        }
+        g.ellipse(x * s, 2 * s, 24 * s, 30 * s).fill(PADDLES.fill).stroke(line(PADDLES.line, 5 * s));
+        g.circle(x * s, 2 * s, 8 * s).fill(WHEEL.hub).stroke(line(PADDLES.line, 3 * s));
+      }
+      g.moveTo(-22 * s, 2 * s).lineTo(22 * s, 2 * s).stroke(line(ink, 6 * s));
       break;
     case 'flag':
       g.moveTo(-14 * s, -40 * s).lineTo(-14 * s, 40 * s).stroke(line(FLAG.pole, 6 * s));
@@ -306,6 +322,15 @@ export function iconArt(): Container {
   lamp.position.set(56, -64);
   c.addChild(cart, lamp);
   return c;
+}
+
+/** Level 4's mark on the new condition's tile: a small yellow star at its top right corner, `size` the tile's size. */
+export function sparkleArt(size: number): Graphics {
+  const g = new Graphics();
+  g.poly(starPoints(size * 0.2, size * 0.09)).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 3));
+  g.position.set(size * 0.42, -size * 0.42);
+  g.eventMode = 'none';
+  return g;
 }
 
 /** A seeded sticker: a cart with one working part in place and a tick. */

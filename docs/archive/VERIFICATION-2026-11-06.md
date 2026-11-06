@@ -90,3 +90,7 @@ Open: whether a six-year-old reads the jar as fewer clicks, and whether the gues
 ## 2026-11-06 — Rain Garden level 4 definition (docs only)
 
 Changed: `docs/definitions/rain-garden.md` (new "Level 4, two-socket downhill route" section), READY (definition line replaced by the level 4 build), the weather-water dive and STUDY-BACKLOG (PR #1313). Source check: EPA green-infrastructure types and USGS runoff pages, opened this session. Ran: `node scripts/check-links.mjs` and `git diff --check`. No code checks (docs tier). Open: nothing built; the level 4 build is next.
+
+## 2026-11-06 — Define Bond Beads 5–8 (docs only)
+
+Changed: `docs/definitions/bond-beads.md` (new "Levels 5–8" section), chemistry dive slice 4, RECOMMENDATIONS row, READY (definition line replaced by the levels 5–6 build, levels 7–8 queued) and STUDY-BACKLOG (PR #1314). Source check: PubChem CIDs 962, 222, 297, 783, 977 and 280 via PUG REST; reactions from Wikipedia as secondary sources (Methane page read in part). Ran: `node scripts/check-links.mjs`, `git diff --check`, and a throwaway vitest layout probe (not committed): `beadLayout` fits 6–7 beads everywhere, 8 nowhere, 9 only in portrait. Open: nothing built; level 8's 9-bead case needs a layout fix or is cut; no device or person check.
