@@ -70,6 +70,63 @@ async function sudokuTouchPlay() {
     log(`Sudoku Garden touch level 8: the X-Wing hint on hint ${asked + 1} (four corners, two lines), 64-unit targets upright, one sticker passed`);
     return;
   }
+  // Level 10 (6 by 6 cage bed): a wrong number is one miss, then hints are asked for, each hinted number placed, until one
+  // names a cage (its last square, or the sets that make its sum); then the bed is filled to its sticker. `SUDOKU_ONLY=10`.
+  if (process.env.SUDOKU_ONLY === '10') {
+    await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
+    await launch('sudoku-garden', 10); await idle();
+    const stickers = await page.evaluate(() => kit.store.data.stickers.length);
+    assert.deepEqual(await page.evaluate(() => [neo.scene.game.n, neo.scene.game.puzzle.blanks, neo.scene.game.puzzle.grade, neo.scene.game.geo.cages.length > 0, neo.scene.game.cell]), [6, 30, 2, true, 92]);
+    assert.deepEqual(await targets('level 10 landscape'), []);
+    const wrong = await page.evaluate(() => { const g = neo.scene.game, i = g.grid.findIndex((d) => !d); return { i, d: (g.puzzle.solution[i] % g.n) + 1 }; });
+    await tapCell(wrong.i); await page.waitForTimeout(100); await tapSlot({ kind: 'digit', d: wrong.d }); await page.waitForTimeout(200);
+    assert.equal((await state()).misses, 1, 'a wrong number on a cage bed is one miss');
+    await tapSlot({ kind: 'erase' }); await page.waitForTimeout(200);
+    await tapSlot({ kind: 'marks' }); await tapCell(wrong.i); for (const d of [1, 2, 3, 4, 5, 6]) await tapSlot({ kind: 'digit', d }); await tapSlot({ kind: 'marks' }); await page.waitForTimeout(200);
+    // A two-square cage filled so it does not add up: its outline rings red and the pet says so once, with no miss of its own.
+    const pair = await page.evaluate(() => {
+      const g = neo.scene.game, s = g.puzzle.solution;
+      for (const c of g.geo.cages) {
+        if (c.cells.length !== 2 || !c.cells.every((i) => !g.grid[i] && !g.notes[i])) continue;
+        const [a, b] = c.cells, da = s[b], peers = g.geo.peers;
+        if (peers[a].some((p) => g.grid[p] === da)) continue;
+        const db = [1, 2, 3, 4, 5, 6].find((d) => d !== da && d + da !== c.sum && !peers[b].some((p) => p !== a && g.grid[p] === d));
+        if (db) return { a, b, da, db };
+      }
+      return null;
+    });
+    assert.ok(pair, 'an empty two-square cage to fill wrongly');
+    const missesBefore = (await state()).misses;
+    await tapCell(pair.a); await tapSlot({ kind: 'digit', d: pair.da }); await page.waitForTimeout(4300);
+    await tapCell(pair.b); await tapSlot({ kind: 'digit', d: pair.db }); await page.waitForTimeout(300);
+    const sum = await page.evaluate(() => ({ told: neo.scene.game.told.sum, misses: neo.scene.game.misses }));
+    assert.equal(sum.told, true, 'a cage that does not add up is spoken about');
+    assert.equal(sum.misses, missesBefore + 1 + (pair.db !== (await page.evaluate((b) => neo.scene.game.puzzle.solution[b], pair.b)) ? 1 : 0), 'only numbers wrong against the answer count, never the sum itself');
+    await screenshot('sudoku-touch-10-landscape');
+    await tapSlot({ kind: 'again' }); await page.waitForTimeout(400);
+    assert.equal((await state()).empty, 30, 'start over puts the cage bed back');
+    const misses = sum.misses;
+    let cage = null, asked = 0;
+    for (; asked < 30 && !cage && !(await page.evaluate(() => neo.scene.finished)); asked++) {
+      await idle(); await tapSlot({ kind: 'hint' }); await page.waitForTimeout(300);
+      const h = await page.evaluate(() => { const h = neo.scene.game.hinted; return h && { kind: h.kind, cell: h.cell, digit: h.digit, tech: h.via?.tech, banner: neo.scene.game.banner.text }; });
+      assert.ok(h && h.kind !== 'fix' && h.kind !== 'few', `hint ${asked + 1} names a reason`);
+      if (h.kind === 'cage-last' || h.tech === 'cage-sets') { cage = h; break; }
+      await tapCell(h.cell); await page.waitForTimeout(60); await tapSlot({ kind: 'digit', d: h.digit }); await page.waitForTimeout(120);
+    }
+    assert.ok(cage, 'a hint names a cage');
+    assert.match(cage.banner, /cage|add up/);
+    await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(500);
+    assert.deepEqual(await targets('level 10 portrait'), []);
+    await screenshot('sudoku-touch-10-portrait');
+    await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(500);
+    await fillAll(); await finished('sudoku-garden');
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.length), stickers + 1, 'one sticker for the cage bed');
+    assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('sudoku-garden').history.at(-1); return [r.level, r.misses, r.hints]; }), [10, misses, asked + 1]);
+    assert.deepEqual(errors, []);
+    log(`Sudoku Garden touch level 10: cage bed at 92 a square, a wrong number, marks, a cage hint (${cage.kind}${cage.tech ? ' via ' + cage.tech : ''}) on hint ${asked + 1}, 64-unit targets upright and sideways, one sticker passed`);
+    return;
+  }
   // Level 7 (4 by 4, the entry): 2 by 2 boxes, a wrong number is a miss, one hint, filled to its sticker. `SUDOKU_ONLY=7` plays just this bed.
   await launch('sudoku-garden', 7); await idle();
   const before = await page.evaluate(() => kit.store.data.stickers.length);

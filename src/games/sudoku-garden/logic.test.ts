@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
+import { gameById } from '../registry';
 import {
-  candidateMask, candidates, conflicts, digitsOf, fillMarks, fillMarksRow, offersFillMarks, countSolutions, deadEnds, formatGrid, geometry, gradeOf, hintFor, isSolved, makePuzzle, parseGrid, parsePuzzle, PLANS,
+  cageGeometry, cageSets, partitionCages, singleSetCages, wrongSums, candidateMask, candidates, conflicts, digitsOf, fillMarks, fillMarksRow, offersFillMarks, countSolutions, deadEnds, formatGrid, geometry, gradeOf, hintFor, isSolved, makePuzzle, parseGrid, parsePuzzle, PLANS,
   placements, planFor, patchGeometry, patchTints, PATCH_LAYOUTS, randomBed, shapeOf, houseName, remaining, shortBed, solve, techniqueSolve, WING_BEDS, type Grid, type Hint, type Puzzle, type Size,
 } from './logic';
 
@@ -550,5 +551,218 @@ describe('level 9, patchwork beds', () => {
     const p = makePuzzle(plan, new Rng(4)), s = shortBed(p, 10);
     expect(s.patchwork).toBe(p.patchwork);
     expect(countSolutions(s.start, shapeOf(s))).toBe(1);
+  });
+});
+
+describe('level 10, cage beds', () => {
+  const plan = planFor(10);
+  const SEEDS = Array.from({ length: 300 }, (_, i) => i * 97 + 5);
+  const beds = SEEDS.map((s) => makePuzzle(plan, new Rng(s)));
+  const edgeNear = (a: number, b: number) => Math.abs(Math.floor(a / 6) - Math.floor(b / 6)) + Math.abs((a % 6) - (b % 6)) === 1;
+
+  it('is a 6 by 6 cage bed of the only-place-left grade with 30 blanks', () => {
+    expect([plan.size, plan.tier, plan.blanks, plan.cages]).toEqual([6, 2, 30, true]);
+  });
+
+  it('cageSets matches brute force for 2 to 4 squares at every reachable sum, and pins examples', () => {
+    for (let k = 2; k <= 4; k++) {
+      const expected = new Map<number, number[][]>();
+      for (let mask = 0; mask < 64; mask++) {
+        const ds = [1, 2, 3, 4, 5, 6].filter((d) => mask & (1 << (d - 1)));
+        if (ds.length !== k) continue;
+        const sum = ds.reduce((a, b) => a + b, 0);
+        expected.set(sum, [...(expected.get(sum) ?? []), ds]);
+      }
+      expect(expected.size).toBeGreaterThan(0);
+      for (let sum = 0; sum <= 30; sum++) {
+        const got = cageSets(sum, k, 6), want = expected.get(sum) ?? [];
+        for (const set of got) {
+          expect(new Set(set).size).toBe(k);
+          expect([...set].sort((a, b) => a - b)).toEqual(set);
+          expect(set.reduce((a, b) => a + b, 0)).toBe(sum);
+        }
+        expect(got, `k ${k} sum ${sum}`).toHaveLength(want.length);
+        expect(new Set(got.map((x) => x.join())), `k ${k} sum ${sum}`).toEqual(new Set(want.map((x) => x.join())));
+      }
+    }
+    expect(cageSets(3, 2, 6)).toEqual([[1, 2]]);
+    expect(cageSets(11, 2, 6)).toEqual([[5, 6]]);
+    expect(cageSets(6, 3, 6)).toEqual([[1, 2, 3]]);
+    expect(cageSets(15, 3, 6)).toEqual([[4, 5, 6]]);
+  });
+
+  it('is deterministic per seed, and the same cages come back from partitionCages', () => {
+    expect(makePuzzle(plan, new Rng(11))).toEqual(makePuzzle(plan, new Rng(11)));
+    expect(new Set(beds.slice(0, 40).map((p) => p.start.join(''))).size).toBeGreaterThan(30);
+    const sol = beds[0].solution;
+    expect(partitionCages(sol, 6, new Rng(4))).toEqual(partitionCages(sol, 6, new Rng(4)));
+  });
+
+  it('over 300 seeds, cages tile the bed, are small, joined, repeat-free, add up, and one is a single set', () => {
+    for (const [i, p] of beds.entries()) {
+      const label = `seed ${SEEDS[i]}`, cages = p.cages!;
+      expect(cages, label).toBeDefined();
+      const all = cages.flatMap((c) => c.cells).sort((a, b) => a - b);
+      expect(all, label).toEqual(Array.from({ length: 36 }, (_, k) => k));
+      for (const c of cages) {
+        expect(c.cells.length, label).toBeGreaterThanOrEqual(2);
+        expect(c.cells.length, label).toBeLessThanOrEqual(4);
+        const seen = new Set([c.cells[0]]);
+        for (let again = 0; again < 4; again++) for (const a of c.cells) for (const b of c.cells) if (seen.has(a) && edgeNear(a, b)) seen.add(b);
+        expect(seen.size, label).toBe(c.cells.length);
+        expect(new Set(c.cells.map((x) => p.solution[x])).size, label).toBe(c.cells.length);
+        expect(c.cells.reduce((t, x) => t + p.solution[x], 0), label).toBe(c.sum);
+      }
+      expect(singleSetCages(cages, 6).length, label).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it('over 300 seeds, each bed has 30 blanks, one answer with the cages, grade 2, and needs its sums', () => {
+    for (const [i, p] of beds.entries()) {
+      const label = `seed ${SEEDS[i]}`, shape = shapeOf(p);
+      expect(p.start.filter((d) => !d), label).toHaveLength(30);
+      expect(p.blanks, label).toBe(30);
+      p.start.forEach((d, c) => { if (d) expect(d, label).toBe(p.solution[c]); });
+      expect(isSolved(p.solution, shape), label).toBe(true);
+      expect(countSolutions(p.start, shape), label).toBe(1);
+      expect(techniqueSolve(p.start, shape, 2).solved, label).toBe(true);
+      expect(techniqueSolve(p.start, shape, 4, false, false).solved, label).toBe(false);
+      expect(gradeOf(p.start, shape), label).toBe(2);
+      expect(p.grade, label).toBe(2);
+    }
+  });
+
+  it('is sound: no cage-sets removal takes the true digit and every cage-last placement is right', () => {
+    let sets = 0, last = 0;
+    for (const [i, p] of beds.entries()) {
+      const r = techniqueSolve(p.start, shapeOf(p), 2);
+      for (const st of r.steps) {
+        if (st.tech === 'cage-sets') {
+          sets++;
+          expect(st.cell).toBe(-1);
+          expect(st.cage && st.sets && st.pattern).toBeTruthy();
+          for (const x of st.removed!) expect(p.solution[x.cell], `seed ${SEEDS[i]}`).not.toBe(x.digit);
+        } else if (st.tech === 'cage-last') {
+          last++;
+          expect(st.digit, `seed ${SEEDS[i]}`).toBe(p.solution[st.cell]);
+        } else if (st.cell >= 0) expect(st.digit, `seed ${SEEDS[i]}`).toBe(p.solution[st.cell]);
+      }
+    }
+    expect(sets).toBeGreaterThan(0);
+    expect(last).toBeGreaterThan(0);
+  });
+
+  it('following the hints finishes each bed, with cage-last and cage-sets hints along the way', () => {
+    let cageLast = 0, viaSets = 0;
+    for (let s = 1; s <= 60; s++) {
+      const p = makePuzzle(plan, new Rng(s)), shape = shapeOf(p), grid = p.start.slice();
+      for (let guard = 0; guard < 60 && !isSolved(grid, shape); guard++) {
+        const h = hintFor(grid, p.start, p.solution, shape)!;
+        expect(h, `seed ${s}`).not.toBeNull();
+        expect(h.kind, `seed ${s}`).not.toBe('fix');
+        if (h.kind === 'cage-last') {
+          cageLast++;
+          expect(h.cage.cells).toContain(h.cell);
+          expect(h.cage.cells.filter((c) => !grid[c])).toEqual([h.cell]);
+          expect(h.have + h.digit).toBe(h.cage.sum);
+        }
+        if (h.kind === 'rules-out' && h.via.tech === 'cage-sets') viaSets++;
+        if (h.kind === 'few') throw new Error(`seed ${s}: a few hint on a grade-2 bed`);
+        expect((h as { digit: number }).digit, `seed ${s}`).toBe(p.solution[h.cell]);
+        grid[h.cell] = (h as { digit: number }).digit;
+      }
+      expect(isSolved(grid, shape), `seed ${s}`).toBe(true);
+    }
+    expect(cageLast).toBeGreaterThan(0);
+    expect(viaSets).toBeGreaterThan(0);
+  });
+
+  it('placements offer only right digits, and a hint walk meets a cage-last square', () => {
+    // Every bed opens with something placeable at a look (makeCageBed throws away beds that need a cage's sets first).
+    let cageSquare = false, bare = 0;
+    for (let s = 1; s <= 40; s++) {
+      const p = makePuzzle(plan, new Rng(s)), shape = shapeOf(p), grid = p.start.slice();
+      for (let guard = 0; guard < 60 && !isSolved(grid, shape); guard++) {
+        const found = placements(grid, shape);
+        if (guard === 0 && !found.length) bare++;
+        for (const f of found) {
+          expect(f.digit, `seed ${s}`).toBe(p.solution[f.cell]);
+          const cage = (shape as ReturnType<typeof cageGeometry>).cages[(shape as ReturnType<typeof cageGeometry>).cageOf[f.cell]];
+          if (cage.cells.filter((c) => !grid[c]).length === 1) cageSquare = true;
+        }
+        const h = hintFor(grid, p.start, p.solution, shape)! as { cell: number; digit: number };
+        grid[h.cell] = h.digit;
+      }
+    }
+    expect(cageSquare).toBe(true);
+    expect(bare).toBe(0);
+  });
+
+  it('shortBed keeps the same cages and sums, and stays uniquely solvable', () => {
+    for (let s = 1; s <= 20; s++) {
+      const p = makePuzzle(plan, new Rng(s)), short = shortBed(p, 10);
+      expect(short.cages).toBe(p.cages);
+      for (const c of short.cages!) expect(c.cells.reduce((t, x) => t + short.solution[x], 0)).toBe(c.sum);
+      expect(short.blanks).toBe(10);
+      expect(countSolutions(short.start, shapeOf(short))).toBe(1);
+    }
+  });
+
+  it('wrongSums reports a full cage off its sum and a partial one past it, and isSolved needs the sums', () => {
+    const p = beds[0], shape = shapeOf(p), g = shape as ReturnType<typeof cageGeometry>;
+    expect(wrongSums(p.solution, shape)).toEqual([]);
+    expect(isSolved(p.solution, shape)).toBe(true);
+    const cage = g.cages[0];
+    // Full cage, wrong total: a swap with a different number elsewhere is not guaranteed legal, so just set one square.
+    const bad = p.solution.slice();
+    bad[cage.cells[0]] = bad[cage.cells[0]] === 6 ? 5 : bad[cage.cells[0]] + 1;
+    expect(wrongSums(bad, shape).map((c) => c.cells.join())).toContain(cage.cells.join());
+    expect(isSolved(bad, shape)).toBe(false);
+    // Partial cage already past its sum.
+    const part = Array<number>(36).fill(0);
+    part[cage.cells[0]] = 6; part[cage.cells[1]] = 5;
+    const small = cageGeometry(6, [{ cells: cage.cells.slice(0, 2).concat(cage.cells.length > 2 ? [cage.cells[2]] : []), sum: 7 }, ...g.cages.slice(1).map((c) => ({ cells: [...c.cells], sum: c.sum }))]);
+    expect(wrongSums(part, small).length).toBeGreaterThan(0);
+    // Partial and under the sum: fine.
+    expect(wrongSums(Array<number>(36).fill(0), shape)).toEqual([]);
+    // A grid with no row, column or box repeat but wrong sums: the plain solution under different cages.
+    const other = beds.find((q) => q.solution.join() !== p.solution.join() && wrongSums(p.solution, shapeOf(q)).length > 0)!;
+    expect(conflicts(p.solution, 6)).toEqual([]);
+    expect(isSolved(p.solution, shapeOf(other))).toBe(false);
+  });
+
+  it('conflicts flags a repeat inside a cage that no row, column or box shares, and candidates skip cage-mates', () => {
+    let found = false;
+    for (const p of beds.slice(0, 40)) for (const c of (shapeOf(p) as ReturnType<typeof cageGeometry>).cages) {
+      const g = shapeOf(p) as ReturnType<typeof cageGeometry>;
+      for (const a of c.cells) for (const b of c.cells) {
+      if (a >= b || geometry(6).peers[a].includes(b)) continue;
+      const grid = Array<number>(36).fill(0);
+      grid[a] = 3; grid[b] = 3;
+      expect(conflicts(grid, g).sort()).toEqual([a, b].sort());
+      expect(conflicts(grid, 6)).toEqual([]);
+      const empty = Array<number>(36).fill(0);
+      empty[a] = 3;
+      expect(candidates(empty, g, b)).not.toContain(3);
+      expect(candidates(empty, 6, b)).toContain(3);
+      found = true;
+      }
+    }
+    expect(found).toBe(true);
+  });
+
+  it('draws nothing extra for levels 1 to 9: each is deterministic and unaffected by cages', () => {
+    for (let level = 1; level <= 9; level++) {
+      expect(planFor(level).cages, `level ${level}`).toBeFalsy();
+      for (const s of [3, 7, 21]) {
+        const a = makePuzzle(planFor(level), new Rng(s)), b = makePuzzle(planFor(level), new Rng(s));
+        expect(a, `level ${level} seed ${s}`).toEqual(b);
+        expect(a.cages, `level ${level}`).toBeUndefined();
+      }
+    }
+  });
+
+  it('puts cage beds after patchwork beds in the grown-up order', () => {
+    expect(gameById('sudoku-garden')!.levels('grownup')).toEqual({ min: 1, max: 10, order: [7, 1, 2, 3, 9, 10, 4, 5, 6, 8] });
   });
 });

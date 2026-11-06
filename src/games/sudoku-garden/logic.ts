@@ -698,7 +698,7 @@ export const singleSetCages = (cages: readonly Cage[], size: Size): Cage[] => ca
 /**
  * A cage bed (level 10): a full bed cut into cages, then numbers taken out as `makePuzzle` does, each kept out only if the
  * bed stays unique with the cages and the techniques up to the plan's tier still finish it. A bed is kept only if its
- * sums are needed: without the two cage techniques, no tier finishes it.
+ * sums are needed (without the two cage techniques, no tier finishes it) and something can be placed at a look to start.
  */
 export function makeCageBed(plan: SudokuPlan, rng: Rng): Puzzle {
   const size = plan.size, n = size * size;
@@ -720,7 +720,9 @@ export function makeCageBed(plan: SudokuPlan, rng: Rng): Puzzle {
       if (countSolutions(start, g) === 1 && techniqueSolve(start, g, plan.tier).solved) blanks++;
       else start[cell] = was;
     }
-    if (techniqueSolve(start, g, 4, false, false).solved) continue;
+    // The sums must be needed, and the first number must need only a look (a lone number, an only place or a cage's last
+    // square), never a cage's sets straight away.
+    if (techniqueSolve(start, g, 4, false, false).solved || !placements(start, g).length) continue;
     const grade = gradeOf(start, g);
     if (!grade) continue;
     const puzzle: Puzzle = { start, solution, size, blanks, grade, cages };

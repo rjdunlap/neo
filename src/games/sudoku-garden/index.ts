@@ -290,7 +290,8 @@ class SudokuGarden implements Game {
     g.roundRect(-16, -16, w + 32, w + 32, 26).fill(wood.light).stroke({ width: 7, color: wood.line });
     for (let i = 0; i < this.grid.length; i++) {
       const x = geo.colOf[i] * cell + 3, y = geo.rowOf[i] * cell + 3, s = cell - 6;
-      g.roundRect(x, y, s, s, 12).fill(this.given[i] ? cream : swatch.brown.light).stroke({ width: 2, color: swatch.brown.line });
+      // On a cage bed each square's own edge is faint, so the dashed cage outlines are the lines that read.
+      g.roundRect(x, y, s, s, 12).fill(this.given[i] ? cream : swatch.brown.light).stroke({ width: 2, color: swatch.brown.line, alpha: geo.cages.length ? 0.3 : 1 });
       // Each patch's soil is faintly tinted so the patches read without counting borders.
       if (tints) g.roundRect(x, y, s, s, 12).fill({ color: PATCH_TINTS[tints[geo.boxOf[i]]], alpha: 0.45 });
       if (bad.has(i)) g.roundRect(x, y, s, s, 12).fill({ color: swatch.red.light, alpha: 0.75 });
@@ -329,7 +330,7 @@ class SudokuGarden implements Game {
     const off = new Set(wrongSums(this.grid, this.shape).map((c) => c.index));
     const font = Math.max(13, Math.round(cell * 0.2));
     for (const c of geo.cages) {
-      const color = off.has(c.index) ? CLASH : ink, alpha = off.has(c.index) ? 0.95 : 0.55;
+      const color = off.has(c.index) ? CLASH : ink, alpha = off.has(c.index) ? 0.95 : 0.75;
       const at = (r: number, k: number) => r >= 0 && r < n && k >= 0 && k < n && geo.cageOf[r * n + k] === c.index;
       for (const i of c.cells) {
         const r = geo.rowOf[i], k = geo.colOf[i], x = k * cell, y = r * cell;
