@@ -6,7 +6,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **Define Rain Garden level 4 *two-socket downhill route*** (`weather-water`; school; docs only, with the session's source check of runoff and storage sources): [what comes next](definitions/rain-garden.md#what-comes-next), levels 1–3 built, [study](deep-dives/subjects/weather-water.md).
+- **`rain-garden`, level 4 *two-socket downhill route*** (school; two beds in a chain, stone or soil each, store exactly 2 in the marked bed and some to the pond; new-interaction tier as the definition's check tier sets, one build session): [definition](definitions/rain-garden.md#level-4-two-socket-downhill-route-definition), [check tier](definitions/rain-garden.md#level-4-check-tier), [study](deep-dives/subjects/weather-water.md).
 - **Define Bond Beads 5–8** (`chemistry`; docs only, with a session source check of the molecule list): [definition so far](definitions/bond-beads.md), [study](deep-dives/subjects/chemistry.md).
 - **Define Welcome Ways 5–7** (`engineering-design`; space limits, a conflict and a repair for a new friend; docs only): [definition so far](definitions/welcome-ways.md), [study](deep-dives/subjects/engineering-design.md).
 - **Dive `swing-pals`** (Swing Pals; lap to school, 6 levels; docs only): [procedure](deep-dives/README.md#one-session-one-game), [definition](definitions/swing-pals.md).
