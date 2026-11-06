@@ -1771,12 +1771,14 @@ export const HOW_TO: Record<string, GameHowTo> = {
     steps: [
       { to: 1, text: 'Drag the letter that fits both words into the empty square where they cross.' },
       { from: 2, to: 2, text: 'Fill the crossing squares and each word\'s first letter; the letters a word needs wait at the side.' },
+      { from: 3, to: 3, text: 'Every square starts empty: tap a picture, then drag its word\'s letters in; two extra letters wait with them.' },
       'Tap a picture or a square to choose its word and hear it. Tap a crossing square again for the other word.',
       'A tile in a square can be dragged back out. Help (?) puts one right letter in.',
     ],
     finish: [
       { to: 1, text: 'The round ends after three little crosswords.' },
-      { from: 2, text: 'The round ends after two crosswords.' },
+      { from: 2, to: 2, text: 'The round ends after two crosswords.' },
+      { from: 3, to: 3, text: 'One criss-cross of four words from one theme (animals, the pond or outside), named at the start; the round ends when it is full.' },
     ],
     note: 'Moving tiles is never judged. A full word that is wrong is one miss and its wrong tiles hop back; after two on a word, the next letter glows. Help counts as a hint.',
   },

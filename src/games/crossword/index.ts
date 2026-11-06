@@ -18,11 +18,13 @@ import {
   applyHelp, bankFor, clueOf, decoysFor, firstOpen, helpFor, judge, makeRound, nearest, nextFill, planFor, solved, spelled, squaresOf, wordRight, wordsAt, wrongSquares, WORDS_1, type Plan, type Puzzle,
 } from './logic';
 
-/** School starts one step above pre-K's opening; levels 3–6 come in later builds. */
+/** School starts one step above pre-K's opening; levels 4–6 come in later builds. */
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 2 },
-  school: { min: 2, max: 2 },
+  school: { min: 2, max: 3 },
 };
+
+const INSTRUCT = ['cw.one', 'cw.two', 'cw.three'] as const;
 
 const SQ = 100;
 const PITCH = 104;
@@ -104,7 +106,14 @@ class Crossword implements Game {
 
   start() {
     this.setPuzzle();
-    void this.ctx.instruct(this.plan.level === 1 ? 'cw.one' : 'cw.two');
+    void this.start2();
+  }
+
+  /** A themed round says its title first. */
+  private async start2() {
+    const theme = this.puzzle?.theme;
+    if (theme) await this.ctx.say('cw.theme', { theme: theme.name });
+    void this.ctx.instruct(INSTRUCT[Math.min(INSTRUCT.length, this.plan.level) - 1]);
   }
 
   update() {}
@@ -119,6 +128,11 @@ class Crossword implements Game {
     return this.view.h > this.view.w * 1.1;
   }
 
+  /** Level 3's bank holds up to six tiles: two columns beside the grid, or two rows below it. */
+  private get wideBank() {
+    return this.plan.decoys >= 2 && this.plan.blank === 'all';
+  }
+
   resize(v: View) {
     this.view = v;
     this.backdrop.resize(v);
@@ -128,11 +142,11 @@ class Crossword implements Game {
     const safe = safeArea(v);
     if (this.upright) {
       this.board.position.set((v.w - gw) / 2, Math.max(160, v.h * 0.18));
-      const y = this.board.y + gh + 110;
+      const y = this.board.y + gh + (this.wideBank ? 170 : 110);
       this.help.position.set(Math.min(v.w - 110, v.w / 2 + 300), y);
     } else {
-      const left = safe.x + 180, right = v.w - 160;
-      this.board.position.set(left + (right - left - gw) / 2, 150 + Math.max(0, (v.h - 190 - gh) / 2));
+      const left = safe.x + 180, right = v.w - (this.wideBank ? 220 : 160);
+      this.board.position.set(Math.max(left, left + (right - left - gw) / 2), Math.max(144, 150 + (v.h - 190 - gh) / 2));
       this.help.position.set(v.w - 90, Math.min(v.h - 80, 660));
     }
     this.layoutBank();
@@ -153,7 +167,11 @@ class Crossword implements Game {
     const v = this.view;
     const n = this.bank.length;
     this.bank.forEach((t, i) => {
-      if (this.upright) t.position.set(v.w / 2 - 120 - ((n - 1) / 2) * 112 + i * 112, this.help.y);
+      if (this.upright && this.wideBank) {
+        const row = Math.floor(i / 3), cols = Math.min(3, n - row * 3);
+        t.position.set(v.w / 2 - 120 - ((cols - 1) / 2) * 112 + (i % 3) * 112, this.help.y - 54 + row * 108);
+      } else if (this.upright) t.position.set(v.w / 2 - 120 - ((n - 1) / 2) * 112 + i * 112, this.help.y);
+      else if (this.wideBank) t.position.set(v.w - 162 + (i % 2) * 108, 210 + Math.floor(i / 2) * 108);
       else t.position.set(v.w - 90, 210 + i * 108);
       if (t.drag) t.drag.home = { x: t.x, y: t.y };
     });

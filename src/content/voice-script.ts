@@ -1936,6 +1936,8 @@ export const SCRIPT = {
   'lg.done': ['You solved every mystery!'],
   'cw.one': ['Which letter fits both words?'],
   'cw.two': ['Fill in the words. One letter is in both.'],
+  'cw.three': ['Tap a picture, then fill in its word.'],
+  'cw.theme': ['{theme}!'],
   'cw.word': ['{word}!'],
   'cw.letter': ['{letter}'],
   'cw.spellout': ['{letters}. {word}!'],

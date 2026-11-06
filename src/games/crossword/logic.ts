@@ -1,9 +1,10 @@
 import type { Rng } from '../../engine/random';
 import { BLOCKED } from '../word-search/blocked';
+import { PICTURE_THEMES } from '../word-search/words';
 
 /**
  * Crossword rules (docs/definitions/crossword.md). Little grids where one letter fills two words: each word has a clue square
- * just before its first letter (to its left across, above it down) holding the word's picture. Levels 1–2 are built here; each
+ * just before its first letter (to its left across, above it down) holding the word's picture. Levels 1–3 are built here; each
  * level's build writes only its own word set.
  */
 
@@ -23,6 +24,8 @@ export interface Puzzle {
   h: number;
   /** Letter squares the child fills (keys from `key`). The rest are written in. */
   blanks: string[];
+  /** The round's theme, for a themed level. */
+  theme?: Theme;
 }
 
 export interface Plan {
@@ -31,12 +34,16 @@ export interface Plan {
   /** The level's word set. */
   words: readonly string[];
   puzzles: number;
-  /** Words in each puzzle, a chain where each crosses the one before. */
+  /** Words in each puzzle, each crossing one word placed before it. */
   count: number;
+  /** A chain crosses each word with the one before; a free criss-cross with any word already placed. */
+  layout: 'chain' | 'free';
+  /** When set, a round draws one theme and its puzzles use only that theme's words. */
+  themes?: readonly Theme[];
   /** Largest grid side, clue squares included. */
   max: number;
-  /** Which squares are blank: only crossings, or crossings and every word's first letter. */
-  blank: 'crossing' | 'crossing-first';
+  /** Which squares are blank: only crossings, crossings and every word's first letter, or every letter square. */
+  blank: 'crossing' | 'crossing-first' | 'all';
   /** Decoys added to the active word's missing letters in the bank. */
   decoys: number;
 }
@@ -46,9 +53,27 @@ export const WORDS_1 = ['hat', 'cat', 'dog', 'pig', 'hen', 'cow', 'bee', 'net', 
 /** Level 2: the 23 drawn picture words (Pip is left out), three or four letters. */
 export const WORDS_2 = [...WORDS_1, 'nest', 'frog', 'duck', 'pond', 'leaf', 'moon', 'rain', 'cake', 'boat', 'tree'] as const;
 
+export interface Theme {
+  id: string;
+  /** Said as the round's title. */
+  name: string;
+  words: readonly string[];
+}
+
+/**
+ * Level 3: Word Search's three picture themes. Animal friends and By the pond share too few letters to cross four words in a
+ * 6 by 6, so each gains drawn picture words from level 2's set that belong in it; every word has a picture.
+ */
+const MORE_3: Record<string, readonly string[]> = { animals: ['duck', 'frog', 'bee', 'bug'], 'pond-pictures': ['pond', 'mud', 'bug'] };
+export const THEMES_3: readonly Theme[] = PICTURE_THEMES.map((t) => ({
+  id: t.id, name: t.name, words: [...t.words.map((w) => w.toLowerCase()), ...(MORE_3[t.id] ?? [])],
+}));
+const WORDS_3 = [...new Set(THEMES_3.flatMap((t) => t.words))];
+
 export const PLANS: readonly Plan[] = [
-  { level: 1, name: 'One letter, two words', words: WORDS_1, puzzles: 3, count: 2, max: 4, blank: 'crossing', decoys: 2 },
-  { level: 2, name: 'Two crossings', words: WORDS_2, puzzles: 2, count: 3, max: 5, blank: 'crossing-first', decoys: 1 },
+  { level: 1, name: 'One letter, two words', words: WORDS_1, puzzles: 3, count: 2, layout: 'chain', max: 4, blank: 'crossing', decoys: 2 },
+  { level: 2, name: 'Two crossings', words: WORDS_2, puzzles: 2, count: 3, layout: 'chain', max: 5, blank: 'crossing-first', decoys: 1 },
+  { level: 3, name: 'Picture criss-cross', words: WORDS_3, themes: THEMES_3, puzzles: 1, count: 4, layout: 'free', max: 6, blank: 'all', decoys: 2 },
 ];
 
 export const planFor = (level: number): Plan => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
@@ -157,7 +182,7 @@ function crossingsWith(on: Placed, next: string): Placed[] {
 
 /** The squares she fills, in reading order. */
 export function blanksFor(plan: Plan, words: readonly Placed[]): string[] {
-  const keep = new Set(crossings(words));
+  const keep = new Set(plan.blank === 'all' ? lettersOf(words).keys() : crossings(words));
   if (plan.blank === 'crossing-first') for (const w of words) keep.add(squaresOf(w)[0].key);
   const order = [...lettersOf(words).keys()].sort((a, b) => {
     const [ar, ac] = a.split(',').map(Number), [br, bc] = b.split(',').map(Number);
@@ -167,16 +192,18 @@ export function blanksFor(plan: Plan, words: readonly Placed[]): string[] {
 }
 
 /**
- * One puzzle: a chain of `plan.count` words, each crossing the one before, the first across. Tries seeded choices until a
- * layout passes `problems` and fits `plan.max` squares a side; `avoid` lists word pairs already used this round.
+ * One puzzle of `plan.count` words, each crossing one word placed before it: the one just before in a chain, any of them in a
+ * free criss-cross. Tries seeded choices until a layout passes `problems` and fits `plan.max` squares a side; `avoid` lists
+ * word sets already used this round, and `words` narrows the level's set (a themed round).
  */
-export function makePuzzle(plan: Plan, rng: Rng, avoid: ReadonlySet<string> = new Set()): Puzzle {
+export function makePuzzle(plan: Plan, rng: Rng, avoid: ReadonlySet<string> = new Set(), words: readonly string[] = plan.words): Puzzle {
   for (let tries = 0; tries < 2000; tries++) {
-    const first = rng.pick([...plan.words]);
+    const first = rng.pick([...words]);
     let chain: Placed[] = [{ word: first, row: 0, col: 0, dir: rng.next() < 0.5 ? 'across' : 'down' }];
     for (let i = 1; i < plan.count && chain.length === i; i++) {
       const used = new Set(chain.map((w) => w.word));
-      const options = rng.shuffle(plan.words.filter((w) => !used.has(w)).flatMap((w) => crossingsWith(chain[i - 1], w)));
+      const on = plan.layout === 'chain' ? [chain[i - 1]] : chain;
+      const options = rng.shuffle(words.filter((w) => !used.has(w)).flatMap((w) => on.flatMap((o) => crossingsWith(o, w))));
       const fit = options.find((o) => {
         const next = [...chain, o];
         return problems(next).length === 0 && crossings(next).length === i && sizeOk(next, plan.max);
@@ -202,8 +229,9 @@ export const pairName = (words: readonly Placed[]) => words.map((w) => w.word).s
 export function makeRound(plan: Plan, rng: Rng): Puzzle[] {
   const out: Puzzle[] = [];
   const used = new Set<string>();
+  const theme = plan.themes ? rng.pick([...plan.themes]) : undefined;
   for (let i = 0; i < plan.puzzles; i++) {
-    const p = makePuzzle(plan, rng, used);
+    const p = { ...makePuzzle(plan, rng, used, theme?.words), theme };
     used.add(pairName(p.words));
     out.push(p);
   }
