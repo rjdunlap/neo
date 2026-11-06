@@ -157,3 +157,10 @@
 - Ran (commit `2ec5e77c`): `npm run typecheck`; `npm test` 305 files, all pass (after the how-to wording fix); `GAME_URL=http://localhost:5482 BROWSER_SUITE=blocktopple TOPPLE_LEVELS=4`: portrait level 4, two thumps 0 misses, golden band 1 hint, three tips shaped wide, tall, wide, saved 0/1, screenshot `block-topple-4-portrait-band`; `BROWSER_SUITE=fingerdemo FINGER_ONLY=block-topple FINGER_LEVELS=4` passed in 5.7 s.
 - Not run: `npm run build` (no shared assets changed beyond content files covered by unit tests); levels 1 and 3 replays (interaction unchanged); an iPad.
 - Open: a person checking that "high up tips it" reads from the thumps and the golden band ([device checks](../DEVICE-CHECKS.md)).
+
+## 2026-11-05 — Block Topple level 5 Count the basket (block-topple slice 3)
+
+- [PR #1277](https://github.com/rjdunlap/neo/pull/1277): level 5 (red fruit on level 4's lines, a woven tray, three number pads with total±1; wrong count is one miss per line with the pet counting aloud, a second wrong tap glows the right pad); school range 2–5; the `blocktopple` case defaults to levels 1,3,4,5.
+- Ran (first implementation commit on base `5d66c487`; a later commit only adds pad press feedback and rule tests): `npm run typecheck`; `npm test` 307 files, 5241 tests pass (43 rule tests); `GAME_URL=http://localhost:5274 BROWSER_SUITE=blocktopple TOPPLE_LEVELS=5`: portrait, two wrong counts on line 1 (1 miss, counted aloud), glowing pad (1 hint), three tips with right counts, saved 1/1, screenshot `block-topple-5-portrait-tray`; `BROWSER_SUITE=fingerdemo FINGER_ONLY=block-topple FINGER_LEVELS=5` in 7.9 s.
+- Not run: `npm run build` (no shared assets), landscape screenshot, levels 1–4 replay (unchanged), an iPad.
+- Open: whether a six-year-old counts on or recounts, and whether the pads slow the shooting ([device checks](../DEVICE-CHECKS.md)).

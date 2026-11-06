@@ -1,5 +1,9 @@
 # Puddle Island verification
 
+## 2026-11-05 — Crossword definition (docs only)
+
+Changed: a new `docs/definitions/crossword.md` (levels 1–6, Story Grove), READY (the definition line replaced by the levels 1–2 build), the puzzle-pages dive, STUDY-BACKLOG, roadmap, IDEAS and the recommendations packet (PR #1290). Ran: `node scripts/check-links.mjs` and `git diff --check`. No code checks (docs tier). Open: nothing built; device speech of letter names and whether a four-year-old sees one letter serve two words stay for a person.
+
 ## 2026-11-05 — Helper House level 4 Chilly nook (RA3)
 
 - [PR #1289](https://github.com/rjdunlap/neo/pull/1289): heater and thermometer, `[zone] → on` and `[zone] → off` rows, warmth 2–4 goal, school band 2–4, voice lines `hh.*.4`, how-to step, `HH_LEVELS` in the `helperhouse` case.
@@ -81,13 +85,6 @@ Changed: the dive `docs/deep-dives/draw-the-pattern.md`, the tracker row, READY,
 - Ran: `npm run typecheck`; full `npm test` passed; `GAME_URL=http://localhost:5313 BROWSER_SUITE=brainbreak` (levels 1 and 6: two wrong taps then outline and hint, Hint, lit stone shows its total, every label at most 88 wide, portrait screenshot, one sticker); `BROWSER_SUITE=fingerdemo FINGER_ONLY=brain-break FINGER_LEVELS=6` passed in 42.6 s.
 - Not run: `npm run build` (no shared assets); device speech of the new lines; an iPad.
 - Open: the spoken lines `brain.sums.*` are unheard on a device; no device check was added by this slice.
-
-## 2026-11-05 — Block Topple level 5 Count the basket (block-topple slice 3)
-
-- [PR #1277](https://github.com/rjdunlap/neo/pull/1277): level 5 (red fruit on level 4's lines, a woven tray, three number pads with total±1; wrong count is one miss per line with the pet counting aloud, a second wrong tap glows the right pad); school range 2–5; the `blocktopple` case defaults to levels 1,3,4,5.
-- Ran (first implementation commit on base `5d66c487`; a later commit only adds pad press feedback and rule tests): `npm run typecheck`; `npm test` 307 files, 5241 tests pass (43 rule tests); `GAME_URL=http://localhost:5274 BROWSER_SUITE=blocktopple TOPPLE_LEVELS=5`: portrait, two wrong counts on line 1 (1 miss, counted aloud), glowing pad (1 hint), three tips with right counts, saved 1/1, screenshot `block-topple-5-portrait-tray`; `BROWSER_SUITE=fingerdemo FINGER_ONLY=block-topple FINGER_LEVELS=5` in 7.9 s.
-- Not run: `npm run build` (no shared assets), landscape screenshot, levels 1–4 replay (unchanged), an iPad.
-- Open: whether a six-year-old counts on or recounts, and whether the pads slow the shooting ([device checks](DEVICE-CHECKS.md)).
 
 ## Coverage summary
 
