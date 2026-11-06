@@ -69,6 +69,16 @@ describe('Welcome Ways authored toy entrances', () => {
       for (let i=0;i<boxes.length;i++) for (const b of boxes.slice(i+1)) { const a=boxes[i]; expect(Math.abs(a.x-b.x)>=(a.w+b.w)/2 || Math.abs(a.y-b.y)>=(a.h+b.h)/2).toBe(true); }
     }
   });
+  it('fits the corner and side-strip boards of levels 5 to 7 across standard views and safe insets without scaling', () => {
+    for (const [index,[w,h]] of views.entries()) for (const inset of [0,20]) for (const level of [5,6,7]) {
+      const v=computeView(w,h,index===3?{top:0,left:47,right:47,bottom:21}:{top:inset,left:inset,bottom:inset,right:inset}); const p=planFor(level);
+      const l=layout(v,p.rises,p.choices.length,p.visitors.length,level);
+      expect(l.sockets).toHaveLength(p.sockets.length);
+      const boxes=[...l.sockets,...l.tray,...l.visitors,l.try,l.undo,l.remove,l.help];
+      for (const b of boxes) { expect(b.w).toBeGreaterThanOrEqual(100); expect(b.h).toBeGreaterThanOrEqual(100); expect(b.x-b.w/2).toBeGreaterThanOrEqual(0); expect(b.x+b.w/2).toBeLessThanOrEqual(v.w); expect(b.y-b.h/2).toBeGreaterThanOrEqual(140); expect(b.y+b.h/2).toBeLessThanOrEqual(v.h); expect(b.x-b.w/2>=240 || b.y+b.h/2<=v.h-205).toBe(true); expect(b.x-b.w/2>=130 || b.y-b.h/2>=220).toBe(true); }
+      for (let i=0;i<boxes.length;i++) for (const b of boxes.slice(i+1)) { const a=boxes[i]; expect(Math.abs(a.x-b.x)>=(a.w+b.w)/2 || Math.abs(a.y-b.y)>=(a.h+b.h)/2).toBe(true); }
+    }
+  });
   it('admits Welcome Ways to Tinker Lab across all bands, both sides and every paged layout', () => {
     const land=LANDS.find(l=>l.id==='tinker-lab')!;
     const candidate={...land,games:[...land.games.filter(id=>id!=='welcome-ways'),'welcome-ways']};
