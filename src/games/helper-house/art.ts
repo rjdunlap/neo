@@ -3,7 +3,7 @@ import { Container, Graphics } from 'pixi.js';
 import { Critter, CRITTERS, type CritterName } from '../../art/critter';
 import { cream, ink, shadow, swatch, wood, type ColorName } from '../../art/palette';
 import { starPoints } from '../../art/shapes';
-import type { Action, Helper, Reading, SensorKind, SunLevel, Zone } from './logic';
+import { SPOTS, type Action, type Helper, type Reading, type SensorKind, type SunLevel, type Zone } from './logic';
 
 const line = (color: number, width = 5) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 export const BRASS = { fill: 0xf4d9a6, line: 0xc9a86a };
@@ -241,6 +241,8 @@ export interface HouseGeometry {
   lamp: boolean;
   /** A chilly nook beside the house with a heater in it (level 4); the house sits left, as with the lamp. */
   heater?: boolean;
+  /** Level 5: a garden shed at the left (the house moves right of it) and a pool of light around the lamp's socket. */
+  shed?: boolean;
 }
 
 /** The house, drawn in a rect of w × h with its top-left at (0, 0): walls, roof, door, window, lamp post. */
@@ -268,7 +270,7 @@ export class House extends Container {
     const sw = swatch[color];
     const ground = h * 0.92;
     this.groundY = ground;
-    const left = w * 0.1;
+    const left = geo.shed ? w * 0.34 : w * 0.1;
     const right = lamp ? w * 0.62 : w * 0.9;
     const top = h * 0.5;
     const peak = h * 0.25;
@@ -300,7 +302,21 @@ export class House extends Container {
     win.roundRect(wx - ws / 2, wy - ws / 2, ws, ws, 8).fill(0xbfe6ff).stroke(line(sw.line, 5));
     win.moveTo(wx, wy - ws / 2).lineTo(wx, wy + ws / 2).moveTo(wx - ws / 2, wy).lineTo(wx + ws / 2, wy).stroke(line(sw.line, 4));
     win.roundRect(wx - ws / 2 - 8, wy + ws / 2 - 2, ws + 16, 10, 4).fill(sw.line);
-    this.addChild(win, this.windowFaces);
+    // The shed's house is too narrow for a window beside its door.
+    if (!geo.shed) this.addChild(win, this.windowFaces);
+    else win.destroy();
+    if (geo.shed) {
+      // The garden shed: plank walls, a roof, and a dark open doorway the lamp's light never reaches.
+      const shed = new Graphics();
+      const sl = w * 0.02;
+      const sr = w * 0.28;
+      const st = h * 0.6;
+      shed.roundRect(sl, st, sr - sl, ground - st, 8).fill(wood.fill).stroke(line(wood.line, 5));
+      shed.moveTo(sl - 14, st + 4).lineTo((sl + sr) / 2, h * 0.53).lineTo(sr + 14, st + 4).closePath().fill(swatch.brown.fill).stroke(line(swatch.brown.line, 5));
+      const dw = Math.max(70, (sr - sl) * 0.62);
+      shed.roundRect(w * SPOTS.shed.x - dw / 2, h * 0.65, dw, ground - h * 0.65, 8).fill(0x2a2540);
+      this.addChild(shed);
+    }
     this.windowAt = { x: wx, y: wy };
     this.windowFaces.position.set(wx, wy);
     // The lamp post (levels 2–3).
@@ -366,6 +382,10 @@ export class House extends Container {
     head.circle(x, y + 10, 22).fill(on ? LAMP.lit : LAMP.dark).stroke(line(on ? swatch.yellow.line : METAL.line, 4));
     const light = this.lampLight;
     light.clear();
+    if (on && this.geo.shed) {
+      // The pool reaches the socket under the lamp, so a sensor there plainly sits in the lamp's own light.
+      light.circle(this.geo.w * SPOTS.lamp.x, this.geo.h * SPOTS.lamp.y, 78).fill({ color: LAMP.glow, alpha: 0.35 });
+    }
     if (on) {
       light.moveTo(x - 18, y + 20).lineTo(x - this.geo.w * 0.22, this.groundY).lineTo(x + this.geo.w * 0.22, this.groundY).lineTo(x + 18, y + 20).closePath().fill({ color: LAMP.glow, alpha: 0.35 });
       light.circle(x, y + 10, 46).fill({ color: LAMP.glow, alpha: 0.45 });

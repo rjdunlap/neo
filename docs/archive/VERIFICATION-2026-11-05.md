@@ -239,3 +239,10 @@ Changed: school level 10 (`salt.ts` `SaltTanks`, `SALT_DEPTHS`/`floatsIn`/`saltR
 - Ran (tested at `b6a4356a`, Vite on port 5197, `VITE_SPEECH=off`): `npm run typecheck`; `npm test` (308 files, 5318 pass); `npm run build`; a one-off scripted school play at 1024×768 and 1024×1365 (squares 600×600 at cell 100, tiles and buttons 100 units, two wrong lines, ring after the second, a tile tap counting nothing, one Hint, all words, sticker; history misses 2, hints 1; no page errors; screenshots in ignored `test-results/`); `BROWSER_SUITE=fingerdemo FINGER_ONLY=word-search FINGER_LEVELS=8 FINGER_BAND=school` PASS (11.4 s). The game-reviewer's one suggestion (fewer repeated ring lines) landed in `9dbe5497`, speech-only and not re-played.
 - Not run: `couchgames` (couch untouched), device speech, a real iPad.
 - Open: the three school-opening checks in [DEVICE-CHECKS](../DEVICE-CHECKS.md); a second school level.
+
+## 2026-11-05 — Helper House level 4 Chilly nook (RA3)
+
+- [PR #1289](https://github.com/rjdunlap/neo/pull/1289): heater and thermometer, `[zone] → on` and `[zone] → off` rows, warmth 2–4 goal, school band 2–4, voice lines `hh.*.4`, how-to step, `HH_LEVELS` in the `helperhouse` case.
+- Ran (commit `b401e617` plus `f9949ecc`'s one-token glow fix, covered by a new unit test; port 5332): `npm run typecheck`; `npm test` (308 files, 5338 tests); Helper House rule tests (36); `BROWSER_SUITE=helperhouse HH_LEVELS=4` PASS (cool dragged, hot tapped, two too-warm days, off-row glow with one hint, portrait screenshot, Show me to warm, finish 0 misses/2 hints); `BROWSER_SUITE=fingerdemo FINGER_ONLY=helper-house FINGER_LEVELS=4` (11.5 s); `npm run build`.
+- Not run: the on-row (never-warms) glow in the browser (unit-tested only); the offline check; other suites; a real iPad.
+- Open: thermometer, heater and friend moods on an iPad, and the science-educator read of the warmth wording ([DEVICE-CHECKS](../DEVICE-CHECKS.md#helper-house-level-4)).

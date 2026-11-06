@@ -1,5 +1,5 @@
 /**
- * Helper House's rules: a house with a helper (the door at level 1, the lamp at levels 2–3, the nook's heater at
+ * Helper House's rules: a house with a helper (the door at level 1, the lamp at levels 2–3 and 5, the nook's heater at
  * level 4), a sensor that reads a picture, rule rows that turn a reading into an action, and a twelve-step day the
  * house runs by itself. The board space is tiny and fully enumerated; a day never counts a miss, and the same unmet
  * goal twice lights a fix. Everything here is pure; the scene draws it. Definition: docs/definitions/helper-house.md.
@@ -21,8 +21,11 @@ export type Reading = SunLevel | EyeReading | Zone;
 /** A reading chip on the bench: a sun level (level 3) or a warmth zone (level 4). */
 export type Chip = SunLevel | Zone;
 export type SensorKind = 'eye' | 'sun' | 'thermo';
-/** Where a sensor can sit: the door and the window (level 1), the lamp post's one slot (levels 2–3), the nook (level 4). */
-export type Socket = 'door' | 'window' | 'post' | 'nook';
+/**
+ * Where a sensor can sit: the door and the window (level 1), the lamp post's one slot (levels 2–3), the nook (level 4);
+ * at level 5 under the lamp (inside its pool of light), up on the roof, or inside the garden shed.
+ */
+export type Socket = 'door' | 'window' | 'post' | 'nook' | 'lamp' | 'roof' | 'shed';
 export type Action = 'open' | 'on' | 'off';
 export type Helper = 'door' | 'lamp' | 'heater';
 /** A piece the board can change: the sensor, or an editable row by its index. */
@@ -82,7 +85,7 @@ export interface Trace {
   warmth: number;
 }
 
-export type Failure = 'friend-waiting' | 'sensor-blind' | 'lamp-on-at-morning' | 'lamp-off-at-night' | 'never-warms' | 'too-warm';
+export type Failure = 'friend-waiting' | 'sensor-blind' | 'lamp-flickers' | 'lamp-on-at-morning' | 'lamp-off-at-night' | 'never-warms' | 'too-warm';
 
 export interface Outcome {
   trace: Trace[];
@@ -95,14 +98,24 @@ export function helperFor(level: number): Helper {
   return level === 1 ? 'door' : level === 4 ? 'heater' : 'lamp';
 }
 
-/** What a sensor at a socket reads at a step; a sensor that sees nothing reads `far`. */
-export function read(board: Board, day: Day, step: number, waiting: number, warmth = day.warmth): Reading {
+/** Levels whose one choice is where the sensor goes (or which one): the rows are given. */
+export function placesSensor(level: number): boolean {
+  return level === 1 || level === 2 || level === 5;
+}
+
+/**
+ * What a sensor at a socket reads at a step; a sensor that sees nothing reads `far`. `lit` is the lamp's state as the
+ * step begins: under the lamp (level 5) the sensor reads the lamp's own light as `bright`.
+ */
+export function read(board: Board, day: Day, step: number, waiting: number, warmth = day.warmth, lit = false): Reading {
   const s = board.sensor;
   if (s.kind === 'eye') {
     if (s.socket === 'door') return waiting > 0 ? 'near' : 'far';
     return 'far';
   }
-  if (s.kind === 'sun' && s.socket === 'post') return day.sun[step];
+  if (s.kind === 'sun' && (s.socket === 'post' || s.socket === 'roof')) return day.sun[step];
+  if (s.kind === 'sun' && s.socket === 'lamp') return lit ? 'bright' : day.sun[step];
+  if (s.kind === 'sun' && s.socket === 'shed') return 'dark';
   if (s.kind === 'thermo' && s.socket === 'nook') return zoneOf(warmth);
   return 'far';
 }
@@ -118,7 +131,7 @@ export function runDay(board: Board, day: Day): Outcome {
   for (let step = 0; step < STEPS; step++) {
     const arrived = day.arrivals.includes(step);
     if (arrived) waiting++;
-    const reading = read(board, day, step, waiting, warmth);
+    const reading = read(board, day, step, waiting, warmth, helperOn);
     let matched: number | null = null;
     board.rows.forEach((r, i) => {
       if (r.reading !== null && r.reading === reading) matched = i;
@@ -153,6 +166,11 @@ export function judge(level: number, trace: Trace[], day: Day): Failure | null {
   }
   const darkOff = trace.some((t) => t.sun === 'dark' && !t.helperOn);
   if (level === 2) return darkOff ? 'sensor-blind' : null;
+  if (level === 5) {
+    // On the bench the sun sensor reads nothing; under the lamp its own light can switch it off in the dark.
+    if (trace.every((t) => t.reading === 'far')) return 'sensor-blind';
+    if (trace.some((t) => t.sun === 'dark' && !t.helperOn && t.reading === 'bright')) return 'lamp-flickers';
+  }
   if (darkOff) return 'lamp-off-at-night';
   return last.helperOn ? 'lamp-on-at-morning' : null;
 }
@@ -175,7 +193,7 @@ export const ARRIVALS: readonly number[][] = [[2, 5, 8], [1, 4, 9], [3, 6, 10]];
 /** Level 4 starts the nook a little chilly. */
 export const START_WARMTH = 1;
 
-/** The day a seed picks for a level; the seed never changes a rule. Level 4 has one day: only the friend and colours vary. */
+/** The day a seed picks for a level; the seed never changes a rule. Level 4 has one day: only the friend and colours vary; level 5 reuses level 3's scripts. */
 export function dayFor(level: number, rng: Rng): Day {
   if (level === 1) return { sun: SUN_SCRIPTS[0].slice(), arrivals: rng.pick(ARRIVALS).slice(), warmth: 0 };
   if (level === 4) return { sun: SUN_SCRIPTS[0].slice(), arrivals: [], warmth: START_WARMTH };
@@ -187,7 +205,7 @@ export function dayFor(level: number, rng: Rng): Day {
 export interface Plan {
   level: number;
   name: string;
-  /** What the bench holds: sensors to place (levels 1–2) or reading chips for the empty rows (levels 3–4). */
+  /** What the bench holds: sensors to place (levels 1–2 and 5) or reading chips for the empty rows (levels 3–4). */
   bench: 'sensors' | 'chips';
 }
 
@@ -196,6 +214,7 @@ const PLANS: readonly Plan[] = [
   { level: 2, name: 'Lamp at dusk', bench: 'sensors' },
   { level: 3, name: 'On and off', bench: 'chips' },
   { level: 4, name: 'Chilly nook', bench: 'chips' },
+  { level: 5, name: 'Where does it look?', bench: 'sensors' },
 ];
 export const MAX_LEVEL = PLANS.length;
 
@@ -225,6 +244,8 @@ export function startBoard(level: number): Board {
   if (level === 1) return { level: 1, sensor: { kind: 'eye', socket: null }, rows: [{ reading: 'near', action: 'open', given: true }] };
   if (level === 2) return { level: 2, sensor: { kind: null, socket: 'post' }, rows: [{ reading: 'dark', action: 'on', given: true }] };
   if (level === 4) return { level: 4, sensor: { kind: 'thermo', socket: 'nook' }, rows: [{ reading: null, action: 'on', given: false }, { reading: null, action: 'off', given: false }] };
+  // Level 3's answer, fixed; only the sensor's place is open, and it starts under the lamp.
+  if (level === 5) return { level: 5, sensor: { kind: 'sun', socket: 'lamp' }, rows: [{ reading: 'dark', action: 'on', given: true }, { reading: 'bright', action: 'off', given: true }] };
   return { level: 3, sensor: { kind: 'sun', socket: 'post' }, rows: [{ reading: 'dark', action: 'on', given: true }, { reading: null, action: 'off', given: false }] };
 }
 
@@ -246,9 +267,9 @@ export function briefFor(level: number, rng: Rng): Brief {
     level: plan.level,
     day,
     board: startBoard(plan.level),
-    sensors: plan.level === 1 ? ['eye'] : plan.level === 2 ? rng.shuffle<SensorKind>(['eye', 'sun']) : [],
+    sensors: plan.level === 1 ? ['eye'] : plan.level === 2 ? rng.shuffle<SensorKind>(['eye', 'sun']) : plan.level === 5 ? ['sun'] : [],
     chips: plan.level === 3 ? rng.shuffle<Chip>([...SUN_LEVELS]) : plan.level === 4 ? [...ZONES] : [],
-    sockets: plan.level === 1 ? ['door', 'window'] : plan.level === 4 ? ['nook'] : ['post'],
+    sockets: plan.level === 1 ? ['door', 'window'] : plan.level === 4 ? ['nook'] : plan.level === 5 ? ['lamp', 'roof', 'shed'] : ['post'],
     friend,
     house,
   };
@@ -259,6 +280,7 @@ export function briefFor(level: number, rng: Rng): Brief {
 /** The board with the sensor at a socket (null: back on the bench). Level 2's slot takes a kind instead. */
 export function placeSensor(board: Board, kind: SensorKind | null, socket: Socket | null): Board {
   if (board.level === 1) return { ...board, sensor: { kind: 'eye', socket } };
+  if (board.level === 5) return { ...board, sensor: { kind: 'sun', socket } };
   if (board.level === 2) return { ...board, sensor: { kind, socket: 'post' } };
   return board;
 }
@@ -286,6 +308,7 @@ export function candidateBoards(brief: Brief): Board[] {
   const start = brief.board;
   if (brief.level === 1) return [null, ...brief.sockets].map((s) => placeSensor(start, 'eye', s));
   if (brief.level === 2) return [null, ...brief.sensors].map((k) => placeSensor(start, k, 'post'));
+  if (brief.level === 5) return [null, ...brief.sockets].map((s) => placeSensor(start, 'sun', s));
   let out: Board[] = [start];
   for (const row of openRows(start)) {
     out = out.flatMap((b) => [null, ...chipsFor(brief.level)].map((r) => setRow(b, row, r)));
@@ -295,7 +318,7 @@ export function candidateBoards(brief: Brief): Board[] {
 
 /** Complete boards: every piece placed. */
 export function complete(board: Board): boolean {
-  if (board.level <= 2) return board.sensor.kind !== null && board.sensor.socket !== null;
+  if (placesSensor(board.level)) return board.sensor.kind !== null && board.sensor.socket !== null;
   return board.rows.every((r) => r.reading !== null);
 }
 
@@ -322,7 +345,8 @@ function wrongRows(board: Board, right: Board): number[] {
  * points at the on row and a nook that gets too warm at the off row, unless that row is already right; then the other.
  */
 export function glowFor(board: Board, failure: Failure): Piece {
-  if (board.level <= 2 || failure === 'sensor-blind' || failure === 'friend-waiting') return 'sensor';
+  // Level 5 has no open rows: every failure points at where the sensor is.
+  if (placesSensor(board.level) || failure === 'sensor-blind' || failure === 'friend-waiting') return 'sensor';
   const open = openRows(board);
   if (board.level === 4) {
     const prefer = failure === 'too-warm' ? 1 : 0;
@@ -340,12 +364,12 @@ export interface Help {
 
 /**
  * Show me: the first press places the next accepted piece the board needs; the second places the rest. At levels
- * 1–3 one piece completes the board, so a later press changes nothing and the pet says so; level 4 has two rows.
+ * 1–3 and 5 one piece completes the board, so a later press changes nothing and the pet says so; level 4 has two rows.
  */
 export function helpFor(board: Board, brief: Brief, _presses: number): Help {
   const right = solutions(brief)[0];
   if (!right) return { board, placed: null };
-  if (board.level <= 2) {
+  if (placesSensor(board.level)) {
     if (board.sensor.kind === right.sensor.kind && board.sensor.socket === right.sensor.socket) return { board, placed: null };
     return { board: placeSensor(board, right.sensor.kind, right.sensor.socket), placed: 'sensor' };
   }
@@ -415,11 +439,12 @@ export type Move = { place: { kind: SensorKind; socket: Socket } } | { chip: Chi
 /**
  * What a capable child does next: place the piece the goal needs, then Watch. At level 3 the first Watch runs the day
  * as it is, so the lamp is seen staying on in the morning before the row is filled. At level 4 the on row, then the
- * off row, then Watch.
+ * off row, then Watch. At level 5 the first Watch shows the lamp flicker before the sensor goes up to the roof.
  */
 export function nextMove(brief: Brief, board: Board, daysPlayed: number): Move {
   const right = solutions(brief)[0];
-  if (brief.level <= 2) {
+  if (brief.level === 5 && daysPlayed === 0 && !meetsGoal(board, brief.day)) return { watch: true };
+  if (placesSensor(brief.level)) {
     if (board.sensor.kind !== right.sensor.kind || board.sensor.socket !== right.sensor.socket) {
       return { place: { kind: right.sensor.kind!, socket: right.sensor.socket! } };
     }
@@ -471,6 +496,16 @@ export interface HouseLayout {
   undo: Rect;
 }
 
+/**
+ * Level 5's sockets as fractions of the house rect, shared with the house art: under the lamp (inside the pool its
+ * light draws), on the roof's peak above it, and in the shed's doorway at the left.
+ */
+export const SPOTS = {
+  lamp: { x: 0.8, y: 0.58 },
+  roof: { x: 0.49, y: 0.21 },
+  shed: { x: 0.15, y: 0.78 },
+} as const;
+
 const button = (cx: number, cy: number, r = BUTTON_R): Rect => ({ x: cx - r, y: cy - r, w: 2 * r, h: 2 * r });
 
 /**
@@ -480,7 +515,7 @@ const button = (cx: number, cy: number, r = BUTTON_R): Rect => ({ x: cx - r, y: 
 export function houseLayout(brief: Brief, v: View): HouseLayout | null {
   const wide = v.w >= v.h;
   const nRows = brief.board.rows.length;
-  const nBench = brief.level >= 3 ? brief.chips.length : brief.sensors.length;
+  const nBench = planFor(brief.level).bench === 'chips' ? brief.chips.length : brief.sensors.length;
   const rowW = CARD.w + ARROW + CARD.w;
   let house: Rect;
   let rowX: number;
@@ -521,6 +556,10 @@ export function houseLayout(brief: Brief, v: View): HouseLayout | null {
   const sockets = brief.sockets.map((s): Rect => {
     if (s === 'door') return { x: house.x + house.w * 0.3 - TILE / 2, y: house.y + house.h * 0.42 - TILE / 2, w: TILE, h: TILE };
     if (s === 'nook') return { x: house.x + house.w * 0.8 - TILE / 2, y: house.y + house.h * 0.6 - TILE / 2, w: TILE, h: TILE };
+    if (s === 'lamp' || s === 'roof' || s === 'shed') {
+      const at = SPOTS[s];
+      return { x: house.x + house.w * at.x - TILE / 2, y: house.y + house.h * at.y - TILE / 2, w: TILE, h: TILE };
+    }
     if (s === 'window') return { x: house.x + house.w * 0.72 - TILE / 2, y: house.y + house.h * 0.42 - TILE / 2, w: TILE, h: TILE };
     return { x: house.x + house.w * 0.8 - TILE / 2, y: house.y + house.h * 0.36 - TILE / 2, w: TILE, h: TILE };
   });

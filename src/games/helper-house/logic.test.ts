@@ -3,7 +3,7 @@ import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
   ARRIVALS, MAX_LEVEL, START_WARMTH, STEPS, SUN_SCRIPTS, Tally, WARMTH_MAX, planFor, zoneOf, briefFor, candidateBoards, complete, corners, dayFor, glowFor, helpFor, houseLayout, meetsGoal,
-  nextMove, offersSetup, openRows, overlaps, placeSensor, runDay, setRow, solutions, startBoard, type Board, type Day, type Failure, type SunLevel, type Zone,
+  nextMove, offersSetup, openRows, overlaps, placeSensor, read, runDay, setRow, solutions, startBoard, type Board, type Day, type Failure, type Socket, type SunLevel, type Zone,
 } from './logic';
 
 const SEEDS = Array.from({ length: 120 }, (_, i) => i);
@@ -234,7 +234,7 @@ describe('the layout', () => {
   const views = { landscape: computeView(1024, 768), portrait: computeView(768, 1024) };
   const all = (l: NonNullable<ReturnType<typeof houseLayout>>) => [l.house, ...l.rows.flatMap((r) => [r.reading, r.action]), ...l.bench, l.watch, l.step, l.undo, ...l.sockets];
   it('holds full-size targets clear of the corners in both orientations at every level', () => {
-    for (const level of [1, 2, 3, 4]) {
+    for (const level of [1, 2, 3, 4, 5]) {
       const b = briefFor(level, new Rng(7));
       for (const [name, v] of Object.entries(views)) {
         const l = houseLayout(b, v);
@@ -250,7 +250,7 @@ describe('the layout', () => {
           expect(p.x >= 0 && p.y >= 0 && p.x + p.w <= v.w && p.y + p.h <= v.h).toBe(true);
         }
         expect(l!.sockets).toHaveLength(b.sockets.length);
-        expect(l!.bench).toHaveLength(level >= 3 ? 3 : level);
+        expect(l!.bench).toHaveLength(level === 3 || level === 4 ? 3 : level === 5 ? 1 : level);
         const parts = all(l!).filter((p) => p !== l!.house);
         parts.forEach((p, i) => parts.forEach((q, j) => { if (i < j) expect(overlaps(p, q), `${name} level ${level} overlap ${i}/${j}`).toBe(false); }));
       }
@@ -277,9 +277,8 @@ describe('level 4: the chilly nook', () => {
   const good = setRow(setRow(startBoard(4), 0, 'cool'), 1, 'warm');
   const d4 = () => briefFor(4, new Rng(1)).day;
 
-  it('is the fourth and last level, named Chilly nook', () => {
+  it('is the fourth level, named Chilly nook', () => {
     expect(planFor(4).name).toBe('Chilly nook');
-    expect(MAX_LEVEL).toBe(4);
   });
   it('maps warmth to zones: cool 0–2, warm 3–4, hot 5–6', () => {
     expect([0, 1, 2, 3, 4, 5, 6].map(zoneOf)).toEqual(['cool', 'cool', 'cool', 'warm', 'warm', 'hot', 'hot']);
@@ -411,5 +410,93 @@ describe('level 4: the chilly nook', () => {
     for (const s of SEEDS.slice(0, 20)) expect(briefFor(4, new Rng(s))).toEqual(briefFor(4, new Rng(s)));
     expect(all[0].chips).toEqual(['cool', 'warm', 'hot']);
     expect(all[0].sockets).toEqual(['nook']);
+  });
+});
+
+describe('level 5: where does the sensor look?', () => {
+  const at = (socket: Socket | null) => placeSensor(startBoard(5), 'sun', socket);
+  const lit = (b: Board, d: Day) => runDay(b, d).trace.map((t) => (t.helperOn ? 1 : 0)).join('');
+
+  it('is the fifth and last level, named Where does it look?, with the level 3 answer given and fixed', () => {
+    expect(planFor(5).name).toBe('Where does it look?');
+    expect(MAX_LEVEL).toBe(5);
+    const start = startBoard(5);
+    expect(start.sensor).toEqual({ kind: 'sun', socket: 'lamp' });
+    expect(start.rows.map((r) => [r.reading, r.action, r.given])).toEqual([['dark', 'on', true], ['bright', 'off', true]]);
+    expect(openRows(start)).toEqual([]);
+    expect(setRow(start, 1, 'dim')).toEqual(start);
+  });
+  it('reads by socket: under the lamp its own light reads bright, the roof reads the sky, the shed is always dark, the bench sees nothing', () => {
+    const d = day(0);
+    for (let step = 0; step < STEPS; step++) {
+      expect(read(at('roof'), d, step, 0)).toBe(d.sun[step]);
+      expect(read(at('shed'), d, step, 0)).toBe('dark');
+      expect(read(at(null), d, step, 0)).toBe('far');
+      expect(read(at('lamp'), d, step, 0, 0, false)).toBe(d.sun[step]);
+      expect(read(at('lamp'), d, step, 0, 0, true)).toBe('bright');
+    }
+  });
+  it('runs the hand-run traces on the three level 3 scripts', () => {
+    expect([0, 1, 2].map((s) => lit(at('roof'), day(s)))).toEqual(['000000011110', '000000111110', '000000111100']);
+    expect([0, 1, 2].map((s) => lit(at('lamp'), day(s)))).toEqual(['000000010100', '000000101000', '000000101000']);
+    for (const s of [0, 1, 2]) {
+      expect(lit(at('shed'), day(s))).toBe('111111111111');
+      expect(lit(at(null), day(s))).toBe('000000000000');
+    }
+  });
+  it('has four boards, accepts exactly the roof on every seed, and the starting board fails', () => {
+    for (const b of briefs(5)) {
+      expect(b.sockets).toEqual(['lamp', 'roof', 'shed']);
+      expect(b.sensors).toEqual(['sun']);
+      expect(SUN_SCRIPTS.some((s) => s.join() === b.day.sun.join())).toBe(true);
+      expect(candidateBoards(b)).toHaveLength(4);
+      expect(solutions(b).map((x) => x.sensor.socket)).toEqual(['roof']);
+      expect(meetsGoal(b.board, b.day)).toBe(false);
+    }
+    expect(new Set(briefs(5).map((b) => b.day.sun.join())).size).toBe(3);
+  });
+  it('has the overlap property: both rows are right (level 3 accepts them), yet under the lamp the helper changes its own reading', () => {
+    const level3Answer = setRow(startBoard(3), 1, 'bright');
+    for (const s of [0, 1, 2]) {
+      expect(meetsGoal(level3Answer, day(s))).toBe(true);
+      expect(runDay(at('lamp'), day(s)).failure).toBe('lamp-flickers');
+      expect(meetsGoal(at('roof'), day(s))).toBe(true);
+    }
+  });
+  it('names one failure per failing board: blind on the bench, flickers under the lamp, on at morning in the shed', () => {
+    const want: Record<string, Failure | null> = { bench: 'sensor-blind', lamp: 'lamp-flickers', roof: null, shed: 'lamp-on-at-morning' };
+    for (const s of [0, 1, 2]) {
+      for (const [k, f] of Object.entries(want)) expect(runDay(at(k === 'bench' ? null : (k as Socket)), day(s)).failure).toBe(f);
+    }
+  });
+  it('glows the sensor for every failure and helps it to the roof in one press, then places nothing', () => {
+    for (const b of briefs(5).slice(0, 12)) {
+      for (const board of candidateBoards(b)) {
+        const o = runDay(board, b.day);
+        if (o.failure) expect(glowFor(board, o.failure)).toBe('sensor');
+        const h = helpFor(board, b, 1);
+        if (board.sensor.socket === 'roof') { expect(h.placed).toBeNull(); continue; }
+        expect(h.placed).toBe('sensor');
+        expect(h.board.sensor.socket).toBe('roof');
+        expect(meetsGoal(h.board, b.day)).toBe(true);
+        expect(helpFor(h.board, b, 2).placed).toBeNull();
+      }
+    }
+  });
+  it('has the ghost finger watch the flicker first, then drag the sensor to the roof, then watch', () => {
+    const b = briefFor(5, new Rng(4));
+    expect(nextMove(b, b.board, 0)).toEqual({ watch: true });
+    expect(nextMove(b, b.board, 1)).toEqual({ place: { kind: 'sun', socket: 'roof' } });
+    expect(nextMove(b, at('roof'), 1)).toEqual({ watch: true });
+  });
+  it('keeps its three sockets full size and at least 140 apart centre to centre in both orientations', () => {
+    const b = briefFor(5, new Rng(2));
+    for (const v of [computeView(1024, 768), computeView(768, 1024), computeView(1366, 1024), computeView(1024, 1366)]) {
+      const l = houseLayout(b, v)!;
+      expect(l).not.toBeNull();
+      const c = l.sockets.map((r) => ({ x: r.x + r.w / 2, y: r.y + r.h / 2 }));
+      for (let i = 0; i < c.length; i++) for (let j = i + 1; j < c.length; j++) expect(Math.hypot(c[i].x - c[j].x, c[i].y - c[j].y)).toBeGreaterThanOrEqual(140);
+      for (const r of l.sockets) expect(r.w).toBeGreaterThanOrEqual(110);
+    }
   });
 });
