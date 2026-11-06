@@ -254,3 +254,8 @@ Changed: a new `docs/definitions/crossword.md` (levels 1–6, Story Grove), READ
 ## 2026-11-05 — Logic grid definition (docs only)
 
 Changed: a new `docs/definitions/logic-grid.md` (Mystery Grid, levels 1–8, Puzzle Peaks), READY (the definition line replaced by the levels 1–2 build), the puzzle-pages dive and IDEAS (PR #1291). Ran: `node scripts/check-links.mjs` and `git diff --check`, both passed. No code checks (docs tier). Open: nothing built; the levels 1–2 build is queued.
+
+## 2026-11-05 — Phone held upright, shell slice 1 with batch 1 (chunk 31)
+
+Changed: the 768 × 1024 upright design area, `Scene.uprightArea` and `GameModule.upright`, Today's six upright-first, `resultSpots`, both manifests `any`, and six upright-ready grown-up games (word-search, sudoku-garden, island-bridges, pond-conga, brain-break, number-nook) (PR #1293). Ran: typecheck; `npm test` (305 of 312 files first run, the 7 load timeouts passed alone, one real daily-test stub fixed); `npm run build`; `BROWSER_SUITE=phonefit` with the new upright root pass (dev server port 5366; Home, Today's six, island-bridges, result screenshots); a one-off probe of all six games at their top level at 390 × 844 (no off-screen targets or errors); `npm run test:offline` on a preview of the current build (root and classic passed); `game-reviewer` (no blockers, the iPad-portrait finding fixed).
+Open: `fingerdemo` not run (the bots tap game objects, not positions); no real phone (the [upright device check](../DEVICE-CHECKS.md) is open; feedback picks batch 2); `world` not run.

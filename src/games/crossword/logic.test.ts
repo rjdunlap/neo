@@ -83,7 +83,7 @@ describe('level 3 rounds', () => {
   });
 });
 
-describe.each(PLANS)('level $level puzzles', (plan) => {
+describe.each(PLANS.filter((p) => !p.grown))('level $level puzzles', (plan) => {
   const rounds = Array.from({ length: SEEDS }, (_, s) => makeRound(plan, new Rng(s + 1)));
 
   it('are the same for the same seed', () => {

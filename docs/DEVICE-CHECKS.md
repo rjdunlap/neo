@@ -1063,6 +1063,7 @@ Performed on the built levels (PR #1043; [definition](definitions/water-road.md#
 - [ ] Watch a four-year-old at level 1: does she see that one letter serves two words, and can she drag the tiles?
 - [ ] Level 3 (PR #1297): on an iPad, listen to device speech of the theme names ("Animal friends", "By the pond", "Look outside") at the start of a round.
 - [ ] Level 4 (PR #1300): on an iPad, listen to device speech of the 15 riddles ("It says moo...") and the "That spells X. The riddle is about Y." line; check that no riddle sounds ambiguous.
+- [ ] Levels 5–6 (PR #1308): on an iPad, listen to device speech of the written clues (the speaker key in the clue bar) and try a hardware keyboard (letters, Backspace) and the on-screen keys in both orientations.
 
 ## Mystery Grid levels 1-2 (2026-11-05)
 

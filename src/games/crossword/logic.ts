@@ -1,11 +1,13 @@
 import type { Rng } from '../../engine/random';
 import { BLOCKED } from '../word-search/blocked';
-import { PICTURE_THEMES } from '../word-search/words';
+import { PICTURE_THEMES, THEMES } from '../word-search/words';
+import { CLUES_5 } from './clues';
 
 /**
- * Crossword rules (docs/definitions/crossword.md). Little grids where one letter fills two words: each word has a clue square
- * just before its first letter (to its left across, above it down) holding the word's picture. Levels 1–4 are built here; each
- * level's build writes only its own word set.
+ * Crossword rules (docs/definitions/crossword.md). Little grids where one letter fills two words: at levels 1–4 each word has a
+ * clue square just before its first letter (to its left across, above it down) holding the word's picture. Levels 5–6, the
+ * grown-ups' written-clue grids, have no clue squares; their rules are in `grown.ts`. Each level's build writes only its own
+ * word set.
  */
 
 export type Dir = 'across' | 'down';
@@ -48,6 +50,8 @@ export interface Plan {
   decoys: number;
   /** The clue square holds a speaker: tapping it says the word's riddle, and Show me turns it into the picture. */
   riddles?: boolean;
+  /** Levels 5–6, the grown-ups' crosswords (`grown.ts`): a free criss-cross of a theme's words, or a frozen 5 by 5 mini. */
+  grown?: 'free' | 'mini';
 }
 
 /** Level 1: the 13 three-letter words of Pond Typing's picture words. */
@@ -78,11 +82,20 @@ const WORDS_3 = [...new Set(THEMES_3.flatMap((t) => t.words))];
  */
 export const WORDS_4 = ['cow', 'pig', 'hen', 'duck', 'cat', 'dog', 'fox', 'frog', 'bee', 'sun', 'moon', 'rain', 'tree', 'boat', 'cake'] as const;
 
+/** Level 5: three of Word Search's everyday themes, every word with a written clue (`clues.ts`). */
+export const THEMES_5: readonly Theme[] = Object.keys(CLUES_5).map((id) => {
+  const t = THEMES.find((x) => x.id === id)!;
+  return { id, name: t.name, words: t.words.map((w) => w.toLowerCase()) };
+});
+const WORDS_5 = THEMES_5.flatMap((t) => t.words);
+
 export const PLANS: readonly Plan[] = [
   { level: 1, name: 'One letter, two words', words: WORDS_1, puzzles: 3, count: 2, layout: 'chain', max: 4, blank: 'crossing', decoys: 2 },
   { level: 2, name: 'Two crossings', words: WORDS_2, puzzles: 2, count: 3, layout: 'chain', max: 5, blank: 'crossing-first', decoys: 1 },
   { level: 3, name: 'Picture criss-cross', words: WORDS_3, themes: THEMES_3, puzzles: 1, count: 4, layout: 'free', max: 6, blank: 'all', decoys: 2 },
   { level: 4, name: 'Say what it is', words: WORDS_4, puzzles: 1, count: 4, layout: 'free', max: 6, blank: 'all', decoys: 2, riddles: true },
+  { level: 5, name: 'Written clues', words: WORDS_5, themes: THEMES_5, puzzles: 1, count: 8, layout: 'free', max: 8, blank: 'all', decoys: 0, grown: 'free' },
+  { level: 6, name: 'The mini', words: [], puzzles: 1, count: 10, layout: 'free', max: 5, blank: 'all', decoys: 0, grown: 'mini' },
 ];
 
 export const planFor = (level: number): Plan => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
@@ -125,7 +138,7 @@ const reads = (s: string) => [s.toUpperCase(), s.toUpperCase().split('').reverse
  * clue; and every across or down run of two or more letter squares must be exactly one placed word, so no two words run
  * together, sit side by side, or spell something unlisted. No placed word reads as a blocked word either way.
  */
-export function problems(words: readonly Placed[]): string[] {
+export function problems(words: readonly Placed[], opts: { clueSquares?: boolean } = {}): string[] {
   const out: string[] = [];
   const letters = new Map<string, string>();
   for (const w of words) for (const s of squaresOf(w)) {
@@ -134,7 +147,7 @@ export function problems(words: readonly Placed[]): string[] {
     letters.set(s.key, s.letter);
   }
   const clues = new Set<string>();
-  for (const w of words) {
+  if (opts.clueSquares !== false) for (const w of words) {
     const c = clueOf(w), k = key(c.row, c.col);
     if (letters.has(k)) out.push(`${w.word}'s clue square holds a letter`);
     if (clues.has(k)) out.push(`${w.word}'s clue square is shared`);
