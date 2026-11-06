@@ -4,7 +4,7 @@ import { PICTURE_THEMES } from '../word-search/words';
 
 /**
  * Crossword rules (docs/definitions/crossword.md). Little grids where one letter fills two words: each word has a clue square
- * just before its first letter (to its left across, above it down) holding the word's picture. Levels 1–3 are built here; each
+ * just before its first letter (to its left across, above it down) holding the word's picture. Levels 1–4 are built here; each
  * level's build writes only its own word set.
  */
 
@@ -46,6 +46,8 @@ export interface Plan {
   blank: 'crossing' | 'crossing-first' | 'all';
   /** Decoys added to the active word's missing letters in the bank. */
   decoys: number;
+  /** The clue square holds a speaker: tapping it says the word's riddle, and Show me turns it into the picture. */
+  riddles?: boolean;
 }
 
 /** Level 1: the 13 three-letter words of Pond Typing's picture words. */
@@ -70,10 +72,17 @@ export const THEMES_3: readonly Theme[] = PICTURE_THEMES.map((t) => ({
 }));
 const WORDS_3 = [...new Set(THEMES_3.flatMap((t) => t.words))];
 
+/**
+ * Level 4: one authored set of drawn picture words, animals and things outside, each with one spoken riddle (`cw.riddle.<word>`
+ * in the voice script). Every word already has a picture, so none needs new art.
+ */
+export const WORDS_4 = ['cow', 'pig', 'hen', 'duck', 'cat', 'dog', 'fox', 'frog', 'bee', 'sun', 'moon', 'rain', 'tree', 'boat', 'cake'] as const;
+
 export const PLANS: readonly Plan[] = [
   { level: 1, name: 'One letter, two words', words: WORDS_1, puzzles: 3, count: 2, layout: 'chain', max: 4, blank: 'crossing', decoys: 2 },
   { level: 2, name: 'Two crossings', words: WORDS_2, puzzles: 2, count: 3, layout: 'chain', max: 5, blank: 'crossing-first', decoys: 1 },
   { level: 3, name: 'Picture criss-cross', words: WORDS_3, themes: THEMES_3, puzzles: 1, count: 4, layout: 'free', max: 6, blank: 'all', decoys: 2 },
+  { level: 4, name: 'Say what it is', words: WORDS_4, puzzles: 1, count: 4, layout: 'free', max: 6, blank: 'all', decoys: 2, riddles: true },
 ];
 
 export const planFor = (level: number): Plan => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
@@ -341,3 +350,6 @@ export const nextFill = (p: Puzzle, fills: Fills, i: number) => emptyBlanks(p, f
 
 /** The first word not yet right, for Help or the ghost finger with nothing active. */
 export const firstOpen = (p: Puzzle, fills: Fills) => p.words.findIndex((_, i) => !wordRight(p, fills, i));
+
+/** Level 4's spoken riddle for a word. */
+export const riddleLine = (word: string) => `cw.riddle.${word}`;

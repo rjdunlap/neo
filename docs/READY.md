@@ -6,11 +6,12 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **`crossword`, level 4 *Say what it is*** (new levels on an existing interaction: typecheck, rule tests, one play of level 4 with one wrong tile, a riddle tap and one Show me, `fingerdemo` at 4): [definition](definitions/crossword.md#levels), school's riddle clues (a speaker square; **Show me** reveals the picture and counts one hint); levels 5–6 follow as a later new-interaction build.
 - **`logic-grid`, level 5 *Who, where and what*** (new levels plus one landscape and one portrait screenshot of the wide two-block grid, `fingerdemo` at 5; see the check tier in the definition): [definition](definitions/logic-grid.md#levels), school's two sharing-header 3 × 3 blocks (friend × place and friend × thing); levels 6 and 7–8 follow as later builds.
 - **Define `helper-house` levels 5–7 (RA4: sensor placement, the comfy line, two lines)** (levels 1–4 built; docs only: links and `git diff --check`): [definition](definitions/helper-house.md), [study](deep-dives/subjects/robots-automation.md#build-slices-in-order). Settles the open parts of levels 5–7 (a frozen switch bound for the calm heater); the first build follows at closeout.
 - **`rain-garden`, levels 1–3, a new game** (toddler 1, preschool 1–2, pre-K 2–3, school 3; stone or soil changes where the drops go; Tinker Lab, else Rainbow Meadow; new-game tier, the building session does the source and land-capacity checks first): [definition](definitions/rain-garden.md#check-tier).
 - **`draw-the-pattern`, slice 3 level 10 *Dot to dot***, on decision 1's default (lap plays 1 and 10) (new interaction: typecheck, unit tests, one scripted play at lap and of toddler's order step from 10 to 2, one portrait screenshot, `fingerdemo` at 10): [dive](deep-dives/draw-the-pattern.md#build-slices-in-order).
+- **`crossword`, levels 5–6 *Written clues* and *The mini*** (grown-up; a new interaction: the A–Z keyboard and frozen 5 by 5 minis; new-interaction tier, see the check tier in the definition): [definition](definitions/crossword.md#levels), levels 1–4 built.
+- **Define Mossy Path 4–7 *find the way*, a maze opening (PP1)** (`puzzle-pages`; toddler to school; docs only, with the session's source check of the maze-planning studies): [ladder](deep-dives/subjects/puzzle-pages.md#a-first-games-ladder-mossy-path-find-the-way), [study](deep-dives/subjects/puzzle-pages.md), [Mossy Path](GAMES.md#mossy-path).
 
 ## Queued
 
@@ -44,7 +45,6 @@ Refilled 2026-11-05 from the [study backlog](STUDY-BACKLOG.md#completed-studies-
 - **Define Gadget Bench 4** (`inventions`; a three-condition path with a conflict, revise one part; docs only): [definition so far](definitions/gadget-bench.md#what-comes-next), [study](deep-dives/subjects/inventions.md).
 - **Define Far Lights 5–8** (`astronomy`; docs only, with the parallax wording reviewed or held and levels 7–8 placed at the top of `school`): [Far Lights 1–4 as built](definitions/far-lights.md#what-comes-next), [study](deep-dives/subjects/astronomy.md#build-slices-in-order).
 - **Define Puddle Lens 7–8** (`cells-microbes`; the wall clue and *Why green?* with enumerated candidate views, coordinated with ecosystems producers and chemistry dissolving; docs only): [Puddle Lens 5–6 as built](definitions/puddle-lens.md#what-comes-next), [study](deep-dives/subjects/cells-microbes.md#build-slices-in-order).
-- **Define Mossy Path 4–7 *find the way*, a maze opening (PP1)** (`puzzle-pages`; toddler to school; docs only, with the session's source check of the maze-planning studies): [ladder](deep-dives/subjects/puzzle-pages.md#a-first-games-ladder-mossy-path-find-the-way), [study](deep-dives/subjects/puzzle-pages.md), [Mossy Path](GAMES.md#mossy-path).
 
 ### Subject research (docs only)
 

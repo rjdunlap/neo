@@ -3,8 +3,10 @@ import { Rng } from '../../engine/random';
 import { BLOCKED } from '../word-search/blocked';
 import {
   applyHelp, bankFor, clueOf, crossings, decoysFor, emptyBlanks, firstOpen, helpFor, judge, key, lettersOf, makeRound, nearest, nextFill,
-  PLANS, problems, solved, squaresOf, THEMES_3, wordRight, wordsAt, wrongSquares, WORDS_1, WORDS_2, type Fills,
+  PLANS, problems, riddleLine, solved, squaresOf, THEMES_3, wordRight, wordsAt, wrongSquares, WORDS_1, WORDS_2, WORDS_4, type Fills,
 } from './logic';
+import { SCRIPT } from '../../content/voice-script';
+import { PICTURE_WORDS } from '../pond-typing/pictures';
 
 const SEEDS = 200;
 const rev = (s: string) => s.split('').reverse().join('');
@@ -32,6 +34,35 @@ describe('word sets', () => {
         expect(BLOCKED).not.toContain(rev(w).toUpperCase());
       }
     }
+  });
+});
+
+describe('level 4 riddles', () => {
+  const plan = PLANS[3];
+  it('use 12 to 15 drawn words of three to five letters, each with its own riddle that never says the word', () => {
+    expect(plan.riddles).toBe(true);
+    expect(WORDS_4.length).toBeGreaterThanOrEqual(12);
+    expect(WORDS_4.length).toBeLessThanOrEqual(15);
+    expect(new Set(WORDS_4).size).toBe(WORDS_4.length);
+    const riddles = new Set<string>();
+    for (const w of WORDS_4) {
+      expect(w.length >= 3 && w.length <= 5).toBe(true);
+      expect(PICTURE_WORDS).toContain(w);
+      expect(w).not.toBe('pip');
+      expect(BLOCKED).not.toContain(w.toUpperCase());
+      expect(BLOCKED).not.toContain(rev(w).toUpperCase());
+      const line = (SCRIPT as Record<string, readonly string[]>)[riddleLine(w)];
+      expect(line?.length).toBeGreaterThan(0);
+      for (const say of line) expect(say.toLowerCase()).not.toMatch(new RegExp(`\\b${w}`));
+      riddles.add(line[0]);
+    }
+    expect(riddles.size).toBe(WORDS_4.length);
+  });
+
+  it('give many different four-word grids', () => {
+    const sets = new Set<string>();
+    for (let s = 1; s <= 100; s++) sets.add(makeRound(plan, new Rng(s))[0].words.map((w) => w.word).sort().join('+'));
+    expect(sets.size).toBeGreaterThan(15);
   });
 });
 

@@ -61,7 +61,7 @@ How the puzzle page maps onto what exists. "Row" means an [IDEAS](../../IDEAS.md
 
 | Puzzle-page genre | On the island | State |
 | --- | --- | --- |
-| Crossword, mini crossword | `crossword` | [Defined](../../definitions/crossword.md) 2026-11-05; levels 1–2 built 2026-11-05, level 3 queued; [notes below](#crossword) |
+| Crossword, mini crossword | `crossword` | [Defined](../../definitions/crossword.md) 2026-11-05; levels 1–4 built by 2026-11-06, levels 5–6 queued; [notes below](#crossword) |
 | Logic grid (Murdle, Dell logic problems, zebra puzzle) | `logic-grid` | [Defined](../../definitions/logic-grid.md) 2026-11-05; levels 1–2 built 2026-11-05, levels 3–4 queued; [notes below](#logic-grid-whodunit) |
 | Word search, themed word search (Strands) | [Word Search](../../GAMES.md#word-search) | Built (grown-up; school opening queued). A Strands-style "theme covers the board" level is a possible later mode |
 | Sudoku, mini sudoku, killer sudoku | [Sudoku Garden](../../GAMES.md#sudoku-garden), [Garden Rows](../../GAMES.md#garden-rows) | Built; cage sums (level 10) in READY |
@@ -220,7 +220,7 @@ Each has a default under the [October 23 standing rules](../../archive/DECISIONS
 
 Each is one session; definitions are docs only.
 
-1. **Define `crossword`**: defined in [crossword.md](../../definitions/crossword.md); levels 1–2 built 2026-11-05 and level 3 queued in READY. Notes: [crossword](#crossword).
+1. **Define `crossword`**: defined in [crossword.md](../../definitions/crossword.md); levels 1–4 built by 2026-11-06 and levels 5–6 queued in READY. Notes: [crossword](#crossword).
 2. **Define `logic-grid`**: defined in [logic-grid.md](../../definitions/logic-grid.md); levels 1–2 built 2026-11-05 and levels 3–4 queued in READY. Notes: [logic-grid](#logic-grid-whodunit).
 3. **PP1: define Mossy Path levels 4–7, *find the way*** (toddler to school; [ladder above](#a-first-games-ladder-mossy-path-find-the-way)), then build it in one session (new levels and band entries on an existing game, plus drag stepping).
 4. **PP2: define Domino Pond 1–3** (pre-K: match a patch's dots; then sums; then signs).
