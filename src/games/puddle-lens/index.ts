@@ -126,6 +126,8 @@ class PuddleLens implements Game {
   private lifeNodes: Container[][] = [];
   private ring: Graphics | null = null;
   private ringR = 0;
+  /** Level 6: the slide on its way into a tray (its scale tween is stopped if the board is rebuilt under it). */
+  private flying: Container | null = null;
   glass: Container | null = null;
   private drag: DragHandle | null = null;
   private under: Container | null = null;
@@ -243,6 +245,8 @@ class PuddleLens implements Game {
     this.relayout = false;
     this.drag?.destroy();
     this.drag = null;
+    if (this.flying) this.ctx.tw.kill(this.flying.scale);
+    this.flying = null;
     for (const c of this.board.removeChildren()) c.destroy({ children: true });
     this.lensHit = this.lensView = this.pointer = this.glass = this.under = this.underMask = this.answer = this.ring = null;
     this.layers = [];
@@ -450,7 +454,8 @@ class PuddleLens implements Game {
     this.placeSwimmers();
     this.placeGlass();
     const glowStops: Stop[] = [];
-    const glowChoice = !this.finished && this.tally.glow ? this.rightChoice : null;
+    // The right answer or tray glows only where the view can decide; below that the deciding stop glows instead.
+    const glowChoice = !this.finished && this.tally.glow && this.deciding && this.stop >= this.deciding ? this.rightChoice : null;
     if (!this.finished && this.tally.glow) {
       if (this.plan.level === 3) glowStops.push(DECIDING);
       else if (this.question) glowStops.push(...acceptedStops(this.question));
@@ -498,6 +503,7 @@ class PuddleLens implements Game {
       });
     });
     const l = this.layout;
+    if (this.ring) this.ring.visible = this.stop >= 2;
     if (this.ring && l) {
       const p = swimmerAt(life.paths[life.ringed], this.swimT);
       const k = (LIFE_SCALE[this.stop - 1] * l.lens.r) / ART_R;
@@ -746,6 +752,7 @@ class PuddleLens implements Game {
     m.scale.set(3);
     this.board.addChild(m);
     sfx.whoosh();
+    this.flying = m;
     void this.ctx.tw.to(m.scale, { x: 0.8, y: 0.8 }, { duration: 0.5 });
     await this.ctx.tw.to(m, { x: b.x, y: b.y + b.height / 2 - 20 }, { duration: 0.5, ease: ease.outCubic });
   }
