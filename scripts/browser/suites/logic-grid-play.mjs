@@ -20,7 +20,7 @@ async function logicGridPlay() {
     }
   };
   await page.evaluate(() => { kit.store.data.settings.howToCards = false; });
-  // LOGICGRID_FROM=3 skips the level 1–2 plays.
+  // LOGICGRID_FROM=3 skips the level 1–2 plays; LOGICGRID_FROM=5 plays level 5 alone.
   const from = Number(process.env.LOGICGRID_FROM ?? 1);
   // Every target's bounds in logical units, the smallest side, and whether any reaches the pet's corner (x < 160, bottom 220).
   const fitNow = () => page.evaluate(() => {
@@ -32,6 +32,7 @@ async function logicGridPlay() {
     };
   });
   let s;
+  if (from <= 4) {
   if (from <= 2) {
 
   // Level 1: a yes one clue rules out is one miss once it rests; Help points (one hint); the rest by the bot's taps.
@@ -113,6 +114,34 @@ async function logicGridPlay() {
   await finished('logic-grid');
   assert.deepEqual(await score(), [0, 0], 'level 4 saved no misses or hints');
   log('Mystery Grid 3 and 4: 3 by 3 with the ball, a ruled-out yes is one miss, Help one hint, landscape and portrait fit clear of the pet, hat clues, both to the sticker, passed');
+  }
+
+  // Level 5: two blocks (where and what) sharing the friend rows; a ruled-out yes is one miss, Help one hint, landscape and
+  // portrait fit clear of the pet, then the bot plays it out (including a "not the one with" step) to the sticker.
+  await launch('logic-grid', 5);
+  await idle(); await page.waitForTimeout(400);
+  s = await page.evaluate(() => { const g = neo.scene.game, b = g.current; return { cells: g.cells.length, thing: b.thing, items: b.items?.length, n: b.clues.length, apart: b.clues.filter((c) => c.kind === 'apart').length, hat: b.clues.some((c) => c.hat) }; });
+  assert.equal(s.cells, 18); assert.equal(s.thing, 'kite'); assert.equal(s.items, 3);
+  assert.ok(s.n >= 4 && s.n <= 5 && s.apart >= 1 && s.hat, `level 5: 4–5 clues, a not-the-one-with clue and a hat clue (${JSON.stringify(s)})`);
+  let fit5 = await fitNow();
+  assert.ok(fit5.min >= 96 && fit5.bottom <= fit5.h && fit5.right <= fit5.w && !fit5.pet, `level 5 fits landscape clear of the pet (${JSON.stringify(fit5)})`);
+  const wrong5 = await page.evaluate(() => neo.scene.game.wrongYes());
+  assert.ok(wrong5 >= 0, 'a square a clue rules out');
+  await tapSquare(wrong5);
+  await page.waitForTimeout(3100);
+  assert.deepEqual(await tally(), [1, 0], 'level 5: a ruled-out yes is one miss once it rests');
+  await page.evaluate(() => kit.tapOn(neo.scene.game.help)); await page.waitForTimeout(400);
+  assert.deepEqual(await tally(), [1, 1], 'level 5: Help counts one hint');
+  await screenshot('logic-grid-5-landscape');
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(800);
+  fit5 = await fitNow();
+  assert.ok(fit5.min >= 96 && fit5.bottom <= fit5.h && fit5.right <= fit5.w && !fit5.pet, `level 5 fits upright clear of the pet (${JSON.stringify(fit5)})`);
+  await screenshot('logic-grid-5-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(500);
+  await playOut();
+  await finished('logic-grid');
+  assert.deepEqual(await score(), [1, 1], 'level 5 saved 1 miss, 1 hint');
+  log('Mystery Grid 5: two blocks with the kite, a ruled-out yes is one miss, Help one hint, landscape and portrait fit clear of the pet, to the sticker, passed');
 }
 return { logicGridPlay };
 }

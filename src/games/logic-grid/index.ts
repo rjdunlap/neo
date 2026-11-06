@@ -2,6 +2,7 @@ import { Container, Graphics, Rectangle } from 'pixi.js';
 import { Critter, CRITTERS, type CritterName } from '../../art/critter';
 import { cream, ink, swatch } from '../../art/palette';
 import { blanketArt, bushArt, treeArt } from '../../art/picnic';
+import { prop } from '../../art/props';
 import { Backdrop } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
@@ -12,23 +13,28 @@ import { safeArea, type View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
-import type { LineId } from '../../content/voice-script';
+import { SCRIPT, type LineId } from '../../content/voice-script';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
-  answerOf, applyStep, brokenClue, contradicts, CROSSED, cycle, EMPTY, emptyMarks, FILLED, fullWrong, HATS, makeRound, nextStep, planFor,
-  shapeOf, shown, solved, wrongSquares, type Board, type Clue, type Mark, type Place, type Plan, type Step, type Thing,
+  answerOf, applyStep, blockOf, brokenClue, colOf, contradicts, CROSSED, cycle, EMPTY, emptyMarks, FILLED, fullWrong, HATS, makeRound, nextStep,
+  planFor, rowOf, shapeOf, shown, sizeOf, solved, wrongSquares, type Board, type Clue, type Item, type Mark, type Place, type Plan, type Step,
+  type Thing,
 } from './logic';
 
-/** Preschool's and pre-K's whole ranges; school starts at level 3, and levels 5–8 (school's top, grown-up) come in later builds. */
+/** Preschool's and pre-K's whole ranges; school starts at level 3, and levels 6–8 (school's top, grown-up) come in later builds. */
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 2, max: 3 },
-  school: { min: 3, max: 4 },
+  school: { min: 3, max: 5 },
 };
 
 const SQ = 100;
 const PITCH = 104;
 const CARD_W = 220;
+/** Level 5's narrower clue cards, so five fit in one row under the two blocks (the written clue shows in the caption below). */
+const CARD_S = 128;
+/** The gap between level 5's place block and item block. */
+const GAP = 12;
 /** A mark is judged once it rests this long, so the yes on the way to a no is never counted. */
 const SETTLE = 2.5;
 
@@ -80,7 +86,31 @@ function ballArt(): Graphics {
   return g;
 }
 
-const thingArt = (t: Thing) => (t === 'ball' ? ballArt() : pieArt());
+/** The missing kite (level 5): a diamond with a cross-spar and a bowed tail. */
+function kiteArt(): Graphics {
+  const g = new Graphics();
+  g.moveTo(0, 26).bezierCurveTo(-14, 40, 14, 46, 0, 60).stroke({ width: 4, color: ink, cap: 'round' });
+  for (const [x, y] of [[-4, 40], [4, 52]]) g.poly([x - 7, y - 5, x + 7, y + 5, x + 7, y - 5, x - 7, y + 5]).fill(swatch.red.fill);
+  g.poly([0, -34, 24, -4, 0, 26, -24, -4]).fill(swatch.yellow.fill).stroke({ width: 5, color: swatch.orange.line, join: 'round' });
+  g.poly([0, -34, 24, -4, 0, -4]).fill(swatch.orange.fill);
+  g.poly([0, 26, -24, -4, 0, -4]).fill(swatch.orange.fill);
+  g.moveTo(0, -34).lineTo(0, 26).moveTo(-24, -4).lineTo(24, -4).stroke({ width: 3, color: swatch.orange.line });
+  return g;
+}
+
+const thingArt = (t: Thing) => (t === 'ball' ? ballArt() : t === 'kite' ? kiteArt() : pieArt());
+
+const ITEM_COLOR = { apple: 'red', balloon: 'blue', flower: 'purple' } as const;
+
+/** Level 5's items, from `prop()`, about 60 across. */
+function itemArt(i: Item): Container {
+  const c = prop(i, ITEM_COLOR[i]);
+  c.scale.set(i === 'balloon' ? 0.56 : 0.62);
+  return c;
+}
+
+/** Fills a line's slots, for the written clue under level 5's cards. */
+const written = (id: LineId, vars: Record<string, string>) => SCRIPT[id][0].replace(/\{(\w+)\}/g, (_, k: string) => vars[k] ?? k);
 
 const HAT_COLOR = { red: swatch.red, blue: swatch.blue, yellow: swatch.yellow } as const;
 const HAT_NAME = { red: 'red striped', blue: 'blue spotty', yellow: 'yellow starry' } as const;
@@ -121,35 +151,57 @@ function card(color: { fill: number; line: number }, w = SQ, h = SQ): Graphics {
   return new Graphics().roundRect(0, 0, w, h, 18).fill(color.fill).stroke({ width: 4, color: color.line });
 }
 
-/** A clue's picture card: the friend (at level 4, just their hat), a green check or a red cross, and the place. */
+/**
+ * A clue's picture card: the friend (or just their hat), a green check or a red cross, and the place or item. Level 5's
+ * different-person card shows the place, a red cross and the item. Level 5's cards are narrower (`CARD_S`), drawn at 0.6.
+ */
 class ClueCard extends Container {
   readonly glow = new Graphics();
+  readonly w: number;
   constructor(readonly clue: Clue, b: Board) {
     super();
-    this.glow.roundRect(-12, -12, CARD_W + 24, SQ + 24, 28).fill({ color: 0xfff3a0, alpha: 0.95 });
+    const w = (this.w = b.items ? CARD_S : CARD_W);
+    const small = w < CARD_W;
+    /** The three pictures' centres, and the scale of the pictures beside the full-size card's. */
+    const [x0, x1, x2] = small ? [32, 66, 100] : [48, 110, 170];
+    const k = small ? 0.66 : 1;
+    this.glow.roundRect(-12, -12, w + 24, SQ + 24, 28).fill({ color: 0xfff3a0, alpha: 0.95 });
     this.glow.visible = false;
-    this.addChild(this.glow, card({ fill: cream, line: swatch.purple.line }, CARD_W, SQ));
+    this.addChild(this.glow, card({ fill: cream, line: swatch.purple.line }, w, SQ));
     let who: Container;
-    if (clue.hat && b.hats) {
+    if (clue.kind === 'apart') {
+      who = placeArt(b.places[clue.place]);
+      who.scale.set(0.8 * k);
+      who.position.set(x0, 50 - 4 * k);
+    } else if (clue.hat && b.hats) {
       who = hatArt(b.hats[clue.friend]);
-      who.scale.set(0.36);
-      who.position.set(48, 146);
+      who.scale.set(0.36 * k);
+      who.position.set(x0, 46 + 100 * k);
     } else {
-      const f = friendArt(b.friends[clue.friend], 0.32);
+      const f = friendArt(b.friends[clue.friend], 0.32 * k);
       f.alive = false;
-      f.position.set(48, 92);
+      f.position.set(x0, small ? 82 : 92);
       who = f;
     }
     const sign = new Graphics();
     if (clue.kind === 'direct') sign.circle(0, 0, 20).fill(swatch.green.fill).moveTo(-9, 0).lineTo(-2, 8).lineTo(10, -8).stroke({ width: 6, color: 0xffffff, cap: 'round', join: 'round' });
     else sign.circle(0, 0, 20).fill(swatch.red.fill).moveTo(-8, -8).lineTo(8, 8).moveTo(8, -8).lineTo(-8, 8).stroke({ width: 6, color: 0xffffff, cap: 'round' });
-    sign.position.set(110, 50);
-    const where = placeArt(b.places[clue.place]);
-    where.scale.set(0.8);
-    where.position.set(170, 46);
-    for (const x of [who, sign, where]) x.eventMode = 'none';
-    this.addChild(who, sign, where);
-    this.hitArea = new Rectangle(0, 0, CARD_W, SQ);
+    sign.scale.set(small ? 0.75 : 1);
+    sign.position.set(x1, 50);
+    let what: Container;
+    const item = clue.kind === 'apart' ? clue.item : clue.block ? clue.place : -1;
+    if (item >= 0) {
+      what = itemArt(b.items![item]);
+      what.scale.set(what.scale.x * k);
+      what.position.set(x2, 50);
+    } else {
+      what = placeArt(b.places[clue.place]);
+      what.scale.set(0.8 * k);
+      what.position.set(x2, 46);
+    }
+    for (const x of [who, sign, what]) x.eventMode = 'none';
+    this.addChild(who, sign, what);
+    this.hitArea = new Rectangle(0, 0, w, SQ);
   }
 }
 
@@ -178,6 +230,8 @@ class MysteryGrid implements Game {
   readonly friendCards: Container[] = [];
   readonly clueCards: ClueCard[] = [];
   private readonly clueRow = new Container();
+  /** Level 5: the written clue of the card last lit or tapped, under the row of cards (not a target). */
+  private readonly caption = label('', 22, ink, '500');
   readonly help = new Container();
   /** The missing thing, shown by its place once the grid is solved. */
   private readonly pie = new Container();
@@ -198,13 +252,14 @@ class MysteryGrid implements Game {
     this.backdrop = new Backdrop({ sky: [0xcfe0ff, 0xfff6e0], hills: [0xb3c7f2, 0xa8dc8f], horizon: 0.72, clouds: 2, seed: 223 }, ctx.view);
     for (const g of [this.markLayer, this.glowLayer]) g.eventMode = 'none';
     this.faces.eventMode = 'none';
+    this.caption.eventMode = 'none';
     const hb = new Graphics().roundRect(-60, -50, 120, 100, 26).fill(swatch.yellow.fill).stroke({ width: 5, color: swatch.yellow.line });
     const q = label('?', 60, ink);
     q.eventMode = 'none';
     this.help.addChild(hb, q);
     this.help.hitArea = new Rectangle(-60, -50, 120, 100);
     onTap(this.help, () => this.useHelp(), { cooldown: 500 });
-    ctx.stage.addChild(this.backdrop, this.board, this.clueRow, this.help);
+    ctx.stage.addChild(this.backdrop, this.board, this.clueRow, this.caption, this.help);
   }
 
   get current(): Board | undefined {
@@ -218,13 +273,19 @@ class MysteryGrid implements Game {
 
   private async intro() {
     await this.ctx.say(this.line('mystery'));
-    await this.ctx.instruct((['lg.one', 'lg.two', 'lg.three', 'lg.four'] as const)[this.plan.level - 1]);
+    await this.ctx.instruct((['lg.one', 'lg.two', 'lg.three', 'lg.four', 'lg.five'] as const)[this.plan.level - 1]);
     await this.readClues();
   }
 
-  /** The lines that name the missing thing: `lg.event` for the pie, `lg.event.ball` for the ball. */
+  /** The lines that name the missing thing: `lg.event` for the pie, `lg.event.ball` for the ball, `lg.event.kite` for the kite. */
   private line(id: 'mystery' | 'event' | 'who' | 'reveal'): LineId {
     return this.plan.thing === 'pie' ? `lg.${id}` : `lg.${id}.${this.plan.thing}`;
+  }
+
+  /** The event clue: by its place, or (level 5) tied to its item. */
+  private sayEvent(b: Board) {
+    if (b.eventItem) return this.ctx.say('lg.event.kite.item', { item: b.items![b.event] });
+    return this.ctx.say(this.line('event'), { place: b.places[b.event] });
   }
 
   private async readClues() {
@@ -233,16 +294,26 @@ class MysteryGrid implements Game {
     const at = this.index;
     for (const c of this.clueCards) {
       if (this.index !== at || this.finished) return;
-      c.glow.visible = true;
+      this.lightClues([this.clueCards.indexOf(c)]);
       await this.sayClue(c.clue, b);
       if (this.index !== at || this.finished) return;
       c.glow.visible = false;
     }
   }
 
+  /** A clue's line and its slots: `lg.clue.not`, `lg.clue.hat.has`, `lg.clue.apart` and so on (`remind` for the miss reminder). */
+  private clueLine(c: Clue, b: Board, id: 'clue' | 'remind'): [LineId, Record<string, string>] {
+    if (c.kind === 'apart') return [`lg.${id}.apart`, { place: b.places[c.place], item: b.items![c.item] }];
+    const kind = c.block ? (c.kind === 'direct' ? 'has' : 'hasnot') : c.kind;
+    const what: Record<string, string> = c.block ? { item: b.items![c.place] } : { place: b.places[c.place] };
+    if (c.hat && b.hats) return [`lg.${id}.hat.${kind}`, { hat: HAT_NAME[HATS[b.hats[c.friend]].color], ...what }];
+    return [`lg.${id}.${kind}`, { friend: nameOf(b.friends[c.friend]), ...what }];
+  }
+
   private sayClue(c: Clue, b: Board, id: 'clue' | 'remind' = 'clue') {
-    if (c.hat && b.hats) return this.ctx.say(`lg.${id}.hat.${c.kind}` as const, { hat: HAT_NAME[HATS[b.hats[c.friend]].color], place: b.places[c.place] });
-    return this.ctx.say(`lg.${id}.${c.kind}`, { friend: nameOf(b.friends[c.friend]), place: b.places[c.place] });
+    const [line, vars] = this.clueLine(c, b, id);
+    if (b.items) this.caption.text = written(this.clueLine(c, b, 'clue')[0], vars);
+    return this.ctx.say(line, vars);
   }
 
   update(dt: number) {
@@ -267,10 +338,24 @@ class MysteryGrid implements Game {
     const b = this.current;
     if (!b) return;
     const s = shapeOf(b);
-    const gw = (s.cols + 1) * PITCH - 4, gh = (s.rows + 1) * PITCH - 4;
+    const blocks = s.blocks ?? 1;
+    const gw = (s.cols * blocks + 1) * PITCH - 4 + (blocks - 1) * GAP, gh = (s.rows + 1) * PITCH - 4;
     const safe = safeArea(v);
     const n = this.clueCards.length;
-    if (this.upright) {
+    if (b.items) {
+      // Level 5: the two blocks across, the five narrow cards in one row under them, the written clue under the cards.
+      const row = n * (CARD_S + 10) - 10;
+      const up = this.upright;
+      this.board.position.set(up ? (v.w - gw) / 2 : Math.max(safe.x + 180, (v.w - gw) / 2), 150);
+      const y = this.board.y + gh + 22;
+      const x = up ? (v.w - row) / 2 : this.board.x;
+      this.clueCards.forEach((c, i) => c.position.set(x + i * (CARD_S + 10), y));
+      this.caption.position.set(x + row / 2, y + SQ + 30);
+      this.caption.style.wordWrap = true;
+      this.caption.style.wordWrapWidth = up ? v.w - 40 : row;
+      if (up) this.help.position.set(Math.min(v.w - 110, v.w / 2 + 300), Math.min(v.h - 114, 910));
+      else this.help.position.set(Math.max(x + row + 70, v.w - 90), Math.min(v.h - 80, y + SQ / 2));
+    } else if (this.upright) {
       // A 3 by 3 sits a little higher so a second row of clues stays above the pet's corner (y804).
       const big = s.rows >= 3;
       this.board.position.set((v.w - gw) / 2, big ? 150 : 160);
@@ -292,10 +377,15 @@ class MysteryGrid implements Game {
     if (this.pie.parent) this.placePie();
   }
 
+  /** A column's left edge on the board: past the friend headers, and past the place block and its gap for an item. */
+  private colX(col: number, block = 0) {
+    const s = shapeOf(this.current!);
+    return PITCH + block * (s.cols * PITCH + GAP) + col * PITCH;
+  }
+
   private cellAt(square: number) {
-    const b = this.current!;
-    const s = shapeOf(b);
-    return { x: PITCH + (square % s.cols) * PITCH, y: PITCH + Math.floor(square / s.cols) * PITCH };
+    const s = shapeOf(this.current!);
+    return { x: this.colX(colOf(s, square), blockOf(s, square)), y: PITCH + rowOf(s, square) * PITCH };
   }
 
   // The board ----------------------------------------------------------------------------
@@ -339,9 +429,21 @@ class MysteryGrid implements Game {
       art.position.set(50, 44);
       art.eventMode = 'none';
       h.addChild(art);
-      h.position.set(PITCH + i * PITCH, 0);
+      h.position.set(this.colX(i), 0);
       h.hitArea = new Rectangle(0, 0, SQ, SQ);
       onTap(h, () => this.tapPlace(i), { cooldown: 300 });
+      this.board.addChild(h);
+    });
+    b.items?.forEach((it, i) => {
+      const h = new Container();
+      h.addChild(card({ fill: swatch.orange.light, line: swatch.orange.line }));
+      const art = itemArt(it);
+      art.position.set(50, 50);
+      art.eventMode = 'none';
+      h.addChild(art);
+      h.position.set(this.colX(i, 1), 0);
+      h.hitArea = new Rectangle(0, 0, SQ, SQ);
+      onTap(h, () => this.tapItem(i), { cooldown: 300 });
       this.board.addChild(h);
     });
     b.friends.forEach((f, i) => {
@@ -359,7 +461,8 @@ class MysteryGrid implements Game {
       this.friendCards.push(h);
       this.board.addChild(h);
     });
-    for (let i = 0; i < s.rows * s.cols; i++) {
+    this.caption.text = '';
+    for (let i = 0; i < sizeOf(s); i++) {
       const cell = new Container();
       cell.addChild(card({ fill: 0xffffff, line: swatch.white.line }));
       cell.position.copyFrom(this.cellAt(i));
@@ -392,7 +495,7 @@ class MysteryGrid implements Game {
       const { x, y } = this.cellAt(i);
       if (m.mark === FILLED) {
         g.roundRect(x + 6, y + 6, SQ - 12, SQ - 12, 14).fill(swatch.green.light);
-        const face = friendArt(b.friends[Math.floor(i / s.cols)], 0.24);
+        const face = friendArt(b.friends[rowOf(s, i)], 0.24);
         face.alive = false;
         face.position.set(x + 42, y + 88);
         this.faces.addChild(face);
@@ -420,6 +523,8 @@ class MysteryGrid implements Game {
 
   private lightClues(ids: number[]) {
     this.clueCards.forEach((c, i) => (c.glow.visible = ids.includes(i)));
+    const b = this.current;
+    if (b?.items && ids.length) this.caption.text = ids.map((i) => written(...this.clueLine(b.clues[i], b, 'clue'))).join(' ');
   }
 
   // Taps ---------------------------------------------------------------------------------
@@ -504,6 +609,13 @@ class MysteryGrid implements Game {
     void this.ctx.say('lg.place', { place: b.places[i] });
   }
 
+  private tapItem(i: number) {
+    const b = this.current;
+    if (!b?.items || this.finished) return;
+    sfx.pop(6);
+    void this.ctx.say('lg.item', { item: b.items[i] });
+  }
+
   private tapFriend(i: number) {
     const b = this.current;
     if (!b || this.finished || this.busy) return;
@@ -520,7 +632,7 @@ class MysteryGrid implements Game {
       const card = this.friendCards[i];
       card.alpha = 0.6;
       void this.ctx.tw.to(card, { alpha: 1 }, { duration: 1.2 });
-      void this.ctx.say(this.line('event'), { place: b.places[b.event] });
+      void this.sayEvent(b);
     }
   }
 
@@ -528,7 +640,7 @@ class MysteryGrid implements Game {
 
   private placePie() {
     const b = this.current!;
-    this.pie.position.set(this.board.x + PITCH + b.event * PITCH + 50, this.board.y - 6);
+    this.pie.position.set(this.board.x + this.colX(b.event, b.eventItem ? 1 : 0) + 50, this.board.y - 6);
   }
 
   private async solvedBoard() {
@@ -551,7 +663,7 @@ class MysteryGrid implements Game {
     this.placePie();
     this.pie.scale.set(0);
     void this.ctx.tw.to(this.pie.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack });
-    await this.ctx.say(this.line('event'), { place: b.places[b.event] });
+    await this.sayEvent(b);
     if (this.index !== at || this.finished) return;
     this.busy = false;
     for (const c of this.critters) c.hop();
@@ -593,7 +705,7 @@ class MysteryGrid implements Game {
       this.hints++;
       this.pointed = { square: -1, mark: EMPTY, clues: [], why: 'clue' };
       this.critters[answerOf(b)]?.hop(1.4);
-      void this.ctx.say(this.line('event'), { place: b.places[b.event] });
+      void this.sayEvent(b);
       return;
     }
     const st = nextStep(b, this.marks);
@@ -615,8 +727,12 @@ class MysteryGrid implements Game {
     this.pulse = st.square;
     this.lightClues(st.clues);
     this.drawGlow();
-    if (st.why === 'last') void this.ctx.say('lg.last', { friend: nameOf(b.friends[Math.floor(st.square / b.places.length)]) });
-    else if (st.why === 'col') void this.ctx.say('lg.last.place', { place: b.places[st.square % b.places.length] });
+    const s = shapeOf(b);
+    const item = blockOf(s, st.square) === 1;
+    if (st.why === 'last') void this.ctx.say(item ? 'lg.last.thing' : 'lg.last', { friend: nameOf(b.friends[rowOf(s, st.square)]) });
+    else if (st.why === 'col' && item) void this.ctx.say('lg.last.item', { item: b.items![colOf(s, st.square)] });
+    else if (st.why === 'col') void this.ctx.say('lg.last.place', { place: b.places[colOf(s, st.square)] });
+    else if (st.why === 'apart') void this.sayClue(b.clues[st.clues.find((i) => b.clues[i].kind === 'apart')!], b);
     else void this.sayClue(b.clues[st.clues[0]], b);
   }
 
@@ -649,7 +765,7 @@ class MysteryGrid implements Game {
   wrongYes() {
     const b = this.current!;
     const s = shapeOf(b);
-    for (let i = 0; i < s.rows * s.cols; i++) if (this.marks[i] === EMPTY && contradicts(b, i, FILLED).length) return i;
+    for (let i = 0; i < sizeOf(s); i++) if (this.marks[i] === EMPTY && contradicts(b, i, FILLED).length) return i;
     return -1;
   }
 
