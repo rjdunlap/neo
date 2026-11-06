@@ -129,7 +129,99 @@ Device and person checks stay open: whether a four-year-old reads the failure fr
 
 ## What comes next
 
-**Gadget Bench 4** (study slice 3): a path of three conditions where one part does not fit with another, so she reads the first failure, changes one part and tries again (the `Show me` rule extends to conflicts). **Levels 5–6** add a size constraint (the garden gate) and the new-kit transfer round, each with an enumeration test. **Level 7** gives two neighbors different criteria with several accepted designs. **Workshop Cases** (older/family case) is defined after its registration decision. None is defined here.
+**Gadget Bench 4** (study slice 3) is defined [below](#level-4-fix-it-day-definition) as *Fix-It Day*: yesterday's cart on a longer path, the first conflict, one part revised. **Levels 5–6** add a size constraint (the garden gate) and the new-kit transfer round, each with an enumeration test. **Level 7** gives two neighbors different criteria with several accepted designs. **Workshop Cases** (older/family case) is defined after its registration decision. None of those is defined here.
+
+## Level 4, Fix-It Day (definition)
+
+Defined 2026-11-06 as slice 3 of the [inventions study](../deep-dives/subjects/inventions.md#build-slices-in-order) (*a path of three conditions; build, Try, read the first failure, change one part, Try again*, 3-5-ETS1-3) and, in the same level, the [engineering-design study](../deep-dives/subjects/engineering-design.md)'s **Fix-It Day** (*a neighbor's gadget worked yesterday but not on today's path; Try, find the part, swap one from the reuse shelf*). Docs only: written against the code as built (`src/games/gadget-bench/`, Painted Canyon, levels 1–3), not the original packet above. Like levels 1–3 it uses invented toy parts with stated properties and names no real invention, inventor or tool, so no reviewer gates it. The study's worn-or-broken-part repair is not in this level: nothing on the cart wears out.
+
+**Fun action and purpose:** a neighbor rolls in with the cart that worked yesterday. Today's path is longer: one more condition. She taps Try and the cart stops at the new condition; the obvious fix (the float for the puddle) makes it stop at the bump instead, because **two jobs need the same socket**. She reads the two stops, finds the part on the reuse shelf that does both jobs, swaps it in and Tries again. The learning purpose: **a failure point tells you which part to change** (3-5-ETS1-3), and **when two needs pull on one place, look for one part that meets both** rather than adding more. It is the study's first conflict ("conflicts begin at level 4 or later").
+
+### Identity and overlap (level 4)
+
+- **Level 2, Change one part,** is the nearest rung: there the first sensible change works. At level 4 the first sensible change always fails at the other conflicting condition (a rule test proves it), so reading the second stop is the point.
+- **Workshop Cases** (later, older) combines the strongest parts of three prototypes from a results table with a built-in conflict. Level 4 previews only the smallest piece of that, one guided conflict on one cart, with no table and no prototypes.
+- **Welcome Ways level 7** (repair the old entrance for a new friend) designs one entrance for several visitors; Gadget Bench stays one neighbor, one cart, one path.
+
+### The model, extended (`logic.ts`)
+
+- **A sixth part, the paddle wheels:** right socket `under`, fixes **`bump` and `puddle`**. Picture: two tall teal wheels with flat paddle blades round the rim; spoken "the paddle wheels". An invented toy (the definition's [decision 4](#open-decisions) applies). It appears only in level 4 trays.
+- **`PartSpec.fixes` becomes a list** (`Condition[]`; every other part keeps its one condition, the flag none). Each condition still has exactly one responsible socket (`bump` and `puddle`: `under`; `rain`: `top`; `dark`: `front`), so `need(c)` keeps returning the single-job part and its socket (it never returns the paddle wheels), and `runPath` asks whether **the part in `need(c).socket` lists `c` in its `fixes`**. The failure result is unchanged (`at`, `socket`, and `part` = the single-job part).
+- **Levels 1–3 do not change:** their trays and pairs never hold the paddle wheels, and for any gadget without the paddle wheels the new `runPath` gives exactly the old result.
+- **`socketConflict(path)`** keeps its meaning; every level-4 path has one (`bump` and `puddle`), and still no level 1–3 path does.
+- **Round shape:** a level-4 round carries `yesterday: { path, gadget }` (like level 2's `shown`) and today's `path`.
+  - The cart: `under` holds the single-job part for the **old** condition (`bump` gives the big wheels, `puddle` the float), and the **third** condition's socket holds its part (`rain`: umbrella on `top`; `dark`: lantern at `front`). The remaining socket is empty.
+  - Yesterday's path: `smooth`, then the old condition and the third in a seeded order. The cart passes it (tested).
+  - Today's path: `smooth`, then the old condition, the **new** one (the other of `bump`/`puddle`) and the third, in a seeded order.
+  - The **reuse shelf** holds two parts: the paddle wheels and the single-job part for the new condition (the obvious fix), in seeded order. The tray has **four slots**: the shelf's two plus one home slot for each part on the cart, so anything she takes off has a place to go (level 2's tray already gives the shown part a slot).
+- **Rounds** (three, `ctx.rng` seeded):
+  1. **Authored:** Bunny; yesterday `smooth, bump, dark` with big wheels and lantern; today `smooth, bump, puddle, dark`; shelf float then paddle wheels. Try stops at the puddle.
+  2. A **float** cart (old `puddle`, new `bump`); third seeded (`rain` or `dark`); path order seeded.
+  3. A **big-wheels** cart with the umbrella (old `bump`, third `rain`); path order seeded.
+
+  Neighbors are seeded from `NEIGHBORS` (Bunny first), a different one each round. Across the three rounds both carts and both thirds appear.
+- **Passing set:** every passing design has the paddle wheels in `under` and the third part in its socket; the remaining socket may be empty or hold the shelf's single-job part (it does nothing there). The fewest-change fix from the cart is **exactly one part** (`under`: old part to paddle wheels).
+
+### Accounting, help and finishing (level 4)
+
+The level 1–3 rules hold (Try free, a failing Give a miss, the glow and Show a hint each a hint, a supported finish), with three additions:
+
+- **Help follows a passing design, never the first stop.** Today's `helpFor` installs the part the first unmet condition needs, which at a conflict swaps the big wheels and the float back and forth forever. From level 4, `helpFor` picks **the passing design that keeps the most of her placed parts** (ties: the one that leaves the remaining socket as she has it) and installs that design's part in the first unmet condition's socket, or, when that socket already matches, in the first other socket that differs. On levels 1–3 this gives the same part as today (each has one essential passing design). At a conflict it installs the paddle wheels.
+- **A repeated failing Try lights the glow.** As well as two Trys in a row failing at the same condition with that socket unchanged, at level 4 a failing Try whose whole assembly matches **any** earlier failing Try this round lights the glow. That catches the big wheels, float, big wheels loop, where the stop changes every time so the old rule never fires. The glow rings `under` and wiggles the paddle wheels; it counts once a round, as now.
+- **The conflict line, uncounted:** the first time a round's failing Trys or Gives have stopped at both `bump` and `puddle`, the pet says `bench.conflict` once. It explains what happened, not what to do, so it counts nothing.
+
+Show a hint counts up to the number of sockets in which her gadget differs from the chosen passing design (normally one), then repeats the words. After the glow, one more miss installs the paddle wheels (the supported finish, one hint). Giving the unchanged cart is a miss like any failing Give. A passing Give ends the round with the usual spread (two more neighbors with the same cart); after three rounds, `ctx.finish({ misses, hints })` and one sticker. Nothing is saved or filed.
+
+### Screen and controls (level 4)
+
+The level 2–3 layout with **four path tiles** (`smooth` plus three) and **four tray slots**: `benchLayout(4, 4, 4, view)`. Each round opens with the neighbor rolling the cart onto the bench while the request card shows **yesterday's path** as small faded tiles. Today's path then fills the tiles at the right, with a **sparkle on the new condition's tile** (a picture, no reading). Dragging, socket snapping, swapping (the old part glides to its home slot), Try, the stop with its socket pulse, Give and the version strip all work as at levels 2–3. The paddle wheels draw in `art.ts` with `src/art/palette.ts`, at the same 110-unit part size.
+
+### Speech (`voice-script.ts`)
+
+New lines:
+- `bench.instruct.fix`: "{neighbor}'s cart worked yesterday. Today's path is longer. Try it, then fix it!"
+- `bench.conflict`: "Big wheels for the bump, a float for the puddle, and only one fits underneath!"
+- `bench.yesterday`: "Here's {neighbor} with yesterday's cart." (the arrival; uncounted)
+
+The existing `fail.*`, `glow` ("The glowing socket needs {part}."), `hint.part`, `installed`, `give.*` and `spread` lines take the paddle wheels by name through `PARTS`. As before, no line says what real wheels, floats or paddles do.
+
+### Rule tests (`logic.test.ts`)
+
+- **The model:** the paddle wheels pass `bump` and `puddle` in `under` and nothing anywhere else. For every assembly of the five old parts, the new `runPath` returns exactly what the old single-part rule returned (a table of the old answers kept in the test). Level 1–3 briefs (500 seeds) never hold the paddle wheels.
+- **Level 4 (500 seeds):**
+  - yesterday's cart passes yesterday's path, and today's path holds exactly three conditions after `smooth` with one conflict;
+  - the cart as given fails today at the new condition;
+  - the obvious fix (the shelf's single-job part in `under`) fails at the old condition;
+  - no assembly without the paddle wheels passes;
+  - `passingDesigns` over the cart's parts plus the shelf, with all three sockets open, is non-empty, and every member has the paddle wheels in `under` and the third part in its socket;
+  - the fewest-change pass differs from the cart in exactly one socket;
+  - round 1 matches the authored table;
+  - across the three rounds both carts and both thirds appear, and no neighbor repeats.
+- **Help:** from every assembly of a level-4 round's four parts, repeating `helpFor` then `applyHelp` reaches a passing gadget within three steps and never removes a part that belongs to the chosen passing design. From the cart, and from the obvious fix, it installs the paddle wheels. Levels 1–3 give the same help part as before for every assembly of their trays.
+- **Tally:** a scripted level-4 round (Try the cart; Try with the float; Try with the big wheels again, which lights the glow once; Show a hint twice, which counts once and then repeats the words) counts the hints exactly, with no misses. The conflict line fires once, never adds a hint, and never fires at levels 1–3.
+- **Layout:** the layout cases gain `[4, 4, 4]` in landscape and portrait (parts and sockets at least 100, buttons 110, nothing overlapping or under a corner). If a view returns null, the build adds a second tray row rather than shrinking a part.
+- **Ghost finger:** `nextMove` at level 4: Try the cart as given (a free stop at the new condition), drag the part help names (the paddle wheels), Try, Give. A simulated bot round passes in each of 200 seeded briefs.
+
+### Registration, ladder and how-to card
+
+- **Bands:** school `{ min: 2, max: 4 }`. Pre-K stays `{1,3}` and preschool `{1,1}`. Level 4 is at the top of school: two stops and a conflict ask for reading a sequence of failures, which the study places at 3-5-ETS1-3. `planFor` and `briefFor` clamp to `1..4` instead of `1..3`.
+- **Plan:** `PLANS[4] = { name: 'Fix-It Day', describe: "Fix-It Day: yesterday's cart meets a longer path, and one part has to do two jobs" }`.
+- **How-to card** (`src/content/howto.ts`):
+  - New step `{ from: 4, to: 4 }`: "Try the cart, see where it stops, then swap in a part from the shelf and Try again."
+  - The Give step widens to `{ from: 2, to: 4 }`.
+  - New note `{ from: 4, to: 4 }`: "When two needs want the same socket, one part has to do both jobs. Trying is never wrong; a Give that does not work counts as a miss, and the glow and Show a hint each count as a hint." The conflict line is spoken help and counts nothing.
+- **Co-play:** unchanged (Client and inventor; Tester points to where it will stop). **Off-screen:** unchanged. No new page card.
+
+### Check tier (level 4)
+
+A new level on the existing drag, Try and Give interaction, so the build session runs:
+- `npm run typecheck`;
+- the `gadget-bench` rule tests above, plus the registry and how-to tests, because the school range and the card change (`npx vitest run src/games/gadget-bench src/games/registry src/content/howto`);
+- one browser play of level 4 only through the `gadget-bench` case: a free failing Try, the obvious-fix Try that stops at the bump and speaks the conflict line, a failing Give for a miss, then the paddle wheels and a passing Give;
+- one portrait screenshot of level 4;
+- `fingerdemo` at level 4.
+
+`npm run build` is needed only if the build touches shared engine or art files beyond the game's own folder, `voice-script.ts` and `howto.ts`. Device and person checks stay open: whether a six-year-old reads two stops at one socket as a conflict, and how the iPad says "paddle wheels".
 
 ## Open decisions
 
@@ -137,3 +229,4 @@ Device and person checks stay open: whether a four-year-old reads the failure fr
 2. **Accounting.** Default: a failing Try is free, a failing Give is a miss, the glow counts as a hint (the study's rule and Chain Reaction's precedent). Alternative: an uncounted glow, which would make every preschool round read as smooth.
 3. **Keeping the gadget.** Default: nothing is kept or filed; the version strip lives in the round. Filing a finished gadget as a creation or a journal entry waits for the developer's call on the study's version-strip question.
 4. **Part names and the decoy.** Default: five invented toy parts including a decoy flag. A part-table wording review is optional here (none names a real device) but welcome before the lantern is paired with a real candle or lamp in a later transfer level.
+5. **Level 4's band and the conflict line** (defaults: level 4 is school only, the top of `school`; the conflict line is uncounted). Pre-K could reach level 4 later if a person sees pre-K players read two stops; that is a device observation, not a build blocker.
