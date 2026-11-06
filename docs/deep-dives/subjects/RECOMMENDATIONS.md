@@ -969,3 +969,19 @@ Completion with spoken support is not evidence of independent understanding of t
 | **FS5 Maker Lane plans**, **FS6 Made far away** | sketches | A finite-orders plan puzzle (read the cooking study's Picnic Pantry first; Lantern Lake after a capacity test) and goods that arrive by ferry (overlaps Caravan Days and Ferry Jam) |
 
 [Ordered slices](food-fiber-systems.md#build-slices-in-order). Decision leans: a new game rather than an extension; four chains, milk and eggs only as level 3 beginnings; shearing drawn as a haircut, no meat, leather or slaughter; child and enslaved labour behind cotton not on a child's screen; lines marked for an agricultural-literacy or textile reviewer; the card is conversation only, no paper-making, dyeing or cooking instructions. Completion with spoken support is not evidence of independent understanding; whether a four-year-old picks the sheep for the sock because it is soft and the replay changes her next pick, whether the thought bubble tells her which maker comes next, and whether a grown-up uses the label card are person checks.
+
+## Puzzle pages recommendations
+
+**Recommended 2026-11-05:** [the puzzle-pages study](puzzle-pages.md), [PR #1283](https://github.com/rjdunlap/neo/pull/1283). Opened: Common Core K.CC, K.OA, K.G, 1.OA, 1.NBT and RF.K; the Highlights and Kumon age listings; Völter and Call 2014, Miyata 2014, Mody and Carey 2016, Woods 2013; the Word Building study (McCandliss et al. 2003); Tatham's collection and generator guide; the *Murdle* preview; the NYT Games, LinkedIn and Puzzmo pages named in the study. NYT, Puzzmo, the Guardian and The Times sites were blocked. The island already covers much of the puzzle page; the gaps are a maze, domino and number-crossing grids, adjacency placement (Star Battle, Tents) and an absurd-scene puzzle. Nothing is daily: each game's levels are a fixed easy-to-hard book.
+
+| Candidate | Next action | Complete slice / boundary |
+| --- | --- | --- |
+| **Crossword** and **Logic Grid** · new games | definitions already in READY | Use the study's [crossword](puzzle-pages.md#crossword) and [logic-grid](puzzle-pages.md#logic-grid-whodunit) notes; each level authors only its own words, cast and clues |
+| **PP1 Mossy Path 4–7, *find the way*** · toddler–school · new levels and bands | define (READY) | Same turtle and stepping; mazes are trees with one route; follow the moss (no fork), which way (a free short branch), look before you go (a seen dead end is a miss), snack on the way (two goals in order). [Ladder](puzzle-pages.md#a-first-games-ladder-mossy-path-find-the-way) |
+| **PP2 Domino Pond 1–3** · pre-K–grown-up · new game | define after PP1 | Lay dominoes so patches meet their signs: matching dots, then sums, then < > ≠; any valid placement is accepted |
+| **PP3 Bunny Patches 1–3** (IDEAS *Garden Queens*) · pre-K/school–grown-up · new game | define after PP2 | One bunny per row, column and patch, none touching; 4×4 to 6×6, grown-up 8×8 at par later |
+| **PP4 Garden Rows, *the bee counts tall flowers*** · school | define after Garden Rows' queued levels | Skyscrapers on 3×3 with every clue, then 4×4 with clues removed |
+| **PP5 Sum Crates**, **PP6 Campsite**, **PP7 Silly Scene** | sketches | Kakuro, Tents and *What's Wrong?*; define after PP2 or PP3 is built, checking Fruit Sums, Not Always and Who Am I |
+| **PP8 A puzzle page at the table** · grown-ups' page | write after the first build | Draw mazes for each other, a spoken word ladder, counting domino dots; plain HTML; no learning claim |
+
+[Ordered slices](puzzle-pages.md#build-slices-in-order). Defaults: the maze is a Mossy Path opening, truth-and-lie clues are left out, generic names only.
