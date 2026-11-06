@@ -84,9 +84,98 @@ export function boardsFor(rng: Rng, authored: boolean): Board[] {
 export type MatchVerdict = 'same' | 'too-bright' | 'too-dim';
 export const judgeMatch = (b: Board, stop: Stop): MatchVerdict => (stop === b.r ? 'same' : stop < b.r ? 'too-bright' : 'too-dim');
 
+// ----- level 5: which is farther? -----
+
+/** The farther (dimmer-looking) light of a pair. Level 5 shows level 3's pairs, so the farther is in lane A once and B once. */
+export const fartherOf = (p: Pair): Lane => other(brighterOf(p));
+export type FartherVerdict = 'right' | 'nearer';
+export const judgeFarther = (p: Pair, lane: Lane): FartherVerdict => (lane === fartherOf(p) ? 'right' : 'nearer');
+
+// ----- level 6: near to far -----
+
+/** Level 6's two stop sets: every neighbour at least 2.25× apart ({x, 3, 4} never). */
+export const ORDER_SETS: readonly (readonly [Stop, Stop, Stop])[] = [[1, 2, 3], [1, 2, 4]];
+
+/** Three lights in the window's three spots, left to right: each spot's stop. */
+export interface OrderBoard {
+  stops: [Stop, Stop, Stop];
+}
+/** The window spots, nearest first: the only accepted order. */
+export const nearOrder = (b: OrderBoard): number[] => [0, 1, 2].sort((i, j) => b.stops[i] - b.stops[j]);
+const sorted = (s: readonly Stop[]) => s.every((x, i) => i === 0 || s[i - 1] < x);
+
+/** Two boards, one per stop set, each shuffled so it is never already nearest-to-farthest left to right. Authored: [3, 1, 2], then {1, 2, 4}. */
+export function orderBoardsFor(rng: Rng, authored: boolean): OrderBoard[] {
+  const sets = authored ? [...ORDER_SETS] : rng.shuffle([...ORDER_SETS]);
+  return sets.map((set, k) => {
+    if (authored && k === 0) return { stops: [3, 1, 2] };
+    let stops = [...set];
+    while (sorted(stops)) stops = rng.shuffle([...set]);
+    return { stops: stops as [Stop, Stop, Stop] };
+  });
+}
+
+/** The first wrong position of a full set of picks (spot indices in tap order), or 'right'. */
+export const judgeOrder = (b: OrderBoard, picks: readonly number[]): 'right' | number => {
+  const want = nearOrder(b);
+  const i = want.findIndex((s, k) => picks[k] !== s);
+  return i < 0 ? 'right' : i;
+};
+
+/**
+ * Level 6's marks: picks[k] is the spot marked k + 1. Tapping an unmarked light gives it the next mark; tapping a marked
+ * one clears it and every later mark (free). Locked marks (from a hint) are always a correct nearest-first prefix, so the
+ * board stays solvable; they never clear.
+ */
+export class OrderMarks {
+  picks: number[] = [];
+  locked = 0;
+  constructor(readonly board: OrderBoard) {}
+  markOf = (spot: number): number => this.picks.indexOf(spot) + 1;
+  get full() {
+    return this.picks.length === 3;
+  }
+  /** Returns what the tap did ('locked' when it touched a hint mark, which stays). */
+  tap(spot: number): 'marked' | 'cleared' | 'locked' {
+    const k = this.picks.indexOf(spot);
+    if (k < 0) {
+      this.picks.push(spot);
+      return 'marked';
+    }
+    if (k < this.locked) return 'locked';
+    this.picks.length = k;
+    return 'cleared';
+  }
+  /** The correct marks counted from the first. */
+  get rightSoFar() {
+    const want = nearOrder(this.board);
+    let k = 0;
+    while (k < this.picks.length && this.picks[k] === want[k]) k++;
+    return k;
+  }
+  /** After a wrong pull: the marks from the first wrong one on clear (the right ones before it stay). */
+  dropWrong() {
+    this.picks.length = this.rightSoFar;
+  }
+  /** The light the next mark should go on (after the correct marks). */
+  get nextRight(): number | null {
+    const k = this.rightSoFar;
+    return k < 3 ? nearOrder(this.board)[k] : null;
+  }
+  /** A hint: clear any wrong marks, mark the next correct light and lock every mark up to it. Returns its spot, or null when all are right. */
+  hint(): number | null {
+    this.dropWrong();
+    const s = this.nextRight;
+    if (s === null) return null;
+    this.picks.push(s);
+    this.locked = this.picks.length;
+    return s;
+  }
+}
+
 // ----- help -----
 
-/** Level 3: the brighter lane. Level 4: the matching stop. */
+/** Level 3: the brighter lane. Level 4: the matching stop. (Level 5: `fartherOf`; level 6: `OrderMarks.nextRight`.) */
 export function helpFor(level: 3, at: Pair): Lane;
 export function helpFor(level: 4, at: Board): Stop;
 export function helpFor(level: 3 | 4, at: Pair | Board): Lane | Stop {
@@ -202,16 +291,24 @@ export const STOP_GAP = 120;
 export const LANE_H = 120;
 export const MIN_WINDOW = { w: 440, h: 300 };
 export const CHECK = 120;
+/** The curtain's tassel (levels 5–6), a touch circle at the strip's right end. */
+export const TASSEL = 120;
+/** Level 6's three display lanes inside the strip. */
+export const LANE_3 = 80;
 /** Width of the little house at the strip's left end. */
 export const HOUSE_W = 130;
 const M = 20;
 
 export interface FarLayout {
-  /** Levels 2–4: the side strip, the house's window, each stop's x, each lane's y. */
+  /** Levels 2–6: the side strip, the house's window, each stop's x, each lane's y. */
   strip: Rect | null;
   house: Rect | null;
   stopX: number[];
   laneY: Record<Lane, number>;
+  /** Level 6: the three display lanes' y, top to bottom (one per window spot, left to right). */
+  lanes3: number[];
+  /** Levels 5–6: the strip is display only, behind a curtain lifted by this tassel. */
+  tassel: Ring | null;
   /** The window view's frame. */
   window: Rect;
   /** Where each light sits in the window view (level 1: three lights). */
@@ -235,16 +332,16 @@ export function ringHits(c: Ring, r: Rect): boolean {
   return Math.hypot(nx - c.x, ny - c.y) < c.r;
 }
 
-/** The strip's touch circles: one per lane per stop. */
-export const stripRings = (l: FarLayout): Ring[] => (l.strip ? LANES.flatMap((lane) => l.stopX.map((x) => ({ x, y: l.laneY[lane], r: l.touchR }))) : []);
-/** The window's touch circles (levels 1 and 3) and the biggest halos (stop 1) around each spot. */
+/** The strip's touch circles: one per lane per stop (none behind the curtain, where the strip is display only). */
+export const stripRings = (l: FarLayout): Ring[] => (l.strip && !l.tassel ? LANES.flatMap((lane) => l.stopX.map((x) => ({ x, y: l.laneY[lane], r: l.touchR }))) : []);
+/** The window's touch circles (levels 1, 3, 5 and 6) and the biggest halos (stop 1) around each spot. */
 export const windowRings = (l: FarLayout): Ring[] => l.spots.map((s) => ({ ...s, r: l.touchR }));
 export const haloRings = (l: FarLayout): Ring[] => l.spots.map((s) => ({ ...s, r: HALO_MAX }));
 
 /**
  * Where everything goes: the strip across the top (levels 2–4), the window view below it, right of the guide's column.
  * Null rather than a touch area under 120 (160 at level 1), stops closer than 120, a lane under 120, a window under
- * 440×300 or a Check under 120.
+ * 440×300, a Check or tassel under 120, or level 6's three spots closer than 240.
  */
 export function farLayout(v: View, level: number): FarLayout | null {
   const room: Rect = { x: 0, y: 0, w: v.w, h: v.h };
@@ -254,16 +351,21 @@ export function farLayout(v: View, level: number): FarLayout | null {
   let stopX: number[] = [];
   let laneY: Record<Lane, number> = { A: 0, B: 0 };
   let top = M;
+  let tassel: Ring | null = null;
+  let lanes3: number[] = [];
   if (level >= 2) {
     const sx = HOME_CORNER.w + M;
     strip = { x: sx, y: M, w: v.w - sx - M, h: 2 * LANE_H + 20 };
     house = { x: strip.x, y: strip.y + 10, w: HOUSE_W, h: 2 * LANE_H };
     const first = house.x + house.w + TOUCH / 2 + 10;
-    const last = strip.x + strip.w - TOUCH / 2 - 10;
+    const curtained = level >= 5;
+    if (curtained) tassel = { x: strip.x + strip.w - TASSEL / 2 - 10, y: strip.y + strip.h / 2, r: TASSEL / 2 };
+    const last = curtained ? tassel!.x - TASSEL / 2 - TOUCH / 2 : strip.x + strip.w - TOUCH / 2 - 10;
     const gap = Math.min(200, (last - first) / 3);
     if (gap < STOP_GAP) return null;
     stopX = STOPS.map((s) => first + (s - 1) * gap);
     laneY = { A: strip.y + 10 + LANE_H / 2, B: strip.y + 10 + LANE_H * 1.5 };
+    if (level === 6) lanes3 = [0, 1, 2].map((k) => strip!.y + 10 + LANE_3 * (k + 0.5));
     top = strip.y + strip.h + M;
   }
   const win: Rect = { x: left, y: top, w: v.w - left - M, h: v.h - top - M };
@@ -271,18 +373,21 @@ export function farLayout(v: View, level: number): FarLayout | null {
   const touchR = (level === 1 ? TOUCH_1 : TOUCH) / 2;
   const cx = win.x + win.w / 2;
   const cy = win.y + win.h / 2 - (level === 4 ? 30 : 0);
-  const half = level === 1 ? Math.min(240, (win.w - 2 * HALO_MAX) / 2) : Math.max(130, Math.min(200, win.w / 2 - HALO_MAX - 30));
-  const spots = level === 1 ? [-1, 0, 1].map((k) => ({ x: cx + k * half, y: cy })) : [{ x: cx - half, y: cy }, { x: cx + half, y: cy }];
+  const three = level === 1 || level === 6;
+  const half = three ? Math.min(240, (win.w - 2 * HALO_MAX) / 2) : Math.max(130, Math.min(200, win.w / 2 - HALO_MAX - 30));
+  const spots = three ? [-1, 0, 1].map((k) => ({ x: cx + k * half, y: cy })) : [{ x: cx - half, y: cy }, { x: cx + half, y: cy }];
   const check: Rect | null = level === 4 ? { x: win.x + win.w - CHECK - 20, y: win.y + win.h - CHECK - 20, w: CHECK, h: CHECK } : null;
-  const l: FarLayout = { strip, house, stopX, laneY, window: win, spots, touchR, check };
+  const l: FarLayout = { strip, house, stopX, laneY, lanes3, tassel, window: win, spots, touchR, check };
 
   // Every touch area inside the room, clear of the corners and of each other.
-  const touches = [...stripRings(l), ...(level === 1 || level === 3 ? windowRings(l) : [])];
+  const touches = [...stripRings(l), ...(level === 4 || level === 2 ? [] : windowRings(l)), ...(tassel ? [tassel] : [])];
   if (level === 1 && half < 200) return null;
+  if (level === 6 && half < 240) return null;
   if (touches.some((c) => !inside(ringBox(c), room) || corners(v).some((k) => ringHits(c, k)))) return null;
   if (touches.some((a, i) => touches.some((b, j) => i < j && ringsMeet(a, b)))) return null;
   if (corners(v).some((k) => overlaps(win, k)) || (strip && corners(v).some((k) => overlaps(strip!, k)))) return null;
   if (strip && overlaps(strip, win)) return null;
+  if (tassel && strip && !inside(ringBox(tassel), strip)) return null;
   // The halos stay inside the window, never touch each other, and the Check covers none of them.
   const halos = haloRings(l);
   if (halos.some((h) => !inside(ringBox(h), win))) return null;
@@ -294,7 +399,7 @@ export function farLayout(v: View, level: number): FarLayout | null {
 // ----- plans -----
 
 export interface PlanInfo {
-  level: 1 | 2 | 3 | 4;
+  level: 1 | 2 | 3 | 4 | 5 | 6;
   name: string;
 }
 export const PLANS: readonly PlanInfo[] = [
@@ -302,5 +407,7 @@ export const PLANS: readonly PlanInfo[] = [
   { level: 2, name: 'Come closer: drag both lights to the window' },
   { level: 3, name: 'Which looks brighter? Tap the brighter light' },
   { level: 4, name: 'Make them match: move a light until both look the same' },
+  { level: 5, name: 'Behind the curtain: tap the farther light' },
+  { level: 6, name: 'Near to far: put three lights in order' },
 ];
 export const planFor = (level: number): PlanInfo => PLANS[Math.min(PLANS.length, Math.max(1, Math.round(level))) - 1];

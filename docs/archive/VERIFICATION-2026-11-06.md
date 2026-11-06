@@ -79,3 +79,10 @@ Open: whether a six-year-old reads the jar as fewer clicks, and whether the gues
 - Review: `game-reviewer` found hardware keys unguarded; fixed.
 - Not run: `npm run build`, the levels 1-4 suites (unchanged path), a `crossword` suite case for levels 5-6, the offline check.
 - Open: device speech of the clues and a hardware keyboard on an iPad ([DEVICE-CHECKS](../DEVICE-CHECKS.md#crossword-levels-1-2-2026-11-05)).
+
+## 2026-11-06 — Mossy Path levels 4–7 find the way (PP1)
+
+- [PR #1312](https://github.com/rjdunlap/neo/pull/1312): `mossy-path` levels 4–7 (three frozen hedge mazes each, tree logic, grid pad with tap and drag stepping, walk-back, berry at level 7), bands toddler 4, preschool 4–5, pre-K 5–6, school 1–7; `entryLevels` 4, 5, 6; voice lines `moss.maze`…`moss.hint-maze`; how-to card scoped by level.
+- Ran (server http://localhost:5448, `VITE_SPEECH=off`): `npm run typecheck`; `npx vitest run src/games src/content` (all pass; `mossy-path` logic tests 14/14, 11 new); `BROWSER_SUITE=mossypath` PASS (levels 1 and 3 unchanged; level 4 one slide, 0 misses; level 7 wrong-branch miss, free re-entry, Hint counted once, berry then pond, sticker; portrait cell at least 100 and screenshot; land launch/home return); `BROWSER_SUITE=fingerdemo FINGER_ONLY=mossy-path FINGER_LEVELS=4,7` PASS (6.2 s toddler, 16.2 s school).
+- Not run: `npm run build` (no shared files or assets), the offline check, other suites.
+- Open: iPad drag feel, device speech, a child's play ([DEVICE-CHECKS](../DEVICE-CHECKS.md)); the turtle's head-turn toward a far tap is not drawn.

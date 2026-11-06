@@ -139,3 +139,61 @@ export function iconArt(size: number, nearLook = 1, farLook = 1 / 9): Container 
   c.addChild(g);
   return c;
 }
+
+/** Levels 5–6: the curtain over the side strip, folds hanging from a rail; it lifts by squashing up toward the rail. */
+export function curtainArt(r: Rect): Container {
+  const c = new Container();
+  c.position.set(r.x, r.y);
+  const g = new Graphics();
+  g.roundRect(0, 0, r.w, r.h, 26).fill(swatch.purple.fill).stroke({ width: 5, color: swatch.purple.line });
+  const folds = Math.max(4, Math.round(r.w / 70));
+  for (let i = 1; i < folds; i++) {
+    const x = (r.w / folds) * i;
+    g.moveTo(x, 14).bezierCurveTo(x - 8, r.h * 0.4, x + 8, r.h * 0.7, x, r.h - 10).stroke({ width: 4, color: swatch.purple.line, alpha: 0.5 });
+  }
+  g.roundRect(-6, -6, r.w + 12, 16, 8).fill(wood.fill).stroke({ width: 3, color: wood.line });
+  c.addChild(g);
+  return c;
+}
+
+/** The curtain's tassel: a cord from the rail ending in a big round tassel, with a touch-down ring. */
+export class Tassel extends Container {
+  readonly ring = touchRing(56);
+  readonly glow = new Graphics().circle(0, 0, 60).fill({ color: GLOW, alpha: 0.3 }).stroke({ width: 6, color: GLOW, alpha: 0.95 });
+  constructor(cordUp: number) {
+    super();
+    const g = new Graphics();
+    g.moveTo(0, -cordUp).lineTo(0, -26).stroke({ width: 5, color: swatch.yellow.line });
+    g.circle(0, -20, 10).fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line });
+    g.poly([-10, -14, 10, -14, 26, 34, -26, 34]).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line, join: 'round' });
+    for (const x of [-14, -5, 5, 14]) g.moveTo(x * 0.6, -10).lineTo(x * 1.4, 32).stroke({ width: 2, color: swatch.yellow.line, alpha: 0.7 });
+    this.glow.visible = false;
+    this.ring.alpha = 0;
+    this.addChild(this.glow, g, this.ring);
+  }
+}
+
+/** Level 6: a light's order mark, one to three dots on a dark pill under it (no numbers to read). */
+export function orderDots(n: number, y: number): Graphics {
+  const g = new Graphics();
+  if (n <= 0) return g;
+  const w = 20 + n * 22;
+  g.roundRect(-w / 2, y - 17, w, 34, 17).fill({ color: ink, alpha: 0.75 }).stroke({ width: 3, color: 0xffffff });
+  for (let i = 0; i < n; i++) g.circle(-(n - 1) * 11 + i * 22, y, 7).fill(0xffffff);
+  return g;
+}
+
+/** Level 6: the ring that shows a light has a mark (a hint's mark gets a solid gold ring). */
+export function markRing(r: number, locked: boolean): Graphics {
+  return new Graphics().circle(0, 0, r).stroke({ width: locked ? 7 : 5, color: locked ? 0xf2c94c : 0xffffff, alpha: 0.85 });
+}
+
+/** Level 6's strip has three thin lanes, so each stop is a faint line with its dots along the bottom (no posts). */
+export function stopTicks(stopX: readonly number[], r: Rect): Graphics {
+  const g = new Graphics();
+  stopX.forEach((x, k) => {
+    g.moveTo(x, r.y + 12).lineTo(x, r.y + r.h - 24).stroke({ width: 2, color: 0xffffff, alpha: 0.18 });
+    for (let i = 0; i <= k; i++) g.circle(x - k * 6 + i * 12, r.y + r.h - 12, 4).fill(0xffffff);
+  });
+  return g;
+}

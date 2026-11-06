@@ -10,10 +10,14 @@ import type { View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { answerGlow, checkArt, houseArt, iconArt, postArt, postGlow, ropeArt, sideLight, stripArt, touchRing, windowArt, WindowLight } from './art';
 import {
-  boardsFor, brighterOf, closerHelp, CloserWalk, farLayout, FarTally, GLOW, GlowTaps, judgeBrighter, judgeMatch, LANES, look, movable,
-  nearestStop, pairsFor, planFor, STOPS, type Board, type FarLayout, type Lane, type Pair, type PlanInfo, type Stop,
+  answerGlow, checkArt, curtainArt, houseArt, iconArt, markRing, orderDots, postArt, postGlow, ropeArt, sideLight, stopTicks, stripArt, Tassel,
+  touchRing, windowArt, WindowLight,
+} from './art';
+import {
+  boardsFor, brighterOf, closerHelp, CloserWalk, farLayout, fartherOf, FarTally, GLOW, GlowTaps, judgeBrighter, judgeFarther, judgeMatch, judgeOrder,
+  LANES, look, movable, nearestStop, orderBoardsFor, OrderMarks, pairsFor, planFor, STOPS, type Board, type FarLayout, type Lane, type OrderBoard,
+  type Pair, type PlanInfo, type Stop,
 } from './logic';
 
 const LEVELS: BandLevels = {
@@ -21,8 +25,10 @@ const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 3 },
   prek: { min: 3, max: 4 },
-  school: { min: 4, max: 4 },
+  school: { min: 4, max: 6 },
 };
+
+const INSTRUCT: LineId[] = ['far.instruct.glow', 'far.instruct.closer', 'far.instruct.brighter', 'far.instruct.match', 'far.instruct.farther', 'far.instruct.order'];
 
 /** Each level's authored first round leads its first round of a session, and every demonstration. */
 const authoredShown = new Set<number>();
@@ -37,6 +43,9 @@ class FarLights implements Game {
   readonly tally = new FarTally();
   readonly pairs: Pair[];
   readonly boards: Board[];
+  /** Level 6: three lights to put in order, and the marks on the one in hand. */
+  readonly orderBoards: OrderBoard[];
+  marks: OrderMarks | null = null;
   readonly taps = new GlowTaps();
   walk = new CloserWalk();
   index = 0;
@@ -60,6 +69,13 @@ class FarLights implements Game {
   stripLights: Partial<Record<Lane, Container>> = {};
   windowLights: WindowLight[] = [];
   check: Container | null = null;
+  /** Levels 5–6: the curtain over the strip, its tassel, and whether it is up. */
+  curtain: Container | null = null;
+  tassel: Tassel | null = null;
+  lifted = false;
+  /** Level 6: the strip's three display lights, one per window spot. */
+  private sideLights: Container[] = [];
+  private markArt: Container[] = [];
   private drags: DragHandle[] = [];
   private glows: Graphics[] = [];
 
@@ -69,16 +85,16 @@ class FarLights implements Game {
     const level = this.plan.level;
     const authored = !!ctx.demo || !authoredShown.has(level);
     if (!ctx.demo) authoredShown.add(level);
-    this.pairs = level === 3 ? pairsFor(ctx.rng, authored) : [];
+    this.pairs = level === 3 || level === 5 ? pairsFor(ctx.rng, authored) : [];
     this.boards = level === 4 ? boardsFor(ctx.rng, authored) : [];
+    this.orderBoards = level === 6 ? orderBoardsFor(ctx.rng, authored) : [];
     this.place();
     ctx.stage.addChild(this.backdrop, this.board);
   }
 
   start() {
     this.build();
-    const lines: LineId[] = ['far.instruct.glow', 'far.instruct.closer', 'far.instruct.brighter', 'far.instruct.match'];
-    void this.ctx.instruct(lines[this.plan.level - 1]);
+    void this.ctx.instruct(INSTRUCT[this.plan.level - 1]);
   }
 
   destroy() {
@@ -98,6 +114,11 @@ class FarLights implements Game {
 
   update() {
     if (this.plan.level === 1) this.windowLights.forEach((w, i) => w.setLook(lookAt(this.dist[i].d)));
+    else if (this.plan.level === 6) {
+      // Past the last board (the finale) the lights keep the last board's looks.
+      const b = this.orderBoards[Math.min(this.index, this.orderBoards.length - 1)];
+      this.windowLights.forEach((w, i) => w.setLook(look(GLOW, b.stops[i])));
+    }
     else for (const lane of LANES) this.windowLights[lane === 'A' ? 0 : 1]?.setLook(look(GLOW, this.live[lane]));
   }
 
@@ -105,13 +126,14 @@ class FarLights implements Game {
   private place() {
     const level = this.plan.level;
     if (level === 2) this.stops = { ...this.walk.at };
-    else if (level === 3) {
+    else if (level === 3 || level === 5) {
       const p = this.pairs[this.index];
       this.stops = { A: p.A, B: p.B };
     } else if (level === 4) {
       const b = this.boards[this.index];
       this.stops = { [b.ref]: b.r, [movable(b)]: b.m } as Record<Lane, Stop>;
-    }
+    } else if (level === 6) this.marks = new OrderMarks(this.orderBoards[this.index]);
+    this.lifted = false;
     this.live = { ...this.stops };
   }
 
@@ -142,6 +164,10 @@ class FarLights implements Game {
     this.windowLights = [];
     this.glows = [];
     this.check = null;
+    this.curtain = null;
+    this.tassel = null;
+    this.sideLights = [];
+    this.markArt = [];
     const v = this.view;
     this.backdrop.clear().rect(0, 0, v.w, v.h).fill(0x3a4372);
     const level = this.plan.level;
@@ -150,24 +176,35 @@ class FarLights implements Game {
 
     if (l.strip && l.house) {
       this.board.addChild(stripArt(l.strip), houseArt(l.house));
-      for (const lane of LANES) for (const s of STOPS) this.board.addChild(postArt(l.stopX[s - 1], l.laneY[lane], s));
+      if (level === 6) this.board.addChild(stopTicks(l.stopX, l.strip));
+      else for (const lane of LANES) for (const s of STOPS) this.board.addChild(postArt(l.stopX[s - 1], l.laneY[lane], s));
     }
     this.board.addChild(windowArt(l.window));
 
-    const count = level === 1 ? 3 : 2;
+    const count = level === 1 || level === 6 ? 3 : 2;
     for (let i = 0; i < count; i++) {
       const w = new WindowLight(l.touchR);
       w.position.set(l.spots[i].x, l.spots[i].y);
       this.board.addChild(w);
       this.windowLights.push(w);
-      if (level === 1 || level === 3) {
+      if (level !== 2 && level !== 4) {
         w.hitArea = new Circle(0, 0, l.touchR);
         onTap(w, () => this.tapWindow(i), { cooldown: 200 });
       }
     }
     this.update();
 
-    if (l.strip) for (const lane of LANES) this.buildStripLight(lane, l);
+    if (level === 6 && l.strip) {
+      const b = this.orderBoards[this.index];
+      for (let i = 0; i < 3; i++) {
+        const side = sideLight();
+        side.position.set(l.stopX[b.stops[i] - 1], l.lanes3[i]);
+        this.board.addChild(side);
+        this.sideLights.push(side);
+      }
+    } else if (l.strip) for (const lane of LANES) this.buildStripLight(lane, l);
+    if (l.strip && l.tassel) this.buildCurtain(l);
+    this.drawMarks();
     if (level === 4 && l.check) {
       const c = checkArt(l.check.w);
       c.position.set(l.check.x + l.check.w / 2, l.check.y + l.check.h / 2);
@@ -177,6 +214,43 @@ class FarLights implements Game {
       this.check = c;
     }
     this.showGlow();
+  }
+
+  /** Levels 5–6: the curtain over the strip (up if this board's answer is in) and its tassel. */
+  private buildCurtain(l: FarLayout) {
+    const curtain = curtainArt(l.strip!);
+    if (this.lifted) curtain.scale.y = 0.06;
+    this.board.addChild(curtain);
+    this.curtain = curtain;
+    const t = new Tassel(l.tassel!.y - l.strip!.y);
+    t.position.set(l.tassel!.x, l.tassel!.y);
+    t.hitArea = new Circle(0, 0, l.tassel!.r);
+    onTap(t, () => this.pullTassel(), { cooldown: 300 });
+    this.board.addChild(t);
+    this.tassel = t;
+  }
+
+  /** Level 6: each light's order dots and ring, in the window and on its strip light; the tassel glows once all three are marked. */
+  private drawMarks() {
+    for (const m of this.markArt) m.destroy();
+    this.markArt = [];
+    const m = this.marks;
+    const l = this.layout;
+    if (this.plan.level !== 6 || !m || !l) return;
+    for (let i = 0; i < 3; i++) {
+      const n = m.markOf(i);
+      if (!n) continue;
+      const w = this.windowLights[i];
+      const ring = markRing(l.touchR - 4, n <= m.locked);
+      const dots = orderDots(n, l.touchR + 18);
+      w.addChild(ring, dots);
+      const side = orderDots(n, 0);
+      side.scale.set(0.6);
+      side.position.set(this.sideLights[i].x + 48, this.sideLights[i].y);
+      this.board.addChildAt(side, this.board.getChildIndex(this.curtain ?? this.sideLights[i]));
+      this.markArt.push(ring, dots, side);
+    }
+    if (this.tassel) this.tassel.glow.visible = m.full && !this.busy;
   }
 
   private buildStripLight(lane: Lane, l: FarLayout) {
@@ -195,6 +269,11 @@ class FarLights implements Game {
       ring.alpha = 1;
       void this.ctx.tw.to(ring, { alpha: 0 }, { duration: 0.5 });
     };
+    if (level >= 5) {
+      // Behind the curtain the strip only shows where the lights are.
+      light.eventMode = 'none';
+      return;
+    }
     if (level === 3 || moored) {
       // Lights in the strip bob when tapped but do not answer.
       onTap(light, () => {
@@ -262,8 +341,9 @@ class FarLights implements Game {
     this.glows = [];
     const l = this.layout;
     if (!l || !this.tally.glow) return;
-    if (this.plan.level === 3) {
-      const k = brighterOf(this.pairs[this.index]) === 'A' ? 0 : 1;
+    if (this.plan.level === 3 || this.plan.level === 5 || this.plan.level === 6) {
+      const k = this.answerSpot();
+      if (k === null) return;
       const g = answerGlow(l.touchR);
       g.position.set(l.spots[k].x, l.spots[k].y);
       this.board.addChildAt(g, this.board.getChildIndex(this.windowLights[0]));
@@ -276,6 +356,14 @@ class FarLights implements Game {
     }
   }
 
+  /** The window spot the answer glow and hint point at (levels 3, 5 and 6). */
+  private answerSpot(): number | null {
+    const level = this.plan.level;
+    if (level === 6) return this.marks?.nextRight ?? null;
+    const p = this.pairs[this.index];
+    return (level === 5 ? fartherOf(p) : brighterOf(p)) === 'A' ? 0 : 1;
+  }
+
   // ----- level 1: glow -----
 
   private tapWindow(i: number) {
@@ -286,6 +374,8 @@ class FarLights implements Game {
     this.lastTouch = i;
     if (this.plan.level === 1) void this.float(i);
     else if (this.plan.level === 3) void this.answer(i === 0 ? 'A' : 'B');
+    else if (this.plan.level === 5) void this.answerFarther(i === 0 ? 'A' : 'B');
+    else if (this.plan.level === 6) this.mark(i);
   }
 
   /** A counted tap: the light floats close and glows up, holds, then drifts back. Its glow never changes; only its distance. */
@@ -351,6 +441,86 @@ class FarLights implements Game {
     if (this.alive && e === this.epoch) this.next();
   }
 
+  // ----- levels 5 and 6: behind the curtain -----
+
+  private async answerFarther(lane: Lane) {
+    if (this.busy || this.lifted) return;
+    if (judgeFarther(this.pairs[this.index], lane) === 'nearer') {
+      sfx.boing();
+      this.tally.miss();
+      this.showGlow();
+      void this.say('far.wrong-farther');
+      return;
+    }
+    this.busy = true;
+    const e = this.epoch;
+    sfx.sparkle();
+    await this.say('far.right-farther');
+    if (!this.alive || e !== this.epoch) return;
+    await this.lift(e);
+    if (!this.alive || e !== this.epoch) return;
+    await this.ctx.tw.wait(1.4);
+    if (this.alive && e === this.epoch) this.next();
+  }
+
+  /** Level 6: a tap marks a light with the next dots, or clears its mark and every later one (free). */
+  private mark(i: number) {
+    const m = this.marks;
+    if (this.busy || !m) return;
+    const did = m.tap(i);
+    if (did === 'marked') sfx.bell(5 + m.markOf(i));
+    else if (did === 'cleared') sfx.pop(4);
+    else this.bob(this.windowLights[i]);
+    this.drawMarks();
+    this.showGlow();
+  }
+
+  private async pullTassel() {
+    const t = this.tassel;
+    if (!t || this.finished) return;
+    t.ring.alpha = 1;
+    void this.ctx.tw.to(t.ring, { alpha: 0 }, { duration: 0.5 });
+    const m = this.marks;
+    // Level 5's curtain lifts only after her answer; an early pull, or one with marks missing, is a free bob.
+    if (this.busy || this.lifted || !m || !m.full) return void this.bob(t);
+    const v = judgeOrder(m.board, m.picks);
+    if (v !== 'right') {
+      sfx.boing();
+      this.tally.miss();
+      m.dropWrong();
+      this.drawMarks();
+      this.showGlow();
+      void this.say(v === 0 ? 'far.order-first' : 'far.order-last');
+      return;
+    }
+    this.busy = true;
+    t.glow.visible = false;
+    const e = this.epoch;
+    sfx.sparkle();
+    await this.say('far.order-right');
+    if (!this.alive || e !== this.epoch) return;
+    await this.lift(e);
+    if (!this.alive || e !== this.epoch) return;
+    await this.ctx.tw.wait(1.2);
+    if (this.alive && e === this.epoch) this.next();
+  }
+
+  /** The curtain lifts (0.6 s) on a soft rising run. */
+  private async lift(e: number) {
+    const c = this.curtain;
+    if (!c) return;
+    void this.say('far.curtain');
+    void (async () => {
+      for (const step of [5, 6, 7, 8, 9]) {
+        if (!this.alive || e !== this.epoch) return;
+        sfx.bell(step, 0.18);
+        await this.ctx.tw.wait(0.12);
+      }
+    })();
+    await this.ctx.tw.to(c.scale, { y: 0.06 }, { duration: 0.6, ease: ease.inOutSine });
+    if (this.alive && e === this.epoch) this.lifted = true;
+  }
+
   // ----- level 4: make them match -----
 
   private async pressCheck() {
@@ -375,12 +545,13 @@ class FarLights implements Game {
   private next() {
     this.index++;
     this.tally.next();
-    const total = this.plan.level === 3 ? this.pairs.length : this.boards.length;
+    const level = this.plan.level;
+    const total = level === 3 || level === 5 ? this.pairs.length : level === 6 ? this.orderBoards.length : this.boards.length;
     if (this.index >= total) return void this.finale();
     this.place();
     this.busy = false;
     this.build();
-    void this.ctx.instruct(this.plan.level === 3 ? 'far.instruct.brighter' : 'far.instruct.match');
+    void this.ctx.instruct(INSTRUCT[level - 1]);
   }
 
   // ----- help, restart, finish -----
@@ -401,10 +572,23 @@ class FarLights implements Game {
       void this.float(i);
       return;
     }
-    if (level === 3) {
+    if (level === 3 || level === 5) {
+      if (this.lifted) return;
       this.tally.hint();
       void this.say('far.hint');
-      this.pulse(this.windowLights[brighterOf(this.pairs[this.index]) === 'A' ? 0 : 1]);
+      this.pulse(this.windowLights[this.answerSpot()!]);
+      return;
+    }
+    if (level === 6) {
+      // The next right light gets its mark, locked; asking again marks the one after, free.
+      const s = this.marks?.hint() ?? null;
+      if (s === null) return void (this.tassel && this.pulse(this.tassel));
+      this.tally.hint();
+      void this.say('far.hint');
+      sfx.bell(5 + this.marks!.markOf(s));
+      this.drawMarks();
+      this.showGlow();
+      this.pulse(this.windowLights[s]);
       return;
     }
     const lane = level === 2 ? closerHelp(this.stops)?.lane : movable(this.boards[this.index]);
@@ -481,7 +665,16 @@ class FarLights implements Game {
       if (this.taps.moving.size || this.taps.count >= 3) return null;
       return { tap: { on: this.windowLights[this.taps.count % 3] } };
     }
-    if (level === 3) return { tap: { on: this.windowLights[brighterOf(this.pairs[this.index]) === 'A' ? 0 : 1] } };
+    if (level === 3 || level === 5) return this.lifted ? null : { tap: { on: this.windowLights[this.answerSpot()!] } };
+    if (level === 6) {
+      const m = this.marks;
+      if (!m || !this.tassel) return null;
+      const right = m.rightSoFar;
+      if (m.full && right === 3) return { tap: { on: this.tassel }, pause: 1 };
+      // A wrong mark is cleared first, then the next right light is marked.
+      const spot = right < m.picks.length ? m.picks[right] : m.nextRight!;
+      return { tap: { on: this.windowLights[spot] }, pause: 0.5 };
+    }
     const b = level === 4 ? this.boards[this.index] : null;
     const help = b ? { lane: movable(b), to: b.r as Stop } : closerHelp(this.stops);
     if (!help) return null;
