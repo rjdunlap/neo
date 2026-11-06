@@ -42,3 +42,10 @@
 - The picture-tap guard came after the browser runs (unit tests re-run only).
 - Not run: `npm run build` (no shared files or assets), other levels' browser plays, a real iPad.
 - Open: whether a one-year-old taps the shining dot and the 120-unit dot suits her finger ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
+
+## 2026-11-06 — Crossword level 4 Say what it is
+
+- [PR #1300](https://github.com/rjdunlap/neo/pull/1300): `crossword` level 4 (school 2-4): 15 drawn picture words with riddles, one four-word criss-cross, speaker clue squares (free riddle), Show me (one hint, once per word), level-4 how-to lines, a `FROM_LEVEL` filter on the browser suite.
+- Ran (branch tip before docs, base `42dc4dc0`; port 5684): `npm run typecheck`; `npm test` (314 files, 5448 tests); `BROWSER_SUITE=crossword FROM_LEVEL=4` PASS (speaker tap free, Show me 1 hint once, wrong full word 1 miss, Show me, bank and Help clear in landscape and portrait, sticker with 1 miss, 1 hint; screenshot `crossword-4-portrait`); `BROWSER_SUITE=fingerdemo FINGER_ONLY=crossword FINGER_LEVELS=4` PASS (33.9 s). game-reviewer fixes: three ambiguous riddles (moon, hen, boat); a dimmed Show me repeats the word.
+- Not run: build (no assets), levels 1-3 replay (unchanged), the offline check, a real iPad.
+- Open: device speech of the riddles ([device check](../DEVICE-CHECKS.md)); riddles are mostly animal-sound clues, so the difficulty is the spelling.

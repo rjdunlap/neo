@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-11-06 — Define Gadget Bench level 4, Fix-It Day (docs only)
+
+Changed: Gadget Bench definition gained level 4 (a longer three-condition path with a bump/puddle conflict, fixed by a new paddle-wheels part; school range becomes {2,4}) and its check tier; READY, the inventions and engineering-design dives and the study backlog updated.
+Ran: `node scripts/check-links.mjs` (links ok) and `git diff --check` (clean). No code checks (docs tier).
+Open: the build (new level on the existing interaction, `fingerdemo` at 4) is queued in READY; decision 5 in the definition has defaults, not blockers.
+
 ## 2026-11-06 — Hat Band levels 1–3 (new game, music M5)
 
 Changed: new game `hat-band` (Music Mountain's eighth; PR #1320, commit 578490ab on base origin/main 8971c43a): `logic.ts` score clock and wear/solo/heard-gate rules, scene, voice lines, how-to card with ghost finger, registry/lands entries, `hatband` browser case, one Kokoro clip (`game.hat-band`). Source check (S1): the only spoken or how-to claims are that drum hats play a beat without notes and tune hats play notes, checked against the definition's cited Toca Band, BANDIMAL and Musical Me! reviews and enforced by the role-difference rule test; no other factual claims.
@@ -73,13 +79,6 @@ Changed: new game `rain-garden` (Tinker Lab's 26th; PR #1303, commit b2121326 on
 ## 2026-11-06 — Helper House levels 5–7 definition (docs only)
 
 Changed: `docs/definitions/helper-house.md` (new "Levels 5–7 (RA4)" section), READY (the definition line replaced by the level 5 build and a queued levels 6–7 line), the robots-automation dive and STUDY-BACKLOG (PR #1302). Ran: `node scripts/check-links.mjs` and `git diff --check`. No code checks (docs tier). Open: nothing built; the level 5 build is next.
-
-## 2026-11-06 — Crossword level 4 Say what it is
-
-- [PR #1300](https://github.com/rjdunlap/neo/pull/1300): `crossword` level 4 (school 2-4): 15 drawn picture words with riddles, one four-word criss-cross, speaker clue squares (free riddle), Show me (one hint, once per word), level-4 how-to lines, a `FROM_LEVEL` filter on the browser suite.
-- Ran (branch tip before docs, base `42dc4dc0`; port 5684): `npm run typecheck`; `npm test` (314 files, 5448 tests); `BROWSER_SUITE=crossword FROM_LEVEL=4` PASS (speaker tap free, Show me 1 hint once, wrong full word 1 miss, Show me, bank and Help clear in landscape and portrait, sticker with 1 miss, 1 hint; screenshot `crossword-4-portrait`); `BROWSER_SUITE=fingerdemo FINGER_ONLY=crossword FINGER_LEVELS=4` PASS (33.9 s). game-reviewer fixes: three ambiguous riddles (moon, hen, boat); a dimmed Show me repeats the word.
-- Not run: build (no assets), levels 1-3 replay (unchanged), the offline check, a real iPad.
-- Open: device speech of the riddles ([device check](DEVICE-CHECKS.md)); riddles are mostly animal-sound clues, so the difficulty is the spelling.
 
 ## Coverage summary
 
