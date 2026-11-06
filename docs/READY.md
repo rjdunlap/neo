@@ -7,7 +7,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 ## Next ten
 
 - **`rain-garden`, level 4 *two-socket downhill route*** (school; two beds in a chain, stone or soil each, store exactly 2 in the marked bed and some to the pond; new-interaction tier as the definition's check tier sets, one build session): [definition](definitions/rain-garden.md#level-4-two-socket-downhill-route-definition), [check tier](definitions/rain-garden.md#level-4-check-tier), [study](deep-dives/subjects/weather-water.md).
-- **Define Bond Beads 5–8** (`chemistry`; docs only, with a session source check of the molecule list): [definition so far](definitions/bond-beads.md), [study](deep-dives/subjects/chemistry.md).
+- **`bond-beads`, levels 5–6 *named kits and double holds*** (`chemistry`; school; N bead and double holds; new-interaction tier as the definition's check tier sets, one build session; the session re-checks the molecule list against its sources): [definition](definitions/bond-beads.md#levels-58-definition), [check tier](definitions/bond-beads.md#check-tier-levels-58), [study](deep-dives/subjects/chemistry.md).
 - **Define Welcome Ways 5–7** (`engineering-design`; space limits, a conflict and a repair for a new friend; docs only): [definition so far](definitions/welcome-ways.md), [study](deep-dives/subjects/engineering-design.md).
 - **Dive `swing-pals`** (Swing Pals; lap to school, 6 levels; docs only): [procedure](deep-dives/README.md#one-session-one-game), [definition](definitions/swing-pals.md).
 - **`hat-band`, levels 1–3, a new Music Mountain game** (defined 2026-10-22 as M5; identity and placement settled 2026-10-23, Music Mountain holds 8 games). The building session does the source check and the actual Music Mountain capacity check first (new-game tier with a build, as the definition's check tier sets it): [definition](definitions/hat-band.md#check-tier), [study](deep-dives/subjects/music-instruments.md).
@@ -32,6 +32,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
   - **`playdate-workshop`, levels 1–3** (preschool 1, pre-K 1–3; taking turns and sharing, with the materials carrying the rule; Story Grove, else Painted Canyon): [definition](definitions/playdate-workshop.md#check-tier).
   - **`circuit-garden`, levels 1–2, then 3** (pre-K and school; a visible way back closes the loop; Tinker Lab): [definition](definitions/circuit-garden.md).
   - **`measuring-post`, levels 1–4** (school; choose the tool for the question, and compare counts only in the same unit; Tinker Lab or Cozy Village): [definition](definitions/measuring-post.md).
+- **`bond-beads`, levels 7–8 (after 5–6)** (`chemistry`; school; a reaction as rearrangement, plus the 9-bead layout fix or cut level 8's 9-bead case): [definition](definitions/bond-beads.md#levels-58-definition), [check tier](definitions/bond-beads.md#check-tier-levels-58).
 
 ### Study follow-ups (docs-only definitions)
 

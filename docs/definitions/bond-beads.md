@@ -1,8 +1,8 @@
 # Bond Beads, levels 1–4 (definition)
 
-Defined 2026-10-22 as slice 1 of the [chemistry study](../deep-dives/subjects/chemistry.md#build-slices-in-order), from its [first game's ladder](../deep-dives/subjects/chemistry.md#a-first-games-ladder-bond-beads) and the [recommendation row](../deep-dives/subjects/RECOMMENDATIONS.md#chemistry-recommendations). *Bond Beads* is a working name; levels 5–8 (named kits, double holds, reactions as rearrangement) are not defined here.
+Defined 2026-10-22 as slice 1 of the [chemistry study](../deep-dives/subjects/chemistry.md#build-slices-in-order), from its [first game's ladder](../deep-dives/subjects/chemistry.md#a-first-games-ladder-bond-beads) and the [recommendation row](../deep-dives/subjects/RECOMMENDATIONS.md#chemistry-recommendations). *Bond Beads* is a working name; levels 5–8 (named kits, double holds, reactions as rearrangement) are [defined below](#levels-58-definition) (2026-11-06, not built).
 
-**Status: levels 1–4 built 2026-10-26 (levels 3–4 [PR #1003](https://github.com/rjdunlap/neo/pull/1003); levels 1–2 [PR #941](https://github.com/rjdunlap/neo/pull/941)).** The open decisions were settled 2026-10-23 ([record](../archive/DECISIONS-2026-10-23.md#decisions)). Built: the game `bond-beads` in Tinker Lab, school levels 1–4, the 6–7-bead layout and two-shape card, the title clip and the ghost finger (levels 1–4). Not built: "Tidy" (moving beads; a released bead always floats home). Levels 1–4 name no substance, so no chemistry educator gates them; one is needed before level 5 ([decision 4](#open-decisions)).
+**Status: levels 1–4 built 2026-10-26 (levels 3–4 [PR #1003](https://github.com/rjdunlap/neo/pull/1003); levels 1–2 [PR #941](https://github.com/rjdunlap/neo/pull/941)).** The open decisions were settled 2026-10-23 ([record](../archive/DECISIONS-2026-10-23.md#decisions)). Built: the game `bond-beads` in Tinker Lab, school levels 1–4, the 6–7-bead layout and two-shape card, the title clip and the ghost finger (levels 1–4). Not built: "Tidy" (moving beads; a released bead always floats home). Levels 1–4 name no substance; levels 5–8 name only the six molecules the [source check](#source-check-this-session-2026-11-06) confirmed.
 
 **Fun action and purpose:** a tray of round beads, each with little hands. She drags from one bead to another to link a hand on each, taps a link to break it, and builds until every hand is held. At levels 3–4 she takes shapes apart and rebuilds them as different shapes, and a **before / now tally** of small bead pictures shows the same beads are still there. The learning purpose is **rearranging the same pieces makes something different and nothing is added or lost** (the study's anchors: NGSS 5-PS1-1, then MS-PS1-1/5 as the later horizon). Construction alone proves nothing, so the tally and the empty tray are the point, not the finished shape.
 
@@ -124,7 +124,106 @@ Device and person checks stay open: whether a school-age child reads the nubs as
 
 ## What comes next
 
-**Levels 5–8** (named kit, double holds, reaction as rearrangement, a larger rearrangement) are defined after a chemistry educator reads the molecule list and the model-limits line ([study slice 4](../deep-dives/subjects/chemistry.md#build-slices-in-order)). Island Bridges molecule seas follow the same review.
+**Levels 5–8** are defined below ([levels 5–8](#levels-58-definition), 2026-11-06), with the session's own source check in place of a chemistry educator ([decided 2026-10-23](#open-decisions)). Island Bridges molecule seas follow from the same molecule list ([study slice 5](../deep-dives/subjects/chemistry.md#build-slices-in-order)).
+
+## Levels 5–8 (definition)
+
+Defined 2026-11-06 from the study's [ladder](../deep-dives/subjects/chemistry.md#a-first-games-ladder-bond-beads) and [model](../deep-dives/subjects/chemistry.md#the-model-stated-once). **Not built.** Levels 5–8 sit at the top of `school` (the study's M rungs, about 11–14; decided 2026-10-23). They add, in order: real names from a checked list and the word "atom" (5), a fourth bead kind N (5), double holds (6), and a reaction shown as rearrangement with the tally as proof (7–8). The fun action stays the same: link, break, rebuild until the tray empties.
+
+### Source check (this session, 2026-11-06)
+
+The molecule list was checked against PubChem's compound records (opened through PubChem's PUG REST property service: formula and SMILES), which stands in for the educator review the study first asked for:
+
+| Name the game says | PubChem CID | Formula | Structure (SMILES) | Bead shape in the game |
+| --- | --- | --- | --- | --- |
+| water | 962 | H2O | `O` | H–O–H |
+| ammonia | 222 | H3N | `N` | N with three H |
+| methane | 297 | CH4 | `C` | C with four H |
+| hydrogen | 783 | H2 | `[HH]` | H–H |
+| oxygen | 977 | O2 | `O=O` | O=O (a double hold) |
+| carbon dioxide | 280 | CO2 | `C(=O)=O` | O=C=O (two double holds) |
+
+Every bead count and hand count above matches the record (H 1, O 2, N 3, C 4 links, doubles counted twice). PubChem also confirms H–O–O–H is hydrogen peroxide (CID 784) and C–O with four H is methanol (CID 887); **both stay unnamed**: the 2026-10-23 decision keeps the O-chain shapes as puzzle shapes, and the game names only the six rows above.
+
+The two reactions were checked in secondary sources only (Wikipedia, opened 2026-11-06): [Oxyhydrogen](https://en.wikipedia.org/wiki/Oxyhydrogen), "2 H2 + O2 → 2 H2O"; [Electrolysis of water](https://en.wikipedia.org/wiki/Electrolysis_of_water), "2 H2O → 2 H2 (g) + O2 (g)"; [Methane](https://en.wikipedia.org/wiki/Methane) (first half of the page read), "CH4 + 2 O2 → CO2 + 2 H2O". Both forward reactions are combustion in real life, so the game shows **no flame, spark, heat or burning** and never says "burn"; the voice says "the atoms rearranged". The electrolysis direction shows **no battery or electricity** art. Conditions and energy are named as left out (the model-limits line below). The boundaries come from the study's opened anchors: [MS-PS1-1](https://www.nextgenscience.org/pe/ms-ps1-1-matter-and-its-interactions) excludes valence electrons and bonding energy; [MS-PS1-5](https://www.nextgenscience.org/pe/ms-ps1-5-matter-and-its-interactions) excludes atomic masses and balancing symbolic equations. So cards draw every piece (two waters are two pictures, never "×2" or "2 H2O"), and the tally stays pictures with numerals.
+
+### The model, extended (`logic.ts`)
+
+- **Kind N (3 hands)**, from level 5: blue (`swatch.blue` in `src/art/palette.ts`, the ball-and-stick convention), letter N, and a fourth shape mark, a **triangle** (H circle, O rounded square, C diamond). It joins `KIND_ORDER` (`C, N, O, H`), the tally strip and the art.
+- **Double holds**, from level 6 only: a pair may hold **two** links. A step carries `doubles: boolean`; with it false, `canLink` keeps the one-link-per-pair rule, so levels 1–5 and the enumerated table above do not change. With it true, linking onto a bead already linked once adds the second link when both beads have a free hand. No triple hold (so no N₂ and no N in levels 6–8).
+- **Links as a multiset:** a double is the same pair twice. `canon`, `buildKey`, `enumerate`, `linkState`, `pieces`, `allHeld`, `helpFor` and `nextMove` count multiplicity. `enumerate(kinds, { doubles })` takes the flag.
+- **Names:** `NAMED` maps the six canonical keys above to a voice line. A build is **named only when it matches the card**. A valid build that is not the card gets the neutral line even when it happens to be a named shape (at level 7, rebuilding the opening hydrogen and oxygen). Nothing outside the six is ever named.
+- **Tally:** unchanged (kinds only, never links): before and now are equal by construction; from level 5 the strip shows numerals beside every kind.
+
+### Enumerated shapes for levels 5–8
+
+Brute-forced the same way as the table above (connected pieces, every hand held), with doubles where the level allows them; the build's test re-derives them.
+
+| Beads | Doubles | Valid builds (all pieces, every bead used) | Card |
+| --- | --- | --- | --- |
+| O1 H2 | no | 1: H–O–H | water |
+| N1 H3 | no | 1: N with three H | ammonia |
+| C1 H4 | no | 1: C with four H | methane |
+| O2 | yes | 1: O=O | oxygen |
+| C1 O2 | yes | 1: O=C=O | carbon dioxide |
+| O2 H2 | yes | 2: H–O–O–H; or H–H and O=O | hydrogen and oxygen |
+| O2 H4 | yes | 3 builds: two H–O–H; H–O–O–H and H–H; two H–H and O=O | two waters, or hydrogen, hydrogen and oxygen |
+| C1 O4 H4 | yes | several (the test lists them) | carbon dioxide and two waters, or methane and two oxygens |
+
+### Levels
+
+| Level | Name | What she decides | Round |
+| --- | --- | --- | --- |
+| 5 | **Name the shape** | Which beads, and how many of each, make the named thing | Three cards: water (authored first), then ammonia and methane in seeded order |
+| 6 | **Two hands together** | When two links join the same pair | Three cards: oxygen (authored first), carbon dioxide, then hydrogen and oxygen from `O2 H2` |
+| 7 | **The same atoms, rearranged** | What to break, what to rebuild, with the tally as proof | Two puzzles: hydrogen, hydrogen and oxygen built on the table → two waters (authored first); then two waters → hydrogen, hydrogen and oxygen |
+| 8 | **A bigger rearrangement** | Which links to break first so hands come free | One puzzle: methane and two oxygens built (9 beads) → carbon dioxide and two waters |
+
+- **Level 5** reuses level 2's card-and-Check flow with a name: the pet says the name and what it is made of ("Water! One O bead and two H beads."). Each tray has one valid build, so the decision is composition, read from the card and counted on the tally; a Check with a free hand is the only possible miss. The first round introduces "atom" once (`named.atoms`).
+- **Level 6** cards picture a double as two parallel bars. The third card is the level's real decision: `O2 H2` also makes the single-link H–O–O–H, which gets the neutral line, and the card's hydrogen and oxygen need a double.
+- **Level 7** opens with the starting pieces built (level 3's flow), the card picturing every product piece, and the before/now tally; the second puzzle is the reverse, so she sees the same atoms go both ways. Either order of identical pieces matches (canonical keys).
+- **Level 8** is the study's 9-bead case, and **gated on layout** (below). If the build's layout audit fails, level 8 is **cut and recorded**, the `school` range stops at 7, and no substitute reaction is used (within 7 beads and no triple holds, the only listed reaction is level 7's pair).
+- **Bands:** `school` `{ min: 1, max: 8 }` (or `max: 7` if level 8 is cut). `describeLevel` for grown-ups: 5 "Build named shapes: water, ammonia, methane (N joins)", 6 "Double holds: oxygen and carbon dioxide", 7 "Rearrange hydrogen and oxygen into water, and back", 8 "Rearrange methane and oxygen into carbon dioxide and water (9 beads)".
+
+### Screen, controls and the 9-bead layout
+
+- **Double hold:** two parallel bars 16 units apart. A tap within `LINK_REACH` of either bar breaks **one** link (a double becomes single, the remaining bar recentres); a double never breaks whole in one tap, consistent with "a link joins one hand on each". Dragging or tap-tapping onto an already linked bead adds the second link at levels 6–8 and slides back at 1–5.
+- **Layout today:** a probe of `beadLayout` (2026-11-06, not committed) at the four views the tests use, and at iPad sizes up to 1366×1024, fits 6 and 7 beads everywhere, **8 nowhere**, and 9 only in portrait. Eight failing where nine passes points at the 7-entry `JITTER` and `RADIAL` tables wrapping, not at a lack of room: a landscape table leaves bead centres about 380×494, a near miss for nine beads 160 apart on one ellipse.
+- **The build of level 8 must:** extend `JITTER` and `RADIAL` to 9 entries; allow a 9-bead variant (the card above the table or a narrower card column in landscape; never a smaller bead or a gap under `BEAD_GAP`); and widen the layout test to **2 to 9 beads** (level 6's oxygen tray is 2 beads, and the current test starts at 3) with **0 to 3 card pictures** (level 8's card shows three pieces) at all four views. If 9 beads cannot pass at 100 units with link midpoints apart, level 8 is cut as above.
+- **Card:** draws every product piece as its own picture with its name spoken, no numerals or formulas; up to three pictures (level 8). It stays at least 140 units tall and clear of every bead.
+
+### Accounting, help and finishing
+
+Unchanged from levels 2–4: only a Check that does not match counts, once per changed build; the glow after two misses counts one hint per card or puzzle; a third miss after the glow plays the supported finish; one sticker, nothing filed. The hint order at 5–8 is *a free hand*, then *these two need another link* (6–8: a pair the card holds twice), then *a bead left over*, then *a link that is not on the card*. At levels 7–8, while the opening is unchanged, the first fact is the link to break ("Break a link to free some hands."), since every hand is held. Every hint still points to a bead or link that some accepted solution changes.
+
+### Speech (`voice-script.ts`)
+
+New lines under `bondbeads.named.*`, the only keys that may say "atom" or a name; the existing banned-word test is scoped to the other `bondbeads.*` keys, and a new test checks that `named.*` uses only the six names and never "burn", "fire", "flame", "explode" or "electric". Lines: `named.atoms` ("Each bead stands for an atom, a piece too tiny to see."), one `named.<name>` per row of the source table ("Water! One O and two H."), `named.instruct.name` ("Build the one on the card!"), `named.instruct.double` ("Some beads hold two hands together!"), `named.instruct.rearrange` ("Rearrange these into the ones on the card!"), `named.double` (the hint "These two need another link."), `named.breakfirst`, `named.rearranged` ("The atoms rearranged. Nothing added, nothing lost.").
+
+### Rule tests
+
+- **Enumeration:** every level 5–8 tray matches the table above (count and keys, with and without doubles); levels 1–4's table is unchanged with `doubles: false`.
+- **Names:** each named key equals the source table's bead and link counts; `NAMED` has exactly six entries; H–O–O–H and methanol's shape are never named.
+- **Solvable and conserved:** every card and puzzle has an accepted build using every bead; `tally(before)` equals `tally(now)` over 500 seeded action sequences including doubles.
+- **Doubles:** a double needs two free hands on each bead; one tap removes one link; levels 1–5 never form a double.
+- **Hints:** in every reachable state of the level 5–8 requests, the hint names a bead or link an accepted solution changes; at an unchanged level 7–8 opening it names a link to break.
+- **Layout:** as the 9-bead layout above; **voice:** the two scoped word tests.
+
+### Ghost finger and how-to card
+
+- **Ghost finger:** follows the solver, including a second drag for a double and, at levels 7–8, breaks before links. A level 8 bot play must finish in the demonstration window or demonstrate only the first breaks and links.
+- **How-to card:** steps "Build the shape the pet names, then tap Check" `{ from: 5, to: 5 }`; "Some pairs hold two hands: link the same two beads twice" `{ from: 6, to: 8 }`; "Break the shapes and rearrange the same beads into the ones on the card" `{ from: 7, to: 8 }`. Notes: the model-limits line `{ from: 5, to: 8 }`: "Beads are a flat toy model: real atoms aren't coloured balls, hands aren't electrons, and the game leaves out 3D shape, charges, energy and what makes a change happen." The level 1–4 note "This is a puzzle about beads and hands, not a model of real substances" narrows to `{ from: 1, to: 4 }`.
+- **Co-play and off-screen:** unchanged; the grown-up holds the tally and asks "what changed, what stayed the same?". No kitchen, model-kit or real-chemical card.
+- **Journal and rework:** nothing filed (decision 5). The study's molecule-shelf and bead-unlock ideas wait for the rework to decide how made things relate to collecting.
+
+### Check tier (levels 5–8)
+
+Two build sessions, one same-game batch each:
+
+1. **Levels 5–6** (new interaction: N and double holds): typecheck and the unit tests above; one scripted play through the `bond-beads` browser case at levels 5 and 6 with one wrong Check and one hint; one portrait screenshot of level 6's carbon dioxide card; `fingerdemo` at 5 and 6; `npm run build` (voice and how-to change).
+2. **Levels 7–8** (new levels plus the layout work): typecheck and rule tests, the widened layout test; one browser play of the top built level; `fingerdemo` at 7 and 8; a portrait and a landscape screenshot of level 8's nine beads (or the recorded cut); `npm run build` for voice.
+
+Device and person checks: whether a 10–13-year-old reads the tally as "nothing added, nothing lost"; whether two parallel bars read as a double hold and are tappable on an iPad; how device speech says "ammonia" and "carbon dioxide".
 
 ## Open decisions
 
@@ -135,6 +234,6 @@ Decisions 1 and 3 block the build; the rest have defaults the build uses.
 1. **A new game** (blocks). Lean: yes, since rearrangement under a tally is an action no game owns and the study checked the overlap.
 2. **Bands.** Default `school` 1–4 only; younger children stay with Matter's play and see nothing. (Alternative: also grown-up at levels 3–4 for parents co-playing; not needed.)
 3. **Home land** (blocks). Default **Tinker Lab** (12 games today; Gear Garden's definition also lists Tinker Lab, so two builds would make 14 and the layout test decides). Fallback **Treehouse** (7), not Puzzle Peaks (13 already). The subject `region` is `tinker-lab` either way.
-4. **Reviewer.** A chemistry educator reads the molecule list, the model-limits line and any reaction picture before level 5; levels 1–4 name nothing and need no review. Please confirm that is the plan.
+4. **Reviewer.** Answered 2026-10-23: no educator gate; the defining session checked the molecule list and reactions against cited sources ([source check](#source-check-this-session-2026-11-06), 2026-11-06).
 5. **Journal.** Default: nothing filed. Alternative: a page of shapes she has built, after the rework decides how made things relate to collecting.
 6. **Levels 1–2 framing.** Levels 1–2 are a puzzle that claims no chemistry; confirm they earn their place on a `school` ladder (the study asks this). Lean yes: they teach the gestures and the tally before level 3.
