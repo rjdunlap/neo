@@ -102,6 +102,14 @@ export class GrownCrossword implements Game {
 
   private buildGrid() {
     const nums = numbers(this.puzzle);
+    // A mini's blocks are dark squares, so it reads as the 5 by 5 it is.
+    if (this.plan.grown === 'mini') {
+      const blocks = new Graphics();
+      for (let r = 0; r < this.puzzle.h; r++) for (let c = 0; c < this.puzzle.w; c++)
+        if (!this.letters.has(`${r},${c}`)) blocks.rect(c * SQ, r * SQ, SQ, SQ).fill(swatch.purple.line).stroke({ width: 2, color: swatch.purple.line });
+      blocks.eventMode = 'none';
+      this.board.addChild(blocks);
+    }
     for (const k of this.letters.keys()) {
       const [r, c] = k.split(',').map(Number);
       const sq = new Container();
@@ -167,9 +175,10 @@ export class GrownCrossword implements Game {
     const safe = safeArea(v);
     if (this.upright) {
       // Clue bar under the top buttons, keys along the bottom right of the pet, the grid centred between them.
-      const top = safe.y + 130;
-      const barW = v.w - 48;
-      this.layoutBar(24, top, barW);
+      // An upright iPad view is taller than the design area; the corner buttons stay at its top, so the bar follows them.
+      const top = 170;
+      // The bar starts right of the corner buttons (Home and the how-to "?").
+      this.layoutBar(150, top, v.w - 174);
       const cols = 7, rows = 4;
       const kx = v.w - 24 - (cols * KEY_PITCH - (KEY_PITCH - KEY)), ky = v.h - 16 - (rows * KEY_PITCH - (KEY_PITCH - KEY));
       this.layoutKeys(kx, ky, cols);
