@@ -501,6 +501,11 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 
 - [ ] On an iPad, check that the sensor, card and helper pulse reads as one chain (the eye or sun sensor lighting its card, then the door or lamp), how a five-year-old reads the pictures without words, and whether the twelve-step day's pace suits Watch and Step, in portrait with the pet clear.
 
+## Helper House level 4
+
+- [ ] On an iPad, check that the thermometer's three fill heights (cool, warm, hot) read without words, and that the heater's on/off and the friend's shiver, comfy and startled moods read, in portrait with the pet clear.
+- [ ] Get the science-educator read of the warmth wording (the `hh.*` lines and the how-to card) before it is treated as final ([definition](definitions/helper-house.md)).
+
 ## Sorting Machine levels 1–2
 
 - [ ] On an iPad, check that the sign's door pictures (property to open door) read without words, and that the star, hollow ring and dotted ring with "?" are clear in portrait with the pet clear.

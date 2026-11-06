@@ -168,8 +168,8 @@ M–L: a new `logic.ts` simulator and solver, `Graphics` house, helpers and gaug
 ## Build slices, in order
 
 1. **RA1 — Define Helper House 1–4** (**defined 2026-10-23:** [definition](../../definitions/helper-house.md)) (docs only): the step model, sensor and helper tables, round plans, voice reasons, accounting (after decision 2), layouts at 100 units in both orientations, the how-to card with level-scoped steps, the ghost-finger plan, the rule tests above and the overlap test, placement after the capacity check.
-2. **RA2 — Build Helper House 1–3** (new-game tier): one scripted play, portrait screenshot. **Built 2026-10-27** ([PR #1011](https://github.com/rjdunlap/neo/pull/1011)): `src/games/helper-house/`, Cozy Village, voice lines `hh.*`, how-to card, `helperhouse` browser case; level 4 (RA3) is the next slice.
-3. **RA3 — Build level 4** (new levels on an existing interaction tier).
+2. **RA2 — Build Helper House 1–3** (new-game tier): one scripted play, portrait screenshot. **Built 2026-10-27** ([PR #1011](https://github.com/rjdunlap/neo/pull/1011)): `src/games/helper-house/`, Cozy Village, voice lines `hh.*`, how-to card, `helperhouse` browser case; level 4 (RA3, built 2026-11-05) was the next slice.
+3. **RA3 — Build level 4** (new levels on an existing interaction tier). **Built 2026-11-05** ([PR #1289](https://github.com/rjdunlap/neo/pull/1289)): the chilly nook, voice lines `hh.*.4`, how-to step, `HH_LEVELS` in the `helperhouse` case; the science-educator read of the wording is still open.
 4. **RA4 — Define and build 5–7** (sensor placement, the comfy line, two lines).
 5. **RA5 — Define Helper House Cases 8–9** and decide registration (decision 4).
 6. **RA6 — Stop and Go 7 *Smart light***, through Stop and Go's dive (its build slice 7), now that this study recommends it; independent of the walk-signal safety review.
