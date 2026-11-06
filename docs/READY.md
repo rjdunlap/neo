@@ -6,7 +6,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **`gadget-bench`, level 4 *Fix-It Day*** (`inventions`; school; the first conflict: paddle wheels do two jobs; new level on the existing interaction, `fingerdemo` at 4): [definition](definitions/gadget-bench.md#level-4-fix-it-day-definition), [check tier](definitions/gadget-bench.md#check-tier-level-4).
+- **`gadget-bench`, level 4 *Fix-It Day*** (claimed: branch `claude/gadget-bench-4`; `inventions`; school; the first conflict: paddle wheels do two jobs; new level on the existing interaction, `fingerdemo` at 4): [definition](definitions/gadget-bench.md#level-4-fix-it-day-definition), [check tier](definitions/gadget-bench.md#check-tier-level-4).
 - **Dive `bolt-boards`** (Bolt Boards; toddler to school, 7 levels; docs only): [procedure](deep-dives/README.md#one-session-one-game), [definition](definitions/bolt-boards.md).
 - **`swing-pals`, more friends and leaf goals** (riders cat, dog, pig and, if it clears the short hook, cow; seeded leaf goals beside the bell; fresh-content tier, no `fingerdemo`): [fresh content inside existing levels](deep-dives/swing-pals.md#fresh-content-inside-existing-levels).
 - **`far-lights`, levels 7–8** (`astronomy`; school; the opening look, Both could fit and the sideways step; new-interaction tier, the school range becomes {4,8}, `fingerdemo` at 8; the held parallax wording is checked against a cited source): [definition](definitions/far-lights.md#levels-58-definition), [build slice 2](definitions/far-lights.md#build-slices-levels-58).
