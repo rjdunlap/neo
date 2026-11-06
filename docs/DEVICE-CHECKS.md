@@ -1089,3 +1089,8 @@ Performed on the built levels (PR #1043; [definition](definitions/water-road.md#
 
 - [ ] On an iPad, check that the 64-unit squares and the 212 × 64 written clue cards are comfortable for a grown-up finger in both orientations, and that the clue column clears the screen edge on the device's safe area.
 - [ ] Listen to device speech of the written case-file clues ("The friend at the pond did not bring the pear", "The friend in the yellow starry hat brought the pear or the orange").
+
+## Mystery Grid level 8 (2026-11-06)
+
+- [ ] On an iPad, drag the level-8 headers to slide the 748 x 728 L under its window in both orientations: does the slide feel direct, do the pinned header strips stay readable, and does a tap on a half-hidden square slide it into view without surprise?
+- [ ] Listen to device speech of the slotted order and pair clues ("Pig came two steps after Cat", "Of Cat and the friend at the pond, one came at dawn and one at noon").

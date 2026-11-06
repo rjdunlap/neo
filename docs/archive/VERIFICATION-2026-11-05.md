@@ -259,3 +259,10 @@ Changed: a new `docs/definitions/logic-grid.md` (Mystery Grid, levels 1–8, Puz
 
 Changed: the 768 × 1024 upright design area, `Scene.uprightArea` and `GameModule.upright`, Today's six upright-first, `resultSpots`, both manifests `any`, and six upright-ready grown-up games (word-search, sudoku-garden, island-bridges, pond-conga, brain-break, number-nook) (PR #1293). Ran: typecheck; `npm test` (305 of 312 files first run, the 7 load timeouts passed alone, one real daily-test stub fixed); `npm run build`; `BROWSER_SUITE=phonefit` with the new upright root pass (dev server port 5366; Home, Today's six, island-bridges, result screenshots); a one-off probe of all six games at their top level at 390 × 844 (no off-screen targets or errors); `npm run test:offline` on a preview of the current build (root and classic passed); `game-reviewer` (no blockers, the iPad-portrait finding fixed).
 Open: `fingerdemo` not run (the bots tap game objects, not positions); no real phone (the [upright device check](../DEVICE-CHECKS.md) is open; feedback picks batch 2); `world` not run.
+
+## 2026-11-05 — Crossword levels 1-2
+
+- [PR #1294](https://github.com/rjdunlap/neo/pull/1294): the new game `crossword` (Story Grove; pre-K 1-2, school 2), 14 rule tests, how-to card with ghost finger, `cw.*` voice lines and one rendered clip, new `crossword` browser case.
+- Ran (commit `2110069a` plus review fixes; port 5477): `npm run typecheck`; `npm test` (309 files, 5359 tests, before the review fixes; crossword rule tests 14/14 after); `npm run build`; `BROWSER_SUITE=crossword` PASS (level 1 wrong crossing tile 1 miss and Help 1 hint to the sticker; level 2 768 x 1024 portrait screenshot with the bank and Help at least 100 units, to the sticker 0/0); `BROWSER_SUITE=fingerdemo FINGER_ONLY=crossword FINGER_LEVELS=1,2` PASS (12.5 s, 20.5 s).
+- Not run: the offline check, other suites, a real iPad.
+- Open: device speech of letter names and spelled non-words, and whether a four-year-old sees one letter serve two words ([DEVICE-CHECKS](../DEVICE-CHECKS.md#crossword-levels-1-2-2026-11-05)).
