@@ -7,7 +7,7 @@ import type { Rng } from '../../engine/random';
  */
 export type Size = 4 | 6 | 9;
 export type Grid = readonly number[];
-export type HouseKind = 'row' | 'column' | 'box';
+export type HouseKind = 'row' | 'column' | 'box' | 'cage';
 
 export interface House {
   kind: HouseKind;
@@ -33,13 +33,24 @@ export interface Geometry {
   housesOf: readonly (readonly [House, House, House])[];
   /** A patchwork bed's layout (one letter a square, row by row), or null for a bed of regular boxes. */
   patches: string | null;
+  /**
+   * A cage bed's cages (empty on any other bed): houses of kind `cage` with their sums. They are not in `houses`, since a
+   * cage need not hold every number, but their squares are each other's peers, as no number repeats in a cage.
+   */
+  cages: readonly CageHouse[];
+  /** Each square's cage index, or -1 on a bed without cages. */
+  cageOf: readonly number[];
 }
+
+/** A cage of a cage bed: two to four squares joined edge to edge whose numbers add up to `sum` and never repeat. */
+export interface Cage { cells: number[]; sum: number }
+export interface CageHouse extends House { kind: 'cage'; sum: number }
 
 /** A bed's shape: its size for a bed of regular boxes, or its geometry (a patchwork bed's comes from `patchGeometry`). */
 export type Shape = Size | Geometry;
 export const geo = (s: Shape): Geometry => (typeof s === 'number' ? geometry(s) : s);
 
-function build(size: Size, boxOf: readonly number[], br: number, bc: number, patches: string | null): Geometry {
+function build(size: Size, boxOf: readonly number[], br: number, bc: number, patches: string | null, cageList: readonly Cage[] = []): Geometry {
   const n = size, cells = n * n;
   const rowOf = Array.from({ length: cells }, (_, i) => Math.floor(i / n));
   const colOf = Array.from({ length: cells }, (_, i) => i % n);
@@ -47,20 +58,42 @@ function build(size: Size, boxOf: readonly number[], br: number, bc: number, pat
   for (let k = 0; k < n; k++) houses.push({ kind: 'row', index: k, cells: Array.from({ length: n }, (_, c) => k * n + c) });
   for (let k = 0; k < n; k++) houses.push({ kind: 'column', index: k, cells: Array.from({ length: n }, (_, r) => r * n + k) });
   for (let k = 0; k < n; k++) houses.push({ kind: 'box', index: k, cells: Array.from({ length: cells }, (_, i) => i).filter((i) => boxOf[i] === k), ...(patches ? { word: 'patch' as const } : {}) });
-  const peers = Array.from({ length: cells }, (_, i) => Array.from({ length: cells }, (_, j) => j).filter((j) => j !== i && (rowOf[j] === rowOf[i] || colOf[j] === colOf[i] || boxOf[j] === boxOf[i])));
+  const cages: CageHouse[] = cageList.map((c, index) => ({ kind: 'cage', index, cells: c.cells.slice().sort((a, b) => a - b), sum: c.sum }));
+  const cageOf = Array<number>(cells).fill(-1);
+  for (const c of cages) for (const i of c.cells) cageOf[i] = c.index;
+  const peers = Array.from({ length: cells }, (_, i) => Array.from({ length: cells }, (_, j) => j).filter((j) => j !== i && (rowOf[j] === rowOf[i] || colOf[j] === colOf[i] || boxOf[j] === boxOf[i] || (cageOf[i] >= 0 && cageOf[j] === cageOf[i]))));
   const housesOf = Array.from({ length: cells }, (_, i) => [houses[rowOf[i]], houses[n + colOf[i]], houses[2 * n + boxOf[i]]] as const);
-  return { size, br, bc, cells, houses, peers, rowOf, colOf, boxOf, housesOf, patches };
+  return { size, br, bc, cells, houses, peers, rowOf, colOf, boxOf, housesOf, patches, cages, cageOf };
 }
 
 const geometries = new Map<Size, Geometry>();
+const regularBoxes = (size: Size) => {
+  const n = size, br = size === 9 ? 3 : 2, bc = size === 4 ? 2 : 3;
+  return { br, bc, boxOf: Array.from({ length: n * n }, (_, i) => Math.floor(Math.floor(i / n) / br) * (n / bc) + Math.floor((i % n) / bc)) };
+};
 export function geometry(size: Size): Geometry {
   let g = geometries.get(size);
   if (g) return g;
-  const n = size, br = size === 9 ? 3 : 2, bc = size === 4 ? 2 : 3;
-  g = build(size, Array.from({ length: n * n }, (_, i) => Math.floor(Math.floor(i / n) / br) * (n / bc) + Math.floor((i % n) / bc)), br, bc, null);
+  const { br, bc, boxOf } = regularBoxes(size);
+  g = build(size, boxOf, br, bc, null);
   geometries.set(size, g);
   return g;
 }
+
+/** A cage bed's geometry: regular boxes, with the cages on top. */
+const cageds = new Map<string, Geometry>();
+export function cageGeometry(size: Size, cages: readonly Cage[]): Geometry {
+  const key = `${size}:${cages.map((c) => `${c.cells.join(',')}=${c.sum}`).join(';')}`;
+  let g = cageds.get(key);
+  if (g) return g;
+  const { br, bc, boxOf } = regularBoxes(size);
+  g = build(size, boxOf, br, bc, null, cages);
+  cageds.set(key, g);
+  return g;
+}
+
+/** The cages' squares in reading order, so a label goes in each cage's first square. */
+export const cageLabelCell = (c: House) => Math.min(...c.cells);
 
 /**
  * A patchwork bed's geometry from its layout: one row of letters a line, each letter one patch. The patches take the
@@ -99,7 +132,7 @@ export function candidates(grid: Grid, shape: Shape, cell: number): number[] {
 /** Squares holding a number that another square in the same row, column or box also holds. */
 export function conflicts(grid: Grid, shape: Shape): number[] {
   const g = geo(shape), out = new Set<number>();
-  for (const h of g.houses) {
+  for (const h of [...g.houses, ...g.cages]) {
     const seen = new Map<number, number>();
     for (const c of h.cells) {
       const d = grid[c];
@@ -120,7 +153,38 @@ export function deadEnds(grid: Grid, shape: Shape): number[] {
 }
 
 export const isFull = (grid: Grid) => grid.every((d) => d > 0);
-export const isSolved = (grid: Grid, shape: Shape) => isFull(grid) && conflicts(grid, shape).length === 0;
+export const isSolved = (grid: Grid, shape: Shape) => isFull(grid) && conflicts(grid, shape).length === 0 && wrongSums(grid, shape).length === 0;
+
+/** Cages whose numbers do not add up: full and off their sum, or already past it. */
+export function wrongSums(grid: Grid, shape: Shape): CageHouse[] {
+  return geo(shape).cages.filter((c) => {
+    const have = c.cells.reduce((t, i) => t + grid[i], 0);
+    return have > c.sum || (c.cells.every((i) => grid[i]) && have !== c.sum);
+  });
+}
+
+/**
+ * Every set of `k` different numbers from 1 to `size` that adds up to `sum`, each lowest first: what a cage of `k`
+ * squares can hold.
+ */
+export function cageSets(sum: number, k: number, size: number): number[][] {
+  const out: number[][] = [];
+  const go = (from: number, left: number, picked: number[]) => {
+    if (picked.length === k) { if (left === 0) out.push(picked.slice()); return; }
+    for (let d = from; d <= size && d <= left; d++) { picked.push(d); go(d + 1, left - d, picked); picked.pop(); }
+  };
+  go(1, sum, []);
+  return out;
+}
+
+/** The smallest and largest sums of `k` different numbers from those in the mask `free`. */
+function sumRange(free: number, k: number): [number, number] {
+  const ds = digitsOf(free);
+  if (ds.length < k) return [Infinity, -Infinity];
+  let lo = 0, hi = 0;
+  for (let j = 0; j < k; j++) { lo += ds[j]; hi += ds[ds.length - 1 - j]; }
+  return [lo, hi];
+}
 
 /**
  * Depth-first search over the empty square with the fewest choices. Counts solutions up to `limit`; with an
@@ -130,13 +194,32 @@ function search(grid: Grid, shape: Shape, limit: number, rng?: Rng): { count: nu
   const g = geo(shape), n = g.size, full = fullMask(n);
   const work = grid.slice();
   const row = Array<number>(n).fill(0), col = Array<number>(n).fill(0), box = Array<number>(n).fill(0);
+  // A cage bed also keeps, for each cage, the numbers in it, what they add up to and how many squares are still empty.
+  const cageOf = g.cageOf, cageUsed = g.cages.map(() => 0), cageSum = g.cages.map(() => 0), cageLeft = g.cages.map((c) => c.cells.length);
+  const caged = g.cages.length > 0;
   for (let i = 0; i < work.length; i++) {
     const d = work[i];
     if (!d) continue;
-    const m = bit(d);
-    if ((row[g.rowOf[i]] | col[g.colOf[i]] | box[g.boxOf[i]]) & m) return { count: 0, first: null };
+    const m = bit(d), k = cageOf[i];
+    if ((row[g.rowOf[i]] | col[g.colOf[i]] | box[g.boxOf[i]] | (k >= 0 ? cageUsed[k] : 0)) & m) return { count: 0, first: null };
     row[g.rowOf[i]] |= m; col[g.colOf[i]] |= m; box[g.boxOf[i]] |= m;
+    if (k >= 0) { cageUsed[k] |= m; cageSum[k] += d; cageLeft[k]--; }
   }
+  // Whether the number `d` in cage `k` leaves a sum its other empty squares can still make.
+  const sumFits = (k: number, d: number) => {
+    const left = g.cages[k].sum - cageSum[k] - d, [lo, hi] = sumRange(full & ~cageUsed[k] & ~bit(d), cageLeft[k] - 1);
+    return left >= lo && left <= hi;
+  };
+  if (caged) for (let k = 0; k < g.cages.length; k++) {
+    const [lo, hi] = sumRange(full & ~cageUsed[k], cageLeft[k]), left = g.cages[k].sum - cageSum[k];
+    if (left < lo || left > hi) return { count: 0, first: null };
+  }
+  const options = (i: number) => {
+    const k = cageOf[i];
+    let m = full & ~(row[g.rowOf[i]] | col[g.colOf[i]] | box[g.boxOf[i]] | (k >= 0 ? cageUsed[k] : 0));
+    if (k >= 0) for (const d of digitsOf(m)) if (!sumFits(k, d)) m &= ~bit(d);
+    return m;
+  };
   let count = 0;
   let first: number[] | null = null;
   const go = () => {
@@ -144,19 +227,21 @@ function search(grid: Grid, shape: Shape, limit: number, rng?: Rng): { count: nu
     let best = -1, bestMask = 0, bestCount = n + 1;
     for (let i = 0; i < work.length; i++) {
       if (work[i]) continue;
-      const m = full & ~(row[g.rowOf[i]] | col[g.colOf[i]] | box[g.boxOf[i]]);
+      const m = options(i);
       const k = popcount(m);
       if (k === 0) return;
       if (k < bestCount) { best = i; bestMask = m; bestCount = k; if (k === 1) break; }
     }
     if (best < 0) { count++; first ??= work.slice(); return; }
-    const options = digitsOf(bestMask);
-    if (rng) rng.shuffle(options);
-    for (const d of options) {
-      const m = bit(d), r = g.rowOf[best], c = g.colOf[best], b = g.boxOf[best];
+    const tries = digitsOf(bestMask);
+    if (rng) rng.shuffle(tries);
+    for (const d of tries) {
+      const m = bit(d), r = g.rowOf[best], c = g.colOf[best], b = g.boxOf[best], k = cageOf[best];
       work[best] = d; row[r] |= m; col[c] |= m; box[b] |= m;
+      if (k >= 0) { cageUsed[k] |= m; cageSum[k] += d; cageLeft[k]--; }
       go();
       work[best] = 0; row[r] &= ~m; col[c] &= ~m; box[b] &= ~m;
+      if (k >= 0) { cageUsed[k] &= ~m; cageSum[k] -= d; cageLeft[k]++; }
       if (count >= limit) return;
     }
   };
@@ -182,10 +267,12 @@ export const randomBed = (shape: Shape, rng: Rng): number[] => search(emptyGrid(
  * `locked`: a number's squares in a house all lie along one line (or one box), which rules it out of the rest of that line (or box).
  * `xwing`: in two rows a number has only two places each, in the same two columns (or the same with rows and columns
  * swapped), so it sits in two opposite corners of that rectangle and is ruled out of the rest of those two columns.
+ * On a cage bed, `cage-last`: every square of a cage but one is filled, so the last holds the sum less the rest; and
+ * `cage-sets`: only some sets of different numbers make a cage's sum and fit its empty squares, which rules the others out.
  */
-export type Tech = 'lone' | 'place' | 'pair' | 'locked' | 'xwing';
+export type Tech = 'lone' | 'place' | 'pair' | 'locked' | 'xwing' | 'cage-last' | 'cage-sets';
 export type Tier = 1 | 2 | 3 | 4;
-export const TIER: Record<Tech, Tier> = { lone: 1, place: 2, pair: 3, locked: 3, xwing: 4 };
+export const TIER: Record<Tech, Tier> = { lone: 1, place: 2, pair: 3, locked: 3, xwing: 4, 'cage-last': 1, 'cage-sets': 2 };
 
 export interface Step {
   tech: Tech;
@@ -196,10 +283,14 @@ export interface Step {
   house?: House;
   /** `xwing`: the two rows (or columns) whose places line up. */
   lines?: House[];
-  /** `pair`: the two squares. `locked`: the squares holding the number's remaining places. `xwing`: the four corners. */
+  /** `pair`: the two squares. `locked`: the squares holding the number's remaining places. `xwing`: the four corners. Cage steps: the cage's squares. */
   pattern?: number[];
-  /** `pair`: the two numbers. `locked`: the one number. */
+  /** `pair`: the two numbers. `locked`: the one number. `cage-sets`: the numbers the kept sets allow. */
   digits?: number[];
+  /** Cage steps: the cage. */
+  cage?: CageHouse;
+  /** `cage-sets`: the sets of numbers the cage can still hold, each lowest first. */
+  sets?: number[][];
   /** Numbers this step rules out of squares. */
   removed?: { cell: number; digit: number }[];
 }
@@ -214,9 +305,10 @@ export interface TechResult {
 
 /**
  * Work a grid out with the techniques up to `maxTier`, always taking the easiest step first. `stopAtPlacement`
- * ends as soon as one number has been placed, which is what a hint needs.
+ * ends as soon as one number has been placed, which is what a hint needs. `sums: false` leaves out the two cage
+ * techniques (a cage still never repeats a number), which is how a test shows a cage bed needs its sums.
  */
-export function techniqueSolve(start: Grid, shape: Shape, maxTier: Tier = 4, stopAtPlacement = false): TechResult {
+export function techniqueSolve(start: Grid, shape: Shape, maxTier: Tier = 4, stopAtPlacement = false, sums = true): TechResult {
   const g = geo(shape), size = g.size, full = fullMask(size);
   const grid = start.slice();
   const cand = Array<number>(grid.length).fill(0);
@@ -232,7 +324,7 @@ export function techniqueSolve(start: Grid, shape: Shape, maxTier: Tier = 4, sto
     if (!cand[i]) return result(false);
   }
   // A grid that already breaks the rules is not worked on.
-  if (conflicts(start, g).length) return result(false);
+  if (conflicts(start, g).length || wrongSums(start, g).length) return result(false);
 
   const place = (cell: number, digit: number) => {
     grid[cell] = digit;
@@ -320,9 +412,47 @@ export function techniqueSolve(start: Grid, shape: Shape, maxTier: Tier = 4, sto
     return null;
   };
 
+  const cageLast = (): Step | null => {
+    for (const c of g.cages) {
+      const open = c.cells.filter((i) => !grid[i]);
+      if (open.length !== 1) continue;
+      const digit = c.sum - c.cells.reduce((t, i) => t + grid[i], 0);
+      // A sum that no number fitting the square can make means a wrong number is already in: nothing to place.
+      if (digit < 1 || digit > size || !(cand[open[0]] & bit(digit))) return null;
+      return { tech: 'cage-last', cell: open[0], digit, cage: c, pattern: c.cells.slice() };
+    }
+    return null;
+  };
+  const cageSetsStep = (): Step | null => {
+    for (const c of g.cages) {
+      const open = c.cells.filter((i) => !grid[i]);
+      if (open.length < 2) continue;
+      const have = c.cells.filter((i) => grid[i]).map((i) => grid[i]);
+      const allowed = open.map(() => 0), kept: number[][] = [];
+      for (const set of cageSets(c.sum, c.cells.length, size)) {
+        if (!have.every((d) => set.includes(d))) continue;
+        const rest = set.filter((d) => !have.includes(d));
+        // Every way to give each empty square a different number of the rest, from what still fits it.
+        let fits = false;
+        const assign = (k: number, free: number[], chosen: number[]) => {
+          if (k === open.length) { fits = true; chosen.forEach((d, j) => (allowed[j] |= bit(d))); return; }
+          for (const d of free) if (cand[open[k]] & bit(d)) assign(k + 1, free.filter((e) => e !== d), [...chosen, d]);
+        };
+        assign(0, rest, []);
+        if (fits) kept.push(set);
+      }
+      const removed: { cell: number; digit: number }[] = [];
+      open.forEach((i, j) => { for (const d of digitsOf(cand[i] & ~allowed[j])) removed.push({ cell: i, digit: d }); });
+      if (removed.length) return { tech: 'cage-sets', cell: -1, digit: 0, cage: c, pattern: c.cells.slice(), digits: digitsOf(allowed.reduce((m, a) => m | a, 0)), sets: kept, removed };
+    }
+    return null;
+  };
+
   while (empties()) {
     let step = lone();
+    if (!step && sums) step = cageLast();
     if (!step && maxTier >= 2) step = only();
+    if (!step && maxTier >= 2 && sums) step = cageSetsStep();
     if (!step && maxTier >= 3) step = pair() ?? locked();
     if (!step && maxTier >= 4) step = xwing();
     if (!step) return result(false);
@@ -360,6 +490,8 @@ export interface SudokuPlan {
   beds: number;
   /** A patchwork bed: irregular patches from `PATCH_LAYOUTS` in place of the boxes. */
   patchwork?: boolean;
+  /** A cage bed: every square in a cage of 2–4 squares with its sum, grown by `makeCageBed`. */
+  cages?: true;
 }
 
 /**
@@ -368,6 +500,7 @@ export interface SudokuPlan {
  * line. (A 6 by 6 bed almost never needs a pair, so it has no third rung.) Level 7 is the easy entry appended above them: a 4 by 4
  * bed of 2 by 2 boxes that lone numbers finish, played first by `order`. Level 8 is the top, played last: a 9 by 9 bed that
  * needs a crossing pair of rows (an X-Wing). Level 9 is played after level 3: a 6 by 6 bed whose boxes are irregular patches.
+ * Level 10 is played after level 9: a 6 by 6 bed cut into cages with sums, only six numbers given.
  */
 export const PLANS: SudokuPlan[] = [
   { name: 'A 6 by 6 bed with a few numbers to find', size: 6, tier: 1, blanks: 14, beds: 1 },
@@ -379,6 +512,7 @@ export const PLANS: SudokuPlan[] = [
   { name: 'A 4 by 4 bed to start', size: 4, tier: 1, blanks: 10, beds: 1 },
   { name: 'A 9 by 9 bed with a crossing pair of rows', size: 9, tier: 4, blanks: 55, beds: 1 },
   { name: 'A 6 by 6 patchwork bed of odd-shaped patches', size: 6, tier: 2, blanks: 20, beds: 1, patchwork: true },
+  { name: 'A 6 by 6 bed with sums in the cages', size: 6, tier: 2, blanks: 30, beds: 1, cages: true },
 ];
 
 /**
@@ -444,10 +578,12 @@ export interface Puzzle {
   grade: Tier;
   /** A patchwork bed's geometry; absent for a bed of regular boxes. */
   patchwork?: Geometry;
+  /** A cage bed's cages; absent on any other bed. */
+  cages?: Cage[];
 }
 
-/** The shape the rules read a puzzle with: its patchwork geometry, or its size. */
-export const shapeOf = (p: Puzzle): Shape => p.patchwork ?? p.size;
+/** The shape the rules read a puzzle with: its patchwork or cage geometry, or its size. */
+export const shapeOf = (p: Puzzle): Shape => p.patchwork ?? (p.cages ? cageGeometry(p.size, p.cages) : p.size);
 
 /**
  * A bed with exactly one solution that techniques up to the plan's tier can finish, with as many empty squares as the
@@ -456,6 +592,7 @@ export const shapeOf = (p: Puzzle): Shape => p.patchwork ?? p.size;
  * Tier 4 (level 8) is too rare to grow this way, so it comes from `WING_BEDS`.
  */
 export function makePuzzle(plan: SudokuPlan, rng: Rng): Puzzle {
+  if (plan.cages) return makeCageBed(plan, rng);
   if (plan.tier === 4) return shuffleBed(rng.pick(WING_BEDS), rng);
   // A patchwork bed is never shuffled like `shuffleBed` does: reordering bands would tear its patches apart.
   const patchwork = plan.patchwork ? patchGeometry(rng.pick(PATCH_LAYOUTS)) : undefined, shape: Shape = patchwork ?? plan.size;
@@ -519,6 +656,83 @@ export function shuffleBed(rows: readonly string[], rng: Rng): Puzzle {
   return parsePuzzle(formatGrid(start, n as Size));
 }
 
+/** How many squares a new cage gets: 2 for 45 in 100, 3 for 40 and 4 for 15. */
+const cageSize = (rng: Rng) => { const r = rng.next(); return r < 0.45 ? 2 : r < 0.85 ? 3 : 4; };
+
+/**
+ * Cut a full bed into cages of 2–4 squares joined edge to edge, no number repeated in one, walking the squares in a seeded
+ * order. A square left on its own joins a neighbouring cage of fewer than four that lacks its number; if none does, null.
+ */
+export function partitionCages(solution: Grid, size: Size, rng: Rng): Cage[] | null {
+  const n = size, of = Array<number>(n * n).fill(-1), cages: number[][] = [];
+  const near = (i: number) => [i - n, i + n, i % n ? i - 1 : -1, i % n < n - 1 ? i + 1 : -1].filter((j) => j >= 0 && j < n * n);
+  for (const start of rng.shuffle(Array.from({ length: n * n }, (_, i) => i))) {
+    if (of[start] >= 0) continue;
+    const cage = [start], want = cageSize(rng);
+    of[start] = cages.length;
+    while (cage.length < want) {
+      const grow = cage.flatMap(near).filter((j, k, all) => of[j] < 0 && all.indexOf(j) === k && !cage.some((c) => solution[c] === solution[j]));
+      if (!grow.length) break;
+      const j = rng.pick(grow);
+      cage.push(j);
+      of[j] = cages.length;
+    }
+    cages.push(cage);
+  }
+  // Fold each lone square into a neighbouring cage.
+  for (let k = 0; k < cages.length; k++) {
+    if (cages[k].length !== 1) continue;
+    const i = cages[k][0];
+    const homes = rng.shuffle(near(i).map((j) => of[j]).filter((h, x, all) => h !== k && all.indexOf(h) === x && cages[h].length > 1 && cages[h].length < 4 && !cages[h].some((c) => solution[c] === solution[i])));
+    if (!homes.length) return null;
+    cages[homes[0]].push(i);
+    of[i] = homes[0];
+    cages[k] = [];
+  }
+  return cages.filter((c) => c.length).map((cells) => ({ cells: cells.sort((a, b) => a - b), sum: cells.reduce((t, i) => t + solution[i], 0) }));
+}
+
+/** A cage with only one set of numbers that makes its sum: the bed's first foothold. */
+export const singleSetCages = (cages: readonly Cage[], size: Size): Cage[] => cages.filter((c) => cageSets(c.sum, c.cells.length, size).length === 1);
+
+/**
+ * A cage bed (level 10): a full bed cut into cages, then numbers taken out as `makePuzzle` does, each kept out only if the
+ * bed stays unique with the cages and the techniques up to the plan's tier still finish it. A bed is kept only if its
+ * sums are needed (without the two cage techniques, no tier finishes it) and something can be placed at a look to start.
+ */
+export function makeCageBed(plan: SudokuPlan, rng: Rng): Puzzle {
+  const size = plan.size, n = size * size;
+  let best: Puzzle | null = null;
+  for (let attempt = 0; attempt < 400; attempt++) {
+    const solution = randomBed(size, rng);
+    let cages: Cage[] | null = null;
+    for (let t = 0; t < 50 && !cages; t++) {
+      const cut = partitionCages(solution, size, rng);
+      if (cut && singleSetCages(cut, size).length) cages = cut;
+    }
+    if (!cages) continue;
+    const g = cageGeometry(size, cages), start = solution.slice();
+    let blanks = 0;
+    for (const cell of rng.shuffle(Array.from({ length: n }, (_, i) => i))) {
+      if (blanks >= plan.blanks) break;
+      const was = start[cell];
+      start[cell] = 0;
+      if (countSolutions(start, g) === 1 && techniqueSolve(start, g, plan.tier).solved) blanks++;
+      else start[cell] = was;
+    }
+    // The sums must be needed, and the first number must need only a look (a lone number, an only place or a cage's last
+    // square), never a cage's sets straight away.
+    if (techniqueSolve(start, g, 4, false, false).solved || !placements(start, g).length) continue;
+    const grade = gradeOf(start, g);
+    if (!grade) continue;
+    const puzzle: Puzzle = { start, solution, size, blanks, grade, cages };
+    if (blanks === plan.blanks && grade === plan.tier) return puzzle;
+    if (!best || blanks > best.blanks || (blanks === best.blanks && Math.abs(grade - plan.tier) < Math.abs(best.grade - plan.tier))) best = puzzle;
+  }
+  if (!best) throw new Error(`could not make a bed for ${plan.name}`);
+  return best;
+}
+
 export const makeBeds = (plan: SudokuPlan, rng: Rng): Puzzle[] => Array.from({ length: plan.beds }, () => makePuzzle(plan, rng));
 
 /** A bed from its picture, with its solution worked out. */
@@ -542,8 +756,10 @@ export type Hint =
   | { kind: 'lone'; cell: number; digit: number }
   /** A number with only one place left in a house. */
   | { kind: 'place'; cell: number; digit: number; house: House }
-  /** After a pair, a pointing line or a crossing pair of rows rules numbers out, one number is left for this square. */
+  /** After a pair, a pointing line, a crossing pair of rows or a cage's sets rule numbers out, one number is left for this square. */
   | { kind: 'rules-out'; cell: number; digit: number; via: Step }
+  /** The last empty square of a cage: its sum less the numbers already in. */
+  | { kind: 'cage-last'; cell: number; digit: number; cage: CageHouse; have: number }
   /** Nothing simple is left (only if she has put the bed in a state no technique reads): the square with fewest choices. */
   | { kind: 'few'; cell: number; digit: number };
 
@@ -560,6 +776,7 @@ export function hintFor(grid: Grid, given: Grid, solution: Grid, shape: Shape): 
   }
   const work = techniqueSolve(grid, shape, 4, true);
   const last = work.steps[work.steps.length - 1];
+  if (last?.tech === 'cage-last') return { kind: 'cage-last', cell: last.cell, digit: last.digit, cage: last.cage!, have: last.cage!.sum - last.digit };
   if (last && last.cell >= 0) {
     // Easier steps are always taken first, so a pair or a pointing line only shows up when nothing simpler was left.
     // The step that ruled numbers out last is the one that made this number the only one left, unless a crossing pair
@@ -596,6 +813,12 @@ export function placements(grid: Grid, shape: Shape): { cell: number; digit: num
       const spots = h.cells.filter((c) => !grid[c] && candidates(grid, g, c).includes(d));
       if (spots.length === 1) out.set(spots[0], d);
     }
+  }
+  for (const c of g.cages) {
+    const open = c.cells.filter((i) => !grid[i]);
+    if (open.length !== 1) continue;
+    const d = c.sum - c.cells.reduce((t, i) => t + grid[i], 0);
+    if (candidates(grid, g, open[0]).includes(d)) out.set(open[0], d);
   }
   return [...out].map(([cell, digit]) => ({ cell, digit }));
 }

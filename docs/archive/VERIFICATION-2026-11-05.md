@@ -136,3 +136,10 @@
 - Ran: `npm run typecheck`; `npm test` (305 files, 5126 tests pass, with new rule tests: plan shape, messages plain and block-free, every theme x 24 seeds leftovers equal the message with at most eight stones outside every word, a line through a stone is never a word); one scripted level 6 play (one wrong line, one hint, all words, reveal, sticker; misses 1, hints 1) at 768x1024 and 1024x768 with screenshots; `BROWSER_SUITE=fingerdemo FINGER_ONLY=word-search FINGER_LEVELS=6` PASS (11.1 s); `npm run build`; game-reviewer (three minor layout findings, fixed).
 - Not run: `couchgames` (levels 1-5 grids proved byte-identical over 60 seeds each, trip stays on 1-3); device speech of the slotted message line; a real iPad.
 - Open: a person hearing the message line on the iPad.
+
+## 2026-11-05 — Word Search level 7 Just the theme (word-search batch 4)
+
+- [PR #1279](https://github.com/rjdunlap/neo/pull/1279): level 7 (10 by 10, six hidden words shown as a theme and length blanks, free non-word lines, a two-step hint); levels 1-6 behaviour unchanged after a reviewer-found repeat-line regression was fixed.
+- Ran (base origin/main 83d96717 plus the branch): `npm run typecheck`; `npm test` (5247+ tests pass, with new rule tests: level 7 plan and themes, every everyday theme x 12 seeds hides each word once with no stray theme word, blanks, a free line never a miss, repeat rules, hint progression, voice lines never name the word); `npm run build`; a headless scripted play at 768x1024 (a free stray line with misses 0, two hints on one word, letter then ring, all six words to the sticker, no console errors) with a portrait screenshot of the blanks and a 1024x768 screenshot of an eight-letter blank; `BROWSER_SUITE=fingerdemo FINGER_ONLY=word-search FINGER_LEVELS=7` PASS (13.1 s); game-reviewer (two findings, fixed and replayed).
+- Not run: `couchgames` (`makeGrid`'s non-hidden path unchanged); a real iPad; device speech of the new lines.
+- Open: a person hearing the level 7 lines and playing the blanks on the iPad.

@@ -1020,6 +1020,7 @@ Performed on the built levels (PR #1043; [definition](definitions/water-road.md#
 - [ ] **Sudoku Garden's Fill marks on an iPad (2026-11-05).** On a 9 by 9 bed (level 4), tap Fill marks: does the row-by-row pencilling feel like a tool that spares clerical work or like the game playing for her, and does the third button row sit clear of the pet and easy to reach in both orientations.
 - [ ] **Sudoku Garden level 8 X-Wing hint on an iPad (2026-11-05).** On a level 8 bed, ask for hints until the X-Wing one: are the lit lines, the four ringed corners and the spoken line clear to a grown-up who does not know the technique?
 - [ ] **Sudoku Garden level 9 patch borders on an iPad (2026-11-05).** On a level 9 bed at 64-unit squares, do the wood-line borders and the tinted soil read clearly as six-square patches, on the brown soil in daylight and at an angle, and does "In this patch, the 5 has only one square left" make sense without a box to count?
+- [ ] **Sudoku Garden level 10 cages on an iPad (2026-11-05).** On a level 10 bed at 92-unit squares, do the dashed outlines and the small sum labels read in daylight, and does a grown-up new to cage puzzles find the first cage (and what its sum means) without the how-to card?
 
 ## Seed Travelers levels 1–3 (life-science slice 2, 2026-11-05)
 
