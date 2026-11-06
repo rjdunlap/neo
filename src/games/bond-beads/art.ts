@@ -8,15 +8,17 @@ export const BEAD_COLOR: Record<Kind, { fill: number; line: number; text: number
   H: { fill: swatch.white.fill, line: swatch.white.line, text: ink },
   O: { fill: swatch.red.fill, line: swatch.red.line, text: 0xffffff },
   C: { fill: 0x5a5a6a, line: 0x34343f, text: 0xffffff },
+  N: { fill: swatch.blue.fill, line: swatch.blue.line, text: 0xffffff },
 };
 
 export const LINK_COLOR = wood.line;
 
-/** Each kind's shape mark, so colour is never the only cue: H a small circle, O a rounded square, C a diamond. */
+/** Each kind's shape mark, so colour is never the only cue: H a small circle, O a rounded square, C a diamond, N a triangle. */
 function mark(g: Graphics, kind: Kind, r: number, color: number) {
   const s = r * 0.62;
   if (kind === 'H') g.circle(0, 0, s).stroke({ width: Math.max(2, r * 0.09), color, alpha: 0.55 });
   else if (kind === 'O') g.roundRect(-s, -s, 2 * s, 2 * s, s * 0.4).stroke({ width: Math.max(2, r * 0.09), color, alpha: 0.55 });
+  else if (kind === 'N') g.poly([0, -s * 1.15, s * 1.1, s * 0.75, -s * 1.1, s * 0.75]).stroke({ width: Math.max(2, r * 0.09), color, alpha: 0.55 });
   else g.poly([0, -s * 1.2, s * 1.2, 0, 0, s * 1.2, -s * 1.2, 0]).stroke({ width: Math.max(2, r * 0.09), color, alpha: 0.55 });
 }
 
@@ -71,11 +73,29 @@ export function drawHands(g: Graphics, kind: Kind, r: number, heldAngles: number
   });
 }
 
-/** Links between beads (drawn under them), as short rounded bars from centre to centre. */
+/** How far each bar of a double hold sits from the line between the beads, as a share of the link width. */
+export const DOUBLE_SPREAD = 0.95;
+
+/**
+ * Links between beads (drawn under them), as short rounded bars from centre to centre. A double hold (the same pair
+ * listed twice) is two slimmer parallel bars.
+ */
 export function drawLinks(g: Graphics, beads: readonly Pt[], links: readonly Link[], width = 16) {
-  for (const [a, b] of links) {
-    g.moveTo(beads[a].x, beads[a].y).lineTo(beads[b].x, beads[b].y).stroke({ width: width + 6, color: 0x7a5230, cap: 'round' });
-    g.moveTo(beads[a].x, beads[a].y).lineTo(beads[b].x, beads[b].y).stroke({ width, color: wood.light, cap: 'round' });
+  const count = new Map<string, number>();
+  for (const [a, b] of links) count.set(`${a}-${b}`, (count.get(`${a}-${b}`) ?? 0) + 1);
+  for (const [id, n] of count) {
+    const [a, b] = id.split('-').map(Number);
+    const dx = beads[b].x - beads[a].x;
+    const dy = beads[b].y - beads[a].y;
+    const len = Math.hypot(dx, dy) || 1;
+    const w = n > 1 ? width * 0.75 : width;
+    const offs = n > 1 ? [-DOUBLE_SPREAD * width, DOUBLE_SPREAD * width] : [0];
+    for (const o of offs) {
+      const ox = (-dy / len) * o;
+      const oy = (dx / len) * o;
+      g.moveTo(beads[a].x + ox, beads[a].y + oy).lineTo(beads[b].x + ox, beads[b].y + oy).stroke({ width: w + 6, color: 0x7a5230, cap: 'round' });
+      g.moveTo(beads[a].x + ox, beads[a].y + oy).lineTo(beads[b].x + ox, beads[b].y + oy).stroke({ width: w, color: wood.light, cap: 'round' });
+    }
   }
 }
 
