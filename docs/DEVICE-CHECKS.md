@@ -53,6 +53,12 @@
 
 - [ ] **The root line on the iPad.** Does device speech say "spect" and "port" in `wordsearch.root-spect` / `wordsearch.root-port` clearly enough for a grown-up to hear the root?
 
+## Word Search school opening (batch word-search 5, built 2026-11-05)
+
+- [ ] **Device speech of the short words.** Does device speech say the 18 picture words (cat, pig, hen, fox, leaf, net, nest, rain and the rest) recognisably on the iPad, in `wordsearch.word` and the found-word line?
+- [ ] **Starting from the spoken instruction.** Does a six-year-old start the grid from `wordsearch.go-school` alone, without a grown-up showing the first word?
+- [ ] **Do the pictures read?** Do the tile pictures (leaf, net, nest in particular) read without a grown-up naming them?
+
 ## Quick Tricks (batch quick-tricks 1, built 2026-11-03)
 
 - [ ] **The free low leaf.** Does a toddler understand a leaf dropped below Bunny as a try again (the boing and spoken line), with no sense of having been wrong?

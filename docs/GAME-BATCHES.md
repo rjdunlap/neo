@@ -1737,7 +1737,7 @@ Proof: new-interaction tier: typecheck, rule tests (no other theme word readable
 
 ### word-search 5: School opening
 
-- **`word-search`, School opening, level 8 (dive slice 6, after batch 2)**: a 6 by 6 grid with four picture words across, one a row, picture themes outside `THEMES`, pictures from Pond Typing's `typingPicture`; home stays Lantern Lake. Appends ID 8 for school. [Dive](deep-dives/word-search.md#build-slices-in-order), [definition](definitions/word-search-school-opening.md)
+- **`word-search`, School opening, level 8 (dive slice 6, after batch 2)** (built 2026-11-05, [PR #1288](https://github.com/rjdunlap/neo/pull/1288)): a 6 by 6 grid with four picture words across, one a row, picture themes outside `THEMES`, pictures from Pond Typing's `typingPicture`; home stays Lantern Lake. Appends ID 8 for school. [Dive](deep-dives/word-search.md#build-slices-in-order), [definition](definitions/word-search-school-opening.md)
 
 Files expected: `src/games/word-search/index.ts`, `logic.ts`, `words.ts`, `logic.test.ts`, `src/games/registry.test.ts`, `src/content/lands.ts` (the comment), `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
 

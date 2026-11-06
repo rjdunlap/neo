@@ -1,16 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
-  ALL_DIRS, blankFor, cellOf, cellsOfWord, hasBlocked, HIDDEN_GRID, hiddenHint, hintFor, judgeLine, leftovers, lettersOf, lineBetween, makeGrid, makeGrids, MAX_STONES, MESSAGE_GRID, occurrences, ORDER, parseGrid, planFor, PLANS, rowsOf, SMALL_GRID, STONE,
+  ALL_DIRS, blankFor, cellOf, cellsOfWord, hasBlocked, HIDDEN_GRID, hiddenHint, hintFor, judgeLine, leftovers, lettersOf, lineBetween, makeGrid, makeGrids, MAX_STONES, MESSAGE_GRID, occurrences, ORDER, parseGrid, PICTURE_GRID, planFor, PLANS, rowsOf, SMALL_GRID, STONE,
   shortestUnfound, textOf, themesFor, wordAt,
 } from './logic';
 import { BLOCKED } from './blocked';
-import { THEMES, themeById } from './words';
+import { PICTURE_THEMES, THEMES, themeById } from './words';
+import { PICTURE_WORDS } from '../pond-typing/pictures';
 import { SCRIPT } from '../../content/voice-script';
 
 describe('the word lists', () => {
   it('are plain capital words of three to eight letters, none repeated, with enough in each theme for every level', () => {
-    const most = Math.max(...PLANS.map((p) => p.words));
+    const most = Math.max(...PLANS.filter((p) => !p.pictures).map((p) => p.words));
     expect(THEMES.filter((t) => !t.root).length).toBeGreaterThanOrEqual(15);
     for (const t of THEMES) {
       expect(new Set(t.words).size, t.id).toBe(t.words.length);
@@ -53,7 +54,7 @@ describe('fresh themes and root families', () => {
   });
 
   it('every theme makes a grid for every plan it can fill, over a dozen seeds', () => {
-    for (const plan of PLANS) for (const t of themesFor(plan)) for (let s = 1; s <= 12; s++) {
+    for (const plan of PLANS.filter((p) => !p.pictures)) for (const t of themesFor(plan)) for (let s = 1; s <= 12; s++) {
       const g = makeGrid(plan, t, new Rng(s * 131 + plan.size));
       expect(g.words, `${t.id} ${plan.name} ${s}`).toHaveLength(plan.words);
       for (const p of g.words) expect(occurrences(g.size, g.letters, p.word), `${t.id} ${p.word}`).toHaveLength(1);
@@ -135,7 +136,7 @@ describe('making grids', () => {
 
   it('climbs in play order: the small grid first, then bigger grids with more words', () => {
     expect(ORDER).toEqual([5, 1, 2, 3, 4, 6, 7]);
-    expect([...ORDER].sort()).toEqual(PLANS.map((_, i) => i + 1));
+    expect([...ORDER].sort()).toEqual(PLANS.map((_, i) => i + 1).filter((l) => l !== PICTURE_GRID));
     expect(ORDER.map((l) => planFor(l).size)).toEqual([6, 8, 10, 12, 14, 8, 10]);
     expect(ORDER.map((l) => planFor(l).words)).toEqual([4, 5, 7, 9, 12, 9, 6]);
     expect(planFor(0)).toBe(PLANS[0]);
@@ -357,5 +358,75 @@ describe('level 7, just the theme', () => {
       expect(SCRIPT[id], id).toBeDefined();
       for (const line of SCRIPT[id]) expect(line, id).not.toMatch(/\{word\}/);
     }
+  });
+});
+
+describe('level 8, picture words (school opening)', () => {
+  const plan = planFor(PICTURE_GRID);
+  const back = (w: string) => [...w].reverse().join('');
+  const allPicture = PICTURE_THEMES.flatMap((t) => t.words);
+
+  it('is the picture plan: a 6 by 6 grid of four words, across only, one to a row', () => {
+    expect(plan).toBe(PLANS[PICTURE_GRID - 1]);
+    expect(plan).toMatchObject({ size: 6, words: 4, grids: 1, pictures: true, oneARow: true });
+    expect(plan.dirs).toEqual([[0, 1]]);
+    expect(ORDER).not.toContain(PICTURE_GRID);
+  });
+
+  it('makes a playable grid over 300 seeds: four words of one picture theme, left to right, a row each, each once, no stray picture word', () => {
+    for (let s = 1; s <= 300; s++) {
+      const g = makeGrids(plan, new Rng(s * 2654435 + 11))[0], label = `seed ${s}`;
+      const theme = PICTURE_THEMES.find((t) => t.id === g.theme)!;
+      expect(theme, label).toBeDefined();
+      expect(g.size, label).toBe(6);
+      expect(g.letters, label).toHaveLength(36);
+      expect(g.letters.every((l) => /^[A-Z]$/.test(l)), label).toBe(true);
+      expect(g.words, label).toHaveLength(4);
+      expect(new Set(g.words.map((p) => p.word)).size, label).toBe(4);
+      expect(new Set(g.words.map((p) => p.r)).size, `${label} one a row`).toBe(4);
+      const listed = g.words.map((p) => p.word);
+      for (const p of g.words) {
+        expect(theme.words, label).toContain(p.word);
+        expect([p.dr, p.dc], `${label} ${p.word}`).toEqual([0, 1]);
+        expect(textOf(g, cellsOfWord(6, p)), label).toBe(p.word);
+        expect(occurrences(6, g.letters, p.word), `${label} ${p.word} once`).toHaveLength(1);
+      }
+      expect(hasBlocked(6, g.letters, listed), label).toBe(false);
+      for (const w of allPicture) if (!listed.includes(w)) expect(occurrences(6, g.letters, w), `${label} stray ${w}`).toHaveLength(0);
+    }
+  });
+
+  it('every picture theme makes grids, and the same seed gives the same one', () => {
+    for (const t of PICTURE_THEMES) for (let s = 1; s <= 40; s++) {
+      const g = makeGrid(plan, t, new Rng(s * 97));
+      expect(g.theme).toBe(t.id);
+      expect(g.words).toHaveLength(4);
+    }
+    expect(makeGrids(plan, new Rng(9))).toEqual(makeGrids(plan, new Rng(9)));
+  });
+
+  it('draws only picture themes for the picture plan, and no other plan ever draws one', () => {
+    expect(themesFor(plan)).toEqual(PICTURE_THEMES);
+    const ids = new Set(PICTURE_THEMES.map((t) => t.id));
+    for (const other of PLANS.filter((p) => p !== plan)) for (const t of themesFor(other)) expect(ids.has(t.id), `${other.name} ${t.id}`).toBe(false);
+    for (let s = 1; s <= 40; s++) for (const other of PLANS.filter((p) => p !== plan)) expect(ids.has(makeGrids(other, new Rng(s))[0].theme), other.name).toBe(false);
+    const all = [...THEMES, ...PICTURE_THEMES].map((t) => t.id);
+    expect(new Set(all).size).toBe(all.length);
+    expect(themeById('animals').name).toBe('Animal friends');
+    expect(themeById('outside').id).toBe('outside');
+  });
+
+  it('has picture words that are short, are Pond Typing pictures, avoid the other game\'s pet words, and never hide one another', () => {
+    const skip = ['PIP', 'BUG', 'MUD', 'POND', 'HAT', 'CAKE'];
+    for (const t of PICTURE_THEMES) {
+      expect(t.words.length, t.id).toBeGreaterThanOrEqual(4);
+      for (const w of t.words) {
+        expect(w, `${t.id} ${w}`).toMatch(/^[A-Z]{3,4}$/);
+        expect(PICTURE_WORDS, `${t.id} ${w}`).toContain(w.toLowerCase());
+        expect(skip, w).not.toContain(w);
+      }
+    }
+    expect(new Set(allPicture).size, 'no word in two themes').toBe(allPicture.length);
+    for (const w of allPicture) for (const o of allPicture) if (o !== w) expect(w.includes(o) || back(w).includes(o), `${o} in ${w}`).toBe(false);
   });
 });

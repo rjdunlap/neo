@@ -42,4 +42,14 @@ export const THEMES: readonly Theme[] = [
   { id: 'spect', name: 'Words that look', root: 'spect', words: ['INSPECT', 'RESPECT', 'SUSPECT', 'SPECTATE', 'PROSPECT', 'SPECTRUM', 'ASPECT'] },
 ];
 
-export const themeById = (id: string): Theme => THEMES.find((t) => t.id === id) ?? THEMES[0];
+/**
+ * School's picture words (level 8): short words of three or four letters, each drawn by Pond Typing's `typingPicture`, so every
+ * word in the list is a picture she can tap to hear. Kept out of `THEMES`, so no grown-up grid or couch board ever draws them.
+ */
+export const PICTURE_THEMES: readonly Theme[] = [
+  { id: 'animals', name: 'Animal friends', words: ['CAT', 'DOG', 'PIG', 'HEN', 'COW', 'FOX'] },
+  { id: 'pond-pictures', name: 'By the pond', words: ['FROG', 'DUCK', 'LOG', 'BOAT', 'NET'] },
+  { id: 'outside', name: 'Look outside', words: ['SUN', 'MOON', 'RAIN', 'TREE', 'LEAF', 'NEST', 'BEE'] },
+];
+
+export const themeById = (id: string): Theme => THEMES.find((t) => t.id === id) ?? PICTURE_THEMES.find((t) => t.id === id) ?? THEMES[0];

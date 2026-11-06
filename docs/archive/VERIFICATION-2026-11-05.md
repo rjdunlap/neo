@@ -150,3 +150,10 @@
 - Ran: `npm run typecheck`; `npm test` 305 files, 5131 tests pass (before the review fix; afterwards vine-snip and content tests, 196); `BROWSER_SUITE=vinesnip` (dev server port 5655, `VITE_SPEECH=off`, commit `348fd91e`): levels 1 and 3 regression, level 4 portrait screenshot with the keep glow, level 5 with a wrong-side keep miss, Grow back free, both lines fed, saved 1 miss 0 hints; `BROWSER_SUITE=fingerdemo FINGER_ONLY=vine-snip` at levels 2 (4.4 s), 4 (6.7 s) and 5 (11.0 s, rerun after the review fix).
 - Not run: the `vinesnip` suite after the glow colour tweak and the two review fixes (glow kept for the other fruit at level 5; the straight-drop line), though `fingerdemo` 5 and unit tests were rerun; `npm run build` (CI runs it); an iPad.
 - Open: a person checking that a four-to-five-year-old reads which vine stays, and two simultaneous fruits on an iPad ([definition](../definitions/vine-snip.md)).
+
+## 2026-11-05 — Block Topple level 4 Hit it high (block-topple slice 2)
+
+- [PR #1271](https://github.com/rjdunlap/neo/pull/1271): level 4 (three lines: short wide stack, tall thin tower, wide stack that tips only from a push at least 150 high) and the golden band after two thumps at every level; bands pre-K 1–4, school 2–4. Level 5 not built (needs redefinition, see the [definition](../definitions/block-topple.md#slice-2-as-built-2026-11-05-level-4-built-level-5-not-built)).
+- Ran (commit `2ec5e77c`): `npm run typecheck`; `npm test` 305 files, all pass (after the how-to wording fix); `GAME_URL=http://localhost:5482 BROWSER_SUITE=blocktopple TOPPLE_LEVELS=4`: portrait level 4, two thumps 0 misses, golden band 1 hint, three tips shaped wide, tall, wide, saved 0/1, screenshot `block-topple-4-portrait-band`; `BROWSER_SUITE=fingerdemo FINGER_ONLY=block-topple FINGER_LEVELS=4` passed in 5.7 s.
+- Not run: `npm run build` (no shared assets changed beyond content files covered by unit tests); levels 1 and 3 replays (interaction unchanged); an iPad.
+- Open: a person checking that "high up tips it" reads from the thumps and the golden band ([device checks](../DEVICE-CHECKS.md)).
