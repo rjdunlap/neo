@@ -547,7 +547,7 @@ export function drawRing(g: Graphics, r: number): Graphics {
 
 // ----- levels 7–8 -----
 
-const CHEEK = { fill: 0xf6efe9, line: 0xc7b3a6, dot: 0xb79a8c };
+const CHEEK = { fill: 0xf4ddd3, line: 0xa08878, dot: 0xa9877a };
 const GREEN_DROP = 0x7fcf6a;
 const PALE_GREEN = 0xc6e9b2;
 
@@ -568,7 +568,7 @@ function softCellArt(g: Graphics, x: number, y: number, r: number, rng: Rng) {
     return { x: x + Math.cos(a) * k, y: y + Math.sin(a) * k * 0.85 };
   });
   poly(g, pts);
-  g.fill({ color: CHEEK.fill, alpha: 0.85 }).stroke(line(CHEEK.line, Math.max(1.5, r * 0.03)));
+  g.fill({ color: CHEEK.fill, alpha: 0.85 }).stroke(line(CHEEK.line, Math.max(3, r * 0.05)));
   g.circle(x + rng.range(-0.15, 0.15) * r, y + rng.range(-0.15, 0.15) * r, r * 0.13).fill(CHEEK.dot);
 }
 
@@ -590,7 +590,7 @@ function cheekCellsArt(r: number, seed: number): Graphics {
 /** A faint pale smear on the slide (stops 1–2), `d` across; `specks` adds a few. */
 function smearArt(d: number, specks: boolean, seed: number): Graphics {
   const g = new Graphics();
-  g.ellipse(0, 0, d / 2, d * 0.32).fill({ color: CHEEK.fill, alpha: 0.9 }).stroke(line(0xe2d6cc, Math.max(2, d * 0.01)));
+  g.ellipse(0, 0, d / 2, d * 0.32).fill({ color: CHEEK.fill, alpha: 0.9 }).stroke(line(0xc9b3a6, Math.max(3, d * 0.01)));
   if (specks) {
     const rng = new Rng(seed);
     for (let i = 0; i < 6; i++) g.circle(rng.range(-0.35, 0.35) * d, rng.range(-0.2, 0.2) * d, d * 0.012).fill(CHEEK.dot);
