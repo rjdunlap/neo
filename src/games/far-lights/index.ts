@@ -114,7 +114,11 @@ class FarLights implements Game {
 
   update() {
     if (this.plan.level === 1) this.windowLights.forEach((w, i) => w.setLook(lookAt(this.dist[i].d)));
-    else if (this.plan.level === 6) this.windowLights.forEach((w, i) => w.setLook(look(GLOW, this.orderBoards[this.index].stops[i])));
+    else if (this.plan.level === 6) {
+      // Past the last board (the finale) the lights keep the last board's looks.
+      const b = this.orderBoards[Math.min(this.index, this.orderBoards.length - 1)];
+      this.windowLights.forEach((w, i) => w.setLook(look(GLOW, b.stops[i])));
+    }
     else for (const lane of LANES) this.windowLights[lane === 'A' ? 0 : 1]?.setLook(look(GLOW, this.live[lane]));
   }
 
