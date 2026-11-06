@@ -1,6 +1,6 @@
 # Hat Band, levels 1–3 (definition)
 
-Defined 2026-10-22 as slice **M5** of the [music and instruments study](../deep-dives/subjects/music-instruments.md#build-slices-in-order), [PR #840](https://github.com/rjdunlap/neo/pull/840), branch `claude/define-hat-band`. It uses the study's [Hat Band case](../deep-dives/subjects/music-instruments.md#hat-band-one-older-family-case) (the creative pair only), its [candidates table](../deep-dives/subjects/music-instruments.md#candidates-and-overlap-decisions), the [IDEAS row](../IDEAS.md#candidates) and the WAITING [Music row](../archive/DECISIONS-2026-10-23.md#decisions). **Docs only; no game, registration, code, audio or device evidence.** The rules are a proposal. Build waits on the gates under [Open decisions](#open-decisions) (above all decision 1, identity beside Beat Builder and Little Conductor). The older three-role arrangement brief is **M6** and stays out of this packet.
+Defined 2026-10-22 as slice **M5** of the [music and instruments study](../deep-dives/subjects/music-instruments.md#build-slices-in-order), [PR #840](https://github.com/rjdunlap/neo/pull/840), branch `claude/define-hat-band`. It uses the study's [Hat Band case](../deep-dives/subjects/music-instruments.md#hat-band-one-older-family-case) (the creative pair only), its [candidates table](../deep-dives/subjects/music-instruments.md#candidates-and-overlap-decisions), the [IDEAS row](../IDEAS.md#candidates) and the WAITING [Music row](../archive/DECISIONS-2026-10-23.md#decisions). **Docs only; no game, registration, code, audio or device evidence.** The rules are a proposal. Build waits on the gates under [Open decisions](#open-decisions) (above all decision 1, identity beside Beat Builder and Little Conductor). The older three-role arrangement brief is **M6** and stays out of this packet (defined below, [level 4](#level-4-build-a-song-m6-definition-2026-11-06)).
 
 **Built 2026-11-06, [PR #1320](https://github.com/rjdunlap/neo/pull/1320)** (levels 1–3, all ten open decisions at their defaults; Music Mountain now holds 8 games). Deviations: a hat counts as heard alone when it is the only part sounding for a whole loop, solo or not (level 3 still needs the spotlight for at least one hat); extra voice lines `hat-band.both` and `hat-band.together` for early-Done reminders; a dim Done glows the next hat or star for 3 s, never counted; each hat is named once, the first time it is lifted; tap versus drag is judged by finger travel (under 24 units). Checks: [VERIFICATION](../VERIFICATION.md#2026-11-06--hat-band-levels-13-new-game-music-m5); device checks open in [DEVICE-CHECKS](../DEVICE-CHECKS.md).
 
@@ -119,3 +119,95 @@ Each has a default the build uses. None blocks a definition review.
 8. **Pace.** Default 80 beats per minute, fixed. Alternative: 72 or 90 (a one-line change); a pace control stays in Little Conductor.
 9. **Cast.** Default: two friends seeded from `CRITTERS` without the bear. Alternative: fixed friends for a familiar first screen.
 10. **Adaptation.** Default: the shell rule stands; two smooth rounds step up and the how-to note says that is interface progression. Alternative: pin level 1 by default for preschool.
+
+## Level 4, *Build a song* (M6 definition, 2026-11-06)
+
+Defined 2026-11-06 as slice **M6** of the [music and instruments study](../deep-dives/subjects/music-instruments.md#build-slices-in-order), branch `claude/define-hat-band-4`. It freezes the study's [older arrangement brief](../deep-dives/subjects/music-instruments.md#hat-band-one-older-family-case) as **one appended level**; levels 1–3 above are unchanged and keep their IDs. **Docs only; no code, audio or device evidence.** The rules are a proposal; the build session checks the source claims named below.
+
+**Fun action and purpose:** three friends on the stage, each with their own hat: a **drum hat**, a **tune hat** and a new **low hat** (the bass). The song has **three parts** in a row, pictured as three cards. She taps a card to pick a part, then taps friends to put their hats on or take them off for that part, hearing the part loop as she shapes it; *Play* plays the whole song through. A brief pictured above the stage asks for a song that **starts with the tune alone and ends with everybody**; the middle is hers. The learning goal is **arrangement: texture as a choice over time** (a song can start thin and grow; a part entering is something you hear). Distinct from Beat Builder's sections (levels 7–9), which edit and copy percussion squares: here no beat is edited, the parts are fixed and pitched or unpitched, and the choice is *who plays when*.
+
+### Source check at build
+
+Nothing new was opened for this packet. The study's distinctions (texture, entrances, roles) were not checked against a music-education source here; the building session cites one source for the words *tune*, *low* and *together* as descriptions of melody, bass and texture before any grown-up note claims more than "she arranged who plays when", and a music educator reading stays recommended ([Device and person checks](#device-and-person-checks-level-4)).
+
+### The brief, honestly counted
+
+Roles `D` (drum), `M` (tune), `B` (low). A song is three parts, each a subset of `{D, M, B}`: 8³ = 512 editing states, 7³ = 343 with every part nonempty. The study states five conditions: tune alone first, everyone at the end, the low part enters exactly once and stays, every role sounds somewhere, every part nonempty. Enumerated (2026-11-06, a one-off script): **exactly 7 of the 343 are accepted**, `{M} · X · {D,M,B}` for each of the seven nonempty `X`, including the study's two examples `{M},{M,B},{D,M,B}` and `{M},{D,M},{D,M,B}`. With only three parts, "the low part enters once and stays" and "every role sounds" are **implied** by the first and last conditions, so they are not shown as separate clause cards and never produce their own hint: a rule that cannot fail on its own is not presented as something she solves. The brief she sees is two pictured clauses:
+
+| Clause | Picture | Fails when |
+| --- | --- | --- |
+| **First: the tune alone** | card 1 with only the tune badge | part 1 is not exactly `{M}` |
+| **Last: everybody** | card 3 with all three badges | part 3 is not exactly `{D, M, B}` |
+
+Part 2 carries an open card (a "your choice" sparkle), any nonempty subset. "Every part has somebody playing" is a precondition of Check, not a clause (see accounting). The **starting song** is everybody in all three parts (`DMB · DMB · DMB`): a full band from the first tap, not accepted, two edits from the nearest accepted song, so the first move is *making space*. Optional depth for a grown-up: "can you make it another way?" (seven accepted middles); never required, never a leaderboard.
+
+### The model (additions to `logic.ts`)
+
+- **Roles and hats.** `Role` gains `'bass'`. Two new authored hats, kept out of levels 1–3: `thump` (low: scale steps 0, rest, 2, rest) and `walk` (low: 0, 1, 2, 1), pentatonic steps in middle C's octave (`stepToMidi`: C4, D4, E4), voiced with `sfx.pluck` so the low part differs from the marimba tune by register **and** timbre. The tune hats stay in the octave above (`noteStep`: D5, E5, G5), so the highest low note (E4) is 10 semitones below the lowest tune note (D5). One octave below the tunes is decision L4-3's default (two octaves down, steps −5…−3, is the alternative; iPad speakers lose low notes, a device check).
+- **Code traps for the builder.** `makeRound` uses `[...HAT_IDS]` for levels 2–3: the new hats must not join that rack (add a role filter or a separate `LOW_HATS` list; a test asserts levels 1–3 rounds are unchanged for the same seeds). `planFor` clamps and `canFinish` falls through to the `alone` branch: add mode `'arrange'` and handle it explicitly in `canFinish`, `earlyDone`, `nextStep`, `botMove` and `hatBandLayout` (or give level 4 its own functions). The existing level 1–3 tests stay unchanged and passing.
+- **A round** (seeded): three friends from the same pool, one drum hat (`steady` or `skippy`), one tune hat (`cuckoo` or `rain`), one low hat (`thump` or `walk`). Each friend wears one role for the whole round; the hat's on/off state per part is the arrangement. Replaying a seed gives the same friends and hats.
+- **Song state:** `{ parts: [Set<Role>, Set<Role>, Set<Role>], selected: 0 | 1 | 2, playing: 'loop' | 'song' | 'check', undo: Song[] }` plus the same beat clock as levels 1–3 (80 per minute, a part is one four-beat bar, changes land at the next beat boundary, events emitted exactly once in order, loop index `beat mod 4`).
+  - **Loop** (editing, the default): the selected part loops, so every hat toggle is heard within a beat, as in levels 1–3.
+  - **Song** (*Play*): parts 1, 2, 3 play once each from the start of a bar, a playhead lighting each card in turn, then it returns to looping the selected part. An edit during Song stops it at the next beat boundary and returns to Loop on the selected part with the edit applied (no edit is lost, no queued change waits through a whole song).
+  - **Check**: the same as Song, but edits are ignored (uncounted) until the song ends and the verdict lands.
+- **Edits.** Tapping a part card selects it (free). Tapping a friend toggles that friend's hat in the selected part (free). Every toggle pushes the prior song onto `undo` (bounded at 20, oldest dropped); **Undo** restores the previous song exactly and is free. Selecting a card is not an edit and is not undone.
+- **Judging.** `check(song)` returns `'empty'` (some part has nobody), `'ok'`, or the **first failing clause** in fixed order: `first` then `last`. Every returned clause is true of the current song (a test enumerates all 512).
+- **Repair.** `repair(song)` returns `{ clause, part, role }`: the first failing clause (or, for `'empty'`, the first empty part) and one role toggle **inside that clause's part** that moves it toward the clause's target (roles tried in the order D, M, B; an empty part 2 gets the tune). Applying repairs repeatedly from any of the 512 states reaches an accepted song in at most 7 toggles (the enumerated maximum Hamming distance to the nearest accepted song), each step lowering that distance by one and **never touching another part**, so her middle part is never discarded.
+
+### Level
+
+| Level | Name | Bands | Round |
+| --- | --- | --- | --- |
+| 4 | *Build a song* | school, grownup | Three friends, three hats (drum, tune, low), three parts. Shape the song to the two-clause brief; Play is free; Check plays the song and judges it |
+
+**Placement (resolved by the [2026-10-23 decision](../archive/DECISIONS-2026-10-23.md#decisions): older arrangements at the top of `school` and as a `grownup` range, no new band):** `school` becomes `{2, 4}` and a new `grownup: { min: 4, max: 4 }` entry is added, with `bands` gaining `'grownup'` (the pattern of Block Garden's `grownup: { min: 5, max: 8 }`). Preschool and pre-K are unchanged. Every target stays at least 100 units at every band; there is no 64-unit grown-up variant. Nothing gates.
+
+### Screen and controls
+
+- **Landscape (1024×768):** across the top, the **brief strip**: two clause cards (each 120×100, the pictured part card with its badges and a number pip) with the open middle card between them, read aloud when tapped (free). Below it the **stage** with three friends 200 apart, each in a 150-wide tappable spot, wearing their hat (on) or holding it at their feet (off), with the role badge (drum, note, low note drawn larger and lower on the staff) so on/off and role never rely on color alone. Below the stage the **part strip**: three 150×120 part cards, the selected one lifted, each showing small badges for the hats on in that part (the whole song visible at once, the trace). Bottom row: **Undo** (100-unit round button, dim with nothing to undo), **Play** (120) and **Check** (120, right edge). Pet corner clear.
+- **Portrait:** brief strip, stage (three friends 150 apart in 150-wide spots), part strip, then Undo/Play/Check in a row above the bottom edge, Done-style clearance from the pet. `hatBandLayout(view, 4, …)` returns every rectangle; a test asserts at least 100 units, no overlaps and the pet corner clear at the four standard views.
+- **Feedback.** Touch-down highlights at once; a toggled hat jumps on or off the head at once (visible), its part joins at the next beat (the pending ring from levels 1–3). During Song and Check a playhead walks the part strip and the friends playing in that part bob.
+- **Speech:** instructions duck the band to half gain, as levels 1–3.
+
+### Accounting, help and finishing
+
+- **Free, never counted:** selecting parts, toggling hats, Undo, Play, tapping a clause card, edits ignored during Check, and Check with an empty part (the pet says which part has nobody, "Part two needs somebody to play", glows that card; no miss).
+- **A miss:** a Check whose song is complete but not accepted. After the song plays, the playhead stops on the failing clause's part, that clause card bounces, and the pet says the clause in plain words ("The song starts with the tune all alone", "At the end, everybody plays"). The song is kept as it is.
+- **Glow and hint:** from the **second miss in the round**, each failing Check (and **Show a hint** in the pause sheet at any time) glows the repair's part card and friend. `hints++` **at most once per clause** (so at most 2 per round); asked again it repeats the words and the glow. The glow lasts until that toggle is made or the song changes elsewhere.
+- **Finish:** an accepted Check: the band plays the song once more as the performance, the friends bow, `ctx.finish({ misses, hints })`, one ordinary sticker, with or without help. Nothing is saved (decision 5 of levels 1–3 stands).
+- **Adaptation:** level 4 is the top of both its bands, so stepping does not move past it; a struggling school round steps back to 3 by the shell rule. Assisted completion is not evidence she can arrange independently; the how-to note says the level asks her to shape when parts come in.
+- **Leaving:** `destroy()` stops the clock and voices; a destroyed scene's Check verdict never fires.
+
+### Rule tests (`logic.test.ts`, added)
+
+- Enumerate all 512 songs: `check` returns `'empty'` exactly when some part is empty; exactly 7 songs are `'ok'`, all of the form `{M} · X · {D,M,B}`, both study examples among them; every accepted song has the low part entering once and staying and every role sounding (the implied conditions, asserted, not displayed); the starting song is not accepted.
+- For every non-accepted song, the returned clause is actually false of it, and the earlier clause in the order is true.
+- From every one of the 512 songs, iterating `repair` reaches `'ok'` within 7 toggles, each lowering the distance to the nearest accepted song by one and changing only the clause's part.
+- Undo after any sequence of up to 25 toggles restores each earlier song exactly, back to the 20-step bound; selecting a card is not recorded.
+- The clock: Song emits parts 1, 2, 3 in order, one bar each, each event once; an edit during Song returns to Loop at the next beat with the edit applied; Check ignores edits; every low-hat pitch is at least 10 semitones below every tune pitch; drum events stay pitchless.
+- Levels 1–3: `makeRound` racks are identical for the same seeds before and after the change (no low hat appears), and the existing tests pass unchanged.
+- Layout at level 4 at the four views; registry: school `{2,4}`, grownup `{4,4}`, `bands` includes `grownup`, the silenced-music list unchanged.
+
+### Ghost finger, how-to card and voice
+
+- **Ghost finger (`autotouch()`, level 4):** tap part card 1, tap the drum friend and the low friend (hats off), tap Play and wait for the song, tap Check, wait for the bow. It reads only the visible brief and part strip and taps through the real controls.
+- **How-to card:** steps scoped `{ from: 4, to: 4 }`: "Tap a part, then tap friends to put their hats on or take them off"; "Make the song start with the tune alone and end with everybody; the middle is up to you"; "Tap Play to hear the whole song, Undo to go back a step, then Check". Note `{ from: 4, to: 4 }`: "There are seven songs that fit; try asking for another way." The existing all-level notes stay.
+- **Voice lines** (`hat-band.*`, new): `instruct-4`, `low` (said on a low-hat press: "the low hat"), `part-1`, `part-2`, `part-3`, `clause-first`, `clause-last`, `empty-part`, `play`, `check-ok`, `undo`. Words: *tune*, *drum*, *low*, *part*, *alone*, *everybody*, *song*. The word **"bass" is not spoken** (device and Kokoro speech may read it as the fish); the grown-up card may print "low part (bass)".
+
+### Check tier (the build)
+
+New-interaction tier: typecheck, unit tests (the rules above plus registry, lands and how-to), one scripted play extending the `hat-band` browser case to level 4 with one Undo, one empty-part Check, two wrong Checks, one hint and the accepted Check, plus level 1 as the first-level regression, one portrait screenshot at level 4; `fingerdemo` at 4. `npm run build`, because voice, how-to and registry change. Run nothing from this definition now: docs only, links and `git diff --check`.
+
+### Device and person checks (level 4)
+
+Whether the low hat is audible on an iPad speaker under the drum at one octave below the tune; whether a school child hears "the tune alone" as different from the full band; whether *low hat* and *part* are clear in device speech; whether the level holds a school child's or a grown-up's interest with seven accepted songs; a music educator reading of *tune / low / everybody* as a description of melody, bass and texture.
+
+### Open decisions (level 4)
+
+Each has a default the build uses.
+
+1. **L4-1, one brief.** Default: the study's brief only. Alternative (a later level 5 candidate, not defined here): *drum alone first; the low part comes in and stays to the end; the tune plays in just one part*, enumerated 2026-11-06 at **14 of 343** accepted, where the low part's "comes in and stays" does fail on its own.
+2. **L4-2, starting song.** Default: everybody in every part. Alternative: the tune alone in every part (one clause already true).
+3. **L4-3, low register.** Default one octave below the tunes' octave with `sfx.pluck`. Alternative two octaves down (steps −5…−3, C3–E3) if the device check says it is still audible.
+4. **L4-4, hint count.** Default at most once per clause. Alternative once per round.
+5. **L4-5, grown-up range.** Default `grownup {4,4}`. Alternative leave grown-ups out until a level 5 exists.

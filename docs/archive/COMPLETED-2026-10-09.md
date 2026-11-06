@@ -3078,7 +3078,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-06.md#2026-11-06--rain-garden-
 ## Helper House level 5 Where does it look? (2026-11-06)
 
 [PR #1305](https://github.com/rjdunlap/neo/pull/1305), robots-automation slice RA4 level 5 (school only; school range now 2-5). The sun sensor starts under the lamp, where the lamp's own light reads bright and the lamp flickers; only the roof socket is accepted, the shed keeps the lamp on into morning and the bench is sensor-blind. Failures: sensor-blind, lamp-flickers, lamp-off-at-night, lamp-on-at-morning; every failure glows the sensor, and Show me moves it to the roof (one press). Misses stay 0. Voice lines `hh.instruct.5`, `hh.lamp-flickers`, `hh.help.sensor.5`, a level 5 how-to step and note, a ghost finger (Watch, drag to roof, Watch), and `HH_LEVELS=5` in the `helperhouse` browser case. Levels 6-7 (the comfy line, calm heater) remain queued in [READY](../READY.md).
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-06--helper-house-level-5-where-does-it-look-ra4).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-06.md#2026-11-06--helper-house-level-5-where-does-it-look-ra4).
 
 ## Helper House levels 6–7 The comfy line and Calm heater (2026-11-06)
 
