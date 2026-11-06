@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
-import { check, checkSet, deciding, exhibitLayout, HEARD, hintEdit, ITS, makeRound, observe, planFor, possible, SEEN, senseTouch, setKey, setTouch, Tally, TOY_IDS, TOYS, type Observation, type Rect, type Round, type ToyId } from './logic';
+import { check, checkSet, deciding, exhibitLayout, HEARD, hintEdit, ITS, makeRound, narrowingFor, observe, planFor, possible, SEEN, senseTouch, setKey, setTouch, Tally, TOY_IDS, TOYS, type Observation, type Rect, type Round, type ToyId } from './logic';
 
 const SEEDS = Array.from({ length: 500 }, (_, i) => i + 1);
 
@@ -377,5 +377,18 @@ describe('Sense Detective: hints and bot', () => {
         expect(done).toBe(true);
       }
     }
+  });
+});
+
+describe('Sense Detective: level 4 needs the listen', () => {
+  it('a Check after so far but before the listen is still so far, never right', () => {
+    const r = makeRound(4, new Rng(1), true);
+    const look = [observe(r.hidden, 'view')];
+    expect(narrowingFor(r, look)).toBe(true);
+    expect(checkSet(r.shelf, look, possible(r.shelf, look), narrowingFor(r, look)).kind).toBe('so-far');
+    const both = [...look, observe(r.hidden, 'sound')];
+    expect(narrowingFor(r, both)).toBe(false);
+    expect(checkSet(r.shelf, both, [r.hidden], narrowingFor(r, both)).kind).toBe('right');
+    expect(narrowingFor(makeRound(3, new Rng(1), true), look)).toBe(false);
   });
 });

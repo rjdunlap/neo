@@ -12,7 +12,7 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { cardBack, checkButtonArt, listenButtonArt, lookButtonArt, outlineArt, parcelArt, soundArt, toyArt } from './art';
 import {
-  check, checkSet, countsAsMiss, deciding, exhibitLayout, GLOW_AFTER, HEARD, hintEdit, ITS, makeRound, observe, planFor, possible, SEEN, senseTouch, setKey,
+  check, checkSet, countsAsMiss, deciding, exhibitLayout, GLOW_AFTER, HEARD, hintEdit, ITS, makeRound, narrowingFor, observe, planFor, possible, SEEN, senseTouch, setKey,
   setTouch, Tally, TOY_IDS, TOY_NAMES, TOYS, type Channel, type Observation, type Rect, type Round, type SoundValue, type ToyId,
 } from './logic';
 import type { LineId } from '../../content/voice-script';
@@ -298,7 +298,7 @@ class SenseDetective implements Game {
 
   /** Levels 3-4: the green tick judges the whole selection against what the clues allow. */
   private async pressSet() {
-    const narrowing = this.round.channels.includes('sound') && !this.listenOpen;
+    const narrowing = narrowingFor(this.round, this.record);
     const v = checkSet(this.round.shelf, this.record, this.chosen, narrowing);
     if (v.kind === 'right') return void this.parcelFound(v.left);
     if (v.kind === 'empty') { void this.ctx.instruct(this.instructId); return; }
@@ -314,6 +314,11 @@ class SenseDetective implements Game {
       // The second one more also pulses the badges that match the clue; it never names the missing toy.
       if (this.oneMores >= 2) for (const c of this.cards) if (possible([c.id], this.record).length) void this.bob(c.badge);
       await this.ctx.say('sense.one-more');
+    } else if (v.kind === 'so-far' && this.listenOpen) {
+      // Still right so far, but the ear has not been tapped yet.
+      sfx.pop(2);
+      void this.bob(this.listenBtn);
+      await this.ctx.instruct(this.instructId);
     } else if (v.kind === 'so-far') {
       sfx.pop(4);
       this.listenOpen = true;
@@ -325,7 +330,7 @@ class SenseDetective implements Game {
       this.instructId = 'sense.instruct-narrow';
       await this.ctx.instruct(this.instructId);
     } else {
-      const glow = this.tally.miss(setKey(this.parcelIndex, this.listenOpen ? 1 : 0, this.chosen, this.record));
+      const glow = this.tally.miss(setKey(this.parcelIndex, narrowing ? 0 : 1, this.chosen, this.record));
       this.sync();
       sfx.boing();
       const ev = this.evidence.find((e) => e.obs.channel === v.obs.channel);
@@ -471,6 +476,7 @@ class SenseDetective implements Game {
       if (this.busy) return;
       this.clearClues();
       this.parcelIndex = 0;
+      this.tally.nextParcel();
       this.oneMores = 0;
       this.listenOpen = false;
       if (this.round.channels.includes('sound')) this.listenBtn.visible = false;

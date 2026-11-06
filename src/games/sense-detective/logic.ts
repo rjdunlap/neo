@@ -123,6 +123,11 @@ export function checkSet(shelf: readonly ToyId[], record: readonly Observation[]
   return narrowing ? { kind: 'so-far', left } : { kind: 'right', left };
 }
 
+/** Level 4 narrows until it has really listened: the ear coming out is not the same as hearing the parcel. */
+export function narrowingFor(round: Round, record: readonly Observation[]): boolean {
+  return round.channels.includes('sound') && !record.some((o) => o.channel === 'sound');
+}
+
 /** The useful edit a hint glows: take out a ruled-out toy, else put in a missing one, else press Check. */
 export type Edit = { remove: ToyId } | { add: ToyId } | { check: true };
 export function hintEdit(shelf: readonly ToyId[], record: readonly Observation[], selected: readonly ToyId[]): Edit {
