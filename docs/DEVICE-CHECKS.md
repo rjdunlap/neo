@@ -379,6 +379,12 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 - [ ] On an iPad, how does speech say "can't" (the `rain.*` lines)?
 - [ ] Does the sliding fresh patch read as a restart, not as weather?
 
+## Rain Garden level 4 (weather-water slice 4, 2026-11-06)
+
+- [ ] With a six-year-old: does she read the dashed drops on the low bed's sign as "needs two" without the voice?
+- [ ] On an iPad, how does speech say "ran past" (`rain.route.*`, `rain.miss.*`)?
+- [ ] Do school children reason from the cause line after a failed Check, or flip at random?
+
 ## Second Chance Shed levels 5–6 (nature-sustainability N3, 2026-10-31)
 
 - [ ] With a school-age child: does she read a friend's picture bubble (a cat with pencils, Bunny, a duck) without the spoken line?

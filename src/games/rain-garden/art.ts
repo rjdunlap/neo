@@ -158,3 +158,56 @@ export function friendArt(f: Friend): Container {
   c.addChild(d);
   return c;
 }
+
+/** Level 4's Check: a big tick on a wooden sign, drawn around its middle. */
+export function checkArt(size: number): Container {
+  const c = new Container();
+  const s = size / 120;
+  const g = new Graphics();
+  g.roundRect(-6 * s, 20 * s, 12 * s, 40 * s, 4 * s).fill(swatch.brown.fill).stroke({ width: 3, color: swatch.brown.line });
+  g.roundRect(-size / 2, -size / 2, size, size * 0.78, 20 * s).fill(0xe8c48e).stroke({ width: 5, color: swatch.brown.line });
+  for (const y of [-0.22, 0.02]) g.moveTo(-size / 2 + 10, y * size).lineTo(size / 2 - 10, y * size).stroke({ width: 2, color: swatch.brown.line, alpha: 0.35 });
+  g.moveTo(-28 * s, -14 * s).lineTo(-8 * s, 8 * s).lineTo(32 * s, -36 * s).stroke({ width: 16 * s, color: swatch.green.line, cap: 'round', join: 'round' });
+  g.moveTo(-28 * s, -14 * s).lineTo(-8 * s, 8 * s).lineTo(32 * s, -36 * s).stroke({ width: 9 * s, color: swatch.green.fill, cap: 'round', join: 'round' });
+  c.addChild(g);
+  return c;
+}
+
+/** A little leaf, the marked bed's marker. */
+function leafMark(g: Graphics, x: number, y: number, r: number) {
+  g.moveTo(x - r, y).quadraticCurveTo(x - r * 0.2, y - r, x + r, y - r * 0.3).quadraticCurveTo(x + r * 0.2, y + r * 0.8, x - r, y)
+    .fill(swatch.green.fill).stroke({ width: 3, color: swatch.green.line });
+  g.moveTo(x - r * 0.8, y).lineTo(x + r * 0.5, y - r * 0.3).stroke({ width: 2, color: swatch.green.line });
+}
+
+/**
+ * A need sign, drawn around its middle: dashed drop outlines for what is needed (the bed's two over a leaf, or the pond's
+ * one with a plus), filled as drops settle, with a tick once met. A picture, not a target.
+ */
+export function needSignArt(kind: 'bed' | 'pond', filled: number, met: boolean, w: number, h: number): Container {
+  const c = new Container();
+  const g = new Graphics();
+  g.roundRect(-5, h / 2 - 12, 10, 26, 3).fill(swatch.brown.fill).stroke({ width: 3, color: swatch.brown.line });
+  g.roundRect(-w / 2, -h / 2, w, h - 8, 16).fill(0xfffdf4).stroke({ width: 5, color: met ? swatch.green.line : swatch.brown.line });
+  c.addChild(g);
+  const outlines = kind === 'bed' ? [-26, 26] : [-14];
+  outlines.forEach((x, i) => {
+    if (i < filled) { const d = dropArt(40); d.position.set(x, -10); c.addChild(d); return; }
+    const o = new Graphics();
+    o.moveTo(x, -34).bezierCurveTo(x + 7, -22, x + 16, -14, x + 16, -6).bezierCurveTo(x + 16, 6, x + 9, 12, x, 12)
+      .bezierCurveTo(x - 9, 12, x - 16, 6, x - 16, -6).bezierCurveTo(x - 16, -14, x - 7, -22, x, -34);
+    o.stroke({ width: 4, color: WATER.line, alpha: 0.9 });
+    // A dashed look: white breaks over the outline.
+    for (const t of [0.15, 0.4, 0.65, 0.9]) o.circle(x + Math.sin(t * Math.PI * 2) * 16, -10 + Math.cos(t * Math.PI * 2) * 18, 3).fill(0xfffdf4);
+    c.addChild(o);
+  });
+  const extra = new Graphics();
+  if (kind === 'bed') leafMark(extra, 0, h / 2 - 28, 14);
+  else extra.moveTo(18, -10).lineTo(42, -10).moveTo(30, -22).lineTo(30, 2).stroke({ width: 6, color: ink, cap: 'round' });
+  if (met) {
+    extra.circle(w / 2 - 14, -h / 2 + 12, 18).fill(swatch.green.fill).stroke({ width: 3, color: swatch.green.line });
+    extra.moveTo(w / 2 - 23, -h / 2 + 12).lineTo(w / 2 - 16, -h / 2 + 19).lineTo(w / 2 - 4, -h / 2 + 4).stroke({ width: 4, color: 0xffffff, cap: 'round', join: 'round' });
+  }
+  c.addChild(extra);
+  return c;
+}

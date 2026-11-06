@@ -173,7 +173,7 @@ Device and person checks stay open: whether a two-year-old taps the cloud again 
 
 ## What comes next
 
-**Level 4** (the study's slice 4) is [defined below](#level-4-two-socket-downhill-route-definition) and ready to build in one session. **Level 5** (up to six sockets, two marked beds, seeded boards with solver witnesses) needs its own docs-only definition after level 4 is built. **Drop's Journey**'s first route is now eligible for its own docs-only definition (the study's slice 8), independent of this build.
+**Level 4** (the study's slice 4) is [defined below](#level-4-two-socket-downhill-route-definition) and built. **Level 5** (up to six sockets, two marked beds, seeded boards with solver witnesses) needs its own docs-only definition after level 4 is built. **Drop's Journey**'s first route is now eligible for its own docs-only definition (the study's slice 8), independent of this build.
 
 ## Open decisions
 
@@ -189,7 +189,7 @@ Each has a default the build uses; decision 1 is the developer's confirmation th
 
 ## Level 4, *two-socket downhill route* (definition)
 
-Defined 2026-11-06 as the weather-and-water study's [slice 4](../deep-dives/subjects/weather-water.md#build-slices-in-order), from the [ladder's level-4 row](../deep-dives/subjects/weather-water.md#a-first-games-ladder-rain-garden) and its concrete check. Docs only: nothing below exists in code yet. One build session, new-interaction tier ([Level 4 check tier](#level-4-check-tier)).
+Defined 2026-11-06 as the weather-and-water study's [slice 4](../deep-dives/subjects/weather-water.md#build-slices-in-order), from the [ladder's level-4 row](../deep-dives/subjects/weather-water.md#a-first-games-ladder-rain-garden) and its concrete check. **Built 2026-11-06** ([PR #1316](https://github.com/rjdunlap/neo/pull/1316); deviations in the [build note](../archive/COMPLETED-2026-10-09.md#rain-garden-level-4-two-socket-downhill-route-weather-water-slice-4-2026-11-06)). One build session, new-interaction tier ([Level 4 check tier](#level-4-check-tier)).
 
 **Fun action and purpose:** two garden beds sit one above the other on a terraced slope, with a fixed arrow from the top bed to the low bed and another from the low bed to the pond. A sign by the low bed shows what it needs, two drops, and the pond friend's sign shows it needs at least one. She taps each bed to make it stone or soil, taps the cloud to try it as often as she likes, then taps the Check. The learning purpose is **reasoning backwards from where water should end up to what the ground uphill must do** (4-ESS3-2, comparing designs, as the horizon): a garden low on a slope gets the water the ground above it could not hold. This is the idea behind real rain gardens, which [EPA](https://www.epa.gov/green-infrastructure/types-green-infrastructure) describes as collecting rainwater from rooftops, sidewalks and streets. The level asks her to revise: when the Check fails, the narration says *where the water stayed*, never "try the other one".
 
