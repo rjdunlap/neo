@@ -22,6 +22,14 @@ Lemonade Stand dive (2026-10-31), two calls that wait on you; the build slices t
 | **A pre-K opening, "Enough cups for the line"?** | Adds the `prek` band to a school game; otherwise counting a line stays with Scoop Shop and Monster Munch. Recommended: wait until the school levels are played | [Lemonade Stand dive](deep-dives/lemonade-stand.md#decisions-for-the-developer) |
 | **A market-week chart in the journal?** | Whether a finished week files its table as a discovery, and which weeks (the first sold-out day, the first boat saving). Recommended: wait for the boats to be played | [Lemonade Stand dive](deep-dives/lemonade-stand.md#decisions-for-the-developer) |
 
+Swing Pals dive (2026-11-06), three calls; slices 1–3 go ahead (slice 2 on decision 1's default) ([the dive](deep-dives/swing-pals.md#decisions-for-the-developer)):
+
+| Step | What happens next | Written in |
+| --- | --- | --- |
+| **Where does level 7 *Who comes back first?* play?** | Pre-K between levels 3 and 4 and school after 6 (default), or school only, leaving pre-K's jump | [Swing Pals dive](deep-dives/swing-pals.md#decisions-for-the-developer) |
+| **Paint the beat as a creative level, and may its painting be kept?** | Reopens the "nothing kept" default for the treehouse; no default, it stays unbuilt | [Swing Pals dive](deep-dives/swing-pals.md#decisions-for-the-developer) |
+| **A journal discovery ("a longer rope swings slower")?** | Reopens the definition's decision 4; default: still none | [Swing Pals dive](deep-dives/swing-pals.md#decisions-for-the-developer) |
+
 Draw the Pattern dive (2026-11-05), three calls; slices 1 and 2 and slice 3 on decision 1's default go ahead ([the dive](deep-dives/draw-the-pattern.md#decisions-for-the-developer)):
 
 | Step | What happens next | Written in |
