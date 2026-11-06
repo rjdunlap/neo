@@ -1,5 +1,13 @@
 # Puddle Island verification
 
+## 2026-11-06 — Define Hat Band level 4, Build a song (docs only, music M6)
+
+Changed: [hat-band.md](definitions/hat-band.md#level-4-build-a-song-m6-definition-2026-11-06) gains level 4 (three friends with drum, tune and low hats, three song parts, a two-clause brief with 7 of 343 accepted, Undo, Play, Check); READY, the music study, STUDY-BACKLOG updated.
+
+Ran: `node scripts/check-links.mjs` and `git diff --check`. No typecheck, unit tests or browser: no code changed.
+
+Open: the build (new-interaction tier, `fingerdemo` at 4) is not started.
+
 ## 2026-11-06 — Define Puddle Lens 7–8, Wall clue and Why green? (docs only)
 
 Changed: Puddle Lens definition gained levels 7 *Wall clue* and 8 *Why green?* (school range becomes {4,8}) with their check tier; READY, the cells-microbes dive and the subject recommendations updated.
@@ -76,13 +84,6 @@ Changed: `helper-house` levels 6–7 (school range 2–7; the gauge line, the gu
 Ran: `npm run typecheck`; `npm test` (316 files, 5619 tests; Helper House `logic.test.ts` 59 tests, which also corrected two claims in the definition); `GAME_URL=http://localhost:5981 BROWSER_SUITE=helperhouse HH_LEVELS=6,7` (level 6 hare guess, glow, one hint, drag to gap 2, Show me to 3, finish 0/2; level 7 eleven pebbles, off line glows, a tap above, a portrait screenshot, Show me to off 4, finish 0/2; rerun after the review fixes); `FINGER_ONLY=helper-house FINGER_LEVELS=6,7` (6 in 10.8 s, 7 in 18.7 s); `npm run build`. `game-reviewer`: three fixes applied (truth line awaited, glow redraws yellow at once, the guess closes when the line moves).
 Not run: other suites, the offline check.
 Open: whether a six-year-old reads the jar as fewer clicks, and whether the guess, truth line and climb strip land on an iPad ([DEVICE-CHECKS](DEVICE-CHECKS.md#helper-house-levels-67)); the science-educator read of the warmth wording.
-
-## 2026-11-06 — Helper House level 5 Where does it look? (RA4)
-
-Changed: `helper-house` level 5 (school only, range 2–5; sun sensor under the lamp reads the lamp's own light, only the roof works), voice lines `hh.instruct.5`, `hh.lamp-flickers`, `hh.help.sensor.5`, how-to step, `HH_LEVELS=5` in the `helperhouse` case ([PR #1305](https://github.com/rjdunlap/neo/pull/1305), base `5d14de16` plus branch commits).
-Ran: `npm run typecheck`; `npm test` (315 files, 5530 tests; Helper House `logic.test.ts` 45 tests, 9 new for level 5: per-socket readings, hand-run traces, exactly roof accepted over 4 boards, overlap, failures, glow and help, ghost finger, socket spacing at least 140); `GAME_URL=http://localhost:5206 BROWSER_SUITE=helperhouse HH_LEVELS=5` (flicker twice, one hint and sensor glow, drag to shed, portrait screenshot, Show me to roof, finish 0 misses/2 hints); `FINGER_ONLY=helper-house FINGER_LEVELS=5 FINGER_BAND=school` (19.1 s). `game-reviewer`: no blocking findings.
-Not run: `npm run build` (CI runs it), other suites, `world`, offline check.
-Open: whether the flicker reads as the lamp's own fault on an iPad ([DEVICE-CHECKS](DEVICE-CHECKS.md#helper-house-level-5)).
 
 ## Coverage summary
 
