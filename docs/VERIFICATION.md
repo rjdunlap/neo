@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-11-06 — Hat Band levels 1–3 (new game, music M5)
+
+Changed: new game `hat-band` (Music Mountain's eighth; PR #1320, commit 578490ab on base origin/main 8971c43a): `logic.ts` score clock and wear/solo/heard-gate rules, scene, voice lines, how-to card with ghost finger, registry/lands entries, `hatband` browser case, one Kokoro clip (`game.hat-band`). Source check (S1): the only spoken or how-to claims are that drum hats play a beat without notes and tune hats play notes, checked against the definition's cited Toca Band, BANDIMAL and Musical Me! reviews and enforced by the role-difference rule test; no other factual claims.
+Ran (Vite dev on http://localhost:5282, `VITE_SPEECH=off`): `npm run typecheck`; hat-band rule tests 34/34; registry, lands, howto, content and voice-clip tests (21 files, 248 tests); `npm run build`; `BROWSER_SUITE=hatband` (level 1 landscape: empty-stage Done, drag, tap-then-tap, early Done while a part joins, heard gate, bow, one sticker 0/0; level 3 portrait: replace, both spotlights, alone then together, 0/0; screenshots `hat-band-1-landscape`, `hat-band-3-portrait`); `BROWSER_SUITE=fingerdemo FINGER_ONLY=hat-band FINGER_LEVELS=1,2,3` (14.7 s, 20.7 s, 21.5 s). `game-reviewer` findings (tap judged by hat travel, dim hat on the rack, repeated hat naming) fixed and both suites re-run green. Full `npm test` showed only timing failures in unchanged games (penguin-slide, secret-code; block-garden, block-topple, fluffy-salon, keep-house under load average about 8 and passing alone): known load flakes.
+Not run: offline check (no persistence change). Open: iPad speaker, speech and a child's reading of the hats ([device checks](DEVICE-CHECKS.md)). Deviation: a hat counts as heard alone when it is the only part sounding for a whole loop, solo or not.
+
 ## 2026-11-06 — Swing Pals deep dive (docs only)
 
 Changed: `docs/deep-dives/swing-pals.md` and its tracker, READY, backlog and waiting-on-developer rows (PR #1319); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built; three decisions wait on the developer ([list](WAITING-ON-DEVELOPER.md)).
@@ -75,20 +81,13 @@ Changed: `docs/definitions/helper-house.md` (new "Levels 5–7 (RA4)" section), 
 - Not run: build (no assets), levels 1-3 replay (unchanged), the offline check, a real iPad.
 - Open: device speech of the riddles ([device check](DEVICE-CHECKS.md)); riddles are mostly animal-sound clues, so the difficulty is the spelling.
 
-## 2026-11-06 — Draw the Pattern level 10 Dot to dot
-
-- [PR #1306](https://github.com/rjdunlap/neo/pull/1306): `draw-the-pattern` level 10 (lap order 1, 10; toddler order 1, 10, 2, 3; `entryLevels: [10]`): six dots at least 120 units apart on a long line then a zigzag, tap or drag to draw, no misses or hints; voice line, how-to step, ghost finger on the dots, `DRAW_LEVELS=10`. A review found a picture tap during the dot tween restarting the pet's redraw; fixed by one guard.
-- Ran (Vite on http://localhost:5802): `npm run typecheck`; `npx vitest run src/games/draw-the-pattern` 48 passed (11 new level-10 tests: spacing and hit circles in four views, order, `nextDot` walk, pools reached, voice, `stepLevel` toddler 10 to 2 and lap 1 to 10); `src/content` and `src/games/registry` 210 passed; `BROWSER_SUITE=drawpattern DRAW_LEVELS=10` PASS (lap in portrait with a stray tap and drag, no misses; taps; one drag along the zigzag; portrait screenshot; toddler round, then level 2); `BROWSER_SUITE=fingerdemo FINGER_ONLY=draw-the-pattern FINGER_LEVELS=10` PASS (9.0 s, lap).
-- The picture-tap guard came after the browser runs (unit tests re-run only).
-- Not run: `npm run build` (no shared files or assets), other levels' browser plays, a real iPad.
-- Open: whether a one-year-old taps the shining dot and the 120-unit dot suits her finger ([DEVICE-CHECKS](DEVICE-CHECKS.md)).
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| `hatband`, `fingerdemo` (`hat-band`) | 2026-11-06 (`578490ab`): typecheck, hat-band rule tests (34), registry/lands/howto/content/voice-clip tests, build; `hatband` (level 1 landscape, level 3 portrait, 0/0 rounds); `fingerdemo` at 1–3 (14.7 s, 20.7 s, 21.5 s) | [Entry](VERIFICATION.md#2026-11-06--hat-band-levels-13-new-game-music-m5) | No offline check; full `npm test` load flakes in unchanged games only; speaker clarity of drum vs tune, speech of the hat names and a child's play are open |
 | `logic-grid` (`logicgrid`), `fingerdemo` (`logic-grid`) | 2026-11-06 (`e7536148`): typecheck, full unit tests (5605), build; `logicgrid` with `LOGICGRID_FROM=8` (75 squares, order and pair clues, header drag slides, ruled-out yes 1 miss, Help 1 hint in view, landscape and portrait fit, sticker, saved 1/1); `fingerdemo` at 8 (27.2 s); level 7 last passed at `6aed60f0`, level 6 at `0f0a23ed`, level 5 at at `a99772bd`, levels 3-4 at `49bce450`, levels 1-2 at `9e9d79db` | [Entry](archive/VERIFICATION-2026-11-06.md#2026-11-06--mystery-grid-logic-grid-level-8) | No offline check; levels 1-7 not re-played after the strip refactor; speech of slotted clues, the iPad slide, hat clues and either/neither clues and a child's grasp of "not" are open |
 | `crossword`, `fingerdemo` (`crossword`) | 2026-11-06 (tip `2bdbc023`): typecheck, full units (5,594); a one-off probe at levels 5 and 6 (landscape and upright, 1 miss, re-check, Help, hardware keys); `fingerdemo` at 5 and 6 (37.0 s, 51.3 s); `crossword` `FROM_LEVEL=4` and levels 1-3 from earlier passes | [Entry](VERIFICATION.md#2026-11-06--crossword-levels-5-6-written-clues-and-the-mini) | No build or offline check; no browser-suite case for levels 5-6; speech of riddles and clues, hardware keyboard on an iPad and a child's grasp of the shared letter are open |
 | Grown-ups' page off-screen lines (`src/content/offscreen.test.ts`) | 2026-10-26: typecheck, full 3465 units, build; 7 rule tests (under-3 word list, wording, resolution, `{name}`) | [Off-screen lines](archive/VERIFICATION-2026-10-26.md#2026-10-26--off-screen-lines-per-band) | No browser look at the page; Bumper Garden school line held; no reader evidence |

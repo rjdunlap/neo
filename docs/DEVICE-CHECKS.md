@@ -1,5 +1,11 @@
 # Needs a person or a device
 
+- [ ] **Hat Band (levels 1–3, 2026-11-06, #1320):** are the drum and tune hats clearly different on an iPad speaker? Does the drum mask the tune at the chosen gains?
+- [ ] **Hat Band:** does a four-year-old read a hat as "mine to put on" and the pending ring as "wait a moment"? Does the one-beat wait feel responsive?
+- [ ] **Hat Band speech of "the drum hat" and "the tune hat":** check actual device speech.
+- [ ] **Hat Band:** does a school child still enjoy it, and does it feel like more than Beat Builder? This decides whether M6 (an older arrangement) is worth building.
+- [ ] **Hat Band, a music educator's reading of *drum*, *tune* and *alone/together*:** before any claim about musical roles (recommended; did not block the screen-only build).
+
 - [ ] **Sense Detective level 5 (2026-11-05):** does *Can't tell yet* read as a good answer rather than giving up, and does the quilt read as "can't hear it" without speech?
 - [ ] **Sense Detective levels 3–4 (2026-11-05):** does a five-year-old read "tap every toy it could be" as several taps, and does the level 4 ear sliding in after the tick's yes read as "now listen"?
 - [ ] **Light Lab level 12 *Split the sunbeam* (2026-11-04):** do the two dim arms read clearly on an iPad screen? Is the half-mirror distinct from a mirror at arm's length? Does device speech say "half-mirror" clearly?
