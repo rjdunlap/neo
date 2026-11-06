@@ -392,6 +392,13 @@ describe('game registry', () => {
     for (const id of ['jelly-drums', 'song-maker']) expect(gameById(id)!.music.bpm, id).toBe(STYLES.jelly.bpm);
   });
 
+  it('lists the upright-ready games (chunk 31), so the converted set is inspectable', () => {
+    // Batch 1: the grown-up six, one game of each kind. Add a batch here as it lands (docs/definitions/phone-portrait.md).
+    const upright = ['brain-break', 'island-bridges', 'number-nook', 'pond-conga', 'sudoku-garden', 'word-search'];
+    expect(GAMES.filter((g) => g.upright).map((g) => g.id).sort()).toEqual(upright);
+    expect(new Set(upright.map((id) => gameById(id)!.challenge)).size).toBe(6);
+  });
+
   it('keeps the island\'s music for the games where the music is only a setting', () => {
     expect(GAMES.filter((g) => !isSilent(g.music)).length).toBeGreaterThan(GAMES.length / 2);
     expect(isSilent(STYLES.hub)).toBe(false);

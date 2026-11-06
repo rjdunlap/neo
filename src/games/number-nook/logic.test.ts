@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { distances, goal, makeBoard, neighbours, planFor, slide, solutionStep, solved } from './logic';
+import { distances, goal, makeBoard, neighbours, nookLayout, planFor, slide, solutionStep, solved } from './logic';
+import { square, uprightProblems, UPRIGHT_VIEWS } from '../upright-check';
 
 describe('Number Nook', () => {
   it('enumerates precisely the reachable states of each shape', () => {
@@ -41,5 +42,18 @@ describe('Number Nook', () => {
     for (const at of [0, 4, 8, -1, 9]) expect(slide(b, 3, at)).toBeNull();
     expect(b).toEqual(before);
     expect(neighbours([1, 2, 0, 3, 4, 5], 3)).toEqual([5, 1]);
+  });
+});
+
+describe('Number Nook on a phone held upright (chunk 31)', () => {
+  it('fits every board, the goal picture and the buttons in each upright view', () => {
+    for (const [name, v] of Object.entries(UPRIGHT_VIEWS)) for (const level of [1, 2, 3]) {
+      const { rows, cols } = planFor(level);
+      const l = nookLayout(v.w, v.h, rows, cols);
+      const cells = Array.from({ length: rows * cols }, (_, i) => square(`cell ${i}`, { x: l.grid.x + (i % cols) * l.cell, y: l.grid.y + Math.floor(i / cols) * l.cell }, l.cell - 1));
+      const goalPicture = { what: 'goal', x: l.target.x, y: 250 + ((rows - 1) * 50) / 2 - 20, w: cols * 50, h: rows * 50 + 40 };
+      const buttons = l.buttons.map((b, i) => square(`button ${i}`, b, 120));
+      expect(uprightProblems(v, [...cells, goalPicture, ...buttons], 100), `${name} level ${level}`).toEqual([]);
+    }
   });
 });

@@ -123,7 +123,7 @@ export const brainBreak: GameModule = {
   id: 'brain-break', name: 'Brain Break', titleLine: 'game.brain-break', region: 'puzzle-peaks', challenge: 'noticing',
   skills: ['Visual search', 'Number order', 'Adding and taking away'], bands: ['grownup'],
   levels: band => rangeFor(LEVELS, band), describeLevel: level => planFor(level).name,
-  music: STYLES.lullaby, touchDemo: true,
+  music: STYLES.lullaby, touchDemo: true, upright: true,
   coplayHint: 'Take turns finding the next stone, or let one person call the number and the other find it. With sums, one person reads a sum aloud and the other says what it makes.',
   offScreen: 'Shuffle numbered paper squares on a table and point to them in order, at your own pace; later, write sums on the squares and lay them out in order.',
   hubIcon: () => new WigglyIcon(stoneArt('1')),

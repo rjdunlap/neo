@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
+import { uprightProblems, UPRIGHT_VIEWS } from '../upright-check';
 import { COURSES } from './course';
 import {
   bycounting, byreasoning, canAdd, closesOff, connected, edgeAt, edgeToward, headStart, forcedPlank, hintFor, isSolved, islandToward, LEVEL_ORDER, layoutOf, makePuzzle, makePuzzles, otherEnd, parsePuzzle, picture, planFor, PLANS, planksAt, roomOf, solve, hintWalk,
@@ -553,6 +554,22 @@ describe('the school opening', () => {
           const a = p.layout.islands[e.a], b = p.layout.islands[e.b];
           expect(Math.abs(a.r - b.r) + Math.abs(a.c - b.c), `level ${level} seed ${seed}`).toBeGreaterThanOrEqual(2);
         }
+      }
+    }
+  });
+});
+
+describe('Island Bridges on a phone held upright (chunk 31)', () => {
+  it('fits every sea and its three buttons in each upright view: cells and buttons 100 at school, 64 for grown-ups', () => {
+    for (const [name, v] of Object.entries(UPRIGHT_VIEWS)) {
+      for (const [school, sizes] of [[true, [5, 7]], [false, [5, 7, 9, 11]]] as const) for (const size of sizes) {
+        const fit = touchLayout(size, v.w, v.h, school), min = school ? 100 : 64, sea = size * fit.cell, where = `${name} ${size}${school ? ' school' : ''}`;
+        expect(fit.cell, where).toBeGreaterThanOrEqual(min);
+        const targets = [
+          { what: 'sea', x: fit.x + sea / 2, y: fit.y + sea / 2, w: sea, h: sea },
+          ...fit.slots.map((s) => ({ what: s.kind, x: s.x + s.w / 2, y: s.y + s.h / 2, w: s.w, h: s.h })),
+        ];
+        expect(uprightProblems(v, targets, min), where).toEqual([]);
       }
     }
   });

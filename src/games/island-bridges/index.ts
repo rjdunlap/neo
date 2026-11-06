@@ -661,6 +661,7 @@ export const islandBridges: GameModule = {
   entryLevels: [5],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
+  upright: true,
   hubIcon: () => new BridgeIcon(),
   sticker,
   create: (ctx) => new IslandBridges(ctx),

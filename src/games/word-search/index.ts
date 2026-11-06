@@ -13,6 +13,7 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseGrids, courseMinimum, isWordCourse } from './course';
 import { typingPicture } from '../pond-typing/pictures';
 import { blankFor, cellsOfWord, hiddenHint, hintFor, judgeLine, lineBetween, makeGrids, ORDER, PICTURE_GRID, planFor, SMALL_GRID, STONE, type WordGrid, type WordPlan } from './logic';
+import { MSG_H, SCHOOL_TOUCH, touchFrame, type Slot, type Viewport } from './layout';
 import { themeById } from './words';
 
 /**
@@ -29,9 +30,6 @@ const MIN_TOUCH = 64;
 /** A small grid's squares are at least this big on every view, and grow up to the cap where the view has room. */
 const SMALL_MIN = 96;
 const SMALL_CAP = 132;
-/** School's picture grid: squares, picture tiles and buttons are all this big; the list column beside the grid is this wide. */
-const SCHOOL_TOUCH = 100;
-const SCHOOL_LIST_W = 210;
 /** An unfound picture tile's paper: pale green, since some pictures (the hen, the rain cloud) are white. */
 const TILE_FILL = 0xe6f3d8;
 /** The gap between two picture tiles. */
@@ -41,14 +39,8 @@ const PAD = 24;
 const EDGE = PAD / 2;
 /** A finger that travels this far (logical units) between touching and lifting is sliding the grid, not tapping a letter. */
 const SLIDE = 14;
-/** Level 6: the strip under the grid kept for the message's blanks, and the narrowest a blank may be before the row wraps. */
-const MSG_H = 76;
+/** The narrowest a message blank may be before the row wraps (level 6). */
 const MSG_MIN_SLOT = 24;
-/** Touch play's two buttons, each a target of its own. */
-type SlotKind = 'hint' | 'again';
-interface Slot { kind: SlotKind; x: number; y: number; w: number; h: number }
-/** The window on the grid: stage units. */
-interface Viewport { x: number; y: number; w: number; h: number }
 
 /** A picture word's tile: the tile itself (the target), what sinks on a tap, its paper, its picture and the picture's own scale. */
 interface Tile { node: Container; inner: Container; bg: Graphics; pic: Container; scale: number; word: Text }
@@ -229,43 +221,13 @@ class WordSearch implements Game {
    * slides: the window shows part of it and a drag moves it. The list sits to the right, or under the grid on a tall view.
    */
   private resizeTouch(v: View) {
-    const n = this.n, words = this.grid.words.length, side = v.w >= v.h, small = n <= planFor(SMALL_GRID).size, school = this.pictureTiles;
-    // School's picture grid: every square, tile and button 100 units, the tiles beside the grid or under it.
-    const bh = school ? SCHOOL_TOUCH : 72;
-    // The home and help buttons are at the top left: on a tall view the grid starts below them.
-    const top = side ? 100 : 150, left = 150, gap = 24;
-    let listX: number, listY: number, vp: Viewport, btn: Slot[];
-    if (side) {
-      // A small grid's short list takes a narrower column, so its squares stay big on a landscape view.
-      const listW = school ? SCHOOL_LIST_W : small ? 222 : 262;
-      listX = v.w - listW - 16;
-      listY = top + 4;
-      vp = { x: left, y: top, w: listX - gap - left, h: v.h - top - 24 - (this.grid.message ? MSG_H : 0) };
-      const bw = (listW - 10) / 2, by = v.h - 24 - bh;
-      btn = [{ kind: 'hint', x: listX, y: by, w: bw, h: bh }, { kind: 'again', x: listX + bw + 10, y: by, w: bw, h: bh }];
-      this.listBox = { cols: 1, step: Math.min(36, Math.floor((by - 12 - (listY + 102)) / words)), top: 102, colW: listW };
-      this.title.position.set(listX, listY + 8);
-      this.tally.position.set(listX, listY + 40);
-      this.slideNote.position.set(listX, listY + 66);
-    } else {
-      const panel = 280;
-      listX = 160;
-      if (school) {
-        // The window holds the grid exactly and the tiles follow it, so a taller view leaves room above the buttons, not the grid.
-        vp = { x: 24, y: top, w: v.w - 48, h: n * SCHOOL_TOUCH + PAD + 12 };
-        listY = vp.y + vp.h + 12;
-      } else {
-        listY = v.h - panel;
-        vp = { x: 24, y: top, w: v.w - 48, h: listY - 12 - top - (this.grid.message ? MSG_H : 0) };
-      }
-      const by = v.h - 24 - bh, bw = 200;
-      btn = [{ kind: 'hint', x: 160, y: by, w: bw, h: bh }, { kind: 'again', x: 160 + bw + 12, y: by, w: bw, h: bh }];
-      const colW = Math.floor((v.w - 160 - 24) / 3);
-      this.listBox = { cols: 3, step: 34, top: 44, colW };
-      this.title.position.set(listX, listY + 8);
-      this.tally.position.set(listX + 330, listY + 8);
-      this.slideNote.position.set(listX + 560, listY + 8);
-    }
+    const n = this.n, words = this.grid.words.length, small = n <= planFor(SMALL_GRID).size, school = this.pictureTiles;
+    const f = touchFrame(v.w, v.h, { n, words, school, small, message: !!this.grid.message });
+    const { listX, listY, vp, btn } = f;
+    this.listBox = f.listBox;
+    this.title.position.set(f.title.x, f.title.y);
+    this.tally.position.set(f.tally.x, f.tally.y);
+    this.slideNote.position.set(f.slideNote.x, f.slideNote.y);
     this.list.position.set(listX, listY);
     this.title.anchor.set(0, 0.5);
     this.tally.anchor.set(0, 0.5);
@@ -1132,6 +1094,7 @@ export const wordSearch: GameModule = {
   entryLevels: [SMALL_GRID, PICTURE_GRID],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.lullaby,
+  upright: true,
   hubIcon: () => new WordIcon(),
   sticker,
   create: (ctx) => new WordSearch(ctx),

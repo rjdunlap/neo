@@ -25,7 +25,9 @@ A game says it is ready with one field on its module, `upright: true` (`src/game
 
 ## Slices
 
-### Shell slice 1: the upright design area, Home, Today's six and the round chrome (ready)
+### Shell slice 1: the upright design area, Home, Today's six and the round chrome (built, with batch 1)
+
+Built 2026-11-05: `computeView(..., upright)`, `Scene.uprightArea`, `GameModule.upright`, `dailySix(..., upright)`, `resultSpots` in `src/app/result-layout.ts`, both manifests `any`, batch 1's six games upright-ready (`src/games/upright-check.ts` is the shared layout check), and the `phonefit` upright root pass. Upright is not yet played on a real phone ([device check](../DEVICE-CHECKS.md)).
 
 - **The area.** `computeView` takes the design area as an input: `UPRIGHT_W × UPRIGHT_H` (768 × 1024) when `needsTurn` is true **and** the scene is upright-ready, else 1024 × 768. `safeArea(view)` returns the rectangle of whichever area was used. A turn of the phone is an ordinary `resize`.
 - **The seam.** `Scene.upright` already exists for HTML scenes; it becomes true for any scene that has a portrait layout (Pixi scenes included). `GameScene` is upright when its game module says `upright: true`, so the prompt shows over a not-yet-ready game and never over a ready one. `App.refreshTurn` already reads the scene's flag.
@@ -36,17 +38,17 @@ A game says it is ready with one field on its module, `upright: true` (`src/game
 - **Files (expected):** `src/engine/view.ts` (+ test), `src/app/App.ts`, `src/app/Scene.ts`, `src/app/scenes/GameScene.ts`, `HomeScene.ts`, `DailyScene.ts`, `src/creatures/home-layout.ts`, `src/content/daily.ts` (+ test), `src/games/types.ts`, `src/games/registry.test.ts`, `vite.config.ts`, `public/classic/manifest.webmanifest`, `src/app/scenes/resident-check.ts` (a `phoneUpright: computeView(390, 844, …)` fixture beside `portrait` and `phone`), `scripts/browser-check.mjs` (upright cases), plus batch 1's games.
 - **Check tier:** shell. Typecheck, unit tests, build; the layout tests at the new fixture for every touched scene; `phonefit` changed to expect no prompt over a ready game and the prompt over a not-ready one; one filtered upright browser pass at 390 × 844 with `hasTouch` (Home → Today's six → one card → a finished round → back on the six with a tick) and one screenshot of each touched screen; the offline check once because the manifest changes. `world` only if the island's route changes.
 
-### Shell slice 2: the rest of the root (ready after slice 1)
+### Shell slice 2: the rest of the root (ready)
 
 All games, Explore, Friends, Dress, the hatch, the journal and the sticker book on the root, each with a layout test at the upright fixture and one screenshot. The island at `classic/` (map, lands, places, stories) stays sideways-only: the cutover retires it, and the turn prompt stays there.
 
-### Game batches: six games each (ready after slice 1)
+### Game batches: six games each (ready; batch 1 built)
 
 Each batch is one session and one PR, picked so that Today's six at the developer's band has six **different kinds of challenge** ready, which is what the six already prefers. Per game: `upright: true`, a layout test at the upright fixture (targets ≥ 100 units, inside the view, pet and corners clear) for its first and top level, and one upright screenshot at 390 × 844. `fingerdemo` for a game only if its bot's targets moved in a way the layout test cannot show. The tier is the "existing-game bug fix on an unchanged interaction" one, six times over, with no new rules: rule tests are untouched.
 
 | Batch | For | Games (kind) |
 | --- | --- | --- |
-| 1 (in shell slice 1) | grown-up six | `word-search` (words), `sudoku-garden` (logic), `island-bridges` (space), `pond-conga` (hands), `brain-break` (noticing), `number-nook` (numbers) |
+| 1 (built in shell slice 1) | grown-up six | `word-search` (words), `sudoku-garden` (logic), `island-bridges` (space), `pond-conga` (hands), `brain-break` (noticing), `number-nook` (numbers) |
 | 2 | the rest of grown-up | `picture-logic`, `lantern-lights`, `block-garden`, `gem-swap`, `tile-pairs`, `pyramid-solitaire` |
 | 3 | lap and toddler six | `bubble-pop` (hands), `sing-along-barn` (music), `animal-snack` (words), `size-parade` (numbers), `far-lights` (noticing), `stamp-studio` (space) |
 | 4 | the last grown-up games | `log-roll`, `marble-jump`, `snowball-merge`, `species-comeback`, plus the two most-played early-school games from the developer's feedback |

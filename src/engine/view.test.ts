@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { clampInsets, computeView, needsTurn, NO_INSETS, spread, textBoost } from './view';
+import { clampInsets, computeView, needsTurn, NO_INSETS, safeArea, spread, textBoost, UPRIGHT_H, UPRIGHT_W } from './view';
 
 describe('computeView', () => {
   it('fits the 4:3 design area and grows the spare side', () => {
@@ -81,5 +81,29 @@ describe('textBoost', () => {
     expect(textBoost(0.75)).toBe(1);
     expect(textBoost(computeView(844, 390).scale)).toBeCloseTo(1.42, 1);
     expect(textBoost(0.2)).toBe(1.5);
+  });
+});
+
+describe('the upright design area (chunk 31)', () => {
+  it('gives an upright phone 768 units across, so targets are as large as sideways', () => {
+    const v = computeView(390, 844, NO_INSETS, true);
+    expect(v.upright).toBe(true);
+    expect(v.w).toBeCloseTo(UPRIGHT_W);
+    expect(v.h).toBeCloseTo(844 / (390 / 768));
+    expect(v.scale).toBeCloseTo(computeView(844, 390).scale, 2);
+    expect(safeArea(v)).toEqual({ x: 0, y: (v.h - UPRIGHT_H) / 2, w: UPRIGHT_W, h: UPRIGHT_H });
+  });
+
+  it('leaves the usual area alone when the scene is not upright-ready', () => {
+    expect(computeView(390, 844)).toEqual(computeView(390, 844, NO_INSETS, false));
+    expect(computeView(390, 844).upright).toBeUndefined();
+    expect(computeView(768, 1024)).toEqual({ w: 1024, h: 1024 * (1024 / 768), scale: 0.75 });
+    expect(safeArea(computeView(1024, 768))).toEqual({ x: 0, y: 0, w: 1024, h: 768 });
+  });
+
+  it('keeps the upright area inside an upright phone\'s notch and home bar', () => {
+    const v = computeView(390, 844, { top: 47, right: 0, bottom: 34, left: 0 }, true);
+    expect(v.w).toBeGreaterThanOrEqual(UPRIGHT_W - 1e-9);
+    expect(v.h).toBeGreaterThanOrEqual(UPRIGHT_H - 1e-9);
   });
 });

@@ -48,3 +48,20 @@ export function makeBoard(level: number, rng: Rng): number[] {
   const candidates = [...distances(p.rows, p.cols)].filter(([, info]) => info.distance === p.depth);
   return rng.pick(candidates)[0].split('').map(Number);
 }
+
+/**
+ * Where the board, the goal picture and the three buttons go: cells up to 136 units, the board left of middle with the goal
+ * picture to its right, the buttons along the bottom. `grid` is the first cell's center; `target` the goal picture's center
+ * column. The same formula fits a 768-wide upright phone (chunk 31), the button row stepped clear of the guide.
+ */
+export function nookLayout(w: number, h: number, rows: number, cols: number) {
+  const cell = Math.min(136, (h - 340) / rows, (w - 420) / cols);
+  const grid = { x: w / 2 - cols * cell / 2 + cell / 2 - 30, y: 180 + cell / 2 };
+  return {
+    cell,
+    grid,
+    target: { x: grid.x + (cols - 0.5) * cell + 120 },
+    // Upright, the row steps right so its first button clears the guide in the corner.
+    buttons: [0, 1, 2].map(i => ({ x: Math.max(w / 2 - 184, 220) + i * 184, y: h - 110 })),
+  };
+}

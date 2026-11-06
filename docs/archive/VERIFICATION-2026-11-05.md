@@ -171,3 +171,10 @@
 - Ran: `npm run typecheck`; full `npm test` passed; `GAME_URL=http://localhost:5313 BROWSER_SUITE=brainbreak` (levels 1 and 6: two wrong taps then outline and hint, Hint, lit stone shows its total, every label at most 88 wide, portrait screenshot, one sticker); `BROWSER_SUITE=fingerdemo FINGER_ONLY=brain-break FINGER_LEVELS=6` passed in 42.6 s.
 - Not run: `npm run build` (no shared assets); device speech of the new lines; an iPad.
 - Open: the spoken lines `brain.sums.*` are unheard on a device; no device check was added by this slice.
+
+## 2026-11-05 — Far Lights levels 1–4 (astronomy slice 2)
+
+- [PR #1273](https://github.com/rjdunlap/neo/pull/1273): new game `far-lights` (Tinker Lab, now 25 games; lap 1, toddler 1–2, preschool 2–3, pre-K 3–4, school 4); title clip rendered; land-count tests updated. Tested at commit `e48a245d`.
+- Ran: `npm run typecheck`; full `npm test` (4 failures before the land-count fix: clip, how-to wording, two land counts, all fixed; affected files then 25 files, 254 tests pass; far-lights rule tests 33); `GAME_URL=http://localhost:5357 BROWSER_SUITE=farlights` (level 1 three taps 0/0; level 3 portrait wrong tap 1/0 with screenshot; level 4 too-bright Check, Show a hint twice counted once, Check, board two 1/1); `BROWSER_SUITE=fingerdemo FINGER_ONLY=far-lights FINGER_LEVELS=1,2,4` (14.6 s, 11.3 s, 12.0 s); `npm run build`. Review fixes (hint glide leaving the game busy, lights draggable at the level-2 finish) re-passed `farlights` and `fingerdemo` 2,4.
+- Not run: the offline check, couch suites, `world`; an iPad and device speech.
+- Open: a lap child's tap-to-halo link, a toddler's one-finger drag, halo read as brighter not bigger, an astronomy reviewer ([device checks](../DEVICE-CHECKS.md#far-lights-levels-14-astronomy-slice-2-2026-11-05)).
