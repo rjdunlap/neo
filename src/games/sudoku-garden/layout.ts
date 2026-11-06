@@ -49,8 +49,8 @@ export function touchLayout(n: number, w: number, h: number, fill: boolean): Tou
   }
   // A tall view: the bed centred, the numbers in a row under it and four buttons under them, clear of the pet in the corner.
   const cell = Math.max(MIN_TOUCH, stack), bed = n * cell, rowW = n * tw + (n - 1) * 5, x = (w - bed) / 2;
-  // A bed reaching into the column of Home and "?" starts below them.
-  const top = x < 120 ? 220 : 128;
+  // On an upright phone (chunk 31) a bed reaching into the column of Home and "?" starts below them; the wide area is unchanged.
+  const top = w < 1000 && x < 120 ? 220 : 128;
   const dx = Math.max(rowLeft, (w - rowW) / 2), dy = top + bed + 16 + 20;
   for (let d = 1; d <= n; d++) slots.push({ kind: 'digit', d, x: dx + (d - 1) * (tw + 5), y: dy, w: tw, h: tw });
   const kinds: SlotKind[] = ['marks', 'erase', 'hint', 'again'], bx = 150, bw = Math.floor((w - margin - bx - 30) / 4);
