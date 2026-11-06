@@ -89,7 +89,7 @@ Each build is its own session: **levels 1–2 together** first (the new game, it
 
 ## What comes next
 
-Queue **levels 1–2's build** in READY. Later definitions: an upper-school rung (4 by 4 with ordering at 100-unit squares) and the couch version of levels 7–8.
+**Levels 1–2 are built** (2026-11-05, [PR #1295](https://github.com/rjdunlap/neo/pull/1295); [build note](../archive/COMPLETED-2026-10-09.md#mystery-grid-logic-grid-levels-1-2-2026-11-05)); levels 3–4 are queued in READY. Later definitions: an upper-school rung (4 by 4 with ordering at 100-unit squares) and the couch version of levels 7–8.
 
 ## Defaults (October 23 standing rules)
 

@@ -1050,3 +1050,8 @@ Performed on the built levels (PR #1043; [definition](definitions/water-road.md#
 
 - [ ] On an iPad, listen to device speech of the letter names and the spelled non-words ("That spells ...") in the miss line.
 - [ ] Watch a four-year-old at level 1: does she see that one letter serves two words, and can she drag the tiles?
+
+## Mystery Grid levels 1-2 (2026-11-05)
+
+- [ ] On an iPad, listen to device speech of the slotted clue lines ("Cat is at the pond", "Bunny is not at the tree") and the pie line.
+- [ ] Watch a three- or four-year-old at level 2: does she follow a spoken "not" on the grid, and does the yes-then-no tap make sense?

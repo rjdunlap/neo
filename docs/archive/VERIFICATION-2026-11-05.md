@@ -189,3 +189,9 @@
 ## 2026-11-05 — Draw the Pattern deep dive (docs only)
 
 Changed: the dive `docs/deep-dives/draw-the-pattern.md`, the tracker row, READY, WAITING-ON-DEVELOPER, STUDY-BACKLOG and the GAMES.md lap wording. Ran: `node scripts/check-links.mjs` and `git diff --check`. Nothing else run (no code touched). Open: nothing.
+
+## 2026-11-05 — Draw the Pattern fresh pictures (slice 1)
+
+- [PR #1286](https://github.com/rjdunlap/neo/pull/1286): seeded piece pools of three per stroke at levels 1–4 and 6, 20 new `draw.picture.*` lines, underneath pieces drawn first (a house no longer covers its window); strokes, rules and the bot unchanged.
+- Ran (commit `8eea9fd7` on base `d13a21e5`; Vite on port 5431): `npm run typecheck`; `npm test` 308 files, 5312 pass, including three new rule tests (each pool three distinct pieces with a voice line; a 200-seed sweep reaches every piece with identical strokes at levels 2, 3, 4, 6; each piece only on its own stroke kind); a Playwright probe in portrait 768×1024 of level 3 (teeth and sea; one stray, one hint; misses 1, hints 1) and level 6 (ribbon, present, bow; one hint) to the finish; a 1024×768 gallery of every new piece reviewed by eye; `game-reviewer` overlap findings (road/candles, washing/rain, wheel/smoke) fixed.
+- Not run: `fingerdemo` (bot unchanged), `npm run build`, any browser suite. Open: the device check for levels 1–8.
