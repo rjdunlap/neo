@@ -57,6 +57,54 @@ async function mossyPathPlay() {
     assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1);
     log(`Mossy Path ${level}: misses, stable hint, revision and one sticker passed`);
   }
+  for (const level of process.env.MOSSY_ONLY === 'navigation' ? [] : [4, 7]) {
+    await launch('mossy-path', level); await page.waitForTimeout(350);
+    const before = await page.evaluate(() => kit.store.data.stickers.length);
+    if (level === 4) {
+      // One slide from the turtle along the whole hedge maze steps every tile (drag stepping).
+      await page.evaluate(async () => {
+        const L = await import('/src/games/mossy-path/logic.ts'), g = neo.scene.game;
+        const route = L.routeBetween(g.board, g.board.start, g.board.pond).map(at => g.nodes[at].getGlobalPosition());
+        const points = route.slice(1).flatMap((p, i) => kit.line([route[i].x, route[i].y], [p.x, p.y], 6));
+        await kit.drag(points, 1, 30);
+      });
+      assert.equal(await page.evaluate(() => neo.scene.game.misses), 0, 'level 4 has no misses');
+    } else {
+      const plan = await page.evaluate(async () => {
+        const L = await import('/src/games/mossy-path/logic.ts'), g = neo.scene.game, b = g.board;
+        const line = L.mainline(b), route = L.routeBetween(b, b.start, b.pond);
+        // A wrong branch hanging off the route before the berry's fork, and the route up to it.
+        const fork = route.find(at => L.neighbours(b, at).some(z => !line.has(z)));
+        const wrong = L.neighbours(b, fork).find(z => !line.has(z));
+        return { toFork: L.routeBetween(b, b.start, fork).slice(1), wrong };
+      });
+      for (const at of plan.toFork) await tap(`neo.scene.game.nodes[${at}]`);
+      await tap(`neo.scene.game.nodes[${plan.wrong}]`);
+      assert.equal(await page.evaluate(() => neo.scene.game.misses), 1, 'a wrong branch counts one miss');
+      await tap(`neo.scene.game.nodes[${plan.toFork.at(-1) ?? 'neo.scene.game.board.start'}]`);
+      await tap(`neo.scene.game.nodes[${plan.wrong}]`);
+      assert.equal(await page.evaluate(() => neo.scene.game.misses), 1, 'walking in again is free');
+      await tap('neo.scene.game.hintButton');
+      assert.equal(await page.evaluate(() => neo.scene.game.hints), 1, 'Hint counts once');
+      await tap('neo.scene.game.hintButton');
+      assert.equal(await page.evaluate(() => neo.scene.game.hints), 1, 'repeat help on the same trail counts once');
+      await page.evaluate(() => kit.tapOn(neo.scene.game.nodes[neo.scene.game.hinted])); await page.waitForTimeout(200);
+      await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(350);
+      assert.ok(await page.evaluate(() => neo.scene.game.cell >= 100), 'portrait maze cells stay at least 100 units');
+      await screenshot('mossy-path-7-portrait');
+      await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(350);
+      await page.evaluate(async () => {
+        const L = await import('/src/games/mossy-path/logic.ts'), g = neo.scene.game;
+        for (let guard = 0; guard < 40 && !g.finished; guard++) {
+          const s = g.maze_; kit.tapOn(g.nodes[L.nextToward(g.board, s.path.at(-1), L.goalOf(g.board, s.berry))]); await kit.sleep(170);
+        }
+      });
+      assert.ok(await page.evaluate(() => neo.scene.game.maze_.berry), 'the berry was collected before the pond');
+    }
+    await finished('mossy-path');
+    assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1);
+    log(`Mossy Path ${level}: maze ${level === 4 ? 'slide' : 'miss, hint, berry'} and one sticker passed`);
+  }
   await page.evaluate(() => { kit.store.data.profile.band = 'school'; neo.go.land('puzzle-peaks'); });
   await scene('LandScene'); await page.waitForTimeout(600);
   await turnToGame('mossy-path');

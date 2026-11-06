@@ -730,6 +730,7 @@ Part of the [roadmap](ROADMAP.md), split into its own file on 2026-10-13 so the 
 
 - [ ] **Story Theater (Story Steps 12–13):** check iPad picture/control taps and device narration in both orientations; can a child interpret each picnic ending and explain the consequence of changing one weather/prop choice? Browser checks do not establish these.
 
+- [ ] **Mossy Path levels 4–7 on an iPad (2026-11-06):** drag stepping and walking back with a finger (does the slide follow, does lifting stop cleanly, are 100-unit cells easy at toddler and preschool), the hedge mazes and berry readable in both orientations, device speech for the `moss.maze`, `moss.hedge`, `moss.snack` and `moss.hint-maze` lines, and whether a toddler or pre-K child follows the way or just enjoys the slide. Browser play does not establish these.
 - [ ] **Mossy Path with a school-age child on an iPad (2026-10-13):** check tile taps, turtle/flower/pond clarity, pet clearance and Undo/Hint/Start over in both orientations; listen to device speech for route rules and dead-end recovery. Does the child understand visiting every tile once and reaching the pond last, and enjoy revising a route? Browser play and screenshots do not establish these.
 
 - [ ] **Opposites level 3 pictures (2026-10-14):** on an iPad, are the sponge (wet/dry), plate (clean/dirty), book (thick/thin) and ball (near/far) readable at card size in portrait, and does a child tell near from far? Browser play and one screenshot do not establish this.

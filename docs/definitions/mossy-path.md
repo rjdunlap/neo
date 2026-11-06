@@ -14,7 +14,7 @@ Built 2026-10-13 on `codex/mossy-path`; [PR #285](https://github.com/rjdunlap/ne
 
 ## Levels 4–7, *find the way* (definition, PP1)
 
-Defined 2026-11-06 on `claude/define-mossy-path-4-7` (docs only), from the [puzzle-pages study's ladder](../deep-dives/subjects/puzzle-pages.md#a-first-games-ladder-mossy-path-find-the-way). Not built.
+Defined 2026-11-06 on `claude/define-mossy-path-4-7` (docs only), from the [puzzle-pages study's ladder](../deep-dives/subjects/puzzle-pages.md#a-first-games-ladder-mossy-path-find-the-way). **Built 2026-11-06** on `claude/mossy-path-4-7` ([PR #1312](https://github.com/rjdunlap/neo/pull/1312); [build note](../archive/COMPLETED-2026-10-09.md#mossy-path-levels-47-find-the-way-2026-11-06)). Deviations: `entryLevels` is `[4, 5, 6]`, not `[4, 5]`, because the registry test requires every level a band places first (school's 6) to be an entry level (landing is unchanged); one added voice line, `moss.hint-maze` ("The gold tile is the way to go."), since `moss.hint` talks about blooming all the moss; the turtle turning its head toward a far tap is not drawn (only the adjacent-tile pulse).
 
 **Fun action and purpose.** The same turtle on the same moss tiles, but the patch is now a hedge maze: walk the turtle to the pond. Levels 1–3 ask her to *cover* every tile; levels 4–7 ask her to *find the way*: which branch reaches the pond, looking ahead from a fork before stepping, and (level 7) doing two goals in order. It opens Mossy Path to toddler, preschool and pre-K, which have no maze anywhere on the island (the study's best-evidenced gap). It is not Penguin Slide (slides to a wall), Robot Path (a programmed sequence) or Treasure Map (directions on a map).
 

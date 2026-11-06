@@ -154,7 +154,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school, G grown-up. "Top level"
 | Cut Along | `cut-along` | TPKS | 8 | 5 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
 | Domino Run | `domino-run` | TPKS | 8 | 5 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
 | Number Trails | `number-trails` | PK | 3 | 6 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
-| Mossy Path | `mossy-path` | S | 3 | 6 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
+| Mossy Path | `mossy-path` | TPKS | 7 | 6 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
 | Fruit Sums | `fruit-sums` | S | 3 | 6 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
 | Jar Sort | `jar-sort` | PKS | 8 | 6 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
 | Pile Match | `pile-match` | PKS | 8 | 6 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
