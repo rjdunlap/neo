@@ -158,7 +158,7 @@ describe("today's six on a phone held upright (chunk 31)", () => {
   const ids = (picks: ReturnType<typeof dailySix>) => picks.map((p) => p.mod.id);
 
   it('is exactly the usual six when the phone is not upright', () => {
-    for (const band of BANDS) for (const day of days.slice(0, 5)) expect(ids(dailySix(day, band, GAMES, undefined, false)), `${band} ${day}`).toEqual(ids(dailySix(day, band, GAMES)));
+    for (const { id: band } of BANDS) for (const day of days.slice(0, 5)) expect(ids(dailySix(day, band, GAMES, undefined, false)), `${band} ${day}`).toEqual(ids(dailySix(day, band, GAMES)));
   });
 
   it('draws upright-ready games first, then fills from the rest of the band', () => {

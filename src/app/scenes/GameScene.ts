@@ -26,6 +26,7 @@ import { nextSpot } from '../../couch/focus';
 import { onTap } from '../../engine/input';
 import { randomSeed, Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
+import { resultSpots } from '../result-layout';
 import { textBoost, type View } from '../../engine/view';
 import { pauseLabels, type PauseAction } from '../pause';
 import type { Game, GameContext, GameModule, RoundResult } from '../../games/types';
@@ -649,15 +650,8 @@ export class GameScene extends Scene {
         confetti.burst(keep!.x, keep!.y, { kind: 'star', colors: [swatch.green.fill, 0xffffff], count: 14, speed: [180, 340], gravity: 0, life: [0.5, 0.9] });
         void this.resultVoice('keep.done');
       });
-      keep.position.set(v.w / 2 - 195, v.h * 0.33);
     }
     this.after = { again, next, heart, home, house, keep };
-    // The celebrating pet fills the middle of the bottom row, so a next level goes above home, below the heart and clear of the discovery card.
-    again.position.set(v.w / 2 - 240, v.h * 0.72);
-    next?.position.set(v.w / 2 + 250, v.h * 0.525);
-    heart.position.set(v.w / 2 + 195, v.h * 0.33);
-    home.position.set(v.w / 2 + 240, v.h * 0.72);
-    house?.position.set(v.w / 2 + 380, v.h * 0.72);
     for (const b of [again, ...(next ? [next] : []), heart, home, ...(house ? [house] : []), ...(keep ? [keep] : [])]) {
       b.scale.set(0);
       layer.addChild(b);
@@ -956,16 +950,17 @@ export class GameScene extends Scene {
     this.resultPlace?.resize(view);
     this.resultVeil?.clear().rect(0, 0, view.w, view.h).fill({ color: 0xfff4e3, alpha: this.veilAlpha() });
     this.resultStar?.position.set(view.w / 2, view.h - 20 + this.resultPetOffset.y);
-    this.resultSticker?.position.set(view.w / 2, view.h * 0.33);
-    this.resultPill?.position.set(view.w / 2, view.h * 0.555);
+    const at = resultSpots(view, !!this.after?.house);
+    this.resultSticker?.position.set(at.sticker.x, at.sticker.y);
+    this.resultPill?.position.set(at.pill.x, at.pill.y);
     const a = this.after;
     if (!a) return;
-    a.again.position.set(view.w / 2 - 240, view.h * 0.72);
-    a.next?.position.set(view.w / 2 + 250, view.h * 0.525);
-    a.home.position.set(view.w / 2 + 240, view.h * 0.72);
-    a.house?.position.set(view.w / 2 + 380, view.h * 0.72);
-    a.heart.position.set(view.w / 2 + 195, view.h * 0.33);
-    a.keep?.position.set(view.w / 2 - 195, view.h * 0.33);
+    a.again.position.set(at.again.x, at.again.y);
+    a.next?.position.set(at.next.x, at.next.y);
+    a.home.position.set(at.home.x, at.home.y);
+    a.house?.position.set(at.house.x, at.house.y);
+    a.heart.position.set(at.heart.x, at.heart.y);
+    a.keep?.position.set(at.keep.x, at.keep.y);
   }
 
   /** A small card for the grown-up, which fades after a few seconds or when tapped. */

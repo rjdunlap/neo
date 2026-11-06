@@ -58,10 +58,13 @@ export class DailyScene extends Scene {
   cards: DailyCard[] = [];
   private leaving = false;
   private readonly grownUp = store.data.profile.band === 'grownup';
+  private readonly uprightPhone: boolean;
 
   constructor(app: App) {
     super(app);
-    this.picks = dailySix(this.day, store.data.profile.band, GAMES, (id) => store.data.games[id]?.pinned ?? null);
+    // A phone held upright draws its six from the upright-ready games first (chunk 31); the rest wear a turn badge.
+    this.uprightPhone = app.uprightPhone();
+    this.picks = dailySix(this.day, store.data.profile.band, GAMES, (id) => store.data.games[id]?.pinned ?? null, this.uprightPhone);
     this.date.text = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
   }
 
@@ -113,7 +116,11 @@ export class DailyScene extends Scene {
     tick.label = 'tick';
     tick.visible = played;
     art.label = 'art';
-    node.addChild(frame, art, pill, name, dots, level, tick);
+    // Not upright-ready yet, on a phone held upright: a small phone turned on its side; opening it shows the turn prompt.
+    const turn = turnBadge();
+    turn.label = 'turn';
+    turn.visible = this.uprightPhone && !pick.mod.upright;
+    node.addChild(frame, art, pill, name, dots, level, tick, turn);
     onTap(node, () => {
       if (this.leaving) return;
       sfx.tick();
@@ -202,6 +209,7 @@ export class DailyScene extends Scene {
       const pillH = level.y - name.y + (level.text ? level.height : -6) + 10;
       (node.getChildByLabel('pill') as Graphics).clear().roundRect(-pillW / 2, name.y - 5, pillW, pillH, 16).fill({ color: cream, alpha: 0.95 });
       (node.getChildByLabel('tick') as Container).position.set(half - 8, -half + 8);
+      (node.getChildByLabel('turn') as Container).position.set(-half + 8, -half + 8);
       node.hitArea = new Rectangle(-half, -half, size, size + (name.y + name.height - half));
     });
   }
@@ -229,4 +237,16 @@ export class DailyScene extends Scene {
       this.particles.burst(c.node.x + tick.x, c.node.y + tick.y, { kind: 'star', colors: [swatch.yellow.fill, 0xffffff], count: 6, speed: [90, 200], gravity: 0, life: [0.4, 0.7] });
     }
   }
+}
+
+/** A card's turn-the-phone badge: a small phone lying on its side in a white disc, with a curved arrow over it. */
+function turnBadge(): Container {
+  const c = new Container();
+  c.addChild(
+    new Graphics().circle(0, 0, 26).fill(0xffffff).stroke({ color: swatch.orange.line, width: 4 }),
+    new Graphics().roundRect(-15, -8, 30, 18, 4).fill(ink).roundRect(-12, -5, 24, 12, 2).fill(swatch.blue.fill),
+    new Graphics().arc(0, 2, 19, -Math.PI * 0.85, -Math.PI * 0.2).stroke({ color: swatch.orange.fill, width: 3.5 }).poly([16, -14, 22, -6, 13, -5]).fill(swatch.orange.fill),
+  );
+  c.eventMode = 'none';
+  return c;
 }
