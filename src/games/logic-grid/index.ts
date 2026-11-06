@@ -409,6 +409,7 @@ class MysteryGrid implements Game {
       const y = this.board.y + gh + 22;
       const x = up ? (v.w - row) / 2 : this.board.x;
       this.clueCards.forEach((c, i) => c.position.set(x + i * (CARD_S + 10), y));
+      this.caption.anchor.set(0.5);
       this.caption.position.set(x + row / 2, y + SQ + 30);
       this.caption.style.wordWrap = true;
       this.caption.style.wordWrapWidth = up ? v.w - 40 : row;
@@ -431,15 +432,17 @@ class MysteryGrid implements Game {
       const below = y0 + rows * (SQ + 10);
       const cw = width(per);
       this.caption.style.wordWrap = true;
+      // Hung from its top, so a long wrapped clue grows down, never back over the cards.
+      this.caption.anchor.set(0.5, 0);
       if (up) {
         const left = (v.w - cw) / 2;
         this.caption.style.wordWrapWidth = cw;
-        this.caption.position.set(left + cw / 2, below + 40);
+        this.caption.position.set(left + cw / 2, below + 6);
         this.help.position.set(Math.min(v.w - 70, left + cw + 80), Math.min(v.h - 60, below + 50));
       } else {
         this.caption.style.wordWrapWidth = cw;
-        this.caption.position.set(x0 + cw / 2, below + 40);
-        this.help.position.set(x0 + 60, Math.min(v.h - 60, below + 150));
+        this.caption.position.set(x0 + cw / 2, below + 6);
+        this.help.position.set(x0 + 60, Math.min(v.h - 60, below + 180));
       }
     } else if (this.upright) {
       // A 3 by 3 sits a little higher so a second row of clues stays above the pet's corner (y804).
