@@ -256,10 +256,6 @@ class SenseDetective implements Game {
 
   private async begin() {
     this.busy = true;
-    if (this.tellLevel) {
-      await this.ctx.say('sense.quilt');
-      if (!this.alive) return;
-    }
     await this.ctx.instruct(this.instructId);
     this.busy = false;
   }
@@ -409,6 +405,8 @@ class SenseDetective implements Game {
       await this.ctx.say('sense.cant-tell-right');
       if (!this.alive) return;
       this.stage = 'sense';
+      // Stage B starts unhelped; a hint earned in stage A has already counted.
+      this.glowOn = false;
       this.clearAnswer();
       this.showChoices(true);
       for (const c of this.choiceCards) { c.node.scale.set(0.2); void this.ctx.tw.to(c.node.scale, { x: 1, y: 1 }, { duration: 0.35, ease: ease.outBack }); }
