@@ -34,13 +34,15 @@ export const PLANS: readonly Plan[] = [
   { mode: 'trace', name: 'Cross, square, triangle: each line from its own ring, in order', count: 3 },
   { mode: 'choose', name: 'What comes next? Two kinds take turns; draw the one that continues', count: 2 },
   { mode: 'choose', name: 'Two, then one: patterns like hill, hill, dip; draw what comes next', count: 2 },
+  { mode: 'trace', name: 'Slanting lines: rain from a cloud, then an X, each line from its own ring', count: 2 },
 ];
 
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
   toddler: { min: 1, max: 3 },
   preschool: { min: 3, max: 5 },
-  prek: { min: 5, max: 8 },
+  // Level 9's slanting lines come between memory (5) and the shapes (6), whose triangle is made of them.
+  prek: { min: 5, max: 9, order: [5, 9, 6, 7, 8] },
 };
 
 export const levelOf = (level: number): number => Math.max(1, Math.min(PLANS.length, Math.floor(level)));
@@ -101,7 +103,8 @@ export type PieceId =
   | 'window' | 'house' | 'roof'
   | 'ribbon' | 'present' | 'bow'
   | 'mast' | 'cabin' | 'sail'
-  | 'bridge' | 'bunting';
+  | 'bridge' | 'bunting'
+  | 'kite' | 'treasure';
 
 /**
  * What a stroke can become, three things each, chosen by the round's seed. The strokes never change with the piece; only
@@ -124,6 +127,9 @@ export const SHAPE_SETS: readonly (readonly [cross: PieceId, square: PieceId, tr
   ['ribbon', 'present', 'bow'],
   ['mast', 'cabin', 'sail'],
 ];
+
+/** Level 9's X becomes a kite's crossed sticks or a treasure mark. */
+export const X_PIECES: readonly PieceId[] = ['kite', 'treasure'];
 
 /** One unit's width along the strip: the strip holds five. */
 export const UNIT_W = 0.6;
@@ -176,7 +182,7 @@ function unitPath(kind: UnitKind, x0: number, w = UNIT_W): { path: Point[]; corn
 export const baseOf = (kind: UnitKind): number => (kind === 'loop' ? LOOP_BASE : BASE);
 
 export interface Stroke {
-  kind: UnitKind | 'line' | 'post' | 'circle' | 'cross-down' | 'cross-across' | 'square' | 'triangle' | 'free';
+  kind: UnitKind | 'line' | 'post' | 'circle' | 'cross-down' | 'cross-across' | 'square' | 'triangle' | 'slant' | 'x-back' | 'x-fwd' | 'free';
   /** One path, or two: a circle's two ways round, or levels 7–8's two candidates (the continuing one is `right`). */
   orders: Point[][];
   /** Points `0..lead` are the pet's part; her checkpoints run from `lead` to the end. */
@@ -302,6 +308,16 @@ export function stripsFor(level: number, rng: Rng): Strip[] {
         { piece: cross, strokes: [single('cross-down', [[cx, 0.12], [cx, 0.88]]), single('cross-across', [[cx - 0.6, 0.5], [cx + 0.6, 0.5]])] },
         { piece: square, strokes: [single('square', [[cx - 0.36, 0.14], [cx - 0.36, 0.86], [cx + 0.36, 0.86], [cx + 0.36, 0.14], [cx - 0.36, 0.14]], 0, [[cx - 0.36, 0.86], [cx + 0.36, 0.86], [cx + 0.36, 0.14]])] },
         { piece: triangle, strokes: [single('triangle', [[cx, 0.12], [cx - 0.5, 0.86], [cx + 0.5, 0.86], [cx, 0.12]], 0, [[cx - 0.5, 0.86], [cx + 0.5, 0.86]])] },
+      ];
+    }
+    case 9: {
+      // Rain: three short slanting lines, each from a ring at its top; the pet draws the first. Then an X, back-slash
+      // first, each stroke from its own ring.
+      const rain = [0.6, 1.45, 2.3].map((x, i) => single('slant', [[x, 0.18], [x + 0.5, 0.86]], i === 0 ? -1 : 0));
+      const cx = 1.7;
+      return [
+        { piece: 'rain', strokes: rain },
+        { piece: rng.pick(X_PIECES), strokes: [single('x-back', [[cx - 0.45, 0.14], [cx + 0.45, 0.86]]), single('x-fwd', [[cx + 0.45, 0.14], [cx - 0.45, 0.86]])] },
       ];
     }
     default: {

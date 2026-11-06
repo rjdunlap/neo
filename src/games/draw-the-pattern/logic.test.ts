@@ -8,6 +8,7 @@ import {
   markCount, nextUnit, onPaper, pathOf, petCorner, planFor, stones, stripsFor, tolerance, wrongReached, type Rect, type Stroke,
 } from './logic';
 import { SCRIPT as LINES } from '../../content/voice-script';
+import { rangeFor, stepLevel } from '../../progress/difficulty';
 
 const VIEWS = {
   landscape: computeView(1024, 768),
@@ -38,16 +39,16 @@ function walk(points: readonly Point[], tol: number, from = 0): number {
 }
 
 describe('Draw the Pattern ladder', () => {
-  it('has eight levels and the defined bands', () => {
-    expect(PLANS).toHaveLength(8);
-    expect(LEVELS).toEqual({ lap: { min: 1, max: 1 }, toddler: { min: 1, max: 3 }, preschool: { min: 3, max: 5 }, prek: { min: 5, max: 8 } });
+  it('has nine levels and the defined bands', () => {
+    expect(PLANS).toHaveLength(9);
+    expect(LEVELS).toEqual({ lap: { min: 1, max: 1 }, toddler: { min: 1, max: 3 }, preschool: { min: 3, max: 5 }, prek: { min: 5, max: 9, order: [5, 9, 6, 7, 8] } });
     expect(markCount(planFor(1))).toBe(4);
     expect(planFor(1).mode).toBe('mark');
     expect(planFor(7).mode).toBe('choose');
   });
 
   it('never widens the corridor as the level rises', () => {
-    for (let l = 2; l <= 8; l++) expect(tolerance(l)).toBeLessThanOrEqual(tolerance(l - 1));
+    for (let l = 2; l <= PLANS.length; l++) expect(tolerance(l)).toBeLessThanOrEqual(tolerance(l - 1));
   });
 
   for (const [name, v] of Object.entries(VIEWS)) {
@@ -60,7 +61,7 @@ describe('Draw the Pattern ladder', () => {
       expect(inView(strip)).toBe(true);
       expect(inView(picture)).toBe(true);
       for (const keep of [homeCorner(), petCorner(v), picture]) expect(overlaps(strip, keep)).toBe(false);
-      for (let l = 2; l <= 8; l++) {
+      for (let l = 2; l <= PLANS.length; l++) {
         for (const seed of SEEDS.slice(0, 5)) {
           for (const strip0 of stripsFor(l, new Rng(seed))) {
             const rings: Rect[] = [];
@@ -70,8 +71,8 @@ describe('Draw the Pattern ladder', () => {
               const ring = { x: strip.x + at[0] * strip.s - RING_R, y: strip.y + at[1] * strip.s - RING_R, w: 2 * RING_R, h: 2 * RING_R };
               expect(inView(ring), `ring at level ${l}`).toBe(true);
               for (const keep of [homeCorner(), petCorner(v), picture]) expect(overlaps(ring, keep), `ring at level ${l}`).toBe(false);
-              // Rings shown together never overlap (level 2's posts, level 6's cross).
-              if (s.lead === 0 && (s.kind === 'post' || s.kind.startsWith('cross'))) {
+              // Rings shown together never overlap (level 2's posts, level 6's cross, level 9's rain and X).
+              if (s.lead === 0 && (s.kind === 'post' || s.kind.startsWith('cross') || s.kind === 'slant' || s.kind.startsWith('x-'))) {
                 for (const r of rings) expect(overlaps(ring, r), `rings at level ${l}`).toBe(false);
                 rings.push(ring);
               }
@@ -83,12 +84,12 @@ describe('Draw the Pattern ladder', () => {
 
     it(`keeps the corridor at least 30 units wide in the ${name} view`, () => {
       const { strip } = layoutFor(v);
-      for (let l = 2; l <= 8; l++) expect(tolerance(l) * strip.s).toBeGreaterThanOrEqual(30);
+      for (let l = 2; l <= PLANS.length; l++) expect(tolerance(l) * strip.s).toBeGreaterThanOrEqual(30);
     });
   }
 
   it('lays every stroke on the strip, and leaves her at least three units of a pattern', () => {
-    for (let l = 1; l <= 8; l++) {
+    for (let l = 1; l <= PLANS.length; l++) {
       for (const seed of SEEDS.slice(0, 10)) {
         for (const s of strokes(l, seed)) {
           for (const o of s.orders) for (const p of o) {
@@ -100,13 +101,13 @@ describe('Draw the Pattern ladder', () => {
           if (s.units && s.lead > 0 && (l === 3 || l === 5)) expect(s.units.length - (s.kind === 'loop' ? 1 : 2)).toBeGreaterThanOrEqual(3);
           if (s.units && l === 4) expect(s.units.length - 1).toBe(3);
         }
-        if (l >= 7) expect(stripsFor(l, new Rng(seed)).every((st) => st.strokes.filter((s) => s.right !== undefined).length === 3)).toBe(true);
+        if (planFor(l).mode === 'choose') expect(stripsFor(l, new Rng(seed)).every((st) => st.strokes.filter((s) => s.right !== undefined).length === 3)).toBe(true);
       }
     }
   });
 
   it('can be drawn to the end from where the pet stops, both ways round the circle and on the continuing candidate', () => {
-    for (let l = 2; l <= 8; l++) {
+    for (let l = 2; l <= PLANS.length; l++) {
       for (const seed of SEEDS.slice(0, 10)) {
         for (const s of hers(l, seed)) {
           const ways = s.right !== undefined ? [s.right] : s.orders.map((_, i) => i);
@@ -117,7 +118,7 @@ describe('Draw the Pattern ladder', () => {
   });
 
   it('lets the ghost finger’s thinned route draw every stroke', () => {
-    for (let l = 2; l <= 8; l++) {
+    for (let l = 2; l <= PLANS.length; l++) {
       for (const seed of SEEDS.slice(0, 10)) {
         for (const s of hers(l, seed)) {
           const o = s.right ?? 0, pts = s.orders[o];
@@ -136,7 +137,7 @@ describe('Draw the Pattern ladder', () => {
   });
 
   it('never lets a chord across a corner consume a checkpoint past it', () => {
-    for (let l = 2; l <= 8; l++) {
+    for (let l = 2; l <= PLANS.length; l++) {
       for (const seed of SEEDS.slice(0, 10)) {
         for (const s of hers(l, seed)) {
           const tol = tolerance(l);
@@ -157,7 +158,7 @@ describe('Draw the Pattern ladder', () => {
   });
 
   it('keeps separate stretches of one path apart, away from corners, the circle’s start and a loop’s crossing', () => {
-    for (let l = 2; l <= 8; l++) {
+    for (let l = 2; l <= PLANS.length; l++) {
       for (const seed of SEEDS.slice(0, 6)) {
         for (const s of hers(l, seed)) {
           const tol = tolerance(l);
@@ -339,7 +340,7 @@ describe('Draw the Pattern ladder', () => {
   });
 
   it('gives the same strips for the same seed', () => {
-    for (let l = 1; l <= 8; l++) expect(stripsFor(l, new Rng(42))).toEqual(stripsFor(l, new Rng(42)));
+    for (let l = 1; l <= PLANS.length; l++) expect(stripsFor(l, new Rng(42))).toEqual(stripsFor(l, new Rng(42)));
   });
 
   it('gives every stroke a pool of three pictures, each with its own spoken line', () => {
@@ -378,6 +379,68 @@ describe('Draw the Pattern ladder', () => {
         if (l === 1) expect(new Set(strips.map((s) => s.piece)).size).toBe(1);
       }
     }
+  });
+});
+
+describe('Draw the Pattern level 9, slanting lines', () => {
+  /** Where two paths cross: pairs of segment indices whose segments intersect. */
+  const crossings = (a: readonly Point[], b: readonly Point[]): number => {
+    const side = (o: Point, p: Point, q: Point) => (p[0] - o[0]) * (q[1] - o[1]) - (p[1] - o[1]) * (q[0] - o[0]);
+    let n = 0;
+    for (let i = 1; i < a.length; i++) for (let j = 1; j < b.length; j++) {
+      const p = a[i - 1], q = a[i], r = b[j - 1], t = b[j];
+      if (side(p, q, r) * side(p, q, t) < 0 && side(r, t, p) * side(r, t, q) < 0) n++;
+    }
+    return n;
+  };
+
+  it('sits between 5 and 6 in pre-K’s order, without renumbering', () => {
+    const prek = rangeFor(LEVELS, 'prek');
+    expect(stepLevel(5, 1, prek)).toBe(9);
+    expect(stepLevel(9, 1, prek)).toBe(6);
+    expect(stepLevel(6, -1, prek)).toBe(9);
+    expect(planFor(6).name).toMatch(/^Cross, square, triangle/);
+    expect(tolerance(9)).toBeLessThanOrEqual(tolerance(6));
+  });
+
+  it('draws real diagonals: rain the pet starts, then an X she draws from two rings', () => {
+    for (const seed of SEEDS) {
+      const [rain, x] = stripsFor(9, new Rng(seed));
+      expect(rain.piece).toBe('rain');
+      expect(['kite', 'treasure']).toContain(x.piece);
+      expect(rain.strokes.map((s) => s.kind)).toEqual(['slant', 'slant', 'slant']);
+      expect(rain.strokes.map((s) => s.lead > 0)).toEqual([true, false, false]);
+      expect(x.strokes.map((s) => s.kind)).toEqual(['x-back', 'x-fwd']);
+      expect(x.strokes.every((s) => s.lead === 0)).toBe(true);
+      for (const s of [...rain.strokes, ...x.strokes]) {
+        const [a, b] = [s.orders[0][0], s.orders[0].at(-1)!];
+        expect(Math.abs(b[0] - a[0])).toBeGreaterThanOrEqual(0.4);
+        expect(Math.abs(b[1] - a[1])).toBeGreaterThanOrEqual(0.4);
+        // Every slanting line starts at its top.
+        expect(a[1]).toBeLessThan(b[1]);
+      }
+      // The X: back-slash first, then forward-slash, crossing once.
+      const [back, fwd] = x.strokes.map((s) => s.orders[0]);
+      expect(back[0][0]).toBeLessThan(back.at(-1)![0]);
+      expect(fwd[0][0]).toBeGreaterThan(fwd.at(-1)![0]);
+      expect(crossings(back, fwd)).toBe(1);
+    }
+  });
+
+  for (const [name, v] of Object.entries(VIEWS)) {
+    it(`keeps the X’s two rings two ring radii apart in the ${name} view`, () => {
+      const { strip } = layoutFor(v);
+      const [back, fwd] = stripsFor(9, new Rng(1))[1].strokes.map((s) => s.orders[0][0]);
+      expect(dist(back, fwd) * strip.s).toBeGreaterThanOrEqual(2 * RING_R);
+    });
+  }
+
+  it('reaches both X pictures, each with its own spoken line', () => {
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 40; seed++) seen.add(stripsFor(9, new Rng(seed))[1].piece);
+    expect([...seen].sort()).toEqual(['kite', 'treasure']);
+    for (const p of ['rain', 'kite', 'treasure']) expect(LINES[`draw.picture.${p}` as keyof typeof LINES]).toBeTruthy();
+    expect(LINES['draw.instruct.slant']).toBeTruthy();
   });
 });
 

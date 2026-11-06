@@ -45,6 +45,8 @@ function slotsFor(level: number, strips: readonly Strip[]): Slot[] {
     ribbon: { x: 0.14, y: 0.44, w: 0.5, h: 0.44 }, present: { x: 0.14, y: 0.44, w: 0.5, h: 0.44 }, bow: { x: 0.29, y: 0.24, w: 0.2, h: 0.2 },
     mast: { x: 0.3, y: 0.12, w: 0.26, h: 0.5 }, cabin: { x: 0.14, y: 0.62, w: 0.56, h: 0.16 }, sail: { x: 0.45, y: 0.18, w: 0.2, h: 0.4 },
     bridge: { x: 0.04, y: 0.5, w: 0.92, h: 0.3 }, bunting: { x: 0.04, y: 0.08, w: 0.92, h: 0.2 },
+    // Level 9: the kite flies top-right, clear of the rain cloud; the treasure mark lies on the grass below the rain.
+    kite: { x: 0.7, y: 0.03, w: 0.2, h: 0.18 }, treasure: { x: 0.34, y: 0.76, w: 0.32, h: 0.14 },
   };
   // Level 5's two strips, whatever they are, stack one above the other, a sky piece on top when only the second is one.
   if (l === 5) return SKY.has(strips[1].piece) && !SKY.has(strips[0].piece) ? [low, top] : [top, low];
@@ -272,6 +274,25 @@ function drawPiece(g: Graphics, strip: Strip, paths: readonly Point[][], r: Rect
     case 'bunting':
       line(paths.flat(), 6, swatch.pink.line);
       break;
+    case 'kite': {
+      // Paper stretched over her crossed sticks, corner to corner, and a tail of bows blowing sideways, clear of the rain cloud.
+      const [a, b] = paths, corners = [a[0], b[0], a.at(-1)!, b.at(-1)!];
+      g.poly(poly(corners)).fill(swatch.orange.fill).stroke({ width: 3, color: swatch.orange.line, join: 'round' });
+      for (const p of paths) line(p, 5, swatch.brown.line);
+      const [tx, ty] = f(b.at(-1)!);
+      g.moveTo(tx, ty).quadraticCurveTo(tx - 16, ty + 8, tx - 34, ty + 4).stroke({ width: 2, color: swatch.white.line });
+      for (const [i, k] of [0.45, 0.85].entries()) {
+        const [x, y] = [tx - 34 * k, ty + 6 * k], c = swatch[MARKS[i]];
+        g.poly([x - 7, y - 5, x, y, x - 7, y + 5]).poly([x + 7, y - 5, x, y, x + 7, y + 5]).fill(c.fill);
+      }
+      break;
+    }
+    case 'treasure': {
+      // A sandy patch on the grass, her X on it in red: the treasure is here.
+      g.ellipse(r.x + r.w / 2, r.y + r.h / 2, r.w * 0.7, r.h * 0.9).fill(swatch.yellow.light).stroke({ width: 2, color: swatch.yellow.line });
+      for (const p of paths) line(p, 7, swatch.red.line);
+      break;
+    }
   }
 }
 
@@ -391,6 +412,8 @@ class DrawThePattern implements Game {
     if (this.strip.memory) return 'draw.instruct.memory';
     if (this.level === 6) return 'draw.instruct.shape';
     if (this.strip.strokes[0].kind === 'post') return 'draw.instruct.down';
+    if (this.strip.strokes[0].kind === 'slant') return 'draw.instruct.slant';
+    if (this.strip.strokes[0].kind === 'x-back') return 'draw.instruct.shape';
     return 'draw.instruct.ring';
   }
 

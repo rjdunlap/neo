@@ -203,3 +203,7 @@ Changed: a levels 5–6 section in `docs/definitions/puddle-lens.md`, the cells-
 ## 2026-11-05 — Sense Detective levels 3–5 definition (docs only)
 
 Changed: a levels 3–5 section in `docs/definitions/sense-detective.md` (with build slices B4a and B4b), the body-health dive rows, READY and STUDY-BACKLOG. Ran: `node scripts/check-links.mjs` and `git diff --check`, both clean. No code checks (docs tier). Open: nothing built or registered; the build checks are written in the definition's build slices.
+
+## 2026-11-05 — Puzzle pages study (docs only)
+
+Changed: a new subject study `docs/deep-dives/subjects/puzzle-pages.md` (newspaper and activity-book puzzles, four research passes), its tracker row, RECOMMENDATIONS packet, STUDY-BACKLOG and roadmap rows, an IDEAS section with five proposals, design-note links on READY's crossword and logic-grid definitions and a READY line for Mossy Path's maze opening (PP1). Ran: `node scripts/check-links.mjs` and `git diff --check`. No code checks (docs tier). Open: nothing built; NYT, Puzzmo, the Guardian and The Times sites were blocked, so their claims are search summaries.
