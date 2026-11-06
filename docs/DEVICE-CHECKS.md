@@ -520,6 +520,10 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 - [ ] On an iPad, check that the thermometer's three fill heights (cool, warm, hot) read without words, and that the heater's on/off and the friend's shiver, comfy and startled moods read, in portrait with the pet clear.
 - [ ] Get the science-educator read of the warmth wording (the `hh.*` lines and the how-to card) before it is treated as final ([definition](definitions/helper-house.md)).
 
+## Helper House level 5
+
+- [ ] On an iPad, check that the flicker reads as the lamp's own fault (the lamp lighting, the sensor seeing bright, the lamp going off), and that a five-year-old can tell the roof, shed and lamp-post sockets apart in portrait with the pet clear.
+
 ## Sorting Machine levels 1–2
 
 - [ ] On an iPad, check that the sign's door pictures (property to open door) read without words, and that the star, hollow ring and dotted ring with "?" are clear in portrait with the pet clear.
