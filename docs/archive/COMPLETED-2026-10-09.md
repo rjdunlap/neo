@@ -3083,7 +3083,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-06.md#2026-11-06--helper-house
 ## Helper House levels 6–7 The comfy line and Calm heater (2026-11-06)
 
 [PR #1311](https://github.com/rjdunlap/neo/pull/1311), robots-automation slice RA4 levels 6–7 (school range now 2–7). Level 6: one line on a seven-mark warmth gauge (comfy band 2–4 hatched), dragged by a 110 tab or set by tapping the gauge, starting at the top; an unscored guess (hare or two flames) before the first day, a truth line after it, the first day's climb kept as faint dots; gaps 3 and 4 accepted. Level 7: an on line and an off line that cannot cross, a click jar of 8 cups, `heater-busy` past 8 switches, only on 3 / off 4 accepted. Misses stay 0; the same failure twice glows the line and counts one hint; Show me one hint per press. Voice lines `hh.instruct.6/7`, `hh.guess.*`, `hh.click`, `hh.heater-busy`, `hh.help.6`, `hh.help.7.*`; how-to steps and notes; ghost finger for both; `HH_LEVELS=6,7` in the `helperhouse` case. The tests corrected two definition claims (see the definition's 5–7 section). Review fixes: the truth line is awaited, the glow redraws the line yellow at once, and the guess closes when the line moves. Levels 8–9 (RA5, Cases) are not yet defined.
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-06--helper-house-levels-67-the-comfy-line-and-calm-heater-ra4).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-06.md#2026-11-06--helper-house-levels-67-the-comfy-line-and-calm-heater-ra4).
 
 ## Draw the Pattern slice 3, level 10 Dot to dot (2026-11-06)
 

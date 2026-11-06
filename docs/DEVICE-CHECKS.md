@@ -1,5 +1,7 @@
 # Needs a person or a device
 
+- [ ] **Playdate Workshop (levels 1–3, 2026-11-06):** does a three-year-old understand passing the pad from the pictured requests? Do pre-K children compare the plans or pick the first card?
+- [ ] **Playdate Workshop:** are the co-play roles (one chooses, one operates) wanted by families? How does iPad speech say the first-person lines?
 - [ ] **Hat Band (levels 1–3, 2026-11-06, #1320):** are the drum and tune hats clearly different on an iPad speaker? Does the drum mask the tune at the chosen gains?
 - [ ] **Hat Band:** does a four-year-old read a hat as "mine to put on" and the pending ring as "wait a moment"? Does the one-beat wait feel responsive?
 - [ ] **Hat Band speech of "the drum hat" and "the tune hat":** check actual device speech.
