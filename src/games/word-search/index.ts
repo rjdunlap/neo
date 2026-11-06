@@ -11,11 +11,15 @@ import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseGrids, courseMinimum, isWordCourse } from './course';
-import { blankFor, cellsOfWord, hiddenHint, hintFor, judgeLine, lineBetween, makeGrids, ORDER, planFor, SMALL_GRID, STONE, type WordGrid, type WordPlan } from './logic';
+import { typingPicture } from '../pond-typing/pictures';
+import { blankFor, cellsOfWord, hiddenHint, hintFor, judgeLine, lineBetween, makeGrids, ORDER, PICTURE_GRID, planFor, SMALL_GRID, STONE, type WordGrid, type WordPlan } from './logic';
 import { themeById } from './words';
 
-/** Grown-up play only: the island's Lantern Lake holds it, with touch or a controller. The small grid (5) comes first, then 1–4, the message grid (6), and just the theme (7) last. */
-const LEVELS: BandLevels = { grownup: { min: 1, max: 7, order: ORDER } };
+/**
+ * Lantern Lake holds it, with touch or a controller. Grown-ups: the small grid (5) comes first, then 1–4, the message grid (6), and
+ * just the theme (7) last. School plays one grid of four picture words (8), by touch.
+ */
+const LEVELS: BandLevels = { school: { min: PICTURE_GRID, max: PICTURE_GRID }, grownup: { min: 1, max: 7, order: ORDER } };
 
 const PAPER = 0xfffdf6;
 const BAND_COLORS: ColorName[] = ['pink', 'blue', 'green', 'orange', 'purple', 'teal', 'yellow', 'red'];
@@ -25,6 +29,13 @@ const MIN_TOUCH = 64;
 /** A small grid's squares are at least this big on every view, and grow up to the cap where the view has room. */
 const SMALL_MIN = 96;
 const SMALL_CAP = 132;
+/** School's picture grid: squares, picture tiles and buttons are all this big; the list column beside the grid is this wide. */
+const SCHOOL_TOUCH = 100;
+const SCHOOL_LIST_W = 210;
+/** An unfound picture tile's paper: pale green, since some pictures (the hen, the rain cloud) are white. */
+const TILE_FILL = 0xe6f3d8;
+/** The gap between two picture tiles. */
+const TILE_GAP = 10;
 /** The paper around a grid, and half of it: the margin kept at each edge of the window when the grid slides. */
 const PAD = 24;
 const EDGE = PAD / 2;
@@ -38,6 +49,9 @@ type SlotKind = 'hint' | 'again';
 interface Slot { kind: SlotKind; x: number; y: number; w: number; h: number }
 /** The window on the grid: stage units. */
 interface Viewport { x: number; y: number; w: number; h: number }
+
+/** A picture word's tile: the tile itself (the target), what sinks on a tap, its paper, its picture and the picture's own scale. */
+interface Tile { node: Container; inner: Container; bg: Graphics; pic: Container; scale: number; word: Text }
 
 /** "FROG" read aloud and shown in the list as "frog". */
 const spoken = (w: string) => w.charAt(0) + w.slice(1).toLowerCase();
@@ -73,6 +87,11 @@ class WordSearch implements Game {
   /** Level 7: how much the hint has shown of each hidden word (1: its first letter, 2: its start ringed too), and the word it last showed. */
   clues = new Map<number, 1 | 2>();
   clueWord: number | null = null;
+  /** Level 8: misses on this grid; from the second, each one rings the start of a word without counting as help. */
+  gridMisses = 0;
+  /** Level 8: the picture tiles, in their own layer so a tap reaches them (the list takes no touches). */
+  readonly tileLayer = new Container();
+  tiles: Tile[] = [];
 
   /** Touch play (every play outside the couch): tap a word's first letter, then its last. Couch play drives the same grid with a controller. */
   touch: boolean;
@@ -169,7 +188,8 @@ class WordSearch implements Game {
       L.on('pointerup', this.onUp);
       L.on('pointerupoutside', this.onUp);
       L.on('pointercancel', this.onCancel);
-      ctx.stage.addChild(this.touchLayer, this.buttonsG, this.buttonText, this.buttonLayer);
+      this.tileLayer.eventMode = 'passive';
+      ctx.stage.addChild(this.touchLayer, this.buttonsG, this.buttonText, this.buttonLayer, this.tileLayer);
     }
   }
 
@@ -207,18 +227,20 @@ class WordSearch implements Game {
    * slides: the window shows part of it and a drag moves it. The list sits to the right, or under the grid on a tall view.
    */
   private resizeTouch(v: View) {
-    const n = this.n, words = this.grid.words.length, side = v.w >= v.h, small = n <= planFor(SMALL_GRID).size;
+    const n = this.n, words = this.grid.words.length, side = v.w >= v.h, small = n <= planFor(SMALL_GRID).size, school = this.pictureTiles;
+    // School's picture grid: every square, tile and button 100 units, the tiles beside the grid or under it.
+    const bh = school ? SCHOOL_TOUCH : 72;
     // The home and help buttons are at the top left: on a tall view the grid starts below them.
     const top = side ? 100 : 150, left = 150, gap = 24;
     let listX: number, listY: number, vp: Viewport, btn: Slot[];
     if (side) {
       // A small grid's short list takes a narrower column, so its squares stay big on a landscape view.
-      const listW = small ? 222 : 262;
+      const listW = school ? SCHOOL_LIST_W : small ? 222 : 262;
       listX = v.w - listW - 16;
       listY = top + 4;
       vp = { x: left, y: top, w: listX - gap - left, h: v.h - top - 24 - (this.grid.message ? MSG_H : 0) };
-      const bw = (listW - 10) / 2, by = v.h - 24 - 72;
-      btn = [{ kind: 'hint', x: listX, y: by, w: bw, h: 72 }, { kind: 'again', x: listX + bw + 10, y: by, w: bw, h: 72 }];
+      const bw = (listW - 10) / 2, by = v.h - 24 - bh;
+      btn = [{ kind: 'hint', x: listX, y: by, w: bw, h: bh }, { kind: 'again', x: listX + bw + 10, y: by, w: bw, h: bh }];
       this.listBox = { cols: 1, step: Math.min(36, Math.floor((by - 12 - (listY + 102)) / words)), top: 102, colW: listW };
       this.title.position.set(listX, listY + 8);
       this.tally.position.set(listX, listY + 40);
@@ -226,10 +248,16 @@ class WordSearch implements Game {
     } else {
       const panel = 280;
       listX = 160;
-      listY = v.h - panel;
-      vp = { x: 24, y: top, w: v.w - 48, h: listY - 12 - top - (this.grid.message ? MSG_H : 0) };
-      const by = v.h - 24 - 72, bw = 200;
-      btn = [{ kind: 'hint', x: 160, y: by, w: bw, h: 72 }, { kind: 'again', x: 160 + bw + 12, y: by, w: bw, h: 72 }];
+      if (school) {
+        // The window holds the grid exactly and the tiles follow it, so a taller view leaves room above the buttons, not the grid.
+        vp = { x: 24, y: top, w: v.w - 48, h: n * SCHOOL_TOUCH + PAD + 12 };
+        listY = vp.y + vp.h + 12;
+      } else {
+        listY = v.h - panel;
+        vp = { x: 24, y: top, w: v.w - 48, h: listY - 12 - top - (this.grid.message ? MSG_H : 0) };
+      }
+      const by = v.h - 24 - bh, bw = 200;
+      btn = [{ kind: 'hint', x: 160, y: by, w: bw, h: bh }, { kind: 'again', x: 160 + bw + 12, y: by, w: bw, h: bh }];
       const colW = Math.floor((v.w - 160 - 24) / 3);
       this.listBox = { cols: 3, step: 34, top: 44, colW };
       this.title.position.set(listX, listY + 8);
@@ -246,7 +274,7 @@ class WordSearch implements Game {
     // grid's squares are bigger, 96 at the least.
     const pad = PAD;
     const fit = Math.floor(Math.min(vp.w - pad, vp.h - pad) / n);
-    this.cell = small ? Math.max(SMALL_MIN, Math.min(SMALL_CAP, fit)) : Math.max(MIN_TOUCH, Math.min(96, fit));
+    this.cell = school ? SCHOOL_TOUCH : small ? Math.max(SMALL_MIN, Math.min(SMALL_CAP, fit)) : Math.max(MIN_TOUCH, Math.min(96, fit));
     const size = n * this.cell;
     this.maxX = Math.max(0, size + pad - vp.w);
     this.maxY = Math.max(0, size + pad - vp.h);
@@ -362,6 +390,73 @@ class WordSearch implements Game {
     for (const c of this.list.removeChildren()) if (c !== this.listMarks) c.destroy();
     this.list.addChild(this.listMarks);
     this.entries = this.grid.words.map((p) => { const t = label(this.entryText(p.word, false, 0), 26, ink); t.anchor.set(0, 0.5); t.eventMode = 'none'; this.list.addChild(t); return t; });
+    this.buildTiles();
+  }
+
+  /** Level 8 by touch: the list is pictures, not words. A controller (never at school) keeps the written list. */
+  get pictureTiles() { return !!this.plan.pictures && this.touch; }
+
+  /** Level 8: a tile a word, its picture above the word in capitals, a small speaker in the corner; a tap says the word. */
+  private buildTiles() {
+    for (const c of this.tileLayer.removeChildren()) c.destroy({ children: true });
+    this.tiles = [];
+    if (!this.plan.pictures) return;
+    this.tiles = this.grid.words.map((p) => {
+      const node = new Container(), inner = new Container(), bg = new Graphics();
+      const pic = new Container();
+      pic.addChild(typingPicture(p.word.toLowerCase()));
+      // Fit the drawing, whatever its own size and origin, into the tile's top 64 units.
+      const b = pic.getLocalBounds(), scale = Math.min(82 / Math.max(1, b.width), 58 / Math.max(1, b.height));
+      pic.pivot.set(b.x + b.width / 2, b.y + b.height / 2);
+      pic.scale.set(scale);
+      pic.position.set(SCHOOL_TOUCH / 2, 36);
+      const word = label(p.word, 28, ink);
+      word.position.set(SCHOOL_TOUCH / 2, 82);
+      const speaker = new Graphics().rect(78, 10, 5, 8).fill(0x7a746a).poly([83, 10, 90, 5, 90, 23, 83, 18]).fill(0x7a746a).moveTo(91 + 6 * Math.cos(-0.9), 14 + 6 * Math.sin(-0.9)).arc(91, 14, 6, -0.9, 0.9).stroke({ width: 2, color: 0x7a746a });
+      for (const part of [inner, bg, pic, word, speaker]) part.eventMode = 'none';
+      inner.addChild(bg, pic, word, speaker);
+      node.addChild(inner);
+      node.hitArea = new Rectangle(0, 0, SCHOOL_TOUCH, SCHOOL_TOUCH);
+      onTap(node, () => this.tapTile(p.word, inner), { cooldown: 250 });
+      this.tileLayer.addChild(node);
+      return { node, inner, bg, pic, scale, word };
+    });
+  }
+
+  /** A tap on a picture: it sinks at once and the word is said. Free, any time, as often as she likes. */
+  private tapTile(word: string, inner: Container) {
+    if (this.finished) return;
+    inner.y = 4;
+    void this.ctx.tw.to(inner, { y: 0 }, { duration: 0.15 });
+    sfx.pop(4);
+    void this.ctx.say('wordsearch.word', { word: spoken(word) });
+  }
+
+  /** Level 8: the tiles beside the grid in two columns, or under it in one row. */
+  private layoutTiles() {
+    const side = this.view.w >= this.view.h, step = SCHOOL_TOUCH + TILE_GAP;
+    this.tiles.forEach((t, i) => {
+      if (side) t.node.position.set(this.list.x + (i % 2) * step, this.list.y + 66 + Math.floor(i / 2) * step);
+      else t.node.position.set(this.list.x + i * (SCHOOL_TOUCH + 12), this.list.y + 48);
+    });
+  }
+
+  /** Unfound: a pale meadow green, so a white hen or cloud still shows. Hinted (or ringed after two misses): the yellow marker. Found: the word's band colour, the word struck through. */
+  private paintTiles() {
+    this.tiles.forEach((t, i) => {
+      const done = this.found.has(i), hinted = this.hinted?.word === i && !done, col = swatch[BAND_COLORS[i % BAND_COLORS.length]];
+      const fill = done ? col.light : hinted ? swatch.yellow.light : TILE_FILL, line = done ? col.line : hinted ? swatch.yellow.line : 0xb9b0a0;
+      const g = t.bg.clear().roundRect(0, 0, SCHOOL_TOUCH, SCHOOL_TOUCH, 14).fill(fill).stroke({ width: 3, color: line });
+      if (done) g.moveTo(SCHOOL_TOUCH / 2 - t.word.width / 2 - 4, 82).lineTo(SCHOOL_TOUCH / 2 + t.word.width / 2 + 4, 82).stroke({ width: 3, color: 0x7a746a, cap: 'round' });
+      t.word.style.fill = done ? 0x7a746a : ink;
+    });
+  }
+
+  /** A found picture hops once. */
+  private hopTile(i: number) {
+    const t = this.tiles[i];
+    if (!t) return;
+    void this.ctx.tw.to(t.pic.scale, { x: t.scale * 1.3, y: t.scale * 1.3 }, { duration: 0.12 }).then(() => this.ctx.tw.to(t.pic.scale, { x: t.scale, y: t.scale }, { duration: 0.16 }));
   }
 
   /** A list entry: the word itself, or on a hidden grid its blanks and length until it is found. */
@@ -377,13 +472,20 @@ class WordSearch implements Game {
 
   private layoutList() {
     const { step } = this.listBox;
-    this.entries.forEach((t, i) => { const at = this.entryAt(i); t.style.fontSize = Math.round(Math.min(28, step * 0.72)); t.position.set(at.x, at.y); });
+    this.entries.forEach((t, i) => { const at = this.entryAt(i); t.style.fontSize = Math.round(Math.min(28, step * 0.72)); t.position.set(at.x, at.y); t.visible = !this.pictureTiles; });
+    this.tileLayer.visible = this.pictureTiles && !this.finished;
+    if (this.pictureTiles) this.layoutTiles();
     this.paintList();
   }
 
   /** The word list: a dot before each, the found ones struck through and grey, the hinted one on a marker. */
   private paintList() {
     const g = this.listMarks.clear(), { step, colW } = this.listBox;
+    if (this.pictureTiles) {
+      this.paintTiles();
+      this.tally.text = `${this.found.size} of ${this.grid.words.length} found`;
+      return;
+    }
     this.grid.words.forEach((_, i) => {
       const { x, y } = this.entryAt(i), t = this.entries[i], done = this.found.has(i);
       t.style.fill = done ? 0x9a948a : ink;
@@ -488,10 +590,11 @@ class WordSearch implements Game {
     this.buttonText.removeChildren().forEach((c) => c.destroy());
     this.slots.forEach((s, k) => {
       const down = this.pressed?.slot === k && this.clock < this.pressed.until ? 3 : 0;
-      const sw = s.kind === 'hint' ? swatch.blue : swatch.teal, text = s.kind === 'hint' ? 'Hint ◇' : 'Start over ↺';
+      const sw = s.kind === 'hint' ? swatch.blue : swatch.teal, text = s.kind === 'hint' ? 'Hint ◇' : s.w < 150 ? 'Start\nover ↺' : 'Start over ↺';
       g.roundRect(s.x, s.y + 4, s.w, s.h, 14).fill(sw.line);
       g.roundRect(s.x, s.y + down, s.w, s.h, 14).fill(sw.light).stroke({ width: 3, color: sw.line });
       const t = label(text, 22, ink);
+      t.style.align = 'center';
       if (t.width > s.w - 14) t.scale.set((s.w - 14) / t.width);
       t.position.set(s.x + s.w / 2, s.y + s.h / 2 + down);
       this.buttonText.addChild(t);
@@ -515,6 +618,7 @@ class WordSearch implements Game {
     this.told = { miss: false, root: false, free: false };
     this.clues = new Map();
     this.clueWord = null;
+    this.gridMisses = 0;
     this.cursor = Math.floor(this.n / 2) * this.n + Math.floor(this.n / 2);
     this.scrollX = 0;
     this.scrollY = 0;
@@ -528,13 +632,15 @@ class WordSearch implements Game {
     this.board.alpha = 0;
     this.list.alpha = 0;
     this.messageRow.alpha = 0;
-    await Promise.all([this.ctx.tw.to(this.board, { alpha: 1 }, { duration: 0.3 }), this.ctx.tw.to(this.list, { alpha: 1 }, { duration: 0.3 }), this.ctx.tw.to(this.messageRow, { alpha: 1 }, { duration: 0.3 })]);
+    this.tileLayer.alpha = 0;
+    await Promise.all([this.ctx.tw.to(this.board, { alpha: 1 }, { duration: 0.3 }), this.ctx.tw.to(this.list, { alpha: 1 }, { duration: 0.3 }), this.ctx.tw.to(this.messageRow, { alpha: 1 }, { duration: 0.3 }), this.ctx.tw.to(this.tileLayer, { alpha: 1 }, { duration: 0.3 })]);
     this.busy = false;
     this.report();
     if (this.spokenGo) return;
     this.spokenGo = true;
     if (this.grid.message) return this.ctx.instruct(this.touch ? 'wordsearch.go-message' : 'wordsearch.go-message-keys');
     if (this.plan.hidden && !this.course) return this.ctx.instruct(this.touch ? 'wordsearch.go-hidden' : 'wordsearch.go-hidden-keys');
+    if (this.pictureTiles) return this.ctx.instruct('wordsearch.go-school');
     return this.ctx.instruct(!this.touch ? 'wordsearch.go' : this.maxX > 0 || this.maxY > 0 ? 'wordsearch.go-slide' : 'wordsearch.go-touch');
   }
 
@@ -592,7 +698,7 @@ class WordSearch implements Game {
     sfx.sparkle();
     if (this.course) await this.gridScore();
     else if (!this.grid.message) await this.ctx.say('wordsearch.cleared');
-    await Promise.all([this.ctx.tw.to(this.board, { alpha: 0 }, { duration: 0.3 }), this.ctx.tw.to(this.list, { alpha: 0 }, { duration: 0.3 }), this.ctx.tw.to(this.messageRow, { alpha: 0 }, { duration: 0.3 })]);
+    await Promise.all([this.ctx.tw.to(this.board, { alpha: 0 }, { duration: 0.3 }), this.ctx.tw.to(this.list, { alpha: 0 }, { duration: 0.3 }), this.ctx.tw.to(this.messageRow, { alpha: 0 }, { duration: 0.3 }), this.ctx.tw.to(this.tileLayer, { alpha: 0 }, { duration: 0.3 })]);
     await this.next();
   }
 
@@ -631,6 +737,7 @@ class WordSearch implements Game {
     this.buttonsG.visible = false;
     this.buttonText.visible = false;
     this.edges.visible = false;
+    this.tileLayer.visible = false;
     this.drag = null;
     sfx.tada();
     await this.ctx.say('wordsearch.done');
@@ -745,6 +852,7 @@ class WordSearch implements Game {
     this.frame.visible = false;
     this.edges.visible = false;
     this.slideNote.visible = false;
+    this.tileLayer.visible = false;
     this.clip.mask = null;
     this.scrollX = 0;
     this.scrollY = 0;
@@ -808,6 +916,20 @@ class WordSearch implements Game {
         this.told.free = true;
         void this.ctx.say('wordsearch.free');
       }
+    } else if (hit < 0 && this.pictureTiles) {
+      // School: every wrong line says so, and from the second miss on a grid the start of the nearest word is ringed, as help
+      // that does not count as a hint (the glow after two misses).
+      this.misses++;
+      this.gridMisses++;
+      sfx.boing();
+      const said = this.ctx.say('wordsearch.miss-school');
+      const ring = this.gridMisses >= 2 ? hintFor(this.grid, this.found, this.cursor) : null;
+      if (ring) {
+        this.hinted = ring;
+        const word = spoken(this.grid.words[ring.word].word);
+        // Only while that ring still stands: a word found (or a new mark) meanwhile makes the line stale.
+        void said.then(() => { if (this.hinted === ring && !this.found.has(ring.word)) void this.ctx.say('wordsearch.hint', { word }); });
+      }
     } else if (hit < 0) {
       this.misses++;
       sfx.boing();
@@ -821,6 +943,7 @@ class WordSearch implements Game {
       if (this.hinted?.word === hit) this.hinted = null;
       if (this.clueWord === hit) this.clueWord = null;
       line.forEach((_, k) => sfx.bell(3 + (k % 7), 0.12));
+      this.hopTile(hit);
       const said = this.ctx.say('wordsearch.found', { word: spoken(this.grid.words[hit].word) });
       // A root family: on its first word found, the pet says what the root means, once a grid.
       const root = themeById(this.grid.theme).root;
@@ -995,13 +1118,13 @@ export const wordSearch: GameModule = {
   region: 'story-grove',
   challenge: 'words',
   skills: ['vocabulary', 'visual-scanning', 'spelling'],
-  bands: ['grownup'],
+  bands: ['school', 'grownup'],
   inputs: ['touch', 'controller'],
   touchDemo: true,
   coplayHint: 'Tap the first letter of a word, then its last letter. Ask which word to hunt for next, and where the tricky ones might hide: slanted, or backwards.',
   offScreen: 'Hide a few words in a grid of letters on paper for someone else to find.',
   levels: (band) => rangeFor(LEVELS, band),
-  entryLevels: [SMALL_GRID],
+  entryLevels: [SMALL_GRID, PICTURE_GRID],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.lullaby,
   hubIcon: () => new WordIcon(),

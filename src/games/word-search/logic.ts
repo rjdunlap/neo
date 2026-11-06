@@ -1,6 +1,6 @@
 import type { Rng } from '../../engine/random';
 import { BLOCKED } from './blocked';
-import { THEMES, themeById, type Theme } from './words';
+import { PICTURE_THEMES, THEMES, themeById, type Theme } from './words';
 
 /**
  * Word Search's rules. A grid of letters hides a list of words, each in a straight line, read forwards or (on the harder
@@ -90,6 +90,10 @@ export interface WordPlan {
    * the grid, so every theme word she finds is a hidden one; a line that spells none is free.
    */
   hidden?: boolean;
+  /** Level 8 (school): the words are pictures from `PICTURE_THEMES`, and no other picture word can be read in the grid. */
+  pictures?: boolean;
+  /** At most one word in a row, so words across never run together ("PIGHEN"). */
+  oneARow?: boolean;
 }
 
 /**
@@ -105,6 +109,7 @@ export const PLANS: WordPlan[] = [
   { name: 'A small 6 by 6 grid with four words, across and down, big letters', size: 6, words: 4, dirs: ALL_DIRS.slice(0, 2), grids: 1 },
   { name: 'An 8 by 8 grid with nine words, across, down and slanting; the letters left over spell a message', size: 8, words: 9, dirs: ALL_DIRS.slice(0, 3), grids: 1, message: true },
   { name: 'A 10 by 10 grid with six hidden words in every direction; the list shows only the theme and how long each word is', size: 10, words: 6, dirs: ALL_DIRS, grids: 1, hidden: true },
+  { name: 'A 6 by 6 grid with four picture words, across', size: 6, words: 4, dirs: ALL_DIRS.slice(0, 1), grids: 1, pictures: true, oneARow: true },
 ];
 
 /** The small grid that starts the ladder, by its ID. */
@@ -113,10 +118,12 @@ export const SMALL_GRID = 5;
 export const MESSAGE_GRID = 6;
 /** The grid whose words are hidden behind the theme, by its ID. */
 export const HIDDEN_GRID = 7;
-/** The levels easiest first: the small grid, then 1 to 4, then the message in the leftovers, then just the theme. */
+/** School's one level: four picture words across a 6 by 6 grid. Not in the grown-up order. */
+export const PICTURE_GRID = 8;
+/** The grown-up levels easiest first: the small grid, then 1 to 4, then the message in the leftovers, then just the theme. */
 export const ORDER = [SMALL_GRID, 1, 2, 3, 4, MESSAGE_GRID, HIDDEN_GRID];
 
-/** A level's plan; a level past the top plays the last in the ladder, not the small one. */
+/** A level's plan; a level past the top plays the last in the grown-up ladder, not the small one. */
 export const planFor = (level: number): WordPlan => PLANS[(level > PLANS.length ? ORDER[ORDER.length - 1] : Math.max(1, level)) - 1];
 
 /** Filler letters, weighted a little toward the common ones, so the grid does not look like a list of the listed words' letters. */
@@ -138,6 +145,7 @@ function placeWords(plan: WordPlan, theme: Theme, rng: Rng): { letters: string[]
         for (const [dr, dc] of plan.dirs) {
           const er = r + dr * (word.length - 1), ec = c + dc * (word.length - 1);
           if (er < 0 || er >= size || ec < 0 || ec >= size) continue;
+          if (plan.oneARow && dr === 0 && placed.some((p) => p.dr === 0 && p.r === r)) continue;
           if ([...word].every((ch, k) => { const have = letters[cellOf(size, r + dr * k, c + dc * k)]; return have === '' || have === ch; })) spots.push({ word, r, c, dr, dc });
         }
     if (!spots.length) return null;
@@ -166,7 +174,7 @@ export function makeGrid(plan: WordPlan, theme: Theme, rng: Rng): WordGrid {
     const fixed = letters.map((l) => l !== '');
     for (let fill = 0; fill < 60; fill++) {
       for (let i = 0; i < letters.length; i++) if (!fixed[i]) letters[i] = rng.pick([...FILL]);
-      if (placed.every((p) => occurrences(size, letters, p.word).length === 1) && !hasBlocked(size, letters, placed.map((p) => p.word)) && (!plan.hidden || !strayThemeWord(size, letters, theme, placed))) return { size, letters, words: placed, theme: theme.id };
+      if (placed.every((p) => occurrences(size, letters, p.word).length === 1) && !hasBlocked(size, letters, placed.map((p) => p.word)) && (!plan.hidden || !strayThemeWord(size, letters, theme, placed)) && (!plan.pictures || !strayPictureWord(size, letters, placed))) return { size, letters, words: placed, theme: theme.id };
     }
   }
   throw new Error(`could not make a grid for ${plan.name}`);
@@ -175,6 +183,10 @@ export function makeGrid(plan: WordPlan, theme: Theme, rng: Rng): WordGrid {
 /** Level 7: whether a word of the theme that is not hidden can be read in the grid, so finding it would look right and count for nothing. */
 export const strayThemeWord = (size: number, letters: readonly string[], theme: Theme, placed: readonly Placed[]) =>
   theme.words.some((w) => !placed.some((p) => p.word === w) && occurrences(size, letters, w).length > 0);
+
+/** Level 8: whether a picture word of any picture theme, other than those placed, can be read in the grid: a real word she knows would look right and be "wrong". */
+export const strayPictureWord = (size: number, letters: readonly string[], placed: readonly Placed[]) =>
+  PICTURE_THEMES.some((t) => t.words.some((w) => !placed.some((p) => p.word === w) && occurrences(size, letters, w).length > 0));
 
 /** A message's letters, in the order they fill the open squares. */
 export const lettersOf = (message: string) => message.replace(/[^A-Z]/g, '');
@@ -213,7 +225,8 @@ export function leftovers(grid: Pick<WordGrid, 'size' | 'letters' | 'words'>): s
 }
 
 /** The themes a plan can draw: those with enough words that fit its grid. Every everyday theme fits every plan; a root family fits only the small ones. */
-export const themesFor = (plan: Pick<WordPlan, 'size' | 'words' | 'message' | 'hidden'>): Theme[] =>
+export const themesFor = (plan: Pick<WordPlan, 'size' | 'words' | 'message' | 'hidden' | 'pictures'>): Theme[] =>
+  plan.pictures ? PICTURE_THEMES.filter((t) => t.words.length >= plan.words) :
   // A hidden grid asks her to think of the theme's words: an everyday theme, not a root family, which is a short list to learn from.
   THEMES.filter((t) => t.words.filter((w) => w.length <= plan.size).length >= plan.words && (!plan.message || !!t.messages?.length) && (!plan.hidden || !t.root));
 
