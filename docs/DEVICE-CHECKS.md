@@ -280,7 +280,7 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 
 ## Welcome Ways levels 1–4 (2026-10-24)
 
-- [ ] On an iPad, check part drag/tap cancellation and comfort, replayable visitor needs and stop reasons; watch whether the child notices Bunny passing the step before Roly stops, and Roly entering before Bear needs a wider door. Browser play and four demonstrations establish scripted behavior only ([verification](archive/VERIFICATION-2026-10-24.md#2026-10-24--welcome-ways-levels-14)). No human access representation or practical access advice is included.
+- [ ] On an iPad, check part drag/tap cancellation and comfort, replayable visitor needs and stop reasons; watch whether the child notices Bunny passing the step before Roly stops, and Roly entering before Bear needs a wider door. Browser play and four demonstrations establish scripted behavior only ([verification](archive/VERIFICATION-2026-10-24.md#2026-10-24--welcome-ways-levels-14)). No human access representation or practical access advice is included. Levels 5–7 (school): also check speech for "Teeter" and "perch", drag comfort on the wide side strips, and whether a six-year-old reads the rail/perch conflict from the pictures ([verification](VERIFICATION.md#2026-11-06--welcome-ways-levels-57)).
 
 ## Taps-only lap levels: Puzzle Pals 1–2, Teddy Doctor 2, Roundup 11 (R2, 2026-10-24)
 
