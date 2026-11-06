@@ -390,9 +390,9 @@ export interface WorkshopLayout {
   banner: Rect[];
   pages: Record<Friend, Rect> | null;
   tray: Rect[];
-  /** Plan phase: Try it, Make it, the lightbulb, the pet; Make phase: Undo, the lightbulb, the pet. */
+  /** Plan phase: Try it, Make it, the lightbulb, the pet; Make phase: Undo, the lightbulb, the pet (Watch again sits left of them). */
   buttons: Rect[];
-  /** Make phase, once done: Finish and Watch again, over the cleared middle. */
+  /** Make phase, once done: Finish over the cleared tray, and Watch again at the start of the button row. */
   finish: Rect | null;
   again: Rect | null;
 }
@@ -440,11 +440,12 @@ export function workshopLayout(v: View, ask: LayoutAsk): WorkshopLayout | null {
   if (tools > 1 && banner.length) return null;
   const chosen = ask.level === 1 ? null : r((BOX.w - SMALL_CARD.w) / 2, 20, SMALL_CARD.w, SMALL_CARD.h);
   const strip = r(190, 190, BOX.w - 380, CHIP);
-  const buttons = row(3, BUTTON.w, BUTTON.h, 650, 180, BOX.w);
+  // Watch again takes the row's first slot once done; Finish takes the cleared tray, so the made banner and pages stay in view.
+  const [again, ...buttons] = row(4, BUTTON.w, BUTTON.h, 650, 180, BOX.w);
   return {
     bubbles, friends, cards: [], hands, chosen, strip, banner, pages, tray, buttons,
-    finish: r(BOX.w / 2 - 200 / 2 - 75, 262, 200, 150),
-    again: r(BOX.w / 2 + 100 - 75 + GAP, 282, BUTTON.w, BUTTON.h),
+    finish: r((BOX.w - 200) / 2, 445, 200, 150),
+    again,
   };
 }
 
@@ -453,5 +454,6 @@ export function targets(l: WorkshopLayout, done = false): Rect[] {
   const base = [l.bubbles.A, l.bubbles.B, ...l.buttons, ...(l.chosen ? [l.chosen] : [])];
   if (!l.pages) return [...base, ...l.cards];
   if (done) return [...base, l.finish!, l.again!];
+  // Watch again's slot is empty until done, but it stays clear of everything live.
   return [...base, l.pages.A, l.pages.B, ...l.banner, ...l.tray, l.friends.A, l.friends.B, l.hands.A, l.hands.B];
 }

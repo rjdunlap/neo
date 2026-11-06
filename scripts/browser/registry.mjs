@@ -15,6 +15,7 @@ import { createSuite as createMeltFreeze } from './suites/melt-freeze-play.mjs';
 import { createSuite as createMoonWindow } from './suites/moon-window-play.mjs';
 import { createSuite as createSortingMachine } from './suites/sorting-machine-play.mjs';
 import { createSuite as createGadgetBench } from './suites/gadget-bench-play.mjs';
+import { createSuite as createPlaydateWorkshop } from './suites/playdate-workshop-play.mjs';
 import { createSuite as createHelperHouse } from './suites/helper-house-play.mjs';
 import { createSuite as createCrossword } from './suites/crossword-play.mjs';
 import { createSuite as createLogicGrid } from './suites/logic-grid-play.mjs';
@@ -307,6 +308,7 @@ export const SUITES = [
   "moonwindow",
   "sortingmachine",
   "gadgetbench",
+  "playdateworkshop",
   "helperhouse",
   "crossword",
   "logicgrid",
@@ -467,6 +469,7 @@ export const ALL_SUITES = [
   "moonwindow",
   "sortingmachine",
   "gadgetbench",
+  "playdateworkshop",
   "helperhouse",
   "crossword",
   "logicgrid",
@@ -679,6 +682,7 @@ export function createChecks(fixture) {
   install(createMoonWindow(shared));
   install(createSortingMachine(shared));
   install(createGadgetBench(shared));
+  install(createPlaydateWorkshop(shared));
   install(createHelperHouse(shared));
   install(createCrossword(shared));
   install(createLogicGrid(shared));
@@ -729,7 +733,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'discovery' && process.env.DISCOVERY_ONLY !== undefined) selectValue(process.env.DISCOVERY_ONLY, ['direct-next', 'mix', 'my-mix'], 'DISCOVERY_ONLY');
   const completed = [];
   const { page, errors, ready, pickFirst, scene } = fixture;
-  const { rainGardenPlay, seesawMeasure, makerLanePlay, seesawEntry, relayWoodsPlay, ribbonPlay, feelingsPoke, critterNotEntry, marbleJumpPlay, logRollPlay, snowballMergePlay, storyTheaterPlay, brainBreakPlay, cueStudioPlay, foodWebPlay, pyramidPlay, mossyPathPlay, numberNookPlay, gemSwapPlay, tilePairsPlay, lanternTouchPlay, pileMatchPlay, boltBoardsPlay, jarSortPlay, dominoRunPlay, fruitSlicePlay, cutAlongPlay, drawPatternPlay, puddleGobblePlay, swingPalsPlay, liftItPlay, fossilDigPlay, atticFindsPlay, atticLeverPlay, atticJobsPlay, atticCasePlay, trackwayTalesPlay, recipeWorkshopPlay, seaLiftPlay, lostLayersPlay, blockGardenPlay, sudokuTouchPlay, wordSearchTouchPlay, comebackPlay, bridgesTouchPlay, pictureTouchPlay, singBarnPlay, numberTrailsPlay, fruitSumsPlay, buddiesPlay, weekPlay, orchardPlay, readDoPlay, friendsFlow, useCompanion, dressFlow, homeFirstRun, homeResidents, homeButtons, homeLastPlace, homeResult, homeFlow, welcomeFlow, hatchingAndMap, grownUps, subjectPlaces, patterns, memory, traceRound, robots, conductor, conductorSign, wardrobe7, wardrobe9, wardrobe10, wardrobe6, stickerBook, expansion, third, feelingsBatch, feelingsAsk, feelings8, fourth, early, arcade, batch, originals, next, encoreTricks, creativeBatch, woodsBatch, shortlistBatch, picnicStory, woodlandStory, couchPlay, couchBeds, couchLanterns, couchPictures, couchHarbors, couchWords, couchConga, couchBridges, couchGames, couchGuide, couchCourse, couchNames, couchSettings, couchSolo, smoke, phoneFit, phoneGames, howToIntro, howToLevelPick, readyForAdventurePlay, adventureWalkPlay, sandTablePlay, senseDetectivePlay, shedPlay, shedPlanPlay, gearsPlay, meadowPlay, lensPlay, wordGluePlay, bondBeadsPlay, bondBeadsNamedPlay, bondBeadsRearrangePlay, villageVotePlay, swapMeetPlay, littleLoomPlay, movieNightPlay, exampleExpressPlay, welcomeWaysPlay, hatBandPlay, whoAmIPlay, lookItUpPlay, fingerDemos, congaTouchPlay, roomPlay, islandShelf, creationsRoom, landsTour, journalPlay, clapPlay, clapTrainPlay, clapShortPlay, clapComparePlay, chainPlay, habitatPlay, profiles, landKeys, liveSwitchPlay, discoveryDirectNext, discoveryMyMix, discoveryMix , storyWeaverPlay, meltFreezePlay, moonWindowPlay, sortingMachinePlay, helperHousePlay, crosswordPlay, logicGridPlay, gadgetBenchPlay, sproutShufflePlay, timelineTrailPlay, riverTabletsPlay, caravanDaysPlay, waterRoadPlay, waterFlowPlay, keepHousePlay, paintMixerPlay, puppetStagePlay, puppetStoryPlay, spinnerFairPlay, spinnerFairRacePlay, ruleMachinePlay, notAlwaysPlay, thoughtBubblesPlay, noticeBoardPlay, shellRowsPlay, tideLinePlay, tideLine34Play, driftCardsPlay, gardenRowsPlay, dropsJourneyPlay, forecastDetectivePlay, vineSnipPlay, farLightsPlay, seedTravelersPlay, blockTopplePlay, couchSunbeams, couchCodeDoors } = createChecks({ ...fixture, recordCheck: name => completed.push(name) });
+  const { rainGardenPlay, seesawMeasure, makerLanePlay, seesawEntry, relayWoodsPlay, ribbonPlay, feelingsPoke, critterNotEntry, marbleJumpPlay, logRollPlay, snowballMergePlay, storyTheaterPlay, brainBreakPlay, cueStudioPlay, foodWebPlay, pyramidPlay, mossyPathPlay, numberNookPlay, gemSwapPlay, tilePairsPlay, lanternTouchPlay, pileMatchPlay, boltBoardsPlay, jarSortPlay, dominoRunPlay, fruitSlicePlay, cutAlongPlay, drawPatternPlay, puddleGobblePlay, swingPalsPlay, liftItPlay, fossilDigPlay, atticFindsPlay, atticLeverPlay, atticJobsPlay, atticCasePlay, trackwayTalesPlay, recipeWorkshopPlay, seaLiftPlay, lostLayersPlay, blockGardenPlay, sudokuTouchPlay, wordSearchTouchPlay, comebackPlay, bridgesTouchPlay, pictureTouchPlay, singBarnPlay, numberTrailsPlay, fruitSumsPlay, buddiesPlay, weekPlay, orchardPlay, readDoPlay, friendsFlow, useCompanion, dressFlow, homeFirstRun, homeResidents, homeButtons, homeLastPlace, homeResult, homeFlow, welcomeFlow, hatchingAndMap, grownUps, subjectPlaces, patterns, memory, traceRound, robots, conductor, conductorSign, wardrobe7, wardrobe9, wardrobe10, wardrobe6, stickerBook, expansion, third, feelingsBatch, feelingsAsk, feelings8, fourth, early, arcade, batch, originals, next, encoreTricks, creativeBatch, woodsBatch, shortlistBatch, picnicStory, woodlandStory, couchPlay, couchBeds, couchLanterns, couchPictures, couchHarbors, couchWords, couchConga, couchBridges, couchGames, couchGuide, couchCourse, couchNames, couchSettings, couchSolo, smoke, phoneFit, phoneGames, howToIntro, howToLevelPick, readyForAdventurePlay, adventureWalkPlay, sandTablePlay, senseDetectivePlay, shedPlay, shedPlanPlay, gearsPlay, meadowPlay, lensPlay, wordGluePlay, bondBeadsPlay, bondBeadsNamedPlay, bondBeadsRearrangePlay, villageVotePlay, swapMeetPlay, littleLoomPlay, movieNightPlay, exampleExpressPlay, welcomeWaysPlay, hatBandPlay, whoAmIPlay, lookItUpPlay, fingerDemos, congaTouchPlay, roomPlay, islandShelf, creationsRoom, landsTour, journalPlay, clapPlay, clapTrainPlay, clapShortPlay, clapComparePlay, chainPlay, habitatPlay, profiles, landKeys, liveSwitchPlay, discoveryDirectNext, discoveryMyMix, discoveryMix , storyWeaverPlay, meltFreezePlay, moonWindowPlay, sortingMachinePlay, helperHousePlay, crosswordPlay, logicGridPlay, gadgetBenchPlay, playdateWorkshopPlay, sproutShufflePlay, timelineTrailPlay, riverTabletsPlay, caravanDaysPlay, waterRoadPlay, waterFlowPlay, keepHousePlay, paintMixerPlay, puppetStagePlay, puppetStoryPlay, spinnerFairPlay, spinnerFairRacePlay, ruleMachinePlay, notAlwaysPlay, thoughtBubblesPlay, noticeBoardPlay, shellRowsPlay, tideLinePlay, tideLine34Play, driftCardsPlay, gardenRowsPlay, dropsJourneyPlay, forecastDetectivePlay, vineSnipPlay, farLightsPlay, seedTravelersPlay, blockTopplePlay, couchSunbeams, couchCodeDoors } = createChecks({ ...fixture, recordCheck: name => completed.push(name) });
 
   if (suite === 'all' || suite === 'world') { await hatchingAndMap(); await subjectPlaces(); }
   else if (suite === 'friends') await friendsFlow();
@@ -856,6 +860,7 @@ export async function runSuite(suite, fixture) {
   if (suite === 'all' || suite === 'moonwindow') await moonWindowPlay();
   if (suite === 'all' || suite === 'sortingmachine') await sortingMachinePlay();
   if (suite === 'all' || suite === 'gadgetbench') await gadgetBenchPlay();
+  if (suite === 'all' || suite === 'playdateworkshop') await playdateWorkshopPlay();
   if (suite === 'all' || suite === 'helperhouse') await helperHousePlay();
   if (suite === 'all' || suite === 'crossword') await crosswordPlay();
   if (suite === 'all' || suite === 'logicgrid') await logicGridPlay();

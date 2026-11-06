@@ -173,12 +173,12 @@ class PlaydateWorkshop implements Game {
       const fr = l.friends[f];
       const holder = new Container();
       const critter = friendArt(v.cast[f === 'A' ? 0 : 1], fr.h - 20);
-      critter.position.set(fr.w / 2, fr.h - 6);
+      critter.position.set(0, fr.h / 2 - 6);
       if (f === 'B') critter.scale.x *= -1;
       holder.addChild(critter);
       this.critters.push(this.ctx.track(critter));
-      holder.position.set(fr.x, fr.y);
-      holder.hitArea = new Rectangle(0, 0, fr.w, fr.h);
+      holder.position.copyFrom(centre(fr));
+      holder.hitArea = new Rectangle(-fr.w / 2, -fr.h / 2, fr.w, fr.h);
       if (this.phase === 'make') onTap(holder, () => this.tapFriend(f), { cooldown: 250 });
       else holder.eventMode = 'none';
       this.board.addChild(holder);
@@ -763,8 +763,8 @@ class PlaydateWorkshop implements Game {
       const inTray = this.plan!.tools.filter((x) => this.table.holder[x] === 'tray');
       const tool = this.toolNodes.find((n) => n.tool === a.tool);
       const friend = this.friendNodes[a.to === 'both' ? 'A' : a.to];
-      if (inTray.length > 1 && tool && friend) return { drag: { on: tool.node }, to: { on: friend, x: this.layoutNow.friends.A.w / 2, y: this.layoutNow.friends.A.h / 2 } };
-      return friend ? { tap: { on: friend, x: this.layoutNow.friends.A.w / 2, y: this.layoutNow.friends.A.h / 2 } } : null;
+      if (inTray.length > 1 && tool && friend) return { drag: { on: tool.node }, to: { on: friend } };
+      return friend ? { tap: { on: friend } } : null;
     }
     const n = this.nodeFor(a);
     return n ? { tap: { on: n } } : null;
