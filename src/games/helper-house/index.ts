@@ -1,7 +1,8 @@
 /**
  * Helper House: put a sensor where it can see, pick the rule chip the empty row needs, tap Watch and see the house run
  * a whole day by itself while a friend reacts (level 1 wakes the door, level 2 lights the lamp at dusk, level 3 turns it
- * off again by morning, level 4 keeps a chilly nook comfy with a heater and a thermometer). Rules: ./logic.ts; definition: docs/definitions/helper-house.md.
+ * off again by morning, level 4 keeps a chilly nook comfy with a heater and a thermometer, level 5 moves the sun sensor out
+ * of the lamp's own light). Rules: ./logic.ts; definition: docs/definitions/helper-house.md.
  */
 import { Container, Graphics, Rectangle } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
@@ -28,7 +29,7 @@ import {
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 1 },
   prek: { min: 1, max: 3 },
-  school: { min: 2, max: 4 },
+  school: { min: 2, max: 5 },
 };
 
 /** The friend stands about 250 tall at scale 1. */
@@ -158,7 +159,7 @@ class HelperHouse implements Game {
     if (!l) return;
 
     // The house, its sky mark and the friend.
-    const house = new House({ w: l.house.w, h: l.house.h, lamp: this.level >= 2 && !this.nook, heater: this.nook }, this.brief.house);
+    const house = new House({ w: l.house.w, h: l.house.h, lamp: this.level >= 2 && !this.nook, heater: this.nook, shed: this.level === 5 }, this.brief.house);
     house.position.set(l.house.x, l.house.y);
     this.board_.addChild(house);
     this.house = house;
@@ -215,7 +216,7 @@ class HelperHouse implements Game {
     });
 
     // The bench: sensors to place, or chips for the empty row.
-    const isChip = this.level >= 3;
+    const isChip = planFor(this.level).bench === 'chips';
     const benchKinds: (SensorKind | Chip)[] = isChip ? this.brief.chips : this.brief.sensors;
     benchKinds.forEach((k, i) => {
       const r = l.bench[i];
@@ -375,8 +376,8 @@ class HelperHouse implements Game {
       const i = this.nearestSocket(x, y);
       if (i === null) {
         // Back to the bench: a placed sensor leaves its socket.
-        if (this.board.sensor.kind === tile.kind && this.board.sensor.socket !== null && this.level === 1) {
-          this.change(placeSensor(this.board, 'eye', null), 'sensor');
+        if (this.board.sensor.kind === tile.kind && this.board.sensor.socket !== null && (this.level === 1 || this.level === 5)) {
+          this.change(placeSensor(this.board, tile.kind, null), 'sensor');
           return true;
         }
         if (this.level === 2 && this.board.sensor.kind === tile.kind) {
@@ -550,8 +551,11 @@ class HelperHouse implements Game {
     }
     if (fire('act', PHASES.act)) {
       if (this.pulse) this.pulse.visible = false;
+      // Level 5: the lamp's own light switched it off in the dark; a low tick and the friend blinks at the flick.
+      const flicked = this.level === 5 && t.sun === 'dark' && !t.helperOn && r.step > 0 && r.outcome.trace[r.step - 1].helperOn;
       this.showHelper(t);
       if (this.nook && this.friend) this.friend.setMood(this.nookMood(t.warmth));
+      else if (flicked && this.friend) { sfx.marimba(1, 0.3); this.friend.setMood('surprised', 0.4); }
       else if (this.level >= 2 && this.friend) this.friend.setMood(t.sun === 'dark' && !t.helperOn ? 'sad' : t.helperOn && t.sun === 'dark' ? 'happy' : 'calm');
     }
     if (r.t < this.stepSeconds) return;
@@ -700,7 +704,11 @@ class HelperHouse implements Game {
     const g = this.tally.glowing;
     if (g === null || this.finished || !this.layoutNow) return;
     const r = 1 + 0.05 * Math.sin(this.clock * 5);
-    if (g === 'sensor') {
+    if (g === 'sensor' && this.level === 5) {
+      // The sensor itself, wherever it sits: its place is the one thing to change.
+      const tile = this.tiles.find((t) => t.kind === 'sun');
+      if (tile) this.glow.circle(tile.node.x, tile.node.y, 76 * r).stroke({ width: 8, color: swatch.yellow.fill });
+    } else if (g === 'sensor') {
       const l = this.layoutNow;
       const socketIndex = this.level === 1 ? this.brief.sockets.indexOf('door') : 0;
       const s = centre(l.sockets[socketIndex]);
@@ -717,7 +725,8 @@ class HelperHouse implements Game {
 
   /**
    * The ghost finger: drag the piece the goal needs, tap Watch; at level 3, Watch first, then the bright chip, then
-   * Watch; at level 4, cool to the on row, warm to the off row, then Watch.
+   * Watch; at level 4, cool to the on row, warm to the off row, then Watch; at level 5, Watch (the lamp flickers), the
+   * sensor up to the roof, then Watch.
    */
   autotouch(): TouchIntent | null {
     if (this.finished || this.run || this.busy || !this.layoutNow) return null;
