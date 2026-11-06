@@ -304,6 +304,7 @@ export class House extends Container {
     win.roundRect(wx - ws / 2 - 8, wy + ws / 2 - 2, ws + 16, 10, 4).fill(sw.line);
     // The shed's house is too narrow for a window beside its door.
     if (!geo.shed) this.addChild(win, this.windowFaces);
+    else win.destroy();
     if (geo.shed) {
       // The garden shed: plank walls, a roof, and a dark open doorway the lamp's light never reaches.
       const shed = new Graphics();
