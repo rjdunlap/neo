@@ -11,6 +11,8 @@ export { CROSSED, EMPTY, FILLED };
  * cast and clue kinds. From level 3 there are as many places as friends, so every place has someone and a column can be closed
  * too. Level 5 adds a second block beside the first, sharing its friend rows: what each friend has (apple, balloon, flower).
  * Level 6 is one 4 by 4 block with this-or-that clues: either-or ("Pig is at the pond or the bush") and neither-nor.
+ * Level 7 (grown-up, *Case file*) is the L of three 4 by 4 blocks: friend × place, friend × snack, and under the places a
+ * snack × place block whose rows are the snacks. Its clues are written, and a yes in one block decides squares in another.
  *
  * A grid's marks are a flat array, block by block and row by row (`block * rows * cols + friend * cols + col`), of Picture
  * Logic's `EMPTY`, `FILLED` (a yes) and `CROSSED` (a no). Only her own marks are stored; the lighter crosses a yes puts across
@@ -20,12 +22,13 @@ export { CROSSED, EMPTY, FILLED };
 export type Place = 'pond' | 'tree' | 'bush' | 'blanket';
 export const PLACES: readonly Place[] = ['pond', 'tree', 'bush', 'blanket'];
 
-/** The missing thing: the pie at levels 1–2, the ball at 3–4, the kite at 5–6. */
-export type Thing = 'pie' | 'ball' | 'kite';
+/** The missing thing: the pie at levels 1–2, the ball at 3–4, the kite at 5–6, the picnic basket at 7. */
+export type Thing = 'pie' | 'ball' | 'kite' | 'basket';
 
-/** Level 5's second block: what each friend has. */
-export type Item = 'apple' | 'balloon' | 'flower';
+/** Level 5's second block: what each friend has; level 7's snacks. */
+export type Item = 'apple' | 'balloon' | 'flower' | 'orange' | 'lemon' | 'pear';
 export const ITEMS: readonly Item[] = ['apple', 'balloon', 'flower'];
+export const SNACKS: readonly Item[] = ['apple', 'orange', 'lemon', 'pear'];
 
 /** Level 4's hats: each colour has its own pattern too, so colour never has to work alone. Level 6's fourth friend wears green. */
 export const HATS = [
@@ -40,15 +43,16 @@ export type Marks = readonly Mark[];
 
 /**
  * A clue on one square. `hat`: the clue names the friend by the hat on their card ("The friend in the red hat…"), not by name.
- * `block: 1` puts it in level 5's item block, where `place` is the item's index.
+ * `block: 1` puts it in level 5's item block (level 7's snacks), where `place` is the item's index. `block: 2` (level 7) puts it
+ * in the snack × place block, where `friend` is the snack's index: "The friend at the pond had the pear".
  */
-export type GridClue = { kind: 'direct' | 'not'; friend: number; place: number; hat?: true; block?: 1 };
+export type GridClue = { kind: 'direct' | 'not'; friend: number; place: number; hat?: true; block?: 1 | 2 };
 /** Level 5's different-person clue: "The friend at the pond is not the one with the balloon". Alone it decides no square. */
 export type ApartClue = { kind: 'apart'; place: number; item: number };
 /** Level 6: "Pig is at the pond or the bush" (one of the two is true). Alone it crosses the friend's other places. */
-export type EitherClue = { kind: 'either'; friend: number; place: number; or: number; hat?: true };
-/** Level 6: "Neither Cat nor Dog is at the tree". Alone it crosses both squares. */
-export type NeitherClue = { kind: 'neither'; friend: number; nor: number; place: number };
+export type EitherClue = { kind: 'either'; friend: number; place: number; or: number; hat?: true; block?: 1 };
+/** Level 6: "Neither Cat nor Dog is at the tree". Alone it crosses both squares. Level 7's `block: 1` is about snacks. */
+export type NeitherClue = { kind: 'neither'; friend: number; nor: number; place: number; block?: 1 };
 export type Clue = GridClue | ApartClue | EitherClue | NeitherClue;
 export type Kind = Clue['kind'];
 /** A clue on one square (direct or not). */
@@ -71,6 +75,8 @@ export interface Board {
   items?: Item[];
   having?: number[];
   eventItem?: true;
+  /** Level 7: the third block, snack × place (`items` are the snacks). */
+  case?: true;
 }
 
 export interface Plan {
@@ -91,8 +97,10 @@ export interface Plan {
   maxDirect?: number;
   /** Every clue names its friend by hat (level 4: true), or some do, at least one (levels 5–6: 'some'). */
   hats?: boolean | 'some';
-  /** Level 5: the second block's items. */
+  /** Level 5: the second block's items (level 7: the snacks). */
   items?: readonly Item[];
+  /** Level 7: the L of three blocks, with a snack × place block under the places. */
+  case?: true;
   /** At least this many of a kind (level 5: one different-person clue; level 6: one either-or and one neither-nor). */
   atLeast?: Partial<Record<Kind, number>>;
   thing: Thing;
@@ -108,11 +116,15 @@ export const PLANS: readonly Plan[] = [
   { level: 4, name: 'The friend in the red hat (clues name a friend by the hat they wear)', cast: ['cat', 'duck', 'bear', 'dog'], friends: 3, placePool: PLACES, places: 3, kinds: ['not'], clues: 3, maxClues: 4, maxDirect: 0, hats: true, thing: 'ball', boards: 1 },
   { level: 5, name: 'Who, where and what (two grids side by side: where each friend is and what each has; "not the one with" clues)', cast: ['cat', 'duck', 'bear', 'dog', 'bunny'], friends: 3, placePool: PLACES, places: 3, items: ITEMS, kinds: ['direct', 'not', 'apart'], clues: 4, maxClues: 5, maxDirect: 1, hats: 'some', atLeast: { apart: 1 }, thing: 'kite', boards: 1 },
   { level: 6, name: 'This one or that one (4 friends, 4 places; "or" and "neither…nor" clues)', cast: ['cat', 'duck', 'bear', 'dog', 'bunny', 'pig'], friends: 4, placePool: PLACES, places: 4, kinds: ['not', 'either', 'neither'], clues: 4, maxClues: 6, maxDirect: 0, hats: 'some', atLeast: { either: 1, neither: 1 }, thing: 'kite', boards: 1 },
+  { level: 7, name: 'Case file (grown-up: 4 friends, 4 places, 4 snacks in three linked grids; written clues)', cast: ['cat', 'duck', 'bear', 'dog', 'bunny', 'pig'], friends: 4, placePool: PLACES, places: 4, items: SNACKS, case: true, kinds: ['direct', 'not', 'either', 'neither'], clues: 5, maxClues: 8, hats: 'some', thing: 'basket', boards: 1 },
 ];
 
 export const planFor = (level: number): Plan => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 
-/** A grid of `blocks` blocks (level 5: two, places then items), each `rows` friends by `cols`, sharing the friend rows. */
+/**
+ * A grid of `blocks` blocks (level 5: two, places then items), each `rows` friends by `cols`, sharing the friend rows. Level 7's
+ * third block is snacks (rows) by places.
+ */
 export interface Shape {
   rows: number;
   cols: number;
@@ -125,19 +137,22 @@ export const sq = (s: Shape, friend: number, place: number, block = 0) => block 
 export const rowOf = (s: Shape, i: number) => Math.floor((i % (s.rows * s.cols)) / s.cols);
 export const colOf = (s: Shape, i: number) => i % s.cols;
 export const blockOf = (s: Shape, i: number) => Math.floor(i / (s.rows * s.cols));
-export const shapeOf = (b: Board): Shape => (b.items ? { rows: b.friends.length, cols: b.places.length, blocks: 2 } : { rows: b.friends.length, cols: b.places.length });
+export const shapeOf = (b: Board): Shape => ({ rows: b.friends.length, cols: b.places.length, ...(b.items ? { blocks: b.case ? 3 : 2 } : {}) });
 export const emptyMarks = (s: Shape): Mark[] => new Array<Mark>(sizeOf(s)).fill(EMPTY);
 /** A square-grid clue's square. */
 export const clueSquare = (s: Shape, c: GridClue) => sq(s, c.friend, c.place, c.block ?? 0);
 const sameLine = (s: Shape, i: number, j: number) => blockOf(s, i) === blockOf(s, j) && (rowOf(s, i) === rowOf(s, j) || colOf(s, i) === colOf(s, j));
 
-/** True of an assignment (friend → place, and at level 5 friend → item)? */
+/** Block `k`'s answer, row by row: each friend's place (0) or item (1), or (level 7's block 2) each snack's place. */
+export const truthOf = (k: number, a: readonly number[], h: readonly number[]): number[] => (k === 2 ? h.map((_, t) => a[h.indexOf(t)]) : [...(k ? h : a)]);
+
+/** True of an assignment (friend → place, and at levels 5 and 7 friend → item)? */
 export function holds(c: Clue, a: readonly number[], h: readonly number[] = []): boolean {
   if (c.kind === 'apart') return a.indexOf(c.place) !== h.indexOf(c.item);
-  if (c.kind === 'either') return a[c.friend] === c.place || a[c.friend] === c.or;
-  if (c.kind === 'neither') return a[c.friend] !== c.place && a[c.nor] !== c.place;
-  const at = (c.block ? h : a)[c.friend];
-  return c.kind === 'direct' ? at === c.place : at !== c.place;
+  const at = truthOf(c.block ?? 0, a, h);
+  if (c.kind === 'either') return at[c.friend] === c.place || at[c.friend] === c.or;
+  if (c.kind === 'neither') return at[c.friend] !== c.place && at[c.nor] !== c.place;
+  return c.kind === 'direct' ? at[c.friend] === c.place : at[c.friend] !== c.place;
 }
 
 const permutations = (n: number, of: number): number[][] => {
@@ -168,8 +183,8 @@ export function solutions(s: Shape, clues: readonly Clue[]): number[][] {
  */
 export function told(s: Shape, c: Clue): { square: number; mark: Mark }[] {
   if (c.kind === 'apart') return [];
-  if (c.kind === 'either') return [...Array(s.cols).keys()].filter((p) => p !== c.place && p !== c.or).map((p) => ({ square: sq(s, c.friend, p), mark: CROSSED }));
-  if (c.kind === 'neither') return [c.friend, c.nor].map((f) => ({ square: sq(s, f, c.place), mark: CROSSED }));
+  if (c.kind === 'either') return [...Array(s.cols).keys()].filter((p) => p !== c.place && p !== c.or).map((p) => ({ square: sq(s, c.friend, p, c.block ?? 0), mark: CROSSED }));
+  if (c.kind === 'neither') return [c.friend, c.nor].map((f) => ({ square: sq(s, f, c.place, c.block ?? 0), mark: CROSSED }));
   return [{ square: clueSquare(s, c), mark: c.kind === 'direct' ? FILLED : CROSSED }];
 }
 
@@ -208,9 +223,10 @@ export interface Step {
   /**
    * `last`: a friend's one place (or item) left; `col`: a place's (or item's) one friend left (only when every place has
    * someone); `apart`: a different-person clue crosses the item of the friend at its place, or the place of the friend with
-   * its item.
+   * its item; `link` (level 7): two squares of one friend, place and snack decide the third (two yeses make a yes, a yes and a
+   * no make a no).
    */
-  why: 'clue' | 'cross' | 'last' | 'col' | 'apart';
+  why: 'clue' | 'cross' | 'last' | 'col' | 'apart' | 'link';
 }
 
 /**
@@ -261,6 +277,21 @@ export function solveSteps(s: Shape, clues: readonly Clue[]): { steps: Step[]; d
         }
       }
     }
+    // Then (level 7) a friend, a place and a snack across the three blocks: two yeses make a yes, a yes and a no make a no.
+    for (let f = 0; f < s.rows && B === 3 && !found; f++) {
+      for (let p = 0; p < s.cols && !found; p++) {
+        for (let t = 0; t < s.cols && !found; t++) {
+          const tri = [sq(s, f, p, 0), sq(s, f, t, 1), sq(s, t, p, 2)];
+          for (let x = 0; x < 3 && !found; x++) {
+            const to = tri[x];
+            const [u, w] = tri.filter((_, y) => y !== x).map((i) => known.get(i));
+            if (known.has(to) || !u || !w || (u.mark !== FILLED && w.mark !== FILLED)) continue;
+            put(to, u.mark === FILLED && w.mark === FILLED ? FILLED : CROSSED, new Set([...u.from, ...w.from]), 'link');
+            found = true;
+          }
+        }
+      }
+    }
     // Then a row with one square left.
     for (let k = 0; k < B && !found; k++) {
       for (let f = 0; f < s.rows && !found; f++) {
@@ -295,7 +326,8 @@ export const answerOf = (b: Board) => (b.eventItem ? b.having! : b.solution).ind
 /** The mark each square ends with: yes on each friend's place (and item), no everywhere else. */
 export function solutionMarks(b: Board): Mark[] {
   const s = shapeOf(b);
-  return emptyMarks(s).map((_, i) => ((blockOf(s, i) ? b.having! : b.solution)[rowOf(s, i)] === colOf(s, i) ? FILLED : CROSSED));
+  const at = [0, 1, 2].map((k) => truthOf(k, b.solution, b.having ?? []));
+  return emptyMarks(s).map((_, i) => (at[blockOf(s, i)][rowOf(s, i)] === colOf(s, i) ? FILLED : CROSSED));
 }
 
 /** Rejects a board whose clues miss the plan's count or mix, have more than one answer, or that the rule solver cannot finish. */
@@ -307,7 +339,7 @@ export function fits(plan: Plan, b: Board): boolean {
   for (const [k, n] of Object.entries(plan.atLeast ?? {})) if (b.clues.filter((c) => c.kind === k).length < n) return false;
   const hats = b.clues.filter(hatted).length;
   if (plan.hats === 'some' ? hats < 1 : b.clues.some((c) => onGrid(c) && !!c.hat !== !!plan.hats)) return false;
-  if (!!b.hats !== !!plan.hats || !!b.items !== !!plan.items) return false;
+  if (!!b.hats !== !!plan.hats || !!b.items !== !!plan.items || !!b.case !== !!plan.case) return false;
   if (b.clues.some((c) => !plan.kinds.includes(c.kind) || !holds(c, b.solution, b.having))) return false;
   if (solutions(s, b.clues).length !== 1) return false;
   if (!solveSteps(s, b.clues).done) return false;
@@ -327,25 +359,31 @@ export function makeBoard(plan: Plan, rng: Rng): Board {
     const solution = rng.shuffle([...places.keys()]).slice(0, friends.length);
     const items = plan.items && rng.shuffle([...plan.items]);
     const having = items && rng.shuffle([...items.keys()]);
-    const s: Shape = items ? { rows: friends.length, cols: places.length, blocks: 2 } : { rows: friends.length, cols: places.length };
+    const s: Shape = items ? { rows: friends.length, cols: places.length, blocks: plan.case ? 3 : 2 } : { rows: friends.length, cols: places.length };
     let clues: Clue[] = [];
     for (let k = 0; k < blocksOf(s); k++) {
-      const at = k ? having! : solution;
-      const block = k ? { block: 1 as const } : {};
+      const at = truthOf(k, solution, having ?? []);
+      const block = k ? { block: k as 1 | 2 } : {};
       for (let f = 0; f < s.rows; f++) {
         for (let p = 0; p < s.cols; p++) {
-          const hat = plan.hats === true || (plan.hats === 'some' && rng.chance(0.5)) ? { hat: true as const } : {};
+          // Block 2's rows are snacks, so its clues name no friend and wear no hat.
+          const hat = k < 2 && (plan.hats === true || (plan.hats === 'some' && rng.chance(0.5))) ? { hat: true as const } : {};
           if (p === at[f] && plan.kinds.includes('direct')) clues.push({ kind: 'direct', friend: f, place: p, ...hat, ...block });
           if (p !== at[f] && plan.kinds.includes('not')) clues.push({ kind: 'not', friend: f, place: p, ...hat, ...block });
         }
       }
     }
     const hat = () => (plan.hats === true || (plan.hats === 'some' && rng.chance(0.5)) ? { hat: true as const } : {});
-    if (plan.kinds.includes('either')) {
-      for (let f = 0; f < s.rows; f++) for (let p = 0; p < s.cols; p++) if (p !== solution[f]) clues.push({ kind: 'either', friend: f, ...(rng.chance(0.5) ? { place: p, or: solution[f] } : { place: solution[f], or: p }), ...hat() });
-    }
-    if (plan.kinds.includes('neither')) {
-      for (let p = 0; p < s.cols; p++) for (let f = 0; f < s.rows; f++) for (let g = f + 1; g < s.rows; g++) if (solution[f] !== p && solution[g] !== p) clues.push({ kind: 'neither', ...(rng.chance(0.5) ? { friend: f, nor: g } : { friend: g, nor: f }), place: p });
+    // This-or-that clues are about friends: their places, and (level 7) their snacks too.
+    for (let k = 0; k < (plan.case ? 2 : 1); k++) {
+      const at = k ? having! : solution;
+      const block = k ? { block: 1 as const } : {};
+      if (plan.kinds.includes('either')) {
+        for (let f = 0; f < s.rows; f++) for (let p = 0; p < s.cols; p++) if (p !== at[f]) clues.push({ kind: 'either', friend: f, ...(rng.chance(0.5) ? { place: p, or: at[f] } : { place: at[f], or: p }), ...hat(), ...block });
+      }
+      if (plan.kinds.includes('neither')) {
+        for (let p = 0; p < s.cols; p++) for (let f = 0; f < s.rows; f++) for (let g = f + 1; g < s.rows; g++) if (at[f] !== p && at[g] !== p) clues.push({ kind: 'neither', ...(rng.chance(0.5) ? { friend: f, nor: g } : { friend: g, nor: f }), place: p, ...block });
+      }
     }
     if (having && plan.kinds.includes('apart')) {
       for (let p = 0; p < s.cols; p++) for (let t = 0; t < s.cols; t++) if (solution.indexOf(p) !== having.indexOf(t)) clues.push({ kind: 'apart', place: p, item: t });
@@ -358,7 +396,7 @@ export function makeBoard(plan: Plan, rng: Rng): Board {
     clues.sort((a, b) => order[a.kind] - order[b.kind]);
     const eventItem = !!having && rng.chance(0.5);
     const board: Board = { friends, places, solution, clues, event: rng.pick(eventItem ? having! : solution), thing: plan.thing };
-    if (items) Object.assign(board, { items, having }, eventItem ? { eventItem: true } : {});
+    if (items) Object.assign(board, { items, having }, eventItem ? { eventItem: true } : {}, plan.case ? { case: true } : {});
     if (plan.hats) board.hats = rng.shuffle([...HATS.keys()].slice(0, friends.length));
     if (fits(plan, board)) return board;
   }
@@ -399,7 +437,11 @@ export function brokenClue(b: Board, marks: Marks): number {
   const y = yeses(marks);
   const pick = (k: number) => [...Array(s.rows).keys()].map((f) => colOf(s, y.find((i) => blockOf(s, i) === k && rowOf(s, i) === f)!));
   const a = pick(0), h = blocksOf(s) > 1 ? pick(1) : [];
-  return b.clues.findIndex((c) => !holds(c, a, h));
+  const broken = b.clues.findIndex((c) => !holds(c, a, h));
+  if (broken >= 0 || blocksOf(s) < 3) return broken;
+  // Level 7: the snack × place block can disagree with the other two; the first clue its own answer breaks.
+  const z = pick(2);
+  return b.clues.findIndex((c) => c.kind !== 'apart' && (c.block ?? 0) === 2 && !holds(c, z, [...z.keys()]));
 }
 
 /** Her marks that disagree with the answer (a wrong yes, or a no on a friend's place). */
