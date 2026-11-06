@@ -97,7 +97,7 @@ export class WelcomeWays implements Game {
       const toy=visitor(kind);toy.position.set(0,size*.23);card.face.addChild(toy,label(visitorNames[kind],size*.4,20));
       // Need pictograms remain visible without reading or colour: ramp, step+ramp, wide aperture, big landing, rail, perch.
       const needs:Part[]=kind==='bear'?(this.plan.level===5?['big','wide']:['wide']):kind==='bunny'?['step','gentle']:kind==='teeter'?['rail']:kind==='duck'?['perch']:['gentle'];
-      needs.forEach((p,n)=>{const need=partArt(p,55,22);need.scale.set(.35);need.position.set(size*.31-(needs.length-1-n)*23,-size*.3);card.face.addChild(need);});
+      needs.forEach((p,n)=>{const need=partArt(p,55,22);need.scale.set(.35);need.position.set(size*.31-(needs.length-1-n)*(p==='big'?40:23),-size*.3);card.face.addChild(need);});
       this.visitors.push(card);this.root.addChild(card);
       const actor=ctx.track(visitor(kind));this.actors.push(actor);this.root.addChild(actor);
       const wave=new Graphics().moveTo(0,0).lineTo(12,-20).stroke({width:9,color:actor.sw.line,cap:'round'}).circle(12,-22,8).fill(actor.sw.fill);wave.eventMode='none';wave.visible=false;this.waves.push(wave);this.root.addChild(wave);
@@ -172,7 +172,7 @@ export class WelcomeWays implements Game {
   /** Level 5: up the lower ramp, onto the landing, turn, up the upper ramp to the door. */
   private switchback(t:number,stop:{socket:number;reason:string}|null){
     const l=this.boxes,[low,turn,up,door]=l.sockets,G=l.ground;
-    const pts=[{x:low.x+230,y:G},{x:low.x+80,y:G},{x:low.x-80,y:G-100},{x:turn.x-20,y:G-100},{x:up.x-80,y:G-100},{x:up.x+80,y:G-200},{x:door.x-40,y:G-200}];
+    const pts=[{x:low.x+230,y:G},{x:low.x+80,y:G},{x:low.x-80,y:G-100},{x:turn.x+30,y:G-100},{x:up.x-80,y:G-100},{x:up.x+80,y:G-200},{x:door.x-40,y:G-200}];
     // A stopped friend walks only to where the blocking socket begins; Bear walks onto the small landing.
     const last=!stop?pts.length-1:stop.socket===1?(stop.reason==='needsBig'?3:2):[1,3,4,6][stop.socket];
     const legs=pts.slice(0,last+1);let total=0;for(let k=1;k<legs.length;k++)total+=Math.hypot(legs[k].x-legs[k-1].x,legs[k].y-legs[k-1].y);
@@ -213,7 +213,7 @@ export class WelcomeWays implements Game {
     const lastRise=this.plan.sockets.lastIndexOf('rise'),end=l.sockets[lastRise].x+80;
     this.boardArt.rect(end,doorBase,l.left+950-end,12).fill(wood.fill);
     // Level 5: the pond fills the ground below the landing, so the path turns.
-    if(five) this.boardArt.ellipse(l.sockets[1].x+20,ground+14,190,24).fill(swatch.blue.fill).stroke({width:4,color:swatch.blue.line});
+    if(five) this.boardArt.ellipse(l.sockets[1].x+20,ground+14,190,24).fill(swatch.blue.fill).stroke({width:4,color:swatch.blue.line}).rect(l.sockets[1].x+80,l.sockets[1].y,80,14).fill(wood.fill).stroke({width:4,color:wood.line});
     let rise=-1;
     this.slots.forEach((slot,i)=>{
       for(const c of slot.face.removeChildren())c.destroy();
@@ -232,12 +232,12 @@ export class WelcomeWays implements Game {
         if(part){const art=partArt(part,160,44);art.y=y-22;slot.face.addChild(art);}
         else slot.face.addChild(label('+',y-38,38));
       }else if(kind==='turn'){
-        // The landing meets both ramp tops at the socket's right; the big one reaches twice as far.
+        // A fixed deck joins both ramp tops to the socket's right edge; the landing fills one cell, or both when big.
         area(-80,-80,160,160);
-        if(part){const g=new Graphics();g.eventMode='none';const x0=part==='big'?-80:20,deep=part==='big'?30:16;
-          g.rect(x0,0,160-x0,deep).fill(wood.fill).stroke({width:5,color:wood.line});
-          if(part==='big')g.moveTo(40,0).lineTo(40,deep).stroke({width:3,color:wood.line});
-          g.moveTo(x0+12,deep).lineTo(x0+12,100).moveTo(150,deep).lineTo(150,100).stroke({width:6,color:wood.line});slot.face.addChild(g);}
+        if(part){const g=new Graphics();g.eventMode='none';const x0=part==='big'?-80:0,deep=part==='big'?30:16;
+          g.rect(x0,0,80-x0,deep).fill(wood.fill).stroke({width:5,color:wood.line});
+          if(part==='big')g.moveTo(0,0).lineTo(0,deep).stroke({width:3,color:wood.line});
+          g.moveTo(x0+12,deep).lineTo(x0+12,100).moveTo(68,deep).lineTo(68,100).stroke({width:6,color:wood.line});slot.face.addChild(g);}
         else slot.face.addChild(label('+',-30,38));
       }else if(kind==='door'){
         const y=doorBase-slot.y; const frame=new Graphics().roundRect(-64,y-128,128,128,10).fill(wood.light).stroke({width:4,color:wood.line});frame.eventMode='none';slot.face.addChild(frame);

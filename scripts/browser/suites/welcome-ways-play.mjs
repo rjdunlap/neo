@@ -2,12 +2,12 @@ import assert from 'node:assert/strict';
 export function createSuite({page,launch,finished,screenshot,log,scene,ready,pickFirst,turnToGame}) {
 async function welcomeWaysPlay(){
   const scope=process.env.WELCOME_ONLY??'all';
-  assert.ok(['all','play','routes'].includes(scope),'WELCOME_ONLY must be all, play or routes');
+  assert.ok(['all','play','routes','deep'].includes(scope),'WELCOME_ONLY must be all, play, routes or deep');
   const tap=async kind=>{await page.evaluate(kind=>kit.tapOn(neo.scene.game[kind]),kind);await page.waitForTimeout(200);};
   const place=async(part,socket,drag=false)=>{await page.evaluate(async({part,socket,drag})=>{const g=neo.scene.game;if(drag)await kit.dragTo(g.trays.get(part),g.slots[socket].getGlobalPosition());else kit.tapOn(g.trays.get(part));},{part,socket,drag});if(!drag){await page.waitForTimeout(200);await page.evaluate(socket=>kit.tapOn(neo.scene.game.slots[socket]),socket);}await page.waitForTimeout(300);};
   const settle=async()=>{await page.waitForTimeout(200);await page.waitForFunction(()=>neo.scene.finished||!neo.scene.game.busy,null,{timeout:20000});await page.waitForTimeout(200);};
   const state=()=>page.evaluate(()=>{const g=neo.scene.game;return{design:g.round.design,hints:g.round.hints,misses:g.round.misses,stop:g.stopSocket};});
-  if(scope!=='routes'){
+  if(scope==='all'||scope==='play'){
   await launch('welcome-ways',1);await place('gentle',0,true);assert.deepEqual((await state()).design.rises,['gentle']);await screenshot('welcome-ways-1-landscape');await tap('tryButton');await finished('welcome-ways');
   assert.deepEqual(await page.evaluate(()=>{const r=kit.store.stats('welcome-ways').history.at(-1);return[r.misses,r.hints];}),[0,0]);
   await launch('welcome-ways',3);
@@ -33,7 +33,26 @@ async function welcomeWaysPlay(){
   await page.setViewportSize({width:1024,height:768});
   log('Welcome Ways play: first/last, stop reasons, free Try/help, cancel, resize, undo and supported finish passed');
   }
-  if(scope!=='play'){
+  if(scope==='all'||scope==='deep'){
+  const history=()=>page.evaluate(()=>{const r=kit.store.stats('welcome-ways').history.at(-1);return[r.misses,r.hints];});
+  // Level 5: Bear stops at the small landing; a repeated stop offers one hint; the big landing finishes.
+  await launch('welcome-ways',5);await place('gentle',0,true);await place('gentle',2);await tap('tryButton');await settle();
+  assert.equal((await state()).stop,1);await screenshot('welcome-ways-5-landscape');
+  await tap('tryButton');await settle();assert.equal((await state()).hints,1);
+  await place('big',1);await tap('tryButton');await finished('welcome-ways');assert.deepEqual(await history(),[0,1]);
+  // Level 6: rails on both sides stop Duck; a perch on the far side finishes.
+  await launch('welcome-ways',6);await place('gentle',0);await place('gentle',1);await place('rail',3);await place('rail',4);await tap('tryButton');await settle();
+  assert.equal((await state()).stop,4);await screenshot('welcome-ways-6-landscape');
+  await page.setViewportSize({width:768,height:1024});await page.waitForTimeout(700);await screenshot('welcome-ways-6-portrait');
+  await place('perch',4);await tap('tryButton');await finished('welcome-ways');assert.deepEqual(await history(),[0,0]);
+  await page.setViewportSize({width:1024,height:768});
+  // Level 7: the start stops Roly; ramps then stop Teeter at the empty far side; a rail there keeps Duck's perch.
+  await launch('welcome-ways',7);await tap('tryButton');await settle();assert.equal((await state()).stop,0);
+  await place('gentle',0);await place('gentle',1);await tap('tryButton');await settle();assert.equal((await state()).stop,4);
+  await place('rail',4);await tap('tryButton');await finished('welcome-ways');assert.deepEqual(await history(),[0,0]);
+  log('Welcome Ways 5–7: Bear at the small landing, Duck under two rails, Teeter on two ramps, one hint, supported finishes passed');
+  }
+  if(scope==='all'||scope==='routes'){
   await page.evaluate(()=>{kit.store.entry.birth=null;kit.store.entry.startBand='prek';kit.store.data.profile.band='prek';});
   // Classic land/page origin and age-home path.
   await page.evaluate(()=>neo.go.land('tinker-lab'));await scene('LandScene');await turnToGame('welcome-ways');
