@@ -618,7 +618,16 @@ class HelperHouse implements Game {
     this.change(setRow(this.board, i, next), i);
   }
 
+  /** Level 6's guess closes when the first day starts, answered or not, or once the line has moved. */
+  private closeGuess() {
+    if (!this.guessOpen) return;
+    this.guessOpen = false;
+    for (const b of this.guessButtons) b.destroy({ children: true });
+    this.guessButtons = [];
+  }
+
   private change(board: Board, piece: Piece) {
+    this.closeGuess();
     this.history.push(this.board);
     this.board = board;
     this.tally.changed(piece);
@@ -630,6 +639,7 @@ class HelperHouse implements Game {
     if (this.run) this.stopRun();
     const b = this.history.pop();
     if (!b) return;
+    this.closeGuess();
     this.board = b;
     this.tally.changed('sensor');
     for (const i of openRows(b)) this.tally.changed(i);
@@ -676,12 +686,7 @@ class HelperHouse implements Game {
   private startRun() {
     const outcome = runDay(this.board, this.brief.day);
     this.run = { outcome, step: 0, t: 0, shown: new Set(), paused: false, single: false };
-    if (this.guessOpen) {
-      // The guess closes when the first day starts, answered or not.
-      this.guessOpen = false;
-      for (const b of this.guessButtons) b.destroy({ children: true });
-      this.guessButtons = [];
-    }
+    this.closeGuess();
     this.showStill();
     if (this.friend && this.level === 1) this.friend.visible = false;
     this.offerButton?.destroy();
@@ -824,8 +829,13 @@ class HelperHouse implements Game {
     this.daysPlayed++;
     if (this.level === 6 && this.daysPlayed === 1) {
       // The guess's answer, whichever was picked; the first day's climb stays on the gauge to compare.
+      // Heard in full before the day's reason, which would otherwise cut it off.
       this.climb = o.trace.map((t) => t.warmth);
-      void this.ctx.say('hh.guess.truth');
+      this.redraw();
+      this.busy = true;
+      await this.ctx.say('hh.guess.truth');
+      if (!this.alive) return;
+      this.busy = false;
     }
     this.redraw();
     if (o.met) { await this.celebrate(); return; }
@@ -834,6 +844,7 @@ class HelperHouse implements Game {
     if (lit) {
       sfx.boing();
       void this.ctx.say('hh.glow');
+      this.redraw();
     }
     if (offersSetup(this.tally) && !this.offered) {
       this.offered = true;
@@ -880,6 +891,7 @@ class HelperHouse implements Game {
       return;
     }
     this.tally.help();
+    this.closeGuess();
     this.history.push(this.board);
     this.board = h.board;
     this.tally.changed(h.placed);
