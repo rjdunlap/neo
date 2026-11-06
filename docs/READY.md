@@ -6,7 +6,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **`puddle-lens`, levels 7–8** (school `{4,6}`→`{4,8}`; *Wall clue* and *Why green?*; new interaction on the existing game, `fingerdemo` at 7 and 8; claimed by `claude/puddle-lens-7-8`): [definition](definitions/puddle-lens.md#levels-78-definition-2026-11-06), [check tier](definitions/puddle-lens.md#check-tier-the-build-1).
+- **`far-lights`, levels 5–6** (`astronomy`; school; the curtain, three-light ordering and the tassel; new-interaction tier, the school range becomes {4,6}, `fingerdemo` at 6): [definition](definitions/far-lights.md#levels-58-definition), [build slice 1](definitions/far-lights.md#build-slices-levels-58).
 - **`hat-band`, level 4 *Build a song*** (`music-instruments` M6; school `{2,4}`, grownup `{4,4}`; new interaction on the existing game, a third (low) role, `fingerdemo` at 4): [definition](definitions/hat-band.md#level-4-build-a-song-m6-definition-2026-11-06), [check tier](definitions/hat-band.md#check-tier-the-build).
 - **`gadget-bench`, level 4 *Fix-It Day*** (`inventions`; school; the first conflict: paddle wheels do two jobs; new level on the existing interaction, `fingerdemo` at 4): [definition](definitions/gadget-bench.md#level-4-fix-it-day-definition), [check tier](definitions/gadget-bench.md#check-tier-level-4).
 - **Dive `bolt-boards`** (Bolt Boards; toddler to school, 7 levels; docs only): [procedure](deep-dives/README.md#one-session-one-game), [definition](definitions/bolt-boards.md).
@@ -32,7 +32,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
   - **`measuring-post`, levels 1–4** (school; choose the tool for the question, and compare counts only in the same unit; Tinker Lab or Cozy Village): [definition](definitions/measuring-post.md).
 
 - **`far-lights`, levels 5–8, two builds in order** (`astronomy`; school; both new-interaction tier; the school range becomes {4,8} at build; [definition](definitions/far-lights.md#levels-58-definition)):
-  - **`far-lights`, levels 5–6** (the curtain, three-light ordering and the tassel; `fingerdemo` at 6): [build slice 1](definitions/far-lights.md#build-slices-levels-58).
   - **`far-lights`, levels 7–8, after 5–6** (the opening look, Both could fit and the sideways step; `fingerdemo` at 8; the held parallax wording is checked against a cited source): [build slice 2](definitions/far-lights.md#build-slices-levels-58).
 
 - **`swing-pals`, three slices in the dive's order** (`physics`; lap to school; [build slices](deep-dives/swing-pals.md#build-slices-in-order)):

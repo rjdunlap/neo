@@ -449,6 +449,13 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 - [ ] With the same child: does "can't tell yet" feel like a real answer rather than a wrong one?
 - [ ] On the iPad's voice, how are the button names (alive, not alive, can't tell yet; one cell, many cells, not cells) said on touch-down?
 
+## Puddle Lens levels 7–8 (cells-microbes slice 4b, 2026-11-06)
+
+- [ ] With an eight-to-ten-year-old: does she use the wall rather than the green to decide plant or animal?
+- [ ] With the same child: does "green all through the water" read as a real answer rather than a wrong one?
+- [ ] On the iPad's voice, how are the new button names (plant cells, animal cells, tiny green living things, green all through the water) said on touch-down?
+- [ ] On the iPad, are the cheek-cell edges legible at the closest stop? (The contrast fix after review was not re-run in a browser.)
+
 ## Gear Garden levels 1–3 (machines-tools slice 2, 2026-10-24)
 
 - [ ] On an iPad with a lap child: does she connect a tap on the machine to the far flower turning, or only watch the flower?
