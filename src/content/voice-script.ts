@@ -2829,7 +2829,7 @@ export const SCRIPT = {
   'hat-band.together': ['Tap the star again to hear them together.', 'Now let them play together. Tap the star again.'],
   'hat-band.solo-on': ['Just one friend, all alone.', 'Listen: only this friend.'],
   'hat-band.solo-off': ['All together again!', 'The whole band together!'],
-  'hat-band.instruct-4': ['Three friends, and a song in three parts. Tap a part, then tap friends to put their hats on or take them off. Start the song with the tune all alone, and end it with everybody. The middle is up to you! Tap play to hear it, then the green check.'],
+  'hat-band.instruct-4': ['Make a song in three parts. Start with the tune alone, end with everybody. Tap a part, then tap friends to change who plays.'],
   'hat-band.low': ['The low hat.', 'A low hat. Listen how low it plays.'],
   'hat-band.part-1': ['Part one.'],
   'hat-band.part-2': ['Part two.'],
