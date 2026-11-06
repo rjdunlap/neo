@@ -48,14 +48,15 @@ export const flip = (s: Surface): Surface => (s === 'stone' ? 'soil' : 'stone');
 
 // ---- levels ----
 
-export interface Plan { level: 1 | 2 | 3; name: string }
+export interface Plan { level: 1 | 2 | 3 | 4; name: string }
 export const PLANS: readonly Plan[] = [
   { level: 1, name: 'Rain on the garden: tap the cloud and watch where four drops go' },
   { level: 2, name: 'Two gardens, same rain: pick stone or soil for each, then rain on both' },
   { level: 3, name: 'Change it and try again: the first rain is kept on a card to compare' },
+  { level: 4, name: 'Two beds downhill: change the ground so the leaf bed gets two drops and the pond some' },
 ];
-export const LEVELS: BandLevels = { toddler: { min: 1, max: 1 }, preschool: { min: 1, max: 2 }, prek: { min: 2, max: 3 }, school: { min: 3, max: 3 } };
-export function planFor(level: number): Plan { return PLANS[Math.max(1, Math.min(3, Math.round(level))) - 1]; }
+export const LEVELS: BandLevels = { toddler: { min: 1, max: 1 }, preschool: { min: 1, max: 2 }, prek: { min: 2, max: 3 }, school: { min: 3, max: 4 } };
+export function planFor(level: number): Plan { return PLANS[Math.max(1, Math.min(4, Math.round(level))) - 1]; }
 
 export type Friend = 'frog' | 'duck' | 'turtle';
 export const FRIENDS: readonly Friend[] = ['frog', 'duck', 'turtle'];
@@ -71,7 +72,8 @@ export interface Round {
 
 /** The authored first round of each level, then seeded rounds within the variation the definition lists. */
 export function makeRound(level: number, rng: Rng, authored: boolean): Round {
-  const p = planFor(level).level;
+  // Level 4 has its own round (`makeRoute`); the levels-1–3 board stops at level 3.
+  const p = Math.min(3, planFor(level).level) as 1 | 2 | 3;
   if (authored) return { level: p, start: p === 1 ? ['soil'] : p === 2 ? ['stone', 'soil'] : ['stone'], friend: 'frog', mirror: false };
   const friend = rng.pick(FRIENDS);
   if (p === 1) return { level: 1, start: ['soil'], friend, mirror: rng.chance(0.5) };
@@ -197,7 +199,7 @@ export function rainLayout(view: { w: number; h: number }, level: number, mirror
   if (w < FW - 1 || h < FH - 1) return null;
   const ox = (w - FW) / 2, oy = (h - FH) / 2;
   const leaf = box(w - 20 - LEAF / 2, 18 + LEAF / 2, LEAF, LEAF);
-  const p = planFor(level).level;
+  const p = Math.min(3, planFor(level).level);
   if (p === 2) {
     const boards = [360, 790].map((bx) => board(ox + bx, oy + 305, 300, 150, ox + bx + 60, oy + 550, 270, 56, 64, 1));
     const tiles = [360, 790].map((bx) => box(ox + bx - 50, oy + 690, TILE2, TILE2));
@@ -217,4 +219,211 @@ export function rainLayout(view: { w: number; h: number }, level: number, mirror
 export function stickerPick(seed: number): { friend: Friend; drops: number } {
   const n = Math.abs(Math.floor(seed));
   return { friend: FRIENDS[n % 3], drops: 1 + (Math.floor(n / 3) % 2) };
+}
+
+// ---- level 4: two beds downhill ----
+//
+// Two sockets in a fixed chain, the top bed (0) and the low bed (1). The shower falls on the top bed; what a bed can't
+// hold runs down its fixed arrow, the top bed's into the low bed and the low bed's into the pond. One bed is marked and
+// must keep exactly two drops; the pond must get at least one. She sets each bed's ground, tries it, then checks.
+
+/** Where a drop can be: a socket's index, or the pond. */
+export type Place = number | 'pond';
+/** Each socket names where its overflow runs. Written for any chain so a longer board can reuse it. */
+export interface Link { down: Place }
+export const ROUTE4: readonly Link[] = [{ down: 1 }, { down: 'pond' }];
+/** One drop's trip: every place it visited in order; the last is where it is counted. */
+export interface RouteStep { unit: number; path: Place[] }
+export interface RouteTrial { sockets: Surface[]; steps: RouteStep[]; stored: number[]; pond: number }
+
+/**
+ * Rain `units` drops, one at a time, on socket 0. A drop stays in a socket with room; otherwise it follows that socket's
+ * `down`, until it stays or reaches the pond. Every trial starts fresh.
+ */
+export function runRoute(sockets: readonly Surface[], route: readonly Link[] = ROUTE4, units = SHOWER): RouteTrial {
+  const stored = sockets.map(() => 0);
+  let pond = 0;
+  const steps: RouteStep[] = [];
+  for (let unit = 0; unit < units; unit++) {
+    const path: Place[] = [];
+    let at: Place = 0;
+    // A chain visits each socket at most once, so this always ends in a socket or the pond.
+    for (let hop = 0; hop <= sockets.length; hop++) {
+      path.push(at);
+      if (at === 'pond') { pond++; break; }
+      if (stored[at] < CAPACITY[sockets[at]]) { stored[at]++; break; }
+      at = route[at].down;
+    }
+    steps.push({ unit, path });
+  }
+  return { sockets: sockets.slice(), steps, stored, pond };
+}
+
+/** The marked bed must keep exactly two; the pond must get at least one. */
+export function meets(t: RouteTrial, bed: 0 | 1): { bed: boolean; pond: boolean } {
+  return { bed: t.stored[bed] === 2, pond: t.pond >= 1 };
+}
+const passes = (sockets: readonly Surface[], bed: 0 | 1) => { const m = meets(runRoute(sockets), bed); return m.bed && m.pond; };
+export const arrangementKey = (sockets: readonly Surface[]) => sockets.join('/');
+/** All four arrangements, top bed first. */
+export const ARRANGEMENTS: readonly Surface[][] = SURFACES.flatMap((a) => SURFACES.map((b) => [a, b]));
+
+/** Every arrangement that meets both needs. */
+export function solutions(bed: 0 | 1): Surface[][] { return ARRANGEMENTS.filter((a) => passes(a, bed)).map((a) => a.slice()); }
+
+const distance = (a: readonly Surface[], b: readonly Surface[]) => a.filter((s, i) => s !== b[i]).length;
+
+/** The solution that differs from `sockets` in the fewest beds. */
+export function nearest(sockets: readonly Surface[], bed: 0 | 1): Surface[] {
+  let best: Surface[] | null = null;
+  for (const sol of solutions(bed)) if (!best || distance(sockets, sol) < distance(sockets, best)) best = sol;
+  return best!;
+}
+
+/** The bed a worked step flips and the glow marks: the first, from the top, that differs from `nearest`; null when it passes. */
+export function stepBed(sockets: readonly Surface[], bed: 0 | 1): number | null {
+  const goal = nearest(sockets, bed);
+  const i = sockets.findIndex((s, k) => s !== goal[k]);
+  return i < 0 ? null : i;
+}
+
+export interface RouteRound {
+  level: 4;
+  /** The marked bed: 0 the top bed, 1 the low bed. */
+  bed: 0 | 1;
+  start: Surface[];
+  friend: Friend;
+  /** The cloud and the top bed on the right, the arrows running left. */
+  mirror: boolean;
+}
+
+/** The authored board is soil over stone with the low bed marked; a seeded board starts on one of its variant's failing arrangements. */
+export function makeRoute(rng: Rng, authored: boolean): RouteRound {
+  if (authored) return { level: 4, bed: 1, start: ['soil', 'stone'], friend: 'frog', mirror: false };
+  const bed: 0 | 1 = rng.chance(0.5) ? 1 : 0;
+  const failing = ARRANGEMENTS.filter((a) => !passes(a, bed));
+  return { level: 4, bed, start: rng.pick(failing).slice(), friend: rng.pick(FRIENDS), mirror: rng.chance(0.5) };
+}
+
+export interface RouteState {
+  sockets: Surface[];
+  /** The settled run of the current arrangement, or null while the beds are fresh. */
+  current: RouteTrial | null;
+  /** The arrangement last judged by a failed Check. */
+  checked: string | null;
+  misses: number;
+  hints: number;
+  /** The bed the causal glow marks, or null. */
+  glow: number | null;
+  glowShown: boolean;
+  /** A requested hint is pointing at the Check. */
+  pointing: boolean;
+  passed: boolean;
+}
+
+export function routeFresh(round: RouteRound): RouteState {
+  return { sockets: round.start.slice(), current: null, checked: null, misses: 0, hints: 0, glow: null, glowShown: false, pointing: false, passed: false };
+}
+
+/** The cloud: a free, unscored trial of the current arrangement. */
+export function tryRoute(s: RouteState): RouteState { return { ...s, current: runRoute(s.sockets) }; }
+
+/** Flip one bed's ground. Both beds and the pond go back to fresh; a glow on that bed has done its job. */
+export function flipBed(s: RouteState, i: number): RouteState {
+  const sockets = s.sockets.slice();
+  sockets[i] = flip(sockets[i]);
+  return { ...s, sockets, current: null, pointing: false, glow: s.glow === i ? null : s.glow };
+}
+
+export type Cause = 'dry' | 'pond';
+export interface Verdict { result: 'pass' | 'miss' | 'again' | 'ignored'; cause: Cause | null }
+
+/**
+ * The Check: runs the shower if the arrangement hasn't settled, then judges both needs. A failed Check counts one miss,
+ * unless it judges the same arrangement as the last failed one. From the second miss the glow marks the bed to change,
+ * counting one hint the first time it lights.
+ */
+export function check(s: RouteState, round: RouteRound): { state: RouteState; verdict: Verdict } {
+  if (s.passed) return { state: s, verdict: { result: 'ignored', cause: null } };
+  const current = s.current ?? runRoute(s.sockets);
+  const m = meets(current, round.bed);
+  if (m.bed && m.pond) return { state: { ...s, current, passed: true, glow: null, pointing: false }, verdict: { result: 'pass', cause: null } };
+  const cause: Cause = m.bed ? 'pond' : 'dry';
+  const k = arrangementKey(s.sockets);
+  if (k === s.checked) return { state: { ...s, current }, verdict: { result: 'again', cause } };
+  const misses = s.misses + 1;
+  let { hints, glow, glowShown } = s;
+  if (misses >= 2) {
+    glow = stepBed(s.sockets, round.bed);
+    if (!glowShown) { hints++; glowShown = true; }
+  }
+  return { state: { ...s, current, checked: k, misses, hints, glow, glowShown }, verdict: { result: 'miss', cause } };
+}
+
+export type RouteHint = { kind: 'flip'; bed: number } | { kind: 'check' };
+
+/** Show me: the pet flips one bed toward `nearest` (one hint), or, when it already passes, points at the Check (one hint if newly pointed). */
+export function routeHint(s: RouteState, round: RouteRound): { state: RouteState; hint: RouteHint } {
+  if (s.passed) return { state: s, hint: { kind: 'check' } };
+  const i = stepBed(s.sockets, round.bed);
+  if (i === null) return { state: { ...s, pointing: true, hints: s.pointing ? s.hints : s.hints + 1 }, hint: { kind: 'check' } };
+  return { state: flipBed({ ...s, hints: s.hints + 1 }, i), hint: { kind: 'flip', bed: i } };
+}
+
+/** Start again: the starting arrangement from fresh. Misses and hints already made keep counting; the glow follows the new arrangement. */
+export function routeRestart(s: RouteState, round: RouteRound): RouteState {
+  const sockets = round.start.slice();
+  return { ...s, sockets, current: null, pointing: false, glow: s.glowShown ? stepBed(sockets, round.bed) : null };
+}
+
+/** The ghost finger's next tap: try the starting board, change each bed that differs from the solution, try again, then check. */
+export function routeNext(s: RouteState, round: RouteRound): { kind: 'cloud' } | { kind: 'bed'; bed: number } | { kind: 'check' } {
+  const i = stepBed(s.sockets, round.bed);
+  const moved = arrangementKey(s.sockets) !== arrangementKey(round.start);
+  if (i !== null && (s.current || moved)) return { kind: 'bed', bed: i };
+  if (!s.current) return { kind: 'cloud' };
+  return { kind: 'check' };
+}
+
+export interface RouteLayout {
+  cloud: Box;
+  /** The top bed, then the low bed, each with its two pockets. */
+  beds: { patch: Box; pockets: Box[] }[];
+  /** Top bed to low bed, then low bed to the pond. */
+  arrows: { x1: number; y1: number; x2: number; y2: number }[];
+  pond: Box;
+  slots: Box[];
+  friend: { x: number; y: number };
+  /** The marked bed's need sign and the pond's: pictures, not targets. */
+  bedSign: Box;
+  pondSign: Box;
+  check: Box;
+}
+
+export const CHECK = 120, BED_W = 300, BED_H = 150, SIGN_W = 140, SIGN_H = 110;
+
+/**
+ * Level 4's board in the 1024×768 frame: the cloud over the top bed, the low bed one terrace down and across, the pond
+ * at the bottom of the downhill side. Mirroring reflects it about x = 525 so the pond stays clear of the pet.
+ */
+export function routeLayout(view: { w: number; h: number }, bed: 0 | 1, mirror = false): RouteLayout | null {
+  const { w, h } = view;
+  if (w < FW - 1 || h < FH - 1) return null;
+  const ox = (w - FW) / 2, oy = (h - FH) / 2;
+  const mx = (x: number) => ox + (mirror ? 1050 - x : x);
+  const dir = mirror ? -1 : 1;
+  const low = board(mx(520), oy + 510, BED_W, BED_H, mx(760), oy + 680, 240, 56, 58, dir);
+  const tx = mx(300), ty = oy + 320;
+  const top = { patch: box(tx, ty, BED_W, BED_H), pockets: [-1, 1].map((k) => box(tx + k * BED_W * 0.22, ty + BED_H * 0.08, Math.min(96, BED_W * 0.27), 60)) };
+  const edge = tx + dir * BED_W / 2;
+  const arrow1 = { x1: edge - dir * 10, y1: ty - 16, x2: edge + dir * 30, y2: low.patch.y - BED_H / 2 - 10 };
+  const bedSign = bed === 1 ? box(mx(200), oy + 510, SIGN_W, SIGN_H) : box(mx(570), oy + 300, SIGN_W, SIGN_H);
+  return {
+    cloud: box(tx, oy + 150, 260, 140),
+    beds: [top, { patch: low.patch, pockets: low.pockets }],
+    arrows: [arrow1, low.arrow],
+    pond: low.pond, slots: low.slots, friend: low.friend,
+    bedSign, pondSign: box(mx(920), oy + 540, SIGN_W, SIGN_H),
+    check: box(w - 20 - CHECK / 2, 18 + CHECK / 2, CHECK, CHECK),
+  };
 }

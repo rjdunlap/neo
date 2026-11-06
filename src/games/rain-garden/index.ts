@@ -18,6 +18,7 @@ import {
   LEAF, LEVELS, canFinish, compare, enough, flip, freshState, makeRound, nextAction, planFor, rain, rainLayout, restartState,
   setSurface, stickerPick, type Action, type Layout, type Plan, type Round, type RoundState, type Step, type Surface, type Trial,
 } from './logic';
+import { RainRoute } from './route';
 
 /** Each level's authored first round leads its first round of a session. */
 const authoredShown = new Set<number>();
@@ -475,6 +476,6 @@ export const rainGarden: GameModule = {
   music: STYLES.bubbles,
   coplayHint: 'One of you chooses the ground; the other taps the cloud and says what happened. Then swap.',
   offScreen: 'Next time it rains, look out the window together: where does the water go on the path, and where on the grass?',
-  hubIcon: () => new WigglyIcon(icon()), sticker, create: (ctx) => new RainGarden(ctx),
+  hubIcon: () => new WigglyIcon(icon()), sticker, create: (ctx) => (planFor(ctx.level).level === 4 ? new RainRoute(ctx) : new RainGarden(ctx)),
   touchDemo: true,
 };
