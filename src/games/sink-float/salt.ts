@@ -71,6 +71,8 @@ export class SaltTanks implements Game {
   private clock = 0;
   private hinted = false;
   private glowOn = false;
+  /** A wrong tank's evidence line is playing. */
+  private explaining = false;
   /** Where the shaker stands: its tank's counter spot, over the tank while shaking, or off-screen in part 2. */
   private shakerAt: 'home' | 'moving' | 'away' = 'home';
   private shakerSide: Side;
@@ -247,7 +249,7 @@ export class SaltTanks implements Game {
     if (q >= this.round.questions.length) return void this.end();
     this.question = q;
     this.wrong = 0;
-    this.hinted = this.glowOn = false;
+    this.hinted = this.glowOn = this.explaining = false;
     this.phase = 'test';
     this.drawGlow();
     this.showTray();
@@ -258,12 +260,18 @@ export class SaltTanks implements Game {
     if (this.phase !== 'answer' || this.busy || this.finished) return;
     const q = this.round.questions[this.question];
     if (SIDES[tank] !== q.salty) {
+      // While the last wrong tank's line plays, more taps on a wrong tank count nothing: one miss per look.
+      if (this.explaining) return;
       // She has already seen the test, so a wrong tank is a miss; the things stay in so she can look again.
       this.misses++;
       this.wrong++;
+      this.explaining = true;
+      const asked = this.question;
       sfx.boing();
       await this.ctx.say(q.test === 'egg' ? 'sink.salt-wrong-egg' : 'sink.salt-wrong-duck');
-      if (this.wrong >= 2 && !this.finished) this.showHint();
+      this.explaining = false;
+      // A right tap during the line may have moved on: the glow belongs only to a question still open.
+      if (this.wrong >= 2 && !this.finished && !this.busy && this.phase === 'answer' && this.question === asked) this.showHint();
       return;
     }
     this.busy = true;

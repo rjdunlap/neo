@@ -220,7 +220,7 @@ async function fourth() {
       const g = neo.scene.game;
       const tapTank = (i) => { const a = g.areas[i].hitArea; const p = g.areas[i].toGlobal({ x: a.x + a.width / 2, y: a.y + a.height / 2 }); kit.tap(p.x, p.y); };
       const sideIndex = () => (g.round.questions[g.question].salty === 'left' ? 0 : 1);
-      for (let k = 0; k < 2; k++) { tapTank(1 - sideIndex()); await kit.sleep(2600); }
+      for (let k = 0; k < 2; k++) { tapTank(1 - sideIndex()); await kit.sleep(300); await kit.until(() => !g.explaining, 15000); await kit.sleep(300); }
       const afterWrong = { misses: g.misses, hints: g.hints };
       for (let q = 0; q < g.round.questions.length; q++) {
         await kit.until(() => g.phase === 'answer' && !g.busy && g.question === q, 40000);
