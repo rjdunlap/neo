@@ -403,6 +403,12 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 - [ ] With a four-year-old: does "too close" make sense?
 - [ ] On the iPad's voice, how does "No swimmers" sound?
 
+## Puddle Lens levels 5–6 (cells-microbes slice 3b, 2026-11-05)
+
+- [ ] With a six-year-old: does she wait for the evidence (turn the dial up) or guess at the lens-with-a-curl and the seed straight away?
+- [ ] With the same child: does "can't tell yet" feel like a real answer rather than a wrong one?
+- [ ] On the iPad's voice, how are the button names (alive, not alive, can't tell yet; one cell, many cells, not cells) said on touch-down?
+
 ## Gear Garden levels 1–3 (machines-tools slice 2, 2026-10-24)
 
 - [ ] On an iPad with a lap child: does she connect a tap on the machine to the far flower turning, or only watch the flower?
