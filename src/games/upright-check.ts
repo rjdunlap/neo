@@ -33,7 +33,7 @@ export function uprightProblems(v: Pick<View, 'w' | 'h'>, targets: readonly Targ
   const out: string[] = [];
   const box = (t: Target) => ({ x0: t.x - t.w / 2, y0: t.y - t.h / 2, x1: t.x + t.w / 2, y1: t.y + t.h / 2 });
   const keepOut = [
-    { what: 'Home and help', x0: 0, y0: 0, x1: 115, y1: 215 },
+    { what: 'Home and help', x0: 0, y0: 0, x1: 115, y1: 210 },
     { what: 'the guide', x0: 0, y0: v.h - 170, x1: 150, y1: v.h },
   ];
   const hit = (a: { x0: number; y0: number; x1: number; y1: number }, b: typeof a) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;

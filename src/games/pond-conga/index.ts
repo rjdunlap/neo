@@ -12,6 +12,7 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { COURSES, courseMinimum, coursePonds, isCongaCourse } from './course';
 import { DX, DY, schoolStep, tapToward, firstCrumbs, foodAt, groupOf, openCrumbs, pondLook, headAfter, hintDir, hintPath, makePond, nextCrumb, opposite, planFor, startState, step, stepDue, STEP_GLIDE, swipeDir, SWIPE, type Cell, type Conga, type Dir, type Food, type Pond, type PondLook } from './logic';
+import { pondTouchLayout, type Slot } from './layout';
 
 /** A grown-up game in Lantern Lake, played by touch or on the couch, with two small step-by-step ponds (10 and 11) for school. */
 /** Level 8, Step by step, is the easy way in: first by `order` and a new player's entry. Level 9, A long conga, is the top. */
@@ -34,10 +35,6 @@ const FOOD_SPARK: Record<Food, number[]> = { peas: [swatch.green.fill, 0xd6f5c8]
 const DUCK = 0.86;
 /** A breather after a bonk, so there is time to choose where to go next. */
 const BREATHER = 0.9;
-/** The smallest touch target in a grown-up game, in logical units. */
-const MIN_TOUCH = 64;
-/** At school the cells and both buttons are 100 units: the ponds are 4 rows so that fits on a 768-unit side. */
-const SCHOOL_TOUCH = 100;
 /** How long the leader shakes when a step is refused, in seconds. */
 const SHAKE = 0.3;
 /** The ghost finger's pond: steps a second, slow enough that a hand which swipes in about half a second can turn at every other step. */
@@ -46,8 +43,6 @@ const DEMO_SPEED = 1;
 const DEMO_CRUMBS = 4;
 /** Seconds from the ghost finger's touch-down until its swipe has gone far enough to turn the line. */
 const DEMO_SWIPE = 0.5;
-type SlotKind = 'hint' | 'again';
-interface Slot { kind: SlotKind; x: number; y: number; w: number; h: number }
 /** Touch play: one finger steers, so one finger is followed. `x`, `y` is where it last came down or turned the line. */
 interface Finger { id: number; x: number; y: number; moved?: boolean }
 
@@ -289,17 +284,13 @@ class PondConga implements Game {
    * tall view goes below them.
    */
   private resizeTouch(v: View) {
-    const p = this.pond, btn = this.school ? SCHOOL_TOUCH : 76, rest = 16 + btn + 44 + 12, cap = this.school ? SCHOOL_TOUCH : 80;
-    const beside = Math.min(cap, Math.floor((v.w - 124 - 24) / p.cols), Math.floor((v.h - 132 - rest) / p.rows));
-    const below = Math.min(cap, Math.floor((v.w - 60) / p.cols), Math.floor((v.h - 212 - rest) / p.rows));
-    const top = beside >= below ? 132 : 212;
-    this.cell = Math.max(this.school ? SCHOOL_TOUCH : 24, Math.max(beside, below));
-    const w = p.cols * this.cell, h = p.rows * this.cell, x = top === 132 ? Math.max(124, (v.w - w) / 2) : (v.w - w) / 2;
-    this.board.position.set(x, top);
+    const p = this.pond, fit = pondTouchLayout(p.cols, p.rows, v.w, v.h, this.school);
+    this.cell = fit.cell;
+    const w = p.cols * this.cell, h = p.rows * this.cell;
+    this.board.position.set(fit.x, fit.y);
     this.top.position.set(v.w / 2, 96);
-    const by = top + h + 16, bw = Math.max(this.school ? SCHOOL_TOUCH : MIN_TOUCH, Math.min(210, Math.floor((v.w - 2 * 170) / 2)));
-    this.slots = (['hint', 'again'] as const).map((kind, k) => ({ kind, x: v.w / 2 - bw - 8 + k * (bw + 16), y: by, w: bw, h: btn }));
-    this.note.position.set(v.w / 2, by + btn + 28);
+    this.slots = fit.slots;
+    this.note.position.set(v.w / 2, fit.noteY);
     this.tapLayer.clear().rect(0, 0, w, h).fill({ color: 0xffffff, alpha: 0.001 });
     this.tapLayer.hitArea = new Rectangle(0, 0, w, h);
     this.tapLayer.position.copyFrom(this.board.position);
@@ -989,6 +980,7 @@ export const pondConga: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.lullaby,
+  upright: true,
   coplayHint: 'On the step-by-step ponds, take turns: one of you says which way, the other swipes or taps.',
   offScreen: 'Walk a duckling line together: the leader picks the way, everyone follows, and nobody crosses the line.',
   touchDemo: true,
