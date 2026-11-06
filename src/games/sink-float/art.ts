@@ -1,5 +1,5 @@
 import { Container, Graphics } from 'pixi.js';
-import { ink, swatch, wood } from '../../art/palette';
+import { cream, ink, swatch, wood } from '../../art/palette';
 import { prop } from '../../art/props';
 import { starPoints } from '../../art/shapes';
 import type { ClayColor, ClayShape, SmallArt, Thing } from './logic';
@@ -192,4 +192,33 @@ export function sameWeightIcon(color: ClayColor): Container {
   boat.position.set(56, -6);
   c.addChild(g, boat);
   return c;
+}
+
+/** Salty or fresh: a cream egg with a soft highlight, about 70 units tall, centered on (0, 0). */
+export function eggArt(): Container {
+  const c = new Container();
+  const g = new Graphics();
+  g.ellipse(0, 0, 28, 36).fill(cream).stroke(line(wood.line, 4));
+  g.ellipse(-10, -14, 7, 11).fill({ color: swatch.white.fill, alpha: 0.8 });
+  c.addChild(g);
+  return c;
+}
+
+/** Salty or fresh: a salt shaker, a white body under a grey cap with holes, about 130 by 150 with its shadow. */
+export function shakerArt(): Container {
+  const c = new Container();
+  const g = new Graphics();
+  g.ellipse(0, 62, 46, 10).fill({ color: ink, alpha: 0.12 });
+  g.moveTo(-38, 58).lineTo(-30, -20).lineTo(30, -20).lineTo(38, 58).closePath().fill(swatch.white.fill).stroke(line(swatch.white.line, 5));
+  g.roundRect(-32, -56, 64, 38, 14).fill(swatch.white.line).stroke(line(ink, 4));
+  for (const [x, y] of [[-14, -44], [0, -36], [14, -44], [-7, -28], [7, -28]]) g.circle(x, y, 3.5).fill(ink);
+  g.moveTo(-18, 6).lineTo(-14, 44).stroke(line(swatch.white.light, 6));
+  c.addChild(g);
+  return c;
+}
+
+/** A thin dashed waterline drawn across a thing at the surface, `w` wide, centered on (x, y). */
+export function waterlineMark(g: Graphics, x: number, y: number, w: number): Graphics {
+  for (let dx = -w / 2; dx < w / 2; dx += 14) g.moveTo(x + dx, y).lineTo(x + Math.min(dx + 8, w / 2), y);
+  return g.stroke({ width: 3, color: swatch.blue.line, cap: 'round' });
 }

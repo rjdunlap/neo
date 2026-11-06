@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { SCRIPT, type LineId } from '../../content/voice-script';
 import { levelsInOrder, rangeFor } from '../../progress/difficulty';
-import { ALL_PAIRS, ALL_SHAPES, ALL_THINGS, CLAY_SHAPES, floats, PAIRS, pairsFor, rightBasket, shapesFor, SINK_IDS, SINK_LEVELS, SINK_PLANS, sinkPlan, THINGS, thingsFor, thingWord, type Thing } from './logic';
+import { ALL_PAIRS, ALL_SHAPES, ALL_THINGS, CLAY_SHAPES, floats, floatsIn, SALT_DEPTHS, saltRoundFor, PAIRS, pairsFor, rightBasket, shapesFor, SINK_IDS, SINK_LEVELS, SINK_PLANS, sinkPlan, THINGS, thingsFor, thingWord, type Thing } from './logic';
 
-const THING_PLANS = Object.values(SINK_PLANS).filter((p) => p.mode !== 'shape' && p.mode !== 'pair');
+const THING_PLANS = Object.values(SINK_PLANS).filter((p) => p.mode !== 'shape' && p.mode !== 'pair' && p.mode !== 'salt');
 
 describe('Sink or Float', () => {
   it('always mixes floaters and sinkers, with surprises only where the level asks for them', () => {
@@ -73,19 +73,21 @@ describe('Sink or Float', () => {
   });
 
   it('keys the plans by level ID: 7 is the shape experiment, 8 stays reserved for Garden Raft, 9 is Big and small', () => {
-    expect(SINK_IDS).toEqual([1, 2, 3, 4, 5, 6, 7, 9]);
+    expect(SINK_IDS).toEqual([1, 2, 3, 4, 5, 6, 7, 9, 10]);
     expect(sinkPlan(7).mode).toBe('shape');
     expect(sinkPlan(9).mode).toBe('pair');
-    for (let l = 1; l <= 6; l++) expect(sinkPlan(l).mode).not.toMatch(/shape|pair/);
+    expect(sinkPlan(10).mode).toBe('salt');
+    for (let l = 1; l <= 6; l++) expect(sinkPlan(l).mode).not.toMatch(/shape|pair|salt/);
     // An unbuilt or out-of-range ID falls to the nearest built one below it.
     expect(sinkPlan(8)).toBe(sinkPlan(7));
-    expect(sinkPlan(99)).toBe(sinkPlan(9));
+    expect(sinkPlan(99)).toBe(sinkPlan(10));
     expect(sinkPlan(0)).toBe(sinkPlan(1));
   });
 
   it('places Big and small between 5 and 6 for pre-K and between 6 and 7 at school, and never plays the reserved 8', () => {
     expect(levelsInOrder(rangeFor(SINK_LEVELS, 'prek'))).toEqual([4, 5, 9, 6]);
-    expect(levelsInOrder(rangeFor(SINK_LEVELS, 'school'))).toEqual([5, 6, 9, 7]);
+    expect(levelsInOrder(rangeFor(SINK_LEVELS, 'school'))).toEqual([5, 6, 9, 7, 10]);
+    for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const) expect(levelsInOrder(rangeFor(SINK_LEVELS, band))).not.toContain(10);
     for (const band of ['lap', 'toddler', 'preschool'] as const) expect(levelsInOrder(rangeFor(SINK_LEVELS, band))).not.toContain(9);
     for (const band of Object.keys(SINK_LEVELS) as (keyof typeof SINK_LEVELS)[]) {
       const order = levelsInOrder(rangeFor(SINK_LEVELS, band));
@@ -138,5 +140,43 @@ describe('Sink or Float', () => {
       expect(exps[0].color).not.toBe(exps[1].color);
     }
     expect([...boatAt].sort()).toEqual([0, 1, 2]);
+  });
+  it('Salty or fresh: the egg sinks in plain water and floats in salty, the duck floats in both and sits higher in salt', () => {
+    expect(floatsIn('egg', 'fresh')).toBe(false);
+    expect(floatsIn('egg', 'salty')).toBe(true);
+    expect(floatsIn('duck', 'fresh')).toBe(true);
+    expect(floatsIn('duck', 'salty')).toBe(true);
+    // Wherever both float, the salty one sits visibly higher.
+    for (const test of ['duck', 'egg'] as const) {
+      const { fresh, salty } = SALT_DEPTHS[test];
+      if (fresh !== null && salty !== null) expect(fresh - salty, test).toBeGreaterThanOrEqual(16);
+    }
+    // The egg and the shaker stay out of the things, so the pools and journal of levels 1 to 6 are unchanged.
+    expect(ALL_THINGS).toHaveLength(14);
+    expect(ALL_THINGS).not.toContain('egg');
+  });
+
+  it('Salty or fresh: four questions, the egg three times then the duck, both sides salty, never three in a row', () => {
+    const plan = sinkPlan(10);
+    const firsts = new Set<string>();
+    const shown = new Set<string>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const round = saltRoundFor(plan, new Rng(seed));
+      expect(saltRoundFor(plan, new Rng(seed))).toEqual(round);
+      const q = round.questions;
+      expect(q).toHaveLength(plan.count);
+      expect(q.map((x) => x.test)).toEqual(['egg', 'egg', 'egg', 'duck']);
+      expect(new Set(q.map((x) => x.salty)).size).toBe(2);
+      for (let i = 2; i < q.length; i++) expect(q[i].salty === q[i - 1].salty && q[i].salty === q[i - 2].salty).toBe(false);
+      firsts.add(q[0].salty);
+      shown.add(round.shown);
+    }
+    expect(firsts.size).toBe(2);
+    expect(shown.size).toBe(2);
+  });
+
+  it('Salty or fresh: every line the level speaks is in the voice script', () => {
+    const ids = ['shake', 'duck-ask', 'egg-ask', 'test-egg', 'test-duck', 'which', 'duck', 'egg', 'why', 'hide', 'right', 'wrong-egg', 'wrong-duck', 'hint-egg', 'hint-duck'];
+    for (const id of ids) expect(SCRIPT[`sink.salt-${id}` as LineId], id).toBeDefined();
   });
 });

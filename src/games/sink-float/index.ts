@@ -13,6 +13,7 @@ import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { drawClay, floatIcon, sameWeightIcon, sinkIcon, smallArt, thingArt } from './art';
 import { rangeFor } from '../../progress/difficulty';
+import { SaltTanks } from './salt';
 import { ALL_SHAPES, CLAY_SHAPES, floats, PAIRS, pairsFor, shapesFor, SINK_LEVELS, sinkPlan, thingsFor, thingWord, type ClayExperiment, type ClayShape, type PairKind, type SinkPlan, type Thing } from './logic';
 
 interface Item {
@@ -745,5 +746,5 @@ export const sinkFloat: GameModule = {
   hubIcon: () => new WigglyIcon(tankArt()),
   touchDemo: true,
   sticker: (seed) => tankArt(seed),
-  create: (ctx) => new SinkFloat(ctx),
+  create: (ctx) => (sinkPlan(ctx.level).mode === 'salt' ? new SaltTanks(ctx) : new SinkFloat(ctx)),
 };
