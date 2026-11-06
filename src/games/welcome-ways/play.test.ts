@@ -43,4 +43,16 @@ describe('Welcome Ways input and parade lifecycle',()=>{
     for(let n=0;n<35&&!g.finished;n++){await settle();const intent=g.autotouch();if(intent&&'tap'in intent)tap(intent.tap.on);}
     await settle();expect(g.finished).toBe(true);expect(ctx.finish).toHaveBeenCalledWith({misses:0,hints:0});if(level>=3)expect(g.tries).toBe(2);g.destroy();
   });
+  it.each([[5,2],[6,3],[7,3]])('the demonstration bot completes level %i with %i tries, showing each stop first',async(level,tries)=>{
+    const {g,ctx,tap,settle}=make(level,true);
+    for(let n=0;n<40&&!g.finished;n++){await settle();const intent=g.autotouch();if(intent&&'tap'in intent)tap(intent.tap.on);}
+    await settle();expect(g.finished).toBe(true);expect(ctx.finish).toHaveBeenCalledWith({misses:0,hints:0});expect(g.tries).toBe(tries);
+    if(level===7)expect(g.round.design.sides).toEqual(['perch','rail']);g.destroy();
+  });
+  it('speaks the stop and hint lines by part and socket kind at levels 5 to 7',async()=>{
+    const {g,ctx,tap,settle}=make(5);for(const i of [0,2]){tap(g.trays.get('gentle')!);tap(g.slots[i]);}tap(g.tryButton);await settle();
+    expect(g.stopSocket).toBe(1);expect(ctx.say).toHaveBeenCalledWith('ww.big');g.askForHint();expect(ctx.say).toHaveBeenCalledWith('ww.hintBig');g.destroy();
+    const six=make(6);for(const [part,i] of [['rail',3],['rail',4],['gentle',0],['gentle',1]] as const){six.tap(six.g.trays.get(part)!);six.tap(six.g.slots[i]);}six.tap(six.g.tryButton);await six.settle();
+    expect(six.g.stopSocket).toBe(4);expect(six.ctx.say).toHaveBeenCalledWith('ww.perchRail');six.g.askForHint();expect(six.ctx.say).toHaveBeenCalledWith('ww.hintPerch');six.g.destroy();
+  });
 });
