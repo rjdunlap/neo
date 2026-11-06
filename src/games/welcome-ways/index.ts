@@ -10,20 +10,25 @@ import type { View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { compatible, copy, evaluate, parts, planFor, presentation, repair, Round, type Part, type Repair, type Result, type Visitor } from './logic';
+import { compatible, copy, doorAt, evaluate, parts, planFor, presentation, repair, Round, type Part, type Repair, type Result, type Visitor } from './logic';
 import { layout, type Box } from './layout';
-const LEVELS: BandLevels = { toddler:{min:1,max:2},preschool:{min:1,max:3},prek:{min:2,max:4},school:{min:3,max:4} };
-const names: Record<Part,string>={gentle:'Ramp',step:'Step',narrow:'Narrow door',wide:'Wide door'};
-const lines: Record<Part,LineId>={gentle:'ww.partRamp',step:'ww.partStep',narrow:'ww.partNarrow',wide:'ww.partWide'};
+const LEVELS: BandLevels = { toddler:{min:1,max:2},preschool:{min:1,max:3},prek:{min:2,max:4},school:{min:3,max:7} };
+const names: Record<Part,string>={gentle:'Ramp',step:'Step',narrow:'Narrow door',wide:'Wide door',small:'Small',big:'Big',rail:'Rail',perch:'Perch'};
+const lines: Record<Part,LineId>={gentle:'ww.partRamp',step:'ww.partStep',narrow:'ww.partNarrow',wide:'ww.partWide',small:'ww.partSmall',big:'ww.partBig',rail:'ww.partRail',perch:'ww.partPerch'};
+const visitorNames: Record<Visitor,string>={roly:'Roly',bunny:'Bunny',bear:'Bear',teeter:'Teeter',duck:'Duck'};
 function label(text:string,y:number,size=23) { const t=new Text({text,style:{fontFamily:'Nunito, sans-serif',fontSize:size,fontWeight:'800',fill:ink,align:'center'}}); t.anchor.set(.5); t.y=y; t.eventMode='none'; return t; }
 function partArt(part:Part, width=112, rise=44):Graphics {
   const g=new Graphics(); g.eventMode='none';
   if(part==='gentle') g.poly([-width/2,rise/2,width/2,-rise/2,width/2,rise/2]).fill(wood.fill).stroke({width:5,color:wood.line,join:'round'});
   else if(part==='step') g.rect(-width/2,-rise/2,width,rise).fill(wood.fill).stroke({width:5,color:wood.line});
+  else if(part==='small') g.rect(-width/4,-9,width/2,18).fill(wood.fill).stroke({width:5,color:wood.line}).moveTo(-width/4+8,9).lineTo(-width/4+8,rise).moveTo(width/4-8,9).lineTo(width/4-8,rise).stroke({width:5,color:wood.line});
+  else if(part==='big') g.rect(-width/2,-14,width,28).fill(wood.fill).stroke({width:5,color:wood.line}).moveTo(0,-14).lineTo(0,14).moveTo(-width/2+8,14).lineTo(-width/2+8,rise).moveTo(width/2-8,14).lineTo(width/2-8,rise).stroke({width:5,color:wood.line});
+  else if(part==='rail') g.moveTo(-width/2+6,rise/2).lineTo(-width/2+6,-rise/2).moveTo(0,rise/2).lineTo(0,-rise/4).moveTo(width/2-6,rise/2).lineTo(width/2-6,-rise/2).moveTo(-width/2,-rise/2+4).lineTo(width/2,-rise/2-4).stroke({width:7,color:wood.line,cap:'round'});
+  else if(part==='perch') g.rect(-width/2,-6,width,12).fill(wood.fill).stroke({width:4,color:wood.line}).moveTo(-width/4,6).lineTo(0,rise/2).stroke({width:6,color:wood.line,cap:'round'}).circle(width/2-10,-14,7).fill(wood.line);
   else { const aperture=part==='wide'?96:50; g.roundRect(-60,-48,120,96,12).fill(wood.fill).stroke({width:4,color:wood.line}); g.rect(-aperture/2,-38,aperture,86).fill(ink); }
   return g;
 }
-function visitor(kind:Visitor):Critter { const c=new Critter(kind==='roly'?{color:'teal',ears:'none',belly:true}:CRITTERS[kind]); c.scale.set(kind==='bear'?.4:.29,kind==='bear'?.34:.29); c.eventMode='none'; return c; }
+function visitor(kind:Visitor):Critter { const c=new Critter(kind==='roly'?{color:'teal',ears:'none',belly:true}:kind==='teeter'?CRITTERS.pig:CRITTERS[kind]); c.scale.set(kind==='bear'?.4:kind==='teeter'?.22:.29,kind==='bear'?.34:kind==='teeter'?.22:.29); c.eventMode='none'; return c; }
 class Pad extends Container {
   readonly face=new Container();
   readonly rim=new Graphics();
@@ -64,16 +69,17 @@ export class WelcomeWays implements Game {
   private run:{ result:Result; snapshot:ReturnType<typeof copy>; elapsed:number; duration:number; end:number; phase:'walk'|'pause'|'finish' }|null=null;
   private boxes:ReturnType<typeof layout>;
   private demonstrated=false;
+  private lastTried='';
   private clock=0;
   constructor(private ctx:GameContext) {
-    this.plan=planFor(ctx.level); this.round=new Round(this.plan); this.choices=presentation(this.plan,ctx.rng); this.boxes=layout(ctx.view,this.plan.rises,this.choices.length,this.plan.visitors.length);
+    this.plan=planFor(ctx.level); this.round=new Round(this.plan); this.choices=presentation(this.plan,ctx.rng); this.boxes=this.layoutFor(ctx.view);
     ctx.stage.addChild(this.root); this.root.addChild(this.scenery,this.boardArt);
     this.scenery.eventMode='static'; this.scenery.hitArea=new Rectangle(0,0,ctx.view.w,ctx.view.h);
     onTap(this.scenery,()=>{ if(!this.busy) { this.selectedPart=null;this.selectedSocket=null;this.draw(); } });
-    for(let i=0;i<=this.plan.rises;i++) { const slot=new Pad(i===this.plan.rises?144:160,i===this.plan.rises?200:160,'',()=>this.tapSocket(i),false); this.slots.push(slot); this.root.addChild(slot); }
+    this.boxes.sockets.forEach((b,i)=>{ const slot=new Pad(b.w,b.h,'',()=>this.tapSocket(i),false); this.slots.push(slot); this.root.addChild(slot); });
     for(const part of this.choices) {
-      const pad=new Pad(144,144,'',()=>{}); pad.removeAllListeners();
-      const art=partArt(part); art.y=-12; pad.face.addChild(art,label(names[part],51,21)); this.root.addChild(pad); this.trays.set(part,pad);
+      const size=this.boxes.tray[0].w,pad=new Pad(size,size,'',()=>{}); pad.removeAllListeners();
+      const art=partArt(part,size-32,size*.3); art.y=-12; pad.face.addChild(art,label(names[part],size*.354,21)); this.root.addChild(pad); this.trays.set(part,pad);
       const handle=draggable(pad,ctx.tw,{
         onPick:()=>{this.cancelled=false;this.selectedPart=part;this.selectedSocket=null;void ctx.say(lines[part]);this.draw();},
         onDrop:(x,y)=>{
@@ -87,11 +93,11 @@ export class WelcomeWays implements Game {
       }); this.handles.push(handle);
     }
     this.plan.visitors.forEach(kind=>{
-      const card=new Pad(144,144,'',()=>{if(!this.busy) void ctx.say(`ww.${kind}`);});
-      const toy=visitor(kind);toy.position.set(0,33);card.face.addChild(toy,label(kind==='roly'?'Roly':kind==='bunny'?'Bunny':'Bear',57,20));
-      // Need pictograms remain visible without reading or colour: ramp, step+ramp, wide aperture.
-      const need=partArt(kind==='bear'?'wide':'gentle',55,22); need.scale.set(.35);need.position.set(45,-43);card.face.addChild(need);
-      if(kind==='bunny'){const step=partArt('step',55,22);step.scale.set(.35);step.position.set(22,-43);card.face.addChild(step);}
+      const size=this.boxes.visitors[0].w,card=new Pad(size,size,'',()=>{if(!this.busy) void ctx.say(kind==='bear'&&this.plan.level===5?'ww.bear5':`ww.${kind}`);});
+      const toy=visitor(kind);toy.position.set(0,size*.23);card.face.addChild(toy,label(visitorNames[kind],size*.4,20));
+      // Need pictograms remain visible without reading or colour: ramp, step+ramp, wide aperture, big landing, rail, perch.
+      const needs:Part[]=kind==='bear'?(this.plan.level===5?['big','wide']:['wide']):kind==='bunny'?['step','gentle']:kind==='teeter'?['rail']:kind==='duck'?['perch']:['gentle'];
+      needs.forEach((p,n)=>{const need=partArt(p,55,22);need.scale.set(.35);need.position.set(size*.31-(needs.length-1-n)*(p==='big'?40:23),-size*.3);card.face.addChild(need);});
       this.visitors.push(card);this.root.addChild(card);
       const actor=ctx.track(visitor(kind));this.actors.push(actor);this.root.addChild(actor);
       const wave=new Graphics().moveTo(0,0).lineTo(12,-20).stroke({width:9,color:actor.sw.line,cap:'round'}).circle(12,-22,8).fill(actor.sw.fill);wave.eventMode='none';wave.visible=false;this.waves.push(wave);this.root.addChild(wave);
@@ -107,40 +113,72 @@ export class WelcomeWays implements Game {
     this.resize(ctx.view);this.draw();
   }
   private cancelDrag=()=>{this.cancelled=true;};
-  start(){void this.ctx.instruct((['ww.one','ww.two','ww.three','ww.four'] as const)[this.plan.level-1]);}
+  start(){void this.ctx.instruct((['ww.one','ww.two','ww.three','ww.four','ww.five','ww.six','ww.seven'] as const)[this.plan.level-1]);}
+  private layoutFor(view:View){return layout(view,this.plan.rises,this.choices.length,this.plan.visitors.length,this.plan.level);}
+  private editable(socket:number){return this.plan.sockets[socket]!=='door'||this.plan.doorEditable;}
   private clearEvidence(){this.suggestion=null;this.stopSocket=null;this.actors.forEach(a=>a.visible=false);this.waves.forEach(a=>a.visible=false);}
   private edit(socket:number,part:Part|null){ if(this.busy||this.destroyed)return; if(this.round.edit(socket,part)){this.clearEvidence();sfx.pluck(3,.15);} this.selectedSocket=socket;this.selectedPart=null;this.draw(); }
   private tapSocket(socket:number){
     if(this.busy||this.destroyed)return;
     if(this.selectedPart&&compatible(this.plan,socket,this.selectedPart)) this.edit(socket,this.selectedPart);
-    else {this.selectedSocket=socket;this.selectedPart=null; if(parts(this.round.design)[socket]&&(socket<this.plan.rises||this.plan.doorEditable)) void this.ctx.say('ww.remove');this.draw();}
+    else {this.selectedSocket=socket;this.selectedPart=null; if(parts(this.round.design)[socket]&&this.editable(socket)) void this.ctx.say('ww.remove');this.draw();}
   }
   hintLabel='Show me';
   askForHint(){if(this.busy||this.finished||this.destroyed)return;this.showSuggestion(this.round.help());}
-  private showSuggestion(r:Repair|null){this.suggestion=r;this.draw();void this.ctx.say(!r?'ww.ready':r.part==='gentle'?'ww.hintRamp':'ww.hintDoor');}
+  private showSuggestion(r:Repair|null){
+    this.suggestion=r;this.draw();
+    const swap=r?.part==='gentle'&&this.plan.level>=5&&parts(this.round.design)[r.socket]==='step';
+    void this.ctx.say(!r?'ww.ready':swap?'ww.hintSwap':({gentle:'ww.hintRamp',big:'ww.hintBig',rail:'ww.hintRail',perch:'ww.hintPerch'} as Partial<Record<Part,LineId>>)[r.part]??'ww.hintDoor');
+  }
   try(){
     if(this.busy||this.finished||this.destroyed||this.handles.some(h=>h.dragging))return;
     this.clearEvidence();this.selectedPart=null;this.selectedSocket=null;this.busy=true;this.tries++;void this.ctx.say('ww.try');
     this.handles.forEach(h=>h.enabled=false);
-    const snapshot=copy(this.round.design),result=evaluate(this.plan,snapshot);
+    const snapshot=copy(this.round.design),result=evaluate(this.plan,snapshot);this.lastTried=parts(snapshot).join();
     const count=result.stop?result.arrived.length+1:this.plan.visitors.length;
     this.run={snapshot,result,elapsed:0,duration:1.6*count,end:count,phase:'walk'};
     this.draw();this.positionActors();
   }
   private positionActors(){
     const run=this.run;if(!run)return;
-    const l=this.boxes;const start=l.sockets[0].x-155;const ground=l.boardY+70;
+    const l=this.boxes,stop=run.result.stop,n=this.plan.visitors.length;
     this.actors.forEach((actor,i)=>{
       const t=Math.max(0,Math.min(1,(run.elapsed-i*1.6)/1.6));actor.visible=i<run.end&&run.elapsed>=i*1.6;
-      const stopped=run.result.stop&&i===run.result.arrived.length;
-      const end=stopped?l.sockets[run.result.stop!.socket].x-(run.result.stop!.socket===this.plan.rises?65:75):l.left+865+i*27;
-      const x=start+(end-start)*t;let rise=0;
-      run.snapshot.rises.forEach((part,j)=>{const left=l.sockets[j].x-80; if(x>=left)rise+=part==='gentle'?44*Math.min(1,(x-left)/160):part==='step'?44:0;});
-      const kind=this.plan.visitors[i];const motion=t>0&&t<1?(kind==='bunny'?-Math.abs(Math.sin(t*Math.PI*5))*24:Math.sin(t*Math.PI*8)*3):0;
+      const stopped=!!stop&&i===run.result.arrived.length;
+      const kind=this.plan.visitors[i];
+      const home={x:l.left+(n>2?845+i*55:875+i*75),y:l.doorBase-62};
+      let x:number,y:number;
+      if(kind==='duck'){
+        // Duck flies over the run; with no perch it circles above the side that needs one.
+        const from={x:l.sockets[0].x-155,y:l.doorBase-150},to=stopped?{x:l.sockets[stop!.socket].x,y:l.doorBase-150}:home;
+        x=from.x+(to.x-from.x)*t;y=from.y+(to.y-from.y)*t+Math.sin(this.clock*9)*6;
+        if(stopped&&t===1){x+=Math.cos(this.clock*3)*40;y+=Math.sin(this.clock*3)*16;}
+      } else if(this.plan.level===5) ({x,y}=this.switchback(t,stopped?stop!:null));
+      else {
+        const start=l.sockets[0].x-155;
+        // Teeter climbs the first ramp and wobbles where the second begins.
+        const end=!stopped?l.left+865+i*27:stop!.reason==='needsRail'?l.sockets[1].x-70:l.sockets[stop!.socket].x-(stop!.socket===doorAt(this.plan)?65:75);
+        x=start+(end-start)*t;let rise=0;
+        run.snapshot.rises.forEach((part,j)=>{const left=l.sockets[j].x-80; if(x>=left)rise+=part==='gentle'?44*Math.min(1,(x-left)/160):part==='step'?44:0;});
+        y=l.ground-rise;
+      }
+      const motion=t>0&&t<1&&kind!=='duck'?(kind==='bunny'?-Math.abs(Math.sin(t*Math.PI*5))*24:Math.sin(t*Math.PI*8)*3):0;
       const inWindow=t===1&&!stopped;
-      actor.position.set(inWindow?l.left+875+i*75:x,inWindow?ground-44*this.plan.rises-62:ground-rise+motion);
+      actor.position.set(inWindow?home.x:x,inWindow?home.y:y+motion);
+      actor.rotation=kind==='teeter'&&actor.visible&&!inWindow?(stopped&&t===1?Math.sin(this.clock*9)*.25:Math.sin(t*Math.PI*10)*.08):0;
       const wave=this.waves[i];wave.visible=actor.visible&&inWindow;wave.position.set(actor.x+28,actor.y-30);wave.rotation=Math.sin(this.clock*7)*.3;
     });
+  }
+  /** Level 5: up the lower ramp, onto the landing, turn, up the upper ramp to the door. */
+  private switchback(t:number,stop:{socket:number;reason:string}|null){
+    const l=this.boxes,[low,turn,up,door]=l.sockets,G=l.ground;
+    const pts=[{x:low.x+230,y:G},{x:low.x+80,y:G},{x:low.x-80,y:G-100},{x:turn.x+30,y:G-100},{x:up.x-80,y:G-100},{x:up.x+80,y:G-200},{x:door.x-40,y:G-200}];
+    // A stopped friend walks only to where the blocking socket begins; Bear walks onto the small landing.
+    const last=!stop?pts.length-1:stop.socket===1?(stop.reason==='needsBig'?3:2):[1,3,4,6][stop.socket];
+    const legs=pts.slice(0,last+1);let total=0;for(let k=1;k<legs.length;k++)total+=Math.hypot(legs[k].x-legs[k-1].x,legs[k].y-legs[k-1].y);
+    let left=t*total;
+    for(let k=1;k<legs.length;k++){const a=legs[k-1],b=legs[k],d=Math.hypot(b.x-a.x,b.y-a.y);if(left<=d||k===legs.length-1){const f=d?Math.min(1,left/d):1;return{x:a.x+(b.x-a.x)*f,y:a.y+(b.y-a.y)*f};}left-=d;}
+    return legs[legs.length-1];
   }
   update(dt:number){
     if(this.destroyed)return;this.clock+=dt;
@@ -152,8 +190,10 @@ export class WelcomeWays implements Game {
       if(run.elapsed>=run.duration){
         if(run.result.stop){run.phase='pause';this.stopSocket=run.result.stop.socket;sfx.boing();this.draw();
           const reason=run.result.stop.reason;
-          void this.ctx.say(({gap:'ww.gap',needsRamp:'ww.ramp',needsDoor:'ww.door',needsWide:'ww.wide'} as const)[reason]).then(()=>{if(!this.destroyed&&this.run===run)run.phase='finish';});
-        } else {run.phase='pause';sfx.bell(7,.2);void this.ctx.say('ww.done').then(()=>{if(!this.destroyed&&this.run===run)run.phase='finish';});}
+          const sides=run.snapshot.sides??[],turn=this.plan.sockets[run.result.stop.socket]==='turn';
+          const line:LineId=reason==='gap'&&turn?'ww.corner':reason==='needsPerch'&&sides.every(x=>x==='rail')?'ww.perchRail':({gap:'ww.gap',needsRamp:'ww.ramp',needsDoor:'ww.door',needsWide:'ww.wide',needsBig:'ww.big',needsRail:'ww.rail',needsPerch:'ww.perch'} as const)[reason];
+          void this.ctx.say(line).then(()=>{if(!this.destroyed&&this.run===run)run.phase='finish';});
+        } else {run.phase='pause';sfx.bell(7,.2);const kept=this.plan.level===7&&run.snapshot.sides?.[0]==='perch';void this.ctx.say('ww.done').then(()=>kept&&!this.destroyed&&this.run===run?this.ctx.say('ww.kept'):undefined).then(()=>{if(!this.destroyed&&this.run===run)run.phase='finish';});}
       }
     }
     this.positionActors();
@@ -165,39 +205,63 @@ export class WelcomeWays implements Game {
   }
   private draw(){
     const l=this.boxes;this.boardArt.clear();this.boardArt.eventMode='none';
-    const ground=l.boardY+70,doorBase=ground-44*this.plan.rises;
+    const ground=l.ground,doorBase=l.doorBase,five=this.plan.level===5;
     this.boardArt.roundRect(l.left+690,doorBase-182,315,182,14).fill(swatch.yellow.light).stroke({width:5,color:wood.line});
     this.boardArt.roundRect(l.left+810,doorBase-175,190,105,10).fill(swatch.blue.fill).stroke({width:5,color:wood.line});
     this.boardArt.poly([l.left+670,doorBase-180,l.left+845,doorBase-265,l.left+1020,doorBase-180]).fill(swatch.orange.fill).stroke({width:5,color:wood.line});
     // The frame stays at the final height; a landing connects the last rise to it.
-    const end=l.sockets[this.plan.rises-1].x+80;
+    const lastRise=this.plan.sockets.lastIndexOf('rise'),end=l.sockets[lastRise].x+80;
     this.boardArt.rect(end,doorBase,l.left+950-end,12).fill(wood.fill);
+    // Level 5: the pond fills the ground below the landing, so the path turns.
+    if(five) this.boardArt.ellipse(l.sockets[1].x+20,ground+14,190,24).fill(swatch.blue.fill).stroke({width:4,color:swatch.blue.line}).rect(l.sockets[1].x+80,l.sockets[1].y,80,14).fill(wood.fill).stroke({width:4,color:wood.line});
+    let rise=-1;
     this.slots.forEach((slot,i)=>{
       for(const c of slot.face.removeChildren())c.destroy();
-      const part=parts(this.round.design)[i];
-      if(i<this.plan.rises){
+      const part=parts(this.round.design)[i],kind=this.plan.sockets[i];
+      const area=(x:number,y:number,w:number,h:number)=>{const a=new Graphics().rect(x,y,w,h).fill({color:swatch.blue.light,alpha:.35}).stroke({width:2,color:swatch.blue.line});a.eventMode='none';slot.face.addChild(a);};
+      if(kind==='rise'&&five){
+        // Each switchback ramp climbs 100 across its 160 × 100 socket: the lower one to the left, the upper one to the right.
+        rise++;area(-80,-50,160,100);
+        if(part){const g=new Graphics();g.eventMode='none';
+          if(part==='gentle')g.poly([-80,50,80,-50,80,50]);else g.rect(-80,0,80,50).rect(0,-50,80,100);
+          g.fill(wood.fill).stroke({width:5,color:wood.line,join:'round'});g.scale.x=rise===0?-1:1;slot.face.addChild(g);}
+        else slot.face.addChild(label('+',0,38));
+      }else if(kind==='rise'){
         // Remove the flat card fill: wood geometry itself carries the rise; dotted cells show the footprint.
-        const y=ground-44*i-slot.y;
-        const area=new Graphics().rect(-80,y-88,160,88).fill({color:swatch.blue.light,alpha:.35}).stroke({width:2,color:swatch.blue.line});area.eventMode='none';slot.face.addChild(area);
+        rise++;const y=ground-44*rise-slot.y;area(-80,y-88,160,88);
         if(part){const art=partArt(part,160,44);art.y=y-22;slot.face.addChild(art);}
         else slot.face.addChild(label('+',y-38,38));
-      }else{
+      }else if(kind==='turn'){
+        // A fixed deck joins both ramp tops to the socket's right edge; the landing fills one cell, or both when big.
+        area(-80,-80,160,160);
+        if(part){const g=new Graphics();g.eventMode='none';const x0=part==='big'?-80:0,deep=part==='big'?30:16;
+          g.rect(x0,0,80-x0,deep).fill(wood.fill).stroke({width:5,color:wood.line});
+          if(part==='big')g.moveTo(0,0).lineTo(0,deep).stroke({width:3,color:wood.line});
+          g.moveTo(x0+12,deep).lineTo(x0+12,100).moveTo(68,deep).lineTo(68,100).stroke({width:6,color:wood.line});slot.face.addChild(g);}
+        else slot.face.addChild(label('+',-30,38));
+      }else if(kind==='door'){
         const y=doorBase-slot.y; const frame=new Graphics().roundRect(-64,y-128,128,128,10).fill(wood.light).stroke({width:4,color:wood.line});frame.eventMode='none';slot.face.addChild(frame);
         if(part){const opening=new Graphics().rect(part==='wide'?-55:-25,y-120,part==='wide'?110:50,120).fill(ink);opening.eventMode='none';slot.face.addChild(opening);}
         else slot.face.addChild(label('+',y-60,38));
+      }else{
+        // A side strip runs along the whole ramp run: a rail along it, or a perch at its door end.
+        area(-160,-50,320,100);
+        if(part==='rail'){const art=partArt('rail',300,60);slot.face.addChild(art);}
+        else if(part==='perch'){const art=partArt('perch',90,50);art.x=105;slot.face.addChild(art);}
+        else slot.face.addChild(label('+',0,38));
       }
       slot.outline((this.plan.level===1&&i===0&&!this.round.design.rises[0])||this.selectedSocket===i||this.suggestion?.socket===i||this.stopSocket===i,this.stopSocket===i?swatch.orange.fill:swatch.yellow.fill);
       slot.alpha=this.selectedPart&&!compatible(this.plan,i,this.selectedPart)?.5:1;
       if(this.selectedPart&&compatible(this.plan,i,this.selectedPart))slot.outline(true,swatch.teal.line);
     });
     for(const [part,pad] of this.trays)pad.outline(this.selectedPart===part||this.suggestion?.part===part);
-    this.removeButton.visible=this.selectedSocket!==null&&!!parts(this.round.design)[this.selectedSocket]&&(this.selectedSocket<this.plan.rises||this.plan.doorEditable);
+    this.removeButton.visible=this.selectedSocket!==null&&!!parts(this.round.design)[this.selectedSocket]&&this.editable(this.selectedSocket);
     this.undoButton.visible=!!this.round.previous;
   }
   resize(view:View){
     // End a held drag without applying it; its old parent coordinates no longer describe a drop.
     this.cancelled=true;
-    this.boxes=layout(view,this.plan.rises,this.choices.length,this.plan.visitors.length);const l=this.boxes;
+    this.boxes=this.layoutFor(view);const l=this.boxes;
     this.scenery.clear().rect(0,0,view.w,view.h).fill(swatch.blue.light).rect(0,l.boardY+82,view.w,view.h-l.boardY-82).fill(grass);this.scenery.hitArea=new Rectangle(0,0,view.w,view.h);
     const place=(obj:Container,b:Box)=>obj.position.set(b.x,b.y);
     this.slots.forEach((s,i)=>place(s,l.sockets[i]));this.choices.forEach((part,i)=>{const pad=this.trays.get(part)!;this.ctx.tw.kill(pad);place(pad,l.tray[i]);Object.assign(this.handles[i].home,{x:pad.x,y:pad.y});});
@@ -214,7 +278,10 @@ export class WelcomeWays implements Game {
       }
       this.demonstrated=true;
     }
-    const next=repair(this.plan,this.round.design);return next?this.botPlace(next):{tap:{on:this.tryButton}};
+    const next=repair(this.plan,this.round.design);
+    // Levels 5–7 demonstrate the evidence: Try before each landing or side part (and first, at 7), so a friend shows why.
+    if(this.ctx.demo&&this.plan.level>=5&&next&&this.selectedPart!==next.part&&this.lastTried!==parts(this.round.design).join()&&(this.plan.sockets[next.socket]!=='rise'||(this.plan.level===7&&this.tries===0)))return {tap:{on:this.tryButton}};
+    return next?this.botPlace(next):{tap:{on:this.tryButton}};
   }
   private botPlace(r:Repair):TouchIntent{ return this.selectedPart===r.part?{tap:{on:this.slots[r.socket]}}:{tap:{on:this.trays.get(r.part)!}}; }
   destroy(){this.destroyed=true;this.run=null;window.removeEventListener('pointercancel',this.cancelDrag,true);window.removeEventListener('blur',this.cancelDrag);this.handles.forEach(h=>h.destroy());this.actors.forEach(a=>this.ctx.untrack(a));}
@@ -222,7 +289,7 @@ export class WelcomeWays implements Game {
 function emblem(){const c=new Container();c.addChild(new Graphics().poly([-75,0,-75,-60,75,-110,75,0]).fill(wood.fill).stroke({width:6,color:wood.line}));return c;}
 export const welcomeWays:GameModule={
   id:'welcome-ways',name:'Welcome Ways',titleLine:'ww.title',region:'tinker-lab',challenge:'space',skills:['engineering design','testing and revision','considering different needs'],bands:['toddler','preschool','prek','school'],levels:band=>rangeFor(LEVELS,band),
-  describeLevel:level=>['Place a ramp for Roly','Try a step or a ramp','One entrance for Bunny and Roly','Two ramps and a wide door for Roly and Bear'][planFor(level).level-1],music:STYLES.quiet,touchDemo:true,
+  describeLevel:level=>['Place a ramp for Roly','Try a step or a ramp','One entrance for Bunny and Roly','Two ramps and a wide door for Roly and Bear','Turn at the pond: ramps and a big landing for Roly and Bear','A rail and a perch: one entrance for Roly, Teeter and Duck','Fix it for Roly: change a working entrance for a new friend'][planFor(level).level-1],music:STYLES.quiet,touchDemo:true,
   coplayHint:'Voice a visitor’s pictured need while {name} builds, then swap.',
   offScreen:'For preschool and older: with large toy blocks, make an entrance for two toys that move differently. Let each toy try it.',
   hubIcon:()=>new WigglyIcon(emblem()),sticker:()=>emblem(),create:ctx=>new WelcomeWays(ctx),
