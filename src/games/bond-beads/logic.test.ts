@@ -6,6 +6,7 @@ import {
   Bench, BEAD_GAP, BEAD_REACH, BUTTON_R, CARDS, CARD_MIN_H, CheckTally, HANDS, LINK_REACH, MID_GAP, PAIR, PLANS, PUZZLES, PUZZLE_PAIRS, SETS, TRAYS, TRIO,
   allHeld, beadAt, beadLayout, buildKey, canLink, canon, centre, corners, degrees, enumerate, helpFor, joinShapes, linkAt, linkId, linkState, nextMove,
   norm, overlaps, requestKey, roundFor, rotateTray, shapeKey, spaced, stepCard, tally, type Kind, type Link,
+  AMMONIA, CARBON_DIOXIDE, HYDROGEN, METHANE, NAMED, NAMED_SHAPES, OXYGEN, WATER, enumerateBuilds, linkCount, namesOf,
 } from './logic';
 
 const k = (s: string) => s.split('') as Kind[];
@@ -214,9 +215,9 @@ describe('roundFor', () => {
   });
 
   it('is the same for the same seed, and every level in the plans produces a round', () => {
-    for (const lv of [1, 2, 3, 4]) expect(roundFor(lv, new Rng(42)), `level ${lv}`).toEqual(roundFor(lv, new Rng(42)));
-    expect(PLANS.map((p) => p.level)).toEqual([1, 2, 3, 4]);
-    for (const p of PLANS) expect(roundFor(p.level, new Rng(5)), `level ${p.level}`).toHaveLength(p.level === 1 ? 3 : 2);
+    for (const lv of [1, 2, 3, 4, 5, 6]) expect(roundFor(lv, new Rng(42)), `level ${lv}`).toEqual(roundFor(lv, new Rng(42)));
+    expect(PLANS.map((p) => p.level)).toEqual([1, 2, 3, 4, 5, 6]);
+    for (const p of PLANS) expect(roundFor(p.level, new Rng(5)), `level ${p.level}`).toHaveLength(p.rounds);
   });
 });
 
@@ -361,9 +362,9 @@ function reachable(bench: Bench, cap = 20000): Link[][] {
     const cur = queue[qi];
     const add = (next: Link[]) => { const kk = key(next); if (!seen.has(kk)) { seen.set(kk, next); queue.push(next); } };
     for (let a = 0; a < n; a++) for (let b = a + 1; b < n; b++) {
-      if (canLink(bench.kinds, cur, a, b)) add([...cur, norm(a, b)]);
+      if (canLink(bench.kinds, cur, a, b, bench.doubles)) add([...cur, norm(a, b)]);
     }
-    for (const l of cur) add(cur.filter((x) => x !== l));
+    cur.forEach((_, i) => add(cur.filter((__, j) => j !== i)));
   }
   return [...seen.values()];
 }
@@ -393,7 +394,7 @@ describe('help', () => {
         } else {
           expect(canLink(bench.kinds, links, h!.link[0], h!.link[1])).toBe(true);
           expect(inSol(h!.link)).toBe(true);
-          expect(h!.link).toContain(h!.bead);
+          if (h!.kind !== 'double') expect(h!.link).toContain(h!.bead);
         }
       }
     }
@@ -435,7 +436,7 @@ describe('help', () => {
         } else {
           expect(has(links, h!.link), id).toBe(false);
           expect(has(near, h!.link), id).toBe(true);
-          expect(h!.link).toContain(h!.bead);
+          if (h!.kind !== 'double') expect(h!.link).toContain(h!.bead);
         }
       }
     }
@@ -544,7 +545,7 @@ describe('beadLayout', () => {
     notch: computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
   };
   for (const [name, v] of Object.entries(views)) {
-    for (const n of [3, 4, 5, 6, 7]) for (const cardShapes of [0, 1, 2]) {
+    for (const n of [2, 3, 4, 5, 6, 7]) for (const cardShapes of [0, 1, 2]) {
       const withCard = cardShapes > 0;
       it(`${name}: ${n} beads ${cardShapes} card shape(s) fit and stay clear`, () => {
         const lay = beadLayout(v, n, cardShapes);
@@ -617,10 +618,194 @@ describe('tap targets', () => {
 });
 
 describe('voice', () => {
-  it('uses none of the words the definition keeps out of levels 1-2', () => {
-    const ids = Object.keys(SCRIPT).filter((id) => id.startsWith('bondbeads.') || id === 'game.bond-beads');
+  it('uses none of the words the definition keeps out of levels 1-4 (named lines aside)', () => {
+    const ids = Object.keys(SCRIPT).filter((id) => (id.startsWith('bondbeads.') && !id.startsWith('bondbeads.named.')) || id === 'game.bond-beads');
     expect(ids.length).toBeGreaterThan(5);
     const banned = /atom|molecule|water|methane|peroxide|oxygen|hydrogen|carbon|chemical/i;
     for (const id of ids) for (const line of (SCRIPT as Record<string, readonly string[]>)[id]) expect(line, id).not.toMatch(banned);
+  });
+});
+
+describe('voice: named lines (levels 5-6)', () => {
+  const named = Object.keys(SCRIPT).filter((id) => id.startsWith('bondbeads.named.'));
+  const lines = (id: string) => (SCRIPT as Record<string, readonly string[]>)[id];
+
+  it('has a line for every named shape, and only the six names ever appear', () => {
+    for (const s of NAMED_SHAPES) expect(named, s.id).toContain(`bondbeads.named.${s.id}`);
+    const names = /\b(water|ammonia|methane|hydrogen|oxygen|carbon dioxide)\b/gi;
+    const otherNames = /peroxide|methanol|nitrogen|ozone|acid|alcohol|molecule|chemical/i;
+    for (const id of named) for (const line of lines(id)) {
+      expect(line, id).not.toMatch(otherNames);
+      const found = [...line.matchAll(names)].map((m) => m[1].toLowerCase().replace(' ', '-'));
+      // A shape's line names only that shape; the other lines name nothing.
+      const own = NAMED_SHAPES.find((s) => id === `bondbeads.named.${s.id}`);
+      expect(found.every((n) => own && n === own.id), `${id}: ${line}`).toBe(true);
+    }
+  });
+
+  it('never says burn, fire, flame, explode or electric', () => {
+    for (const id of named) for (const line of lines(id)) expect(line, id).not.toMatch(/burn|fire|flame|explo|electric|spark|heat/i);
+  });
+});
+
+describe('levels 5-6: named shapes and double holds', () => {
+  const both = (kinds: string) => enumerateBuilds(k(kinds), { doubles: true });
+
+  it('the six named shapes match the source table: beads, hands and links', () => {
+    expect(NAMED.size).toBe(6);
+    const want: Record<string, { kinds: string; links: number }> = {
+      water: { kinds: 'O1H2', links: 2 }, ammonia: { kinds: 'N1H3', links: 3 }, methane: { kinds: 'C1H4', links: 4 },
+      hydrogen: { kinds: 'H2', links: 1 }, oxygen: { kinds: 'O2', links: 2 }, 'carbon-dioxide': { kinds: 'C1O2', links: 4 },
+    };
+    for (const s of NAMED_SHAPES) {
+      expect(tally(s.kinds).map((t) => `${t.kind}${t.count}`).join(''), s.id).toBe(want[s.id].kinds);
+      expect(s.links, s.id).toHaveLength(want[s.id].links);
+      expect(allHeld(s.kinds, s.links), s.id).toBe(true);
+      expect(s.pic, s.id).toHaveLength(s.kinds.length);
+      expect(NAMED.get(shapeKey(s))).toBe(s.id);
+    }
+    expect(linkCount(OXYGEN.links, 0, 1)).toBe(2);
+    expect(linkCount(CARBON_DIOXIDE.links, 0, 1)).toBe(2);
+    expect(linkCount(CARBON_DIOXIDE.links, 1, 2)).toBe(2);
+  });
+
+  it('never names H–O–O–H or the C–O shape with four H', () => {
+    expect(NAMED.has(shapeKey(CARDS[0]))).toBe(false);
+    const coh4 = { kinds: k('COHHHH'), links: [norm(0, 1), norm(1, 2), norm(0, 3), norm(0, 4), norm(0, 5)] };
+    expect(allHeld(coh4.kinds, coh4.links)).toBe(true);
+    expect(NAMED.has(buildKey(coh4.kinds, coh4.links))).toBe(false);
+    expect(namesOf([CARDS[0]])).toEqual([]);
+    expect(namesOf([HYDROGEN, OXYGEN])).toEqual(['hydrogen', 'oxygen']);
+  });
+
+  it('enumerates the levels 5-8 table, and doubles off leaves levels 1-4 alone', () => {
+    expect(enumerateBuilds(k('OHH'))).toEqual([shapeKey(WATER)]);
+    expect(enumerateBuilds(k('NHHH'))).toEqual([shapeKey(AMMONIA)]);
+    expect(enumerateBuilds(k('CHHHH'))).toEqual([shapeKey(METHANE)]);
+    expect(enumerateBuilds(k('OO'))).toEqual([]);
+    expect(both('OO')).toEqual([shapeKey(OXYGEN)]);
+    expect(both('COO')).toEqual([shapeKey(CARBON_DIOXIDE)]);
+    expect(both('OOHH')).toEqual([shapeKey(CARDS[0]), requestKey([HYDROGEN, OXYGEN])].sort());
+    expect(both('OOHHHH')).toHaveLength(3);
+    expect(both('OOHHHH')).toContain(requestKey([WATER, WATER]));
+    expect(both('OOHHHH')).toContain(requestKey([HYDROGEN, HYDROGEN, OXYGEN]));
+    const big = both('COOOOHHHH');
+    expect(big).toContain(requestKey([CARBON_DIOXIDE, WATER, WATER]));
+    expect(big).toContain(requestKey([METHANE, OXYGEN, OXYGEN]));
+    // Without doubles the one-piece shapes of levels 1-4 are as before.
+    for (const kinds of ['HOH', 'OOO', 'HOOH', 'OOOO', 'CHHHH', 'CHHOO']) expect(enumerate(k(kinds)), kinds).toEqual(enumerate(k(kinds), { doubles: false }));
+  });
+
+  it('level 5: water first, then ammonia and methane in seeded order, no doubles; level 6: oxygen, carbon dioxide, hydrogen and oxygen', () => {
+    const orders = new Set<string>();
+    for (const seed of SEEDS) {
+      const r5 = roundFor(5, new Rng(seed));
+      expect(r5.map((s) => s.requests![0][0].id).slice(0, 1)).toEqual(['water']);
+      orders.add(r5.map((s) => s.requests![0][0].id).join(','));
+      for (const s of r5) {
+        expect(s.doubles).toBe(false);
+        expect(s.opening).toEqual([]);
+        expect(tally(s.kinds)).toEqual(tally(joinShapes(s.requests![0]).kinds));
+      }
+      const r6 = roundFor(6, new Rng(seed));
+      expect(r6.map((s) => s.requests![0].map((x) => x.id).join('+'))).toEqual(['oxygen', 'carbon-dioxide', 'hydrogen+oxygen']);
+      for (const s of r6) {
+        expect(s.doubles).toBe(true);
+        expect(tally(s.kinds)).toEqual(tally(joinShapes(s.requests![0]).kinds));
+      }
+    }
+    expect([...orders].sort()).toEqual(['water,ammonia,methane', 'water,methane,ammonia']);
+    expect(PLANS.map((p) => p.level)).toEqual([1, 2, 3, 4, 5, 6]);
+  });
+
+  const steps = [...roundFor(5, new Rng(1)), ...roundFor(6, new Rng(1))];
+  const benches = () => steps.map((s) => ({ id: s.requests![0].map((x) => x.id).join('+'), bench: new Bench(s.kinds, s.requests, s.opening, s.doubles) }));
+
+  it('a double needs a free hand on each bead, one tap removes one link, and no triple hold', () => {
+    const b = new Bench(k('OCO'), [[CARBON_DIOXIDE]], [], true);
+    expect(b.link(0, 1)).toBe(true);
+    expect(b.link(0, 1)).toBe(true);
+    expect(b.link(0, 1)).toBe(false);
+    expect(linkCount(b.links, 0, 1)).toBe(2);
+    expect(b.unlink(0, 1)).toBe(true);
+    expect(linkCount(b.links, 0, 1)).toBe(1);
+    b.link(0, 1); b.link(1, 2); b.link(1, 2);
+    expect(b.done).toBe(true);
+    // Hydrogen has one hand: no double on an H.
+    const h = new Bench(k('HH'), [[HYDROGEN]], [], true);
+    expect(h.link(0, 1)).toBe(true);
+    expect(h.link(0, 1)).toBe(false);
+    // Without doubles (level 5 and below) the second link slides back.
+    const single = new Bench(k('OO'), null);
+    expect(single.link(0, 1)).toBe(true);
+    expect(single.link(0, 1)).toBe(false);
+    expect(canLink(k('OO'), [norm(0, 1)], 0, 1)).toBe(false);
+    expect(canLink(k('OO'), [norm(0, 1)], 0, 1, true)).toBe(true);
+  });
+
+  it('every card is solvable, not done at the start, and every solution uses every bead', () => {
+    for (const { id, bench } of benches()) {
+      expect(bench.solutions.length, id).toBeGreaterThan(0);
+      expect(bench.done, id).toBe(false);
+      for (const sol of bench.solutions) expect(allHeld(bench.kinds, sol), id).toBe(true);
+    }
+  });
+
+  it('the hint names a link or bead the nearest accepted build changes, in every reachable state', () => {
+    for (const { id, bench } of benches()) {
+      for (const links of reachable(bench)) {
+        bench.links = links;
+        const h = helpFor(bench);
+        if (bench.done) { expect(h, id).toBeNull(); continue; }
+        expect(h, `${id} ${bench.state}`).not.toBeNull();
+        const near = bench.nearest();
+        const have = linkCount(links, h!.link[0], h!.link[1]);
+        const want = linkCount(near, h!.link[0], h!.link[1]);
+        if (h!.kind === 'break') expect(have, id).toBeGreaterThan(want);
+        else {
+          expect(have, id).toBeLessThan(want);
+          expect(canLink(bench.kinds, links, h!.link[0], h!.link[1], bench.doubles), id).toBe(true);
+          if (h!.kind === 'double') expect(have, id).toBe(1);
+          else expect(h!.link).toContain(h!.bead);
+        }
+      }
+    }
+  });
+
+  it('following nextMove reaches the card from every reachable state', () => {
+    for (const { id, bench } of benches()) {
+      for (const start of reachable(bench)) {
+        bench.links = start.slice();
+        expect(followToCheck(bench), id).toBeLessThanOrEqual(2 * bench.kinds.length + 4);
+        expect(bench.done, `${id} from ${linkListKey(start)}`).toBe(true);
+      }
+    }
+  });
+
+  it('O2H2 at level 6: H–O–O–H holds every hand but is not the card', () => {
+    const b = new Bench(k('OOHH'), [[HYDROGEN, OXYGEN]], [], true);
+    b.link(0, 1); b.link(0, 2); b.link(1, 3);
+    expect(allHeld(b.kinds, b.links)).toBe(true);
+    expect(b.done).toBe(false);
+    expect(helpFor(b)?.kind).toBe('break');
+  });
+
+  it('keeps the tally and never overfills a hand over 500 random action sequences with doubles', () => {
+    const rng = new Rng(77);
+    for (let run = 0; run < 500; run++) {
+      const { bench: b } = rng.pick(benches());
+      const kinds = b.kinds.slice();
+      const n = kinds.length;
+      for (let i = 0; i < 25; i++) {
+        const r = rng.next();
+        if (r < 0.55) b.link(rng.int(0, n - 1), rng.int(0, n - 1));
+        else if (r < 0.8) b.unlink(rng.int(0, n - 1), rng.int(0, n - 1));
+        else if (r < 0.95) b.undo();
+        else b.startAgain();
+        expect(tally(b.kinds)).toEqual(tally(kinds));
+        degrees(n, b.links).forEach((x, j) => expect(x).toBeLessThanOrEqual(HANDS[kinds[j]]));
+        for (const [x, y] of b.links) expect(linkCount(b.links, x, y)).toBeLessThanOrEqual(2);
+      }
+    }
   });
 });

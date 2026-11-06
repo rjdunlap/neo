@@ -128,7 +128,7 @@ Device and person checks stay open: whether a school-age child reads the nubs as
 
 ## Levels 5–8 (definition)
 
-Defined 2026-11-06 from the study's [ladder](../deep-dives/subjects/chemistry.md#a-first-games-ladder-bond-beads) and [model](../deep-dives/subjects/chemistry.md#the-model-stated-once). **Not built.** Levels 5–8 sit at the top of `school` (the study's M rungs, about 11–14; decided 2026-10-23). They add, in order: real names from a checked list and the word "atom" (5), a fourth bead kind N (5), double holds (6), and a reaction shown as rearrangement with the tally as proof (7–8). The fun action stays the same: link, break, rebuild until the tray empties.
+Defined 2026-11-06 from the study's [ladder](../deep-dives/subjects/chemistry.md#a-first-games-ladder-bond-beads) and [model](../deep-dives/subjects/chemistry.md#the-model-stated-once). **Levels 5–6 built 2026-11-06 ([PR #1317](https://github.com/rjdunlap/neo/pull/1317)); levels 7–8 not built.** Levels 5–8 sit at the top of `school` (the study's M rungs, about 11–14; decided 2026-10-23). They add, in order: real names from a checked list and the word "atom" (5), a fourth bead kind N (5), double holds (6), and a reaction shown as rearrangement with the tally as proof (7–8). The fun action stays the same: link, break, rebuild until the tray empties.
 
 ### Source check (this session, 2026-11-06)
 

@@ -126,5 +126,71 @@ async function bondBeadsPlay() {
   log('Bond Beads 1–4: drag link, tap break, Undo, Start again, tap-tap link, trays held; two misses, repeat Check ignored, glow hint, cards matched; level 3 opening shapes, miss, Start again, rebuilt; level 4 seven beads, miss, hint, portrait, first shape faded, both ways passed');
 }
 
-return { bondBeadsPlay };
+/** Bond Beads 5–6: level 5 with a wrong Check and Show a hint (1/1), the N bead on the board; level 6 with a double hold made by two carries and halved by one tap, a portrait screenshot of the carbon dioxide card, then all three cards (0/0). */
+async function bondBeadsNamedPlay() {
+  const score = () => page.evaluate(() => { const r = kit.store.stats('bond-beads').history.at(-1); return [r.misses, r.hints]; });
+  const tally = () => page.evaluate(() => [neo.scene.game.tally.misses, neo.scene.game.tally.hints]);
+  const links = () => page.evaluate(() => neo.scene.game.bench.links.length);
+  const settle = async () => { await page.waitForTimeout(250); await page.waitForFunction(() => neo.scene.finished || !neo.scene.game.busy, null, { timeout: 25000 }); await page.waitForTimeout(250); };
+  const carry = (a, b) => page.evaluate(async ([a, b]) => { const g = neo.scene.game; await kit.dragTo(g.beadNodes[a], g.beadNodes[b].getGlobalPosition()); }, [a, b]);
+  const auto = () => page.evaluate(async () => {
+    const g = neo.scene.game; const t = g.autotouch(0);
+    if (!t) return;
+    if ('drag' in t) await kit.dragTo(t.drag.on, t.to.on.getGlobalPosition());
+    else if (t.tap.on === g.linkLayer) { const p = g.linkLayer.toGlobal({ x: t.tap.x, y: t.tap.y }); kit.tap(p.x, p.y); }
+    else kit.tapOn(t.tap.on);
+  });
+  const playOut = async () => {
+    for (let i = 0; i < 60; i++) {
+      await settle();
+      if (await page.evaluate(() => neo.scene.finished || neo.scene.game.finished)) return;
+      await auto();
+    }
+  };
+  await page.evaluate(() => { kit.store.data.settings.howToCards = false; });
+
+  await launch('bond-beads', 5);
+  await settle();
+  assert.equal(await page.evaluate(() => neo.scene.game.steps[0].requests[0][0].id), 'water', 'level 5 opens with water');
+  assert.ok(await page.evaluate(() => neo.scene.game.steps.some((s) => s.kinds.includes('N'))), 'level 5 brings the N bead');
+  const pair = await page.evaluate(async () => {
+    const { canLink } = await import('/src/games/bond-beads/logic.ts');
+    const b = neo.scene.game.bench;
+    for (let i = 0; i < b.kinds.length; i++) for (let j = i + 1; j < b.kinds.length; j++) if (canLink(b.kinds, b.links, i, j)) return [i, j];
+    return null;
+  });
+  await carry(pair[0], pair[1]); await settle();
+  await page.evaluate(() => kit.tapOn(neo.scene.game.checkButton)); await settle();
+  assert.deepEqual(await tally(), [1, 0], 'a Check with a free hand is one miss');
+  await page.evaluate(() => neo.scene.game.askForHint()); await settle();
+  assert.deepEqual(await tally(), [1, 1], 'Show a hint counts one hint');
+  await playOut();
+  await finished('bond-beads');
+  assert.deepEqual(await score(), [1, 1]);
+
+  await launch('bond-beads', 6);
+  await settle();
+  assert.equal(await page.evaluate(() => neo.scene.game.bench.kinds.join('')), 'OO', 'level 6 opens with two O beads');
+  await carry(0, 1); await settle();
+  await carry(1, 0); await settle();
+  assert.equal(await links(), 2, 'carrying onto a linked O adds the second link of a double hold');
+  await page.evaluate(() => {
+    const g = neo.scene.game; const p = g.layoutNow.beads;
+    const at = g.linkLayer.toGlobal({ x: (p[0].x + p[1].x) / 2, y: (p[0].y + p[1].y) / 2 }); kit.tap(at.x, at.y);
+  }); await settle();
+  assert.equal(await links(), 1, 'one tap breaks one link of the double');
+  for (let i = 0; i < 30 && (await page.evaluate(() => neo.scene.game.index)) < 1; i++) { await settle(); await auto(); }
+  await settle();
+  assert.equal(await page.evaluate(() => neo.scene.game.steps[neo.scene.game.index].requests[0][0].id), 'carbon-dioxide', 'the second card is carbon dioxide');
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(900);
+  await carry(0, 1); await settle();
+  await screenshot('bond-beads-6-carbon-dioxide-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(500);
+  await playOut();
+  await finished('bond-beads');
+  assert.deepEqual(await score(), [0, 0]);
+  log('Bond Beads 5–6: water first, N bead, miss, hint (1/1); oxygen double by two carries, one tap halves it, carbon dioxide portrait, three cards (0/0)');
+}
+
+return { bondBeadsPlay, bondBeadsNamedPlay };
 }

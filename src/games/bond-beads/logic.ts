@@ -5,13 +5,16 @@ import type { View } from '../../engine/view';
  * Bond Beads: round beads with little hands, linked hand to hand. A toy model only: levels 1–4 name no substance and say
  * nothing about real ones (definition: docs/definitions/bond-beads.md).
  */
-export type Kind = 'C' | 'O' | 'H';
-/** How many hands each kind of bead has. */
-export const HANDS: Record<Kind, number> = { C: 4, O: 2, H: 1 };
+export type Kind = 'C' | 'N' | 'O' | 'H';
+/** How many hands each kind of bead has (N joins at level 5). */
+export const HANDS: Record<Kind, number> = { C: 4, N: 3, O: 2, H: 1 };
 /** The order kinds are listed in a tally and a canonical key. */
-export const KIND_ORDER: readonly Kind[] = ['C', 'O', 'H'];
+export const KIND_ORDER: readonly Kind[] = ['C', 'N', 'O', 'H'];
 
-/** A link joins one free hand on each of two beads; stored with the lower bead first. */
+/**
+ * A link joins one free hand on each of two beads; stored with the lower bead first. From level 6 a pair may hold two
+ * links (a double hold), so a build's links are a multiset: the same pair listed twice.
+ */
 export type Link = readonly [number, number];
 
 export const norm = (a: number, b: number): Link => (a < b ? [a, b] : [b, a]);
@@ -29,18 +32,36 @@ export function freeHands(kinds: readonly Kind[], links: readonly Link[], i: num
 }
 
 export const linked = (links: readonly Link[], a: number, b: number) => links.some((l) => sameLink(l, a, b));
+/** How many links join this pair: 0, 1, or 2 for a double hold. */
+export const linkCount = (links: readonly Link[], a: number, b: number) => links.filter((l) => sameLink(l, a, b)).length;
 
-/** One link per pair, never a bead to itself, and both beads need a free hand. */
-export function canLink(kinds: readonly Kind[], links: readonly Link[], a: number, b: number): boolean {
-  if (a === b || a < 0 || b < 0 || a >= kinds.length || b >= kinds.length || linked(links, a, b)) return false;
+/**
+ * One link per pair (two with `doubles`, levels 6 and up), never a bead to itself, and both beads need a free hand.
+ * There is never a triple hold.
+ */
+export function canLink(kinds: readonly Kind[], links: readonly Link[], a: number, b: number, doubles = false): boolean {
+  if (a === b || a < 0 || b < 0 || a >= kinds.length || b >= kinds.length) return false;
+  if (linkCount(links, a, b) >= (doubles ? 2 : 1)) return false;
   const d = degrees(kinds.length, links);
   return d[a] < HANDS[kinds[a]] && d[b] < HANDS[kinds[b]];
 }
 
 /** Whether any link can still be made. */
-export function anyLink(kinds: readonly Kind[], links: readonly Link[]): boolean {
-  for (let a = 0; a < kinds.length; a++) for (let b = a + 1; b < kinds.length; b++) if (canLink(kinds, links, a, b)) return true;
+export function anyLink(kinds: readonly Kind[], links: readonly Link[], doubles = false): boolean {
+  for (let a = 0; a < kinds.length; a++) for (let b = a + 1; b < kinds.length; b++) if (canLink(kinds, links, a, b, doubles)) return true;
   return false;
+}
+
+/** The links in `a` that `b` does not have, counting a double as two (a multiset difference). */
+export function linksMissing(a: readonly Link[], b: readonly Link[]): Link[] {
+  const rest = b.slice();
+  const out: Link[] = [];
+  for (const l of a) {
+    const i = rest.findIndex((r) => sameLink(r, l[0], l[1]));
+    if (i >= 0) rest.splice(i, 1);
+    else out.push(l);
+  }
+  return out;
 }
 
 /** The pieces on the table: groups of beads joined by links (a lone bead is a piece of one). */
@@ -81,8 +102,8 @@ function permutations(items: number[]): number[][] {
 }
 
 /**
- * A piece's canonical key: its kinds in tally order, then the smallest adjacency over every relabelling of beads of the
- * same kind. Where beads are drawn and which H is which never change it.
+ * A piece's canonical key: its kinds in tally order, then the smallest adjacency (links per pair, 0 to 2) over every
+ * relabelling of beads of the same kind. Where beads are drawn and which H is which never change it.
  */
 export function canon(kinds: readonly Kind[], links: readonly Link[], members: readonly number[] = kinds.map((_, i) => i)): string {
   const groups = KIND_ORDER.map((k) => members.filter((i) => kinds[i] === k));
@@ -95,7 +116,7 @@ export function canon(kinds: readonly Kind[], links: readonly Link[], members: r
   let best: string | null = null;
   for (const order of orders) {
     let bits = '';
-    for (let i = 0; i < order.length; i++) for (let j = i + 1; j < order.length; j++) bits += linked(links, order[i], order[j]) ? '1' : '0';
+    for (let i = 0; i < order.length; i++) for (let j = i + 1; j < order.length; j++) bits += String(linkCount(links, order[i], order[j]));
     if (best === null || bits < best) best = bits;
   }
   return `${kindsPart}:${best}`;
@@ -106,8 +127,8 @@ export function buildKey(kinds: readonly Kind[], links: readonly Link[]): string
   return pieces(kinds.length, links).map((p) => canon(kinds, links, p)).sort().join('+');
 }
 
-/** Every finished labelled build of these beads (all hands held, single links) that `accept` takes. */
-export function labelledBuilds(kinds: readonly Kind[], accept: (links: Link[]) => boolean): Link[][] {
+/** Every finished labelled build of these beads (all hands held; single links, or up to doubles) that `accept` takes. */
+export function labelledBuilds(kinds: readonly Kind[], accept: (links: Link[]) => boolean, doubles = false): Link[][] {
   const n = kinds.length;
   const pairs: Link[] = [];
   for (let a = 0; a < n; a++) for (let b = a + 1; b < n; b++) pairs.push([a, b]);
@@ -121,21 +142,31 @@ export function labelledBuilds(kinds: readonly Kind[], accept: (links: Link[]) =
     }
     if (k >= pairs.length) return;
     const [a, b] = pairs[k];
-    if (d[a] < HANDS[kinds[a]] && d[b] < HANDS[kinds[b]]) {
-      d[a]++; d[b]++; chosen.push(pairs[k]);
+    const most = doubles ? 2 : 1;
+    // This pair taken as many times as hands allow (up to `most`), then fewer, then not at all.
+    const take = (n: number) => {
+      if (n < most && d[a] < HANDS[kinds[a]] && d[b] < HANDS[kinds[b]]) {
+        d[a]++; d[b]++; chosen.push(pairs[k]);
+        take(n + 1);
+        d[a]--; d[b]--; chosen.pop();
+      }
       walk(k + 1);
-      d[a]--; d[b]--; chosen.pop();
-    }
-    walk(k + 1);
+    };
+    take(0);
   };
   walk(0);
   return out;
 }
 
-/** The distinct shapes these beads make as one piece with every hand held. */
-export function enumerate(kinds: readonly Kind[]): string[] {
-  const keys = new Set(labelledBuilds(kinds, (links) => pieces(kinds.length, links).length === 1).map((l) => buildKey(kinds, l)));
+/** The distinct shapes these beads make as one piece with every hand held (`doubles` from level 6). */
+export function enumerate(kinds: readonly Kind[], opts: { doubles?: boolean } = {}): string[] {
+  const keys = new Set(labelledBuilds(kinds, (links) => pieces(kinds.length, links).length === 1, opts.doubles).map((l) => buildKey(kinds, l)));
   return [...keys].sort();
+}
+
+/** The distinct builds of every bead into any number of pieces, every hand held (the levels 5–8 table). */
+export function enumerateBuilds(kinds: readonly Kind[], opts: { doubles?: boolean } = {}): string[] {
+  return [...new Set(labelledBuilds(kinds, () => true, opts.doubles).map((l) => buildKey(kinds, l)))].sort();
 }
 
 /** A pictured shape: its beads, its links and where each bead sits on the card (unit spacing). */
@@ -171,6 +202,23 @@ export const CARDS: Shape[] = [
 /** The small pieces levels 3–4 take apart and build: a pair of H, and the H–O–H trio. */
 export const PAIR: Shape = { id: 'pair', kinds: k('HH'), links: L([0, 1]), pic: [{ x: -0.5, y: 0 }, { x: 0.5, y: 0 }] };
 export const TRIO: Shape = { id: 'trio', kinds: k('HOH'), links: L([0, 1], [1, 2]), pic: [{ x: -1, y: 0.3 }, { x: 0, y: -0.3 }, { x: 1, y: 0.3 }] };
+
+/**
+ * Levels 5–6: the six named shapes, checked against PubChem's records (definition: source check). A double hold is the
+ * same pair listed twice. Nothing else is ever named: H–O–O–H and the C–O shape with four H stay puzzle shapes.
+ */
+export const WATER: Shape = { ...TRIO, id: 'water' };
+export const AMMONIA: Shape = { id: 'ammonia', kinds: k('NHHH'), links: L([0, 1], [0, 2], [0, 3]), pic: [{ x: 0, y: -0.15 }, { x: -1, y: 0.55 }, { x: 0, y: 1 }, { x: 1, y: 0.55 }] };
+export const METHANE: Shape = { ...CARDS[1], id: 'methane' };
+export const HYDROGEN: Shape = { ...PAIR, id: 'hydrogen' };
+export const OXYGEN: Shape = { id: 'oxygen', kinds: k('OO'), links: L([0, 1], [0, 1]), pic: [{ x: -0.7, y: 0 }, { x: 0.7, y: 0 }] };
+export const CARBON_DIOXIDE: Shape = { id: 'carbon-dioxide', kinds: k('OCO'), links: L([0, 1], [0, 1], [1, 2], [1, 2]), pic: [{ x: -1.35, y: 0 }, { x: 0, y: 0 }, { x: 1.35, y: 0 }] };
+
+/** The named shapes by build key; the name is the shape's id, which the voice line `bondbeads.named.<id>` says. */
+export const NAMED_SHAPES: readonly Shape[] = [WATER, AMMONIA, METHANE, HYDROGEN, OXYGEN, CARBON_DIOXIDE];
+export const NAMED = new Map<string, string>(NAMED_SHAPES.map((s) => [shapeKey(s), s.id]));
+/** The names a matched card says, piece by piece: only at levels 5 and up, and only for the card's own shapes. */
+export const namesOf = (shapes: readonly Shape[]): string[] => shapes.map((s) => NAMED.get(shapeKey(s))).filter((n): n is string => !!n);
 
 /** A request is a set of shapes that together use every bead; its key is the build key they make. */
 export const requestKey = (shapes: readonly Shape[]) => shapes.map(shapeKey).sort().join('+');
@@ -236,6 +284,8 @@ export const PLANS: Plan[] = [
   { level: 2, name: 'Copy the shape: two pictured cards, then Check', rounds: 2 },
   { level: 3, name: 'Take it apart, build two: two built shapes become the two on the card, every bead used', rounds: 2 },
   { level: 4, name: 'The same beads, two ways: build one pictured shape, then rearrange it into the other', rounds: 2 },
+  { level: 5, name: 'Build named shapes: water, ammonia, methane (N joins)', rounds: 3 },
+  { level: 6, name: 'Double holds: oxygen and carbon dioxide', rounds: 3 },
 ];
 
 export function planFor(level: number): Plan {
@@ -247,7 +297,7 @@ export function planFor(level: number): Plan {
  * card asks for: null at level 1 (any shape), one request at levels 2–3, and at level 4 two single-shape requests of
  * which either is accepted first and the other is then built from the same beads (`twoWays`).
  */
-export interface Step { kinds: Kind[]; opening: Link[]; requests: Shape[][] | null; twoWays: boolean }
+export interface Step { kinds: Kind[]; opening: Link[]; requests: Shape[][] | null; twoWays: boolean; doubles?: boolean }
 
 /** The card at level 2, when the step has exactly one single-shape request. */
 export const stepCard = (s: Step): Shape | null => (s.requests && s.requests.length === 1 && s.requests[0].length === 1 ? s.requests[0][0] : null);
@@ -263,10 +313,16 @@ export function rotateTray(kinds: readonly Kind[], links: readonly Link[], off: 
 
 /**
  * A round: level 1 three distinct trays, level 2 two distinct cards, level 3 the authored puzzle then the other pair in
- * either direction, level 4 both sets with the seven-bead set first; each level opens with its authored first.
+ * either direction, level 4 both sets with the seven-bead set first, level 5 water then ammonia and methane in either
+ * order, level 6 oxygen, carbon dioxide, then hydrogen and oxygen from the same four beads that also make H–O–O–H; each
+ * level opens with its authored first.
  */
 export function roundFor(level: number, rng: Rng): Step[] {
   const lv = planFor(level).level;
+  if (lv === 5 || lv === 6) {
+    const cards: Shape[][] = lv === 5 ? [[WATER], ...rng.shuffle([[AMMONIA], [METHANE]])] : [[OXYGEN], [CARBON_DIOXIDE], [HYDROGEN, OXYGEN]];
+    return cards.map((req) => ({ kinds: rng.shuffle(joinShapes(req).kinds), opening: [], requests: [req], twoWays: false, doubles: lv === 6 }));
+  }
   if (lv === 4) {
     return SETS.map((set) => ({ kinds: rng.shuffle(set.kinds.slice()), opening: [], requests: set.shapes.map((s) => [s]), twoWays: true }));
   }
@@ -298,10 +354,16 @@ export class Bench {
    * the requests (level 2 one shape, level 3 two shapes, level 4 either of two shapes). `opening` is where the tray
    * starts and where Start again returns to.
    */
-  constructor(readonly kinds: readonly Kind[], readonly requests: readonly Shape[][] | null, readonly opening: readonly Link[] = []) {
+  constructor(
+    readonly kinds: readonly Kind[],
+    readonly requests: readonly Shape[][] | null,
+    readonly opening: readonly Link[] = [],
+    /** Level 6 and up: a pair may hold two links. */
+    readonly doubles = false,
+  ) {
     this.links = opening.slice();
     this.targets = requests ? requests.map(requestKey) : null;
-    this.solutions = labelledBuilds(kinds, (links) => this.accepts(links));
+    this.solutions = labelledBuilds(kinds, (links) => this.accepts(links), doubles);
   }
 
   /** The request this finished build matches, or null. */
@@ -323,16 +385,18 @@ export class Bench {
   }
 
   link(a: number, b: number): boolean {
-    if (!canLink(this.kinds, this.links, a, b)) return false;
+    if (!canLink(this.kinds, this.links, a, b, this.doubles)) return false;
     this.history.push(this.links);
     this.links = [...this.links, norm(a, b)];
     return true;
   }
 
+  /** Breaks one link of the pair: a double becomes single. */
   unlink(a: number, b: number): boolean {
-    if (!linked(this.links, a, b)) return false;
+    const i = this.links.findIndex((l) => sameLink(l, a, b));
+    if (i < 0) return false;
     this.history.push(this.links);
-    this.links = this.links.filter((l) => !sameLink(l, a, b));
+    this.links = [...this.links.slice(0, i), ...this.links.slice(i + 1)];
     return true;
   }
 
@@ -360,7 +424,7 @@ export class Bench {
   }
 
   get stuck(): boolean {
-    return !this.done && !anyLink(this.kinds, this.links);
+    return !this.done && !anyLink(this.kinds, this.links, this.doubles);
   }
 
   /** The accepted build nearest to what is on the table (fewest links to break and make). */
@@ -368,8 +432,8 @@ export class Bench {
     let best = this.solutions[0];
     let bestCost = Infinity;
     for (const s of this.solutions) {
-      const extra = this.links.filter((l) => !linked(s, l[0], l[1])).length;
-      const missing = s.filter((l) => !linked(this.links, l[0], l[1])).length;
+      const extra = linksMissing(this.links, s).length;
+      const missing = linksMissing(s, this.links).length;
       if (extra + missing < bestCost) { bestCost = extra + missing; best = s; }
     }
     return best;
@@ -381,22 +445,26 @@ export const linkState = (links: readonly Link[]) => links.map(linkId).sort().jo
 /** What to look at next: a bead to link from (with the link it needs), or a link to break. */
 export type Help =
   | { kind: 'free' | 'left'; bead: number; link: Link }
+  | { kind: 'double'; link: Link }
   | { kind: 'break'; link: Link };
 
 /**
  * The next useful change toward the nearest accepted build. A link that can be made now comes first (named from a bead
- * that already holds a hand, else a bead left on its own); when none can be made, a link that is not in that build is
- * broken. Every help points at a bead or link the nearest accepted build changes. Null once the build is accepted.
+ * that already holds a hand, then a pair that needs its second link, then a bead left on its own); when none can be
+ * made, a link that is not in that build is broken. Every help points at a bead or link the nearest accepted build
+ * changes. Null once the build is accepted.
  */
 export function helpFor(bench: Bench): Help | null {
   if (bench.done || !bench.solutions.length) return null;
   const s = bench.nearest();
   const d = degrees(bench.kinds.length, bench.links);
-  const missing = s.filter((l) => !linked(bench.links, l[0], l[1]) && canLink(bench.kinds, bench.links, l[0], l[1]));
-  const extra = bench.links.filter((l) => !linked(s, l[0], l[1]));
-  // A free hand on a bead that is already in a piece, then a bead on its own.
-  for (const l of missing) for (const b of l) if (d[b] > 0) return { kind: 'free', bead: b, link: l };
-  for (const l of missing) return { kind: 'left', bead: d[l[0]] === 0 ? l[0] : l[1], link: l };
+  const missing = linksMissing(s, bench.links).filter((l) => canLink(bench.kinds, bench.links, l[0], l[1], bench.doubles));
+  const extra = linksMissing(bench.links, s);
+  const single = missing.filter((l) => !linked(bench.links, l[0], l[1]));
+  // A free hand on a bead that is already in a piece, then two beads that need another link, then a bead on its own.
+  for (const l of single) for (const b of l) if (d[b] > 0) return { kind: 'free', bead: b, link: l };
+  for (const l of missing) if (linked(bench.links, l[0], l[1])) return { kind: 'double', link: l };
+  for (const l of single) return { kind: 'left', bead: d[l[0]] === 0 ? l[0] : l[1], link: l };
   if (extra.length) return { kind: 'break', link: extra[0] };
   return null;
 }

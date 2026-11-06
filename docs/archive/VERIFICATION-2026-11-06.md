@@ -13,3 +13,10 @@
 - Ran (tested commit `0f0a23ed`, base `e93e08cf`; port 5286, Vite dev): `npm run typecheck`; `npx vitest run src/games/logic-grid src/content src/games/registry` 276 passed (logic-grid 66); `BROWSER_SUITE=logicgrid LOGICGRID_FROM=6` PASS (either-or-ruled-out yes 1 miss, Help 1 hint, 1024 x 768 and 768 x 1024 fit at least 96 units clear of the pet, bot to the sticker, 1/1 saved); `BROWSER_SUITE=fingerdemo FINGER_ONLY=logic-grid FINGER_LEVELS=6` PASS (31.1 s). The review's caption-overlap nit was fixed and re-played.
 - Not run: `npm run build` (no shared files or assets), plays of levels 1-5 (logic unchanged, tests guard their boards), the offline check, a real iPad.
 - Open: device speech of slotted either/neither clues ([DEVICE-CHECKS](../DEVICE-CHECKS.md#mystery-grid-level-6-2026-11-06)).
+
+## 2026-11-06 — Mystery Grid (logic-grid) level 7
+
+- [PR #1307](https://github.com/rjdunlap/neo/pull/1307): level 7 *Case file* (grown-up): three linked 4 x 4 blocks, written clue list, a 'link' step in the rule solver, `lg.*` voice lines, how-to step; `LOGICGRID_FROM=7`.
+- Ran (tested commit `6aed60f0`, base `c03bbc74`; port 5236, Vite dev): `npm run typecheck`; `npm test` (315 files, 5555 tests, 11 new level-7 rule tests, 80 in the game's file); `npm run build`; `BROWSER_SUITE=logicgrid LOGICGRID_FROM=7` PASS (48 cells, one ruled-out yes counted, one Help hint, landscape and portrait fit at least 64 units clear of the pet, bot to the sticker, saved 1 miss 1 hint); `BROWSER_SUITE=fingerdemo FINGER_ONLY=logic-grid` PASS (levels 1 and 7, 10.1 s and 22.3 s). game-reviewer found no defects.
+- Not run: level 8, the offline check, a real iPad. Note: landscape needs 1008 units across, so a side safe-area inset would push the clue column off the edge (not reachable at the 1024 minimum view).
+- Open: device speech of slotted written clues (person check).

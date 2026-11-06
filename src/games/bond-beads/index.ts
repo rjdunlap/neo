@@ -17,12 +17,12 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
 import { beadBody, beadTrio, cardArt, drawHands, drawLinks, LINK_COLOR, shapePicture, tableArt } from './art';
 import {
-  allHeld, BEAD_R, beadAt, beadLayout, Bench, canLink, centre, CheckTally, helpFor, linkAt, linked, nextMove, planFor, roundFor, shapeKey, tally,
+  allHeld, BEAD_R, beadAt, beadLayout, Bench, canLink, centre, CheckTally, helpFor, linkAt, linkCount, namesOf, nextMove, planFor, roundFor, shapeKey, tally,
   type BeadLayout, type Help, type Kind, type Link, type Plan, type Pt, type Shape, type Step,
 } from './logic';
 
 const LEVELS: BandLevels = {
-  school: { min: 1, max: 4 },
+  school: { min: 1, max: 6 },
 };
 
 /** The shapes a step's card pictures: one (level 2), the two to build (level 3), or the two ways (level 4). */
@@ -30,6 +30,9 @@ function cardShapes(s: Step): Shape[] {
   if (!s.requests) return [];
   return s.twoWays ? s.requests.map((r) => r[0]) : s.requests[0];
 }
+
+/** How far a double hold's two hands sit either side of the line between its beads, in radians (at its bars). */
+const DOUBLE_HAND = 0.29;
 
 /** Finger travel below this is a tap on a bead (select it, or link to the selected one), not a carry. */
 const PRESS_TRAVEL = 15;
@@ -89,13 +92,33 @@ class BondBeads implements Game {
       case 2: return 'bondbeads.instruct.copy';
       case 3: return 'bondbeads.instruct.rebuild';
       case 4: return 'bondbeads.instruct.twoways';
+      case 5: return 'bondbeads.named.instruct.name';
+      case 6: return 'bondbeads.named.instruct.double';
       default: return 'bondbeads.instruct.hold';
     }
   }
 
   start() {
-    this.openStep();
-    void this.ctx.instruct(this.instruction());
+    this.openStep(false);
+    void this.intro();
+  }
+
+  /** The instruction; at level 5 the word "atom" once; then (levels 5–6) the first card's name. */
+  private async intro() {
+    await this.ctx.instruct(this.instruction());
+    if (!this.alive || this.plan.level < 5) return;
+    if (this.plan.level === 5) await this.ctx.say('bondbeads.named.atoms');
+    if (this.alive) void this.sayNames();
+  }
+
+  /** Levels 5–6: the pet names the card's shapes and what each is made of. Nothing else is ever named. */
+  private async sayNames() {
+    if (this.plan.level < 5) return;
+    const index = this.index;
+    for (const name of namesOf(cardShapes(this.steps[index]))) {
+      if (!this.alive || index !== this.index || this.finished) return;
+      await this.ctx.say(`bondbeads.named.${name}` as LineId);
+    }
   }
 
   destroy() {
@@ -113,14 +136,15 @@ class BondBeads implements Game {
     this.build();
   }
 
-  private openStep() {
+  private openStep(announce = true) {
     const s = this.steps[this.index];
-    this.bench = new Bench(s.kinds, s.requests, s.opening);
+    this.bench = new Bench(s.kinds, s.requests, s.opening, s.doubles ?? false);
     this.first = null;
     this.tally.next();
     this.selected = null;
     this.wasStuck = false;
     this.build();
+    if (announce) void this.sayNames();
   }
 
   /** Every node of the board, rebuilt from the model. */
@@ -291,10 +315,18 @@ class BondBeads implements Game {
     this.linkGfx.clear();
     drawLinks(this.linkGfx, beads, this.bench.links);
     this.bench.kinds.forEach((kind, i) => {
-      const held = this.bench.links.filter((k) => k[0] === i || k[1] === i).map((k) => {
+      const held: number[] = [];
+      const seen = new Set<number>();
+      for (const k of this.bench.links) {
+        if (k[0] !== i && k[1] !== i) continue;
         const j = k[0] === i ? k[1] : k[0];
-        return Math.atan2(beads[j].y - beads[i].y, beads[j].x - beads[i].x);
-      });
+        if (seen.has(j)) continue;
+        seen.add(j);
+        const a = Math.atan2(beads[j].y - beads[i].y, beads[j].x - beads[i].x);
+        // A double hold's two hands sit either side of the line, at its two bars.
+        if (linkCount(this.bench.links, i, j) > 1) held.push(a - DOUBLE_HAND, a + DOUBLE_HAND);
+        else held.push(a);
+      }
       drawHands(this.hands[i], kind, BEAD_R, held);
       if (this.selected === i) this.hands[i].circle(0, 0, BEAD_R + 20).stroke({ width: 7, color: swatch.yellow.fill });
     });
@@ -341,8 +373,9 @@ class BondBeads implements Game {
 
   private tryLink(a: number, b: number) {
     this.selected = null;
-    if (!canLink(this.bench.kinds, this.bench.links, a, b)) {
-      if (!linked(this.bench.links, a, b)) void this.ctx.say('bondbeads.full');
+    if (!canLink(this.bench.kinds, this.bench.links, a, b, this.bench.doubles)) {
+      // A pair already holding all the links it can (one, or two from level 6) just wiggles; otherwise a hand is full.
+      if (linkCount(this.bench.links, a, b) < (this.bench.doubles ? 2 : 1)) void this.ctx.say('bondbeads.full');
       void this.wiggle(this.beadNodes[b]);
       return;
     }
@@ -413,20 +446,21 @@ class BondBeads implements Game {
     if (!h) return this.first ? 'bondbeads.other' : this.instruction();
     if (h.kind === 'free') return 'bondbeads.free';
     if (h.kind === 'left') return 'bondbeads.left';
+    if (h.kind === 'double') return 'bondbeads.named.double';
     return allHeld(this.bench.kinds, this.bench.links) ? 'bondbeads.notcard' : 'bondbeads.break';
   }
 
   /** Where a help points, on the board. */
   private helpAt(h: Help): Pt {
     const b = this.layoutNow!.beads;
-    if (h.kind === 'break') return { x: (b[h.link[0]].x + b[h.link[1]].x) / 2, y: (b[h.link[0]].y + b[h.link[1]].y) / 2 };
+    if (h.kind === 'break' || h.kind === 'double') return { x: (b[h.link[0]].x + b[h.link[1]].x) / 2, y: (b[h.link[0]].y + b[h.link[1]].y) / 2 };
     return b[h.bead];
   }
 
   private async pulse(h: Help) {
     if (!this.layoutNow) return;
     const at = this.helpAt(h);
-    const ring = new Graphics().circle(0, 0, h.kind === 'break' ? 34 : BEAD_R + 16).stroke({ width: 8, color: swatch.yellow.fill });
+    const ring = new Graphics().circle(0, 0, h.kind === 'break' || h.kind === 'double' ? 34 : BEAD_R + 16).stroke({ width: 8, color: swatch.yellow.fill });
     ring.eventMode = 'none';
     ring.position.set(at.x, at.y);
     this.board.addChild(ring);
@@ -486,7 +520,7 @@ class BondBeads implements Game {
       if (!this.alive || epoch !== this.epoch) return;
       this.first = made ? made[0] : null;
       const other = (s.requests ?? []).filter((r) => !made || r[0] !== made[0]);
-      this.bench = new Bench(s.kinds, other.length ? other : s.requests, this.bench.links);
+      this.bench = new Bench(s.kinds, other.length ? other : s.requests, this.bench.links, s.doubles ?? false);
       // The shape she just made is the last Check: pressing Check again before changing anything is not a miss.
       this.tally.next(this.bench.state);
       this.selected = null;
@@ -506,7 +540,7 @@ class BondBeads implements Game {
   /** What the pet says when a tray, card, puzzle or set is finished. */
   private stepLine(): LineId {
     switch (this.plan.level) {
-      case 2: return 'bondbeads.match';
+      case 2: case 5: case 6: return 'bondbeads.match';
       case 3: return 'bondbeads.rebuilt';
       case 4: return 'bondbeads.twoways';
       default: return 'bondbeads.held';
@@ -533,7 +567,7 @@ class BondBeads implements Game {
     this.glow.clear();
     if (!this.tally.glowing || !this.help || !this.layoutNow || this.busy) return;
     const at = this.helpAt(this.help);
-    const r = (this.help.kind === 'break' ? 34 : BEAD_R + 16) * (1 + 0.06 * Math.sin(this.clock * 5));
+    const r = (this.help.kind === 'break' || this.help.kind === 'double' ? 34 : BEAD_R + 16) * (1 + 0.06 * Math.sin(this.clock * 5));
     this.glow.circle(at.x, at.y, r).stroke({ width: 8, color: swatch.yellow.fill });
   }
 
