@@ -1649,7 +1649,7 @@ Proof: new-interaction tier: typecheck, unit tests including order, one play of 
 
 ### sudoku-garden 5: Cage beds
 
-- **`sudoku-garden`, level 10 A 6 by 6 bed with sums in the cages (dive slice 5)** (defined 2026-11-03; new interaction; grown-up): cages on `Puzzle`, cage-aware `search`, `cage-last` and `cage-sets`, `makeCageBed` (or its authored fallback), the dashed outlines, sum labels and moved marks, two hint lines, the instruction and the wrong-sum line; 9 by 9 cages are left out. [Dive](deep-dives/sudoku-garden.md#build-slices-in-order), [definition](deep-dives/sudoku-garden.md#cage-beds-level-10-definition-2026-11-03)
+- **`sudoku-garden`, level 10 A 6 by 6 bed with sums in the cages (dive slice 5)** (built 2026-11-05; new interaction; grown-up): cages on `Puzzle`, cage-aware `search`, `cage-last` and `cage-sets`, `makeCageBed` (or its authored fallback), the dashed outlines, sum labels and moved marks, two hint lines, the instruction and the wrong-sum line; 9 by 9 cages are left out. [Dive](deep-dives/sudoku-garden.md#build-slices-in-order), [definition](deep-dives/sudoku-garden.md#cage-beds-level-10-definition-2026-11-03)
 
 Files expected: `src/games/sudoku-garden/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
 
