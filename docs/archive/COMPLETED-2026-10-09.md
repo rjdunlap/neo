@@ -2561,7 +2561,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-03.md#2026-11-03--sink-or-floa
 
 ## Sink or Float, level 9 Big and small (batch sink-float 2, 2026-11-05)
 
-Branch `claude/sink-float-big-small`, PR #1261: [dive slice 2](../deep-dives/sink-float.md#build-slices-in-order). `SINK_PLANS` became a table keyed by level ID (1-7 and 9; 8 reserved for Garden Raft; `sinkPlan` falls to the nearest built ID below) and the bands moved to `order` (pre-K 4, 5, 9, 6; school 5, 6, 9, 7). Level 9 plays three seeded pairs (log and twig, rock and pebble, big and little ball): watch the big one, guess the small one, test it, always the material line. New twig and pebble art; the little ball reuses the ball. Guesses are never misses and nothing is filed in the journal. Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--sink-or-float-level-9-big-and-small-sink-float-batch-2).
+Branch `claude/sink-float-big-small`, PR #1261: [dive slice 2](../deep-dives/sink-float.md#build-slices-in-order). `SINK_PLANS` became a table keyed by level ID (1-7 and 9; 8 reserved for Garden Raft; `sinkPlan` falls to the nearest built ID below) and the bands moved to `order` (pre-K 4, 5, 9, 6; school 5, 6, 9, 7). Level 9 plays three seeded pairs (log and twig, rock and pebble, big and little ball): watch the big one, guess the small one, test it, always the material line. New twig and pebble art; the little ball reuses the ball. Guesses are never misses and nothing is filed in the journal. Checks are in [VERIFICATION](VERIFICATION-2026-11-05.md#2026-11-05--sink-or-float-level-9-big-and-small-sink-float-batch-2).
 
 ## Sudoku Garden, a 4 by 4 bed to start (batch sudoku-garden 1, 2026-11-03)
 
