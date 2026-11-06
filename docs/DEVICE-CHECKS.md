@@ -1044,3 +1044,8 @@ Performed on the built levels (PR #1043; [definition](definitions/water-road.md#
 
 - [ ] On an iPad, check that a lap child links her tap to the swelling halo, that a toddler keeps a light moving along its path with one finger, that a four-year-old reads the halo as brighter rather than bigger, that the stop-4 halo is visible in a lit room, the hint glide and pet clearance in both orientations, and how the iPad says "brighter, not bigger". Browser play establishes none of these.
 - [ ] Have an astronomy educator review the toy (the halo-size convention and "nearer looks brighter" for same lights); none is named yet. See also the Astronomy proposals line above.
+
+## Crossword levels 1-2 (2026-11-05)
+
+- [ ] On an iPad, listen to device speech of the letter names and the spelled non-words ("That spells ...") in the miss line.
+- [ ] Watch a four-year-old at level 1: does she see that one letter serves two words, and can she drag the tiles?
