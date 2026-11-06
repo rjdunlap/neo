@@ -36,11 +36,11 @@ function slotsFor(level: number, strips: readonly Strip[]): Slot[] {
   // Level 2 puts a sky piece (washing, rain) above a ground one; level 3 a zigzag above a wave (the kite's tail flies
   // above both); level 4 a circle top-right or a wheel on the right, clear of the loops.
   const at: Partial<Record<PieceId, Slot>> = {
-    ground: { x: 0.04, y: 0.74, w: 0.92, h: 0.1 }, washing: { x: 0.04, y: 0.14, w: 0.92, h: 0.1 }, road: { x: 0.04, y: 0.76, w: 0.92, h: 0.1 },
-    fence: { x: 0.12, y: 0.44, w: 0.76, h: 0.3 }, rain: { x: 0.12, y: 0.42, w: 0.76, h: 0.28 }, candles: { x: 0.3, y: 0.44, w: 0.4, h: 0.16 },
+    ground: { x: 0.04, y: 0.74, w: 0.92, h: 0.1 }, washing: { x: 0.04, y: 0.1, w: 0.92, h: 0.1 }, road: { x: 0.04, y: 0.76, w: 0.92, h: 0.1 },
+    fence: { x: 0.12, y: 0.44, w: 0.76, h: 0.3 }, rain: { x: 0.12, y: 0.46, w: 0.76, h: 0.26 }, candles: { x: 0.3, y: 0.44, w: 0.4, h: 0.16 },
     crown: { x: 0.2, y: 0.32, w: 0.6, h: 0.28 }, snake: { x: 0.04, y: 0.68, w: 0.92, h: 0.22 }, tail: { x: 0.3, y: 0.08, w: 0.62, h: 0.18 },
     sun: { x: 0.62, y: 0.06, w: 0.3, h: 0.3 }, balloon: { x: 0.64, y: 0.06, w: 0.24, h: 0.26 }, wheel: { x: 0.64, y: 0.32, w: 0.24, h: 0.24 },
-    sheep: { x: 0.04, y: 0.58, w: 0.92, h: 0.3 }, clouds: { x: 0.04, y: 0.08, w: 0.54, h: 0.2 }, smoke: { x: 0.14, y: 0.08, w: 0.46, h: 0.24 },
+    sheep: { x: 0.04, y: 0.58, w: 0.92, h: 0.3 }, clouds: { x: 0.04, y: 0.08, w: 0.54, h: 0.2 }, smoke: { x: 0.14, y: 0.08, w: 0.42, h: 0.24 },
     window: { x: 0.27, y: 0.6, w: 0.2, h: 0.2 }, house: { x: 0.14, y: 0.48, w: 0.46, h: 0.44 }, roof: { x: 0.08, y: 0.12, w: 0.58, h: 0.36 },
     ribbon: { x: 0.14, y: 0.44, w: 0.5, h: 0.44 }, present: { x: 0.14, y: 0.44, w: 0.5, h: 0.44 }, bow: { x: 0.29, y: 0.24, w: 0.2, h: 0.2 },
     mast: { x: 0.3, y: 0.12, w: 0.26, h: 0.5 }, cabin: { x: 0.14, y: 0.62, w: 0.56, h: 0.16 }, sail: { x: 0.45, y: 0.18, w: 0.2, h: 0.4 },
@@ -130,7 +130,7 @@ function drawPiece(g: Graphics, strip: Strip, paths: readonly Point[][], r: Rect
       const [[x0, y], [x1]] = ends(paths[0]);
       for (let x = x0 + 8; x < x1 - 14; x += 26) g.moveTo(x, y + r.h * 0.7 + 4).lineTo(x + 12, y + r.h * 0.7 + 4);
       g.stroke({ width: 3, color: 0xffffff, cap: 'round' });
-      const cx = x0 + (x1 - x0) * 0.4;
+      const cx = x0 + (x1 - x0) * 0.12;
       g.roundRect(cx - 22, y - 22, 44, 16, 6).fill(swatch.red.fill).stroke({ width: 2, color: swatch.red.line })
         .roundRect(cx - 12, y - 32, 22, 12, 4).fill(swatch.blue.light).stroke({ width: 2, color: swatch.red.line })
         .circle(cx - 12, y - 5, 6).circle(cx + 12, y - 5, 6).fill(ink);
@@ -138,7 +138,7 @@ function drawPiece(g: Graphics, strip: Strip, paths: readonly Point[][], r: Rect
     }
     case 'washing': {
       const [[x0, y0], [x1, y1]] = ends(paths[0]);
-      g.moveTo(x0, y0).lineTo(x0, y0 + 40).moveTo(x1, y1).lineTo(x1, y1 + 40).stroke({ width: 5, color: swatch.brown.line, cap: 'round' });
+      g.moveTo(x0, y0).lineTo(x0, y0 + 30).moveTo(x1, y1).lineTo(x1, y1 + 30).stroke({ width: 5, color: swatch.brown.line, cap: 'round' });
       line(paths[0], 3, swatch.brown.line);
       const socks = ['red', 'blue', 'yellow', 'pink', 'green'] as const;
       socks.forEach((c, i) => {
@@ -199,8 +199,8 @@ function drawPiece(g: Graphics, strip: Strip, paths: readonly Point[][], r: Rect
       break;
     }
     case 'candles': {
-      g.roundRect(r.x - r.w * 0.12, r.y + r.h, r.w * 1.24, r.h * 1.3, 8).fill(swatch.pink.fill).stroke({ width: 3, color: swatch.pink.line })
-        .rect(r.x - r.w * 0.12, r.y + r.h * 1.6, r.w * 1.24, 5).fill(0xffffff);
+      g.roundRect(r.x - r.w * 0.05, r.y + r.h, r.w * 1.1, r.h, 8).fill(swatch.pink.fill).stroke({ width: 3, color: swatch.pink.line })
+        .rect(r.x - r.w * 0.05, r.y + r.h * 1.45, r.w * 1.1, 5).fill(0xffffff);
       paths.forEach((p, i) => {
         line(p, 8, swatch[(['blue', 'yellow', 'green'] as const)[i % 3]].line);
         const [x, y] = f(p[0]);
