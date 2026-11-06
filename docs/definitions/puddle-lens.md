@@ -1,5 +1,7 @@
 # Puddle Lens, levels 1–4 (definition)
 
+**Levels 5–6 are defined below ([2026-11-05](#levels-56-definition-2026-11-05)), docs only; the build is the next slice.**
+
 Defined 2026-10-22 as slice 1 of the [cells-and-microbes study](../deep-dives/subjects/cells-microbes.md#build-slices-in-order), from its [proposed ladder](../deep-dives/subjects/cells-microbes.md#a-first-games-ladder-puddle-lens) and the [recommendation row](../deep-dives/subjects/RECOMMENDATIONS.md#cells-and-microbes-recommendations). Docs only: no game, ID registration, voice line, save field or band exists yet.
 
 
@@ -153,7 +155,7 @@ Device and person checks stay open: whether a lap child links her tap to the swe
 
 ## What comes next
 
-**Puddle Lens 5–6** (study slice 3, docs only): alive / not alive / can't tell yet, and one cell or many. It needs a named biology/microbiology educator first, since those levels make the first claims about living things. Slide Files (slice 5) follows 5–6.
+**Puddle Lens 5–6** is [defined](#levels-56-definition-2026-11-05) (2026-11-05); its build is next. Then the study's slice 4 (define 7–8, Wall clue and Why green?) and slice 5 (Slide Files, which also takes the dead-cell and clump cases set aside in 5–6).
 
 ## Open decisions
 
@@ -166,3 +168,137 @@ Device and person checks stay open: whether a lap child links her tap to the swe
 5. **Practical card.** None drafted. A hand-lens or microscope card needs a named reviewer; never culturing, swabs, body samples, pond collection or sunlight through a lens.
 6. **Framing.** Faceless science drawings in the lens; the companion reacts beside them. No germ, hygiene, illness or "bad microbe" content.
 7. **Journal.** Default: no journal entry or discoveries at levels 1–4. A "first swimmers seen" entry could join with a reviewed line later.
+
+## Levels 5–6 (definition, 2026-11-05)
+
+Defined 2026-11-05 as slice 3 of the [cells-and-microbes study](../deep-dives/subjects/cells-microbes.md#build-slices-in-order), from its [proposed levels](../deep-dives/subjects/cells-microbes.md#proposed-levels-and-bands). Docs only: no code, voice line or save field changes. It was written against the built game (`src/games/puddle-lens/logic.ts` at `e82d9cd3`), not only the 1–4 text above. The [October 23 decision](#open-decisions) applies: this session's source check (below) stands in for a named biology reviewer, and no reviewer gate remains.
+
+**Fun action and purpose.** **Level 5, *Alive or can't tell yet*:** two specks share a drop and the companion rings one. She turns the dial and answers with one of three picture buttons: **alive**, **not alive** or **can't tell yet**. **Level 6, *One cell or many*:** one slide at a time sits under the lens. She turns the dial until she can see edges, then taps one of three trays: **one cell**, **many cells** or **not cells**. The purpose is the study's school claim ([NGSS MS-LS1-1](https://www.nextgenscience.org/pe/ms-ls1-1-molecules-organisms-structures-and-processes)): living things are made of cells, one or many, and **the scale you look at decides what you can tell**. Moving and being green are drawn but are never the evidence.
+
+**Wording changes from levels 1–4.** These are the first lines in the game that say **alive** and **cell**. They still never say microbe, bacteria, germ, illness, dirty or clean, and they never name yeast (the study routes yeast to the cooking and food studies). Decision 6 stands: faceless science drawings only. **Stated simplification:** everything drawn in these fresh drops that shows a cell is alive. Dead cells, and things made of cells that are no longer alive, are left for Slide Files, and no line claims the opposite.
+
+### Source check (this session)
+
+| Claim the tables rely on | Source | How it was read |
+| --- | --- | --- |
+| Moving is not evidence of life: Brown and Brongniart "at first presumed a 'living' origin" for the jiggling, and "Brown subsequently showed that inorganic grains also demonstrated an irregular motion in suspension" | [Emory, *Brownian Motion* reading](https://faculty.college.emory.edu/sites/weeks/squishy/reading1.html) | Opened. Particle sizes are not given there, so specks are drawn drifting with the water, not as a size-specific jiggle |
+| Air bubbles in a wet mount look like round things with a thick dark edge and a bright middle, and can be mistaken for structures | [microbehunter.com](https://www.microbehunter.com/what-are-the-effects-of-air-bubbles-under-the-cover-glass/) (opened: bubbles "cause some problems, especially for beginning microscopists"; it does not describe the look), [medicallabnotes.com](https://medicallabnotes.com/air-bubbles-microscopy-introduction-identification-and-keynotes/) (opened: "round, clear", "smooth borders", and recognising them prevents "misinterpretations") | The dark rim and bright centre are **known from search summaries only** (refractive-index explanations). The drawing uses a thick edge and an empty middle, which both opened pages fit |
+| Spirogyra-like green threads are cells "rod shaped and attached end-to-end in long, filamentous chains", with "ribbon-like, spiral chloroplasts (visible inside each cell)", photographed at 100× | [Sierra College slide page](https://biosci.sierracollege.edu/resources/mslides-2016/mslides-bio4-pages2016/spirogyra.html) | Opened. The thread's boxes and spiral are drawn from stop 3 (the microscope stop the 1–4 status already ties to ~100×) |
+| Onion skin cells form "a single layer" and "do not contain chloroplasts" | [Wikipedia, *Onion epidermal cell*](https://en.wikipedia.org/wiki/Onion_epidermal_cell) | Opened. That the walls show as long boxes under a light microscope comes from search summaries of school practical pages only. Level 7's *Wall clue* still has its own point (plant or animal by the wall, not the colour), so onion skin is used here only as "many cells" |
+| A small round green alga (Chlorella-like) is one "spherical or ellipsoidal" cell, "2 to 12 µm", which "lack motility", with a cup-shaped chloroplast | [Freshwater Biodiversity of Bangladesh, *Chlorella vulgaris*](https://freshwaterbiodiversity.org.bd/?p=12292) | Opened (the Connecticut College key returned 403). At that size it is only a dot at stop 3 and shows its edge and green cup only at stop 4 |
+| A paramecium-like swimmer is one cell, its outline shows near 100× and its hairs near 400× | Already cited in the [1–4 status](#puddle-lens-levels-14-definition) (Berdan; iNaturalist) | Not re-opened |
+
+No size, number or species name is drawn or spoken. The drawings stay "a swimmer", "a green ball", "a green thread", "onion skin", "a leaf", "a grain of sand", "a mud speck" and "a bubble".
+
+### The model, added to `logic.ts`
+
+- **Evidence features, not every visible feature.** Each candidate has, per stop, a set of **evidence** marks: `edge` (an edge all round), `inside` (parts inside the edge), `hairs` (a fringe), `empty` (a thick edge with nothing inside), `ragged` (a rough edge with nothing inside), `boxes` (boxes side by side sharing walls) and `cracks` (bumps and cracks, no boxes). **Moving** and **colour** are drawn but are **never evidence**. This refines the study's rule test ("can't tell yet is accepted exactly when the two candidates share every *visible* feature"). Under that wording a swimmer and a drifting speck would differ by movement alone, which contradicts the study's own "movement alone never counts". It also keeps level 8's *Why green?* honest, since colour alone must never have decided anything earlier.
+- **Level-5 candidates** (evidence by stop; nothing separate shows at stop 1, where the view is the whole drop):
+
+| Candidate | Truth | Stop 2 | Stop 3 | Stop 4 | Moves | Colour |
+| --- | --- | --- | --- | --- | --- | --- |
+| `swimmer` (the built swimmer art) | alive | — (a speck) | edge, inside | edge, inside, hairs | swims and turns | pale |
+| `green-ball` | alive | — (a speck) | — (a tiny dot) | edge, inside (a green cup) | still | green |
+| `mud-speck` | not alive | — (a speck) | ragged | ragged | drifts with the water | brown |
+| `silt` (a smaller speck) | not alive | — (a speck) | — (a tiny dot) | ragged | still | brown-green |
+| `bubble` | not alive | — (a speck) | edge, empty | edge, empty | drifts with the water | clear |
+
+- **Pairs are enumerated, never free.** A level-5 drop holds exactly one of three **reviewed pairs**, each one alive plus one not alive. Within every pair, **both move or both are still** (a test), so movement can never separate them. In pair C the colours differ but colour is not evidence.
+
+| Pair | Candidates | Both | Deciding stop (lowest where evidence differs) |
+| --- | --- | --- | --- |
+| A | swimmer + mud speck | move | 3 |
+| B | swimmer + bubble | move | 3 (the bubble's edge matches; *inside* versus *empty* decides) |
+| C | green ball + silt | still | 4 |
+
+- **`judgeLife(pair, ringed, stop, answer)`**, with `answer` one of `'alive' | 'not-alive' | 'cant-tell'`:
+  - **Below the deciding stop** (the ringed and unringed candidates' evidence sets are equal): `'cant-tell'` gives `'right-for-now'` ("Right, we can't tell yet. What would show it?"). It is free and does not finish the speck. `'alive'` or `'not-alive'` gives `'could-be'`, free and **the same line for a true and a false guess** ("Could be. What would show it?"). So an early tap is never a free answer key, and nothing early counts.
+  - **At or above the deciding stop:** the true answer is `'right'` and finishes the speck. `'cant-tell'` is a miss, `'can-tell-now'` ("We can tell now. Look at its edge and what's inside."). The false answer is a miss, `'look-at-it'`, with a line naming what the ringed thing's evidence shows, never the verdict: `look.inside` ("Look: it has parts inside its edge."), `look.empty` ("Look: just an edge, and nothing inside."), `look.ragged` ("Look: a rough edge, and nothing inside.").
+  - **True answer:** `alive` exactly when the ringed candidate's evidence at that stop includes both `edge` and `inside`. A test checks this agrees with the table's Truth column at every deciding-or-higher stop.
+- **Level-6 samples** (one slide at a time; the slide stays put while the dial turns). Each has a **class**, the evidence that shows it, and a **deciding stop** (the lowest stop where that evidence is drawn whole):
+
+| Sample | Class | Evidence (from its deciding stop) | Deciding stop | Drawn below it |
+| --- | --- | --- | --- | --- |
+| `leaf` (built table, `boxes` 3–4) | many cells | boxes | 3 | the whole leaf, its edge hairs |
+| `onion-skin` | many cells | boxes (long, no green; a faint dot in each from stop 4) | 3 | a thin clear piece (1–2) |
+| `green-thread` | many cells | boxes end to end, each with a green spiral | 3 | a green wisp (1), a green thread (2) |
+| `swimmer` | one cell | edge, inside | 3 | the drop, then a speck |
+| `green-ball` | one cell | edge, inside | 4 | the drop, a speck, a tiny dot |
+| `sand` (built table, `grain-bumps` 3–4) | not cells | cracks (irregular lines, never closed boxes) | 3 | the pinch, the separate grains |
+| `bubble` | not cells | edge, empty | 3 | a speck |
+| `mud-speck` | not cells | ragged | 3 | a speck |
+
+  At stop 2 the sand's *separate grains* are many things but not many cells. Sorting there is the free prompt, which is part of the lesson.
+- **`judgeSort(sample, stop, tray)`**: below the deciding stop, every tray gives `'look-closer'`, free and the same for every tray ("Could be. Turn the dial until you can see its edges."). At or above it, the right tray is `'right'` and the slide slides into the tray. A wrong tray is a miss with the line for what the view shows: `see.boxes` ("Look: lots of little boxes side by side."), `see.one` ("Look: one edge all round, with parts inside."), `see.empty`, `see.ragged` or `see.cracks` ("Look: bumps and cracks, but no boxes.").
+- **Deviation from the study:** its level-6 round had "a clump of yeast-like cells" sorted as "one cell each". It is **dropped** because yeast belongs to the cooking and food studies. Also, telling loose separate cells from tissue that shares walls is a finer cue than these two levels teach, and putting a clump in the "one cell" tray contradicts the picture. The green ball is drawn alone, never clumped (the Chlorella source notes it can also occur "in irregular clumps"). A clump case can return with Slide Files.
+- **Motion:** swimmers keep the built seeded paths (at most 30 units a second, turning gently, still while any finger is down). A drifting speck or bubble follows a slow seeded straight drift, also capped at 30 and also still while a finger is down. Still candidates do not move. Nothing is tapped on the drop at levels 5–6, so no target ever moves under a finger.
+- **Variety:** seeded from `ctx.rng`: which pair each drop holds, which of the two is ringed, positions, swimmer shapes (round, long, bean), the leaf kind, and the sample order and choice at level 6.
+- **Rounds:** **Level 5:** three drops. Across the three there is at least one pair decided at stop 3 (A or B) and pair C at least once, and the ringed speck is alive at least once and not alive at least once. **Level 6:** four slides with every class at least once and at least one sample decided at stop 4 (the green ball). Neither level draws two copies of a sample in one round.
+
+### Screen and controls
+
+- **Ringing:** the companion's ring (a soft dashed circle, at least 120 across at every stop, which follows its speck) marks which speck is asked about. **She never taps a speck**, so the specks' size at stop 2 does not matter for targets.
+- **Level 5 buttons:** the four built stop buttons (110) plus three answer buttons, each at least 120 and picture-only. Each speaks its name on touch-down, so no reading is needed: **alive** (a sprouting seed), **not alive** (a pebble) and **can't tell yet** (a lens with a small "?" curl drawn, not lettered).
+- **Level 6 trays:** three trays, each at least 120 and picture-only, speaking on touch-down: **one cell** (one round outline with a dot), **many cells** (a block of boxes) and **not cells** (a pebble). Each holds the slides sorted into it.
+- **Layout:** `lensLayout(view, 5 | 6)` adds a three-button group. **Landscape:** two columns at the right, the stops (as now) and the three answers or trays beside them. That takes about 242 units of width, which at 1024×768 leaves a lens near 510. **Portrait:** the answer row runs along the bottom edge to the right of the guide's corner, with the stop row above it. That leaves a lens near 470 at 768×1024. A single row of seven does not fit portrait (about 872 units), and stacking the rows above the guide's corner leaves the lens under 360. Either way it **returns null rather than shrink** (buttons under 110 or 120, a lens under 360). The rule test runs it at the four `lands.test.ts` views (landscape, portrait, phone, notch) and fails on null. These widths are arithmetic from the built constants (`STOP_SIZE`, `ANSWER_SIZE`, `GAP`, the corners), not a probe.
+- **Music, pause sheet:** as levels 3–4 (Start again replays the seeded round from its first question; Show a hint).
+
+### Ranges
+
+`school` changes from `{4,4}` to `{4,6}`. Every other band is unchanged (`prek` stays `{3,4}`), and nothing is renumbered, so saved levels and pins keep their meaning. Levels 7–8 later extend school to `{4,8}` (decision of 2026-10-23).
+
+### First rounds (authored)
+
+- **Level 5:** drop one holds pair A, with the swimmer ringed. The dial starts at stop 2: two specks drift. "Is this one alive?" She presses **alive** at stop 2: "Could be. What would show it?" (free). She presses **can't tell yet**: "Right, we can't tell yet. What would show it?" (free). She taps stop 3: an edge all round, with parts inside. She presses **not alive**: a boing and "Look: it has parts inside its edge." (one miss). She presses **alive**: "An edge all round and parts inside. It's alive!" Drop two is pair C with the silt ringed: at stop 3 both are tiny dots (one green, one brown), and **can't tell yet** is right-for-now. At stop 4 a ragged edge with nothing inside shows, and **not alive** is right. Drop three is seeded under the round rules.
+- **Level 6:** the green thread, the swimmer, the sand and the green ball, in that order. Green thread: at stop 2 she taps **one cell** ("Could be. Turn the dial until you can see its edges.", free). At stop 3 the boxes appear, and **many cells** is right. Swimmer at stop 3: **many cells** is a miss ("Look: one edge all round, with parts inside."), then **one cell** is right. Sand at stop 3: **not cells**. Green ball: at stop 3 the tray taps are free. Show a hint turns the dial to 4, and **one cell** is right.
+
+### Accounting, help and finishing
+
+- **Misses:** only a committed answer at or above the deciding stop that is wrong (level 5: the false verdict or *can't tell yet*; level 6: a wrong tray). Turning the dial and every answer below the deciding stop are free. One miss per wrong press.
+- **Glow:** after two misses on one speck or slide, the right button or tray glows. It is a standing glow and counts nothing extra.
+- **Hints:** at most one per speck or slide, from Show a hint. It turns the dial to the deciding stop (`helpFor(5|6, …)` returns `{ do: 'turn', stop }`, reusing the built `Help` type), and the companion says the evidence line for what that stop shows (`look.*` / `see.*`). She still presses the answer, as at level 4. If the dial is already at or above the deciding stop, the hint only speaks the line.
+- **Supported completion:** a hint plus the glow leave one press. Nothing times out; specks never leave the view.
+- **Adaptation:** the shell's rule as built (two smooth rounds with at most one miss and no hints step up within school's `{4,6}`). Assisted finishes are not mastery; the hint counts.
+- **Finish:** after the last speck or slide, everything waves once, then `ctx.finish({ misses, hints })`, and the shell gives one sticker. Still no journal entry or discoveries (decision 7). A "first living cell seen" entry needs its own line later.
+
+### Speech (`voice-script.ts`)
+
+New `lens.*` lines (the built keys keep their wording):
+- `instruct.alive` ("Is this one alive? Look closer, then choose!")
+- `instruct.cells` ("One cell, many cells, or not cells? Look closer, then choose!")
+- the button names `say.alive`, `say.not-alive`, `say.cant-tell`, `say.one-cell`, `say.many-cells`, `say.not-cells`
+- `could-be`, `right-for-now`, `can-tell-now`
+- the evidence lines `look.inside`, `look.empty` and `look.ragged`
+- `alive.yes` ("An edge all round and parts inside. It's alive!") and `alive.no` ("Nothing inside its edge. Not alive.")
+- `look-closer-edges`
+- the evidence lines `see.boxes`, `see.one`, `see.empty`, `see.ragged` and `see.cracks`
+- the sorted lines `sorted.one` ("One cell, all by itself."), `sorted.many` ("Lots of cells, side by side.") and `sorted.not` ("No cells at all.")
+
+None of them names a microbe, germ, species, size or number.
+
+### Rule tests (`logic.test.ts`)
+
+- **Candidates:** every evidence set is defined at stops 1–4. Evidence never shrinks as the stop rises, except where a feature leaves the view by the built windows; no level-5 or level-6 evidence leaves. Moving and colour are not in any evidence set.
+- **Pairs:** exactly pairs A–C. Each has one alive and one not alive. Both members move or both are still. The deciding stop is the lowest stop where their evidence differs, it matches the table, and at stop 4 the pair always differs. `'cant-tell'` is `'right-for-now'` exactly below the deciding stop.
+- **Judging:** at every stop and for every answer and ringed side, `judgeLife` gives the same verdict for `alive` and `not-alive` below the deciding stop (no oracle). At or above it, it misses only on the false verdict or *can't tell yet*, and the truth rule (`edge` and `inside`) agrees with the Truth column. `judgeSort` gives one identical free verdict for all trays below each sample's deciding stop and misses only on wrong trays above it. Each sample's class evidence is drawn at its deciding stop and at stop 4.
+- **Rounds:** across 500 seeds, level 5 has three drops that satisfy the round rules, and level 6 has four distinct samples with every class and a stop-4 decider. The authored rounds match their stories.
+- **Help:** `helpFor` names the deciding stop. A scripted speck (wrong verdict, Show a hint, Show a hint again, right verdict) counts one miss and one hint. Two wrong presses light the right button.
+- **Motion:** drifting candidates stay inside the drop and under 30 units a second, and still candidates do not move.
+- **Layout:** `lensLayout` at levels 5 and 6 at the four views gives buttons at least 110 or 120, the lens at least 360, no overlaps with the corners or each other, everything inside `view`, and null rather than smaller.
+- **Registry, lands and how-to tests** pass with school `{4,6}`.
+
+### Ghost finger and how-to card
+
+- **Ghost finger:** `autotouch()` at levels 5–6 follows `helpFor`. It taps the deciding stop, then the right button or tray (the bot reads the truth from `logic.ts`), for each speck or slide in turn.
+- **How-to card** (`src/content/howto.ts`, added to the existing card):
+  - Steps: "Turn the dial until you can see the ringed speck's edge, then choose alive, not alive or can't tell yet" `{ from: 5, to: 5 }`; "Turn the dial until you can see the edges, then put the slide in one cell, many cells or not cells" `{ from: 6, to: 6 }`.
+  - Finish: "Every ringed speck answered" `{ from: 5, to: 5 }`; "All four slides sorted" `{ from: 6, to: 6 }`.
+  - Notes: "Moving or being green never proves something is alive; the edge and what's inside do" `{ from: 5, to: 6 }`; "Answering before the view can show it is never wrong; it only asks to look closer" `{ from: 5, to: 6 }`; extend the built Show-a-hint note's range from `{ from: 3, to: 4 }` to `{ from: 3, to: 6 }`.
+- **Co-play:** "Slide and lens" at level 5: the grown-up rings a speck by pointing, and she says "alive", "not alive" or "can't tell yet" before each turn of the dial. **Off-screen** (spoken tip, no equipment): "Something moving isn't always alive. Leaves blow and bubbles float. What else moves but isn't alive?" Still no microscope, water-collecting, culturing or sunlight instruction (decision 5).
+- **Couch:** none. **Rework couplings:** none.
+
+### Check tier (the build)
+
+New interaction on an existing game: typecheck, unit tests (above, plus registry, lands, how-to and voice), and one scripted play through the existing Puddle Lens `browser-check.mjs` case extended to levels 5 and 6. At level 5: one free early guess, one miss at the deciding stop, Show a hint, to the sticker. At level 6: one wrong tray and to the sticker. Also one portrait and one landscape screenshot of level 5's two button groups, `fingerdemo` at levels 5 and 6, and `npm run build` (voice and how-to change).
+
+Device and person checks stay open: whether a six-year-old waits for the evidence or guesses, whether "can't tell yet" feels like a real answer, and how the iPad says the button names. Browser automation establishes none of these.
