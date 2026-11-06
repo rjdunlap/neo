@@ -1,8 +1,10 @@
-# Far Lights, levels 1–4 (definition)
+# Far Lights, levels 1–8 (definition)
 
 **Admitted to the build queue 2026-11-05** ([READY](../READY.md#queued)): the developer asked for the recommendations to be made without waiting, so the build uses this packet's defaults (settled in the [October 23 record](../archive/DECISIONS-2026-10-23.md#decisions)). Its source check and the lands test still run at build time.
 
 Defined 2026-10-22 as slice 1 of the [astronomy study](../deep-dives/subjects/astronomy.md#build-slices-in-order), from its [first game's ladder](../deep-dives/subjects/astronomy.md#a-first-games-ladder-far-lights), the [recommendation row](../deep-dives/subjects/RECOMMENDATIONS.md#astronomy-recommendations) and the notebook row ([IDEAS](../IDEAS.md)). Docs only: no game, ID registration, voice line, save field or band exists yet.
+
+**Levels 5–8 defined 2026-11-06** (the study's slice 3, docs only): [Levels 5–8](#levels-58-definition). They are queued as two builds, 5–6 then 7–8. Everything above that section describes levels 1–4 as built.
 
 **Status: built 2026-11-05 (levels 1–4, [PR #1273](https://github.com/rjdunlap/neo/pull/1273), the study's slice 2) with this packet's defaults: Tinker Lab, no shell change for levels 1–2, two boards at level 4, no journal.** The paragraph below is the pre-build status. The [Waiting row](../WAITING-ON-DEVELOPER.md) "Astronomy: Far Lights identity, model review and older placement" asks for three things before registration: the identity beside Light Lab, the band windows and land, and an exploration-accounting policy for levels 1–2 that matches Space's. This packet gives a default for each ([open decisions](#open-decisions)); the build starts when the developer accepts or changes them. No astronomy educator is named. Levels 1–4 claim only the **order** "nearer looks brighter, farther looks dimmer" for lights that are the same; no round asks how much brighter, and no line names a ratio, a star or a law. The default therefore lets the review gate levels 5–8 and any quantitative wording, not this build ([decision 4](#open-decisions)).
 
@@ -114,7 +116,120 @@ Device and person checks stay open: whether a lap child links her tap to the swe
 
 ## What comes next
 
-**Far Lights 5–8** (study slice 3, docs only): the curtained side view and near-to-far ordering with equal glows, then unequal glows that look the same and "both could fit" before a labelled sideways step. It needs the glow/stop combinations frozen (glow 9 at stop 4 and glow 4 at stop 3 crowd together), the parallax wording reviewed or held, and levels 7–8 placed at the top of `school`.
+**Far Lights 5–8** is defined below. Its builds are two sessions: **5–6** (the curtain and ordering), then **7–8** (unequal glows and the sideways step) [after 5–6](#build-slices-levels-58).
+
+## Levels 5–8 (definition)
+
+Defined 2026-11-06 from the study's [ladder](../deep-dives/subjects/astronomy.md#proposed-levels-and-bands) rows 5–8 and its [decisions of 2026-10-23](../deep-dives/subjects/astronomy.md#decisions-for-the-developer): 7–8 sit at the top of `school`; the scientific check is the building session's check against cited sources, with no named educator; "both could fit" follows Space's policy, so the ordinary level rule applies and there is no exploratory flag. Docs only: nothing below exists in code yet.
+
+**What these levels add:** the side view goes behind a **curtain**. At 5–6 she works out how far the lights are from how bright they look, then lifts the curtain to see. At 7–8 lights differ in their **own glow**: a strong light far away can look the same as a gentle light nearby, and at 8 she cannot tell which is which until she steps to the side and watches the lights shift. Every line still talks about **these lights from this window**: no star, Sun, planet or law is named ([wording](#speech-and-the-held-wording-levels-58)).
+
+### The model, extended (`logic.ts`)
+
+- **Glows** `1` (gentle), `4` (strong) and `9` (strongest). `look(glow, stop) = glow / stop²`, as built. The full table:
+
+| Glow \ stop | 1 | 2 | 3 | 4 |
+| --- | --- | --- | --- | --- |
+| 1 | 1 | 0.25 | 0.111 | 0.0625 |
+| 4 | *4* | **1** | 0.444 | **0.25** |
+| 9 | *9* | *2.25* | **1** | 0.5625 |
+
+- **Exactly equal looks** with different glows: `{1@1, 4@2, 9@3}` all look `1`; `{1@2, 4@4}` both look `0.25`. No other look repeats.
+- **Frozen cells.** A light may be **shown resting** only at `1@1–4`, `4@2`, `4@4` and `9@3`, plus `4@3` only during level 7's opening look ([level 7](#levels-58)). Never shown: `4@1`, `9@1`, `9@2` (look over 1, which would draw a halo past `HALO_MAX` = 110 and break the window layout) and `9@4` (0.5625 is within 2× of both 1 and 0.444). **No resting state ever has look over 1**, so `haloRadius` and the built layout checks stay as they are. Passing states while a light glides are never judged.
+- **Readable steps, unchanged:** two judged lights count as different only at least twofold apart, and as the same only if exactly equal. Every judged board below is listed with its ratios.
+- **Own glow in the side view** (levels 7–8 only, once the curtain lifts): each light carries one, two or three thin rings of short rays for glow 1, 4 and 9. **The core and the float stay the same size**; the rays never appear in the window view. "Strong" means its own glow, never its size.
+- **Toy parallax** (level 8): a sideways step moves the window view; a light at stop `s` shifts by `120 / s` units against **far trees** on the horizon, which do not move (shifts 120, 60, 40 at stops 1–3). Two shifts count as readably different only if one is at least twice the other **and** they differ by at least 50 units. This is a labelled toy: no distance follows from the shift, and no line names parallax.
+- **The curtain** covers the whole side strip at levels 5–8 and lifts (0.6 s) to reveal the lights on their stops. At these levels the strip is **display only**: nothing in it is dragged or judged, so its lanes need not be 120 tall; the touch areas live in the window and on the curtain's tassel.
+
+### Levels 5–8
+
+| Level | Name | What she does | Round |
+| --- | --- | --- | --- |
+| 5 | **Behind the curtain** | Two gentle lights; taps the one that is **farther away**; the curtain lifts | Two pairs |
+| 6 | **Near to far** | Three gentle lights; taps them nearest first, then pulls the tassel to lift the curtain and check | Two boards |
+| 7 | **Strong and gentle** | Sees a strong and a gentle light side by side, watches the gentle one come until both look the same, then taps the one that is farther | Two boards |
+| 8 | **Can't tell yet** | Two lights look the same, glows hidden; says "both could fit", steps to the side, then taps the farther | Two boards |
+
+Every round is **two boards**, where the study's ladder says one board for levels 4–8: the built levels 3–4 use two, and two let the second board swap lanes. Recorded as a departure ([decision 8](#open-decisions)).
+
+**Level 5 boards:** the level-3 pair set `{1,2}`, `{1,3}`, `{1,4}`, `{2,3}`, `{2,4}` (never `{3,4}`; every pair at least 2.25×), both glow 1, the farther in lane A once and lane B once, the two pairs different. `judgeFarther(pair, lane)` accepts exactly the farther (dimmer-looking) light.
+
+**Level 6 boards:** three glow-1 lights at stops `{1,2,3}` or `{1,2,4}` (every adjacent pair at least 2.25×; `{x,3,4}` never), placed in the window's three spots in a seeded order that is never already nearest-to-farthest left to right; the two boards use both stop sets. Tapping a light gives it the next order mark (one, two, three dots on its touch ring); tapping a marked light clears its mark and every later mark (free). Once all three are marked, the tassel glows; pulling it checks. `judgeOrder(board, picks)` returns `'right'` or the first wrong position. The only accepted order is nearest first.
+
+**Level 7 boards** (the stronger is always the farther, the looks always exactly equal):
+
+| Pair | Look | Opening look (both at the strong light's stop) | Ratio there |
+| --- | --- | --- | --- |
+| `1@1` + `4@2` | 1 | `1@2` beside `4@2` | 4× |
+| `1@1` + `9@3` | 1 | `1@3` beside `9@3` | 9× |
+| `4@2` + `9@3` | 1 | `4@3` beside `9@3` | 2.25× |
+| `1@2` + `4@4` | 0.25 | `1@4` beside `4@4` | 4× |
+
+A board opens with the curtain down and both lights at the strong light's stop, so in the window the strong one plainly looks brighter ("This one is a strong light."). Then the gentle light glides nearer to its own stop (1.2 s) until both look exactly the same ("Now they look the same!"). She taps the one that is farther. The two boards use different pairs, with the strong light in lane A once and lane B once. `judgeFarther` accepts exactly the strong light.
+
+**Level 8 boards:** only `1@1` + `4@2` (shifts 120 vs 60) and `1@1` + `9@3` (120 vs 40), one each, strong light in lane A once and B once. `4@2` + `9@3` (60 vs 40, 1.5×) and `1@2` + `4@4` (60 vs 30, a 30-unit difference) fail the readable-shift rule and never appear here. The curtain stays down and **the glows are hidden**.
+
+- **Before the step**, both lights look `1`. The explanations that fit are every assignment of `{1@1, 4@2, 9@3}` to the two lanes: the farther light could be A, could be B, or they could be at the same stop. `candidates(board, null)` lists them; more than one "which is farther" answer survives. Pressing **Both could fit** (a 120 button: two lights with a two-way arrow) is the right answer: a chime, "Both could fit! Let's step to the side and look again.", and the step button appears.
+- **A light tapped before the step is a prediction, never a miss:** "Maybe! A strong light far away could look the same. We can't tell yet." Both could fit then pulses, and the round goes on as above.
+- **The step:** a 120 button (two footprints and an arrow). The window glides sideways over 1 s; the far trees stay put, each light shifts left by its toy shift, and a faint ring stays where each light was. Pressing it again steps back and forth, free. After the first step, `candidates(board, shifts)` leaves exactly one assignment. She taps the farther light: "It hardly moved, so it's farther away!", then the curtain lifts and shows both glows' rays.
+
+**Bands:** `school: { min: 4, max: 8 }`. Levels 5–6 serve the study's school window (4–6), 7–8 its top for 9–12 (decided 2026-10-23); pre-K stays `{3, 4}` and every other band is unchanged. Appending levels renumbers nothing, so saved levels and pins keep their meaning. Still no `grownup` range.
+
+### Screen and controls, levels 5–8
+
+- **The strip** keeps its place and height (260) above the window. At level 6 it holds **three display lanes** of 80 inside the same height; at 5, 7 and 8, the built two lanes. Nothing in it is a touch target except the curtain's **tassel**: a 120 circle at the strip's right end, which lifts the curtain at level 6 (Check) and replays the lifted view after a board ends (free).
+- **The window** keeps its built size (at least 824×448 in all four test views; measured on the built `farLayout`). Answer touch areas are circles **120** across around each light, independent of halo size.
+  - Level 5 and 7: the two built spots, at least 240 apart.
+  - Level 6: three spots at least 240 apart in a row (two stop-1 halos never meet; `2×240 + 2×110 = 700 ≤ 824`).
+  - Level 8: the two spots and two 120 buttons (Both could fit, then the step) along the window's bottom edge. Every halo stays inside the window at **both** step positions and never meets another halo or a button: with spots ±150 from the centre and a 120 shift, the outermost halo edge is 380 from the centre, inside 412.
+- **`farLayout(view, level)`** gains branches for 5–8 and still returns **null** rather than give a touch area under 120, a tassel under 120, a window under 440×300 or a halo outside the window at either step position; the layout test runs every level in all four views.
+- **Touch:** taps through `onTap` with the core ring brightening on touch-down, as built. Levels 5–8 drag nothing.
+
+### Accounting, help and finishing, levels 5–8
+
+- **Level 5:** each tap on the nearer light is one miss, "That one looks brighter, so it's nearer." Two misses on one pair: the farther light glows.
+- **Level 6:** marking is free; each pull of the tassel with a wrong order is one miss, naming the first wrong place ("The brightest one is nearest. Look again!" or "Which one looks dimmest? That one is farthest."), and the curtain stays down. Two misses on one board: the next correct light glows.
+- **Level 7:** each tap on the gentle light is one miss, "That's the gentle light. It had to come close to look as bright." Two misses: the strong light glows.
+- **Level 8:** before the step nothing can miss. After it, each tap on the nearer light is one miss, "That one moved a lot, so it's nearer." Two misses after the step: the farther light glows.
+- **Hints** (Show a hint in the pause sheet, at most **one counted per board or pair**; asking again repeats it free): 5, the farther light pulses; 6, the nearest unmarked light is marked and locked in place by itself, which leaves a solvable board; 7, the opening look replays (the gentle light slides back out and in again) and the strong light pulses; 8, before the step Both could fit pulses, after it the two faint rings and the lights are joined by short lines so both shifts show side by side, and the farther light pulses.
+- **Supported completion:** a glow plus a hint always leaves one tap, or at level 6 one pull. Nothing times out.
+- **Finish:** as built, `ctx.finish({ misses, hints })` after the second board; one ordinary sticker. The 0-miss "both could fit" counts as a smooth round under the ordinary rule (decided 2026-10-23; the card says these rounds are not proof).
+- **Journal (level 7):** a finished level-7 round files `entryId('far-lights', 'strong-far')` ("A strong light far away"; line `far.journal.strong-far`: "A strong light far away can look as bright as a gentle light close by."; find "tell which light is farther when a strong light and a gentle light look the same", found "a strong light far away looked as bright as a gentle light close by") in `src/content/journal.ts`, with `JournalGame` extended to `far-lights` and the journal tests updated. Levels 1–6 and 8 file nothing. This replaces [decision 7](#open-decisions)'s "belongs to level 7" placeholder with a default; its old wording ("small light") is dropped because the game never calls a light small.
+
+### Speech and the held wording, levels 5–8
+
+New lines under `far.*`: `instruct.farther` ("Which light is farther away? Tap it!"); `instruct.order` ("Tap the lights from nearest to farthest, then pull the curtain!"); `instruct.strong` ("Which light is farther away? Tap it!", reusing `instruct.farther`'s text under its own ID); `instruct.cant-tell` ("They look the same. Which one is farther? Or could it be either?"); `right-farther` ("Yes! It looks dimmer, so it's farther away."); `wrong-farther` ("That one looks brighter, so it's nearer."); `curtain` ("Let's lift the curtain!"); `order-right` ("Nearest to farthest!"); `order-first` ("The brightest one is nearest. Look again!"); `order-last` ("Which one looks dimmest? That one is farthest."); `strong-look` ("This one is a strong light."); `same-now` ("Now they look the same!"); `right-strong` ("That strong light is farther away. It looks just as bright as the gentle light up close."); `wrong-strong` ("That's the gentle light. It had to come close to look as bright."); `both-fit` ("Both could fit! Let's step to the side and look again."); `maybe` ("Maybe! A strong light far away could look the same. We can't tell yet."); `step` ("Step to the side!"); `right-step` ("It hardly moved, so it's farther away!"); `wrong-step` ("That one moved a lot, so it's nearer."); `journal.strong-far` (above).
+
+**Held for the building session's cited-source check** (the 2026-10-23 decision; this docs session opened no source): the toy-parallax lines `right-step`, `wrong-step` and the card note on stepping, and the card's own-glow note. They claim only qualitative relations: a nearer thing seems to shift more against faraway things when you step sideways, and a light's look depends on both its own glow and its distance. The build session opens at least one source for each (an agency or university astronomy page on parallax and on apparent brightness) and cites it in its verification entry; if a source contradicts a line, it rewrites the line before merging rather than shipping it. No line names a star, parallax, a ratio or a law; stars stay out of the voice script.
+
+### Rule tests (`logic.test.ts`), levels 5–8
+
+- **Model:** the look table above; the exactly-equal sets are exactly `{1@1, 4@2, 9@3}` and `{1@2, 4@4}`; no resting cell any board can show has look over 1; the side-view rays differ by glow while the core and float radii do not.
+- **Level 5:** across 500 seeds, two different legal pairs, the farther in lane A once and B once, at least 2.25× apart; `judgeFarther` accepts exactly the farther; following `helpFor` finishes.
+- **Level 6:** across 500 seeds, stop sets `{1,2,3}` and `{1,2,4}` one each, never already in order left to right; exactly one accepted order; every adjacent pair at least 2.25×; from **any** set of locked hint marks the board stays solvable; clearing a mark clears the later ones; a scripted board (wrong pull, hint, hint again, right pull) counts one miss and one hint.
+- **Level 7:** every board is one of the four listed pairs; the looks are exactly equal; the stronger is the farther; the opening look differs at least 2.25×; two boards differ and swap lanes; a finished round reports the journal discovery.
+- **Level 8:** only the two listed pairs; before the step `candidates` holds more than one "which is farther" answer, and after it exactly one, which is the strong light; every shift pair is at least 2× and 50 apart; a tap before the step never counts; Both could fit never counts; a scripted board (tap before, Both could fit, step, wrong tap, hint, right tap) counts one miss and one hint.
+- **Layout:** `farLayout` at levels 5–8 in the four views: touch areas and tassel at least 120 and clear of the corners and each other, three display lanes inside the strip at 6, every halo inside the window and apart at both step positions at 8, buttons clear of halos, and null rather than smaller.
+- **Registry:** the school range is `{4, 8}` and `describeLevel` names levels 5–8.
+
+### Ghost finger, how-to card and registration, levels 5–8
+
+- **Ghost finger** (`autotouch()` follows `helpFor`): 5, a tap on the farther light; 6, three taps nearest first, then the tassel; 7, waits for the opening look to finish, then taps the strong light; 8, Both could fit, the step, a 0.5 s pause, then a tap on the farther light. `fingerdemo` runs at the top new level of each build (6, then 8).
+- **How-to card**, extending the built steps:
+  - Steps: "Tap the light that is farther away, then watch the curtain lift" `{ from: 5, to: 5 }`; "Tap the lights from nearest to farthest, then pull the tassel" `{ from: 6, to: 6 }`; "Watch a strong light and a gentle light come to look the same, then tap the farther one" `{ from: 7, to: 7 }`; "Press Both could fit, step to the side, then tap the light that moved less" `{ from: 8, to: 8 }`.
+  - Finish: "Two pairs" `{ from: 5, to: 5 }`; "Two boards" `{ from: 6, to: 8 }`.
+  - Notes: "Changing a mark is never wrong; only pulling the tassel with the wrong order counts" `{ from: 6, to: 6 }`; "Some lights are stronger than others; their rays show only once the curtain lifts" `{ from: 7, to: 8 }`; "Before the step, picking a light is a guess and never counts; Both could fit is the right answer" `{ from: 8, to: 8 }`; "A toy: when you step to the side, nearer things seem to shift more against faraway trees" `{ from: 8, to: 8 }`; "Show a hint counts once per pair or board" widened to `{ from: 3, to: 8 }`. The built note "A toy model: real stars also differ in their own brightness" stays for all levels.
+- **`PLANS`** gains: 5 "Behind the curtain: tap the farther light"; 6 "Near to far: put three lights in order"; 7 "Strong and gentle: which light is farther when both look the same?"; 8 "Can't tell yet: both could fit, then step to the side".
+- **Art** (`art.ts`): the curtain and tassel, the order dots, the ray rings, the far trees and the two buttons, code-drawn with the palette. **Sound:** the curtain lift a soft rising pentatonic run, the step a two-note shuffle; the island style keeps playing.
+- **Co-play** (extends "Hand over the lake"): at level 6 the grown-up and she take turns marking; at level 8 she says out loud "both could fit" before anyone steps. **Off-screen** (spoken tip, unchanged in kind): "Next time you're in a car or on a walk, look out of the side: do near things or far things seem to go past faster?" Never Sun or telescope advice.
+- **Couch** none; **land** unchanged (Tinker Lab, where the game already lives, so the lands test is unaffected).
+
+### Build slices, levels 5–8
+
+1. **Far Lights 5–6** (new-interaction tier: the curtain, three-light ordering and the tassel): typecheck and rule tests; one scripted play of levels 5 and 6 (one wrong tap at 5, a wrong pull and Show a hint at 6); one portrait screenshot of level 6 with the curtain down and the order marks on; `fingerdemo` at 6; `npm run build` (voice, how-to and registry files change).
+2. **Far Lights 7–8, after 5–6** (new-interaction tier: the opening look, Both could fit and the sideways step): the same tiers, scripted at 7 (one wrong tap) and 8 (a tap before the step, Both could fit, the step, a wrong tap, Show a hint); one portrait screenshot of level 8 after the step; `fingerdemo` at 8; the cited-source check of the [held wording](#speech-and-the-held-wording-levels-58) in its verification entry; `npm run build`.
+
+Device and person checks to add when each builds: whether a seven-year-old works out "farther" from a dimmer halo without the strip; whether the order dots read as order without numbers; whether the 40-unit shift at level 8 is visible on the iPad; and whether "both could fit" makes sense said aloud by the iPad voice.
 
 ## Open decisions
 
@@ -126,4 +241,6 @@ Each has a default; decisions 1–3 are the Waiting row's and must be confirmed 
 4. **Reviewer.** Default: levels 1–4 claim only the order (nearer looks brighter for identical lights) and never a ratio, so the astronomy educator (study decision 2, not named) gates levels 5–8, the halo-area convention's use in any comparison of unequal lights, and any quantitative line, not this build. Alternative: the reviewer reads the [model](#the-model-logicts) and the card's toy note before this build merges.
 5. **Practical card.** None drafted beyond the spoken looking tip. A torch-and-distance card needs a named reviewer; never Sun, eclipse or telescope viewing.
 6. **Level 4 round.** Default two boards (lanes swapped). Alternative: the study's one board.
-7. **Journal.** Default: no journal entry or discoveries at levels 1–4. "A strong light far away can look like a small light nearby" belongs to level 7.
+7. **Journal.** Default: no journal entry or discoveries at levels 1–6 or 8; level 7 files `far-lights:strong-far` ([levels 5–8](#accounting-help-and-finishing-levels-58)).
+8. **Rounds at 5–8.** Default two boards (or pairs) at every level, as built at 3–4. Alternative: the study's one board.
+9. **Level 8's pairs.** Default only the two pairs with a light at stop 1, so every shift reads at least twofold and 50 apart. Alternative: a larger step (a bigger window shift) to admit `1@2 + 4@4`, which the layout would have to prove.

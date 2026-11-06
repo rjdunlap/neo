@@ -6,7 +6,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **Define Far Lights 5–8** (`astronomy`; docs only, with the parallax wording reviewed or held and levels 7–8 placed at the top of `school`): [Far Lights 1–4 as built](definitions/far-lights.md#what-comes-next), [study](deep-dives/subjects/astronomy.md#build-slices-in-order).
 - **Define Puddle Lens 7–8** (`cells-microbes`; the wall clue and *Why green?* with enumerated candidate views, coordinated with ecosystems producers and chemistry dissolving; docs only): [Puddle Lens 5–6 as built](definitions/puddle-lens.md#what-comes-next), [study](deep-dives/subjects/cells-microbes.md#build-slices-in-order).
 - **Define Hat Band 4+ (M6)** (`music-instruments`; the older three-role, three-phrase arrangement brief with all accepted states, trace, undo and truthful repair, older placement resolved; docs only): [Hat Band 1–3 as built](definitions/hat-band.md), [study](deep-dives/subjects/music-instruments.md#build-slices-in-order).
 - **`playdate-workshop`, levels 1–3** (preschool 1, pre-K 1–3; taking turns and sharing, with the materials carrying the rule; Story Grove, else Painted Canyon): [definition](definitions/playdate-workshop.md#check-tier).
@@ -32,6 +31,10 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 - **New games admitted 2026-11-05** (the developer asked for the recommendations to be made without waiting; identity, bands, land and accounting use the defaults settled in the [October 23 record](archive/DECISIONS-2026-10-23.md#decisions)). Each building session still does its own source check and the lands test at build time, since a full land pages rather than shrinks. They are in order of her age first, one game per session, new-game tier as each definition's check tier sets it:
   - **`circuit-garden`, levels 1–2, then 3** (pre-K and school; a visible way back closes the loop; Tinker Lab): [definition](definitions/circuit-garden.md).
   - **`measuring-post`, levels 1–4** (school; choose the tool for the question, and compare counts only in the same unit; Tinker Lab or Cozy Village): [definition](definitions/measuring-post.md).
+
+- **`far-lights`, levels 5–8, two builds in order** (`astronomy`; school; both new-interaction tier; the school range becomes {4,8} at build; [definition](definitions/far-lights.md#levels-58-definition)):
+  - **`far-lights`, levels 5–6** (the curtain, three-light ordering and the tassel; `fingerdemo` at 6): [build slice 1](definitions/far-lights.md#build-slices-levels-58).
+  - **`far-lights`, levels 7–8, after 5–6** (the opening look, Both could fit and the sideways step; `fingerdemo` at 8; the held parallax wording is checked against a cited source): [build slice 2](definitions/far-lights.md#build-slices-levels-58).
 
 - **`swing-pals`, three slices in the dive's order** (`physics`; lap to school; [build slices](deep-dives/swing-pals.md#build-slices-in-order)):
   - **`swing-pals`, level 7 *Who comes back first?*** (pre-K between 3 and 4 and school after 6, on decision 1's default; new-interaction tier with `fingerdemo` at 7): [new levels on top](deep-dives/swing-pals.md#new-levels-on-top).
