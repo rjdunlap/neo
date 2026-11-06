@@ -32,15 +32,44 @@ const CRAYONS: ColorName[] = ['purple', 'red', 'blue', 'orange', 'green', 'red',
 function slotsFor(level: number, strips: readonly Strip[]): Slot[] {
   const l = levelOf(level);
   if (l === 1) return strips.map((_, i) => ({ x: 0.04, y: 0.56 + i * 0.13, w: 0.92, h: 0.12 }));
-  if (l === 6) return [{ x: 0.27, y: 0.6, w: 0.2, h: 0.2 }, { x: 0.14, y: 0.48, w: 0.46, h: 0.44 }, { x: 0.08, y: 0.12, w: 0.58, h: 0.36 }];
   const top = { x: 0.04, y: 0.3, w: 0.92, h: 0.34 }, low = { x: 0.04, y: 0.66, w: 0.92, h: 0.28 };
+  // Level 2 puts a sky piece (washing, rain) above a ground one; level 3 a zigzag above a wave (the kite's tail flies
+  // above both); level 4 a circle top-right or a wheel on the right, clear of the loops.
   const at: Partial<Record<PieceId, Slot>> = {
-    ground: { x: 0.04, y: 0.74, w: 0.92, h: 0.1 }, fence: { x: 0.12, y: 0.44, w: 0.76, h: 0.3 },
-    sun: { x: 0.62, y: 0.06, w: 0.3, h: 0.3 }, sheep: { x: 0.04, y: 0.58, w: 0.92, h: 0.3 },
+    ground: { x: 0.04, y: 0.74, w: 0.92, h: 0.1 }, washing: { x: 0.04, y: 0.14, w: 0.92, h: 0.1 }, road: { x: 0.04, y: 0.76, w: 0.92, h: 0.1 },
+    fence: { x: 0.12, y: 0.44, w: 0.76, h: 0.3 }, rain: { x: 0.12, y: 0.42, w: 0.76, h: 0.28 }, candles: { x: 0.3, y: 0.44, w: 0.4, h: 0.16 },
+    crown: { x: 0.2, y: 0.32, w: 0.6, h: 0.28 }, snake: { x: 0.04, y: 0.68, w: 0.92, h: 0.22 }, tail: { x: 0.3, y: 0.08, w: 0.62, h: 0.18 },
+    sun: { x: 0.62, y: 0.06, w: 0.3, h: 0.3 }, balloon: { x: 0.64, y: 0.06, w: 0.24, h: 0.26 }, wheel: { x: 0.64, y: 0.32, w: 0.24, h: 0.24 },
+    sheep: { x: 0.04, y: 0.58, w: 0.92, h: 0.3 }, clouds: { x: 0.04, y: 0.08, w: 0.54, h: 0.2 }, smoke: { x: 0.14, y: 0.08, w: 0.46, h: 0.24 },
+    window: { x: 0.27, y: 0.6, w: 0.2, h: 0.2 }, house: { x: 0.14, y: 0.48, w: 0.46, h: 0.44 }, roof: { x: 0.08, y: 0.12, w: 0.58, h: 0.36 },
+    ribbon: { x: 0.14, y: 0.44, w: 0.5, h: 0.44 }, present: { x: 0.14, y: 0.44, w: 0.5, h: 0.44 }, bow: { x: 0.29, y: 0.24, w: 0.2, h: 0.2 },
+    mast: { x: 0.3, y: 0.12, w: 0.26, h: 0.5 }, cabin: { x: 0.14, y: 0.62, w: 0.56, h: 0.16 }, sail: { x: 0.45, y: 0.18, w: 0.2, h: 0.4 },
     bridge: { x: 0.04, y: 0.5, w: 0.92, h: 0.3 }, bunting: { x: 0.04, y: 0.08, w: 0.92, h: 0.2 },
   };
-  // Level 5's two strips, whatever they are, stack one above the other.
-  return strips.map((s, i) => (l === 5 ? undefined : at[s.piece]) ?? (i === 0 ? top : low));
+  // Level 5's two strips, whatever they are, stack one above the other, a sky piece on top when only the second is one.
+  if (l === 5) return SKY.has(strips[1].piece) && !SKY.has(strips[0].piece) ? [low, top] : [top, low];
+  return strips.map((s, i) => at[s.piece] ?? (i === 0 ? top : low));
+}
+
+const SKY: ReadonlySet<PieceId> = new Set<PieceId>(['clouds', 'tail', 'smoke']);
+
+/** Pieces drawn under the others in the picture: the house under its window, the present under its ribbon, the boat under its mast. */
+const BEHIND: ReadonlySet<PieceId> = new Set<PieceId>(['house', 'present', 'cabin', 'sail']);
+
+/** Level 1's marks: each lifted touch sprouts flowers in the meadow, fish in the pond, or birds in the sky. */
+function sprout(g: Graphics, piece: PieceId, x: number, y: number, color: ColorName, k = 1) {
+  const c = swatch[color];
+  if (piece === 'pond') {
+    g.ellipse(x, y, 13 * k, 8 * k).fill(c.fill).stroke({ width: 2, color: c.line })
+      .poly([x + 11 * k, y, x + 21 * k, y - 8 * k, x + 21 * k, y + 8 * k]).fill(c.fill).stroke({ width: 2, color: c.line, join: 'round' })
+      .circle(x - 6 * k, y - 2 * k, 2 * k).fill(ink);
+  } else if (piece === 'sky') {
+    g.moveTo(x - 14 * k, y - 4 * k).quadraticCurveTo(x - 7 * k, y - 12 * k, x, y).quadraticCurveTo(x + 7 * k, y - 12 * k, x + 14 * k, y - 4 * k)
+      .stroke({ width: 4 * k, color: c.line, cap: 'round', join: 'round' });
+  } else {
+    for (let i = 0; i < 5; i++) g.circle(x + Math.cos((i * 2 * Math.PI) / 5) * 11 * k, y - 14 * k + Math.sin((i * 2 * Math.PI) / 5) * 11 * k, 8 * k).fill(c.fill);
+    g.circle(x, y - 14 * k, 6 * k).fill(swatch.yellow.fill).moveTo(x, y - 4 * k).lineTo(x, y + 10 * k).stroke({ width: 4 * k, color: swatch.green.line });
+  }
 }
 
 /** Map strip points into a slot (the stroke's own bounds stretched to the slot). */
@@ -71,17 +100,68 @@ function drawPiece(g: Graphics, strip: Strip, paths: readonly Point[][], r: Rect
     g.poly([...poly(pts), r.x + r.w, r.y + r.h + 4, r.x, r.y + r.h + 4]).fill(swatch[color].fill);
     line(pts, 4, swatch[color].line);
   };
+  const above = (pts: readonly Point[], color: ColorName) => {
+    g.poly([...poly(pts), r.x + r.w, r.y - 4, r.x, r.y - 4]).fill(swatch[color].fill);
+    line(pts, 4, swatch[color].line);
+  };
+  const at = (pts: readonly Point[], u: number) => f(pts[Math.floor((pts.length - 1) * u)]);
+  const ends = (pts: readonly Point[]) => {
+    let lo = pts[0], hi = pts[0];
+    for (const p of pts) { if (p[0] < lo[0]) lo = p; if (p[0] > hi[0]) hi = p; }
+    return [f(lo), f(hi)];
+  };
+  const MARKS = ['pink', 'yellow', 'red', 'purple'] as const;
   switch (strip.piece) {
-    case 'meadow': {
-      g.rect(r.x, r.y + r.h * 0.5, r.w, r.h * 0.5).fill(swatch.green.fill);
+    case 'meadow': case 'pond': case 'sky': {
+      const band = strip.piece === 'meadow' ? swatch.green.fill : strip.piece === 'pond' ? swatch.blue.fill : swatch.blue.light;
+      g.rect(r.x, r.y + r.h * 0.5, r.w, r.h * 0.5).fill(band);
       for (let i = 0; i < 6; i++) {
-        const x = r.x + ((i + 0.5) / 6) * r.w, y = r.y + r.h * 0.45;
-        g.circle(x, y, 6).fill(swatch[(['pink', 'yellow', 'red', 'purple'] as const)[i % 4]].fill).circle(x, y, 2.5).fill(swatch.yellow.line);
+        const x = r.x + ((i + 0.5) / 6) * r.w, y = r.y + r.h * (strip.piece === 'meadow' ? 0.45 : 0.75);
+        if (strip.piece === 'meadow') g.circle(x, y, 6).fill(swatch[MARKS[i % 4]].fill).circle(x, y, 2.5).fill(swatch.yellow.line);
+        else sprout(g, strip.piece, x, y, strip.piece === 'pond' ? (['orange', 'yellow', 'red'] as const)[i % 3] : 'purple', 0.45);
       }
       break;
     }
     case 'ground': below(paths[0], 'green'); break;
+    case 'road': {
+      // A grey road under her line, with white dashes and a car on it.
+      g.poly([...poly(paths[0]), r.x + r.w, r.y + r.h + 4, r.x, r.y + r.h + 4]).fill(swatch.white.line);
+      line(paths[0], 4, ink);
+      const [[x0, y], [x1]] = ends(paths[0]);
+      for (let x = x0 + 8; x < x1 - 14; x += 26) g.moveTo(x, y + r.h * 0.7 + 4).lineTo(x + 12, y + r.h * 0.7 + 4);
+      g.stroke({ width: 3, color: 0xffffff, cap: 'round' });
+      const cx = x0 + (x1 - x0) * 0.4;
+      g.roundRect(cx - 22, y - 22, 44, 16, 6).fill(swatch.red.fill).stroke({ width: 2, color: swatch.red.line })
+        .roundRect(cx - 12, y - 32, 22, 12, 4).fill(swatch.blue.light).stroke({ width: 2, color: swatch.red.line })
+        .circle(cx - 12, y - 5, 6).circle(cx + 12, y - 5, 6).fill(ink);
+      break;
+    }
+    case 'washing': {
+      const [[x0, y0], [x1, y1]] = ends(paths[0]);
+      g.moveTo(x0, y0).lineTo(x0, y0 + 40).moveTo(x1, y1).lineTo(x1, y1 + 40).stroke({ width: 5, color: swatch.brown.line, cap: 'round' });
+      line(paths[0], 3, swatch.brown.line);
+      const socks = ['red', 'blue', 'yellow', 'pink', 'green'] as const;
+      socks.forEach((c, i) => {
+        const [x, y] = at(paths[0], (i + 0.6) / (socks.length + 0.2));
+        g.poly([x - 5, y, x + 5, y, x + 5, y + 16, x + 12, y + 20, x + 12, y + 26, x - 5, y + 26]).fill(swatch[c].fill).stroke({ width: 2, color: swatch[c].line, join: 'round' });
+      });
+      break;
+    }
     case 'mountains': below(paths[0], 'purple'); break;
+    case 'teeth': {
+      above(paths[0], 'green');
+      g.poly([...poly(paths[0]), r.x + r.w, r.y + r.h, r.x, r.y + r.h]).fill(0xffffff);
+      line(paths[0], 3, swatch.white.line);
+      g.rect(r.x, r.y + r.h * 0.88, r.w, r.h * 0.12).fill(swatch.green.fill);
+      const [ex, ey] = [r.x + r.w * 0.12, r.y - 4];
+      g.circle(ex, ey, 9).fill(0xffffff).stroke({ width: 2, color: swatch.green.line }).circle(ex + 2, ey, 4).fill(ink);
+      break;
+    }
+    case 'crown': {
+      below(paths[0], 'yellow');
+      (['red', 'blue', 'green'] as const).forEach((c, i) => g.circle(r.x + r.w * (0.25 + i * 0.25), r.y + r.h * 0.84, 5).fill(swatch[c].fill));
+      break;
+    }
     case 'sea': {
       below(paths[0], 'blue');
       const [bx, by] = f(paths[0][Math.floor(paths[0].length * 0.6)]);
@@ -89,23 +169,102 @@ function drawPiece(g: Graphics, strip: Strip, paths: readonly Point[][], r: Rect
       g.poly([bx, by - 9, bx, by - 30, bx + 13, by - 12]).fill(0xffffff).stroke({ width: 2, color: swatch.white.line });
       break;
     }
+    case 'snake': {
+      line(paths[0], 16, swatch.green.line);
+      line(paths[0], 10, swatch.green.fill);
+      const [hx, hy] = f(paths[0].at(-1)!);
+      g.ellipse(hx + 4, hy, 13, 10).fill(swatch.green.fill).stroke({ width: 3, color: swatch.green.line })
+        .circle(hx + 7, hy - 3, 2.5).fill(ink)
+        .moveTo(hx + 16, hy + 2).lineTo(hx + 24, hy + 2).lineTo(hx + 28, hy - 1).moveTo(hx + 24, hy + 2).lineTo(hx + 28, hy + 5).stroke({ width: 2, color: swatch.red.line });
+      break;
+    }
+    case 'tail': {
+      line(paths[0], 3, swatch.white.line);
+      for (let i = 1; i <= 4; i++) {
+        const [x, y] = at(paths[0], i / 5), c = swatch[MARKS[i % 4]];
+        g.poly([x - 7, y - 5, x, y, x - 7, y + 5]).poly([x + 7, y - 5, x, y, x + 7, y + 5]).fill(c.fill);
+      }
+      const [kx, ky] = f(paths[0][0]);
+      g.poly([kx - 6, ky - 26, kx + 10, ky - 6, kx - 2, ky + 2, kx - 18, ky - 16]).fill(swatch.orange.fill).stroke({ width: 3, color: swatch.orange.line, join: 'round' });
+      break;
+    }
     case 'fence':
       for (const p of paths) line(p, 9, swatch.brown.line);
       line([paths[0][Math.floor(paths[0].length * 0.35)], [paths.at(-1)!.at(-1)![0], paths[0][Math.floor(paths[0].length * 0.35)][1]]], 6, swatch.brown.fill);
       break;
+    case 'rain': {
+      for (const p of paths) line(p, 5, swatch.blue.line);
+      for (let i = 0; i < 4; i++) g.circle(r.x + r.w * (0.2 + i * 0.2), r.y - 8 - (i % 2) * 6, 22).fill(0xffffff);
+      g.roundRect(r.x + r.w * 0.06, r.y - 14, r.w * 0.88, 20, 10).fill(0xffffff);
+      break;
+    }
+    case 'candles': {
+      g.roundRect(r.x - r.w * 0.12, r.y + r.h, r.w * 1.24, r.h * 1.3, 8).fill(swatch.pink.fill).stroke({ width: 3, color: swatch.pink.line })
+        .rect(r.x - r.w * 0.12, r.y + r.h * 1.6, r.w * 1.24, 5).fill(0xffffff);
+      paths.forEach((p, i) => {
+        line(p, 8, swatch[(['blue', 'yellow', 'green'] as const)[i % 3]].line);
+        const [x, y] = f(p[0]);
+        g.ellipse(x, y - 9, 5, 8).fill(swatch.orange.fill).ellipse(x, y - 7, 2.5, 4).fill(swatch.yellow.fill);
+      });
+      break;
+    }
     case 'sun':
       g.poly(poly(paths[0])).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line });
       break;
+    case 'balloon': {
+      const [bx, by] = [r.x + r.w / 2, r.y + r.h];
+      g.moveTo(bx, by).quadraticCurveTo(bx - 10, by + r.h * 0.3, bx + 4, by + r.h * 0.6).stroke({ width: 2, color: swatch.white.line });
+      g.poly(poly(paths[0])).fill(swatch.red.fill).stroke({ width: 4, color: swatch.red.line });
+      g.poly([bx - 6, by + 6, bx + 6, by + 6, bx, by - 2]).fill(swatch.red.line);
+      break;
+    }
+    case 'wheel': {
+      const [cx, cy] = [r.x + r.w / 2, r.y + r.h / 2];
+      g.roundRect(r.x - r.w * 0.5, r.y - r.h * 0.2, r.w * 1.6, r.h * 0.5, 6).fill(swatch.orange.fill).stroke({ width: 3, color: swatch.orange.line });
+      g.poly(poly(paths[0])).fill({ color: 0xffffff, alpha: 0.6 }).stroke({ width: 7, color: swatch.brown.line });
+      for (let i = 0; i < 4; i++) {
+        const a = (i * Math.PI) / 4;
+        g.moveTo(cx - Math.cos(a) * r.w * 0.45, cy - Math.sin(a) * r.h * 0.45).lineTo(cx + Math.cos(a) * r.w * 0.45, cy + Math.sin(a) * r.h * 0.45);
+      }
+      g.stroke({ width: 3, color: swatch.brown.line }).circle(cx, cy, 5).fill(swatch.brown.line);
+      break;
+    }
     case 'sheep':
       line(paths[0], 14, swatch.white.line);
       line(paths[0], 9, 0xffffff);
       break;
+    case 'clouds':
+      line(paths[0], 20, swatch.white.line);
+      line(paths[0], 15, 0xffffff);
+      break;
+    case 'smoke': {
+      const [sx, sy] = f(paths[0][0]);
+      g.rect(sx - 10, sy + 2, 20, 30).fill(swatch.red.fill).stroke({ width: 3, color: swatch.red.line });
+      line(paths[0], 12, swatch.white.line, 0.8);
+      line(paths[0], 7, 0xffffff, 0.9);
+      break;
+    }
     case 'window':
       g.rect(r.x, r.y, r.w, r.h).fill(swatch.blue.light).stroke({ width: 4, color: swatch.brown.line });
       for (const p of paths) line(p, 4, swatch.brown.line);
       break;
     case 'house': g.poly(poly(paths[0])).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line }); break;
     case 'roof': g.poly(poly(paths[0])).fill(swatch.red.fill).stroke({ width: 4, color: swatch.red.line }); break;
+    case 'present': g.poly(poly(paths[0])).fill(swatch.purple.fill).stroke({ width: 4, color: swatch.purple.line }); break;
+    case 'ribbon': for (const p of paths) { line(p, 12, swatch.yellow.line); line(p, 7, swatch.yellow.fill); } break;
+    case 'bow': {
+      g.poly(poly(paths[0])).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line, join: 'round' });
+      const [tx, ty] = f(paths[0][0]);
+      g.circle(tx, ty, 7).fill(swatch.yellow.line);
+      break;
+    }
+    case 'cabin': {
+      g.rect(0, r.y + r.h * 0.7, r.x + r.w * 1.45, r.h * 0.9).fill(swatch.blue.fill);
+      g.poly(poly(paths[0])).fill(swatch.red.fill).stroke({ width: 4, color: swatch.red.line });
+      break;
+    }
+    case 'mast': for (const p of paths) line(p, 7, swatch.brown.line); break;
+    case 'sail': g.poly(poly(paths[0])).fill(0xffffff).stroke({ width: 4, color: swatch.white.line }); break;
     case 'bridge':
       line(paths.flat(), 10, swatch.brown.line);
       line(paths.flat(), 5, swatch.brown.fill);
@@ -231,7 +390,7 @@ class DrawThePattern implements Game {
     if (this.plan.mode === 'choose') return 'draw.instruct.next';
     if (this.strip.memory) return 'draw.instruct.memory';
     if (this.level === 6) return 'draw.instruct.shape';
-    if (this.strip.piece === 'fence') return 'draw.instruct.down';
+    if (this.strip.strokes[0].kind === 'post') return 'draw.instruct.down';
     return 'draw.instruct.ring';
   }
 
@@ -397,12 +556,14 @@ class DrawThePattern implements Game {
     const { w, h } = this.layout.picture;
     this.sceneG.clear(); drawScene(this.sceneG, w, h);
     const g = this.piecesG.clear();
-    this.strips.forEach((strip, i) => {
+    const order = this.strips.map((_, i) => i).sort((a, b) => +BEHIND.has(this.strips[b].piece) - +BEHIND.has(this.strips[a].piece));
+    for (const i of order) {
+      const strip = this.strips[i];
       const r = this.slots[i], slot = { x: r.x * w, y: r.y * h, w: r.w * w, h: r.h * h };
       if (this.placed.has(i)) drawPiece(g, strip, this.drawn[i], slot, false);
-      else if (strip.piece === 'meadow') g.rect(slot.x, slot.y + slot.h * 0.5, slot.w, slot.h * 0.5).fill({ color: 0xffffff, alpha: 0.5 });
+      else if (this.plan.mode === 'mark') g.rect(slot.x, slot.y + slot.h * 0.5, slot.w, slot.h * 0.5).fill({ color: 0xffffff, alpha: 0.5 });
       else drawPiece(g, strip, this.ghostPaths(strip), slot, true);
-    });
+    }
   }
 
   /** The soft outline of a strip's piece before it is drawn. */
@@ -565,13 +726,12 @@ class DrawThePattern implements Game {
   private markLifted(mark: Point[]) {
     if (this.busy || this.finished) return;
     this.lifts++;
-    const g = this.flowersG, colors = ['pink', 'yellow', 'red', 'purple', 'orange'] as const;
+    const g = this.flowersG, colors = ['pink', 'yellow', 'red', 'purple', 'orange'] as const, piece = this.strip.piece;
     const n = Math.min(4, Math.max(1, Math.ceil(lengthTo(mark, mark.length - 1) / 0.5)));
     for (let i = 0; i < n; i++) {
       const p = mark[Math.floor((i / Math.max(1, n - 1 || 1)) * (mark.length - 1))];
-      const [x, y] = this.pts(p), c = swatch[colors[(this.lifts + i) % colors.length]];
-      for (let k = 0; k < 5; k++) g.circle(x + Math.cos((k * 2 * Math.PI) / 5) * 11, y - 14 + Math.sin((k * 2 * Math.PI) / 5) * 11, 8).fill(c.fill);
-      g.circle(x, y - 14, 6).fill(swatch.yellow.fill).moveTo(x, y - 4).lineTo(x, y + 10).stroke({ width: 4, color: swatch.green.line });
+      const [x, y] = this.pts(p);
+      sprout(g, piece, x, y, colors[(this.lifts + i) % colors.length]);
     }
     sfx.bell(5 + this.lifts, 0.14);
     if (this.lifts >= markCount(this.plan)) void this.stripDone();
