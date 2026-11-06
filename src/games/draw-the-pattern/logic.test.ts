@@ -4,7 +4,7 @@ import { computeView } from '../../engine/view';
 import { advanceTrace, traceWaypoints, type Point } from '../letter-trails/strokes';
 import { offTrail } from '../letter-trails/logic';
 import {
-  LEVELS, PAIRS, PLANS, RING_R, STRIP_W, botRoute, chooseOrder, core, divergence, hintStretch, homeCorner, layoutFor, lengthTo,
+  LEVELS, PAIRS, PLANS, POOLS, SHAPE_SETS, RING_R, STRIP_W, botRoute, chooseOrder, core, divergence, hintStretch, homeCorner, layoutFor, lengthTo,
   markCount, nextUnit, onPaper, pathOf, petCorner, planFor, stones, stripsFor, tolerance, wrongReached, type Rect, type Stroke,
 } from './logic';
 import { SCRIPT as LINES } from '../../content/voice-script';
@@ -340,6 +340,44 @@ describe('Draw the Pattern ladder', () => {
 
   it('gives the same strips for the same seed', () => {
     for (let l = 1; l <= 8; l++) expect(stripsFor(l, new Rng(42))).toEqual(stripsFor(l, new Rng(42)));
+  });
+
+  it('gives every stroke a pool of three pictures, each with its own spoken line', () => {
+    const pieces = [...Object.values(POOLS).flat(), ...SHAPE_SETS.flat()];
+    for (const pool of [...Object.values(POOLS), ...SHAPE_SETS]) expect(new Set(pool).size).toBe(3);
+    expect(new Set(pieces).size).toBe(pieces.length);
+    for (const p of [...pieces, 'bridge', 'bunting']) expect(LINES[`draw.picture.${p}` as keyof typeof LINES]).toBeTruthy();
+  });
+
+  it('reaches every picture in a seed sweep, and the pictures never change the strokes', () => {
+    const seen = new Set<string>();
+    const strokes = new Map<number, string>();
+    for (let seed = 1; seed <= 200; seed++) {
+      for (let l = 1; l <= 6; l++) {
+        const strips = stripsFor(l, new Rng(seed));
+        for (const s of strips) seen.add(s.piece);
+        if (l === 6) expect(SHAPE_SETS.some((set) => set.every((p, i) => strips[i].piece === p))).toBe(true);
+        // Levels 2, 3, 4 and 6 draw the same strokes every round, whatever they become.
+        if (l === 1 || l === 5) continue;
+        const key = JSON.stringify(strips.map((s) => s.strokes));
+        if (!strokes.has(l)) strokes.set(l, key);
+        expect(key).toBe(strokes.get(l));
+      }
+    }
+    for (const p of [...Object.values(POOLS).flat(), ...SHAPE_SETS.flat()]) expect(seen, p).toContain(p);
+  });
+
+  it('puts each stroke’s pictures only on that stroke', () => {
+    const pool = (kind: string): readonly string[] =>
+      kind === 'free' ? POOLS.mark : kind === 'line' ? POOLS.line : kind === 'post' ? POOLS.down : kind === 'circle' ? POOLS.circle
+        : kind === 'zig' || kind === 'wave' || kind === 'loop' ? POOLS[kind] : [];
+    for (let seed = 1; seed <= 60; seed++) {
+      for (let l = 1; l <= 5; l++) {
+        const strips = stripsFor(l, new Rng(seed));
+        for (const s of strips) expect(pool(s.strokes[0].kind)).toContain(s.piece);
+        if (l === 1) expect(new Set(strips.map((s) => s.piece)).size).toBe(1);
+      }
+    }
   });
 });
 

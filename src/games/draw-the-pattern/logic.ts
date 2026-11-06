@@ -90,7 +90,40 @@ export function layoutFor(v: { w: number; h: number }): Layout {
 
 export type UnitKind = 'zig' | 'wave' | 'loop' | 'hill' | 'dip' | 'peak' | 'vee';
 /** What a finished strip becomes in the picture. */
-export type PieceId = 'meadow' | 'ground' | 'fence' | 'mountains' | 'sea' | 'sun' | 'sheep' | 'window' | 'house' | 'roof' | 'bridge' | 'bunting';
+export type PieceId =
+  | 'meadow' | 'pond' | 'sky'
+  | 'ground' | 'washing' | 'road'
+  | 'fence' | 'rain' | 'candles'
+  | 'mountains' | 'teeth' | 'crown'
+  | 'sea' | 'snake' | 'tail'
+  | 'sun' | 'balloon' | 'wheel'
+  | 'sheep' | 'clouds' | 'smoke'
+  | 'window' | 'house' | 'roof'
+  | 'ribbon' | 'present' | 'bow'
+  | 'mast' | 'cabin' | 'sail'
+  | 'bridge' | 'bunting';
+
+/**
+ * What a stroke can become, three things each, chosen by the round's seed. The strokes never change with the piece; only
+ * the picture does. Level 1's marks become flowers, fish or birds.
+ */
+export const POOLS = {
+  mark: ['meadow', 'pond', 'sky'],
+  line: ['ground', 'washing', 'road'],
+  down: ['fence', 'rain', 'candles'],
+  zig: ['mountains', 'teeth', 'crown'],
+  wave: ['sea', 'snake', 'tail'],
+  circle: ['sun', 'balloon', 'wheel'],
+  loop: ['sheep', 'clouds', 'smoke'],
+} as const satisfies Record<string, readonly PieceId[]>;
+export type PoolId = keyof typeof POOLS;
+
+/** Level 6's cross, square and triangle become one thing together, so a set swaps as a whole. */
+export const SHAPE_SETS: readonly (readonly [cross: PieceId, square: PieceId, triangle: PieceId])[] = [
+  ['window', 'house', 'roof'],
+  ['ribbon', 'present', 'bow'],
+  ['mast', 'cabin', 'sail'],
+];
 
 /** One unit's width along the strip: the strip holds five. */
 export const UNIT_W = 0.6;
@@ -227,45 +260,48 @@ export function patternUnits(core: readonly UnitKind[], total: number): UnitKind
 export function stripsFor(level: number, rng: Rng): Strip[] {
   const l = levelOf(level);
   switch (l) {
-    case 1:
+    case 1: {
+      const piece = rng.pick(POOLS.mark);
       return Array.from({ length: 3 }, () => ({
-        piece: 'meadow' as const,
+        piece,
         strokes: [single('free', curve((u) => [X0 + 3 * u, BASE + 0.18 * Math.sin(rng.range(0, 1) + 3 * Math.PI * u)], 60), -1)],
       }));
+    }
     case 2: {
       const line = sampleStroke([[X0, BASE], [3.2, BASE]], SPACING);
       const posts = [0.8, 1.7, 2.6].map((x, i) => single('post', [[x, 0.25], [x, 0.85]], i === 0 ? -1 : 0));
       return [
-        { piece: 'ground', strokes: [{ kind: 'line', orders: [line], lead: line.findIndex((p) => p[0] >= 1.2 - 1e-9), corners: [] }] },
-        { piece: 'fence', strokes: posts },
+        { piece: rng.pick(POOLS.line), strokes: [{ kind: 'line', orders: [line], lead: line.findIndex((p) => p[0] >= 1.2 - 1e-9), corners: [] }] },
+        { piece: rng.pick(POOLS.down), strokes: posts },
       ];
     }
     case 3:
       return [
-        { piece: 'mountains', strokes: [patternStroke(Array(5).fill('zig'), 2, X0)] },
-        { piece: 'sea', strokes: [patternStroke(Array(5).fill('wave'), 2, X0)] },
+        { piece: rng.pick(POOLS.zig), strokes: [patternStroke(Array(5).fill('zig'), 2, X0)] },
+        { piece: rng.pick(POOLS.wave), strokes: [patternStroke(Array(5).fill('wave'), 2, X0)] },
       ];
     case 4: {
       const c = circle(1.7, 0.5, 0.36);
       return [
-        { piece: 'sun', strokes: [{ kind: 'circle', orders: c, lead: 0, corners: [] }] },
-        { piece: 'sheep', strokes: [patternStroke(Array(4).fill('loop'), 1, (STRIP_W - 4 * LOOP_W) / 2, LOOP_W)] },
+        { piece: rng.pick(POOLS.circle), strokes: [{ kind: 'circle', orders: c, lead: 0, corners: [] }] },
+        { piece: rng.pick(POOLS.loop), strokes: [patternStroke(Array(4).fill('loop'), 1, (STRIP_W - 4 * LOOP_W) / 2, LOOP_W)] },
       ];
     }
     case 5: {
       const kinds = rng.shuffle<'zig' | 'wave' | 'loop'>(['zig', 'wave', 'loop']).slice(0, 2);
       return kinds.map((k) => ({
-        piece: PIECE_OF[k], memory: true,
+        piece: rng.pick(POOLS[k]), memory: true,
         // Loops are as at level 4: four, the pet draws one.
         strokes: [k === 'loop' ? patternStroke(Array(4).fill(k), 1, (STRIP_W - 4 * LOOP_W) / 2, LOOP_W) : patternStroke(Array(5).fill(k), 2, X0)],
       }));
     }
     case 6: {
       const cx = 1.7;
+      const [cross, square, triangle] = rng.pick(SHAPE_SETS);
       return [
-        { piece: 'window', strokes: [single('cross-down', [[cx, 0.12], [cx, 0.88]]), single('cross-across', [[cx - 0.6, 0.5], [cx + 0.6, 0.5]])] },
-        { piece: 'house', strokes: [single('square', [[cx - 0.36, 0.14], [cx - 0.36, 0.86], [cx + 0.36, 0.86], [cx + 0.36, 0.14], [cx - 0.36, 0.14]], 0, [[cx - 0.36, 0.86], [cx + 0.36, 0.86], [cx + 0.36, 0.14]])] },
-        { piece: 'roof', strokes: [single('triangle', [[cx, 0.12], [cx - 0.5, 0.86], [cx + 0.5, 0.86], [cx, 0.12]], 0, [[cx - 0.5, 0.86], [cx + 0.5, 0.86]])] },
+        { piece: cross, strokes: [single('cross-down', [[cx, 0.12], [cx, 0.88]]), single('cross-across', [[cx - 0.6, 0.5], [cx + 0.6, 0.5]])] },
+        { piece: square, strokes: [single('square', [[cx - 0.36, 0.14], [cx - 0.36, 0.86], [cx + 0.36, 0.86], [cx + 0.36, 0.14], [cx - 0.36, 0.14]], 0, [[cx - 0.36, 0.86], [cx + 0.36, 0.86], [cx + 0.36, 0.14]])] },
+        { piece: triangle, strokes: [single('triangle', [[cx, 0.12], [cx - 0.5, 0.86], [cx + 0.5, 0.86], [cx, 0.12]], 0, [[cx - 0.5, 0.86], [cx + 0.5, 0.86]])] },
       ];
     }
     default: {
@@ -284,8 +320,6 @@ export function stripsFor(level: number, rng: Rng): Strip[] {
     }
   }
 }
-
-const PIECE_OF: Record<'zig' | 'wave' | 'loop', PieceId> = { zig: 'mountains', wave: 'sea', loop: 'sheep' };
 
 /** A circle from the top, both ways round: counterclockwise first (going left, as the pet draws it), then clockwise. */
 function circle(cx: number, cy: number, r: number): Point[][] {

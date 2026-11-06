@@ -129,3 +129,10 @@
 - **Ran:** `node scripts/check-links.mjs` (links ok) and `git diff --check`. No code checks (docs tier).
 - **Follow-up, same day:** the developer asked for the recommendations to be made without waiting. Six defined new games were admitted on their October 23 defaults (Far Lights, Seed Travelers, Rain Garden, Playdate Workshop, Circuit Garden, Measuring Post). Next ten was filled to ten.
 - **Open:** waves 6–7 dives queue only through the tracker; Weights Case still waits on Box Balance; each new game's source check and lands test run at build time.
+
+## 2026-11-05 — Word Search level 6 A message in the leftovers (word-search batch 3)
+
+- [PR #1269](https://github.com/rjdunlap/neo/pull/1269): level 6 (8 by 8, nine words, up to eight stones, the leftovers spell a themed message revealed at the last word); `makeGrid` output for levels 1-5 unchanged.
+- Ran: `npm run typecheck`; `npm test` (305 files, 5126 tests pass, with new rule tests: plan shape, messages plain and block-free, every theme x 24 seeds leftovers equal the message with at most eight stones outside every word, a line through a stone is never a word); one scripted level 6 play (one wrong line, one hint, all words, reveal, sticker; misses 1, hints 1) at 768x1024 and 1024x768 with screenshots; `BROWSER_SUITE=fingerdemo FINGER_ONLY=word-search FINGER_LEVELS=6` PASS (11.1 s); `npm run build`; game-reviewer (three minor layout findings, fixed).
+- Not run: `couchgames` (levels 1-5 grids proved byte-identical over 60 seeds each, trip stays on 1-3); device speech of the slotted message line; a real iPad.
+- Open: a person hearing the message line on the iPad.
