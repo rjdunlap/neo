@@ -186,3 +186,7 @@ Each has a default the build uses; decision 1 is the developer's confirmation th
 5. **Home land.** Default Tinker Lab (full at 14 games since 2026-10-24: Gear Garden went to Painted Canyon for that reason), fallback Rainbow Meadow; `lands.test.ts` decides between them at every band and view.
 
 **Decided 2026-10-23 (on the developer's delegation):** every default stands: register Rain Garden as a new game (toddler 1, preschool 1–2, pre-K 2–3, school 3; Tinker Lab, fallback Rainbow Meadow), and decision 2's science reader is the building session's source check against EPA/NOAA, recorded in its verification entry.
+
+## Level 4, *two-socket downhill route* (claimed)
+
+Being defined on `claude/define-rain-garden-4` (docs only): the weather-water study's [slice 4](../deep-dives/subjects/weather-water.md#build-slices-in-order).
