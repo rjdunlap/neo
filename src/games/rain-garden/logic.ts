@@ -113,9 +113,9 @@ export function setSurface(s: RoundState, i: number, surface: Surface): RoundSta
   return { ...s, surfaces, current: null };
 }
 
-/** Start again: the same board from fresh. The bookmark goes too, since it is part of the round's work. */
-export function restartState(round: Round, s: RoundState): RoundState {
-  return { ...freshState(round), trials: s.trials, compared: 0 };
+/** Start again: the same board from fresh. The bookmark and the trial counts go too (hints are the scene's and stay). */
+export function restartState(round: Round): RoundState {
+  return freshState(round);
 }
 
 export function canFinish(s: RoundState): boolean {

@@ -56,6 +56,8 @@ class RainGarden implements Game {
   private readonly friends: Container[] = [];
   private settled: Settled[] = [];
   private readonly flying = new Set<Container>();
+  /** A resize that came while something moved; applied when it stops. */
+  private stale = false;
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
@@ -169,6 +171,7 @@ class RainGarden implements Game {
   private tapCloud() {
     if (this.busy || this.finished) return;
     this.squash(this.cloud);
+    this.tilesLit = false;
     void this.shower();
   }
 
@@ -187,7 +190,7 @@ class RainGarden implements Game {
     if (firstBookmark) { await this.keepBookmark(trials[0]); return; }
     if (canFinish(this.s)) this.ever = true;
     this.leaf.visible = this.canFinish;
-    this.busy = false;
+    this.idle();
     await this.ctx.say(this.resultLine(trials));
     if (this.finished) return;
     if (!this.saidEnough && enough(this.s)) { this.saidEnough = true; await this.ctx.say('rain.done'); }
@@ -309,7 +312,7 @@ class RainGarden implements Game {
     await this.freshen();
     if (this.finished) return;
     this.tilesLit = true;
-    this.busy = false;
+    this.idle();
     await this.ctx.say('rain.again');
   }
 
@@ -329,7 +332,7 @@ class RainGarden implements Game {
     this.drawTiles();
     if (this.settled.length) {
       this.busy = true;
-      void this.freshen().then(() => { if (!this.finished) this.busy = false; });
+      void this.freshen().then(() => { if (!this.finished) this.idle(); });
     } else if (changed) {
       const old = this.patches[patch];
       this.patches[patch] = this.patchGraphic(patch);
@@ -362,7 +365,7 @@ class RainGarden implements Game {
     const go = () => {
       if (this.finished) return;
       if (this.busy) { void this.ctx.tw.wait(0.2).then(go); return; }
-      this.s = restartState(this.round, this.s);
+      this.s = restartState(this.round);
       this.ever = false;
       this.saidEnough = false;
       this.tilesLit = false;
@@ -387,12 +390,18 @@ class RainGarden implements Game {
 
   // ---- shell hooks ----
 
+  private idle() {
+    this.busy = false;
+    if (this.stale) { this.stale = false; this.resize(this.ctx.view); }
+  }
+
   resize(view: View) {
     this.layout = rainLayout(view, this.plan.level, this.round.mirror) ?? this.layout;
     const l = this.layout;
     this.backdrop.resize(view);
-    this.drawBoards();
-    this.placeSettled();
+    // Boards and drops are redrawn only while nothing moves; a resize mid-shower is applied when it settles.
+    if (this.busy) this.stale = true;
+    else { this.drawBoards(); this.placeSettled(); }
     this.cloud.position.set(l.cloud.x, l.cloud.y);
     this.leaf.position.set(l.leaf.x, l.leaf.y);
     this.tiles.forEach((t, i) => t.position.set(l.tiles[i].x, l.tiles[i].y));

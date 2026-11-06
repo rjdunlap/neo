@@ -61,11 +61,12 @@ describe('fresh start', () => {
       const round = makeRound(level, new Rng(level), true);
       let s = rain(rain(freshState(round)).state).state;
       expect(setSurface(s, 0, 'stone').current).toBeNull();
-      s = restartState(round, s);
+      s = restartState(round);
       expect(s.surfaces).toEqual(round.start);
       expect(s.current).toBeNull();
       expect(s.bookmark).toBeNull();
-      expect(s.compared).toBe(0);
+      expect([s.compared, s.trials]).toEqual([0, 0]);
+      expect(enough(s)).toBe(false);
       expect(rain(s).trials[0]).toEqual(trial(round.start[0]));
     }
   });
