@@ -132,3 +132,7 @@ Required meaningful rule tests in `logic.test.ts`:
 Build tier: typecheck and unit tests; one filtered scripted play covering first/last levels, a step that blocks Roly, narrow door that blocks Bear, hint and supported finish; demonstrate each new layout/level with `fingerdemo`; one portrait screenshot of level 4 and a landscape inspection. Build because registration/content files change. Add the suite/filter to the existing browser harness and README. Navigation/assets/persistence checks follow only what the implementation actually changes, under AGENTS' budget; do not claim offline fit from this document.
 
 Definition proof was Markdown links and `git diff --check` only. Build checks are recorded in [VERIFICATION](../archive/VERIFICATION-2026-10-24.md#2026-10-24--welcome-ways-levels-14). iPad drag/tap comfort, spoken reasons on device, whether the child notices two visitors' needs, and human access representation review remain **not run**. No unresolved developer decision gates levels 1–4; later human representation, practical access cards and later geometry retain their study gates.
+
+## Levels 5–7 (claimed)
+
+Being defined on `claude/define-welcome-ways-5-7` (docs only): the engineering-design study's [slice 2](../deep-dives/subjects/engineering-design.md#build-slices-in-order), constraints, a conflict and a repair for a new friend.
