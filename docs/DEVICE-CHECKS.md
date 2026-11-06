@@ -293,6 +293,12 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 - [ ] Does she take the level 2 Check as "same shape as the card" and can she tell a rebuilt shape from the card's picture at a glance?
 - [ ] Levels 3–4: does she read the before/now tally strip, and are seven beads plus a two-shape card comfortable on an iPad in portrait (nubs reachable, nothing crowding the pet or corner buttons)? Does she understand the made shape fading on the card as "now build the other"?
 
+## Bond Beads levels 5–6 (chemistry slice 4, 2026-11-06)
+
+- [ ] On an iPad: do two parallel bars read as a double hold, and can a finger tap one bar to break one link without hitting the other?
+- [ ] On the iPad's voice, are "ammonia" and "carbon dioxide" and the `bondbeads.named.*` lines clear?
+- [ ] With a 10–13-year-old: does she read the tally, and do the model-limits note and the N bead (triangle mark) make sense?
+
 ## Story Weaver levels 1–3 (writing-composition WC1, 2026-10-24)
 
 - [ ] With a six-year-old: does she understand that the owl cannot see the pictures, and does the owl's question read as a suggestion she may decline?
