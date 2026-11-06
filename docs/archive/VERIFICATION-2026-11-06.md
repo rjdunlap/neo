@@ -27,3 +27,10 @@
 - Ran (tested commit `e7536148`, base `734291c2`; port 5743, Vite dev): `npm run typecheck`; `npm test` (316 files, 5605 tests, 8 new level-8 rule tests); `npm run build`; `BROWSER_SUITE=logicgrid LOGICGRID_FROM=8` PASS (75 squares, 7-9 clues with order and pair, landscape and portrait fit at 64 clear of the pet, a header drag slides, a hidden square takes no mark, one counted miss, one Help hint in view, bot to the sticker, saved 1 miss 1 hint); `BROWSER_SUITE=fingerdemo FINGER_ONLY=logic-grid FINGER_LEVELS=8` clean in 27.2 s. Screenshots `test-results/browser/logicgrid/logic-grid-8-landscape.png` and `-portrait.png`.
 - Not run: levels 1-7 browser plays (their code moved cells into a body container and headers into strips at zero offset with no mask; unit tests cover rules), the offline check.
 - Open: device speech of the slotted level-8 clues and a real iPad slide (person/device, in [DEVICE-CHECKS](../DEVICE-CHECKS.md#mystery-grid-level-8-2026-11-06)).
+
+## 2026-11-06 — Draw the Pattern level 9 Slanting lines
+
+- [PR #1299](https://github.com/rjdunlap/neo/pull/1299): `draw-the-pattern` level 9 (pre-K, order 5, 9, 6, 7, 8): rain `\` lines, then an X becoming a kite or treasure mark; new voice lines, how-to level-9 step, `DRAW_LEVELS` filter in the `drawpattern` case.
+- Ran (commit `b333110a`; port 5309, Vite dev): `npm run typecheck`; `npm test` (314 files, 5440 tests; level-9 rule tests: diagonals at least 0.4 in x and y, the X crosses once, X rings at least 2 ring radii apart in every view, order 5 to 9 to 6, both pictures reachable); `BROWSER_SUITE=drawpattern DRAW_LEVELS=9` PASS (two strays: 1 miss, glow, 1 hint, finish, picture screenshot); `BROWSER_SUITE=fingerdemo FINGER_ONLY=draw-the-pattern FINGER_LEVELS=9 FINGER_BAND=prek` PASS; a probe screenshot of the kite and treasure pictures.
+- Not run: `npm run build` (no shared files or assets), other levels' browser plays (unchanged), a real iPad.
+- Open: a four-year-old's finger on the short slanting lines ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).

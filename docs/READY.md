@@ -6,7 +6,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **Dive `swing-pals`** (Swing Pals; lap to school, 6 levels; docs only): [procedure](deep-dives/README.md#one-session-one-game), [definition](definitions/swing-pals.md).
 - **`hat-band`, levels 1–3, a new Music Mountain game** (defined 2026-10-22 as M5; identity and placement settled 2026-10-23, Music Mountain holds 8 games). The building session does the source check and the actual Music Mountain capacity check first (new-game tier with a build, as the definition's check tier sets it): [definition](definitions/hat-band.md#check-tier), [study](deep-dives/subjects/music-instruments.md).
 - **Define Gadget Bench 4** (`inventions`; a three-condition path with a conflict, revise one part; docs only): [definition so far](definitions/gadget-bench.md#what-comes-next), [study](deep-dives/subjects/inventions.md).
 - **`bond-beads`, levels 7–8** (`chemistry`; school; a reaction as rearrangement, plus the 9-bead layout fix or cut level 8's 9-bead case; levels 1–6 built): [definition](definitions/bond-beads.md#levels-58-definition), [check tier](definitions/bond-beads.md#check-tier-levels-58).
@@ -32,6 +31,11 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
   - **`playdate-workshop`, levels 1–3** (preschool 1, pre-K 1–3; taking turns and sharing, with the materials carrying the rule; Story Grove, else Painted Canyon): [definition](definitions/playdate-workshop.md#check-tier).
   - **`circuit-garden`, levels 1–2, then 3** (pre-K and school; a visible way back closes the loop; Tinker Lab): [definition](definitions/circuit-garden.md).
   - **`measuring-post`, levels 1–4** (school; choose the tool for the question, and compare counts only in the same unit; Tinker Lab or Cozy Village): [definition](definitions/measuring-post.md).
+
+- **`swing-pals`, three slices in the dive's order** (`physics`; lap to school; [build slices](deep-dives/swing-pals.md#build-slices-in-order)):
+  - **`swing-pals`, more friends and leaf goals** (riders cat, dog, pig and, if it clears the short hook, cow; seeded leaf goals beside the bell; fresh-content tier, no `fingerdemo`): [fresh content inside existing levels](deep-dives/swing-pals.md#fresh-content-inside-existing-levels).
+  - **`swing-pals`, level 7 *Who comes back first?*** (pre-K between 3 and 4 and school after 6, on decision 1's default; new-interaction tier with `fingerdemo` at 7): [new levels on top](deep-dives/swing-pals.md#new-levels-on-top).
+  - **`swing-pals`, level 8 *Twice as quick*** (after level 7; new level on the existing hook interaction, `fingerdemo` at 8): [new levels on top](deep-dives/swing-pals.md#new-levels-on-top).
 
 ### Study follow-ups (docs-only definitions)
 

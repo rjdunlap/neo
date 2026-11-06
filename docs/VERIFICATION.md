@@ -1,5 +1,9 @@
 # Puddle Island verification
 
+## 2026-11-06 — Swing Pals deep dive (docs only)
+
+Changed: `docs/deep-dives/swing-pals.md` and its tracker, READY, backlog and waiting-on-developer rows (PR #1319); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built; three decisions wait on the developer ([list](WAITING-ON-DEVELOPER.md)).
+
 ## 2026-11-06 — Welcome Ways levels 5–7
 
 Changed: `welcome-ways` school range 3–7: kind-tagged sockets, switchback board (level 5), side strips with Teeter and Duck (6–7), repair ties prefer the design that meets the stop socket's need, voice, how-to, ghost finger, `WELCOME_ONLY=deep` (PR #1318, commit 99b5ca07 on origin/main dfc82771, Vite dev on :5998 with `VITE_SPEECH=off`).
@@ -78,13 +82,6 @@ Changed: `docs/definitions/helper-house.md` (new "Levels 5–7 (RA4)" section), 
 - The picture-tap guard came after the browser runs (unit tests re-run only).
 - Not run: `npm run build` (no shared files or assets), other levels' browser plays, a real iPad.
 - Open: whether a one-year-old taps the shining dot and the 120-unit dot suits her finger ([DEVICE-CHECKS](DEVICE-CHECKS.md)).
-
-## 2026-11-06 — Draw the Pattern level 9 Slanting lines
-
-- [PR #1299](https://github.com/rjdunlap/neo/pull/1299): `draw-the-pattern` level 9 (pre-K, order 5, 9, 6, 7, 8): rain `\` lines, then an X becoming a kite or treasure mark; new voice lines, how-to level-9 step, `DRAW_LEVELS` filter in the `drawpattern` case.
-- Ran (commit `b333110a`; port 5309, Vite dev): `npm run typecheck`; `npm test` (314 files, 5440 tests; level-9 rule tests: diagonals at least 0.4 in x and y, the X crosses once, X rings at least 2 ring radii apart in every view, order 5 to 9 to 6, both pictures reachable); `BROWSER_SUITE=drawpattern DRAW_LEVELS=9` PASS (two strays: 1 miss, glow, 1 hint, finish, picture screenshot); `BROWSER_SUITE=fingerdemo FINGER_ONLY=draw-the-pattern FINGER_LEVELS=9 FINGER_BAND=prek` PASS; a probe screenshot of the kite and treasure pictures.
-- Not run: `npm run build` (no shared files or assets), other levels' browser plays (unchanged), a real iPad.
-- Open: a four-year-old's finger on the short slanting lines ([DEVICE-CHECKS](DEVICE-CHECKS.md)).
 
 ## Coverage summary
 
