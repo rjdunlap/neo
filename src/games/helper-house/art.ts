@@ -3,7 +3,7 @@ import { Container, Graphics } from 'pixi.js';
 import { Critter, CRITTERS, type CritterName } from '../../art/critter';
 import { cream, ink, shadow, swatch, wood, type ColorName } from '../../art/palette';
 import { starPoints } from '../../art/shapes';
-import type { Action, Reading, SensorKind, SunLevel } from './logic';
+import type { Action, Helper, Reading, SensorKind, SunLevel, Zone } from './logic';
 
 const line = (color: number, width = 5) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 export const BRASS = { fill: 0xf4d9a6, line: 0xc9a86a };
@@ -55,9 +55,40 @@ function moonArt(r: number): Graphics {
   return g;
 }
 
-/** A reading's picture: the eye near a friend or far, a moon, a half sun, a full sun. */
+/** Each warmth zone's fill height and colour: never colour alone. */
+const ZONE_ART: Record<Zone, { fill: number; color: { fill: number; line: number } }> = {
+  cool: { fill: 0.25, color: swatch.blue },
+  warm: { fill: 0.6, color: swatch.orange },
+  hot: { fill: 0.95, color: swatch.red },
+};
+
+/** A thermometer: a tube with a bulb, filled to `fill` (0–1) in a colour, with three notches for the zones. */
+function thermoArt(fill: number, color: { fill: number; line: number }, h: number): Graphics {
+  const g = new Graphics();
+  const w = h * 0.26;
+  const bulb = h * 0.2;
+  const top = -h / 2;
+  const tubeBottom = h / 2 - bulb * 1.6;
+  g.roundRect(-w / 2, top, w, tubeBottom - top + bulb, w / 2).fill(0xffffff).stroke(line(ink, Math.max(3, h * 0.05)));
+  g.circle(0, h / 2 - bulb, bulb).fill(color.fill).stroke(line(ink, Math.max(3, h * 0.05)));
+  const inner = w * 0.46;
+  const reach = (tubeBottom - top - w * 0.3) * fill;
+  g.roundRect(-inner / 2, tubeBottom - reach, inner, reach + bulb, inner / 2).fill(color.fill);
+  g.circle(0, h / 2 - bulb, bulb * 0.62).fill(color.line);
+  for (const k of [1 / 3, 2 / 3]) {
+    const y = tubeBottom - (tubeBottom - top) * k;
+    g.moveTo(w / 2, y).lineTo(w / 2 + h * 0.1, y).stroke(line(ink, Math.max(2, h * 0.035)));
+  }
+  return g;
+}
+
+/** A reading's picture: the eye near a friend or far, a moon, a half sun, a full sun, a thermometer's zone. */
 export function readingArt(reading: Reading, size = 80): Container {
   const r = size * 0.32;
+  if (reading === 'cool' || reading === 'warm' || reading === 'hot') {
+    const z = ZONE_ART[reading];
+    return thermoArt(z.fill, z.color, size * 0.86);
+  }
   if (reading === 'near') {
     const c = new Container();
     c.addChild(eyeArt(true, r));
@@ -77,10 +108,35 @@ export function readingArt(reading: Reading, size = 80): Container {
   return sunArt(r * 0.8, reading === 'dim');
 }
 
-/** An action's picture: an open door, a lit lamp, a dark lamp. */
-export function actionArt(action: Action, size = 80): Graphics {
+/** A heater: a rounded radiator with fins; on, it glows warm with wavy lines rising. */
+function heaterArt(on: boolean, w: number): Graphics {
   const g = new Graphics();
+  const h = w * 0.72;
+  if (on) g.roundRect(-w * 0.62, -h * 0.62, w * 1.24, h * 1.24, w * 0.3).fill({ color: swatch.orange.fill, alpha: 0.28 });
+  g.roundRect(-w / 2, -h / 2, w, h, w * 0.14).fill(on ? swatch.orange.light : METAL.fill).stroke(line(on ? swatch.orange.line : METAL.line, Math.max(3, w * 0.05)));
+  for (let i = 1; i < 5; i++) {
+    const x = -w / 2 + (w * i) / 5;
+    g.moveTo(x, -h * 0.32).lineTo(x, h * 0.32).stroke(line(on ? swatch.red.fill : METAL.line, Math.max(3, w * 0.05)));
+  }
+  g.roundRect(-w * 0.42, h / 2, w * 0.12, h * 0.16, 3).fill(METAL.line).roundRect(w * 0.3, h / 2, w * 0.12, h * 0.16, 3).fill(METAL.line);
+  if (on) {
+    for (const x of [-w * 0.25, 0, w * 0.25]) {
+      g.moveTo(x, -h * 0.62).quadraticCurveTo(x + w * 0.08, -h * 0.75, x, -h * 0.88).quadraticCurveTo(x - w * 0.08, -h * 1.0, x, -h * 1.12)
+        .stroke(line(swatch.orange.line, Math.max(3, w * 0.05)));
+    }
+  }
+  return g;
+}
+
+/** An action's picture: an open door, a lit lamp, a dark lamp, a warm or a cold heater. */
+export function actionArt(action: Action, size = 80, helper: Helper = 'lamp'): Graphics {
   const s = size * 0.42;
+  if (helper === 'heater' && action !== 'open') {
+    const g = heaterArt(action === 'on', size * 0.8);
+    g.y = s * 0.2;
+    return g;
+  }
+  const g = new Graphics();
   if (action === 'open') {
     g.roundRect(-s * 0.6, -s, s * 1.2, s * 2, 8).fill(wood.light).stroke(line(wood.line, 4));
     g.roundRect(-s * 0.6, -s, s * 0.5, s * 2, 6).fill(wood.fill).stroke(line(wood.line, 4));
@@ -102,10 +158,15 @@ export function actionArt(action: Action, size = 80): Graphics {
   return g;
 }
 
-/** A sensor's picture: an eye on a bracket, or a little sun panel. */
+/** A sensor's picture: an eye on a bracket, a little sun panel, or a thermometer on a plate. */
 export function sensorArt(kind: SensorKind, size = 80): Container {
   const c = new Container();
   const r = size * 0.3;
+  if (kind === 'thermo') {
+    const plate = new Graphics().roundRect(-r * 1.3, -r * 1.5, r * 2.6, r * 3, r * 0.5).fill(METAL.fill).stroke(line(METAL.line, 4));
+    c.addChild(plate, thermoArt(0.5, swatch.teal, r * 2.6));
+    return c;
+  }
   if (kind === 'eye') {
     const bracket = new Graphics().roundRect(-r * 1.3, -r * 0.95, r * 2.6, r * 1.9, r * 0.5).fill(METAL.fill).stroke(line(METAL.line, 4));
     c.addChild(bracket, eyeArt(true, r));
@@ -178,6 +239,8 @@ export interface HouseGeometry {
   h: number;
   /** Whether the house has a lamp post (levels 2–3) or a door with sockets (level 1). */
   lamp: boolean;
+  /** A chilly nook beside the house with a heater in it (level 4); the house sits left, as with the lamp. */
+  heater?: boolean;
 }
 
 /** The house, drawn in a rect of w × h with its top-left at (0, 0): walls, roof, door, window, lamp post. */
@@ -186,6 +249,8 @@ export class House extends Container {
   private readonly lampLight = new Graphics();
   private readonly lampHead = new Graphics();
   private readonly windowFaces = new Container();
+  private readonly heater = new Graphics();
+  readonly heaterAt: { x: number; y: number };
   readonly doorAt: { x: number; y: number };
   readonly windowAt: { x: number; y: number };
   readonly lampAt: { x: number; y: number };
@@ -197,7 +262,9 @@ export class House extends Container {
   constructor(readonly geo: HouseGeometry, color: ColorName) {
     super();
     this.eventMode = 'none';
-    const { w, h, lamp } = geo;
+    const { w, h } = geo;
+    // The lamp post and the nook both sit to the right of a narrower house.
+    const lamp = geo.lamp || !!geo.heater;
     const sw = swatch[color];
     const ground = h * 0.92;
     this.groundY = ground;
@@ -240,14 +307,35 @@ export class House extends Container {
     const px = w * 0.8;
     const topY = h * 0.2;
     this.lampAt = { x: px, y: topY };
-    if (lamp) {
+    this.heaterAt = { x: px, y: ground - h * 0.12 };
+    if (geo.heater) {
+      // The nook: a rug and a little roof over it, the heater against its back wall.
+      const nook = new Graphics();
+      const nl = right + 18;
+      const nr = w * 0.98;
+      nook.roundRect(nl, top + 10, nr - nl, ground - top - 4, 12).fill(sw.light).stroke(line(sw.line, 5));
+      nook.moveTo(nl - 12, top + 14).lineTo((nl + nr) / 2, top - h * 0.1).lineTo(nr + 12, top + 14).closePath().fill(sw.fill).stroke(line(sw.line, 5));
+      nook.ellipse((nl + nr) / 2 - w * 0.05, ground - 6, (nr - nl) * 0.42, 12).fill(swatch.purple.light).stroke(line(swatch.purple.line, 3));
+      this.addChild(nook, this.heater);
+      this.setHeater(false);
+    } else if (geo.lamp) {
       const post = new Graphics();
       post.roundRect(px - 9, topY, 18, ground - topY, 6).fill(METAL.fill).stroke(line(METAL.line, 4));
       post.roundRect(px - 30, ground - 16, 60, 20, 8).fill(METAL.fill).stroke(line(METAL.line, 4));
       this.addChild(this.lampLight, post, this.lampHead);
       this.setLamp(false);
     }
-    this.friendAt = lamp ? { x: px - w * 0.14, y: ground } : { x: dx, y: ground + 8 };
+    this.friendAt = geo.heater ? { x: px - w * 0.08, y: ground } : lamp ? { x: px - w * 0.14, y: ground } : { x: dx, y: ground + 8 };
+  }
+
+  /** The nook's heater, warm and glowing or cold. */
+  setHeater(on: boolean) {
+    if (!this.geo.heater) return;
+    const art = heaterArt(on, Math.max(70, this.geo.w * 0.14));
+    this.heater.clear();
+    this.heater.removeChildren().forEach((c) => c.destroy());
+    art.position.set(this.heaterAt.x + this.geo.w * 0.07, this.heaterAt.y);
+    this.heater.addChild(art);
   }
 
   private drawDoor(dw: number, dh: number) {
