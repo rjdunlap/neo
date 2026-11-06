@@ -1,9 +1,9 @@
-/** Helper House's code-drawn pieces: sensors, reading and action pictures, cards, chips, sockets, the house, the sky mark, icons. */
+/** Helper House's code-drawn pieces: sensors, reading and action pictures, cards, chips, sockets, the house, the sky mark, the warmth gauge and click jar, icons. */
 import { Container, Graphics } from 'pixi.js';
 import { Critter, CRITTERS, type CritterName } from '../../art/critter';
 import { cream, ink, shadow, swatch, wood, type ColorName } from '../../art/palette';
 import { starPoints } from '../../art/shapes';
-import { SPOTS, type Action, type Helper, type Reading, type SensorKind, type SunLevel, type Zone } from './logic';
+import { COMFY, JAR, SPOTS, type Action, type Helper, type LinePiece, type Reading, type SensorKind, type SunLevel, type Zone } from './logic';
 
 const line = (color: number, width = 5) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 export const BRASS = { fill: 0xf4d9a6, line: 0xc9a86a };
@@ -230,6 +230,137 @@ export function bubbleArt(size: number): Graphics {
   g.roundRect(-size / 2, -size / 2, size, size, 16).fill(0xffffff).stroke(line(ink, 4));
   g.moveTo(-10, size / 2).lineTo(0, size / 2 + 14).lineTo(10, size / 2).fill(0xffffff).stroke(line(ink, 4));
   return g;
+}
+
+// ——— The warmth gauge (levels 6–7) ———
+
+/** A small flame, crossed out for the off line. */
+function flameArt(r: number, crossed = false): Graphics {
+  const g = new Graphics();
+  g.moveTo(0, -r).quadraticCurveTo(r * 0.9, -r * 0.1, r * 0.55, r * 0.55).quadraticCurveTo(0, r * 0.95, -r * 0.55, r * 0.55)
+    .quadraticCurveTo(-r * 0.9, -r * 0.1, 0, -r).fill(swatch.orange.fill).stroke(line(swatch.red.fill, Math.max(3, r * 0.12)));
+  g.ellipse(0, r * 0.3, r * 0.28, r * 0.38).fill(swatch.yellow.fill);
+  if (crossed) g.moveTo(-r, -r).lineTo(r, r).stroke(line(ink, Math.max(5, r * 0.2)));
+  return g;
+}
+
+/**
+ * The gauge's still parts: a tall column of cells, warmth 0 at the bottom, a mark between each, and the comfy band
+ * drawn as a hatched stripe with a comfy face beside it (pattern and position, never colour alone). Local units: the
+ * column's top-left is 0, 0.
+ */
+export function gaugeArt(w: number, pitch: number, cells: number): Container {
+  const c = new Container();
+  const h = pitch * cells;
+  const g = new Graphics();
+  g.roundRect(-6, -6, w + 12, h + 12, 24).fill(0xffffff).stroke(line(METAL.line, 5));
+  const top = h - (COMFY.max + 1) * pitch;
+  const bottom = h - COMFY.min * pitch;
+  g.rect(4, top, w - 8, bottom - top).fill(swatch.green.light);
+  // Hatching across the comfy band.
+  for (let x = -bottom; x < w; x += 18) {
+    const x0 = Math.max(4, x);
+    const y0 = top + (x0 - x);
+    const x1 = Math.min(w - 4, x + (bottom - top));
+    const y1 = top + (x1 - x);
+    if (x1 > x0 && y0 < bottom) g.moveTo(x0, y0).lineTo(x1, Math.min(bottom, y1)).stroke({ width: 3, color: swatch.green.line, alpha: 0.5 });
+  }
+  g.rect(4, top, w - 8, bottom - top).stroke(line(swatch.green.line, 4));
+  for (let k = 1; k < cells; k++) g.moveTo(8, h - k * pitch).lineTo(26, h - k * pitch).moveTo(w - 26, h - k * pitch).lineTo(w - 8, h - k * pitch).stroke(line(METAL.line, 4));
+  c.addChild(g);
+  return c;
+}
+
+/** The gauge's moving parts: the warmth now, filled up from the bottom like a thermometer, and the day's climb dots. */
+export function warmthFill(g: Graphics, w: number, pitch: number, cells: number, warmth: number) {
+  const h = pitch * cells;
+  const top = h - (warmth + 1) * pitch + pitch * 0.3;
+  g.roundRect(w / 2 - 14, top, 28, h - top - 6, 14).fill(swatch.red.fill).stroke(line(swatch.red.line, 3));
+}
+
+/** A line across the gauge column at a gap, reaching to its handle's lane side. */
+export function gaugeLine(g: Graphics, x0: number, x1: number, y: number, glow = false) {
+  g.moveTo(x0, y).lineTo(x1, y).stroke(line(glow ? swatch.yellow.fill : ink, glow ? 10 : 7));
+}
+
+/** A line's handle tab: a flame for the on line, a crossed flame for the off line, both arrows for level 6's one line. */
+export function lineTabArt(piece: LinePiece, size: number, lit = false): Container {
+  const c = new Container();
+  c.addChild(tileArt(size, lit));
+  if (piece === 'line') {
+    const g = new Graphics();
+    const s = size * 0.22;
+    g.moveTo(-s, -s * 0.6).lineTo(0, -s * 1.7).lineTo(s, -s * 0.6).moveTo(-s, s * 0.6).lineTo(0, s * 1.7).lineTo(s, s * 0.6).stroke(line(ink, 6));
+    g.moveTo(-size * 0.32, 0).lineTo(size * 0.32, 0).stroke(line(ink, 7));
+    c.addChild(g);
+  } else {
+    c.addChild(flameArt(size * 0.28, piece === 'off-line'));
+  }
+  return c;
+}
+
+/** A rule card's picture at levels 6–7: a little gauge with its line, the part below (or above) the line shaded. */
+export function lineRuleArt(side: 'below' | 'above', size = 80): Graphics {
+  const g = new Graphics();
+  const w = size * 0.42;
+  const h = size * 0.9;
+  g.roundRect(-w / 2, -h / 2, w, h, 10).fill(0xffffff).stroke(line(METAL.line, 4));
+  if (side === 'below') g.roundRect(-w / 2 + 4, 2, w - 8, h / 2 - 6, 6).fill(swatch.blue.light);
+  else g.roundRect(-w / 2 + 4, -h / 2 + 4, w - 8, h / 2 - 6, 6).fill(swatch.orange.light);
+  g.moveTo(-w / 2 - 10, 0).lineTo(w / 2 + 10, 0).stroke(line(ink, 6));
+  const a = side === 'below' ? 1 : -1;
+  g.moveTo(w / 2 + 16, a * h * 0.12).lineTo(w / 2 + 16, a * h * 0.4).moveTo(w / 2 + 8, a * h * 0.3).lineTo(w / 2 + 16, a * h * 0.42).lineTo(w / 2 + 24, a * h * 0.3).stroke(line(ink, 4));
+  return g;
+}
+
+/** The click jar: eight cups, a pebble in each switch so far; any more roll out over the rim onto the floor. */
+export function jarArt(w: number, h: number, pebbles: number): Container {
+  const c = new Container();
+  const g = new Graphics();
+  const jw = w * 0.55;
+  g.roundRect(0, 6, jw, h - 6, 18).fill({ color: 0xe8f4ff, alpha: 0.9 }).stroke(line(swatch.blue.line, 5));
+  g.roundRect(-6, 0, jw + 12, 14, 7).fill(METAL.fill).stroke(line(METAL.line, 4));
+  const cols = 2;
+  const rows = JAR / cols;
+  const cw = (jw - 16) / cols;
+  const ch = (h - 30) / rows;
+  for (let i = 0; i < JAR; i++) {
+    const cx = 8 + (i % cols) * cw + cw / 2;
+    const cy = h - 8 - Math.floor(i / cols) * ch - ch / 2;
+    g.circle(cx, cy, Math.min(cw, ch) * 0.36).stroke({ width: 2, color: swatch.blue.line, alpha: 0.4 });
+    if (i < pebbles) g.circle(cx, cy, Math.min(cw, ch) * 0.36).fill(swatch.brown.fill).stroke(line(swatch.brown.line, 3));
+  }
+  // The pebbles that did not fit lie on the floor beside the jar.
+  for (let i = 0; i < pebbles - JAR; i++) {
+    g.circle(jw + 22 + (i % 3) * 26, h - 12 - Math.floor(i / 3) * 24, 11).fill(swatch.brown.fill).stroke(line(swatch.brown.line, 3));
+  }
+  c.addChild(g);
+  return c;
+}
+
+/** The guess buttons: a running hare (faster) or two matching flames (the same). */
+export function guessArt(choice: 'faster' | 'same', size: number): Container {
+  const c = new Container();
+  c.addChild(tileArt(size));
+  if (choice === 'same') {
+    const a = flameArt(size * 0.2);
+    const b = flameArt(size * 0.2);
+    a.position.set(-size * 0.2, 0);
+    b.position.set(size * 0.2, 0);
+    c.addChild(a, b);
+  } else {
+    const g = new Graphics();
+    const s = size * 0.3;
+    // A hare mid-leap: a long body, long ears back, speed lines behind.
+    g.ellipse(0, s * 0.1, s * 0.8, s * 0.42).fill(swatch.brown.light).stroke(line(swatch.brown.line, 4));
+    g.circle(s * 0.75, -s * 0.2, s * 0.32).fill(swatch.brown.light).stroke(line(swatch.brown.line, 4));
+    g.ellipse(s * 0.5, -s * 0.75, s * 0.12, s * 0.42).fill(swatch.brown.light).stroke(line(swatch.brown.line, 4));
+    g.ellipse(s * 0.72, -s * 0.8, s * 0.12, s * 0.42).fill(swatch.brown.light).stroke(line(swatch.brown.line, 4));
+    g.circle(s * 0.86, -s * 0.24, s * 0.06).fill(ink);
+    for (const y of [-s * 0.3, 0, s * 0.3]) g.moveTo(-s * 1.4, y).lineTo(-s * 0.95, y).stroke(line(ink, 4));
+    c.addChild(g);
+  }
+  return c;
 }
 
 // ——— The house ———

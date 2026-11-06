@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { gapAt, gapY, handleRect, setLine, switches, GAPS, PITCH } from './logic';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
@@ -419,7 +420,7 @@ describe('level 5: where does the sensor look?', () => {
 
   it('is the fifth and last level, named Where does it look?, with the level 3 answer given and fixed', () => {
     expect(planFor(5).name).toBe('Where does it look?');
-    expect(MAX_LEVEL).toBe(5);
+    expect(MAX_LEVEL).toBe(7);
     const start = startBoard(5);
     expect(start.sensor).toEqual({ kind: 'sun', socket: 'lamp' });
     expect(start.rows.map((r) => [r.reading, r.action, r.given])).toEqual([['dark', 'on', true], ['bright', 'off', true]]);
@@ -497,6 +498,238 @@ describe('level 5: where does the sensor look?', () => {
       const c = l.sockets.map((r) => ({ x: r.x + r.w / 2, y: r.y + r.h / 2 }));
       for (let i = 0; i < c.length; i++) for (let j = i + 1; j < c.length; j++) expect(Math.hypot(c[i].x - c[j].x, c[i].y - c[j].y)).toBeGreaterThanOrEqual(140);
       for (const r of l.sockets) expect(r.w).toBeGreaterThanOrEqual(110);
+    }
+  });
+});
+
+describe('levels 6-7: lines on the warmth gauge', () => {
+  const brief = (level: number) => briefFor(level, new Rng(3));
+  const lineBoard = (level: number, on: number, off = on): Board => ({ ...startBoard(level), lines: { on, off } });
+  const warmths = (b: Board) => runDay(b, brief(b.level).day).trace.map((t) => t.warmth);
+  const failureOf = (b: Board) => runDay(b, brief(b.level).day).failure;
+  const accepted = (level: number) => candidateBoards(brief(level)).filter((b) => meetsGoal(b, brief(level).day)).map((b) => [b.lines!.on, b.lines!.off]);
+
+  it('reproduces the hand-run warmth table', () => {
+    const table: Record<number, [number[], number]> = {
+      1: [[0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1], 11],
+      2: [[2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1], 12],
+      3: [[2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3], 11],
+      4: [[2, 3, 4, 3, 4, 3, 4, 3, 4, 3, 4, 3], 10],
+      5: [[2, 3, 4, 5, 4, 5, 4, 5, 4, 5, 4, 5], 9],
+      6: [[2, 3, 4, 5, 6, 5, 6, 5, 6, 5, 6, 5], 8],
+    };
+    for (const g of [1, 2, 3, 4, 5, 6]) {
+      const b = lineBoard(6, g);
+      const out = runDay(b, brief(6).day);
+      expect(out.trace.map((t) => t.warmth), `line ${g}`).toEqual(table[g][0]);
+      expect(switches(out.trace), `line ${g}`).toBe(table[g][1]);
+    }
+    const two = runDay(lineBoard(7, 3, 4), brief(7).day);
+    expect(two.trace.map((t) => t.warmth)).toEqual([2, 3, 4, 3, 2, 3, 4, 3, 2, 3, 4, 3]);
+    expect(switches(two.trace)).toBe(6);
+  });
+
+  it('has bounded board spaces and the stated accepted sets', () => {
+    expect(candidateBoards(brief(6))).toHaveLength(6);
+    expect(candidateBoards(brief(7))).toHaveLength(21);
+    expect(accepted(6)).toEqual([[3, 3], [4, 4]]);
+    expect(accepted(7)).toEqual([[3, 4]]);
+  });
+
+  it('fails both start boards with the named failure, from every seed', () => {
+    for (const s of SEEDS) {
+      const b6 = briefFor(6, new Rng(s));
+      const b7 = briefFor(7, new Rng(s));
+      expect(b6.board.lines).toEqual({ on: 6, off: 6 });
+      expect(b7.board.lines).toEqual({ on: 3, off: 3 });
+      expect(runDay(b6.board, b6.day).failure).toBe('too-warm');
+      expect(runDay(b7.board, b7.day).failure).toBe('heater-busy');
+      expect(meetsGoal(b6.board, b6.day)).toBe(false);
+      expect(meetsGoal(b7.board, b7.day)).toBe(false);
+    }
+  });
+
+  it('names each failing board by its failure', () => {
+    expect(failureOf(lineBoard(6, 1))).toBe('never-warms');
+    expect(failureOf(lineBoard(6, 2))).toBe('never-warms');
+    expect(failureOf(lineBoard(6, 5))).toBe('too-warm');
+    expect(failureOf(lineBoard(6, 6))).toBe('too-warm');
+    expect(failureOf(lineBoard(7, 3, 3))).toBe('heater-busy');
+    expect(failureOf(lineBoard(7, 4, 4))).toBe('heater-busy');
+    for (const b of candidateBoards(brief(7))) {
+      const { on, off } = b.lines!;
+      const w = warmths(b);
+      const f = failureOf(b);
+      if (on <= 2 && off >= 5) expect(['never-warms', 'too-warm'], `${on},${off}`).toContain(f);
+      else if (on <= 2) expect(f, `${on},${off}`).toBe('never-warms');
+      else if (off >= 5) expect(f, `${on},${off}`).toBe('too-warm');
+      else if (on === 3 && off === 4) expect(f).toBeNull();
+      else expect(f, `${on},${off}`).toBe('heater-busy');
+      expect(w).toHaveLength(12);
+    }
+  });
+
+  it('glows a line whose change moves toward an accepted board', () => {
+    for (const level of [6, 7]) {
+      const br = brief(level);
+      for (const b of candidateBoards(br)) {
+        const f = runDay(b, br.day).failure;
+        if (!f) continue;
+        const piece = glowFor(b, f);
+        if (level === 6) { expect(piece).toBe('line'); continue; }
+        expect(['on-line', 'off-line']).toContain(piece);
+        const { on, off } = b.lines!;
+        const wrong = piece === 'on-line' ? on !== 3 : off !== 4;
+        expect(wrong, `${on},${off} ${f}`).toBe(true);
+      }
+    }
+    expect(glowFor(lineBoard(7, 1, 4), 'never-warms')).toBe('on-line');
+    expect(glowFor(lineBoard(7, 3, 6), 'too-warm')).toBe('off-line');
+    expect(glowFor(lineBoard(7, 3, 3), 'heater-busy')).toBe('off-line');
+    expect(glowFor(lineBoard(7, 1, 4), 'too-warm')).toBe('on-line');
+  });
+
+  it('helpFor reaches an accepted board within one press (level 6) or two (level 7)', () => {
+    for (const level of [6, 7]) {
+      const br = brief(level);
+      for (const b of candidateBoards(br)) {
+        let cur = b;
+        let presses = 0;
+        const limit = level === 6 ? 1 : 2;
+        while (!meetsGoal(cur, br.day) && presses < limit) {
+          const h = helpFor(cur, br, presses + 1);
+          expect(h.placed).not.toBeNull();
+          cur = h.board;
+          presses++;
+        }
+        expect(meetsGoal(cur, br.day), `${level} ${JSON.stringify(b.lines)}`).toBe(true);
+        const done = helpFor(cur, br, 1);
+        expect(done.placed).toBeNull();
+        expect(done.board).toBe(cur);
+      }
+    }
+  });
+
+  it('keeps the valve property: a higher line never warms the nook sooner', () => {
+    const day = brief(6).day;
+    const trace = (g: number) => runDay(lineBoard(6, g), day).trace.map((t) => t.warmth);
+    const warms = [3, 4, 5, 6];
+    for (const a of warms) for (const b of warms) {
+      if (a >= b) continue;
+      const lo = trace(a);
+      const hi = trace(b);
+      // Both reach the comfy band; they agree until the lower line is reached.
+      const reach = lo.findIndex((w) => w >= a);
+      expect(hi.slice(0, reach + 1)).toEqual(lo.slice(0, reach + 1));
+      expect(hi.findIndex((w) => w >= 2)).toBe(lo.findIndex((w) => w >= 2));
+    }
+  });
+
+  it('level 7: every single-line board switches at least 10 times and exactly one board is accepted', () => {
+    const br = brief(7);
+    for (let g = 1; g <= GAPS; g++) {
+      if (g === 1) continue;
+      const out = runDay(lineBoard(7, g), br.day);
+      if (g >= 3 && g <= 4) expect(switches(out.trace)).toBeGreaterThanOrEqual(10);
+    }
+    for (let g = 1; g <= GAPS; g++) expect(switches(runDay(lineBoard(7, g), br.day).trace), `gap ${g}`).toBeGreaterThanOrEqual(8);
+    expect(solutions(br)).toHaveLength(1);
+    expect(switches(runDay(lineBoard(7, 3, 4), br.day).trace)).toBeLessThanOrEqual(8);
+  });
+
+  it('level 7 single lines 3 and 4 exceed the jar and 3,4 does not', () => {
+    const br = brief(7);
+    expect(switches(runDay(lineBoard(7, 3), br.day).trace)).toBeGreaterThan(8);
+    expect(switches(runDay(lineBoard(7, 4), br.day).trace)).toBeGreaterThan(8);
+  });
+
+  it('setLine never lets the on line exceed the off line', () => {
+    for (let on = 1; on <= GAPS; on++) for (let off = on; off <= GAPS; off++) for (let g = 0; g <= GAPS + 1; g++) {
+      const b = lineBoard(7, on, off);
+      for (const piece of ['on-line', 'off-line'] as const) {
+        const n = setLine(b, piece, g).lines!;
+        expect(n.on).toBeLessThanOrEqual(n.off);
+        expect(n.on).toBeGreaterThanOrEqual(1);
+        expect(n.off).toBeLessThanOrEqual(GAPS);
+      }
+      const one = setLine(b, 'line', g).lines!;
+      expect(one.on).toBe(one.off);
+    }
+    expect(setLine(lineBoard(7, 3, 4), 'on-line', 6).lines).toEqual({ on: 4, off: 4 });
+    expect(setLine(lineBoard(7, 3, 4), 'off-line', 1).lines).toEqual({ on: 3, off: 3 });
+  });
+
+  it('the ghost finger drags the line then watches', () => {
+    const b6 = brief(6);
+    expect(nextMove(b6, b6.board, 0)).toEqual({ line: 'line', gap: 4 });
+    expect(nextMove(b6, setLine(b6.board, 'line', 4), 0)).toEqual({ watch: true });
+    const b7 = brief(7);
+    expect(nextMove(b7, b7.board, 0)).toEqual({ watch: true });
+    expect(nextMove(b7, b7.board, 1)).toEqual({ line: 'off-line', gap: 4 });
+    expect(nextMove(b7, setLine(b7.board, 'off-line', 4), 1)).toEqual({ watch: true });
+  });
+
+  it('plays out to a finish with the bot and with help', () => {
+    for (const level of [6, 7]) for (const s of SEEDS.slice(0, 30)) {
+      const br = briefFor(level, new Rng(s));
+      let b = br.board;
+      let days = 0;
+      for (let i = 0; i < 6 && !(meetsGoal(b, br.day) && days > 0); i++) {
+        const m = nextMove(br, b, days);
+        if ('line' in m) b = setLine(b, m.line, m.gap);
+        else days++;
+      }
+      expect(meetsGoal(b, br.day), `${level}/${s}`).toBe(true);
+    }
+  });
+
+  it('tallies a line piece: the same failure twice glows it, one hint, no misses', () => {
+    const br = brief(6);
+    const t = new Tally();
+    expect(t.failed(br.board, 'too-warm')).toBe(false);
+    expect(t.failed(br.board, 'too-warm')).toBe(true);
+    expect(t.glowing).toBe('line');
+    expect(t.hints).toBe(1);
+    expect(t.misses).toBe(0);
+    t.changed('line');
+    expect(t.glowing).toBeNull();
+    const b7 = brief(7);
+    const t7 = new Tally();
+    t7.failed(b7.board, 'heater-busy');
+    t7.failed(b7.board, 'heater-busy');
+    expect(t7.glowing).toBe('off-line');
+    expect(t7.hints).toBe(1);
+  });
+
+  it('lays the gauge out at every view with full-size handles', () => {
+    const views = [computeView(1024, 768), computeView(768, 1024), computeView(1366, 1024), computeView(1024, 1366)];
+    for (const level of [6, 7]) for (const v of views) {
+      const l = houseLayout(brief(level), v);
+      expect(l, `${level} ${v.w}x${v.h}`).not.toBeNull();
+      const g = l!.gauge!;
+      expect(g).not.toBeNull();
+      expect(g.pitch).toBeGreaterThanOrEqual(60);
+      expect(PITCH).toBeGreaterThanOrEqual(60);
+      expect(g.column.w).toBeGreaterThanOrEqual(110);
+      expect(g.column.h).toBeGreaterThanOrEqual(420);
+      for (let k = 1; k < GAPS; k++) expect(gapY(g, k) - gapY(g, k + 1)).toBeGreaterThanOrEqual(60);
+      for (let k = 1; k <= GAPS; k++) expect(gapAt(g, gapY(g, k))).toBe(k);
+      const avoid = [l!.watch, l!.step, l!.undo, ...l!.rows.flatMap((r) => [r.reading, r.action]), ...corners(v)];
+      const handles = (['line', 'on-line', 'off-line'] as const).flatMap((p) => Array.from({ length: GAPS }, (_, i) => handleRect(g, p, i + 1)));
+      const rects = level === 7 ? [...handles, g.jar!] : handles.filter((_, i) => i < GAPS);
+      expect(g.jar === null).toBe(level === 6);
+      for (const r of rects) {
+        expect(r.w).toBeGreaterThanOrEqual(110);
+        expect(r.x >= 0 && r.y >= 0 && r.x + r.w <= v.w && r.y + r.h <= v.h, `${level} ${v.w}x${v.h} ${JSON.stringify(r)}`).toBe(true);
+        for (const a of avoid) expect(overlaps(r, a), `${level} ${v.w}x${v.h}`).toBe(false);
+      }
+      if (level === 7) {
+        for (let k = 1; k < GAPS; k++) {
+          expect(overlaps(handleRect(g, 'on-line', k), handleRect(g, 'off-line', k + 1))).toBe(false);
+          expect(overlaps(handleRect(g, 'on-line', k + 1), handleRect(g, 'off-line', k))).toBe(false);
+        }
+        expect(overlaps(handleRect(g, 'on-line', 3), handleRect(g, 'off-line', 3))).toBe(false);
+      }
     }
   });
 });
