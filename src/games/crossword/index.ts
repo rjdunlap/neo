@@ -64,6 +64,8 @@ class Crossword implements Game {
   fills = new Map<string, string>();
   bank: Tile[] = [];
   readonly placed = new Map<string, Tile>();
+  /** Every tile made, so leaving mid-animation still frees each one's window listeners. */
+  private readonly tiles = new Set<Tile>();
 
   private readonly backdrop: Backdrop;
   private readonly board = new Container();
@@ -108,7 +110,7 @@ class Crossword implements Game {
   update() {}
 
   destroy() {
-    for (const t of [...this.bank, ...this.placed.values()]) t.drag?.destroy();
+    for (const t of this.tiles) t.drag?.destroy();
   }
 
   // Layout -------------------------------------------------------------------------------
@@ -269,10 +271,12 @@ class Crossword implements Game {
     const t = new Tile(letter);
     t.drag = draggable(t, this.ctx.tw, { onPick: () => this.pick(t), onDrop: (x, y) => this.drop(t, x, y) });
     this.layer.addChild(t);
+    this.tiles.add(t);
     return t;
   }
 
   private dropTile(t: Tile) {
+    this.tiles.delete(t);
     t.drag?.destroy();
     t.destroy({ children: true });
   }
@@ -282,8 +286,11 @@ class Crossword implements Game {
     const p = this.puzzle;
     if (!p) return;
     if (this.bank.some((t) => t.drag?.dragging)) return;
-    for (const t of this.bank) this.dropTile(t);
     const letters = wordRight(p, this.fills, this.active) ? [] : bankFor(p, this.fills, this.active, this.decoys[this.active]);
+    // The same letters stay put rather than popping again.
+    const same = (a: string[]) => [...a].sort().join('');
+    if (this.bank.length && same(letters) === same(this.bank.map((t) => t.letter))) return this.drawGlow();
+    for (const t of this.bank) this.dropTile(t);
     this.bank = new Rng(this.index * 97 + this.active * 13 + letters.length).shuffle(letters.map((l) => this.makeTile(l)));
     this.layoutBank();
     for (const t of this.bank) {
@@ -322,8 +329,10 @@ class Crossword implements Game {
     if (target.key === from) return false;
     const other = this.placed.get(target.key);
     if (other) {
+      // The tile already there goes back to the bank.
       this.placed.delete(target.key);
-      this.dropTile(other);
+      other.eventMode = 'none';
+      void this.ctx.tw.to(other, { alpha: 0 }, { duration: 0.2 }).then(() => this.dropTile(other));
     }
     if (from) {
       this.placed.delete(from);
@@ -370,6 +379,7 @@ class Crossword implements Game {
           this.fills.delete(s);
           if (t) {
             t.drag!.enabled = false;
+            t.eventMode = 'none';
             void this.ctx.tw.to(t, { y: t.y - 50, alpha: 0 }, { duration: 0.35 }).then(() => this.dropTile(t));
           }
         }
@@ -386,6 +396,8 @@ class Crossword implements Game {
     for (const s of squaresOf(this.puzzle!.words[i])) {
       const t = this.placed.get(s.key);
       if (t?.drag) t.drag.enabled = false;
+      // A solved letter lets touches through to its square, which says the letter and switches words.
+      if (t) t.eventMode = 'none';
     }
   }
 
