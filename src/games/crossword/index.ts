@@ -13,18 +13,19 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { typingPicture } from '../pond-typing/pictures';
 import { WigglyIcon } from '../shared';
+import type { LineId } from '../../content/voice-script';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
-  applyHelp, bankFor, clueOf, decoysFor, firstOpen, helpFor, judge, makeRound, nearest, nextFill, planFor, solved, spelled, squaresOf, wordRight, wordsAt, wrongSquares, WORDS_1, type Plan, type Puzzle,
+  applyHelp, bankFor, clueOf, decoysFor, firstOpen, helpFor, judge, makeRound, nearest, nextFill, planFor, riddleLine, solved, spelled, squaresOf, wordRight, wordsAt, wrongSquares, WORDS_1, type Plan, type Puzzle,
 } from './logic';
 
-/** School starts one step above pre-K's opening; levels 4–6 come in later builds. */
+/** School starts one step above pre-K's opening; levels 5–6 come in a later build. */
 const LEVELS: BandLevels = {
   prek: { min: 1, max: 2 },
-  school: { min: 2, max: 3 },
+  school: { min: 2, max: 4 },
 };
 
-const INSTRUCT = ['cw.one', 'cw.two', 'cw.three'] as const;
+const INSTRUCT = ['cw.one', 'cw.two', 'cw.three', 'cw.four'] as const;
 
 const SQ = 100;
 const PITCH = 104;
@@ -77,6 +78,12 @@ class Crossword implements Game {
   private readonly layer = new Container();
   private readonly help = new Container();
   private readonly pictures = new Map<number, Container>();
+  /** Level 4: each riddle word's speaker, until Show me or a solved word turns it into the picture. */
+  private readonly speakers = new Map<number, Container>();
+  /** Riddle words whose picture shows. */
+  readonly revealed = new Set<number>();
+  /** Level 4's Show me button: the active word's picture, for one hint. */
+  readonly show = new Container();
   private wordMisses: number[] = [];
   private decoys: string[][] = [];
   private view: View;
@@ -97,7 +104,13 @@ class Crossword implements Game {
     this.help.addChild(hb, q);
     this.help.hitArea = new Rectangle(-60, -50, 120, 100);
     onTap(this.help, () => this.useHelp(), { cooldown: 500 });
-    ctx.stage.addChild(this.backdrop, this.board, this.help, this.layer);
+    const sb = new Graphics().roundRect(-60, -50, 120, 100, 26).fill(swatch.green.light).stroke({ width: 5, color: swatch.green.line })
+      .ellipse(0, 0, 40, 24).fill(0xffffff).stroke({ width: 5, color: ink }).circle(0, 0, 13).fill(swatch.blue.fill).circle(0, 0, 6).fill(ink);
+    this.show.addChild(sb);
+    this.show.hitArea = new Rectangle(-60, -50, 120, 100);
+    this.show.visible = !!this.plan.riddles;
+    onTap(this.show, () => this.showMe(), { cooldown: 500 });
+    ctx.stage.addChild(this.backdrop, this.board, this.help, this.show, this.layer);
   }
 
   get puzzle(): Puzzle | undefined {
@@ -113,7 +126,12 @@ class Crossword implements Game {
   private async intro() {
     const theme = this.puzzle?.theme;
     if (theme) await this.ctx.say('cw.theme', { theme: theme.name });
-    void this.ctx.instruct(INSTRUCT[Math.min(INSTRUCT.length, this.plan.level) - 1]);
+    const told = this.ctx.instruct(INSTRUCT[Math.min(INSTRUCT.length, this.plan.level) - 1]);
+    // A riddle round reads the first word's riddle straight away, so she never has to find the speaker first.
+    if (this.plan.riddles) {
+      await told;
+      if (!this.revealed.has(this.active) && !this.finished) void this.ctx.say(riddleLine(this.puzzle!.words[this.active].word) as LineId);
+    }
   }
 
   update() {}
@@ -144,10 +162,13 @@ class Crossword implements Game {
       this.board.position.set((v.w - gw) / 2, Math.max(160, v.h * 0.18));
       const y = this.board.y + gh + (this.wideBank ? 170 : 110);
       this.help.position.set(Math.min(v.w - 110, v.w / 2 + 300), y);
+      // Show me sits just above Help, under the grid's last row.
+      this.show.position.set(this.help.x, y - 112);
     } else {
       const left = safe.x + 180, right = v.w - (this.wideBank ? 220 : 160);
       this.board.position.set(Math.max(left, left + (right - left - gw) / 2), Math.max(144, 150 + (v.h - 190 - gh) / 2));
       this.help.position.set(v.w - 90, Math.min(v.h - 80, 660));
+      this.show.position.set(this.help.x, this.help.y - 116);
     }
     this.layoutBank();
     for (const [k, t] of this.placed) if (!t.drag?.dragging) {
@@ -186,6 +207,8 @@ class Crossword implements Game {
     this.placed.clear();
     this.fills = new Map();
     this.pictures.clear();
+    this.speakers.clear();
+    this.revealed.clear();
     this.grid.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.wordMisses = p.words.map(() => 0);
     this.decoys = p.words.map((_, i) => decoysFor(this.plan, p, i, this.rng));
@@ -216,6 +239,17 @@ class Crossword implements Game {
       pic.eventMode = 'none';
       sq.addChild(pic);
       this.pictures.set(i, pic);
+      if (this.plan.riddles) {
+        pic.visible = false;
+        const sp = new Graphics()
+          .poly([-30, -12, -16, -12, 2, -28, 2, 28, -16, 12, -30, 12]).fill(ink)
+          .moveTo(12, -20).quadraticCurveTo(32, 0, 12, 20).stroke({ width: 5, color: ink, cap: 'round' })
+          .moveTo(20, -32).quadraticCurveTo(48, 0, 20, 32).stroke({ width: 5, color: ink, cap: 'round' });
+        sp.position.set(SQ / 2 - 4, SQ / 2);
+        sp.eventMode = 'none';
+        sq.addChild(sp);
+        this.speakers.set(i, sp);
+      }
       // A small arrow points the way the word reads.
       const a = new Graphics();
       if (w.dir === 'across') a.poly([SQ - 4, SQ / 2 - 12, SQ + 10, SQ / 2, SQ - 4, SQ / 2 + 12]).fill(swatch.green.line);
@@ -237,6 +271,7 @@ class Crossword implements Game {
   private drawOutline() {
     const p = this.puzzle;
     const g = this.outline.clear();
+    this.drawShow();
     if (!p || this.finished) return;
     for (const s of squaresOf(p.words[this.active])) g.roundRect(s.col * PITCH - 6, s.row * PITCH - 6, SQ + 12, SQ + 12, 20).stroke({ width: 6, color: swatch.blue.line });
     const c = clueOf(p.words[this.active]);
@@ -267,8 +302,43 @@ class Crossword implements Game {
     if (this.busy || this.finished) return;
     sfx.pop(4);
     this.activate(i);
-    void this.ctx.say('cw.word', { word: this.puzzle!.words[i].word });
+    const word = this.puzzle!.words[i].word;
+    if (this.plan.riddles && !this.revealed.has(i)) {
+      // The riddle is free to hear again and again.
+      void this.ctx.say(riddleLine(word) as LineId);
+      const sp = this.speakers.get(i);
+      if (sp) void this.ctx.tw.to(sp.scale, { x: 1.2, y: 1.2 }, { duration: 0.12 }).then(() => this.ctx.tw.to(sp.scale, { x: 1, y: 1 }, { duration: 0.2, ease: ease.outBack }));
+      return;
+    }
+    void this.ctx.say('cw.word', { word });
     this.bounce(i);
+  }
+
+  /** A riddle word's speaker turns into its picture. */
+  private reveal(i: number) {
+    if (!this.plan.riddles || this.revealed.has(i)) return;
+    this.revealed.add(i);
+    const sp = this.speakers.get(i), pic = this.pictures.get(i);
+    if (sp) sp.visible = false;
+    if (pic) pic.visible = true;
+    this.drawShow();
+  }
+
+  /** Show me is lit only while the active word's picture is still hidden. */
+  private drawShow() {
+    this.show.alpha = this.plan.riddles && !this.revealed.has(this.active) && !this.finished ? 1 : 0.4;
+  }
+
+  /** Level 4: Show me turns the active word's speaker into its picture and says the word. One hint, once per word. */
+  showMe() {
+    const p = this.puzzle;
+    if (!p || !this.plan.riddles || this.busy || this.finished || this.revealed.has(this.active)) return;
+    this.hints++;
+    sfx.pop(4);
+    const i = this.active;
+    this.reveal(i);
+    this.bounce(i);
+    void this.ctx.say('cw.word', { word: p.words[i].word });
   }
 
   /** Tapping a square makes its word active; tapping a crossing again switches to the other word. */
@@ -401,7 +471,7 @@ class Crossword implements Game {
             void this.ctx.tw.to(t, { y: t.y - 50, alpha: 0 }, { duration: 0.35 }).then(() => this.dropTile(t));
           }
         }
-        if (i === j.wrong[0]) void this.ctx.say('cw.spells', { spelled: said, word: named(p.words[i].word) });
+        if (i === j.wrong[0]) void this.ctx.say(this.plan.riddles ? 'cw.spellsRiddle' : 'cw.spells', { spelled: said, word: named(p.words[i].word) });
       }
       this.active = j.wrong[0];
     }
@@ -443,6 +513,7 @@ class Crossword implements Game {
     if (done) this.busy = true;
     this.settle();
     for (const i of words) {
+      this.reveal(i);
       this.bounce(i);
       const at = this.center(squaresOf(p.words[i])[1].key);
       this.ctx.particles.burst(at.x, at.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.orange.light], count: 14, speed: [100, 260], gravity: 0, life: [0.5, 0.9] });
