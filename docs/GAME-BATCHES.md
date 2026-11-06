@@ -1729,7 +1729,7 @@ Proof: new-rule tier: typecheck, rule tests (leftovers in reading order equal th
 
 ### word-search 4: Just the theme
 
-- **`word-search`, Level 7 *Just the theme* (dive slice 4, after batch 3)**: a 10 by 10 grid, six hidden words shown only as a theme and blanks with lengths; a non-theme line is free ("Not one of the hidden words"); a two-step hint (first letter, then ring the start). Appends ID 7; `order` becomes `[5, 1, 2, 3, 4, 6, 7]`. [Dive](deep-dives/word-search.md#build-slices-in-order)
+- **`word-search`, Level 7 *Just the theme* (dive slice 4, after batch 3)** (built 2026-11-05, [PR #1279](https://github.com/rjdunlap/neo/pull/1279)): a 10 by 10 grid, six hidden words shown only as a theme and blanks with lengths; a non-theme line is free ("Not one of the hidden words"); a two-step hint (first letter, then ring the start). Appends ID 7; `order` becomes `[5, 1, 2, 3, 4, 6, 7]`. [Dive](deep-dives/word-search.md#build-slices-in-order)
 
 Files expected: `src/games/word-search/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`. The couch trip stays on levels 1–3.
 

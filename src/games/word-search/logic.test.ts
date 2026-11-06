@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
-  ALL_DIRS, cellOf, cellsOfWord, hasBlocked, hintFor, leftovers, lettersOf, lineBetween, makeGrid, makeGrids, MAX_STONES, MESSAGE_GRID, occurrences, ORDER, parseGrid, planFor, PLANS, rowsOf, SMALL_GRID, STONE,
-  textOf, themesFor, wordAt,
+  ALL_DIRS, blankFor, cellOf, cellsOfWord, hasBlocked, HIDDEN_GRID, hiddenHint, hintFor, judgeLine, leftovers, lettersOf, lineBetween, makeGrid, makeGrids, MAX_STONES, MESSAGE_GRID, occurrences, ORDER, parseGrid, planFor, PLANS, rowsOf, SMALL_GRID, STONE,
+  shortestUnfound, textOf, themesFor, wordAt,
 } from './logic';
 import { BLOCKED } from './blocked';
 import { THEMES, themeById } from './words';
@@ -134,10 +134,10 @@ describe('making grids', () => {
   });
 
   it('climbs in play order: the small grid first, then bigger grids with more words', () => {
-    expect(ORDER).toEqual([5, 1, 2, 3, 4, 6]);
+    expect(ORDER).toEqual([5, 1, 2, 3, 4, 6, 7]);
     expect([...ORDER].sort()).toEqual(PLANS.map((_, i) => i + 1));
-    expect(ORDER.map((l) => planFor(l).size)).toEqual([6, 8, 10, 12, 14, 8]);
-    expect(ORDER.map((l) => planFor(l).words)).toEqual([4, 5, 7, 9, 12, 9]);
+    expect(ORDER.map((l) => planFor(l).size)).toEqual([6, 8, 10, 12, 14, 8, 10]);
+    expect(ORDER.map((l) => planFor(l).words)).toEqual([4, 5, 7, 9, 12, 9, 6]);
     expect(planFor(0)).toBe(PLANS[0]);
     // A level past the top plays the hardest grid, never the small entry.
     expect(planFor(99)).toBe(planFor(ORDER[ORDER.length - 1]));
@@ -262,6 +262,100 @@ describe('a message in the leftovers (level 6)', () => {
     for (let to = 0; to < 64; to++) {
       const line = lineBetween(8, stone, to);
       if (line && to !== stone) expect(wordAt(g, line, new Set()), `stone to ${to}`).toBe(-1);
+    }
+  });
+});
+
+describe('level 7, just the theme', () => {
+  const plan = planFor(HIDDEN_GRID);
+
+  it('is a 10 by 10 grid of six words in every direction, drawn only from everyday themes', () => {
+    expect(plan).toMatchObject({ size: 10, words: 6, grids: 1, hidden: true });
+    expect(plan.dirs).toEqual(ALL_DIRS);
+    const themes = themesFor(plan);
+    expect(themes.length).toBeGreaterThanOrEqual(15);
+    for (const t of themes) expect(t.root, t.id).toBeUndefined();
+  });
+
+  it('every theme makes a grid over a dozen seeds where each hidden word is there once and no other word of the theme can be read', () => {
+    for (const t of themesFor(plan)) for (let s = 1; s <= 12; s++) {
+      const g = makeGrid(plan, t, new Rng(s * 104729 + t.id.length)), label = `${t.id} seed ${s}`;
+      expect(g.words, label).toHaveLength(6);
+      const hidden = g.words.map((p) => p.word);
+      for (const p of g.words) expect(occurrences(g.size, g.letters, p.word), `${label} ${p.word}`).toHaveLength(1);
+      for (const w of t.words) if (!hidden.includes(w)) expect(occurrences(g.size, g.letters, w), `${label} stray ${w}`).toHaveLength(0);
+      expect(hasBlocked(g.size, g.letters, hidden), label).toBe(false);
+    }
+  });
+
+  it('shows a blank for each letter and the length, the first letter once hinted, and the word once found', () => {
+    expect(blankFor('FROG', false)).toBe('____ (4)');
+    expect(blankFor('FROG', false, 1)).toBe('F___ (4)');
+    expect(blankFor('FROG', false, 2)).toBe('F___ (4)');
+    expect(blankFor('FROG', true)).toBe('FROG');
+    const g = makeGrid(plan, themeById('pond'), new Rng(3));
+    for (const p of g.words) expect(blankFor(p.word, false).replace(/ \(\d+\)$/, '')).toHaveLength(p.word.length);
+  });
+
+  it('a line that spells no hidden word is free, never a miss; a found word marked again is neither', () => {
+    for (let s = 1; s <= 12; s++) {
+      const g = makeGrids(plan, new Rng(s))[0], found = new Set<number>();
+      let free = 0, misses = 0;
+      // Every straight line from the top-left corner and the centre: each is a find, a repeat, or free.
+      for (const from of [0, 55]) for (let to = 0; to < 100; to++) {
+        const line = to !== from ? lineBetween(10, from, to) : null;
+        if (!line) continue;
+        const r = judgeLine(g, line, found, true);
+        if (r.kind === 'miss') misses++;
+        if (r.kind === 'free') free++;
+      }
+      expect(misses, `seed ${s}`).toBe(0);
+      expect(free, `seed ${s}`).toBeGreaterThan(0);
+      const first = cellsOfWord(10, g.words[0]);
+      expect(judgeLine(g, first, found, true)).toEqual({ kind: 'found', word: 0 });
+      found.add(0);
+      expect(judgeLine(g, first, found, true)).toEqual({ kind: 'again', word: 0 });
+      expect(judgeLine(g, [...first].reverse(), found, true)).toEqual({ kind: 'again', word: 0 });
+    }
+    // On a listed grid the same stray line is still a miss.
+    const listed = makeGrids(planFor(2), new Rng(1))[0];
+    const stray = Array.from({ length: 100 }, (_, to) => lineBetween(10, 0, to)).find((l) => l && l.length > 1 && wordAt(listed, l, new Set()) < 0)!;
+    expect(judgeLine(listed, stray, new Set())).toEqual({ kind: 'miss' });
+    // And on a listed grid a found word marked again is a miss, as it always was.
+    const w0 = cellsOfWord(10, listed.words[0]);
+    expect(judgeLine(listed, w0, new Set([0]))).toEqual({ kind: 'miss' });
+  });
+
+  it('hints the shortest unfound word: its first letter first, then its start, and again its start if still unfound', () => {
+    for (let s = 1; s <= 12; s++) {
+      const g = makeGrids(plan, new Rng(s))[0], found = new Set<number>(), stages = new Map<number, 1 | 2>();
+      const shortest = Math.min(...g.words.map((p) => p.word.length));
+      const one = hiddenHint(g, found, stages)!;
+      expect(g.words[one.word].word.length, `seed ${s}`).toBe(shortest);
+      expect(one.stage).toBe(1);
+      expect(one.letter).toBe(g.words[one.word].word[0]);
+      expect(g.letters[one.cell]).toBe(one.letter);
+      expect(one.cell).toBe(cellsOfWord(10, g.words[one.word])[0]);
+      stages.set(one.word, 1);
+      const two = hiddenHint(g, found, stages)!;
+      expect(two).toMatchObject({ word: one.word, stage: 2, cell: one.cell });
+      stages.set(one.word, 2);
+      expect(hiddenHint(g, found, stages)).toMatchObject({ word: one.word, stage: 2 });
+      // Once found, the hint moves to the next shortest.
+      found.add(one.word);
+      const next = hiddenHint(g, found, stages)!;
+      expect(next.word).toBe(shortestUnfound(g, found));
+      expect(next.word).not.toBe(one.word);
+      expect(next.stage).toBe(1);
+      for (let i = 0; i < 6; i++) found.add(i);
+      expect(hiddenHint(g, found, stages)).toBeNull();
+    }
+  });
+
+  it('has its spoken lines, none naming the word it hints', () => {
+    for (const id of ['wordsearch.go-hidden', 'wordsearch.go-hidden-keys', 'wordsearch.free', 'wordsearch.hidden-letter', 'wordsearch.hidden-ring'] as const) {
+      expect(SCRIPT[id], id).toBeDefined();
+      for (const line of SCRIPT[id]) expect(line, id).not.toMatch(/\{word\}/);
     }
   });
 });
