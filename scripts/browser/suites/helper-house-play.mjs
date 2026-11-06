@@ -114,6 +114,49 @@ async function helperHousePlay() {
   await finished('helper-house');
   assert.deepEqual(await score(), [0, 2], 'level 4 saved 0 misses, 2 hints');
   }
+  if (levels.includes(5)) {
+  // Level 5: the sensor starts under the lamp and the lamp flickers twice (one hint, the sensor glows); dragged into
+  // the shed the lamp stays on into the morning; Show me moves it to the roof and Watch finishes with 2 hints.
+  await launch('helper-house', 5);
+  await settle();
+  s = await state();
+  assert.deepEqual(s.sensor, { kind: 'sun', socket: 'lamp' }, 'level 5 opens with the sun sensor under the lamp');
+  assert.deepEqual(s.rows, ['dark', 'bright'], 'both rows are given');
+  await watch();
+  const lit = await page.evaluate(async () => {
+    const { runDay } = await import('/src/games/helper-house/logic.ts');
+    const g = neo.scene.game;
+    return runDay(g.board, g.brief.day).failure;
+  });
+  assert.equal(lit, 'lamp-flickers', 'under the lamp it flickers');
+  assert.deepEqual(await tally(), [0, 0], 'a flickering day counts nothing');
+  await watch();
+  s = await state();
+  assert.deepEqual(await tally(), [0, 1], 'the same failure twice counts one hint');
+  assert.equal(s.glow, 'sensor', 'the sensor glows');
+  await page.evaluate(async () => {
+    const g = neo.scene.game;
+    const tile = g.tiles.find((t) => t.kind === 'sun');
+    const shed = g.socketNodes[2].getGlobalPosition();
+    await kit.dragTo(tile.node, { x: shed.x, y: shed.y + 40 }, 14);
+  });
+  await page.waitForTimeout(500);
+  s = await state();
+  assert.equal(s.sensor.socket, 'shed', 'the dragged sensor lands in the shed');
+  assert.equal(s.glow, null, 'moving the sensor puts the glow out');
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(800);
+  await tapOn('neo.scene.game.stepButton');
+  for (let i = 0; i < 8; i++) { await tapOn('neo.scene.game.stepButton'); await page.waitForTimeout(950); }
+  await screenshot('helper-house-5-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(500);
+  await page.evaluate(() => neo.scene.game.askForHint()); await page.waitForTimeout(400);
+  s = await state();
+  assert.equal(s.sensor.socket, 'roof', 'Show me puts the sensor on the roof');
+  assert.deepEqual(await tally(), [0, 2], 'Show me counts one hint');
+  await watch();
+  await finished('helper-house');
+  assert.deepEqual(await score(), [0, 2], 'level 5 saved 0 misses, 2 hints');
+  }
   log(`Helper House ${levels.join(', ')}: failing days glow once, drags and taps, Step, portrait, Show me, passed`);
 }
 return { helperHousePlay };
