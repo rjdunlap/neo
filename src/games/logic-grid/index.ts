@@ -17,7 +17,7 @@ import { SCRIPT, type LineId } from '../../content/voice-script';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   answerOf, applyStep, blockOf, brokenClue, colOf, contradicts, CROSSED, cycle, EMPTY, emptyMarks, FILLED, fullWrong, HATS, makeRound, nextStep,
-  planFor, rowOf, shapeOf, shown, sizeOf, solved, wrongSquares, type Board, type Clue, type Item, type Mark, type Place, type Plan, type Step,
+  planFor, rowOf, shapeOf, shown, sizeOf, solved, solveSteps, wrongSquares, type Board, type Clue, type Item, type Mark, type Place, type Plan, type Step,
   type Thing,
 } from './logic';
 
@@ -220,6 +220,7 @@ class ClueCard extends Container {
       t.style.wordWrap = true;
       t.style.wordWrapWidth = width - 20;
       t.style.lineHeight = 19;
+      t.style.align = 'left';
       t.anchor.set(0, 0.5);
       t.position.set(10, LINE_H / 2);
       t.eventMode = 'none';
@@ -701,7 +702,7 @@ class MysteryGrid implements Game {
       } else {
         art.position.set(24, h / 2);
         t.anchor.set(0, 0.5);
-        t.position.set(46, h / 2);
+        t.position.set(51, h / 2);
       }
       c.addChild(art, t);
       c.position.set(x, y);
@@ -713,7 +714,7 @@ class MysteryGrid implements Game {
     const small = (a: Container, k: number) => (a.scale.set(a.scale.x * k), a);
     b.places.forEach((p, i) => head(swatch.green, this.colX(i), 0, C, HH, small(placeArt(p), 0.5), p, () => this.tapPlace(i), true));
     b.items!.forEach((it, i) => head(swatch.orange, this.colX(i, 1), 0, C, HH, small(itemArt(it), 0.6), it, () => this.tapItem(i), true));
-    b.items!.forEach((it, i) => head(swatch.orange, 0, this.rowY(i, 2), HW, C, small(itemArt(it), 0.6), it, () => this.tapItem(i), false));
+    b.items!.forEach((it, i) => head(swatch.orange, 0, this.rowY(i, 2), HW, C, small(itemArt(it), 0.55), it, () => this.tapItem(i), false));
     b.friends.forEach((f, i) => {
       const cr = this.ctx.track(friendArt(f, 0.17));
       if (b.hats) cr.attach(hatArt(b.hats[i]));
@@ -999,7 +1000,7 @@ class MysteryGrid implements Game {
 
   /**
    * The ghost finger replays the rule solver: one tap for a yes, two for a no (the second soon after, before the first is
-   * judged), then taps the friend who has the pie.
+   * judged), then taps the friend who has the pie. Level 7 taps only the yeses.
    */
   autotouch(): TouchIntent | null {
     const b = this.current;
@@ -1008,7 +1009,10 @@ class MysteryGrid implements Game {
       const c = this.friendCards[answerOf(b)];
       return { tap: { on: c, x: (b.case ? HW : SQ) / 2, y: this.cs / 2 } };
     }
-    const st = nextStep(b, this.marks);
+    // Level 7's 48 squares: the case file's demo taps the rule solver's yeses in order, since each yes crosses its own row
+    // and column; the full step list takes over if a mark of hers is left in the way.
+    const yes = b.case ? solveSteps(shapeOf(b), b.clues).steps.find((x) => x.mark === FILLED && this.marks[x.square] !== FILLED) : undefined;
+    const st = yes ?? nextStep(b, this.marks);
     if (!st) return null;
     const cell = this.cells[st.square];
     const twice = st.mark === CROSSED && this.marks[st.square] !== FILLED;
