@@ -332,7 +332,9 @@ class Crossword implements Game {
   /** Level 4: Show me turns the active word's speaker into its picture and says the word. One hint, once per word. */
   showMe() {
     const p = this.puzzle;
-    if (!p || !this.plan.riddles || this.busy || this.finished || this.revealed.has(this.active)) return;
+    if (!p || !this.plan.riddles || this.busy || this.finished) return;
+    // Already shown: it says the word again, free.
+    if (this.revealed.has(this.active)) return void this.ctx.say('cw.word', { word: p.words[this.active].word });
     this.hints++;
     sfx.pop(4);
     const i = this.active;
