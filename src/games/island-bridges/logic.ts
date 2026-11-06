@@ -616,7 +616,8 @@ export function touchLayout(size: number, w: number, h: number, school: boolean)
       tally: { x: bx + panel / 2, y: y + 8 + 3 * (bh + 12) + 8, ax: 0.5, ay: 0 },
     };
   }
-  const cell = Math.max(min, stack), sea = size * cell, x = (w - sea) / 2, y = 140;
+  // A sea wider than the gap beside Home and "?" (an upright phone, chunk 31; a big sea on an upright iPad) starts below them.
+  const cell = Math.max(min, stack), sea = size * cell, x = (w - sea) / 2, y = x < 120 ? 220 : 140;
   const by = y + sea + 16 + 20, bw = Math.min(200, Math.floor((sea - 24) / 3));
   return {
     cell, x, y, beside: false,
