@@ -325,7 +325,7 @@ describe('game registry', () => {
   });
 
   it('lists the grown-up games as island games for the grown-up band only, and opens any controller-only one through the couch', () => {
-    const ids = ['marble-jump', 'log-roll', 'snowball-merge', 'brain-break', 'pyramid-solitaire', 'number-nook', 'gem-swap', 'tile-pairs', 'sudoku-garden', 'picture-logic', 'word-search'];
+    const ids = ['marble-jump', 'log-roll', 'snowball-merge', 'brain-break', 'pyramid-solitaire', 'number-nook', 'gem-swap', 'tile-pairs', 'sudoku-garden', 'picture-logic'];
     for (const id of ids) {
       const g = gameById(id)!;
       expect(g, id).toBeDefined();
@@ -368,6 +368,16 @@ describe('game registry', () => {
     expect(g.levels('school')).toEqual({ min: 10, max: 11 });
     expect(g.levels('grownup')).toMatchObject({ min: 1, max: 9 });
     expect(couchGameById('pond-conga')).toBe(g);
+  });
+
+  it('opens Word Search\'s one picture-word grid to school and every grid to grown-ups', () => {
+    const g = gameById('word-search')!;
+    expect(g.bands).toEqual(['school', 'grownup']);
+    expect(g.levels('school')).toEqual({ min: 8, max: 8 });
+    expect(g.levels('grownup')).toMatchObject({ min: 1, max: 7 });
+    expect(g.entryLevels).toContain(8);
+    expect(g.describeLevel(8).length).toBeGreaterThan(3);
+    expect(couchGameById('word-search')).toBe(g);
   });
 
   it('plays no background music in a game where she makes the music', () => {
