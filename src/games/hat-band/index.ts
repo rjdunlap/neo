@@ -29,7 +29,7 @@ const HAT_COLORS: Record<HatId, Swatch> = { steady: swatch.red, skippy: swatch.o
 /** A worn hat sits a little smaller on a friend's head. */
 const WORN_SCALE = 0.8;
 /** How far above a friend's feet the worn hat sits. */
-const HEAD = 178;
+const HEAD = 166;
 
 /** A little drum, the drum hats' badge and the drummer's prop. */
 function drumArt(scale = 1): Graphics {
@@ -112,8 +112,8 @@ class Player extends Container {
     this.flash.circle(0, 0, 92).fill({ color: 0xfff3a0, alpha: 1 });
     this.flash.position.set(0, -80);
     this.flash.alpha = 0;
-    this.drum.position.set(0, -34);
-    this.bars.position.set(0, -38);
+    this.drum.position.set(0, -20);
+    this.bars.position.set(0, -22);
     this.drum.visible = this.bars.visible = false;
     this.addChild(this.flash, this.critter, this.drum, this.bars, this.ring);
     this.eventMode = 'none';
