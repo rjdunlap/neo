@@ -89,6 +89,8 @@ class WordSearch implements Game {
   clueWord: number | null = null;
   /** Level 8: misses on this grid; from the second, each one rings the start of a word without counting as help. */
   gridMisses = 0;
+  /** Level 8: the word the last ring after a miss named, so a run of misses does not repeat the same line. */
+  private ringSaid = -1;
   /** Level 8: the picture tiles, in their own layer so a tap reaches them (the list takes no touches). */
   readonly tileLayer = new Container();
   tiles: Tile[] = [];
@@ -619,6 +621,7 @@ class WordSearch implements Game {
     this.clues = new Map();
     this.clueWord = null;
     this.gridMisses = 0;
+    this.ringSaid = -1;
     this.cursor = Math.floor(this.n / 2) * this.n + Math.floor(this.n / 2);
     this.scrollX = 0;
     this.scrollY = 0;
@@ -926,9 +929,11 @@ class WordSearch implements Game {
       const ring = this.gridMisses >= 2 ? hintFor(this.grid, this.found, this.cursor) : null;
       if (ring) {
         this.hinted = ring;
+        const fresh = ring.word !== this.ringSaid;
+        this.ringSaid = ring.word;
         const word = spoken(this.grid.words[ring.word].word);
         // Only while that ring still stands: a word found (or a new mark) meanwhile makes the line stale.
-        void said.then(() => { if (this.hinted === ring && !this.found.has(ring.word)) void this.ctx.say('wordsearch.hint', { word }); });
+        if (fresh) void said.then(() => { if (this.hinted === ring && !this.found.has(ring.word)) void this.ctx.say('wordsearch.hint', { word }); });
       }
     } else if (hit < 0) {
       this.misses++;
