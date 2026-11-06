@@ -2569,7 +2569,7 @@ Branch `claude/sink-float-big-small`, PR #1261: [dive slice 2](../deep-dives/sin
 
 ## Sink or Float, level 10 Salty or fresh (batch sink-float 3, 2026-11-05)
 
-Branch `claude/sink-float-salty-or-fresh`, PR #1285: [dive slice 3a](../deep-dives/sink-float.md#build-slices-in-order), built to the [definition](../definitions/salty-or-fresh.md). School is now `{ min: 5, max: 10, order: [5, 6, 9, 7, 10] }`. New `salt.ts` (`SaltTanks`, dispatched from `create`), model in `logic.ts` (`SALT_DEPTHS`, `floatsIn`, `saltRoundFor`), egg, shaker and waterline art in `art.ts`, 15 `sink.salt-*` voice lines, how-to steps, finish and note scoped to 10. Deviations: the how-to note drops the off-screen raw-egg safety sentence (840-character limit; waits on band-keyed `offScreenFor`); a light water wash tints what sits under the surface; wrong taps during a wrong tank's evidence line count nothing; the duck's dashed mark sits at its plain-water waterline. Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--sink-or-float-level-10-salty-or-fresh-sink-float-batch-3).
+Branch `claude/sink-float-salty-or-fresh`, PR #1285: [dive slice 3a](../deep-dives/sink-float.md#build-slices-in-order), built to the [definition](../definitions/salty-or-fresh.md). School is now `{ min: 5, max: 10, order: [5, 6, 9, 7, 10] }`. New `salt.ts` (`SaltTanks`, dispatched from `create`), model in `logic.ts` (`SALT_DEPTHS`, `floatsIn`, `saltRoundFor`), egg, shaker and waterline art in `art.ts`, 15 `sink.salt-*` voice lines, how-to steps, finish and note scoped to 10. Deviations: the how-to note drops the off-screen raw-egg safety sentence (840-character limit; waits on band-keyed `offScreenFor`); a light water wash tints what sits under the surface; wrong taps during a wrong tank's evidence line count nothing; the duck's dashed mark sits at its plain-water waterline. Checks are in [VERIFICATION](VERIFICATION-2026-11-05.md#2026-11-05--sink-or-float-level-10-salty-or-fresh-sink-float-batch-3).
 
 ## Sudoku Garden, a 4 by 4 bed to start (batch sudoku-garden 1, 2026-11-03)
 
@@ -3009,7 +3009,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-05.md#2026-11-05--word-search-
 
 [PR #1284](https://github.com/rjdunlap/neo/pull/1284), `claude/sense-detective-3-4`: [definition](../definitions/sense-detective.md#levels-35-definition-2026-11-05). Level 3 (pre-K, school): two parcels, Look only, select every toy the look allows (`checkSet`; "one more" is free, a kept ruled-out toy is a miss and deselects). Level 4 (school): one bell-or-drum parcel, the look's set gives "so far", the ear appears, she listens and keeps only the fitting toy; Check before listening stays so-far. Bands now pre-K 1–3, school 2–4. Help counts per parcel (Tally) and the glow shows the useful edit (`hintEdit`). Eight new `sense.*` voice lines (device speech) and a how-to card scoped 3–4. Open decisions 1, 2, 4, 5 and 7 took the definition's defaults. Sense language stays look/listen/peek/hear with no body content, so no new source check was needed (none performed). Level 5 (B4b) stays queued; whether a five-year-old reads "every toy it could be" as several taps is a device check not yet run.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--sense-detective-levels-34-b4a).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-05.md#2026-11-05--sense-detective-levels-34-b4a).
 
 ## Draw the Pattern slice 1, Fresh pictures (2026-11-05)
 
