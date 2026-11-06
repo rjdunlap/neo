@@ -372,6 +372,13 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 - [ ] On an iPad, is "vapour" clear in device speech (and the `dj.*` lines)?
 - [ ] With a school-age child: can she say why a can't-go card is wrong (the drop cannot go uphill by itself)?
 
+## Rain Garden levels 1–3 (weather-water slices 2–3, 2026-11-06)
+
+- [ ] With a two-year-old: does she tap the cloud again, or reach for the leaf?
+- [ ] With a four-year-old: does she read the bookmark card as "before"?
+- [ ] On an iPad, how does speech say "can't" (the `rain.*` lines)?
+- [ ] Does the sliding fresh patch read as a restart, not as weather?
+
 ## Second Chance Shed levels 5–6 (nature-sustainability N3, 2026-10-31)
 
 - [ ] With a school-age child: does she read a friend's picture bubble (a cat with pencils, Bunny, a duck) without the spoken line?

@@ -1014,6 +1014,21 @@ export const HOW_TO: Record<string, GameHowTo> = {
     ],
     note: 'Zero has no things: the round ends with “zero” said aloud. Wandering off the trail is a gentle miss; counting things can never be wrong.',
   },
+  'rain-garden': {
+    goal: 'Rain on a little garden and see where the water goes when the ground changes.',
+    steps: [
+      'Tap the cloud: four drops fall, some stay in the ground and the rest run to the pond.',
+      { from: 1, to: 1, text: 'Tap the cloud again to rain on a fresh, dry garden.' },
+      { from: 2, to: 2, text: 'Tap a ground tile to make that garden stone or soil; both gardens get the same rain.' },
+      { from: 3, to: 3, text: 'The first rain is kept on a card; change the ground and rain again to compare.' },
+    ],
+    finish: [
+      { from: 1, to: 1, text: "Tap the leaf when she's done; it appears after one rain." },
+      { from: 2, to: 2, text: "Tap the leaf when she's done; it appears after one rain on both gardens." },
+      { from: 3, to: 3, text: "Tap the leaf when she's done; it appears after rain on two different grounds." },
+    ],
+    note: 'Every choice is fine here: there are no wrong answers and no misses. A pretend model: soil holds two drops and stone holds none. Real ground soaks rain in more slowly, and how much depends on how wet it already is. Show me has the pet point at the next step and counts as help; finishing with help still earns the sticker. Rounds without hints move her up, which means she joined in, not that she has learned fair tests.',
+  },
   'drops-journey': {
     goal: 'Follow a water drop as it moves between the sea, the sky, the mountain, the river and the ground.',
     steps: [
