@@ -14,12 +14,12 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseBeds, courseMinimum, isBedCourse } from './course';
 import {
-  conflicts, deadEnds, fillMarksRow, geo, hintFor, patchTints, shapeOf, offersFillMarks, houseName, isSolved, makeBeds, placements, planFor, remaining, shortBed, type Hint, type Puzzle, type SudokuPlan,
+  cageLabelCell, conflicts, deadEnds, fillMarksRow, geo, hintFor, patchTints, shapeOf, offersFillMarks, houseName, isSolved, makeBeds, placements, planFor, remaining, shortBed, wrongSums, type Hint, type Puzzle, type SudokuPlan,
 } from './logic';
 
 /** Grown-up play only: this game lives on the couch, not on the child's island. */
-/** Level 7, a 4 by 4 bed, is the easy entry played first; the ladder then climbs 1 to 6. */
-const LEVELS: BandLevels = { grownup: { min: 1, max: 9, order: [7, 1, 2, 3, 9, 4, 5, 6, 8] } };
+/** Level 7, a 4 by 4 bed, is the easy entry played first; the ladder then climbs 1 to 6, with patchwork (9) and cage (10) beds after 3. */
+const LEVELS: BandLevels = { grownup: { min: 1, max: 10, order: [7, 1, 2, 3, 9, 10, 4, 5, 6, 8] } };
 
 /** One soft color for each number, so a bed can be read at a glance as well as by its digits. */
 const DIGIT_COLORS: ColorName[] = ['red', 'orange', 'yellow', 'green', 'teal', 'blue', 'purple', 'pink', 'white'];
@@ -29,6 +29,10 @@ const ENTERED = 0x2f78c9;
 const CLASH = 0xc23a40;
 const COLS = 3;
 const NOTE_POSITIONS = (d: number) => ({ x: 0.2 + 0.3 * ((d - 1) % 3), y: 0.2 + 0.3 * Math.floor((d - 1) / 3) });
+/** On a cage bed the sum label takes the top third of a square, so the six marks sit in two lower rows. */
+const CAGE_NOTE_POSITIONS = (d: number) => ({ x: 0.2 + 0.3 * ((d - 1) % 3), y: d <= 3 ? 0.52 : 0.8 });
+/** A cage bed's numbers and blossoms sit this far (of a square) below the middle, clear of the sum label. */
+const CAGE_DROP = 0.06;
 
 type Mode = 'board' | 'tray';
 
@@ -86,6 +90,9 @@ class SudokuGarden implements Game {
   private readonly bannerBg = new Graphics();
   private readonly tally: Text;
   private texts: Text[] = [];
+  /** A cage bed's sum labels, one for each cage, in the cage's first square. */
+  private sumTexts: Text[] = [];
+  private readonly sumsLayer = new Container();
   private noteTexts: (Text | null)[][] = [];
   private cell = 80;
   private trayTile = 66;
@@ -96,7 +103,7 @@ class SudokuGarden implements Game {
   private lastDigit = 1;
   private readonly held = new HeldDirection();
   private dirty = true;
-  private told = { clash: false, stuck: false };
+  private told = { clash: false, stuck: false, sum: false };
   /** When the wrong-number hint may speak again, so quick entries boing without stacking lines. */
   private wrongQuietUntil = 0;
   private botWait = 0.8;
@@ -129,8 +136,8 @@ class SudokuGarden implements Game {
       if (ctx.demo) this.beds = this.beds.map((b) => shortBed(b));
       this.course = null;
     }
-    for (const part of [this.board, this.cellsG, this.digits, this.notesLayer, this.glow, this.tray, this.trayG, this.trayText, this.trayRing]) part.eventMode = 'none';
-    this.board.addChild(this.cellsG, this.notesLayer, this.digits, this.glow);
+    for (const part of [this.board, this.cellsG, this.sumsLayer, this.digits, this.notesLayer, this.glow, this.tray, this.trayG, this.trayText, this.trayRing]) part.eventMode = 'none';
+    this.board.addChild(this.cellsG, this.sumsLayer, this.notesLayer, this.digits, this.glow);
     this.tray.addChild(this.trayG, this.trayText, this.trayRing);
     this.banner = new Text({ text: '', style: { fontFamily: FONT, fontSize: 22, fill: ink, fontWeight: '500', align: 'left', wordWrap: true, wordWrapWidth: 260, lineHeight: 28 } });
     this.banner.position.set(12, 8);
@@ -266,6 +273,12 @@ class SudokuGarden implements Game {
     return { x: g.colOf[i] * this.cell + this.cell / 2, y: g.rowOf[i] * this.cell + this.cell / 2 };
   }
 
+  /** Where a square's number and blossom sit: its middle, or a little lower on a cage bed. */
+  private bloomAt(i: number) {
+    const mid = this.center(i);
+    return this.geo.cages.length ? { x: mid.x, y: mid.y + this.cell * CAGE_DROP } : mid;
+  }
+
   private color(d: number) { return swatch[DIGIT_COLORS[(d - 1) % DIGIT_COLORS.length]]; }
 
   /** The bed: soil, the numbers' blossoms and the box lines. Drawn again whenever something in it changes. */
@@ -285,8 +298,8 @@ class SudokuGarden implements Game {
       if (stuck.has(i)) g.roundRect(x + 2, y + 2, s - 4, s - 4, 11).stroke({ width: 5, color: swatch.orange.fill });
       const d = this.grid[i];
       if (d) {
-        const c = this.color(d), mid = this.center(i);
-        g.circle(mid.x, mid.y, cell * 0.38).fill(c.light).stroke({ width: 3, color: this.given[i] ? ink : c.line });
+        const c = this.color(d), mid = this.bloomAt(i);
+        g.circle(mid.x, mid.y, cell * (geo.cages.length ? 0.34 : 0.38)).fill(c.light).stroke({ width: 3, color: this.given[i] ? ink : c.line });
         if (here && d === here && i !== this.cursor) g.circle(mid.x, mid.y, cell * 0.44).stroke({ width: 4, color: swatch.yellow.fill });
       }
     }
@@ -301,19 +314,59 @@ class SudokuGarden implements Game {
       for (let k = 1; k < n / geo.bc; k++) g.moveTo(k * geo.bc * cell, 2).lineTo(k * geo.bc * cell, w - 2).stroke({ width: 6, color: wood.line, cap: 'round' });
       for (let k = 1; k < n / geo.br; k++) g.moveTo(2, k * geo.br * cell).lineTo(w - 2, k * geo.br * cell).stroke({ width: 6, color: wood.line, cap: 'round' });
     }
+    if (geo.cages.length) this.paintCages(g);
     this.syncTexts(bad);
     const left = this.grid.filter((d) => !d).length;
     this.tally.text = `${left} to fill · ${this.entries} entered`;
   }
 
+  /**
+   * A cage bed's cages: a dashed outline 6 units inside each cage's outer edges (red while its numbers do not add up), and
+   * its sum on a small paper patch in its first square.
+   */
+  private paintCages(g: Graphics) {
+    const geo = this.geo, cell = this.cell, n = this.n, inset = 6;
+    const off = new Set(wrongSums(this.grid, this.shape).map((c) => c.index));
+    const font = Math.max(13, Math.round(cell * 0.2));
+    for (const c of geo.cages) {
+      const color = off.has(c.index) ? CLASH : ink, alpha = off.has(c.index) ? 0.95 : 0.55;
+      const at = (r: number, k: number) => r >= 0 && r < n && k >= 0 && k < n && geo.cageOf[r * n + k] === c.index;
+      for (const i of c.cells) {
+        const r = geo.rowOf[i], k = geo.colOf[i], x = k * cell, y = r * cell;
+        const up = at(r - 1, k), down = at(r + 1, k), left = at(r, k - 1), right = at(r, k + 1);
+        // Each outer side runs along the inset outline, reaching to the square's edge where the cage goes on beside it.
+        const x0 = left ? x : x + inset, x1 = right ? x + cell : x + cell - inset, y0 = up ? y : y + inset, y1 = down ? y + cell : y + cell - inset;
+        if (!up) dashedEdge(g, x0, y + inset, x1, y + inset);
+        if (!down) dashedEdge(g, x0, y + cell - inset, x1, y + cell - inset);
+        if (!left) dashedEdge(g, x + inset, y0, x + inset, y1);
+        if (!right) dashedEdge(g, x + cell - inset, y0, x + cell - inset, y1);
+        // Where the outline turns back inside the cage, close the little corner between this square's two neighbours.
+        for (const [dx, dy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]] as const) {
+          if (!at(r, k + dx) || !at(r + dy, k) || at(r + dy, k + dx)) continue;
+          const cx = dx < 0 ? x + inset : x + cell - inset, cy = dy < 0 ? y + inset : y + cell - inset;
+          dashedEdge(g, cx, cy, dx < 0 ? x : x + cell, cy);
+          dashedEdge(g, cx, cy, cx, dy < 0 ? y : y + cell);
+        }
+      }
+      g.stroke({ width: 2, color, alpha });
+      const first = cageLabelCell(c), t = this.sumTexts[c.index];
+      if (!t) continue;
+      t.style.fontSize = font;
+      t.style.fill = color === CLASH ? CLASH : ink;
+      const lx = geo.colOf[first] * cell + 9, ly = geo.rowOf[first] * cell + 9;
+      t.position.set(lx, ly);
+      g.roundRect(lx - 2, ly - 1, t.width + 4, t.height + 2, 4).fill({ color: cream, alpha: 0.85 });
+    }
+  }
+
   /** Numbers and pencil marks, laid over the blossoms. */
   private syncTexts(bad: Set<number>) {
-    const cell = this.cell;
+    const cell = this.cell, caged = this.geo.cages.length > 0;
     for (let i = 0; i < this.texts.length; i++) {
-      const t = this.texts[i], d = this.grid[i], mid = this.center(i);
+      const t = this.texts[i], d = this.grid[i], mid = this.bloomAt(i);
       t.text = d ? String(d) : '';
       t.style.fill = bad.has(i) ? CLASH : this.given[i] ? ink : ENTERED;
-      t.style.fontSize = Math.round(cell * 0.5);
+      t.style.fontSize = Math.round(cell * (caged ? 0.46 : 0.5));
       t.position.set(mid.x, mid.y + 1);
       const marks = this.noteTexts[i];
       for (let k = 1; k <= this.n; k++) {
@@ -326,7 +379,7 @@ class SudokuGarden implements Game {
           this.notesLayer.addChild(note);
           marks[k - 1] = note;
         }
-        const at = NOTE_POSITIONS(k), geo = this.geo;
+        const at = (caged ? CAGE_NOTE_POSITIONS : NOTE_POSITIONS)(k), geo = this.geo;
         note.visible = true;
         note.style.fontSize = Math.max(13, Math.round(cell * 0.22));
         note.position.set(geo.colOf[i] * cell + at.x * cell, geo.rowOf[i] * cell + at.y * cell);
@@ -420,7 +473,7 @@ class SudokuGarden implements Game {
       const h = this.hinted, pulse = 6 + 2 * Math.sin(this.clock * 6);
       if (h.kind === 'place') for (const c of h.house.cells) { const m = this.center(c); g.roundRect(m.x - cell / 2 + 6, m.y - cell / 2 + 6, cell - 12, cell - 12, 10).stroke({ width: 3, color: swatch.yellow.line, alpha: 0.9 }); }
       if (h.kind === 'rules-out') for (const line of h.via.lines ?? []) for (const c of line.cells) { const m = this.center(c); g.roundRect(m.x - cell / 2 + 6, m.y - cell / 2 + 6, cell - 12, cell - 12, 10).stroke({ width: 3, color: swatch.yellow.line, alpha: 0.9 }); }
-      if (h.kind === 'rules-out') for (const c of h.via.pattern ?? []) { const m = this.center(c); g.roundRect(m.x - cell / 2 + 4, m.y - cell / 2 + 4, cell - 8, cell - 8, 12).stroke({ width: 6, color: swatch.blue.fill }); }
+      if (h.kind === 'rules-out' || h.kind === 'cage-last') for (const c of h.kind === 'cage-last' ? h.cage.cells : h.via.pattern ?? []) { const m = this.center(c); g.roundRect(m.x - cell / 2 + 4, m.y - cell / 2 + 4, cell - 8, cell - 8, 12).stroke({ width: 6, color: swatch.blue.fill }); }
       const m = this.center(h.cell);
       g.roundRect(m.x - cell / 2 - 3, m.y - cell / 2 - 3, cell + 6, cell + 6, 16).stroke({ width: pulse, color: h.kind === 'fix' ? swatch.red.fill : swatch.yellow.fill });
     }
@@ -455,12 +508,14 @@ class SudokuGarden implements Game {
     this.noting = false;
     this.botPick = null;
     this.sweep = null;
-    this.told = { clash: false, stuck: false };
+    this.told = { clash: false, stuck: false, sum: false };
     this.wrongQuietUntil = 0;
     this.cursor = Math.max(0, this.grid.findIndex((d) => !d));
     this.showBanner('');
     this.digits.removeChildren().forEach((c) => c.destroy());
     this.notesLayer.removeChildren().forEach((c) => c.destroy());
+    this.sumsLayer.removeChildren().forEach((c) => c.destroy());
+    this.sumTexts = this.geo.cages.map((c) => { const t = label(String(c.sum), 18, ink, '600'); t.eventMode = 'none'; t.anchor.set(0, 0); this.sumsLayer.addChild(t); return t; });
     this.texts = this.grid.map(() => { const t = label('', 40, ink); t.eventMode = 'none'; this.digits.addChild(t); return t; });
     this.noteTexts = this.grid.map(() => Array<Text | null>(this.n).fill(null));
     this.resize(this.view);
@@ -473,7 +528,8 @@ class SudokuGarden implements Game {
     this.report();
     if (this.spoken) return;
     this.spoken = true;
-    const patch = this.geo.patches !== null;
+    const patch = this.geo.patches !== null, caged = this.geo.cages.length > 0;
+    if (caged) return this.ctx.instruct(this.touch ? 'sudoku.go-cages-touch' : 'sudoku.go-cages');
     return this.ctx.instruct(this.touch ? (patch ? 'sudoku.go-patch-touch' : 'sudoku.go-touch') : patch ? 'sudoku.go-patch' : 'sudoku.go');
   }
 
@@ -722,7 +778,8 @@ class SudokuGarden implements Game {
     // A number the answer does not have is a miss, and the game says so: a boing, a red ring and a spoken hint.
     const wrong = digit !== this.puzzle.solution[i];
     if (wrong) this.misses++;
-    const mine = geo.housesOf[i].find((h) => h.cells.some((c) => c !== i && this.grid[c] === digit));
+    const cage = geo.cageOf[i] >= 0 ? [geo.cages[geo.cageOf[i]]] : [];
+    const mine = [...geo.housesOf[i], ...cage].find((h) => h.cells.some((c) => c !== i && this.grid[c] === digit));
     if (mine) {
       const twin = mine.cells.filter((c) => this.grid[c] === digit);
       this.flash = { cells: twin, color: swatch.red.fill, until: this.clock + 1.4 };
@@ -731,6 +788,16 @@ class SudokuGarden implements Game {
         this.told.clash = true;
         void this.ctx.say('sudoku.clash', { house: houseName(mine) });
       } else if (wrong) this.sayWrong(digit);
+      return;
+    }
+    // A cage whose numbers do not add up rings red until fixed; it is never a miss of its own (a number in it is already wrong).
+    const off = cage.length ? wrongSums(this.grid, this.shape).find((c) => c.index === cage[0].index) : undefined;
+    if (off && !this.told.sum && this.clock >= this.wrongQuietUntil) {
+      this.told.sum = true;
+      this.wrongQuietUntil = this.clock + 4;
+      sfx.boing();
+      void this.ctx.say('sudoku.cage-sum', { have: off.cells.reduce((t, c) => t + this.grid[c], 0), sum: off.sum });
+      if (wrong) this.flash = { cells: [i], color: swatch.red.fill, until: this.clock + 1.4 };
       return;
     }
     if (wrong) {
@@ -788,8 +855,14 @@ class SudokuGarden implements Game {
       case 'lone': return ['sudoku.hint-lone', { n: h.digit }];
       case 'place': return ['sudoku.hint-place', { n: h.digit, house: houseName(h.house) }];
       case 'few': return ['sudoku.hint-few', {}];
+      case 'cage-last': return ['sudoku.hint-cage-last', { sum: h.cage.sum, have: h.have, n: h.digit }];
       default: {
-        const via = h.via, house = houseName(via.house!);
+        const via = h.via;
+        if (via.tech === 'cage-sets') {
+          const sets = via.sets!.map(spokenSet), vars = { k: via.cage!.cells.length, sum: via.cage!.sum, m: h.digit };
+          return sets.length === 1 ? ['sudoku.hint-cage-sets', { ...vars, set: sets[0] }] : ['sudoku.hint-cage-sets-or', { ...vars, sets: sets.join(', or ') }];
+        }
+        const house = houseName(via.house!);
         if (via.tech === 'xwing') return ['sudoku.hint-xwing', { lines: `${house}s`, n: via.digits![0], across: house === 'row' ? 'columns' : 'rows', m: h.digit }];
         return via.tech === 'pair'
           ? ['sudoku.hint-pair', { a: via.digits![0], b: via.digits![1], house, n: h.digit }]
@@ -885,6 +958,20 @@ class SudokuGarden implements Game {
 /* ---------------------------------------------------------------------------------------------- */
 
 /** A little bed of nine numbered blossoms, no number repeated in any row or column. */
+/** A set of numbers as the pet says it: "1 and 2", or "1, 2 and 3". */
+const spokenSet = (set: readonly number[]) => (set.length < 2 ? String(set[0]) : `${set.slice(0, -1).join(', ')} and ${set[set.length - 1]}`);
+
+/** A dashed straight line (Pixi has no dashed stroke): dashes 7 long with gaps of 5, added to the path for one stroke. */
+function dashedEdge(g: Graphics, x0: number, y0: number, x1: number, y1: number) {
+  const len = Math.hypot(x1 - x0, y1 - y0);
+  if (len < 0.5) return;
+  const ux = (x1 - x0) / len, uy = (y1 - y0) / len;
+  for (let t = 0; t < len; t += 12) {
+    const e = Math.min(len, t + 7);
+    g.moveTo(x0 + ux * t, y0 + uy * t).lineTo(x0 + ux * e, y0 + uy * e);
+  }
+}
+
 function miniBed(cell: number): Container {
   const c = new Container();
   const n = 3, w = n * cell;
@@ -936,7 +1023,7 @@ export const sudokuGarden: GameModule = {
   bands: ['grownup'],
   inputs: ['touch', 'controller'],
   touchDemo: true,
-  coplayHint: 'Tap a square, then a number. Ask which number can only go in one place in a row, a column, a box or a patch.',
+  coplayHint: 'Tap a square, then a number. Ask which number can only go in one place in a row, a column, a box or a patch, or which numbers can make a cage\'s sum.',
   offScreen: 'Draw a small grid on paper and fill it so no row or column repeats a shape or a number.',
   entryLevels: [7],
   levels: (band) => rangeFor(LEVELS, band),

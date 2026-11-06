@@ -182,9 +182,9 @@ describe('sudoku beds', () => {
   });
 
   it('climbs: more blanks as the levels rise within a size, and 9 by 9 after 6 by 6, with the 4 by 4 entry and the crossing-rows top appended', () => {
-    expect(PLANS.map((p) => p.size)).toEqual([6, 6, 6, 9, 9, 9, 4, 9, 6]);
+    expect(PLANS.map((p) => p.size)).toEqual([6, 6, 6, 9, 9, 9, 4, 9, 6, 6]);
     for (const size of [4, 6, 9] as Size[]) {
-      const blanks = PLANS.filter((p) => p.size === size && !p.patchwork).map((p) => p.blanks);
+      const blanks = PLANS.filter((p) => p.size === size && !p.patchwork && !p.cages).map((p) => p.blanks);
       expect([...blanks].sort((a, b) => a - b)).toEqual(blanks);
     }
     expect(planFor(0)).toBe(PLANS[0]);
