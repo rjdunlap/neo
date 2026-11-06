@@ -35,25 +35,50 @@ export function possible(cards: readonly ToyId[], record: readonly Observation[]
   return cards.filter((c) => record.every((o) => TOYS[c][o.channel] === o.value));
 }
 
-export interface Plan { name: string; shelf: ToyId[]; channels: Channel[] }
+/**
+ * Levels 1-2 ask for the one toy; from level 3 she selects every toy the clues still allow (`set`), over `parcels`
+ * parcels, and level 4 then listens and narrows that set.
+ */
+export interface Plan { name: string; shelf: ToyId[]; channels: Channel[]; set: boolean; parcels: number }
 
 const PLANS: Record<number, Plan> = {
-  1: { name: 'Peek inside', shelf: ['bell', 'rattle'], channels: ['view'] },
-  2: { name: 'Look or listen?', shelf: ['bell', 'drum'], channels: ['view', 'sound'] },
+  1: { name: 'Peek inside', shelf: ['bell', 'rattle'], channels: ['view'], set: false, parcels: 1 },
+  2: { name: 'Look or listen?', shelf: ['bell', 'drum'], channels: ['view', 'sound'], set: false, parcels: 1 },
+  3: { name: 'Which could it be?', shelf: [...TOY_IDS], channels: ['view'], set: true, parcels: 2 },
+  4: { name: 'Narrow it down', shelf: [...TOY_IDS], channels: ['view', 'sound'], set: true, parcels: 1 },
 };
-export const MAX_LEVEL = 2;
+export const MAX_LEVEL = 4;
 
 export function planFor(level: number): Plan {
   return PLANS[Math.max(1, Math.min(MAX_LEVEL, level))];
 }
 
-export interface Round { level: number; shelf: ToyId[]; hidden: ToyId; channels: Channel[] }
+/** `hidden` is the first parcel's toy; `parcels` holds every parcel in order (one at levels 1, 2 and 4). */
+export interface Round { level: number; shelf: ToyId[]; hidden: ToyId; parcels: ToyId[]; channels: Channel[] }
 
-export function makeRound(level: number, rng: Rng): Round {
-  const plan = planFor(level);
-  const shelf = rng.shuffle([...plan.shelf]);
-  const hidden = plan.shelf[rng.int(0, plan.shelf.length - 1)];
-  return { level: Math.max(1, Math.min(MAX_LEVEL, level)), shelf, hidden, channels: [...plan.channels] };
+/** Each set level's authored first round of a session: the shelf, then the parcels in order. */
+const AUTHORED: Record<number, { shelf: ToyId[]; parcels: ToyId[] }> = {
+  3: { shelf: ['rattle', 'bell', 'drum'], parcels: ['drum', 'rattle'] },
+  4: { shelf: ['bell', 'rattle', 'drum'], parcels: ['bell'] },
+};
+
+export function makeRound(level: number, rng: Rng, first = false): Round {
+  const lv = Math.max(1, Math.min(MAX_LEVEL, level));
+  const plan = planFor(lv);
+  const channels = [...plan.channels];
+  if (!plan.set) {
+    const shelf = rng.shuffle([...plan.shelf]);
+    const hidden = plan.shelf[rng.int(0, plan.shelf.length - 1)];
+    return { level: lv, shelf, hidden, parcels: [hidden], channels };
+  }
+  if (first && AUTHORED[lv]) {
+    const a = AUTHORED[lv];
+    return { level: lv, shelf: [...a.shelf], hidden: a.parcels[0], parcels: [...a.parcels], channels };
+  }
+  const shelf = rng.shuffle([...TOY_IDS]);
+  // Two different toys hold at least one round toy, so a parcel is always ambiguous; a look always leaves two at level 4.
+  const parcels = plan.parcels === 2 ? rng.shuffle([...TOY_IDS]).slice(0, 2) : [rng.pick<ToyId>(['bell', 'drum'])];
+  return { level: lv, shelf, hidden: parcels[0], parcels, channels };
 }
 
 export type Verdict =
@@ -70,6 +95,86 @@ export function check(shelf: readonly ToyId[], record: readonly Observation[], c
   }
   if (left.length === 1 && record.length > 0) return { kind: 'found' };
   return { kind: 'notyet', other: left.find((c) => c !== card) ?? null };
+}
+
+export type SetVerdict =
+  | { kind: 'empty' }
+  | { kind: 'look-first' }
+  | { kind: 'miss'; ruledOut: ToyId[]; first: ToyId; obs: Observation }
+  | { kind: 'one-more'; missing: ToyId }
+  | { kind: 'so-far'; left: ToyId[] }
+  | { kind: 'right'; left: ToyId[] };
+
+/**
+ * Levels 3-4: judge the selected set against what the clues allow (never against the parcel). `narrowing` is true while a
+ * listen is still to come (level 4 before its listen), so the look's exact set is only "so far".
+ */
+export function checkSet(shelf: readonly ToyId[], record: readonly Observation[], selected: readonly ToyId[], narrowing: boolean): SetVerdict {
+  if (selected.length === 0) return { kind: 'empty' };
+  if (record.length === 0) return { kind: 'look-first' };
+  const left = possible(shelf, record);
+  const ruledOut = shelf.filter((t) => selected.includes(t) && !left.includes(t));
+  if (ruledOut.length > 0) {
+    const first = ruledOut[0];
+    return { kind: 'miss', ruledOut, first, obs: record.find((o) => TOYS[first][o.channel] !== o.value)! };
+  }
+  const missing = left.find((t) => !selected.includes(t));
+  if (missing) return { kind: 'one-more', missing };
+  return narrowing ? { kind: 'so-far', left } : { kind: 'right', left };
+}
+
+/** The useful edit a hint glows: take out a ruled-out toy, else put in a missing one, else press Check. */
+export type Edit = { remove: ToyId } | { add: ToyId } | { check: true };
+export function hintEdit(shelf: readonly ToyId[], record: readonly Observation[], selected: readonly ToyId[]): Edit {
+  const left = possible(shelf, record);
+  const out = shelf.find((t) => selected.includes(t) && !left.includes(t));
+  if (out) return { remove: out };
+  const missing = left.find((t) => !selected.includes(t));
+  if (missing) return { add: missing };
+  return { check: true };
+}
+
+/** The key an unchanged resubmit repeats: the parcel, the stage, the sorted selection and how much has been revealed. */
+export function setKey(parcel: number, stage: number, selected: readonly ToyId[], record: readonly Observation[]): string {
+  return `${parcel}|${stage}|${[...selected].sort().join(',')}|${record.length}`;
+}
+
+/**
+ * Misses and hints for a round of parcels. Help counts per parcel: two misses on one parcel glow the useful edit and
+ * count one hint for that parcel, and Show a hint on the same parcel adds nothing more.
+ */
+export class Tally {
+  misses = 0;
+  hints = 0;
+  parcelMisses = 0;
+  hinted = false;
+  private lastKey: string | null = null;
+  /** A wrong Check; returns true when the glow should come on. An unchanged resubmit counts nothing. */
+  miss(key: string): boolean {
+    if (countsAsMiss(this.lastKey, key)) { this.misses++; this.parcelMisses++; }
+    this.lastKey = key;
+    if (this.parcelMisses >= GLOW_AFTER) { this.hint(); return true; }
+    return false;
+  }
+  hint() {
+    if (!this.hinted) { this.hinted = true; this.hints++; }
+  }
+  nextParcel() {
+    this.parcelMisses = 0;
+    this.hinted = false;
+    this.lastKey = null;
+  }
+}
+
+/** The bot at levels 3-4: look first, listen once level 4 opens it, then make the useful edit until Check. */
+export type SetMove = { investigate: Channel } | { toggle: ToyId } | { check: true };
+export function setTouch(round: Round, record: readonly Observation[], selected: readonly ToyId[], listenOpen: boolean): SetMove {
+  if (!record.some((o) => o.channel === 'view')) return { investigate: 'view' };
+  if (listenOpen && !record.some((o) => o.channel === 'sound')) return { investigate: 'sound' };
+  const e = hintEdit(round.shelf, record, selected);
+  if ('remove' in e) return { toggle: e.remove };
+  if ('add' in e) return { toggle: e.add };
+  return { check: true };
 }
 
 /** A check with nothing changed since the last one repeats its reason and counts nothing more. */

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, log, scene, screenshot, launch, finished }) {
-/** Sense Detective: level 1 (a not-yet, a wrong tick, then found); level 2 in portrait (a look, a not-yet, a listen, a wrong tick, a requested hint). */
+/** Sense Detective: level 1 (a not-yet, a wrong tick, then found); level 2 in portrait (a look, a not-yet, a listen, a wrong tick, a requested hint); level 3 in portrait over two parcels (one more, a miss); level 4 (so far, a listen, a miss, a requested hint). */
 async function senseDetectivePlay() {
   const score = () => page.evaluate(() => { const r = kit.store.stats('sense-detective').history.at(-1); return [r.misses, r.hints]; });
   const settle = async () => { await page.waitForTimeout(300); await page.waitForFunction(() => neo.scene.finished || !neo.scene.game.busy, null, { timeout: 25000 }); await page.waitForTimeout(250); };
@@ -33,6 +33,54 @@ async function senseDetectivePlay() {
   assert.deepEqual(await score(), [1, 1]);
   await page.setViewportSize({ width: 1024, height: 768 });
   log('Sense Detective 1 and 2: not-yet, wrong tick, found, look then listen, requested hint, portrait, saved score passed');
+
+  // Levels 3-4: select every toy the clues allow. The possible set is read from the game's own record and shelf.
+  const left = () => page.evaluate(async () => { const { possible } = await import('/src/games/sense-detective/logic.ts'); const g = neo.scene.game; return possible(g.round.shelf, g.record); });
+  const shelf = () => page.evaluate(() => neo.scene.game.round.shelf);
+  const tapToy = async (id) => { await page.evaluate((id) => kit.tapOn(neo.scene.game.cards.find((c) => c.id === id).node), id); await page.waitForTimeout(300); };
+  const misses = () => page.evaluate(() => neo.scene.game.misses);
+  await launch('sense-detective', 3);
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(400);
+  await settle();
+  await tapNode('lookBtn');
+  let fit = await left();
+  assert.equal(fit.length, 2, 'the authored first parcel leaves two toys');
+  await tapToy(fit[0]); await tapNode('checkBtn');
+  assert.equal(await misses(), 0, 'one more is free');
+  const out = (await shelf()).find((t) => !fit.includes(t));
+  await tapToy(out);
+  await screenshot('sense-detective-3-two-selected-portrait');
+  await tapNode('checkBtn');
+  assert.equal(await misses(), 1, 'a ruled-out toy kept in is one miss');
+  assert.deepEqual(await page.evaluate(() => neo.scene.game.chosen), [fit[0]], 'the ruled-out toy deselects');
+  await tapToy(fit[1]); await tapNode('checkBtn');
+  await page.waitForFunction(() => neo.scene.game.parcelIndex === 1 && !neo.scene.game.busy, null, { timeout: 25000 });
+  assert.equal(await page.evaluate(() => neo.scene.game.record.length), 0, 'the record clears between parcels');
+  await tapNode('lookBtn');
+  for (const t of await left()) await tapToy(t);
+  await tapNode('checkBtn');
+  await finished('sense-detective');
+  assert.deepEqual(await score(), [1, 0]);
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await launch('sense-detective', 4);
+  await settle();
+  assert.equal(await page.evaluate(() => neo.scene.game.listenBtn.visible), false, 'the ear waits for the look');
+  await tapNode('lookBtn');
+  fit = await left();
+  for (const t of fit) await tapToy(t);
+  await tapNode('checkBtn');
+  assert.equal(await page.evaluate(() => neo.scene.game.listenOpen && neo.scene.game.listenBtn.visible), true, 'so far opens the ear');
+  assert.equal(await misses(), 0);
+  await tapNode('listenBtn');
+  await tapNode('checkBtn');
+  assert.equal(await misses(), 1, 'keeping the toy the sound rules out is a miss');
+  await page.evaluate(() => neo.scene.game.askForHint());
+  assert.equal(await page.evaluate(() => neo.scene.game.hints), 1);
+  for (const t of await left()) if (!(await page.evaluate(() => neo.scene.game.chosen)).includes(t)) await tapToy(t);
+  await tapNode('checkBtn');
+  await finished('sense-detective');
+  assert.deepEqual(await score(), [1, 1]);
+  log('Sense Detective 3 and 4: one more, a ruled-out miss, two parcels, so far, listen, miss, requested hint, saved scores passed');
 }
 
 return { senseDetectivePlay };
