@@ -2997,7 +2997,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-05.md#2026-11-05--sudoku-garde
 
 [PR #1273](https://github.com/rjdunlap/neo/pull/1273), `claude/far-lights-1-4`: [astronomy slice 2](../deep-dives/subjects/astronomy.md#build-slices-in-order), [definition](../definitions/far-lights.md). A new game `far-lights` in Tinker Lab (now 25 games), built with the definition's defaults: no shell change for levels 1–2 accounting, two boards at level 4, no journal. Bands lap 1, toddler 1–2, preschool 2–3, pre-K 3–4, school 4; challenge `noticing`, music `STYLES.hub`. Rules and layout in `src/games/far-lights/logic.ts` (33 rule tests); one arrangement (strip above the window) in every view. Title clip `game.far-lights` rendered with Kokoro (`scripts/voice-clips`). The land-count tests moved with Tinker Lab to 25 (the land-pages test pages 8, 8, 8 at school; the example-express capacity test expects 25 entries). New suite `farlights` (`scripts/browser/suites/far-lights-play.mjs`). Review fixed a hint glide that could leave the game busy and lights draggable during the level-2 finish. Levels 5–8 stay unbuilt ([Define Far Lights 5–8](../READY.md)).
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--far-lights-levels-14-astronomy-slice-2).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-05.md#2026-11-05--far-lights-levels-14-astronomy-slice-2).
 
 ## Word Search level 7 Just the theme (word-search batch 4, 2026-11-05)
 
