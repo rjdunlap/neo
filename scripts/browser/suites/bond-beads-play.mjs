@@ -192,5 +192,42 @@ async function bondBeadsNamedPlay() {
   log('Bond Beads 5–6: water first, N bead, miss, hint (1/1); oxygen double by two carries, one tap halves it, carbon dioxide portrait, three cards (0/0)');
 }
 
-return { bondBeadsPlay, bondBeadsNamedPlay };
+/** Bond Beads 7: hydrogen, hydrogen and oxygen built on the table; a Check at the unchanged opening is one miss (the link to break first), Show a hint (1/1), a landscape screenshot, two waters, then the reverse card's three pictures in portrait, both cards done. */
+async function bondBeadsRearrangePlay() {
+  const score = () => page.evaluate(() => { const r = kit.store.stats('bond-beads').history.at(-1); return [r.misses, r.hints]; });
+  const tally = () => page.evaluate(() => [neo.scene.game.tally.misses, neo.scene.game.tally.hints]);
+  const settle = async () => { await page.waitForTimeout(250); await page.waitForFunction(() => neo.scene.finished || !neo.scene.game.busy, null, { timeout: 25000 }); await page.waitForTimeout(250); };
+  const auto = () => page.evaluate(async () => {
+    const g = neo.scene.game; const t = g.autotouch(0);
+    if (!t) return;
+    if ('drag' in t) await kit.dragTo(t.drag.on, t.to.on.getGlobalPosition());
+    else if (t.tap.on === g.linkLayer) { const p = g.linkLayer.toGlobal({ x: t.tap.x, y: t.tap.y }); kit.tap(p.x, p.y); }
+    else kit.tapOn(t.tap.on);
+  });
+  await page.evaluate(() => { kit.store.data.settings.howToCards = false; });
+
+  await launch('bond-beads', 7);
+  await settle();
+  assert.deepEqual(await page.evaluate(() => neo.scene.game.steps[0].requests[0].map((s) => s.id)), ['water', 'water'], 'level 7 opens asking for two waters');
+  assert.equal(await page.evaluate(() => neo.scene.game.bench.links.length), 4, 'hydrogen, hydrogen and oxygen open built (a double counts twice)');
+  assert.equal(await page.evaluate(() => neo.scene.game.help?.kind), 'break', 'at the opening the help is a link to break');
+  await page.evaluate(() => kit.tapOn(neo.scene.game.checkButton)); await settle();
+  assert.deepEqual(await tally(), [1, 0], 'a Check at the unchanged opening is one miss');
+  await page.evaluate(() => neo.scene.game.askForHint()); await settle();
+  assert.deepEqual(await tally(), [1, 1], 'Show a hint counts one hint');
+  await screenshot('bond-beads-7-opening-landscape');
+  for (let i = 0; i < 40 && (await page.evaluate(() => neo.scene.game.index)) < 1; i++) { await settle(); await auto(); }
+  await settle();
+  assert.deepEqual(await page.evaluate(() => neo.scene.game.steps[1].requests[0].map((s) => s.id)), ['hydrogen', 'hydrogen', 'oxygen'], 'the reverse card pictures three pieces');
+  assert.deepEqual(await page.evaluate(() => neo.scene.game.bench.kinds.slice().sort().join('')), 'HHHHOO', 'the same atoms, both ways');
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(900);
+  await screenshot('bond-beads-7-reverse-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(500);
+  for (let i = 0; i < 60; i++) { await settle(); if (await page.evaluate(() => neo.scene.finished || neo.scene.game.finished)) break; await auto(); }
+  await finished('bond-beads');
+  assert.deepEqual(await score(), [1, 1]);
+  log('Bond Beads 7: opening built, Check at the opening one miss (break first), hint (1/1), landscape; two waters; reverse three pictures in portrait; done (1/1)');
+}
+
+return { bondBeadsPlay, bondBeadsNamedPlay, bondBeadsRearrangePlay };
 }

@@ -6,7 +6,7 @@ import {
   Bench, BEAD_GAP, BEAD_REACH, BUTTON_R, CARDS, CARD_MIN_H, CheckTally, HANDS, LINK_REACH, MID_GAP, PAIR, PLANS, PUZZLES, PUZZLE_PAIRS, SETS, TRAYS, TRIO,
   allHeld, beadAt, beadLayout, buildKey, canLink, canon, centre, corners, degrees, enumerate, helpFor, joinShapes, linkAt, linkId, linkState, nextMove,
   norm, overlaps, requestKey, roundFor, rotateTray, shapeKey, spaced, stepCard, tally, type Kind, type Link,
-  AMMONIA, CARBON_DIOXIDE, HYDROGEN, METHANE, NAMED, NAMED_SHAPES, OXYGEN, WATER, enumerateBuilds, linkCount, namesOf,
+  AMMONIA, CARBON_DIOXIDE, HYDROGEN, METHANE, NAMED, NAMED_SHAPES, OXYGEN, REARRANGEMENTS, WATER, enumerateBuilds, linkCount, namesOf,
 } from './logic';
 
 const k = (s: string) => s.split('') as Kind[];
@@ -215,8 +215,8 @@ describe('roundFor', () => {
   });
 
   it('is the same for the same seed, and every level in the plans produces a round', () => {
-    for (const lv of [1, 2, 3, 4, 5, 6]) expect(roundFor(lv, new Rng(42)), `level ${lv}`).toEqual(roundFor(lv, new Rng(42)));
-    expect(PLANS.map((p) => p.level)).toEqual([1, 2, 3, 4, 5, 6]);
+    for (const lv of [1, 2, 3, 4, 5, 6, 7]) expect(roundFor(lv, new Rng(42)), `level ${lv}`).toEqual(roundFor(lv, new Rng(42)));
+    expect(PLANS.map((p) => p.level)).toEqual([1, 2, 3, 4, 5, 6, 7]);
     for (const p of PLANS) expect(roundFor(p.level, new Rng(5)), `level ${p.level}`).toHaveLength(p.rounds);
   });
 });
@@ -545,7 +545,7 @@ describe('beadLayout', () => {
     notch: computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
   };
   for (const [name, v] of Object.entries(views)) {
-    for (const n of [2, 3, 4, 5, 6, 7]) for (const cardShapes of [0, 1, 2]) {
+    for (const n of [2, 3, 4, 5, 6, 7]) for (const cardShapes of [0, 1, 2, 3]) {
       const withCard = cardShapes > 0;
       it(`${name}: ${n} beads ${cardShapes} card shape(s) fit and stay clear`, () => {
         const lay = beadLayout(v, n, cardShapes);
@@ -715,7 +715,7 @@ describe('levels 5-6: named shapes and double holds', () => {
       }
     }
     expect([...orders].sort()).toEqual(['water,ammonia,methane', 'water,methane,ammonia']);
-    expect(PLANS.map((p) => p.level)).toEqual([1, 2, 3, 4, 5, 6]);
+    expect(PLANS.map((p) => p.level)).toEqual([1, 2, 3, 4, 5, 6, 7]);
   });
 
   const steps = [...roundFor(5, new Rng(1)), ...roundFor(6, new Rng(1))];
@@ -807,5 +807,123 @@ describe('levels 5-6: named shapes and double holds', () => {
         for (const [x, y] of b.links) expect(linkCount(b.links, x, y)).toBeLessThanOrEqual(2);
       }
     }
+  });
+});
+
+describe('level 7: the same atoms, rearranged', () => {
+  const seven = SEEDS.slice(0, 30);
+  const stepsFor = (seed: number) => roundFor(7, new Rng(seed));
+
+  it('gives the authored puzzle first, then the reverse, built as the opening with doubles on', () => {
+    expect(REARRANGEMENTS).toHaveLength(2);
+    expect(requestKey(REARRANGEMENTS[1].from)).toBe(requestKey(REARRANGEMENTS[0].to));
+    expect(requestKey(REARRANGEMENTS[1].to)).toBe(requestKey(REARRANGEMENTS[0].from));
+    for (const seed of SEEDS) {
+      const r = stepsFor(seed);
+      expect(r).toHaveLength(2);
+      r.forEach((st, i) => {
+        const p = REARRANGEMENTS[i];
+        expect(st.requests).toEqual([p.to]);
+        expect(st.doubles).toBe(true);
+        expect(st.twoWays).toBe(false);
+        expect(allHeld(st.kinds, st.opening)).toBe(true);
+        expect(buildKey(st.kinds, st.opening)).toBe(requestKey(p.from));
+        expect(tally(st.kinds)).toEqual(tally(joinShapes(p.from).kinds));
+        expect(st.kinds.slice().sort()).toEqual(joinShapes(p.from).kinds.slice().sort());
+        expect(st.kinds.slice().sort()).toEqual(joinShapes(p.to).kinds.slice().sort());
+      });
+      expect(stepsFor(seed)).toEqual(r);
+    }
+  });
+
+  it('every step is solvable, not done at the opening, and every solution uses every bead', () => {
+    for (const seed of SEEDS) for (const st of stepsFor(seed)) {
+      const b = new Bench(st.kinds, st.requests, st.opening, st.doubles);
+      expect(b.solutions.length).toBeGreaterThan(0);
+      expect(b.done).toBe(false);
+      for (const sol of b.solutions) {
+        expect(allHeld(b.kinds, sol)).toBe(true);
+        expect(buildKey(b.kinds, sol)).toBe(requestKey(st.requests![0]));
+      }
+    }
+  });
+
+  it('keeps the tally over 500 random action sequences with doubles', () => {
+    const rng = new Rng(707);
+    for (let run = 0; run < 500; run++) {
+      const st = rng.pick(stepsFor(rng.int(1, 500)));
+      const b = new Bench(st.kinds, st.requests, st.opening, st.doubles);
+      const kinds = b.kinds.slice();
+      const n = kinds.length;
+      for (let i = 0; i < 25; i++) {
+        const r = rng.next();
+        if (r < 0.55) b.link(rng.int(0, n - 1), rng.int(0, n - 1));
+        else if (r < 0.8) b.unlink(rng.int(0, n - 1), rng.int(0, n - 1));
+        else if (r < 0.95) b.undo();
+        else b.startAgain();
+        expect(b.kinds).toEqual(kinds);
+        expect(tally(b.kinds)).toEqual(tally(kinds));
+        degrees(n, b.links).forEach((x, j) => expect(x).toBeLessThanOrEqual(HANDS[kinds[j]]));
+      }
+    }
+  });
+
+  it('at the unchanged opening the first help is a link to break that the nearest build removes', () => {
+    for (const seed of seven) for (const st of stepsFor(seed)) {
+      const b = new Bench(st.kinds, st.requests, st.opening, st.doubles);
+      const h = helpFor(b);
+      expect(h?.kind).toBe('break');
+      expect(linkCount(b.links, h!.link[0], h!.link[1])).toBeGreaterThan(linkCount(b.nearest(), h!.link[0], h!.link[1]));
+      expect(nextMove(b)).toEqual({ cut: h!.link });
+    }
+  });
+
+  it('in every reachable state help is null iff done, otherwise changes what the nearest build changes; nextMove finishes', () => {
+    for (const seed of seven.slice(0, 6)) for (const st of stepsFor(seed)) {
+      const b = new Bench(st.kinds, st.requests, st.opening, st.doubles);
+      const states = reachable(b, 6000);
+      expect(states.length).toBeGreaterThan(1);
+      for (const links of states) {
+        b.links = links;
+        const h = helpFor(b);
+        if (b.done) { expect(h).toBeNull(); continue; }
+        expect(h, b.state).not.toBeNull();
+        const near = b.nearest();
+        const have = linkCount(links, h!.link[0], h!.link[1]);
+        const want = linkCount(near, h!.link[0], h!.link[1]);
+        if (h!.kind === 'break') expect(have).toBeGreaterThan(want);
+        else {
+          expect(have).toBeLessThan(want);
+          expect(canLink(b.kinds, links, h!.link[0], h!.link[1], b.doubles)).toBe(true);
+          if (h!.kind === 'double') expect(have).toBe(1);
+          else expect(h!.link).toContain(h!.bead);
+        }
+      }
+      // From the opening, and from a spread of reachable states, following the help reaches the card.
+      b.links = st.opening.slice();
+      expect(followToCheck(b)).toBeLessThanOrEqual(30);
+      expect(b.done).toBe(true);
+      const stride = Math.max(1, Math.floor(states.length / 60));
+      for (let i = 0; i < states.length; i += stride) {
+        b.links = states[i].slice();
+        expect(followToCheck(b), linkListKey(states[i])).toBeLessThanOrEqual(30);
+        expect(b.done, linkListKey(states[i])).toBe(true);
+      }
+    }
+  });
+
+  it('is named only when it matches the card: the opening hydrogens and oxygen are not accepted at the first puzzle', () => {
+    for (const seed of seven) {
+      const [first, second] = stepsFor(seed);
+      const b = new Bench(first.kinds, first.requests, first.opening, first.doubles);
+      expect(b.accepts(first.opening)).toBe(false);
+      expect(b.matched(first.opening)).toBeNull();
+      // The reverse puzzle accepts exactly that build, once rearranged.
+      const rev = new Bench(second.kinds, second.requests, second.opening, second.doubles);
+      expect(rev.accepts(first.opening)).toBe(false);
+    }
+    expect(namesOf(REARRANGEMENTS[0].to)).toEqual(['water', 'water']);
+    expect(namesOf(REARRANGEMENTS[1].to)).toEqual(['hydrogen', 'hydrogen', 'oxygen']);
+    expect(namesOf(REARRANGEMENTS[0].from)).toEqual(['hydrogen', 'hydrogen', 'oxygen']);
   });
 });
