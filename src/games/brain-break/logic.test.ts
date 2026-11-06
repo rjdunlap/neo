@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { evaluate, hintIndex, judge, layoutFor, makeBoard, makeLabels, MINUS, planFor } from './logic';
+import { square, uprightProblems, UPRIGHT_VIEWS } from '../upright-check';
 
 describe('Brain Break number order', () => {
   it('gives every number exactly once and always has a next-number hint', () => {
@@ -81,5 +82,15 @@ describe('Brain Break sums in order (levels 4–6)', () => {
     const deal = (seed: number) => { const rng = new Rng(seed), b = makeBoard(6, rng); return makeLabels(b, 6, rng); };
     expect(deal(9)).toEqual(deal(9));
     expect(deal(9)).not.toEqual(deal(10));
+  });
+});
+
+describe('Brain Break on a phone held upright (chunk 31)', () => {
+  it('fits every board and the help stone in each upright view', () => {
+    for (const [name, v] of Object.entries(UPRIGHT_VIEWS)) for (const side of [3, 4, 5]) {
+      const layout = layoutFor(v.w, v.h, side);
+      const targets = [...layout.stones.map((p, i) => square(`stone ${i}`, p, layout.size)), { what: 'help', ...layout.hint, w: 132, h: 100 }];
+      expect(uprightProblems(v, targets), `${name} side ${side}`).toEqual([]);
+    }
   });
 });
