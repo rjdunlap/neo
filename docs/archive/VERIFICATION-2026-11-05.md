@@ -207,3 +207,9 @@ Changed: a levels 3–5 section in `docs/definitions/sense-detective.md` (with b
 ## 2026-11-05 — Puzzle pages study (docs only)
 
 Changed: a new subject study `docs/deep-dives/subjects/puzzle-pages.md` (newspaper and activity-book puzzles, four research passes), its tracker row, RECOMMENDATIONS packet, STUDY-BACKLOG and roadmap rows, an IDEAS section with five proposals, design-note links on READY's crossword and logic-grid definitions and a READY line for Mossy Path's maze opening (PP1). Ran: `node scripts/check-links.mjs` and `git diff --check`. No code checks (docs tier). Open: nothing built; NYT, Puzzmo, the Guardian and The Times sites were blocked, so their claims are search summaries.
+
+## 2026-11-05 — Puddle Lens levels 5–6 (cells-microbes slice 3b)
+
+Changed: levels 5 *Alive or can't tell yet* and 6 *One cell or many* in `src/games/puddle-lens/` (logic, art, scene, rule tests), `lens.*` voice lines, how-to card and the `lens` browser suite; school range `{4,4}` to `{4,6}`.
+- Ran (tested commit `22bee707` on base `98c2fbcd`, `GAME_URL=http://localhost:5595`): `npm run typecheck`; full `npm test` (308 files, 5294 tests on an earlier run; a later run had two timing failures in block-topple and fluffy-salon under load that passed on re-run); puddle-lens rule tests 87; `BROWSER_SUITE=lens` (level 5: two free early answers, one miss at stop 3, a counted hint to stop 4, saved 1/1; level 6: a free tray, a wrong tray, saved 1/0; portrait 768×1024 and landscape 1024×768 screenshots reviewed); `BROWSER_SUITE=fingerdemo FINGER_ONLY=puddle-lens FINGER_LEVELS=5,6` (14.4 s, 24.8 s); `npm run build`. `game-reviewer` findings fixed.
+- Open: level-5 co-play and off-screen tip not built; offline and `world` not run; the [device checks](../DEVICE-CHECKS.md) (a six-year-old waiting for evidence, "can't tell yet" as a real answer, iPad button-name speech) stay open.
