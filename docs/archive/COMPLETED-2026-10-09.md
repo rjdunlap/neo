@@ -3065,7 +3065,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-05.md#2026-11-05--word-search-
 
 Branch `claude/rain-garden` ([PR #1303](https://github.com/rjdunlap/neo/pull/1303)), one batch, [definition](../definitions/rain-garden.md): a new game, `rain-garden`, Tinker Lab's 26th; toddler 1, preschool 1-2, pre-K 2-3, school 3; challenge `noticing`, music `STYLES.bubbles`. Tap a cloud and four drops fall: soil keeps two and sends two to the pond, stone sends all four. Level 1: rain, then rain again on fresh ground, a leaf ends it. Level 2: two gardens with a ground tile each under one wide cloud (a flip resets both; portrait keeps them side by side since the logical view is 1024 wide). Level 3: the first rain is kept on a bookmark card, then rain on different ground with a spoken comparison, then the leaf. No misses ever; Show me points at the next cloud, tile or leaf (one hint per newly pointed action); a leaf nudge counts nothing; Start again clears the bookmark and trial counts. Deviations from the definition: one generic hint line per action kind, the pond friend reacts with a sound and a hop (no spoken `rain.friend`), no idle demonstration, `rain.compare.back` added. Science source check: EPA CADDIS "Urbanization - stormwater runoff" and USGS Water Science School runoff and infiltration pages support the toy model (stone holds none, soil some, the rest runs downhill). Pinned land-count tests updated for Tinker Lab's 26.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-06--rain-garden-levels-13-weather-water-slices-23).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-06.md#2026-11-06--rain-garden-levels-13-weather-water-slices-23).
 
 ## Mystery Grid (logic-grid) level 6 (2026-11-06)
 
