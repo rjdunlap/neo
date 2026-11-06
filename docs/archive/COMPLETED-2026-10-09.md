@@ -2803,7 +2803,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-05.md#2026-11-05--block-topple
 
 [PR #1277](https://github.com/rjdunlap/neo/pull/1277), [as built](../definitions/block-topple.md#slice-3-as-built-2026-11-05-level-5-count-the-basket). Level 5 *Count the basket*: red fruit drawn on level 4's blocks hop into a tray after each tip, and she taps one of three number pads (total±1) for how many are in the tray; a wrong count is one miss per line with the pet counting aloud, a second wrong tap glows the right pad. School range 2–5.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--block-topple-level-5-count-the-basket-block-topple-slice-3).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-05.md#2026-11-05--block-topple-level-5-count-the-basket-block-topple-slice-3).
 
 ## Ferry Jam levels 9 and 10 Pre-K entry and who's in the way (ferry-jam 4, 2026-11-04)
 

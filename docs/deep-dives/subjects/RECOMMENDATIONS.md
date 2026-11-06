@@ -976,7 +976,7 @@ Completion with spoken support is not evidence of independent understanding of t
 
 | Candidate | Next action | Complete slice / boundary |
 | --- | --- | --- |
-| **Crossword** and **Logic Grid** · new games | definitions already in READY | Use the study's [crossword](puzzle-pages.md#crossword) and [logic-grid](puzzle-pages.md#logic-grid-whodunit) notes; each level authors only its own words, cast and clues |
+| **Crossword** and **Logic Grid** · new games | crossword defined ([definition](../../definitions/crossword.md)), logic-grid definition in READY | Use the study's [crossword](puzzle-pages.md#crossword) and [logic-grid](puzzle-pages.md#logic-grid-whodunit) notes; each level authors only its own words, cast and clues |
 | **PP1 Mossy Path 4–7, *find the way*** · toddler–school · new levels and bands | define (READY) | Same turtle and stepping; mazes are trees with one route; follow the moss (no fork), which way (a free short branch), look before you go (a seen dead end is a miss), snack on the way (two goals in order). [Ladder](puzzle-pages.md#a-first-games-ladder-mossy-path-find-the-way) |
 | **PP2 Domino Pond 1–3** · pre-K–grown-up · new game | define after PP1 | Lay dominoes so patches meet their signs: matching dots, then sums, then < > ≠; any valid placement is accepted |
 | **PP3 Bunny Patches 1–3** (IDEAS *Garden Queens*) · pre-K/school–grown-up · new game | define after PP2 | One bunny per row, column and patch, none touching; 4×4 to 6×6, grown-up 8×8 at par later |
