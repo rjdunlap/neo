@@ -183,6 +183,7 @@ class MysteryGrid implements Game {
       if (this.index !== at || this.finished) return;
       c.glow.visible = true;
       await this.sayClue(c.clue, b);
+      if (this.index !== at || this.finished) return;
       c.glow.visible = false;
     }
   }
@@ -403,6 +404,8 @@ class MysteryGrid implements Game {
       this.rings.add(p.square);
       this.lightClues([against[0]]);
       void this.sayClue(b.clues[against[0]], b, 'remind');
+      // A full grid's wrong yeses lift too; this mark already counted, so no second miss.
+      if (fullWrong(b, this.marks)) for (const s of wrongSquares(b, this.marks)) if (this.marks[s] === FILLED) this.marks[s] = EMPTY;
       this.drawMarks();
       return;
     }
@@ -454,8 +457,10 @@ class MysteryGrid implements Game {
     else {
       this.misses++;
       sfx.boing();
-      this.friendCards[i].alpha = 0.6;
-      void this.ctx.say('lg.event', { place: b.places[b.event] }).then(() => (this.friendCards[i].alpha = 1));
+      const card = this.friendCards[i];
+      card.alpha = 0.6;
+      void this.ctx.tw.to(card, { alpha: 1 }, { duration: 1.2 });
+      void this.ctx.say('lg.event', { place: b.places[b.event] });
     }
   }
 
