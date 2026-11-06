@@ -28,11 +28,16 @@ async function gadgetBenchPlay() {
     await tapOn('neo.scene.game.giveButton'); await settle();
   };
   await page.evaluate(() => { kit.store.data.settings.howToCards = false; });
+  // BENCH_LEVELS=4 plays only those levels (level 4 is Fix-It Day).
+  const only = (process.env.BENCH_LEVELS ?? '').split(',').filter(Boolean).map(Number);
+  const wants = (level) => only.length === 0 || only.includes(level);
+  let s;
 
+  if (wants(1)) {
   // Level 1: a free Try of the failing gadget, a wrong Give (one miss), then the right one; rounds 2–3 given straight.
   await launch('gadget-bench', 1);
   await settle();
-  let s = await state();
+  s = await state();
   assert.equal(s.passing, 0, 'the authored first round puts the passing gadget on the left');
   assert.deepEqual(s.path, ['smooth', 'rain'], 'the authored first round is rain');
   await tapOn('neo.scene.game.boardNodes[1]'); await settle();
@@ -50,6 +55,8 @@ async function gadgetBenchPlay() {
   }
   await finished('gadget-bench');
   assert.deepEqual(await score(), [1, 0], 'level 1 saves one miss, no hints');
+  }
+  if (wants(2)) {
 
   // Level 2: the pet's demonstration, a free failing Try of the unchanged cart, the swap by a real drag, a passing Give.
   await launch('gadget-bench', 2);
@@ -69,6 +76,8 @@ async function gadgetBenchPlay() {
   for (let r = 1; r < 3; r++) await buildAndGive();
   await finished('gadget-bench');
   assert.deepEqual(await score(), [0, 0], 'level 2 saves no misses and no hints');
+  }
+  if (wants(3)) {
 
   // Level 3: a swapped placement Try (position matters), a portrait screenshot, Show a hint (one hint), the right build, Give.
   await launch('gadget-bench', 3);
@@ -101,6 +110,49 @@ async function gadgetBenchPlay() {
   await finished('gadget-bench');
   assert.deepEqual(await score(), [0, 1], 'level 3 saves no misses and one hint');
   log('Gadget Bench 1–3: a free failing Try and a wrong Give, the swap, a swapped placement, Show a hint, portrait, passed');
+  }
+
+  if (wants(4)) {
+  // Level 4: yesterday's cart rolls in; a free Try stops at the new puddle, the obvious fix (the float) stops at the bump
+  // and speaks the conflict line, a failing Give is a miss, then the paddle wheels pass. Portrait screenshot.
+  await launch('gadget-bench', 4);
+  await page.evaluate(() => {
+    const g = neo.scene.game;
+    window.benchSpoken = [];
+    const say = g.ctx.say.bind(g.ctx);
+    g.ctx.say = (id, ...args) => { window.benchSpoken.push(id); return say(id, ...args); };
+  });
+  await settle();
+  s = await state();
+  assert.deepEqual(s.path, ['smooth', 'bump', 'puddle', 'dark'], "the authored first round is today's longer path");
+  assert.deepEqual(s.gadget, { under: 'wheels', front: 'lantern' }, "yesterday's cart is on the bench");
+  await tapOn('neo.scene.game.tryButton'); await settle();
+  assert.deepEqual((await state()).strip, ['puddle'], 'the cart as given stops at the new puddle');
+  assert.deepEqual(await tally(), [0, 0], 'that Try is free');
+  await dragPart('float', 'under');
+  assert.deepEqual((await state()).gadget, { under: 'float', front: 'lantern' }, 'the float swaps in for the big wheels');
+  await tapOn('neo.scene.game.tryButton'); await settle();
+  assert.equal((await state()).strip.at(-1), 'bump', 'the obvious fix stops at the bump');
+  const spoken = await page.evaluate(() => window.benchSpoken);
+  assert.equal(spoken.filter((id) => id === 'bench.conflict').length, 1, 'the conflict line is spoken once');
+  assert.deepEqual(await tally(), [0, 0], 'the conflict line counts nothing');
+  await tapOn('neo.scene.game.giveButton'); await settle();
+  assert.deepEqual(await tally(), [1, 0], 'a failing Give is one miss');
+  assert.deepEqual(await help(), { kind: 'install', part: 'paddles', socket: 'under', replaces: 'float', at: 'bump' }, 'help names the paddle wheels');
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(800);
+  await screenshot('gadget-bench-4-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(500);
+  await dragPart('paddles', 'under');
+  assert.deepEqual((await state()).gadget, { under: 'paddles', front: 'lantern' }, 'the paddle wheels go underneath');
+  await tapOn('neo.scene.game.tryButton'); await settle();
+  assert.equal((await state()).strip.at(-1), null, 'the paddle wheels get all the way along');
+  await tapOn('neo.scene.game.giveButton'); await settle();
+  assert.equal((await state()).round, 1, 'the Give ends the round');
+  for (let r = 1; r < 3; r++) await buildAndGive();
+  await finished('gadget-bench');
+  assert.deepEqual(await score(), [1, 0], 'level 4 saves one miss and no hints');
+  log('Gadget Bench 4: yesterday\'s cart, a free stop at the new condition, the conflict line, a failing Give, the paddle wheels, portrait, passed');
+  }
 }
 return { gadgetBenchPlay };
 }
