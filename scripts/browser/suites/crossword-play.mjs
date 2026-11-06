@@ -68,6 +68,58 @@ async function crosswordPlay() {
   await finished('crossword');
   assert.deepEqual(await score(), [0, 0], 'level 2 saved no misses or hints');
   log('Crossword 1 and 2: a wrong crossing is one miss and hops back, Help one hint, portrait bank, both levels to the sticker, passed');
+
+  // Level 3: one themed criss-cross of four words, every square blank. A word filled with one wrong last tile is one miss;
+  // Help is one hint; the six-tile bank sits clear of Help and the grid in landscape.
+  await launch('crossword', 3);
+  await idle(); await page.waitForTimeout(400);
+  s = await page.evaluate(() => {
+    const g = neo.scene.game, p = g.puzzle;
+    const letters = new Set(p.words.flatMap((w) => w.word.split('').map((_, i) => (w.dir === 'down' ? `${w.row + i},${w.col}` : `${w.row},${w.col + i}`))));
+    return { puzzles: g.puzzles.length, words: p.words.length, theme: p.theme?.name, allBlank: letters.size === p.blanks.length, w: p.w, h: p.h };
+  });
+  assert.equal(s.puzzles, 1, 'level 3 plays one grid');
+  assert.equal(s.words, 4, 'four words');
+  assert.ok(s.theme, 'the round has a theme');
+  assert.ok(s.allBlank, 'every letter square is blank');
+  assert.ok(s.w <= 6 && s.h <= 6, 'at most 6 by 6');
+  const geom = () => page.evaluate(() => {
+    const g = neo.scene.game, v = neo.view;
+    const box = (o) => ({ x0: o.x + o.hitArea.x, y0: o.y + o.hitArea.y, x1: o.x + o.hitArea.x + o.hitArea.width, y1: o.y + o.hitArea.y + o.hitArea.height });
+    const all = [...g.bank, g.help].map(box);
+    const hit = (a, b) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1;
+    let overlaps = 0;
+    for (let i = 0; i < all.length; i++) for (let j = i + 1; j < all.length; j++) if (hit(all[i], all[j])) overlaps++;
+    const p = g.puzzle, b = g.board;
+    const grid = { x0: b.x, y0: b.y, x1: b.x + p.w * 104 - 4, y1: b.y + p.h * 104 - 4 };
+    return { bank: g.bank.length, overlaps, onGrid: all.filter((a) => hit(a, grid)).length, inView: all.every((a) => a.x0 >= 0 && a.y0 >= 0 && a.x1 <= v.w && a.y1 <= v.h) && grid.y1 <= v.h && grid.x1 <= v.w };
+  });
+  let gm = await geom();
+  assert.ok(gm.bank <= 6, `at most six tiles (${gm.bank})`);
+  assert.deepEqual([gm.overlaps, gm.onGrid, gm.inView], [0, 0, true], `landscape bank clear of Help and the grid, on screen (${JSON.stringify(gm)})`);
+  await screenshot('crossword-3-landscape');
+  // Right tiles until one blank of the active word is left, then a wrong one.
+  for (let n = 0; n < 6; n++) {
+    const left = await page.evaluate(() => { const g = neo.scene.game, p = g.puzzle, w = p.words[g.active];
+      return w.word.split('').filter((_, i) => { const k = w.dir === 'down' ? `${w.row + i},${w.col}` : `${w.row},${w.col + i}`; return !g.fills.has(k); }).length; });
+    if (left <= 1) break;
+    await fill(false); await page.waitForTimeout(400); await idle();
+  }
+  await fill(true);
+  await page.waitForTimeout(900);
+  assert.deepEqual(await tally(), [1, 0], 'a wrong full word is one miss');
+  await idle();
+  await page.evaluate(() => kit.tapOn(neo.scene.game.help)); await page.waitForTimeout(400);
+  assert.deepEqual(await tally(), [1, 1], 'Help counts one hint');
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(800);
+  gm = await geom();
+  assert.deepEqual([gm.overlaps, gm.onGrid, gm.inView], [0, 0, true], `portrait bank clear of Help and the grid, on screen (${JSON.stringify(gm)})`);
+  await screenshot('crossword-3-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(500);
+  await playOut();
+  await finished('crossword');
+  assert.deepEqual(await score(), [1, 1], 'level 3 saved 1 miss, 1 hint');
+  log('Crossword 3: a themed four-word criss-cross, a wrong full word one miss, Help one hint, six-tile bank clear in both orientations, to the sticker, passed');
 }
 return { crosswordPlay };
 }

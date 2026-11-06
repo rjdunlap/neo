@@ -3,7 +3,7 @@ import { Rng } from '../../engine/random';
 import { BLOCKED } from '../word-search/blocked';
 import {
   applyHelp, bankFor, clueOf, crossings, decoysFor, emptyBlanks, firstOpen, helpFor, judge, key, lettersOf, makeRound, nearest, nextFill,
-  PLANS, problems, solved, squaresOf, wordRight, wordsAt, wrongSquares, WORDS_1, WORDS_2, type Fills,
+  PLANS, problems, solved, squaresOf, THEMES_3, wordRight, wordsAt, wrongSquares, WORDS_1, WORDS_2, type Fills,
 } from './logic';
 
 const SEEDS = 200;
@@ -20,6 +20,35 @@ describe('word sets', () => {
     expect(WORDS_2.length).toBe(23);
     expect(WORDS_2).not.toContain('pip');
     expect(WORDS_2.every((w) => w.length >= 3 && w.length <= 4)).toBe(true);
+  });
+
+  it('give level 3 the three picture themes, every word drawn and free of blocked words', () => {
+    expect(THEMES_3.map((t) => t.name)).toEqual(['Animal friends', 'By the pond', 'Look outside']);
+    for (const t of THEMES_3) {
+      expect(new Set(t.words).size).toBe(t.words.length);
+      for (const w of t.words) {
+        expect(WORDS_2).toContain(w);
+        expect(BLOCKED).not.toContain(w.toUpperCase());
+        expect(BLOCKED).not.toContain(rev(w).toUpperCase());
+      }
+    }
+  });
+});
+
+describe('level 3 rounds', () => {
+  const plan = PLANS[2];
+  it('draw one theme, use only its words, and reach every theme with more than one grid', () => {
+    const sets = new Map<string, Set<string>>();
+    for (let s = 1; s <= 200; s++) {
+      const [p, ...rest] = makeRound(plan, new Rng(s));
+      expect(rest).toEqual([]);
+      for (const w of p.words) expect(p.theme!.words).toContain(w.word);
+      const got = sets.get(p.theme!.id) ?? new Set<string>();
+      got.add(p.words.map((w) => w.word).sort().join('+'));
+      sets.set(p.theme!.id, got);
+    }
+    expect([...sets.keys()].sort()).toEqual(THEMES_3.map((t) => t.id).sort());
+    for (const got of sets.values()) expect(got.size).toBeGreaterThan(1);
   });
 });
 
@@ -58,6 +87,7 @@ describe.each(PLANS)('level $level puzzles', (plan) => {
     for (const round of rounds) for (const p of round) {
       const want = new Set(crossings(p.words));
       if (plan.blank === 'crossing-first') for (const w of p.words) want.add(squaresOf(w)[0].key);
+      if (plan.blank === 'all') for (const k of lettersOf(p.words).keys()) want.add(k);
       expect([...p.blanks].sort()).toEqual([...want].sort());
     }
   });
@@ -72,7 +102,7 @@ describe.each(PLANS)('level $level puzzles', (plan) => {
           const bank = bankFor(p, new Map(), i, dec);
           const missing = emptyBlanks(p, new Map(), i).map((q) => q.letter);
           expect(bank.length).toBe(missing.length + plan.decoys);
-          expect(bank.length).toBeLessThanOrEqual(plan.level === 1 ? 3 : 4);
+          expect(bank.length).toBeLessThanOrEqual(plan.level === 1 ? 3 : plan.level === 2 ? 4 : 6);
           const pool = [...bank];
           for (const l of missing) { const at = pool.indexOf(l); expect(at).toBeGreaterThanOrEqual(0); pool.splice(at, 1); }
           for (const d of dec) expect(missing).not.toContain(d);

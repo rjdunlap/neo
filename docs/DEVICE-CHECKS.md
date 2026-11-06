@@ -1050,6 +1050,7 @@ Performed on the built levels (PR #1043; [definition](definitions/water-road.md#
 
 - [ ] On an iPad, listen to device speech of the letter names and the spelled non-words ("That spells ...") in the miss line.
 - [ ] Watch a four-year-old at level 1: does she see that one letter serves two words, and can she drag the tiles?
+- [ ] Level 3 (PR #1297): on an iPad, listen to device speech of the theme names ("Animal friends", "By the pond", "Look outside") at the start of a round.
 
 ## Mystery Grid levels 1-2 (2026-11-05)
 
