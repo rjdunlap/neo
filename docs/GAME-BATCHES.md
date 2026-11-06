@@ -1609,7 +1609,7 @@ Proof: new-level tier with `order`: typecheck, unit tests including order, lands
 
 ### sink-float 3: Salty or fresh
 
-- **`sink-float`, Level 10 *Salty or fresh* (dive slice 3)**, after batch sink-float 2 (built; new interaction, school only, order `[5, 6, 9, 7, 10]`): a new salt mode with two tanks; part 1 unscored, part 2 four scored questions. [Definition](definitions/salty-or-fresh.md), [dive](deep-dives/sink-float.md#build-slices-in-order)
+- **`sink-float`, Level 10 *Salty or fresh* (dive slice 3)** (**built 2026-11-05**, branch `claude/sink-float-salty-or-fresh`, PR #1285), after batch sink-float 2 (built; new interaction, school only, order `[5, 6, 9, 7, 10]`): a new salt mode with two tanks; part 1 unscored, part 2 four scored questions. [Definition](definitions/salty-or-fresh.md), [dive](deep-dives/sink-float.md#build-slices-in-order)
 
 Files expected: `src/games/sink-float/logic.ts`, `logic.test.ts`, `index.ts`, `art.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`, and the registry and lands tests only if their expectations change.
 
