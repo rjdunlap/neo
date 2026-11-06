@@ -6,7 +6,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **`welcome-ways`, levels 5–7 *turn at the pond, a rail and a perch, fix it for Roly*** (`engineering-design`; school; new-interaction tier as the definition's check tier sets, one build session, may split after level 5): [definition](definitions/welcome-ways.md#levels-57-definition), [check tier](definitions/welcome-ways.md#levels-57-check-tier), [study](deep-dives/subjects/engineering-design.md).
+- **`welcome-ways`, levels 5–7 *turn at the pond, a rail and a perch, fix it for Roly*** (`engineering-design`; school; new-interaction tier as the definition's check tier sets, one build session, may split after level 5): [definition](definitions/welcome-ways.md#levels-57-definition), [check tier](definitions/welcome-ways.md#levels-57-check-tier), [study](deep-dives/subjects/engineering-design.md). **Claimed 2026-11-06** by `claude/welcome-ways-5-7`.
 - **Dive `swing-pals`** (Swing Pals; lap to school, 6 levels; docs only): [procedure](deep-dives/README.md#one-session-one-game), [definition](definitions/swing-pals.md).
 - **`hat-band`, levels 1–3, a new Music Mountain game** (defined 2026-10-22 as M5; identity and placement settled 2026-10-23, Music Mountain holds 8 games). The building session does the source check and the actual Music Mountain capacity check first (new-game tier with a build, as the definition's check tier sets it): [definition](definitions/hat-band.md#check-tier), [study](deep-dives/subjects/music-instruments.md).
 - **Define Gadget Bench 4** (`inventions`; a three-condition path with a conflict, revise one part; docs only): [definition so far](definitions/gadget-bench.md#what-comes-next), [study](deep-dives/subjects/inventions.md).
