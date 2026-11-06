@@ -2987,7 +2987,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-05.md#2026-11-05--shape-buddie
 
 [PR #1266](https://github.com/rjdunlap/neo/pull/1266), `claude/sudoku-garden-patchwork-beds`: [dive slice 4](../deep-dives/sudoku-garden.md#build-slices-in-order). Level 9: a 6 by 6 bed (tier 2, 20 blanks) whose boxes are irregular six-square patches from eight authored `PATCH_LAYOUTS` (six connected patches of six, none a line, at most one plain 2 by 3, each admits a full bed); grown-up `order` `[7, 1, 2, 3, 9, 4, 5, 6, 8]`. Logic functions take a `Shape` (a `Size` or a `patchGeometry(layout)`), `Puzzle.patchwork` carries it, patches are `box` houses with the spoken word `patch`, the only-place step scans patches first on patchwork beds (so hints name a patch) and such beds skip `shuffleBed`. The scene draws a 6-unit `wood.line` along each edge between patches and tints each patch's soil (alpha 0.45; 0.25 did not read on the brown soil). Voice lines `sudoku.go-patch` and `sudoku.go-patch-touch`, a how-to step (the goal says "box (or patch)") and a co-play hint. Courses and the couch trip are unchanged. The game-reviewer found no defects.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--sudoku-garden-level-9-patchwork-beds-sudoku-garden-batch-4).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-05.md#2026-11-05--sudoku-garden-level-9-patchwork-beds-sudoku-garden-batch-4).
 
 ### Far Lights levels 1–4 (astronomy slice 2, built 2026-11-05)
 
