@@ -7,7 +7,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 ## Next ten
 
 - **`logic-grid`, levels 7–8 *Case file* and *Who came first?*** (grown-up; a new interaction: written clue list, 64-unit blocks, the sliding window; new-interaction tier, see the check tier in the definition): [definition](definitions/logic-grid.md#levels), levels 1–6 built.
-- **`draw-the-pattern`, slice 3 level 10 *Dot to dot***, on decision 1's default (lap plays 1 and 10) (new interaction: typecheck, unit tests, one scripted play at lap and of toddler's order step from 10 to 2, one portrait screenshot, `fingerdemo` at 10): [dive](deep-dives/draw-the-pattern.md#build-slices-in-order).
+- **`draw-the-pattern`, slice 3 level 10 *Dot to dot***, on decision 1's default (lap plays 1 and 10) (new interaction: typecheck, unit tests, one scripted play at lap and of toddler's order step from 10 to 2, one portrait screenshot, `fingerdemo` at 10): [dive](deep-dives/draw-the-pattern.md#build-slices-in-order). Claimed 2026-11-06 by branch `claude/draw-the-pattern-10`.
 - **`crossword`, levels 5–6 *Written clues* and *The mini*** (grown-up; a new interaction: the A–Z keyboard and frozen 5 by 5 minis; new-interaction tier, see the check tier in the definition): [definition](definitions/crossword.md#levels), levels 1–4 built.
 - **Define Mossy Path 4–7 *find the way*, a maze opening (PP1)** (`puzzle-pages`; toddler to school; docs only, with the session's source check of the maze-planning studies): [ladder](deep-dives/subjects/puzzle-pages.md#a-first-games-ladder-mossy-path-find-the-way), [study](deep-dives/subjects/puzzle-pages.md), [Mossy Path](GAMES.md#mossy-path).
 
