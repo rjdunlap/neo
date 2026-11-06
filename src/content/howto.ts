@@ -844,12 +844,14 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 1, to: 1, text: 'Drag the eye to the door.' },
       { from: 2, to: 2, text: 'Pick the sensor the lamp needs.' },
       { from: 3, to: 3, text: 'Add the missing row so the lamp turns off too.' },
+      { from: 4, to: 4, text: 'Pick which warmth turns the heater on and which turns it off.' },
       'Tap Watch and see what the helper does.',
     ],
     finish: 'The helper does its job all day by itself.',
     note: [
       { from: 1, to: 2, text: 'This is a try-out, not a test. Watching is never counted; if it does not work, look at what the friend and the helper did.' },
       { from: 3, to: 3, text: 'Watching is never counted. If it does not work, look at what the friend and the lamp did; the same trouble twice makes the part to change glow.' },
+      { from: 4, to: 4, text: 'Watching is never counted. The thermometer shows cool, warm or hot by how full it is; if the nook gets too chilly or too hot, look at when the heater came on and went off. The same trouble twice makes the part to change glow.' },
     ],
   },
   'keep-house': {

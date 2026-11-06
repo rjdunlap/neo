@@ -2797,7 +2797,7 @@ Checks are in [VERIFICATION](../VERIFICATION.md) (entry "Block Topple levels 1�
 
 [PR #1271](https://github.com/rjdunlap/neo/pull/1271), [as built](../definitions/block-topple.md#slice-2-as-built-2026-11-05-level-4-built-level-5-not-built). Level 4 *Hit it high*: three lines, one stack each (a short wide stack, a tall thin tower, a seeded wide stack) where a wide stack tips only from a push at least 150 high; after two thumps a golden band (a hint) shows the tipping height at every level. Bands pre-K 1–4, school 2–4. Level 5 *Count what fell* is not built and is a define item in READY.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--block-topple-level-4-hit-it-high-block-topple-slice-2).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-05.md#2026-11-05--block-topple-level-4-hit-it-high-block-topple-slice-2).
 
 ### Block Topple level 5 (slice 3, built 2026-11-05)
 

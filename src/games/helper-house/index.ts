@@ -1,7 +1,7 @@
 /**
  * Helper House: put a sensor where it can see, pick the rule chip the empty row needs, tap Watch and see the house run
  * a whole day by itself while a friend reacts (level 1 wakes the door, level 2 lights the lamp at dusk, level 3 turns it
- * off again by morning). Rules: ./logic.ts; definition: docs/definitions/helper-house.md.
+ * off again by morning, level 4 keeps a chilly nook comfy with a heater and a thermometer). Rules: ./logic.ts; definition: docs/definitions/helper-house.md.
  */
 import { Container, Graphics, Rectangle } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
@@ -21,14 +21,14 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
 import { actionArt, bubbleArt, cardArt, House, iconArt, pauseArt, readingArt, sensorArt, SkyMark, socketArt, stepArt, stickerArt, tileArt, watchArt } from './art';
 import {
-  briefFor, centre, helpFor, HOUSE_COLORS, houseLayout, nextMove, offersSetup, openRows, placeSensor, planFor, runDay, sameBoard, setRow, solutions, SPECIES, STEPS, SUN_LEVELS, Tally, TILE,
-  type Board, type Brief, type HouseLayout, type Outcome, type Pt, type Reading, type SensorKind, type Socket, type SunLevel,
+  briefFor, centre, chipsFor, helperFor, helpFor, HOUSE_COLORS, houseLayout, nextMove, offersSetup, openRows, placeSensor, planFor, runDay, sameBoard, setRow, solutions, SPECIES, STEPS, Tally, TILE, zoneOf,
+  type Board, type Brief, type Chip, type HouseLayout, type Outcome, type Piece, type Pt, type Reading, type SensorKind, type Socket, type SunLevel, type Trace,
 } from './logic';
 
 const LEVELS: BandLevels = {
   preschool: { min: 1, max: 1 },
   prek: { min: 1, max: 3 },
-  school: { min: 2, max: 3 },
+  school: { min: 2, max: 4 },
 };
 
 /** The friend stands about 250 tall at scale 1. */
@@ -53,7 +53,7 @@ interface Tile {
   node: Container;
   handle: DragHandle;
   kind: SensorKind | null;
-  chip: SunLevel | null;
+  chip: Chip | null;
 }
 
 class HelperHouse implements Game {
@@ -91,11 +91,14 @@ class HelperHouse implements Game {
   undoButton: RoundButton | null = null;
   offerButton: RoundButton | null = null;
   private nearSocket: number | null = null;
+  /** Level 4: the nook's warmth the thermometer in its socket shows now. */
+  warmthNow = 0;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.brief = briefFor(ctx.level, ctx.rng);
     this.board = this.brief.board;
+    this.warmthNow = this.brief.day.warmth;
     this.stepSeconds = ctx.demo ? 0.6 : 0.9;
     this.backdrop = new Backdrop({ sky: [0xbfe6ff, 0xfff6e0], hills: [0xa9e0d6, 0xc5e7a8], horizon: 0.55, clouds: 2, sun: false, seed: 173 }, ctx.view);
     this.veil.eventMode = 'none';
@@ -105,6 +108,11 @@ class HelperHouse implements Game {
 
   private get level() {
     return this.brief.level;
+  }
+
+  /** Level 4 is the nook: the sky stays a steady day and only the warmth changes. */
+  private get nook() {
+    return helperFor(this.level) === 'heater';
   }
 
   start() {
@@ -150,7 +158,7 @@ class HelperHouse implements Game {
     if (!l) return;
 
     // The house, its sky mark and the friend.
-    const house = new House({ w: l.house.w, h: l.house.h, lamp: this.level >= 2 }, this.brief.house);
+    const house = new House({ w: l.house.w, h: l.house.h, lamp: this.level >= 2 && !this.nook, heater: this.nook }, this.brief.house);
     house.position.set(l.house.x, l.house.y);
     this.board_.addChild(house);
     this.house = house;
@@ -207,20 +215,20 @@ class HelperHouse implements Game {
     });
 
     // The bench: sensors to place, or chips for the empty row.
-    const benchKinds: (SensorKind | SunLevel)[] = this.level === 3 ? this.brief.chips : this.brief.sensors;
+    const isChip = this.level >= 3;
+    const benchKinds: (SensorKind | Chip)[] = isChip ? this.brief.chips : this.brief.sensors;
     benchKinds.forEach((k, i) => {
       const r = l.bench[i];
       const node = new Container();
-      const isChip = this.level === 3;
       node.addChild(tileArt(r.w));
-      node.addChild(isChip ? readingArt(k as SunLevel, r.w * 0.66) : sensorArt(k as SensorKind, r.w * 0.7));
+      node.addChild(isChip ? readingArt(k as Chip, r.w * 0.66) : sensorArt(k as SensorKind, r.w * 0.7));
       node.hitArea = new Rectangle(-r.w / 2 - 6, -r.h / 2 - 6, r.w + 12, r.h + 12);
       const at = centre(r);
       // A placed sensor sits in its socket instead of on the bench.
       const placedAt = !isChip && this.board.sensor.kind === k && this.board.sensor.socket !== null ? this.socketAt(this.board.sensor.socket) : null;
       node.position.copyFrom(placedAt ?? at);
       this.board_.addChild(node);
-      const tile: Tile = { node, kind: isChip ? null : (k as SensorKind), chip: isChip ? (k as SunLevel) : null, handle: null as unknown as DragHandle };
+      const tile: Tile = { node, kind: isChip ? null : (k as SensorKind), chip: isChip ? (k as Chip) : null, handle: null as unknown as DragHandle };
       tile.handle = draggable(node, this.ctx.tw, {
         onPick: () => this.picked(tile),
         onMove: (x, y) => this.moved(tile, x, y),
@@ -273,8 +281,9 @@ class HelperHouse implements Game {
       for (const c of node.removeChildren()) c.destroy();
       const filled = this.board.sensor.socket === s && this.board.sensor.kind !== null;
       node.addChild(socketArt(l.sockets[i].w, !filled, this.nearSocket === i));
-      // A fixed sensor (level 3) has no bench tile, so the socket draws it.
-      if (filled && !this.tiles.some((t) => t.kind === this.board.sensor.kind)) node.addChild(sensorArt(this.board.sensor.kind!, l.sockets[i].w * 0.7));
+      // A fixed sensor (levels 3–4) has no bench tile, so the socket draws it; the nook's thermometer shows the warmth now.
+      if (filled && this.nook) node.addChild(readingArt(zoneOf(this.warmthNow), l.sockets[i].w * 0.8));
+      else if (filled && !this.tiles.some((t) => t.kind === this.board.sensor.kind)) node.addChild(sensorArt(this.board.sensor.kind!, l.sockets[i].w * 0.7));
     });
     this.board.rows.forEach((row, i) => {
       const n = this.rowNodes[i];
@@ -283,7 +292,7 @@ class HelperHouse implements Game {
       n.reading.addChild(cardArt(l.rows[i].reading.w, l.rows[i].reading.h, lit, row.reading === null));
       if (row.reading !== null) n.reading.addChild(readingArt(row.reading, 76));
       for (const c of n.action.removeChildren()) c.destroy();
-      n.action.addChild(cardArt(l.rows[i].action.w, l.rows[i].action.h, lit), actionArt(row.action, 76));
+      n.action.addChild(cardArt(l.rows[i].action.w, l.rows[i].action.h, lit), actionArt(row.action, 76, helperFor(this.level)));
     });
     const w = this.watchButton;
     if (w) {
@@ -297,18 +306,30 @@ class HelperHouse implements Game {
 
   /** The house at rest: a dim morning, the helper off, the friend at its spot. */
   private showStill() {
-    this.sky?.set(this.level === 1 ? 'bright' : 'dim');
-    this.setVeil(this.level === 1 ? 'bright' : 'dim');
+    const steady = this.level === 1 || this.nook;
+    this.sky?.set(steady ? 'bright' : 'dim');
+    this.setVeil(steady ? 'bright' : 'dim');
     this.house?.setDoor(0);
     this.house?.setLamp(false);
+    this.house?.setHeater(false);
     this.house?.setInside(0);
+    if (this.nook && this.warmthNow !== this.brief.day.warmth) {
+      this.warmthNow = this.brief.day.warmth;
+      this.redraw();
+    }
     if (this.friend) {
       this.friend.visible = this.level >= 2;
       this.friend.alpha = 1;
-      this.friend.setMood('calm');
+      this.friend.setMood(this.nook ? this.nookMood(this.warmthNow) : 'calm');
     }
     if (this.bubble) this.bubble.visible = false;
     if (this.pulse) this.pulse.visible = false;
+  }
+
+  /** The friend in the nook shivers (sad) when cool, is comfy (happy) when warm, and is startled when hot. */
+  private nookMood(warmth: number) {
+    const z = zoneOf(warmth);
+    return z === 'cool' ? 'sad' as const : z === 'warm' ? 'happy' as const : 'surprised' as const;
   }
 
   private setVeil(sun: SunLevel) {
@@ -373,44 +394,49 @@ class HelperHouse implements Game {
     const row = this.rowUnder(x, y);
     if (row === null) return false;
     sfx.tick();
-    this.change(setRow(this.board, row, tile.chip), 'row');
-    void this.ctx.say('hh.row-set');
+    this.change(setRow(this.board, row, tile.chip), row);
+    void this.ctx.say(this.nook ? 'hh.row-set.4' : 'hh.row-set');
     return true;
   }
 
+  /** The open row nearest a drop, within reach of its reading card. */
   private rowUnder(x: number, y: number): number | null {
     const l = this.layoutNow;
     if (!l) return null;
+    let best: number | null = null;
+    let bd = TILE * 0.9;
     for (const i of openRows(this.board)) {
       const c = centre(l.rows[i].reading);
-      if (Math.hypot(c.x - x, c.y - y) < TILE * 0.9) return i;
+      const d = Math.hypot(c.x - x, c.y - y);
+      if (d < bd) { bd = d; best = i; }
     }
-    return null;
+    return best;
   }
 
-  /** A tap on a chip puts it in the empty row (the first open row). */
+  /** A tap on a chip puts it in the first empty row (or the first open row when every row is filled). */
   tapChip(tile: Tile) {
     if (this.finished || this.busy || tile.handle.dragging || tile.chip === null) return;
     if (this.run) this.stopRun();
-    const [row] = openRows(this.board);
+    const open = openRows(this.board);
+    const row = open.find((i) => this.board.rows[i].reading === null) ?? open[0];
     if (row === undefined) return;
     sfx.tick();
-    this.change(setRow(this.board, row, tile.chip), 'row');
-    void this.ctx.say('hh.row-set');
+    this.change(setRow(this.board, row, tile.chip), row);
+    void this.ctx.say(this.nook ? 'hh.row-set.4' : 'hh.row-set');
   }
 
   /** A tap on an open row cycles its reading through the chips. */
   cycleRow(i: number) {
     if (this.finished || this.busy) return;
     if (this.run) this.stopRun();
-    const now = this.board.rows[i].reading as SunLevel | null;
-    const order = [...SUN_LEVELS].reverse();
+    const now = this.board.rows[i].reading as Chip | null;
+    const order = chipsFor(this.level);
     const next = now === null ? order[0] : order[(order.indexOf(now) + 1) % order.length];
     sfx.pop(8);
-    this.change(setRow(this.board, i, next), 'row');
+    this.change(setRow(this.board, i, next), i);
   }
 
-  private change(board: Board, piece: 'sensor' | 'row') {
+  private change(board: Board, piece: Piece) {
     this.history.push(this.board);
     this.board = board;
     this.tally.changed(piece);
@@ -424,7 +450,7 @@ class HelperHouse implements Game {
     if (!b) return;
     this.board = b;
     this.tally.changed('sensor');
-    this.tally.changed('row');
+    for (const i of openRows(b)) this.tally.changed(i);
     sfx.pop(4);
     this.build();
   }
@@ -492,7 +518,7 @@ class HelperHouse implements Game {
       r.shown.add(name);
       return true;
     };
-    if (fire('world', 0)) {
+    if (fire('world', 0) && !this.nook) {
       this.sky?.set(t.sun);
       this.setVeil(t.sun);
       if (this.level >= 2 && this.friend) this.friend.setMood(t.sun === 'dark' && !t.helperOn ? 'sad' : 'calm');
@@ -524,8 +550,9 @@ class HelperHouse implements Game {
     }
     if (fire('act', PHASES.act)) {
       if (this.pulse) this.pulse.visible = false;
-      this.showHelper(t.helperOn, t.opened, t.inside, t.waiting);
-      if (this.level >= 2 && this.friend) this.friend.setMood(t.sun === 'dark' && !t.helperOn ? 'sad' : t.helperOn && t.sun === 'dark' ? 'happy' : 'calm');
+      this.showHelper(t);
+      if (this.nook && this.friend) this.friend.setMood(this.nookMood(t.warmth));
+      else if (this.level >= 2 && this.friend) this.friend.setMood(t.sun === 'dark' && !t.helperOn ? 'sad' : t.helperOn && t.sun === 'dark' ? 'happy' : 'calm');
     }
     if (r.t < this.stepSeconds) return;
     r.step++;
@@ -543,7 +570,7 @@ class HelperHouse implements Game {
 
   private helperPoint(): Pt {
     const h = this.house!;
-    const at = this.level === 1 ? h.doorAt : h.lampAt;
+    const at = this.level === 1 ? h.doorAt : this.nook ? h.heaterAt : h.lampAt;
     return { x: h.x + at.x, y: h.y + at.y };
   }
 
@@ -558,9 +585,16 @@ class HelperHouse implements Game {
     sfx.pop(reading === 'near' || reading === 'bright' ? 9 : reading === 'dim' ? 7 : 5);
   }
 
-  private showHelper(on: boolean, opened: boolean, inside: number, waiting: number) {
+  private showHelper(t: Trace) {
+    const { helperOn: on, opened, inside, waiting } = t;
     const h = this.house;
     if (!h) return;
+    if (this.nook) {
+      h.setHeater(on);
+      this.warmthNow = t.warmth;
+      this.redraw();
+      return;
+    }
     if (this.level === 1) {
       h.setDoor(opened ? 1 : 0);
       h.setInside(inside);
@@ -640,7 +674,7 @@ class HelperHouse implements Game {
     this.board = h.board;
     this.tally.changed(h.placed);
     this.build();
-    void this.ctx.say(h.placed === 'sensor' ? `hh.help.sensor.${this.level}` as LineId : 'hh.help.row');
+    void this.ctx.say(h.placed === 'sensor' ? `hh.help.sensor.${this.level}` as LineId : this.nook ? `hh.help.row.4.${h.placed === 0 ? 'on' : 'off'}` as LineId : 'hh.help.row');
   }
 
   /** Shall I set it up? Yes: the accepted board, and the day plays to its finish. */
@@ -652,7 +686,7 @@ class HelperHouse implements Game {
     this.history.push(this.board);
     this.board = right;
     this.tally.changed('sensor');
-    this.tally.changed('row');
+    for (const i of openRows(right)) this.tally.changed(i);
     this.build();
     void this.ctx.say('hh.help.setup');
     this.startRun();
@@ -664,7 +698,7 @@ class HelperHouse implements Game {
     if (this.relayout && !this.busy && !this.finished && !this.run) this.build();
     this.glow.clear();
     const g = this.tally.glowing;
-    if (!g || this.finished || !this.layoutNow) return;
+    if (g === null || this.finished || !this.layoutNow) return;
     const r = 1 + 0.05 * Math.sin(this.clock * 5);
     if (g === 'sensor') {
       const l = this.layoutNow;
@@ -676,14 +710,15 @@ class HelperHouse implements Game {
         this.glow.circle(tile!.node.x, tile!.node.y, 76 * r).stroke({ width: 8, color: swatch.yellow.fill });
       }
     } else {
-      const [row] = openRows(this.board);
-      if (row === undefined) return;
-      const c = centre(this.layoutNow.rows[row].reading);
+      const c = centre(this.layoutNow.rows[g].reading);
       this.glow.roundRect(c.x - 80 * r, c.y - 70 * r, 160 * r, 140 * r, 22).stroke({ width: 8, color: swatch.yellow.fill });
     }
   }
 
-  /** The ghost finger: drag the piece the goal needs, tap Watch; at level 3, Watch first, then the bright chip, then Watch. */
+  /**
+   * The ghost finger: drag the piece the goal needs, tap Watch; at level 3, Watch first, then the bright chip, then
+   * Watch; at level 4, cool to the on row, warm to the off row, then Watch.
+   */
   autotouch(): TouchIntent | null {
     if (this.finished || this.run || this.busy || !this.layoutNow) return null;
     const m = nextMove(this.brief, this.board, this.daysPlayed);
