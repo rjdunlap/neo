@@ -222,7 +222,7 @@ Each is one session; definitions are docs only.
 
 1. **Define `crossword`**: defined in [crossword.md](../../definitions/crossword.md); levels 1–4 built by 2026-11-06 and levels 5–6 queued in READY. Notes: [crossword](#crossword).
 2. **Define `logic-grid`**: defined in [logic-grid.md](../../definitions/logic-grid.md); levels 1–2 built 2026-11-05 and levels 3–4 queued in READY. Notes: [logic-grid](#logic-grid-whodunit).
-3. **PP1: define Mossy Path levels 4–7, *find the way*** (toddler to school; [ladder above](#a-first-games-ladder-mossy-path-find-the-way)), then build it in one session (new levels and band entries on an existing game, plus drag stepping).
+3. **PP1: define Mossy Path levels 4–7, *find the way*** (toddler to school; [ladder above](#a-first-games-ladder-mossy-path-find-the-way)): defined in [mossy-path.md](../../definitions/mossy-path.md#levels-47-find-the-way-definition-pp1) 2026-11-06; the build is queued in READY (new levels and band entries on an existing game, plus drag stepping).
 4. **PP2: define Domino Pond 1–3** (pre-K: match a patch's dots; then sums; then signs).
 5. **PP3: define Bunny Patches 1–3** (pre-K or school 4×4, 5×5, 6×6; grown-up 8×8 at par as a later rung).
 6. **PP4: define Garden Rows' *bee counts tall flowers*** after Garden Rows' queued levels.
