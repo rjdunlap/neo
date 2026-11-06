@@ -1062,3 +1062,8 @@ Performed on the built levels (PR #1043; [definition](definitions/water-road.md#
 
 - [ ] On an iPad, listen to device speech of the slotted hat clues ("The friend in the red hat was not at the tree") and the ball line.
 - [ ] Watch a five- or six-year-old at level 4: do the hat patterns (stripes, spots, stars) read apart, and does she find the friend by hat on the header card?
+
+## Mystery Grid level 5 (2026-11-06)
+
+- [ ] On an iPad, listen to device speech of the different-person clue ("The friend at the pond is not the one with the balloon") and the kite event lines.
+- [ ] Watch a six- or seven-year-old at level 5: do the small clue cards and the caption strip read, and does the two-block grid make sense?
