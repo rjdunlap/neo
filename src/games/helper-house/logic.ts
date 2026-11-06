@@ -375,7 +375,7 @@ export class Tally {
   /** A completed day that did not meet its goal. Returns whether the glow comes on now. */
   failed(board: Board, failure: Failure): boolean {
     this.failedDays++;
-    if (this.glowing) return false;
+    if (this.glowing !== null) return false;
     this.same = failure === this.last ? this.same + 1 : 1;
     this.last = failure;
     if (this.same < 2) return false;

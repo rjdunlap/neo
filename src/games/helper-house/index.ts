@@ -698,7 +698,7 @@ class HelperHouse implements Game {
     if (this.relayout && !this.busy && !this.finished && !this.run) this.build();
     this.glow.clear();
     const g = this.tally.glowing;
-    if (!g || this.finished || !this.layoutNow) return;
+    if (g === null || this.finished || !this.layoutNow) return;
     const r = 1 + 0.05 * Math.sin(this.clock * 5);
     if (g === 'sensor') {
       const l = this.layoutNow;

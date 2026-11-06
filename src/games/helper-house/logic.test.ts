@@ -363,6 +363,18 @@ describe('level 4: the chilly nook', () => {
     t.changed(1);
     expect(t.glowing).toBeNull();
   });
+  it('lights the on row (index 0) for a nook that never warms, once, without counting again while it glows', () => {
+    const t = new Tally();
+    const board = nook(null, 'on', 'warm', 'off');
+    t.failed(board, 'never-warms');
+    expect(t.failed(board, 'never-warms')).toBe(true);
+    expect(t.glowing).toBe(0);
+    expect(t.failed(board, 'never-warms')).toBe(false);
+    expect(t.failed(board, 'never-warms')).toBe(false);
+    expect(t.hints).toBe(1);
+    t.changed(0);
+    expect(t.glowing).toBeNull();
+  });
   it('helps to the accepted board within two presses from all 16 boards, then places nothing', () => {
     const b = briefFor(4, new Rng(4));
     for (const board of candidateBoards(b)) {
