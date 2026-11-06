@@ -151,9 +151,8 @@ export const SWIMMER_FIELD = 0.55;
 export const MAX_ART_SCALE = 1.75;
 const MAX_DROP_SPEED = MAX_SPEED / (ART_R * STOP4_ZOOM * MAX_ART_SCALE);
 
-function makeSwimmer(rng: Rng, shape: SwimmerShape, i: number, n: number): Swimmer {
+function makeSwimmer(rng: Rng, shape: SwimmerShape, i: number, n: number, r = 0.28): Swimmer {
   const a = (Math.PI * 2 * i) / n + rng.range(-0.4, 0.4);
-  const r = 0.28;
   const amp = SWIMMER_FIELD - r;
   const rx = rng.range(0.1, amp);
   const ry = rng.range(0.1, amp);
@@ -258,13 +257,199 @@ export class LookTracker {
   }
 }
 
+// ----- levels 5–6: alive, and cells -----
+
+/**
+ * What a candidate shows at a stop that can decide something. Moving and colour are drawn but are never evidence: a drifting bubble
+ * and a swimmer both move, and a green ball and a brown speck differ only in colour until the closest stop.
+ */
+export type Evidence = 'edge' | 'inside' | 'hairs' | 'empty' | 'ragged' | 'boxes' | 'cracks';
+export type CandidateId = 'swimmer' | 'green-ball' | 'mud-speck' | 'silt' | 'bubble';
+export type Motion = 'swims' | 'drifts' | 'still';
+
+export interface Candidate {
+  id: CandidateId;
+  alive: boolean;
+  /** Evidence at stops 1–4 (index 0 is stop 1). */
+  evidence: readonly (readonly Evidence[])[];
+  motion: Motion;
+}
+
+/** The level-5 candidates (the definition's table, row for row). Nothing separate shows at stops 1–2. */
+export const CANDIDATES: Record<CandidateId, Candidate> = {
+  swimmer: { id: 'swimmer', alive: true, evidence: [[], [], ['edge', 'inside'], ['edge', 'inside', 'hairs']], motion: 'swims' },
+  'green-ball': { id: 'green-ball', alive: true, evidence: [[], [], [], ['edge', 'inside']], motion: 'still' },
+  'mud-speck': { id: 'mud-speck', alive: false, evidence: [[], [], ['ragged'], ['ragged']], motion: 'drifts' },
+  silt: { id: 'silt', alive: false, evidence: [[], [], [], ['ragged']], motion: 'still' },
+  bubble: { id: 'bubble', alive: false, evidence: [[], [], ['edge', 'empty'], ['edge', 'empty']], motion: 'drifts' },
+};
+
+export const evidenceAt = (c: CandidateId, stop: Stop): readonly Evidence[] => CANDIDATES[c].evidence[stop - 1];
+const sameSet = (a: readonly Evidence[], b: readonly Evidence[]) => a.length === b.length && a.every((e) => b.includes(e));
+/** Alive exactly when an edge all round and parts inside show. */
+export const looksAlive = (ev: readonly Evidence[]) => ev.includes('edge') && ev.includes('inside');
+
+export type PairId = 'A' | 'B' | 'C';
+/** The reviewed pairs: one alive and one not alive, both moving or both still. */
+export const PAIRS: Record<PairId, readonly [CandidateId, CandidateId]> = {
+  A: ['swimmer', 'mud-speck'],
+  B: ['swimmer', 'bubble'],
+  C: ['green-ball', 'silt'],
+};
+export const PAIR_IDS: readonly PairId[] = ['A', 'B', 'C'];
+
+/** The lowest stop where the pair's evidence differs. */
+export function decidingStop(pair: PairId): Stop {
+  const [a, b] = PAIRS[pair];
+  return STOPS.find((s) => !sameSet(evidenceAt(a, s), evidenceAt(b, s))) ?? 4;
+}
+
+export type LifeAnswer = 'alive' | 'not-alive' | 'cant-tell';
+export type LifeVerdict =
+  | { result: 'free'; line: 'lens.could-be' | 'lens.right-for-now' }
+  | { result: 'right'; line: 'lens.alive.yes' | 'lens.alive.no' }
+  | { result: 'miss'; line: 'lens.can-tell-now' | LookLine };
+export type LookLine = 'lens.look.inside' | 'lens.look.empty' | 'lens.look.ragged';
+
+/** What the companion says to point at the ringed thing's evidence, never the verdict. */
+export function lookLine(c: CandidateId, stop: Stop): LookLine {
+  const ev = evidenceAt(c, stop);
+  return ev.includes('inside') ? 'lens.look.inside' : ev.includes('empty') ? 'lens.look.empty' : 'lens.look.ragged';
+}
+
+/** Judge an answer about the ringed candidate (0 or 1 of the pair) at a stop. Below the deciding stop nothing counts, either way. */
+export function judgeLife(pair: PairId, ringed: 0 | 1, stop: Stop, answer: LifeAnswer): LifeVerdict {
+  const c = PAIRS[pair][ringed];
+  if (stop < decidingStop(pair)) return answer === 'cant-tell' ? { result: 'free', line: 'lens.right-for-now' } : { result: 'free', line: 'lens.could-be' };
+  if (answer === 'cant-tell') return { result: 'miss', line: 'lens.can-tell-now' };
+  const alive = looksAlive(evidenceAt(c, stop));
+  if ((answer === 'alive') === alive) return { result: 'right', line: alive ? 'lens.alive.yes' : 'lens.alive.no' };
+  return { result: 'miss', line: lookLine(c, stop) };
+}
+
+/** The answer that is right at a stop, for the glow and the ghost finger. */
+export const rightLife = (pair: PairId, ringed: 0 | 1, stop: Stop): LifeAnswer =>
+  stop < decidingStop(pair) ? 'cant-tell' : looksAlive(evidenceAt(PAIRS[pair][ringed], stop)) ? 'alive' : 'not-alive';
+
+/** How far each level-5 speck's spot is from the middle of the drop. */
+export const LIFE_SPOT = 0.4;
+
+/** A level-5 drop: a pair, which one the companion rings, and each one's path (a still one's amplitudes are zero). */
+export interface LifeDrop {
+  pair: PairId;
+  ringed: 0 | 1;
+  paths: [Swimmer, Swimmer];
+}
+
+function makePath(rng: Rng, id: CandidateId, i: number): Swimmer {
+  const motion = CANDIDATES[id].motion;
+  // The two sit well apart, on opposite sides of the drop, so the ring round one never takes in the other.
+  const r = LIFE_SPOT;
+  if (motion === 'swims') return makeSwimmer(rng, rng.pick(['round', 'long', 'bean'] as const), i, 2, r);
+  const a = Math.PI * i + rng.range(-0.4, 0.4);
+  const base: Swimmer = { shape: 'round', cx: Math.cos(a) * r, cy: Math.sin(a) * r, ax: 0, ay: 0, wx: 0, wy: 0, px: 0, py: 0 };
+  if (motion === 'still') return base;
+  // A slow straight drift with the water, back and forth along one line.
+  const d = rng.range(0, Math.PI * 2);
+  const amp = rng.range(0.06, SWIMMER_FIELD - r);
+  const w = (MAX_DROP_SPEED * 0.8) / amp;
+  const p = rng.range(0, Math.PI * 2);
+  return { ...base, ax: Math.cos(d) * amp, ay: Math.sin(d) * amp, wx: w, wy: w, px: p, py: p };
+}
+
+/**
+ * Three drops, one of each pair in a shuffled order (no pair twice), with at least one ringed alive and one ringed not alive. The
+ * authored round is A with the swimmer ringed, C with the silt ringed, then B.
+ */
+export function lifeDropsFor(rng: Rng, authored: boolean): LifeDrop[] {
+  let order: PairId[];
+  let rings: (0 | 1)[];
+  if (authored) {
+    order = ['A', 'C', 'B'];
+    rings = [0, 1, rng.next() < 0.5 ? 0 : 1];
+  } else {
+    order = rng.shuffle([...PAIR_IDS]);
+    for (;;) {
+      rings = order.map(() => (rng.next() < 0.5 ? 0 : 1));
+      const alive = rings.map((k, i) => CANDIDATES[PAIRS[order[i]][k]].alive);
+      if (alive.includes(true) && alive.includes(false)) break;
+    }
+  }
+  return order.map((pair, i) => {
+    const [a, b] = PAIRS[pair];
+    const paths: [Swimmer, Swimmer] = [makePath(rng, a, 0), makePath(rng, b, 1)];
+    return { pair, ringed: rings[i], paths };
+  });
+}
+
+export type CellClass = 'one' | 'many' | 'not';
+export type SortSampleId = 'leaf' | 'onion-skin' | 'green-thread' | 'swimmer' | 'green-ball' | 'sand' | 'bubble' | 'mud-speck';
+
+export interface SortSample {
+  id: SortSampleId;
+  cls: CellClass;
+  /** The evidence that shows its class, drawn whole from the deciding stop on. */
+  evidence: readonly Evidence[];
+  deciding: Stop;
+}
+
+/** The level-6 samples (the definition's table, row for row). */
+export const SORT_SAMPLES: Record<SortSampleId, SortSample> = {
+  leaf: { id: 'leaf', cls: 'many', evidence: ['boxes'], deciding: 3 },
+  'onion-skin': { id: 'onion-skin', cls: 'many', evidence: ['boxes'], deciding: 3 },
+  'green-thread': { id: 'green-thread', cls: 'many', evidence: ['boxes'], deciding: 3 },
+  swimmer: { id: 'swimmer', cls: 'one', evidence: ['edge', 'inside'], deciding: 3 },
+  'green-ball': { id: 'green-ball', cls: 'one', evidence: ['edge', 'inside'], deciding: 4 },
+  sand: { id: 'sand', cls: 'not', evidence: ['cracks'], deciding: 3 },
+  bubble: { id: 'bubble', cls: 'not', evidence: ['edge', 'empty'], deciding: 3 },
+  'mud-speck': { id: 'mud-speck', cls: 'not', evidence: ['ragged'], deciding: 3 },
+};
+export const SORT_IDS = Object.keys(SORT_SAMPLES) as SortSampleId[];
+export const CLASSES: readonly CellClass[] = ['one', 'many', 'not'];
+
+/** The evidence a sample shows at a stop: its class evidence from the deciding stop on, nothing that decides below it. */
+export const sortEvidenceAt = (s: SortSampleId, stop: Stop): readonly Evidence[] => (stop >= SORT_SAMPLES[s].deciding ? SORT_SAMPLES[s].evidence : []);
+
+export type SeeLine = 'lens.see.boxes' | 'lens.see.one' | 'lens.see.empty' | 'lens.see.ragged' | 'lens.see.cracks';
+/** What the view shows, said on a wrong tray and by Show a hint. */
+export function seeLine(s: SortSampleId): SeeLine {
+  const ev = SORT_SAMPLES[s].evidence;
+  return ev.includes('boxes') ? 'lens.see.boxes' : ev.includes('inside') ? 'lens.see.one' : ev.includes('empty') ? 'lens.see.empty' : ev.includes('ragged') ? 'lens.see.ragged' : 'lens.see.cracks';
+}
+
+export type SortVerdict =
+  | { result: 'free'; line: 'lens.look-closer-edges' }
+  | { result: 'right'; line: 'lens.sorted.one' | 'lens.sorted.many' | 'lens.sorted.not' }
+  | { result: 'miss'; line: SeeLine };
+
+export function judgeSort(s: SortSampleId, stop: Stop, tray: CellClass): SortVerdict {
+  const sample = SORT_SAMPLES[s];
+  if (stop < sample.deciding) return { result: 'free', line: 'lens.look-closer-edges' };
+  if (tray === sample.cls) return { result: 'right', line: `lens.sorted.${tray}` };
+  return { result: 'miss', line: seeLine(s) };
+}
+
+/** Four slides, no sample twice, every class at least once, and the green ball (decided only at the closest stop). Authored: thread, swimmer, sand, green ball. */
+export function sortRoundFor(rng: Rng, authored: boolean): SortSampleId[] {
+  if (authored) return ['green-thread', 'swimmer', 'sand', 'green-ball'];
+  const pick = (cls: CellClass, not: SortSampleId[] = []) => rng.pick(SORT_IDS.filter((id) => SORT_SAMPLES[id].cls === cls && !not.includes(id)));
+  const chosen: SortSampleId[] = ['green-ball', pick('many'), pick('not')];
+  chosen.push(rng.pick(SORT_IDS.filter((id) => !chosen.includes(id))));
+  return rng.shuffle(chosen);
+}
+
 // ----- help -----
 
 export type Help = { do: 'tap-lens' } | { do: 'glide'; to: number } | { do: 'turn'; stop: Stop };
 
-/** What Show a hint does: tap the lens (1), glide to the nearest thing not yet looked at (2), turn to the stop that decides (3) or the lowest that shows the asked thing (4). */
-export function helpFor(level: number, s: { glass?: { x: number; y: number }; things?: readonly { x: number; y: number }[]; looked?: ReadonlySet<number>; question?: Question }): Help | null {
+/**
+ * What Show a hint does: tap the lens (1), glide to the nearest thing not yet looked at (2), turn to the stop that decides (3, 5 and 6)
+ * or the lowest that shows the asked thing (4).
+ */
+export function helpFor(level: number, s: { glass?: { x: number; y: number }; things?: readonly { x: number; y: number }[]; looked?: ReadonlySet<number>; question?: Question; pair?: PairId; sample?: SortSampleId }): Help | null {
   if (level === 1) return { do: 'tap-lens' };
+  if (level === 5) return s.pair ? { do: 'turn', stop: decidingStop(s.pair) } : null;
+  if (level === 6) return s.sample ? { do: 'turn', stop: SORT_SAMPLES[s.sample].deciding } : null;
   if (level === 3) return { do: 'turn', stop: DECIDING };
   if (level === 4) return s.question ? { do: 'turn', stop: windowOf(s.question)[0] } : null;
   const { glass, things = [], looked = new Set() } = s;
@@ -323,9 +508,10 @@ const GAP = 12;
 export interface LensLayout {
   /** The lens view (levels 1, 3 and 4). */
   lens: Ring;
-  /** Levels 3–4: the four stop buttons, then the answer button. */
+  /** Levels 3–6: the four stop buttons; levels 3–4: the answer button; levels 5–6: the three answers or trays. */
   stops: Rect[];
   answer: Rect | null;
+  choices: Rect[];
   /** Level 2: the three things on the table, the hand lens's resting place and the area its glass stays inside. */
   things: Ring[];
   rest: { x: number; y: number } | null;
@@ -352,9 +538,9 @@ export function ringHits(c: Ring, r: Rect): boolean {
 /** Where everything goes, or null rather than a button under 110, a lens under 360 (300 at level 1) or a level-2 thing under 160. */
 export function lensLayout(v: View, level: number): LensLayout | null {
   const wide = v.w >= v.h;
-  const none = { stops: [], answer: null, things: [], rest: null, table: null, paw: null };
+  const none = { stops: [], answer: null, choices: [], things: [], rest: null, table: null, paw: null };
   const ok = (l: LensLayout) => {
-    const rects = [...l.stops, ...(l.answer ? [l.answer] : []), ...l.things.map(ringBox), ...(l.paw ? [ringBox(l.paw)] : [])];
+    const rects = [...l.stops, ...(l.answer ? [l.answer] : []), ...l.choices, ...l.things.map(ringBox), ...(l.paw ? [ringBox(l.paw)] : [])];
     if (!rects.every((r) => inside(r, v))) return null;
     if (rects.some((r) => corners(v).some((k) => overlaps(r, k)))) return null;
     if (rects.some((a, i) => rects.some((b, j) => i < j && overlaps(a, b)))) return null;
@@ -383,9 +569,31 @@ export function lensLayout(v: View, level: number): LensLayout | null {
     return ok({ ...none, lens: { ...rest, r: GLASS_R }, things, rest, table, paw });
   }
   let stops: Rect[];
-  let answer: Rect;
+  let answer: Rect | null = null;
+  let choices: Rect[] = [];
   let area: Rect;
-  if (wide) {
+  const three = level >= 5;
+  const row = 3 * ANSWER_SIZE + 2 * GAP;
+  if (three && wide) {
+    // Two columns at the right: the stops, and the three answers or trays beside them.
+    const cx = v.w - M - ANSWER_SIZE / 2;
+    const sx = cx - ANSWER_SIZE / 2 - GAP - STOP_SIZE;
+    const stopsH = 4 * STOP_SIZE + 3 * GAP;
+    stops = STOPS.map((_, i) => ({ x: sx, y: (v.h - stopsH) / 2 + i * (STOP_SIZE + GAP), w: STOP_SIZE, h: STOP_SIZE }));
+    choices = [0, 1, 2].map((i) => ({ x: cx - ANSWER_SIZE / 2, y: (v.h - row) / 2 + i * (ANSWER_SIZE + GAP), w: ANSWER_SIZE, h: ANSWER_SIZE }));
+    area = { x: PET_CORNER.w + 10, y: M, w: sx - 2 * M - PET_CORNER.w - 10, h: v.h - 2 * M };
+  } else if (three) {
+    // The answers along the bottom edge right of the guide's corner, the stops above them.
+    const ax = Math.max(PET_CORNER.w + 10, (v.w - row) / 2);
+    const ay = v.h - M - ANSWER_SIZE;
+    choices = [0, 1, 2].map((i) => ({ x: ax + i * (ANSWER_SIZE + GAP), y: ay, w: ANSWER_SIZE, h: ANSWER_SIZE }));
+    const stopsW = 4 * STOP_SIZE + 3 * GAP;
+    const sx = Math.max(PET_CORNER.w + 10, (v.w - stopsW) / 2);
+    const sy = ay - GAP - STOP_SIZE;
+    stops = STOPS.map((_, i) => ({ x: sx + i * (STOP_SIZE + GAP), y: sy, w: STOP_SIZE, h: STOP_SIZE }));
+    const top = HOME_CORNER.h + 10;
+    area = { x: M, y: top, w: v.w - 2 * M, h: sy - M - top };
+  } else if (wide) {
     const total = 4 * STOP_SIZE + 3 * GAP + 20 + ANSWER_SIZE;
     const top = (v.h - total) / 2;
     const cx = v.w - M - ANSWER_SIZE / 2;
@@ -407,8 +615,8 @@ export function lensLayout(v: View, level: number): LensLayout | null {
   // The paw rests just outside the lens, down and to the left, where there is room.
   const d = (r + 70) / Math.SQRT2;
   const paw = { x: lens.x - d, y: lens.y + d, r: 45 };
-  const withPaw = ok({ ...none, lens, stops, answer, paw });
-  return withPaw ?? ok({ ...none, lens, stops, answer });
+  const withPaw = ok({ ...none, lens, stops, answer, choices, paw });
+  return withPaw ?? ok({ ...none, lens, stops, answer, choices });
 }
 
 /** The glass stays on the table. */
@@ -446,7 +654,7 @@ export class LensTally {
 }
 
 export interface PlanInfo {
-  level: 1 | 2 | 3 | 4;
+  level: 1 | 2 | 3 | 4 | 5 | 6;
   name: string;
 }
 export const PLANS: readonly PlanInfo[] = [
@@ -454,5 +662,7 @@ export const PLANS: readonly PlanInfo[] = [
   { level: 2, name: 'Lens over: slide a hand lens over three things' },
   { level: 3, name: 'Anyone there? Turn the dial to find swimmers in a drop' },
   { level: 4, name: 'Just enough: set the dial to just the view asked for' },
+  { level: 5, name: "Alive or can't tell yet: look closer, then say if the ringed speck is alive" },
+  { level: 6, name: 'One cell or many: look closer, then sort each slide into one cell, many cells or not cells' },
 ];
 export const planFor = (level: number): PlanInfo => PLANS[Math.min(PLANS.length, Math.max(1, Math.round(level))) - 1];
