@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-11-06 — Define Gadget Bench level 4, Fix-It Day (docs only)
+
+Changed: Gadget Bench definition gained level 4 (a longer three-condition path with a bump/puddle conflict, fixed by a new paddle-wheels part; school range becomes {2,4}) and its check tier; READY, the inventions and engineering-design dives and the study backlog updated.
+Ran: `node scripts/check-links.mjs` (links ok) and `git diff --check` (clean). No code checks (docs tier).
+Open: the build (new level on the existing interaction, `fingerdemo` at 4) is queued in READY; decision 5 in the definition has defaults, not blockers.
+
 ## 2026-11-06 — Swing Pals deep dive (docs only)
 
 Changed: `docs/deep-dives/swing-pals.md` and its tracker, READY, backlog and waiting-on-developer rows (PR #1319); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built; three decisions wait on the developer ([list](WAITING-ON-DEVELOPER.md)).
@@ -74,14 +80,6 @@ Changed: `docs/definitions/helper-house.md` (new "Levels 5–7 (RA4)" section), 
 - Ran (branch tip before docs, base `42dc4dc0`; port 5684): `npm run typecheck`; `npm test` (314 files, 5448 tests); `BROWSER_SUITE=crossword FROM_LEVEL=4` PASS (speaker tap free, Show me 1 hint once, wrong full word 1 miss, Show me, bank and Help clear in landscape and portrait, sticker with 1 miss, 1 hint; screenshot `crossword-4-portrait`); `BROWSER_SUITE=fingerdemo FINGER_ONLY=crossword FINGER_LEVELS=4` PASS (33.9 s). game-reviewer fixes: three ambiguous riddles (moon, hen, boat); a dimmed Show me repeats the word.
 - Not run: build (no assets), levels 1-3 replay (unchanged), the offline check, a real iPad.
 - Open: device speech of the riddles ([device check](DEVICE-CHECKS.md)); riddles are mostly animal-sound clues, so the difficulty is the spelling.
-
-## 2026-11-06 — Draw the Pattern level 10 Dot to dot
-
-- [PR #1306](https://github.com/rjdunlap/neo/pull/1306): `draw-the-pattern` level 10 (lap order 1, 10; toddler order 1, 10, 2, 3; `entryLevels: [10]`): six dots at least 120 units apart on a long line then a zigzag, tap or drag to draw, no misses or hints; voice line, how-to step, ghost finger on the dots, `DRAW_LEVELS=10`. A review found a picture tap during the dot tween restarting the pet's redraw; fixed by one guard.
-- Ran (Vite on http://localhost:5802): `npm run typecheck`; `npx vitest run src/games/draw-the-pattern` 48 passed (11 new level-10 tests: spacing and hit circles in four views, order, `nextDot` walk, pools reached, voice, `stepLevel` toddler 10 to 2 and lap 1 to 10); `src/content` and `src/games/registry` 210 passed; `BROWSER_SUITE=drawpattern DRAW_LEVELS=10` PASS (lap in portrait with a stray tap and drag, no misses; taps; one drag along the zigzag; portrait screenshot; toddler round, then level 2); `BROWSER_SUITE=fingerdemo FINGER_ONLY=draw-the-pattern FINGER_LEVELS=10` PASS (9.0 s, lap).
-- The picture-tap guard came after the browser runs (unit tests re-run only).
-- Not run: `npm run build` (no shared files or assets), other levels' browser plays, a real iPad.
-- Open: whether a one-year-old taps the shining dot and the 120-unit dot suits her finger ([DEVICE-CHECKS](DEVICE-CHECKS.md)).
 
 ## Coverage summary
 

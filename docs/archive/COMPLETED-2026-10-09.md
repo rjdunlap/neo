@@ -3089,7 +3089,7 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-06--helper-house-levels-
 
 [PR #1306](https://github.com/rjdunlap/neo/pull/1306), `draw-the-pattern` level 10 for lap and toddler on decision 1's default (`LEVELS` lap `{ 1–10, order [1, 10] }`, toddler `{ 1–10, order [1, 10, 2, 3] }`; module `entryLevels: [10]`). Six dots a unit apart (at least 120 logical units at the smallest strip): strip 1 along a long line (a piece from the line pool: ground, washing line or road), strip 2 on a zigzag's peaks and troughs (mountains, crocodile teeth or a crown). The pet draws dot 1 to 2; the next dot shines (a yellow disc as big as its 120-unit tap area); a tap on it draws the crayon there in 0.4 s; a drag along the dashes works too; a tap elsewhere is a soft tick and a stray drag counts nothing, so there are no misses or hints (Hint repeats the instruction). Corridor 0.18 as at level 2. New voice line `draw.instruct.dots` ("Tap the shiny dot!"), a how-to step scoped to level 10 and a ghost finger that taps the dots. A review found that a picture tap during the dot tween started the pet's redraw; the picture tap is now guarded. Eleven new rule tests (dot spacing in four views, hit circles clear of corners and picture, order, `nextDot` walk, pools reached, voice lines, `stepLevel` toddler 10 to 2 and lap 1 to 10); `DRAW_LEVELS=10` in the `drawpattern` browser case.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-06--draw-the-pattern-level-10-dot-to-dot).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-06.md#2026-11-06--draw-the-pattern-level-10-dot-to-dot).
 
 ## Mystery Grid (logic-grid) level 8 (2026-11-06)
 

@@ -178,7 +178,7 @@ Welcome Ways 1–4 is [defined](../../definitions/welcome-ways.md) (2026-10-24, 
 1. Welcome Ways 1–4 built; [batch record](../../archive/COMPLETED-2026-10-09.md#welcome-ways-levels-14-2026-10-24).
 2. **Define Welcome Ways 5–7** (constraints, conflict, repair for a new friend), with enumeration tests per level. Defined 2026-11-06 ([PR #1315](https://github.com/rjdunlap/neo/pull/1315); [definition](../../definitions/welcome-ways.md#levels-57-definition)); levels 5–7 built ([PR #1318](https://github.com/rjdunlap/neo/pull/1318); [build record](../../definitions/welcome-ways.md#build-record)).
 3. **Define Sink or Float 8: Garden Raft** after a float/balance model review, sharing `topples`-style exact positions.
-4. **Define Gadget Bench Fix-It Day** inside Gadget Bench 4–7's definition (inventions packet I3).
+4. **Define Gadget Bench Fix-It Day** inside Gadget Bench 4–7's definition (inventions packet I3). Defined 2026-11-06 as Gadget Bench level 4 ([definition](../../definitions/gadget-bench.md#level-4-fix-it-day-definition)); the worn-part repair is not in it, and the build is still to do.
 5. **Define Plaza Cases** (levels 8–9) and the 13+ registration decision.
 6. **Who can use it?** card after a named reviewer.
 
