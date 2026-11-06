@@ -34,3 +34,11 @@
 - Ran (commit `b333110a`; port 5309, Vite dev): `npm run typecheck`; `npm test` (314 files, 5440 tests; level-9 rule tests: diagonals at least 0.4 in x and y, the X crosses once, X rings at least 2 ring radii apart in every view, order 5 to 9 to 6, both pictures reachable); `BROWSER_SUITE=drawpattern DRAW_LEVELS=9` PASS (two strays: 1 miss, glow, 1 hint, finish, picture screenshot); `BROWSER_SUITE=fingerdemo FINGER_ONLY=draw-the-pattern FINGER_LEVELS=9 FINGER_BAND=prek` PASS; a probe screenshot of the kite and treasure pictures.
 - Not run: `npm run build` (no shared files or assets), other levels' browser plays (unchanged), a real iPad.
 - Open: a four-year-old's finger on the short slanting lines ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).
+
+## 2026-11-06 — Draw the Pattern level 10 Dot to dot
+
+- [PR #1306](https://github.com/rjdunlap/neo/pull/1306): `draw-the-pattern` level 10 (lap order 1, 10; toddler order 1, 10, 2, 3; `entryLevels: [10]`): six dots at least 120 units apart on a long line then a zigzag, tap or drag to draw, no misses or hints; voice line, how-to step, ghost finger on the dots, `DRAW_LEVELS=10`. A review found a picture tap during the dot tween restarting the pet's redraw; fixed by one guard.
+- Ran (Vite on http://localhost:5802): `npm run typecheck`; `npx vitest run src/games/draw-the-pattern` 48 passed (11 new level-10 tests: spacing and hit circles in four views, order, `nextDot` walk, pools reached, voice, `stepLevel` toddler 10 to 2 and lap 1 to 10); `src/content` and `src/games/registry` 210 passed; `BROWSER_SUITE=drawpattern DRAW_LEVELS=10` PASS (lap in portrait with a stray tap and drag, no misses; taps; one drag along the zigzag; portrait screenshot; toddler round, then level 2); `BROWSER_SUITE=fingerdemo FINGER_ONLY=draw-the-pattern FINGER_LEVELS=10` PASS (9.0 s, lap).
+- The picture-tap guard came after the browser runs (unit tests re-run only).
+- Not run: `npm run build` (no shared files or assets), other levels' browser plays, a real iPad.
+- Open: whether a one-year-old taps the shining dot and the 120-unit dot suits her finger ([DEVICE-CHECKS](../DEVICE-CHECKS.md)).

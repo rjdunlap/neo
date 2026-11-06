@@ -75,6 +75,7 @@ import { goodnightRoom } from './goodnight-room';
 import { animalSnack } from './animal-snack';
 import { beatBuilder } from './beat-builder';
 import { littleConductor } from './little-conductor';
+import { hatBand } from './hat-band';
 import { clapSyllables } from './clap-syllables';
 import { chainReaction } from './chain-reaction';
 import { rhymeTime } from './rhyme-time';
@@ -246,6 +247,7 @@ export const GAMES: GameModule[] = [
   animalSnack,
   beatBuilder,
   littleConductor,
+  hatBand,
   rhymeTime,
   storyWeaver,
   stopAndGo,
