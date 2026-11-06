@@ -399,7 +399,7 @@ class DrawThePattern implements Game {
     // Pixi does not pass a cancelled touch on, so the window is watched for it.
     window.addEventListener('pointercancel', this.cancel, { capture: true });
     // A tap on the picture: the pet draws its part again and says what to do. Not a hint.
-    onTap(this.picture, () => { if (!this.busy && !this.drag && !this.finished) void this.petDraws(); }, { cooldown: 600 });
+    onTap(this.picture, () => { if (!this.busy && !this.drag && !this.tapping && !this.finished) void this.petDraws(); }, { cooldown: 600 });
     ctx.stage.addChild(this.back, this.paper, this.picture, this.layer);
     this.nextStrip();
     this.resize(ctx.view);
