@@ -2937,7 +2937,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-04.md#2026-11-04--word-search-
 
 [PR #1269](https://github.com/rjdunlap/neo/pull/1269), `claude/word-search-message`: [dive slice 3](../deep-dives/word-search.md#build-slices-in-order). Level 6 appended: `ORDER` `[5, 1, 2, 3, 4, 6]`, `LEVELS` grownup max 6; plan 8 by 8, nine words across, down and down-right (forwards only). `makeMessageGrid` places the words, then picks one of the theme's authored `messages` (3-4 on each of the 15 everyday themes in `words.ts`, 13-24 letters, none holding a theme or blocked word) whose letter count fits the open squares with at most eight stones (`STONE` `#`, `MAX_STONES`); the leftovers in reading order equal the message. Levels 1-5 grids are byte-identical to before (proved once by a temporary comparison over levels 1-5 and 60 seeds), so the couch trip and courses are unchanged. UI: pebble-drawn stones, a row of blanks under the grid (at most two lines); on the last word the leftover squares light in order and fill the blanks, and the pet says `wordsearch.message` ("The letters left over say: {message}.", slotted, device speech), held 2.5 s. New instruct lines `wordsearch.go-message` and `go-message-keys`; the how-to demo grid drops the message; the how-to slide step now covers levels 2-6 and a level 6 step was added. Not built: shaped grids on the stones (notebook only).
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--word-search-level-6-a-message-in-the-leftovers-word-search-batch-3).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-05.md#2026-11-05--word-search-level-6-a-message-in-the-leftovers-word-search-batch-3).
 
 ## Read & Do levels 8–9 Mend the sign (read-do batch 4, 2026-11-05)
 
@@ -3010,3 +3010,9 @@ Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--word-search-level-7-
 [PR #1284](https://github.com/rjdunlap/neo/pull/1284), `claude/sense-detective-3-4`: [definition](../definitions/sense-detective.md#levels-35-definition-2026-11-05). Level 3 (pre-K, school): two parcels, Look only, select every toy the look allows (`checkSet`; "one more" is free, a kept ruled-out toy is a miss and deselects). Level 4 (school): one bell-or-drum parcel, the look's set gives "so far", the ear appears, she listens and keeps only the fitting toy; Check before listening stays so-far. Bands now pre-K 1–3, school 2–4. Help counts per parcel (Tally) and the glow shows the useful edit (`hintEdit`). Eight new `sense.*` voice lines (device speech) and a how-to card scoped 3–4. Open decisions 1, 2, 4, 5 and 7 took the definition's defaults. Sense language stays look/listen/peek/hear with no body content, so no new source check was needed (none performed). Level 5 (B4b) stays queued; whether a five-year-old reads "every toy it could be" as several taps is a device check not yet run.
 
 Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--sense-detective-levels-34-b4a).
+
+## Draw the Pattern slice 1, Fresh pictures (2026-11-05)
+
+[PR #1286](https://github.com/rjdunlap/neo/pull/1286), `claude/draw-the-pattern-fresh-pictures`: [dive](../deep-dives/draw-the-pattern.md#build-slices-in-order). Seeded piece pools of three per stroke (`POOLS`, `SHAPE_SETS` in `logic.ts`) for levels 1–4 and 6 (level 5 reuses the zigzag, wave and loop pools); 20 new `draw.picture.*` lines. Pieces underneath (house, present, cabin, sail) now draw first, so the house no longer covers its window. The level-2 "Start at the top and go down" instruction is keyed on the stroke kind. Strokes, rules and the bot are unchanged. The GAMES.md "Lap 1–2" wording is resolved.
+
+Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-05--draw-the-pattern-fresh-pictures-slice-1).
