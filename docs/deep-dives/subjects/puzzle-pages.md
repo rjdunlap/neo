@@ -146,7 +146,7 @@ The newspaper format is built on one puzzle a day, a streak and tomorrow's answe
 
 | # | Name (working) | After | Fun action | What she decides | Audiences | Home | Effort | Infrastructure |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| — | **Crossword** | Picture crosswords, the Mini, the arrowword | Drag letters into crossing words | Which word fits the clue and the crossing letters | K–G | new game (definition queued) | M | Seeded placer; per-level reviewed lists |
+| — | **Crossword** | Picture crosswords, the Mini, the arrowword | Drag letters into crossing words | Which word fits the clue and the crossing letters | K–G | new game ([defined](../../definitions/logic-grid.md)) | M | Seeded placer; per-level reviewed lists |
 | — | **Logic Grid** | *Murdle*, Dell logic problems, the zebra puzzle | Mark yes and no until one answer per row is left, then name who took the pie | Which possibility a clue rules out | P–G | new game (definition queued) | M | Generator plus a human-style solver |
 | PP1 | **Mossy Path: find the way** | Kumon mazes | Step the turtle through hedges to the pond | Which branch reaches it; looking ahead from a fork | T–S | Mossy Path (new levels and bands) | M | A maze generator in `logic.ts` |
 | PP2 | **Domino Pond** | Pips (NYT 2025), Dominosa | Lay stepping-stone dominoes so each patch meets its sign | Which domino, which way round, where | K–G | new game | M | Random tiling → derive conditions → solver; accept any valid placement |
@@ -221,7 +221,7 @@ Each has a default under the [October 23 standing rules](../../archive/DECISIONS
 Each is one session; definitions are docs only.
 
 1. **Define `crossword`**: defined in [crossword.md](../../definitions/crossword.md); the build of levels 1–2 is queued in READY. Notes: [crossword](#crossword).
-2. **Define `logic-grid`** (queued in READY): use the [logic-grid notes](#logic-grid-whodunit).
+2. **Define `logic-grid`**: defined in [logic-grid.md](../../definitions/logic-grid.md); the build of levels 1–2 is queued in READY. Notes: [logic-grid](#logic-grid-whodunit).
 3. **PP1: define Mossy Path levels 4–7, *find the way*** (toddler to school; [ladder above](#a-first-games-ladder-mossy-path-find-the-way)), then build it in one session (new levels and band entries on an existing game, plus drag stepping).
 4. **PP2: define Domino Pond 1–3** (pre-K: match a patch's dots; then sums; then signs).
 5. **PP3: define Bunny Patches 1–3** (pre-K or school 4×4, 5×5, 6×6; grown-up 8×8 at par as a later rung).
