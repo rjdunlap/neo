@@ -279,3 +279,10 @@ Open: `fingerdemo` not run (the bots tap game objects, not positions); no real p
 Changed: level 5 *Can we tell?* (quilted parcels, `checkTell`, *Can't tell yet*, stage B eye or ear), school 2–5, voice lines, widened how-to card, and a fix so a pulse no longer doubles the shelf badges.
 - Ran (commit `3fabf0d4`, base `cb5d8b96`, port 5467): `npm run typecheck`; `npm test` (313 files, 5387 pass); `BROWSER_SUITE=sensedetective SENSE_LEVEL=5` (both fit free, Can't tell yet, eye miss, ear reveal, rattle parcel in portrait with Can't tell yet a miss, score [2,0]; landscape and portrait screenshots); `fingerdemo FINGER_ONLY=sense-detective FINGER_LEVELS=5` clean (20.5 s); `npm run build`; game-reviewer, two minor fixes.
 - Not run: levels 1–4 browser play (only the badge wrapper changed), offline check, `world`; no iPad or child (does Can't tell yet read as a good answer; does the quilt read as can't-hear). Sense language ("look", "listen", "peek", "hear") not separately re-sourced; no new body content.
+
+## 2026-11-05 — Crossword level 3
+
+- [PR #1297](https://github.com/rjdunlap/neo/pull/1297): `crossword` level 3 *Picture criss-cross* (school 2-3), themed four-word grids, new rule tests (theme words drawn and blocked-free, one theme a round, every theme reached with more than one grid, all blank, bank at most 6), level-3 how-to lines.
+- Ran (commit `3ccf3cb2` on base `5b047d80`; `c0228b2c` is a method rename; port 5702): `npm run typecheck`; `npx vitest run src/games src/content` (237 files, 4,612 tests); `BROWSER_SUITE=crossword` PASS (level 3 one wrong full word 1 miss, one Help 1 hint, bank/Help/grid non-overlapping and on screen at 1024 x 768 and 768 x 1024, saved [1,1]); `BROWSER_SUITE=fingerdemo FINGER_ONLY=crossword FINGER_LEVELS=3` PASS (28.5 s). game-reviewer: no defects.
+- Not run: build (no shared assets), the offline check, a real iPad.
+- Open: device speech of the theme names; Animal friends has only 2 distinct grids.

@@ -1,5 +1,9 @@
 # Puddle Island verification
 
+## 2026-11-06 — Rain Garden level 4 definition (docs only)
+
+Changed: `docs/definitions/rain-garden.md` (new "Level 4, two-socket downhill route" section), READY (definition line replaced by the level 4 build), the weather-water dive and STUDY-BACKLOG (PR #1313). Source check: EPA green-infrastructure types and USGS runoff pages, opened this session. Ran: `node scripts/check-links.mjs` and `git diff --check`. No code checks (docs tier). Open: nothing built; the level 4 build is next.
+
 ## 2026-11-06 — Mossy Path levels 4–7 find the way (PP1)
 
 - [PR #1312](https://github.com/rjdunlap/neo/pull/1312): `mossy-path` levels 4–7 (three frozen hedge mazes each, tree logic, grid pad with tap and drag stepping, walk-back, berry at level 7), bands toddler 4, preschool 4–5, pre-K 5–6, school 1–7; `entryLevels` 4, 5, 6; voice lines `moss.maze`…`moss.hint-maze`; how-to card scoped by level.
@@ -93,13 +97,6 @@ Changed: `docs/definitions/helper-house.md` (new "Levels 5–7 (RA4)" section), 
 - Ran (commits `35496f34`, `49bce450` on base `8cdaacc7`; port 5803, Vite dev): `npm run typecheck`; `npm test` (all pass after a how-to wording fix; 38 logic-grid rule tests incl. level 3-4 properties and a hand-made column-step test); `BROWSER_SUITE=logicgrid LOGICGRID_FROM=3` PASS (level 3 ruled-out yes 1 miss, Help 1 hint, 1024 x 768 and 768 x 1024 fit with targets at least 96 and clear of the pet corner, bot to the sticker saved [1,1]; level 4 hats distinct and every clue a hat clue, bot to the sticker [0,0]); `BROWSER_SUITE=fingerdemo FINGER_ONLY=logic-grid FINGER_LEVELS=3,4` PASS (level 4 again after the not-only change); `game-reviewer` found one issue (level 4 allowed a direct clue), fixed.
 - Not run: `npm run build` (no shared assets), levels 1-2 of the suite (unchanged), the offline check, a real iPad.
 - Open: device speech of slotted hat clues and a child's reaction ([DEVICE-CHECKS](DEVICE-CHECKS.md#mystery-grid-levels-3-4-2026-11-05)).
-
-## 2026-11-05 — Crossword level 3
-
-- [PR #1297](https://github.com/rjdunlap/neo/pull/1297): `crossword` level 3 *Picture criss-cross* (school 2-3), themed four-word grids, new rule tests (theme words drawn and blocked-free, one theme a round, every theme reached with more than one grid, all blank, bank at most 6), level-3 how-to lines.
-- Ran (commit `3ccf3cb2` on base `5b047d80`; `c0228b2c` is a method rename; port 5702): `npm run typecheck`; `npx vitest run src/games src/content` (237 files, 4,612 tests); `BROWSER_SUITE=crossword` PASS (level 3 one wrong full word 1 miss, one Help 1 hint, bank/Help/grid non-overlapping and on screen at 1024 x 768 and 768 x 1024, saved [1,1]); `BROWSER_SUITE=fingerdemo FINGER_ONLY=crossword FINGER_LEVELS=3` PASS (28.5 s). game-reviewer: no defects.
-- Not run: build (no shared assets), the offline check, a real iPad.
-- Open: device speech of the theme names; Animal friends has only 2 distinct grids.
 
 ## Coverage summary
 
