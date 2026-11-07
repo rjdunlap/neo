@@ -1,5 +1,9 @@
 # Puddle Island verification
 
+## 2026-11-06 — Bolt Boards deep dive (docs only)
+
+Changed: `docs/deep-dives/bolt-boards.md` and its tracker, READY, backlog and waiting-on-developer rows (PR #1331); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built; two decisions wait on the developer ([list](WAITING-ON-DEVELOPER.md)).
+
 ## 2026-11-06 — Hat Band level 4, Build a song (music M6)
 
 Changed: `hat-band` level 4 (PR #1329, branch `claude/hat-band-4`): arrange model at the end of `logic.ts`, the scene in `song.ts`, art in `art.ts`, low hats `thump`/`walk`, voice lines, level-scoped how-to, school `{2,4}` and new `grownup {4,4}`, a level 4 case and a `HAT_LEVELS` filter in the `hatband` suite. Source check: not done; no music-education source was opened, so the grown-up note claims only that she arranges who plays when.
@@ -82,10 +86,6 @@ Open: no iPad, device speech or child check ([DEVICE-CHECKS](DEVICE-CHECKS.md#bo
 ## 2026-11-06 — Rain Garden level 4 two-socket downhill route (weather-water slice 4)
 
 Changed: `rain-garden` level 4 (PR #1316, commits 4ffe7b67 and e7ec3b28 on base 8c0b18e7): level-4 model in `logic.ts`, new scene `route.ts`, two art pieces, new voice lines, how-to steps, the `raingarden` browser case (`FROM_LEVEL`, level-4 portrait block). Ran: `npm run typecheck`; full `npm test` 316 files / 5,656 tests (72 rain-garden rule tests: conservation, outcome table, judge equals solutions, causes, seeded starts over all 12 variant/start/side combinations, hints strictly closer within two steps, accounting, bot from every start, layout in 4 views with 2 marked beds and mirror); `npm run build`; `BROWSER_SUITE=raingarden FROM_LEVEL=4` (port 5321) before and after the review fix: try, wrong Check 1 miss, same arrangement again no miss, Show me flips the top bed 1 hint, flip the low bed, Check passes, saved [1,1]; portrait screenshot `test-results/browser/raingarden/rain-garden-4-portrait-wrong-check.png` reviewed; `fingerdemo` `FINGER_ONLY=rain-garden FINGER_LEVELS=4` (21.6 s). `game-reviewer` pass, two findings fixed. Not run: levels 1-3 browser blocks (unchanged code, earlier evidence reused), offline check. Open: three device and person checks ([DEVICE-CHECKS](DEVICE-CHECKS.md#rain-garden-level-4-weather-water-slice-4-2026-11-06)).
-
-## 2026-11-06 — Define Welcome Ways 5–7 (docs only)
-
-Changed: `docs/definitions/welcome-ways.md` (new "Levels 5–7" section and check tier), the engineering-design dive slice 2, READY (definition line replaced by the levels 5–7 build) and STUDY-BACKLOG (PR #1315). Ran: `node scripts/check-links.mjs` and `git diff --check`. No code checks (docs tier). Open: nothing built; the levels 5–7 build is next.
 
 ## Coverage summary
 

@@ -22,6 +22,13 @@ Lemonade Stand dive (2026-10-31), two calls that wait on you; the build slices t
 | **A pre-K opening, "Enough cups for the line"?** | Adds the `prek` band to a school game; otherwise counting a line stays with Scoop Shop and Monster Munch. Recommended: wait until the school levels are played | [Lemonade Stand dive](deep-dives/lemonade-stand.md#decisions-for-the-developer) |
 | **A market-week chart in the journal?** | Whether a finished week files its table as a discovery, and which weeks (the first sold-out day, the first boat saving). Recommended: wait for the boats to be played | [Lemonade Stand dive](deep-dives/lemonade-stand.md#decisions-for-the-developer) |
 
+Bolt Boards dive (2026-11-06), two calls; slices 1–3 go ahead (slice 2 on decision 1's default) ([the dive](deep-dives/bolt-boards.md#decisions-for-the-developer)):
+
+| Step | What happens next | Written in |
+| --- | --- | --- |
+| **Where does level 8 *Plenty of holes* play?** | Pre-K and school between levels 5 and 6 (default), or pre-K only, leaving school's 5 → 6 step as it is | [Bolt Boards dive](deep-dives/bolt-boards.md#decisions-for-the-developer) |
+| **A lap entry for Bolt Boards (one huge bolt, tap anywhere)?** | No default; it stays a sketch until the toddler device check has run | [Bolt Boards dive](deep-dives/bolt-boards.md#decisions-for-the-developer) |
+
 Swing Pals dive (2026-11-06), three calls; slices 1–3 go ahead (slice 2 on decision 1's default) ([the dive](deep-dives/swing-pals.md#decisions-for-the-developer)):
 
 | Step | What happens next | Written in |

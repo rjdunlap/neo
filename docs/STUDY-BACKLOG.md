@@ -110,7 +110,7 @@ These are existing games awaiting research, not new game implementations. One do
 | --- | --- | --- |
 | Draw the Pattern (`draw-the-pattern`) | designed 2026-11-05 (slice 1 built; slices 2–3 ready) | [Dive](deep-dives/draw-the-pattern.md), [tracker](deep-dives/README.md#tracker) |
 | Swing Pals (`swing-pals`) | designed 2026-11-06 (slices 1–3 ready) | [Dive](deep-dives/swing-pals.md), [tracker](deep-dives/README.md#tracker) |
-| Bolt Boards (`bolt-boards`) | not started, wave 5 | [Tracker](deep-dives/README.md#tracker) |
+| Bolt Boards (`bolt-boards`) | designed (dive 2026-11-06) | [Dive](deep-dives/bolt-boards.md) |
 | Puddle Gobble (`puddle-gobble`) | not started, wave 5 | [Tracker](deep-dives/README.md#tracker) |
 | Fruit Slice (`fruit-slice`) | not started, wave 5 | [Tracker](deep-dives/README.md#tracker) |
 | Cut Along (`cut-along`) | not started, wave 5 | [Tracker](deep-dives/README.md#tracker) |
