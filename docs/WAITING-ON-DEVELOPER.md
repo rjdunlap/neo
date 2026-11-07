@@ -65,6 +65,14 @@ Block Garden dive (2026-11-07), one call; slices 1–5 go ahead on the default (
 | --- | --- | --- |
 | **A preschool door, level 14 *One little gap*?** | Default: keep pre-K and up until a person sees a four-year-old play level 1 on an iPad; if yes, preschool gets a 4×4 bed at 110 units and one piece | [Block Garden dive](deep-dives/block-garden.md#decisions-for-the-developer) |
 
+Gem Swap dive (2026-11-07), three calls; slices 1–5 go ahead regardless ([the dive](deep-dives/gem-swap.md#decisions-for-the-developer)):
+
+| Step | What happens next | Written in |
+| --- | --- | --- |
+| **Open levels 1–2 to the school band?** | Lean: yes, after a child plays them once on the iPad; it costs one voice pass and a `LEVELS` line | [Gem Swap dive](deep-dives/gem-swap.md#decisions-for-the-developer) |
+| **Keep the roadmap's Zen refill proposal or drop it?** | Lean: drop it; levels 5–8 give the grown-up who wants more finite trays instead | [Gem Swap dive](deep-dives/gem-swap.md#decisions-for-the-developer) |
+| **A frozen Gem Swap course, *The Big Trays*?** | Lean: skip unless couch play is staying (it retires at Lands stage E); if built, after slice 2 | [Gem Swap dive](deep-dives/gem-swap.md#decisions-for-the-developer) |
+
 Number Trails dive (2026-11-06), two calls; slices 1–6 go ahead regardless ([the dive](deep-dives/number-trails.md#decisions-for-the-developer)):
 
 | Step | What happens next | Written in |
