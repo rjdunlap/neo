@@ -61,7 +61,7 @@ Each is one screen with a host who greets her and suggests a game, and shows its
 
 <!-- generated: game counts (npm run game-docs) -->
 
-There are 175 games; the 160 child games are listed below and the 15 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), where 131 games play their most demanding levels, and "grown-up" (13 and up) is played by 19 games: the 15 grown-up puzzles and 4 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
+There are 175 games; the 160 child games are listed below and the 15 grown-up puzzles in their own table. "Ages" lists the bands each game has levels for; a person younger or older than those still finds it in its land (behind the signpost if it is for bigger kids) and plays its nearest band. "school" is the early-school band (ages 6–12, made for 6 to 8), played by 131 games, and "grown-up" (13 and up) is played by 19 games: the 15 grown-up puzzles and 4 child games that grow up to it. Each name links to the game's page: its levels, what it starts as and grows into, and its design notes.
 
 <!-- end generated -->
 
@@ -238,7 +238,7 @@ Within a place, games are grouped by subject: senses, music, art, animals, numbe
 
 Every time a game is opened, it explains itself: a card with the game's picture and name (spoken), what the game is for, how to play this level (a pair of held arrows beside "this level" lets a grown-up pick another level in her band, and the steps and demonstration follow), and how the round ends, with a big green **Play** and a **Back**. A **demonstration window** beside the text plays a real round with the input the person is using: a **ghost finger** (a drawn hand that taps and drags the game's own objects) on a touch screen, a **mouse pointer** on a desktop, at the child's current level. That is built for every registered touch game, each bot's choice a tested rule in the game's `logic.ts`: the island's card never shows a controller-style highlight to someone holding a tablet, and a new game that has no bot shows the card's text alone. Nothing has started behind the card, and Back leaves the game. After Play the game starts at once, tapping **again** after a round skips the card (it has just been seen), and holding the small **?** under the home button opens the card during a round. A grown-up can turn the cards off in the grown-up zone (a game started by a story request never shows one).
 
-Each game moves up a level after two easy rounds and down after two hard ones, inside the range for the place it was played in. In the grown-up zone you can see each game's current level and pin one. How each game handles mistakes and hints, and what it grows into, is on its page (linked from the tables below and indexed in [GAMES.md](docs/GAMES.md)).
+Each game moves up a level after two easy rounds and down after two hard ones, inside the range for the place it was played in. In the grown-up zone you can see each game's current level and pin one. How each game handles mistakes and hints, and what it grows into, is on its page (linked from the inventory tables and indexed in [GAMES.md](docs/GAMES.md)).
 
 ### The Windy Picnic
 
