@@ -69,12 +69,48 @@ function drawPiece(g: Graphics, piece: PieceId, r: Rect, ghost: boolean, theme: 
       break;
     case 'window': shape('square'); if (!ghost) g.moveTo(r.x + r.w / 2, r.y).lineTo(r.x + r.w / 2, r.y + r.h).moveTo(r.x, r.y + r.h / 2).lineTo(r.x + r.w, r.y + r.h / 2).stroke({ width: 3, color: c.line }); break;
     case 'sail': case 'roof': shape('triangle'); break;
+    case 'shell': {
+      // A round shell with its spiral drawn in.
+      const cx = r.x + r.w / 2, cy = r.y + r.h / 2, R = Math.min(r.w, r.h) / 2;
+      g.circle(cx, cy, R).fill(fill).stroke(stroke);
+      if (!ghost) coil(g, cx, cy, R * 0.85, R * 0.12, 1.75, 1).stroke({ width: 3, color: c.line, cap: 'round' });
+      break;
+    }
+    case 'snake': case 'coil': {
+      // A snake lying in a coil, its head at the outside end; the second snake coils the other way.
+      const flip = piece === 'coil' ? -1 : 1, cx = r.x + r.w / 2, cy = r.y + r.h / 2, R = Math.min(r.w, r.h) / 2;
+      const body = Math.max(4, R * 0.28);
+      coil(g, cx, cy, R * 0.8, R * 0.15, 1.5, flip).stroke({ width: ghost ? body * 0.7 : body, color: ghost ? 0xffffff : c.fill, alpha: ghost ? 0.5 : 1, cap: 'round', join: 'round' });
+      const hx = cx - flip * R * 0.8;
+      g.ellipse(hx, cy + R * 0.12, body * 0.8, body * 0.65).fill(fill).stroke(stroke);
+      if (!ghost) g.circle(hx - flip * body * 0.3, cy + R * 0.02, Math.max(1.5, body * 0.16)).fill(ink);
+      break;
+    }
+    case 'cat-tail': {
+      // A tail rising from the cat and curling at the tip.
+      const w = Math.max(4, r.w * 0.22), x0 = r.x + r.w * 0.3, top = r.y + r.h * 0.38, R = r.w * 0.34;
+      g.moveTo(x0, r.y + r.h).lineTo(x0, top);
+      coil(g, x0 + R, top, R, R * 0.35, 0.8, 1, true);
+      g.stroke({ width: ghost ? w * 0.7 : w, color: ghost ? 0xffffff : c.fill, alpha: ghost ? 0.5 : 1, cap: 'round', join: 'round' });
+      break;
+    }
     default: shape(piece);
   }
 }
 
+/** A spiral path from the outer radius at the far left (far right when mirrored) inward, clockwise (or not). */
+function coil(g: Graphics, cx: number, cy: number, outer: number, inner: number, turns: number, sign: number, joined = false): Graphics {
+  const n = Math.ceil(turns * 40);
+  for (let i = 0; i <= n; i++) {
+    const u = i / n, t = u * turns * 2 * Math.PI, rr = outer - (outer - inner) * u;
+    const x = cx - sign * rr * Math.cos(t), y = cy - rr * Math.sin(t);
+    if (i === 0 && !joined) g.moveTo(x, y); else g.lineTo(x, y);
+  }
+  return g;
+}
+
 /** The host's picture behind the pieces: sky, ground and whatever the pieces belong to. */
-function drawScene(g: Graphics, theme: Theme, w: number, h: number) {
+function drawScene(g: Graphics, theme: Theme, w: number, h: number, slots: readonly Slot[]) {
   g.roundRect(0, 0, w, h, 18).fill(theme === 'night' ? swatch.blue.line : swatch.blue.light).stroke({ width: 5, color: swatch.white.line });
   g.rect(4, h * 0.7, w - 8, h * 0.3 - 4).fill(theme === 'night' ? swatch.green.line : swatch.green.light);
   const boat = (y: number) => {
@@ -122,6 +158,23 @@ function drawScene(g: Graphics, theme: Theme, w: number, h: number) {
       g.rect(w * 0.1, h * 0.52, w * 0.32, h * 0.3).fill(swatch.yellow.light).stroke({ width: 3, color: swatch.yellow.line });
       boat(0.72);
       break;
+    case 'garden': {
+      // A garden path: a snail waiting for its shell, flowers, and a sitting cat when a tail is wanted.
+      g.moveTo(w * 0.3, h).quadraticCurveTo(w * 0.5, h * 0.8, w * 0.7, h * 0.7).stroke({ width: h * 0.06, color: swatch.brown.light, cap: 'round' });
+      g.ellipse(w * 0.22, h * 0.72, w * 0.16, h * 0.04).fill(swatch.green.fill).stroke({ width: 3, color: swatch.green.line });
+      g.moveTo(w * 0.07, h * 0.71).lineTo(w * 0.04, h * 0.6).moveTo(w * 0.1, h * 0.71).lineTo(w * 0.1, h * 0.6).stroke({ width: 2, color: swatch.green.line });
+      g.circle(w * 0.04, h * 0.6, w * 0.012).circle(w * 0.1, h * 0.6, w * 0.012).fill(ink);
+      for (const [x, y, col] of [[0.48, 0.2, 'pink'], [0.6, 0.12, 'yellow'], [0.12, 0.2, 'purple']] as const) {
+        g.circle(w * x, h * y, w * 0.035).fill(swatch[col].fill).circle(w * x, h * y, w * 0.012).fill(swatch.yellow.light);
+      }
+      if (slots.some((s) => s.piece === 'cat-tail')) {
+        g.ellipse(w * 0.76, h * 0.56, w * 0.09, h * 0.12).fill(swatch.orange.light).stroke({ width: 3, color: swatch.orange.line });
+        g.circle(w * 0.72, h * 0.38, w * 0.07).fill(swatch.orange.light).stroke({ width: 3, color: swatch.orange.line });
+        g.poly([w * 0.66, h * 0.35, w * 0.67, h * 0.27, w * 0.7, h * 0.32]).poly([w * 0.74, h * 0.32, w * 0.77, h * 0.27, w * 0.78, h * 0.35]).fill(swatch.orange.line);
+        g.circle(w * 0.7, h * 0.38, w * 0.01).circle(w * 0.745, h * 0.38, w * 0.01).fill(ink);
+      }
+      break;
+    }
     default: // meadow, mountains and day: sky and ground only
   }
 }
@@ -238,6 +291,7 @@ class CutAlong implements Game {
   }
 
   private instructLine(): LineId {
+    if (this.level === 9) return 'cut.instruct.round';
     return this.plan.mode === 'snip' ? 'cut.instruct.snip' : this.plan.mode === 'fits' ? 'cut.instruct.fits' : 'cut.instruct.ring';
   }
 
@@ -339,7 +393,7 @@ class CutAlong implements Game {
 
   private drawPicture() {
     const { w, h } = this.layout.picture;
-    this.sceneG.clear(); drawScene(this.sceneG, this.theme, w, h);
+    this.sceneG.clear(); drawScene(this.sceneG, this.theme, w, h, this.slots);
     const g = this.piecesG.clear();
     this.slots.forEach((slot, i) => drawPiece(g, slot.piece, { x: slot.x * w, y: slot.y * h, w: slot.w * w, h: slot.h * h }, !this.placed.has(i), this.theme));
   }

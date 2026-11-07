@@ -6,7 +6,7 @@ import { offTrail } from '../../learning/tracing/feedback';
 import {
   DIFFERS, EDGE, botRoute, LEVELS, MARK_HIT, PAPER_W, PLANS, RING_R, STRIP, boardsFor, chooseOrder, countsStrays, cutsFor, differsLine,
   fringeMarks, hintStretch, homeCorner, judgeOutline, layoutFor, markAt, markBox, pathOf, petCorner, planFor, startOf, tolerance,
-  lengthTo, wrongReached, OUTLINES, PICTURE_SHAPES, THEMES, pieceColor, pieceLine, slotsFor, themeFor, type Cut, type PieceId, type Rect,
+  lengthTo, wrongReached, INNER_R, RING_GAP, SPACING, OUTLINES, PICTURE_SHAPES, THEMES, pieceColor, pieceLine, slotsFor, themeFor, type Cut, type PieceId, type Rect,
 } from './logic';
 import { swatch } from '../../art/palette';
 import { SCRIPT as LINES } from '../../content/voice-script';
@@ -42,9 +42,9 @@ function walk(points: readonly Point[], tol: number, from = 0): number {
 }
 
 describe('Cut Along ladder', () => {
-  it('has eight levels and the defined bands', () => {
-    expect(PLANS).toHaveLength(8);
-    expect(LEVELS).toEqual({ toddler: { min: 1, max: 2 }, preschool: { min: 2, max: 5 }, prek: { min: 4, max: 7 }, school: { min: 6, max: 8 } });
+  it('has nine levels and the defined bands', () => {
+    expect(PLANS).toHaveLength(9);
+    expect(LEVELS).toEqual({ toddler: { min: 1, max: 2 }, preschool: { min: 2, max: 5 }, prek: { min: 4, max: 7 }, school: { min: 6, max: 9 } });
     expect(planFor(1).mode).toBe('snip');
     expect(planFor(8).mode).toBe('fits');
   });
@@ -56,7 +56,7 @@ describe('Cut Along ladder', () => {
   });
 
   it('never widens the corridor as the level rises', () => {
-    for (let l = 3; l <= 8; l++) expect(tolerance(l)).toBeLessThanOrEqual(tolerance(l - 1));
+    for (let l = 3; l <= PLANS.length; l++) expect(tolerance(l)).toBeLessThanOrEqual(tolerance(l - 1));
   });
 });
 
@@ -81,14 +81,14 @@ describe('Cut Along layout', () => {
 
     it(`keeps the corridor at least 30 units wide in the ${name} view`, () => {
       const { paper } = layoutFor(v);
-      for (let l = 2; l <= 8; l++) expect(tolerance(l) * paper.s).toBeGreaterThanOrEqual(30);
+      for (let l = 2; l <= PLANS.length; l++) expect(tolerance(l) * paper.s).toBeGreaterThanOrEqual(30);
     });
   }
 });
 
 describe('Cut Along cuts', () => {
   it('starts every cut on its sheet edge, with the whole path on the paper', () => {
-    for (let l = 2; l <= 8; l++) {
+    for (let l = 2; l <= PLANS.length; l++) {
       for (const seed of SEEDS) {
         for (const cut of allCuts(l, seed)) {
           const s = startOf(cut), sh = cut.sheet, e = 1e-9;
@@ -108,7 +108,7 @@ describe('Cut Along cuts', () => {
   });
 
   it('lets the ghost finger’s thinned route cut every path, both ways', () => {
-    for (let l = 2; l <= 8; l++) {
+    for (let l = 2; l <= PLANS.length; l++) {
       for (const seed of SEEDS.slice(0, 10)) {
         for (const cut of allCuts(l, seed)) {
           for (const order of cut.orders) {
@@ -124,7 +124,7 @@ describe('Cut Along cuts', () => {
   });
 
   it('can be cut to the end, both ways round a closed shape', () => {
-    for (let l = 2; l <= 8; l++) {
+    for (let l = 2; l <= PLANS.length; l++) {
       for (const seed of SEEDS.slice(0, 10)) {
         for (const cut of allCuts(l, seed)) {
           for (const order of cut.orders) expect(walk(order, tolerance(l)), `${cut.kind} at level ${l}`).toBe(order.length - 1);
@@ -134,7 +134,7 @@ describe('Cut Along cuts', () => {
   });
 
   it('never lets a chord across a corner consume a checkpoint past it', () => {
-    for (let l = 4; l <= 8; l++) {
+    for (let l = 4; l <= PLANS.length; l++) {
       for (const seed of SEEDS.slice(0, 10)) {
         for (const cut of allCuts(l, seed)) {
           const tol = tolerance(l);
@@ -156,7 +156,7 @@ describe('Cut Along cuts', () => {
   });
 
   it('keeps separate stretches of one path apart, away from corners and the joint', () => {
-    for (let l = 2; l <= 8; l++) {
+    for (let l = 2; l <= PLANS.length; l++) {
       for (const seed of SEEDS.slice(0, 6)) {
         for (const cut of allCuts(l, seed)) {
           const tol = tolerance(l), points = cut.orders[0];
@@ -212,7 +212,7 @@ describe('Cut Along cuts', () => {
   });
 
   it('gives the same paper for the same seed', () => {
-    for (let l = 2; l <= 7; l++) expect(cutsFor(l, new Rng(42))).toEqual(cutsFor(l, new Rng(42)));
+    for (const l of [2, 3, 4, 5, 6, 7, 9]) expect(cutsFor(l, new Rng(42))).toEqual(cutsFor(l, new Rng(42)));
     expect(boardsFor(new Rng(9))).toEqual(boardsFor(new Rng(9)));
   });
 
@@ -314,7 +314,7 @@ describe('Cut Along themes and shapes', () => {
     l === 1 ? ['grass', 'grass', 'grass'] : allCuts(l, seed).map((c) => c.piece);
 
   it('picks only the level’s themes, and shows each of them across seeds', () => {
-    for (let l = 1; l <= 8; l++) {
+    for (let l = 1; l <= PLANS.length; l++) {
       const seen = new Set(SEEDS.map((seed) => themeFor(l, new Rng(seed))));
       expect([...seen].sort()).toEqual([...THEMES[l - 1]].sort());
     }
@@ -322,7 +322,7 @@ describe('Cut Along themes and shapes', () => {
   });
 
   it('puts every piece of every theme inside the picture, and never two in one place', () => {
-    for (let l = 1; l <= 8; l++) for (const theme of THEMES[l - 1]) for (const seed of SEEDS.slice(0, 12)) {
+    for (let l = 1; l <= PLANS.length; l++) for (const theme of THEMES[l - 1]) for (const seed of SEEDS.slice(0, 12)) {
       const slots = slotsFor(l, theme, piecesOf(l, seed));
       for (const sl of slots) {
         expect(sl.x, `${theme} ${sl.piece}`).toBeGreaterThanOrEqual(0);
@@ -337,7 +337,7 @@ describe('Cut Along themes and shapes', () => {
   });
 
   it('gives every piece in every theme a spoken line and a colour', () => {
-    for (let l = 1; l <= 8; l++) for (const theme of THEMES[l - 1]) for (const seed of SEEDS.slice(0, 12)) {
+    for (let l = 1; l <= PLANS.length; l++) for (const theme of THEMES[l - 1]) for (const seed of SEEDS.slice(0, 12)) {
       for (const sl of slotsFor(l, theme, piecesOf(l, seed))) {
         expect(LINES[pieceLine(theme, sl.piece) as keyof typeof LINES], pieceLine(theme, sl.piece)).toBeDefined();
         expect(swatch[pieceColor(theme, sl.piece)], `${theme} ${sl.piece}`).toBeDefined();
@@ -383,5 +383,96 @@ describe('Cut Along themes and shapes', () => {
         for (const corner of cut.corners) expect(cut.orders[0].some((p) => dist(p, corner) < 1e-9), `${kind} corner on the path`).toBe(true);
       }
     }
+  });
+});
+
+describe('Cut Along level 9 spirals', () => {
+  const spirals = SEEDS.flatMap((seed) => cutsFor(9, new Rng(seed)));
+
+  it('cuts a shell, a snake, then a cat’s tail or a mirrored snake, each seed', () => {
+    const thirds = new Set<string>();
+    for (const seed of SEEDS) {
+      const pieces = cutsFor(9, new Rng(seed)).map((c) => c.piece);
+      expect(pieces.slice(0, 2)).toEqual(['shell', 'snake']);
+      expect(['cat-tail', 'coil']).toContain(pieces[2]);
+      thirds.add(pieces[2]);
+    }
+    expect([...thirds].sort()).toEqual(['cat-tail', 'coil']);
+    expect(planFor(9).count).toBe(3);
+  });
+
+  it('keeps each turn more than two corridors and a sample from the next, and the middle open', () => {
+    const tol = tolerance(9);
+    expect(RING_GAP).toBeGreaterThanOrEqual(0.16);
+    expect(RING_GAP).toBeGreaterThan(2 * tol + SPACING);
+    expect(INNER_R).toBeGreaterThanOrEqual(0.14);
+    for (const cut of spirals) {
+      const sp = cut.spiral!;
+      const pts = cut.orders[0];
+      const radii = pts.map((p) => dist(p, [sp.cx, sp.cy]));
+      expect(Math.min(...radii)).toBeGreaterThanOrEqual(INNER_R - 1e-6);
+      // Once the line turns, one straight swipe from anywhere on it never cuts more than 135° of the turn (the tight middle
+      // is the most forgiving), so it can never cut across to the next turn in.
+      const ang = (p: Point) => Math.atan2(p[1] - sp.cy, p[0] - sp.cx);
+      const joint = radii.findIndex((r) => r <= sp.outer + 1e-6);
+      expect(joint).toBeGreaterThan(0);
+      for (let i = joint; i < pts.length - 1; i++) {
+        for (let j = i + 1; j < Math.min(pts.length, i + 60); j++) {
+          const reached = advanceTrace(pts, i, pts[i], pts[j], tol);
+          let turned = 0;
+          for (let q = i + 1; q <= reached; q++) turned += Math.abs(((ang(pts[q]) - ang(pts[q - 1]) + 3 * Math.PI) % (2 * Math.PI)) - Math.PI);
+          expect(turned, `${cut.piece} ${i}→${j}`).toBeLessThan(0.75 * Math.PI);
+        }
+      }
+    }
+  });
+
+  it('starts on the paper’s bottom edge and keeps every turn a corridor inside the paper', () => {
+    const tol = tolerance(9);
+    for (const cut of spirals) {
+      const pts = cut.orders[0];
+      expect(pts[0][1]).toBeCloseTo(1, 9);
+      for (const p of pts.slice(1)) {
+        expect(p[1]).toBeGreaterThanOrEqual(tol);
+        expect(p[0]).toBeGreaterThanOrEqual(tol);
+        expect(p[0]).toBeLessThanOrEqual(PAPER_W - tol);
+      }
+      for (const p of cut.outline!) {
+        expect(p[0]).toBeGreaterThanOrEqual(0); expect(p[0]).toBeLessThanOrEqual(PAPER_W);
+        expect(p[1]).toBeGreaterThanOrEqual(0); expect(p[1]).toBeLessThanOrEqual(1);
+      }
+    }
+  });
+
+  it('is cut to the middle by hand and by the ghost finger, both the plain and the mirrored snake', () => {
+    const tol = tolerance(9);
+    const kinds = new Set(spirals.map((c) => c.piece));
+    expect(kinds.size).toBe(4);
+    for (const piece of kinds) {
+      const cut = spirals.find((c) => c.piece === piece)!, order = cut.orders[0];
+      expect(walk(order, tol), `${piece} walked`).toBe(order.length - 1);
+      const route = botRoute(cut, order, 0);
+      let progress = 0, prev = route[0];
+      for (const to of route.slice(1)) { progress = advanceTrace(order, progress, prev, to, tol); prev = to; }
+      expect(progress, `${piece} by the ghost finger`).toBe(order.length - 1);
+    }
+  });
+
+  it('turns the mirrored snake the other way round', () => {
+    const turn = (cut: Cut) => {
+      const pts = cut.orders[0], sp = cut.spiral!;
+      let sum = 0;
+      for (let i = 1; i < pts.length; i++) {
+        const a = Math.atan2(pts[i - 1][1] - sp.cy, pts[i - 1][0] - sp.cx), b = Math.atan2(pts[i][1] - sp.cy, pts[i][0] - sp.cx);
+        sum += ((b - a + 3 * Math.PI) % (2 * Math.PI)) - Math.PI;
+      }
+      return Math.sign(sum);
+    };
+    const snake = spirals.find((c) => c.piece === 'snake')!, coil = spirals.find((c) => c.piece === 'coil')!;
+    expect(turn(snake)).toBe(-turn(coil));
+  });
+
+  it('fits the paper in every standard view with the corridor at least 30 units wide', () => {
+    for (const v of Object.values(VIEWS)) expect(tolerance(9) * layoutFor(v).paper.s).toBeGreaterThanOrEqual(30);
   });
 });
