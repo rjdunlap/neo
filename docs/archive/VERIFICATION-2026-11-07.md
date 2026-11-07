@@ -101,3 +101,15 @@ Changed: level 9 (school 5–9; numerals soaked smallest first into a puddle tha
 ## 2026-11-07 — Puddle Gobble slices 3–4: levels 10 Count the dots and 11 Too full (PR #1384)
 
 Changed: level 10 (dot cards, `dotSpots`; pre-K 3–10, school 5–11 with `order`), level 11 (`pail` mode with `Board.held`, `gobble.under-pail`, `gobble.instruct-too-full`; a let-go that hits the pail finishes the round), strip geometry in logic. Ran: `npx tsc --noEmit`; `npm test` (325 files, 6081 passed, 1 skipped; 41 rule tests); `BROWSER_SUITE=puddlegobble` pass (10: too-big touch no miss, played clean, 5→10→6 step; 11: let-go under the pail, requested hint counts one, finish at 14; landscape screenshots reviewed); `fingerdemo FINGER_ONLY=puddle-gobble FINGER_LEVELS=10,11` pass (19.0 s, 5.4 s); `npm run build`. Open: offline, `world` and any iPad check not run; no portrait screenshot of 10 or 11.
+
+## 2026-11-07 — Shared misses/hints coach (codebase item 8)
+
+Changed: `src/progress/coach.ts` and its test (8 tests: threshold two, every-second and once-per-request cadences, request reset keeps totals, Help/idle hints alone, `ctx.finish` shape); Fill and Dump's four cadences, Sorting Machine's `Tally` and Rainbow Fingers' counting moved onto it with behaviour unchanged. Ran: `npm run typecheck`; the pilots' rule tests unedited (88 with the coach's); `npm test` (324 files, 6,046 tests); `npm run build`; `BROWSER_SUITE=early EARLY_ONLY=paint FROM_LEVEL=3 TO_LEVEL=7` on port 5191 (2 misses/1 hint saved on each coloring level). Open: no browser play of Fill and Dump or Sorting Machine (their rule tests read the same fields); other games migrate as touched.
+
+## 2026-11-07 — Level ladders into `logic.ts`, pilot (codebase item 5)
+
+Changed: `scripts/ladders-into-logic.mjs` (moves a game's `LEVELS` table into `logic.ts`); Animal Snack, Frog Hop and Pond Typing moved with values unchanged; `src/games/ladders.test.ts` (2 tests: no table or inline ladder in an `index.ts` outside its lists, and the lists only shrink). Ran: `npm run typecheck`; `npm test` (325 files, 6,053 tests; the game-docs staleness check passed, so the pilots' level ranges are unchanged); a dry run of the codemod on all 133 remaining tables (132 move, `playdate-workshop` skipped). Not run: build (no shared runtime file changed) and browser play (no behaviour changed). Open: the sweep, `playdate-workshop` and the ten inline ladders.
+
+## 2026-11-07 — Mossy Path slice 1: more mazes, coverage plans and looks
+
+Changed: six mazes per level at 4–7; three coverage plans per level at 1–3 (open 3 × 3 instead of the dive's 2 × 5); seeded season and berry looks in `src/games/mossy-path/`; `MOSSY_ONLY=look` mode in the `mossypath` suite. Ran: `npm run typecheck`; `npx vitest run src/games/mossy-path src/games/registry.test.ts` 55 passed; `BROWSER_SUITE=mossypath MOSSY_ONLY=look` pass (level 6 forced autumn, one wrong branch, one hint, portrait 768×1024 with cells ≥ 100, one sticker; level-7 snow and strawberry screenshot). Open: `fingerdemo` (bot unchanged), build, offline and the full `mossypath` suite (levels 1, 3, 4, 7) not run; how the looks read on an iPad is unchecked.
