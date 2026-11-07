@@ -94,3 +94,7 @@ Changed: `docs/definitions/rain-garden.md` (new "Level 4, two-socket downhill ro
 ## 2026-11-06 — Define Bond Beads 5–8 (docs only)
 
 Changed: `docs/definitions/bond-beads.md` (new "Levels 5–8" section), chemistry dive slice 4, RECOMMENDATIONS row, READY (definition line replaced by the levels 5–6 build, levels 7–8 queued) and STUDY-BACKLOG (PR #1314). Source check: PubChem CIDs 962, 222, 297, 783, 977 and 280 via PUG REST; reactions from Wikipedia as secondary sources (Methane page read in part). Ran: `node scripts/check-links.mjs`, `git diff --check`, and a throwaway vitest layout probe (not committed): `beadLayout` fits 6–7 beads everywhere, 8 nowhere, 9 only in portrait. Open: nothing built; level 8's 9-bead case needs a layout fix or is cut; no device or person check.
+
+## 2026-11-06 — Define Welcome Ways 5–7 (docs only)
+
+Changed: `docs/definitions/welcome-ways.md` (new "Levels 5–7" section and check tier), the engineering-design dive slice 2, READY (definition line replaced by the levels 5–7 build) and STUDY-BACKLOG (PR #1315). Ran: `node scripts/check-links.mjs` and `git diff --check`. No code checks (docs tier). Open: nothing built; the levels 5–7 build is next.
