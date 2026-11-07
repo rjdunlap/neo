@@ -4,6 +4,10 @@
 
 Changed: six mazes per level at 4–7; three coverage plans per level at 1–3 (open 3 × 3 instead of the dive's 2 × 5); seeded season and berry looks in `src/games/mossy-path/`; `MOSSY_ONLY=look` mode in the `mossypath` suite. Ran: `npm run typecheck`; `npx vitest run src/games/mossy-path src/games/registry.test.ts` 55 passed; `BROWSER_SUITE=mossypath MOSSY_ONLY=look` pass (level 6 forced autumn, one wrong branch, one hint, portrait 768×1024 with cells ≥ 100, one sticker; level-7 snow and strawberry screenshot). Open: `fingerdemo` (bot unchanged), build, offline and the full `mossypath` suite (levels 1, 3, 4, 7) not run; how the looks read on an iPad is unchecked.
 
+## 2026-11-07 — Level ladders into `logic.ts`, pilot (codebase item 5)
+
+Changed: `scripts/ladders-into-logic.mjs` (moves a game's `LEVELS` table into `logic.ts`); Animal Snack, Frog Hop and Pond Typing moved with values unchanged; `src/games/ladders.test.ts` (2 tests: no table or inline ladder in an `index.ts` outside its lists, and the lists only shrink). Ran: `npm run typecheck`; `npm test` (325 files, 6,053 tests; the game-docs staleness check passed, so the pilots' level ranges are unchanged); a dry run of the codemod on all 133 remaining tables (132 move, `playdate-workshop` skipped). Not run: build (no shared runtime file changed) and browser play (no behaviour changed). Open: the sweep, `playdate-workshop` and the ten inline ladders.
+
 ## 2026-11-07 — Shared misses/hints coach (codebase item 8)
 
 Changed: `src/progress/coach.ts` and its test (8 tests: threshold two, every-second and once-per-request cadences, request reset keeps totals, Help/idle hints alone, `ctx.finish` shape); Fill and Dump's four cadences, Sorting Machine's `Tally` and Rainbow Fingers' counting moved onto it with behaviour unchanged. Ran: `npm run typecheck`; the pilots' rule tests unedited (88 with the coach's); `npm test` (324 files, 6,046 tests); `npm run build`; `BROWSER_SUITE=early EARLY_ONLY=paint FROM_LEVEL=3 TO_LEVEL=7` on port 5191 (2 misses/1 hint saved on each coloring level). Open: no browser play of Fill and Dump or Sorting Machine (their rule tests read the same fields); other games migrate as touched.
@@ -58,16 +62,13 @@ Open: build not run (no shared files changed); `fingerdemo` not run (bot path un
 Changed: `src/games/domino-run` (puddles, three moods, five end looks, three voice ids), four rule tests, the `dominorun` suite. Ran: typecheck; `vitest run src/games/domino-run src/content` (196 tests); filtered `BROWSER_SUITE=dominorun` (levels 1, 8, 5, plus 6 upright in sunset with a drop on a puddle: misses 0, hints 0); `npm run build`; an ad hoc screenshot check of all five end looks and the morning and low-tide moods (no page errors).
 Open: `fingerdemo` not run (bot unchanged); no other suites, offline or full `npm test` (CI); whether a puddle reads without speech on an iPad is a [device check](DEVICE-CHECKS.md).
 
-## 2026-11-07 — Pile Match deep dive (docs only)
-
-Changed: `docs/deep-dives/pile-match.md` and its tracker, READY and STUDY-BACKLOG rows (PR #1363); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; slices 1–4 are queued; no new decisions (the toddler entry needs a person watching a child, a device check).
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Ladder scan (`src/games/ladders.test.ts`) | 2026-11-07: typecheck, full 6,053 units | [Ladders pilot](#2026-11-07--level-ladders-into-logicts-pilot-codebase-item-5) | Pilots only: Animal Snack, Frog Hop, Pond Typing; 133 tables and 10 inline ladders listed |
 | Shared coach (`src/progress/coach.test.ts`) | 2026-11-07: typecheck, full 6,046 units, build | [Shared coach](#2026-11-07--shared-misseshints-coach-codebase-item-8) | Pilots only: Fill and Dump, Sorting Machine, Rainbow Fingers |
 | Generated game docs (`src/content/game-docs.test.ts`) | 2026-11-07: typecheck, full 6,034 units; stale check proven to fail on an edited page | [Generated game inventory docs](#2026-11-07--generated-game-inventory-docs-codebase-item-3) | Runs in every `npm test`; rerun `npm run game-docs` after a game, land or page change |
 | `circuitgarden`, `fingerdemo` (`circuit-garden`) | 2026-11-06 (level 3, `f46bcc55`): typecheck, full `npm test` (321 files), 25 rule tests, one scripted school level 3 play (two wrong Checks 2/1, Help, early Done inert, Undo clears Check, finish) plus portrait screenshot; `fingerdemo` at levels 1, 2 and 3 (levels 1–2 earlier: `circuitgarden` suite) | [Entry](archive/VERIFICATION-2026-11-06.md#2026-11-06--circuit-garden-level-3-mend-the-lantern-energywaves-e3) | no build, no device check, no science-educator reading |

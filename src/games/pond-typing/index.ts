@@ -4,15 +4,14 @@ import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { idle, type CouchControls } from '../../engine/controller';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule } from '../types';
 import { COURSES, courseMinimum, isTypingCourse } from './course';
-import { describeTypingLevel, keyName, roundBubbles, typingLevel, typingLayout, muddle, LineTypist, Typist } from './logic';
+import { LEVELS, describeTypingLevel, keyName, roundBubbles, typingLevel, typingLayout, muddle, LineTypist, Typist } from './logic';
 import { typingPicture } from './pictures';
 
-export const LEVELS: BandLevels = { school: { min: 1, max: 6 } };
 const INSTRUCTION = ['pt.one', 'pt.one', 'pt.name', 'pt.word', 'pt.capital', 'pt.line', 'pt.mend'] as const;
 
 /** A big soap bubble with a shine, centred on its origin. */
