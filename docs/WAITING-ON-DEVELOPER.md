@@ -81,6 +81,14 @@ Log Roll dive (2026-11-07), three calls; slices 1–5 go ahead regardless ([the 
 | **A controller or couch course for Log Roll?** | Lean: skip; couch play retires at Lands stage E, and a d-pad would only duplicate the arrows | [Log Roll dive](deep-dives/log-roll.md#decisions-for-the-developer) |
 | **Swipe on the board as well as the arrow buttons?** | Lean: yes as an addition, buttons kept, after a person says whether the buttons feel slow; it follows the input pitfalls | [Log Roll dive](deep-dives/log-roll.md#decisions-for-the-developer) |
 
+Marble Jump dive (2026-11-07), three calls; slices 1–4 go ahead regardless ([the dive](deep-dives/marble-jump.md#decisions-for-the-developer)):
+
+| Step | What happens next | Written in |
+| --- | --- | --- |
+| **Open levels 1–2 to the school band, with a larger-hole 10-hole entry (level 10) and a shorter instruction?** | Lean: yes, after a school-age child plays level 1 once on the iPad; it costs a board model for smaller triangles, `order`/`entryLevels`, 100-unit holes and one voice line | [Marble Jump dive](deep-dives/marble-jump.md#decisions-for-the-developer) |
+| **Square-lattice boards (the English 33-hole cross, the French 37-hole board)?** | Lean: later, and only if a grown-up asks for more after level 9; they need a board wider than 32 bits and frozen offline search results | [Marble Jump dive](deep-dives/marble-jump.md#decisions-for-the-developer) |
+| **A controller or couch course for Marble Jump?** | Lean: skip; couch play retires at Lands stage E, and moving a cursor between 15 holes is slower than tapping | [Marble Jump dive](deep-dives/marble-jump.md#decisions-for-the-developer) |
+
 Number Trails dive (2026-11-06), two calls; slices 1–6 go ahead regardless ([the dive](deep-dives/number-trails.md#decisions-for-the-developer)):
 
 | Step | What happens next | Written in |
