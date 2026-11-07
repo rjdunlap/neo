@@ -9,17 +9,11 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { answerOf, answerSlot, GAP_CARDS, makeQuestions, planFor, PLANS, missKind, hintCharge, stickerNumber, WINDOW, type HopPlan, type HopQuestion, splitsAtTen } from './logic';
-
-const LEVELS: BandLevels = {
-  preschool: { min: 1, max: 2 },
-  prek: { min: 1, max: 4 },
-  school: { min: 3, max: PLANS.length },
-};
+import { LEVELS, answerOf, answerSlot, GAP_CARDS, makeQuestions, planFor, PLANS, missKind, hintCharge, stickerNumber, WINDOW, type HopPlan, type HopQuestion, splitsAtTen } from './logic';
 
 const STEP = 104;
 

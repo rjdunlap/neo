@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Frog Hop: a number line of lily pads. Find a number, then one more and one less, then adding
@@ -29,6 +30,12 @@ export const PLANS: HopPlan[] = [
   { mode: 'make-ten', top: 20, questions: 5, name: 'Hop to 10 first, then hop the rest of a sum that crosses 10' },
   { mode: 'back-ten', top: 20, questions: 5, name: 'Hop back to 10 first, then hop the rest of a take-away that crosses 10' },
 ];
+
+export const LEVELS: BandLevels = {
+  preschool: { min: 1, max: 2 },
+  prek: { min: 1, max: 4 },
+  school: { min: 3, max: PLANS.length },
+};
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
