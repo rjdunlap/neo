@@ -1,5 +1,5 @@
 import { Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
-import { ink, swatch, wood, type ColorName } from '../../art/palette';
+import { cream, ink, swatch, wood, type ColorName } from '../../art/palette';
 import { Critter, CRITTERS, type CritterName } from '../../art/critter';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
@@ -14,9 +14,10 @@ import { againIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
-  boardLayout, boltAt, coveringBoards, done, HEAD, HIT, holeAt, holeAtPoint, holeCount, hintMove, isFree, mirror, openHoles,
-  planFor, poses, remove, removed, solve, startState, stuck, toView, toWall, WALL_H, WALL_W,
-  type BoltLayout, type BoltPlan, type Hint, type Move, type Pose, type Pt, type Puzzle, type State,
+  blockingBoard, boardBuilt, boardLayout, boltAt, built, canFinish, cardLayout, CARD_H, CARD_W, corners, coveringBoards, covered, done,
+  emptyState, HEAD, HIT, hintBuild, holeAt, holeAtPoint, holeCount, hintMove, inRect, isFree, mirror, openHoles, overlaps, place,
+  planFor, pose, poses, remove, removed, solve, startState, stuck, toView, toWall, WALL_H, WALL_W, woodpileLayout,
+  type BoltLayout, type BoltPlan, type Hint, type Move, type Pose, type Pt, type Puzzle, type Rect, type State,
 } from './logic';
 import { PUZZLES } from './puzzles';
 
@@ -25,7 +26,8 @@ const LEVELS: BandLevels = {
   preschool: { min: 1, max: 4 },
   // Level 8 (Plenty of holes) sits between 5 and 6: parking bolts in holes before the planning holes carry.
   prek: { min: 2, max: 8, order: [2, 3, 4, 5, 8, 6] },
-  school: { min: 4, max: 8, order: [4, 5, 8, 6, 7] },
+  // Level 9 (Put it back) builds the wall up again, after every take-apart level.
+  school: { min: 4, max: 9, order: [4, 5, 8, 6, 7, 9] },
 };
 
 /** Board colours, each with its own pattern so colour is never the only cue; the pet names a board by its colour. */
@@ -41,7 +43,7 @@ type Fruit = (typeof FRUITS)[number];
 const FRIENDS: CritterName[] = ['cow', 'duck', 'pig', 'cat', 'dog', 'bunny', 'bear'];
 /** A swing's length: the state has changed at once; this is only for show. */
 const SWING = 0.6;
-/** Level 6's and level 8's authored first boards lead their first round of a session. */
+/** Level 6's, 8's and 9's authored first boards lead their first round of a session. */
 const authoredShown = new Set<number>();
 
 /* ---------------------------------------------------------------------------------------------- */
@@ -193,6 +195,15 @@ class BoltBoards implements Game {
   private shimmer: { bolts: number[]; t: number } | null = null;
   private solved = new Map<string, Move[] | null | undefined>();
   private swingSaid = false;
+  /** Level 9: building the wall up from the woodpile. */
+  readonly build: boolean;
+  /** Level 9: the board lifted from the woodpile (or tapped while hanging), whose holes glow. */
+  picked: number | null = null;
+  /** Level 9: the wall can no longer be finished; undo is the answer. */
+  dead = false;
+  private slots: Rect[] = [];
+  private pileArts: (Container | null)[] = [];
+  private pileWobble = 0;
 
   /** Display: the board views, the pivot bolt each turns about, its base rotation, a swing and a wobble. */
   private views: BoardView[] = [];
@@ -215,6 +226,9 @@ class BoltBoards implements Game {
   private readonly basketFill = new Container();
   private readonly toolbox = new Container();
   private readonly undoButton: RoundButton;
+  private readonly woodpile = new Container();
+  private readonly pileGlow = new Graphics();
+  private readonly card = new Container();
   private fruitViews: Container[] = [];
   private friend: Critter | null = null;
   private liftedView: Container | null = null;
@@ -222,6 +236,7 @@ class BoltBoards implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
+    this.build = !!this.plan.build;
     this.boardLayer.sortableChildren = true;
     for (const c of [this.wallBack, this.holes, this.behind, this.parked, this.boardLayer, this.glow, this.fly]) c.eventMode = 'none';
     this.wall.eventMode = 'none';
@@ -237,9 +252,12 @@ class BoltBoards implements Game {
     this.hitLayer.on('pointermove', (e) => this.move(e));
     this.hitLayer.on('pointerup', (e) => this.up(e));
     this.hitLayer.on('pointerupoutside', () => this.letGo(true));
-    ctx.stage.addChild(this.wall, this.toolbox, this.basket, this.hitLayer, this.undoButton);
+    for (const c of [this.woodpile, this.pileGlow, this.card]) c.eventMode = 'none';
+    this.basket.visible = this.toolbox.visible = !this.build;
+    this.woodpile.visible = this.pileGlow.visible = this.card.visible = this.build;
+    ctx.stage.addChild(this.wall, this.toolbox, this.basket, this.woodpile, this.card, this.pileGlow, this.hitLayer, this.undoButton);
     window.addEventListener('pointercancel', this.onCancel);
-    this.layout = boardLayout(ctx.view);
+    this.layout = boardLayout(ctx.view, this.build);
     this.buildScene();
   }
 
@@ -252,7 +270,7 @@ class BoltBoards implements Game {
 
   resize(v: View) {
     this.letGo(true);
-    this.layout = boardLayout(v);
+    this.layout = boardLayout(v, this.build);
     const L = this.layout;
     this.wall.position.set(L.x, L.y);
     this.wall.scale.set(L.scale);
@@ -261,6 +279,13 @@ class BoltBoards implements Game {
     this.basket.position.set(L.basket.x, L.basket.y);
     this.undoButton.position.set(L.undo.x, L.undo.y);
     this.toolbox.position.set(L.toolbox.x, L.toolbox.y);
+    if (this.build) {
+      this.slots = woodpileLayout(v, this.puzzle.boards.length);
+      const c = cardLayout(v, L);
+      this.card.position.set(c.x, c.y);
+      this.drawWoodpile();
+      this.drawCard();
+    }
   }
 
   update(dt: number) {
@@ -286,6 +311,10 @@ class BoltBoards implements Game {
       const v = this.boltView(press.bolt);
       if (v) v.rotation += dt * 5;
     }
+    if (this.build) {
+      this.pileWobble = Math.max(0, this.pileWobble - dt);
+      this.pileArts.forEach((a) => { if (a) a.rotation = Math.sin(this.pileWobble * 40) * 0.08 * (this.pileWobble / 0.4); });
+    }
     this.undoButton.scale.set(this.undoPulse > 0 ? 1 + 0.08 * Math.sin(this.clock * 8) : 1);
     if (this.undoPulse > 0) this.undoPulse -= dt;
     this.drawGlow(dt);
@@ -299,11 +328,14 @@ class BoltBoards implements Game {
   restart() {
     if (this.finished || this.busy) return;
     this.letGo(true);
-    this.state = startState(this.puzzle);
+    this.state = this.build ? emptyState(this.puzzle) : startState(this.puzzle);
     this.history = [];
     this.hinted = null;
     this.sinceHint = 0;
+    this.picked = null;
+    this.dead = false;
     this.placeAll();
+    if (this.build) { this.drawWoodpile(); this.drawCard(); }
   }
 
   /** The ghost finger: the hint each step, highest board first at 1–5 and 8 (then an open hole), the solver's path (bolt, then hole) at 6–7. */
@@ -313,6 +345,12 @@ class BoltBoards implements Game {
     if (!h) return null;
     if ('undo' in h) return { tap: { on: this.undoButton }, pause: 0.6 };
     const m = h.move;
+    if (this.build) {
+      // Level 9: pick the hinted bolt's board (its slot, or its body while it hangs), then tap its hole.
+      const i = this.puzzle.bolts[m.bolt].board;
+      const q = this.picked === i ? toView(this.layout, this.puzzle.bolts[m.bolt]) : this.pickPoint(i);
+      return { tap: { on: this.hitLayer, x: q.x, y: q.y }, pause: 0.5 };
+    }
     if (this.plan.holes && this.lifted === m.bolt) {
       const q = toView(this.layout, holeAt(this.puzzle, m.hole!));
       return { tap: { on: this.hitLayer, x: q.x, y: q.y }, pause: 0.5 };
@@ -326,8 +364,20 @@ class BoltBoards implements Game {
   /* -------------------------------------------------------------------------------------------- */
 
   private pickPuzzle(): Puzzle {
-    const list = PUZZLES[this.plan.id];
     const rng = this.ctx.rng;
+    if (this.plan.build) {
+      // Level 9: the authored board first in a session, then boards from the level-3 and level-4 lists, by scene.
+      if (this.scene === 0 && !authoredShown.has(9) && !this.ctx.demo) {
+        authoredShown.add(9);
+        return PUZZLES[9][0];
+      }
+      const id = this.plan.build[this.scene], list = PUZZLES[id], key = (k: number) => id * 1000 + k;
+      const choices = list.map((_, k) => k).filter((k) => !this.used.has(key(k)));
+      const k = rng.pick(choices.length ? choices : list.map((_, k) => k));
+      this.used.add(key(k));
+      return rng.chance(0.5) ? mirror(list[k]) : list[k];
+    }
+    const list = PUZZLES[this.plan.id];
     if (this.plan.id === 1 && this.scene === 0) return list[0];
     if ((this.plan.id === 6 || this.plan.id === 8) && this.scene === 0 && !authoredShown.has(this.plan.id) && !this.ctx.demo) {
       authoredShown.add(this.plan.id);
@@ -343,7 +393,9 @@ class BoltBoards implements Game {
 
   private buildScene() {
     this.puzzle = this.pickPuzzle();
-    this.state = startState(this.puzzle);
+    this.state = this.build ? emptyState(this.puzzle) : startState(this.puzzle);
+    this.picked = null;
+    this.dead = false;
     this.history = [];
     this.solved.clear();
     this.sceneMisses = 0;
@@ -377,8 +429,11 @@ class BoltBoards implements Game {
     this.rots = p.boards.map(() => 0);
     this.swings = p.boards.map(() => null);
     this.wobbles = p.boards.map(() => 0);
-    const start = poses(p, this.state);
-    if (this.plan.goal === 'all') {
+    const start = poses(p, startState(p));
+    if (this.build) {
+      // No fruit or friend behind the boards at level 9: the picture card is the goal.
+      this.fruitViews = [];
+    } else if (this.plan.goal === 'all') {
       this.fruitViews = p.boards.map((_, i) => {
         const f = this.behind.addChild(fruitArt(this.fruits[i]));
         const q = start[i] as Pt;
@@ -395,6 +450,11 @@ class BoltBoards implements Game {
       this.ctx.track(c);
     }
     this.placeAll();
+    if (this.build) {
+      this.slots = woodpileLayout(this.ctx.view, p.boards.length);
+      this.drawWoodpile();
+      this.drawCard();
+    }
   }
 
   private instruction(): LineId {
@@ -405,6 +465,7 @@ class BoltBoards implements Game {
       case 5: return 'bolt.instruct-friend';
       case 6: return 'bolt.instruct-holes';
       case 8: return 'bolt.instruct-park';
+      case 9: return 'bolt.instruct-build';
       default: return 'bolt.instruct-holes-friend';
     }
   }
@@ -475,6 +536,8 @@ class BoltBoards implements Game {
     });
     this.holes.clear();
     for (let h = 0; h < holeCount(p); h++) {
+      // Level 9 shows only the picked board's empty holes: she plans from the picture, not from the wall.
+      if (this.build && (this.picked === null || p.bolts[h].board !== this.picked || s[h] === h)) continue;
       const at = holeAt(p, h);
       holeArt(this.holes, at.x, at.y);
     }
@@ -516,6 +579,8 @@ class BoltBoards implements Game {
         this.setPose(i, q, q.kind === 'hanging' ? q.bolt : null);
         v.alpha = 0;
         void this.ctx.tw.to(v, { alpha: 1 }, { duration: 0.25 });
+        // Level 9: a board's first bolt swings it up on that bolt.
+        if (this.build && q.kind === 'hanging') { this.swings[i] = { from: q.rot + 0.7, to: q.rot, t: 0 }; v.rotation = q.rot + 0.7; sfx.squeak(4); }
         const f = this.fruitViews[i];
         if (f) { this.ctx.tw.kill(f); f.visible = true; f.alpha = 1; const s = poses(this.puzzle, startState(this.puzzle))[i] as Pt; f.position.set(s.x, s.y); }
         return;
@@ -546,8 +611,10 @@ class BoltBoards implements Game {
 
   private drawGlow(dt: number) {
     const g = this.glow.clear();
+    if (this.build) this.pileGlow.clear();
     if (this.finished) return;
     const p = this.puzzle, pulse = 6 + 2 * Math.sin(this.clock * 6);
+    if (this.build) return this.drawBuildGlow(g, pulse);
     if (this.lifted !== null && this.plan.litHoles) {
       for (const h of openHoles(p, this.state)) {
         const at = holeAt(p, h);
@@ -588,6 +655,7 @@ class BoltBoards implements Game {
   private down(e: FederatedPointerEvent) {
     this.letGo(false);
     if (this.busy || this.finished || palmOnGlass()) return;
+    if (this.build) return this.buildDown(e);
     const at = this.wallPoint(e);
     if (!at) return;
     const hit = boltAt(this.puzzle, this.state, at);
@@ -621,6 +689,7 @@ class BoltBoards implements Game {
     this.press = null;
     const at = this.wallPoint(e);
     if (this.busy || this.finished || !at) return this.letGo(true);
+    if (this.build) return this.buildTap(at);
     if ('bolt' in press) {
       const v = this.boltView(press.bolt);
       if (v) { v.scale.set(1); v.rotation = 0; }
@@ -757,9 +826,213 @@ class BoltBoards implements Game {
     this.hinted = null;
     this.undoPulse = 0;
     this.state = this.history.pop()!;
+    if (this.build) {
+      if (this.picked !== null && boardBuilt(this.puzzle, this.state, this.picked)) this.picked = null;
+      this.dead = !canFinish(this.puzzle, this.state);
+      if (this.dead) this.undoPulse = 4;
+      sfx.pop(2);
+    }
     this.drawBolts();
     this.animatePoses();
     this.fillBasket();
+    if (this.build) { this.drawWoodpile(); this.drawCard(); }
+  }
+
+  /* -------------------------------------------------------------------------------------------- */
+  /* Level 9: putting the wall back                                                                 */
+  /* -------------------------------------------------------------------------------------------- */
+
+  /** Touch-down: a woodpile slot lifts its board at once; anywhere else waits for the release. */
+  private buildDown(e: FederatedPointerEvent) {
+    const at = this.ctx.stage.toLocal(e.global);
+    if (!Number.isFinite(at.x)) return;
+    const k = this.slots.findIndex((r) => inRect(r, at));
+    if (k >= 0) {
+      if (pose(this.puzzle, this.state, k).kind === 'down') this.pick(k);
+      return;
+    }
+    const w = toWall(this.layout, at);
+    this.press = { wall: w };
+    if (this.pickedHoleAt(w) !== null) sfx.tick();
+  }
+
+  /** A tap on the wall: a hole of the picked board, else the body of a hanging board to pick, else the woodpile wobbles. */
+  private buildTap(at: Pt) {
+    const b = this.pickedHoleAt(at);
+    if (b !== null) return this.tryPlace(b);
+    const i = this.bodyAt(at);
+    if (i !== null) return this.pick(i);
+    if (this.picked === null) this.pileWobble = 0.4;
+  }
+
+  private pick(i: number) {
+    if (this.picked === i) return;
+    this.picked = i;
+    sfx.tick();
+    this.drawBolts();
+    this.drawWoodpile();
+  }
+
+  /** The nearest empty hole of the picked board within reach of a touch. */
+  private pickedHoleAt(at: Pt): number | null {
+    const p = this.puzzle, i = this.picked;
+    if (i === null) return null;
+    let best: number | null = null, dist = HIT;
+    p.bolts.forEach((q, b) => {
+      if (q.board !== i || this.state[b] !== -1) return;
+      const d = Math.hypot(q.x - at.x, q.y - at.y);
+      if (d <= dist) { best = b; dist = d; }
+    });
+    return best;
+  }
+
+  /** The board under a touch, if the topmost one there hangs from one bolt and still misses one. */
+  private bodyAt(at: Pt): number | null {
+    const p = this.puzzle, qs = poses(p, this.state);
+    let top: number | null = null;
+    qs.forEach((q, i) => {
+      if (overlaps(p, i, q, at, 1) && (top === null || p.boards[i].z > p.boards[top].z)) top = i;
+    });
+    return top !== null && qs[top].kind === 'hanging' && !boardBuilt(p, this.state, top) ? top : null;
+  }
+
+  /** Where the ghost finger picks board `i`: its slot, or a point on its hanging body that resolves to it. */
+  private pickPoint(i: number): Pt {
+    const p = this.puzzle, q = pose(p, this.state, i);
+    if (q.kind === 'down') {
+      const r = this.slots[i];
+      return { x: r.x + r.w / 2, y: r.y + r.h / 2 };
+    }
+    const d = p.boards[i], c = Math.cos(q.rot), sn = Math.sin(q.rot);
+    for (const [u, v] of [[0, 0], [0.3, 0.3], [-0.3, 0.3], [0.3, -0.3], [-0.3, -0.3], [0, 0.4], [0.4, 0], [-0.4, 0], [0, -0.4]]) {
+      const x = u * d.w, y = v * d.h, pt = { x: q.x + x * c - y * sn, y: q.y + x * sn + y * c };
+      if (this.bodyAt(pt) === i && this.pickedHoleAt(pt) === null) return toView(this.layout, pt);
+    }
+    return toView(this.layout, q);
+  }
+
+  /** Bolt `b` into its hole: a covered hole is one miss while the wall can still be finished, and free at a dead end. */
+  private tryPlace(b: number) {
+    const p = this.puzzle, r = place(p, this.state, b);
+    if (!('state' in r)) {
+      if (r.refused !== 'covered') return;
+      const top = coveringBoards(p, this.state, p.boards[p.bolts[b].board].z, p.bolts[b], HEAD)[0];
+      if (top !== undefined) this.wobbles[top] = 0.4;
+      sfx.boing();
+      if (this.dead) return this.sayCovers();
+      this.sayOnce('bolt.hole-closed');
+      return this.miss();
+    }
+    this.hinted = null;
+    this.history.push(this.state);
+    const before = this.shown.map((q) => q.kind);
+    this.state = r.state;
+    const i = p.bolts[b].board;
+    if (boardBuilt(p, this.state, i)) this.picked = null;
+    this.drawBolts();
+    this.animatePoses();
+    const head = this.boltView(b);
+    if (head) { head.rotation = -Math.PI * 3; void this.ctx.tw.to(head, { rotation: 0 }, { duration: 0.3, ease: ease.outQuad }); }
+    sfx.ratchet(7, -1);
+    this.drawWoodpile();
+    this.drawCard();
+    if (!this.swingSaid && this.shown.some((q, k) => q.kind === 'hanging' && before[k] === 'down')) {
+      this.swingSaid = true;
+      this.sayOnce('bolt.swing');
+    }
+    if (built(p, this.state)) return void this.sceneDone();
+    this.dead = !canFinish(p, this.state);
+    if (this.dead) {
+      this.undoPulse = 4;
+      this.lastSaid = -Infinity;
+      this.sayCovers();
+    }
+  }
+
+  /** At a dead end the pet names the board that covers a hole still waiting, and it wobbles. */
+  private sayCovers() {
+    const top = blockingBoard(this.puzzle, this.state);
+    if (top === null) return;
+    this.wobbles[top] = 0.4;
+    this.undoPulse = 4;
+    this.sayOnce(`bolt.covers.${this.colors[top]}` as LineId);
+  }
+
+  /** The woodpile: one slot per board, the board lying small in it until it is up; the picked one lifts. */
+  private drawWoodpile() {
+    this.woodpile.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.pileArts = [];
+    const p = this.puzzle;
+    this.slots.forEach((r, i) => {
+      const pad = new Graphics().roundRect(r.x + 4, r.y + 4, r.w - 8, r.h - 8, 18).fill({ color: wood.light, alpha: 0.85 }).stroke({ width: 4, color: wood.line, alpha: 0.6 });
+      this.woodpile.addChild(pad);
+      if (pose(p, this.state, i).kind !== 'down') { this.pileArts.push(null); return; }
+      const d = p.boards[i];
+      const art = boardArt(d.w, d.h, this.colors[i]);
+      art.scale.set(Math.min(0.5 * this.layout.scale, (Math.min(150, r.w) - 24) / d.w, (Math.min(120, r.h) - 24) / d.h));
+      art.position.set(r.x + r.w / 2, r.y + r.h / 2 + (this.picked === i ? -10 : 4));
+      this.woodpile.addChild(art);
+      this.pileArts.push(art);
+    });
+  }
+
+  /** The picture card: the finished wall small, with a tick on each board that already matches it. */
+  private drawCard() {
+    this.card.removeChildren().forEach((c) => c.destroy({ children: true }));
+    const p = this.puzzle, goal = poses(p, startState(p));
+    this.card.addChild(new Graphics().roundRect(3, 5, CARD_W, CARD_H, 14).fill({ color: ink, alpha: 0.18 })
+      .roundRect(0, 0, CARD_W, CARD_H, 14).fill(cream).stroke({ width: 4, color: wood.line }));
+    const sc = Math.min((CARD_W - 20) / WALL_W, (CARD_H - 30) / WALL_H);
+    const inner = this.card.addChild(new Container());
+    inner.position.set((CARD_W - WALL_W * sc) / 2, 22);
+    inner.scale.set(sc);
+    inner.addChild(new Graphics().roundRect(0, 0, WALL_W, WALL_H, 30).fill(0xe8c79a));
+    const order = p.boards.map((_, i) => i).sort((a, b) => p.boards[a].z - p.boards[b].z);
+    const ticks = new Graphics();
+    for (const i of order) {
+      const q = goal[i];
+      if (q.kind === 'down') continue;
+      const d = p.boards[i], art = inner.addChild(boardArt(d.w, d.h, this.colors[i]));
+      art.position.set(q.x, q.y);
+      art.rotation = q.rot;
+      if (boardBuilt(p, this.state, i)) {
+        ticks.moveTo(q.x - 40, q.y).lineTo(q.x - 10, q.y + 30).lineTo(q.x + 45, q.y - 35)
+          .stroke({ width: 34, color: 0xffffff, cap: 'round', join: 'round' })
+          .moveTo(q.x - 40, q.y).lineTo(q.x - 10, q.y + 30).lineTo(q.x + 45, q.y - 35)
+          .stroke({ width: 18, color: swatch.green.line, cap: 'round', join: 'round' });
+      }
+    }
+    inner.addChild(ticks);
+    this.card.addChild(new Graphics().circle(CARD_W / 2, 10, 9).fill(swatch.red.fill).stroke({ width: 3, color: swatch.red.line }));
+  }
+
+  /** Level 9's glows: the picked board's empty holes (open ones bright, covered ones dim), its slot, and the hint. */
+  private drawBuildGlow(g: Graphics, pulse: number) {
+    const p = this.puzzle, s = this.state, pg = this.pileGlow;
+    if (this.picked !== null) {
+      p.bolts.forEach((q, b) => {
+        if (q.board !== this.picked || s[b] !== -1) return;
+        if (covered(p, s, b)) g.circle(q.x, q.y, 32).stroke({ width: 5, color: 0x6b7280, alpha: 0.45 });
+        else g.circle(q.x, q.y, 34 + pulse / 2).stroke({ width: 6, color: swatch.yellow.fill, alpha: 0.9 });
+      });
+      const r = this.slots[this.picked];
+      if (r && pose(p, s, this.picked).kind === 'down') pg.roundRect(r.x + 2, r.y + 2, r.w - 4, r.h - 4, 20).stroke({ width: 6, color: 0xffffff });
+    }
+    const h = this.hinted;
+    if (!h || !('move' in h)) return;
+    const b = h.move.bolt, i = p.bolts[b].board;
+    if (this.picked === i) {
+      g.circle(p.bolts[b].x, p.bolts[b].y, HIT + pulse).stroke({ width: pulse, color: swatch.yellow.fill });
+      return;
+    }
+    const q = pose(p, s, i);
+    if (q.kind === 'down') {
+      const r = this.slots[i];
+      if (r) pg.roundRect(r.x - pulse / 2, r.y - pulse / 2, r.w + pulse, r.h + pulse, 22).stroke({ width: pulse, color: swatch.yellow.fill });
+    } else {
+      const cs = corners(p, i, q);
+      g.poly(cs.flatMap((c) => [c.x, c.y])).stroke({ width: pulse, color: swatch.yellow.fill });
+    }
   }
 
   /** A covered bolt waits: the board on top wobbles, its free bolts shimmer and the pet names it. A miss from level 4. */
@@ -794,6 +1067,10 @@ class BoltBoards implements Game {
   }
 
   private hint(): Hint | null {
+    if (this.build) {
+      const h = hintBuild(this.puzzle, this.state);
+      return h && 'bolt' in h ? { move: { bolt: h.bolt } } : h;
+    }
     if (done(this.puzzle, this.state, this.plan.goal)) return null;
     if (!this.plan.holes || !this.plan.par) return hintMove(this.puzzle, this.state, this.plan);
     const path = this.solveAt(this.state);
@@ -805,6 +1082,8 @@ class BoltBoards implements Game {
     if (this.finished || this.hinted) return;
     const h = this.hint();
     if (!h) return;
+    // Level 9: at a dead end the hint is the undo arrow, as level 6–7's "Stuck!", and is not counted.
+    if (this.build && 'undo' in h) return this.sayCovers();
     this.hinted = h;
     this.hints++;
     this.sinceHint = 0;
@@ -819,6 +1098,10 @@ class BoltBoards implements Game {
     this.busy = true;
     this.letGo(true);
     await this.ctx.tw.wait(0.7);
+    if (this.build) {
+      sfx.bell(9);
+      await this.ctx.say('bolt.built');
+    }
     if (this.friend) {
       const f = this.friend;
       sfx.sparkle();
@@ -839,7 +1122,7 @@ class BoltBoards implements Game {
     this.finished = true;
     sfx.tada();
     this.ctx.pet.cheer();
-    await this.ctx.say('bolt.done');
+    if (!this.build) await this.ctx.say('bolt.done');
     this.ctx.finish({ misses: this.misses, hints: this.hints });
   }
 }

@@ -2,6 +2,8 @@
 
 *Game `bolt-boards` · level 9 · school · defined 2026-11-07 on `claude/define-bolt-boards-9` · [deep dive](../deep-dives/bolt-boards.md#build-slices-in-order) slice 3; the build is slice 4*
 
+**Built:** level 9 (PR #1354); the whole file is one level, so read “Boards” for the authored board and “Hint” for the build hint.
+
 Every level so far takes a wall apart. Level 9 is the other half of the physical take-apart toy and of [NGSS 2-PS1-3](https://www.nextgenscience.org/pe/2-ps1-3-matter-and-its-interactions): the boards lie on the woodpile, a picture card shows the finished wall, and she bolts the boards back up. The "on top" rule runs backwards, so the board at the back goes up first. This page fixes the rule, the screen, the accounting, the bot, the voice lines and the tests, so the build session has nothing left to guess. It corrects one claim in the dive. The dive says that from any reachable state the hint is a board whose holes are all open. A probe of the real rules found that false: 28 of the authored board's 64 reachable states cannot be finished, and so does at least one state of every frozen level-3 and level-4 board.
 
 ## Bands and ranges
@@ -36,6 +38,8 @@ Level 9 is an appended ID, so nothing is renumbered and saved levels and pins ke
 | 0, small left | (220, 300), 180 × 160, z 1 | (180, 245) and (260, 340) | the first bolt lies under the big board |
 | 1, small right | (480, 300), 180 × 160, z 2 | (520, 245) and (440, 340) | the first bolt lies under the big board |
 | 2, big | (350, 200), 420 × 160, z 3 | (280, 155) and (420, 155) | covers one hole of each small board |
+
+As built, the small boards' bolts sit at y 254 and 345 (not 245 and 340) so the bolt heads stay on the board and 120 apart; the table's figures below were measured at the original positions and the built board keeps 64 reachable states, 28 dead.
 
 Results: 64 reachable states, 28 of them dead ends. The empty state can be finished. Every pose of every board stays inside the wall. The closest two bolts are 124 apart (the touch circle is 120), and every bolt is at least 57 from its board's centre (`MIN_ARM` is 40). Bolting the big board up first covers both small boards' first holes. That is the lesson, and undo takes it back.
 
