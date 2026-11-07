@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 export function createSuite({ page, log, scene, tap, screenshot, turnToGame, launch, finished, next }) {
 /** Mossy Path: real steps, free experiments, recovery help, both ends, reward and land return. */
 async function mossyPathPlay() {
+  if (process.env.MOSSY_ONLY === 'look') { await mossyLookPlay(); return; }
   for (const level of process.env.MOSSY_ONLY === 'navigation' ? [] : [1, 3]) {
     await launch('mossy-path', level); await page.waitForTimeout(350);
     const initial = await page.evaluate(() => neo.scene.game.path.slice());
@@ -116,6 +117,42 @@ async function mossyPathPlay() {
   }); await scene('LandScene');
   assert.equal(await page.evaluate(() => neo.scene.land.id), 'puzzle-peaks');
   log('Mossy Path: land launch and home return passed');
+}
+
+/** Level 6 in the autumn look: a counted wrong branch, the way back and a finish, with one portrait screenshot. */
+async function mossyLookPlay() {
+  await launch('mossy-path', 6); await page.waitForTimeout(350);
+  const before = await page.evaluate(() => kit.store.data.stickers.length);
+  await page.evaluate(() => { const g = neo.scene.game; g.look = { season: 'autumn', berry: 'strawberry' }; g.resize(neo.view); });
+  const plan = await page.evaluate(async () => {
+    const L = await import('/src/games/mossy-path/logic.ts'), b = neo.scene.game.board, line = L.mainline(b), route = L.routeBetween(b, b.start, b.pond);
+    const fork = route.find(at => L.neighbours(b, at).some(z => !line.has(z)));
+    return { toFork: L.routeBetween(b, b.start, fork).slice(1), wrong: L.neighbours(b, fork).find(z => !line.has(z)) };
+  });
+  for (const at of plan.toFork) await tap(`neo.scene.game.nodes[${at}]`);
+  await tap(`neo.scene.game.nodes[${plan.wrong}]`);
+  assert.equal(await page.evaluate(() => neo.scene.game.misses), 1, 'a wrong branch counts one miss');
+  await tap('neo.scene.game.hintButton');
+  assert.equal(await page.evaluate(() => neo.scene.game.hints), 1, 'Hint counts once');
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(350);
+  assert.ok(await page.evaluate(() => neo.scene.game.cell >= 100), 'portrait maze cells stay at least 100 units');
+  assert.equal(await page.evaluate(() => neo.scene.game.look.season), 'autumn');
+  await screenshot('mossy-path-6-autumn-portrait');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(350);
+  await page.evaluate(async () => {
+    const L = await import('/src/games/mossy-path/logic.ts'), g = neo.scene.game;
+    for (let guard = 0; guard < 40 && !g.finished; guard++) {
+      if (g.walkTo >= 0) { await kit.sleep(170); continue; }
+      kit.tapOn(g.nodes[L.nextToward(g.board, g.maze_.path.at(-1), g.board.pond)]); await kit.sleep(170);
+    }
+  });
+  await finished('mossy-path');
+  assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1);
+  log('Mossy Path 6 (autumn look): one counted branch, hint, finish and one sticker passed');
+  // Level 7 in snow with a strawberry: the snowy hedge tops and the berry on its bush and in the badge.
+  await launch('mossy-path', 7); await page.waitForTimeout(350);
+  await page.evaluate(() => { const g = neo.scene.game; g.look = { season: 'snow', berry: 'strawberry' }; g.resize(neo.view); });
+  await screenshot('mossy-path-7-snow');
 }
 
 return { mossyPathPlay };

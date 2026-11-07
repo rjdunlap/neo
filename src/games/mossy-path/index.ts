@@ -10,7 +10,7 @@ import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { FederatedPointerEvent } from 'pixi.js';
-import { completion, goalOf, helpFor, isMaze, levelName, makeBoard, mazeBack, mazeRestart, mazeStart, mazeTouch, moveError, neighbours, nextToward, routeBetween, solved, step, type MazeState } from './logic';
+import { completion, goalOf, helpFor, isMaze, leafSpots, levelName, makeBoard, pickLook, mazeBack, mazeRestart, mazeStart, mazeTouch, moveError, neighbours, nextToward, routeBetween, solved, step, type Look, type MazeState } from './logic';
 
 const HEADINGS: Record<number, string> = { 4: 'Walk the turtle to the pond', 5: 'Walk the turtle to the pond', 6: 'Find the way to the pond', 7: 'Get the berry, then the pond' };
 
@@ -18,8 +18,29 @@ function flower(g: Graphics, x: number, y: number, size: number, color: number) 
   for (let p = 0; p < 5; p++) { const a = p * Math.PI * 2 / 5; g.circle(x + Math.cos(a) * size * 0.65, y + Math.sin(a) * size * 0.65, size * 0.5).fill(color); }
   g.circle(x, y, size * 0.35).fill(swatch.yellow.fill);
 }
+/** Flower petals per season: pink and white in spring, amber and yellow in autumn, purple and white crocuses in snow. */
+const PETALS: Record<Look['season'], [number, number]> = {
+  spring: [swatch.pink.fill, swatch.white.fill], autumn: [swatch.orange.fill, swatch.yellow.light], snow: [swatch.purple.fill, swatch.white.fill],
+};
+/** The one berry drawing (bush, carried on the turtle, and the badge): a red berry, a blueberry or a strawberry. */
+function drawBerry(g: Graphics, kind: Look['berry'], x: number, y: number, r: number, empty = false) {
+  const colour = kind === 'blue' ? swatch.blue : swatch.red, line = empty ? colour.line : ink, fill = empty ? swatch.white.light : colour.fill;
+  if (kind === 'strawberry') {
+    r *= 1.25; // a pointed berry reads smaller than a round one of the same radius
+    g.poly([x - r, y - r * 0.5, x + r, y - r * 0.5, x + r * 0.35, y + r * 0.8, x, y + r * 1.05, x - r * 0.35, y + r * 0.8]).fill(fill).stroke({ width: 3, color: line, join: 'round' });
+    if (!empty) for (const [sx, sy] of [[-0.45, -0.15], [0.4, -0.2], [0, 0.25], [-0.2, 0.6], [0.25, 0.55]]) g.circle(x + sx * r, y + sy * r, r * 0.08).fill(swatch.yellow.fill);
+    for (const k of [-1, 0, 1]) g.ellipse(x + k * r * 0.4, y - r * 0.62, r * 0.28, r * 0.16).fill(swatch.green.fill).stroke({ width: 2, color: swatch.green.line });
+    return;
+  }
+  g.circle(x, y, r).fill(fill).stroke({ width: 3, color: line });
+  if (!empty) g.circle(x - r * 0.33, y - r * 0.28, r * 0.25).fill(swatch.white.fill);
+  if (kind === 'blue' && !empty) g.circle(x + r * 0.3, y + r * 0.3, r * 0.18).fill(swatch.blue.line);
+  g.ellipse(x + r * 0.45, y - r, r * 0.6, r * 0.3).fill(swatch.green.fill).stroke({ width: 2, color: swatch.green.line });
+}
 class MossyPath implements Game {
   readonly board;
+  /** The round's seeded moss season and berry kind, picked after the board. */
+  look: Look;
   path: number[];
   readonly nodes: Container[] = [];
   readonly undoButton = new Container();
@@ -55,7 +76,7 @@ class MossyPath implements Game {
   private pulseCells: number[] = [];
   private readonly berryBadge = new Graphics();
   constructor(private readonly ctx: GameContext) {
-    this.board = makeBoard(ctx.level, ctx.rng); this.path = [this.board.start];
+    this.board = makeBoard(ctx.level, ctx.rng); this.look = pickLook(ctx.rng); this.path = [this.board.start];
     this.maze = isMaze(ctx.level);
     this.trail.eventMode = 'none'; this.buttonGlow.eventMode = 'none'; this.pulse.eventMode = 'none'; this.berryBadge.eventMode = 'none';
     if (this.maze) {
@@ -227,6 +248,12 @@ class MossyPath implements Game {
         g.roundRect(-half, -half - 10, half * 2, half * 2 + 10, 16).fill(swatch.green.line).stroke({ width: 3, color: ink });
         for (let k = 0; k < 3; k++) g.circle(-half * 0.62 + k * half * 0.62, -half - 8, half * 0.3).fill(swatch.green.line).stroke({ width: 3, color: ink });
         g.roundRect(-half + 2, -half - 2, half * 2 - 4, 12, 6).fill(swatch.green.line);
+        if (this.look.season === 'autumn') for (const [sx, sy] of leafSpots(at)) g.ellipse(sx * half * 0.8, -half - 6 + sy * 8, 9, 6).fill(swatch.orange.fill).stroke({ width: 2, color: swatch.orange.line });
+        if (this.look.season === 'snow') {
+          // A snowy top a quarter of the hedge's height, over the clipped bumps.
+          for (let k = 0; k < 3; k++) g.circle(-half * 0.62 + k * half * 0.62, -half - 8, half * 0.3).fill(swatch.white.fill);
+          g.roundRect(-half, -half - 10, half * 2, (half * 2 + 10) * 0.25, 14).fill(swatch.white.fill).stroke({ width: 2, color: swatch.white.line });
+        }
         node.addChild(g); return;
       }
       if (!this.board.tiles.includes(at)) {
@@ -240,12 +267,11 @@ class MossyPath implements Game {
         g.ellipse(0, 4, half * 0.5, half * 0.32).stroke({ width: 3, color: swatch.blue.light });
         g.circle(half * 0.48, -half * 0.32, half * 0.23).fill(swatch.green.fill);
       } else if (visited) {
-        flower(g, -half * 0.6, half * 0.55, 9, swatch.pink.fill);
-        flower(g, half * 0.55, -half * 0.5, 8, swatch.white.fill);
+        const [a, b] = PETALS[this.look.season];
+        flower(g, -half * 0.6, half * 0.55, 9, a);
+        flower(g, half * 0.55, -half * 0.5, 8, b);
       } else if (this.maze && at === this.board.berry && !this.maze_!.berry) {
-        g.circle(0, 6, half * 0.36).fill(swatch.red.fill).stroke({ width: 3, color: ink });
-        g.circle(-half * 0.12, -half * 0.04, half * 0.09).fill(swatch.white.fill);
-        g.ellipse(half * 0.16, -half * 0.36, half * 0.22, half * 0.11).fill(swatch.green.fill).stroke({ width: 2, color: swatch.green.line });
+        drawBerry(g, this.look.berry, 0, 6, half * 0.36);
       } else if (this.maze && this.pawed.has(at)) {
         // A faint paw print where the turtle has been: it means nothing to the rules.
         for (const [x, y] of [[-10, 6], [10, -6]]) { g.ellipse(x, y, 7, 9).fill({ color: swatch.green.line, alpha: 0.35 }); }
@@ -256,7 +282,7 @@ class MossyPath implements Game {
       node.addChild(g);
       if (at === last) {
         node.addChild(turtleArt(this.cell * 0.72));
-        if (this.maze_?.berry) { const b = new Graphics(); b.eventMode = 'none'; b.circle(0, -this.cell * 0.2, this.cell * 0.1).fill(swatch.red.fill).stroke({ width: 3, color: ink }); node.addChild(b); }
+        if (this.maze_?.berry) { const b = new Graphics(); b.eventMode = 'none'; drawBerry(b, this.look.berry, 0, -this.cell * 0.2, this.cell * 0.1); node.addChild(b); }
       }
     });
     this.trail.clear();
@@ -271,8 +297,7 @@ class MossyPath implements Game {
       this.status.text = '';
       if (this.board.berry !== undefined) {
         const x = this.status.x, y = this.status.y, got = this.maze_!.berry;
-        this.berryBadge.circle(x, y, 16).fill(got ? swatch.red.fill : swatch.white.light).stroke({ width: 3, color: got ? ink : swatch.red.line });
-        this.berryBadge.ellipse(x + 7, y - 16, 9, 5).fill(swatch.green.fill);
+        drawBerry(this.berryBadge, this.look.berry, x, y, 16, !got);
       }
     } else {
     const blocked = !solved(this.board, this.path) && !completion(this.board, this.path);
