@@ -863,6 +863,8 @@ class FruitSlice implements Game {
     sfx.sparkle();
     this.ctx.pet.cheer();
     await this.say(this.plan.mode === 'cover' ? 'slice.cover-yes' : 'slice.line-yes', { n: this.board!.n });
+    // Level 9 empties the bowl for the next board: let the last halves land first.
+    if (this.plan.mode === 'cover') await this.ctx.tw.wait(0.8);
     this.index++;
     if (this.index >= this.boards.length) return void this.finale();
     await this.begin();
