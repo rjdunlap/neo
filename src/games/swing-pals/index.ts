@@ -498,7 +498,7 @@ class SwingPals implements Game {
       for (const h of this.hookTargets) h.node.position.copyFrom(col.pivot[h.hook]);
       this.drawHooks();
     }
-    if (this.round.kind === 'predict') {
+    if (this.round.kind === 'predict' && this.line < this.round.lines.length) {
       for (const [i, node] of this.friendNodes.entries()) {
         const rig = this.rigs[i];
         const box = friendBox(seatAt(L, L.columns[i], rig.hook, -this.releaseHeight(i) * L.bell));
@@ -512,7 +512,7 @@ class SwingPals implements Game {
   /** Level 8's request in pictures under the pet's swing: big dots for the pet's returns, small dots for hers. */
   private drawStrip() {
     const g = this.strip.clear();
-    if (!this.plan.requests || this.round.kind !== 'together' || !this.rigs[0]) return;
+    if (!this.plan.requests || this.round.kind !== 'together' || !this.rigs[0] || this.line >= this.round.lines.length) return;
     const req = this.pairLine.request ?? 'together';
     const pets = req === 'half' ? 2 : 1, hers = req === 'twice' ? 2 : 1;
     const box = requestStrip(this.layout);
@@ -850,6 +850,7 @@ class SwingPals implements Game {
     if (raceTempts(race)) await this.ctx.say('swing-pals.first-same');
     if (this.destroyed) return;
     this.marker.visible = false;
+    this.hintLit = false;
     await this.nextLine();
   }
 
@@ -960,7 +961,7 @@ class SwingPals implements Game {
     }
     // The glow around the matching hook.
     this.glow.clear();
-    if (this.hintLit && this.round.kind === 'predict') {
+    if (this.hintLit && this.round.kind === 'predict' && this.line < this.round.lines.length) {
       // The shorter rope, lit along both its strands.
       const rig = this.rigs[firstBack(this.race)];
       const p = rig.col.pivot[rig.hook];
