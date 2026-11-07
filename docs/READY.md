@@ -7,8 +7,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 ## Next ten
 
 - **`measuring-post`, levels 3–4** (school; level 3 *Same units, then compare* in the new-interaction tier with `fingerdemo` at 3, then level 4 *How many little ones?*, per the definition's build boundaries; Tinker Lab, levels 1–2 built): [definition](definitions/measuring-post.md).
-- **`swing-pals`, level 7 *Who comes back first?*** (`tinker-lab`; pre-K between 3 and 4 and school after 6, on decision 1's default; new-interaction tier with `fingerdemo` at 7; promoted from Queued 2026-11-06): [build slices](deep-dives/swing-pals.md#build-slices-in-order), [new levels on top](deep-dives/swing-pals.md#new-levels-on-top).
-- **`swing-pals`, level 8 *Twice as quick*** (`tinker-lab`; after level 7, so a same-game batch with it; new level on the existing hook interaction, `fingerdemo` at 8): [new levels on top](deep-dives/swing-pals.md#new-levels-on-top).
 - **`bolt-boards`, more boards, fruit and a friend** (`tinker-lab`; 20 frozen boards per level, orange, strawberry, banana and the bear; existing-interaction content tier, no `fingerdemo`; promoted from Queued 2026-11-06): [build slices](deep-dives/bolt-boards.md#build-slices-in-order).
 - **`bolt-boards`, level 8 *Plenty of holes*** (pre-K and school between 5 and 6 on decision 1's default; after slice 1 is fine but not required; new level on the existing interaction, `fingerdemo` at 8): [build slices](deep-dives/bolt-boards.md#build-slices-in-order).
 

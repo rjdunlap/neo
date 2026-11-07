@@ -12,17 +12,18 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
-  applyPush, BASKET_HALF, FRIEND_SCALE, HOOKS, land, makeRound, nextBackTime, nextToPush, period, planFor, ropeOf, seatAt,
-  swingLayout, together, watchTime, WEIGHT, type Column, type Friend, type Goal, type Hook, type Line, type Plan, type PushLine, type Round, type Swing,
-  type SwingLayout,
+  applyPush, backTimes, BASKET_HALF, clapTimes, FRIEND_SCALE, friendBox, firstBack, MARK_R, markerAt, HOOKS, land, makeRound, nextBackTime, nextToPush, period, planFor,
+  raceTempts, raceWatch, requestStrip, rightHook, ropeOf, seatAt, swingLayout, together, watchTime, WEIGHT, type Column, type Friend, type Goal, type Hook, type Line,
+  type Plan, type PushLine, type Race, type Request, type Round, type Swing, type SwingLayout,
 } from './logic';
 
 const LEVELS: BandLevels = {
   lap: { min: 1, max: 1 },
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 3 },
-  prek: { min: 3, max: 4 },
-  school: { min: 4, max: 6 },
+  // Level 7 sits between 3 and 4 for pre-K, and after 6 for school.
+  prek: { min: 3, max: 7, order: [3, 7, 4] },
+  school: { min: 4, max: 8 },
 };
 
 /** Each level's authored first line leads its first round of a session. */
@@ -47,6 +48,8 @@ const NAMES: Record<Friend, string> = {
 /** The goal's name in the instructions, one and two. */
 const GOAL_NAME: Record<Goal, [string, string]> = { bell: ['bell', 'bells'], chimes: ['chimes', 'chimes'], apple: ['apple', 'apples'], nest: ['nest', 'nests'] };
 const GOAL_LINE: Record<Goal, LineId> = { bell: 'swing-pals.ring', chimes: 'swing-pals.ring-chimes', apple: 'swing-pals.ring-apple', nest: 'swing-pals.ring-nest' };
+/** Level 8: each request's spoken ask, and what she hears when it comes true. */
+const REQUEST_LINE: Record<Request, LineId> = { twice: 'swing-pals.instruct-twice', half: 'swing-pals.instruct-half', together: 'swing-pals.instruct-same' };
 const BRASS = { fill: 0xf2c14e, line: 0xb8862b };
 const LEAF = [0x6cc070, 0x5bb062, 0x7fd07c];
 const ROPE = 0xa8865a;
@@ -120,6 +123,14 @@ function basketArt(): Graphics {
     .poly([-w, -h + 8, w, -h + 8, w - 8, h, -w + 8, h]).fill(wood.fill).stroke({ width: 4, color: wood.line, join: 'round' })
     .moveTo(-w + 4, 0).lineTo(w - 4, 0).moveTo(-w + 6, h - 10).lineTo(w - 6, h - 10).stroke({ width: 3, color: wood.line })
     .roundRect(-w - 4, -h + 2, 2 * w + 8, 12, 6).fill(wood.fill).stroke({ width: 4, color: wood.line });
+}
+
+/** Level 7's guess marker: a small paw over the friend she picked. */
+function pawArt(g: Graphics): Graphics {
+  g.circle(0, 0, MARK_R).fill({ color: 0xffffff, alpha: 0.9 }).stroke({ width: 4, color: swatch.red.line });
+  g.ellipse(0, 6, 12, 10).fill(swatch.red.fill);
+  for (const [x, y] of [[-13, -8], [-4, -14], [5, -14], [14, -8]]) g.circle(x, y, 5).fill(swatch.red.fill);
+  return g;
 }
 
 function mittenArt(): Graphics {
@@ -243,13 +254,20 @@ class SwingPals implements Game {
   private destroyed = false;
   private giggledAt = -10;
   private lookT = 0;
-  /** Together: the watch running, and the pet's back points counted for claps. */
-  private watchEnd = 0;
-  private claps = 0;
   private match = false;
   /** How far both swings are drawn back before a release, 0 to 1. */
   private readonly hold = { k: 0 };
   private readonly finaleCritters: Critter[] = [];
+  /** Together: the claps and (level 8) her soft notes still to come, in seconds after letting go. */
+  private clapsLeft: number[] = [];
+  private notesLeft: number[] = [];
+  /** Level 8: the request, in pictures under the pet's swing. */
+  private readonly strip = new Graphics();
+  /** Level 7: a tap target on each friend, her guess and its paw marker, and whether the hint lights the shorter rope. */
+  private readonly friendNodes: Container[] = [];
+  private readonly marker = new Graphics();
+  guess: number | null = null;
+  hintLit = false;
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -300,7 +318,11 @@ class SwingPals implements Game {
       this.nowRings.push(n);
     }
 
-    ctx.stage.addChild(this.backdrop, this.tree, ...this.baskets, ...this.bells, this.swingLayer, ...this.nowRings, ...this.waitRings, ...this.mittens, this.ground, this.glow, this.hookLayer);
+    this.strip.eventMode = 'none';
+    this.marker.eventMode = 'none';
+    this.marker.visible = false;
+    pawArt(this.marker);
+    ctx.stage.addChild(this.backdrop, this.tree, ...this.baskets, ...this.bells, this.glow, this.swingLayer, ...this.nowRings, ...this.waitRings, ...this.mittens, this.ground, this.strip, this.marker, this.hookLayer);
     this.ground.eventMode = this.plan.mode === 'push' ? 'static' : 'none';
     this.ground.on('pointerdown', this.onGround);
 
@@ -314,14 +336,26 @@ class SwingPals implements Game {
         this.hookTargets.push({ node, ring, hook });
       }
     }
+    if (this.plan.mode === 'predict') {
+      for (let i = 0; i < 2; i++) {
+        const node = new Container();
+        onTap(node, () => this.chooseFriend(i));
+        this.hookLayer.addChild(node);
+        this.friendNodes.push(node);
+      }
+    }
     this.buildLine();
   }
 
   start() {
     const lines: Record<number, LineId> = {
       1: 'swing-pals.instruct-push', 2: 'swing-pals.instruct-back', 3: 'swing-pals.instruct-two',
-      4: 'swing-pals.instruct-together', 5: 'swing-pals.instruct-heavy', 6: 'swing-pals.instruct-big',
+      4: 'swing-pals.instruct-together', 5: 'swing-pals.instruct-heavy', 6: 'swing-pals.instruct-big', 7: 'swing-pals.instruct-first',
     };
+    if (this.plan.requests) {
+      void this.ctx.instruct(REQUEST_LINE[this.pairLine.request ?? 'together']);
+      return;
+    }
     void this.ctx.instruct(lines[this.plan.id], { friend: this.friendName(), goal: GOAL_NAME[this.goal][0], goals: GOAL_NAME[this.goal][1] });
   }
 
@@ -339,6 +373,16 @@ class SwingPals implements Game {
 
   private get pairLine(): Line {
     return (this.round as Extract<Round, { kind: 'together' }>).lines[this.line];
+  }
+
+  private get race(): Race {
+    return (this.round as Extract<Round, { kind: 'predict' }>).lines[this.line];
+  }
+
+  /** The release height of swing i on a together or predict line, as a share of the bell height. */
+  private releaseHeight(i: number): number {
+    if (this.round.kind === 'predict') return this.race.heights[i];
+    return i === 0 ? this.pairLine.petHeight : this.pairLine.height;
   }
 
   /* Lines ----------------------------------------------------------------------------------------- */
@@ -366,10 +410,26 @@ class SwingPals implements Game {
         rig.t0 = s.t0;
         this.rigs.push(rig);
       });
+    } else if (this.round.kind === 'predict') {
+      const r = this.race;
+      this.rigs = [new Rig(r.hooks[0], r.friends[0], cols[0]), new Rig(r.hooks[1], r.friends[1], cols[1])];
+      for (const rig of this.rigs) {
+        rig.L = ropeOf(this.layout, rig.hook);
+        rig.held = 0;
+      }
+      // Both friends draw back to their release heights and wait there for her guess.
+      this.ctx.tw.kill(this.hold);
+      this.hold.k = 0;
+      void this.ctx.tw.to(this.hold, { k: 1 }, { duration: 0.9, ease: ease.inOutSine });
+      this.guess = null;
+      this.hintLit = false;
+      this.marker.visible = false;
+      this.lookT = 0;
     } else {
       const l = this.pairLine;
       this.rigs = [new Rig(l.petHook, l.petFriend, cols[0]), new Rig(l.hook, l.friend, cols[1])];
       for (const r of this.rigs) r.L = ropeOf(this.layout, r.hook);
+      if (this.plan.requests && this.line > 0) void this.ctx.instruct(REQUEST_LINE[l.request ?? 'together']);
       this.tried.clear();
       this.apart = 0;
       this.glowHook = null;
@@ -438,6 +498,29 @@ class SwingPals implements Game {
       for (const h of this.hookTargets) h.node.position.copyFrom(col.pivot[h.hook]);
       this.drawHooks();
     }
+    if (this.round.kind === 'predict' && this.line < this.round.lines.length) {
+      for (const [i, node] of this.friendNodes.entries()) {
+        const rig = this.rigs[i];
+        const box = friendBox(seatAt(L, L.columns[i], rig.hook, -this.releaseHeight(i) * L.bell));
+        node.position.set(box.x + box.w / 2, box.y + box.h / 2);
+        node.hitArea = new Rectangle(-box.w / 2, -box.h / 2, box.w, box.h);
+      }
+    }
+    this.drawStrip();
+  }
+
+  /** Level 8's request in pictures under the pet's swing: big dots for the pet's returns, small dots for hers. */
+  private drawStrip() {
+    const g = this.strip.clear();
+    if (!this.plan.requests || this.round.kind !== 'together' || !this.rigs[0] || this.line >= this.round.lines.length) return;
+    const req = this.pairLine.request ?? 'together';
+    const pets = req === 'half' ? 2 : 1, hers = req === 'twice' ? 2 : 1;
+    const box = requestStrip(this.layout);
+    const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
+    g.roundRect(box.x, box.y, box.w, box.h, box.h / 2).fill({ color: 0xffffff, alpha: 0.85 }).stroke({ width: 4, color: swatch.blue.line });
+    for (let k = 0; k < pets; k++) g.circle(cx - 50 + (k - (pets - 1) / 2) * 36, cy, 15).fill(swatch.blue.fill).stroke({ width: 3, color: swatch.blue.line });
+    g.roundRect(cx - 3, cy - 18, 6, 36, 3).fill(swatch.white.line);
+    for (let k = 0; k < hers; k++) g.circle(cx + 50 + (k - (hers - 1) / 2) * 28, cy, 9).fill(swatch.red.fill).stroke({ width: 3, color: swatch.red.line });
   }
 
   private drawTree() {
@@ -657,8 +740,8 @@ class SwingPals implements Game {
     pet.held = her.held = null;
     pet.t0 = her.t0 = this.t;
     this.match = together(l, hook).match;
-    this.claps = 0;
-    this.watchEnd = this.t + watchTime(l);
+    this.clapsLeft = this.match ? clapTimes(pet.hook, hook, watchTime(l)) : [];
+    this.notesLeft = this.plan.requests ? backTimes(hook, watchTime(l)) : [];
     sfx.whoosh();
     await this.ctx.tw.wait(watchTime(l));
     if (this.destroyed) return;
@@ -680,7 +763,12 @@ class SwingPals implements Game {
       for (const rig of this.rigs) rig.critter.hop(0.8);
       this.glowHook = null;
       this.drawHooks();
-      const extra: LineId = this.plan.id === 5 && WEIGHT[l.friend] !== WEIGHT[l.petFriend] ? 'swing-pals.heavy-same' : this.plan.id === 6 ? 'swing-pals.big-same' : 'swing-pals.together';
+      const extra: LineId =
+        l.request === 'twice' ? 'swing-pals.twice-yes'
+        : l.request === 'half' ? 'swing-pals.half-yes'
+        : this.plan.id === 5 && WEIGHT[l.friend] !== WEIGHT[l.petFriend] ? 'swing-pals.heavy-same'
+        : this.plan.id === 6 ? 'swing-pals.big-same'
+        : 'swing-pals.together';
       await this.ctx.say(extra);
       if (this.destroyed) return;
       await this.nextLine();
@@ -695,7 +783,9 @@ class SwingPals implements Game {
         this.misses++;
         sfx.boing();
       }
-      await this.ctx.say(r.side === 'quicker' ? 'swing-pals.quicker' : 'swing-pals.slower');
+      if (l.request === 'twice') await this.ctx.say('swing-pals.twice-not-yet');
+      else if (l.request === 'half') await this.ctx.say('swing-pals.half-not-yet');
+      else await this.ctx.say(r.side === 'quicker' ? 'swing-pals.quicker' : 'swing-pals.slower');
       if (!free && this.plan.id === 5 && WEIGHT[l.friend] !== WEIGHT[l.petFriend]) await this.ctx.say('swing-pals.heavy-same');
       if (!free && this.plan.id === 6) await this.ctx.say('swing-pals.big-same');
     }
@@ -705,8 +795,67 @@ class SwingPals implements Game {
     this.busy = false;
   }
 
+  /* Who comes back first? (level 7) -------------------------------------------------------------- */
+
+  /** Her guess: a paw on the friend, both let go, and the shorter rope's friend comes back first. Never a miss. */
+  async chooseFriend(i: number) {
+    if (this.busy || this.finished || this.round.kind !== 'predict' || this.guess !== null) return;
+    this.busy = true;
+    this.guess = i;
+    const race = this.race;
+    const first = firstBack(race), slow = first === 0 ? 1 : 0;
+    this.marker.visible = true;
+    this.marker.scale.set(0.5);
+    void this.ctx.tw.to(this.marker.scale, { x: 1, y: 1 }, { duration: 0.2, ease: ease.outBack });
+    sfx.pop();
+    void this.ctx.say('swing-pals.ready-go');
+    this.ctx.tw.kill(this.hold);
+    await this.ctx.tw.to(this.hold, { k: 1 }, { duration: 0.2 + 0.7 * (1 - this.hold.k), ease: ease.inOutSine });
+    if (this.destroyed) return;
+    await this.ctx.tw.wait(0.4);
+    if (this.destroyed) return;
+    const bell = this.layout.bell;
+    for (const [k, rig] of this.rigs.entries()) {
+      rig.A = race.heights[k] * bell;
+      rig.held = null;
+      rig.t0 = this.t;
+    }
+    sfx.whoosh();
+    const quickT = period(race.hooks[first]);
+    await this.ctx.tw.wait(quickT);
+    if (this.destroyed) return;
+    // The first friend back reaches the mitten: a clap and a bright note.
+    this.popMitten(first, false);
+    sfx.clap();
+    sfx.bell(NOTES[race.friends[first]] + 5, 0.3);
+    const m = this.mittens[first];
+    this.ctx.particles.burst(m.x, m.y - 30, { kind: 'star', colors: [0xffffff, swatch.yellow.light], count: 10, speed: [80, 200], gravity: 0, life: [0.4, 0.7] });
+    this.rigs[first].critter.setMood('happy', 1);
+    void this.ctx.tw.to(m.scale, { x: 0, y: 0 }, { duration: 0.3, delay: 0.5 });
+    await this.ctx.tw.wait(raceWatch(race) - quickT);
+    if (this.destroyed) return;
+    sfx.pluck(NOTES[race.friends[slow]], 0.15);
+    await Promise.all(this.rigs.map((r) => this.ctx.tw.to(r, { A: 0 }, { duration: 1.1 })));
+    if (this.destroyed) return;
+    for (const r of this.rigs) r.t0 = null;
+    if (i === first) {
+      sfx.tada();
+      this.ctx.pet.cheer();
+      this.rigs[first].critter.hop(0.8);
+      await this.ctx.say('swing-pals.first-yes');
+    } else await this.ctx.say('swing-pals.first-named', { friend: NAMES[race.friends[first]] });
+    if (this.destroyed) return;
+    await this.ctx.say('swing-pals.first-quick');
+    if (this.destroyed) return;
+    if (raceTempts(race)) await this.ctx.say('swing-pals.first-same');
+    if (this.destroyed) return;
+    this.marker.visible = false;
+    this.hintLit = false;
+    await this.nextLine();
+  }
+
   private showGlow() {
-    this.glowHook = this.pairLine.petHook;
+    this.glowHook = rightHook(this.pairLine);
     if (!this.glowCounted) {
       this.glowCounted = true;
       this.hints++;
@@ -725,6 +874,15 @@ class SwingPals implements Game {
       this.hints++;
       this.helperPushes = 2;
       void this.ctx.say('swing-pals.hint-push');
+      return;
+    }
+    if (this.round.kind === 'predict') {
+      // Lights the shorter rope before she guesses, one hint a line; after her guess it only speaks.
+      if (!this.busy && this.guess === null && !this.hintLit) {
+        this.hintLit = true;
+        this.hints++;
+      }
+      if (this.hintLit) void this.ctx.say('swing-pals.hint-first');
       return;
     }
     if (this.busy) return;
@@ -762,7 +920,7 @@ class SwingPals implements Game {
         py = from.y + (to.y - from.y) * move.k;
         rig.L = from.L + (to.L - from.L) * move.k;
       }
-      if (rig.held !== null) rig.held = -(i === 0 ? this.pairLine.petHeight : this.pairLine.height) * L.bell * this.hold.k;
+      if (rig.held !== null) rig.held = -this.releaseHeight(i) * L.bell * this.hold.k;
       if (rig.draw(this.t, px, py) && this.t - this.giggledAt > 1.4) {
         this.giggledAt = this.t;
         sfx.giggle();
@@ -781,25 +939,44 @@ class SwingPals implements Game {
         w.scale.set(1 + 0.08 * Math.sin(this.t * 10));
       }
     }
-    // Claps while the two swings come back together.
-    if (this.round.kind === 'together' && this.rigs[0].t0 !== null && this.t < this.watchEnd) {
-      const k = Math.floor((this.t - this.rigs[0].t0) / period(this.rigs[0].hook));
-      if (k > this.claps) {
-        this.claps = k;
-        if (this.match) {
-          sfx.clap();
-          const a = seatAt(L, L.columns[0], this.rigs[0].hook, -this.rigs[0].A), b = seatAt(L, L.columns[1], this.rigs[1].hook, -this.rigs[1].A);
-          this.ctx.particles.burst((a.x + b.x) / 2, Math.min(a.y, b.y) - 120, { kind: 'star', colors: [0xffffff, swatch.yellow.light], count: 8, speed: [80, 180], gravity: 0, life: [0.4, 0.7] });
-        }
+    // Claps when both swings are back at once, and (level 8) a soft note at each of her returns.
+    if (this.round.kind === 'together' && this.rigs[0].t0 !== null) {
+      const since = this.t - this.rigs[0].t0;
+      while (this.notesLeft.length && this.notesLeft[0] <= since) {
+        this.notesLeft.shift();
+        sfx.pluck(NOTES[this.rigs[1].friend], 0.12);
       }
+      while (this.clapsLeft.length && this.clapsLeft[0] <= since) {
+        this.clapsLeft.shift();
+        sfx.clap();
+        const a = seatAt(L, L.columns[0], this.rigs[0].hook, -this.rigs[0].A), b = seatAt(L, L.columns[1], this.rigs[1].hook, -this.rigs[1].A);
+        this.ctx.particles.burst((a.x + b.x) / 2, Math.min(a.y, b.y) - 120, { kind: 'star', colors: [0xffffff, swatch.yellow.light], count: 8, speed: [80, 180], gravity: 0, life: [0.4, 0.7] });
+      }
+    }
+    // Level 7: the paw rides over her guess.
+    if (this.guess !== null && this.marker.visible) {
+      const rig = this.rigs[this.guess];
+      const seat = seatAt(L, rig.col, rig.hook, rig.angle(this.t));
+      this.marker.position.copyFrom(markerAt(seat, rig.friend));
     }
     // The glow around the matching hook.
     this.glow.clear();
+    if (this.hintLit && this.round.kind === 'predict' && this.line < this.round.lines.length) {
+      // The shorter rope, lit along both its strands.
+      const rig = this.rigs[firstBack(this.race)];
+      const p = rig.col.pivot[rig.hook];
+      const rot = (-rig.angle(this.t) * Math.PI) / 180;
+      const c = Math.cos(rot), sn = Math.sin(rot);
+      for (const x of [-52, 52]) {
+        this.glow.moveTo(p.x + x * c, p.y + x * sn).lineTo(p.x + x * c - rig.L * sn, p.y + x * sn + rig.L * c);
+      }
+      this.glow.stroke({ width: 16 + 3 * Math.sin(this.t * 5), color: swatch.yellow.fill, alpha: 0.75, cap: 'round' });
+    }
     if (this.glowHook) {
       const p = L.columns[1].pivot[this.glowHook];
       this.glow.circle(p.x, p.y, 72 + 6 * Math.sin(this.t * 5)).stroke({ width: 8, color: swatch.yellow.fill, alpha: 0.8 });
     }
-    if (this.round.kind === 'together' && !this.busy) this.lookT += dt;
+    if (this.round.kind !== 'push' && !this.busy) this.lookT += dt;
   }
 
   /* Bot ------------------------------------------------------------------------------------------- */
@@ -817,7 +994,8 @@ class SwingPals implements Game {
       return { tap: spot, receiver: this.ground, when: () => (this.busy ? 'cancel' : nextBackTime(this.swings[i], this.t) - this.t < 0.45), pause: 0.2 };
     }
     if (this.lookT < 1) return null;
-    const right = this.hookTargets.find((h) => h.hook === this.pairLine.petHook);
+    if (this.round.kind === 'predict') return this.guess === null ? { tap: { on: this.friendNodes[firstBack(this.race)] } } : null;
+    const right = this.hookTargets.find((h) => h.hook === rightHook(this.pairLine));
     return right ? { tap: { on: right.node } } : null;
   }
 
@@ -828,6 +1006,7 @@ class SwingPals implements Game {
     this.busy = true;
     const friends: Friend[] = [];
     if (this.round.kind === 'push') for (const l of this.round.lines) for (const s of l.swings) friends.push(s.friend);
+    else if (this.round.kind === 'predict') for (const r of this.round.lines) friends.push(...r.friends);
     else for (const l of this.round.lines) friends.push(l.petFriend, l.friend);
     const row = new Container();
     row.eventMode = 'none';

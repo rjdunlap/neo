@@ -5,7 +5,10 @@ import {
   angleAt, applyPush, ART_TOP, AUTHORED_TEMPT, BASKET_HALF, FRIENDS, friendHeight, GOALS, ropeOf, authoredPush, authoredTogether, BELL_ONE, BELL_TWO, friendBox, heavyTempts, hookTargets, HOOKS, land,
   LENGTH, makeRound, nextBackTime, nextToPush, period, petCorner, phaseAt, PLANS, planFor, rectsOverlap, rightHook, roundFits, seatAt,
   shellButtons, STEPS, stillSwing, swingLayout, together, watchTime, WEIGHT, widestApart, type Hook, type Line, type Swing,
+  authoredRace, authoredRequest, backTimes, beatRatio, BIG, clapTimes, EVEN, firstBack, MARK_R, markerAt, raceTempts, raceWatch, requestStrip, SMALL, WANTED,
+  type Race, type Request,
 } from './logic';
+import { stepLevel } from '../../progress/difficulty';
 
 const VIEWS = {
   landscape: computeView(1024, 768),
@@ -204,7 +207,7 @@ describe('generation', () => {
           if (round.kind === 'together') {
             for (const l of round.lines) expect(together(l, l.hook).match).toBe(false);
             if (p.id === 5) expect(round.lines.filter((l) => [WEIGHT[l.friend], WEIGHT[l.petFriend]].sort().join() === 'heavy,light').length).toBeGreaterThanOrEqual(2);
-          } else if (p.two) {
+          } else if (round.kind === 'push' && p.two) {
             for (const l of round.lines) expect(period(l.swings[1].hook) / period(l.swings[0].hook)).not.toBeCloseTo(1);
           }
         }
@@ -352,4 +355,186 @@ describe('layout', () => {
       });
     }
   }
+});
+
+describe('level 7: who comes back first?', () => {
+  const plan = planFor(7);
+  const races = (authored: boolean) =>
+    Array.from({ length: 500 }, (_, i) => {
+      const { round } = makeRound(plan, new Rng(i + 1), authored);
+      if (round.kind !== 'predict') throw new Error('predict');
+      return round.lines;
+    });
+
+  it('the shorter rope comes back first for every pair, whatever the weights and heights', () => {
+    for (const a of HOOKS) for (const b of HOOKS) {
+      if (a === b) continue;
+      for (const fa of FRIENDS) for (const fb of FRIENDS) for (const ha of [SMALL, EVEN, BIG]) for (const hb of [SMALL, EVEN, BIG]) {
+        const race: Race = { hooks: [a, b], friends: [fa, fb], heights: [ha, hb] };
+        const s = firstBack(race), o = s === 0 ? 1 : 0;
+        expect(LENGTH[race.hooks[s]]).toBeLessThan(LENGTH[race.hooks[o]]);
+        // Released together from the back, the first back point reached is the shorter rope's.
+        const back = (k: 0 | 1) => nextBackTime({ ...stillSwing(race.hooks[k], race.friends[k], 1, 0) }, 0.01);
+        expect(back(s)).toBeLessThan(back(o));
+      }
+    }
+  });
+
+  it('the authored race is mouse on short (left) and bear on long, at one height', () => {
+    expect(authoredRace()).toEqual({ hooks: ['short', 'long'], friends: ['mouse', 'bear'], heights: [EVEN, EVEN] });
+    const { round } = makeRound(plan, new Rng(3), true);
+    if (round.kind !== 'predict') throw new Error('predict');
+    expect(round.lines[0]).toEqual(authoredRace());
+  });
+
+  it('every race has two different hooks and friends; every round holds a tempting race; sides are seeded', () => {
+    let shortRight = 0, heavyTempt = 0, pushTempt = 0;
+    for (const authored of [true, false]) {
+      for (const lines of races(authored)) {
+        expect(lines).toHaveLength(3);
+        for (const r of lines) {
+          expect(r.hooks[0]).not.toBe(r.hooks[1]);
+          expect(r.friends[0]).not.toBe(r.friends[1]);
+          if (firstBack(r) === 1) shortRight++;
+        }
+        expect(lines.some(raceTempts)).toBe(true);
+        for (const r of lines.filter(raceTempts)) {
+          const s = firstBack(r), o = s === 0 ? 1 : 0;
+          if (WEIGHT[r.friends[s]] === 'heavy' && WEIGHT[r.friends[o]] !== 'heavy') heavyTempt++;
+          if (r.heights[s] > r.heights[o]) pushTempt++;
+        }
+      }
+    }
+    expect(shortRight).toBeGreaterThan(300);
+    expect(heavyTempt).toBeGreaterThan(50);
+    expect(pushTempt).toBeGreaterThan(50);
+  });
+
+  it('the watch lasts until the slower friend has come back once', () => {
+    for (const lines of races(false)) for (const r of lines) {
+      expect(raceWatch(r)).toBeGreaterThanOrEqual(Math.max(period(r.hooks[0]), period(r.hooks[1])));
+      expect(raceWatch(r)).toBeLessThanOrEqual(2.5);
+    }
+  });
+
+  for (const [name, v] of Object.entries(VIEWS)) {
+    it(`${name}: both friends are tap targets at least 110 tall, apart, and the paw stays in the view clear of the corners`, () => {
+      const L = swingLayout(2, v);
+      const keepOut = [petCorner(v), ...shellButtons(v)];
+      for (const lines of races(true).slice(0, 60)) for (const r of lines) {
+        const boxes = [0, 1].map((k) => friendBox(seatAt(L, L.columns[k], r.hooks[k], -r.heights[k] * L.bell)));
+        for (const b of boxes) {
+          expect(b.h).toBeGreaterThanOrEqual(110);
+          expect(b.w).toBeGreaterThanOrEqual(100);
+          for (const k of keepOut) expect(rectsOverlap(b, k)).toBe(false);
+        }
+        expect(rectsOverlap(boxes[0], boxes[1])).toBe(false);
+        for (const k of [0, 1]) for (let a = -L.bell; a <= L.bell; a += 3) {
+          const m = markerAt(seatAt(L, L.columns[k], r.hooks[k], a), r.friends[k]);
+          expect(m.y - MARK_R, `${name} ${r.friends[k]} on ${r.hooks[k]}`).toBeGreaterThanOrEqual(0);
+          expect(m.x - MARK_R).toBeGreaterThanOrEqual(0);
+          expect(m.x + MARK_R).toBeLessThanOrEqual(v.w);
+        }
+      }
+    });
+  }
+});
+
+describe('level 8: twice as quick', () => {
+  const plan = planFor(8);
+
+  it('beatRatio is exactly 2 only for long with short and exactly ½ only for short with long', () => {
+    for (const p of HOOKS) for (const h of HOOKS) {
+      const r = beatRatio(p, h);
+      expect(Math.abs(r - 2) < 1e-9).toBe(p === 'long' && h === 'short');
+      expect(Math.abs(r - 0.5) < 1e-9).toBe(p === 'short' && h === 'long');
+    }
+  });
+
+  it('each request has exactly one right hook, and every wrong hook says which way to go', () => {
+    const lines: Line[] = [
+      { ...authoredRequest() },
+      { petHook: 'short', petFriend: 'cat', petHeight: EVEN, hook: 'middle', friend: 'cow', height: EVEN, request: 'half' },
+      ...HOOKS.map((h): Line => ({ petHook: h, petFriend: 'cat', petHeight: EVEN, hook: h, friend: 'cow', height: EVEN, request: 'together' })),
+    ];
+    for (const l of lines) {
+      const right = HOOKS.filter((h) => together(l, h).match);
+      expect(right).toEqual([rightHook(l)]);
+      expect(Math.abs(beatRatio(l.petHook, rightHook(l)) - WANTED[l.request!])).toBeLessThan(1e-9);
+      for (const h of HOOKS) {
+        const t = together(l, h);
+        if (t.match) continue;
+        // "Quicker" means her rope must get longer to reach the asked-for beat.
+        expect(t.side === 'quicker').toBe(LENGTH[h] < LENGTH[rightHook(l)]);
+      }
+    }
+    expect(rightHook(lines[0])).toBe('short');
+    expect(rightHook(lines[1])).toBe('long');
+  });
+
+  it('claps fire only when both swings are back at once, and every right pair claps inside its watch', () => {
+    for (const p of HOOKS) for (const h of HOOKS) {
+      for (const t of clapTimes(p, h, 6)) {
+        expect(Math.abs(t / period(p) - Math.round(t / period(p)))).toBeLessThan(1e-9);
+        expect(Math.abs(t / period(h) - Math.round(t / period(h)))).toBeLessThan(1e-9);
+        expect(phaseAt(p, 0, t)).toBeCloseTo(-1);
+        expect(phaseAt(h, 0, t)).toBeCloseTo(-1);
+      }
+    }
+    for (const request of ['twice', 'half', 'together'] as Request[]) {
+      for (const petHook of HOOKS) {
+        const l: Line = { petHook, petFriend: 'cat', petHeight: EVEN, hook: petHook, friend: 'cow', height: EVEN, request };
+        if (Math.abs(beatRatio(petHook, rightHook(l)) - WANTED[request]) > 1e-9) continue;
+        const claps = clapTimes(petHook, rightHook(l), watchTime(l));
+        expect(claps.length, `${request} on ${petHook}`).toBeGreaterThanOrEqual(1);
+        expect(backTimes(rightHook(l), watchTime(l)).length).toBeGreaterThanOrEqual(2);
+      }
+    }
+    // A "half" line shows her long rope come back twice, so its second shared return is inside the watch.
+    const half: Line = { petHook: 'short', petFriend: 'cat', petHeight: EVEN, hook: 'middle', friend: 'cow', height: EVEN, request: 'half' };
+    expect(clapTimes('short', 'long', watchTime(half))).toEqual([2, 4]);
+    // Levels 4–6 keep their watch: two of the pet's swings.
+    for (const h of HOOKS) expect(watchTime({ ...half, petHook: h, request: undefined })).toBeCloseTo(Math.min(4, 2 * period(h)));
+  });
+
+  it('the authored first line asks bunny-on-long for twice, with her duck on the middle hook', () => {
+    expect(authoredRequest()).toMatchObject({ petHook: 'long', petFriend: 'bunny', hook: 'middle', friend: 'duck', request: 'twice' });
+  });
+
+  it('every round holds both requests and the together line, and every starting hook is wrong', () => {
+    for (let seed = 1; seed <= 500; seed++) for (const authored of [true, false]) {
+      const { round } = makeRound(plan, new Rng(seed), authored);
+      if (round.kind !== 'together') throw new Error('together');
+      expect(round.lines.map((l) => l.request).sort()).toEqual(['half', 'together', 'twice']);
+      for (const l of round.lines) expect(together(l, l.hook).match).toBe(false);
+      if (authored) expect(round.lines[0]).toEqual(authoredRequest());
+    }
+  });
+
+  for (const [name, v] of Object.entries(VIEWS)) {
+    it(`${name}: the request strip sits in the view under the pet's swing, clear of the pet and the swings`, () => {
+      const L = swingLayout(2, v);
+      const s = requestStrip(L);
+      expect(s.x).toBeGreaterThanOrEqual(0);
+      expect(s.y + s.h).toBeLessThanOrEqual(v.h);
+      expect(rectsOverlap(s, petCorner(v)), name).toBe(false);
+      for (const h of HOOKS) for (let a = -L.bell; a <= L.bell; a += 2) expect(rectsOverlap(s, friendBox(seatAt(L, L.columns[0], h, a)))).toBe(false);
+    });
+  }
+});
+
+describe('level order', () => {
+  it("pre-K steps 3 → 7 → 4; school runs 4 to 8; level 7's window includes pre-K and school", async () => {
+    const { swingPals } = await import('./index');
+    const prek = swingPals.levels('prek');
+    expect(stepLevel(3, 1, prek)).toBe(7);
+    expect(stepLevel(7, 1, prek)).toBe(4);
+    expect(stepLevel(4, -1, prek)).toBe(7);
+    const school = swingPals.levels('school');
+    expect([school.min, school.max]).toEqual([4, 8]);
+    expect(stepLevel(6, 1, school)).toBe(7);
+    expect(stepLevel(7, 1, school)).toBe(8);
+    expect(swingPals.describeLevel?.(7)).toBe('Who comes back first?');
+    expect(swingPals.describeLevel?.(8)).toBe('Twice as quick');
+  });
 });

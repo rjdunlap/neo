@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, errors, log, scene, tap, screenshot, launch, finished }) {
-/** Swing Pals by touch: level 1 pushed to every bell by taps; level 6 with one wrong hook (one miss) and a requested glow (one hint); level 3 upright. */
+/** Swing Pals by touch: level 1 pushed to every bell by taps; level 6 with one wrong hook (one miss) and a requested glow (one hint); level 3 upright; level 7 upright with a wrong guess (never a miss) and a lit rope (one hint); level 8 with one wrong hook. */
 async function swingPalsPlay() {
   const state = () => page.evaluate(() => { const g = neo.scene.game; return { busy: g.busy, misses: g.misses, hints: g.hints, line: g.line, glow: g.glowHook }; });
   const idle = () => page.waitForFunction(() => neo.scene.finished || (neo.scene.game && !neo.scene.game.busy), null, { timeout: 20000 });
@@ -53,9 +53,46 @@ async function swingPalsPlay() {
   }
   await page.waitForTimeout(500);
   await screenshot('swing-pals-3-portrait');
+  // Level 7 upright: a requested hint lights the shorter rope (one hint, once); a wrong guess is named, never a miss.
+  await launch('swing-pals', 7); await idle(); await page.waitForTimeout(400);
+  n = await page.evaluate(() => kit.store.data.stickers.length);
+  const ROPES = ['short', 'middle', 'long'];
+  const quickSide = () => page.evaluate((ROPES) => { const h = neo.scene.game.race.hooks; return ROPES.indexOf(h[0]) < ROPES.indexOf(h[1]) ? 0 : 1; }, ROPES);
+  const tapFriend = async (i) => {
+    await idle(); await page.waitForTimeout(150);
+    const p = await page.evaluate((i) => { const q = neo.scene.game.friendNodes[i].position; return { x: q.x, y: q.y }; }, i);
+    await tapAt(p.x, p.y); await page.waitForTimeout(250);
+  };
+  await page.evaluate(() => neo.scene.game.askForHint()); await page.evaluate(() => neo.scene.game.askForHint());
+  st = await page.evaluate(() => ({ hints: neo.scene.game.hints, lit: neo.scene.game.hintLit }));
+  assert.deepEqual(st, { hints: 1, lit: true }, 'a requested hint lights the shorter rope once');
+  const q = await quickSide();
+  await tapFriend(q === 0 ? 1 : 0);
+  assert.equal(await page.evaluate(() => neo.scene.game.guess), q === 0 ? 1 : 0, 'the tap is her guess');
+  await page.waitForTimeout(1200);
+  await screenshot('swing-pals-7-portrait');
+  await page.waitForFunction(() => neo.scene.finished || neo.scene.game.line === 1, null, { timeout: 30000 });
+  for (let guard = 0; guard < 6 && !(await page.evaluate(() => neo.scene.finished || neo.scene.game.finished)); guard++) {
+    await tapFriend(await quickSide());
+    await page.waitForFunction((line) => neo.scene.finished || neo.scene.game.line !== line, await page.evaluate(() => neo.scene.game.line), { timeout: 30000 });
+  }
+  await sticker(n);
+  st = await state(); assert.deepEqual([st.misses, st.hints], [0, 1], 'level 7: a wrong guess is no miss; one hint');
   await page.setViewportSize({ width: 1024, height: 768 });
+
+  // Level 8: a hook that misses the asked-for beat (not the start) is one miss; then the right hook for each request.
+  await launch('swing-pals', 8); await idle();
+  n = await page.evaluate(() => kit.store.data.stickers.length);
+  const right8 = () => page.evaluate(() => { const l = neo.scene.game.pairLine; return l.request === 'twice' ? 'short' : l.request === 'half' ? 'long' : l.petHook; });
+  const r0 = await right8();
+  const start8 = await page.evaluate(() => neo.scene.game.pairLine.hook);
+  await tapHook(['short', 'middle', 'long'].find((h) => h !== r0 && h !== start8));
+  st = await state(); assert.deepEqual([st.misses, st.hints, st.line], [1, 0, 0], 'level 8: a wrong hook counts one miss');
+  for (let guard = 0; guard < 6 && !(await page.evaluate(() => neo.scene.finished || neo.scene.game.finished)); guard++) await tapHook(await right8());
+  await sticker(n);
+  st = await state(); assert.deepEqual([st.misses, st.hints], [1, 0]);
   assert.deepEqual(errors, [], 'page errors');
-  log('Swing Pals: level 1 by taps, level 6 with a wrong hook and a requested hint, level 3 upright');
+  log('Swing Pals: level 1 by taps, level 6 with a wrong hook and a requested hint, level 3 upright, level 7 upright with a wrong guess and a hint, level 8 with a wrong hook');
 }
 
 return { swingPalsPlay };
