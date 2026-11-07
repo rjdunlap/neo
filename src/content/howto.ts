@@ -621,6 +621,20 @@ export const HOW_TO: Record<string, GameHowTo> = {
       { from: 8, to: 8, text: "No edges even at the closest look means the green is in the water itself. It doesn't prove nothing is alive there." },
     ],
   },
+  'circuit-garden': {
+    goal: 'Make a complete connection so the lantern lights, and watch a switch change it.',
+    steps: [
+      { from: 1, to: 1, text: 'Drag the wire piece into the gap, or tap the piece and then tap the gap.' },
+      { from: 1, to: 1, text: 'Watch the lantern light. The arrow button puts the piece back; the round arrow undoes the last change.' },
+      { from: 2, to: 2, text: 'Tap the switch to close and open it, and watch the lantern go on and off.' },
+      'The hand button shows one next step.',
+    ],
+    finish: [
+      { from: 1, to: 1, text: 'Press the tick once the lantern has lit; it may be on or off when she finishes.' },
+      { from: 2, to: 2, text: 'Press the tick once she has seen the lantern both on and off; either final state is fine.' },
+    ],
+    note: 'Nothing here is a mistake: trying pieces, flipping the switch and pressing the tick early never count. The hand button counts as a hint once for each thing it shows. A toy model: the flower is a made lamp, and the battery gives energy; nothing is used up.',
+  },
   'far-lights': {
     goal: 'See how a light looks brighter when it is nearer.',
     steps: [

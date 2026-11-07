@@ -1703,6 +1703,18 @@ export const SCRIPT = {
   'lens.green.yes.living': ['Tiny green living things, lots of them!'],
   'lens.green.yes.through': ['No edges, even this close. The green is all through the water.'],
 
+  // Circuit Garden: a toy lantern lights only when the wires make a complete loop through it and back to the battery.
+  'game.circuit-garden': ['Circuit Garden!'],
+  'circuit.instruct.1': ['Join the gap so the lantern has a way back to the battery.'],
+  'circuit.instruct.2': ['Try the switch. Watch the lantern on and off.'],
+  'circuit.closed': ['The connections make a complete loop through the lamp.'],
+  'circuit.open': ['There is a break. The lantern is off.'],
+  'circuit.supply-break': ['Join this gap from the battery to the lamp.'],
+  'circuit.return-break': ['Join this gap back to the battery.'],
+  'circuit.unseen-on': ['Try the switch to see the lantern on.'],
+  'circuit.unseen-off': ['Try the switch to see the lantern off.'],
+  'circuit.can-finish': ['You saw it! Press the tick when you are done.'],
+
   // Far Lights: the same light looks brighter near the window and dimmer far away.
   'game.far-lights': ['Far lights!'],
   'far.instruct.glow': ['Tap a little light!'],
