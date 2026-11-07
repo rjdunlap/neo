@@ -21,4 +21,12 @@ export const VOICE = {
   'bolt.stuck': ["Stuck! Let's take one back."],
   'bolt.hint': ['Try the glowing one.'],
   'bolt.done': ['All done. What a good fixer!', 'Every board is down. Thank you!'],
+  'bolt.instruct-build': ['Make the wall look like the picture. Pick a board, then tap its holes.'],
+  'bolt.covers.red': ["The red board is covering a hole. Let's take it back."],
+  'bolt.covers.blue': ["The blue board is covering a hole. Let's take it back."],
+  'bolt.covers.yellow': ["The yellow board is covering a hole. Let's take it back."],
+  'bolt.covers.green': ["The green board is covering a hole. Let's take it back."],
+  'bolt.covers.purple': ["The purple board is covering a hole. Let's take it back."],
+  'bolt.covers.orange': ["The orange board is covering a hole. Let's take it back."],
+  'bolt.built': ['It looks just like the picture!', 'Just like the picture. What a good builder!'],
 } satisfies Record<string, string[]>;
