@@ -2,8 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import { BOARDS } from './puzzles';
+import { VOICE } from './voice';
 import {
-  canonical, greedy, hintMove, HIT_W, jarLayout, legal, matLabels, move, moves, parse, PLANS, planFor, present, refusal, render, search, solve, solved,
+  canonical, FRUITS, LID_COLOR, LOOKS, roundBoards, greedy, hintMove, HIT_W, jarLayout, legal, matLabels, move, moves, parse, PLANS, planFor, present, refusal, render, search, solve, solved,
   uniformFull, UNDO_INSET, type Board, type Labels,
 } from './logic';
 
@@ -61,13 +62,43 @@ describe('Jar Sort rules', () => {
   it('solves level 1 the way the definition walks it', () => {
     expect(solve(parse(BOARDS[1][0]), 2)).toHaveLength(2);
     expect(solve(parse(BOARDS[1][1]), 2)).toHaveLength(3);
-    expect(BOARDS[1]).toHaveLength(2);
+  });
+
+  it('keeps level 1 as authored pairs, each two moves then three, and the seed picks a pair', () => {
+    const list = BOARDS[1];
+    expect(list.length % 2).toBe(0);
+    expect(list.length / 2).toBeGreaterThanOrEqual(4);
+    expect(new Set(list).size, 'no two level 1 boards stand alike').toBe(list.length);
+    for (let i = 0; i < list.length; i += 2) {
+      expect(solve(parse(list[i]), 2), list[i]).toHaveLength(2);
+      expect(solve(parse(list[i + 1]), 2), list[i + 1]).toHaveLength(3);
+    }
+    const plan = planFor(1);
+    const firsts = new Set<string>();
+    for (let seed = 1; seed <= 60; seed++) {
+      const round = roundBoards(list, plan, new Rng(seed), plan.boards);
+      expect(round).toHaveLength(2);
+      expect(list.indexOf(round[0]) % 2, 'a round opens with a pair\'s two-move board').toBe(0);
+      expect(list.indexOf(round[1])).toBe(list.indexOf(round[0]) + 1);
+      expect(roundBoards(list, plan, new Rng(seed), 1)).toEqual([round[0]]);
+      firsts.add(round[0]);
+    }
+    expect(firsts.size, 'every pair turns up').toBe(list.length / 2);
+  });
+
+  it('gives every fruit its refusal and wrong-jar lines, and every look a lid colour', () => {
+    for (const f of FRUITS) {
+      expect(VOICE, f).toHaveProperty([`jar.refuse-kind.${f}`]);
+      expect(VOICE, f).toHaveProperty([`jar.wrong-jar.${f}`]);
+    }
+    expect(LOOKS).toHaveLength(3);
+    expect(new Set(LOOKS.map((l) => LID_COLOR[l])).size).toBe(LOOKS.length);
   });
 
   it('keeps a frozen list where every board is well formed, solvable and inside its par range', () => {
     for (const plan of PLANS) {
       const list = BOARDS[plan.id];
-      if (plan.id > 1) expect(list.length, `level ${plan.id}`).toBeGreaterThanOrEqual(12);
+      if (plan.id > 1) expect(list.length, `level ${plan.id}`).toBeGreaterThanOrEqual(20);
       const labels = matLabels(plan);
       for (const s of list) {
         const b = parse(s);
@@ -88,7 +119,8 @@ describe('Jar Sort rules', () => {
         }
         expect(solved(at, plan.cap, labels)).toBe(true);
       }
-      expect(new Set(list.map((s) => canonical(parse(s), labels))).size, `level ${plan.id} repeats a board`).toBe(list.length);
+      // Level 1's pairs share their few puzzles and differ in where the fruit stand (its own test checks them).
+      if (plan.id > 1) expect(new Set(list.map((s) => canonical(parse(s), labels))).size, `level ${plan.id} repeats a board`).toBe(list.length);
     }
   });
 
@@ -102,20 +134,31 @@ describe('Jar Sort rules', () => {
   it('keeps the shortest length when a round renames kinds and shuffles jars, and a seed repeats itself', () => {
     for (const plan of PLANS) {
       const labels = matLabels(plan);
-      for (const s of BOARDS[plan.id].slice(0, 4)) {
+      for (const s of BOARDS[plan.id]) {
         const fewest = solve(parse(s), plan.cap, labels)!.length;
-        const a = present(s, plan, new Rng(7));
-        const b = present(s, plan, new Rng(7));
-        expect(render(a.board)).toBe(render(b.board));
-        expect(solve(a.board, plan.cap, a.labels)!.length, s).toBe(fewest);
-        if (plan.labels) {
-          expect(a.labels!.filter((k) => k !== null)).toHaveLength(plan.kinds);
-          expect(new Set(a.labels!.filter((k) => k !== null)).size).toBe(plan.kinds);
+        for (const seed of [7, 19]) {
+          const a = present(s, plan, new Rng(seed));
+          const b = present(s, plan, new Rng(seed));
+          expect(render(a.board)).toBe(render(b.board));
+          expect(solve(a.board, plan.cap, a.labels)!.length, s).toBe(fewest);
+          expect(a.board.flat().every((k) => k >= 0 && k < FRUITS.length), s).toBe(true);
+          expect(new Set(a.board.flat()).size, s).toBe(plan.kinds);
+          if (plan.labels) {
+            expect(a.labels!.filter((k) => k !== null)).toHaveLength(plan.kinds);
+            expect(new Set(a.labels!.filter((k) => k !== null)).size).toBe(plan.kinds);
+          }
         }
       }
     }
-    // Level 1 stays as authored.
-    expect(render(present(BOARDS[1][0], planFor(1), new Rng(3)).board)).toBe(BOARDS[1][0]);
+    // Level 1 renames its fruit but keeps the authored jar order, so the shape of each jar is as drawn.
+    const shape = (b: Board) => b.map((j) => j.length).join('|');
+    const shown = present(BOARDS[1][0], planFor(1), new Rng(3)).board;
+    expect(shape(shown)).toBe(shape(parse(BOARDS[1][0])));
+    expect(canonical(shown)).toBe(canonical(parse(BOARDS[1][0])));
+    // All seven fruits are in use: over a few seeds, cherries and lemons turn up on a three-kind board.
+    const seen = new Set<number>();
+    for (let seed = 1; seed <= 40; seed++) present(BOARDS[3][0], planFor(3), new Rng(seed)).board.flat().forEach((k) => seen.add(k));
+    expect(seen.size).toBe(FRUITS.length);
   });
 
   it('hints a legal move that brings the board one move closer, from boards she could wander to', () => {

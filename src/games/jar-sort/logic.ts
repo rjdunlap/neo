@@ -2,7 +2,7 @@ import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 
 /**
- * Jar Sort's rules. A jar is a bottom-to-top list of fruit kinds (0 strawberry, 1 blueberry, 2 orange, 3 pear, 4 plum); a move
+ * Jar Sort's rules. A jar is a bottom-to-top list of fruit kinds (0 strawberry, 1 blueberry, 2 orange, 3 pear, 4 plum, 5 cherries, 6 lemon); a move
  * takes the top piece of one jar and puts it on another that has room and is empty or has the same kind on top (the ball rule:
  * one piece per move). Solved: every jar is empty or full of one kind, and on a labelled board each kind sits on its own mat.
  */
@@ -16,8 +16,13 @@ export interface Move {
   to: number;
 }
 
-export const FRUITS = ['strawberry', 'blueberry', 'orange', 'pear', 'plum'] as const;
+export const FRUITS = ['strawberry', 'blueberry', 'orange', 'pear', 'plum', 'cherry', 'lemon'] as const;
 export type Fruit = (typeof FRUITS)[number];
+
+/** The pantry behind the jars: the window's light and the lids' colour change with the round; the rules never do. */
+export const LOOKS = ['morning', 'rain', 'evening'] as const;
+export type Look = (typeof LOOKS)[number];
+export const LID_COLOR: Record<Look, 'red' | 'blue' | 'purple'> = { morning: 'red', rain: 'blue', evening: 'purple' };
 
 export interface JarPlan {
   id: number;
@@ -197,13 +202,25 @@ export function greedy(b: Board, cap: number, labels?: Labels, steps = 200): boo
   return false;
 }
 
-/** A frozen board as she sees it: kinds renamed and jars shuffled from the seed (level 1 keeps its authored order). Neither changes the shortest solution. */
+/**
+ * The frozen boards of one round. Level 1's list is authored pairs (a two-move board, then a three-move one) and the seed picks a
+ * pair; every other level draws its boards from the shuffled list.
+ */
+export function roundBoards(list: readonly string[], plan: JarPlan, rng: Rng, count: number): string[] {
+  if (plan.id !== 1) return rng.shuffle([...list]).slice(0, count);
+  const pair = rng.int(0, Math.floor(list.length / 2) - 1);
+  return list.slice(pair * 2, pair * 2 + count);
+}
+
+/**
+ * A frozen board as she sees it: kinds renamed from all seven fruits and jars shuffled from the seed (level 1 keeps its authored
+ * jar order, so the lit jars stand where the pair was drawn). Neither changes the shortest solution.
+ */
 export function present(s: string, plan: JarPlan, rng: Rng): { board: Board; labels?: Labels } {
   const raw = parse(s);
   const mats = matLabels(plan);
-  if (plan.id === 1) return { board: raw, labels: mats };
-  const names = rng.shuffle([0, 1, 2, 3, 4]);
-  const order = rng.shuffle(raw.map((_, i) => i));
+  const names = rng.shuffle(FRUITS.map((_, i) => i));
+  const order = plan.id === 1 ? raw.map((_, i) => i) : rng.shuffle(raw.map((_, i) => i));
   return {
     board: order.map((i) => raw[i].map((k) => names[k])),
     labels: mats && order.map((i) => (mats[i] === null ? null : names[mats[i]!])),

@@ -24,17 +24,21 @@ async function jarSortPlay() {
     for (let f = 0; f < g.board.length; f++) for (let t = 0; t < g.board.length; t++) if (L.refusal(g.board, g.plan.cap, f, t)) return { from: f, to: t };
     return null;
   });
-  // Level 1: two authored boards; a refused move under lit jars is free; a tap on the ground sets a lifted fruit back.
+  // Level 1: a seeded authored pair; a refused move under lit jars is free; a tap on the ground sets a lifted fruit back.
   await launch('jar-sort', 1); await idle();
   const stickers = await page.evaluate(() => kit.store.data.stickers.length);
   let st = await state();
-  assert.equal(st.board, '01|1|0', 'level 1 starts with the authored two-move board');
-  await tapJar(0);
-  assert.equal((await state()).lifted, 0, 'a tap lifts the top fruit');
+  const first = st.board;
+  assert.equal(await page.evaluate(async () => { const L = await import('/src/games/jar-sort/logic.ts'), g = neo.scene.game; return L.solve(g.board, g.plan.cap).length; }), 2, 'level 1 opens with a two-move board');
+  const full = st.board.split('|').findIndex((j) => j.length > 0);
+  await tapJar(full);
+  assert.equal((await state()).lifted, full, 'a tap lifts the top fruit');
   await page.evaluate(() => kit.tap(neo.view.w / 2 * neo.view.scale, (neo.view.h - 30) * neo.view.scale)); await page.waitForTimeout(200);
   assert.equal((await state()).lifted, null, 'a tap on the ground sets it back');
-  await tapJar(0); await tapJar(2); await page.waitForTimeout(400);
-  st = await state(); assert.deepEqual([st.misses, st.board], [0, '01|1|0'], 'a refused move at level 1 is free and changes nothing');
+  const refused1 = await refusedPair();
+  assert.ok(refused1, 'level 1 has a refused move to try');
+  await tapJar(refused1.from); await tapJar(refused1.to); await page.waitForTimeout(400);
+  st = await state(); assert.deepEqual([st.misses, st.board], [0, first], 'a refused move at level 1 is free and changes nothing');
   await solveAll();
   st = await state(); assert.deepEqual([st.misses, st.hints], [0, 0]);
   await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, stickers, { timeout: 15000 });
@@ -55,8 +59,16 @@ async function jarSortPlay() {
   await page.evaluate(() => neo.scene.game.undoButton.press()); await page.waitForTimeout(300);
   assert.equal((await state()).board, before, 'the round arrow takes it back');
   assert.deepEqual(errors, [], 'page errors');
-  // Level 7 upright: seven jars in two rows, one screenshot.
+  // Level 3 upright in the rain look (relaunched until the round picks it): the pantry window, a blue lid colour, jars clear.
   await page.setViewportSize({ width: 768, height: 1024 });
+  for (let i = 0; i < 12; i++) {
+    await launch('jar-sort', 3); await idle();
+    if (await page.evaluate(() => neo.scene.game.look) === 'rain') break;
+  }
+  assert.equal(await page.evaluate(() => neo.scene.game.look), 'rain');
+  await page.waitForTimeout(400);
+  await screenshot('jar-sort-3-rain-portrait');
+  // Level 7 upright: seven jars in two rows, one screenshot.
   await launch('jar-sort', 7); await idle(); await page.waitForTimeout(400);
   await screenshot('jar-sort-7-portrait');
   await page.setViewportSize({ width: 1024, height: 768 });
@@ -68,7 +80,7 @@ async function jarSortPlay() {
   st = await state(); assert.deepEqual([st.misses, st.hints], [0, 0]);
   await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, stickers8, { timeout: 15000 });
   assert.deepEqual(errors, [], 'page errors');
-  log('Jar Sort: levels 1 and 8 solved by taps, refused moves (free at 1, misses at 3), a hint, a drag, undo, level 7 upright');
+  log('Jar Sort: a seeded level 1 pair and level 8 solved by taps, refused moves (free at 1, misses at 3), a hint, a drag, undo, level 3 upright in the rain look, level 7 upright');
 }
 
 return { jarSortPlay };

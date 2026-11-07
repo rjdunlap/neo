@@ -19,13 +19,12 @@ She taps a jar to lift its top fruit and taps another jar to drop it, or drags i
 
 `LEVELS` is `{ preschool: 1–3, prek: 2–5, school: 4–8 }`, with no `order` or `entryLevels`. A round is two boards at levels 1–4 and one board from 5.
 
-**Content pools.** Boards are frozen and solver-checked in `puzzles.ts`: level 1 is two authored boards, always in the same order; levels 2–8 hold 14 boards each. `present` renames the five kinds and shuffles jar order from the seed (not at level 1), which keeps par. Five fruits (strawberry, blueberry, orange, pear, plum) with distinct silhouettes; one glass jar drawing; one red lid; jam colours per fruit. No backdrop of its own (a transparent tap layer over the scene). Music `STYLES.paint`; each fruit lands on its own marimba step.
+**Content pools.** Boards are frozen and solver-checked in `puzzles.ts`: level 1 is four authored pairs (seed picks one); levels 2–8 hold 20 boards each. `present` renames the kinds from seven fruits (renamed at level 1 too, jar order kept) and shuffles jar order from the seed elsewhere, which keeps par. Seven fruits (strawberry, blueberry, orange, pear, plum, cherries, lemon) with distinct silhouettes; one glass jar drawing; jam colours per fruit. A code-drawn pantry backdrop in three seeded looks with lid colours red, blue, purple (slice 1). Music `STYLES.paint`; each fruit lands on its own marimba step.
 
 **Accounting.** A refused move (full, or a different fruit on top) springs back with a boing and a spoken reason ("Pear goes on pear, or in an empty jar."). It is free at levels 1–2 (`lit`) and one miss from level 3; every second miss on a board lights the hint move's two jars (one hint). After `max(8, 2 × par)` legal moves since the last hint, the hint lights too. The hint is a breadth-first search capped at 200,000 states, falling back to "take some back" on the round arrow. A dead end ("Stuck! Let's take one back.") is never a miss or a hint. Undo is free and unlimited; legal wandering, set-downs and undo never count.
 
 **Known gaps.**
-- Level 1 is the same two boards every time, in the same order: a preschooler's first rung never varies.
-- Every round looks the same: no backdrop, one jar, one lid colour; with five fruits and 5-kind boards at level 7, renaming cannot vary which fruit appear.
+- Closed by slice 1 (2026-11-07, PR #1365): level 1 now has four authored pairs and every round has one of three pantry looks and seven fruits.
 - The step from level 2 to 3 changes three things at once for pre-K and preschool: a third kind, a spare jar to plan with, and the end of lit jars together with refusals becoming misses.
 - The sticker's fruit is from the seed, not from the round.
 - Capacity is one number per level (`plan.cap`); every jar on a board is the same height, so "where to park" is never "which smaller place".
@@ -108,7 +107,7 @@ None new. Couch play stays "later" as decided on 2026-10-23.
 
 ## Build slices, in order
 
-1. **Fresh content: pantry looks, two more fruits, more level 1 boards and more boards** (preschool to school; typecheck, rule tests, one filtered `jarsort` play at level 3 with one portrait screenshot in the rain look, build because voice lines change; no `fingerdemo`).
+1. **Built 2026-11-07 (PR #1365).** **Fresh content: pantry looks, two more fruits, more level 1 boards and more boards** (preschool to school; typecheck, rule tests, one filtered `jarsort` play at level 3 with one portrait screenshot in the rain look, build because voice lines change; no `fingerdemo`).
 2. **Level 9 *Three kinds, bright jars*** placed between 2 and 3 (new level on the existing interaction: typecheck, rule and registry/how-to tests, one browser play of 9, `fingerdemo` at 9, build).
 3. **Level 10 *A little jar to park in*** (model change on the existing interaction: typecheck, rule tests with levels 1–9 unchanged, one browser play of 10 with one refused move on the little jar, `fingerdemo` at 10, build).
 4. **Level 11 *Like the picture*** (new interaction: typecheck, unit tests, one scripted play with one refused move and one hint, one portrait screenshot, `fingerdemo` at 11, build).
@@ -116,4 +115,4 @@ None new. Couch play stays "later" as decided on 2026-10-23.
 
 ## What was built in this session
 
-Nothing: research and ideation only. Links and `git diff --check` ran.
+Research and ideation (PR #1361). **Slice 1 built 2026-11-07 (PR #1365):** a code-drawn pantry backdrop (window pane per look: morning sun, rain, evening lamp; shelf with striped cloth under each row) in three seeded looks with lid colours red, blue, purple (`LOOKS`, `LID_COLOR` in `logic.ts`); cherries and lemon (`FRUITS` now 7, board kinds still at most five; jam pink and yellow; marimba steps 6 and 10; four new voice lines, not rendered, so device speech); level 1 is four authored pairs picked by seed (level 1 renames fruit but keeps jar order; pairs differ in where fruit stand, since a 3×2 two-kind board has only two puzzles of each length); levels 2–8 hold 20 solver-checked boards each. Sticker unchanged. Checks in [VERIFICATION](../VERIFICATION.md).
