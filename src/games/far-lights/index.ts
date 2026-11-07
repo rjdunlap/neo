@@ -741,13 +741,17 @@ class FarLights implements Game {
     const sb = this.stepBoard;
     const btn = this.stepButton;
     if (!sb || !btn || !sb.fit || this.busy || this.finished || this.lifted) return;
-    btn.ring.alpha = 1;
-    void this.ctx.tw.to(btn.ring, { alpha: 0 }, { duration: 0.5 });
     const first = !sb.stepped;
     sb.step();
     this.busy = true;
     const e = this.epoch;
+    // The first step rebuilds to add the faint rings, so the flash goes on the rebuilt button.
     if (first && this.layout) this.build();
+    const flash = this.stepButton;
+    if (flash) {
+      flash.ring.alpha = 1;
+      void this.ctx.tw.to(flash.ring, { alpha: 0 }, { duration: 0.5 });
+    }
     sfx.pop(4);
     void this.ctx.tw.wait(0.2).then(() => this.alive && e === this.epoch && sfx.pop(6));
     await this.ctx.tw.to(this.stepAt, { t: this.stepAt.t < 0.5 ? 1 : 0 }, { duration: 1, ease: ease.inOutSine });
