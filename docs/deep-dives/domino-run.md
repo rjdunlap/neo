@@ -16,8 +16,9 @@ She drags dominoes from a tray into the sockets of a sandy lane, taps the green 
 | 6 | Growing dominoes | school | Climb small → tall → giant to ring the gong; a wrong order stalls "too heavy" |
 | 7 | Just enough | school | The tray holds the fewest pieces that work, bell or gong, so every piece has to count |
 | 8 | Two bells, one tray | school | A fork with a bell and a gong: share three mixed pieces unevenly between the lanes |
+| 9 | Where will it stop? | school | Guess which domino the line stops at (tap it), watch it run, then fix the line with one piece (stalls too far or too heavy) |
 
-`BandLevels`: toddler 1–2, preschool 2–4, pre-K 3–5, school 4–8. There is no `order`, no `entryLevels`, and no lap or grown-up range (the kept default in the [October 23 record](../archive/DECISIONS-2026-10-23.md)).
+`BandLevels`: toddler 1–2, preschool 2–4, pre-K 3–5, school 4–9. There is no `order`, no `entryLevels`, and no lap or grown-up range (the kept default in the [October 23 record](../archive/DECISIONS-2026-10-23.md)).
 
 **Content pools.** Each level has one authored first line (`FIRST`) and seeded lines after it: a lane of 3–6 slots (sockets at most 5, tray at most 3), six line colours (`LINE_COLORS`), three sizes and two ends. The lane is always the same sandy strip on the plain game background, and pinned dominoes are always the same brown. The generator builds a lane backward from a random chain (`randomChain`, `chainLane`) and accepts it only through the plan filter (`passes`). A test asserts that 500 seeds per plan never need the fallback.
 
@@ -25,7 +26,8 @@ She drags dominoes from a tray into the sockets of a sandy lane, taps the green 
 
 **Known gaps.**
 - **Puddles on a real iPad:** whether a puddle reads as "nothing can stand here" without speech is a person check (below).
-- **School stops at level 8,** and the ladder's newest idea is level 8's uneven split.
+- **School stops at level 9,** and the ladder's newest idea is level 9's predict-then-fix guess.
+- **The level 9 flag and ring on a real iPad:** whether the orange guess flag and the ring on the real last domino read clearly is a person check (below); the new voice lines have no rendered clips.
 - **The stalled-chain accounting** is hints-only (misses are always 0). That is a kept default, not a gap.
 - **Nothing is saved, and there is no couch play.**
 - **The device check is still open** in [DEVICE-CHECKS](../DEVICE-CHECKS.md): tap-to-hop at level 2, whether the stall ring reads as "here is the gap", and whether the dot faces tell sizes apart (puddles to be added).
@@ -107,8 +109,8 @@ No new decisions. The kept 2026-10-23 defaults stay as recorded: no lap or grown
 ## Build slices, in order
 
 1. **Puddles, beach moods and more ends** (built 2026-11-07, PR #1360). Tier: typecheck and the game's rule tests (a puddle on every non-socket empty slot and never on a socket; every end look maps to bell or gong size), one filtered `dominorun` play at level 6 with one portrait screenshot in the sunset mood, `npm run build` (voice). No `fingerdemo`: the bot is unchanged.
-2. **Level 9 *Where will it stop?*** (ready). Tier: new interaction. Typecheck and unit tests (one stall per pre-built line, too-heavy share, one-piece fix, layout of the flag), one scripted `dominorun` play of level 9 with one wrong prediction and one requested hint, one portrait screenshot, `fingerdemo` at 9, build (voice, how-to).
-3. **Level 10 *Over the puddle*** (ready, after slice 1 for the puddle art and after slice 2 so school's range is edited once more). Tier: new level on the existing drag interaction. Typecheck, rule tests (a giant before every puddle, no giantless solution, 500 seeds without fallback), one browser play of level 10, `fingerdemo` at 10, build.
+2. **Level 9 *Where will it stop?*** (built 2026-11-07, PR #1386). Tier: new interaction. Typecheck and unit tests (one stall per pre-built line, too-heavy share, one-piece fix, layout of the flag), one scripted `dominorun` play of level 9 with one wrong prediction and one requested hint, one portrait screenshot, `fingerdemo` at 9, build (voice, how-to).
+3. **Level 10 *Over the puddle*** (ready; slices 1–2 built). Tier: new level on the existing drag interaction. Typecheck, rule tests (a giant before every puddle, no giantless solution, 500 seeds without fallback), one browser play of level 10, `fingerdemo` at 10, build.
 4. **Level 11 *Under the pier*** (ready, after slice 3). Tier: model change on the existing interaction. Typecheck and rule tests (low sockets in `solutions`, the generator and `hintPlacement`; levels 1–10's first lines and solution counts unchanged), one scripted play of level 11 with one refused tall drop, one portrait screenshot, `fingerdemo` at 11, build.
 
 ## What was built in this session
@@ -118,3 +120,7 @@ Research and ideation only (the dive, PR #1357). Checked with the link checker a
 ### Slice 1, puddles, beach moods and more ends (PR #1360)
 
 Built as defined; rules unchanged and authored first lines have no puddles (seeded lines at levels 4 and 6–8 can). Puddles ripple from `update()`; the three moods draw a backdrop band above the lanes (low tide adds wet sand and shells); the five end looks have their own art, pentatonic ring and voice line (new ids `domino-run.ring-chime`, `ring-horn`, `gong-drum`; no rendered clips). Four new rule tests (21 domino-run tests). The `dominorun` suite now plays level 6 upright in the sunset mood with a drag onto a puddle (misses 0, hints 0).
+
+### Slice 2, level 9 Where will it stop? (PR #1386)
+
+Plan 9 (`predict: true`); first line `SS_SSB` with tray S (stops at slot 2, too far). Seeded lines are about 55% too heavy (a tall reaching over an empty socket to the gong; a giant fixes it) and about 45% too far (one chain piece removed); the tray holds one or two pieces (35% chance of one decoy) with exactly one solution using one piece. New helpers `stopsAt` and `standing`. Each line opens with a guess: the tray is disabled with no paw pulse and the instruct line is `domino-run.predict`. Tapping the starter or a pinned domino (the whole 100×180 column) plants an orange flag, the line runs as it stands, the real last domino gets a ring, then `predict-right` sparkles or `predict-here` says where, then the stall reason, then she builds as at levels 3–8. A guess is never a miss, hint or counted stall; a hint asked during the guess waits until she builds. The bot taps the true stop. New voice ids `domino-run.predict`, `predict-right`, `predict-here` (no rendered clips). How-to has a level 9 step and note. Four new rule tests (25 domino-run tests). The `dominorun` suite also plays level 9 upright (wrong guess on the starter, waiting hint shows once building, 0 misses, 1 hint, sticker). `fingerdemo` at 9 passed (11.5 s).

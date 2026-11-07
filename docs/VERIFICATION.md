@@ -1,5 +1,11 @@
 # Puddle Island verification
 
+## 2026-11-07 — Domino Run slice 2: level 9 Where will it stop? (PR #1386)
+
+Changed: school range now 4–9; predict-then-fix level (guess flag, ring on the real stop, one-piece fix), `stopsAt`/`standing`, three voice ids, how-to step, four rule tests.
+Ran: `npm run typecheck`; `npm test` (325 files, 6,085 passed); `npm run build`; `BROWSER_SUITE=dominorun` passed (also level 9 upright: wrong guess, waiting hint, 0 misses, 1 hint, sticker; portrait screenshot kept); `FINGER_ONLY=domino-run FINGER_LEVELS=9` `fingerdemo` passed (11.5 s).
+Not run: iPad reading of the flag and ring (open in DEVICE-CHECKS), other suites, offline, `world`.
+
 ## 2026-11-07 — Shared tracing and sorting helpers (codebase item 6 complete, PR #1383)
 
 Changed: shared tracing/feedback, sorting predicates/types, name normalization and letter vocabulary in `src/learning/`; letter-picture, sorting-sign and plant art in `src/art/`; game/journal callers and woods harness imports updated. The nine moved bodies/data match exactly; game-specific rules remain local. Tested base `dcc001e4` plus working diff.
@@ -64,14 +70,6 @@ Changed: the stuck hint flies the next stretch (Letter Trails' `showTheWay`/`hin
 ## 2026-11-07 — Pile Match slice 1: looks, windy drop-in, more shapes, varied level 1
 
 Changed: three seeded looks, the windy drop-in, ten shapes a level, a seeded second kind at level 1 (PR #1371). Ran: `npm run typecheck`; `npx vitest run src/games/pile-match src/games/registry` (51 pass, 16 pile-match rule tests); `BROWSER_SUITE=pilematch` (level 1 one wrong kind, level 8 full tray, put-backs and hint, level 4 portrait screenshot in the autumn look); `BROWSER_SUITE=fingerdemo FINGER_ONLY=pile-match FINGER_LEVELS=1` (9.6 s). Open: build, other suites and offline not run; whether the drop-in makes "underneath" clearer to a three-year-old is a [device check](DEVICE-CHECKS.md).
-
-## 2026-11-07 — Number Nook deep dive (docs only)
-
-Changed: `docs/deep-dives/number-nook.md` and its tracker, READY, STUDY-BACKLOG, IDEAS and waiting-on-developer rows (PR #1370); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; slices 1–6 are queued; two decisions wait on the developer ([list](WAITING-ON-DEVELOPER.md)).
-
-## 2026-11-07 — Marble Jump deep dive (docs only)
-
-Changed: `docs/deep-dives/marble-jump.md` and its tracker, READY, STUDY-BACKLOG, IDEAS and waiting-on-developer rows (PR #1369); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; slices 1–4 are queued; three decisions wait on the developer ([list](WAITING-ON-DEVELOPER.md)).
 
 ## Coverage summary
 
@@ -170,7 +168,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | `cutalong`, `fingerdemo` (`cut-along`) | 2026-11-07 `cutalong` pass on the themes code (level 7 garland in portrait, 0 misses and hints); `fingerdemo` last run 2026-10-21 clean at levels 1, 5, 7 and 8 (bot unchanged); typecheck, `npm test` (6,067), build | PR #1380 | No fingerdemo on the new shapes, world, offline or couch run; iPad corridor floor, scissors hiding the line and level 8's choice open |
 | `pilematch`, `fingerdemo` (`pile-match`) | 2026-11-07 (slice 1, PR #1371): typecheck, 51 unit tests (16 rule), `pilematch` (level 1 one wrong kind, level 8 full tray/put-backs/hint, level 4 autumn portrait screenshot), `fingerdemo` at 1 (9.6 s). 2026-10-20: level 1 by taps with one wrong-kind tap, level 8 with a full tray (refused tap twice, three put-backs, one hint), portrait screenshot; a mid-flight resize lands; ghost finger clean at levels 1 and 8 (9.6, 36.1 s); typecheck, 13 rule tests, full `npm test` (2012), build | commit `7b34ea3a` plus the relayout fix, http://localhost:5509 | No offline, `world` or couch run; iPad dimmed-piece reading, 24-piece legibility and put-back discovery open |
 | `fruitslice`, `fingerdemo` (`fruit-slice`) | 2026-11-07 (slice 1): levels 1, 3 (misses, glow), 7 upright, 3 upright at sunset with a banana, 8; typecheck, 350 unit tests (fruit-slice, bolt-boards, art), build. Earlier (2026-10-20): ghost finger clean at levels 1–8 | `BROWSER_SUITE=fruitslice` | No `fingerdemo` rerun (bot unchanged), world, offline or couch run; iPad swipe, hang pace and straight line open |
-| `dominorun`, `fingerdemo` (`domino-run`) | 2026-11-07: `dominorun` PASS (levels 1, 8, 5, plus 6 upright in sunset with a drop on a puddle, 0 misses, 0 hints), typecheck, 20 files / 196 tests, build; ghost finger last clean 2026-10-20 at levels 1 and 8 (5.0, 13.6 s) | commit `250fc2a6`, PR #1360 | `fingerdemo` not re-run (bot unchanged); no world, offline or couch run; iPad tap-to-hop, stall ring, dot faces and puddle reading open |
+| `dominorun`, `fingerdemo` (`domino-run`) | 2026-11-07: `dominorun` PASS (levels 1, 8, 5, 6 upright in sunset with a puddle drop, plus 9 upright with a wrong guess and a waiting hint, 0 misses, 1 hint), typecheck, 325 files / 6,085 tests, build; `fingerdemo` level 9 PASS (11.5 s), levels 1 and 8 last clean 2026-10-20 | PR #1386 | no world, offline or couch run; iPad tap-to-hop, stall ring, dot faces, puddle reading and level 9 flag/ring open |
 | `jarsort`, `fingerdemo` (`jar-sort`) | 2026-11-07 (slice 1): level 1 pair, level 3 rain-look portrait, level 7 upright by taps; typecheck, 13 rule tests, `npm test`, build; 2026-10-20: levels 1, 3, 7 (portrait) and 8 by taps (free and counted refused moves, drag, undo, mats, one sticker); ghost finger clean at levels 1, 8 and 4 (16.6, 49.8, 25.1 s; the last after the one-board demo); typecheck, 10 rule tests and build | [2026-10-20 entry](archive/VERIFICATION-2026-10-20.md#2026-10-20--jar-sort-levels-18) | Offline, `world` and phone suites not run; `fingerdemo` not rerun since 2026-10-20 (its level 1 and 8 demos predate the one-board change); device checks open |
 | `conductor`, `fingerdemo` (`little-conductor`) | 2026-10-21: `conductor` at level 3 (Check with no pick, wrong Check, requested hint once, both halves, one sticker, portrait; levels 1–2 last played 2026-10-20) and a clean 18.1 s ghost finger at level 3; typecheck, full `npm test` (2322) and build | [2026-10-21 entry](archive/VERIFICATION-2026-10-21.md#2026-10-21--little-conductor-level-3-two-pictured-requests-music-m3) | No landscape level-3 screenshot, real Esc pause-sheet route, levels 1–2 regression play, `smoke`, `world` or offline run; iPad sound, sign and rabbit-pad readability, speech and child reaction open |
 | Dressing (RW06 slice 1), `dress`, `friends`, `world`, offline | 2026-10-20: typecheck, 1614 units, build, `dress` (new), `friends`, `world` and `test:offline` all passed at `c92a51d3` | [2026-10-20 entry](archive/VERIFICATION-2026-10-20.md#2026-10-20--rw06-slice-1-the-saved-look-and-dressing) | Large-pet games and couch suites not run; no device, speech or child check |
