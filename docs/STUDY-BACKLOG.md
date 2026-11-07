@@ -117,7 +117,7 @@ These are existing games awaiting research, not new game implementations. One do
 | Domino Run (`domino-run`) | designed 2026-11-07 ([dive](deep-dives/domino-run.md): slices 1–4 ready, no new decisions); wave 5 | [Tracker](deep-dives/README.md#tracker) |
 | Number Trails (`number-trails`) | designed, wave 6 (slices 1–6 ready; level 7 and the journal wait on decisions) | [Dive](deep-dives/number-trails.md) |
 | Mossy Path (`mossy-path`) | designed 2026-11-06 ([dive](deep-dives/mossy-path.md): slices 1–5 ready, three decisions waiting); wave 6; levels 4–7 defined and built ([definition](definitions/mossy-path.md#levels-47-find-the-way-definition-pp1)); the [puzzle-pages study](deep-dives/subjects/puzzle-pages.md#a-first-games-ladder-mossy-path-find-the-way) plans levels 4–7 (a younger maze opening, PP1), so the dive starts from them | [Tracker](deep-dives/README.md#tracker) |
-| Fruit Sums (`fruit-sums`) | designed 2026-11-07 ([dive](deep-dives/fruit-sums.md): slices 1–5 ready; two decisions wait on the developer); wave 6 | [Tracker](deep-dives/README.md#tracker) |
+| Fruit Sums (`fruit-sums`) | designed 2026-11-07 ([dive](deep-dives/fruit-sums.md): slice 1 built, slices 2–5 ready; two decisions wait on the developer); wave 6 | [Tracker](deep-dives/README.md#tracker) |
 | Jar Sort (`jar-sort`) | designed 2026-11-07 ([dive](deep-dives/jar-sort.md): slices 1–5 ready; no new decisions); wave 6 | [Tracker](deep-dives/README.md#tracker) |
 | Pile Match (`pile-match`) | not started, wave 6 | [Tracker](deep-dives/README.md#tracker) |
 | Lift It (`lift-it`) | not started, wave 6 | [Tracker](deep-dives/README.md#tracker) |

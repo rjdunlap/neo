@@ -1,6 +1,6 @@
 # Fruit Sums deep dive
 
-*ID `fruit-sums` · bands school · levels 1–3 on 2026-11-07 · session `claude/dive-fruit-sums` ([PR #1358](https://github.com/rjdunlap/neo/pull/1358))*
+*ID `fruit-sums` · bands school · levels 1–3 on 2026-11-07 · build slice 1 built ([PR #1362](https://github.com/rjdunlap/neo/pull/1362)) · session `claude/dive-fruit-sums` ([PR #1358](https://github.com/rjdunlap/neo/pull/1358))*
 
 ## The game today
 
@@ -112,7 +112,7 @@ The game's point is the second way: many routes to one number. The ladder grows 
 
 ## Build slices, in order
 
-1. **Trees, moods, the drop and a hint that follows through** (all levels; typecheck, rule tests for the partner hint, one filtered `fruitsums` play at level 3 with one hint and one portrait screenshot in the cove sunset look; no `fingerdemo`, since the bot path is unchanged; build only if shared art files change).
+1. **Trees, moods, the drop and a hint that follows through** (built, PR #1362; all levels; typecheck, rule tests for the partner hint, one filtered `fruitsums` play at level 3 with one hint and one portrait screenshot in the cove sunset look; no `fingerdemo`, since the bot path is unchanged; build only if shared art files change).
 2. **Level 4 *Same as the sign*** (new level on the existing interaction: typecheck, rule tests, one browser play of level 4, `fingerdemo` at 4).
 3. **Level 5 *Clear the tree*** with the school `order` (same interaction with a basket; typecheck, rule tests including the no-dead-end invariant, registry/how-to tests, one browser play of level 5 with one wrong pair, one portrait screenshot, `fingerdemo` at 5).
 4. **Level 6 *Three fruit*** (new interaction, a third box: layout probe at 768×1024 first, unit tests, one scripted play with a two-fruit check and one hint, one portrait screenshot, `fingerdemo` at 6).
@@ -120,4 +120,4 @@ The game's point is the second way: many routes to one number. The ladder grows 
 
 ## What was built in this session
 
-Nothing: a deep dive session is research and ideation only (links and `git diff --check` ran).
+Dive session: nothing (research only). **Slice 1 built 2026-11-07 (PR #1362, `claude/fruit-sums-trees`).** Three seeded looks per round (`LOOKS`, chosen by the round's RNG after the tray): orchard morning (round fruit), cove palm at sunset (coconuts ringed in the tray colour, teal sea and sand), autumn (pears and plums alternating, golden sky). The drop: fruit fall from above the top edge, staggered 0.09 s (`DROP_GAP`), landing on falling pentatonic pops; a fruit takes taps only once landed and `autotouch` waits for it. A found way's two fruit hop. `hintWay(..., first)` prefers a way starting from the fruit in the first box and `hintGlow` glows start fruit, partner, needed leaf (level 3), then the check; a dead-end first-box fruit glows so a tap sends it home. Still one hint per sum, counted when the glow first appears; `fsums.hint` now says "Follow the glow! It shows the next step." Sticker unchanged. Not run: `fingerdemo` (bot path unchanged), the level-3 hint in a browser (unit-tested, including a simulation that following the glow from every box state finishes an unfound way at levels 1 and 3).
