@@ -57,3 +57,7 @@ Open: build not run (no shared files changed); `fingerdemo` not run (bot path un
 ## 2026-11-07 — Lift It deep dive (docs only)
 
 Changed: `docs/deep-dives/lift-it.md` and its tracker, READY, STUDY-BACKLOG and waiting-on-developer rows (PR #1364); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; slices 1–5 are queued; two decisions wait on the developer ([list](../WAITING-ON-DEVELOPER.md)); there was no IDEAS ladder-audit row for Lift It to point at.
+
+## 2026-11-07 — Block Garden deep dive (docs only)
+
+Changed: `docs/deep-dives/block-garden.md` and its tracker, READY, STUDY-BACKLOG and waiting-on-developer rows (PR #1366); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; slices 1–5 are queued; one decision waits on the developer ([list](../WAITING-ON-DEVELOPER.md)); there was no IDEAS ladder-audit row for Block Garden to point at.

@@ -1,3 +1,4 @@
+import type { ColorName } from '../../art/palette';
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
 import { advanceTrace, sampleStroke, type Point } from '../letter-trails/strokes';
@@ -30,8 +31,8 @@ export const PLANS: readonly CutPlan[] = [
   { mode: 'cut', name: 'Straight across: longer lines, level and slanted', count: 4 },
   { mode: 'cut', name: 'Zigzag and waves: lines that turn corners and bend', count: 4 },
   { mode: 'cut', name: 'Curves and a circle, cut either way round', count: 3 },
-  { mode: 'cut', name: 'Corners: a square and a triangle', count: 3 },
-  { mode: 'cut', name: 'Picture shapes: heart, house, leaf, fish or cloud', count: 3 },
+  { mode: 'cut', name: 'Corners: three of a square, a triangle, a door and a kite', count: 3 },
+  { mode: 'cut', name: 'Picture shapes: three of heart, house, leaf, fish, cloud, star and moon', count: 3 },
   { mode: 'fits', name: 'The piece that fits: choose the outline for the gap, then cut it', count: 3 },
 ];
 
@@ -94,12 +95,12 @@ export function layoutFor(v: { w: number; h: number }): Layout {
 
 /** What a cut-out becomes in the collage. */
 export type PieceId =
-  | 'grass' | 'tail' | 'plank' | 'mountain' | 'sea' | 'hill' | 'path' | 'sun' | 'window' | 'sail' | 'flag'
-  | 'heart' | 'house' | 'leaf' | 'fish' | 'cloud' | 'roof';
+  | 'grass' | 'tail' | 'plank' | 'mountain' | 'sea' | 'hill' | 'path' | 'sun' | 'window' | 'sail' | 'door' | 'kite'
+  | 'heart' | 'house' | 'leaf' | 'fish' | 'cloud' | 'star' | 'moon' | 'roof';
 
 export type CutKind =
   | 'ribbon' | 'level' | 'slant' | 'zigzag' | 'wave' | 'hill' | 'scurve'
-  | 'circle' | 'square' | 'triangle' | 'heart' | 'house' | 'leaf' | 'fish' | 'cloud' | 'roof-arch';
+  | 'circle' | 'square' | 'triangle' | 'door' | 'kite' | 'heart' | 'house' | 'leaf' | 'fish' | 'cloud' | 'star' | 'moon' | 'roof-arch';
 
 export interface Cut {
   kind: CutKind;
@@ -141,10 +142,14 @@ function curve(f: (u: number) => Point, n = 80): Point[] {
 const place = (shape: Point[], cx: number, cy: number, r: number): Point[] => shape.map(([x, y]) => [cx + x * r, cy + y * r] as const);
 
 /** Unit outlines in a −1..1 box, y down, each starting at its joint at the bottom. Corners are listed by index. */
-export const OUTLINES: Record<'circle' | 'square' | 'triangle' | 'heart' | 'house' | 'leaf' | 'fish' | 'cloud' | 'arch', { loop: Point[]; corners: number[] }> = {
+type OutlineId = 'circle' | 'square' | 'triangle' | 'door' | 'kite' | 'heart' | 'house' | 'leaf' | 'fish' | 'cloud' | 'star' | 'moon' | 'arch';
+export const OUTLINES: Record<OutlineId, { loop: Point[]; corners: number[] }> = {
   circle: { loop: curve((u) => [Math.sin(u * 2 * Math.PI), Math.cos(u * 2 * Math.PI)], 72).slice(0, -1), corners: [] },
   square: { loop: [[0, 1], [1, 1], [1, -1], [-1, -1], [-1, 1]], corners: [1, 2, 3, 4] },
   triangle: { loop: [[0, 0.8], [1, 0.8], [0, -1], [-1, 0.8]], corners: [1, 2, 3] },
+  door: { loop: [[0, 1], [0.6, 1], [0.6, -1], [-0.6, -1], [-0.6, 1]], corners: [1, 2, 3, 4] },
+  // A diamond kite, its joint at the bottom tip; the long half is below the cross.
+  kite: { loop: [[0, 1], [0.75, -0.25], [0, -1], [-0.75, -0.25]], corners: [1, 2, 3] },
   arch: (() => {
     // A rounded-top piece: flat sides and bottom, a half circle on top (level 8's "round on top").
     const top = curve((u) => [Math.cos(u * Math.PI), -Math.sin(u * Math.PI)] as Point, 30).slice(1, -1);
@@ -178,6 +183,27 @@ export const OUTLINES: Record<'circle' | 'square' | 'triangle' | 'heart' | 'hous
     const at = (p: Point) => loop.indexOf(p);
     return { loop, corners: [at(belly1.at(-1)!), at(tail[0]), at(tail[1]), at(tail[2]), at(tail[3]), at(back.at(-1)!)] };
   })(),
+  star: (() => {
+    // Five fat points (inner radius 0.6 of the outer), the joint in the notch between the two lower points.
+    const loop: Point[] = Array.from({ length: 10 }, (_, i) => {
+      const a = Math.PI / 2 + (i * Math.PI) / 5, r = i % 2 === 0 ? 0.6 : 1;
+      return [r * Math.cos(a), r * Math.sin(a)] as Point;
+    });
+    return { loop, corners: [1, 2, 3, 4, 5, 6, 7, 8, 9] };
+  })(),
+  moon: (() => {
+    // A crescent lying on its back, its tips up: the outer circle from the joint at the thick bottom to the left tip, the
+    // inner circle (centre 0.8 up, radius 0.9) across to the right tip, then the outer circle back down. The tips meet at
+    // about 50°, so the two arcs part quickly.
+    const tx = (1 + 0.8 ** 2 - 0.9 ** 2) / 1.6, ty = Math.sqrt(1 - tx * tx);
+    const alpha = Math.atan2(tx, ty), beta = Math.atan2(0.8 - tx, ty);
+    const arc = (cx: number, cy: number, r: number, a0: number, a1: number, n: number) =>
+      curve((u) => { const a = a0 + u * (a1 - a0); return [cx + r * Math.cos(a), cy + r * Math.sin(a)] as Point; }, n);
+    const left = arc(0, 0, 1, Math.PI / 2, Math.PI + alpha, 24).slice(0, -1);
+    const inner = arc(0, -0.8, 0.9, Math.PI - beta, beta, 36);
+    const right = arc(0, 0, 1, -alpha, Math.PI / 2, 24).slice(1, -1);
+    return { loop: [...left, ...inner, ...right], corners: [left.length, left.length + inner.length - 1] };
+  })(),
   cloud: (() => {
     // A flat bottom and three bumps on top; the bumps meet in small dips.
     const bump = (x0: number, x1: number, h: number) => curve((u) => [x0 + (x1 - x0) * u, 0.1 - h * Math.sin(Math.PI * u)] as Point, 24).slice(1);
@@ -189,7 +215,7 @@ export const OUTLINES: Record<'circle' | 'square' | 'triangle' | 'heart' | 'hous
 };
 
 /** A shape outline placed on the paper at (cx, cy) with half-size r, reached by a lead-in from the paper's bottom edge. */
-export function shapeCut(kind: keyof typeof OUTLINES, piece: PieceId, cx: number, cy: number, r: number, cutKind?: CutKind): Cut {
+export function shapeCut(kind: OutlineId, piece: PieceId, cx: number, cy: number, r: number, cutKind?: CutKind): Cut {
   const o = OUTLINES[kind];
   const loop = place(o.loop, cx, cy, r);
   return closed(cutKind ?? (kind === 'arch' ? 'roof-arch' : kind), piece, loop, [loop[0][0], 1], o.corners.map((i) => loop[i]));
@@ -234,19 +260,21 @@ export function cutsFor(level: number, rng: Rng): Cut[] {
         shapeCut('circle', 'sun', mid, 0.45, 0.36),
       ];
     case 6: {
-      const third = flip();
-      return [
-        shapeCut('square', 'window', mid, 0.42, 0.31),
-        shapeCut('triangle', 'sail', mid, 0.4, 0.35),
-        third ? shapeCut('square', 'window', mid, 0.42, 0.31) : shapeCut('triangle', 'flag', mid, 0.4, 0.35),
+      const shapes: [OutlineId, PieceId, number, number][] = [
+        ['square', 'window', 0.42, 0.31], ['triangle', 'sail', 0.4, 0.35], ['door', 'door', 0.42, 0.33], ['kite', 'kite', 0.42, 0.34],
       ];
+      return rng.shuffle(shapes).slice(0, 3).map(([k, piece, cy, r]) => shapeCut(k, piece, mid, cy, r));
     }
     default: {
-      const kinds = rng.shuffle<'heart' | 'house' | 'leaf' | 'fish' | 'cloud'>(['heart', 'house', 'leaf', 'fish', 'cloud']).slice(0, 3);
-      return kinds.map((k) => shapeCut(k, k, mid, 0.42, k === 'cloud' ? 0.42 : 0.34));
+      const kinds = rng.shuffle<PictureShape>([...PICTURE_SHAPES]).slice(0, 3);
+      return kinds.map((k) => shapeCut(k, k, mid, 0.42, k === 'cloud' ? 0.42 : k === 'star' ? 0.36 : 0.34));
     }
   }
 }
+
+/** Level 7's outlines; a round cuts three of them. */
+export const PICTURE_SHAPES = ['heart', 'house', 'leaf', 'fish', 'cloud', 'star', 'moon'] as const;
+type PictureShape = (typeof PICTURE_SHAPES)[number];
 
 /** The sheet's edge the ring sits on is where the path starts. */
 export const startOf = (cut: Cut): Point => cut.orders[0][0];
@@ -291,6 +319,83 @@ export function botRoute(cut: Cut, points: readonly Point[], progress: number): 
   }
   return out;
 }
+
+/* ---------------------------------------------------------------- the picture */
+
+/**
+ * The host's picture a round fills. Each level has one or two, picked by seed; a theme changes the scene, where the pieces
+ * go, their colour and what the pet says, never the cuts.
+ */
+export type Theme =
+  | 'meadow' | 'hedgehog' | 'kite' | 'gift' | 'fence' | 'raft' | 'mountains' | 'river' | 'day' | 'night'
+  | 'harbour' | 'pond' | 'garland' | 'boats';
+export const THEMES: readonly (readonly Theme[])[] = [
+  ['meadow', 'hedgehog'], ['kite', 'gift'], ['fence', 'raft'], ['mountains', 'river'], ['day', 'night'], ['harbour'], ['pond', 'garland'], ['boats'],
+];
+export const themeFor = (level: number, rng: Rng): Theme => rng.pick(THEMES[levelOf(level) - 1]);
+
+/** Where a piece goes in the host's picture, in the picture's 0–1 units. */
+export interface Slot { piece: PieceId; x: number; y: number; w: number; h: number }
+type Spot = Omit<Slot, 'piece'>;
+
+/** The slots a round's pieces fill, in round order (level 8: every gap, in a fixed order). */
+export function slotsFor(level: number, theme: Theme, pieces: readonly PieceId[]): Slot[] {
+  const at = (spots: readonly Spot[]) => pieces.map((piece, i) => ({ piece, ...spots[i] }));
+  const by = (spots: Partial<Record<PieceId, Spot>>) => pieces.map((piece) => ({ piece, ...spots[piece]! }));
+  switch (levelOf(level)) {
+    case 1:
+      return theme === 'hedgehog'
+        ? at([{ x: 0.1, y: 0.36, w: 0.26, h: 0.16 }, { x: 0.36, y: 0.3, w: 0.26, h: 0.16 }, { x: 0.62, y: 0.36, w: 0.26, h: 0.16 }])
+        : pieces.map((piece, i) => ({ piece, x: 0.04 + i * 0.32, y: 0.78, w: 0.3, h: 0.18 }));
+    case 2:
+      return theme === 'gift'
+        ? pieces.map((piece, i) => ({ piece, x: 0.18, y: 0.42 + i * 0.13, w: 0.64, h: 0.12 }))
+        : pieces.map((piece, i) => ({ piece, x: 0.36 + i * 0.12, y: 0.42 + i * 0.16, w: 0.2, h: 0.12 }));
+    case 3:
+      return theme === 'raft'
+        ? pieces.map((piece, i) => ({ piece, x: 0.2 + i * 0.15, y: 0.4, w: 0.13, h: 0.34 }))
+        : pieces.map((piece, i) => ({ piece, x: 0.12 + i * 0.21, y: 0.5, w: 0.13, h: 0.38 }));
+    case 4:
+      return theme === 'river'
+        ? at([{ x: 0.08, y: 0.4, w: 0.42, h: 0.12 }, { x: 0.5, y: 0.4, w: 0.42, h: 0.12 }, { x: 0.02, y: 0.66, w: 0.96, h: 0.13 }, { x: 0.02, y: 0.8, w: 0.96, h: 0.13 }])
+        : at([{ x: 0.04, y: 0.28, w: 0.48, h: 0.3 }, { x: 0.48, y: 0.24, w: 0.48, h: 0.34 }, { x: 0.02, y: 0.62, w: 0.96, h: 0.14 }, { x: 0.02, y: 0.78, w: 0.96, h: 0.14 }]);
+    case 5:
+      return by({ hill: { x: 0.04, y: 0.5, w: 0.92, h: 0.32 }, path: { x: 0.3, y: 0.72, w: 0.4, h: 0.24 }, sun: { x: 0.66, y: 0.06, w: 0.28, h: 0.28 } });
+    case 6:
+      return by({
+        window: { x: 0.14, y: 0.46, w: 0.16, h: 0.16 }, door: { x: 0.36, y: 0.5, w: 0.14, h: 0.28 },
+        sail: { x: 0.62, y: 0.26, w: 0.26, h: 0.36 }, kite: { x: 0.24, y: 0.04, w: 0.16, h: 0.22 },
+      });
+    case 7:
+      return theme === 'garland'
+        ? pieces.map((piece, i) => ({ piece, x: 0.06 + i * 0.31, y: 0.24 + (i === 1 ? 0.07 : 0), w: 0.26, h: 0.26 }))
+        : pieces.map((piece, i) => ({ piece, x: 0.06 + i * 0.31, y: 0.3 + (i % 2) * 0.22, w: 0.26, h: 0.26 }));
+    default: {
+      const gaps: Partial<Record<PieceId, Spot>> = {
+        roof: { x: 0.06, y: 0.3, w: 0.4, h: 0.22 }, window: { x: 0.18, y: 0.6, w: 0.16, h: 0.16 },
+        sun: { x: 0.7, y: 0.06, w: 0.22, h: 0.22 }, sail: { x: 0.62, y: 0.38, w: 0.26, h: 0.3 },
+      };
+      return (['roof', 'window', 'sun', 'sail'] as const).map((piece) => ({ piece, ...gaps[piece]! }));
+    }
+  }
+}
+
+const PIECE_COLOR: Record<PieceId, ColorName> = {
+  grass: 'green', tail: 'pink', plank: 'brown', mountain: 'purple', sea: 'blue', hill: 'green', path: 'orange', sun: 'yellow',
+  window: 'blue', sail: 'white', door: 'red', kite: 'purple', heart: 'red', house: 'orange', leaf: 'green', fish: 'orange',
+  cloud: 'white', star: 'yellow', moon: 'yellow', roof: 'red',
+};
+const THEME_COLOR: Partial<Record<Theme, Partial<Record<PieceId, ColorName>>>> = {
+  hedgehog: { grass: 'brown' }, gift: { tail: 'yellow' }, river: { mountain: 'white' }, garland: { cloud: 'teal' },
+};
+export const pieceColor = (theme: Theme, piece: PieceId): ColorName => THEME_COLOR[theme]?.[piece] ?? PIECE_COLOR[piece];
+
+/** The pieces that get their own line in a theme; every other piece says its plain `cut.piece.<piece>` line. */
+export const THEME_LINES: Partial<Record<Theme, readonly PieceId[]>> = {
+  hedgehog: ['grass'], gift: ['tail'], raft: ['plank'], river: ['mountain', 'sea'], night: ['sun'], garland: PICTURE_SHAPES,
+};
+export const pieceLine = (theme: Theme, piece: PieceId): string =>
+  THEME_LINES[theme]?.includes(piece) ? `cut.piece.${theme}.${piece}` : `cut.piece.${piece}`;
 
 /* ---------------------------------------------------------------- level 1 */
 

@@ -20,15 +20,15 @@
 | 3 | Straight across: longer lines, level and slanted |
 | 4 | Zigzag and waves: lines that turn corners and bend |
 | 5 | Curves and a circle, cut either way round |
-| 6 | Corners: a square and a triangle |
-| 7 | Picture shapes: heart, house, leaf, fish or cloud |
+| 6 | Corners: three of a square, a triangle, a door and a kite |
+| 7 | Picture shapes: three of heart, house, leaf, fish, cloud, star and moon |
 | 8 | The piece that fits: choose the outline for the gap, then cut it |
 
 <!-- end generated -->
 
 **Starts as:** tap each thick mark and a pair of big scissors snips it, or put the scissors on the green ring and move them along a dashed line, and the cut piece floats into the host's paper picture
 
-**Grows into:** one thick straight line, longer lines, zigzags and waves, curves and a circle (either way round), a square and a triangle, heart, house, leaf, fish and cloud outlines, and choosing which outline fits a gap; a drag that leaves the line stops the scissors with a boing, no clock
+**Grows into:** one thick straight line, longer lines, zigzags and waves, curves and a circle (either way round), a square, triangle, door and kite, then heart, house, leaf, fish, cloud, star and moon outlines, and choosing which outline fits a gap; each play of levels 1–5 and 7 picks one of a few pictures (hedgehog, gift, raft, river, night, garland); a drag that leaves the line stops the scissors with a boing, no clock
 
 ## Design notes
 
