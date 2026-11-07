@@ -278,7 +278,7 @@ class LiftIt implements Game {
     this.ctx.listen(window, 'pointerup', this.release);
     this.ctx.listen(window, 'pointercancel', this.release, true);
 
-    ctx.stage.addChild(this.backdrop, this.tree, this.hookRings, this.crate, this.rope, this.fixedWheel, this.friendLayer, this.drift, this.counter, this.glow, this.paws, this.handle, this.wheelLayer, this.panel);
+    ctx.stage.addChild(this.backdrop, this.tree, this.hookRings, this.crate, this.rope, this.fixedWheel, this.drift, this.friendLayer, this.counter, this.glow, this.paws, this.handle, this.wheelLayer, this.panel);
     this.crate.addChild(this.parcel);
 
     for (let i = 0; i < this.plan.tray; i++) {
@@ -893,6 +893,7 @@ class LiftIt implements Game {
     }
     const n = this.paws.children.length;
     const avoid = [...this.friends.map((f) => friendBox(f.c.position)), circleBox(L.branchHook, WHEEL_R), circleBox(crateHook(L, this.shown), WHEEL_R)];
+    if (this.held) avoid.push({ x: this.parcel.x - 30, y: this.parcel.y - 56, w: 60, h: 56 });
     const spots = pawSpots(this.view, H, n, avoid);
     this.paws.children.forEach((p, i) => p.position.copyFrom(spots[i]));
     this.paws.alpha = n && this.rock.a > 0 && Math.sin(this.t * 20) < 0 ? 0.35 : 1;
@@ -967,7 +968,8 @@ class LiftIt implements Game {
     const top = BRANCH_Y + 40, span = Math.max(200, this.layout.groundY - top);
     this.drift.children.forEach((leaf, i) => {
       const k = (this.t * (0.05 + 0.012 * i) + i / 5) % 1;
-      leaf.position.set(((i * 0.23 + 0.15) * v.w + Math.sin(this.t * 0.9 + i * 2) * 40 + k * 120) % v.w, top + k * span);
+      const x = (i * 0.23 + 0.15) * v.w + Math.sin(this.t * 0.9 + i * 2) * 40 + k * 120;
+      leaf.position.set(((x % v.w) + v.w) % v.w, top + k * span);
       leaf.rotation = Math.sin(this.t * 1.3 + i) * 0.7;
     });
   }
