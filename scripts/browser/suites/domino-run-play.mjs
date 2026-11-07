@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, errors, log, scene, tap, screenshot, launch, finished }) {
-/** Domino Run by touch: level 1 tipped by taps, level 8 with a stalled run, a requested hint and the rest by drags, level 5 upright. */
+/** Domino Run by touch: level 1 tipped by taps, level 8 with a stalled run, a requested hint and the rest by drags, level 5 upright, level 6 upright at sunset with a drop on a puddle. */
 async function dominoRunPlay() {
   const state = () => page.evaluate(() => { const g = neo.scene.game; return { busy: g.busy, misses: g.misses, hints: g.hints, stalls: g.stalls, hinted: !!g.hinted, index: g.index }; });
   const idle = () => page.waitForFunction(() => neo.scene.finished || (neo.scene.game && !neo.scene.game.busy), null, { timeout: 15000 });
@@ -10,10 +10,12 @@ async function dominoRunPlay() {
     await page.evaluate(({ x, y }) => kit.tap(x, y), p); await page.waitForTimeout(200);
   };
   /** Play the hint's way to a ringing line by drags, tap the starter, and go on until the round ends. */
-  const solveAll = async () => {
+  const solveAll = async (untilIndex = Infinity) => {
     for (let guard = 0; guard < 60 && !(await page.evaluate(() => neo.scene.finished)); guard++) {
+      if ((await page.evaluate(() => neo.scene.game.index)) >= untilIndex) return;
       await idle();
       if (await page.evaluate(() => neo.scene.finished)) break;
+      if ((await page.evaluate(() => neo.scene.game.index)) >= untilIndex) return;
       const step = await page.evaluate(async () => {
         const L = await import('/src/games/domino-run/logic.ts'), g = neo.scene.game;
         if (g.plan.tapAny) return { kind: 'tap1' };
@@ -54,9 +56,38 @@ async function dominoRunPlay() {
   await page.setViewportSize({ width: 768, height: 1024 });
   await launch('domino-run', 5); await idle(); await page.waitForTimeout(500);
   await screenshot('domino-run-5-portrait');
+  // Level 6 upright: the second line is a seeded one with a puddle; at sunset, a domino dropped on the puddle springs back
+  // (never a miss), then the round finishes with one sticker.
+  const stickers6 = await page.evaluate(() => kit.store.data.stickers.length);
+  await launch('domino-run', 6); await idle();
+  const wet = await page.evaluate(async () => {
+    const L = await import('/src/games/domino-run/logic.ts'), R = await import('/src/engine/random.ts'), g = neo.scene.game;
+    for (let seed = 1; seed < 200; seed++) {
+      const { line } = L.makeLine(L.planFor(6), new R.Rng(seed));
+      if (L.puddles(line.lanes[0]).length) { g.lines[1] = line; return seed; }
+    }
+    return 0;
+  });
+  assert.ok(wet, 'a seeded level 6 line has a puddle');
+  await solveAll(1); await idle();
+  const pud = await page.evaluate(async () => {
+    const L = await import('/src/games/domino-run/logic.ts'), g = neo.scene.game;
+    g.mood = 'sunset'; g.build();
+    const r = L.puddles(g.line.lanes[0])[0], l = g.lay.lanes[0];
+    const p = g.pieces.find((q) => !q.at);
+    return { drawn: g.puddleNodes.length, a: p.node.toGlobal({ x: 0, y: -60 }), b: g.pieceLayer.parent.toGlobal({ x: l.x0 + r.from * L.PITCH, y: l.base + 40 }) };
+  });
+  assert.ok(pud.drawn >= 1, 'the puddle is drawn');
+  await page.evaluate(({ a, b }) => kit.drag(kit.line([a.x, a.y], [b.x, b.y], 16)), pud); await page.waitForTimeout(500);
+  st = await page.evaluate(() => { const g = neo.scene.game; return { misses: g.misses, hints: g.hints, inTray: g.pieces.every((q) => !q.at) }; });
+  assert.deepEqual(st, { misses: 0, hints: 0, inTray: true }, 'a domino dropped on a puddle springs back, never a miss');
+  await page.waitForTimeout(300);
+  await screenshot('domino-run-6-portrait-sunset');
+  await solveAll();
+  await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, stickers6, { timeout: 15000 });
   await page.setViewportSize({ width: 1024, height: 768 });
   assert.deepEqual(errors, [], 'page errors');
-  log('Domino Run: level 1 tipped by taps, level 8 with a stall (no miss), a requested hint and drags, level 5 upright');
+  log('Domino Run: level 1 tipped by taps, level 8 with a stall (no miss), a requested hint and drags, level 5 upright, level 6 upright at sunset with a puddle drop that springs back');
 }
 
 return { dominoRunPlay };
