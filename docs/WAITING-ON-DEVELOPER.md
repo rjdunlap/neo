@@ -143,8 +143,8 @@ Fruit Sums dive (2026-11-07), two calls that wait on you; the build slices go ah
 
 | Step | What happens next | Written in |
 | --- | --- | --- |
-| **Open `prek` with *Partners to five* (dot fruit) in Fruit Sums?** | Adds the `prek` band, so the band audit comes with it. Recommended: decide after slice 1 is played at school | [Fruit Sums dive](deep-dives/fruit-sums.md#decisions-for-the-developer) |
-| **A grown-up "make 24" level or couch puzzle (four fruit, all four operations, brackets)?** | A `grownup` level or a couch catalog entry, each with its own check tier. Recommended: couch puzzle only, after the school ladder is built | [Fruit Sums dive](deep-dives/fruit-sums.md#decisions-for-the-developer) |
+| **Open `prek` with *Partners to five* (dot fruit) in Fruit Sums?** | Adds the `prek` band, so the band audit comes with it. The dive makes no recommendation | [Fruit Sums dive](deep-dives/fruit-sums.md#decisions-for-the-developer) |
+| **A grown-up "make 24" level or couch puzzle (four fruit, all four operations, brackets)?** | A `grownup` level or a couch catalog entry, each with its own check tier. The dive makes no recommendation | [Fruit Sums dive](deep-dives/fruit-sums.md#decisions-for-the-developer) |
 
 ## Adding a question
 
