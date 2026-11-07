@@ -6,8 +6,9 @@ import type { BandLevels } from '../../progress/difficulty';
 /** Rules for Fruit Slice: the arcs, the swept slice, what a cut counts as, and the still boards of levels 7–8. */
 
 export type Kind = PropKind;
-export const FRUIT: Kind[] = ['apple', 'orange', 'lemon', 'pear', 'blueberries', 'grapes'];
-export const NOT_FRUIT: Kind[] = ['balloon', 'flower'];
+export const FRUIT: Kind[] = ['apple', 'orange', 'lemon', 'pear', 'blueberries', 'grapes', 'strawberry', 'banana', 'plum'];
+/** Beach things nobody would call a fruit (no tomato, no nut). */
+export const NOT_FRUIT: Kind[] = ['balloon', 'flower', 'beachball', 'shell'];
 export const isFruit = (k: Kind) => FRUIT.includes(k);
 
 /** The hit circle's radius: the drawn fruit (about 110 across) plus 20. */
@@ -18,6 +19,10 @@ export const MIN_TRAVEL = 30;
 export const LINE_CANCEL = 40;
 /** The shortest straight line the boards are built around. */
 export const MIN_LINE = 150;
+
+/** The round's look, seeded; decoration only, never a rule. */
+export type Mood = 'morning' | 'picnic' | 'sunset';
+export const MOODS: Mood[] = ['morning', 'picnic', 'sunset'];
 
 export type Mode = 'touch' | 'swipe' | 'kind' | 'fruit' | 'enough' | 'two' | 'line' | 'pieces';
 

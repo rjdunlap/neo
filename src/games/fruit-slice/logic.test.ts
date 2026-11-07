@@ -5,8 +5,9 @@ import { computeView } from '../../engine/view';
 import {
   arcAt, basketAt, BOARD_H, BOARD_W, boardsFor, bowlAt, BOWL_R, FLIGHT, FRUIT, hangTime, hintLineFor, HIT_R, insideLength, isFruit,
   judge, judgeStroke, lineHits, makeToss, met, MIN_LINE, MIN_TRAVEL, nextKind, pairBoard, pairHint, planFor, reachableCounts, RISE, HANG,
-  signAt, SIGN_W, signsFor, sliceHits, type Kind,
+  MOODS, NOT_FRUIT, signAt, SIGN_W, signsFor, sliceHits, type Kind,
 } from './logic';
+import { VOICE } from './voice';
 
 const VIEWS = {
   landscape: computeView(1024, 768),
@@ -279,5 +280,45 @@ describe('plans', () => {
     expect(RISE + HANG).toBeLessThan(FLIGHT);
     expect(planFor(1).aloft).toBe(1);
     expect(Math.max(...[1, 2, 3, 4, 5, 6, 8].map((i) => planFor(i).aloft))).toBe(3);
+  });
+});
+
+describe('fruit, not-fruit and moods', () => {
+  it('nine fruit, four beach not-fruit, no overlap and nothing a child might call a fruit', () => {
+    expect(new Set(FRUIT).size).toBe(9);
+    expect(new Set(NOT_FRUIT).size).toBe(4);
+    for (const k of NOT_FRUIT) expect(isFruit(k)).toBe(false);
+    for (const k of ['tomato', 'nut', 'coconut']) expect([...FRUIT, ...NOT_FRUIT]).not.toContain(k);
+  });
+
+  it('every fruit has its instruction and its refusal line', () => {
+    for (const k of FRUIT) {
+      expect(VOICE[`slice.instruct.only.${k}` as keyof typeof VOICE]).toBeTruthy();
+      expect(VOICE[`slice.not-kind.${k}` as keyof typeof VOICE]).toBeTruthy();
+    }
+  });
+
+  it('level 3 can ask for each of the nine, and level 6 for each in a row', () => {
+    for (const id of [3, 6]) {
+      const asked = new Set<Kind | null>();
+      for (let seed = 1; seed <= 300; seed++) for (const sign of signsFor(planFor(id), new Rng(seed))) for (const r of sign.rows) asked.add(r.kind);
+      for (const k of FRUIT) expect(asked.has(k)).toBe(true);
+    }
+  });
+
+  it('level 4 tosses every not-fruit', () => {
+    const plan = planFor(4);
+    const seen = new Set<Kind>();
+    const rng = new Rng(9);
+    const sign = signsFor(plan, rng)[0];
+    for (let i = 0; i < 400; i++) seen.add(nextKind(plan, sign, ['apple'], rng, i));
+    for (const k of NOT_FRUIT) expect(seen.has(k)).toBe(true);
+  });
+
+  it('three moods, each reachable from a round seed', () => {
+    expect(MOODS).toEqual(['morning', 'picnic', 'sunset']);
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 60; seed++) seen.add(new Rng(seed).pick(MOODS));
+    expect(seen.size).toBe(3);
   });
 });

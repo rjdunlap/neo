@@ -2,7 +2,11 @@ import { Container, Graphics } from 'pixi.js';
 import { ink, swatch, type ColorName } from './palette';
 
 /** Things to sort, each drawn about 100 units across and centered on (0, 0). Each has one obvious color. */
-export type PropKind = 'apple' | 'orange' | 'lemon' | 'pear' | 'blueberries' | 'grapes' | 'balloon' | 'flower';
+export type PropKind =
+  | 'apple' | 'orange' | 'lemon' | 'pear' | 'blueberries' | 'grapes' | 'strawberry' | 'banana' | 'plum'
+  | 'balloon' | 'flower' | 'beachball' | 'shell';
+/** Fruit drawn small (about 64 across) in fixed colors; Bolt Boards' own, shared so Fruit Slice draws the same ones. */
+export type SmallFruit = 'strawberry' | 'banana' | 'plum';
 
 /** The fruit that is (unmistakably) each color. */
 export const FRUIT_FOR: Partial<Record<ColorName, PropKind>> = {
@@ -23,6 +27,39 @@ function leaf(x: number, y: number, angle: number) {
   l.position.set(x, y);
   l.rotation = angle;
   return l;
+}
+
+/** A strawberry, banana or plum about 64 units across, centered on (0, 0), in its own colors. */
+export function smallFruit(kind: SmallFruit): Graphics {
+  const g = new Graphics();
+  const line = (color: number) => ({ width: 4, color, join: 'round' as const });
+  if (kind === 'strawberry') {
+    const c = swatch.red;
+    g.moveTo(0, -18).bezierCurveTo(-26, -26, -38, 0, -16, 22).bezierCurveTo(-8, 30, -4, 34, 0, 36)
+      .bezierCurveTo(4, 34, 8, 30, 16, 22).bezierCurveTo(38, 0, 26, -26, 0, -18).fill(c.fill).stroke(line(c.line));
+    for (const [x, y] of [[-14, -6], [0, -4], [14, -6], [-8, 8], [8, 8], [-2, 20], [0, 30]]) g.ellipse(x, y, 2, 3).fill(swatch.yellow.light);
+    // A leafy cap instead of a stalk.
+    for (const a of [-1, 0, 1]) g.ellipse(a * 10, -20 + Math.abs(a) * 2, 8, 5).fill(swatch.green.fill).stroke({ width: 3, color: swatch.green.line });
+    g.moveTo(0, -22).lineTo(1, -32).stroke({ width: 4, color: swatch.green.line, cap: 'round' });
+    return g;
+  }
+  if (kind === 'banana') {
+    const c = swatch.yellow;
+    g.moveTo(-26, -24).bezierCurveTo(-34, 6, -10, 30, 26, 22).bezierCurveTo(30, 21, 30, 16, 26, 14)
+      .bezierCurveTo(0, 16, -16, 0, -16, -24).closePath().fill(c.fill).stroke(line(c.line));
+    g.moveTo(-23, -22).bezierCurveTo(-26, 2, -6, 22, 22, 18).stroke({ width: 3, color: c.line, alpha: 0.45 });
+    // Brown tips at both ends instead of a stalk and leaf.
+    g.roundRect(-26, -32, 9, 10, 3).fill(swatch.brown.line);
+    g.circle(28, 18, 3.5).fill(swatch.brown.line);
+    return g;
+  }
+  const c = swatch.purple;
+  g.ellipse(0, 4, 26, 28).fill(c.fill).stroke(line(c.line));
+  g.moveTo(0, -20).bezierCurveTo(8, -4, 8, 14, 0, 28).stroke({ width: 3, color: c.line, alpha: 0.5 });
+  g.moveTo(0, -18).lineTo(3, -32).stroke({ width: 5, color: swatch.brown.line, cap: 'round' });
+  g.ellipse(13, -30, 10, 5).fill(swatch.green.fill).stroke({ width: 3, color: swatch.green.line });
+  g.ellipse(-10, -4, 5, 8).fill({ color: 0xffffff, alpha: 0.4 });
+  return g;
 }
 
 export function prop(kind: PropKind, color: ColorName): Container {
@@ -89,6 +126,36 @@ export function prop(kind: PropKind, color: ColorName): Container {
       c.addChild(g);
       if (kind === 'grapes') c.addChild(leaf(6, -48, -0.3));
       for (const [x, y] of spots.slice(0, 3)) shine.circle(x - r * 0.35, y - r * 0.35, r * 0.22).fill({ color: 0xffffff, alpha: 0.5 });
+      break;
+    }
+    case 'strawberry':
+    case 'banana':
+    case 'plum': {
+      // The small fruit scaled up to the others' size.
+      const f = smallFruit(kind);
+      f.scale.set(1.6);
+      c.addChild(f);
+      break;
+    }
+    case 'beachball': {
+      // Six panels, white between colored ones, round a white cap.
+      const panels = [sw.fill, 0xffffff, swatch.yellow.fill, 0xffffff, swatch.blue.fill, 0xffffff];
+      panels.forEach((fill, i) => {
+        const a = (i * Math.PI) / 3 - Math.PI / 2;
+        g.moveTo(0, 0).arc(0, 0, 46, a, a + Math.PI / 3).closePath().fill(fill);
+      });
+      g.circle(0, 0, 46).stroke(line(swatch.white.line, 5));
+      g.circle(0, 0, 10).fill(0xffffff).stroke(line(swatch.white.line, 3));
+      c.addChild(g);
+      shine.ellipse(-20, -22, 7, 12).fill({ color: 0xffffff, alpha: 0.5 });
+      break;
+    }
+    case 'shell': {
+      // A scallop: a ribbed fan on a little hinge.
+      g.moveTo(-14, 40).lineTo(-50, -6).quadraticCurveTo(0, -66, 50, -6).lineTo(14, 40).closePath().fill(sw.fill).stroke(line(sw.line));
+      for (const x of [-30, -15, 0, 15, 30]) g.moveTo(x * 0.3, 38).lineTo(x * 1.25, -18 - (30 - Math.abs(x)) * 0.8).stroke(line(sw.line, 3));
+      g.roundRect(-22, 34, 44, 14, 5).fill(sw.fill).stroke(line(sw.line, 4));
+      c.addChild(g);
       break;
     }
     case 'balloon':

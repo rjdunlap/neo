@@ -1,7 +1,7 @@
 import { Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi.js';
 import { ink, swatch, wood, type ColorName } from '../../art/palette';
 import { prop } from '../../art/props';
-import { Backdrop } from '../../art/scenery';
+import { Backdrop, type BackdropStyle } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { onTap, palmOnGlass } from '../../engine/input';
@@ -16,13 +16,21 @@ import type { LineId } from '../../content/voice-script';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
+  MOODS,
   arcAt, basketAt, boardOrigin, boardsFor, bowlAt, BOWL_R, distToSegment, GAP, HANG, hanging, hintLineFor, HIT_R, inBowl, insideLength, judgeStroke,
   left, LINE_CANCEL, lineHits, makeToss, met, MIN_TRAVEL, nextKind, pairBoard, pairHint, planFor, RISE, signAt, SIGN_W, signsFor,
-  type Board, type Kind, type Line, type Plan, type Pt, type Refusal, type Sign, type Toss,
+  type Board, type Kind, type Line, type Mood, type Plan, type Pt, type Refusal, type Sign, type Toss,
 } from './logic';
 
 const COLOR: Record<Kind, ColorName> = {
-  apple: 'red', orange: 'orange', lemon: 'yellow', pear: 'green', blueberries: 'blue', grapes: 'purple', balloon: 'pink', flower: 'pink',
+  apple: 'red', orange: 'orange', lemon: 'yellow', pear: 'green', blueberries: 'blue', grapes: 'purple',
+  strawberry: 'red', banana: 'yellow', plum: 'purple', balloon: 'pink', flower: 'pink', beachball: 'red', shell: 'pink',
+};
+/** Each mood's sky and hills; the picnic adds a blanket under the basket and the sunset a low half sun. */
+const MOOD_SKY: Record<Mood, BackdropStyle> = {
+  morning: { sky: [0x9fd8f5, 0xfff6e0], hills: [0x9fd8f5, 0x7cc7ec, 0xffe7a3], horizon: 0.78, clouds: 3, sun: true, seed: 131 },
+  picnic: { sky: [0xbfe6fb, 0xf3fbe8], hills: [0xbfe6fb, swatch.green.fill, swatch.green.light], horizon: 0.78, clouds: 2, sun: true, seed: 47 },
+  sunset: { sky: [swatch.orange.light, swatch.pink.light], hills: [swatch.pink.light, swatch.pink.fill, swatch.yellow.light], horizon: 0.78, clouds: 2, seed: 88 },
 };
 /** The fruit art is drawn about 100 across; this makes it about 110. */
 const ART = 1.1;
@@ -110,6 +118,11 @@ class FruitSlice implements Game {
   private arrowFor: { at: Pt; t: number } | null = null;
 
   private readonly back: Backdrop;
+  private readonly mood: Mood;
+  /** The picnic's blanket, between the hills and the basket. */
+  private readonly decor = new Graphics();
+  /** The sunset's low sun, inside the backdrop behind its hills. */
+  private readonly lowSun = new Graphics();
   private readonly fruitLayer = new Container();
   private readonly layer = new Container();
   private readonly trailG = new Graphics();
@@ -123,10 +136,11 @@ class FruitSlice implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
-    this.back = ctx.track(new Backdrop({ sky: [0x9fd8f5, 0xfff6e0], hills: [0x9fd8f5, 0x7cc7ec, 0xffe7a3], horizon: 0.78, clouds: 3, sun: true, seed: 131 }, ctx.view));
     this.plan = planFor(ctx.level);
     this.signs = signsFor(this.plan, ctx.rng);
     if (this.plan.mode === 'line') this.boards = boardsFor(ctx.rng);
+    this.mood = ctx.rng.pick(MOODS);
+    this.back = ctx.track(new Backdrop(MOOD_SKY[this.mood], ctx.view));
     // The how-to card's demonstration plays a short round.
     if (ctx.demo) {
       if (this.signs.length > 1) this.signs = this.signs.slice(0, 1);
@@ -141,6 +155,8 @@ class FruitSlice implements Game {
     this.glowG.eventMode = 'none';
     this.fruitLayer.eventMode = 'none';
     this.back.eventMode = 'none';
+    this.decor.eventMode = 'none';
+    if (this.mood === 'sunset') this.back.addChildAt(this.lowSun, 1);
     this.layer.eventMode = 'static';
     this.layer.on('pointerdown', (e) => this.down(e));
     this.layer.on('globalpointermove', (e) => this.move(e));
@@ -150,7 +166,7 @@ class FruitSlice implements Game {
     onTap(this.sign, () => void this.say(this.instructLine()), { cooldown: 600 });
     onTap(this.bowl, () => this.tapBowl(), { cooldown: 500 });
     // The slice layer catches touches over the play area; the sign and the bowl sit above it.
-    ctx.stage.addChild(this.back, this.basket, this.fruitLayer, this.glowG, this.layer, this.trailG, this.bowl, this.sign);
+    ctx.stage.addChild(this.back, this.decor, this.basket, this.fruitLayer, this.glowG, this.layer, this.trailG, this.bowl, this.sign);
     this.resize(ctx.view);
   }
 
@@ -164,6 +180,7 @@ class FruitSlice implements Game {
     this.layer.hitArea = new Rectangle(0, 0, v.w, v.h);
     const b = basketAt(v);
     this.basket.position.set(b.x, b.y);
+    this.drawDecor(v);
     const bw = bowlAt(v);
     this.bowl.position.set(bw.x, bw.y);
     const s = signAt(v);
@@ -674,12 +691,34 @@ class FruitSlice implements Game {
     void this.ctx.tw.to(g, { alpha: 0 }, { duration: 0.4 }).then(() => g.destroy());
   }
 
+  private drawDecor(v: View) {
+    const g = this.decor.clear();
+    const b = basketAt(v);
+    if (this.mood === 'picnic') {
+      // A red-checked blanket the basket sits on, wider at the front.
+      const [top, bottom, rows, cols] = [b.y - 30, Math.min(v.h - 6, b.y + 60), 3, 8];
+      const xAt = (x: number, y: number) => b.x + x * (0.8 + (0.2 * (y - top)) / (bottom - top));
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const [y0, y1] = [top + ((bottom - top) * r) / rows, top + ((bottom - top) * (r + 1)) / rows];
+          const [x0, x1] = [-200 + (400 * c) / cols, -200 + (400 * (c + 1)) / cols];
+          g.poly([xAt(x0, y0), y0, xAt(x1, y0), y0, xAt(x1, y1), y1, xAt(x0, y1), y1]).fill((r + c) % 2 ? swatch.white.fill : swatch.red.fill);
+        }
+      }
+      g.poly([xAt(-200, top), top, xAt(200, top), top, xAt(200, bottom), bottom, xAt(-200, bottom), bottom]).stroke({ width: 4, color: swatch.red.line, join: 'round' });
+    }
+    // The sunset's sun sinks behind the far hills, so about half of it shows.
+    this.lowSun.clear();
+    if (this.mood === 'sunset') this.lowSun.circle(v.w * 0.28, v.h * MOOD_SKY.sunset.horizon - 130, 90).fill(swatch.yellow.fill);
+  }
+
   private drawBasket() {
+    const weave = this.mood === 'sunset' ? swatch.brown.line : wood.line;
     const g = new Graphics()
       .moveTo(-110, -40).lineTo(110, -40).lineTo(90, 40).lineTo(-90, 40).closePath()
       .fill(wood.fill).stroke({ width: 5, color: wood.line, join: 'round' });
     for (let x = -80; x <= 80; x += 32) g.moveTo(x, -36).lineTo(x * 0.85, 36);
-    g.moveTo(-100, 0).lineTo(100, 0).stroke({ width: 3, color: wood.line, alpha: 0.6 });
+    g.moveTo(-100, 0).lineTo(100, 0).stroke({ width: 3, color: weave, alpha: 0.6 });
     g.roundRect(-118, -50, 236, 16, 8).fill(wood.light).stroke({ width: 4, color: wood.line });
     this.basket.addChild(g);
     this.basket.eventMode = 'none';
