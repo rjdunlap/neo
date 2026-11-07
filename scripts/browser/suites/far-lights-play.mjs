@@ -11,10 +11,11 @@ async function farLightsPlay() {
     await kit.dragTo(g.stripLights[lane], to, 12);
   }, [lane, s]);
   await page.evaluate(() => { kit.store.data.settings.howToCards = false; });
-  // FAR_LEVELS=5,6 plays only the curtain levels.
+  // FAR_LEVELS=5,6 plays only the curtain levels; FAR_LEVELS=7,8 only strong and gentle.
   const only = (process.env.FAR_LEVELS ?? '').split(',').filter(Boolean).map(Number);
   if (!only.length || only.some((l) => l <= 4)) await early(score, idle, dragTo);
-  if (!only.length || only.some((l) => l >= 5)) await curtain(score, idle);
+  if (!only.length || only.some((l) => l === 5 || l === 6)) await curtain(score, idle);
+  if (!only.length || only.some((l) => l >= 7)) await strong(score, idle);
 }
 
 async function early(score, idle, dragTo) {
@@ -128,6 +129,63 @@ async function curtain(score, idle) {
   assert.deepEqual(await score(), [1, 1], 'level 6 saved 1 miss, 1 hint');
   await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(400);
   log('Far Lights 5 and 6: level 5 authored pair, an early pull free, a nearer tap one miss, curtain lifts and drops for pair two 1/0; level 6 portrait authored board, a pull before three marks free, re-marking free, a wrong pull one miss and marks off, Show a hint twice (counted once, marks locked), the right pull, board two by autotouch 1/1; passed');
+}
+async function strong(score, idle) {
+  const tally = () => page.evaluate(() => [neo.scene.game.tally.misses, neo.scene.game.tally.hints]);
+  const tapLane = (lane) => page.evaluate((lane) => kit.tapOn(neo.scene.game.windowLights[lane === 'A' ? 0 : 1]), lane);
+  const strongLane = () => page.evaluate(() => { const g = neo.scene.game; const b = g.strongBoards[g.index]; return b.A.glow > b.B.glow ? 'A' : 'B'; });
+  const otherLane = (l) => (l === 'A' ? 'B' : 'A');
+  const ready = (i) => page.waitForFunction((i) => { const g = neo.scene.game; return g && g.index === i && g.layout && !g.busy && !g.lifted; }, i, { timeout: 20000 });
+
+  // Level 7: the authored board (strong 4@2 in A, gentle 1@1 in B); the opening look ends with both looking the same.
+  await launch('far-lights', 7, 'Mia', 'school');
+  await ready(0);
+  assert.deepEqual(await page.evaluate(() => neo.scene.game.strongBoards[0]), { A: { glow: 4, stop: 2 }, B: { glow: 1, stop: 1 } }, 'the authored first board');
+  assert.deepEqual(await page.evaluate(() => neo.scene.game.windowLights.map((w) => w.shown)), [1, 1], 'after the opening look both look the same');
+  await tapLane('B');
+  await page.waitForFunction(() => neo.scene.game.tally.misses === 1, null, { timeout: 4000 });
+  await tapLane('A');
+  await page.waitForFunction(() => neo.scene.game.lifted, null, { timeout: 10000 });
+  await ready(1);
+  await tapLane(await strongLane());
+  await finished('far-lights');
+  assert.deepEqual(await score(), [1, 0], 'level 7 saved 1 miss, 0 hints');
+  assert.ok(await page.evaluate(() => kit.store.data.journal.found.includes('far-lights:strong-far')), 'level 7 files its journal entry');
+
+  // Level 8 in portrait: a tap before the step is free, Both could fit, the step, a wrong tap, Show a hint, then the farther light.
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(600);
+  await launch('far-lights', 8, 'Mia', 'school');
+  await ready(0);
+  const s0 = await strongLane();
+  await tapLane(otherLane(s0));
+  await page.waitForTimeout(300);
+  assert.deepEqual(await tally(), [0, 0], 'a tap before the step is a guess, never a miss');
+  assert.equal(await page.evaluate(() => neo.scene.game.stepButton.visible), false, 'the step waits for Both could fit');
+  await page.evaluate(() => kit.tapOn(neo.scene.game.fitButton));
+  await page.waitForFunction(() => neo.scene.game.stepBoard.fit && neo.scene.game.stepButton.visible, null, { timeout: 4000 });
+  await page.evaluate(() => kit.tapOn(neo.scene.game.stepButton));
+  await page.waitForFunction(() => neo.scene.game.stepBoard.stepped && neo.scene.game.stepAt.t === 1 && !neo.scene.game.busy, null, { timeout: 6000 });
+  assert.deepEqual(await tally(), [0, 0], 'Both could fit and the step never count');
+  await tapLane(otherLane(s0));
+  await page.waitForFunction(() => neo.scene.game.tally.misses === 1, null, { timeout: 4000 });
+  await page.evaluate(() => neo.scene.game.askForHint());
+  await page.evaluate(() => neo.scene.game.askForHint());
+  assert.deepEqual(await tally(), [1, 1], 'asking again on the same board counts once');
+  await page.waitForTimeout(500);
+  await screenshot('far-lights-8-stepped');
+  await tapLane(s0);
+  await page.waitForFunction(() => neo.scene.game.lifted, null, { timeout: 10000 });
+  await ready(1);
+  // Board two by the ghost finger's own moves.
+  for (let k = 0; k < 8 && !(await page.evaluate(() => neo.scene.game?.finished !== false)); k++) {
+    await page.waitForFunction(() => neo.scene.game?.finished !== false || !neo.scene.game.busy, null, { timeout: 15000 });
+    await page.evaluate(() => { const g = neo.scene.game; const t = g && !g.finished && g.autotouch(); if (t) kit.tapOn(t.tap.on); });
+    await page.waitForTimeout(500);
+  }
+  await finished('far-lights');
+  assert.deepEqual(await score(), [1, 1], 'level 8 saved 1 miss, 1 hint');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(400);
+  log('Far Lights 7 and 8: level 7 authored board, the opening look ends level, a gentle tap one miss, curtain lifts, board two 1/0 and the journal entry; level 8 portrait, a tap before the step free, Both could fit, the step, a wrong tap one miss, Show a hint twice (counted once), the farther light, board two by autotouch 1/1; passed');
 }
 return { farLightsPlay };
 }

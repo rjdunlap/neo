@@ -223,8 +223,8 @@ export function farTrees(r: Rect): Graphics {
   const n = Math.max(6, Math.round(r.w / 70));
   for (let i = 0; i < n; i++) {
     const x = r.x + 30 + (i * (r.w - 60)) / (n - 1);
-    const h = 18 + ((i * 37) % 14);
-    g.poly([x - 9, base, x, base - h, x + 9, base]).fill({ color: 0x14203c, alpha: 0.95 });
+    const h = 26 + ((i * 37) % 16);
+    g.poly([x - 9, base, x, base - h, x + 9, base]).fill({ color: 0x5f8f7a, alpha: 0.95 });
   }
   g.eventMode = 'none';
   return g;
