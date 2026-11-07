@@ -53,6 +53,8 @@ Files from other games import `letter-trails/` 18 times, `word-search/` 5, `pond
 
 ## 7. One standard way to clean up after a round
 
+**Claimed:** `codex/scene-owned-cleanup`; add a tested lifetime helper and `GameContext` cleanup methods, wire touch/couch/demo owners, and pilot Rainbow Fingers listeners and Puzzle Pals drag ownership. Expected files: `src/engine/lifetime*`, `src/games/types.ts`, the three context owners, the two game modules, and closeout docs. No behavior or level changes.
+
 Games use four idioms for "this round is gone": `gone` (6 files), `epoch` (14), `destroyed` (18) and hand-rolled `releaseDrags` (5); 37 game files call `addEventListener` directly. Add scene-owned helpers to `GameContext` (`ctx.alive` or an `AbortSignal`, `ctx.listen(target, type, fn)`, `ctx.own(disposable)` for drags, textures and timers) that the shell disposes on destroy. `game-reviewer` can then flag raw listeners. Migrate games as they are touched, no sweep needed. Shell tier.
 
 ## 8. A shared helper for misses, hints and glows
