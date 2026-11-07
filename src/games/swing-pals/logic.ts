@@ -127,23 +127,96 @@ export interface Line {
   hook: Hook;
   friend: Friend;
   height: number;
+  /** Level 8: the beat asked for, hers against the pet's. Unset means together. */
+  request?: Request;
+}
+
+/** Level 8's requests: hers back twice for each of the pet's, half as often, or together. */
+export type Request = 'twice' | 'half' | 'together';
+/** How many of her swings come back for each of the pet's each request asks for. */
+export const WANTED: Record<Request, number> = { twice: 2, half: 0.5, together: 1 };
+
+/** How many times her swing on `hook` comes back for each return of the pet's swing on `petHook`. */
+export function beatRatio(petHook: Hook, hook: Hook): number {
+  return period(petHook) / period(hook);
 }
 
 export type Together = { match: true } | { match: false; side: 'quicker' | 'slower' };
 
 /** Do the two swings move together with her rope on `hook`? Only the hook decides; a mismatch says which way it is off. */
 export function together(line: Line, hook: Hook): Together {
-  if (hook === line.petHook) return { match: true };
-  return { match: false, side: LENGTH[hook] < LENGTH[line.petHook] ? 'quicker' : 'slower' };
+  const right = rightHook(line);
+  if (hook === right) return { match: true };
+  return { match: false, side: LENGTH[hook] < LENGTH[right] ? 'quicker' : 'slower' };
 }
 
+/** The one hook that gives the asked-for beat: the pet's own, or (level 8) the one at twice or half its beat. */
 export function rightHook(line: Line): Hook {
-  return line.petHook;
+  const want = WANTED[line.request ?? 'together'];
+  return HOOKS.find((h) => Math.abs(beatRatio(line.petHook, h) - want) < 1e-9) ?? line.petHook;
 }
 
-/** How long the swings move together before they settle: two of the pet's swings, at most four seconds. */
+/**
+ * How long the swings move before they settle: two of the pet's swings, at most four seconds; at level 8, two of the
+ * slower of the pet's swing and the right one, so a "half" line still shows her long rope come back twice.
+ */
 export function watchTime(line: Line): number {
-  return Math.min(4, 2 * period(line.petHook));
+  return Math.min(4, 2 * Math.max(period(line.petHook), period(rightHook(line))));
+}
+
+/** The times (after letting go together, up to `watch`) when both swings are back at the pusher at once: the claps. */
+export function clapTimes(petHook: Hook, hook: Hook, watch: number): number[] {
+  const out: number[] = [];
+  const Tp = period(petHook), Th = period(hook);
+  for (let k = 1; k * Tp <= watch + 1e-9; k++) {
+    const t = k * Tp;
+    if (Math.abs(t / Th - Math.round(t / Th)) < 1e-9) out.push(t);
+  }
+  return out;
+}
+
+/** The times her swing comes back during the watch (level 8 taps a soft note at each). */
+export function backTimes(hook: Hook, watch: number): number[] {
+  const out: number[] = [];
+  for (let k = 1; k * period(hook) <= watch + 1e-9; k++) out.push(k * period(hook));
+  return out;
+}
+
+/* Who comes back first? (level 7) ---------------------------------------------------------------- */
+
+/** Two friends on two different hooks, released together; she predicts which comes back first. Left first. */
+export interface Race {
+  hooks: [Hook, Hook];
+  friends: [Friend, Friend];
+  /** Release heights as a share of the bell height. */
+  heights: [number, number];
+}
+
+/** Which side comes back first: the shorter rope, whatever the weights and heights. */
+export function firstBack(race: Race): 0 | 1 {
+  return LENGTH[race.hooks[0]] < LENGTH[race.hooks[1]] ? 0 : 1;
+}
+
+/** How long a race is watched: until the slower friend's first return, and a breath more. */
+export function raceWatch(race: Race): number {
+  return Math.max(period(race.hooks[0]), period(race.hooks[1])) + 0.3;
+}
+
+const RANK: Record<Weight, number> = { light: 0, middle: 1, heavy: 2 };
+/** The tempting wrong guess: the heavier friend or the bigger push is on the shorter rope. */
+export function raceTempts(race: Race): boolean {
+  const s = firstBack(race), o = s === 0 ? 1 : 0;
+  return RANK[WEIGHT[race.friends[s]]] > RANK[WEIGHT[race.friends[o]]] || race.heights[s] > race.heights[o];
+}
+
+export function authoredRace(): Race {
+  return { hooks: ['short', 'long'], friends: ['mouse', 'bear'], heights: [EVEN, EVEN] };
+}
+
+/* Twice as quick (level 8) ------------------------------------------------------------------------ */
+
+export function authoredRequest(): Line {
+  return { petHook: 'long', petFriend: 'bunny', petHeight: EVEN, hook: 'middle', friend: 'duck', height: EVEN, request: 'twice' };
 }
 
 /** The widest gap in phase (each swing's position over its own height) between two hooks released together, over the watch. */
@@ -158,7 +231,7 @@ export function widestApart(a: Hook, b: Hook, watch: number, step = 0.01): numbe
 export interface Plan {
   id: number;
   name: string;
-  mode: 'push' | 'together';
+  mode: 'push' | 'together' | 'predict';
   /** Lines (friends or pairs) in a round. */
   lines: number;
   /** Level 3: two swings, short and long. */
@@ -167,6 +240,8 @@ export interface Plan {
   weights: boolean;
   /** Level 6: different release heights. */
   heights: boolean;
+  /** Level 8: each line asks for twice, half or the same beat. */
+  requests?: boolean;
 }
 
 export const PLANS: readonly Plan[] = [
@@ -176,6 +251,8 @@ export const PLANS: readonly Plan[] = [
   { id: 4, name: 'Swing together', mode: 'together', lines: 3, two: true, weights: false, heights: false },
   { id: 5, name: 'Heavy or light', mode: 'together', lines: 3, two: true, weights: true, heights: false },
   { id: 6, name: 'Big push, small push', mode: 'together', lines: 3, two: true, weights: true, heights: true },
+  { id: 7, name: 'Who comes back first?', mode: 'predict', lines: 3, two: true, weights: true, heights: true },
+  { id: 8, name: 'Twice as quick', mode: 'together', lines: 3, two: true, weights: false, heights: false, requests: true },
 ];
 
 export function planFor(level: number): Plan {
@@ -192,7 +269,7 @@ export interface PushLine {
   swings: Swing[];
 }
 
-export type Round = { kind: 'push'; lines: PushLine[]; goal: Goal } | { kind: 'together'; lines: Line[] };
+export type Round = { kind: 'push'; lines: PushLine[]; goal: Goal } | { kind: 'together'; lines: Line[] } | { kind: 'predict'; lines: Race[] };
 
 /** Each level's authored first line, from the definition's first rounds. */
 export function authoredPush(plan: Plan): PushLine {
@@ -254,6 +331,42 @@ function seededTogether(plan: Plan, rng: Rng, kind: LineKind): Line {
   return { petHook, petFriend, petHeight, hook, friend, height };
 }
 
+function seededRace(rng: Rng, tempt: boolean): Race {
+  const [a, b] = rng.shuffle([...HOOKS]);
+  const hooks: [Hook, Hook] = [a, b];
+  const quick = firstBack({ hooks, friends: ['bunny', 'bunny'], heights: [EVEN, EVEN] });
+  const slow = quick === 0 ? 1 : 0;
+  const friends: [Friend, Friend] = ['bunny', 'bunny'];
+  const heights: [number, number] = [EVEN, EVEN];
+  if (tempt && rng.chance(0.5)) {
+    // The heavier friend on the shorter rope.
+    const heavyOne = rng.pick(FRIENDS.filter((f) => WEIGHT[f] === 'heavy'));
+    friends[quick] = heavyOne;
+    friends[slow] = rng.pick(FRIENDS.filter((f) => WEIGHT[f] === 'light'));
+    if (rng.chance(0.5)) [heights[quick], heights[slow]] = [BIG, SMALL];
+  } else if (tempt) {
+    // The bigger push on the shorter rope.
+    [friends[0], friends[1]] = rng.shuffle([...FRIENDS]);
+    [heights[quick], heights[slow]] = [BIG, SMALL];
+  } else {
+    [friends[0], friends[1]] = rng.shuffle([...FRIENDS]);
+    if (rng.chance(0.5)) [heights[0], heights[1]] = rng.chance(0.5) ? [BIG, SMALL] : [SMALL, BIG];
+  }
+  return { hooks, friends, heights };
+}
+
+function seededRequest(rng: Rng, request: Request): Line {
+  const [petFriend, friend] = rng.shuffle([...FRIENDS]);
+  let petHook: Hook;
+  if (request === 'twice') petHook = 'long';
+  else if (request === 'half') petHook = 'short';
+  else petHook = rng.pick(HOOKS);
+  const line: Line = { petHook, petFriend, petHeight: EVEN, hook: petHook, friend, height: EVEN, request };
+  // Her rope starts on a wrong hook: for twice or half that may be the pet's own, the together habit.
+  line.hook = rng.pick(HOOKS.filter((h) => h !== rightHook(line)));
+  return line;
+}
+
 const lightHeavy = (l: Line) => {
   const w = [WEIGHT[l.friend], WEIGHT[l.petFriend]];
   return w.includes('light') && w.includes('heavy');
@@ -263,6 +376,12 @@ export const heavyTempts = (l: Line) => WEIGHT[l.friend] === 'heavy' && WEIGHT[l
 
 /** Does a round meet its plan's filter (the definition's table)? */
 export function roundFits(plan: Plan, round: Round): boolean {
+  if (round.kind === 'predict') {
+    const races = round.lines;
+    if (plan.mode !== 'predict' || races.length !== plan.lines) return false;
+    if (races.some((r) => r.hooks[0] === r.hooks[1] || r.friends[0] === r.friends[1])) return false;
+    return races.some(raceTempts) && new Set(races.map((r) => r.hooks.join())).size >= 2;
+  }
   if (round.kind === 'push') {
     if (round.lines.length !== plan.lines) return false;
     return round.lines.every((l) => {
@@ -273,7 +392,12 @@ export function roundFits(plan: Plan, round: Round): boolean {
   }
   const lines = round.lines;
   if (lines.length !== plan.lines) return false;
-  if (lines.some((l) => l.hook === l.petHook)) return false;
+  if (lines.some((l) => l.hook === rightHook(l))) return false;
+  if (plan.requests) {
+    const asked = new Set(lines.map((l) => l.request ?? 'together'));
+    return (asked.has('twice') || asked.has('half')) && asked.size >= 2;
+  }
+  if (lines.some((l) => l.request)) return false;
   if (new Set(lines.map(rightHook)).size < 2) return false;
   if (plan.id === 4 && lines.some((l) => l.friend !== l.petFriend)) return false;
   if (plan.id === 5 && (lines.filter(lightHeavy).length < 2 || !lines.some(heavyTempts))) return false;
@@ -287,6 +411,22 @@ export function roundFits(plan: Plan, round: Round): boolean {
 
 /** The fallback round, used only if 50 seeded tries all miss the filter (a test asserts it never happens). */
 export function fallbackRound(plan: Plan): Round {
+  if (plan.mode === 'predict') {
+    return {
+      kind: 'predict',
+      lines: [authoredRace(), { hooks: ['long', 'middle'], friends: ['duck', 'pig'], heights: [EVEN, EVEN] }, { hooks: ['middle', 'short'], friends: ['frog', 'cat'], heights: [SMALL, BIG] }],
+    };
+  }
+  if (plan.requests) {
+    return {
+      kind: 'together',
+      lines: [
+        authoredRequest(),
+        { petHook: 'short', petFriend: 'frog', petHeight: EVEN, hook: 'short', friend: 'cat', height: EVEN, request: 'half' },
+        { petHook: 'middle', petFriend: 'pig', petHeight: EVEN, hook: 'long', friend: 'mouse', height: EVEN, request: 'together' },
+      ],
+    };
+  }
   if (plan.mode === 'push') {
     const lines = [authoredPush(plan)];
     while (lines.length < plan.lines) lines.push(plan.two ? { swings: [stillSwing('long', 'duck'), stillSwing('short', 'bear')] } : { swings: [stillSwing('middle', 'duck')] });
@@ -312,7 +452,19 @@ export function makeRound(plan: Plan, rng: Rng, authored: boolean): { round: Rou
   const goal: Goal = authored ? 'bell' : rng.pick(GOALS);
   for (let attempt = 0; attempt < 50; attempt++) {
     let round: Round;
-    if (plan.mode === 'push') {
+    if (plan.mode === 'predict') {
+      // Every round holds a tempting race; the authored first race is not one, so a seeded one is.
+      const kinds = authored ? [false, ...rng.shuffle([true, false])] : rng.shuffle([true, false, false]);
+      const lines: Race[] = [];
+      for (let i = 0; i < plan.lines; i++) lines.push(i === 0 && authored ? authoredRace() : seededRace(rng, kinds[i]));
+      round = { kind: 'predict', lines };
+    } else if (plan.requests) {
+      // Both requests and the plain together line, in a seeded order; the authored first line is "twice".
+      const asks: Request[] = authored ? ['twice', ...rng.shuffle(['half', 'together'] as Request[])] : rng.shuffle(['twice', 'half', 'together'] as Request[]);
+      const lines: Line[] = [];
+      for (let i = 0; i < plan.lines; i++) lines.push(i === 0 && authored ? authoredRequest() : seededRequest(rng, asks[i]));
+      round = { kind: 'together', lines };
+    } else if (plan.mode === 'push') {
       const lines: PushLine[] = [];
       for (let i = 0; i < plan.lines; i++) lines.push(i === 0 && authored ? authoredPush(plan) : seededPush(plan, rng, i));
       round = { kind: 'push', lines, goal };
@@ -428,6 +580,17 @@ export function swingLayout(swings: 1 | 2, v: View): SwingLayout {
     }
   }
   return layout;
+}
+
+/** Level 8's request strip, under the pet's swing (column 0). */
+export function requestStrip(L: SwingLayout): Rect {
+  return { x: L.columns[0].pivot.middle.x - 100, y: L.seatY + 32, w: 200, h: 60 };
+}
+
+/** Level 7's paw marker over a friend on the seat at `seat`: its middle, radius 30. */
+export const MARK_R = 30;
+export function markerAt(seat: Pt, friend: Friend): Pt {
+  return { x: seat.x, y: seat.y - friendHeight(friend) - 40 };
 }
 
 /** The three hook targets of her swing (levels 4–6), centered on each pivot. */
