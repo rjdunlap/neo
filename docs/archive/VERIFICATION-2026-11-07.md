@@ -19,3 +19,7 @@ Changed: plan 9 in `src/games/bolt-boards/` (school order 4, 5, 8, 6, 7, 9): the
 ## 2026-11-07 — Domino Run deep dive (docs only)
 
 Changed: `docs/deep-dives/domino-run.md` and its tracker, STUDY-BACKLOG and READY rows (PR #1357); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; slices 1–4 are queued; no new decisions wait on the developer.
+
+## 2026-11-07 — Games discovered from their folders (PR #1356)
+
+Changed: `src/games/registry.ts` builds `GAMES` with `import.meta.glob`, in `LANDS` order (same 175 IDs as sorted sets; 135 positions moved); new registry test (fails when the sort is removed). Ran (ff996ade): `npm run typecheck`; `npm test` (322 files, 6,003 tests, run before the new test was added; registry and `src/content` re-run after, 20 files, 214 tests); `npm run build`; `BROWSER_SUITE=world` at http://localhost:5197 (2 checks). Open: offline check not run (persistence and assets unchanged); no device check.
