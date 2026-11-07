@@ -1,0 +1,20 @@
+// What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
+export const VOICE = {
+  'game.clap-syllables': ['Clap the syllables!'],
+  'clap.along': ['Clap along with me! Tap the big hands once for each beat.'],
+  'clap.solo': ['Your turn! Tap the big hands once for each beat in the word, then wait a moment.'],
+  'clap.sort': ['Sort the pictures by claps! Drag each one to the number of beats in its name.'],
+  'clap.match': ['Listen to the claps, then touch the picture with that many beats!'],
+  'clap.more': ['Touch the picture whose word has more claps!'],
+  'clap.fewer': ['Touch the picture whose word has fewer claps!'],
+  'clap.compare.wrong': ['{word} has {count}. Let us count both words again.'],
+  'clap.word': ['{word}!'],
+  'clap.count': ['{word} has {count}!'],
+  'clap.try': ['Let us clap it together, then you try again!'],
+  'clap.sort.wrong': ['{word} has {count}. Let us clap it!'],
+  'clap.match.wrong': ['{word} has {count}. Listen to the claps again!'],
+  'clap.train': ['Make a beat train! The picture with the fewest claps rides at the back, the one with the most claps rides by the engine.'],
+  'clap.train.wrong': ['{word} has {count}. Let us clap it, then find its car!'],
+  'clap.train.go': ['Fewest claps to most. All aboard!', 'Clap, clap, choo choo!'],
+  'clap.done': ['What a great clapper!', 'Clap, clap, hooray!'],
+} satisfies Record<string, string[]>;

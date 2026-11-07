@@ -1,0 +1,21 @@
+// What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
+export const VOICE = {
+  'game.mossy-path': ['Mossy Path!'],
+  'moss.go': ['Help the turtle bloom every moss tile. Tap a tile beside the turtle to take one step. Visit each tile once, and reach the blue pond last. Undo takes back a step.'],
+  'moss.far': ['Take one step to a tile beside the turtle. We cannot jump across the patch.'],
+  'moss.visited': ['That tile has already bloomed. Try a fresh moss tile, or Undo to change the trail.'],
+  'moss.pond': ['The pond comes last. Bloom the other moss tiles first.'],
+  'moss.blocked': ['This trail leaves some moss out of reach. Try Undo to change the route.'],
+  'moss.hint': ['The gold tile starts a route that can bloom all the moss.'],
+  'moss.recover': ['Tap the gold Undo button to take back steps. When a route is possible, the next tile will glow.'],
+  'moss.restart': ['The same moss patch is ready. Try a new trail.'],
+  'moss.done': ['Every tile bloomed, and the turtle reached the pond!'],
+  'moss.maze': ['Help the turtle find the way to the pond. Tap or slide along the moss.'],
+  'moss.maze-berry': ['The turtle wants a berry snack on the way. Get the berry first, then go to the pond.'],
+  'moss.hedge': ['Hedges all around. Let\'s turn back.'],
+  'moss.stop': ['That way stops at the hedge. Look for the way that keeps going.'],
+  'moss.snack': ['The pond can wait. Get the berry first!'],
+  'moss.berry': ['Yum, a berry! Now to the pond.'],
+  'moss.hint-maze': ['The gold tile is the way to go.'],
+  'moss.done-maze': ['The turtle found the way to the pond!'],
+} satisfies Record<string, string[]>;

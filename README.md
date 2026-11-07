@@ -294,7 +294,7 @@ src/
   content/    voice script, how-to cards, the age-trail places, stable world IDs, the two picnics' story rules, and the treehouse's room, creations and journal rules
 ```
 
-To add a minigame, follow the checklist in [AGENTS.md](AGENTS.md#adding-or-extending-a-minigame): a `GameModule` in `src/games/<id>/index.ts` with its rules in `logic.ts`, voice lines in `content/voice-script.ts`, a how-to card in `content/howto.ts`, and a registry entry. The shell handles transitions, the home button, the pet guide, saving, difficulty, stickers and the celebration; a game draws into `ctx.stage` and calls `ctx.finish({ misses, hints })`. Making a game playable on the couch, or adding a challenge course, is described in [DESIGN](docs/DESIGN.md#extending-couch-play).
+To add a minigame, follow the checklist in [AGENTS.md](AGENTS.md#adding-or-extending-a-minigame): a `GameModule` in `src/games/<id>/index.ts` with its rules in `logic.ts`, voice lines in its `voice.ts`, a how-to card in its `howto.ts` (gathered by `node scripts/content-barrels.mjs`), and a registry entry. The shell handles transitions, the home button, the pet guide, saving, difficulty, stickers and the celebration; a game draws into `ctx.stage` and calls `ctx.finish({ misses, hints })`. Making a game playable on the couch, or adding a challenge course, is described in [DESIGN](docs/DESIGN.md#extending-couch-play).
 
 In `npm run dev`, the browser console has `neo` (the app) and `kit` (synthetic taps and drags, the store) for poking at the game.
 

@@ -1,0 +1,21 @@
+// What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
+export const VOICE = {
+  'game.jar-sort': ['Jar sort!'],
+  'jar.instruct': ['Put each fruit in its own jar. Tap a jar to lift the top fruit, then tap where it goes.'],
+  'jar.instruct-labels': ['Every fruit has its own jar. Look at the pictures under the jars, and put each fruit on its picture.'],
+  'jar.refuse-kind.strawberry': ['Strawberry goes on strawberry, or in an empty jar.'],
+  'jar.refuse-kind.blueberry': ['Blueberry goes on blueberry, or in an empty jar.'],
+  'jar.refuse-kind.orange': ['Orange goes on orange, or in an empty jar.'],
+  'jar.refuse-kind.pear': ['Pear goes on pear, or in an empty jar.'],
+  'jar.refuse-kind.plum': ['Plum goes on plum, or in an empty jar.'],
+  'jar.refuse-full': ['That jar is full.'],
+  'jar.lid': ['A whole jar of one fruit! On goes the lid.', 'Pop! The lid goes on.'],
+  'jar.wrong-jar.strawberry': ['The strawberries go in the strawberry jar.'],
+  'jar.wrong-jar.blueberry': ['The blueberries go in the blueberry jar.'],
+  'jar.wrong-jar.orange': ['The oranges go in the orange jar.'],
+  'jar.wrong-jar.pear': ['The pears go in the pear jar.'],
+  'jar.wrong-jar.plum': ['The plums go in the plum jar.'],
+  'jar.stuck': ['Stuck! Let\'s take one back. Tap the round arrow.'],
+  'jar.hint': ['Try moving the fruit from the glowing jar to the other bright jar.'],
+  'jar.done': ['Every jar is one fruit. Jam time!', 'All sorted! Yummy jam.'],
+} satisfies Record<string, string[]>;

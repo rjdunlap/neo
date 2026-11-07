@@ -1,0 +1,22 @@
+// What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
+export const VOICE = {
+  'game.vine-snip': ['Vine snip!'],
+  'vine-snip.instruct-snip': ['Snip the vine to feed {friend}!'],
+  'vine-snip.instruct-two': ['Snip a vine. What happens?'],
+  'vine-snip.other': ['Snip the other vine.'],
+  'vine-snip.instruct-wait': ['Wait until it swings toward {friend}, then snip!'],
+  'vine-snip.instruct-keep': ['Which vine should stay so it swings to {friend}?'],
+  'vine-snip.instruct-both': ['Feed both friends, one fruit each.'],
+  'vine-snip.wrong-side': ["That vine swings it the other way. Keep the vine on {friend}'s side."],
+  'vine-snip.straight': ["It dropped straight down. Keep the vine on {friend}'s side so it swings."],
+  'vine-snip.swings': ['It swings!'],
+  'vine-snip.still': ['It hangs still.'],
+  'vine-snip.early': ['Too soon. Wait until it swings toward {friend}.'],
+  'vine-snip.late': ['A little late. Snip as it swings up toward {friend}.'],
+  'vine-snip.grow': ['The vines grew back.'],
+  'vine-snip.munch': ['Yum! {friend} munched it.', 'Munch, munch! Thank you!'],
+  'vine-snip.hint': ['Snip when the fruit is on the golden part.'],
+  'vine-snip.hint-vine': ['Snip the glowing vine.'],
+  'vine-snip.hint-keep': ['Keep the yellow vine. Snip the orange ones first.'],
+  'vine-snip.done': ['Every friend has eaten!'],
+} satisfies Record<string, string[]>;

@@ -195,3 +195,7 @@ Changed: `docs/deep-dives/bolt-boards.md` and its tracker, READY, backlog and wa
 ## 2026-11-06 — Swing Pals more friends and leaf goals (PR #1332)
 
 Changed: riders cat, dog, pig, cow and seeded leaf goals (bell, chimes, apple, nest) in `src/games/swing-pals/`, voice lines and the how-to card. Ran: `npm run typecheck`; `npx vitest run src/games/swing-pals` (28 pass, 5 new); `npx vitest run src/content` (176 pass); one scripted browser probe (dev server, `/classic/`, 768×1024 portrait) at levels 1 and 3 until apple, nest and chimes rounds appeared, with screenshots of the goals and the cat, pig and cow riders. Not run: `fingerdemo` (fresh-content tier), build, offline check, any device. Open: the short-hook clearance rule in the dive was impossible as written, so the test compares against the original five; a cow on the short rope crowding the hook stays a device check.
+
+## 2026-11-06 — Bolt Boards more boards, fruit and a friend (PR #1341)
+
+Changed: `scripts/bolt-boards-puzzles.ts` second pass (seed 20261106) gives 20 frozen boards per level (21 at 6), orange, strawberry and banana in `fruitArt`, the bear as a friend; new rule tests for the counts and the unchanged authored boards. Ran (Vite on 5516): `npm run typecheck`; `npx vitest run src/games/bolt-boards` (21 tests); `BROWSER_SUITE=boltboards`; a portrait 768×1024 screenshot at level 5 showing the new fruits and the bear; `npm run build`; game-reviewer found nothing. Not run: `fingerdemo` (bot unchanged), full unit suite. Open: no iPad or child.
