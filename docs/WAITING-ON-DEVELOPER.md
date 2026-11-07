@@ -37,6 +37,13 @@ Swing Pals dive (2026-11-06), three calls; slices 1–3 go ahead (slice 2 on dec
 | **Paint the beat as a creative level, and may its painting be kept?** | Reopens the "nothing kept" default for the treehouse; no default, it stays unbuilt | [Swing Pals dive](deep-dives/swing-pals.md#decisions-for-the-developer) |
 | **A journal discovery ("a longer rope swings slower")?** | Reopens the definition's decision 4; default: still none | [Swing Pals dive](deep-dives/swing-pals.md#decisions-for-the-developer) |
 
+Number Trails dive (2026-11-06), two calls; slices 1–6 go ahead regardless ([the dive](deep-dives/number-trails.md#decisions-for-the-developer)):
+
+| Step | What happens next | Written in |
+| --- | --- | --- |
+| **A school window at level 7 (*Ten, and some more*)?** | Lean: yes, school 5–7 after a layout probe; otherwise Number Trails stays pre-K and teens go to another game | [Number Trails dive](deep-dives/number-trails.md#decisions-for-the-developer) |
+| **Journal entries for the numerals 0–9?** | Lean: yes, ten entries `number-trails:0`–`9` filed when the numeral was traced and its things shown, journal total +10; or none | [Number Trails dive](deep-dives/number-trails.md#decisions-for-the-developer) |
+
 Puddle Gobble dive (2026-11-06), two calls; slices 1–4 go ahead on both defaults ([the dive](deep-dives/puddle-gobble.md#decisions-for-the-developer)):
 
 | Step | What happens next | Written in |

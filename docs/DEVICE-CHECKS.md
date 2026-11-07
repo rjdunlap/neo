@@ -1,5 +1,6 @@
 # Needs a person or a device
 
+- [ ] **Number Trails (dive, 2026-11-06; proposed slices, nothing built):** can a three-year-old stay inside the 0.1 corridor in portrait? On an iPad, how is the speech of "zero" and the single digits? Does the flying hint read as help, and do dotted and start-only trails (level 6) stay clear to a four-year-old?
 - [ ] **Playdate Workshop (levels 1–3, 2026-11-06):** does a three-year-old understand passing the pad from the pictured requests? Do pre-K children compare the plans or pick the first card?
 - [ ] **Playdate Workshop:** are the co-play roles (one chooses, one operates) wanted by families? How does iPad speech say the first-person lines?
 - [ ] **Hat Band (levels 1–3, 2026-11-06, #1320):** are the drum and tune hats clearly different on an iPad speaker? Does the drum mask the tune at the chosen gains?
