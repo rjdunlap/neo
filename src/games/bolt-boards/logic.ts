@@ -264,17 +264,19 @@ export function solve(p: Puzzle, s: State, plan: BoltPlan, cap = SEARCH_CAP): Mo
 export type Hint = { move: Move } | { undo: true };
 
 /**
- * What to glow. Levels 1–5: a free bolt on the highest board that has to go, which nothing can cover. Levels 6–8:
- * the first move of a shortest solution, or the undo arrow at a proved dead end (or when the search ran out).
+ * What to glow. Levels 1–5: a free bolt on the highest board that has to go, which nothing can cover. Level 8 (no par,
+ * never stuck): the same bolt, into the first open hole; every move there is progress, so no search is needed. Levels
+ * 6–7: the first move of a shortest solution, or the undo arrow at a proved dead end (or when the search ran out).
  */
 export function hintMove(p: Puzzle, s: State, plan: BoltPlan): Hint | null {
   if (done(p, s, plan.goal)) return null;
-  if (!plan.holes) {
+  if (!plan.holes || !plan.par) {
     const need = [...mustGo(p, s, plan.goal)].sort((a, b) => p.boards[b].z - p.boards[a].z);
-    const free = freeBolts(p, s);
+    const free = freeBolts(p, s), open = openHoles(p, s);
+    if (plan.holes && !open.length) return null;
     for (const i of need) {
       const b = free.find((x) => p.bolts[x].board === i);
-      if (b !== undefined) return { move: { bolt: b } };
+      if (b !== undefined) return { move: plan.holes ? { bolt: b, hole: open[0] } : { bolt: b } };
     }
     return null;
   }

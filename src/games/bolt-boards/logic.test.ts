@@ -289,6 +289,27 @@ describe('Bolt Boards level 8, Plenty of holes', () => {
       } else expect(closed.length).toBeLessThanOrEqual(1);
     }
   });
+
+  it('hints a legal move from every reachable state without a search, and following the hints brings every board down', () => {
+    let worst = 0;
+    for (const p of eight) {
+      for (const s of reachable(p, true, 100_000)) {
+        if (done(p, s, 'all')) { expect(hintMove(p, s, plan)).toBeNull(); continue; }
+        const t0 = performance.now();
+        const h = hintMove(p, s, plan);
+        worst = Math.max(worst, performance.now() - t0);
+        expect(h && 'move' in h && removed(remove(p, s, h.move.bolt, true, h.move.hole))).toBe(true);
+      }
+      let s: State = startState(p);
+      for (let k = 0; k <= p.bolts.length && !done(p, s, 'all'); k++) {
+        const h = hintMove(p, s, plan);
+        if (!h || !('move' in h)) break;
+        s = apply(s, h.move);
+      }
+      expect(done(p, s, 'all')).toBe(true);
+    }
+    expect(worst).toBeLessThan(20);
+  });
 });
 
 describe('Bolt Boards mirror', () => {
@@ -328,7 +349,7 @@ describe('Bolt Boards hints', () => {
 
   it('shortens the solution by exactly one at levels 6–7, or is undo at a proved dead end, fast', () => {
     let worst = 0;
-    for (const { plan, p } of all().filter((x) => x.plan.holes)) {
+    for (const { plan, p } of all().filter((x) => x.plan.holes && x.plan.par)) {
       for (const s of reachable(p, true, 120)) {
         if (done(p, s, plan.goal)) continue;
         const t0 = performance.now();

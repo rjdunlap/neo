@@ -306,7 +306,7 @@ class BoltBoards implements Game {
     this.placeAll();
   }
 
-  /** The ghost finger: the hint each step, highest board first at 1–5, the solver's path (bolt, then hole) at 6–8. */
+  /** The ghost finger: the hint each step, highest board first at 1–5 and 8 (then an open hole), the solver's path (bolt, then hole) at 6–7. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.press || this.swings.some((s) => s)) return null;
     const h = this.hint();
@@ -352,7 +352,7 @@ class BoltBoards implements Game {
     this.lifted = null;
     this.swingSaid = false;
     const p = this.puzzle;
-    if (this.plan.holes) this.par = this.solveAt(this.state)?.length ?? 0;
+    if (this.plan.par) this.par = this.solveAt(this.state)?.length ?? 0;
     this.colors = this.ctx.rng.shuffle([...COLORS]).slice(0, p.boards.length);
     this.fruits = p.boards.map(() => this.ctx.rng.pick(FRUITS));
     this.friendKind = this.ctx.rng.pick(FRIENDS);
@@ -739,8 +739,8 @@ class BoltBoards implements Game {
     }
     if (done(this.puzzle, this.state, this.plan.goal)) return void this.sceneDone();
     if (this.plan.holes) {
-      const solved = this.solveAt(this.state);
-      if (stuck(this.puzzle, this.state, this.plan) || solved === null) {
+      // Level 8 never dead-ends (a rule test searches every state), so it skips the search after each move.
+      if (stuck(this.puzzle, this.state, this.plan) || (this.plan.par && this.solveAt(this.state) === null)) {
         this.undoPulse = 4;
         void this.ctx.say('bolt.stuck');
         return;
@@ -795,7 +795,7 @@ class BoltBoards implements Game {
 
   private hint(): Hint | null {
     if (done(this.puzzle, this.state, this.plan.goal)) return null;
-    if (!this.plan.holes) return hintMove(this.puzzle, this.state, this.plan);
+    if (!this.plan.holes || !this.plan.par) return hintMove(this.puzzle, this.state, this.plan);
     const path = this.solveAt(this.state);
     return path && path.length ? { move: path[0] } : this.history.length ? { undo: true } : null;
   }
