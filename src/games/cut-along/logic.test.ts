@@ -7,6 +7,7 @@ import {
   DIFFERS, EDGE, botRoute, LEVELS, MARK_HIT, PAPER_W, PLANS, RING_R, STRIP, boardsFor, chooseOrder, countsStrays, cutsFor, differsLine,
   fringeMarks, hintStretch, homeCorner, judgeOutline, layoutFor, markAt, markBox, pathOf, petCorner, planFor, startOf, tolerance,
   lengthTo, wrongReached, INNER_R, RING_GAP, SPACING, OUTLINES, PICTURE_SHAPES, THEMES, pieceColor, pieceLine, slotsFor, themeFor, type Cut, type PieceId, type Rect,
+  MAKES, PAIR_PIECE, judgeLine, lineOfCut, makesLine, splitBoardsFor, splitSheet, twinOf, type Pair,
 } from './logic';
 import { swatch } from '../../art/palette';
 import { SCRIPT as LINES } from '../../content/voice-script';
@@ -23,6 +24,7 @@ const dist = (a: Point, b: Point) => Math.hypot(a[0] - b[0], a[1] - b[1]);
 
 function allCuts(level: number, seed: number): Cut[] {
   if (level === 8) return boardsFor(new Rng(seed)).flatMap((b) => b.cuts);
+  if (level === 10) return splitBoardsFor(new Rng(seed)).flatMap((b) => b.cuts);
   return cutsFor(level, new Rng(seed));
 }
 
@@ -42,9 +44,10 @@ function walk(points: readonly Point[], tol: number, from = 0): number {
 }
 
 describe('Cut Along ladder', () => {
-  it('has nine levels and the defined bands', () => {
-    expect(PLANS).toHaveLength(9);
-    expect(LEVELS).toEqual({ toddler: { min: 1, max: 2 }, preschool: { min: 2, max: 5 }, prek: { min: 4, max: 7 }, school: { min: 6, max: 9 } });
+  it('has ten levels and the defined bands', () => {
+    expect(PLANS).toHaveLength(10);
+    expect(LEVELS).toEqual({ toddler: { min: 1, max: 2 }, preschool: { min: 2, max: 5 }, prek: { min: 4, max: 7 }, school: { min: 6, max: 10 } });
+    expect(planFor(10).mode).toBe('two');
     expect(planFor(1).mode).toBe('snip');
     expect(planFor(8).mode).toBe('fits');
   });
@@ -92,7 +95,8 @@ describe('Cut Along cuts', () => {
       for (const seed of SEEDS) {
         for (const cut of allCuts(l, seed)) {
           const s = startOf(cut), sh = cut.sheet, e = 1e-9;
-          const onEdge = Math.abs(s[0] - sh.x) < e || Math.abs(s[0] - (sh.x + sh.w)) < e || Math.abs(s[1] - (sh.y + sh.h)) < e;
+          // Level 10's lines run edge to edge with a ring at each end, so one end may be on the sheet's top edge.
+          const onEdge = Math.abs(s[0] - sh.x) < e || Math.abs(s[0] - (sh.x + sh.w)) < e || Math.abs(s[1] - (sh.y + sh.h)) < e || (l === 10 && Math.abs(s[1] - sh.y) < e);
           expect(onEdge, `${cut.kind} at level ${l}`).toBe(true);
           for (const order of cut.orders) for (const p of order) {
             expect(p[0]).toBeGreaterThanOrEqual(-e); expect(p[0]).toBeLessThanOrEqual(PAPER_W + e);
@@ -474,5 +478,130 @@ describe('Cut Along level 9 spirals', () => {
 
   it('fits the paper in every standard view with the corridor at least 30 units wide', () => {
     for (const v of Object.values(VIEWS)) expect(tolerance(9) * layoutFor(v).paper.s).toBeGreaterThanOrEqual(30);
+  });
+});
+
+describe('Cut Along level 10 lines', () => {
+  const area = (poly: readonly Point[]) => Math.abs(poly.reduce((a, p, i) => { const q = poly[(i + 1) % poly.length]; return a + p[0] * q[1] - q[0] * p[1]; }, 0)) / 2;
+  /** What a piece is, from its corners alone: three is a triangle, four with equal sides a square, four longer than wide a strip. */
+  const kindOf = (poly: readonly Point[]): Pair | 'other' => {
+    if (poly.length === 3) return 'triangles';
+    if (poly.length !== 4) return 'other';
+    const xs = poly.map((p) => p[0]), ys = poly.map((p) => p[1]);
+    const w = Math.max(...xs) - Math.min(...xs), h = Math.max(...ys) - Math.min(...ys);
+    if (Math.abs(area(poly) - w * h) > 1e-9) return 'other';
+    return Math.abs(w - h) < 1e-9 ? 'squares' : Math.max(w, h) >= 2 * Math.min(w, h) - 1e-9 ? 'strips' : 'other';
+  };
+
+  it('has three boards: a square with two lines, the rectangle with two, then with three', () => {
+    for (const seed of SEEDS) {
+      const boards = splitBoardsFor(new Rng(seed));
+      expect(boards.map((b) => b.lines.length)).toEqual([2, 2, 3]);
+      expect(boards[0].sheet.w).toBeCloseTo(boards[0].sheet.h);
+      expect(boards[1].sheet.w).toBeCloseTo(2 * boards[1].sheet.h);
+      for (const b of boards) expect(b.cuts).toHaveLength(2 * b.lines.length);
+    }
+  });
+
+  it('cuts the sheet into two equal pieces of exactly the kind each line claims', () => {
+    for (const seed of SEEDS) for (const b of splitBoardsFor(new Rng(seed))) for (const ln of b.lines) {
+      const [p, q] = splitSheet(b.sheet, ln);
+      expect(kindOf(p), JSON.stringify(ln)).toBe(ln.makes);
+      expect(kindOf(q)).toBe(ln.makes);
+      expect(area(p)).toBeCloseTo(b.sheet.w * b.sheet.h / 2);
+      expect(area(q)).toBeCloseTo(b.sheet.w * b.sheet.h / 2);
+    }
+  });
+
+  it('has exactly one line that makes the pair the picture needs, and a spoken line for every other', () => {
+    for (const seed of SEEDS) for (const b of splitBoardsFor(new Rng(seed))) {
+      expect(b.lines.filter((ln) => ln.makes === b.need)).toHaveLength(1);
+      expect(b.lines.filter((_, i) => judgeLine(b, i))).toHaveLength(1);
+      expect(b.lines[b.fits].makes).toBe(b.need);
+      b.lines.forEach((_, i) => {
+        if (judgeLine(b, i)) return;
+        const line = makesLine(b, i);
+        expect(Object.values(MAKES)).toContain(line);
+        expect(LINES[line], line).toBeDefined();
+      });
+      expect(LINES[`cut.instruct.two.${b.need}` as keyof typeof LINES]).toBeDefined();
+    }
+  });
+
+  it('fills each pair of gaps in the picture once a round, and shows every order across seeds', () => {
+    const orders = new Set<string>();
+    const slots = slotsFor(10, 'twos', []);
+    for (const seed of SEEDS) {
+      const needs = splitBoardsFor(new Rng(seed)).map((b) => b.need);
+      expect([...needs].sort()).toEqual(['squares', 'strips', 'triangles']);
+      for (const need of needs) expect(slots.filter((sl) => sl.piece === PAIR_PIECE[need])).toHaveLength(2);
+      orders.add(needs.join());
+    }
+    expect(orders.size).toBe(3);
+    expect(slots).toHaveLength(6);
+  });
+
+  it('puts a ring at both ends of every line, each pair of ends from one line, the two cuts the same line reversed', () => {
+    for (const seed of SEEDS.slice(0, 10)) for (const b of splitBoardsFor(new Rng(seed))) {
+      b.lines.forEach((ln, i) => {
+        const a = b.cuts[2 * i].orders[0], r = b.cuts[2 * i + 1].orders[0];
+        expect(lineOfCut(2 * i)).toBe(i); expect(lineOfCut(2 * i + 1)).toBe(i);
+        expect(twinOf(2 * i)).toBe(2 * i + 1); expect(twinOf(2 * i + 1)).toBe(2 * i);
+        expect(dist(a[0], ln.from)).toBeLessThan(1e-9);
+        expect(dist(r[0], ln.to)).toBeLessThan(1e-9);
+        expect(dist(a.at(-1)!, ln.to)).toBeLessThan(1e-9);
+      });
+    }
+  });
+
+  for (const [name, v] of Object.entries(VIEWS)) {
+    it(`keeps every ring at least two ring-radii from every other, and inside the touch area, in the ${name} view`, () => {
+      const { paper } = layoutFor(v), sc = paper.s;
+      for (const seed of SEEDS.slice(0, 10)) for (const b of splitBoardsFor(new Rng(seed))) {
+        const rings = b.cuts.map(startOf);
+        for (let i = 0; i < rings.length; i++) for (let j = i + 1; j < rings.length; j++) {
+          expect(dist(rings[i], rings[j]) * sc, `rings ${i} and ${j}`).toBeGreaterThanOrEqual(2 * RING_R);
+        }
+        for (const r of rings) {
+          // The touch layer starts at the paper's top edge and reaches EDGE beyond its sides and bottom; a touch within the ring must land on it.
+          expect(r[1] * sc).toBeGreaterThanOrEqual(RING_R);
+          expect(r[0] * sc).toBeGreaterThanOrEqual(RING_R - EDGE);
+          expect((PAPER_W - r[0]) * sc).toBeGreaterThanOrEqual(RING_R - EDGE);
+          expect((1 - r[1]) * sc).toBeGreaterThanOrEqual(RING_R - EDGE);
+        }
+      }
+    });
+  }
+
+  it('never lets a drag along one line advance another where they cross', () => {
+    for (const seed of SEEDS.slice(0, 10)) for (const b of splitBoardsFor(new Rng(seed))) {
+      const tol = tolerance(10);
+      b.cuts.forEach((cut, i) => {
+        // Walk this cut all the way; every other cut, fed the same finger, stays at its ring.
+        const path = cut.orders[0];
+        expect(walk(path, tol)).toBe(path.length - 1);
+        b.cuts.forEach((other, j) => {
+          if (j === i) return;
+          let progress = 0, prev = path[0];
+          for (const to of path.slice(1)) { progress = advanceTrace(other.orders[0], progress, prev, to, tol); prev = to; }
+          expect(progress, `cut ${j} moved with cut ${i}`).toBe(0);
+        });
+      });
+    }
+  });
+
+  it('counts a wrong line from a fifth of its length, from its own ring, before it reaches the crossing', () => {
+    for (const seed of SEEDS.slice(0, 10)) for (const b of splitBoardsFor(new Rng(seed))) for (const cut of b.cuts) {
+      const pts = cut.orders[0], at = Math.ceil((pts.length - 1) * 0.2);
+      expect(wrongReached(at - 1, pts.length)).toBe(false);
+      expect(wrongReached(at, pts.length)).toBe(true);
+      // The lines cross at the sheet's middle; a fifth in is well short of it.
+      const mid: Point = [b.sheet.x + b.sheet.w / 2, b.sheet.y + b.sheet.h / 2];
+      expect(dist(pts[at], mid)).toBeGreaterThan(2 * tolerance(10));
+    }
+  });
+
+  it('gives the same boards for the same seed', () => {
+    expect(JSON.stringify(splitBoardsFor(new Rng(42)))).toBe(JSON.stringify(splitBoardsFor(new Rng(42))));
   });
 });

@@ -16,7 +16,7 @@ export const PAPER_W = 4 / 3;
 /** Sample spacing along a cut, in paper units: about 11 logical units on the smallest paper. */
 export const SPACING = 0.025;
 
-export type Mode = 'snip' | 'cut' | 'fits';
+export type Mode = 'snip' | 'cut' | 'fits' | 'two';
 
 export interface CutPlan {
   mode: Mode;
@@ -35,13 +35,14 @@ export const PLANS: readonly CutPlan[] = [
   { mode: 'cut', name: 'Picture shapes: three of heart, house, leaf, fish, cloud, star and moon', count: 3 },
   { mode: 'fits', name: 'The piece that fits: choose the outline for the gap, then cut it', count: 3 },
   { mode: 'cut', name: 'Round and round: spirals for a snail, a snake and a curly tail', count: 3 },
+  { mode: 'two', name: 'Cut it in two: choose the line that makes the two pieces the picture needs, then cut it edge to edge', count: 3 },
 ];
 
 export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 5 },
   prek: { min: 4, max: 7 },
-  school: { min: 6, max: 9 },
+  school: { min: 6, max: 10 },
 };
 
 export const levelOf = (level: number): number => Math.max(1, Math.min(PLANS.length, Math.floor(level)));
@@ -101,7 +102,7 @@ export type PieceId =
 
 export type CutKind =
   | 'ribbon' | 'level' | 'slant' | 'zigzag' | 'wave' | 'hill' | 'scurve'
-  | 'circle' | 'square' | 'triangle' | 'door' | 'kite' | 'heart' | 'house' | 'leaf' | 'fish' | 'cloud' | 'star' | 'moon' | 'roof-arch' | 'spiral';
+  | 'circle' | 'square' | 'triangle' | 'door' | 'kite' | 'heart' | 'house' | 'leaf' | 'fish' | 'cloud' | 'star' | 'moon' | 'roof-arch' | 'spiral' | 'split';
 
 export interface Cut {
   kind: CutKind;
@@ -364,9 +365,9 @@ export function botRoute(cut: Cut, points: readonly Point[], progress: number): 
  */
 export type Theme =
   | 'meadow' | 'hedgehog' | 'kite' | 'gift' | 'fence' | 'raft' | 'mountains' | 'river' | 'day' | 'night'
-  | 'harbour' | 'pond' | 'garland' | 'boats' | 'garden';
+  | 'harbour' | 'pond' | 'garland' | 'boats' | 'garden' | 'twos';
 export const THEMES: readonly (readonly Theme[])[] = [
-  ['meadow', 'hedgehog'], ['kite', 'gift'], ['fence', 'raft'], ['mountains', 'river'], ['day', 'night'], ['harbour'], ['pond', 'garland'], ['boats'], ['garden'],
+  ['meadow', 'hedgehog'], ['kite', 'gift'], ['fence', 'raft'], ['mountains', 'river'], ['day', 'night'], ['harbour'], ['pond', 'garland'], ['boats'], ['garden'], ['twos'],
 ];
 export const themeFor = (level: number, rng: Rng): Theme => rng.pick(THEMES[levelOf(level) - 1]);
 
@@ -411,6 +412,13 @@ export function slotsFor(level: number, theme: Theme, pieces: readonly PieceId[]
         shell: { x: 0.1, y: 0.48, w: 0.24, h: 0.24 }, snake: { x: 0.36, y: 0.74, w: 0.26, h: 0.2 },
         coil: { x: 0.68, y: 0.74, w: 0.26, h: 0.2 }, 'cat-tail': { x: 0.8, y: 0.3, w: 0.16, h: 0.3 },
       });
+    case 10:
+      // Two windows in the house, two sails on the boats, two boards in the fence; each board fills one pair.
+      return [
+        { piece: 'window', x: 0.1, y: 0.42, w: 0.12, h: 0.12 }, { piece: 'window', x: 0.3, y: 0.42, w: 0.12, h: 0.12 },
+        { piece: 'sail', x: 0.55, y: 0.3, w: 0.15, h: 0.26 }, { piece: 'sail', x: 0.79, y: 0.3, w: 0.15, h: 0.26 },
+        { piece: 'plank', x: 0.12, y: 0.74, w: 0.08, h: 0.22 }, { piece: 'plank', x: 0.32, y: 0.74, w: 0.08, h: 0.22 },
+      ];
     default: {
       const gaps: Partial<Record<PieceId, Spot>> = {
         roof: { x: 0.06, y: 0.3, w: 0.4, h: 0.22 }, window: { x: 0.18, y: 0.6, w: 0.16, h: 0.16 },
@@ -434,6 +442,7 @@ export const pieceColor = (theme: Theme, piece: PieceId): ColorName => THEME_COL
 /** The pieces that get their own line in a theme; every other piece says its plain `cut.piece.<piece>` line. */
 export const THEME_LINES: Partial<Record<Theme, readonly PieceId[]>> = {
   hedgehog: ['grass'], gift: ['tail'], raft: ['plank'], river: ['mountain', 'sea'], night: ['sun'], garland: PICTURE_SHAPES,
+  twos: ['window', 'sail', 'plank'],
 };
 export const pieceLine = (theme: Theme, piece: PieceId): string =>
   THEME_LINES[theme]?.includes(piece) ? `cut.piece.${theme}.${piece}` : `cut.piece.${piece}`;
@@ -527,6 +536,97 @@ export function differsLine(board: Board, outline: number): (typeof DIFFERS)[Dif
 /** Cutting into a wrong outline is a miss once this share of it is cut (counting from its own start ring). */
 export const WRONG_SHARE = 0.2;
 export const wrongReached = (progress: number, length: number): boolean => progress >= Math.ceil((length - 1) * WRONG_SHARE);
+
+/* ---------------------------------------------------------------- level 10 */
+
+/** What one straight line cuts a sheet into. */
+export type Pair = 'triangles' | 'squares' | 'strips';
+/** The pair of gaps in the picture each kind fills. */
+export const PAIR_PIECE: Record<Pair, PieceId> = { triangles: 'sail', squares: 'window', strips: 'plank' };
+/** What she hears when a line makes the wrong pair, keyed `<what it makes>-<what the picture needs>`. */
+export const MAKES = {
+  'strips-triangles': 'cut.makes.strips-triangles',
+  'squares-triangles': 'cut.makes.squares-triangles',
+  'triangles-squares': 'cut.makes.triangles-squares',
+  'strips-squares': 'cut.makes.strips-squares',
+  'triangles-strips': 'cut.makes.triangles-strips',
+  'squares-strips': 'cut.makes.squares-strips',
+} as const;
+export type MakesKey = keyof typeof MAKES;
+
+export interface SplitLine { from: Point; to: Point; makes: Pair }
+export interface SplitBoard {
+  /** The cut paper shape: a square, or a rectangle twice as wide as tall. Every line runs edge to edge across it. */
+  sheet: Rect;
+  lines: SplitLine[];
+  need: Pair;
+  /** Index of the line that makes the pair the picture needs. */
+  fits: number;
+  /** Two cuts per line, one from each end, so a ring sits at both: line i is `cuts[2i]` and, reversed, `cuts[2i + 1]`. */
+  cuts: Cut[];
+}
+
+/** Board 1's square and the rectangle of boards 2 and 3. Each keeps every ring at least 2 × `RING_R` from the next on the smallest paper, and clear of the paper's top edge. */
+export const SQUARE_SHEET: Rect = { x: (PAPER_W - 0.78) / 2, y: 0.15, w: 0.78, h: 0.78 };
+export const LONG_SHEET: Rect = { x: (PAPER_W - 1.2) / 2, y: 0.2, w: 1.2, h: 0.6 };
+
+const isSquare = (sh: Rect) => Math.abs(sh.w - sh.h) < 1e-9;
+const diagonal = (sh: Rect, up: boolean): SplitLine =>
+  ({ from: [sh.x, up ? sh.y + sh.h : sh.y], to: [sh.x + sh.w, up ? sh.y : sh.y + sh.h], makes: 'triangles' });
+/** Top to bottom through the middle: two strips from a square, two squares from the rectangle. */
+const across = (sh: Rect): SplitLine =>
+  ({ from: [sh.x + sh.w / 2, sh.y + sh.h], to: [sh.x + sh.w / 2, sh.y], makes: isSquare(sh) ? 'strips' : 'squares' });
+/** Side to side through the middle: two strips. */
+const along = (sh: Rect): SplitLine => ({ from: [sh.x, sh.y + sh.h / 2], to: [sh.x + sh.w, sh.y + sh.h / 2], makes: 'strips' });
+
+/** The orders boards may ask in, so a round fills each pair of gaps once: the square can only make triangles or strips, and the two-line rectangle only squares or strips. */
+export const NEED_ORDERS: readonly (readonly Pair[])[] = [
+  ['triangles', 'squares', 'strips'], ['triangles', 'strips', 'squares'], ['strips', 'squares', 'triangles'],
+];
+
+/** Level 10's three boards: a square with two lines, the rectangle with two, then the rectangle with three. */
+export function splitBoardsFor(rng: Rng): SplitBoard[] {
+  const needs = rng.pick(NEED_ORDERS);
+  const sheets = [SQUARE_SHEET, LONG_SHEET, LONG_SHEET];
+  const lineSets = [
+    [diagonal(SQUARE_SHEET, rng.int(0, 1) === 1), rng.int(0, 1) === 1 ? across(SQUARE_SHEET) : along(SQUARE_SHEET)],
+    [across(LONG_SHEET), along(LONG_SHEET)],
+    [diagonal(LONG_SHEET, rng.int(0, 1) === 1), across(LONG_SHEET), along(LONG_SHEET)],
+  ];
+  return sheets.map((sheet, b) => {
+    const lines = rng.shuffle(lineSets[b]);
+    const cuts = lines.flatMap((ln) => [open('split', PAIR_PIECE[needs[b]], [ln.from, ln.to], [], sheet), open('split', PAIR_PIECE[needs[b]], [ln.from, ln.to], [], sheet, true)]);
+    return { sheet, lines, need: needs[b], fits: lines.findIndex((ln) => ln.makes === needs[b]), cuts };
+  });
+}
+
+/** The line a level-10 cut belongs to, and the cut from that line's other end. */
+export const lineOfCut = (i: number): number => i >> 1;
+export const twinOf = (i: number): number => i ^ 1;
+
+export const judgeLine = (board: SplitBoard, line: number): boolean => line === board.fits;
+
+/** The line for a cut that makes the wrong pair. */
+export function makesLine(board: SplitBoard, line: number): (typeof MAKES)[MakesKey] {
+  return MAKES[`${board.lines[line].makes}-${board.need}` as MakesKey];
+}
+
+/** The two pieces a straight edge-to-edge line cuts the sheet into (each a polygon, one either side of the line). */
+export function splitSheet(sheet: Rect, line: SplitLine): [Point[], Point[]] {
+  const rect: Point[] = [[sheet.x, sheet.y], [sheet.x + sheet.w, sheet.y], [sheet.x + sheet.w, sheet.y + sheet.h], [sheet.x, sheet.y + sheet.h]];
+  const [a, b] = [line.from, line.to], e = 1e-9;
+  const side = (p: Point) => (b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0]);
+  const clip = (sign: number): Point[] => {
+    const out: Point[] = [];
+    rect.forEach((p, i) => {
+      const q = rect[(i + 1) % rect.length], sp = sign * side(p), sq = sign * side(q);
+      if (sp >= -e) out.push(p);
+      if ((sp > e && sq < -e) || (sp < -e && sq > e)) { const t = sp / (sp - sq); out.push([p[0] + t * (q[0] - p[0]), p[1] + t * (q[1] - p[1])]); }
+    });
+    return out;
+  };
+  return [clip(1), clip(-1)];
+}
 
 /* ---------------------------------------------------------------- feel */
 

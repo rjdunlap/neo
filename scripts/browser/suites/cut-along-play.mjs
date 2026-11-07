@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 export function createSuite({ page, errors, log, scene, tap, screenshot, launch, finished }) {
 /**
  * Cut Along by touch: level 1 by taps, two strays at 3 (two misses, the glow), level 5's circle both ways round, level 7
- * upright in the garland with a star or moon, a wrong outline at 8, one stray on level 9's spirals upright.
+ * upright in the garland with a star or moon, a wrong outline at 8, one stray on level 9's spirals upright, a wrong line and
+ * a hint at 10 upright.
  * `CUT_LEVELS=9` (a comma list) plays only those levels.
  */
 async function cutAlongPlay() {
@@ -150,6 +151,32 @@ async function cutAlongPlay() {
   st = await state(); assert.deepEqual([st.misses, st.hints], [1, 0], 'level 9: one miss, no hint');
   await page.setViewportSize({ width: 1024, height: 768 });
   played.push(`level 9's spirals upright with one stray (${pieces.join(', ')})`);
+  }
+  // Level 10 upright: cut a fifth into a line that makes the wrong pair (one miss, both of its ends close), ask for the hint
+  // (the working line glows, one hint), then cut the working line on every board, from its far end on the first.
+  if (want(10)) {
+  await page.setViewportSize({ width: 768, height: 1024 });
+  await launch('cut-along', 10); await idle();
+  n = await stickers();
+  const wrong = await page.evaluate(() => 2 * (neo.scene.game.splits[0].fits === 0 ? 1 : 0));
+  await dragAlong((await route(wrong, 0)).slice(0, 4));
+  await idle();
+  st = await state();
+  assert.deepEqual([st.misses, st.hints], [1, 0], 'a wrong line is one miss');
+  assert.deepEqual(await page.evaluate((w) => [neo.scene.game.tracks[w].progress, neo.scene.game.tracks[w + 1].progress], wrong), [0, 0], 'its slit closes up again');
+  await page.evaluate(() => neo.scene.game.askForHint());
+  st = await state(); assert.deepEqual([st.misses, st.hints, st.glow], [1, 1, true], 'the hint lights the working line');
+  await page.waitForTimeout(400); await screenshot('cut-along-10-two-portrait');
+  for (let guard = 0; guard < 6 && !(await page.evaluate(() => neo.scene.finished)); guard++) {
+    await idle();
+    if (await done()) break;
+    const fit = await page.evaluate(() => { const g = neo.scene.game; return 2 * g.splits[g.index].fits + (g.index === 0 ? 1 : 0); });
+    await dragAlong(await route(fit, 0)); await page.waitForTimeout(150);
+  }
+  await sticker(n);
+  st = await state(); assert.deepEqual([st.misses, st.hints], [1, 1], 'level 10: one miss, one hint');
+  await page.setViewportSize({ width: 1024, height: 768 });
+  played.push('a wrong line and a hint at 10 upright');
   }
   assert.deepEqual(errors, [], 'page errors');
   log(`Cut Along: ${played.join('; ')}`);
