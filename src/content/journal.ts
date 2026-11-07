@@ -14,7 +14,7 @@ import type { LineId } from './voice-script';
  * is found. A game reports what it actually showed during a round (`RoundResult.discoveries`); the shell files it.
  */
 
-export type JournalGame = 'sink-float' | 'animal-snack' | 'photo-safari' | 'seesaw-balance' | 'bouncy-launch' | 'habitat-helpers' | 'letter-trails' | 'mail-carrier' | 'rhythm-neighbors' | 'melt-freeze' | 'pet-kitchen' | 'paint-mixer';
+export type JournalGame = 'sink-float' | 'animal-snack' | 'photo-safari' | 'seesaw-balance' | 'bouncy-launch' | 'habitat-helpers' | 'letter-trails' | 'mail-carrier' | 'rhythm-neighbors' | 'melt-freeze' | 'pet-kitchen' | 'paint-mixer' | 'far-lights';
 
 export interface JournalEntry {
   /** Stable forever: `game:key`. Saves keep these, so never rename one. */
@@ -245,6 +245,18 @@ export const JOURNAL: readonly JournalEntry[] = [
       source: { find: `make the bucket the sample's colour with ${said}`, found: `the bucket was ${r.name}: ${said}` },
     };
   }),
+  // Far Lights, level 7: a strong light far away and a gentle light close by looked the same (definition levels 5–8).
+  {
+    id: entryId('far-lights', 'strong-far'),
+    game: 'far-lights',
+    key: 'strong-far',
+    name: 'A strong light far away',
+    line: 'journal.far.strong-far',
+    source: {
+      find: 'tell which light is farther when a strong light and a gentle light look the same',
+      found: 'a strong light far away looked as bright as a gentle light close by',
+    },
+  },
 ];
 
 export const JOURNAL_IDS: readonly string[] = JOURNAL.map((e) => e.id);
