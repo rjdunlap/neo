@@ -6,7 +6,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **`number-trails` slice 1, the flying hint, looks and a rising tune** (`letter-trails` helpers reused; preschool and pre-K; typecheck, rule tests, `fingerdemo` at 1 and 3): [build slices](deep-dives/number-trails.md#build-slices-in-order).
+- **`number-trails` slice 1, the flying hint, looks and a rising tune** (in progress on `claude/number-trails-hint-looks`; `letter-trails` helpers reused; preschool and pre-K; typecheck, rule tests, `fingerdemo` at 1 and 3): [build slices](deep-dives/number-trails.md#build-slices-in-order).
 - **`puddle-gobble`, slices 1–4 in the dive's order** (`bubble-beach`; toddler to school; slice 1 more kinds and beach moods, slice 2 level 9 *Smallest number first*, slice 3 level 10 *Count the dots* after slice 2, slice 4 level 11 *Too full* after slice 2): [build slices](deep-dives/puddle-gobble.md#build-slices-in-order).
 - **`mossy-path` slice 1, more mazes, coverage plans and looks** (toddler to school; typecheck, rule tests, one filtered `mossypath` play at level 6 with one portrait screenshot in the autumn look; no `fingerdemo`): [build slices](deep-dives/mossy-path.md#build-slices-in-order).
 - **`fruit-slice` slice 1, more fruit, beach not-fruit and moods** (toddler to school; typecheck, rule tests, one filtered `fruitslice` play at level 3 with one portrait screenshot in the sunset mood, build, no `fingerdemo`): [build slices](deep-dives/fruit-slice.md#build-slices-in-order).
