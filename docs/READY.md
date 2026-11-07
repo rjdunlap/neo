@@ -7,7 +7,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 ## Next ten
 
 - **Define `gadget-bench` levels 5–6** (`inventions`, docs only; the garden gate's size constraint and the new-kit transfer round, each with an enumeration test; built from level 4's cart and paddle wheels): [what comes next](definitions/gadget-bench.md#what-comes-next), [study](deep-dives/subjects/inventions.md#build-slices-in-order).
-- **`swing-pals`, more friends and leaf goals** (riders cat, dog, pig and, if it clears the short hook, cow; seeded leaf goals beside the bell; fresh-content tier, no `fingerdemo`; claimed 2026-11-06 by `claude/swing-pals-friends`): [fresh content inside existing levels](deep-dives/swing-pals.md#fresh-content-inside-existing-levels).
 - **`far-lights`, levels 7–8** (`astronomy`; school; the opening look, Both could fit and the sideways step; new-interaction tier, the school range becomes {4,8}, `fingerdemo` at 8; the held parallax wording is checked against a cited source): [definition](definitions/far-lights.md#levels-58-definition), [build slice 2](definitions/far-lights.md#build-slices-levels-58).
 - **`circuit-garden`, levels 1–2, then 3** (pre-K and school; a visible way back closes the loop; Tinker Lab; new-game tier, promoted from Queued 2026-11-06): [definition](definitions/circuit-garden.md).
 - **`measuring-post`, levels 1–4** (school; choose the tool for the question, and compare counts only in the same unit; Tinker Lab or Cozy Village): [definition](definitions/measuring-post.md). (promoted from Queued 2026-11-06)

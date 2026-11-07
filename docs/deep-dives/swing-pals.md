@@ -69,6 +69,8 @@ The long arc: lap and toddler push and hear the bell; preschool pushes in time a
 
 ### Fresh content inside existing levels
 
+**Built 2026-11-06** (PR #1332, build note in the [archive](../archive/COMPLETED-2026-10-09.md#swing-pals-more-friends-and-leaf-goals-2026-11-06)). The short-hook rule below was impossible as written (short rope about 100 units, riders 113–178 tall), so the test asserts that no rider rises further above the short hook than the original five do.
+
 | Pool | Today | Added | Notes |
 | --- | --- | --- | --- |
 | Riders | bunny, duck, bear (`CRITTERS`); mouse, frog (local) | cat (light), dog (middle), pig (heavy), cow (heavy, if it clears the short hook) | Level 5's filter then pairs light and heavy from a wider pool; level 4 keeps same-kind pairs. The sticker and hub icon stay pinned to the original five so existing stickers do not change |
