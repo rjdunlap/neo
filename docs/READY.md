@@ -71,7 +71,6 @@ Added 2026-11-05: 21 games built from definitions have no dive and no study row 
 
 ## Blocked work (not routine picks)
 
-- **Repository weight: move the 151 MB of concept images out of the code checkout** (decision: Git LFS, a separate assets repository, or documented sparse checkout; [waiting](WAITING-ON-DEVELOPER.md#still-waiting)): [review item 12](CODEBASE-REVIEW-2026-11-07.md#12-repository-weight).
 - **Rework RW08 slice 3, the cutover** (approved by the developer 2026-10-23; starts only when they say they have played slices 1–2 on the iPad ([waiting](WAITING-ON-DEVELOPER.md#still-waiting)), so no routine picks it up; shell, save and navigation tier): delete `classic/`, the map, age places and `?preview`. [Slice 3](rework/RW08-CUTOVER.md#slice-3-the-cutover-approved-starts-when-the-developer-has-played-slices-12)
 
 Ordinary factual content uses the session source check under the [October 23 standing rules](archive/DECISIONS-2026-10-23.md#standing-rules). The [deferred research scopes](STUDY-BACKLOG.md#research-waiting-on-a-reviewer-decision) are not routine picks; translations still need fluent family review.

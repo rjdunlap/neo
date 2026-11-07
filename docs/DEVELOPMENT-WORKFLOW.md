@@ -100,6 +100,15 @@ Measured from the 60 most recent Claude Code transcripts for this project (2026-
 - **AGENTS.md crept back over 32 KiB** (33.5 KB) after the 2026-10-23 trim. *Done:* the worktree-release checklist moved word for word to [Releasing a finished worktree](#releasing-a-finished-worktree), the scheduled-work paragraph was cut to what [EXECUTION-QUEUE](EXECUTION-QUEUE.md) does not already say, and a few historical asides went; `scripts/agent-guard.test.mjs` now fails above 32 KiB.
 - **Not done, on purpose.** Splitting `voice-script.ts` (435 KB) and `howto.ts` (341 KB) per game: sessions reach them by `grep`, about 1.5 KB a call, so a 181-game move would buy little and conflict with every open slice. Reflowing the one-line-paragraph docs (a deliberate merge-friendly style) and splitting the largest game files were left too. Screenshots cost at most about 1.6K tokens each whatever their file size, so they are not a lever.
 
+## Concept art out of code checkouts (2026-11-07)
+
+The developer chose to have code sessions skip the concept-art originals rather than move them to Git LFS or another repository. They are 113 PNGs, about 150 MB of the 177 MB pack, under `docs/rework/concepts/`.
+
+- **Local worktrees:** run `scripts/concept-art.sh skip` once in a fresh worktree. It applies a per-worktree sparse checkout that drops the PNGs from disk (151 MB to 0.4 MB there) and keeps the `.md` manifests and prompts. Other worktrees and the main checkout are unaffected. `status` reports the state; `restore` brings the files back.
+- **Art sessions** (`scripts/creature-art/prepare-sprite.mjs --set`, `scripts/art/import-inbox.mjs`) restore first; both scripts stop with the restore command if the PNGs are skipped. A git add outside the sparse definition is refused, so don't commit new originals from a skipped worktree.
+- **Links:** `scripts/check-links.mjs` treats a link to a tracked file that the checkout left out as fine, and still fails on a truly missing file.
+- **Fresh clones** (cloud sessions, another machine): `git clone --filter=blob:none --no-checkout <url>`, then `scripts/concept-art.sh skip` and `git checkout main`. The PNG blobs are then never downloaded unless restored. A cloud `create_session` can also pass `blob_limit_kb` (for example 500) to leave large files out; voice clips and prepared sprites are smaller than that, but check `git ls-files` sizes before relying on a limit.
+
 ## Releasing a finished worktree
 
 After publication and merge, remove a finished worktree only after checking its owning session is complete, its tip is in current `origin/main`, it has no uncommitted or untracked work, and no live PR still uses its branch. Preserve needed ignored screenshots, probes and local settings before removal. Use the app's recoverable archive for a managed worktree when available; otherwise keep a recovery manifest with its path and commit, and back up needed artifacts before `git worktree remove`. Delete only merged feature branches after their worktree is released; preserve `main`, active branches and unmerged research. Do not force removal of a dirty worktree. Cleanup does not require closing the historical chat.

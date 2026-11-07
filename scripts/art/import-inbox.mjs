@@ -21,6 +21,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, statSync,
 import { createRequire } from 'node:module';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { requireConceptArt } from './concept-art-present.mjs';
 import { chosenFor, insertRows, parseName, plan, setChosen } from './inbox-core.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -38,6 +39,7 @@ for (let i = 0; i < args.length; i++) {
   else throw new Error(`unknown argument ${a}`);
 }
 
+requireConceptArt(root);
 const generated = at('docs/rework/concepts/generated');
 const manifestPath = join(generated, 'README.md');
 let manifest = readFileSync(manifestPath, 'utf8');

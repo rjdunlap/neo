@@ -15,6 +15,8 @@ Target:
 
 Mechanical, so a script does it. Pilot on 2–3 games, then sweep in one PR while no game work is in flight.
 
+Counterpoint: the [2026-11-06 token review](DEVELOPMENT-WORKFLOW.md#token-review-2026-11-06) left this split undone on purpose, because sessions reach these files by `grep` at about 1.5 KB a call and the move itself conflicts with every open slice. This review weighs the merge conflicts (about 580 commits each since 2026-10-01) more heavily. The session that picks this item should confirm with the developer which view wins before sweeping.
+
 ## 2. Discover games instead of listing them
 
 `registry.ts` imports all 176 modules by hand, and new games are added at the top. Build `GAMES` with `import.meta.glob('./*/index.ts', { eager: true })`. Order matters: `lands.test.ts`, `arcade.test.ts` and `welcome-ways/logic.test.ts` index into `GAMES`, so either sort explicitly (by id, or an `order` field) or make those tests independent of order. Do this after item 1.
@@ -57,7 +59,7 @@ There is no formatter or linter. `howto.ts` is written as `{from:2,to:2,text:…
 
 ## 12. Repository weight
 
-The git pack is 177 MB, 151 MB of it `docs/rework/concepts` images, which every fresh worktree and cloud session downloads. Options: Git LFS, a separate assets repository, or documented sparse checkout for code sessions. This changes how the repository is stored, so it needs the developer's decision and sits under Blocked work in READY.
+The git pack is 177 MB, 151 MB of it `docs/rework/concepts` images, which every fresh worktree and cloud session downloads. **Decided and built 2026-11-07:** the developer chose to have code sessions skip the images rather than use Git LFS or a separate repository. `scripts/concept-art.sh skip` applies a per-worktree sparse checkout; the link checker and the art scripts handle it. How to use it: [concept art out of code checkouts](DEVELOPMENT-WORKFLOW.md#concept-art-out-of-code-checkouts-2026-11-07).
 
 ## Done during the review
 
