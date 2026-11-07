@@ -3117,7 +3117,7 @@ Checks are in [VERIFICATION](VERIFICATION-2026-11-06.md#2026-11-06--rain-garden-
 
 [Definition](../definitions/bond-beads.md#levels-58-definition): `bond-beads` school range now 1-6. Level 5 adds an N bead (three hands, blue, triangle mark) and three named cards (water first, ammonia and methane seeded); the pet names the card's shapes (`bondbeads.named.*`) and says "atom" once at the level start. Level 6 allows a double hold (two parallel bars; one tap breaks one link) with cards oxygen, carbon dioxide, then hydrogen and oxygen from O2H2 (H-O-O-H gets the neutral not-the-card line); new hint "These two need another link." Accounting unchanged from level 2; layout now 2-7 beads; how-to card has the level 5-6 steps and the model-limits note. Source re-check 2026-11-06: PubChem PUG REST for CIDs 962, 222, 297, 783, 977, 280 matched the definition's table. Levels 7-8 not built.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-06--bond-beads-levels-56-chemistry-slice-4).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-06.md#2026-11-06--bond-beads-levels-56-chemistry-slice-4).
 
 ## Welcome Ways levels 5–7 (2026-11-06)
 
