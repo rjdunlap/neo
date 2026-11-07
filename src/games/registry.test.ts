@@ -10,8 +10,16 @@ import { FIRST_COURSE } from '../couch/courses';
 import { isSilent, silenced, STYLES } from '../audio/music';
 import { PLACES } from '../content/places';
 import { REGION_IDS } from '../content/world';
+import { LANDS } from '../content/lands';
 
 describe('game registry', () => {
+  it('finds every game folder, one game each, named by its id, in island order', () => {
+    // Every game folder has rules in logic.ts; the lazy glob reads only paths.
+    const folders = Object.keys(import.meta.glob('./*/logic.ts')).map((p) => p.split('/')[1]).sort();
+    expect(GAMES.map((g) => g.id).sort()).toEqual(folders);
+    expect(GAMES.map((g) => g.id)).toEqual(LANDS.flatMap((l) => l.games).filter((id) => folders.includes(id)));
+  });
+
   it('places Penguin Slide 11 after 2 for preschool and pre-K only, and lands school at its easiest', () => {
     const g = gameById('penguin-slide')!;
     expect(g.levels('preschool')).toEqual({ min: 1, max: 11, order: [1, 2, 11] });
