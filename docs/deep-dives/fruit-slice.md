@@ -1,6 +1,6 @@
 # Fruit Slice deep dive
 
-*ID `fruit-slice` · bands toddler, preschool, pre-K, school · levels 1–8 on 2026-11-06 · session `claude/dive-fruit-slice` ([PR #1346](https://github.com/rjdunlap/neo/pull/1346))*
+*ID `fruit-slice` · bands toddler, preschool, pre-K, school · levels 1–9 on 2026-11-07 · session `claude/dive-fruit-slice` ([PR #1346](https://github.com/rjdunlap/neo/pull/1346))*
 
 ## The game today
 
@@ -16,8 +16,9 @@ Big fruit is tossed up from a basket and hangs near the top of a slow arc (about
 | 6 | Two kinds, two numbers | pre-K, school | A two-row sign, each kind 1–4 |
 | 7 | One straight swipe | school | One straight line through exactly N (2, 3, 3, 4) of four to six still fruit |
 | 8 | Pieces by twos | school | Every fruit makes 2 pieces; signs 6, 8, then 10 or 12 on a still board of three pairs cut with the line tool |
+| 9 | Two lines clear it | school | Two straight lines that together cut every fruit of a still board (two rows of 3+2, 2+2, 3+2, 3+3); a line through no fruit is free |
 
-`BandLevels`: toddler 1–2, preschool 2–4, pre-K 3–6, school 5–8; no `order`, no `entryLevels`, no lap or grown-up range.
+`BandLevels`: toddler 1–2, preschool 2–4, pre-K 3–6, school 5–9; no `order`, no `entryLevels`, no lap or grown-up range.
 
 **Content pools.** Nine fruit kinds (apple, orange, lemon, pear, blueberries, grapes, plus strawberry, banana and plum) and four not-fruit (balloon, flower, beach ball, shell), all art from `src/art/props.ts` (the three new fruit are `smallFruit()` there, moved from Bolt Boards' local drawing); each round draws a seeded mood from `MOODS` in `logic.ts` (morning, picnic with greener hills and a red-checked blanket, sunset with an orange-to-pink sky and a low sun), decoration only. Level 3 picks its kind from nine; level 6 picks two of nine with counts 1–4; level 7 boards are seeded (four to six fruit, with lines through N and N − 1, and N + 1 when N is below 4); level 8's pair board is seeded. Voice lines are per kind (`slice.instruct.only.<kind>`, `slice.not-kind.<kind>`), so a new kind needs two lines.
 
@@ -102,11 +103,13 @@ Both are added to [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md). Slices 1�
 ## Build slices, in order
 
 1. **More fruit, beach not-fruit and moods** (built 2026-11-07, PR #1382). Tier: typecheck and the game's rule tests (kinds, lines, `nextKind` with nine kinds), one filtered `fruitslice` play at level 3 with a new kind and one portrait screenshot in the sunset mood; `npm run build`, since `src/art/props.ts`, voice and Bolt Boards' drawing source change; no `fingerdemo` (bot unchanged); a filtered Bolt Boards regression play if its fruit drawing moves.
-2. **Level 9 *Two lines clear it*** (ready). Tier: new level on the existing line interaction: typecheck, rule tests (cover, no single cover, early check, hint), one browser play of level 9 with one dead-end first line and one hint, `fingerdemo` at 9; build (voice, how-to).
-3. **Level 10 *Twos and threes*** (ready; after slice 2 so school's range is edited once more). Tier: new interaction (the put-back strip): typecheck, unit tests, a layout probe first, then one scripted play (an overshoot refusal, a stuck total and a put-back, a hint, finish) and one portrait screenshot, `fingerdemo` at 10; build.
+2. **Level 9 *Two lines clear it*** (built 2026-11-07, PR #1388). Tier: new level on the existing line interaction: typecheck, rule tests (cover, no single cover, early check, hint), one browser play of level 9 with one dead-end first line and one hint, `fingerdemo` at 9; build (voice, how-to).
+3. **Level 10 *Twos and threes*** (ready; slice 2 is built, so school's range is edited once more here). Tier: new interaction (the put-back strip): typecheck, unit tests, a layout probe first, then one scripted play (an overshoot refusal, a stuck total and a put-back, a hint, finish) and one portrait screenshot, `fingerdemo` at 10; build.
 4. **Level 11 *Just a few*** (ready). Tier: new level on the existing interaction: typecheck, rule tests (plus registry and how-to tests for the new `order`s), one browser play of level 11, `fingerdemo` at 11; build (how-to, registry).
 5. **Fractions closure and the journal:** decisions 1–2.
 
 ## What was built in this session
 
 Slice 1 (2026-11-07, PR #1382): strawberry, banana and plum join `FRUIT`; beach ball and shell join `NOT_FRUIT`; a seeded mood per round; six new voice lines (`slice.instruct.fruit` now names beach balls and shells); rule tests for pool sizes, both lines per fruit, levels 3 and 6 able to ask every fruit, level 4 tossing every not-fruit and three moods. The `fruitslice` suite gained a level 3 upright sunset round asking a new fruit. Ran: typecheck, 350 unit tests across fruit-slice, bolt-boards and art, `fruitslice` and `boltboards` suites, build. Not run: `fingerdemo` (bot unchanged), device.
+
+Slice 2 (2026-11-07, PR #1388): level 9 *Two lines clear it* (school; `LEVELS.school` is now 5–9). Four still boards of two seeded rows (3+2, 2+2, 3+2, 3+3 fruit, at least 160 units apart, the narrowest strip holding all fruit at least 170 so no single line clears one). She draws two straight lines that together cut every fruit; a line through no fruit is free. A first line that leaves fruit no single line can reach, or a second line that leaves any, is one miss: the pet says so at once, the fruit close up or hop back and the board resets. At every second miss, or on request, a dashed line glows (a cover's first line on a whole board, or the line that clears the rest after a good first line); it re-points without counting a new hint. New in `logic.ts`: `coverLines`, `clearingLine`, `oneLineClears`, `coverStep`, `coverHint`, `stripWidth`, `COVER_ROWS`, `coverBoardsFor`; five voice lines, a how-to step and note, and a level 9 segment in the `fruitslice` suite. Ran: typecheck; 45 fruit-slice rule tests (six new: boards, two-line cover with no single cover, early check against brute force, hint belongs to a cover, stuck cases, determinism); `npm test` (6,098 passed); `fruitslice` suite; `fingerdemo` at 9; build. Not run: offline, device; a six-year-old's reading of the two-line task is open.

@@ -17,7 +17,7 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
   MOODS,
-  arcAt, basketAt, boardOrigin, boardsFor, bowlAt, BOWL_R, distToSegment, GAP, HANG, hanging, hintLineFor, HIT_R, inBowl, insideLength, judgeStroke,
+  arcAt, basketAt, boardOrigin, boardsFor, coverBoardsFor, coverHint, coverStep, bowlAt, BOWL_R, distToSegment, GAP, HANG, hanging, hintLineFor, HIT_R, inBowl, insideLength, judgeStroke,
   left, LINE_CANCEL, lineHits, makeToss, met, MIN_TRAVEL, nextKind, pairBoard, pairHint, planFor, RISE, signAt, SIGN_W, signsFor,
   type Board, type Kind, type Line, type Mood, type Plan, type Pt, type Refusal, type Sign, type Toss,
 } from './logic';
@@ -111,6 +111,8 @@ class FruitSlice implements Game {
   private slices = 0;
   private signMisses = 0;
   private glow: { kind: 'fruit' | 'bowl' | 'line'; line?: Line } | null = null;
+  /** Level 9: lines kept on this board (0 or 1). */
+  private linesUsed = 0;
   private stroke: Stroke | null = null;
   private trail: { x: number; y: number; t: number }[] = [];
   private clock = 0;
@@ -139,6 +141,7 @@ class FruitSlice implements Game {
     this.plan = planFor(ctx.level);
     this.signs = signsFor(this.plan, ctx.rng);
     if (this.plan.mode === 'line') this.boards = boardsFor(ctx.rng);
+    if (this.plan.mode === 'cover') this.boards = coverBoardsFor(ctx.rng);
     this.mood = ctx.rng.pick(MOODS);
     this.back = ctx.track(new Backdrop(MOOD_SKY[this.mood], ctx.view));
     // The how-to card's demonstration plays a short round.
@@ -253,7 +256,7 @@ class FruitSlice implements Game {
   }
 
   private get lineMode() {
-    return this.plan.mode === 'line' || !!this.current?.board;
+    return this.plan.mode === 'line' || this.plan.mode === 'cover' || !!this.current?.board;
   }
 
   /** Levels where the bowl is sent by a tap. */
@@ -282,6 +285,7 @@ class FruitSlice implements Game {
       case 'enough': return 'slice.instruct.enough';
       case 'two': return 'slice.instruct.two';
       case 'line': return 'slice.instruct.line';
+      case 'cover': return 'slice.instruct.cover';
       case 'pieces': return s?.board ? 'slice.instruct.pairs' : 'slice.instruct.pieces';
     }
   }
@@ -296,8 +300,10 @@ class FruitSlice implements Game {
     this.busy = true;
     this.signMisses = 0;
     this.glow = null;
-    if (this.plan.mode === 'line') {
+    if (this.plan.mode === 'line' || this.plan.mode === 'cover') {
       this.board = this.boards[this.index];
+      this.linesUsed = 0;
+      if (this.plan.mode === 'cover') this.clearBowl();
       this.buildBoard();
     } else if (this.current?.board) {
       this.clearFlyers();
@@ -394,6 +400,7 @@ class FruitSlice implements Game {
     if (!b) return null;
     const cut = this.stills.map((s) => s.cut);
     if (this.plan.mode === 'line') return hintLineFor(b.fruit, b.n, cut) ?? b.hint;
+    if (this.plan.mode === 'cover') return coverHint(b.fruit, cut) ?? b.hint;
     const s = this.current!;
     return pairHint(b, cut, left(s));
   }
@@ -502,6 +509,7 @@ class FruitSlice implements Game {
     if (!ids.length) return;
     const hit = ids.map((i) => live[i]);
     const angle = Math.atan2(b.y - a.y, b.x - a.x);
+    if (this.plan.mode === 'cover') return this.coverLine(hit, angle);
     if (this.plan.mode === 'line') {
       const want = this.board!.n;
       if (hit.length !== want) {
@@ -530,6 +538,80 @@ class FruitSlice implements Game {
       } else s.wobble = 0.6;
     });
     this.afterCut(r.cut.some(Boolean), r.miss, r.reasons.find((x) => x) ?? null);
+  }
+
+  /**
+   * Level 9: a line that cuts fruit is kept while one more line can still reach the rest; a line that strands them
+   * (or a second that leaves any) is one miss, said at once, and the board comes back whole.
+   */
+  private coverLine(hit: Still[], angle: number) {
+    const b = this.board!;
+    const step = coverStep(b.fruit, this.stills.map((s) => s.cut), hit.map((s) => this.stills.indexOf(s)), this.linesUsed + 1);
+    if (step === 'stuck') return void this.coverStuck(hit, angle);
+    for (const s of hit) {
+      s.cut = true;
+      this.cutFruit(s.node, s.kind, angle);
+    }
+    this.linesUsed++;
+    this.drawSign();
+    if (step === 'cleared') {
+      this.glow = null;
+      return void this.boardDone();
+    }
+    // A glow from a different cover now points at the line that clears what is left (the same hint, not a new one).
+    if (this.glow) this.glow = { kind: 'line', line: this.solution() ?? undefined };
+    void this.say('slice.cover-more');
+  }
+
+  private async coverStuck(hit: Still[], angle: number) {
+    this.busy = true;
+    this.misses++;
+    this.signMisses++;
+    sfx.boing();
+    for (const s of hit) this.splitBack(s, angle);
+    void this.say(this.linesUsed ? 'slice.cover-left' : 'slice.cover-stuck');
+    // Let the first line's halves land before the bowl empties and they hop back.
+    await this.ctx.tw.wait(0.9);
+    if (this.finished) return;
+    this.clearBowl();
+    for (const s of this.stills) {
+      if (!s.cut) continue;
+      s.cut = false;
+      s.node.visible = true;
+      s.node.scale.set(0.2 * ART);
+      s.wobble = 0.5;
+      void this.ctx.tw.to(s.node.scale, { x: ART, y: ART }, { duration: 0.35, ease: ease.outBack });
+    }
+    this.linesUsed = 0;
+    this.drawSign();
+    this.busy = false;
+    if (this.glow) this.glow = { kind: 'line', line: this.solution() ?? undefined };
+    else if (this.signMisses % 2 === 0) this.showGlow();
+  }
+
+  /** A cut that will not stay: the halves part a little and close up again. */
+  private splitBack(s: Still, angle: number) {
+    const at = { x: s.node.x, y: s.node.y };
+    s.node.visible = false;
+    const nx = -Math.sin(angle), ny = Math.cos(angle);
+    for (const side of [1, -1] as const) {
+      const h = halfArt(s.kind, angle, side);
+      h.position.set(at.x, at.y);
+      h.eventMode = 'none';
+      this.fruitLayer.addChild(h);
+      void (async () => {
+        await this.ctx.tw.to(h, { x: at.x + nx * side * 26, y: at.y + ny * side * 26 }, { duration: 0.2, ease: ease.outQuad });
+        await this.ctx.tw.to(h, { x: at.x, y: at.y }, { duration: 0.25, ease: ease.inQuad });
+        h.destroy({ children: true });
+        if (s.node.destroyed) return;
+        s.node.visible = true;
+        s.wobble = 0.5;
+      })();
+    }
+  }
+
+  private clearBowl() {
+    if (!this.bowlFill.destroyed) this.bowlFill.removeChildren().forEach((c) => c.destroy());
   }
 
   /** After a stroke's cuts: count aloud, tell the reason for a bounce, the glow on every second miss, and the next sign. */
@@ -780,7 +862,9 @@ class FruitSlice implements Game {
     this.busy = true;
     sfx.sparkle();
     this.ctx.pet.cheer();
-    await this.say('slice.line-yes', { n: this.board!.n });
+    await this.say(this.plan.mode === 'cover' ? 'slice.cover-yes' : 'slice.line-yes', { n: this.board!.n });
+    // Level 9 empties the bowl for the next board: let the last halves land first.
+    if (this.plan.mode === 'cover') await this.ctx.tw.wait(0.8);
     this.index++;
     if (this.index >= this.boards.length) return void this.finale();
     await this.begin();
@@ -832,6 +916,14 @@ class FruitSlice implements Game {
         const y = i === 0 ? -36 : 36;
         add(fruitArt(r.kind!), -40, y, 0.5);
         add(label(r.cut >= r.n ? '✓' : String(r.n - r.cut), 52, ink), 30, y);
+      });
+    } else if (mode === 'cover') {
+      // Two lines; the one already drawn turns pale.
+      [-30, 30].forEach((y, i) => {
+        const used = i < this.linesUsed;
+        const g = new Graphics().moveTo(-58, y + 12).lineTo(58, y - 12).stroke({ width: 10, color: used ? 0xd8d8d8 : swatch.yellow.line, cap: 'round' });
+        for (const x of [-30, 0, 30]) g.circle(x, y + 12 - (x + 58) * (24 / 116), 9).fill(used ? 0xe8e8e8 : swatch.red.fill);
+        add(g, 0, 0);
       });
     } else if (mode === 'line') {
       add(label(String(this.board?.n ?? this.boards[this.index]?.n ?? 0), 64, ink), 0, -26);

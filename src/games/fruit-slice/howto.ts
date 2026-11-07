@@ -12,12 +12,14 @@ export const HOW_TO: GameHowTo = {
     { from: 8, to: 8, text: 'When the bowl has enough, tap it to send it.' },
     { from: 7, to: 7, text: 'Draw one straight line: it cuts every fruit it crosses. Make it cross the number on the sign.' },
     { from: 8, to: 8, text: 'Each fruit makes two pieces. On the last sign the fruit hold still: draw a straight line through two.' },
+    { from: 9, to: 9, text: 'The fruit hold still. Draw two straight lines that together cut every fruit.' },
   ],
   finish: 'The bowl is full.',
   note: [
     { from: 1, to: 2, text: 'Fruit that falls just comes back. Nothing is timed, and nothing she does is counted against her.' },
     { from: 3, to: 6, text: 'Fruit that falls just comes back. Nothing is timed. Slicing something the sign does not ask for counts as a miss; after two misses the next right one glows, which counts as a hint.' },
     { from: 7, to: 7, text: 'Nothing is timed, and a line through no fruit is free. A line through the wrong number counts as a miss; after two misses a dashed line shows one that works, which counts as a hint.' },
+    { from: 9, to: 9, text: 'Nothing is timed, and a line through no fruit is free. If the first line leaves fruit that one line cannot reach, or the second leaves any, the fruit come back whole and it counts as a miss; after two misses a dashed line shows one that works, which counts as a hint.' },
     { from: 8, to: 8, text: 'Fruit that falls just comes back. Nothing is timed. A slice that would pass the sign counts as a miss; after two misses the next right one glows, which counts as a hint.' },
   ],
 };

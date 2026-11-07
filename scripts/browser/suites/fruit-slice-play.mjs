@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, errors, log, scene, tap, screenshot, launch, finished }) {
-/** Fruit Slice by touch: level 1 by taps, two wrong-kind swipes at 3 (two misses, one glow), level 7's boards by straight lines (portrait screenshot), level 3 at sunset with a new fruit (portrait screenshot), level 8 by swipes, the bowl and the pair board. */
+/** Fruit Slice by touch: level 1 by taps, two wrong-kind swipes at 3 (two misses, one glow), level 7's boards by straight lines (portrait screenshot), level 3 at sunset with a new fruit (portrait screenshot), level 8 by swipes, the bowl and the pair board, level 9 upright with a stranding first line and a requested hint (portrait screenshot). */
 async function fruitSlicePlay() {
   const state = () => page.evaluate(() => { const g = neo.scene.game; return { misses: g.misses, hints: g.hints, glow: g.glow?.kind ?? null, index: g.index }; });
   const idle = () => page.waitForFunction(() => neo.scene.finished || (neo.scene.game && !neo.scene.game.busy), null, { timeout: 15000 });
@@ -104,8 +104,33 @@ async function fruitSlicePlay() {
   await tapBowl();
   await sticker(n);
   st = await state(); assert.deepEqual([st.misses, st.hints], [0, 0], 'level 8 with no misses');
+
+  // Level 9 upright: a first line that strands the rest is one miss and the board comes back whole; a requested hint
+  // dashes a cover's first line (portrait screenshot); then four boards by two lines each.
+  await page.setViewportSize({ width: 768, height: 1024 });
+  n = await page.evaluate(() => kit.store.data.stickers.length);
+  await launch('fruit-slice', 9); await idle(); await page.waitForTimeout(400);
+  const stuck = await page.evaluate(async () => {
+    const L = await import('/src/games/fruit-slice/logic.ts');
+    const g = neo.scene.game, f = g.board.fruit, st = g.ctx.stage;
+    const l = L.coverLines(f).find((l) => { const h = L.lineHits(l.a, l.b, f); return h.length && L.coverStep(f, [], h, 1) === 'stuck'; });
+    return { a: st.toGlobal(g.boardPoint(l.a)), b: st.toGlobal(g.boardPoint(l.b)) };
+  });
+  await page.evaluate(({ a, b }) => kit.drag(kit.line([a.x, a.y], [b.x, b.y], 14)), stuck);
+  await page.waitForTimeout(200);
+  await idle();
+  st = await page.evaluate(() => { const g = neo.scene.game; return { misses: g.misses, hints: g.hints, cut: g.stills.filter((s) => s.cut).length, used: g.linesUsed }; });
+  assert.deepEqual(st, { misses: 1, hints: 0, cut: 0, used: 0 }, 'level 9: a stranding first line is one miss and the fruit come back');
+  await page.evaluate(() => neo.scene.game.askForHint());
+  st = await state(); assert.deepEqual([st.misses, st.hints, st.glow], [1, 1, 'line'], 'level 9: a requested hint dashes a line');
+  await page.waitForTimeout(300);
+  await screenshot('fruit-slice-9-portrait-hint');
+  for (let guard = 0; guard < 12 && !(await page.evaluate(() => neo.scene.finished)); guard++) await drawSolution();
+  await sticker(n);
+  st = await state(); assert.deepEqual([st.misses, st.hints], [1, 1], 'level 9: the one stranding line and the one hint');
+
   assert.deepEqual(errors, [], 'page errors');
-  log('Fruit Slice: level 1 by taps, two wrong-kind swipes and a glow at 3, level 7 by lines (upright), level 3 at sunset with a new fruit (upright), level 8 by swipes, the bowl and the pair board');
+  log('Fruit Slice: level 1 by taps, two wrong-kind swipes and a glow at 3, level 7 by lines (upright), level 3 at sunset with a new fruit (upright), level 8 by swipes, the bowl and the pair board, level 9 upright with a stranding line, a hint and two lines a board');
 }
 
 return { fruitSlicePlay };
