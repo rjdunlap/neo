@@ -34,13 +34,14 @@ export const PLANS: readonly CutPlan[] = [
   { mode: 'cut', name: 'Corners: three of a square, a triangle, a door and a kite', count: 3 },
   { mode: 'cut', name: 'Picture shapes: three of heart, house, leaf, fish, cloud, star and moon', count: 3 },
   { mode: 'fits', name: 'The piece that fits: choose the outline for the gap, then cut it', count: 3 },
+  { mode: 'cut', name: 'Round and round: spirals for a snail, a snake and a curly tail', count: 3 },
 ];
 
 export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 5 },
   prek: { min: 4, max: 7 },
-  school: { min: 6, max: 8 },
+  school: { min: 6, max: 9 },
 };
 
 export const levelOf = (level: number): number => Math.max(1, Math.min(PLANS.length, Math.floor(level)));
@@ -96,11 +97,11 @@ export function layoutFor(v: { w: number; h: number }): Layout {
 /** What a cut-out becomes in the collage. */
 export type PieceId =
   | 'grass' | 'tail' | 'plank' | 'mountain' | 'sea' | 'hill' | 'path' | 'sun' | 'window' | 'sail' | 'door' | 'kite'
-  | 'heart' | 'house' | 'leaf' | 'fish' | 'cloud' | 'star' | 'moon' | 'roof';
+  | 'heart' | 'house' | 'leaf' | 'fish' | 'cloud' | 'star' | 'moon' | 'roof' | 'shell' | 'snake' | 'coil' | 'cat-tail';
 
 export type CutKind =
   | 'ribbon' | 'level' | 'slant' | 'zigzag' | 'wave' | 'hill' | 'scurve'
-  | 'circle' | 'square' | 'triangle' | 'door' | 'kite' | 'heart' | 'house' | 'leaf' | 'fish' | 'cloud' | 'star' | 'moon' | 'roof-arch';
+  | 'circle' | 'square' | 'triangle' | 'door' | 'kite' | 'heart' | 'house' | 'leaf' | 'fish' | 'cloud' | 'star' | 'moon' | 'roof-arch' | 'spiral';
 
 export interface Cut {
   kind: CutKind;
@@ -114,8 +115,10 @@ export interface Cut {
   orders: Point[][];
   /** The real corners (zigzag points, a square's corners, the heart's dip, the fish's tail), as points on the path. */
   corners: Point[];
-  /** A closed shape's outline, for drawing the piece that drops out. */
+  /** A closed shape's outline (or a spiral's cut-out strip), for drawing the piece that drops out. */
   outline?: Point[];
+  /** A spiral's centre and its innermost and outermost radii, for the rule tests. */
+  spiral?: { cx: number; cy: number; inner: number; outer: number; turns: number };
 }
 
 const FULL: Rect = { x: 0, y: 0, w: PAPER_W, h: 1 };
@@ -221,6 +224,32 @@ export function shapeCut(kind: OutlineId, piece: PieceId, cx: number, cy: number
   return closed(cutKind ?? (kind === 'arch' ? 'roof-arch' : kind), piece, loop, [loop[0][0], 1], o.corners.map((i) => loop[i]));
 }
 
+/** Level 9's ring spacing: more than twice the corridor and a sample apart, so one turn never shares another's corridor. */
+export const RING_GAP = 0.17;
+/** The innermost radius of a spiral: tight enough to turn, never so tight that a short chord skips the curl. */
+export const INNER_R = 0.14;
+
+/**
+ * An Archimedean spiral turning inward from its outermost point (the far left, or the far right when mirrored), reached
+ * by a straight lead-in up from the paper's bottom edge that meets it heading up, so the joint has no corner. It turns
+ * clockwise on the paper (counterclockwise when mirrored) and ends at its inner radius; `outline` is the strip it cuts free.
+ */
+export function spiralCut(piece: PieceId, cx: number, cy: number, turns: number, mirror = false): Cut {
+  const outer = INNER_R + RING_GAP * turns, sign = mirror ? -1 : 1;
+  const at = (u: number, off = 0): Point => {
+    const t = u * turns * 2 * Math.PI, r = outer - (outer - INNER_R) * u + off;
+    return [cx - sign * r * Math.cos(t), cy - r * Math.sin(t)];
+  };
+  const spiral = curve((u) => at(u), Math.ceil(turns * 90));
+  const start: Point = [cx - sign * outer, 1];
+  const path = [...sampleStroke([start, spiral[0]], SPACING), ...sampleStroke(spiral, SPACING).slice(1)];
+  // The strip the cut frees runs half a ring either side of the line, round to the centre.
+  const half = RING_GAP / 2, n = Math.ceil(turns * 48);
+  const side = (off: number) => Array.from({ length: n + 1 }, (_, i) => at(i / n, off));
+  const outline = [...side(half), ...side(-Math.min(half, INNER_R * 0.8)).reverse()];
+  return { kind: 'spiral', piece, closed: false, sheet: FULL, lead: 0, orders: [path], corners: [], outline, spiral: { cx, cy, inner: INNER_R, outer, turns } };
+}
+
 function zigzag(corners: number, rng: Rng): { path: Point[]; corners: Point[] } {
   const dx = PAPER_W / (corners + 1), a = 0.19, up = rng.int(0, 1) === 0;
   const path: Point[] = [[0, 0.5]];
@@ -265,6 +294,13 @@ export function cutsFor(level: number, rng: Rng): Cut[] {
       ];
       return rng.shuffle(shapes).slice(0, 3).map(([k, piece, cy, r]) => shapeCut(k, piece, mid, cy, r));
     }
+    case 9:
+      // A snail's shell, a snake, then a cat's curly tail or a second snake turning the other way.
+      return [
+        spiralCut('shell', mid + 0.02, 0.56, 1.5),
+        spiralCut('snake', mid + 0.04, 0.53, 2),
+        flip() ? spiralCut('cat-tail', mid + 0.06, 0.42, 1) : spiralCut('coil', mid - 0.04, 0.53, 2, true),
+      ];
     default: {
       const kinds = rng.shuffle<PictureShape>([...PICTURE_SHAPES]).slice(0, 3);
       return kinds.map((k) => shapeCut(k, k, mid, 0.42, k === 'cloud' ? 0.42 : k === 'star' ? 0.36 : 0.34));
@@ -328,9 +364,9 @@ export function botRoute(cut: Cut, points: readonly Point[], progress: number): 
  */
 export type Theme =
   | 'meadow' | 'hedgehog' | 'kite' | 'gift' | 'fence' | 'raft' | 'mountains' | 'river' | 'day' | 'night'
-  | 'harbour' | 'pond' | 'garland' | 'boats';
+  | 'harbour' | 'pond' | 'garland' | 'boats' | 'garden';
 export const THEMES: readonly (readonly Theme[])[] = [
-  ['meadow', 'hedgehog'], ['kite', 'gift'], ['fence', 'raft'], ['mountains', 'river'], ['day', 'night'], ['harbour'], ['pond', 'garland'], ['boats'],
+  ['meadow', 'hedgehog'], ['kite', 'gift'], ['fence', 'raft'], ['mountains', 'river'], ['day', 'night'], ['harbour'], ['pond', 'garland'], ['boats'], ['garden'],
 ];
 export const themeFor = (level: number, rng: Rng): Theme => rng.pick(THEMES[levelOf(level) - 1]);
 
@@ -370,6 +406,11 @@ export function slotsFor(level: number, theme: Theme, pieces: readonly PieceId[]
       return theme === 'garland'
         ? pieces.map((piece, i) => ({ piece, x: 0.06 + i * 0.31, y: 0.24 + (i === 1 ? 0.07 : 0), w: 0.26, h: 0.26 }))
         : pieces.map((piece, i) => ({ piece, x: 0.06 + i * 0.31, y: 0.3 + (i % 2) * 0.22, w: 0.26, h: 0.26 }));
+    case 9:
+      return by({
+        shell: { x: 0.1, y: 0.48, w: 0.24, h: 0.24 }, snake: { x: 0.36, y: 0.74, w: 0.26, h: 0.2 },
+        coil: { x: 0.68, y: 0.74, w: 0.26, h: 0.2 }, 'cat-tail': { x: 0.8, y: 0.3, w: 0.16, h: 0.3 },
+      });
     default: {
       const gaps: Partial<Record<PieceId, Spot>> = {
         roof: { x: 0.06, y: 0.3, w: 0.4, h: 0.22 }, window: { x: 0.18, y: 0.6, w: 0.16, h: 0.16 },
@@ -383,7 +424,7 @@ export function slotsFor(level: number, theme: Theme, pieces: readonly PieceId[]
 const PIECE_COLOR: Record<PieceId, ColorName> = {
   grass: 'green', tail: 'pink', plank: 'brown', mountain: 'purple', sea: 'blue', hill: 'green', path: 'orange', sun: 'yellow',
   window: 'blue', sail: 'white', door: 'red', kite: 'purple', heart: 'red', house: 'orange', leaf: 'green', fish: 'orange',
-  cloud: 'white', star: 'yellow', moon: 'yellow', roof: 'red',
+  cloud: 'white', star: 'yellow', moon: 'yellow', roof: 'red', shell: 'orange', snake: 'green', coil: 'teal', 'cat-tail': 'orange',
 };
 const THEME_COLOR: Partial<Record<Theme, Partial<Record<PieceId, ColorName>>>> = {
   hedgehog: { grass: 'brown' }, gift: { tail: 'yellow' }, river: { mountain: 'white' }, garland: { cloud: 'teal' },
