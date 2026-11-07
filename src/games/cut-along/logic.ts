@@ -1,8 +1,8 @@
 import type { ColorName } from '../../art/palette';
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
-import { advanceTrace, sampleStroke, type Point } from '../letter-trails/strokes';
-import { showTheWay } from '../letter-trails/logic';
+import { advanceTrace, sampleStroke, type Point } from '../../learning/tracing/strokes';
+import { showTheWay } from '../../learning/tracing/feedback';
 
 /**
  * Cut Along: follow a dashed line from the paper's edge with big scissors, and the piece drops into the host's collage.

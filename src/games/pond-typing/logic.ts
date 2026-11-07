@@ -1,5 +1,5 @@
 import type { Rng } from '../../engine/random';
-import { nameLetters } from '../letter-trails/logic';
+import { nameLetters } from '../../learning/words/name-letters';
 import type { BandLevels } from '../../progress/difficulty';
 
 /**

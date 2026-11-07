@@ -7,8 +7,8 @@ import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import type { LineId } from '../../content/voice-script';
 import { rangeFor } from '../../progress/difficulty';
-import { offTrail, startArrow, tuneStep } from '../letter-trails/logic';
-import type { Point } from '../letter-trails/strokes';
+import { offTrail, startArrow, tuneStep } from '../../learning/tracing/feedback';
+import type { Point } from '../../learning/tracing/strokes';
 import { WigglyIcon, tile } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {

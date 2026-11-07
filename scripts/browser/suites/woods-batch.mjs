@@ -1746,11 +1746,12 @@ async function woodsBatch() {
       }
       if (level === 9) {
         const data = await page.evaluate(async () => {
-          const L = await import('/src/games/critter-sort/logic.ts'); const g = neo.scene.game;
+          const L = await import('/src/games/critter-sort/logic.ts');
+          const { fits } = await import('/src/learning/sorting/rules.ts'); const g = neo.scene.game;
           const [a, b] = g.round.rules;
           return { places: g.sorters.map(s => L.placeOf(s.c, g.round.rules, 'butnot')),
-            both: g.sorters.findIndex(s => L.fits(s.c, a) && L.fits(s.c, b)),
-            neither: g.sorters.findIndex(s => !L.fits(s.c, a) && !L.fits(s.c, b)), centers: g.centers().length };
+            both: g.sorters.findIndex(s => fits(s.c, a) && fits(s.c, b)),
+            neither: g.sorters.findIndex(s => !fits(s.c, a) && !fits(s.c, b)), centers: g.centers().length };
         });
         assert.equal(data.centers, 1);
         assert.ok(data.both >= 0 && data.neither >= 0 && data.places.includes('left'));

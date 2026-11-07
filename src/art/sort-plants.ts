@@ -1,6 +1,6 @@
 import { Container, Graphics } from 'pixi.js';
-import { cream, ink, swatch } from '../../art/palette';
-import type { Leaves, Petals } from './logic';
+import { cream, ink, swatch } from './palette';
+import type { Leaves, Petals } from '../learning/sorting/rules';
 
 /** One petal colour per family, so colour is never a third difference a hoop might mean. */
 export const PETAL_COLORS = [cream, swatch.pink.fill, swatch.yellow.light];

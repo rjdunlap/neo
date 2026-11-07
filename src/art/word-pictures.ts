@@ -3,7 +3,7 @@ import { PICTURE_WORDS } from '../learning/words/picture-words';
 import { Critter, CRITTERS } from './critter';
 import { frogArt } from './animals';
 import { ink, swatch, wood } from './palette';
-import { letterPicture } from '../games/letter-trails/pictures';
+import { letterPicture } from './letter-pictures';
 
 /** Pictures name objects, never substitute a printed initial for a missing illustration. */
 export function typingPicture(text: string): Container {

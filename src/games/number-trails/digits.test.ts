@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { advanceTrace, sampleStroke, traceWaypoints, type Point } from '../letter-trails/strokes';
+import { advanceTrace, sampleStroke, traceWaypoints, type Point } from '../../learning/tracing/strokes';
 import { DIGITS, DIGIT_KEYS } from './digits';
 
 describe('numeral strokes', () => {

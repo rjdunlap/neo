@@ -1,7 +1,8 @@
 import { critterSort } from './index';
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { COUNT_PARTS, COUNT_PLAN, countParts, morePart, countSpot, planFor, exampleIndices, examplePlaces, fits, hasNeitherMat, hintFor, neitherMat, MAT_RX, MAT_RY, sortPlaceAt, hoopCenters, makeRound, nextToSort, OVERLAPPING, placeAt, placeOf, PLANS, ruleToTap, SEPARATE, spotFor, type Place, makePlantRound, SPROUT_PLANS, HAVE_WORDS, type PlantRule } from './logic';
+import { COUNT_PARTS, COUNT_PLAN, countParts, morePart, countSpot, planFor, exampleIndices, examplePlaces, hasNeitherMat, hintFor, neitherMat, MAT_RX, MAT_RY, sortPlaceAt, hoopCenters, makeRound, nextToSort, OVERLAPPING, placeAt, placeOf, PLANS, ruleToTap, SEPARATE, spotFor, type Place, makePlantRound, SPROUT_PLANS } from './logic';
+import { fits, HAVE_WORDS, type PlantRule } from '../../learning/sorting/rules';
 
 describe('Critter Sort', () => {
   it('preserves the younger ladder and stable school IDs, appending 11 without opening reserved level 10', () => {

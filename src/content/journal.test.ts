@@ -4,7 +4,7 @@ import { ANIMALS, FAVORITE } from '../games/animal-snack/logic';
 import { ACTIONS } from '../games/photo-safari/logic';
 import { ALL_THINGS, floats, thingWord } from '../games/sink-float/logic';
 import { cleanJournal, discover, emptyJournal, entriesOf, entryById, entryId, hasNew, JOURNAL, JOURNAL_IDS, markSeen, sourceText } from './journal';
-import { WORDS } from '../games/letter-trails/pictures';
+import { WORDS } from '../learning/words/letter-words';
 import { HELPER, HELPERS } from '../games/mail-carrier/logic';
 import { SCRIPT } from './voice-script';
 
