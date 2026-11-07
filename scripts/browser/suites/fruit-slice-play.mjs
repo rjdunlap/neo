@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, errors, log, scene, tap, screenshot, launch, finished }) {
-/** Fruit Slice by touch: level 1 by taps, two wrong-kind swipes at 3 (two misses, one glow), level 7's boards by straight lines (portrait screenshot), level 8 by swipes, the bowl and the pair board. */
+/** Fruit Slice by touch: level 1 by taps, two wrong-kind swipes at 3 (two misses, one glow), level 7's boards by straight lines (portrait screenshot), level 3 at sunset with a new fruit (portrait screenshot), level 8 by swipes, the bowl and the pair board. */
 async function fruitSlicePlay() {
   const state = () => page.evaluate(() => { const g = neo.scene.game; return { misses: g.misses, hints: g.hints, glow: g.glow?.kind ?? null, index: g.index }; });
   const idle = () => page.waitForFunction(() => neo.scene.finished || (neo.scene.game && !neo.scene.game.busy), null, { timeout: 15000 });
@@ -67,6 +67,23 @@ async function fruitSlicePlay() {
   for (let guard = 0; guard < 8 && !(await page.evaluate(() => neo.scene.finished)); guard++) await drawSolution();
   await sticker(n);
   st = await state(); assert.deepEqual([st.misses, st.hints], [0, 0], 'level 7 solved by the hint lines');
+
+  // Level 3 upright in the sunset mood, asking for one of the new fruit; one screenshot, then sliced to the end.
+  const NEW = ['strawberry', 'banana', 'plum'];
+  let look = null;
+  for (let tries = 0; tries < 40; tries++) {
+    await launch('fruit-slice', 3); await idle();
+    look = await page.evaluate(() => ({ mood: neo.scene.game.mood, kind: neo.scene.game.current.rows[0].kind }));
+    if (look.mood === 'sunset' && NEW.includes(look.kind)) break;
+  }
+  assert.equal(look.mood, 'sunset', 'a sunset round comes up');
+  assert.ok(NEW.includes(look.kind), 'a new fruit is asked for');
+  await page.waitForTimeout(3200);
+  await screenshot('fruit-slice-3-sunset-portrait');
+  n = await page.evaluate(() => kit.store.data.stickers.length);
+  for (let guard = 0; guard < 14 && !(await page.evaluate(() => neo.scene.finished)); guard++) await swipe(await hanging(true));
+  await sticker(n);
+  st = await state(); assert.deepEqual([st.misses, st.hints], [0, 0], `level 3 with ${look.kind} at sunset, no misses`);
   await page.setViewportSize({ width: 1024, height: 768 });
 
   // Level 8: two signs by swipes and the bowl, then the pair board by straight lines and the bowl.
@@ -88,7 +105,7 @@ async function fruitSlicePlay() {
   await sticker(n);
   st = await state(); assert.deepEqual([st.misses, st.hints], [0, 0], 'level 8 with no misses');
   assert.deepEqual(errors, [], 'page errors');
-  log('Fruit Slice: level 1 by taps, two wrong-kind swipes and a glow at 3, level 7 by lines (upright), level 8 by swipes, the bowl and the pair board');
+  log('Fruit Slice: level 1 by taps, two wrong-kind swipes and a glow at 3, level 7 by lines (upright), level 3 at sunset with a new fruit (upright), level 8 by swipes, the bowl and the pair board');
 }
 
 return { fruitSlicePlay };
