@@ -112,7 +112,7 @@ These are existing games awaiting research, not new game implementations. One do
 | Swing Pals (`swing-pals`) | designed 2026-11-06 (slices 1–3 ready) | [Dive](deep-dives/swing-pals.md), [tracker](deep-dives/README.md#tracker) |
 | Bolt Boards (`bolt-boards`) | designed (dive 2026-11-06) | [Dive](deep-dives/bolt-boards.md) |
 | Puddle Gobble (`puddle-gobble`) | designed (dive 2026-11-06; slices 1–4 ready) | [Dive](deep-dives/puddle-gobble.md), [tracker](deep-dives/README.md#tracker) |
-| Fruit Slice (`fruit-slice`) | not started, wave 5 | [Tracker](deep-dives/README.md#tracker) |
+| Fruit Slice (`fruit-slice`) | designed, wave 5 (slices 1–4 ready; fractions closure and the journal wait on decisions) | [Dive](deep-dives/fruit-slice.md) |
 | Cut Along (`cut-along`) | not started, wave 5 | [Tracker](deep-dives/README.md#tracker) |
 | Domino Run (`domino-run`) | not started, wave 5 | [Tracker](deep-dives/README.md#tracker) |
 | Number Trails (`number-trails`) | designed, wave 6 (slices 1–6 ready; level 7 and the journal wait on decisions) | [Dive](deep-dives/number-trails.md) |
