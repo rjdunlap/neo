@@ -122,7 +122,7 @@ These are existing games awaiting research, not new game implementations. One do
 | Pile Match (`pile-match`) | designed 2026-11-07 ([dive](deep-dives/pile-match.md): slices 1–4 ready; no new decisions); wave 6 | [Tracker](deep-dives/README.md#tracker) |
 | Lift It (`lift-it`) | designed 2026-11-07 ([dive](deep-dives/lift-it.md): slices 1–5 ready; two decisions wait on the developer); wave 6 | [Tracker](deep-dives/README.md#tracker) |
 | Block Garden (`block-garden`) | designed 2026-11-07 ([dive](deep-dives/block-garden.md): slices 1–5 ready; one decision waits on the developer); wave 6 | [Tracker](deep-dives/README.md#tracker) |
-| Gem Swap (`gem-swap`) | not started, wave 7 | [Tracker](deep-dives/README.md#tracker) |
+| Gem Swap (`gem-swap`) | designed 2026-11-07 ([dive](deep-dives/gem-swap.md): slices 1–5 ready; three decisions wait on the developer); wave 7 | [Tracker](deep-dives/README.md#tracker) |
 | Log Roll (`log-roll`) | not started, wave 7 | [Tracker](deep-dives/README.md#tracker) |
 | Marble Jump (`marble-jump`) | not started, wave 7 | [Tracker](deep-dives/README.md#tracker) |
 | Number Nook (`number-nook`) | not started, wave 7 | [Tracker](deep-dives/README.md#tracker) |
