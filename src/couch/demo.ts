@@ -1,3 +1,4 @@
+import { Lifetime } from '../engine/lifetime';
 import { Container, Graphics, type Renderer } from 'pixi.js';
 import type { Updatable } from '../app/Scene';
 import { makeCompanion, makeStar, type Companion } from '../creatures/companion';
@@ -58,6 +59,7 @@ export class Demo {
   private finger: GhostFinger | null = null;
   private pet: Companion | null = null;
   private game: Game | null = null;
+  private lifetime: Lifetime | null = null;
   private age = 0;
   private rest = 0;
   private done = false;
@@ -173,6 +175,8 @@ export class Demo {
 
   /** Stop the current round and everything it started. Its pending promises never resolve. */
   private teardown() {
+    this.lifetime?.destroy();
+    this.lifetime = null;
     this.game?.destroy();
     this.game = null;
     this.tw.clear();
@@ -219,7 +223,12 @@ export class Demo {
         progress: (p: CourseProgress) => { if (p.done.length > part.board) this.done = true; },
       },
     } : undefined;
+    const lifetime = new Lifetime();
+    this.lifetime = lifetime;
     const ctx: GameContext = {
+      get alive() { return lifetime.alive; },
+      own: lifetime.own,
+      listen: lifetime.listen.bind(lifetime),
       stage: this.stage,
       view: VIEW,
       level: this.opts.level,
