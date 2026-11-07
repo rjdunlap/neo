@@ -1,6 +1,6 @@
 import { Container, Graphics } from 'pixi.js';
 import { ink, swatch, wood } from '../../art/palette';
-import { CORE_R, haloAlpha, haloRadius, sideGlow, type Rect } from './logic';
+import { CORE_R, haloAlpha, haloRadius, SIDE_GLOW_R, sideGlow, sideRays, type Rect } from './logic';
 
 const NIGHT = 0x27305a;
 const NIGHT_LOW = 0x1c2446;
@@ -196,4 +196,92 @@ export function stopTicks(stopX: readonly number[], r: Rect): Graphics {
     for (let i = 0; i <= k; i++) g.circle(x - k * 6 + i * 12, r.y + r.h - 12, 4).fill(0xffffff);
   });
   return g;
+}
+
+/** Levels 7–8: a side-view light with rings of short rays for its own glow (one, two or three). The core and float stay the same. */
+export function raysLight(glow: number): Container {
+  const c = sideLight();
+  const g = new Graphics();
+  const rings = sideRays(glow);
+  for (let k = 0; k < rings; k++) {
+    const r0 = SIDE_GLOW_R + 4 + k * 9;
+    const n = 10 + k * 4;
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * Math.PI * 2 + k * 0.3;
+      g.moveTo(Math.cos(a) * r0, Math.sin(a) * r0).lineTo(Math.cos(a) * (r0 + 5), Math.sin(a) * (r0 + 5));
+    }
+    g.stroke({ width: 2.5, color: GLOW, alpha: 0.85, cap: 'round' });
+  }
+  c.addChildAt(g, 0);
+  return c;
+}
+
+/** Level 8: far trees along the window's horizon, which never move when she steps. */
+export function farTrees(r: Rect): Graphics {
+  const g = new Graphics();
+  const base = r.y + r.h * 0.6;
+  const n = Math.max(6, Math.round(r.w / 70));
+  for (let i = 0; i < n; i++) {
+    const x = r.x + 30 + (i * (r.w - 60)) / (n - 1);
+    const h = 26 + ((i * 37) % 16);
+    g.poly([x - 9, base, x, base - h, x + 9, base]).fill({ color: 0x5f8f7a, alpha: 0.95 });
+  }
+  g.eventMode = 'none';
+  return g;
+}
+
+/** Level 8: a faint ring left where a light was before the step. */
+export function ghostRing(): Graphics {
+  const g = new Graphics().circle(0, 0, CORE_R + 8).stroke({ width: 3, color: 0xffffff, alpha: 0.45 });
+  g.eventMode = 'none';
+  return g;
+}
+
+/** Level 8: a big round button with its picture (Both could fit: two lights and a two-way arrow; the step: two footprints and an arrow). */
+export class PictureButton extends Container {
+  readonly ring: Graphics;
+  readonly glow: Graphics;
+  constructor(size: number, kind: 'fit' | 'step') {
+    super();
+    const g = new Graphics();
+    const color = kind === 'fit' ? swatch.blue : swatch.green;
+    g.roundRect(-size / 2, -size / 2 + 5, size, size, 28).fill(color.line);
+    g.roundRect(-size / 2, -size / 2, size, size, 28).fill(color.fill).stroke({ width: 5, color: color.line });
+    if (kind === 'fit') {
+      for (const x of [-26, 26]) g.circle(x, -14, 13).fill({ color: GLOW, alpha: 0.6 }).circle(x, -14, 7).fill(CORE);
+      g.moveTo(-26, 22).lineTo(26, 22).stroke({ width: 6, color: 0xffffff, cap: 'round' });
+      for (const s of [-1, 1]) g.moveTo(s * 26, 22).lineTo(s * 16, 12).moveTo(s * 26, 22).lineTo(s * 16, 32).stroke({ width: 6, color: 0xffffff, cap: 'round' });
+    } else {
+      for (const [x, y] of [[-14, -10], [10, 6]]) g.ellipse(x, y, 9, 14).fill(0xffffff).circle(x, y - 18, 4).fill(0xffffff);
+      g.moveTo(-30, 34).lineTo(30, 34).stroke({ width: 6, color: 0xffffff, cap: 'round' });
+      g.moveTo(30, 34).lineTo(20, 25).moveTo(30, 34).lineTo(20, 43).stroke({ width: 6, color: 0xffffff, cap: 'round' });
+    }
+    this.glow = new Graphics().roundRect(-size / 2 - 8, -size / 2 - 8, size + 16, size + 16, 34).stroke({ width: 7, color: GLOW, alpha: 0.95 });
+    this.glow.visible = false;
+    this.ring = new Graphics().roundRect(-size / 2 + 6, -size / 2 + 6, size - 12, size - 12, 24).stroke({ width: 6, color: 0xffffff, alpha: 0.9 });
+    this.ring.alpha = 0;
+    this.addChild(this.glow, g, this.ring);
+  }
+}
+
+/** Level 8's hint after the step: a short line from each faint ring to its light, so both shifts show side by side. */
+export function shiftLine(dx: number): Graphics {
+  const g = new Graphics().moveTo(0, 0).lineTo(-dx, 0).stroke({ width: 4, color: GLOW, alpha: 0.9, cap: 'round' });
+  g.eventMode = 'none';
+  return g;
+}
+
+/** The journal card: a strong light far away (its rays showing) and a gentle light close by, both with the same halo. */
+export function farJournalPicture(): Container {
+  const c = new Container();
+  const g = new Graphics();
+  g.roundRect(-120, -80, 240, 160, 28).fill(NIGHT).stroke({ width: 5, color: ink, alpha: 0.6 });
+  g.rect(-116, 10, 232, 66).fill({ color: WATER, alpha: 0.7 });
+  c.addChild(g);
+  const near = sideLight();
+  near.position.set(-70, -10);
+  const far = raysLight(9);
+  far.position.set(70, -10);
+  c.addChild(near, far);
+  return c;
 }

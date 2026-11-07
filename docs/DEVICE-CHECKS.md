@@ -294,7 +294,7 @@ What a person saw when a check was run goes in [OBSERVATIONS](OBSERVATIONS.md), 
 
 ## Welcome Ways levels 1–4 (2026-10-24)
 
-- [ ] On an iPad, check part drag/tap cancellation and comfort, replayable visitor needs and stop reasons; watch whether the child notices Bunny passing the step before Roly stops, and Roly entering before Bear needs a wider door. Browser play and four demonstrations establish scripted behavior only ([verification](archive/VERIFICATION-2026-10-24.md#2026-10-24--welcome-ways-levels-14)). No human access representation or practical access advice is included. Levels 5–7 (school): also check speech for "Teeter" and "perch", drag comfort on the wide side strips, and whether a six-year-old reads the rail/perch conflict from the pictures ([verification](VERIFICATION.md#2026-11-06--welcome-ways-levels-57)).
+- [ ] On an iPad, check part drag/tap cancellation and comfort, replayable visitor needs and stop reasons; watch whether the child notices Bunny passing the step before Roly stops, and Roly entering before Bear needs a wider door. Browser play and four demonstrations establish scripted behavior only ([verification](archive/VERIFICATION-2026-10-24.md#2026-10-24--welcome-ways-levels-14)). No human access representation or practical access advice is included. Levels 5–7 (school): also check speech for "Teeter" and "perch", drag comfort on the wide side strips, and whether a six-year-old reads the rail/perch conflict from the pictures ([verification](archive/VERIFICATION-2026-11-06.md#2026-11-06--welcome-ways-levels-57)).
 
 ## Taps-only lap levels: Puzzle Pals 1–2, Teddy Doctor 2, Roundup 11 (R2, 2026-10-24)
 
@@ -1106,6 +1106,12 @@ Performed on the built levels (PR #1043; [definition](definitions/water-road.md#
 
 - [ ] On an iPad, check whether a seven-year-old works out "farther" from a dimmer halo without the strip, and whether the order dots at level 6 read as order without numbers. Browser play establishes neither.
 - [ ] Listen to device speech of the level 5–6 lines (the curtain and tassel praise) and check the tassel and light targets in both orientations.
+
+## Far Lights levels 7–8 (astronomy, 2026-11-06)
+
+- [ ] On an iPad, check whether a seven-year-old works out "farther" from a dimmer halo without the strip, and whether the order dots read as order without numbers. Browser play establishes neither.
+- [ ] Check that the 40-unit shift per stop at level 8 is visible against the far trees on the iPad, in both orientations.
+- [ ] Listen to the iPad voice say "both could fit" and the level 7–8 lines, and check they make sense aloud.
 
 ## Crossword levels 1-2 (2026-11-05)
 

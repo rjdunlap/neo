@@ -21,7 +21,8 @@ describe('the entries', () => {
     expect(entriesOf('rhythm-neighbors').map((e) => e.key)).toEqual(['frogs-answer']);
     expect(entriesOf('pet-kitchen').map((e) => e.key)).toEqual(['half', 'quarter', 'third']);
     expect(entriesOf('paint-mixer').map((e) => e.key)).toEqual(['peach', 'coral', 'blush', 'lavender', 'rose', 'lilac']);
-    expect(JOURNAL).toHaveLength(ALL_THINGS.length + ANIMALS.length + ACTIONS.length + 5 + 26 + 6 + 1 + 4 + 3 + 6);
+    expect(entriesOf('far-lights').map((e) => e.key)).toEqual(['strong-far']);
+    expect(JOURNAL).toHaveLength(ALL_THINGS.length + ANIMALS.length + ACTIONS.length + 5 + 26 + 6 + 1 + 4 + 3 + 6 + 1);
   });
 
   it('gives each a stable, unique id from its game and key', () => {
@@ -96,6 +97,10 @@ describe('the entries', () => {
           expect(said, e.id).toContain(e.key);
           expect(said, e.id).toContain('for every');
           break;
+        case 'far-lights':
+          expect(said, e.id).toContain('strong light far away');
+          expect(said, e.id).toContain('gentle light close by');
+          break;
       }
     }
   });
@@ -152,6 +157,9 @@ describe('the entries', () => {
         expect(find).toContain("Make the bucket the sample's colour with");
         expect(found).toContain(`the bucket was ${e.key}:`);
         expect(found).toMatch(/\d \w+, \d \w+ and \d white/);
+      } else if (e.game === 'far-lights') {
+        expect(find).toContain('strong light and a gentle light');
+        expect(found).toContain('a strong light far away');
       } else if (e.game === 'letter-trails') {
         expect(find).toContain(`letter ${e.key}`);
         expect(found).toContain(`letter ${e.key}`);
