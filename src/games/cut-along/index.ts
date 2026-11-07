@@ -160,7 +160,7 @@ function drawScene(g: Graphics, theme: Theme, w: number, h: number, slots: reado
       break;
     case 'garden': {
       // A garden path: a snail waiting for its shell, flowers, and a sitting cat when a tail is wanted.
-      g.moveTo(w * 0.3, h).quadraticCurveTo(w * 0.5, h * 0.8, w * 0.7, h * 0.7).stroke({ width: h * 0.06, color: swatch.brown.light, cap: 'round' });
+      g.moveTo(w * 0.3, h * 0.94).quadraticCurveTo(w * 0.5, h * 0.8, w * 0.7, h * 0.72).stroke({ width: h * 0.06, color: swatch.brown.light, cap: 'round' });
       g.ellipse(w * 0.22, h * 0.72, w * 0.16, h * 0.04).fill(swatch.green.fill).stroke({ width: 3, color: swatch.green.line });
       g.moveTo(w * 0.07, h * 0.71).lineTo(w * 0.04, h * 0.6).moveTo(w * 0.1, h * 0.71).lineTo(w * 0.1, h * 0.6).stroke({ width: 2, color: swatch.green.line });
       g.circle(w * 0.04, h * 0.6, w * 0.012).circle(w * 0.1, h * 0.6, w * 0.012).fill(ink);
