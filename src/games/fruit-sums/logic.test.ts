@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
-  LEVELS, PLANS, SLOT, TILE, WAYS_PER_ROUND, choosesSign, hintWay, judge, layoutFor, makeRound, made, planFor, solutions,
-  stickerNumber, wayKey,
+  DROP_GAP, DROP_TIME, LEVELS, LOOKS, PLANS, SLOT, TILE, WAYS_PER_ROUND, choosesSign, dropStep, hintGlow, hintWay, judge, layoutFor,
+  makeRound, made, planFor, shapeFor, solutions, stickerNumber, wayKey, type HintGlow, type Op,
 } from './logic';
 
 const SEEDS = Array.from({ length: 300 }, (_, i) => i + 1);
@@ -134,5 +134,86 @@ describe('Fruit Sums layout', () => {
 describe('Fruit Sums sticker', () => {
   it('shows a numeral from 2 to 9', () => {
     for (const seed of SEEDS) { const n = stickerNumber(seed); expect(n).toBeGreaterThanOrEqual(2); expect(n).toBeLessThanOrEqual(9); }
+  });
+});
+
+describe('Fruit Sums hint that follows through', () => {
+  it('given the fruit in the first box, the hinted way starts with it when one does', () => {
+    for (const level of [1, 2, 3]) {
+      const ops = planFor(level).ops;
+      for (const seed of SEEDS) {
+        const { target, tray } = makeRound(level, new Rng(seed));
+        for (let first = 0; first < tray.length; first++) {
+          const starts = solutions(tray, ops, target).some((w) => tray[w.a] === tray[first] || (w.op === 'plus' && tray[w.b] === tray[first]));
+          const way = hintWay(tray, ops, target, [], first)!;
+          expect(way).not.toBeNull();
+          expect(made(tray[way.a], way.op, tray[way.b])).toBe(target);
+          expect(way.a === first).toBe(starts);
+          expect(way.b).not.toBe(way.a);
+        }
+      }
+    }
+  });
+
+  it('skips ways already found, even when the first box holds their start', () => {
+    const tray = [3, 9, 5, 7, 1];
+    const way = hintWay(tray, ['plus'], 12, [wayKey(3, 'plus', 9)], 0)!;
+    expect(wayKey(tray[way.a], way.op, tray[way.b])).toBe(wayKey(5, 'plus', 7));
+  });
+
+  /** Taps the way the game does: a fruit in a box goes home, else it fills the first empty box, else it swaps the second. */
+  const tapTile = (s: { a: number | null; b: number | null }, i: number) => {
+    if (s.a === i) s.a = null; else if (s.b === i) s.b = null; else if (s.a === null) s.a = i; else s.b = i;
+  };
+
+  it('following the glow from any boxes and sign builds an unfound way and lights the check', () => {
+    for (const level of [1, 3]) {
+      const ops = planFor(level).ops, signs = choosesSign(level);
+      for (const seed of SEEDS.slice(0, 80)) {
+        const { target, tray } = makeRound(level, new Rng(seed));
+        const firstWay = solutions(tray, ops, target)[0];
+        for (const found of [[], [wayKey(tray[firstWay.a], firstWay.op, tray[firstWay.b])]]) {
+          for (let a = -1; a < tray.length; a++) for (let b = -1; b < tray.length; b++) {
+            if (a === b && a >= 0) continue;
+            const s = { a: a < 0 ? null : a, b: b < 0 ? null : b };
+            let op: Op | null = signs ? 'minus' : 'plus';
+            let done = false;
+            for (let step = 0; step < 8 && !done; step++) {
+              const glow: HintGlow = hintGlow(tray, ops, target, found, s.a, s.b, op)!;
+              expect(glow).not.toBeNull();
+              if ('check' in glow) done = true;
+              else if ('leaf' in glow) op = glow.leaf;
+              else tapTile(s, glow.tile);
+            }
+            expect(done).toBe(true);
+            expect(judge(tray[s.a!], op!, tray[s.b!], target, found).kind).toBe('right');
+          }
+        }
+      }
+    }
+  });
+
+  it('once the glowing start fruit is in the first box, its partner glows next', () => {
+    const tray = [3, 9, 5, 8, 1];
+    const start = hintGlow(tray, ['plus'], 12, [], null, null, 'plus');
+    expect(start).toEqual({ tile: 0 });
+    expect(hintGlow(tray, ['plus'], 12, [], 0, null, 'plus')).toEqual({ tile: 1 });
+    expect(hintGlow(tray, ['plus'], 12, [], 0, 1, 'plus')).toEqual({ check: true });
+  });
+});
+
+describe('Fruit Sums looks', () => {
+  it('each tree grows its own fruit, and the autumn tree mixes pears and plums', () => {
+    expect(LOOKS).toEqual(['orchard', 'cove', 'autumn']);
+    expect([0, 1, 2].map((i) => shapeFor('orchard', i))).toEqual(['round', 'round', 'round']);
+    expect(shapeFor('cove', 3)).toBe('coconut');
+    expect([0, 1].map((i) => shapeFor('autumn', i))).toEqual(['pear', 'plum']);
+  });
+
+  it('the drop lands every fruit quickly on falling pentatonic steps', () => {
+    expect(5 * DROP_GAP + DROP_TIME).toBeLessThan(1.2);
+    const steps = [0, 1, 2, 3, 4, 5].map(dropStep);
+    for (let i = 1; i < steps.length; i++) expect(steps[i]).toBeLessThan(steps[i - 1]);
+    expect(Math.min(...steps)).toBeGreaterThanOrEqual(1);
   });
 });

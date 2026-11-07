@@ -1,5 +1,10 @@
 # Puddle Island verification
 
+## 2026-11-07 — Fruit Sums slice 1, looks, the drop and a hint that follows through (PR #1362)
+
+Changed: `src/games/fruit-sums` (three seeded looks, the drop, hopping fruit, `hintWay`/`hintGlow` follow-through, `fsums.hint` line and how-to notes), rule tests, the `fruitsums` suite. Ran: typecheck; `npm test` (322 files, 6026 tests); filtered `BROWSER_SUITE=fruitsums` (level 1: two misses and one hint glowing start fruit, partner, check; level 3 portrait 768×1024 in the cove look, screenshot `test-results/browser/fruitsums/fruit-sums-3-portrait-cove.png`).
+Open: build not run (no shared files changed); `fingerdemo` not run (bot path unchanged); the level-3 hint is covered by unit tests, not a browser play; whether the drop and glow read on an iPad is a [device check](DEVICE-CHECKS.md).
+
 ## 2026-11-07 — Domino Run slice 1, puddles, beach moods and more ends (PR #1360)
 
 Changed: `src/games/domino-run` (puddles, three moods, five end looks, three voice ids), four rule tests, the `dominorun` suite. Ran: typecheck; `vitest run src/games/domino-run src/content` (196 tests); filtered `BROWSER_SUITE=dominorun` (levels 1, 8, 5, plus 6 upright in sunset with a drop on a puddle: misses 0, hints 0); `npm run build`; an ad hoc screenshot check of all five end looks and the morning and low-tide moods (no page errors).
@@ -56,12 +61,6 @@ Changed: `docs/deep-dives/number-trails.md` and its tracker, READY, backlog, wai
 ## 2026-11-06 — Puddle Gobble deep dive (docs only)
 
 Changed: `docs/deep-dives/puddle-gobble.md` and its tracker, READY, backlog and waiting-on-developer rows (PR #1342); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built; two decisions wait on the developer ([list](WAITING-ON-DEVELOPER.md)).
-
-## 2026-11-06 — Swing Pals levels 7–8 (slices 2–3)
-
-Changed: `swing-pals` level 7 *Who comes back first?* and level 8 *Twice as quick* (PR #1339, branch `claude/swing-pals-7-8`; base 90721172); pre-K 3, 7, 4 and school 4–8; voice lines and how-to steps.
-Ran: `npm run typecheck`; `npm test` (321 files, 5979 tests; Swing Pals 46 rule tests incl. 500-seed rounds and layout in four views); `npm run build`; `BROWSER_SUITE=swingpals` (extended: level 7 with one wrong guess, never a miss, and one hint; level 8 with one wrong hook, one miss; portrait screenshot) on a dev server; `fingerdemo FINGER_ONLY=swing-pals FINGER_LEVELS=7,8` (27.6 s at 7 in pre-K, 30.7 s at 8 in school). `game-reviewer`: one finding (hint wording after a guess), fixed.
-Not run: offline check, any device or child. Open: level 9 gated on its layout probe.
 
 ## Coverage summary
 
@@ -192,7 +191,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | `lands`, `world` (Lands stage B follow-ups; stage C2 rings) | 2026-10-13: `world` passed again with the map and lands rings (stage C2, about 9.5 minutes, base `e96fca8` plus the working diff); earlier the same day `lands` (key caps, the couch course's return to Lantern Lake, grown-ups' page rows) and `world` (subject cards at all six bands including Lantern Lodge) | [Verification entry](archive/VERIFICATION-2026-10-13.md#2026-10-13--focus-rings-on-the-map-and-the-lands-lands-stage-c2) / [stage B entry](archive/VERIFICATION-2026-10-07-13.md#2026-10-13--lands-stage-b-follow-ups-chunk-17) | The home path's controller-only tap and a real keyboard or controller are unchecked |
 | `livekeys` (eleven games, keys and back to touch) | 2026-10-15: the 2026-10-13 eight (Sudoku Garden, Word Search, Island Bridges, Picture Logic, Pond Conga, Tile Pairs, Gem Swap, Lantern Lights) plus Bouncy Launch L3, Ferry Jam L3 and Penguin Slide L2 (`LIVE_ONLY` filter), each touch → key → touch → key → touch; no page errors. The eight were not re-run after group 3; no real pad or iPad |
 | `landkeys` (focus rings on the map and the lands) | 2026-10-13: ring hidden for a finger, first key only shows it, arrows, Backspace (nothing on the map, back from a land), held Enter through map-to-land, Enter on the host, tap with the ring showing; landscape and portrait screenshots | [Verification entry](archive/VERIFICATION-2026-10-13.md#2026-10-13--focus-rings-on-the-map-and-the-lands-lands-stage-c2) / [PR #271](https://github.com/rjdunlap/neo/pull/271) | Synthetic keys only: no real keyboard or pad, no iPad or TV; the home spots, picnic, stickers, treehouse, journal and hatching have no ring yet |
-| `fruitsums`, `fingerdemo` (`fruit-sums`) | 2026-10-13: levels 1 and 3 (two wrong totals give two misses and one hint, the same sum the other way round, two ways to finish, a take away by leaf), portrait, one sticker per round; demo clean in 10.5 s and 12.8 s; typecheck, build, unit tests | Fruit Sums entry | No iPad, device speech or child play |
+| `fruitsums`, `fingerdemo` (`fruit-sums`) | 2026-11-07: `fruitsums` PASS (level 1 two misses and one hint glowing start fruit, partner, check; level 3 portrait in the cove look), typecheck, 322 files / 6026 tests; ghost finger last clean 2026-10-13 (10.5 s, 12.8 s) | PR #1362 | `fingerdemo` not re-run (bot path unchanged); level-3 hint unit-tested only; no build, world, offline or couch run; no iPad, device speech or child play |
 | `numbertrails`, `fingerdemo` (`number-trails`) | 2026-10-13: levels 1 and 3 (wandering drags give two misses and one hint, the count, waking from a bigger group), portrait, one sticker per round; demo clean in 5.1 s and 8.7 s; typecheck, build, unit tests | Number Trails entry / [PR #241](https://github.com/rjdunlap/neo/pull/241) | Interim numeral forms unchecked against a publisher's chart; no iPad, device speech or child play |
 | `fingerdemo`/probe (`pet-says` level 13) | 2026-10-13: demo clean at levels 13 and 1; real-touch probe twice; focused unit tests | Pet Says Pat the pet / [PR #236](https://github.com/rjdunlap/neo/pull/236) | A person must see whether she pats; no portrait, build or offline run |
 | `fingerdemo`/probe (`bubble-pop` level 15) | 2026-10-13: demo clean at levels 15 and 1; real-touch probe at level 15 and portrait; focused unit tests | Bubble Pop Pop anywhere / [PR #236](https://github.com/rjdunlap/neo/pull/236) | A person must see whether she pops by swatting; no build or offline run |

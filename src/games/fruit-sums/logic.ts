@@ -81,9 +81,43 @@ export function judge(av: number, op: Op, bv: number, target: number, found: rea
   return found.includes(key) ? { kind: 'same', made: m } : { kind: 'right', made: m, key };
 }
 
-/** The fruit to light after two misses: the first number of a way she has not found. */
-export function hintWay(tray: readonly number[], ops: readonly Op[], target: number, found: readonly string[]): Way | null {
-  return solutions(tray, ops, target).find((w) => !found.includes(wayKey(tray[w.a], w.op, tray[w.b]))) ?? null;
+/**
+ * The way the hint leads to: one she has not found. Given the fruit already in the first box, it is a way that starts from that
+ * fruit if one exists (a sum may be turned round so it does), so the hint follows through from where she is rather than restarting.
+ */
+export function hintWay(tray: readonly number[], ops: readonly Op[], target: number, found: readonly string[], first: number | null = null): Way | null {
+  const open = solutions(tray, ops, target).filter((w) => !found.includes(wayKey(tray[w.a], w.op, tray[w.b])));
+  if (first !== null) {
+    for (const w of open) {
+      if (w.a === first) return w;
+      if (w.op === 'plus' && w.b === first) return { a: w.b, op: 'plus', b: w.a };
+    }
+    // Another fruit with the same number starts the same way just as well.
+    for (const w of open) {
+      if (tray[w.a] === tray[first] && w.b !== first) return { ...w, a: first };
+      if (w.op === 'plus' && tray[w.b] === tray[first] && w.a !== first) return { a: first, op: 'plus', b: w.a };
+    }
+  }
+  return open[0] ?? null;
+}
+
+/** What glows once the hint is on: a fruit (by tray index), the sign leaf she needs, or the check when the way is built. */
+export type HintGlow = { tile: number } | { leaf: Op } | { check: true };
+
+/**
+ * The next step of the hinted way from what is in the boxes: the start fruit, then its partner, then (at level 3) the needed leaf,
+ * then the check. A first box holding a fruit that starts no way left glows itself, so tapping it sends it home.
+ */
+export function hintGlow(tray: readonly number[], ops: readonly Op[], target: number, found: readonly string[],
+  slotA: number | null, slotB: number | null, op: Op | null): HintGlow | null {
+  const way = hintWay(tray, ops, target, found, slotA);
+  if (!way) return null;
+  // The start fruit sits in the second box: a sum just needs its partner; a take-away goes home to start again in the first box.
+  if (slotA === null) return { tile: way.a === slotB && way.op === 'plus' ? way.b : way.a };
+  if (way.a !== slotA) return { tile: slotA };
+  if (slotB !== way.b) return { tile: way.b };
+  if (op !== way.op) return { leaf: way.op };
+  return { check: true };
 }
 
 export interface TreeRound { target: number; tray: number[] }
@@ -118,6 +152,25 @@ export function makeRound(level: number, rng: Rng): TreeRound {
   }
   throw new Error(`Fruit Sums: no tray for level ${level}`);
 }
+
+// ---- looks: the tree and the light change with the round; the rules never do ----
+
+export type Look = 'orchard' | 'cove' | 'autumn';
+export const LOOKS: readonly Look[] = ['orchard', 'cove', 'autumn'];
+export type FruitShape = 'round' | 'coconut' | 'pear' | 'plum';
+
+/** The orchard grows round fruit, the cove palm coconuts, and the autumn tree pears and plums in turn. */
+export function shapeFor(look: Look, i: number): FruitShape {
+  if (look === 'cove') return 'coconut';
+  if (look === 'autumn') return i % 2 === 0 ? 'pear' : 'plum';
+  return 'round';
+}
+
+/** Fruit fall in one after another at the start; each lands this long after the one before it. */
+export const DROP_GAP = 0.09;
+export const DROP_TIME = 0.42;
+/** A falling pentatonic step for each landing, high to low. */
+export const dropStep = (i: number) => Math.max(1, 10 - i);
 
 // ---- layout (design units; the pet keeps the bottom-left corner clear) ----
 

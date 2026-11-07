@@ -244,3 +244,9 @@ Changed: `circuit-garden` level 3 (PR #1338, branch `claude/circuit-garden-3`): 
 Ran (commit f46bcc55, base ed7f6536): `npm run typecheck`; `npm test` (321 files; the only failures were how-to card ones, fixed, then howto and circuit-garden 44 pass); 25 circuit-garden rule tests including a level-3 block; one scripted Playwright play at school level 3 (1024×768, local dev server: two wrong Checks 2 misses, glow, 1 hint; Help filled supply with no new hint; early Done inert; correct Check; Undo cleared it; Done before re-check inert; Check then Done finished 2/1; no page errors) and a portrait 768×1024 screenshot; `BROWSER_SUITE=fingerdemo FINGER_ONLY=circuit-garden` (levels 1 and 3) and `FINGER_LEVELS=2`. `game-reviewer`: no defects; two minor fixes applied.
 Not run: build, smoke and howto suites, device check, science-educator reading of the energy wording.
 Open: legibility of the break outline and 100-unit comfort of Check on the iPad, speech ([device checks](../DEVICE-CHECKS.md)).
+
+## 2026-11-06 — Swing Pals levels 7–8 (slices 2–3)
+
+Changed: `swing-pals` level 7 *Who comes back first?* and level 8 *Twice as quick* (PR #1339, branch `claude/swing-pals-7-8`; base 90721172); pre-K 3, 7, 4 and school 4–8; voice lines and how-to steps.
+Ran: `npm run typecheck`; `npm test` (321 files, 5979 tests; Swing Pals 46 rule tests incl. 500-seed rounds and layout in four views); `npm run build`; `BROWSER_SUITE=swingpals` (extended: level 7 with one wrong guess, never a miss, and one hint; level 8 with one wrong hook, one miss; portrait screenshot) on a dev server; `fingerdemo FINGER_ONLY=swing-pals FINGER_LEVELS=7,8` (27.6 s at 7 in pre-K, 30.7 s at 8 in school). `game-reviewer`: one finding (hint wording after a guess), fixed.
+Not run: offline check, any device or child. Open: level 9 gated on its layout probe.
