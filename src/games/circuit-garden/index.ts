@@ -88,7 +88,7 @@ function layoutFor(v: View, mirror: boolean, pieces: number, checking: boolean):
     tray: (pieces > 1 ? [300, 470] : [300]).map((x) => ({ x: x * sx, y: v.h - 364 })),
     undo: { x: 300 * sx, y: v.h - 224 }, back: { x: 470 * sx, y: v.h - 224 },
     ...(checking
-      ? { help: { x: 250 * sx, y: v.h - 84 }, check: { x: 420 * sx, y: v.h - 84 }, done: { x: 600 * sx, y: v.h - 84 } }
+      ? { help: { x: Math.max(250 * sx, 220), y: v.h - 84 }, check: { x: 420 * sx, y: v.h - 84 }, done: { x: 600 * sx, y: v.h - 84 } }
       : { help: { x: 300 * sx, y: v.h - 84 }, check: { x: 430 * sx, y: v.h - 84 }, done: { x: 560 * sx, y: v.h - 84 } }),
   };
 }
@@ -364,7 +364,7 @@ class CircuitGarden implements Game {
     }
     const brk = result.brk;
     void this.ctx.say('circuit.open').then(() => {
-      if (this.alive && !this.finished) void this.ctx.say(brk === 'supply' ? 'circuit.supply-break' : 'circuit.return-break');
+      if (this.alive && !this.finished && this.breakAt === brk) void this.ctx.say(brk === 'supply' ? 'circuit.supply-break' : 'circuit.return-break');
     });
   }
 
