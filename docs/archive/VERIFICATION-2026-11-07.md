@@ -53,3 +53,11 @@ Open: `fingerdemo` not run (bot unchanged); no other suites, offline or full `np
 
 Changed: `src/games/fruit-sums` (three seeded looks, the drop, hopping fruit, `hintWay`/`hintGlow` follow-through, `fsums.hint` line and how-to notes), rule tests, the `fruitsums` suite. Ran: typecheck; `npm test` (322 files, 6026 tests); filtered `BROWSER_SUITE=fruitsums` (level 1: two misses and one hint glowing start fruit, partner, check; level 3 portrait 768×1024 in the cove look, screenshot `test-results/browser/fruitsums/fruit-sums-3-portrait-cove.png`).
 Open: build not run (no shared files changed); `fingerdemo` not run (bot path unchanged); the level-3 hint is covered by unit tests, not a browser play; whether the drop and glow read on an iPad is a [device check](../DEVICE-CHECKS.md).
+
+## 2026-11-07 — Lift It deep dive (docs only)
+
+Changed: `docs/deep-dives/lift-it.md` and its tracker, READY, STUDY-BACKLOG and waiting-on-developer rows (PR #1364); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; slices 1–5 are queued; two decisions wait on the developer ([list](../WAITING-ON-DEVELOPER.md)); there was no IDEAS ladder-audit row for Lift It to point at.
+
+## 2026-11-07 — Block Garden deep dive (docs only)
+
+Changed: `docs/deep-dives/block-garden.md` and its tracker, READY, STUDY-BACKLOG and waiting-on-developer rows (PR #1366); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; slices 1–5 are queued; one decision waits on the developer ([list](../WAITING-ON-DEVELOPER.md)); there was no IDEAS ladder-audit row for Block Garden to point at.

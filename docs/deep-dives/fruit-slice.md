@@ -11,7 +11,7 @@ Big fruit is tossed up from a basket and hangs near the top of a slow arc (about
 | 1 | Touch the fruit | toddler | Nothing: any touch slices (one aloft, 6 slices) |
 | 2 | Swipe across | toddler, preschool | Move the finger through the fruit (two aloft, 8 slices) |
 | 3 | Only the apples | preschool, pre-K | One seeded kind among others (three aloft, 6 of the kind) |
-| 4 | Only fruit | preschool, pre-K | Fruit, not a balloon or flower |
+| 4 | Only fruit | preschool, pre-K | Fruit, not a balloon, flower, beach ball or shell |
 | 5 | Just enough | pre-K, school | Stop at 3, 4, then 5 or 6, and tap the bowl to send |
 | 6 | Two kinds, two numbers | pre-K, school | A two-row sign, each kind 1–4 |
 | 7 | One straight swipe | school | One straight line through exactly N (2, 3, 3, 4) of four to six still fruit |
@@ -19,9 +19,9 @@ Big fruit is tossed up from a basket and hangs near the top of a slow arc (about
 
 `BandLevels`: toddler 1–2, preschool 2–4, pre-K 3–6, school 5–8; no `order`, no `entryLevels`, no lap or grown-up range.
 
-**Content pools.** Six fruit kinds (apple, orange, lemon, pear, blueberries, grapes) and two not-fruit (balloon, flower), all `prop()` art from `src/art/props.ts`; one sky and basket every round. Level 3 picks its kind from six; level 6 picks two of six with counts 1–4; level 7 boards are seeded (four to six fruit, with lines through N and N − 1, and N + 1 when N is below 4); level 8's pair board is seeded. Voice lines are per kind (`slice.instruct.only.<kind>`, `slice.not-kind.<kind>`), so a new kind needs two lines.
+**Content pools.** Nine fruit kinds (apple, orange, lemon, pear, blueberries, grapes, plus strawberry, banana and plum) and four not-fruit (balloon, flower, beach ball, shell), all art from `src/art/props.ts` (the three new fruit are `smallFruit()` there, moved from Bolt Boards' local drawing); each round draws a seeded mood from `MOODS` in `logic.ts` (morning, picnic with greener hills and a red-checked blanket, sunset with an orange-to-pink sky and a low sun), decoration only. Level 3 picks its kind from nine; level 6 picks two of nine with counts 1–4; level 7 boards are seeded (four to six fruit, with lines through N and N − 1, and N + 1 when N is below 4); level 8's pair board is seeded. Voice lines are per kind (`slice.instruct.only.<kind>`, `slice.not-kind.<kind>`), so a new kind needs two lines.
 
-**Known gaps.** Every round looks the same (one beach sky, one basket, eight props); a pre-K child meets the sign's count at level 5 straight from level 4's sorting, with 3 as the smallest count and three aloft; school ends at level 8 with no level that asks her to plan more than one line or to correct a total; the IDEAS fractions row still says it waits on the fractions study, which has since landed (see decision 1). Nothing is saved or filed in the journal, and there is no couch play (the swipe is the point). Device check open in [DEVICE-CHECKS](../DEVICE-CHECKS.md): palm and wrist contact on a toddler's swipe, whether the hang feels calm or slow, whether the level 7 line reads to a six-year-old.
+**Known gaps.** Rounds differ in kind and mood only (one basket, no weather beyond the three moods); a pre-K child meets the sign's count at level 5 straight from level 4's sorting, with 3 as the smallest count and three aloft; school ends at level 8 with no level that asks her to plan more than one line or to correct a total; the IDEAS fractions row still says it waits on the fractions study, which has since landed (see decision 1). Nothing is saved or filed in the journal, and there is no couch play (the swipe is the point). Device check open in [DEVICE-CHECKS](../DEVICE-CHECKS.md): palm and wrist contact on a toddler's swipe, whether the hang feels calm or slow, whether the level 7 line reads to a six-year-old.
 
 ## Similar games
 
@@ -101,7 +101,7 @@ Both are added to [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md). Slices 1�
 
 ## Build slices, in order
 
-1. **More fruit, beach not-fruit and moods** (fresh content, ready; claimed 2026-11-07 on branch `claude/fruit-slice-more-fruit`). Tier: typecheck and the game's rule tests (kinds, lines, `nextKind` with nine kinds), one filtered `fruitslice` play at level 3 with a new kind and one portrait screenshot in the sunset mood; `npm run build`, since `src/art/props.ts`, voice and Bolt Boards' drawing source change; no `fingerdemo` (bot unchanged); a filtered Bolt Boards regression play if its fruit drawing moves.
+1. **More fruit, beach not-fruit and moods** (built 2026-11-07, PR #1382). Tier: typecheck and the game's rule tests (kinds, lines, `nextKind` with nine kinds), one filtered `fruitslice` play at level 3 with a new kind and one portrait screenshot in the sunset mood; `npm run build`, since `src/art/props.ts`, voice and Bolt Boards' drawing source change; no `fingerdemo` (bot unchanged); a filtered Bolt Boards regression play if its fruit drawing moves.
 2. **Level 9 *Two lines clear it*** (ready). Tier: new level on the existing line interaction: typecheck, rule tests (cover, no single cover, early check, hint), one browser play of level 9 with one dead-end first line and one hint, `fingerdemo` at 9; build (voice, how-to).
 3. **Level 10 *Twos and threes*** (ready; after slice 2 so school's range is edited once more). Tier: new interaction (the put-back strip): typecheck, unit tests, a layout probe first, then one scripted play (an overshoot refusal, a stuck total and a put-back, a hint, finish) and one portrait screenshot, `fingerdemo` at 10; build.
 4. **Level 11 *Just a few*** (ready). Tier: new level on the existing interaction: typecheck, rule tests (plus registry and how-to tests for the new `order`s), one browser play of level 11, `fingerdemo` at 11; build (how-to, registry).
@@ -109,4 +109,4 @@ Both are added to [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md). Slices 1�
 
 ## What was built in this session
 
-Nothing: research and ideation only. Checked with the link checker and `git diff --check`.
+Slice 1 (2026-11-07, PR #1382): strawberry, banana and plum join `FRUIT`; beach ball and shell join `NOT_FRUIT`; a seeded mood per round; six new voice lines (`slice.instruct.fruit` now names beach balls and shells); rule tests for pool sizes, both lines per fruit, levels 3 and 6 able to ask every fruit, level 4 tossing every not-fruit and three moods. The `fruitslice` suite gained a level 3 upright sunset round asking a new fruit. Ran: typecheck, 350 unit tests across fruit-slice, bolt-boards and art, `fruitslice` and `boltboards` suites, build. Not run: `fingerdemo` (bot unchanged), device.
