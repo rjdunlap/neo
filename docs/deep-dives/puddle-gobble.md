@@ -99,7 +99,7 @@ Both are added to [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md).
 ## Build slices, in order
 
 1. **More kinds and beach moods** (built 2026-11-07, PR #1374). Tier: existing interaction with new content: typecheck, the game's rule tests (the content tests above), one filtered play of level 5 with one portrait screenshot in the evening mood; no `fingerdemo` (bot unchanged); `npm run build` only if `palette.ts` or the shared scenery changes.
-2. **Level 9 *Smallest number first*** (ready). Tier: new level on the existing interaction: typecheck, rule tests, one browser play of level 9 with one aimed out-of-order touch, `fingerdemo` at 9; build (voice and how-to change).
+2. **Level 9 *Smallest number first*** (in progress, branch `claude/puddle-gobble-smallest-first`, 2026-11-07). Tier: new level on the existing interaction: typecheck, rule tests, one browser play of level 9 with one aimed out-of-order touch, `fingerdemo` at 9; build (voice and how-to change).
 3. **Level 10 *Count the dots*** (ready; after slice 2 so school's `order` is written once). Tier: new level on the existing interaction: typecheck, rule tests (plus the `order` and registry tests), one browser play of level 10 and pre-K's step from 5 to 10 to 6, `fingerdemo` at 10; build.
 4. **Level 11 *Too full*** (ready; after slice 2). Tier: new level on the existing let-go interaction: typecheck, rule tests (the held-start state, hint reach, strip fits), one browser play of level 11 with one under-shoot and one requested hint, `fingerdemo` at 11; build.
 5. **Two pails:** a `beachLayout` and strip probe in `logic.test.ts` at four views, then a definition (define).
