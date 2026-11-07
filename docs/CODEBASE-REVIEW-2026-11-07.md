@@ -21,6 +21,8 @@ Counterpoint: the [2026-11-06 token review](DEVELOPMENT-WORKFLOW.md#token-review
 
 ## 2. Discover games instead of listing them
 
+**Built 2026-11-07** (PR #1356). `GAMES` comes from `import.meta.glob('./*/index.ts', { eager: true })`: each folder's one export with an `id` and `create` (it throws on zero or several, or when the id differs from the folder name). Order comes from `LANDS` (land by land, each land's game order; a game in no land goes last by id), not an `order` field; 135 of the 175 positions changed, so the home spot's within-subject order, the grown-ups' table, daily picks and mix pools follow land order. `registry.test.ts` checks one game per folder, named by its id, in island order. Analysis kept below.
+
 `registry.ts` imports all 176 modules by hand, and new games are added at the top. Build `GAMES` with `import.meta.glob('./*/index.ts', { eager: true })`. Order matters: `lands.test.ts`, `arcade.test.ts` and `welcome-ways/logic.test.ts` index into `GAMES`, so either sort explicitly (by id, or an `order` field) or make those tests independent of order. Do this after item 1.
 
 ## 3. Generate the game inventory docs
