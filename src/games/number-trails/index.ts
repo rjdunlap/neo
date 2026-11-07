@@ -1,5 +1,5 @@
 import { Circle, Container, Graphics } from 'pixi.js';
-import { cream, ink, swatch } from '../../art/palette';
+import { cream, ink, RAINBOW, swatch } from '../../art/palette';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { draggable, type DragHandle } from '../../engine/drag';
@@ -8,12 +8,13 @@ import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
+import { hintDue, offTrail, showTheWay, tuneStep, type Look } from '../letter-trails/logic';
 import { advanceTrace, sampleStroke, traceWaypoints, type Point } from '../letter-trails/strokes';
 import { WigglyIcon, tile } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { DIGITS } from './digits';
 import {
-  LEVELS, THING_HIT, groupSize, numeralFor, planFor, stickerDigit, thingFor, thingSpots, thingWord, trailTolerance,
+  LEVELS, THING_HIT, groupSize, planFor, roundFor, stickerDigit, thingSpots, thingWord, trailTolerance,
 } from './logic';
 
 type Phase = 'trace' | 'show' | 'wake' | 'done';
@@ -63,7 +64,12 @@ function numeralArt(digit: number, width: number, color: number): Graphics {
 
 class NumberTrails implements Game {
   readonly n: number;
-  private readonly thing: ReturnType<typeof thingFor>;
+  private readonly thing: ReturnType<typeof roundFor>['thing'];
+  private readonly look: Look;
+  /** The fifth of the stroke whose note last sounded; the firefly's note climbs as she reaches each new one. */
+  private fifth = 0;
+  /** The second wander on a stroke asks the firefly to show the way once she lets go. */
+  private showPending = false;
   private phase: Phase = 'trace';
   private stroke = 0;
   private progress = 0;
@@ -95,8 +101,8 @@ class NumberTrails implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
-    this.n = numeralFor(ctx.level, ctx.rng);
-    this.thing = thingFor(ctx.rng);
+    const round = roundFor(ctx.level, ctx.rng);
+    this.n = round.n; this.thing = round.thing; this.look = round.look;
     this.strokes = DIGITS[String(this.n)];
     this.tolerance = trailTolerance(ctx.level);
     ctx.stage.addChild(this.background, this.canvas, this.pile, this.heading);
@@ -107,14 +113,14 @@ class NumberTrails implements Game {
       lift: 0,
       onPick: () => { this.previous = this.points[this.progress]; this.missedDrag = false; sfx.bell(7, 0.15); },
       onMove: (x, y) => this.trace([x / this.size, y / this.size]),
-      onDrop: () => { this.placeFirefly(); return true; },
+      onDrop: () => { this.placeFirefly(); if (this.showPending) void this.showWay(); return true; },
     });
     this.prepareStroke();
   }
 
   private prepareStroke() {
     this.points = sampleStroke(this.strokes[this.stroke]);
-    this.progress = 0; this.previous = this.points[0]; this.wrong = 0;
+    this.progress = 0; this.previous = this.points[0]; this.wrong = 0; this.fifth = 0; this.showPending = false;
     this.handle.enabled = true; this.firefly.visible = true;
     this.draw(); this.placeFirefly();
   }
@@ -129,15 +135,38 @@ class NumberTrails implements Game {
     if (this.busy || this.phase !== 'trace') { this.placeFirefly(); return; }
     const next = advanceTrace(this.points, this.progress, this.previous, to, this.tolerance);
     const checkpoint = this.points[this.progress];
-    if (next === this.progress && Math.hypot(to[0] - checkpoint[0], to[1] - checkpoint[1]) > this.tolerance * 2 + 1e-9 && !this.missedDrag) {
+    if (next === this.progress && offTrail(to, checkpoint, this.tolerance) && !this.missedDrag) {
       this.missedDrag = true; this.misses++; this.wrong++;
       sfx.boing(); void this.ctx.say('nt.wrong');
-      if (this.wrong === 2) this.hints++;
+      if (hintDue(this.wrong)) { this.hints++; this.showPending = true; }
     }
     this.progress = next;
+    const fifth = tuneStep(next, this.points.length);
+    if (fifth > this.fifth) { this.fifth = fifth; sfx.marimba(5 + fifth, 0.3); }
     this.previous = to;
     this.placeFirefly(); this.draw();
     if (this.progress === this.points.length - 1) void this.completeStroke();
+  }
+
+  /** The hint: the firefly flies the next stretch of trail by itself, leaving dots where it went, then comes back to her. */
+  private async showWay() {
+    this.showPending = false;
+    if (this.busy || this.phase !== 'trace') return;
+    this.busy = true; this.handle.enabled = false;
+    const path = showTheWay(this.points, this.progress);
+    const trail = new Graphics();
+    this.canvas.addChildAt(trail, this.canvas.getChildIndex(this.firefly));
+    sfx.chirp();
+    for (const p of path.slice(1)) {
+      await this.ctx.tw.to(this.firefly, { x: p[0] * this.size, y: p[1] * this.size }, { duration: 0.07 });
+      trail.circle(p[0] * this.size, p[1] * this.size, 7).fill({ color: swatch.yellow.fill, alpha: 0.8 });
+    }
+    await this.ctx.tw.wait(0.3);
+    const home = this.points[this.progress];
+    await this.ctx.tw.to(this.firefly, { x: home[0] * this.size, y: home[1] * this.size }, { duration: 0.35 });
+    trail.destroy();
+    if (this.phase !== 'trace') return;
+    this.busy = false; this.handle.enabled = true; this.placeFirefly();
   }
 
   private async completeStroke() {
@@ -226,14 +255,27 @@ class NumberTrails implements Game {
     g.stroke({ width, color, cap: 'round', join: 'round' });
   }
 
+  /** The round's look: teal, a rainbow that changes color along the trail, gold with glitter, or sand. Paint only. */
+  private drawInk(points: readonly Point[]) {
+    if (this.look === 'rainbow') {
+      for (let i = 1; i < points.length; i++) this.drawPath(this.ink, [points[i - 1], points[i]], swatch[RAINBOW[Math.floor(i / 4) % RAINBOW.length]].fill, 24);
+    } else if (this.look === 'glitter') {
+      this.drawPath(this.ink, points, swatch.yellow.fill, 24);
+      points.forEach((p, i) => { if (i % 3 === 1) this.ink.circle(p[0] * this.size + (i % 2 ? 5 : -5), p[1] * this.size + (i % 4 < 2 ? -4 : 4), 3).fill(swatch.white.fill); });
+    } else {
+      this.drawPath(this.ink, points, this.look === 'sand' ? swatch.brown.light : swatch.teal.fill, 24);
+      if (this.look === 'sand') this.drawPath(this.ink, points, swatch.brown.fill, 6);
+    }
+  }
+
   private draw() {
     if (this.phase !== 'trace') return;
     this.outline.clear(); this.ink.clear(); this.cue.clear();
     this.strokes.forEach((stroke, i) => {
       this.drawPath(this.outline, stroke, i === this.stroke ? swatch.purple.light : swatch.white.line, 28);
-      if (i < this.stroke) this.drawPath(this.ink, stroke, swatch.teal.fill, 24);
+      if (i < this.stroke) this.drawInk(sampleStroke(stroke));
     });
-    if (this.progress > 0) this.drawPath(this.ink, this.points.slice(0, this.progress + 1), swatch.teal.fill, 24);
+    if (this.progress > 0) this.drawInk(this.points.slice(0, this.progress + 1));
     if (this.progress === 0) this.drawStart();
     this.heading.text = `${this.n}`;
   }
