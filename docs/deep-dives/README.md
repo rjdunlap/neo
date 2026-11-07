@@ -149,7 +149,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school, G grown-up. "Top level"
 | Draw the Pattern | `draw-the-pattern` | LTPK | 8 | 5 | designed (slice 1 fresh pictures built; slices 2–3 ready: level 9 Slanting lines, level 10 Dot to dot; 11 spiral/eight and 12 Your pattern need decisions) | `claude/dive-draw-the-pattern` ([PR #1276](https://github.com/rjdunlap/neo/pull/1276)) | [draw-the-pattern.md](draw-the-pattern.md) |
 | Swing Pals | `swing-pals` | LTPKS | 6 | 5 | designed (slices 1–3 ready: more friends and leaf goals, level 7 Who comes back first?, level 8 Twice as quick; 9 needs a layout probe, Paint the beat and the journal need decisions) | `claude/dive-swing-pals` ([PR #1319](https://github.com/rjdunlap/neo/pull/1319)) | [swing-pals.md](swing-pals.md) |
 | Bolt Boards | `bolt-boards` | TPKS | 7 | 5 | designed (slice 1 built: more boards/fruit/bear; slices 2–3 ready: level 8 Plenty of holes, define level 9 Put it back; lap entry needs a decision) | `claude/bolt-boards-dive` ([PR #1331](https://github.com/rjdunlap/neo/pull/1331)) | [bolt-boards.md](bolt-boards.md) |
-| Puddle Gobble | `puddle-gobble` | TPKS | 8 | 5 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
+| Puddle Gobble | `puddle-gobble` | TPKS | 8 | 5 | in progress (`claude/dive-puddle-gobble`) | — | — |
 | Fruit Slice | `fruit-slice` | TPKS | 8 | 5 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
 | Cut Along | `cut-along` | TPKS | 8 | 5 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
 | Domino Run | `domino-run` | TPKS | 8 | 5 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
