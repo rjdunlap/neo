@@ -21,7 +21,7 @@ const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
   prek: { min: 3, max: 6 },
-  school: { min: 5, max: 8 },
+  school: { min: 5, max: 9 },
 };
 
 /** Top speed of the puddle, units per second. */
@@ -245,6 +245,7 @@ class PuddleGobble implements Game {
     const lines = { grow: 'gobble.instruct', order: 'gobble.instruct-order', plus: 'gobble.instruct-number', add: 'gobble.instruct-add', pail: 'gobble.instruct-pail' } as const;
     if (this.plan.id === 1) void this.ctx.instruct('gobble.instruct-1');
     else if (this.plan.grow === 3) void this.ctx.instruct('gobble.instruct-grow');
+    else if (this.plan.numbers) void this.ctx.instruct('gobble.instruct-order-number');
     else void this.ctx.instruct(lines[this.plan.mode], { t: this.board.pail ?? 0 });
   }
 
@@ -433,7 +434,7 @@ class PuddleGobble implements Game {
           else g.fill(0xffffff).stroke({ width: 3, color: swatch.blue.line });
         }
       }
-    } else if (this.plan.mode === 'order') {
+    } else if (this.plan.mode === 'order' && !numeric(this.plan)) {
       const spots = [[-7, -7], [7, -7], [-7, 7], [7, 7]];
       g.circle(0, -r * 0.92 - 4, 22).fill(0xffffff).stroke({ width: 3, color: WATER_EDGE });
       for (const [dx, dy] of spots) g.circle(dx, -r * 0.92 - 4 + dy, 4.5).fill(ink);
@@ -507,7 +508,8 @@ class PuddleGobble implements Game {
     }
     if (why === 'order') {
       const small = this.state.left.map((id) => this.items[id].thing).reduce((a, b) => (b.size < a.size ? b : a));
-      this.speak('gobble.smaller-first', { thing: NAMES[small.kind] });
+      if (numeric(this.plan)) this.speak('gobble.smaller-first-number', { v: small.size });
+      else this.speak('gobble.smaller-first', { thing: NAMES[small.kind] });
     } else {
       this.speak('gobble.too-much', { sum: this.state.puddle + it.thing.size, t: this.board.pail! });
     }
@@ -546,7 +548,8 @@ class PuddleGobble implements Game {
     });
     void tw.to(node.scale, { x: 0.3, y: 0.3 }, { duration: 0.35, ease: ease.inQuad });
     this.ctx.particles.burst(this.puddle.x, this.puddle.y, { colors: [WATER, 0xffffff], count: 6, speed: [60, 140], gravity: 300, angle: -Math.PI / 2, spread: 1.4, size: [0.2, 0.32] });
-    if (numeric(this.plan)) this.speak('gobble.number', { v: t.size, p: this.state.puddle });
+    // Level 9's puddle never grows, so only the soaks that change it say its number.
+    if (numeric(this.plan) && this.plan.mode !== 'order') this.speak('gobble.number', { v: t.size, p: this.state.puddle });
     else if (r.grew) {
       sfx.sparkle();
       this.speak('gobble.grow');

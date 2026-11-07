@@ -11,7 +11,7 @@
 | toddler | 1–2 |
 | preschool | 2–4 |
 | pre-K | 3–6 |
-| school | 5–8 |
+| school | 5–9 |
 
 | Level | Plays like |
 | --- | --- |
@@ -23,6 +23,7 @@
 | 6 | Bigger number |
 | 7 | Add to grow |
 | 8 | Just right |
+| 9 | Smallest number first |
 
 <!-- end generated -->
 
