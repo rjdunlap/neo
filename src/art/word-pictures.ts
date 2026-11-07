@@ -1,8 +1,9 @@
 import { Container, Graphics } from 'pixi.js';
-import { Critter, CRITTERS } from '../../art/critter';
-import { frogArt } from '../../art/animals';
-import { ink, swatch, wood } from '../../art/palette';
-import { letterPicture } from '../letter-trails/pictures';
+import { PICTURE_WORDS } from '../learning/words/picture-words';
+import { Critter, CRITTERS } from './critter';
+import { frogArt } from './animals';
+import { ink, swatch, wood } from './palette';
+import { letterPicture } from '../games/letter-trails/pictures';
 
 /** Pictures name objects, never substitute a printed initial for a missing illustration. */
 export function typingPicture(text: string): Container {
@@ -33,4 +34,3 @@ export function typingPicture(text: string): Container {
   else if (noun === 'hen') g.ellipse(0, 20, 65, 55).circle(35, -35, 35).fill(0xffffff).circle(20, -70, 13).circle(40, -70, 13).fill(swatch.red.fill).poly([62, -40, 88, -25, 62, -15]).fill(swatch.orange.fill).circle(43, -38, 5).fill(ink);
   return c;
 }
-export const PICTURE_WORDS: readonly string[] = ['hat','cat','dog','pig','hen','cow','bee','net','sun','mud','log','fox','pip','bug','nest','frog','duck','pond','leaf','moon','rain','cake','boat','tree'];

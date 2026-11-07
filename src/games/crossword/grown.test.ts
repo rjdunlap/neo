@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { BLOCKED } from '../word-search/blocked';
+import { BLOCKED } from '../../learning/words/blocked';
 import { CLUES_5, MINIS } from './clues';
 import {
   allFilled, backspace, check, grownHelp, grownSolved, makeFree, makeGrown, makeMini, MIN_FREE, miniWords, numbers, readyToCheck,

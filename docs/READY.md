@@ -56,7 +56,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 Requested by the developer 2026-11-07 to make the code cheaper for AI to write and maintain; evidence and targets are in the [review](CODEBASE-REVIEW-2026-11-07.md). One item per session, in this order unless an item says otherwise. The sweeps (5, 6) touch every game folder, so each pilots on 2–3 games first and merges while no game PR is open on those files.
 
-- **Promote shared code out of `letter-trails`, `word-search`, `pond-typing` and `critter-sort`** (typecheck, unit tests, build, `fingerdemo` filtered to two importing games): [item 6](CODEBASE-REVIEW-2026-11-07.md#6-promote-shared-code-out-of-game-folders).
+- **Promote the remaining Letter Trails/tracing and Critter Sort shared helpers** (ready; typecheck, unit tests, build, `fingerdemo` filtered to two importing games): include the shared picture renderer’s `letterPicture` dependency and Pond Typing’s `nameLetters` import; [item 6](CODEBASE-REVIEW-2026-11-07.md#6-promote-shared-code-out-of-game-folders).
 - **Scene-owned cleanup helpers on `GameContext`** (shell tier; migrate 2–3 games, the rest as touched): [item 7](CODEBASE-REVIEW-2026-11-07.md#7-one-standard-way-to-clean-up-after-a-round).
 - **Split the largest game and shell files by mode and art** (one file per session, when it next comes up for work; that game's tier): [item 9](CODEBASE-REVIEW-2026-11-07.md#9-split-the-largest-files).
 - **Prettier and a minimal ESLint** (one reformat commit in `.git-blame-ignore-revs`; typecheck, unit tests, build): [item 10](CODEBASE-REVIEW-2026-11-07.md#10-a-formatter-and-a-minimal-lint).

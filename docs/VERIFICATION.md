@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-11-07 — Shared word-learning helpers pilot (codebase item 6, PR #1381)
+
+Changed: shared themes, blocked-word list and picture vocabulary in `src/learning/words/`; picture-clue renderer in `src/art/word-pictures.ts`; Word Search, Pond Typing and Crossword callers updated with data and behavior unchanged. Tested base `42de1cb3` plus working diff.
+Ran: `npm run typecheck`; `npm test` (6,056 passed, 5 skipped; one unchanged Secret Code timing assertion failed at 277 ms against 250 ms during concurrent browser checking); that unchanged file passed alone (24 tests, 17.19 s); `npm run build`; source review clean.
+Browser: `GAME_URL=http://localhost:5196 BROWSER_SUITE=fingerdemo FINGER_ONLY=word-search,crossword FINGER_LEVELS=1` passed (Crossword pre-K 12.5 s; Word Search grown-up 11.3 s). Server stopped.
+Open: Letter Trails/tracing and Critter Sort remain queued. Offline, `world`, device and child play not run; no assets, persistence or navigation changed.
+
 ## 2026-11-07 — Level ladders into `logic.ts`, complete (codebase item 5, PR #1379)
 
 Changed: 133 remaining tables and ten inline ladders moved to `logic.ts`; Playdate Workshop's internal plans renamed `PLANS`; source-scan allowlists removed; codemod handles tightly spaced imports.
@@ -59,10 +66,6 @@ Changed: `docs/deep-dives/gem-swap.md` and its tracker, READY, STUDY-BACKLOG, RO
 
 Changed: `docs/deep-dives/block-garden.md` and its tracker, READY, STUDY-BACKLOG and waiting-on-developer rows (PR #1366); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; slices 1–5 are queued; one decision waits on the developer ([list](WAITING-ON-DEVELOPER.md)); there was no IDEAS ladder-audit row for Block Garden to point at.
 
-## 2026-11-07 — Lift It deep dive (docs only)
-
-Changed: `docs/deep-dives/lift-it.md` and its tracker, READY, STUDY-BACKLOG and waiting-on-developer rows (PR #1364); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; slices 1–5 are queued; two decisions wait on the developer ([list](WAITING-ON-DEVELOPER.md)); there was no IDEAS ladder-audit row for Lift It to point at.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
@@ -70,6 +73,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
 | Ladder scan (`src/games/ladders.test.ts`) | 2026-11-07: typecheck; full units, 6,057 passed / 5 skipped | [Complete sweep](#2026-11-07--level-ladders-into-logicts-complete-codebase-item-5-pr-1379) | No allowlists; 133 table and ten inline-ladder equivalence probes passed; browser/build/offline not run |
+| Shared learning modules | 2026-11-07: typecheck/build; 6,056 units passed, 5 skipped, one unrelated timing failure passed alone (24 tests); Word Search/Crossword level-1 demos passed | [Word-learning pilot](#2026-11-07--shared-word-learning-helpers-pilot-codebase-item-6-pr-1381) | Letter Trails/tracing and Critter Sort remain; no device/offline check |
 | Shared coach (`src/progress/coach.test.ts`) | 2026-11-07: typecheck, full 6,046 units, build | [Shared coach](#2026-11-07--shared-misseshints-coach-codebase-item-8) | Pilots only: Fill and Dump, Sorting Machine, Rainbow Fingers |
 | Generated game docs (`src/content/game-docs.test.ts`) | 2026-11-07: typecheck, full 6,034 units; stale check proven to fail on an edited page | [Generated game inventory docs](#2026-11-07--generated-game-inventory-docs-codebase-item-3) | Runs in every `npm test`; rerun `npm run game-docs` after a game, land or page change |
 | `circuitgarden`, `fingerdemo` (`circuit-garden`) | 2026-11-06 (level 3, `f46bcc55`): typecheck, full `npm test` (321 files), 25 rule tests, one scripted school level 3 play (two wrong Checks 2/1, Help, early Done inert, Undo clears Check, finish) plus portrait screenshot; `fingerdemo` at levels 1, 2 and 3 (levels 1–2 earlier: `circuitgarden` suite) | [Entry](archive/VERIFICATION-2026-11-06.md#2026-11-06--circuit-garden-level-3-mend-the-lantern-energywaves-e3) | no build, no device check, no science-educator reading |

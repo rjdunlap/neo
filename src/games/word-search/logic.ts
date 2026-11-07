@@ -1,6 +1,6 @@
 import type { Rng } from '../../engine/random';
-import { BLOCKED } from './blocked';
-import { PICTURE_THEMES, THEMES, themeById, type Theme } from './words';
+import { BLOCKED } from '../../learning/words/blocked';
+import { PICTURE_THEMES, THEMES, themeById, type Theme } from '../../learning/words/themes';
 import type { BandLevels } from '../../progress/difficulty';
 
 /**
