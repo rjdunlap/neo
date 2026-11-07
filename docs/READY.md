@@ -37,6 +37,22 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 - **`number-trails`, slices 1–6 in the dive's order** (`letter-trails` helpers; preschool and pre-K; [build slices](deep-dives/number-trails.md#build-slices-in-order)): slice 1 the flying hint, looks and a rising tune (typecheck, rule tests, `fingerdemo` at 1 and 3); slice 2 more things and arrangements (rule tests, one portrait screenshot); slice 3 check the digits against the HWT chart (`digits.test.ts`, `fingerdemo` at 2; once the chart is open); slice 4 level 4 *First numbers* (rule tests, browser play of 4, `fingerdemo` at 4); slice 5 level 5 *Write how many* (new interaction: unit tests, one scripted play, one portrait screenshot); slice 6 level 6 *Less help each time* (rule tests, one play, `fingerdemo` at 6, one screenshot; coordinate with Letter Trails level 9 if in flight). Level 7 and the journal wait on [decisions](WAITING-ON-DEVELOPER.md).
 - **`bolt-boards`, remaining slices in the dive's order** (`tinker-lab`; toddler to school; [build slices](deep-dives/bolt-boards.md#build-slices-in-order)):
 
+### Codebase structure (2026-11-07 review)
+
+Requested by the developer 2026-11-07 to make the code cheaper for AI to write and maintain; evidence and targets are in the [review](CODEBASE-REVIEW-2026-11-07.md). One item per session, in this order unless an item says otherwise. The sweeps (1, 2, 5, 6) touch every game folder, so each pilots on 2–3 games first and merges while no game PR is open on those files.
+
+- **Co-locate voice lines and how-to cards per game** (shell tier: typecheck, unit tests, build, voice-clip test; generated `SCRIPT`/`HOW_TO` barrels keep `LineId` exact): [item 1](CODEBASE-REVIEW-2026-11-07.md#1-co-locate-each-games-voice-lines-and-how-to-card).
+- **Discover games with `import.meta.glob`** (after item 1; explicit order for the order-dependent tests; shell tier plus `world`): [item 2](CODEBASE-REVIEW-2026-11-07.md#2-discover-games-instead-of-listing-them).
+- **Generate the README inventory and per-game GAMES.md pages** (after item 2; stale-check in CI; docs plus a script test): [item 3](CODEBASE-REVIEW-2026-11-07.md#3-generate-the-game-inventory-docs).
+- **Trim AGENTS.md to contracts and pointers** (docs only; can go first, independent of the rest): [item 4](CODEBASE-REVIEW-2026-11-07.md#4-trim-agentsmd).
+- **Move level ladders into `logic.ts`** (scripted sweep; typecheck, unit tests, a source-scan test): [item 5](CODEBASE-REVIEW-2026-11-07.md#5-move-level-ladders-into-logicts).
+- **Promote shared code out of `letter-trails`, `word-search`, `pond-typing` and `critter-sort`** (typecheck, unit tests, build, `fingerdemo` filtered to two importing games): [item 6](CODEBASE-REVIEW-2026-11-07.md#6-promote-shared-code-out-of-game-folders).
+- **Scene-owned cleanup helpers on `GameContext`** (shell tier; migrate 2–3 games, the rest as touched): [item 7](CODEBASE-REVIEW-2026-11-07.md#7-one-standard-way-to-clean-up-after-a-round).
+- **A shared misses/hints coach** (pure module with tests; migrate 2–3 games, the rest as touched): [item 8](CODEBASE-REVIEW-2026-11-07.md#8-a-shared-helper-for-misses-hints-and-glows).
+- **Split the largest game and shell files by mode and art** (one file per session, when it next comes up for work; that game's tier): [item 9](CODEBASE-REVIEW-2026-11-07.md#9-split-the-largest-files).
+- **Prettier and a minimal ESLint** (one reformat commit in `.git-blame-ignore-revs`; typecheck, unit tests, build): [item 10](CODEBASE-REVIEW-2026-11-07.md#10-a-formatter-and-a-minimal-lint).
+- **A new-game scaffold script or skill** (after items 1 and 2): [item 11](CODEBASE-REVIEW-2026-11-07.md#11-a-new-game-scaffold).
+
 ### Study follow-ups (docs-only definitions)
 
 Each line is selected for routine dispatch; claim one packet, then enqueue its unblocked builds. [Scope and cadence](STUDY-BACKLOG.md#dispatch-and-closeout).
@@ -53,6 +69,7 @@ Added 2026-11-05: 21 games built from definitions have no dive and no study row 
 
 ## Blocked work (not routine picks)
 
+- **Repository weight: move the 151 MB of concept images out of the code checkout** (decision: Git LFS, a separate assets repository, or documented sparse checkout; [waiting](WAITING-ON-DEVELOPER.md#still-waiting)): [review item 12](CODEBASE-REVIEW-2026-11-07.md#12-repository-weight).
 - **Rework RW08 slice 3, the cutover** (approved by the developer 2026-10-23; starts only when they say they have played slices 1–2 on the iPad ([waiting](WAITING-ON-DEVELOPER.md#still-waiting)), so no routine picks it up; shell, save and navigation tier): delete `classic/`, the map, age places and `?preview`. [Slice 3](rework/RW08-CUTOVER.md#slice-3-the-cutover-approved-starts-when-the-developer-has-played-slices-12)
 
 Ordinary factual content uses the session source check under the [October 23 standing rules](archive/DECISIONS-2026-10-23.md#standing-rules). The [deferred research scopes](STUDY-BACKLOG.md#research-waiting-on-a-reviewer-decision) are not routine picks; translations still need fluent family review.

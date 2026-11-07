@@ -6,7 +6,7 @@ Part of the [roadmap](ROADMAP.md), split into its own file on 2026-10-13 so the 
 
 ## Still waiting
 
-The developer answered the last four questions on 2026-10-23 ([record](archive/DECISIONS-2026-10-23.md#answered-by-the-developer)). Two steps are still theirs, plus the parked phone-hosting choice:
+The developer answered the last four questions on 2026-10-23 ([record](archive/DECISIONS-2026-10-23.md#answered-by-the-developer)). Two steps are still theirs, plus the parked phone-hosting choice and where the concept images live:
 
 | Step | What happens next | Written in |
 | --- | --- | --- |
@@ -14,6 +14,7 @@ The developer answered the last four questions on 2026-10-23 ([record](archive/D
 | **Play Today's six (D10 slice 1 is built)** | The developer asked on 2026-11-03 for the daily shuffle to stay, reachable from `?daily` and a Home button, at preset levels by band with a mix of kinds of challenge ([definition](definitions/todays-six.md)). Still theirs after playing slice 1: a shared-per-band or per-profile six, the grown-up blend (two grown-up games plus four early-school ones), whether the six should avoid recently played games, and whether the island at `classic/` also gets a button (proposed: `?daily` only, since the cutover removes it) | [Open decisions](definitions/todays-six.md#open-decisions) |
 | **Name the Portuguese reviewer** | Portuguese comes first, in European Portuguese (decided 2026-10-23); its lines are reviewed by that family member before anything in Portuguese ships | [Additional languages](definitions/additional-languages.md) |
 | **How phones meet the shared screen** (parked, low priority: the developer will raise it when wanted) | The developer approved second screens in principle (2026-10-23). Phones still need somewhere to meet: a hosted relay (an account, maybe money, and a service that sees a child's app's traffic), WebRTC introduced through a relay, or a QR exchange that needs a camera. Recommended: a small relay with no accounts and nothing stored, used only by couch play's phone mode (the island stays offline), built with the first phone slice (phones as couch gamepads) | [Phone party play](PHONE-PARTY.md#hosting-where-the-phones-meet) |
+| **Where the concept images live** (raised by the 2026-11-07 codebase review) | The git pack is 177 MB, 151 MB of it `docs/rework/concepts`, downloaded by every fresh worktree and cloud session. Choose Git LFS, a separate assets repository, or documented sparse checkout for code sessions; a session then makes the move | [Review item 12](CODEBASE-REVIEW-2026-11-07.md#12-repository-weight) |
 
 Lemonade Stand dive (2026-10-31), two calls that wait on you; the build slices that do not need them go ahead ([the dive](deep-dives/lemonade-stand.md#decisions-for-the-developer)):
 

@@ -1,0 +1,64 @@
+# Codebase structure review (2026-11-07)
+
+A review of how the game code is split up, focused on what makes AI sessions slow or conflict-prone. Each section is one [READY](READY.md#codebase-structure-2026-11-07-review) item. Measured on `origin/main` at `07d7ac06`; the unit suite was not run during the review.
+
+Baseline: about 245K source lines and 74K test lines across 181 game folders. Every game has `logic.ts` and `logic.test.ts`, 174 have an `autotouch()` bot, and the engine is small and tested. The basics are sound; the problems are about scale.
+
+## 1. Co-locate each game's voice lines and how-to card
+
+A new game touches about 14 files in 6 places (the Measuring Post commit `1c4b140b`: `registry.ts`, `lands.ts`, `voice-script.ts`, `howto.ts`, `voice-clips.json`, the browser registry and a suite, `land-pages.test.ts`, another game's test). Since 2026-10-01, `voice-script.ts` (435 KB) changed in 588 commits and `howto.ts` (341 KB) in 576. These files cause merge conflicts between parallel worktrees, and agents read sections of half-megabyte files to find one game's lines.
+
+Target:
+- `src/games/<id>/voice.ts` exports that game's lines `as const`; `src/games/<id>/howto.ts` exports its `GameHowTo`.
+- `src/content/voice-script.ts` becomes a generated barrel that spreads every game's lines plus the shared ones (`game.*` titles, pet, UI), so `LineId = keyof typeof SCRIPT` stays exact and `scripts/voice-clips/render.mjs` keeps importing `SCRIPT`. `HOW_TO` is generated the same way.
+- One completeness test: every game folder has each required piece and the barrels are current.
+
+Mechanical, so a script does it. Pilot on 2–3 games, then sweep in one PR while no game work is in flight.
+
+## 2. Discover games instead of listing them
+
+`registry.ts` imports all 176 modules by hand, and new games are added at the top. Build `GAMES` with `import.meta.glob('./*/index.ts', { eager: true })`. Order matters: `lands.test.ts`, `arcade.test.ts` and `welcome-ways/logic.test.ts` index into `GAMES`, so either sort explicitly (by id, or an `order` field) or make those tests independent of order. Do this after item 1.
+
+## 3. Generate the game inventory docs
+
+The README inventory (213 KB, 672 commits since 2026-10-01) and GAMES.md (609 KB, 641 commits) restate what the registry and how-to cards already hold: name, bands, levels, `describeLevel`, rules. Generate a per-game page and the inventory from the modules, keep only the hand-written design notes by hand, and have CI fail when the generated files are stale. VERIFICATION.md (1,277 commits) would also conflict less as one small file per dated entry.
+
+## 4. Trim AGENTS.md
+
+It is 32,758 bytes against the 32 KiB test in `scripts/agent-guard.test.mjs`, and every session reads it on every turn. About half is rationale and dated history. Cut it to contracts, commands and pointers, about 10–15 KB, and move the reasons to `DEVELOPMENT-WORKFLOW.md` and DESIGN.md. Items 1–3 shrink the "Adding a minigame" steps further.
+
+## 5. Move level ladders into `logic.ts`
+
+AGENTS.md puts ladders in `logic.ts`, but 129 games define `const LEVELS: BandLevels` in `index.ts` and 26 in `logic.ts`. In `index.ts` the ladder can't be tested without loading Pixi, and agents copy the majority pattern. Move `LEVELS` and each `describe…` with a script, then add a source-scan test so it can't drift back.
+
+## 6. Promote shared code out of game folders
+
+Files from other games import `letter-trails/` 18 times, `word-search/` 5, `pond-typing/` 4 and `critter-sort/` 4. That code is shared: move it to `src/learning/…` or `src/art/…` and list it in the [reuse map](DESIGN.md#reuse-map), so refactoring one game cannot break others and agents can find the helpers.
+
+## 7. One standard way to clean up after a round
+
+Games use four idioms for "this round is gone": `gone` (6 files), `epoch` (14), `destroyed` (18) and hand-rolled `releaseDrags` (5); 37 game files call `addEventListener` directly. Add scene-owned helpers to `GameContext` (`ctx.alive` or an `AbortSignal`, `ctx.listen(target, type, fn)`, `ctx.own(disposable)` for drags, textures and timers) that the shell disposes on destroy. `game-reviewer` can then flag raw listeners. Migrate games as they are touched, no sweep needed. Shell tier.
+
+## 8. A shared helper for misses, hints and glows
+
+Each game writes the "boing, spoken hint, glow after two misses" rule itself: Fill and Dump hints on `misses % 2 === 0`, while Rainbow Fingers counts `wrongs === 2` separately from `misses` and also hints after 12 seconds idle. Both look intentional, but no test checks the shared contract, and miss accounting drives difficulty changes. A small pure `Coach` (counters, hint cadence, the `finish({ misses, hints })` tally) in a testable module would let games keep their own visuals. Migrate as games are touched.
+
+## 9. Split the largest files
+
+Game files of 40–68 KB (Caravan Days, River Tablets, Logic Grid, Keep House, Light Lab and others) often hold several modes as separate classes. Fill and Dump has four game classes in one file, chosen in `create()`. Split by mode (`modes/<mode>.ts`) and art (`art.ts`, as Caravan Days and Measuring Post do). The shell scenes `GameScene.ts` (49 KB) and `CouchScene.ts` (63 KB) are next. Do it when each file next comes up for work, not as a sweep.
+
+## 10. A formatter and a minimal lint
+
+There is no formatter or linter. `howto.ts` is written as `{from:2,to:2,text:…}` while game code uses normal spacing, so AI edits produce noisy diffs. Add Prettier, with one reformat commit listed in `.git-blame-ignore-revs`. Add a minimal ESLint covering `as any` (43 files), floating promises and raw listeners.
+
+## 11. A new-game scaffold
+
+`.claude/skills/` has only `codex-image`. A scaffold script or skill that creates the item 1 layout (module, logic, tests, voice, how-to, suite stub, land entry) would replace much of the "Adding or extending a minigame" prose with one command. Do it after items 1 and 2.
+
+## 12. Repository weight
+
+The git pack is 177 MB, 151 MB of it `docs/rework/concepts` images, which every fresh worktree and cloud session downloads. Options: Git LFS, a separate assets repository, or documented sparse checkout for code sessions. This changes how the repository is stored, so it needs the developer's decision and sits under Blocked work in READY.
+
+## Done during the review
+
+The `agent-guard` hook blocked any command that only mentioned the browser harness, such as `wc -c` on its script or a heredoc naming it. It now matches only commands that run it (`npm run test:browser`, `node …browser-check.mjs`), with tests for the false positives.

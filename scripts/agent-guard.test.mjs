@@ -10,6 +10,12 @@ describe('agent guard hook', () => {
     expect(blockReason('GAME_URL=http://localhost:5198 BROWSER_SUITE=fingerdemo FINGER_ONLY=day-by-day npm run test:browser')).toBeNull()
     expect(blockReason('export BROWSER_SUITE=world && npm run test:browser')).toBeNull()
     expect(blockReason('grep -n "test:browser" README.md')).toBeNull()
+    // Reading the harness is not running it (these were blocked before 2026-11-07).
+    expect(blockReason('wc -c scripts/browser-check.mjs scripts/browser/* | tail -3')).toBeNull()
+    expect(blockReason('sed -n 1,40p scripts/browser-check.mjs')).toBeNull()
+    expect(blockReason('grep -n "npm run test:browser" README.md AGENTS.md')).toBeNull()
+    expect(blockReason('cd /tmp && node /repo/scripts/browser-check.mjs')).toMatch(/BROWSER_SUITE/)
+    expect(blockReason('ls; npm run test:browser')).toMatch(/BROWSER_SUITE/)
   })
 
   it('blocks a backup-suffix sed -i on macOS only', () => {
