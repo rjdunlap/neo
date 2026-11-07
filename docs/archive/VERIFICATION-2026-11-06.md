@@ -142,3 +142,9 @@ Open: device checks (two stops at one socket as a conflict; how the iPad says "p
 Changed: `bond-beads` level 7 *The same atoms, rearranged* (two puzzles: hydrogen, hydrogen and oxygen into two waters, then back; doubles on; before/now tally; `named.breakfirst` at the unchanged opening, `named.rearranged` on a match); card pictures up to three pieces; how-to card extended to 7; browser case `bondBeadsRearrangePlay` (PR #1322, code at 83496ef0). Level 8 cut by the definition's rule: the layout audit failed (landscape table 524×638, ring perimeter about 1380 against the 1440 nine beads 160 apart need; no 9-bead ring kept link midpoints 30 apart, best 28.4).
 Ran: `npm run typecheck`; `npm test` (317 files, 5759 tests; 146 in bond-beads logic tests, layout test widened to 0–3 card pictures); `npm run build`; `BROWSER_SUITE=bondbeads BOND_LEVELS=7` at http://localhost:5480 (opening miss 1, hint 1, both cards, score 1/1, landscape and portrait screenshots); `BROWSER_SUITE=fingerdemo FINGER_ONLY=bond-beads FINGER_LEVELS=7` (36.1 s).
 Open: offline not run; no iPad, device speech or child check ([DEVICE-CHECKS](../DEVICE-CHECKS.md#bond-beads-level-7-chemistry-slice-4-2026-11-06)); level 8 only as a non-ring layout idea.
+
+## 2026-11-06 — Define Puddle Lens 7–8, Wall clue and Why green? (docs only)
+
+Changed: Puddle Lens definition gained levels 7 *Wall clue* and 8 *Why green?* (school range becomes {4,8}) with their check tier; READY, the cells-microbes dive and the subject recommendations updated.
+Ran: `node scripts/check-links.mjs` and `git diff --check`. No code checks (docs tier).
+Open: the build (new interaction on the existing game, `fingerdemo` at 7 and 8) is queued in READY. Only the Carolina Elodea page was opened; the onion, cheek-cell and pond-colour facts are from search summaries. No child or device evidence.

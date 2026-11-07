@@ -643,19 +643,24 @@ export const HOW_TO: Record<string, GameHowTo> = {
     ],
   },
   'measuring-post': {
-    goal: 'Choose the tool that answers how long, how heavy or how much, and see that smaller units take more of them.',
+    goal: 'Choose the tool for how long, how heavy or how much, and compare measures only in the same units.',
     steps: [
       { from: 1, to: 1, text: 'Listen to the friend’s question, then tap the rope, the balance or the cup.' },
       { from: 1, to: 1, text: 'Watch the tool measure, then press the paper plane to send the answer.' },
       { from: 2, to: 2, text: 'Tap the tool, watch one big unit match two little ones, then watch both friends measure.' },
       { from: 2, to: 2, text: 'Tap the friend who used the smaller units; the last friend asks who used the bigger ones.' },
-      'The speaker says the question or the result again. The hand points at what to do next; pressed again, it does it.',
+      { from: 3, to: 3, text: 'Tap the tool, then the big or little unit to measure both things the same way.' },
+      { from: 3, to: 3, text: 'Tap the longer, heavier or fuller one, or the two bars when they are the same.' },
+      { from: 4, to: 4, text: 'Watch four 250-gram weights balance one kilogram, then fill the table: tap a number of grams.' },
+      { from: 4, to: 4, text: 'Press the tick to check it, then the paper plane to send.' },
+      'The speaker says it again. The hand points at what to do next; pressed again, it does it.',
     ],
     finish: [
       { from: 1, to: 1, text: 'The round ends when the third answer is sent.' },
-      { from: 2, to: 2, text: 'The round ends when the third friend’s question is answered.' },
+      { from: 2, to: 3, text: 'The round ends when the third friend’s question is answered.' },
+      { from: 4, to: 4, text: 'The round ends when the second row is sent.' },
     ],
-    note: 'A tool that measures something else, or the wrong friend, counts as a miss and says why; after two misses the useful choice glows. The hand counts as one hint per step it helps with. The measurements are made up for the game, not real sizes.',
+    note: 'A wrong tool, friend, comparison or checked row is a miss and says why; a unit that does not fit both is no miss. Two misses make the useful choice glow; the hand is one hint per step. The measurements are made up.',
   },
   'far-lights': {
     goal: 'See how a light looks brighter when it is nearer.',
