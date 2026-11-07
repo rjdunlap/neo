@@ -6,7 +6,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **`bolt-boards`, level 8 *Plenty of holes*** (pre-K and school between 5 and 6 on decision 1's default; after slice 1 is fine but not required; new level on the existing interaction, `fingerdemo` at 8): [build slices](deep-dives/bolt-boards.md#build-slices-in-order).
+- **`bolt-boards`, level 8 *Plenty of holes*** (claimed: branch `claude/bolt-boards-level-8`; pre-K and school between 5 and 6 on decision 1's default; after slice 1 is fine but not required; new level on the existing interaction, `fingerdemo` at 8): [build slices](deep-dives/bolt-boards.md#build-slices-in-order).
 - **Define `bolt-boards` level 9 *Put it back*** (docs only): [build slices](deep-dives/bolt-boards.md#build-slices-in-order).
 - **Dive `mossy-path`** (Mossy Path; toddler to school, 7 levels, mazes and routes; docs only): [procedure](deep-dives/README.md#one-session-one-game). The rest of waves 5–7 follow in the tracker's order.
 - **`number-trails` slice 1, the flying hint, looks and a rising tune** (`letter-trails` helpers reused; preschool and pre-K; typecheck, rule tests, `fingerdemo` at 1 and 3): [build slices](deep-dives/number-trails.md#build-slices-in-order).
