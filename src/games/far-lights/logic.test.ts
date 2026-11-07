@@ -6,6 +6,8 @@ import {
   windowRings, closerHelp, CloserWalk, corners, CORE_R, farLayout, FarTally, GlowTaps, GLOW, haloRadius, haloRings, helpFor,
   HOME_CORNER, judgeBrighter, judgeMatch, LANES, LANE_H, look, movable, MIN_WINDOW, nearestStop, other, pairsFor, ringBox, ringHits, sideGlow,
   STOPS, STOP_GAP, readablyDifferent, type Board, type Lane, type Stop,
+  BUTTON, candidates, fartherAnswers, GLOWS, lightsLooking, lookOf, openingStop, readableShift, shiftOf, shiftsOf, sideRays, STEP_PAIRS, StepBoard,
+  steppedHalos, stepBoards, stopsOf, STRONG_PAIRS, strongBoardsFor, strongOf, type StrongBoard,
 } from './logic';
 
 const seeds = Array.from({ length: 500 }, (_, i) => i + 1);
@@ -184,7 +186,7 @@ describe('level 1 and 2 trackers', () => {
 });
 
 describe('layout', () => {
-  for (const [name, v] of Object.entries(views)) for (const level of [1, 2, 3, 4, 5, 6]) {
+  for (const [name, v] of Object.entries(views)) for (const level of [1, 2, 3, 4, 5, 6, 7, 8]) {
     it(`${name} level ${level}`, () => {
       const l = farLayout(v, level);
       expect(l).not.toBeNull();
@@ -242,6 +244,29 @@ describe('layout', () => {
         expect(b.y + b.h).toBeLessThanOrEqual(l.window.y + l.window.h);
         if (l.check) expect(ringHits(h, l.check)).toBe(false);
       }
+      if (level === 8) {
+        for (const r of [l.fit!, l.step!]) {
+          expect(r.w).toBeGreaterThanOrEqual(BUTTON);
+          expect(r.h).toBeGreaterThanOrEqual(BUTTON);
+          expect(r.x >= l.window.x && r.y >= l.window.y && r.x + r.w <= l.window.x + l.window.w && r.y + r.h <= l.window.y + l.window.h).toBe(true);
+          for (const k of corners(v)) expect(ringHits({ x: r.x + r.w / 2, y: r.y + r.h / 2, r: 1 }, k)).toBe(false);
+        }
+        expect(l.step!.x).toBeGreaterThanOrEqual(l.fit!.x + l.fit!.w);
+        for (const b of stepBoards()) for (const t of [0, 0.5, 1]) {
+          const at = steppedHalos(l, b, t);
+          for (const h of at) {
+            const box = ringBox(h);
+            expect(box.x >= l.window.x && box.x + box.w <= l.window.x + l.window.w && box.y >= l.window.y && box.y + box.h <= l.window.y + l.window.h).toBe(true);
+            for (const r of [l.fit!, l.step!]) expect(ringHits(h, r)).toBe(false);
+            // A touch circle stays clear of the buttons too.
+            for (const r of [l.fit!, l.step!]) expect(ringHits({ ...h, r: l.touchR }, r)).toBe(false);
+          }
+          expect(Math.hypot(at[0].x - at[1].x, at[0].y - at[1].y)).toBeGreaterThanOrEqual(at[0].r + at[1].r);
+        }
+      } else {
+        expect(l.fit).toBeNull();
+        expect(l.step).toBeNull();
+      }
       if (level === 4) {
         expect(l.check!.w).toBeGreaterThanOrEqual(CHECK);
         expect(l.check!.h).toBeGreaterThanOrEqual(CHECK);
@@ -251,7 +276,7 @@ describe('layout', () => {
     });
   }
   it('a tiny view returns null at every level', () => {
-    for (const level of [1, 2, 3, 4, 5, 6]) expect(farLayout({ w: 600, h: 400, scale: 1 } as never, level)).toBeNull();
+    for (const level of [1, 2, 3, 4, 5, 6, 7, 8]) expect(farLayout({ w: 600, h: 400, scale: 1 } as never, level)).toBeNull();
   });
 });
 
@@ -341,9 +366,115 @@ describe('level 6 boards', () => {
   });
 });
 
+const key = (l: { glow: number; stop: number }) => `${l.glow}@${l.stop}`;
+
+describe('levels 7 and 8: the model', () => {
+  it('the look table, and exactly two sets of different glows that look the same', () => {
+    expect(look(4, 2)).toBe(1);
+    expect(look(9, 3)).toBe(1);
+    expect(look(4, 4)).toBe(0.25);
+    expect(look(9, 2)).toBe(2.25);
+    const seen = new Map<number, string[]>();
+    for (const g of GLOWS) for (const s of STOPS) seen.set(look(g, s), [...(seen.get(look(g, s)) ?? []), `${g}@${s}`]);
+    const repeats = [...seen.values()].filter((v) => v.length > 1).map((v) => v.sort());
+    expect(repeats.sort()).toEqual([['1@1', '4@2', '9@3'], ['1@2', '4@4']].sort());
+    expect(lightsLooking(1).map(key).sort()).toEqual(['1@1', '4@2', '9@3']);
+  });
+  it('no light any level 7–8 board shows at rest (or in its opening look) looks brighter than 1', () => {
+    for (const [g, s] of STRONG_PAIRS) {
+      expect(lookOf(g)).toBeLessThanOrEqual(1);
+      expect(lookOf(s)).toBeLessThanOrEqual(1);
+      expect(look(g.glow, s.stop)).toBeLessThanOrEqual(1);
+    }
+  });
+  it('the side view rays differ by glow; the core and float do not', () => {
+    expect(new Set(GLOWS.map(sideRays)).size).toBe(3);
+    expect(sideRays(1)).toBeLessThan(sideRays(4));
+    expect(sideRays(4)).toBeLessThan(sideRays(9));
+    expect(sideGlow()).toEqual(sideGlow());
+  });
+  it('the toy step shifts nearer lights more; only the two level-8 pairs read apart', () => {
+    expect(STOPS.slice(0, 3).map(shiftOf)).toEqual([120, 60, 40]);
+    const readable = STRONG_PAIRS.filter(([g, s]) => readableShift(shiftOf(g.stop), shiftOf(s.stop)));
+    expect(readable.map((p) => p.map(key))).toEqual(STEP_PAIRS.map((p) => p.map(key)));
+    expect(readable.map((p) => p.map(key))).toEqual([['1@1', '4@2'], ['1@1', '9@3']]);
+  });
+});
+
+describe('level 7 boards', () => {
+  it('two different listed pairs, looks exactly equal, the strong light farther, lanes swapped', () => {
+    for (const seed of seeds) for (const authored of [false, true]) {
+      const bs = strongBoardsFor(new Rng(seed), 7, authored);
+      expect(bs).toHaveLength(2);
+      const pairKey = (b: StrongBoard) => [b.A, b.B].map(key).sort().join('+');
+      expect(pairKey(bs[0])).not.toBe(pairKey(bs[1]));
+      expect(new Set(bs.map(strongOf))).toEqual(new Set(['A', 'B']));
+      for (const b of bs) {
+        expect(STRONG_PAIRS.map((p) => p.map(key).sort().join('+'))).toContain(pairKey(b));
+        expect(lookOf(b.A)).toBe(lookOf(b.B));
+        const strong = strongOf(b);
+        expect(b[strong].stop).toBeGreaterThan(b[other(strong)].stop);
+        expect(fartherOf(stopsOf(b))).toBe(strong);
+        expect(judgeFarther(stopsOf(b), strong)).toBe('right');
+        expect(judgeFarther(stopsOf(b), other(strong))).toBe('nearer');
+        // The opening look: both at the strong light's stop, at least 2.25× apart.
+        const gentle = b[other(strong)];
+        const opening = look(gentle.glow, openingStop(b));
+        expect(lookOf(b[strong]) / opening).toBeGreaterThanOrEqual(2.25);
+      }
+      if (authored) expect(bs[0]).toEqual({ A: { glow: 4, stop: 2 }, B: { glow: 1, stop: 1 } });
+    }
+  });
+});
+
+describe('level 8 boards', () => {
+  it('only the two readable pairs, one each, the strong light in A once and B once', () => {
+    for (const seed of seeds) {
+      const bs = strongBoardsFor(new Rng(seed), 8, false);
+      expect(bs.map((b) => [b.A, b.B].map(key).sort().join('+')).sort()).toEqual(['1@1+4@2', '1@1+9@3']);
+      expect(new Set(bs.map(strongOf))).toEqual(new Set(['A', 'B']));
+      for (const b of bs) {
+        const s = shiftsOf(b);
+        expect(readableShift(s.A, s.B)).toBe(true);
+        expect(Math.max(s.A, s.B)).toBeGreaterThanOrEqual(2 * Math.min(s.A, s.B));
+        expect(Math.abs(s.A - s.B)).toBeGreaterThanOrEqual(50);
+      }
+    }
+  });
+  it('before the step more than one answer fits; after it exactly one, the strong light', () => {
+    for (const b of stepBoards()) {
+      const before = candidates(b, null);
+      expect(before).toHaveLength(9);
+      expect(fartherAnswers(before)).toEqual(new Set(['A', 'B', 'same']));
+      const after = candidates(b, shiftsOf(b));
+      expect(after).toEqual([b]);
+      expect(fartherAnswers(after)).toEqual(new Set([strongOf(b)]));
+    }
+  });
+  it('a tap before the step and Both could fit never count; after it the nearer light is a miss', () => {
+    const b = stepBoards()[0];
+    const s = new StepBoard(b);
+    const tally = new FarTally();
+    for (const lane of LANES) expect(s.tap(lane)).toBe('maybe');
+    expect(s.pressFit()).toBe('fit');
+    expect(s.pressFit()).toBe('again');
+    expect(s.tap(other(strongOf(b)))).toBe('maybe');
+    s.step();
+    // A scripted board: tap before, Both could fit, step, wrong tap, hint, right tap.
+    expect(s.tap(other(strongOf(b)))).toBe('nearer');
+    tally.miss();
+    expect(tally.hint()).toBe(true);
+    expect(tally.hint()).toBe(false);
+    expect(s.tap(strongOf(b))).toBe('right');
+    expect([tally.misses, tally.hints]).toEqual([1, 1]);
+  });
+});
+
 describe('plans', () => {
-  it('levels 5 and 6 are named', () => {
-    expect(PLANS.map((p) => p.level)).toEqual([1, 2, 3, 4, 5, 6]);
+  it('levels 5 to 8 are named', () => {
+    expect(PLANS.map((p) => p.level)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+    expect(planFor(7).name).toMatch(/Strong and gentle/);
+    expect(planFor(8).name).toMatch(/both could fit/);
     expect(planFor(5).name).toMatch(/curtain/);
     expect(planFor(6).name).toMatch(/order/);
   });
