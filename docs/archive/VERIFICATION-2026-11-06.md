@@ -156,3 +156,9 @@ Changed: [hat-band.md](../definitions/hat-band.md#level-4-build-a-song-m6-defini
 Ran: `node scripts/check-links.mjs` and `git diff --check`. No typecheck, unit tests or browser: no code changed.
 
 Open: the build (new-interaction tier, `fingerdemo` at 4) is not started.
+
+## 2026-11-06 — Playdate Workshop levels 1–3 (new game, social-emotional slice 2)
+
+Changed: new game `playdate-workshop` (Story Grove's twentieth; branch `claude/playdate-workshop`, tested tip `974b560b` on base origin/main `cebef1eb`): `logic.ts` rules, scene, art, voice lines, how-to card with ghost finger, registry/lands entries, `playdateworkshop` browser case, one Kokoro clip (`game.playdate-workshop`). `game-reviewer` found six issues, all fixed.
+Ran (Vite dev on http://localhost:5986): `npm run typecheck`; `npm test` 318 files / 5789 tests before the review fixes, then the game's and content/voice-clip tests (210) after; `npm run build`; `BROWSER_SUITE=playdateworkshop` (level 1: out-of-turn tap, lightbulb, give, refused stamp, stamp, pass, stamp, Finish 0/1; level 3: two unmet previews, Make it on an unmet plan stays on the cards, Help me make it 0/2, portrait screenshot); `BROWSER_SUITE=fingerdemo FINGER_ONLY=playdate-workshop FINGER_LEVELS=1,2,3` (8.4 s, 21.8 s, 17.4 s).
+Not run: offline check; other suites; full `npm test` after the review fixes. Open: whether a three-year-old understands passing, whether pre-K children compare plans, co-play roles and iPad speech of the first-person lines ([device checks](../DEVICE-CHECKS.md)). Deviations: Try it ticks the request bubbles rather than ghosting a run; level 1's first give counts as a plan decision.

@@ -1418,7 +1418,7 @@ The 2600's Sesame Street titles (Children's Computer Workshop, 1983) were made f
 
 | Idea | Inspired by | First playable loop | Grows into | Notes |
 | --- | --- | --- | --- | --- |
-| Big Fish, Little Fish (covered by built Puddle Gobble) | Feeding Frenzy | Swim a little fish and gobble littler snacks to grow; big fish just swim by | Eat only things smaller than you; order fish by size | Size comparison; nobody gets eaten |
+| Big Fish, Little Fish (covered by built [Puddle Gobble](deep-dives/puddle-gobble.md)) | Feeding Frenzy | Swim a little fish and gobble littler snacks to grow; big fish just swim by | Eat only things smaller than you; order fish by size | Size comparison; nobody gets eaten |
 | Piñata Garden | Viva Piñata | Plant flowers and fruit, and the critters who love them come to visit | Each visitor wants something; plan the garden to invite three | Nature and habitats; treehouse garden |
 | Block Builder | Minecraft, A Kingdom for Keflings | Tap to place soft blocks; a critter moves into whatever you build | Copy a little blueprint; count blocks per wall | Treehouse creativity |
 | Match the Card | Uno, Family Game Night | Take turns with the pet: play a card that matches the color or the number | Choose between two matches; count cards left | Playing together and turn-taking |

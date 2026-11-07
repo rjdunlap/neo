@@ -37,6 +37,13 @@ Swing Pals dive (2026-11-06), three calls; slices 1–3 go ahead (slice 2 on dec
 | **Paint the beat as a creative level, and may its painting be kept?** | Reopens the "nothing kept" default for the treehouse; no default, it stays unbuilt | [Swing Pals dive](deep-dives/swing-pals.md#decisions-for-the-developer) |
 | **A journal discovery ("a longer rope swings slower")?** | Reopens the definition's decision 4; default: still none | [Swing Pals dive](deep-dives/swing-pals.md#decisions-for-the-developer) |
 
+Puddle Gobble dive (2026-11-06), two calls; slices 1–4 go ahead on both defaults ([the dive](deep-dives/puddle-gobble.md#decisions-for-the-developer)):
+
+| Step | What happens next | Written in |
+| --- | --- | --- |
+| **A lap entry for Puddle Gobble (appended level 12 *Splash*)?** | Default: no, as the definition left it | [Puddle Gobble dive](deep-dives/puddle-gobble.md#decisions-for-the-developer) |
+| **File the finish's tidy row as a journal discovery?** | Default: no, nothing is filed | [Puddle Gobble dive](deep-dives/puddle-gobble.md#decisions-for-the-developer) |
+
 Draw the Pattern dive (2026-11-05), three calls; slices 1 and 2 and slice 3 on decision 1's default go ahead ([the dive](deep-dives/draw-the-pattern.md#decisions-for-the-developer)):
 
 | Step | What happens next | Written in |
