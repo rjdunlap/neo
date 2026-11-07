@@ -223,3 +223,10 @@ Changed: new `circuit-garden` (PR #1335, branch `claude/circuit-garden`): levels
 Ran: `npm run typecheck`; `npm test` (320 files pass) after updating the Tinker Lab capacity tests to 27 entries (land-pages 9,9,8; example-express capacity) and rendering the title clip with `scripts/voice-clips/render.mjs`; `BROWSER_SUITE=circuitgarden` at http://localhost:5207 (level 1 landscape: early Done free, a drag lights the lantern, Put back, Undo, Done 0/0; Show me twice 0/1; level 2 portrait: the switch shows both states, Done 0/0; Show me then Done 0/1) with landscape and portrait screenshots; `fingerdemo` with `FINGER_ONLY=circuit-garden` at levels 1 and 2. `game-reviewer`: three minor findings fixed and the play rerun.
 Not run: `npm run build`, any device check, the science educator's reading of the wording.
 Open: seeing both terminals and the return path, 100-unit comfort in both layouts, speech, preschool readiness ([device checks](../DEVICE-CHECKS.md)); level 3 is unbuilt.
+
+## 2026-11-06 — Measuring Post levels 1–2 (new game, measurement M3)
+
+Changed: new `measuring-post` (PR #1337, branch `claude/measuring-post-1-2`): levels 1–2, school {1,2}, Tinker Lab (now 28 games, pages 9/9/9 at school); a `measuringpost` browser suite.
+Ran (commit 0103845b, http://localhost:5270, `VITE_SPEECH=off`): `npm run typecheck`; `npm test` (321 files, 5,953 tests); `BROWSER_SUITE=measuringpost` (level 1 landscape: ribbon first, wrong tool 1 miss, taps inert while measuring, Send three times 1/0; level 2 portrait: Help points then does 1 hint, two wrong rows glow 1 hint, last asks bigger, 2/2); `fingerdemo` with `FINGER_ONLY=measuring-post` at levels 1 and 2 (12.4 s, 17.9 s); `npm run build`. `game-reviewer` findings fixed.
+Not run: offline check, `world` suite, device speech.
+Open: child appeal and legibility, 100-unit comfort on the iPad, speech ([device checks](../DEVICE-CHECKS.md)); levels 3–4 unbuilt.
