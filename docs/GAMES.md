@@ -882,6 +882,16 @@ Misses and help: no misses at levels 1–2. Show me (the hand button, also the p
 
 Deviations from the definition: level 3 *Mend the lantern* (two gaps, Check, misses, automatic glow) is the definition's E3 and is not built.
 
+### Measuring Post
+
+*school · levels 1–2 of 4 · [definition](definitions/measuring-post.md) · measurement slice M3, levels 1–2.* Three friends at a post ask a question and she taps the tool that answers it: the rope (how long), the balance (how heavy) or the cup (how much). Level 1 "Which tool?": the ribbon is always the first question, then the parcel and the jug; the chosen tool measures in 4 little units while taps are inert, and she sends the answer with a paper plane. Level 2 "Whose unit was smaller?": after picking the tool, a strip shows one big unit equals two little ones, both friends measure (6 and 3 worms, 4 and 2 blocks, 6 and 3 cups), and she taps the friend whose units were smaller; the last task asks who used the bigger. A correct row sends automatically.
+
+Rules (`src/games/measuring-post/logic.ts`, 11 rule tests): the tool must match the attribute asked; the larger count always belongs to the smaller unit. School band {1,2}.
+
+Misses and help: a wrong tool (levels 1–2) or a wrong row is a miss with a boing, a shake and a spoken reason ("The balance tells how heavy. We need how long."); after two misses on a task the useful control glows (counts as that step's hint). Help points and explains first (one hint per step: tool, answer); pressing again does the step. Send is not a counted step. The speaker replays the question or result. Challenge `numbers`, music `STYLES.quiet`; touch demonstration on the how-to card. In Tinker Lab.
+
+Deviations from the definition: a wrong tool does not animate measuring its own attribute; levels 3 (common-unit comparison) and 4 (conversion table) are not built.
+
 ### Forecast Detective
 
 *school · levels 1–2 · after the weather and water study; [definition](definitions/forecast-detective.md).* A harbour town sits between Hill Isle (west) and Lighthouse Isle (east). Four covered flaps hold the clues: the town's wind vane, a postcard from each island showing its sky today, and the thermometer. She lifts a flap (the pet says the clue), then picks one of four weather cards and presses Check. The rule is disclosed on a card before any answer: in this pretend world tomorrow's sky comes on the wind from the island it blows from, and freezing turns rain to snow. Checking, not guessing, is the action; the lesson is that evidence narrows the possibilities and that "can't tell yet" can be the right answer.
