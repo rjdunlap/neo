@@ -1,5 +1,6 @@
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
+import { pickLook, type Look } from '../letter-trails/logic';
 
 /**
  * Number Trails: follow the firefly along a numeral, then meet that many things. The rules that a test can hold the
@@ -38,6 +39,15 @@ export const THINGS = [
 export type ThingId = (typeof THINGS)[number]['id'];
 
 export const thingFor = (rng: Rng) => rng.pick(THINGS);
+
+/**
+ * A round's draws in a fixed order: the numeral, the thing, then the ink's look (Letter Trails' `LOOKS`). The look is drawn
+ * last, so adding it never changed which numeral or thing a seed gives; it is only paint.
+ */
+export function roundFor(level: number, rng: Rng): { n: number; thing: (typeof THINGS)[number]; look: Look } {
+  const n = numeralFor(level, rng), thing = thingFor(rng);
+  return { n, thing, look: pickLook(rng) };
+}
 
 /** What the voice calls `n` of a thing: "1 duck", "2 ducks", "0 ducks". */
 export const thingWord = (thing: (typeof THINGS)[number], n: number): string => (n === 1 ? thing.one : thing.plural);
