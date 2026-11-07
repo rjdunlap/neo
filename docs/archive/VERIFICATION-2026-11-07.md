@@ -35,3 +35,11 @@ Changed: `docs/deep-dives/fruit-sums.md` and its tracker, READY, STUDY-BACKLOG, 
 ## 2026-11-07 — Jar Sort deep dive (docs only)
 
 Changed: `docs/deep-dives/jar-sort.md` and its tracker, READY and STUDY-BACKLOG rows (PR #1361); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; slices 1–5 are queued; no new decisions.
+
+## 2026-11-07 — Jar Sort slice 1: pantry looks, two fruits, more boards
+
+Changed: pantry backdrop in three looks, cherries and lemon, four authored level 1 pairs, 20 boards a level at 2–8 (PR #1365). Ran: `npm run typecheck`; `npx vitest run src/games/jar-sort` (13 tests); `npm test` (322 files, 6028 tests); `BROWSER_SUITE=jarsort` once (level 1 pair, level 3 rain-look portrait screenshot, level 7 upright); `npm run build`. A game-reviewer pass found no blocking defects; two cosmetic fixes after the suite were covered by a typecheck rerun only. Open: `fingerdemo`, offline and other suites not run; the two new fruits' lines use device speech; no iPad check.
+
+## 2026-11-07 — Pile Match deep dive (docs only)
+
+Changed: `docs/deep-dives/pile-match.md` and its tracker, READY and STUDY-BACKLOG rows (PR #1363); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; slices 1–4 are queued; no new decisions (the toddler entry needs a person watching a child, a device check).

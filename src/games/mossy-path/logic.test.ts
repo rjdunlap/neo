@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
-  completion, deadEnd, flipBoard, goalOf, helpFor, makeBoard, mainline, MAZES, mazeBack, mazeRestart, mazeStart, mazeTouch,
+  BERRIES, completion, deadEnd, flipBoard, leafSpots, pickLook, PLANS, SEASONS, transformPlan, goalOf, helpFor, makeBoard, mainline, MAZES, mazeBack, mazeRestart, mazeStart, mazeTouch,
   moveError, nextToward, neighbours, parseMaze, routeBetween, solved, step, validPath,
   type Board, type MazeState,
 } from './logic';
@@ -48,6 +48,81 @@ describe('Mossy Path', () => {
       for (const at of b.tiles) { const next = step(b, path, at); if (next) visit(next); }
     };
     visit([b.start]); expect(deadEnds).toBeGreaterThan(0);
+  });
+});
+
+const SYMMETRIES = [false, true].flatMap(fx => [false, true].flatMap(fy => [false, true].map(t => [fx, fy, t] as const)));
+/** Every complete route from the start, by brute force (at most 16 tiles). */
+function routeCount(b: Board): number {
+  let n = 0;
+  const go = (path: number[]) => {
+    if (solved(b, path)) { n++; return; }
+    for (const at of b.tiles) { const next = step(b, path, at); if (next) go(next); }
+  };
+  go([b.start]); return n;
+}
+const sameBoard = (a: Board, z: Board) => a.rows === z.rows && a.cols === z.cols && a.start === z.start && a.pond === z.pond && [...a.tiles].sort((x, y) => x - y).join() === [...z.tiles].sort((x, y) => x - y).join();
+
+describe('Mossy Path levels 1-3 plans', () => {
+  it('has three plans per level, each within 4 × 4, completing from the start under every symmetry with 100-unit cells', () => {
+    for (const [index, set] of PLANS.entries()) {
+      expect(set, `level ${index + 1}`).toHaveLength(3);
+      for (const [n, p] of set.entries()) for (const [fx, fy, t] of SYMMETRIES) {
+        const b = transformPlan(p, fx, fy, t), label = `level ${index + 1} plan ${n} ${fx} ${fy} ${t}`;
+        expect(b.rows * b.cols, label).toBeLessThanOrEqual(16);
+        expect(Math.max(b.rows, b.cols), label).toBeLessThanOrEqual(4);
+        expect(new Set(b.tiles).size, label).toBe(b.tiles.length);
+        expect(b.tiles.includes(b.start) && b.tiles.includes(b.pond) && b.start !== b.pond, label).toBe(true);
+        expect(Math.min(132, (768 - 330) / b.rows, (1024 - 320) / b.cols), label).toBeGreaterThanOrEqual(100);
+        const route = completion(b, [b.start]);
+        expect(route, label).not.toBeNull();
+        let path = [b.start];
+        for (const at of route!) { expect(helpFor(b, path)?.undo, label).toBe(0); path = step(b, path, at)!; }
+        expect(solved(b, path), label).toBe(true);
+      }
+    }
+  });
+  it('keeps level 1 a corridor and gives each later plan a real choice of complete routes', () => {
+    for (const p of PLANS[0]) expect(routeCount(transformPlan(p, false, false, false))).toBe(1);
+    for (const p of PLANS[1]) expect(routeCount(transformPlan(p, false, false, false))).toBeGreaterThanOrEqual(2);
+    // The first level-3 plan is the original single-route bottleneck; the added ones each allow two or more.
+    for (const p of PLANS[2].slice(1)) expect(routeCount(transformPlan(p, false, false, false))).toBeGreaterThanOrEqual(2);
+  });
+  it('plays every plan for some seed, always as an authored plan under one of its symmetries', () => {
+    for (let level = 1; level <= 3; level++) {
+      const seen = new Set<number>();
+      for (let seed = 1; seed <= 200; seed++) {
+        const b = makeBoard(level, new Rng(seed));
+        const n = PLANS[level - 1].findIndex(p => SYMMETRIES.some(([fx, fy, t]) => sameBoard(transformPlan(p, fx, fy, t), b)));
+        expect(n, `level ${level} seed ${seed}`).toBeGreaterThanOrEqual(0);
+        seen.add(n);
+      }
+      expect(seen.size, `level ${level}`).toBe(3);
+    }
+  });
+});
+
+describe('Mossy Path looks', () => {
+  it('picks every season and berry, reproducibly, without changing the board a seed gives', () => {
+    const seasons = new Set<string>(), berries = new Set<string>();
+    for (let seed = 1; seed <= 80; seed++) {
+      const rng = new Rng(seed), b = makeBoard(6, rng), look = pickLook(rng);
+      const again = new Rng(seed);
+      expect(makeBoard(6, again)).toEqual(b);
+      expect(pickLook(again)).toEqual(look);
+      seasons.add(look.season); berries.add(look.berry);
+    }
+    expect([...seasons].sort()).toEqual([...SEASONS].sort());
+    expect([...berries].sort()).toEqual([...BERRIES].sort());
+  });
+  it('scatters three to five leaves per hedge, inside the hedge and the same on every redraw', () => {
+    for (let at = 0; at < 28; at++) {
+      const spots = leafSpots(at);
+      expect(spots).toEqual(leafSpots(at));
+      expect(spots.length).toBeGreaterThanOrEqual(3);
+      expect(spots.length).toBeLessThanOrEqual(5);
+      expect(spots.every(([x, y]) => Math.abs(x) <= 1 && Math.abs(y) <= 1)).toBe(true);
+    }
   });
 });
 
@@ -133,6 +208,17 @@ describe('Mossy Path levels 4-7 boards', () => {
         expect(route.indexOf(berryFork), label).toBeLessThan(route.length - 1);
         expect(dist(b, b.start, berry), label).toBeLessThan(dist(b, b.start, b.pond));
       }
+    }
+  });
+  it('has six authored mazes per level, each reached by some seed', () => {
+    for (const level of MAZE_LEVELS) {
+      expect(MAZES[level], `level ${level}`).toHaveLength(6);
+      const authored = MAZES[level].map(r => parseMaze(r)), seen = new Set<number>();
+      for (let seed = 1; seed <= 300; seed++) {
+        const b = makeBoard(level, new Rng(seed));
+        seen.add(authored.findIndex(a => FLIPS.some(([fx, fy]) => JSON.stringify(flipBoard(a, fx, fy)) === JSON.stringify(b))));
+      }
+      expect([...seen].sort(), `level ${level}`).toEqual([0, 1, 2, 3, 4, 5]);
     }
   });
   it('picks an authored board, flipped but never transposed, and is reproducible per seed', () => {

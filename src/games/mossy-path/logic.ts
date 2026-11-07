@@ -1,15 +1,42 @@
 import type { Rng } from '../../engine/random';
 
 export interface Board { rows: number; cols: number; tiles: number[]; start: number; pond: number; berry?: number }
-export const PLANS = [
-  { name: 'A winding trail: bloom seven tiles', rows: 3, cols: 3, tiles: [0, 1, 2, 5, 6, 7, 8], start: 0, pond: 6 },
-  { name: 'An open patch: plan a route through twelve tiles', rows: 3, cols: 4, tiles: Array.from({ length: 12 }, (_, i) => i), start: 0, pond: 11 },
-  { name: 'Two rocks: visit fourteen tiles through narrow passages', rows: 4, cols: 4, tiles: [0, 1, 2, 3, 4, 7, 8, 9, 10, 11, 12, 13, 14, 15], start: 4, pond: 15 },
-] as const;
-export const planFor = (level: number) => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
+export interface Plan { rows: number; cols: number; tiles: readonly number[]; start: number; pond: number }
+const open = (rows: number, cols: number, rocks: readonly number[] = []) => Array.from({ length: rows * cols }, (_, i) => i).filter(i => !rocks.includes(i));
+/**
+ * Levels 1–3, frozen coverage plans; a seed picks one and flips or transposes it. Every plan stays within 4 × 4,
+ * so `completion`'s memo key (`mask * 16 + at`) holds and a transposed plan keeps cells at 100 units.
+ */
+export const PLANS: readonly (readonly Plan[])[] = [
+  [
+    { rows: 3, cols: 3, tiles: [0, 1, 2, 5, 6, 7, 8], start: 0, pond: 6 },
+    { rows: 4, cols: 3, tiles: [0, 1, 2, 3, 6, 7, 8, 11], start: 2, pond: 11 },
+    { rows: 4, cols: 4, tiles: [0, 4, 8, 12, 13, 14, 15, 11], start: 0, pond: 11 },
+  ],
+  [
+    { rows: 3, cols: 4, tiles: open(3, 4), start: 0, pond: 11 },
+    { rows: 3, cols: 4, tiles: open(3, 4, [5]), start: 3, pond: 11 },
+    { rows: 3, cols: 3, tiles: open(3, 3), start: 0, pond: 8 },
+  ],
+  [
+    { rows: 4, cols: 4, tiles: open(4, 4, [5, 6]), start: 4, pond: 15 },
+    { rows: 4, cols: 4, tiles: open(4, 4, [0, 6]), start: 4, pond: 15 },
+    { rows: 4, cols: 4, tiles: open(4, 4, [1, 10]), start: 0, pond: 12 },
+  ],
+];
+const PLAN_NAMES = [
+  'A winding trail: bloom every tile',
+  'An open patch: plan a route through every tile',
+  'Two rocks: visit fourteen tiles through narrow passages',
+];
+const planLevel = (level: number) => Math.max(0, Math.min(PLANS.length - 1, level - 1));
 export function makeBoard(level: number, rng: Rng): Board {
   if (isMaze(level)) return makeMaze(level, rng);
-  const p = planFor(level), flipX = rng.chance(0.5), flipY = rng.chance(0.5), transpose = rng.chance(0.5);
+  const set = PLANS[planLevel(level)], p = set[rng.int(0, set.length - 1)];
+  const flipX = rng.chance(0.5), flipY = rng.chance(0.5), transpose = rng.chance(0.5);
+  return transformPlan(p, flipX, flipY, transpose);
+}
+export function transformPlan(p: Plan, flipX: boolean, flipY: boolean, transpose: boolean): Board {
   const cols = transpose ? p.rows : p.cols, rows = transpose ? p.cols : p.rows;
   const transform = (i: number) => {
     const r = flipY ? p.rows - 1 - Math.floor(i / p.cols) : Math.floor(i / p.cols);
@@ -63,27 +90,39 @@ export function helpFor(b: Board, path: readonly number[]): { undo: number; next
 
 /* Levels 4–7, *find the way*: hedge mazes whose open tiles form a tree, so there is one route between any two tiles. */
 export const isMaze = (level: number) => level >= 4;
-/** Frozen boards, rows top first: `S` start, `P` pond, `B` berry, `.` moss, `#` hedge. A seed picks one and flips it. */
+/** Frozen boards (six per level), rows top first: `S` start, `P` pond, `B` berry, `.` moss, `#` hedge. A seed picks one and flips it. */
 export const MAZES: Record<number, readonly (readonly string[])[]> = {
   4: [
     ['S....', '####.', 'P....'],
     ['S.###', '#...#', '###.P'],
     ['..S##', '.####', '....P'],
+    ['S..#P', '##.#.', '##.#.', '##...'],
+    ['S.....', '#####.', '......', 'P#####'],
+    ['#...S', '#.###', '#...#', '###.P'],
   ],
   5: [
     ['##..#', 'S..#P', '##...'],
     ['S...#', '#.#.#', '#.#.P'],
     ['S.#.P', '#...#', '##.##'],
+    ['S...', '#.##', '#..P'],
+    ['S..#.', '##...', '####P'],
+    ['#S...', '##.#.', '##.#P'],
   ],
   6: [
     ['#.#.#.#', 'S......', '######.', 'P......'],
     ['S..#...', '#.##.#.', '#....#P', '#.#####'],
     ['S.#...', '#.#.#.', '....#.', '###.#P'],
+    ['S.....', '#.###.', '##.##.', 'P.....'],
+    ['S.#.P', '#...#', '#.#.#'],
+    ['S...##', '#.#.#.', '###...', '###.#P'],
   ],
   7: [
     ['#.##B##', '.......', '##.###.', 'S....#P'],
     ['##B#.##', 'S.....P', '#.###.#', '...##.#'],
     ['#.#B#.P', 'S.....#', '####.##', '###...#'],
+    ['S.....P', '#.##.##', '#B#...#'],
+    ['B..S...', '######.', '###....', '####.#P'],
+    ['#B##.##', 'S.....P', '###.###', '##...##'],
   ],
 };
 const MAZE_NAMES: Record<number, string> = {
@@ -92,7 +131,7 @@ const MAZE_NAMES: Record<number, string> = {
   6: 'Look before you go: dead ends one step deep',
   7: 'Snack on the way: get the berry, then the pond',
 };
-export const levelName = (level: number) => MAZE_NAMES[level] ?? planFor(level).name;
+export const levelName = (level: number) => MAZE_NAMES[level] ?? PLAN_NAMES[planLevel(level)];
 export function parseMaze(rows: readonly string[]): Board {
   const cols = rows[0].length, tiles: number[] = [];
   let start = -1, pond = -1, berry: number | undefined;
@@ -186,4 +225,17 @@ export function mazeTouch(b: Board, level: number, s: MazeState, at: number): { 
     branches: miss ? [...s.branches, at] : s.branches, reached: progress ? [...s.reached, at] : s.reached,
   };
   return { state, move: { kind: 'forward', miss, berry: at === b.berry && !s.berry, pond: at === b.pond, deadEnd: deadEnd(b, at), progress } };
+}
+
+/* A seeded look for the round: the moss season and the berry kind. Neither changes a rule; drawn once per board. */
+export const SEASONS = ['spring', 'autumn', 'snow'] as const;
+export const BERRIES = ['red', 'blue', 'strawberry'] as const;
+export interface Look { season: (typeof SEASONS)[number]; berry: (typeof BERRIES)[number] }
+/** Picked after the board, so a seed's board is the same with or without a look. */
+export const pickLook = (rng: Rng): Look => ({ season: SEASONS[rng.int(0, SEASONS.length - 1)], berry: BERRIES[rng.int(0, BERRIES.length - 1)] });
+/** A small, fixed scatter per hedge (3–5 leaves at offsets in −1..1), from the cell index so redraws never move it. */
+export function leafSpots(at: number): [number, number][] {
+  let h = Math.imul(at + 1, 2654435761) >>> 0;
+  const next = () => { h = Math.imul(h ^ (h >>> 15), 2246822519) >>> 0; h ^= h >>> 13; return (h >>> 0) / 4294967296; };
+  return Array.from({ length: 3 + Math.floor(next() * 3) }, () => [next() * 2 - 1, next() * 2 - 1]);
 }
