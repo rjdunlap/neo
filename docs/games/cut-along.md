@@ -20,8 +20,8 @@
 | 3 | Straight across: longer lines, level and slanted |
 | 4 | Zigzag and waves: lines that turn corners and bend |
 | 5 | Curves and a circle, cut either way round |
-| 6 | Corners: a square and a triangle |
-| 7 | Picture shapes: heart, house, leaf, fish or cloud |
+| 6 | Corners: three of a square, a triangle, a door and a kite |
+| 7 | Picture shapes: three of heart, house, leaf, fish, cloud, star and moon |
 | 8 | The piece that fits: choose the outline for the gap, then cut it |
 
 <!-- end generated -->

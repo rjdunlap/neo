@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, errors, log, scene, tap, screenshot, launch, finished }) {
-/** Cut Along by touch: level 1 by taps, two strays at 3 (two misses, the glow), level 5's circle both ways round, a level 6 portrait screenshot, a wrong outline at 8. */
+/** Cut Along by touch: level 1 by taps, two strays at 3 (two misses, the glow), level 5's circle both ways round, level 7 upright in the garland with a star or moon, a wrong outline at 8. */
 async function cutAlongPlay() {
   const state = () => page.evaluate(() => { const g = neo.scene.game; return { misses: g.misses, hints: g.hints, glow: g.glow, index: g.index }; });
   const idle = () => page.waitForFunction(() => neo.scene.finished || (neo.scene.game && !neo.scene.game.busy), null, { timeout: 20000 });
@@ -67,10 +67,27 @@ async function cutAlongPlay() {
     await sticker(n);
   }
 
-  // Level 6 upright: one screenshot of the first sheet.
+  // Level 7 upright: relaunch until the garland holds a star or a moon, screenshot that sheet, then cut every shape.
   await page.setViewportSize({ width: 768, height: 1024 });
-  await launch('cut-along', 6); await idle(); await page.waitForTimeout(500);
-  await screenshot('cut-along-6-portrait');
+  const night = (p) => p === 'star' || p === 'moon';
+  let pick = null;
+  for (let tries = 0; tries < 30; tries++) {
+    await launch('cut-along', 7); await idle();
+    pick = await page.evaluate(() => { const g = neo.scene.game; return { theme: g.theme, pieces: g.cuts.map((c) => c.piece) }; });
+    if (pick.theme === 'garland' && pick.pieces.some(night)) break;
+  }
+  assert.ok(pick.theme === 'garland' && pick.pieces.some(night), `a garland with a star or moon: ${JSON.stringify(pick)}`);
+  n = await stickers();
+  let shot = false;
+  for (let guard = 0; guard < 6 && !(await page.evaluate(() => neo.scene.finished)); guard++) {
+    await idle();
+    if (await done()) break;
+    const piece = await page.evaluate(() => neo.scene.game.active?.cut.piece);
+    if (!shot && night(piece)) { await page.waitForTimeout(400); await screenshot('cut-along-7-garland-portrait'); shot = true; }
+    await cutActive();
+  }
+  await sticker(n);
+  st = await state(); assert.deepEqual([st.misses, st.hints], [0, 0], 'level 7 cut cleanly');
   await page.setViewportSize({ width: 1024, height: 768 });
 
   // Level 8: cut a fifth into a piece that does not fit (one miss, it closes again), then cut the fitting one on every board.
@@ -92,7 +109,7 @@ async function cutAlongPlay() {
   await sticker(n);
   st = await state(); assert.deepEqual([st.misses, st.hints], [1, 0]);
   assert.deepEqual(errors, [], 'page errors');
-  log('Cut Along: level 1 by taps, two strays and the glow at 3, the level-5 circle both ways, level 6 upright, a wrong outline at 8');
+  log('Cut Along: level 1 by taps, two strays and the glow at 3, the level-5 circle both ways, a level-7 garland with a star or moon upright, a wrong outline at 8');
 }
 
 return { cutAlongPlay };
