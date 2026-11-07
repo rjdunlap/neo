@@ -4,7 +4,8 @@ import type { View } from '../../engine/view';
  * Bolt Boards' rules. Boards hang on a 700 × 560 wall, held by bolts at fixed wall points. A board with two or more of
  * its bolts in is pinned in its authored pose, with one it hangs straight down from that bolt, with none it is down.
  * Every pose is computed exactly; there is no physics. Levels 1–5 drop removed bolts in a toolbox with no limit;
- * levels 6–7 need an open hole on the wall for every bolt taken out.
+ * levels 6–8 need an open hole on the wall for every bolt taken out. Level 8 (played between 5 and 6) has holes to
+ * spare, so no order gets stuck.
  */
 
 export const WALL_W = 700;
@@ -27,7 +28,7 @@ export interface Pt { x: number; y: number }
 export interface BoardDef { x: number; y: number; w: number; h: number; z: number }
 export interface BoltDef { x: number; y: number; board: number }
 /**
- * A frozen board set. Bolt `b` starts in hole `b`; `holes` lists the extra holes, which start empty (levels 6–7).
+ * A frozen board set. Bolt `b` starts in hole `b`; `holes` lists the extra holes, which start empty (levels 6–8).
  * `friend` is set at friend levels (5 and 7).
  */
 export interface Puzzle { boards: BoardDef[]; bolts: BoltDef[]; holes: Pt[]; friend?: Pt }
@@ -62,6 +63,8 @@ export const PLANS: readonly BoltPlan[] = [
   { id: 5, name: 'Find the friend', goal: 'friend', holes: false, litHoles: false, coveredMiss: true, scenes: 1 },
   { id: 6, name: 'Every bolt needs a hole', goal: 'all', holes: true, litHoles: true, coveredMiss: true, scenes: 1, par: [4, 8] },
   { id: 7, name: 'Holes and a friend', goal: 'friend', holes: true, litHoles: false, coveredMiss: true, scenes: 1, par: [2, 8] },
+  /** Played between 5 and 6: the hole-parking action before the planning it carries. No `par`, since no order gets stuck. */
+  { id: 8, name: 'Plenty of holes', goal: 'all', holes: true, litHoles: true, coveredMiss: true, scenes: 2 },
 ];
 export const planFor = (level: number): BoltPlan => PLANS[Math.max(0, Math.min(PLANS.length - 1, Math.floor(level) - 1))];
 
@@ -159,7 +162,7 @@ export type Refusal = 'gone' | 'covered' | 'no-hole' | 'hole-closed';
 export type Removal = { state: number[] } | { refused: Refusal };
 export const removed = (r: Removal): r is { state: number[] } => 'state' in r;
 
-/** Take bolt `b` out: into the toolbox (no `hole`) at levels 1–5, into an open hole at levels 6–7. */
+/** Take bolt `b` out: into the toolbox (no `hole`) at levels 1–5, into an open hole at levels 6–8. */
 export function remove(p: Puzzle, s: State, b: number, holes: boolean, hole?: number): Removal {
   if (s[b] !== b) return { refused: 'gone' };
   if (covered(p, s, b)) return { refused: 'covered' };
@@ -261,7 +264,7 @@ export function solve(p: Puzzle, s: State, plan: BoltPlan, cap = SEARCH_CAP): Mo
 export type Hint = { move: Move } | { undo: true };
 
 /**
- * What to glow. Levels 1–5: a free bolt on the highest board that has to go, which nothing can cover. Levels 6–7:
+ * What to glow. Levels 1–5: a free bolt on the highest board that has to go, which nothing can cover. Levels 6–8:
  * the first move of a shortest solution, or the undo arrow at a proved dead end (or when the search ran out).
  */
 export function hintMove(p: Puzzle, s: State, plan: BoltPlan): Hint | null {

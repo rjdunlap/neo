@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, errors, log, scene, tap, screenshot, launch, finished }) {
-/** Bolt Boards by touch: level 1 solved by taps, level 7 with a covered tap and a covered hole (two misses, one hint), level 6 upright; one sticker each. */
+/** Bolt Boards by touch: level 1 solved by taps, level 7 with a covered tap and a covered hole (two misses, one hint), level 8's authored swing and free covered hole, level 6 upright; one sticker each. */
 async function boltBoardsPlay() {
   const state = () => page.evaluate(() => { const g = neo.scene.game; return { busy: g.busy, misses: g.misses, hints: g.hints, state: g.state.join(','), lifted: g.lifted, hinted: !!g.hinted, finished: g.finished }; });
   const idle = () => page.waitForFunction(() => neo.scene.finished || (neo.scene.game && !neo.scene.game.busy), null, { timeout: 15000 });
@@ -52,13 +52,35 @@ async function boltBoardsPlay() {
   await solveAll();
   st = await state(); assert.deepEqual([st.misses, st.hints], [2, 1], 'level 7 solved with the two misses and one hint');
   await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, stickers7, { timeout: 15000 });
+  // Level 8: the authored first board; a swing covers one of three holes, a covered hole is free, no wander hint.
+  await launch('bolt-boards', 8); await idle(); await page.waitForTimeout(400);
+  const stickers8 = await page.evaluate(() => kit.store.data.stickers.length);
+  const first = await page.evaluate(async () => {
+    const L = await import('/src/games/bolt-boards/logic.ts'), g = neo.scene.game, p = g.puzzle, s = g.state;
+    return { boards: p.boards.length, open: L.openHoles(p, s).length, bolt: p.bolts[0], hole: L.holeAt(p, p.bolts.length) };
+  });
+  assert.deepEqual([first.boards, first.open], [2, 3], 'level 8 starts on the authored board: two boards, three open holes');
+  await tapWall(first.bolt); await tapWall(first.hole); await idle(); await page.waitForTimeout(700);
+  const swung = await page.evaluate(async () => {
+    const L = await import('/src/games/bolt-boards/logic.ts'), g = neo.scene.game, p = g.puzzle, s = g.state, open = L.openHoles(p, s);
+    let closed = -1;
+    for (let h = 0; h < L.holeCount(p); h++) if (!s.includes(h) && !open.includes(h)) closed = h;
+    return { free: L.freeBolts(p, s).map((b) => p.bolts[b])[0], closed: closed < 0 ? null : L.holeAt(p, closed), extraOpen: open.filter((h) => h >= p.bolts.length).length };
+  });
+  assert.ok(swung.closed && swung.extraOpen === 1, 'the swing covers one hole; one of the three still glows');
+  await screenshot('bolt-boards-8-swing');
+  await tapWall(swung.free); await tapWall(swung.closed); await page.waitForTimeout(300);
+  st = await state(); assert.deepEqual([st.misses, st.hints, st.lifted], [0, 0, null], 'a covered hole at level 8 is free');
+  await solveAll();
+  st = await state(); assert.deepEqual([st.misses, st.hints], [0, 0], 'level 8 solved over two scenes with no miss and no wander hint');
+  await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, stickers8, { timeout: 15000 });
   // Level 6 upright: one screenshot.
   await page.setViewportSize({ width: 768, height: 1024 });
   await launch('bolt-boards', 6); await idle(); await page.waitForTimeout(600);
   await screenshot('bolt-boards-6-portrait');
   await page.setViewportSize({ width: 1024, height: 768 });
   assert.deepEqual(errors, [], 'page errors');
-  log('Bolt Boards: level 1 by taps; level 7 with a covered bolt, a covered hole and the hint, solved; level 6 upright');
+  log('Bolt Boards: level 1 by taps; level 7 with a covered bolt, a covered hole and the hint, solved; level 8 authored swing, free covered hole, two scenes; level 6 upright');
 }
 
 return { boltBoardsPlay };

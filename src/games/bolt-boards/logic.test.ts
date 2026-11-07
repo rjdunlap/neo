@@ -208,15 +208,17 @@ describe('Bolt Boards frozen list', () => {
   });
 
   it('can get stuck at levels 6–7, so holes really matter', () => {
-    for (const { plan, p } of all().filter((x) => x.plan.holes)) {
+    for (const { plan, p } of all().filter((x) => x.plan.holes && x.plan.id !== 8)) {
       expect(reachable(p, true).some((s) => stuck(p, s, plan))).toBe(true);
     }
   });
 
-  it('opens one or two holes at the start of level 6 and one at level 7', () => {
+  it('opens one or two holes at the start of level 6, one at level 7 and three or four at level 8', () => {
     for (const { plan, p } of all().filter((x) => x.plan.holes)) {
       const n = openHoles(p, startState(p)).length;
-      if (plan.id === 6) { expect(n).toBeGreaterThanOrEqual(1); expect(n).toBeLessThanOrEqual(2); } else expect(n).toBe(1);
+      if (plan.id === 6) { expect(n).toBeGreaterThanOrEqual(1); expect(n).toBeLessThanOrEqual(2); }
+      else if (plan.id === 8) { expect(n).toBeGreaterThanOrEqual(3); expect(n).toBeLessThanOrEqual(4); }
+      else expect(n).toBe(1);
     }
   });
 
@@ -237,6 +239,55 @@ describe('Bolt Boards frozen list', () => {
     const p = PUZZLES[1][0], qs = poses(p, startState(p));
     expect(p.boards.length).toBe(3);
     for (const q of qs) expect(q.kind === 'hanging' && Math.abs(q.rot) < 1e-9).toBe(true);
+  });
+});
+
+describe('Bolt Boards level 8, Plenty of holes', () => {
+  const eight = PUZZLES[8], plan = planFor(8);
+
+  it('is a hole level with lit holes, a covered-bolt miss and no par, so no wander hint', () => {
+    expect(plan).toMatchObject({ id: 8, goal: 'all', holes: true, litHoles: true, coveredMiss: true, scenes: 2 });
+    expect(plan.par).toBeUndefined();
+    expect(eight.length).toBeGreaterThanOrEqual(10);
+  });
+
+  it('never gets stuck: every reachable state of every board has a free bolt with an open hole, until all are down', () => {
+    for (const p of eight) {
+      const states = reachable(p, true, 100_000);
+      expect(states.length).toBeLessThan(100_000);
+      for (const s of states) if (!done(p, s, 'all')) expect(moves(p, s, true).length).toBeGreaterThan(0);
+    }
+  });
+
+  it('has a move on every board that swings a board over a hole that was open', () => {
+    for (const p of eight) {
+      const found = reachable(p, true, 100_000).some((s) => moves(p, s, true).some((m) => {
+        const now = openHoles(p, apply(s, m));
+        return openHoles(p, s).some((h) => h !== m.hole && !now.includes(h));
+      }));
+      expect(found).toBe(true);
+    }
+  });
+
+  it('authors its first board: two boards side by side, three open holes; the left board’s first bolt swings over exactly one', () => {
+    const p = eight[0], s = startState(p);
+    expect(p.boards.length).toBe(2);
+    expect(p.bolts.every((b) => p.bolts.filter((c) => c.board === b.board).length === 2)).toBe(true);
+    expect(openHoles(p, s).length).toBe(3);
+    expect(p.bolts.some((_, b) => covered(p, s, b))).toBe(false);
+    const first = moves(p, s, true);
+    expect(first.length).toBe(4 * 3);
+    for (const m of first) {
+      const n = apply(s, m), extra = p.holes.map((_, k) => p.bolts.length + k);
+      const closed = extra.filter((h) => p.boards.some((_, j) => polyOverlaps(p, j, pose(p, n, j), holeAt(p, h), HOLE)));
+      if (p.bolts[m.bolt].board === 0) {
+        expect(closed.length).toBe(1);
+        // Right over it: the hole's whole circle lies inside the hanging board, so it reads as covered.
+        const h = holeAt(p, closed[0]), q = pose(p, n, 0);
+        expect(q.kind).toBe('hanging');
+        if (q.kind === 'hanging') expect(Math.abs(h.x - q.x)).toBeLessThanOrEqual(p.boards[0].h / 2 - HOLE);
+      } else expect(closed.length).toBeLessThanOrEqual(1);
+    }
   });
 });
 
