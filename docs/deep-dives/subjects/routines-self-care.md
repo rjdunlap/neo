@@ -23,7 +23,7 @@ No school or adolescent self-care standard was opened. The older ladder is a des
 
 ## On the island today
 
-Read [GAMES](../../GAMES.md#cozy-village-everyday-life), the four games' plan tables and registrations, and the notebook candidates. These are local implementation facts, not fresh play verification.
+Read [GAMES](../../GAMES.md#cozy-village), the four games' plan tables and registrations, and the notebook candidates. These are local implementation facts, not fresh play verification.
 
 | Built / proposed neighbor | Current action and coverage | Boundary for this study |
 | --- | --- | --- |

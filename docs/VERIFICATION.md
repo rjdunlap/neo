@@ -1,5 +1,9 @@
 # Puddle Island verification
 
+## 2026-11-07 — Generated game inventory docs (codebase item 3)
+
+Changed: 175 pages `docs/games/<id>.md` split from README rows and GAMES.md entries (every cell and paragraph checked present); `src/content/game-docs.ts` and its test generate each page's block, the README tables and counts and the GAMES.md index; `npm run game-docs`; workflow pointers in AGENTS.md, SESSION-GUIDE, GAME-BATCHES and both agents. Ran: `npm run typecheck`; `npm test` (323 files, 6,034 tests); the stale check failed on a hand-edited Starts as line and passed once restored; `node scripts/check-links.mjs`; `git diff --check`. Open: no build or browser suite (no app code changed); the VERIFICATION.md split stays undone.
+
 ## 2026-11-07 — Pile Match slice 1: looks, windy drop-in, more shapes, varied level 1
 
 Changed: three seeded looks, the windy drop-in, ten shapes a level, a seeded second kind at level 1 (PR #1371). Ran: `npm run typecheck`; `npx vitest run src/games/pile-match src/games/registry` (51 pass, 16 pile-match rule tests); `BROWSER_SUITE=pilematch` (level 1 one wrong kind, level 8 full tray, put-backs and hint, level 4 portrait screenshot in the autumn look); `BROWSER_SUITE=fingerdemo FINGER_ONLY=pile-match FINGER_LEVELS=1` (9.6 s). Open: build, other suites and offline not run; whether the drop-in makes "underneath" clearer to a three-year-old is a [device check](DEVICE-CHECKS.md).
@@ -68,6 +72,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Generated game docs (`src/content/game-docs.test.ts`) | 2026-11-07: typecheck, full 6,034 units; stale check proven to fail on an edited page | [Generated game inventory docs](#2026-11-07--generated-game-inventory-docs-codebase-item-3) | Runs in every `npm test`; rerun `npm run game-docs` after a game, land or page change |
 | `circuitgarden`, `fingerdemo` (`circuit-garden`) | 2026-11-06 (level 3, `f46bcc55`): typecheck, full `npm test` (321 files), 25 rule tests, one scripted school level 3 play (two wrong Checks 2/1, Help, early Done inert, Undo clears Check, finish) plus portrait screenshot; `fingerdemo` at levels 1, 2 and 3 (levels 1–2 earlier: `circuitgarden` suite) | [Entry](archive/VERIFICATION-2026-11-06.md#2026-11-06--circuit-garden-level-3-mend-the-lantern-energywaves-e3) | no build, no device check, no science-educator reading |
 | `measuringpost`, `fingerdemo` (`measuring-post`) | 2026-11-06 (commit fcf535cc): typecheck, full `npm test` (321 files, 5,991 tests), `measuringpost` levels 1–4 (level 3 landscape, level 4 portrait), `fingerdemo` at levels 3 and 4 | [Entry](archive/VERIFICATION-2026-11-06.md#2026-11-06--measuring-post-levels-34-measurement-m3m4) | no build, offline or `world` run since levels 3–4; no device check |
 | `playdateworkshop`, `fingerdemo` (`playdate-workshop`) | 2026-11-06 (`974b560b`): typecheck, full units (5789) before review fixes then the game's and content/voice-clip tests (210), build; `playdateworkshop` (level 1, level 3 portrait); `fingerdemo` at 1–3 (8.4 s, 21.8 s, 17.4 s) | [Entry](archive/VERIFICATION-2026-11-06.md#2026-11-06--playdate-workshop-levels-13-new-game-social-emotional-slice-2) | No offline check; full units not re-run after review fixes; whether children understand passing and plan comparison, and iPad speech, are open |

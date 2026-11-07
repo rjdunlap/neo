@@ -1,0 +1,37 @@
+# Critter Sort
+
+<!-- generated: from src/games/critter-sort; edit the text below the end mark (npm run game-docs) -->
+
+**ID:** `critter-sort` · **Land:** Barnyard · **Ages:** pre-K–school · **Challenge:** noticing · **Plays by:** touch · **Ghost finger:** yes
+
+**Skills:** sorting, logic, attributes, data
+
+| Band | Levels, easiest first |
+| --- | --- |
+| pre-K | 6, 1, 12, 2, 3, 13 |
+| school | 2, 12, 3, 13, 4, 5, 7, 8, 9, 11 |
+
+| Level | Plays like |
+| --- | --- |
+| 1 | One hoop, one critter already in: put in every critter that fits the rule (like "wearing a hat") |
+| 2 | Two hoops with different rules, one critter already in each; some critters fit neither |
+| 3 | Overlapping hoops, one critter already in the middle: the middle is for critters that fit both rules |
+| 4 | Already sorted: what is the rule? Pick the right picture |
+| 5 | A not hoop, one critter already in: put in every critter that does not fit the picture rule |
+| 6 | Just a few: three critters, one already in the hoop; which of the other two fits? |
+| 7 | Where does the new one go? Place one newcomer in a sorted diagram: left, right, both, or neither |
+| 8 | A new sign: sort six critters into a hoop or onto the leaf mat, then sort the same six again by a new rule |
+| 9 | This but not that: one hoop for critters that fit the first sign but not the crossed-out sign; all others go on the leaf mat |
+| 11 | How many? Sort six critters, tap to count each hoop and the leaf mat aloud, then choose the part with more |
+| 12 | Like the big plant: one hoop, one little plant already in; put in every little plant that shares the big plant’s pictured feature |
+| 13 | Same and different: overlapping hoops for the big plant’s leaves and petal marks; the middle is both, the leaf mat is different both ways |
+
+<!-- end generated -->
+
+**Starts as:** drag critters into a hoop: "wearing a hat"
+
+**Grows into:** a few-critter entry with one already sorted, a worked example at the first levels, two hoops, overlapping hoops where the middle is both, a leaf mat for neither, guess the rule, a hoop for "not", then place one newcomer in an already sorted diagram re-sort the same six under a new sign, then sort by “this but not that”, count each sorted part and choose which has more, and sort little plants grown from one big plant's seeds by its leaf or petal marks
+
+## Design notes
+
+*After Venn-diagram sorting and Zoombinis.* Critters, some wearing top hats, are dragged into hoops labelled with picture signs (a hat, a brown or white paint blob, floppy or pointy ears, whiskers). Levels: one hoop, two separate hoops (rules that never overlap), overlapping hoops where the middle means both, a guessing level where critters are already sorted and the child picks the rule from three pictures, then a red-lined picture that means **not**: the critters outside the hoop share the pictured property. Level 6 (Just a few) is the pre-K entry, placed before level 1 in pre-K's order (6, 1, 2, 3): three critters and one hoop, with one critter that fits already inside as a worked example; two are left to sort and one of them fits. After two wrong drops the hint glows the critter she just missed (in its right place), not the first unplaced one. Preschool does not offer it yet. Levels 1, 2, 3 and 5 also open with a worked example: after the pet says the rule it points out a critter already in its place ("Look, the bear is already in its place."), one in the hoop at level 1, one in each hoop at level 2, one in the middle only at level 3 and, at level 5, one that is not like the picture. Examples are never moved by the bot or the hint, and at least two critters are left to carry. Every part of the diagram gets at least one critter and exactly one offered rule sorts the guessing round that way (rule-tested). A wrong hoop is a miss with a reason ("the cow is not brown"; "the dog is brown and has floppy ears, so it goes in the middle"); putting a critter back on bare grass is never a miss. At levels 2, 3 and 5, a code-drawn leaf mat below the hoops is the explicit outside answer: critters that fit neither hoop go there at 2–3, and those that fit the crossed-out picture go there at 5. A correct mat drop gets a spoken reason; a wrong mat drop explains the hoop it belongs in. Every critter must reach a hoop or the mat before these rounds finish. The two-miss glow and ghost finger include the mat and keep the hint on the missed critter. One-hoop entries 1 and 6 still allow outsiders to stay on the grass. Level 7, **Where does the new one go?**, is school only: five critters are already sorted across the two overlapping hoops and mat; the sixth is the only movable newcomer. Each diagram retains an example of left, right, both and neither, and all four newcomer destinations occur across seeds. Place the newcomer in each of three diagrams to finish; wrong places get the usual reason and a glow after two misses. Level 8, **A new sign**, is school only: sort six critters into one hoop or onto the leaf mat, then the sign flips and the same six hop back to the grass. The pet names the new rule and all six are sorted again. Both rules have in/out examples and classify the group differently. Both passes are needed for one sticker; mistakes and hints accumulate across them, with the glow cleared when the sign changes. The ghost finger sorts both passes. Level 9, **This but not that**, adds one hoop with a paired sign: the first picture must fit and the crossed-out second picture must not. Each seeded group has an accepted critter, an A-and-B exclusion and one matching neither. Correct and wrong placements explain both parts; bare grass stays free and two misses glow the missed critter’s destination. Sort all six into the hoop or onto the leaf mat in each of two diagrams for one sticker. The ghost finger follows the same A-and-not-B rule. Level 11, **How many?**, sorts six critters into two separate hoops and the leaf mat, with groups of one, two and three. After sorting, tap any critter to count its part aloud: a ring marks it and its part’s badge grows once. Repeated taps replay its assigned number without inflating the count or recording misses/hints; counting is optional support. Choose the pictured part with more using the three buttons below. Wrong comparison choices give a spoken quantity comparison and a retry; two wrong choices reveal totals and glow the largest part, adding one hint for that diagram. Sorting retains its usual miss/help accounting. Complete two sort-and-compare diagrams for one sticker; the ghost finger sorts, counts all parts and chooses the largest. Levels 12 and 13 (genetics G4, [definition](../definitions/same-kind-different-sprouts.md)) sort little plants grown from one big plant's seeds, drawn in code (`plants.ts`) with the big plant standing beside or above the hoops; the family is stated by the pet, never deduced, and no mechanism is taught. Level 12, **Like the big plant**, has one hoop for the big plant's leaf shape or petal marks: the plants that match go in, the rest may stay on the grass. Level 13, **Same and different**, has two overlapping hoops (leaf shape and petal marks), the middle for both and the leaf mat for neither. Wrong drops get a spoken reason ("This little plant has ..., the big plant has ..."), grass stays free, two misses glow the missed plant's destination, and the ghost finger sorts both. Pre-K follows 6, 1, 12, 2, 3, 13; school follows IDs (2, 12, 3, 13, 4, 5, 7, 8, 9, 11), skipping reserved 10; existing saved levels and pins keep their meaning.

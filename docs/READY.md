@@ -58,7 +58,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 Requested by the developer 2026-11-07 to make the code cheaper for AI to write and maintain; evidence and targets are in the [review](CODEBASE-REVIEW-2026-11-07.md). One item per session, in this order unless an item says otherwise. The sweeps (5, 6) touch every game folder, so each pilots on 2–3 games first and merges while no game PR is open on those files.
 
-- **Generate the README inventory and per-game GAMES.md pages** (after item 2; stale-check in CI; docs plus a script test; **claimed 2026-11-07 by `claude/generated-game-docs`**: `docs/games/<id>.md`, README, GAMES.md, a generator test): [item 3](CODEBASE-REVIEW-2026-11-07.md#3-generate-the-game-inventory-docs).
 - **Move level ladders into `logic.ts`** (scripted sweep; typecheck, unit tests, a source-scan test): [item 5](CODEBASE-REVIEW-2026-11-07.md#5-move-level-ladders-into-logicts).
 - **Promote shared code out of `letter-trails`, `word-search`, `pond-typing` and `critter-sort`** (typecheck, unit tests, build, `fingerdemo` filtered to two importing games): [item 6](CODEBASE-REVIEW-2026-11-07.md#6-promote-shared-code-out-of-game-folders).
 - **Scene-owned cleanup helpers on `GameContext`** (shell tier; migrate 2–3 games, the rest as touched): [item 7](CODEBASE-REVIEW-2026-11-07.md#7-one-standard-way-to-clean-up-after-a-round).

@@ -74,7 +74,7 @@ Done in the follow-up (2026-10-13), as pure moves with every link repointed by `
 Left as is, on purpose:
 
 - `EXECUTION-QUEUE.md` (18 KB) is the live state of the Codex coordinator, which rewrites its "Current checkpoint" every hour; trimming it from another session risks a conflict with the owner. The coordinator can shorten it when it next edits.
-- `IDEAS.md` (396 KB) and `GAMES.md` (131 KB) are only read by section, so they cost nothing until opened.
+- `IDEAS.md` (396 KB) is only read by section, so it costs nothing until opened; `GAMES.md` became a generated index of per-game pages on 2026-11-07.
 - About 40 registered worktrees (roughly 30 under `~/.codex/worktrees`) are mostly merged branches. That is disk and clutter, not tokens; the cleanup procedure below applies.
 
 ## Agent setup review (2026-10-23)

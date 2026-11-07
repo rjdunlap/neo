@@ -1,0 +1,33 @@
+# Rule Machine
+
+<!-- generated: from src/games/rule-machine; edit the text below the end mark (npm run game-docs) -->
+
+**ID:** `rule-machine` · **Land:** Puzzle Peaks · **Ages:** pre-K–school · **Challenge:** logic · **Plays by:** touch · **Ghost finger:** yes
+
+**Skills:** patterns, prediction, deduction, adding
+
+| Band | Levels, easiest first |
+| --- | --- |
+| pre-K | 1 |
+| school | 2–4 |
+
+| Level | Plays like |
+| --- | --- |
+| 1 | Hat machine |
+| 2 | One more goes in |
+| 3 | What does it do? |
+| 4 | Covered machine |
+
+<!-- end generated -->
+
+**Starts as:** creatures walk into a hat machine and come out wearing a hat; tap the picture of what the next one will look like
+
+**Grows into:** level 1 (pre-K): two machines (two of hat, blue, big, spots), three creatures walk through by themselves (tap to send sooner), then two wait and she taps one of three pictures (the look applied, unchanged, or another look); the first prediction on each machine is free, a later wrong one is a miss with a spoken reason, two glow the right picture (Show me included; one hint per machine). Level 2 (school): a tray of five numbered cars, she sends four to the hopper (tap or drag) and an in → out table fills in; the machine is +1 or +2, and she taps the count on three pads before each run (pads are free until two rows show). A counted wrong keeps the pads, a second glows the right one. The right pad rings green beside her pick. No equal sign anywhere. Level 3 "What does it do?" (school): three cars go through with pads (the third counts) while a see-through window shows the counters change, then she hangs one of three rule cards (+2, +3, −1) on the machine; a wrong card is a miss with the newest row ringed and read out, a second glows the right card. Level 4 "Covered machine" (school): the window is covered and the shelf (the rule and two trap cards) is out from the start; she chooses which cars to feed (never a miss), a card tap is not judged while more than one card still fits, a card some row breaks is a miss, the one card left hangs, then one last car is sent and its prediction counts; Peek lifts the cover for one run and counts as the hint. School range 2–4. Puzzle Peaks
+
+## Design notes
+
+*pre-K level 1, school levels 2–4 · levels 1–4 · after the algebra-balance study; [definition](../definitions/rule-machine.md).* A machine with a hopper and an out chute; she watches what goes in and what comes out, then says what the next one will come out as. Art is code-drawn. The out-table is in → out columns and the game never draws or says an equal sign. After every prediction the right answer rings green beside her pick, right or wrong.
+
+Levels: 1 "Hat machine" (pre-K): two machines, each two of hat, blue, big or spots (Pip is left out under blue, as teal sits too near blue). Three creatures walk through by themselves (tap to send sooner), then two wait; she taps one of three pictures (the look applied, unchanged, another look). The first prediction on each machine is free. 2 "One more goes in" (school): two machines (+1 then +2, seeded order); a tray of five cars numbered 1–5, she sends four (tap or drag to the hopper), and before each run taps one of three pads (the right count and its neighbours). Pads are free until two rows show. A counted wrong is one miss with a spoken reason (`rm.one-more`, `rm.two-more`) and the pads stay; a second wrong is a second miss and glows the right pad. One hint per machine, Show me included; asking again makes the ghost tap. 3 "What does it do?" (school): two machines from +2, +3, −1; a tray of five distinct counts 1–9; she sends three cars with pads (the first two free, the third counts) while the see-through window shows the counters change (new counters yellow, a crossed-out counter on a take-away). The front badge shows "?" until her card hangs; then a shelf of three cards (+2, +3, −1) comes down. A wrong card is one miss, the newest row is ringed red and read out ("4 went in and 3 came out. Plus two would make 6."); a second wrong glows the right card (one hint); the right card hangs and one more car goes through with counted pads. 4 "Covered machine" (school): rules ×2, ×3, +2, +4 on a tray of 0–4, the window covered and the shelf (the rule and two trap partners, cards 120×120) out from the start. Feeding any car is never a miss and runs without pads. A card tap is never judged while more than one card fits (or nothing has gone in): it wiggles and the pet says "More than one card still fits…"; a card some row breaks is one miss (that row ringed and read out); when one card is left it hangs. Then the lowest-numbered unfed car is sent by itself and its prediction always counts (skipped if all five were fed). Help: glow or Show me on the car that tells the open cards apart, or the right card once settled, or the right pad; asking again makes the ghost do it. Peek (an eye on the cover) lifts the lid for one run so the counters show, and counts as the machine's one hint (shared with glow and Show me). The bot feeds the settling car, taps the card, then the pad. The wording "went in / came out", "one more / two more" and "plus two / take one away / twice as many / three times as many" is not yet checked against CCSS 3.OA.D.9, 4.OA.C.5 or England Year 6 (open).
+
+---
