@@ -187,3 +187,7 @@ Changed: `hat-band` level 4 (PR #1329, branch `claude/hat-band-4`): arrange mode
 Ran (commit `95a25da4` plus a voice-line-only change `56131fb2`, Vite dev on http://localhost:5518): `npm run typecheck`; `npm test` (319 files, 5870 tests pass, including 17 new hat-band tests: all 512 songs judged, repair from every song within 7 steps, undo bound, clock, pitches, rounds, bot, layout at four views, registry ranges); `npm run build`; `BROWSER_SUITE=hatband HAT_LEVELS=1,4` (level 1 landscape regression; level 4 portrait: Undo, empty-part Check, two wrong Checks, hint, Play, accepted Check, sticker, record [4,2,1]; screenshot `hat-band-4-portrait`); `BROWSER_SUITE=fingerdemo FINGER_ONLY=hat-band` at levels 1 and 4. `game-reviewer`: no rule breaks; its note on a long opening instruction was fixed.
 Not run: the level 3 browser case (unchanged), the offline check, any device check.
 Open: low-hat audibility, tune-alone distinguishability, speech of "low hat" and "part", interest across seven songs and the educator reading ([device checks](../DEVICE-CHECKS.md)).
+
+## 2026-11-06 — Bolt Boards deep dive (docs only)
+
+Changed: `docs/deep-dives/bolt-boards.md` and its tracker, READY, backlog and waiting-on-developer rows (PR #1331); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built; two decisions wait on the developer ([list](../WAITING-ON-DEVELOPER.md)).

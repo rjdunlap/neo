@@ -1,5 +1,9 @@
 # Puddle Island verification
 
+## 2026-11-07 — Bolt Boards level 9 definition (docs only)
+
+Changed: `docs/definitions/bolt-boards-put-it-back.md`, READY and the dive (PR #1348); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. The definition's figures (64 states/28 dead on the authored board, dead ends on all 40 level-3/4 boards, 2,561 dead states each with a covered unplaced bolt, max 256 states, `boardLayout` rectangles at the four views) came from a throwaway tsx probe against the real `logic.ts`, not a committed test. Open: no code checks run; nothing built.
+
 ## 2026-11-06 — Fruit Slice deep dive (docs only)
 
 Changed: `docs/deep-dives/fruit-slice.md` and its tracker, READY, backlog, IDEAS and waiting-on-developer rows (PR #1346); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; two decisions wait on the developer ([list](WAITING-ON-DEVELOPER.md)).
@@ -74,10 +78,6 @@ Changed: `scripts/bolt-boards-puzzles.ts` second pass (seed 20261106) gives 20 f
 ## 2026-11-06 — Swing Pals more friends and leaf goals (PR #1332)
 
 Changed: riders cat, dog, pig, cow and seeded leaf goals (bell, chimes, apple, nest) in `src/games/swing-pals/`, voice lines and the how-to card. Ran: `npm run typecheck`; `npx vitest run src/games/swing-pals` (28 pass, 5 new); `npx vitest run src/content` (176 pass); one scripted browser probe (dev server, `/classic/`, 768×1024 portrait) at levels 1 and 3 until apple, nest and chimes rounds appeared, with screenshots of the goals and the cat, pig and cow riders. Not run: `fingerdemo` (fresh-content tier), build, offline check, any device. Open: the short-hook clearance rule in the dive was impossible as written, so the test compares against the original five; a cow on the short rope crowding the hook stays a device check.
-
-## 2026-11-06 — Bolt Boards deep dive (docs only)
-
-Changed: `docs/deep-dives/bolt-boards.md` and its tracker, READY, backlog and waiting-on-developer rows (PR #1331); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built; two decisions wait on the developer ([list](WAITING-ON-DEVELOPER.md)).
 
 ## Coverage summary
 
