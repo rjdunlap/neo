@@ -6,7 +6,10 @@
 /** Why `command` must not run, or null when it may. `platform` decides the macOS-only sed rule. */
 export function blockReason(command, platform = process.platform) {
   if (typeof command !== 'string') return null
-  if (/\bnpm run test:browser\b|\bscripts\/browser-check\.mjs\b/.test(command) && !/\bBROWSER_SUITE=/.test(command)) {
+  // Only a command that starts the harness: npm or node at a command position. Reading, grepping or listing its
+  // files (`wc -c scripts/browser-check.mjs`, `grep "npm run test:browser" README.md`) is not a run.
+  const runsHarness = /(^|[\s;&|(])npm\s+run\s+test:browser\b|(^|[\s;&|(])node\s+(?:-\S+\s+)*\S*browser-check\.mjs\b/.test(command)
+  if (runsHarness && !/\bBROWSER_SUITE=/.test(command)) {
     return 'Never start the browser harness without a filter (AGENTS.md, "Verification budget"): set BROWSER_SUITE (and its game filter) on the same command, e.g. GAME_URL=… BROWSER_SUITE=fingerdemo FINGER_ONLY=<id> npm run test:browser.'
   }
   // BSD sed reads the word after -i as a backup suffix, so `sed -i -e …` leaves a stray `<file>-e` copy (one was committed).
