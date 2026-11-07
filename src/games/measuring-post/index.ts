@@ -160,6 +160,10 @@ class MeasuringPost implements Game {
     this.layout = layoutFor(ctx.view);
   }
 
+  get hints(): number {
+    return this.tally.count;
+  }
+
   get current(): Task {
     return this.tasks[this.task];
   }
@@ -395,7 +399,10 @@ class MeasuringPost implements Game {
     n.x = -32;
     const u = unitArt(attr, rec.unit.size);
     const ub = u.getLocalBounds();
-    const us = Math.min(1, 56 / Math.max(ub.width, ub.height));
+    // One scale for both sizes (set by the big unit), so a big unit never looks smaller than a little one.
+    const big = unitArt(attr, 'big'), bb = big.getLocalBounds();
+    big.destroy();
+    const us = Math.min(1, 56 / Math.max(bb.width, bb.height));
     u.scale.set(us);
     u.position.set(22 - (ub.x + ub.width / 2) * us, -(ub.y + ub.height / 2) * us);
     c.addChild(n, u);
