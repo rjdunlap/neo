@@ -882,7 +882,7 @@ class SwingPals implements Game {
         this.hintLit = true;
         this.hints++;
       }
-      void this.ctx.say('swing-pals.hint-first');
+      if (this.hintLit) void this.ctx.say('swing-pals.hint-first');
       return;
     }
     if (this.busy) return;
