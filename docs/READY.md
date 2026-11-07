@@ -6,7 +6,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **`puddle-gobble`, slices 3–4 in the dive's order** (`bubble-beach`; toddler to school; slice 3 level 10 *Count the dots*, slice 4 level 11 *Too full*; slice 2 is built): [build slices](deep-dives/puddle-gobble.md#build-slices-in-order).
+- **`puddle-gobble`, slices 3–4 in the dive's order** (`bubble-beach`; toddler to school; slice 3 level 10 *Count the dots*, slice 4 level 11 *Too full*; slice 2 is built; claimed 2026-11-07 by `claude/puddle-gobble-dots-too-full`): [build slices](deep-dives/puddle-gobble.md#build-slices-in-order).
 - **`domino-run` slice 2, level 9 *Where will it stop?*** (school; new interaction: typecheck, unit tests, one scripted play with one wrong prediction and one hint, one portrait screenshot, `fingerdemo` at 9, build): [build slices](deep-dives/domino-run.md#build-slices-in-order).
 - **`lift-it` slice 1, looks, parcels, three more friends and varied lines at 1–3** (preschool to school; typecheck, rule tests, one filtered `liftit` play at level 3 with one portrait screenshot in the autumn look; no `fingerdemo`, since the bot's actions do not change; build only if shared files change): [build slices](deep-dives/lift-it.md#build-slices-in-order).
 - **`block-garden` slice 1, looks, flower kinds, more gardens and a longer pre-K round** (pre-K to grown-up; typecheck, rule tests, one filtered `blockgarden` play at level 5 with one portrait screenshot in the autumn look; no `fingerdemo`, since the bot's actions do not change; build only if shared files change): [build slices](deep-dives/block-garden.md#build-slices-in-order).
