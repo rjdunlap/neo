@@ -27,6 +27,8 @@ Counterpoint: the [2026-11-06 token review](DEVELOPMENT-WORKFLOW.md#token-review
 
 ## 3. Generate the game inventory docs
 
+**Built 2026-11-07.** Each game has a page, `docs/games/<id>.md` (175 pages): a generated block (ID, land, ages, challenge, inputs, skills, each band's levels and every level's `describeLevel`), then by hand its **Starts as** and **Grows into** lines (the old README cells) and its design notes (the old GAMES.md entry; a leading bands-only italic was dropped as generated, an inspiration kept). `npm run game-docs` writes those blocks, the README's two inventory tables and counts and the GAMES.md index (by land, keeping each `### <Name>` anchor); `src/content/game-docs.test.ts` fails `npm test`, so CI, when any is stale. A one-off split checked that every old row cell and every old entry paragraph landed in its page. README went from 213 KB to about 141 KB, GAMES.md from 611 KB to about 16 KB; the counts it fixed were stale (131 games play school levels, not 119; 19 play grown-up levels, not 16). The VERIFICATION.md split was left out. The original analysis follows.
+
 The README inventory (213 KB, 672 commits since 2026-10-01) and GAMES.md (609 KB, 641 commits) restate what the registry and how-to cards already hold: name, bands, levels, `describeLevel`, rules. Generate a per-game page and the inventory from the modules, keep only the hand-written design notes by hand, and have CI fail when the generated files are stale. VERIFICATION.md (1,277 commits) would also conflict less as one small file per dated entry.
 
 ## 4. Trim AGENTS.md

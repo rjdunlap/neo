@@ -39,7 +39,7 @@ No study opened here establishes middle-school engagement with these proposals, 
 
 ## On the island today
 
-Read the current `logic.ts`/registrations, [GAMES](../../GAMES.md#music-mountain-music), the [Beat Builder dive](../beat-builder.md), [music gap](../../IDEAS.md#gaps-in-the-catalog) and the notebook's [music seeds](../../IDEAS.md#touch-native-learning-and-music-apps). Source code is the current behavior where an earlier dive's audit predates a build.
+Read the current `logic.ts`/registrations, [GAMES](../../GAMES.md#music-mountain), the [Beat Builder dive](../beat-builder.md), [music gap](../../IDEAS.md#gaps-in-the-catalog) and the notebook's [music seeds](../../IDEAS.md#touch-native-learning-and-music-apps). Source code is the current behavior where an earlier dive's audit predates a build.
 
 - **Jelly Drums:** lap–school, free notes and tune memory; a broad-touch lap entry already exists. Keep short musical imitation here, including its researched decision modes.
 - **Song Maker:** lap–school, free grid play, visible/card copying, pitch-pattern continuation and a four-note ear tune (levels 1–7). Creative tunes can be kept; copied tunes cannot. The existing *answer the phrase* proposal belongs here, not in a new melody game.
