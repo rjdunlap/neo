@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  applyPull, authored, bestRig, cardSpots, CARD, circleBox, crateBottom, crateHook, CRATE_H, endsRight, FRIENDS, friendBox, guessCards,
+  applyPull, authored, bestRig, cardSpots, CARD, circleBox, crateBottom, crateHook, CRATE_H, endsRight, fallbackRound, FRIENDS, friendBox, guessCards,
   handleAt, HANDLE_HIT, HOOK_HIT, hooksOf, KNOT, knotsCards, ledgeSpots, liftLayout, lineFits, makeRound, paws, pawsCards, petCorner,
-  PLANS, planFor, pullDirection, pullers, pullersAt, ratio, rectsOverlap, rigOf, RIGS, rigsFor, roundFits, shellButtons, travel, TRAY_HIT,
+  PARCELS, parcelsFor, pawSpots, PAW_HALF, PLANS, planFor, pullDirection, pullers, pullersAt, ratio, rectsOverlap, rigOf, RIGS, rigsFor, roundFits, shellButtons, travel, TRAY_HIT,
   wheels, workingRigs, works, type Line, type Rect,
 } from './logic';
 
@@ -148,6 +148,60 @@ describe('plans and rounds', () => {
   }
 });
 
+describe('fresh content', () => {
+  it('the authored first lines are unchanged', () => {
+    const nums = (p: number) => authored(planFor(p)).map(({ w, h, g, l, waiting, puller, ask }) => [w, h, g, l, waiting, puller, ask]);
+    expect(nums(1)).toEqual([[1, 2, 1, 0, 'bunny', 'duck', undefined]]);
+    expect(nums(2)).toEqual([[2, 2, 2, 0, 'frog', 'mouse', undefined]]);
+    expect(nums(3)).toEqual([[4, 2, 2, 2, 'bunny', 'bear', undefined]]);
+    expect(nums(4)).toEqual([[4, 1, 2, 2, 'duck', 'bear', undefined]]);
+    expect(nums(5)).toEqual([[4, 2, 3, 0, 'bunny', 'mouse', 'ground'], [2, 2, 0, 2, 'duck', 'frog', 'ledge']]);
+    expect(nums(6)).toEqual([[6, 3, 3, 0, 'frog', 'bear', 'ground']]);
+    // The definition's first parcel: a crate of apples.
+    expect(authored(planFor(1))[0].parcel).toBe('apples');
+  });
+
+  it('a parcel always agrees with its stones: light things on 1–2, heavy on 3–6', () => {
+    for (let w = 1; w <= 6; w++) for (const p of PARCELS) expect(lineFits(planFor(4), { ...line(w, 1, 3, 2), parcel: p })).toBe(w >= 2 && w <= 4 && parcelsFor(w).includes(p));
+    for (const p of PLANS) for (const l of [...authored(p), ...fallbackRound(p)]) {
+      expect(l.parcel).toBeDefined();
+      expect(parcelsFor(l.w)).toContain(l.parcel);
+      expect(lineFits(p, l)).toBe(true);
+    }
+    expect(roundFits(planFor(1), fallbackRound(planFor(1)))).toBe(true);
+  });
+
+  it('levels 1–3 vary over 500 seeds, every value in each widened range appears, and all friends and parcels turn up', () => {
+    const seen: Record<number, { w: Set<number>; h: Set<number> }> = {};
+    const friends = new Set<string>();
+    const parcels = new Set<string>();
+    for (const plan of PLANS) {
+      seen[plan.id] = { w: new Set(), h: new Set() };
+      for (let seed = 1; seed <= 500; seed++)
+        for (const l of makeRound(plan, new Rng(seed), false).lines) {
+          seen[plan.id].w.add(l.w);
+          seen[plan.id].h.add(l.h);
+          friends.add(l.waiting).add(l.puller);
+          parcels.add(l.parcel!);
+          expect(parcelsFor(l.w)).toContain(l.parcel);
+          if (plan.id === 1) expect([l.w, l.g, l.l]).toEqual([1, 1, 0]);
+          if (plan.id === 2) expect([l.g, l.h, l.l]).toEqual([l.w, 2, 0]);
+          if (plan.id === 3) {
+            expect([l.g, l.l]).toEqual([2, 2]);
+            expect(workingRigs(l)).toEqual(['movable', 'both']);
+          }
+        }
+    }
+    const sorted = (s: Set<number>) => [...s].sort();
+    expect(sorted(seen[1].h)).toEqual([2, 3]);
+    expect(sorted(seen[2].w)).toEqual([1, 2]);
+    expect(sorted(seen[3].w)).toEqual([3, 4]);
+    expect(sorted(seen[3].h)).toEqual([1, 2, 3]);
+    expect([...friends].sort()).toEqual([...FRIENDS].sort());
+    expect([...parcels].sort()).toEqual([...PARCELS].sort());
+  });
+});
+
 describe('layout', () => {
   for (const [name, v] of Object.entries(VIEWS)) {
     it(`fits the ${name} view at every ledge height`, () => {
@@ -180,6 +234,15 @@ describe('layout', () => {
         for (const p of [...L.ground, ...ledge.pullers, ledge.waiting]) {
           expect(inside(friendBox(p))).toBe(true);
           expect(clear(friendBox(p))).toBe(true);
+        }
+        // The paw prints beside each handle stay in view and clear of every friend's face and both wheels.
+        const avoid = [...L.ground, ...ledge.pullers, ledge.waiting].map(friendBox).concat([circleBox(L.branchHook, 50), circleBox(crateHook(L, 0), 50)]);
+        for (const rig of RIGS) for (let n = 1; n <= 6; n++) {
+          const pts = pawSpots(v, handleAt(L, v, rig, ln, 0), n, avoid);
+          for (const p of pts) {
+            expect(inside(circleBox(p, PAW_HALF))).toBe(true);
+            if (rig !== 'direct') for (const a of avoid) expect(rectsOverlap(circleBox(p, PAW_HALF), a)).toBe(false);
+          }
         }
         const top = crateBottom(L, h) - CRATE_H;
         expect(top).toBeGreaterThan(0);

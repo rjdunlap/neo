@@ -1,6 +1,6 @@
 import { Circle, Container, Graphics, Text, type FederatedPointerEvent } from 'pixi.js';
 import { Critter, CRITTERS, type CritterSpec } from '../../art/critter';
-import { ink, swatch, wood } from '../../art/palette';
+import { cream, ink, swatch, wood } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
@@ -17,8 +17,8 @@ import {
   LEVELS,
   applyPull, bestRig, BRANCH_Y, CARD, cardSpots, countsMisses, crateBottom, crateHook, CRATE_H, CRATE_W, endsRight, guessCards, handleAt,
   HANDLE_HIT, HOOK_HIT, hooksOf, knotsCards, ledgeSpots, ledgeY, liftLayout, makeRound, paws, pawsCards, planFor, pullDirection, pullers,
-  ratio, rigOf, rigsFor, TRAY_HIT, travel, WHEEL_R, works, type Friend, type Haul, type HookId, type Hooks, type LiftLayout, type Line,
-  type Plan, type Pt, type Rig,
+  circleBox, friendBox, LOOKS, PARCELS, parcelOf, pawSpots, ratio, rigOf, rigsFor, TRAY_HIT, travel, WHEEL_R, works, type Friend, type Haul, type HookId, type Hooks,
+  type LiftLayout, type Line, type Look, type Parcel, type Plan, type Pt, type Rig,
 } from './logic';
 
 /** Each level's authored first lines lead its first round of a session. */
@@ -30,21 +30,35 @@ const SPECS: Record<Friend, CritterSpec> = {
   bear: CRITTERS.bear,
   mouse: { color: 'white', ears: 'round', earColor: 'pink', snout: 'nose', noseColor: 0xff8fa3, whiskers: true },
   frog: { color: 'green', ears: 'none', snout: 'none', belly: true },
+  cat: CRITTERS.cat,
+  dog: CRITTERS.dog,
+  pig: CRITTERS.pig,
 };
-const NAMES: Record<Friend, string> = { bunny: 'bunnies', duck: 'ducks', mouse: 'mice', bear: 'bears', frog: 'frogs' };
+const NAMES: Record<Friend, string> = { bunny: 'bunnies', duck: 'ducks', mouse: 'mice', bear: 'bears', frog: 'frogs', cat: 'cats', dog: 'dogs', pig: 'pigs' };
 const BRASS = { fill: 0xf2c14e, line: 0xb8862b };
 const ROPE = 0xa8865a;
 const KNOT_COLOR = 0xf3e2c0;
-const LEAF = [0x6cc070, 0x5bb062, 0x7fd07c];
+/** Each round's sky, hills and leaves; the meadow is the game's first look. */
+const SCENES: Record<Look, { sky: [number, number]; hills: number[]; sun: boolean; leaf: number[] }> = {
+  meadow: { sky: [0xbfe6ff, 0xf3fbe8], hills: [0xbfe3a0, 0x9fd38a, 0x86c96e], sun: true, leaf: [0x6cc070, 0x5bb062, 0x7fd07c] },
+  spring: { sky: [swatch.blue.light, swatch.pink.light], hills: [swatch.green.light, 0xbfe3a0, 0x9fd38a], sun: true, leaf: [0x7fd07c, 0x6cc070, 0x8fdc86] },
+  autumn: { sky: [swatch.yellow.light, swatch.orange.light], hills: [swatch.orange.light, swatch.yellow.light, swatch.brown.light], sun: true, leaf: [swatch.orange.fill, swatch.red.fill, swatch.yellow.fill] },
+  evening: { sky: [swatch.purple.light, swatch.orange.light], hills: [0x9fb8d8, 0x86a8c8, 0x7096b8], sun: false, leaf: [0x4f9a68, 0x45895c, 0x5aa874] },
+};
 const STONE = 0x9a9aa8;
 const FRIEND_SCALE = 0.4;
+/** The parcel's place on the crate, left of the crate's wheel. */
+const PARCEL_X = -CRATE_W / 2 + 12;
 /** Visual spacing of the knots along the rope. */
 const KNOT_GAP = 46;
 /** The ghost finger's stroke. */
 const STROKE = 190;
 
 function voice(f: Friend) {
-  if (f === 'duck') sfx.animal('quack');
+  if (f === 'cat') sfx.animal('meow');
+  else if (f === 'dog') sfx.animal('woof');
+  else if (f === 'pig') sfx.animal('oink');
+  else if (f === 'duck') sfx.animal('quack');
   else if (f === 'bear') sfx.animal('growl');
   else if (f === 'bunny') sfx.animal('hop');
   else if (f === 'frog') sfx.croak();
@@ -78,11 +92,56 @@ function crateArt(w: number): Graphics {
   return g;
 }
 
-function parcelArt(): Graphics {
-  return new Graphics()
-    .roundRect(-26, -40, 52, 40, 6).fill(swatch.red.fill).stroke({ width: 4, color: swatch.red.line })
-    .moveTo(0, -40).lineTo(0, 0).stroke({ width: 5, color: swatch.yellow.fill })
-    .ellipse(-9, -46, 10, 7).ellipse(9, -46, 10, 7).stroke({ width: 4, color: swatch.yellow.fill });
+/** A parcel standing on (0, 0), about 56 across and 50 tall. */
+function parcelArt(kind: Parcel): Graphics {
+  const g = new Graphics();
+  const { red, yellow, green, orange, blue, pink, white, brown, purple, teal } = swatch;
+  switch (kind) {
+    case 'apples':
+      // A wicker basket heaped with three red apples.
+      g.circle(-14, -30, 12).circle(14, -30, 12).circle(0, -38, 12).fill(red.fill).stroke({ width: 3, color: red.line });
+      g.moveTo(0, -50).lineTo(3, -56).stroke({ width: 3, color: wood.line });
+      g.moveTo(-28, -26).lineTo(28, -26).lineTo(22, 0).lineTo(-22, 0).closePath().fill(brown.fill).stroke({ width: 4, color: brown.line });
+      g.moveTo(-25, -14).lineTo(25, -14).stroke({ width: 3, color: brown.line, alpha: 0.6 });
+      break;
+    case 'kite':
+      // A diamond kite on its tail of bows.
+      g.moveTo(0, -56).lineTo(20, -32).lineTo(0, -8).lineTo(-20, -32).closePath().fill(blue.fill).stroke({ width: 4, color: blue.line });
+      g.moveTo(0, -56).lineTo(0, -8).moveTo(-20, -32).lineTo(20, -32).stroke({ width: 3, color: blue.line, alpha: 0.6 });
+      g.moveTo(0, -8).quadraticCurveTo(10, -2, 4, 0).stroke({ width: 3, color: ink });
+      g.ellipse(-6, -2, 6, 4).ellipse(14, -2, 6, 4).fill(yellow.fill);
+      break;
+    case 'cake':
+      // Two tiers, pink icing and a candle.
+      g.roundRect(-26, -22, 52, 22, 5).fill(cream).stroke({ width: 4, color: brown.line });
+      g.roundRect(-18, -40, 36, 18, 5).fill(cream).stroke({ width: 4, color: brown.line });
+      g.roundRect(-26, -24, 52, 8, 4).roundRect(-18, -42, 36, 8, 4).fill(pink.fill);
+      g.rect(-3, -54, 6, 12).fill(blue.fill).ellipse(0, -59, 4, 6).fill(yellow.fill);
+      break;
+    case 'pumpkin':
+      // A round orange pumpkin with three darker ribs and a green stem.
+      g.ellipse(0, -22, 28, 22).fill(orange.fill).stroke({ width: 4, color: orange.line });
+      g.moveTo(-10, -42).quadraticCurveTo(-18, -22, -10, -2).moveTo(10, -42).quadraticCurveTo(18, -22, 10, -2).moveTo(0, -44).lineTo(0, 0)
+        .stroke({ width: 3, color: orange.line });
+      g.roundRect(-4, -54, 8, 13, 3).fill(green.fill).stroke({ width: 2, color: green.line });
+      break;
+    case 'books':
+      // A stack of three books.
+      g.roundRect(-26, -16, 52, 16, 3).fill(purple.fill).stroke({ width: 3, color: purple.line });
+      g.roundRect(-22, -32, 46, 16, 3).fill(green.fill).stroke({ width: 3, color: green.line });
+      g.roundRect(-24, -48, 44, 16, 3).fill(red.fill).stroke({ width: 3, color: red.line });
+      g.rect(18, -13, 5, 10).rect(-19, -29, 5, 10).rect(14, -45, 5, 10).fill(white.fill);
+      break;
+    case 'teapot':
+      // A round teapot with a spout, a handle and a lid knob.
+      g.moveTo(18, -24).quadraticCurveTo(34, -28, 34, -44).stroke({ width: 7, color: teal.fill });
+      g.ellipse(-24, -24, 8, 11).stroke({ width: 5, color: teal.fill });
+      g.ellipse(0, -22, 22, 20).fill(teal.fill).stroke({ width: 4, color: teal.line });
+      g.roundRect(-12, -46, 24, 7, 3).fill(teal.line).circle(0, -50, 5).fill(yellow.fill);
+      g.roundRect(-16, -4, 32, 4, 2).fill(teal.line);
+      break;
+  }
+  return g;
 }
 
 function pawArt(): Graphics {
@@ -149,7 +208,12 @@ class LiftIt implements Game {
   private readonly hookRings = new Graphics();
   private readonly crate = new Container();
   private crateBody: Graphics | null = null;
-  private readonly parcel = parcelArt();
+  /** The parcel rides on the crate, then the waiting friend holds it on the ledge until the next line. */
+  private readonly parcel = new Container();
+  private held = false;
+  readonly look: Look;
+  /** Autumn leaves drifting past the ledge, moved each frame from the view. */
+  private readonly drift = new Container();
   private readonly rope = new Graphics();
   private readonly fixedWheel = wheelArt();
   private readonly wheelLayer = new Container();
@@ -185,8 +249,13 @@ class LiftIt implements Game {
     const first = !authoredShown.has(this.plan.id) && !ctx.demo;
     if (first) authoredShown.add(this.plan.id);
     this.lines = makeRound(this.plan, ctx.rng, first).lines;
+    this.look = ctx.rng.pick(LOOKS);
     this.layout = liftLayout(ctx.view);
-    this.backdrop = new Backdrop({ sky: [0xbfe6ff, 0xf3fbe8], hills: [0xbfe3a0, 0x9fd38a, 0x86c96e], horizon: 0.78, clouds: 2, sun: true, seed: 271 }, ctx.view);
+    const scene = SCENES[this.look];
+    this.backdrop = new Backdrop({ sky: scene.sky, hills: scene.hills, horizon: 0.78, clouds: 2, sun: scene.sun, seed: 271 }, ctx.view);
+    this.drift.eventMode = 'none';
+    if (this.look === 'autumn')
+      for (let i = 0; i < 5; i++) this.drift.addChild(new Graphics().ellipse(0, 0, 14, 8).fill(scene.leaf[i % 3]).moveTo(-14, 0).lineTo(14, 0).stroke({ width: 2, color: wood.line, alpha: 0.5 }));
     for (const g of [this.tree, this.hookRings, this.rope, this.glow, this.fixedWheel]) g.eventMode = 'none';
     this.crate.eventMode = 'none';
     this.friendLayer.eventMode = 'none';
@@ -209,7 +278,7 @@ class LiftIt implements Game {
     this.ctx.listen(window, 'pointerup', this.release);
     this.ctx.listen(window, 'pointercancel', this.release, true);
 
-    ctx.stage.addChild(this.backdrop, this.tree, this.hookRings, this.crate, this.rope, this.fixedWheel, this.friendLayer, this.counter, this.glow, this.paws, this.handle, this.wheelLayer, this.panel);
+    ctx.stage.addChild(this.backdrop, this.tree, this.hookRings, this.crate, this.rope, this.fixedWheel, this.drift, this.friendLayer, this.counter, this.glow, this.paws, this.handle, this.wheelLayer, this.panel);
     this.crate.addChild(this.parcel);
 
     for (let i = 0; i < this.plan.tray; i++) {
@@ -279,9 +348,14 @@ class LiftIt implements Game {
     this.crateBody?.destroy();
     this.crateBody = crateArt(l.w);
     this.crate.addChildAt(this.crateBody, 0);
-    this.parcel.visible = true;
-    this.parcel.position.set(0, -CRATE_H);
-    this.parcel.scale.set(1);
+    for (const c of this.parcel.removeChildren()) c.destroy();
+    this.parcel.addChild(parcelArt(parcelOf(l)));
+    this.crate.addChild(this.parcel);
+    this.held = false;
+    this.parcel.alpha = 1;
+    // On the crate's left corner, clear of the crate's wheel and the rope tied at its middle.
+    this.parcel.position.set(PARCEL_X, -CRATE_H);
+    this.parcel.scale.set(0.95);
     this.hooks = { branch: this.plan.prebuilt === 'fixed', crate: false };
     for (const w of this.wheels) {
       w.on = null;
@@ -314,9 +388,13 @@ class LiftIt implements Game {
     const spot = ledgeSpots(L, this.view, l.h).waiting;
     // The parcel hops over to the waiting friend.
     const from = this.crate.toLocal({ x: spot.x - 40, y: spot.y }, this.ctx.stage);
+    void this.ctx.tw.to(this.parcel.scale, { x: 1, y: 1 }, { duration: 0.5 });
     await this.ctx.tw.to(this.parcel, { x: from.x, y: from.y }, { duration: 0.5, ease: ease.outBack });
     if (this.destroyed) return;
-    this.parcel.visible = false;
+    // The friend keeps it on the ledge beside them.
+    this.friendLayer.addChild(this.parcel);
+    this.held = true;
+    this.placeHeld();
     voice(l.waiting);
     waiting?.c.hop(1);
     waiting?.c.setMood('happy', 1.5);
@@ -340,6 +418,7 @@ class LiftIt implements Game {
       return;
     }
     for (const f of this.friends) void this.ctx.tw.to(f.c, { alpha: 0 }, { duration: 0.3 });
+    void this.ctx.tw.to(this.parcel, { alpha: 0 }, { duration: 0.3 });
     await this.ctx.tw.wait(0.35);
     if (this.destroyed) return;
     this.buildLine();
@@ -374,7 +453,13 @@ class LiftIt implements Game {
       f.c.position.set(p.x, p.y);
     }
     this.counter.position.set(Math.max(150, L.cx - 220), BRANCH_Y + 200);
+    if (this.held) this.placeHeld();
     this.fixedWheel.position.copyFrom(L.branchHook);
+  }
+
+  private placeHeld() {
+    const spot = ledgeSpots(this.layout, this.view, this.cur.h).waiting;
+    this.parcel.position.set(spot.x - 40, spot.y);
   }
 
   private drawTree() {
@@ -391,8 +476,21 @@ class LiftIt implements Game {
     g.roundRect(ledge.from, y, L.trunkX - ledge.from, 24, 10).fill(wood.light).stroke({ width: 5, color: wood.line });
     g.moveTo(ledge.from + 30, y + 24).lineTo(L.trunkX - 30, y + 110).stroke({ width: 10, color: wood.line });
     // Leaves along the top.
-    for (let x = L.ring.x - 120; x <= this.view.w + 60; x += 95) g.circle(x, BRANCH_Y - 40 + Math.sin(x * 0.05) * 14, 70).fill(LEAF[Math.abs(Math.round(x / 95)) % 3]);
-    g.circle(L.trunkX, BRANCH_Y + 10, 95).fill(LEAF[1]);
+    const leaf = SCENES[this.look].leaf;
+    for (let x = L.ring.x - 120; x <= this.view.w + 60; x += 95) g.circle(x, BRANCH_Y - 40 + Math.sin(x * 0.05) * 14, 70).fill(leaf[Math.abs(Math.round(x / 95)) % 3]);
+    g.circle(L.trunkX, BRANCH_Y + 10, 95).fill(leaf[1]);
+    if (this.look === 'spring')
+      // Blossom on the bough.
+      for (let x = L.ring.x - 100; x <= this.view.w + 40; x += 95)
+        for (const [dx, dy] of [[-30, 10], [18, -4], [-4, 34]]) g.circle(x + dx, BRANCH_Y - 40 + Math.sin(x * 0.05) * 14 + dy, 9).fill(swatch.pink.light).circle(x + dx, BRANCH_Y - 40 + Math.sin(x * 0.05) * 14 + dy, 3.5).fill(swatch.yellow.fill);
+    if (this.look === 'evening') {
+      // A lantern hangs from the bough, left of the ring.
+      const lx = L.ring.x - 60;
+      g.moveTo(lx, BRANCH_Y + 10).lineTo(lx, BRANCH_Y + 50).stroke({ width: 3, color: ink });
+      g.circle(lx, BRANCH_Y + 76, 34).fill({ color: swatch.yellow.light, alpha: 0.35 });
+      g.roundRect(lx - 14, BRANCH_Y + 54, 28, 40, 8).fill(swatch.yellow.fill).stroke({ width: 4, color: wood.line });
+      g.rect(lx - 10, BRANCH_Y + 48, 20, 7).fill(wood.line);
+    }
   }
 
   /* Wheels ---------------------------------------------------------------------------------------- */
@@ -679,6 +777,7 @@ class LiftIt implements Game {
       this.helperLeft -= step;
       this.haul = applyPull(this.haul, rig, l, step * 120);
     }
+    if (this.look === 'autumn') this.driftLeaves();
     if (this.fall) this.shown = this.fall.r;
     else if (!this.busy) this.shown += (this.haul.rung - this.shown) * (1 - Math.exp(-dt * 10));
     // One tick per knot going by, and the counter at levels 4–6.
@@ -771,6 +870,7 @@ class LiftIt implements Game {
     this.paws.visible = show;
     if (!show) return;
     const H = this.freeEnd();
+    const L = this.layout;
     this.handle.position.set(H.x, H.y);
     const nobody = pullers(rig, l) === 0;
     const k = this.knotArt.clear();
@@ -792,11 +892,10 @@ class LiftIt implements Game {
       if (!hide) for (let i = 0; i < need; i++) this.paws.addChild(pawArt());
     }
     const n = this.paws.children.length;
-    const side = H.x + 70 + 30 > this.view.w - 20 ? -1 : 1;
-    this.paws.children.forEach((p, i) => {
-      const row = Math.floor(i / 3), col = i % 3;
-      p.position.set(H.x + side * (70 + col * 26), H.y - 16 + row * 26);
-    });
+    const avoid = [...this.friends.map((f) => friendBox(f.c.position)), circleBox(L.branchHook, WHEEL_R), circleBox(crateHook(L, this.shown), WHEEL_R)];
+    if (this.held) avoid.push({ x: this.parcel.x - 30, y: this.parcel.y - 56, w: 60, h: 56 });
+    const spots = pawSpots(this.view, H, n, avoid);
+    this.paws.children.forEach((p, i) => p.position.copyFrom(spots[i]));
     this.paws.alpha = n && this.rock.a > 0 && Math.sin(this.t * 20) < 0 ? 0.35 : 1;
   }
 
@@ -863,6 +962,18 @@ class LiftIt implements Game {
     return { trace: { on: this.ctx.stage, x: H.x, y: H.y }, via: [{ on: this.ctx.stage, x: H.x, y: H.y + dy }], receiver: this.handle, pause: 0.35 };
   }
 
+  /** Five leaves fall slowly from the bough past the ledge, wrapping round the view. */
+  private driftLeaves() {
+    const v = this.view;
+    const top = BRANCH_Y + 40, span = Math.max(200, this.layout.groundY - top);
+    this.drift.children.forEach((leaf, i) => {
+      const k = (this.t * (0.05 + 0.012 * i) + i / 5) % 1;
+      const x = (i * 0.23 + 0.15) * v.w + Math.sin(this.t * 0.9 + i * 2) * 40 + k * 120;
+      leaf.position.set(((x % v.w) + v.w) % v.w, top + k * span);
+      leaf.rotation = Math.sin(this.t * 1.3 + i) * 0.7;
+    });
+  }
+
   /* Finish ---------------------------------------------------------------------------------------- */
 
   private async finale() {
@@ -891,7 +1002,7 @@ class LiftIt implements Game {
 
 /* Icon and sticker ------------------------------------------------------------------------------ */
 
-function liftPicture(friend: Friend | null, rise: number): Container {
+function liftPicture(friend: Friend | null, rise: number, parcel: Parcel = 'apples'): Container {
   const c = new Container();
   c.addChild(new Graphics().roundRect(-120, -250, 240, 24, 12).fill(wood.fill).stroke({ width: 4, color: wood.line }));
   const wheel = wheelArt(36);
@@ -909,7 +1020,7 @@ function liftPicture(friend: Friend | null, rise: number): Container {
     k.alive = false;
     k.scale.set(0.34);
     k.position.set(80, -150);
-    const p = parcelArt();
+    const p = parcelArt(parcel);
     p.scale.set(0.8);
     p.position.set(80, -170);
     c.addChild(new Graphics().roundRect(30, -150, 110, 16, 6).fill(wood.light).stroke({ width: 3, color: wood.line }), k, p);
@@ -936,7 +1047,7 @@ class LiftIcon extends WigglyIcon {
 
 function sticker(seed: number): Container {
   const kinds: Friend[] = ['bunny', 'duck', 'mouse', 'bear', 'frog'];
-  const c = liftPicture(kinds[Math.abs(seed) % kinds.length], 80);
+  const c = liftPicture(kinds[Math.abs(seed) % kinds.length], 80, PARCELS[Math.floor(Math.abs(seed) / kinds.length) % PARCELS.length]);
   c.scale.set(0.85);
   c.y = 90;
   return c;

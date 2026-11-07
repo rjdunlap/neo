@@ -60,15 +60,22 @@ async function liftItPlay() {
   await playOut(n);
   st = await state(); assert.deepEqual([st.misses, st.hints], [1, 1]);
 
-  // Level 3 upright: both wheels hung, one screenshot.
+  // Level 3 upright in the autumn look (relaunched until the round picks it): both wheels hung, one screenshot.
   await page.setViewportSize({ width: 768, height: 1024 });
-  await launch('lift-it', 3); await idle(); await page.waitForTimeout(400);
+  for (let i = 0; i < 20; i++) {
+    await launch('lift-it', 3); await idle();
+    if (await page.evaluate(() => neo.scene.game.look) === 'autumn') break;
+  }
+  assert.equal(await page.evaluate(() => neo.scene.game.look), 'autumn');
+  const l3 = await page.evaluate(() => { const l = neo.scene.game.cur; return [l.w, l.g, l.l, l.parcel]; });
+  assert.ok([3, 4].includes(l3[0]) && l3[1] === 2 && l3[2] === 2 && ['pumpkin', 'books', 'teapot'].includes(l3[3]), `a heavy level 3 parcel: ${l3}`);
+  await page.waitForTimeout(400);
   await step('both'); await idle(); await step('both'); await idle(); await page.waitForTimeout(400);
   assert.equal((await state()).rig, 'both', 'two wheels hung');
   await screenshot('lift-it-3-portrait');
   await page.setViewportSize({ width: 1024, height: 768 });
   assert.deepEqual(errors, [], 'page errors');
-  log('Lift It: level 1 by strokes, level 6 with a wrong rig and a requested hint, level 3 upright with two wheels');
+  log('Lift It: level 1 by strokes, level 6 with a wrong rig and a requested hint, level 3 upright in the autumn look with a heavy parcel and two wheels');
 }
 
 return { liftItPlay };

@@ -17,14 +17,11 @@ A friend waits on the tree's ledge for a parcel. She hauls the crate up by dragg
 
 `LEVELS` is `{ preschool: 1–2, prek: 2–4, school: 3–6 }`, with no `order` or `entryLevels`. A round is three parcels; each level's first round of a session leads with its authored line(s).
 
-**Content pools.** Four rigs (`direct`, `fixed`, `movable`, `both`); `ratio` is typed `1 | 2`. Five friend kinds (bunny, duck, mouse, bear, frog); the waiting friend and the pullers are two different kinds. One look: a `Backdrop` with seed 271 (one sky, three hill greens), one leaf palette, one wooden crate with a stone dot per stone, one red parcel with a yellow bow. Speech uses the ideal rule only.
+**Content pools.** Four rigs (`direct`, `fixed`, `movable`, `both`); `ratio` is typed `1 | 2`. Eight friend kinds (bunny, duck, mouse, bear, frog, cat, dog, pig); the waiting friend and the pullers are two different kinds. One look: a `Backdrop` with seed 271 (one sky, three hill greens), one leaf palette, one wooden crate with a stone dot per stone, one red parcel with a yellow bow. Speech uses the ideal rule only.
 
 **Accounting.** Levels 1–4 record no misses; a tug on a rig that cannot lift only stretches the rope and wobbles the crate, and the knot guess at 4 is a prediction. At 5–6 the first tug per rig per parcel on a rig that cannot lift, or that ends at the wrong friends, is a miss ("We tried that one" after); at 6 a wrong card is a miss and the right card lights. A parcel's second miss glows `bestRig`'s hooks (or the right card), one hint per parcel. Show a hint pulls a stroke with her at 1–2 and glows at 3–6. One sticker per round; nothing is filed in the journal.
 
-**Known gaps.**
-- At levels 1–3 every parcel is numerically the same: `seededLine` returns fixed `w`, `h`, `g` and `l`, and `lineFits` requires them, so only the friends change. Level 1 is always one stone, two rungs, one puller; a preschooler on 1–2 never meets a different ledge or crate.
-- One look and one parcel drawing. The definition's first rounds speak of apples and pumpkins; the build draws the same red box every time, so nothing says what the friend is waiting for.
-- Five friend kinds, while `CRITTERS` already has cat, dog and pig specs.
+**Known gaps.** (Slice 1 closed the fixed lines at 1–3, the single look and parcel, and the five friend kinds: see *What was built*.)
 - Not built from the definition: the **replay** button from level 3 (play the last haul again with the knots counted aloud) and a drawn pet paw for the level 1–2 hint (the hint pulls with a spoken line only).
 - The ladder stops at two strands. The rule the game teaches (the ideal advantage is the number of strands holding the load, [OpenStax 9.3](https://openstax.org/books/physics/pages/9-3-simple-machines)) has its next step one rope-tie away: with both wheels hung, tying the rope's end to the crate instead of the branch ring makes three strands.
 - The numbers step is abrupt. Level 4's guess is free; level 6 adds the request, hidden paws and two cards at once. No level asks only "how many paws?".
@@ -116,7 +113,7 @@ By the [standing rules](../archive/DECISIONS-2026-10-23.md#standing-rules) (S8) 
 
 ## Build slices, in order
 
-1. **Looks, parcels, three more friends and varied lines at 1–3** (preschool to school; typecheck, rule tests, one filtered `liftit` play at level 3 with one portrait screenshot in the autumn look; no `fingerdemo`, since the bot's actions do not change; build only if shared files change).
+1. **Built.** **Looks, parcels, three more friends and varied lines at 1–3** (preschool to school; typecheck, rule tests, one filtered `liftit` play at level 3 with one portrait screenshot in the autumn look; no `fingerdemo`, since the bot's actions do not change; build only if shared files change).
 2. **The replay button and the helping paw** (from the definition, not built; level 3 up: the replay button replays the last haul with the knots counted aloud; levels 1–2: a drawn pet paw rides the handle when Show a hint pulls; typecheck, unit tests including a layout test for the button clear of the pet and shell, one browser play at level 4 that taps replay, one portrait screenshot; build because voice lines change).
 3. **Level 9 *How many paws?*** placed between 4 and 5 (new level on the existing card interaction: typecheck, rule and registry/how-to tests with the new `order`, one browser play of 9 with one wrong card, `fingerdemo` at 9, build because voice lines change).
 4. **Level 7 *Three ropes*** (new interaction, the movable knot: layout probe at 768×1024 first, then unit tests, one scripted play with one wrong rig and one hint, one portrait screenshot, `fingerdemo` at 7, build).
@@ -126,4 +123,11 @@ Gated: level 10 (decision 1). Device check to add when slice 4 lands: whether th
 
 ## What was built in this session
 
-Nothing: research and ideation only. Links and `git diff --check` ran.
+Slice 1 (looks, parcels, three more friends, varied lines at 1–3), on branch `claude/lift-it-looks-parcels`.
+
+- Four seeded round looks (`meadow`, `spring` blossom, `autumn` leaves drifting past the ledge, `evening` with a lantern and no sun), exposed as `game.look`.
+- Six parcels in two weight groups: light (at most 2 stones) apples, kite, cake; heavy (3 or more) pumpkin, books, teapot. Seeded per line in `makeRound` and checked by `lineFits`; authored first lines keep their numbers and get parcels (level 1 apples). The parcel rides on the crate's left corner and the waiting friend keeps it on the ledge until the next line; the sticker draws a parcel from its seed.
+- Cat, dog and pig added (eight friend kinds).
+- Widened lines: level 1 `h` 2–3; level 2 `w` 1–2 with `g = w`; level 3 `w` 3–4, `h` 1–3 (`g` 2, `l` 2). Two level-2 voice lines reworded because level 2 can now have one friend.
+- Paw prints placed by `pawSpots` (right, else left, else below the handle), clear of friends, wheels and the held parcel.
+- Checks: typecheck; 21 rule tests; `BROWSER_SUITE=liftit` 2026-11-07 (level 1 by strokes, level 6 wrong rig plus hint, level 3 portrait screenshot in the autumn look). Not run: `fingerdemo` (bot unchanged), build, offline.

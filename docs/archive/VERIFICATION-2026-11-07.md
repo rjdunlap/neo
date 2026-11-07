@@ -85,3 +85,11 @@ Changed: three seeded looks, the windy drop-in, ten shapes a level, a seeded sec
 ## 2026-11-07 — Number Trails slice 1: flying hint, four looks, rising tune (PR #1372)
 
 Changed: the stuck hint flies the next stretch (Letter Trails' `showTheWay`/`hintDue`), four seeded ink looks via `pickLook` drawn last in `roundFor`, and a rising marimba (`tuneStep`) in `src/games/number-trails/`. Ran: `npm run typecheck`; 4 new rule tests; `npm test` (322 files, 6035 tests pass); `BROWSER_SUITE=fingerdemo FINGER_ONLY=number-trails FINGER_LEVELS=1,3` pass (5.2 s, 9.2 s). Open: build and a browser play of the hint flight not run; whether the flying hint reads as help on an iPad is a [device check](../DEVICE-CHECKS.md).
+
+## 2026-11-07 — Generated game inventory docs (codebase item 3)
+
+Changed: 175 pages `docs/games/<id>.md` split from README rows and GAMES.md entries (every cell and paragraph checked present); `src/content/game-docs.ts` and its test generate each page's block, the README tables and counts and the GAMES.md index; `npm run game-docs`; workflow pointers in AGENTS.md, SESSION-GUIDE, GAME-BATCHES and both agents. Ran: `npm run typecheck`; `npm test` (323 files, 6,034 tests); the stale check failed on a hand-edited Starts as line and passed once restored; `node scripts/check-links.mjs`; `git diff --check`. Open: no build or browser suite (no app code changed); the VERIFICATION.md split stays undone.
+
+## 2026-11-07 — Puddle Gobble slice 1: more kinds and beach moods (PR #1374)
+
+Changed: four tier 3–4 kinds (sun hat, sand spade, beach umbrella, rolled towel), sea glass and buttons for levels 6–8, and seeded morning/midday/evening moods in `src/games/puddle-gobble/` (art moved to `art.ts`). Ran: `npm run typecheck`; 25 rule tests; `BROWSER_SUITE=puddlegobble` pass (new level-5 step: seeded second launch, evening mood leaves the board unchanged, portrait screenshot, played to its sticker via hints). Open: `fingerdemo` (bot unchanged), build and offline not run; whether the evening look reads on an iPad is unchecked.

@@ -25,7 +25,7 @@
 
 **Starts as:** drag the rope's end in strokes to haul a crate up to a friend on the tree's ledge; a crate that is held never slides back
 
-**Grows into:** wheels hung on the branch hook or the crate's hook (push, fixed, movable, both), why two strands halve the paws and double the knots, who pulls from the ground or the ledge, then paws and knots by the numbers
+**Grows into:** wheels hung on the branch hook or the crate's hook (push, fixed, movable, both), why two strands halve the paws and double the knots, who pulls from the ground or the ledge, then paws and knots by the numbers; every round has one of four looks (meadow, spring, autumn, evening) and a parcel (apples, kite, cake light; pumpkin, books, teapot heavy) matched to the stones, with eight friend kinds
 
 ## Design notes
 
