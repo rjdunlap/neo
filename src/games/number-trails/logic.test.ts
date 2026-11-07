@@ -4,8 +4,8 @@ import { rangeFor } from '../../progress/difficulty';
 import {
   LEVELS, MAX_THINGS, PLANS, SPARE, THINGS, THING_GAP, THING_HIT, groupSize, numeralFor, planFor, roundFor, stickerDigit, thingFor, thingSpots, thingWord,
 } from './logic';
-import { LOOKS, hintDue, showTheWay, tuneStep } from '../letter-trails/logic';
-import { sampleStroke } from '../letter-trails/strokes';
+import { LOOKS, hintDue, showTheWay, tuneStep } from '../../learning/tracing/feedback';
+import { sampleStroke } from '../../learning/tracing/strokes';
 import { DIGITS } from './digits';
 
 describe('number trails levels', () => {

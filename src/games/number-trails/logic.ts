@@ -1,6 +1,6 @@
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
-import { pickLook, type Look } from '../letter-trails/logic';
+import { pickLook, type Look } from '../../learning/tracing/feedback';
 
 /**
  * Number Trails: follow the firefly along a numeral, then meet that many things. The rules that a test can hold the

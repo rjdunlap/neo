@@ -1,5 +1,5 @@
 import type { Rng } from '../../engine/random';
-import { fits, RULE_WORDS, type Rule, type SortCritter } from '../critter-sort/logic';
+import { fits, RULE_WORDS, type Rule, type SortCritter } from '../../learning/sorting/rules';
 import type { BandLevels } from '../../progress/difficulty';
 
 /**

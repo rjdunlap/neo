@@ -7,7 +7,7 @@ import { launchJournalPicture } from '../games/bouncy-launch';
 import { habitatJournalPicture } from '../games/habitat-helpers/art';
 import { mailJournalPicture } from '../games/mail-carrier/art';
 import type { HelperId } from '../games/mail-carrier/logic';
-import { letterPicture } from '../games/letter-trails/pictures';
+import { letterPicture } from '../art/letter-pictures';
 import { neighborsJournalPicture } from '../games/rhythm-neighbors';
 import { safariJournalPicture } from '../games/photo-safari';
 import type { Action } from '../games/photo-safari/logic';
