@@ -10,8 +10,8 @@
 | --- | --- |
 | toddler | 1–2 |
 | preschool | 2–4 |
-| pre-K | 3–6 |
-| school | 5–9 |
+| pre-K | 3, 4, 5, 10, 6 |
+| school | 5, 10, 6, 7, 8, 9, 11 |
 
 | Level | Plays like |
 | --- | --- |
@@ -24,6 +24,8 @@
 | 7 | Add to grow |
 | 8 | Just right |
 | 9 | Smallest number first |
+| 10 | Count the dots |
+| 11 | Too full |
 
 <!-- end generated -->
 

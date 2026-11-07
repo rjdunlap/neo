@@ -78,7 +78,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Sink or Float](docs/games/sink-float.md) | lap–school | Bubble Beach | 9 | drop things in the water and watch |
 | [Domino Run](docs/games/domino-run.md) | toddler–school | Bubble Beach | 8 | stand dominoes from a tray in a lane's gaps and tap the green starter; the line clacks down to the bell |
 | [Fruit Slice](docs/games/fruit-slice.md) | toddler–school | Bubble Beach | 8 | touch a fruit hanging at the top of its slow arc and it splits |
-| [Puddle Gobble](docs/games/puddle-gobble.md) | toddler–school | Bubble Beach | 9 | lead a smiling rain puddle with a finger (or taps) and it soaks up the beach things that fit inside it, growing every few |
+| [Puddle Gobble](docs/games/puddle-gobble.md) | toddler–school | Bubble Beach | 11 | lead a smiling rain puddle with a finger (or taps) and it soaks up the beach things that fit inside it, growing every few |
 | [Lost Layers](docs/games/lost-layers.md) | school | Bubble Beach | 2 | drag Shell Cove's broken rock pieces beside Gull Cliff's six layers until the fossil twins go green and no wavy line is squeezed, stamp each fit as a story card, then claim a story or Can't tell |
 | [Sea Lift](docs/games/sea-lift.md) | school | Bubble Beach | 5 | tap the stop a friend asks for on a glass lift whose zero is the water line: three up, two below the water; the lift rides there and the friend counts it out |
 | [Puddle Lens](docs/games/puddle-lens.md) | lap–school | Bubble Beach | 8 | tap the big lens and a leaf, a drop and a pinch of sand each swell into view; slide a hand lens over three things beside a same-size paw; turn a four-stop dial on a drop until swimmers appear; then set the dial to just the view a question needs |
