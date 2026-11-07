@@ -3198,6 +3198,7 @@ export const SCRIPT = {
   'bolt.instruct-all': ['Take out the bolts and bring every board down. Boards on top go first.'],
   'bolt.instruct-friend': ["Who's hiding behind the boards? Take out bolts to help them out."],
   'bolt.instruct-holes': ['Every bolt needs a hole. Tap a bolt, then tap an empty hole for it.'],
+  'bolt.instruct-park': ['Take a bolt out, then put it in a glowing hole.'],
   'bolt.instruct-holes-friend': ["Who's hiding? Every bolt needs an empty hole. Tap a bolt, then a hole."],
   'bolt.on-top.red': ['The red board is on top. Its bolts come first.'],
   'bolt.on-top.blue': ['The blue board is on top. Its bolts come first.'],

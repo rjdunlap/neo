@@ -23,8 +23,9 @@ import { PUZZLES } from './puzzles';
 const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
   preschool: { min: 1, max: 4 },
-  prek: { min: 2, max: 6 },
-  school: { min: 4, max: 7 },
+  // Level 8 (Plenty of holes) sits between 5 and 6: parking bolts in holes before the planning holes carry.
+  prek: { min: 2, max: 8, order: [2, 3, 4, 5, 8, 6] },
+  school: { min: 4, max: 8, order: [4, 5, 8, 6, 7] },
 };
 
 /** Board colours, each with its own pattern so colour is never the only cue; the pet names a board by its colour. */
@@ -40,8 +41,8 @@ type Fruit = (typeof FRUITS)[number];
 const FRIENDS: CritterName[] = ['cow', 'duck', 'pig', 'cat', 'dog', 'bunny', 'bear'];
 /** A swing's length: the state has changed at once; this is only for show. */
 const SWING = 0.6;
-/** Level 6's authored first board leads its first round of a session. */
-let authoredSixShown = false;
+/** Level 6's and level 8's authored first boards lead their first round of a session. */
+const authoredShown = new Set<number>();
 
 /* ---------------------------------------------------------------------------------------------- */
 /* Art                                                                                            */
@@ -173,7 +174,7 @@ class BoltBoards implements Game {
   hints = 0;
   busy = true;
   finished = false;
-  /** The bolt lifted and waiting for a hole (levels 6–7). */
+  /** The bolt lifted and waiting for a hole (levels 6–8). */
   lifted: number | null = null;
   hinted: Hint | null = null;
   scene = 0;
@@ -305,7 +306,7 @@ class BoltBoards implements Game {
     this.placeAll();
   }
 
-  /** The ghost finger: the hint each step, highest board first at 1–5, the solver's path (bolt, then hole) at 6–7. */
+  /** The ghost finger: the hint each step, highest board first at 1–5 and 8 (then an open hole), the solver's path (bolt, then hole) at 6–7. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.press || this.swings.some((s) => s)) return null;
     const h = this.hint();
@@ -328,8 +329,9 @@ class BoltBoards implements Game {
     const list = PUZZLES[this.plan.id];
     const rng = this.ctx.rng;
     if (this.plan.id === 1 && this.scene === 0) return list[0];
-    if (this.plan.id === 6 && !authoredSixShown && !this.ctx.demo) {
-      authoredSixShown = true;
+    if ((this.plan.id === 6 || this.plan.id === 8) && this.scene === 0 && !authoredShown.has(this.plan.id) && !this.ctx.demo) {
+      authoredShown.add(this.plan.id);
+      this.used.add(0);
       return list[0];
     }
     const from = this.plan.id === 1 ? 1 : 0;
@@ -350,7 +352,7 @@ class BoltBoards implements Game {
     this.lifted = null;
     this.swingSaid = false;
     const p = this.puzzle;
-    if (this.plan.holes) this.par = this.solveAt(this.state)?.length ?? 0;
+    if (this.plan.par) this.par = this.solveAt(this.state)?.length ?? 0;
     this.colors = this.ctx.rng.shuffle([...COLORS]).slice(0, p.boards.length);
     this.fruits = p.boards.map(() => this.ctx.rng.pick(FRUITS));
     this.friendKind = this.ctx.rng.pick(FRIENDS);
@@ -402,6 +404,7 @@ class BoltBoards implements Game {
       case 3: case 4: return 'bolt.instruct-all';
       case 5: return 'bolt.instruct-friend';
       case 6: return 'bolt.instruct-holes';
+      case 8: return 'bolt.instruct-park';
       default: return 'bolt.instruct-holes-friend';
     }
   }
@@ -599,7 +602,7 @@ class BoltBoards implements Game {
     this.press = { wall: at };
   }
 
-  /** Levels 6–7: a pressed free bolt that travels becomes a drag, riding 40 units above the finger. */
+  /** Levels 6–8: a pressed free bolt that travels becomes a drag, riding 40 units above the finger. */
   private move(e: FederatedPointerEvent) {
     const press = this.press;
     if (!press || !('bolt' in press) || !this.plan.holes) return;
@@ -651,7 +654,7 @@ class BoltBoards implements Game {
     if (drop && this.lifted !== null) this.putBack();
   }
 
-  /** Levels 6–7: lift a free bolt out, ready for a hole. */
+  /** Levels 6–8: lift a free bolt out, ready for a hole. */
   private lift(b: number) {
     if (this.lifted === b) return;
     if (this.lifted !== null) this.putBack();
@@ -678,7 +681,7 @@ class BoltBoards implements Game {
     sfx.pop(2);
   }
 
-  /** Levels 6–7: the lifted bolt into hole `h`, if it is open. */
+  /** Levels 6–8: the lifted bolt into hole `h`, if it is open. */
   private place(h: number) {
     const b = this.lifted;
     if (b === null) return;
@@ -736,13 +739,14 @@ class BoltBoards implements Game {
     }
     if (done(this.puzzle, this.state, this.plan.goal)) return void this.sceneDone();
     if (this.plan.holes) {
-      const solved = this.solveAt(this.state);
-      if (stuck(this.puzzle, this.state, this.plan) || solved === null) {
+      // Level 8 never dead-ends (a rule test searches every state), so it skips the search after each move.
+      if (stuck(this.puzzle, this.state, this.plan) || (this.plan.par && this.solveAt(this.state) === null)) {
         this.undoPulse = 4;
         void this.ctx.say('bolt.stuck');
         return;
       }
-      if (this.sinceHint >= Math.max(6, 2 * this.par)) this.showHint();
+      // No wander hint at level 8 (no par): with holes to spare, every move is progress.
+      if (this.plan.par && this.sinceHint >= Math.max(6, 2 * this.par)) this.showHint();
     }
   }
 
@@ -791,7 +795,7 @@ class BoltBoards implements Game {
 
   private hint(): Hint | null {
     if (done(this.puzzle, this.state, this.plan.goal)) return null;
-    if (!this.plan.holes) return hintMove(this.puzzle, this.state, this.plan);
+    if (!this.plan.holes || !this.plan.par) return hintMove(this.puzzle, this.state, this.plan);
     const path = this.solveAt(this.state);
     return path && path.length ? { move: path[0] } : this.history.length ? { undo: true } : null;
   }

@@ -6,10 +6,10 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **`bolt-boards`, level 8 *Plenty of holes*** (pre-K and school between 5 and 6 on decision 1's default; after slice 1 is fine but not required; new level on the existing interaction, `fingerdemo` at 8): [build slices](deep-dives/bolt-boards.md#build-slices-in-order).
 - **Define `bolt-boards` level 9 *Put it back*** (docs only): [build slices](deep-dives/bolt-boards.md#build-slices-in-order).
 - **Dive `mossy-path`** (Mossy Path; toddler to school, 7 levels, mazes and routes; docs only): [procedure](deep-dives/README.md#one-session-one-game). The rest of waves 5–7 follow in the tracker's order.
 - **`number-trails` slice 1, the flying hint, looks and a rising tune** (`letter-trails` helpers reused; preschool and pre-K; typecheck, rule tests, `fingerdemo` at 1 and 3): [build slices](deep-dives/number-trails.md#build-slices-in-order).
+- **`puddle-gobble`, slices 1–4 in the dive's order** (`bubble-beach`; toddler to school; slice 1 more kinds and beach moods, slice 2 level 9 *Smallest number first*, slice 3 level 10 *Count the dots* after slice 2, slice 4 level 11 *Too full* after slice 2): [build slices](deep-dives/puddle-gobble.md#build-slices-in-order).
 
 ## Queued
 
@@ -30,7 +30,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 
 
-- **`puddle-gobble`, slices 1–4 in the dive's order** (`bubble-beach`; toddler to school; slice 1 more kinds and beach moods, slice 2 level 9 *Smallest number first*, slice 3 level 10 *Count the dots* after slice 2, slice 4 level 11 *Too full* after slice 2): [build slices](deep-dives/puddle-gobble.md#build-slices-in-order).
 - **`number-trails`, slices 1–6 in the dive's order** (`letter-trails` helpers; preschool and pre-K; [build slices](deep-dives/number-trails.md#build-slices-in-order)): slice 1 the flying hint, looks and a rising tune (typecheck, rule tests, `fingerdemo` at 1 and 3); slice 2 more things and arrangements (rule tests, one portrait screenshot); slice 3 check the digits against the HWT chart (`digits.test.ts`, `fingerdemo` at 2; once the chart is open); slice 4 level 4 *First numbers* (rule tests, browser play of 4, `fingerdemo` at 4); slice 5 level 5 *Write how many* (new interaction: unit tests, one scripted play, one portrait screenshot); slice 6 level 6 *Less help each time* (rule tests, one play, `fingerdemo` at 6, one screenshot; coordinate with Letter Trails level 9 if in flight). Level 7 and the journal wait on [decisions](WAITING-ON-DEVELOPER.md).
 - **`bolt-boards`, remaining slices in the dive's order** (`tinker-lab`; toddler to school; [build slices](deep-dives/bolt-boards.md#build-slices-in-order)):
 
