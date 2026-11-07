@@ -40,12 +40,31 @@ export const numeric = (plan: Plan) => plan.mode === 'plus' || plan.mode === 'ad
 export const KINDS_BY_TIER = {
   1: ['shell', 'pebble', 'leaf', 'feather'],
   2: ['pinecone', 'boat', 'seaweed', 'starfish'],
-  3: ['ball', 'driftwood', 'bucket'],
-  4: ['ring', 'kite'],
+  3: ['ball', 'driftwood', 'bucket', 'hat', 'spade'],
+  4: ['ring', 'kite', 'umbrella', 'towel'],
 } as const;
-export type Kind = (typeof KINDS_BY_TIER)[keyof typeof KINDS_BY_TIER][number];
+/** Kinds drawn only with a number on them, never at the picture levels. */
+const NUMBER_ONLY = ['seaglass', 'button'] as const;
+export type Kind = (typeof KINDS_BY_TIER)[keyof typeof KINDS_BY_TIER][number] | (typeof NUMBER_ONLY)[number];
 /** Numbered things are drawn alike at tier 2's size, so only the number decides. */
-export const NUMBER_KINDS: Kind[] = ['pebble', 'shell', 'starfish'];
+export const NUMBER_KINDS: Kind[] = ['pebble', 'shell', 'starfish', ...NUMBER_ONLY];
+
+/** What the voice calls each kind ("The {thing} is smaller."). Never a critter or a friend's belonging. */
+export const NAMES: Record<Kind, string> = {
+  shell: 'shell', pebble: 'pebble', leaf: 'leaf', feather: 'feather', pinecone: 'pinecone', boat: 'toy boat', seaweed: 'seaweed',
+  starfish: 'starfish', ball: 'beach ball', driftwood: 'driftwood stick', bucket: 'bucket', hat: 'sun hat', spade: 'sand spade',
+  ring: 'floaty ring', kite: 'kite', umbrella: 'beach umbrella', towel: 'rolled towel', seaglass: 'sea glass', button: 'button',
+};
+
+/* Beach moods ----------------------------------------------------------------------------------- */
+
+export type Mood = 'morning' | 'midday' | 'evening';
+export const MOODS: readonly Mood[] = ['morning', 'midday', 'evening'];
+
+/** A round's look, drawn from its own stream after the board and layout, so it never changes what is on the sand. */
+export function moodFor(rng: Rng): Mood {
+  return rng.pick(MOODS);
+}
 
 export interface Thing {
   id: number;
