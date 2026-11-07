@@ -10,7 +10,7 @@ export const HOW_TO: GameHowTo = {
   ],
   finish: 'The round ends after two different ways to make the number.',
   note: [
-    { to: 2, text: 'A try that makes another number tells how much it made, and you can swap a fruit and check again. After two misses a fruit to start with glows. Adding the same two fruit the other way round is the same way.' },
-    { from: 3, text: 'A try that makes another number tells how much it made, and you can swap a fruit and check again. After two misses a fruit to start with glows. Taking away more than you have just says so, and is not a miss.' },
+    { to: 2, text: 'A try that makes another number tells how much it made, and you can swap a fruit and check again. After two misses a glow shows the next step: a fruit to start with, then its partner. Adding the same two fruit the other way round is the same way.' },
+    { from: 3, text: 'A try that makes another number tells how much it made, and you can swap a fruit and check again. After two misses a glow shows the next step: a fruit to start with, then its partner and the leaf. Taking away more than you have just says so, and is not a miss.' },
   ],
 };

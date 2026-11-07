@@ -13,6 +13,6 @@ export const VOICE = {
   'fsums.same': ['That is the same way. Can you find a different one?'],
   'fsums.below': ['We cannot take {b} away from {a}. Try them the other way round!'],
   'fsums.wrong': ['{a} {op} {b} makes {m}. We need {n}.', '{a} {op} {b} is {m}. Let us make {n}.'],
-  'fsums.hint': ['Try the glowing fruit!'],
+  'fsums.hint': ['Follow the glow! It shows the next step.'],
   'fsums.done': ['Two ways to make {n}! Great thinking!'],
 } satisfies Record<string, string[]>;

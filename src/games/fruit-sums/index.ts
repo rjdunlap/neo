@@ -11,8 +11,8 @@ import { label } from '../../ui/text';
 import { WigglyIcon, tile } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
-  LEVELS, SLOT, TILE, WAYS_PER_ROUND, choosesSign, hintWay, judge, layoutFor, makeRound, opWord, planFor, stickerNumber,
-  type Op, type TreeLayout,
+  DROP_GAP, DROP_TIME, LEVELS, LOOKS, SLOT, TILE, WAYS_PER_ROUND, choosesSign, dropStep, hintGlow, hintWay, judge, layoutFor,
+  makeRound, opWord, planFor, shapeFor, stickerNumber, type FruitShape, type HintGlow, type Look, type Op, type TreeLayout,
 } from './logic';
 
 const FRUIT: ColorName[] = ['red', 'orange', 'yellow', 'green', 'purple', 'pink'];
@@ -25,13 +25,37 @@ function signArt(op: Op, size: number, color: number): Graphics {
   return g;
 }
 
-/** A numbered fruit, centered on (0, 0) and 100 units across. */
-function fruit(value: number, color: ColorName): Container {
+/** Each tree's sky and hills; the orchard morning is the game's first look. */
+const SCENES: Record<Look, { sky: [number, number]; hills: number[] }> = {
+  orchard: { sky: [swatch.green.light, cream], hills: [grass, swatch.green.light] },
+  cove: { sky: [swatch.orange.light, swatch.pink.light], hills: [swatch.teal.light, swatch.yellow.light] },
+  autumn: { sky: [swatch.yellow.light, swatch.orange.light], hills: [swatch.orange.light, swatch.yellow.light] },
+};
+
+/** A numbered fruit, centered on (0, 0) and 100 units across, in its tree's shape; the colour still tells the fruit apart. */
+function fruit(value: number, color: ColorName, shape: FruitShape = 'round'): Container {
   const c = new Container(), sw = swatch[color];
-  c.addChild(new Graphics().ellipse(0, 44, 36, 7).fill({ color: ink, alpha: 0.12 })
-    .circle(0, 4, 48).fill(sw.fill).stroke({ width: 5, color: sw.line })
-    .moveTo(0, -42).quadraticCurveTo(4, -56, 12, -62).stroke({ width: 6, color: wood.line, cap: 'round' })
-    .ellipse(20, -52, 17, 8).fill(swatch.green.fill).stroke({ width: 3, color: swatch.green.line }));
+  const g = new Graphics().ellipse(0, 44, 36, 7).fill({ color: ink, alpha: 0.12 });
+  const stem = () => g.moveTo(0, -42).quadraticCurveTo(4, -56, 12, -62).stroke({ width: 6, color: wood.line, cap: 'round' })
+    .ellipse(20, -52, 17, 8).fill(swatch.green.fill).stroke({ width: 3, color: swatch.green.line });
+  if (shape === 'coconut') {
+    // A brown coconut with three eyes, ringed in its colour so two coconuts never look alike.
+    g.circle(0, 4, 48).fill(swatch.brown.light).stroke({ width: 7, color: sw.fill })
+      .circle(-13, -32, 4.5).circle(0, -36, 4.5).circle(13, -32, 4.5).fill(swatch.brown.line);
+  } else if (shape === 'pear') {
+    g.ellipse(0, 14, 40, 34).fill(sw.fill).stroke({ width: 5, color: sw.line })
+      .circle(0, -18, 28).fill(sw.fill).stroke({ width: 5, color: sw.line })
+      .ellipse(0, 14, 35, 29).fill(sw.fill);
+    stem();
+  } else if (shape === 'plum') {
+    g.ellipse(0, 4, 44, 48).fill(sw.fill).stroke({ width: 5, color: sw.line })
+      .moveTo(0, -40).quadraticCurveTo(-8, 4, 0, 48).stroke({ width: 3, color: sw.line, alpha: 0.5 });
+    stem();
+  } else {
+    g.circle(0, 4, 48).fill(sw.fill).stroke({ width: 5, color: sw.line });
+    stem();
+  }
+  c.addChild(g);
   const n = label(`${value}`, value >= 10 ? 50 : 60, ink);
   n.position.set(0, 6);
   c.addChild(n);
@@ -51,7 +75,11 @@ class FruitSums implements Game {
   op: Op | null;
   /** Keys of the ways she has made, in order. */
   found: string[] = [];
-  hintTile: number | null = null;
+  /** The hint is on (after two misses on a sum) until the next way is found; what glows follows what is in the boxes. */
+  hinted = false;
+  readonly look: Look;
+  /** Fruit still falling in at the start take no taps. */
+  readonly landed: boolean[] = [];
   busy = false;
   finished = false;
   misses = 0;
@@ -80,8 +108,9 @@ class FruitSums implements Game {
     this.target = round.target;
     this.tray = round.tray;
     this.op = this.signs ? null : 'plus';
+    this.look = ctx.rng.pick(LOOKS);
     this.layout = layoutFor(ctx.view.w, ctx.view.h, this.tray.length, this.signs);
-    this.backdrop = new Backdrop({ sky: [swatch.green.light, cream], hills: [grass, swatch.green.light], horizon: 0.3, clouds: 2, sun: true, seed: 57 }, ctx.view);
+    this.backdrop = new Backdrop({ ...SCENES[this.look], horizon: 0.3, clouds: 2, sun: true, seed: 57 }, ctx.view);
     this.glow.eventMode = this.pick.eventMode = this.foundText.eventMode = this.slots.eventMode = this.ropes.eventMode = this.equals.eventMode = 'none';
 
     this.signNumber = label(`${this.target}`, 84, ink);
@@ -100,10 +129,11 @@ class FruitSums implements Game {
     onTap(this.check, () => this.tapCheck());
 
     this.tray.forEach((v, i) => {
-      const c = fruit(v, FRUIT[i % FRUIT.length]);
+      const c = fruit(v, FRUIT[i % FRUIT.length], shapeFor(this.look, i));
       c.hitArea = new Rectangle(-TILE / 2, -TILE / 2, TILE, TILE);
       onTap(c, () => this.tapTile(i));
       this.tiles.push(c);
+      this.landed.push(false);
     });
     if (this.signs) {
       for (const op of this.plan.ops) {
@@ -119,6 +149,8 @@ class FruitSums implements Game {
     this.fixedPlus.visible = !this.signs;
     this.fixedPlus.eventMode = 'none';
     this.resize(ctx.view);
+    // Up in the tree until start() drops them: lifted by the pivot, so layout and resize stay put.
+    for (const t of this.tiles) t.pivot.y = t.y + TILE;
   }
 
   private slotArt(at: 'a' | 'b' | 'op'): Graphics {
@@ -129,7 +161,27 @@ class FruitSums implements Game {
   }
 
   start() {
+    this.drop();
     void this.ctx.instruct(this.signs ? 'fsums.start3' : 'fsums.start', { n: this.target });
+  }
+
+  /** The tree drops its fruit: each falls from above the top edge and lands with a bounce on a falling note. */
+  private drop() {
+    this.tiles.forEach((t, i) => {
+      void this.ctx.tw.to(t.pivot, { y: 0 }, { duration: DROP_TIME, delay: i * DROP_GAP, ease: ease.outBack }).then(() => {
+        if (this.finished) return;
+        this.landed[i] = true;
+        sfx.pop(dropStep(i));
+      });
+    });
+  }
+
+  /** A found way's two fruit take a little hop. */
+  private hop(i: number) {
+    const t = this.tiles[i];
+    void this.ctx.tw.to(t.pivot, { y: 34 }, { duration: 0.14, ease: ease.outQuad }).then(() => {
+      if (!this.finished) void this.ctx.tw.to(t.pivot, { y: 0 }, { duration: 0.2, ease: ease.outBack });
+    });
   }
 
   destroy() { this.finished = true; }
@@ -137,7 +189,7 @@ class FruitSums implements Game {
   // ---- play ----
 
   private tapTile(i: number) {
-    if (this.busy || this.finished) return;
+    if (this.busy || this.finished || !this.landed[i]) return;
     if (this.slotA === i) this.slotA = null;
     else if (this.slotB === i) this.slotB = null;
     else if (this.slotA === null) this.slotA = i;
@@ -212,12 +264,16 @@ class FruitSums implements Game {
   /** After two misses on a sum the first fruit of a way she has not found glows; that is one hint, counted when it appears. */
   private lightHint(): boolean {
     if (this.sumMisses < 2) return false;
-    if (this.hintTile === null) {
-      const way = hintWay(this.tray, this.plan.ops, this.target, this.found);
-      if (!way) return false;
-      this.hintTile = way.a; this.hints++;
+    if (!this.hinted) {
+      if (!this.glowing()) return false;
+      this.hinted = true; this.hints++;
     }
     return true;
+  }
+
+  /** What glows now: the next step of a way she has not found, from what is in the boxes. */
+  glowing(): HintGlow | null {
+    return hintGlow(this.tray, this.plan.ops, this.target, this.found, this.slotA, this.slotB, this.signs ? this.op : 'plus');
   }
 
   private async hearWrong(words: { a: number; b: number; op: string; n: number; m: number }, hint: boolean) {
@@ -230,7 +286,9 @@ class FruitSums implements Game {
     this.found.push(key);
     this.foundText.text = this.found.map((k) => this.sentence(k)).join('     ');
     this.checkMark.visible = true; this.checkMade.visible = false;
-    this.hintTile = null;
+    this.hinted = false;
+    if (this.slotA !== null) this.hop(this.slotA);
+    if (this.slotB !== null) this.hop(this.slotB);
     sfx.sparkle();
     this.ctx.particles.burst(this.layout.check.x, this.layout.check.y, { kind: 'star', colors: [swatch.yellow.fill, swatch.green.fill, swatch.pink.fill], count: 18, speed: [120, 260], gravity: 300, life: [0.5, 0.9] });
     await this.ctx.say('fsums.right', words);
@@ -286,13 +344,15 @@ class FruitSums implements Game {
   update(dt: number) {
     this.clock += dt;
     this.glow.clear();
-    if (this.hintTile === null || this.finished) return;
-    const t = this.tiles[this.hintTile];
-    this.glow.circle(t.x, t.y + 4, 62 + 4 * Math.sin(this.clock * 5)).stroke({ width: 7, color: swatch.yellow.fill });
+    if (!this.hinted || this.busy || this.finished) return;
+    const at = this.glowing();
+    if (!at) return;
+    const on = 'tile' in at ? this.tiles[at.tile] : 'leaf' in at ? this.leaves.get(at.leaf)! : this.check;
+    this.glow.circle(on.x, on.y + ('tile' in at ? 4 : 0), 62 + 4 * Math.sin(this.clock * 5)).stroke({ width: 7, color: swatch.yellow.fill });
   }
 
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished) return null;
+    if (this.busy || this.finished || !this.landed.every(Boolean)) return null;
     const way = hintWay(this.tray, this.plan.ops, this.target, this.found);
     if (!way) return null;
     const want = [way.a, way.b], have = [this.slotA, this.slotB];
