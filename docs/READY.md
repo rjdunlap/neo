@@ -6,7 +6,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **`fruit-sums` slice 1, trees, moods, the drop and a hint that follows through** (school; typecheck, rule tests for the partner hint, one filtered `fruitsums` play at level 3 with one hint and one portrait screenshot in the cove sunset look; no `fingerdemo`; build only if shared art files change): [build slices](deep-dives/fruit-sums.md#build-slices-in-order).
+- **`fruit-sums` slice 1, trees, moods, the drop and a hint that follows through** (in progress on `claude/fruit-sums-trees`, files `src/games/fruit-sums/*`; school; typecheck, rule tests for the partner hint, one filtered `fruitsums` play at level 3 with one hint and one portrait screenshot in the cove sunset look; no `fingerdemo`; build only if shared art files change): [build slices](deep-dives/fruit-sums.md#build-slices-in-order).
 - **Dive `pile-match`** (Pile Match; pre-K to school, 8 levels; docs only; the next unstarted game in the tracker's order, so the rest of waves 6–7 follow after it): [procedure](deep-dives/README.md#one-session-one-game).
 - **`jar-sort` slice 1, pantry looks, two more fruits and more boards** (preschool to school; typecheck, rule tests, one filtered `jarsort` play at level 3 with one portrait screenshot in the rain look, build because voice lines change; no `fingerdemo`): [build slices](deep-dives/jar-sort.md#build-slices-in-order).
 - **`number-trails` slice 1, the flying hint, looks and a rising tune** (`letter-trails` helpers reused; preschool and pre-K; typecheck, rule tests, `fingerdemo` at 1 and 3): [build slices](deep-dives/number-trails.md#build-slices-in-order).
