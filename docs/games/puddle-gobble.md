@@ -11,7 +11,7 @@
 | toddler | 1–2 |
 | preschool | 2–4 |
 | pre-K | 3–6 |
-| school | 5–8 |
+| school | 5–9 |
 
 | Level | Plays like |
 | --- | --- |
@@ -23,12 +23,13 @@
 | 6 | Bigger number |
 | 7 | Add to grow |
 | 8 | Just right |
+| 9 | Smallest number first |
 
 <!-- end generated -->
 
 **Starts as:** lead a smiling rain puddle with a finger (or taps) and it soaks up the beach things that fit inside it, growing every few
 
-**Grows into:** things bigger than the puddle wobble and wait (never a miss), then smallest first, numbers up to the puddle's own, add to grow, and land exactly on the pail's number with a free let-go; everything soaked washes up in a row, smallest to biggest
+**Grows into:** things bigger than the puddle wobble and wait (never a miss), then smallest first, numbers up to the puddle's own, add to grow, land exactly on the pail's number with a free let-go, and soak numerals smallest first into a puddle that never grows; everything soaked washes up in a row, smallest to biggest
 
 ## Design notes
 

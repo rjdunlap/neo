@@ -3,8 +3,8 @@ import { Rng } from '../../engine/random';
 import { thingArt } from './art';
 import {
   authoredBoard, beachLayout, deadEndReachable, detour, blocker, done, exactSolutions, fieldFor, fits, greedyClears, hintTarget, inPailBox, inPetCorner,
-  KINDS_BY_TIER, LEVEL_COUNT, letGo, makeBoard, MAX_PUDDLE_D, moodFor, MOODS, NAMES, NUMBER_KINDS, passesFilter, placeOn, planFor, PUDDLE_D, puddleStart, soak, soakable, startState, THING_D, thingDiameter,
-  thingOf, type Board, type State,
+  KINDS_BY_TIER, LEVEL_COUNT, letGo, makeBoard, MAX_PUDDLE_D, moodFor, MOODS, NAMES, NUMBER_KINDS, numeric, passesFilter, placeOn, planFor, PUDDLE_D, puddleStart, soak, soakable, startState, THING_D, thingDiameter,
+  refusal, thingOf, type Board, type State,
 } from './logic';
 
 const plans = Array.from({ length: LEVEL_COUNT }, (_, i) => planFor(i + 1));
@@ -166,6 +166,37 @@ describe('never a dead end at levels 1–7', () => {
           for (let i = 0; i < 5; i++) expect(greedyClears(b, randomWalk(b, rng))).toBe(true);
         }
       }
+    }
+  });
+});
+
+describe('level 9, smallest number first', () => {
+  it('numbers on alike things, the puddle at 20 that never grows, the authored six', () => {
+    const p = planFor(9);
+    expect(p.mode).toBe('order');
+    expect(numeric(p)).toBe(true);
+    const b = authoredBoard(p);
+    expect(b.start).toBe(20);
+    expect(b.things.map((t) => t.size).sort((x, y) => x - y)).toEqual([3, 8, 11, 14, 17, 19]);
+    expect(b.things.every((t) => NUMBER_KINDS.includes(t.kind))).toBe(true);
+    const r = soak(b, startState(b), 1);
+    expect(r.ok && r.state.puddle).toBe(20);
+  });
+
+  it('over 500 seeds: every value fits from the start, values distinct, the only refusal is the order, the hint is the smallest left', () => {
+    for (let seed = 1; seed <= 500; seed++) {
+      const b = makeBoard(planFor(9), new Rng(seed));
+      expect(b.things.every((t) => fits(b.start, t))).toBe(true);
+      expect(new Set(b.things.map((t) => t.size)).size).toBe(b.things.length);
+      const s = randomWalk(b, new Rng(seed));
+      if (done(b, s)) continue;
+      const smallest = Math.min(...s.left.map((id) => thingOf(b, id).size));
+      for (const id of s.left) {
+        const why = refusal(b, s, id);
+        expect(why).toBe(thingOf(b, id).size === smallest ? null : 'order');
+      }
+      const h = hintTarget(b, s);
+      expect(h && 'soak' in h && thingOf(b, h.soak).size).toBe(smallest);
     }
   });
 });

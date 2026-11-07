@@ -1,6 +1,6 @@
 # Puddle Gobble deep dive
 
-*ID `puddle-gobble` · bands toddler, preschool, pre-K, school · levels 1–8 on 2026-11-06 · session `claude/dive-puddle-gobble` ([PR #1342](https://github.com/rjdunlap/neo/pull/1342))*
+*ID `puddle-gobble` · bands toddler, preschool, pre-K, school · levels 1–9 on 2026-11-07 · session `claude/dive-puddle-gobble` ([PR #1342](https://github.com/rjdunlap/neo/pull/1342))*
 
 ## The game today
 
@@ -16,12 +16,13 @@ A smiling rain puddle sits on the beach. She leads it with a finger (a drag, or 
 | 6 | Bigger number | pre-K, school | numerals 1–10 on alike pebbles; the puddle gains 1 per soak |
 | 7 | Add to grow | school | numerals 1–20; the puddle gains each number, a sum strip along the top |
 | 8 | Just right | school | land exactly on the pail's number (12–20); an overshoot is refused (a miss when aimed); a strip token lets a thing go, free |
+| 9 | Smallest number first | school | a stated order on numerals: six distinct numbers 1–20 on pebbles, shells, starfish, sea glass or buttons, soaked smallest to biggest; the puddle is 20 and never grows (a bigger number aimed while a smaller is left is a miss) |
 
-`BandLevels`: toddler 1–2, preschool 2–4, pre-K 3–6, school 5–8; no `order`, no `entryLevels`, no lap or grown-up range.
+`BandLevels`: toddler 1–2, preschool 2–4, pre-K 3–6, school 5–9; no `order`, no `entryLevels`, no lap or grown-up range.
 
 **Content pools.** Seventeen code-drawn kinds by tier (`KINDS_BY_TIER` in `logic.ts`, art in `art.ts`): tier 1 shell, pebble, leaf, feather; tier 2 pinecone, toy boat, seaweed, starfish; tier 3 beach ball, driftwood stick, bucket, sun hat, sand spade; tier 4 floaty ring, kite, closed beach umbrella, rolled towel. Numbered levels draw pebbles, shells, starfish, sea glass and buttons (`NUMBER_KINDS`, all at tier 2's size). Each round takes one of three seeded beach moods (`moodFor`: morning, midday, evening; drawn from a separate RNG stream after the board and layout, so a seed's board never changes; each level's authored first round stays midday). Boards are seeded from each plan and kept only if they pass its filter (50 tries, then the authored board, which a test shows is never needed); each level's first round is authored once per session. Morning has a pale sky, teal sea and mist along the water; evening a purple-to-orange sky, purple sea, a low half sun with glints and a warm sheen on the sand. No host friend is drawn (the finish line is "Thank you! The beach is clean.").
 
-**Known gaps.** Level 8 is the only exact-total level and the ladder stops there for school (six to eight); there is no subtraction or "too full" direction although `letGo` already exists. Pre-K meets bare numerals at level 6 straight after pictured tiers (decision 5's alternative, dot cards, was not built). No lap entry. Nothing is saved, nothing goes into the journal, no couch play. Device checks open in [DEVICE-CHECKS](../DEVICE-CHECKS.md): tap-to-lead for a toddler, tier 1 versus tier 2 with dots on an iPad, and whether "Too big yet" while steering feels like a scold.
+**Known gaps.** Level 8 is the only exact-total level and the ladder stops at 9 for school (six to eight); there is no subtraction or "too full" direction although `letGo` already exists. Pre-K meets bare numerals at level 6 straight after pictured tiers (decision 5's alternative, dot cards, was not built). No lap entry. Nothing is saved, nothing goes into the journal, no couch play. Device checks open in [DEVICE-CHECKS](../DEVICE-CHECKS.md): tap-to-lead for a toddler, tier 1 versus tier 2 with dots on an iPad, and whether "Too big yet" while steering feels like a scold.
 
 ## Similar games
 
@@ -99,8 +100,8 @@ Both are added to [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md).
 ## Build slices, in order
 
 1. **More kinds and beach moods** (built 2026-11-07, PR #1374). Tier: existing interaction with new content: typecheck, the game's rule tests (the content tests above), one filtered play of level 5 with one portrait screenshot in the evening mood; no `fingerdemo` (bot unchanged); `npm run build` only if `palette.ts` or the shared scenery changes.
-2. **Level 9 *Smallest number first*** (ready). Tier: new level on the existing interaction: typecheck, rule tests, one browser play of level 9 with one aimed out-of-order touch, `fingerdemo` at 9; build (voice and how-to change).
-3. **Level 10 *Count the dots*** (ready; after slice 2 so school's `order` is written once). Tier: new level on the existing interaction: typecheck, rule tests (plus the `order` and registry tests), one browser play of level 10 and pre-K's step from 5 to 10 to 6, `fingerdemo` at 10; build.
+2. **Level 9 *Smallest number first*** (built 2026-11-07, PR #1378). Tier: new level on the existing interaction: typecheck, rule tests, one browser play of level 9 with one aimed out-of-order touch, `fingerdemo` at 9; build (voice and how-to change).
+3. **Level 10 *Count the dots*** (ready; slice 2 is built, so school's `order` is written once). Tier: new level on the existing interaction: typecheck, rule tests (plus the `order` and registry tests), one browser play of level 10 and pre-K's step from 5 to 10 to 6, `fingerdemo` at 10; build.
 4. **Level 11 *Too full*** (ready; after slice 2). Tier: new level on the existing let-go interaction: typecheck, rule tests (the held-start state, hint reach, strip fits), one browser play of level 11 with one under-shoot and one requested hint, `fingerdemo` at 11; build.
 5. **Two pails:** a `beachLayout` and strip probe in `logic.test.ts` at four views, then a definition (define).
 6. **Lap entry** and **journal**: decisions 1 and 2.
@@ -110,3 +111,5 @@ Both are added to [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md).
 The dive session built nothing: research and ideation only (checks: `node scripts/check-links.mjs` and `git diff --check`).
 
 Slice 1 (PR #1374): tier 3 gained `hat` and `spade`, tier 4 `umbrella` and `towel`, and `NUMBER_KINDS` gained `seaglass` and `button` (levels 6–8, tier 2 size with the numeral badge); `NAMES` moved to `logic.ts` and `thingArt` to `art.ts`. Seeded moods (`moodFor`, with `setMood` for the browser check) leave the board unchanged. 25 rule tests (every tier has at least four kinds with none in two tiers; every kind is named and draws at 70–220; level 5 shows at least three tier-4 kinds over 500 seeds; levels 6–8 use every number kind; the mood is seeded and leaves the board and layout seed alone). Ran: typecheck, the rule tests and `BROWSER_SUITE=puddlegobble` (level 5 upright step with a portrait screenshot in the evening look). Not run: `fingerdemo` (bot unchanged), build.
+
+Slice 2 (PR #1378): level 9 *Smallest number first* (school, window now 5–9) is the `order` plan with a `numbers: true` flag: numerals on alike number kinds, a puddle at 20 that never grows, six distinct numbers 1–20 (authored first round 3, 8, 11, 14, 17, 19). Steering onto a bigger number while a smaller is left is an aimed miss with "{v} is smaller. Soak it first." (`gobble.smaller-first-number`); the glow after two misses shows the smallest left and counts one hint; new instruction `gobble.instruct-order-number`; no number line on a soak at 9. Two fixes found while checking: in the `order` mode (5 and 9) a soak now re-arms every thing on the sand (a number refused for the order could stay inert while the puddle stayed near it), and the ghost finger taps the goal instead of dragging when the straight way is blocked and no detour is clear (its drag through bigger numbers counted as aimed misses). Rule tests cover the authored board and plan and, over 500 seeds, that every value fits, values are distinct, the only refusal is the order and the hint is the smallest left. Ran: typecheck, `npm test` (325 files, 6061 passed, 1 skipped), `BROWSER_SUITE=puddlegobble` (levels 1, 8, 9, 4 upright, 5 evening upright; at 9 one aimed bigger-number touch is one miss, then played to its sticker), `fingerdemo` for `puddle-gobble` at 4, 5, 8, 9 (9 finished in 14.0 s, clean), build. Not run: offline, world, any iPad check; no screenshot.

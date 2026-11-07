@@ -2,7 +2,7 @@ import type { Rng } from '../../engine/random';
 
 /**
  * Puddle Gobble's rules: a puddle soaks up beach things that fit inside it and grows, so what fits depends on what she
- * has already soaked. Levels 1–5 compare pictured sizes (tiers 1–4, with dots); 6–8 compare numbers.
+ * has already soaked. Levels 1–5 compare pictured sizes (tiers 1–4, with dots); 6–9 compare numbers.
  */
 
 export type Mode = 'grow' | 'order' | 'plus' | 'add' | 'pail';
@@ -13,6 +13,8 @@ export interface Plan {
   mode: Mode;
   /** Soaks per growth step at the picture levels (0: the puddle stays its size). */
   grow: number;
+  /** Numerals on alike things rather than pictured tiers (the `order` mode at level 9). */
+  numbers?: true;
 }
 
 const PLANS: Plan[] = [
@@ -24,6 +26,7 @@ const PLANS: Plan[] = [
   { id: 6, name: 'Bigger number', mode: 'plus', grow: 0 },
   { id: 7, name: 'Add to grow', mode: 'add', grow: 0 },
   { id: 8, name: 'Just right', mode: 'pail', grow: 0 },
+  { id: 9, name: 'Smallest number first', mode: 'order', grow: 0, numbers: true },
 ];
 
 export const LEVEL_COUNT = PLANS.length;
@@ -32,8 +35,8 @@ export function planFor(level: number): Plan {
   return PLANS[Math.max(1, Math.min(PLANS.length, Math.round(level))) - 1];
 }
 
-/** True where numbers decide (levels 6–8) rather than pictured tiers. */
-export const numeric = (plan: Plan) => plan.mode === 'plus' || plan.mode === 'add' || plan.mode === 'pail';
+/** True where numbers decide (levels 6–9) rather than pictured tiers. */
+export const numeric = (plan: Plan) => plan.numbers === true || plan.mode === 'plus' || plan.mode === 'add' || plan.mode === 'pail';
 
 /* Things ---------------------------------------------------------------------------------------- */
 
@@ -69,7 +72,7 @@ export function moodFor(rng: Rng): Mood {
 export interface Thing {
   id: number;
   kind: Kind;
-  /** Its tier (1–4) at the picture levels, its number at 6–8. */
+  /** Its tier (1–4) at the picture levels, its number at 6–9. */
   size: number;
 }
 
@@ -214,7 +217,7 @@ export function exactSolutions(board: Board, s: State = startState(board)): numb
 export type Hint = { soak: number } | { letGo: number };
 
 /**
- * The next good move: the nearest thing that fits (1–4, 6–7); the smallest left (5); at level 8 a soak on some exact
+ * The next good move: the nearest thing that fits (1–4, 6–7); the smallest left (5, 9); at level 8 a soak on some exact
  * solution, or the strip token to let go that reopens one with the fewest let-gos. `near` ranks ties by distance.
  */
 export function hintTarget(board: Board, s: State, near: (id: number) => number = () => 0): Hint | null {
@@ -295,6 +298,7 @@ export function authoredBoard(plan: Plan): Board {
     case 5: return { plan, start: 4, things: things([['feather', 1], ['seaweed', 2], ['ball', 3], ['seaweed', 2], ['ring', 4]]) };
     case 6: return { plan, start: 3, things: things([['pebble', 1], ['pebble', 2], ['pebble', 4], ['pebble', 5], ['pebble', 7], ['pebble', 3]]) };
     case 7: return { plan, start: 5, things: things([['pebble', 2], ['shell', 3], ['pebble', 6], ['starfish', 9], ['pebble', 15], ['shell', 4]]) };
+    case 9: return { plan, start: 20, things: things([['pebble', 11], ['shell', 3], ['pebble', 17], ['starfish', 8], ['pebble', 19], ['shell', 14]]) };
     default: return { plan, start: 4, pail: 15, things: things([['pebble', 2], ['pebble', 3], ['shell', 5], ['pebble', 6], ['starfish', 8], ['pebble', 9]]) };
   }
 }
@@ -332,6 +336,8 @@ export function passesFilter(board: Board): boolean {
       return st.puddle < 3;
     }
     case 5: return tooBig.length === 0 && new Set(things.map((t) => t.size)).size === 4 && things.length === 5;
+    // Everything fits from the start, so the only refusal is the order; the numbers are distinct, so "smallest" is never a tie.
+    case 9: return tooBig.length === 0 && new Set(things.map((t) => t.size)).size === 6 && things.length === 6;
     case 6: return tooBig.length >= 2 && greedyClears(board);
     case 7: {
       const smallest = Math.min(...things.map((t) => t.size));
@@ -354,6 +360,7 @@ function draw(plan: Plan, rng: Rng): Board {
     case 5: return { plan, start: 4, things: picture(rng, [1, 2, 3, 4, rng.int(1, 4)]) };
     case 6: return { plan, start: 3, things: numbered(rng, distinct(rng, 6, 1, 10)) };
     case 7: return { plan, start: rng.int(4, 6), things: numbered(rng, distinct(rng, 6, 1, 20)) };
+    case 9: return { plan, start: 20, things: numbered(rng, distinct(rng, 6, 1, 20)) };
     default: return { plan, start: rng.int(3, 5), pail: rng.int(12, 20), things: numbered(rng, distinct(rng, 6, 1, 9)) };
   }
 }

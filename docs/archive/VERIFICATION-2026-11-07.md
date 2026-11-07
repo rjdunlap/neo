@@ -43,3 +43,8 @@ Changed: pantry backdrop in three looks, cherries and lemon, four authored level
 ## 2026-11-07 — Pile Match deep dive (docs only)
 
 Changed: `docs/deep-dives/pile-match.md` and its tracker, READY and STUDY-BACKLOG rows (PR #1363); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; slices 1–4 are queued; no new decisions (the toddler entry needs a person watching a child, a device check).
+
+## 2026-11-07 — Domino Run slice 1, puddles, beach moods and more ends (PR #1360)
+
+Changed: `src/games/domino-run` (puddles, three moods, five end looks, three voice ids), four rule tests, the `dominorun` suite. Ran: typecheck; `vitest run src/games/domino-run src/content` (196 tests); filtered `BROWSER_SUITE=dominorun` (levels 1, 8, 5, plus 6 upright in sunset with a drop on a puddle: misses 0, hints 0); `npm run build`; an ad hoc screenshot check of all five end looks and the morning and low-tide moods (no page errors).
+Open: `fingerdemo` not run (bot unchanged); no other suites, offline or full `npm test` (CI); whether a puddle reads without speech on an iPad is a [device check](../DEVICE-CHECKS.md).

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, errors, log, scene, tap, screenshot, launch, finished }) {
-/** Puddle Gobble by touch: level 1 led by taps, level 8 with a too-big touch (never a miss), a refused overshoot (one miss), a requested hint (one hint), finished by taps; level 4 upright; level 5 upright in the evening mood. */
+/** Puddle Gobble by touch: level 1 led by taps, level 8 with a too-big touch (never a miss), a refused overshoot (one miss), a requested hint (one hint), finished by taps; level 9 with one bigger number first (one miss); level 4 upright; level 5 upright in the evening mood. */
 async function puddleGobblePlay() {
   const state = () => page.evaluate(() => { const g = neo.scene.game; return { misses: g.misses, hints: g.hints, puddle: g.state.puddle, left: g.state.left.length, glow: g.glow }; });
   /** Wait until the puddle has stopped gliding and nothing is sliding in or hopping out. */
@@ -80,6 +80,17 @@ async function puddleGobblePlay() {
   st = await state(); assert.deepEqual([st.misses, st.hints], [1, 1]);
   assert.equal(await page.evaluate(() => neo.scene.game.state.puddle === neo.scene.game.board.pail), true, 'the puddle matches the pail');
 
+  // Level 9: steering onto a bigger number while a smaller is left is refused (one miss); then smallest first to the sticker.
+  await launch('puddle-gobble', 9); await still();
+  n = await page.evaluate(() => kit.store.data.stickers.length);
+  st = await state(); assert.equal(st.puddle, 20, 'the puddle is 20');
+  const later = await page.evaluate(() => { const g = neo.scene.game; const small = Math.min(...g.state.left.map((id) => g.items[id].thing.size)); return g.state.left.find((id) => g.items[id].thing.size > small); });
+  assert.ok(await besides(later)); await tapThing(later);
+  st = await state(); assert.deepEqual([st.misses, st.hints, st.left, st.puddle], [1, 0, 6, 20], 'a bigger number first is refused and counts one miss');
+  for (let guard = 0; guard < 12 && !(await page.evaluate(() => neo.scene.finished)); guard++) await followHint(true);
+  await sticker(n);
+  st = await state(); assert.deepEqual([st.misses, st.hints, st.puddle], [1, 0, 20], 'level 9 finishes with one miss and the puddle still 20');
+
   // Level 4 upright: the meter and the biggest things, one screenshot.
   await page.setViewportSize({ width: 768, height: 1024 });
   await launch('puddle-gobble', 4); await still(); await page.waitForTimeout(400);
@@ -98,7 +109,7 @@ async function puddleGobblePlay() {
   await sticker(n);
   await page.setViewportSize({ width: 1024, height: 768 });
   assert.deepEqual(errors, [], 'page errors');
-  log('Puddle Gobble: level 1 by taps, level 8 with a too-big touch, a refused overshoot and a requested hint, level 4 upright, level 5 upright in the evening');
+  log('Puddle Gobble: level 1 by taps, level 8 with a too-big touch, a refused overshoot and a requested hint, level 9 with a bigger number first, level 4 upright, level 5 upright in the evening');
 }
 
 return { puddleGobblePlay };
