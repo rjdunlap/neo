@@ -11,7 +11,7 @@
 | toddler | 1–2 |
 | preschool | 2–4 |
 | pre-K | 3–6 |
-| school | 5–9 |
+| school | 5–10 |
 
 | Level | Plays like |
 | --- | --- |
@@ -24,6 +24,7 @@
 | 7 | One straight swipe |
 | 8 | Pieces by twos |
 | 9 | Two lines clear it |
+| 10 | Twos and threes |
 
 <!-- end generated -->
 
