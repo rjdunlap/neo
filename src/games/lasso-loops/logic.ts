@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Lasso Loops, after Montessori golden beads, ten frames and Pokémon Ranger's capture loop: draw a loop around
@@ -22,6 +23,12 @@ export const PLANS: LassoPlan[] = [
   { mode: 'groups', name: 'Equal groups: make 3 groups of 4, then say how many in all' },
   { mode: 'tens', guess: true, name: 'About how many? Guess, loop one jar of 10, keep or change the guess, then loop the tens and say the number' },
 ];
+
+export const LEVELS: BandLevels = {
+  preschool: { min: 1, max: 3 },
+  prek: { min: 2, max: 4 },
+  school: { min: 3, max: 6 },
+};
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 

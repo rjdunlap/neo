@@ -11,19 +11,11 @@ import { spread, type View } from '../../engine/view';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { sideColumns, sideLayout, sideWrong, parity, addressedHouse, countedAloud, countsAloud, helpFixed, helpWrong, houseLooks, isMapMode, letterShows, mailboxColor, mailboxShows, makeLetters, makeStreet, nearestHouse, NEIGHBORS, planFor, shouldInvite, teenSpoken, TOOL_NAME, type HelperId, type House, type HouseLook, type MailPlan } from './logic';
+import { LEVELS, sideColumns, sideLayout, sideWrong, parity, addressedHouse, countedAloud, countsAloud, helpFixed, helpWrong, houseLooks, isMapMode, letterShows, mailboxColor, mailboxShows, makeLetters, makeStreet, nearestHouse, NEIGHBORS, planFor, shouldInvite, teenSpoken, TOOL_NAME, type HelperId, type House, type HouseLook, type MailPlan } from './logic';
 import { drawProblem, drawTool } from './art';
 import type { CompanionRig } from '../../creatures/companion';
 import { WoodsMail } from './woods';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
-
-const LEVELS: BandLevels = {
-  lap: { min: 1, max: 1 },
-  toddler: { min: 1, max: 10, order: [1, 2, 10] },
-  preschool: { min: 2, max: 10, order: [2, 10, 3, 4] },
-  prek: { min: 3, max: 12, order: [3, 4, 5, 9, 12, 6] },
-  school: { min: 4, max: 15, order: [4, 5, 9, 12, 6, 13, 7, 8, 11, 14, 15] },
-};
+import { rangeFor } from '../../progress/difficulty';
 
 /** Dots laid out like dice faces, so small numbers can be seen at a glance. */
 function dots(g: Graphics, n: number, x: number, y: number, r: number, gap: number, color: number) {

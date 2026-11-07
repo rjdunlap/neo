@@ -10,16 +10,8 @@ import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, Spot, TouchIntent } from '../types';
-import { arrive, canJoin, dressingAt, DRESSING_COLORS, makeMeadow, makeRound, needed, nextInPattern, nextStop, planFor, readyForPond, type Dressing, type Meadow, type ParadePlan, type Round } from './logic';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
-
-const LEVELS: BandLevels = {
-  lap: { min: 1, max: 1 },
-  toddler: { min: 1, max: 3 },
-  preschool: { min: 2, max: 6 },
-  prek: { min: 4, max: 8 },
-  school: { min: 9, max: 11 },
-};
+import { LEVELS, arrive, canJoin, dressingAt, DRESSING_COLORS, makeMeadow, makeRound, needed, nextInPattern, nextStop, planFor, readyForPond, type Dressing, type Meadow, type ParadePlan, type Round } from './logic';
+import { rangeFor } from '../../progress/difficulty';
 
 const MAMA_SCALE = 0.5;
 const DUCK_SCALE = 0.2;

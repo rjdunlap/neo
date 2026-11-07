@@ -1,5 +1,6 @@
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
+import type { BandLevels } from '../../progress/difficulty';
 
 /** A tiny picture story, then a friend's empty thought bubble: what she wants (1), where he will look (2), why she did it (3). */
 
@@ -221,6 +222,11 @@ export const PLANS: readonly LevelPlan[] = [
   { level: 2, name: 'Where will he look? Was the friend there when his thing moved?' },
   { level: 3, name: 'How do we know? The reason, then where the picture shows it' },
 ];
+
+export const LEVELS: BandLevels = {
+  prek: { min: 1, max: 2 },
+  school: { min: 1, max: 3 },
+};
 export const planFor = (level: number): LevelPlan => PLANS[Math.max(1, Math.min(3, Math.round(level))) - 1];
 
 /** The right card for a story. */

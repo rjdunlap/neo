@@ -1,4 +1,5 @@
 import { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Seesaw Balance, after Hasee Bounce and playground balance toys: put friends and blocks on a big
@@ -38,6 +39,14 @@ export const PLANS: SeesawPlan[] = [
   { mode: 'difference', rounds: 3, name: 'How much heavier? Add blocks to the light side, then say the difference' },
   { mode: 'predict', rounds: 3, name: 'Which way will it tip? Predict a side or level, release the prop, then compare the sums' },
 ];
+
+export const LEVELS: BandLevels = {
+  lap: { min: 12, max: 12, order: [12] },
+  toddler: { min: 1, max: 12, order: [12, 1, 2] },
+  preschool: { min: 2, max: 13, order: [2, 13, 3, 4] },
+  prek: { min: 3, max: 15, order: [3, 4, 14, 5, 6, 7, 15] },
+  school: { min: 6, max: 17, order: [6, 7, 15, 16, 17, 8, 9, 10, 11] },
+};
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 

@@ -9,7 +9,7 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { safeArea, type View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { typingPicture } from '../pond-typing/pictures';
 import { WigglyIcon } from '../shared';
@@ -17,15 +17,9 @@ import { GrownCrossword } from './grownup';
 import type { LineId } from '../../content/voice-script';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  LEVELS,
   applyHelp, bankFor, clueOf, decoysFor, firstOpen, helpFor, judge, makeRound, nearest, nextFill, planFor, riddleLine, solved, spelled, squaresOf, wordRight, wordsAt, wrongSquares, WORDS_1, type Plan, type Puzzle,
 } from './logic';
-
-/** School starts one step above pre-K's opening; levels 5–6 are the grown-ups' written-clue grids (`grownup.ts`). */
-const LEVELS: BandLevels = {
-  prek: { min: 1, max: 2 },
-  school: { min: 2, max: 4 },
-  grownup: { min: 5, max: 6 },
-};
 
 const INSTRUCT = ['cw.one', 'cw.two', 'cw.three', 'cw.four'] as const;
 

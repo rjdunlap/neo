@@ -10,20 +10,13 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { finish, spring, squash } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { riverWords, acrossWords, HALF, mirrorPath, mirrorReason, riverReason, upDownWords, type Mirror, flagWalk, slideWords, bestDig, distance, dugAt, ruledOutBy, stepsWord, stillFits, type FarDig, cardDone, cardFor, cardReason, CELL, cellCenter, clueDirection, compare, digSpot, directions, dressingFor, EMPTY_CARD, firstDirection, firstLeg, headersFor, inLine, lineSquares, makeFinds, name, ONE_LINE, nextCount, nextWay, planFor, squareAt, walkCard, type Card, type Doodle, type Find, type Headers, type MapPlan, type RowPicture, type Square } from './logic';
+import { LEVELS, riverWords, acrossWords, HALF, mirrorPath, mirrorReason, riverReason, upDownWords, type Mirror, flagWalk, slideWords, bestDig, distance, dugAt, ruledOutBy, stepsWord, stillFits, type FarDig, cardDone, cardFor, cardReason, CELL, cellCenter, clueDirection, compare, digSpot, directions, dressingFor, EMPTY_CARD, firstDirection, firstLeg, headersFor, inLine, lineSquares, makeFinds, name, ONE_LINE, nextCount, nextWay, planFor, squareAt, walkCard, type Card, type Doodle, type Find, type Headers, type MapPlan, type RowPicture, type Square } from './logic';
 
-const LEVELS: BandLevels = {
-  // Level 9 (One line) is the preschool opening, appended after 8 and played first.
-  preschool: { min: 1, max: ONE_LINE, order: [ONE_LINE, 1] },
-  prek: { min: 1, max: ONE_LINE, order: [ONE_LINE, 1, 2] },
-  // Level 9 is younger than school's window; 10 and 11 follow 8.
-  school: { min: 1, max: 11, order: [1, 2, 3, 4, 5, 6, 7, 8, 10, 11] },
-};
 /** Level 9's squares are bigger: 120 units on screen. */
 const LINE_SCALE = 1.2;
 /** Levels 10 and 11 put the sign above the map when the view has this much height to spare (portrait), else beside it. */

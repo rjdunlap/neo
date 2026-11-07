@@ -7,21 +7,15 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { SAND, SAND_LINE, drawBucket, drawPail, flagArt, grainDot, invitationCard, paddleArt, sandPicture } from './art';
 import {
+  LEVELS,
   COLS, GRAINS, apply, botStep, describeLandscape, describeSand, hintAction, restart, sandLayout, startState,
   type SandAction, type SandEvent, type SandLayout, type SandResult, type SandState,
 } from './logic';
-
-const LEVELS: BandLevels = {
-  lap: { min: 1, max: 1 },
-  toddler: { min: 1, max: 2 },
-  preschool: { min: 2, max: 3 },
-  prek: { min: 3, max: 3 },
-};
 
 const IDLE_SECONDS = 6;
 

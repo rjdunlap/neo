@@ -1,6 +1,7 @@
 import type { CritterName } from '../../art/critter';
 import type { Rng } from '../../engine/random';
 import type { Band } from '../../progress/bands';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Picture Graph: count the critters playing in a meadow and build a bar graph, one block per
@@ -42,6 +43,11 @@ export const PLANS: GraphPlan[] = [
   // A finished graph and three things a friend says about the meadow, one at a time: stamp each yes, no, or the graph can't say.
   { mode: 'claim', kinds: 3, max: 6, graphs: 2, per: 1, name: 'What the graph can say: stamp what a friend says yes, no, or "the graph can\'t say" (it shows how many, not who came first)' },
 ];
+
+export const LEVELS: BandLevels = {
+  prek: { min: 1, max: 8, order: [8, 1, 2] },
+  school: { min: 1, max: 11, order: [1, 2, 8, 3, 4, 5, 6, 7, 9, 10, 11] },
+};
 
 /** The levels with a scene of their own (`LineUp`, `TwoPictures`) rather than a graph she builds or reads. */
 export const ownScene = (plan: GraphPlan) => plan.mode === 'line' || plan.mode === 'pair';

@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 // Saved stickers and the icon keep their original pool, even if play gains new friends.
 export const STICKER_ANIMALS = ['cow', 'duck', 'pig', 'cat', 'dog', 'bunny', 'bear'] as const;
@@ -29,6 +30,14 @@ export const PLANS: PeekPlan[] = [
   { mode: 'remember', spots: 3, goal: 5 },
   { mode: 'remember', spots: 4, goal: 6 },
 ];
+
+export const LEVELS: BandLevels = {
+  // Level 16 (One door) is the easiest, so lap plays it first and then 1, 2 (see `order`).
+  lap: { min: 1, max: 16, order: [16, 1, 2] },
+  toddler: { min: 1, max: 5 },
+  preschool: { min: 4, max: 8 },
+  prek: { min: 6, max: 8 },
+};
 
 const ONE_DOOR: PeekPlan = { mode: 'free', spots: 1, goal: 6, door: true };
 

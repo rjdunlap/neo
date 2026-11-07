@@ -9,21 +9,13 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseBest, courseDoors, courseMinimum, isCodeCourse } from './course';
-import { contradictsClues, crossedOut, detectiveDoor, demoCode, doorKinds, ignoredClues, makeCode, nextMark, nextMove, petTry, planFor, quickCode, rowsThatFit, score, STONES, suggestion, swapResult, visibleRows, wrongMarks, type CodePlan, type DoorKind, type Guess, type Mark } from './logic';
-
-const LEVELS: BandLevels = {
-  // Level 10, One slot, opens preschool before level 1's two slots.
-  preschool: { min: 1, max: 10, order: [10, 1] },
-  prek: { min: 1, max: 3 },
-  // Level 9, Be the door, marks yellow before four slots; level 12, Swap seats, uses 9's plan, so it follows it.
-  school: { min: 2, max: 12, order: [2, 3, 4, 9, 12, 5, 6, 7, 8, 11] },
-};
+import { LEVELS, contradictsClues, crossedOut, detectiveDoor, demoCode, doorKinds, ignoredClues, makeCode, nextMark, nextMove, petTry, planFor, quickCode, rowsThatFit, score, STONES, suggestion, swapResult, visibleRows, wrongMarks, type CodePlan, type DoorKind, type Guess, type Mark } from './logic';
 
 /** Each stone has a shape as well as a color, so colors never have to be told apart by hue alone. */
 const MARKS: ShapeKind[] = ['circle', 'triangle', 'square', 'star', 'heart'];

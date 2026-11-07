@@ -6,21 +6,15 @@ import { HeldDirection, idle, type CouchControls } from '../../engine/controller
 import { onTap, palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseGrids, courseMinimum, isWordCourse } from './course';
 import { typingPicture } from '../pond-typing/pictures';
-import { blankFor, cellsOfWord, hiddenHint, hintFor, judgeLine, lineBetween, makeGrids, ORDER, PICTURE_GRID, planFor, SMALL_GRID, STONE, type WordGrid, type WordPlan } from './logic';
+import { LEVELS, blankFor, cellsOfWord, hiddenHint, hintFor, judgeLine, lineBetween, makeGrids, PICTURE_GRID, planFor, SMALL_GRID, STONE, type WordGrid, type WordPlan } from './logic';
 import { MSG_H, SCHOOL_TOUCH, touchFrame, type Slot, type Viewport } from './layout';
 import { themeById } from './words';
-
-/**
- * Lantern Lake holds it, with touch or a controller. Grown-ups: the small grid (5) comes first, then 1–4, the message grid (6), and
- * just the theme (7) last. School plays one grid of four picture words (8), by touch.
- */
-const LEVELS: BandLevels = { school: { min: PICTURE_GRID, max: PICTURE_GRID }, grownup: { min: 1, max: 7, order: ORDER } };
 
 const PAPER = 0xfffdf6;
 const BAND_COLORS: ColorName[] = ['pink', 'blue', 'green', 'orange', 'purple', 'teal', 'yellow', 'red'];

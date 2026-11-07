@@ -1,6 +1,7 @@
 import { CRITTERS, type CritterName } from '../../art/critter';
 import { PENTATONIC } from '../../audio/notes';
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Little Conductor's rules: one four-beat tune on the game's own score clock, and two paces she sets.
@@ -40,6 +41,13 @@ const PLANS: Plan[] = [
   { level: 2, name: 'Two ways to play: hear the tune slow and fast, then finish with the one she likes', mode: 'both' },
   { level: 3, name: "Two pictured requests: a listener's sign shows the turtle or the rabbit for each half of the tune; she picks that pad and taps Check", mode: 'sign' },
 ];
+
+// Level 3's pictured requests (music M3) are for preschool and pre-K; toddlers stay with free play.
+export const LEVELS: BandLevels = {
+  toddler: { min: 1, max: 2 },
+  preschool: { min: 1, max: 3 },
+  prek: { min: 2, max: 3 },
+};
 export const planFor = (level: number): Plan => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 
 export interface Round {

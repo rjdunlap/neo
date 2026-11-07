@@ -14,16 +14,9 @@ import type { View } from '../../engine/view';
 import type { LineId } from '../../content/voice-script';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { bigSingerIndex, bigTouch, CHOICES, echoDots, echoRest, GAP_SECONDS, judgeEcho, makeQuestions, makeRhythms, makeCast, planFor, singerToTap, songFor, tileFor, type Singer, type Song, type Answer, type Gap, type GardenPlan, type Note, type Question, type Sound } from './logic';
+import { LEVELS, bigSingerIndex, bigTouch, CHOICES, echoDots, echoRest, GAP_SECONDS, judgeEcho, makeQuestions, makeRhythms, makeCast, planFor, singerToTap, songFor, tileFor, type Singer, type Song, type Answer, type Gap, type GardenPlan, type Note, type Question, type Sound } from './logic';
 import { MIN_TAP_GAP } from '../../engine/ghost';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
-
-const LEVELS: BandLevels = {
-  lap: { min: 1, max: 8, order: [8, 1] },
-  toddler: { min: 1, max: 2 },
-  preschool: { min: 2, max: 9, order: [2, 3, 4, 9] },
-  prek: { min: 3, max: 10, order: [3, 4, 5, 6, 7, 9, 10] },
-};
+import { rangeFor } from '../../progress/difficulty';
 
 type Kind = 'bird' | 'frog' | 'bunny' | 'turtle' | 'up' | 'down' | 'same' | 'bell' | 'woodpecker' | 'drum';
 

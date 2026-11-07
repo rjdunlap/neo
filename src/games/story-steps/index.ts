@@ -4,7 +4,7 @@ import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { draggable, type DragHandle } from '../../engine/drag';
 import { spread, type View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { replayArt, tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
@@ -14,14 +14,9 @@ import { PredictStory } from './predict';
 import { TheaterStoryGame } from './theater';
 import { THEATER_PLANS } from './theater-logic';
 import { PREDICTION_PLAN } from './predictions';
-import { UNTANGLE_PLAN, REPAIR_PLAN } from './logic';
+import { LEVELS, UNTANGLE_PLAN, REPAIR_PLAN } from './logic';
 import { storyCard, storySticker } from './art';
 import { nextPicture, nextSlot, CAUSES, pictureText, STORIES, LEVEL_PLANS, sameCard, storyPuzzle, type StoryCard } from './logic';
-
-const LEVELS: BandLevels = {
-  toddler: { min: 1, max: 2 }, preschool: { min: 2, max: 5 },
-  prek: { min: 4, max: 8 }, school: { min: 6, max: 13 },
-};
 
 class StorySteps implements Game {
   readonly plan;

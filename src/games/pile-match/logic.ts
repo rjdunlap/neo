@@ -1,6 +1,7 @@
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import { SHAPES } from './shapes';
+import type { BandLevels } from '../../progress/difficulty';
 
 /** A place in the heap, in grid pitches (120 units); odd layers sit half a pitch over. */
 export interface Cell { x: number; y: number; z: number }
@@ -60,6 +61,12 @@ export const PLANS: readonly PilePlan[] = [
   { id: 7, name: 'Six kinds', pieces: 18, kinds: 6, layers: 3, tray: 5, asked: false, count: true },
   { id: 8, name: 'The big heap', pieces: 24, kinds: 8, layers: 3, tray: 5, asked: false, count: true },
 ];
+
+export const LEVELS: BandLevels = {
+  preschool: { min: 1, max: 4 },
+  prek: { min: 3, max: 6 },
+  school: { min: 5, max: 8 },
+};
 export const planFor = (level: number): PilePlan => PLANS[Math.max(0, Math.min(PLANS.length - 1, Math.floor(level) - 1))];
 
 export const fullMask = (n: number) => (1 << n) - 1;

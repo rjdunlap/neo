@@ -15,6 +15,7 @@ import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  LEVELS,
   aimFor,
   CATCH_Y,
   FLIPPER,
@@ -37,14 +38,7 @@ import {
   type BumperPlan,
   type FlipperSide,
 } from './logic';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
-
-const LEVELS: BandLevels = {
-  lap: { min: 1, max: 1 },
-  toddler: { min: 1, max: 2 },
-  preschool: { min: 2, max: 4 },
-  prek: { min: 3, max: 9, order: [3, 4, 6, 8, 5, 9] },
-};
+import { rangeFor } from '../../progress/difficulty';
 
 /** Colors a flower can be; on color levels the first is the one to bloom. */
 const FLOWER_COLORS: ColorName[] = ['yellow', 'pink', 'blue', 'purple'];

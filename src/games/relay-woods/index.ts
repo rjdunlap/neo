@@ -8,13 +8,12 @@ import { GhostFinger } from '../../engine/ghost';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { helpArt, mosaic, resetArt, stump } from './art';
-import { fixture, layout, NAMES, picture, Relay, roundFor, type Point } from './logic';
-const LEVELS:BandLevels={toddler:{min:1,max:2},preschool:{min:1,max:4},prek:{min:2,max:4},school:{min:4,max:4}};
+import { LEVELS, fixture, layout, NAMES, picture, Relay, roundFor, type Point } from './logic';
 interface Control{node:Container;w:number;h:number}
 export class RelayWoods implements Game {
  readonly relay;readonly root=new Container();readonly board=new Container();readonly glow=new Graphics();readonly ghost;readonly companion;readonly backdrop;

@@ -2,6 +2,7 @@ import type { ColorName } from '../../art/palette';
 import type { PixelPictureCreation } from '../../content/creations';
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
+import type { BandLevels } from '../../progress/difficulty';
 export const NAMES=['Pass it along — tap the next connected friend','Two ways — follow either connected route','Fallen log — find a clear path around a log','The short way — deliver with the fewest hops'];
 export const PICTURES=['flower','cake','kite','portrait','tune'] as const;
 export type PictureId=typeof PICTURES[number];
@@ -71,3 +72,5 @@ export function layout(v:View,p:Plan):{nodes:Record<string,Point>;reset:Point;he
  if(p.reflect)for(const pt of Object.values(nodes))pt.y=2*cy-pt.y;
  return {nodes,reset:{x:cx-100,y:v.h-68},help:{x:cx+100,y:v.h-68},request:{x:cx,y:127},ribbon:{x:cx,y:183}};
 }
+
+export const LEVELS:BandLevels={toddler:{min:1,max:2},preschool:{min:1,max:4},prek:{min:2,max:4},school:{min:4,max:4}};

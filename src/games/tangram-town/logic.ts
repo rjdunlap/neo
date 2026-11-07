@@ -1,3 +1,4 @@
+import type { BandLevels } from '../../progress/difficulty';
 import type { Rng } from '../../engine/random';
 export type Shape = 'square' | 'roof' | 'triangle' | 'rectangle' | 'hull';
 export interface Piece { shape: Shape; turns: number }
@@ -120,3 +121,10 @@ export function repairAction(targets: readonly Target[], pieces: readonly Piece[
   const i=repairMismatches(targets,pieces)[0];
   return i===undefined?{check:true}:selected!==i?{pick:i}:{turn:true};
 }
+
+export const LEVELS: BandLevels = {
+  toddler: { min: 1, max: 2 },
+  preschool: { min: 2, max: 4 },
+  prek: { min: 3, max: 6 },
+  school: { min: 5, max: 8 },
+};

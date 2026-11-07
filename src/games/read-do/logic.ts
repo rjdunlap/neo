@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 export const COLORS = ['red', 'blue', 'yellow', 'green', 'pink'] as const;
 export const ANIMALS = ['duck', 'cat', 'pig', 'dog'] as const;
@@ -23,6 +24,8 @@ export const PLANS = [
   { name: 'Fix a sign by putting one word in or taking one out', rounds: 3 },
   { name: 'Fix a sign by swapping one word for another', rounds: 3 },
 ] as const;
+
+export const LEVELS: BandLevels = { prek: { min: 1, max: 5, order: [1, 2, 4, 5] }, school: { min: 1, max: 9 } };
 export const planFor = (level: number) => PLANS[Math.max(1, Math.min(PLANS.length, level)) - 1];
 export function meaning(c: Choice): Word[] {
   if (c.kind === 'hat') return [c.color];

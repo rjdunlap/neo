@@ -9,18 +9,9 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { ANIMALS, GAP_HOLD, GAPS, RHYMES, VOICES, farmAnimals, makeSong, nextInvite, phraseMidi, pickGapTune, pickRhymeTune, pickTune, planFor, rhymeSides, tunesFor, type Animal, type Note, type Picture, type Rhyme, type SingPlan, type Tune } from './logic';
-
-const LEVELS: BandLevels = {
-  lap: { min: 1, max: 2 },
-  // *Finish the line* (7) sits after choosing friends (3) for the younger bands; pre-K does not play it. *Which one
-  // finishes it?* (8) follows it for preschool and tops pre-K's ladder: the only level with a wrong answer.
-  toddler: { min: 1, max: 7, order: [1, 2, 3, 7] },
-  preschool: { min: 2, max: 8, order: [2, 3, 7, 8] },
-  prek: { min: 3, max: 8, order: [3, 4, 5, 6, 8] },
-};
+import { LEVELS, ANIMALS, GAP_HOLD, GAPS, RHYMES, VOICES, farmAnimals, makeSong, nextInvite, phraseMidi, pickGapTune, pickRhymeTune, pickTune, planFor, rhymeSides, tunesFor, type Animal, type Note, type Picture, type Rhyme, type SingPlan, type Tune } from './logic';
 
 const GRASS = 0x9edb86;
 const BARN_RED = 0xd9534f;

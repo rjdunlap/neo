@@ -1,6 +1,7 @@
 import type { CritterName } from '../../art/critter';
 import type { Rng } from '../../engine/random';
 import { CROSSED, EMPTY, FILLED } from '../picture-logic/logic';
+import type { BandLevels } from '../../progress/difficulty';
 
 export { CROSSED, EMPTY, FILLED };
 
@@ -140,6 +141,14 @@ export const PLANS: readonly Plan[] = [
   { level: 7, name: 'Case file (grown-up: 4 friends, 4 places, 4 snacks in three linked grids; written clues)', cast: ['cat', 'duck', 'bear', 'dog', 'bunny', 'pig'], friends: 4, placePool: PLACES, places: 4, items: SNACKS, case: true, kinds: ['direct', 'not', 'either', 'neither'], clues: 5, maxClues: 8, hats: 'some', thing: 'basket', boards: 1 },
   { level: 8, name: 'Who came first? (grown-up: 5 friends, 5 places, 5 times of day; "before", "two after" and "one of the two" clues)', cast: ['cat', 'duck', 'bear', 'dog', 'bunny', 'pig'], friends: 5, placePool: PLACES5, places: 5, items: TIMES, case: true, times: true, kinds: ['direct', 'not', 'either', 'neither', 'order', 'pair'], clues: 7, maxClues: 9, hats: 'some', atLeast: { order: 1, pair: 1 }, thing: 'basket', boards: 1 },
 ];
+
+/** Preschool's, pre-K's and school's whole ranges, and grown-up's levels 7–8. */
+export const LEVELS: BandLevels = {
+  preschool: { min: 1, max: 2 },
+  prek: { min: 2, max: 3 },
+  school: { min: 3, max: 6 },
+  grownup: { min: 7, max: 8 },
+};
 
 export const planFor = (level: number): Plan => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 

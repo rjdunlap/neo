@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /** A ramp sends the marble one column left or right when it reaches that row. */
 export type Ramp = 'left' | 'right';
@@ -57,6 +58,13 @@ export const TURN_PLAN: ChainPlan = {
 
 /** Level 9, school: a red and a blue marble run the same machine, so each ramp is placed for both of them. */
 export const TWO_MARBLES = 9;
+
+export const LEVELS: BandLevels = {
+  // Tap to turn and Which bell? are easy entries before the existing drag levels.
+  prek: { min: 1, max: 8, order: [TAP_TO_TURN, WHICH_BELL, 1, 2, 3] },
+  // Two marbles tops the school ladder after the chime machines; levels 7 and 8 stay pre-K entries.
+  school: { min: 3, max: TWO_MARBLES, order: [3, 4, 5, 6, TWO_MARBLES] },
+};
 export const TWO_PLAN: ChainPlan = {
   name: 'Two marbles: each one rings the bell of its own colour', cols: 5, rows: 4, fixed: 1, loose: 2, decoys: 3, chime: false,
   solutions: { min: 1, max: 3 }, machines: 2, two: true,

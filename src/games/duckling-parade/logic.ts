@@ -1,5 +1,6 @@
 import type { ColorName } from '../../art/palette';
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Duckling Parade, after Neopets' Meerca Chase: walk Mama Duck around the meadow and her
@@ -39,6 +40,14 @@ export const PLANS: ParadePlan[] = [
   { mode: 'pattern', ducklings: 6, colors: 3, unit: 3, repeatedPair: 'aab', oddDuckling: true, name: 'Make the pattern, leaving out the duckling that does not fit' },
   { mode: 'pattern', ducklings: 6, colors: 2, unit: 3, repeatedPair: 'abb', name: 'Make the pattern: one of a color, then two of another' },
 ];
+
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 1 },
+  toddler: { min: 1, max: 3 },
+  preschool: { min: 2, max: 6 },
+  prek: { min: 4, max: 8 },
+  school: { min: 9, max: 11 },
+};
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 

@@ -1,5 +1,6 @@
 import type { Rng } from '../../engine/random';
 import { fits, RULE_WORDS, type Rule, type SortCritter } from '../critter-sort/logic';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Critter Crossing: a bridge gate lets some critters across by a rule. At first the rule is on the sign; then it is
@@ -76,6 +77,11 @@ export const PLANS: CrossPlan[] = [
   // Appended entry: saved IDs 1–7 retain their rules. Pre-K places this between 1 and 2.
   { name: 'The sign shows a picture with a slash: send the critters that do not fit that picture', mode: 'visible', gates: 'not', critters: 5, options: 0, minTests: 0, rounds: 2 },
 ];
+
+export const LEVELS: BandLevels = {
+  prek: { min: 1, max: 8, order: [1, 8, 2, 3] },
+  school: { min: 2, max: 7 },
+};
 
 export const planFor = (level: number): CrossPlan => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 

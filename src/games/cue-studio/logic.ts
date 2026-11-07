@@ -1,3 +1,4 @@
+import type { BandLevels } from '../../progress/difficulty';
 /**
  * Cue Studio's rules (docs/definitions/cue-studio.md): a tiny executable show. She puts Wave and Turn cards in one or two
  * slots, presses Play and watches the companion act each card in order, left to right. Levels 1–2 are free creation: every
@@ -22,6 +23,12 @@ export const PLANS: readonly CuePlan[] = [
   { level: 2, slots: 2, name: 'My little show: make any two-action show and play it' },
   { level: 3, slots: 2, name: 'Fix the cue: repair the pictured order, then check the show', request: ['W', 'T'] },
 ];
+
+// The 2026-10-23 decision separates pre-K creation from school requested repair.
+export const LEVELS: BandLevels = {
+  prek: { min: 1, max: 2 },
+  school: { min: 3, max: 3 },
+};
 
 export const planFor = (level: number): CuePlan => PLANS.find((p) => p.level === level) ?? PLANS[0];
 

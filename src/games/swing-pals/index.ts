@@ -8,23 +8,15 @@ import { onTap, palmOnGlass } from '../../engine/input';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import type { LineId } from '../../content/voice-script';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  LEVELS,
   applyPush, backTimes, BASKET_HALF, clapTimes, FRIEND_SCALE, friendBox, firstBack, MARK_R, markerAt, HOOKS, land, makeRound, nextBackTime, nextToPush, period, planFor,
   raceTempts, raceWatch, requestStrip, rightHook, ropeOf, seatAt, swingLayout, together, watchTime, WEIGHT, type Column, type Friend, type Goal, type Hook, type Line,
   type Plan, type PushLine, type Race, type Request, type Round, type Swing, type SwingLayout,
 } from './logic';
-
-const LEVELS: BandLevels = {
-  lap: { min: 1, max: 1 },
-  toddler: { min: 1, max: 2 },
-  preschool: { min: 2, max: 3 },
-  // Level 7 sits between 3 and 4 for pre-K, and after 6 for school.
-  prek: { min: 3, max: 7, order: [3, 7, 4] },
-  school: { min: 4, max: 8 },
-};
 
 /** Each level's authored first line leads its first round of a session. */
 const authoredShown = new Set<number>();

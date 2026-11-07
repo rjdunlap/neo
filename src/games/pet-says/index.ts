@@ -11,20 +11,12 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { arrowIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { danceSeconds, saysFrame, type SaysFrame, makeTurns, MOVE_CUES, MOVE_WORDS, shouldNudge, stickerRecipe, planFor, type Move, type SaysPlan, type Turn } from './logic';
-
-const LEVELS: BandLevels = {
-  // Level 13, Pat the pet, is the easiest, so lap plays it first, then 1 and 2 (see `order`).
-  lap: { min: 1, max: 13, order: [13, 1, 2] },
-  toddler: { min: 1, max: 3 },
-  preschool: { min: 2, max: 4 },
-  prek: { min: 3, max: 5 },
-};
+import { LEVELS, danceSeconds, saysFrame, type SaysFrame, makeTurns, MOVE_CUES, MOVE_WORDS, shouldNudge, stickerRecipe, planFor, type Move, type SaysPlan, type Turn } from './logic';
 
 /** The freeze dance's tune, in pentatonic steps. */
 const DANCE = [5, 7, 9, 7, 5, 4, 5, 7, 9, 10, 9, 7];

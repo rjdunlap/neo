@@ -1,5 +1,6 @@
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Adventure Walk's rules: the companion walks to a friend's picnic past three landmarks, and at each one she decides which
@@ -55,6 +56,13 @@ export const PLANS: readonly Plan[] = [
   { level: 2, name: 'Come this way', calls: true, groups: [[0], [1], [2]] },
   { level: 3, name: 'Two at once', calls: true, groups: [[0, 1], [2]] },
 ];
+
+export const LEVELS: BandLevels = {
+  toddler: { min: 1, max: 1 },
+  preschool: { min: 1, max: 2 },
+  prek: { min: 2, max: 3 },
+  school: { min: 3, max: 3 },
+};
 
 export const planFor = (level: number): Plan => PLANS[Math.max(1, Math.min(PLANS.length, level)) - 1];
 

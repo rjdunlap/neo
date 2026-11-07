@@ -1,3 +1,4 @@
+import type { BandLevels } from '../../progress/difficulty';
 import type { ColorName } from '../../art/palette';
 import { STAMP_KINDS, type StampKindId } from '../../content/creations';
 import { Rng } from '../../engine/random';
@@ -221,3 +222,11 @@ export function traceDemo(plan: NonNullable<StampPlan['trace']>, st: { prints: r
   const want = n < 3 ? plan.makers[0] : plan.makers[1];
   return st.chosen !== want ? { do: 'choose', maker: want } : { do: 'press', ...DEMO_SPOTS[n] };
 }
+
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 8, order: [7, 8, 1, 2] },
+  toddler: { min: 2, max: 9, order: [9, 2, 3] },
+  preschool: { min: 3, max: 5 },
+  prek: { min: 4, max: 6 },
+  school: { min: 5, max: 6 },
+};

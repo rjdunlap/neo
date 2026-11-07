@@ -10,7 +10,7 @@ import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { FederatedPointerEvent } from 'pixi.js';
-import { completion, goalOf, helpFor, isMaze, leafSpots, levelName, makeBoard, pickLook, mazeBack, mazeRestart, mazeStart, mazeTouch, moveError, neighbours, nextToward, routeBetween, solved, step, type Look, type MazeState } from './logic';
+import { LEVELS, completion, goalOf, helpFor, isMaze, leafSpots, levelName, makeBoard, pickLook, mazeBack, mazeRestart, mazeStart, mazeTouch, moveError, neighbours, nextToward, routeBetween, solved, step, type Look, type MazeState } from './logic';
 
 const HEADINGS: Record<number, string> = { 4: 'Walk the turtle to the pond', 5: 'Walk the turtle to the pond', 6: 'Find the way to the pond', 7: 'Get the berry, then the pond' };
 
@@ -376,7 +376,7 @@ function iconArt(seed = 0): Container {
 export const mossyPath: GameModule = {
   id: 'mossy-path', name: 'Mossy Path', titleLine: 'game.mossy-path', region: 'puzzle-peaks', challenge: 'space',
   skills: ['spatial-reasoning', 'planning', 'path-coverage', 'maze-planning'], bands: ['toddler', 'preschool', 'prek', 'school'], touchDemo: true,
-  levels: band => rangeFor({ toddler: { min: 4, max: 4 }, preschool: { min: 4, max: 5 }, prek: { min: 5, max: 6 }, school: { min: 1, max: 7, order: [6, 1, 7, 2, 3] } }, band),
+  levels: (band) => rangeFor(LEVELS, band),
   // School opens on the one-step maze (6); a saved 4 or 5 from a younger band starts school there, not at the hardest patch.
   entryLevels: [4, 5, 6],
   describeLevel: levelName, music: STYLES.lullaby,

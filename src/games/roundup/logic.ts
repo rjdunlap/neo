@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Roundup, after Neopets' Extreme Herder and Club Penguin's Puffle Roundup: animals scoot away
@@ -52,6 +53,13 @@ export const PLANS: HerdPlan[] = [
   COME_ALONG,
   { mode: 'size', animals: 6, name: 'Sort big and little pigs into pens with matching-sized pictures' },
 ];
+
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 11, order: [1, 11] },
+  toddler: { min: 1, max: 11, order: [1, 11, 10, 2, 3] },
+  preschool: { min: 2, max: 5 },
+  prek: { min: 3, max: 12, order: [3, 4, 5, 6, 7, 8, 9, 12] },
+};
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 

@@ -1,5 +1,6 @@
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Ready for Adventure's rules: pretend parade props. A prop with a missing part (a bare flagpole, a drum with no beater) is
@@ -42,6 +43,12 @@ export const PLANS: readonly Plan[] = [
   { level: 2, name: 'Make it ready' },
   { level: 3, name: 'Two useful jobs' },
 ];
+
+export const LEVELS: BandLevels = {
+  toddler: { min: 1, max: 1 },
+  preschool: { min: 1, max: 2 },
+  prek: { min: 2, max: 3 },
+};
 
 export function planFor(level: number): Plan {
   return PLANS[Math.max(1, Math.min(PLANS.length, level)) - 1];

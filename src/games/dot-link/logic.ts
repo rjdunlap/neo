@@ -1,5 +1,6 @@
 import type { ColorName } from '../../art/palette';
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Dot Link, after Two Dots: drag a line through neighboring dots of one color and they pop;
@@ -33,6 +34,14 @@ export const PLANS: DotPlan[] = [
 
 /** Level 11, the toddler entry before level 2: one pair of dots wiggles from the start, and only that pair links. */
 export const BUDDY_LEVEL = 11;
+
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 1 },
+  // Level 11, Find my buddy, is the toddler step between tapping and linking any pair.
+  toddler: { min: 1, max: 11, order: [1, BUDDY_LEVEL, 2] },
+  preschool: { min: 2, max: 4 },
+  prek: { min: 3, max: 6 },
+};
 export const BUDDY: DotPlan = { mode: 'buddy', rows: 3, cols: 3, colors: 2, goal: 4, name: 'Find my buddy: link the two wiggling dots' };
 
 /** Every plan by level ID; 7–10 are kept for the levels the dive appends above 6. */

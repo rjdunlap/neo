@@ -9,6 +9,7 @@
 import type { CritterName } from '../../art/critter';
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
+import type { BandLevels } from '../../progress/difficulty';
 
 export type Socket = 'under' | 'top' | 'front';
 export type PartId = 'wheels' | 'float' | 'umbrella' | 'lantern' | 'flag' | 'paddles' | 'rollers' | 'lid' | 'raft' | 'glowstones';
@@ -197,6 +198,12 @@ export const PLANS: Record<number, Plan> = {
   4: { name: 'Fix-It Day', describe: "Fix-It Day: yesterday's cart meets a longer path, and one part has to do two jobs" },
   5: { name: 'Little Gate', describe: 'Little Gate: build for the path, and the whole cart must fit under the low garden gate' },
   6: { name: 'New Box', describe: "New Box: the same job as the pet's cart, from a box of parts it never used" },
+};
+
+export const LEVELS: BandLevels = {
+  preschool: { min: 1, max: 1 },
+  prek: { min: 1, max: 3 },
+  school: { min: 2, max: 6 },
 };
 
 export const TOP_LEVEL = 6;

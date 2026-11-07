@@ -14,6 +14,7 @@ import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  LEVELS,
   sortTouch,
   predictionComparison,
   type PairReading,
@@ -42,15 +43,7 @@ import {
   type Thing,
   type ThingKind,
 } from './logic';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
-
-const LEVELS: BandLevels = {
-  lap: { min: 12, max: 12, order: [12] },
-  toddler: { min: 1, max: 12, order: [12, 1, 2] },
-  preschool: { min: 2, max: 13, order: [2, 13, 3, 4] },
-  prek: { min: 3, max: 15, order: [3, 4, 14, 5, 6, 7, 15] },
-  school: { min: 6, max: 17, order: [6, 7, 15, 16, 17, 8, 9, 10, 11] },
-};
+import { rangeFor } from '../../progress/difficulty';
 
 /** From the middle of the seesaw to each tray's post. */
 const ARM = 290;

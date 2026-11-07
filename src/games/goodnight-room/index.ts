@@ -7,18 +7,11 @@ import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { acceptsTap, makeNight, makeRequests, COLORS, NAMES, noteFor, planFor, ROOM_NAMES, SLOTS, thingToTap, isLight, type NightPlan, type NightRoom, type Thing } from './logic';
-
-const LEVELS: BandLevels = {
-  lap: { min: 1, max: 2 },
-  toddler: { min: 2, max: 4 },
-  preschool: { min: 3, max: 5 },
-  prek: { min: 5, max: 10 },
-};
+import { LEVELS, acceptsTap, makeNight, makeRequests, COLORS, NAMES, noteFor, planFor, ROOM_NAMES, SLOTS, thingToTap, isLight, type NightPlan, type NightRoom, type Thing } from './logic';
 
 const WALL = 0x9fb8e8;
 const NIGHT = 0x1d2350;

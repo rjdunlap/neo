@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Species Comeback's rules: a family tree of the island's (invented) pond turtles, the one pairing rule (no close family),
@@ -48,6 +49,9 @@ export const PLANS: readonly ComebackPlan[] = [
   { level: 2, name: 'Not cousins either', founders: 3, young: [3, 2, 2], third: [2, 3], depth: 2, target: 3, site: false },
   { level: 3, name: 'Where will they live?', founders: 3, young: [3, 2, 2], third: [2, 3], depth: 2, target: 3, site: true },
 ];
+
+/** Lantern Lake: levels 1–3 in this slice; level 4 (the keeper's two plans) is the next. */
+export const LEVELS: BandLevels = { grownup: { min: 1, max: 3 } };
 
 export const planFor = (level: number): ComebackPlan => PLANS.find((p) => p.level === level) ?? PLANS[0];
 

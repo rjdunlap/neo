@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Habitat Helpers uses a deliberately small garden model: a visitor comes when the garden supplies
@@ -67,6 +68,12 @@ export const PLANS: readonly HabitatPlan[] = [
   { mode: 'shore', rounds: 2, name: 'High rock or rock pool? Place shore friends so each has what it needs when the sea goes out' },
   { mode: 'shore', rounds: 2, name: 'Who lives where? Three shore places, and the rock pool has room for one' },
 ];
+
+export const LEVELS: BandLevels = {
+  preschool: { min: 1, max: 3 },
+  prek: { min: 2, max: 5 },
+  school: { min: 4, max: 9 },
+};
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 

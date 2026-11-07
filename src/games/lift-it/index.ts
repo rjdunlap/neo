@@ -9,22 +9,17 @@ import { onTap, palmOnGlass } from '../../engine/input';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import type { LineId } from '../../content/voice-script';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { FONT } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  LEVELS,
   applyPull, bestRig, BRANCH_Y, CARD, cardSpots, countsMisses, crateBottom, crateHook, CRATE_H, CRATE_W, endsRight, guessCards, handleAt,
   HANDLE_HIT, HOOK_HIT, hooksOf, knotsCards, ledgeSpots, ledgeY, liftLayout, makeRound, paws, pawsCards, planFor, pullDirection, pullers,
   ratio, rigOf, rigsFor, TRAY_HIT, travel, WHEEL_R, works, type Friend, type Haul, type HookId, type Hooks, type LiftLayout, type Line,
   type Plan, type Pt, type Rig,
 } from './logic';
-
-const LEVELS: BandLevels = {
-  preschool: { min: 1, max: 2 },
-  prek: { min: 2, max: 4 },
-  school: { min: 3, max: 6 },
-};
 
 /** Each level's authored first lines lead its first round of a session. */
 const authoredShown = new Set<number>();

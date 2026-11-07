@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Goodnight Room, after "Goodnight Moon": a cosy bedroom at bedtime. Tap each thing to say
@@ -30,6 +31,13 @@ export const PLANS: NightPlan[] = [
   { mode: 'except', things: 6, requests: 1, asleep: 0, name: 'Say goodnight to everyone except the lamp or lantern: keep a night-light awake' },
   { mode: 'tour', things: 6, requests: 0, asleep: 0, name: 'Goodnight everywhere: follow the arrow through three rooms and say goodnight to everyone' },
 ];
+
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 2 },
+  toddler: { min: 2, max: 4 },
+  preschool: { min: 3, max: 5 },
+  prek: { min: 5, max: 10 },
+};
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 

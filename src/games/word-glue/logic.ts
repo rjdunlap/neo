@@ -1,5 +1,6 @@
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Word Glue: two pictures join into a third, and the pet says the parts and the whole. Level 1 joins the only pair,
@@ -71,6 +72,14 @@ export const PLANS: readonly Plan[] = [
   { level: 2, name: 'What do they make? Find the two pictures that make the asked word' },
   { level: 3, name: 'Who is it for? Join the friend who needs the thing in the middle' },
 ];
+
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 1 },
+  toddler: { min: 1, max: 2 },
+  preschool: { min: 2, max: 3 },
+  prek: { min: 3, max: 3 },
+  school: { min: 3, max: 3 },
+};
 
 export const planFor = (level: number): Plan => PLANS.find((p) => p.level === level) ?? PLANS[0];
 

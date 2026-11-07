@@ -1,5 +1,6 @@
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Bond Beads: round beads with little hands, linked hand to hand. A toy model only: levels 1–4 name no substance and say
@@ -298,6 +299,10 @@ export const PLANS: Plan[] = [
   { level: 6, name: 'Double holds: oxygen and carbon dioxide', rounds: 3 },
   { level: 7, name: 'Rearrange hydrogen and oxygen into water, and back', rounds: 2 },
 ];
+
+export const LEVELS: BandLevels = {
+  school: { min: 1, max: 7 },
+};
 
 export function planFor(level: number): Plan {
   return PLANS.find((p) => p.level === level) ?? PLANS[0];

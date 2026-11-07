@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Photo Safari, after Pokémon Snap: animals around the island are busy doing things in
@@ -28,6 +29,15 @@ export const PLANS: SafariPlan[] = [
   { mode: 'not', photos: 4, animals: 3, name: 'Not: "the animal that is not sleeping"' },
   { mode: 'clues', photos: 4, animals: 4, name: 'Two clues, no name: combine what an animal is doing and where it is' },
 ];
+
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 2 },
+  // "Who is sleeping?" (12) is the toddler step after naming; younger players never hear a false claim (9 is school only).
+  toddler: { min: 1, max: 12, order: [1, 2, 12] },
+  preschool: { min: 2, max: 4 },
+  prek: { min: 3, max: 5 },
+  school: { min: 4, max: 11, order: [4, 5, 6, 7, 8, 9, 10, 11] },
+};
 
 export const TELL_WHICH_LEVEL = 10;
 export const TELL_BOTH_LEVEL = 11;

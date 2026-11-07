@@ -1,5 +1,6 @@
 import type { Rng } from '../../engine/random';
 import { hinted, missEvery, missOnRequest, nextRequest, type RequestTally, type Tally } from '../../progress/coach';
+import type { BandLevels } from '../../progress/difficulty';
 
 /** One material per round; speech and art share these nouns. Pitch offsets are pentatonic steps. */
 export const FILL_SETS = [
@@ -42,6 +43,12 @@ export const FILL_PLANS: readonly FillPlan[] = [
 ];
 
 export const planFor = (level: number): FillPlan => FILL_PLANS[Math.min(FILL_PLANS.length, Math.max(1, level)) - 1];
+
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 2 },
+  toddler: { min: 1, max: 6, order: [1, 2, 6, 3, 4] },
+  preschool: { min: 1, max: 7, order: [1, 2, 6, 3, 4, 5, 7] },
+};
 
 /** The number she is asked to put in, drawn from the plan's range. Null in the tip-out levels. */
 export const targetFor = (plan: FillPlan, rng: Rng): number | null => (plan.count ? rng.int(plan.count[0], plan.count[1]) : null);

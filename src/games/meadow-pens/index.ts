@@ -10,7 +10,7 @@ import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { store } from '../../progress/store';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { FixedMeadow } from './fixed';
@@ -19,14 +19,11 @@ import {
   requestPicture, turfCell,
 } from './art';
 import {
+  LEVELS,
   CELLS, cellAt, cellRect, centre, check, drawnSide, drawnRows, FenceHeap, fenceEdges, fieldCells, flowersOf, GAP, holes, makeTasks,
   meadowLayout, nextCell, PenTally, penOf, planFor, targetFor, type Cell, type FieldTask, type MeadowLayout, type PenTask,
   type Plan, type Task,
 } from './logic';
-
-const LEVELS: BandLevels = {
-  school: { min: 1, max: 5 },
-};
 
 const FRIENDS = ['bunny', 'duck', 'pig', 'cat', 'dog', 'cow', 'bear'] as const;
 

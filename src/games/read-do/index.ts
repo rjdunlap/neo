@@ -8,14 +8,13 @@ import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import type { LineId } from '../../content/voice-script';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { act, actionOf, answerIndex, hintFor, makeMendSigns, makeSigns, makeTasks, makeWishes, matches, MAX_SLOTS, meaning, missing, planFor, printed, resolveDrop, sameAct, signLayout, stepFor, type Box, type Choice, type Drop, type Hint, type Marks, type Outcome, type Sign, type SignLayout, type SlotWord, type Step, type Wish, type WishSign, type Word } from './logic';
+import { LEVELS, act, actionOf, answerIndex, hintFor, makeMendSigns, makeSigns, makeTasks, makeWishes, matches, MAX_SLOTS, meaning, missing, planFor, printed, resolveDrop, sameAct, signLayout, stepFor, type Box, type Choice, type Drop, type Hint, type Marks, type Outcome, type Sign, type SignLayout, type SlotWord, type Step, type Wish, type WishSign, type Word } from './logic';
 
-const LEVELS: BandLevels = { prek: { min: 1, max: 5, order: [1, 2, 4, 5] }, school: { min: 1, max: 9 } };
 export const WORD_LINES: Record<Word, LineId> = {
   red: 'read.red', blue: 'read.blue', yellow: 'read.yellow', green: 'read.green', pink: 'read.pink', big: 'read.big', small: 'read.small',
   duck: 'read.duck', cat: 'read.cat', pig: 'read.pig', dog: 'read.dog', the: 'read.the', can: 'read.can', jump: 'read.jump', sleep: 'read.sleep', jumps: 'read.jumps', sleeps: 'read.sleeps',

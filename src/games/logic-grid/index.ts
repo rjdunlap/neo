@@ -11,24 +11,17 @@ import type { FederatedPointerEvent } from 'pixi.js';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { safeArea, type View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import { SCRIPT, type LineId } from '../../content/voice-script';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  LEVELS,
   answerOf, applyStep, blockOf, brokenClue, colOf, contradicts, CROSSED, cycle, EMPTY, emptyMarks, FILLED, fullWrong, HATS, isTime, makeRound, nextStep, TIMES, type Time,
   planFor, rowOf, shapeOf, shown, sizeOf, sq, solved, solveSteps, wrongSquares, type Board, type Clue, type Item, type Mark, type Place, type Plan, type Step,
   type Thing,
 } from './logic';
-
-/** Preschool's, pre-K's and school's whole ranges, and grown-up's levels 7–8. */
-const LEVELS: BandLevels = {
-  preschool: { min: 1, max: 2 },
-  prek: { min: 2, max: 3 },
-  school: { min: 3, max: 6 },
-  grownup: { min: 7, max: 8 },
-};
 
 const SQ = 100;
 const PITCH = 104;

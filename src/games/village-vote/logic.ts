@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 export const OPTIONS = ['slide', 'swing', 'sandpit'] as const;
 export type Option = typeof OPTIONS[number];
 export interface Vote { id: string; option: Option }
@@ -56,3 +57,5 @@ export function layout(view:{w:number;h:number},e:Election):Layout {
  e.plan.options.forEach((o,i)=>e.voters.filter(v=>v.option===o).forEach((v,j)=>{voters[v.id]={x:xs[i]+xoff+(j%2===0?-58:58),y:first+Math.floor(j/2)*gap};}));
  return {options:xs.map(x=>({x:x+xoff,y:oy})),boards:xs.map(x=>({x:x+xoff,y:by})),voters,help:{x:90,y:280}};
 }
+
+export const LEVELS:BandLevels={preschool:{min:1,max:2},prek:{min:1,max:3},school:{min:3,max:3}};

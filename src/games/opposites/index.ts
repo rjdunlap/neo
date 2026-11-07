@@ -9,17 +9,10 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { STICKER_CONCEPTS, cardToTap, makeRounds, opposites, planFor, word, type Card, type OppPlan, type OppRound } from './logic';
-
-const LEVELS: BandLevels = {
-  lap: { min: 1, max: 1 },
-  toddler: { min: 1, max: 2 },
-  preschool: { min: 2, max: 3 },
-  prek: { min: 3, max: 5 },
-};
+import { LEVELS, STICKER_CONCEPTS, cardToTap, makeRounds, opposites, planFor, word, type Card, type OppPlan, type OppRound } from './logic';
 
 /** A picture of one side of a concept, about 140 units square, centered on (0, 0). */
 export function picture(card: Card): Container {

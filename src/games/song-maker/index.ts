@@ -1,3 +1,4 @@
+import { rangeFor } from '../../progress/difficulty';
 import { Container, Graphics, Rectangle } from 'pixi.js';
 import { cream, ink, swatch, wood, type ColorName } from '../../art/palette';
 import { musicNote } from '../../art/shapes';
@@ -10,7 +11,7 @@ import type { View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
 import { replayArt, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { beadToTap, key, makeSong, MOTIF_WINDOW, ROW_STEPS, songLayout, songPlan, type Note, type Song, type SongPlan } from './logic';
+import { LEVELS, beadToTap, key, makeSong, MOTIF_WINDOW, ROW_STEPS, songLayout, songPlan, type Note, type Song, type SongPlan } from './logic';
 
 /** Row colors, top (high) to bottom (low), matching the jelly drums' rainbow. */
 const ROW_COLORS: ColorName[] = ['red', 'orange', 'yellow', 'green', 'blue'];
@@ -348,7 +349,7 @@ export const songMaker: GameModule = {
   challenge: 'music',
   skills: ['music', 'patterns', 'listening'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
-  levels: (b) => (b === 'school' ? { min: 6, max: 7 } : b === 'prek' ? { min: 5, max: 7 } : b === 'preschool' ? { min: 4, max: 6 } : b === 'toddler' ? { min: 2, max: 4 } : { min: 1, max: 2 }),
+  levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (l) => songPlan(l).name,
   music: silenced(STYLES.jelly),
   coplayHint: 'Sing along with {name} when the jellies play: up high for the top row, down low for the bottom.',

@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Puddle Gobble's rules: a puddle soaks up beach things that fit inside it and grows, so what fits depends on what she
@@ -28,6 +29,13 @@ const PLANS: Plan[] = [
   { id: 8, name: 'Just right', mode: 'pail', grow: 0 },
   { id: 9, name: 'Smallest number first', mode: 'order', grow: 0, numbers: true },
 ];
+
+export const LEVELS: BandLevels = {
+  toddler: { min: 1, max: 2 },
+  preschool: { min: 2, max: 4 },
+  prek: { min: 3, max: 6 },
+  school: { min: 5, max: 9 },
+};
 
 export const LEVEL_COUNT = PLANS.length;
 

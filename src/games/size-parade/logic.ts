@@ -1,5 +1,6 @@
 import { spread } from '../../engine/view';
 import { swatch, type Swatch } from '../../art/palette';
+import type { BandLevels } from '../../progress/difficulty';
 
 export interface SizePlan {
   count: number; order: 'big' | 'small'; mode: 'pick' | 'line' | 'cycle' | 'fit' | 'insert' | 'hidden' | 'ribbon'; name: string;
@@ -373,3 +374,11 @@ export function dropSpot(x: number, y: number, spots: number[], spotY: number, g
   spots.forEach((s, i) => { if (Math.abs(x - s) <= half && (best === null || Math.abs(x - s) < Math.abs(x - spots[best]))) best = i; });
   return best;
 }
+
+export const LEVELS: BandLevels = {
+  lap: { min: 9, max: 16, order: [16, 9] },
+  toddler: { min: 1, max: 17, order: [9, 1, 2, 3, 4, 17] },
+  preschool: { min: 3, max: 17, order: [3, 4, 17, 10, 5, 6, 11] },
+  prek: { min: 5, max: 15, order: [5, 6, 11, 7, 8, 12, 15] },
+  school: { min: 7, max: 15, order: [7, 8, 12, 13, 14, 15] },
+};

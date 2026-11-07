@@ -5,11 +5,11 @@ import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { drawLitOutline, drawMoon, drawWall, frameArt, iconArt, laterArt, requestArt, shutterArt, stickerArt, windowArt } from './art';
-import { AMOUNT_WORDS, amountOf, CardRound, center, compareBoards, LOOK_PRESSES, lookStart, lookViews, missSpot, moonPlan, sameBoards, viewLine, windowLayout, type Plan, type WindowLayout } from './logic';
+import { LEVELS, AMOUNT_WORDS, amountOf, CardRound, center, compareBoards, LOOK_PRESSES, lookStart, lookViews, missSpot, moonPlan, sameBoards, viewLine, windowLayout, type Plan, type WindowLayout } from './logic';
 
 /** Each level's authored first round leads its first round of a session, and every demonstration. */
 const authoredShown = new Set<number>();
@@ -26,8 +26,6 @@ interface Card {
   outline: Graphics;
   k: number;
 }
-
-const LEVELS: BandLevels = { lap: { min: 1, max: 1 }, toddler: { min: 1, max: 2 }, preschool: { min: 2, max: 3 }, prek: { min: 3, max: 3 } };
 
 class MoonWindow implements Game {
   readonly plan: Plan;

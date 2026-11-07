@@ -1,3 +1,4 @@
+import type { BandLevels } from '../../progress/difficulty';
 import type { ColorName } from '../../art/palette';
 import type { ShapeKind } from '../../art/shapes';
 import type { Rng } from '../../engine/random';
@@ -70,3 +71,10 @@ export function slotAt<S extends BugSpot & { filled: boolean }>(spots: readonly 
 export function nextStamp<S extends BugSpot & { filled: boolean }>(spots: readonly S[]): S | undefined {
   return spots.find((s) => !s.filled);
 }
+
+export const LEVELS: BandLevels = {
+  toddler: { min: 1, max: 2 },
+  preschool: { min: 2, max: 5 },
+  prek: { min: 4, max: 7 },
+  school: { min: 6, max: 7 },
+};

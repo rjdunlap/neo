@@ -16,23 +16,17 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
 import { bagArt, bellArt, buildButtonArt, cellArt, hallArt, labelArt, rowArt, ruinCellArt, yearBarArt, doorArt, figureArt, fixedArt, frontArt, iconArt, keepArt, needArt, roomArt, spotArt, steamArt, stickerArt, tileArt, wellArt } from './art';
 import {
+  LEVELS,
   account, askBuild, decidingClue as decidingClueOf, askRuin, BUILDS_ORDER, buildTally, cost, fits, keepBuild, label, placeBuild, roomInCell, ruinDone, ruinHint, ruinTally, spareLabel, startBuild, startRuin, YEAR_STEP,
   allPlaced, askPlacement, askPlan, askYard, briefFor, CELL, centre, doorsDone, drop, fixedRect, glowTarget, hintFor, keep, keepLayout, movePlan, NEEDS, nextDoor, place, PLAN_ROOMS, planFor, planTally, ringBell, solutions, SPOT, spotRects, startDoors, startPlacement, startPlan, startYard, stepsTo, tapDoor, tapWell, TILE, walkTally, workplaceOf, yardDone, yardTally,
   type Board, type Brief, type Build, type BuildState, type Hall, type Ruin, type RuinState, type Situation, type DoorsState, type Figure, type KeepLayout, type Move, type Person, type Placement, type PlacementState, type PlanRoom, type PlanState, type Rect, type Room, type Spot, type YardState,
 } from './logic';
-
-const LEVELS: BandLevels = {
-  toddler: { min: 1, max: 1 },
-  preschool: { min: 1, max: 3 },
-  prek: { min: 2, max: 4 },
-  school: { min: 4, max: 6 },
-};
 
 /** A closed door glows after this long with no tap (entry guidance; it records nothing). */
 const IDLE_GLOW = 8;

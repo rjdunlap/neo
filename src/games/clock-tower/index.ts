@@ -7,17 +7,12 @@ import { onTap, palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { appointmentFor, demoAction, EVENT_WORDS, fiveExample, hourOf, laterExample, makeTasks, minuteChoices, planFor, PLANS, requestFor, spoken, timeOf, type Appointment, type ClockPlan, type ClockTask } from './logic';
-
-const LEVELS: BandLevels = {
-  prek: { min: 1, max: 4 },
-  school: { min: 2, max: PLANS.length },
-};
+import { LEVELS, appointmentFor, demoAction, EVENT_WORDS, fiveExample, hourOf, laterExample, makeTasks, minuteChoices, planFor, requestFor, spoken, timeOf, type Appointment, type ClockPlan, type ClockTask } from './logic';
 
 const R = 200;
 

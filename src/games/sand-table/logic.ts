@@ -1,5 +1,6 @@
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Sand Table's rules: an invented, deterministic toy (not a measured angle of repose). A tray of 12 columns between two walls,
@@ -43,6 +44,13 @@ export const PLANS: readonly Plan[] = [
     show: true,
   },
 ];
+
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 1 },
+  toddler: { min: 1, max: 2 },
+  preschool: { min: 2, max: 3 },
+  prek: { min: 3, max: 3 },
+};
 
 export function planFor(level: number): Plan {
   return PLANS[Math.max(1, Math.min(PLANS.length, level)) - 1];

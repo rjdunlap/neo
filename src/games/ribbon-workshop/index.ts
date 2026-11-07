@@ -1,3 +1,4 @@
+import { rangeFor } from '../../progress/difficulty';
 import { Container, Graphics, Rectangle } from 'pixi.js';
 import { cream, ink, RAINBOW, swatch, wood, type ColorName } from '../../art/palette';
 import { STYLES } from '../../audio/music';
@@ -10,7 +11,7 @@ import { arrowIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import {
+import { LEVELS,
   AMOUNTS, CAPACITY, compositionKey, GiftTally, HALF, hintAction, judge, planFor, roundFor, total, trayLayout, UNIT, Workbench, WRITTEN,
   type GiftCase, type Hint, type Piece,
 } from './logic';
@@ -425,7 +426,7 @@ export const ribbonWorkshop: GameModule = {
   challenge: 'numbers',
   skills: ['fractions', 'equivalent-fractions', 'measurement'],
   bands: ['school'],
-  levels: () => ({ min: 1, max: 3 }),
+  levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (l) => {
     const p = planFor(l);
     return l === 1 ? `${p.name}: a whole from halves and quarters` : l === 2 ? `${p.name}: a half, then a quarter that needs the scissors` : `${p.name}: ¾ as ½ + ¼, then from two halves with a snip`;

@@ -8,22 +8,16 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { animalArt, bookArt, pictureArt, rowIcon, tabFace } from './art';
 import {
+  LEVELS,
   ANIMALS, choicesFor, check, countsAsMiss, GLOW_AFTER, guideLayout, HELP_AFTER, hintFor, lookTouch, makeRound, nearestPoint,
   PICTURE_WORDS, pictureOf, planFor, askOf, type AnimalId, type Hint, type Picture, type Rect, type Round, type Row,
 } from './logic';
-
-const LEVELS: BandLevels = {
-  toddler: { min: 1, max: 1 },
-  preschool: { min: 1, max: 2 },
-  prek: { min: 2, max: 3 },
-  school: { min: 3, max: 3 },
-};
 
 /** What the pet says a wrong choice is. */
 const WHAT: Record<Picture, string> = {

@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Beat Builder, after Chrome Music Lab's rhythm toys: a grid of beats. Each row is an instrument
@@ -28,6 +29,13 @@ export const PLANS: BeatPlan[] = [
   { mode: 'sections', steps: 4, rows: 2, beats: 1, name: 'A and B: make a part, copy it, change the copy, then hear one part after the other' },
   { mode: 'return', steps: 4, rows: 2, beats: 1, name: 'A returning song: put the first part back at the end, change the parts if you like, then hear it' },
 ];
+
+export const LEVELS: BandLevels = {
+  toddler: { min: 1, max: 1 },
+  preschool: { min: 1, max: 2 },
+  prek: { min: 1, max: 6 },
+  school: { min: 3, max: 9 },
+};
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 

@@ -1,5 +1,6 @@
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Block Garden's rules. The bed is `n × n` squares stored as one bitmask per row (bit `c` is column `c`). A square is empty or
@@ -488,6 +489,12 @@ export const PLANS: GardenPlan[] = [
   { id: 7, name: 'The big garden', n: 8, cell: 72, goal: 'buds', pieces: 9, traySize: 3, buds: [4, 6], par: [7, 9], gardens: 1, tinted: false, refusalCounts: true, families: BIG },
   { id: 8, name: 'Clear the whole garden', n: 8, cell: 72, goal: 'clear', pieces: 9, traySize: 3, buds: [0, 0], par: [6, 9], gardens: 1, tinted: false, refusalCounts: true, families: BIG, stones: [8, 16] },
 ];
+
+export const LEVELS: BandLevels = {
+  prek: { min: 1, max: 3 },
+  school: { min: 2, max: 6 },
+  grownup: { min: 5, max: 8 },
+};
 
 export function planFor(level: number): GardenPlan {
   return PLANS[Math.min(PLANS.length, Math.max(1, Math.round(level))) - 1];

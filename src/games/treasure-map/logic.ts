@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Treasure Map: a grid map where things are found by row and column. First rows and columns
@@ -35,6 +36,14 @@ export const PLANS: MapPlan[] = [
 
 /** Level 9, the preschool opening: appended after 8 (`planFor` reads by position) and played first through each band's `order`. */
 export const ONE_LINE = 9;
+
+export const LEVELS: BandLevels = {
+  // Level 9 (One line) is the preschool opening, appended after 8 and played first.
+  preschool: { min: 1, max: ONE_LINE, order: [ONE_LINE, 1] },
+  prek: { min: 1, max: ONE_LINE, order: [ONE_LINE, 1, 2] },
+  // Level 9 is younger than school's window; 10 and 11 follow 8.
+  school: { min: 1, max: 11, order: [1, 2, 3, 4, 5, 6, 7, 8, 10, 11] },
+};
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 

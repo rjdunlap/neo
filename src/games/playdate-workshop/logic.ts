@@ -7,6 +7,7 @@
 import type { CritterName } from '../../art/critter';
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
+import type { BandLevels } from '../../progress/difficulty';
 
 export type Friend = 'A' | 'B';
 export type Surface = 'pageA' | 'pageB' | 'banner';
@@ -97,16 +98,21 @@ export const VARIATIONS: Record<number, readonly Variation[]> = {
   ],
 };
 
-const LEVELS: readonly Omit<LevelSpec, 'requests'>[] = [
+const PLANS: readonly Omit<LevelSpec, 'requests'>[] = [
   { level: 1, name: 'Stamp and pass', describe: 'Stamp and pass: one stamp pad, a star on each friend\'s page', cells: 0, plans: ['stampPass'] },
   { level: 2, name: 'Two ways to make', describe: 'Two ways to make: take turns or roll together for one banner', cells: 4, plans: ['turns', 'roll'] },
   { level: 3, name: 'My page, our plan', describe: 'My page, our plan: a plan that works for both friends\' requests', cells: 2, plans: ['side', 'bannerThenPage', 'pageThenBanner', 'justBanner'] },
 ];
 
-export const LEVEL_COUNT = LEVELS.length;
+export const LEVELS: BandLevels = {
+  preschool: { min: 1, max: 1 },
+  prek: { min: 1, max: 3 },
+};
+
+export const LEVEL_COUNT = PLANS.length;
 
 export function specFor(level: number, own: Friend = 'B'): LevelSpec {
-  const s = LEVELS[Math.max(1, Math.min(LEVEL_COUNT, level)) - 1];
+  const s = PLANS[Math.max(1, Math.min(LEVEL_COUNT, level)) - 1];
   const requests: Record<Friend, RequestId> =
     s.level === 1 ? { A: 'page', B: 'page' } : s.level === 2 ? { A: 'banner', B: 'banner' } : own === 'B' ? { A: 'bannerOr', B: 'own' } : { A: 'own', B: 'bannerOr' };
   return { ...s, requests };

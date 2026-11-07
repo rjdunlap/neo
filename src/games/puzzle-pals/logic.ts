@@ -1,3 +1,4 @@
+import type { BandLevels } from '../../progress/difficulty';
 export interface PuzzlePlan {
   cols: number;
   rows: number;
@@ -109,3 +110,11 @@ export const TAP_HOP = 30;
 export function nextToPlace<P extends { placed: boolean }>(pieces: readonly P[]): P | undefined {
   return pieces.find((p) => !p.placed);
 }
+
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 2 },
+  toddler: { min: 2, max: 4 },
+  preschool: { min: 4, max: 6 },
+  prek: { min: 5, max: 7 },
+  school: { min: 6, max: 7 },
+};

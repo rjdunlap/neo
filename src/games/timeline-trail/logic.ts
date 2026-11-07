@@ -7,6 +7,7 @@
  */
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
+import type { BandLevels } from '../../progress/difficulty';
 
 // ——— Places and stages ———
 
@@ -79,6 +80,12 @@ export const PLANS: readonly Plan[] = [
   { level: 2, name: 'Hang it between', cards: 3, hungAtStart: 2 },
   { level: 3, name: 'Grow the line', cards: 4, hungAtStart: 1 },
 ];
+
+export const LEVELS: BandLevels = {
+  preschool: { min: 1, max: 2 },
+  prek: { min: 1, max: 3 },
+  school: { min: 2, max: 3 },
+};
 
 export function planFor(level: number): Plan {
   return PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];

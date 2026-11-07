@@ -9,19 +9,17 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { FONT } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { bookArt, owlOnStump, tilePicture } from './art';
 import {
+  LEVELS,
   botStep, clauseOf, eventClause, layout, pageText, PAGE_PARTS, planFor, PROBLEM_IDS, slotBoxes, storyText, TILE_H, TILE_W,
   WeaverRound, WHO, type Part, type WeaverLayout,
 } from './logic';
-
-/** School only: levels 1–2 never miss, so the step up to 3 is the shell's ordinary one (definition, Bands). */
-const LEVELS: BandLevels = { school: { min: 1, max: 3 } };
 
 /** Seconds per lit word while a page is read. */
 const WORD_SECONDS = 0.3;

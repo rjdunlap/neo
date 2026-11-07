@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 export type Direction = 'left' | 'up' | 'right' | 'down';
 export const DIRECTIONS: readonly Direction[] = ['left', 'up', 'right', 'down'];
@@ -9,6 +10,8 @@ export const PLANS = [
   { target: 32, name: 'Make 32 · choose your pairs', board: [2, 4, 2, 4, 0, 4, 8, 0, 8] },
   { target: 64, name: 'Make 64 · make room first', board: [2, 4, 2, 8, 4, 8, 16, 4, 16] },
 ] as const;
+
+export const LEVELS: BandLevels = { grownup: { min: 1, max: 3 } };
 export const planFor = (level: number) => PLANS[Math.max(0, Math.min(PLANS.length - 1, Math.floor(level) - 1))];
 
 /** Read a row/column from its leading edge. Equal neighbours merge once per slide. */

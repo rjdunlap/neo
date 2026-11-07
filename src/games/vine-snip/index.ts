@@ -8,24 +8,17 @@ import { sfx } from '../../audio/sfx';
 import { onTap, palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import type { LineVars } from '../../audio/voice';
 import type { LineId } from '../../content/voice-script';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  LEVELS,
   alongVine, ANCHOR_Y, arcAt, BAND, beat, BOARD_H, BOARD_W, boardOrigin, cutBy, distToSegment, FRIEND_MAX, FRIEND_MIN, FRIENDS, GROW, growAt, landing, LEAF_Y,
   linesFor, MOUTH_Y, nearestVine, pairsOf, planFor, posAt, solvePair, startSwing, swingFrom, TAP_TRAVEL, vineSeg, windows,
   type FriendKind, type Kind, type Landing, type Line, type Pair, type Plan, type Pt, type Swing,
 } from './logic';
-
-const LEVELS: BandLevels = {
-  lap: { min: 1, max: 1 },
-  toddler: { min: 1, max: 2 },
-  preschool: { min: 1, max: 3 },
-  prek: { min: 2, max: 4 },
-  school: { min: 3, max: 5 },
-};
 
 const COLOR: Record<Kind, ColorName> = { apple: 'red', orange: 'orange', lemon: 'yellow', pear: 'green' };
 const NAME: Record<FriendKind, string> = { bunny: 'Bunny', bear: 'Bear', duck: 'Duck', pig: 'Pig', dog: 'Dog', cat: 'Cat' };

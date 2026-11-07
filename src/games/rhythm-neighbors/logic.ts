@@ -1,5 +1,6 @@
 import type { Rng } from '../../engine/random';
 import { GAP_SECONDS, RHYTHMS, judgeEcho, type Gap } from '../sound-garden/logic';
+import type { BandLevels } from '../../progress/difficulty';
 export { GAP_SECONDS };
 export interface Phrase { call: Gap[]; gaps: Gap[]; voices: number[] }
 /**
@@ -17,6 +18,14 @@ export const PLANS: Record<number, NeighborPlan> = {
  7:{free:true,voices:1,timing:false,knock:true,name:'Knock a big tree and a frog answers every knock'},
  8:{free:false,voices:1,timing:false,turn:true,name:'My turn, your turn: the bird knocks, then one tap on the glowing frog answers'},
  9:{free:false,voices:1,timing:false,call:true,name:'Knock a call on the big tree and the frog answers it, turned around'},
+};
+
+export const LEVELS: BandLevels = {
+ lap: { min: 1, max: 7, order: [7, 1, 2] },
+ toddler: { min: 2, max: 9, order: [2, 8, 9, 3] },
+ preschool: { min: 3, max: 9, order: [9, 3, 4] },
+ prek: { min: 4, max: 6 },
+ school: { min: 5, max: 6 },
 };
 export const LEVEL_IDS = Object.keys(PLANS).map(Number);
 export const planFor=(l:number)=>PLANS[l]??PLANS[Math.min(Math.max(...LEVEL_IDS),Math.max(1,Math.round(l)))];

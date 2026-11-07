@@ -8,24 +8,18 @@ import { onTap, palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { LineVars } from '../../audio/voice';
 import type { LineId } from '../../content/voice-script';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  LEVELS,
   arcAt, basketAt, boardOrigin, boardsFor, bowlAt, BOWL_R, distToSegment, GAP, HANG, hanging, hintLineFor, HIT_R, inBowl, insideLength, judgeStroke,
   left, LINE_CANCEL, lineHits, makeToss, met, MIN_TRAVEL, nextKind, pairBoard, pairHint, planFor, RISE, signAt, SIGN_W, signsFor,
   type Board, type Kind, type Line, type Plan, type Pt, type Refusal, type Sign, type Toss,
 } from './logic';
-
-const LEVELS: BandLevels = {
-  toddler: { min: 1, max: 2 },
-  preschool: { min: 2, max: 4 },
-  prek: { min: 3, max: 6 },
-  school: { min: 5, max: 8 },
-};
 
 const COLOR: Record<Kind, ColorName> = {
   apple: 'red', orange: 'orange', lemon: 'yellow', pear: 'green', blueberries: 'blue', grapes: 'purple', balloon: 'pink', flower: 'pink',

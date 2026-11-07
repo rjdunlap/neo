@@ -3,6 +3,7 @@ import { RAINBOW, type ColorName } from '../../art/palette';
 import type { AnimalSound } from '../../audio/sfx';
 import type { Rng } from '../../engine/random';
 import type { LineId } from '../../content/voice-script';
+import type { BandLevels } from '../../progress/difficulty';
 
 export type BubbleMode = 'free' | 'color' | 'count' | 'bonds';
 
@@ -77,6 +78,15 @@ export const PLANS: BubblePlan[] = [
   // Below level 1, for lap: a swat or a flat palm anywhere pops the nearest bubble. Big, slow and few, so what pops is plain.
   { mode: 'free', goal: 8, speed: 42, most: 4, colors: 0, radius: [96, 118], anywhere: true },
 ];
+
+export const LEVELS: BandLevels = {
+  // Level 15 is the easiest, so lap plays it first and then 1, 2, 3 (see `order`).
+  lap: { min: 1, max: 15, order: [15, 1, 2, 3] },
+  toddler: { min: 1, max: 6 },
+  preschool: { min: 4, max: 9 },
+  prek: { min: 6, max: 12 },
+  school: { min: 10, max: 14 },
+};
 
 /** Bonds mode: numbers for `pairs` pairs that each make `sum`, so every bubble has a partner. */
 export function bondNumbers(sum: number, pairs: number, rng: Rng): number[] {

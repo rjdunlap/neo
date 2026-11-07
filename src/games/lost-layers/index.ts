@@ -6,17 +6,16 @@ import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { FONT } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  LEVELS,
   BTN_H, BTN_W, CARD_H, CARD_W, claim, COL_W, commitLook, cove, CREATURE, currentStep, fits, glowing, gull, help, layersLayout,
   LENS_R, LOOK_H, LOOK_W, lostRow, makeCase, move, nearestRow, planFor, ROW_H, ROWS, roundState, rowY, SLOT_H, SLOT_W, story, ties,
   type Case, type Claim, type LayersLayout, type Layer, type LookId, type Picture, type Placement, type Reason, type RoundState, type Story,
 } from './logic';
-
-const LEVELS: BandLevels = { school: { min: 1, max: 2 } };
 
 /** Each level's authored first round leads its first round of a session. */
 const authoredShown = new Set<number>();

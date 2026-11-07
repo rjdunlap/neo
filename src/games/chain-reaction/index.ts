@@ -9,17 +9,10 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { chainTouch, hintFor, makeBoards, planFor, predictedBell, trace, traces, turnHint, works, TAP_TO_TURN, TWO_MARBLES, WHICH_BELL, type ChainBoard, type ChainPlan, type Layout, type Marble, type Ramp, type Trace } from './logic';
-
-const LEVELS: BandLevels = {
-  // Tap to turn and Which bell? are easy entries before the existing drag levels.
-  prek: { min: 1, max: 8, order: [TAP_TO_TURN, WHICH_BELL, 1, 2, 3] },
-  // Two marbles tops the school ladder after the chime machines; levels 7 and 8 stay pre-K entries.
-  school: { min: 3, max: TWO_MARBLES, order: [3, 4, 5, 6, TWO_MARBLES] },
-};
+import { LEVELS, chainTouch, hintFor, makeBoards, planFor, predictedBell, trace, traces, turnHint, works, TAP_TO_TURN, WHICH_BELL, type ChainBoard, type ChainPlan, type Layout, type Marble, type Ramp, type Trace } from './logic';
 
 const COL_GAP = 104;
 const PART_R = 52;

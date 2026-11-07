@@ -1,5 +1,6 @@
 import type { ColorName } from '../../art/palette';
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Quick Tricks, after WarioWare's tiny scenes, made calm: a little show of three tricks, each one
@@ -42,6 +43,15 @@ export const PLANS: TricksPlan[] = [
   { friends: 3, socks: 5, patterns: true, bridge: 'two', countShort: true, countBelow: true, two: true, name: 'Two at once: two leaves for three friends, two lost socks, two gaps to bridge' },
   { friends: 1, socks: 2, patterns: false, bridge: 'stretch', countShort: false, countBelow: false, tricks: ['umbrella', 'bridge'], tiny: true, name: 'A tiny show: a leaf over a friend, a bridge stretched past halfway' },
 ];
+
+export const LEVELS: BandLevels = {
+  // A tiny show (8) comes first for the youngest: two tricks, nothing counted.
+  // The third show (9) comes last at every band; its amounts follow the band.
+  toddler: { min: 1, max: 9, order: [8, 1, 9] },
+  preschool: { min: 1, max: 9, order: [8, 1, 2, 3, 4, 9] },
+  prek: { min: 2, max: 9, order: [2, 3, 4, 5, 6, 7, 9] },
+  school: { min: 5, max: 9, order: [5, 6, 7, 9] },
+};
 
 /** The first show's levels: 1 to 3, the remix at level 7 and the tiny show at level 8 (levels 4 to 6 are the second show). */
 export const planFor = (level: number) => (level === 8 ? PLANS[4] : level >= 7 ? PLANS[3] : PLANS[Math.min(3, Math.max(1, level)) - 1]);

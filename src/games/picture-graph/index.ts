@@ -7,7 +7,7 @@ import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { crossIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
@@ -15,13 +15,8 @@ import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { TwoPictures } from './compare';
 import { LineUp } from './line';
-import { claimBars, claimLayout, STAMP_R, STAMPS, stampWhy, type Claim, type Stamp } from './logic';
+import { LEVELS, claimBars, claimLayout, STAMP_R, STAMPS, stampWhy, type Claim, type Stamp } from './logic';
 import { barsFor, cardLayout, CARD_GROUP_W, choicesFor, graphMove, GROUP_GAP, groupSpots, makeGraph, meadowArea, meadowSpots, MEADOWS, planFor, prebuilt, questionsFor, sameHint, sameTap, tallerCount, tallyMove, whyBlocks, type Graph, type GraphPlan, type Question } from './logic';
-
-const LEVELS: BandLevels = {
-  prek: { min: 1, max: 8, order: [8, 1, 2] },
-  school: { min: 1, max: 11, order: [1, 2, 8, 3, 4, 5, 6, 7, 9, 10, 11] },
-};
 
 const COL_W = 110;
 const BLOCK_H = 34;

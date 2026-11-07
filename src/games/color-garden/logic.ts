@@ -1,6 +1,7 @@
 import { RAINBOW, type ColorName } from '../../art/palette';
 import { FRUIT_FOR, type PropKind } from '../../art/props';
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 export interface GardenPlan {
   /** A tap sends each item to its own basket; there is no sorting choice. */
@@ -37,6 +38,13 @@ export const PLANS: GardenPlan[] = [
   { colors: 2, items: 8, fruit: false, rule: true },
   { colors: 2, items: 4, fruit: true, tap: true },
 ];
+
+export const LEVELS: BandLevels = {
+  lap: { min: 9, max: 9, order: [9] },
+  toddler: { min: 1, max: 9, order: [9, 1, 2, 3, 4, 5] },
+  preschool: { min: 3, max: 8 },
+  prek: { min: 4, max: 8 },
+};
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 

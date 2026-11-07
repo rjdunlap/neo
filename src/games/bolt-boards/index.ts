@@ -8,27 +8,19 @@ import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import type { LineId } from '../../content/voice-script';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { againIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  LEVELS,
   blockingBoard, boardBuilt, boardLayout, boltAt, built, canFinish, cardLayout, CARD_H, CARD_W, corners, coveringBoards, covered, done,
   emptyState, HEAD, HIT, hintBuild, holeAt, holeAtPoint, holeCount, hintMove, inRect, isFree, mirror, openHoles, overlaps, place,
   planFor, pose, poses, remove, removed, solve, startState, stuck, toView, toWall, WALL_H, WALL_W, woodpileLayout,
   type BoltLayout, type BoltPlan, type Hint, type Move, type Pose, type Pt, type Puzzle, type Rect, type State,
 } from './logic';
 import { PUZZLES } from './puzzles';
-
-const LEVELS: BandLevels = {
-  toddler: { min: 1, max: 2 },
-  preschool: { min: 1, max: 4 },
-  // Level 8 (Plenty of holes) sits between 5 and 6: parking bolts in holes before the planning holes carry.
-  prek: { min: 2, max: 8, order: [2, 3, 4, 5, 8, 6] },
-  // Level 9 (Put it back) builds the wall up again, after every take-apart level.
-  school: { min: 4, max: 9, order: [4, 5, 8, 6, 7, 9] },
-};
 
 /** Board colours, each with its own pattern so colour is never the only cue; the pet names a board by its colour. */
 const COLORS = ['red', 'blue', 'yellow', 'green', 'purple', 'orange'] as const satisfies readonly ColorName[];

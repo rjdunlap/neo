@@ -1,5 +1,6 @@
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Meadow Pens: a friend at the gate asks for a pen, she paints squares of grass on a meadow grid, and the
@@ -259,6 +260,10 @@ export const PLANS: readonly Plan[] = [
   { level: 4, name: 'More grass, or more fence? Compare two pens, including equal counts', count: 5 },
   { level: 5, name: 'Two parts: count all the grass in a bent field made of two rectangles', count: 5 },
 ];
+
+export const LEVELS: BandLevels = {
+  school: { min: 1, max: 5 },
+};
 
 export const planFor = (level: number): Plan => PLANS[Math.min(PLANS.length, Math.max(1, Math.round(level))) - 1];
 

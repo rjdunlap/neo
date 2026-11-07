@@ -1,5 +1,6 @@
 import type { ColorName } from '../../art/palette';
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Scoop Shop, after Papa's Freezeria and Neopets' Ice Cream Machine: customers order a cone,
@@ -29,6 +30,14 @@ export const PLANS: ScoopPlan[] = [
   { mode: 'stack', customers: 3, flavors: 5, min: 3, max: 3, name: 'Three flavors stacked bottom to top, like the picture' },
   { mode: 'memory', customers: 3, flavors: 6, min: 3, max: 3, name: 'Remember the order after the picture hides' },
 ];
+
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 10, order: [10, 1] },
+  toddler: { min: 1, max: 11, order: [1, 2, 11, 3] },
+  preschool: { min: 2, max: 11, order: [2, 11, 3, 4, 5] },
+  prek: { min: 3, max: 13, order: [3, 4, 12, 13, 5, 6] },
+  school: { min: 5, max: 13, order: [5, 12, 13, 6, 7, 8, 9] },
+};
 
 const CHANGE: ScoopPlan = { mode: 'change', customers: 3, flavors: 6, min: 3, max: 3, name: 'Remember three scoops, change one named position, then build the new order' };
 const TOP_FIRST: ScoopPlan = { mode: 'topfirst', customers: 3, flavors: 6, min: 3, max: 3, name: 'Hear three distinct scoops top first, then build bottom first; tap the friend for an upright peek' };

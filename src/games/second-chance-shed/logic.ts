@@ -1,5 +1,6 @@
 import type { Rng } from '../../engine/random';
 import { spread, type View } from '../../engine/view';
+import type { BandLevels } from '../../progress/difficulty';
 
 /** The four places on the island that give a used thing its next life, in the order they open. */
 export const PLACES = ['worm', 'shelf', 'mend', 'remake'] as const;
@@ -74,6 +75,13 @@ export const PLANS: Plan[] = [
   { level: 5, name: 'Someone needs it', open: ['worm', 'shelf', 'mend', 'remake'], count: 5, counts: true },
   { level: 6, name: 'Two friends', open: ['worm', 'shelf', 'mend', 'remake'], count: 5, counts: true },
 ];
+
+export const LEVELS: BandLevels = {
+  toddler: { min: 1, max: 2 },
+  preschool: { min: 2, max: 3 },
+  prek: { min: 3, max: 4 },
+  school: { min: 4, max: 6 },
+};
 /** The last level that brings one thing at a time; above it the cart is laid out and planned (levels 5–6). */
 export const SORT_MAX = 4;
 export const MAX_LEVEL = PLANS.length;

@@ -9,17 +9,12 @@ import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { spread, type View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { PlantNode, PETAL_COLORS, drawPlant, plantRuleIcon } from './plants';
-import { COUNT_PARTS, HAVE_WORDS, isPlantRule, makePlantRound, countParts, countSpot, morePart, type CountPart, exampleIndices, fits, HOOP_R, hasNeitherMat, hintFor, MAT_RX, MAT_RY, neitherMat, hoopCenters, makeRound, nextToSort, sortPlaceAt, placeOf, planFor, RULE_WORDS, ruleToTap, spotFor, type Place, type PlantRule, type Rule, type SortCritter, type SortPlan, type SortRound } from './logic';
-
-const LEVELS: BandLevels = {
-  prek: { min: 1, max: 13, order: [6, 1, 12, 2, 3, 13] },
-  school: { min: 2, max: 13, order: [2, 12, 3, 13, 4, 5, 7, 8, 9, 11] },
-};
+import { LEVELS, COUNT_PARTS, HAVE_WORDS, isPlantRule, makePlantRound, countParts, countSpot, morePart, type CountPart, exampleIndices, fits, HOOP_R, hasNeitherMat, hintFor, MAT_RX, MAT_RY, neitherMat, hoopCenters, makeRound, nextToSort, sortPlaceAt, placeOf, planFor, RULE_WORDS, ruleToTap, spotFor, type Place, type PlantRule, type Rule, type SortCritter, type SortPlan, type SortRound } from './logic';
 
 const SCALE = 0.32;
 export const KIND_WORDS: Record<string, string> = { cow: 'cow', duck: 'duck', pig: 'pig', cat: 'cat', bear: 'bear', dog: 'dog', bunny: 'bunny' };

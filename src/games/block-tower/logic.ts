@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Block Tower, after stacking blocks, Jenga and Art of Balance: stack blocks and knock them down. The ladder grows
@@ -27,6 +28,14 @@ export const PLANS: TowerPlan[] = [
   { mode: 'stand', rounds: 3, name: 'Which tower will stand? Guess, then let go and see (a guess is never wrong)' },
   { mode: 'reach', rounds: 2, name: 'Stack blocks out past the table edge to touch the star without tipping' },
 ];
+
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 2 },
+  toddler: { min: 2, max: 3 },
+  preschool: { min: 3, max: 4 },
+  prek: { min: 4, max: 5 },
+  school: { min: 5, max: 6 },
+};
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 

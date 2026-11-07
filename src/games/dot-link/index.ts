@@ -10,16 +10,8 @@ import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { BUDDY_LEVEL, buddyCounts, chainCounts, collapse, demoMove, DOT_COLORS, DOT_MARKS, ensureMove, findLine, findSquare, makeGrid, pickBuddy, planFor, popped, step, type Cell, type DotMark, type DotPlan, type Grid } from './logic';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
-
-const LEVELS: BandLevels = {
-  lap: { min: 1, max: 1 },
-  // Level 11, Find my buddy, is the toddler step between tapping and linking any pair.
-  toddler: { min: 1, max: 11, order: [1, BUDDY_LEVEL, 2] },
-  preschool: { min: 2, max: 4 },
-  prek: { min: 3, max: 6 },
-};
+import { LEVELS, BUDDY_LEVEL, buddyCounts, chainCounts, collapse, demoMove, DOT_COLORS, DOT_MARKS, ensureMove, findLine, findSquare, makeGrid, pickBuddy, planFor, popped, step, type Cell, type DotMark, type DotPlan, type Grid } from './logic';
+import { rangeFor } from '../../progress/difficulty';
 
 const GAP = 108;
 const DOT_R = 34;

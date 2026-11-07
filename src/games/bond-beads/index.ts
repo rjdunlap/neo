@@ -8,7 +8,7 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { againIcon, arrowIcon, checkIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
@@ -17,13 +17,10 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
 import { beadBody, beadTrio, cardArt, drawHands, drawLinks, LINK_COLOR, shapePicture, tableArt } from './art';
 import {
+  LEVELS,
   allHeld, BEAD_R, beadAt, beadLayout, Bench, canLink, centre, CheckTally, helpFor, linkAt, linkCount, linkState, namesOf, nextMove, planFor, roundFor, shapeKey, tally,
   type BeadLayout, type Help, type Kind, type Link, type Plan, type Pt, type Shape, type Step,
 } from './logic';
-
-const LEVELS: BandLevels = {
-  school: { min: 1, max: 7 },
-};
 
 /** The shapes a step's card pictures: one (level 2), the pieces to build (levels 3 and 7), or the two ways (level 4). */
 function cardShapes(s: Step): Shape[] {

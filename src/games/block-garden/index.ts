@@ -6,23 +6,18 @@ import { draggable, type DragHandle } from '../../engine/drag';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { againIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { GARDENS } from './puzzles';
 import {
+  LEVELS,
   apply, decode, FIRST_GARDEN, fits, gardenLayout, goalMet, has, hintPlacement, makeGarden, nearestAnchor, place, placements,
   planFor, RIDE, search, SHAPES, startState, transformGarden, trayIndex, trayNow, TRAY_CELL, type Anchor, type Family, type Garden,
   type GardenLayout, type GardenPlan, type Placement, type State,
 } from './logic';
-
-const LEVELS: BandLevels = {
-  prek: { min: 1, max: 3 },
-  school: { min: 2, max: 6 },
-  grownup: { min: 5, max: 8 },
-};
 
 /** The bloom: taps are ignored while the flowers open. */
 const BLOOM = 0.5;

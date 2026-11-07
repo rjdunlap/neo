@@ -17,7 +17,7 @@ import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
@@ -26,15 +26,11 @@ import {
   requestPicture, rollerArt, stampArt, stickerArt, THEME, tryIcon, undoIcon, watchIcon,
 } from './art';
 import {
+  LEVELS,
   accepts, acceptedPlans, blankTable, cardOrder, centre, check, complete, decisionNow, FRIENDS, give, hintFor, nextStep, pageOf, planFor, previewOf, replay,
   specFor, Tally, variationFor, whyNot, workshopLayout, type Action, type Friend, type LevelSpec, type Plan, type PlanId, type Rect, type Surface, type Table,
   type Tool, type Variation, type WorkshopLayout, type BannerTheme, type StampPicture,
 } from './logic';
-
-const LEVELS: BandLevels = {
-  preschool: { min: 1, max: 1 },
-  prek: { min: 1, max: 3 },
-};
 
 const REQUEST_LINE = { page: 'playdate.request.page', banner: 'playdate.request.banner', bannerOr: 'playdate.request.bannerOr', own: 'playdate.request.own' } as const;
 const INSTRUCT: Record<number, LineId> = { 1: 'playdate.instruct.1', 2: 'playdate.instruct.2', 3: 'playdate.instruct.3' };

@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Lemonade Stand: a short market week. Each day shows a forecast, the child chooses how many cups to make (and,
@@ -61,6 +62,10 @@ export const PLANS: StandPlan[] = [
   { days: 5, events: true, prices: [1, 2, 3], purse: true, name: 'A market week: cups cost shells to make, so read the profit' },
   { days: 4, events: true, prices: [1, 2, 3], purse: true, boats: 'same', name: 'Two lemon boats: tap the boat that sells lemons cheaper, then run the stand' },
 ];
+
+export const LEVELS: BandLevels = {
+  school: { min: 1, max: 5 },
+};
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 

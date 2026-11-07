@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Sound Garden, after Electroplankton: a garden of creatures that sing when touched. The
@@ -28,6 +29,13 @@ export const PLANS: Record<number, GardenPlan> = {
   9: { mode: 'sing', rounds: 12, name: 'Sing Higher: drag a singer up and down to make twelve notes' },
   10: { mode: 'copy', rounds: 6, name: 'Copy the shape: sing two- then three-note directions' },
   7: { mode: 'updownsame', rounds: 6, name: 'Does the tune go up, down or stay the same?' },
+};
+
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 8, order: [8, 1] },
+  toddler: { min: 1, max: 2 },
+  preschool: { min: 2, max: 9, order: [2, 3, 4, 9] },
+  prek: { min: 3, max: 10, order: [3, 4, 5, 6, 7, 9, 10] },
 };
 
 export const LEVEL_IDS = Object.keys(PLANS).map(Number);

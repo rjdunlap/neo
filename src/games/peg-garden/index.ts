@@ -12,16 +12,9 @@ import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, Spot, TouchIntent } from '../types';
 import { idle, type CouchControls } from '../../engine/controller';
-import { AIM_LIMIT, aimAt, aimInto, aimVelocity, blooms, BOARD, CUP_TOP, CUP_W, cupAt, cupCentre, CUPS, CUTOFF, driftOf, dropAt, guided, HIT, ledgeX, makeBoard, makeCupRound, makePlantRound, pickTheme, planFor, plantDrop, SAMPLE, SEED_HOMES, snapPlace, targets, TRAY, traySlot, worldOf, type Backdrop, type BoardShape, type PegPlan, type PegSpot, type Place } from './logic';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { LEVELS, AIM_LIMIT, aimAt, aimInto, aimVelocity, blooms, BOARD, CUP_TOP, CUP_W, cupAt, cupCentre, CUPS, CUTOFF, driftOf, dropAt, guided, HIT, ledgeX, makeBoard, makeCupRound, makePlantRound, pickTheme, planFor, plantDrop, SAMPLE, SEED_HOMES, snapPlace, targets, TRAY, traySlot, worldOf, type Backdrop, type BoardShape, type PegPlan, type PegSpot, type Place } from './logic';
+import { rangeFor } from '../../progress/difficulty';
 import { ease } from '../../engine/tween';
-
-const LEVELS: BandLevels = {
-  lap: { min: 1, max: 8, order: [8, 1] },
-  toddler: { min: 1, max: 8, order: [8, 1, 2] },
-  preschool: { min: 2, max: 4 },
-  prek: { min: 3, max: 7 },
-};
 
 const PETALS: ColorName[] = ['pink', 'purple', 'blue', 'yellow', 'teal', 'red'];
 const SPECIAL: ColorName = 'orange';

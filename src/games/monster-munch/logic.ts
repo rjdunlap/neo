@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /** Every food a monster eats. Levels 1–3, 9 and 10 keep cookies (and apples); the counting and sharing levels pick from all of them. */
 export const FOODS = ['cookie', 'apple', 'carrot', 'berry', 'cracker'] as const;
@@ -328,3 +329,12 @@ export function shareReturns(want: Order, fed: Order[]): Order[] {
     return back;
   });
 }
+
+export const LEVELS: BandLevels = {
+  // Big bites (9) opens the lap band, One of each (10) sits between 3 and 4 at toddler.
+  lap: { min: 1, max: 9, order: [9, 1, 2] },
+  toddler: { min: 2, max: 10, order: [2, 3, 10, 4] },
+  preschool: { min: 4, max: 6 },
+  prek: { min: 5, max: 7 },
+  school: { min: 6, max: 12, order: [6, 7, 12, 8, 11] },
+};

@@ -1,6 +1,7 @@
 import { CRITTERS, type CritterName } from '../../art/critter';
 import { PENTATONIC } from '../../audio/notes';
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Hat Band's rules (music M5, docs/definitions/hat-band.md): two friends on a stage, a rack of hats, and each hat a
@@ -49,6 +50,15 @@ const PLANS: Plan[] = [
   { level: 3, name: 'Alone, then together: both friends play; hear each one alone with the spotlight, then the two together', mode: 'alone' },
   { level: 4, name: 'Build a song: three friends (drum, tune and a low part) and a three-part song; start with the tune alone, end with everybody, the middle is hers; Check plays it through', mode: 'arrange' },
 ];
+
+// Lap and toddler stay with Jelly Drums and Little Conductor; school starts at swapping (decision 2's default). Building a
+// song (level 4) tops the school range and is the grown-ups' level (the 2026-10-23 placement, no new band).
+export const LEVELS: BandLevels = {
+  preschool: { min: 1, max: 2 },
+  prek: { min: 1, max: 3 },
+  school: { min: 2, max: 4 },
+  grownup: { min: 4, max: 4 },
+};
 export const planFor = (level: number): Plan => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 
 export interface Round {

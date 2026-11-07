@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Island Bridges' rules (Hashi). Numbered islands sit on a grid. Join them with straight plank bridges, one or two between
@@ -298,6 +299,12 @@ export const PLANS: BridgePlan[] = [
  * to three planks (7) after 6.
  */
 export const LEVEL_ORDER = [5, 1, 2, 6, 7, 3, 4] as const;
+
+/** Grown-ups get every sea; school plays the two small ones, 5 by 5 then 7 by 7, at 100-unit cells. */
+export const LEVELS: BandLevels = {
+  school: { min: 1, max: 5, order: [5, 1] },
+  grownup: { min: 1, max: 7, order: [...LEVEL_ORDER] },
+};
 
 export const planFor = (level: number): BridgePlan => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
