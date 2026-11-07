@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  allShortest, anchors, apply, cloneBed, decode, emptyBed, encode, FIRST_GARDEN, fits, fullLines, gardenLayout, goalMet, has,
-  hintPlacement, makeGarden, mirrorShape, nearestAnchor, noRoom, passesFilter, place, placements, PLANS, planFor, popcount,
+  allShortest, anchors, apply, cloneBed, decode, emptyBed, encode, FIRST_GARDEN, fits, FLOWER_KINDS, flowerAt, fullLines, gardenLayout, goalMet, has,
+  hintPlacement, LOOKS, lookFor, makeGarden, mirrorShape, nearestAnchor, noRoom, passesFilter, place, placements, PLANS, planFor, popcount,
   RIDE, search, SEARCH_CAP, SHAPES, solve, startState, transformGarden, trayIndex, trayNow, type Garden, type State,
 } from './logic';
 import { GARDENS } from './puzzles';
@@ -102,6 +102,25 @@ describe('level 1, garden 1', () => {
   });
 });
 
+describe('rounds, looks and flowers', () => {
+  it('a pre-K round at levels 1 and 2 is three gardens; the rest keep theirs', () => {
+    expect(PLANS.map((p) => p.gardens)).toEqual([3, 3, 2, 2, 2, 1, 1, 1]);
+  });
+
+  it('every look and every flower kind is reachable', () => {
+    const looks = new Set(Array.from({ length: 200 }, (_, seed) => lookFor(new Rng(seed + 1))));
+    expect([...looks].sort()).toEqual([...LOOKS].sort());
+    const kinds = new Set<string>();
+    for (let g = 0; g < 3; g++) for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) kinds.add(flowerAt(g, r, c));
+    expect([...kinds].sort()).toEqual([...FLOWER_KINDS].sort());
+  });
+
+  it('a bud wakes the same flower every time: fixed by its place', () => {
+    expect(flowerAt(1, 2, 3)).toBe(flowerAt(1, 2, 3));
+    expect(new Set([0, 1, 2, 3].map((c) => flowerAt(0, 0, c))).size).toBe(FLOWER_KINDS.length);
+  });
+});
+
 describe.each(PLANS.filter((p) => p.id <= 4).map((p) => [p.id, p] as const))('generated gardens, level %i', (_, plan) => {
   it('over 500 seeds: well formed, solvable at par inside the range, passing the filter, never the fallback, the same for a seed', () => {
     for (let seed = 1; seed <= 500; seed++) {
@@ -124,8 +143,8 @@ describe.each(PLANS.filter((p) => p.id <= 4).map((p) => [p.id, p] as const))('ge
 
 describe.each([5, 6, 7, 8].map((id) => [id, planFor(id)] as const))('frozen gardens, level %i', (id, plan) => {
   const list = GARDENS[id];
-  it('has at least 12 different gardens', () => {
-    expect(list.length).toBeGreaterThanOrEqual(12);
+  it('has at least 24 different gardens', () => {
+    expect(list.length).toBeGreaterThanOrEqual(24);
     expect(new Set(list.map((t) => t.split(':')[0])).size).toBe(list.length);
   });
 

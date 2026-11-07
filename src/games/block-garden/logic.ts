@@ -480,8 +480,8 @@ const MID: Family[] = ['domino', 'I3', 'corner3', 'square2', 'I4', 'L4', 'J4', '
 const BIG: Family[] = ['I3', 'corner3', 'square2', 'I4', 'L4', 'J4', 'T4', 'S4', 'Z4', 'I5', 'corner5', 'square3'];
 
 export const PLANS: GardenPlan[] = [
-  { id: 1, name: 'Finish one row', n: 5, cell: 100, goal: 'buds', pieces: 2, traySize: 2, buds: [1, 2], par: [1, 1], gardens: 2, tinted: true, refusalCounts: false, families: ['domino', 'I3'] },
-  { id: 2, name: 'Rows and columns', n: 5, cell: 100, goal: 'buds', pieces: 3, traySize: 3, buds: [2, 2], par: [2, 2], gardens: 2, tinted: true, refusalCounts: false, families: ['domino', 'I3', 'square2'] },
+  { id: 1, name: 'Finish one row', n: 5, cell: 100, goal: 'buds', pieces: 2, traySize: 2, buds: [1, 2], par: [1, 1], gardens: 3, tinted: true, refusalCounts: false, families: ['domino', 'I3'] },
+  { id: 2, name: 'Rows and columns', n: 5, cell: 100, goal: 'buds', pieces: 3, traySize: 3, buds: [2, 2], par: [2, 2], gardens: 3, tinted: true, refusalCounts: false, families: ['domino', 'I3', 'square2'] },
   { id: 3, name: 'Two lines with one piece', n: 6, cell: 100, goal: 'buds', pieces: 3, traySize: 3, buds: [2, 3], par: [2, 3], gardens: 2, tinted: false, refusalCounts: true, families: ['corner3', 'domino', 'I3'] },
   { id: 4, name: 'Pick the right pieces', n: 6, cell: 100, goal: 'buds', pieces: 3, traySize: 3, buds: [2, 3], par: [2, 2], gardens: 2, tinted: false, refusalCounts: true, families: SMALL },
   { id: 5, name: 'Make room first', n: 6, cell: 100, goal: 'buds', pieces: 3, traySize: 3, buds: [3, 3], par: [3, 3], gardens: 2, tinted: false, refusalCounts: true, families: MID },
@@ -498,6 +498,26 @@ export const LEVELS: BandLevels = {
 
 export function planFor(level: number): GardenPlan {
   return PLANS[Math.min(PLANS.length, Math.max(1, Math.round(level))) - 1];
+}
+
+/* ---------------------------------------------------------------------------------------------- */
+/* Looks and flowers                                                                               */
+/* ---------------------------------------------------------------------------------------------- */
+
+/** The bed's look for a round. Drawing only: no look changes a garden, its rule or its solution. */
+export const LOOKS = ['morning', 'autumn', 'rain', 'evening'] as const;
+export type GardenLook = (typeof LOOKS)[number];
+
+/** Drawn once per round, after the gardens are picked, so the same seed gives the same gardens in every look. */
+export const lookFor = (rng: Rng): GardenLook => rng.pick(LOOKS);
+
+/** What a sleeping bud blooms into. Drawing only. */
+export const FLOWER_KINDS = ['poppy', 'tulip', 'daisy', 'sunflower'] as const;
+export type FlowerKind = (typeof FLOWER_KINDS)[number];
+
+/** The flower a bud at (r, c) wakes into in the round's `garden`-th garden: fixed by place, so undo and replay wake the same one. */
+export function flowerAt(garden: number, r: number, c: number): FlowerKind {
+  return FLOWER_KINDS[(r * 7 + c * 3 + garden) % FLOWER_KINDS.length];
 }
 
 /* ---------------------------------------------------------------------------------------------- */

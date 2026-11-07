@@ -22,7 +22,7 @@ She drags a shaped seed piece from the tray onto a square garden bed. A shadow s
 **Content pools.** There are 14 shape families (35 oriented shapes once mirrors and turns are counted), each with one colour and one pattern drawn in `seedSquare`. Levels 1–4 are generated at runtime from one template per level (`lineGarden`, `crossGarden`, `cornerGarden`, `blockGarden`), shown under one of the square's eight symmetries, with one authored fallback per level. Levels 5–8 draw on **14 frozen gardens each** in `puzzles.ts`, written by `scripts/block-garden-gardens.mjs`. A round is 2 gardens at levels 1–5 and 1 garden at 6–8. The bed has **one look**: brown soil, grey stones, pink sleeping buds, green seedlings. Flowers are picked as a five-colour petal burst with a pentatonic marimba run up each line, and the basket on the side fills with flowers.
 
 **Known gaps.**
-- **Variety.** One look; 14 gardens a level at 5–8, so a frequent grown-up player sees repeats within a few days; two gardens a round at the pre-K levels.
+- **Variety.** Slice 1 added four looks, four flower kinds, 24 gardens a level at 5–8 and three-garden rounds at levels 1–2; repeats at 5–8 are rarer but still come eventually, and the tray at 6–8 and the pre-K range are unchanged.
 - **The tray at 6–8 is blind.** The packets under the tray count the pieces still to come but do not show them. That is a big jump from level 5, where every piece is visible, to level 6, where she has to plan for pieces she cannot see.
 - **The pre-K range ends at 3.** Level 3 already counts refused drops and drops the stripes, so a four-year-old who struggles at 3 has only levels 1–2, which are two short gardens each.
 - **No younger opening.** Preschool has no level, though the first garden (a striped row, one gap, a domino) is a preschool-sized task.
@@ -108,7 +108,7 @@ Decision 1 is added to [Waiting on the developer](../WAITING-ON-DEVELOPER.md). B
 
 ## Build slices, in order
 
-1. **Looks, flower kinds, more gardens and a longer pre-K round** (four looks, four flower kinds, at least 24 frozen gardens at 5–8, three gardens a round at 1–2; typecheck, rule tests, one filtered `blockgarden` play at level 5 with one portrait screenshot in the autumn look; no `fingerdemo`, since the bot's actions do not change; build only if shared files change).
+1. **Built.** **Looks, flower kinds, more gardens and a longer pre-K round** (four looks, four flower kinds, at least 24 frozen gardens at 5–8, three gardens a round at 1–2; typecheck, rule tests, one filtered `blockgarden` play at level 5 with one portrait screenshot in the autumn look; no `fingerdemo`, since the bot's actions do not change; build only if shared files change).
 2. **Level 9 *Corner with stripes*** placed between 2 and 3 for pre-K and school (new level on the existing interaction: typecheck, rule and registry/how-to tests with the new pre-K `[1, 2, 9, 3]` and school `order`, one browser play of 9, `fingerdemo` at 9).
 3. **Level 10 *See what comes next*** placed between 5 and 6 for school (new presentation of the tray: layout probe at 768×1024 first, typecheck, rule and registry/how-to tests with the school `order`, one browser play of 10 with one tap on a faded piece, one portrait screenshot, `fingerdemo` at 10, build because voice lines change).
 4. **Level 11 *Mind the snail*** (model change, the `keep` mask: typecheck, unit tests with levels 1–10 gardens unchanged, one scripted play with one refused snail clear and one hint, one portrait screenshot, `fingerdemo` at 11, build).
@@ -118,4 +118,4 @@ Gated: level 14 (decision 1). Not planned: level 13 (box clears stay a proposal)
 
 ## What was built in this session
 
-Nothing: research and ideation only. Links and `git diff --check` ran.
+Slice 1 (2026-11-07, PR #1390): four garden looks per round (morning, autumn, rain, evening) picked with `ctx.rng` after the gardens so a look never changes a garden; four flower kinds (poppy, tulip, daisy, sunflower) by bud place via `flowerAt`, with woken flowers peeking out of the basket (newest 7); frozen gardens at levels 5–8 raised from 14 to 24 each (`PER_LEVEL` 24 in `scripts/block-garden-gardens.mjs`, the first 14 unchanged); levels 1–2 are three gardens a round. Slices 2–5 are not built.
