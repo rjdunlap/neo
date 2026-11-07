@@ -33,12 +33,11 @@ A grown-up clears a finite tray of coloured shapes by swapping two occupied neig
 
 | Game | Kind | How its progression grows | What to borrow | What to leave out |
 | --- | --- | --- | --- | --- |
-| [Shariki](https://en.wikipedia.org/wiki/Shariki) (1994) | The first swap-three game | Endless refill, score | The bare rule: swap two neighbours, three in a line clear | Endless scoring |
+| [Shariki](https://en.wikipedia.org/wiki/Shariki) (Eugene Alemzhin, MS-DOS, 1994) | The first swap-three game | A swap is valid only if it makes a line of three; new balls fall in; it ends when no valid swap remains | The bare rule: swap two neighbours, three in a line clear | Endless scoring |
 | [Bejeweled 3](https://en.wikipedia.org/wiki/Bejeweled_3) (PopCap, 2010) | Refilling match-three | Classic ends when moves run out; Zen is endless and "impossible to run out of moves"; Lightning has a one-minute limit; Quest has 40 set challenges | Set challenges with one twist each (Quest); a calm untimed tone | The timer (Lightning), endless refill as the main game, points as the goal |
 | [Candy Crush Saga](https://en.wikipedia.org/wiki/Candy_Crush_Saga) (King, 2012) | Saga of goal levels | Fixed move limits; goals (collect candies, bring ingredients down, clear jelly under candies); blockers such as licorice locks and chocolate | Goals other than "clear everything"; a cell feature that changes the order of play (jelly, locks) | Move limits that fail a level, five lives that regenerate every half-hour, bought moves and boosters, friend requests |
 | [Tetris Attack](https://en.wikipedia.org/wiki/Tetris_Attack) / Panel de Pon (1995–96) | Swap-to-match, puzzle mode | Puzzle Mode: clear all blocks of a "preset block arrangement" within a set number of moves, and the blocks do not rise | **The closest model**: a fixed arrangement, clear it all, a move count. Ours shows the count as a par instead of a limit | Rising stacks, the versus garbage, a move limit that fails |
-| [Puyo Puyo](https://en.wikipedia.org/wiki/Puyo_Puyo) (Nazo Puyo, Mission mode) | Set-up boards with goals | Each puzzle sets a board and a goal (the page does not list them; the series is known for chain goals) | A goal stated as a cascade: "make the fall clear a second line" | Falling-piece timing |
-| [Zoo Keeper](https://en.wikipedia.org/wiki/Zoo_Keeper_(video_game)) (Robot Communications, 2003) | Timed swap-three | Quotas per animal under a timer | Pictures that read without colour (our shapes do this) | The timer |
+| [Puyo Puyo](https://en.wikipedia.org/wiki/Puyo_Puyo) (Nazo Puyo) | Set-up boards with goals | The page says Nazo Puyo "expands on the original Puyo Puyo's Mission mode": a set-up board and goals to meet (it does not list the goals) | A goal other than "clear everything", such as a cascade the fall must make | Falling-piece timing |
 | Physical: counters on a grid | Off-screen version | — | Already the game's `offScreen` line: exchange neighbours, slide counters into gaps | — |
 
 No school skill is claimed. The grown-up's page names what it asks ("plan swaps and predict falling gems") and makes no brain-training claim; that stays.
@@ -51,7 +50,7 @@ The finite, no-refill tray is already the right core: it is Panel de Pon's puzzl
 - **Long lines and crossings**: the rules already clear runs of four or five and an L or T crossing in one swap, but no tray needs one. A level whose every shortest route uses one teaches that a single swap can do more.
 - **Stones that do not fall** (fixed ledges). Gems above a stone rest on it, so a column splits into two stacks. This is the most meaningful new rule: it changes the gravity prediction itself. It is a model change to `fall`.
 - **Iced gems**: an iced gem cannot be picked until a line clears beside it, which thaws it. This is Candy Crush's lock without the pressure: it forces an order. Also a model change.
-- **A frozen couch course** of the hardest trays, matching the other grown-up puzzles' courses.
+- **A frozen course** of the hardest trays, like the other grown-up puzzles' courses, but only if the developer wants new couch work: couch play retires at Lands stage E (decision 3).
 
 What does **not** fit: move limits that fail a tray (par stays a target, never a wall), lives, boosters, timers, endless refill as the main game, and points for big combos (cascades are pleasant, but the score stays swaps over par). A **Zen refill mode** is left out on purpose (below) and kept as a developer decision because the roadmap names it.
 
@@ -104,25 +103,25 @@ None needed for grown-ups: 6 → 12 → 15 → 18 gems is already a gentle slope
 ### Left out on purpose
 
 - **A Zen refill mode.** Refill makes the tray endless and random, removes the par, and turns planning into searching. That is the opposite of this game's reason to exist and of "comfortable stopping". Bejeweled's Zen proves the calm tone is liked; the finite tray already has it.
-- Move limits, lives, boosters, big-combo points and timers (Candy Crush, Lightning, Zoo Keeper).
+- Move limits, lives, boosters, big-combo points and timers (Candy Crush, Bejeweled's Lightning).
 - Special gems made by four- or five-lines (Bejeweled's flame and star gems): they add a second rule set and make exact pars much harder to prove; level 6 gives long lines a purpose without them.
 - Saving an unfinished tray: rounds are a few minutes; the shell's normal exit is enough.
 
 ## Decisions for the developer
 
 1. **Open levels 1–2 to the school band?** Lean: yes, after a child plays them once on the iPad; it costs one voice pass and a `LEVELS` line.
-2. **Keep the roadmap's Zen refill proposal or drop it?** Lean: drop it (reasons above); the course (slice 4) gives the grown-up who wants "more" a finite set instead.
+2. **Keep the roadmap's Zen refill proposal or drop it?** Lean: drop it (reasons above); levels 5–8 give the grown-up who wants "more" finite trays instead.
+3. **A frozen Gem Swap course, *The Big Trays*?** Five frozen trays from levels 4–6 in `src/couch/courses.ts` (the [course pattern](../DESIGN.md), as Lantern Lights has), scored as swaps over par, shown on the couch puzzle shelf. The roadmap lists it as a proposal, but couch play retires at Lands stage E, so new couch-only work waits for the developer. Lean: skip unless couch play is staying; if built, after slice 2 (couch-course tier: unit tests, `couchcourse` filtered, build).
 
 ## Build slices, in order
 
 1. **More trays, looks and a visible fall.** The tray generator script and 20 frozen trays a level at 1–4; three seeded looks; the falling tween, landing squash and rising cascade steps. Checks: typecheck, rule tests, one filtered `gemswap` play at level 4 with one portrait screenshot in a new look; no `fingerdemo` (the bot's actions do not change); build only if shared files change.
 2. **Level 5 *Six by six: five swaps*.** Frozen 6×6 trays with offline pars, the node-budget test, grown-up range 1–5 and the couch trip mapping. Checks: new level on the existing interaction: typecheck, rule and registry/how-to tests, one browser play of 5, `fingerdemo` at 5; `couchgames` filtered for the catalog change.
 3. **Level 6 *One swap, a long line*.** Content-tagged trays and the enumerated-route test; range 1–6. Checks: typecheck, rule tests, one browser play of 6, `fingerdemo` at 6.
-4. **A frozen couch course, *The Big Trays*.** Five frozen trays from levels 4–6 in `src/couch/courses.ts`, following the Lantern Lights course pattern, scored as swaps over par. Checks: typecheck, unit tests (courses), `couchcourse` filtered, build. After slice 2.
-5. **Level 7 *Stones that stay*.** The stone model, drawing and voice; range 1–7. Checks: model change: typecheck, rule tests with levels 1–6 unchanged, one browser play of 7 with one refused stone tap, one portrait screenshot, `fingerdemo` at 7, build.
-6. **Level 8 *Iced gems*.** The ice model; range 1–8. Checks: new interaction: typecheck, unit tests, one scripted play with one iced-gem tap and one hint, one portrait screenshot, `fingerdemo` at 8, build. After slice 5.
+4. **Level 7 *Stones that stay*.** The stone model, drawing and voice; range 1–7. Checks: model change: typecheck, rule tests with levels 1–6 unchanged, one browser play of 7 with one refused stone tap, one portrait screenshot, `fingerdemo` at 7, build.
+5. **Level 8 *Iced gems*.** The ice model; range 1–8. Checks: new interaction: typecheck, unit tests, one scripted play with one iced-gem tap and one hint, one portrait screenshot, `fingerdemo` at 8, build. After slice 4.
 
-The school opening is gated on decision 1 and stays out of the ready list.
+The school opening (decision 1) and the couch course (decision 3) are gated and stay out of the ready list.
 
 ## What was built in this session
 
