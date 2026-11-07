@@ -5,6 +5,10 @@
 Changed: `src/games/domino-run` (puddles, three moods, five end looks, three voice ids), four rule tests, the `dominorun` suite. Ran: typecheck; `vitest run src/games/domino-run src/content` (196 tests); filtered `BROWSER_SUITE=dominorun` (levels 1, 8, 5, plus 6 upright in sunset with a drop on a puddle: misses 0, hints 0); `npm run build`; an ad hoc screenshot check of all five end looks and the morning and low-tide moods (no page errors).
 Open: `fingerdemo` not run (bot unchanged); no other suites, offline or full `npm test` (CI); whether a puddle reads without speech on an iPad is a [device check](DEVICE-CHECKS.md).
 
+## 2026-11-07 — Jar Sort deep dive (docs only)
+
+Changed: `docs/deep-dives/jar-sort.md` and its tracker, READY and STUDY-BACKLOG rows (PR #1361); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; slices 1–5 are queued; no new decisions.
+
 ## 2026-11-07 — Fruit Sums deep dive (docs only)
 
 Changed: `docs/deep-dives/fruit-sums.md` and its tracker, READY, STUDY-BACKLOG, IDEAS, algebra-balance study, RECOMMENDATIONS and WAITING-ON-DEVELOPER rows (PR #1358); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; slices 1–5 are queued; two calls (pre-K Partners to five, a grown-up make 24) wait on the developer.
@@ -59,20 +63,13 @@ Changed: `swing-pals` level 7 *Who comes back first?* and level 8 *Twice as quic
 Ran: `npm run typecheck`; `npm test` (321 files, 5979 tests; Swing Pals 46 rule tests incl. 500-seed rounds and layout in four views); `npm run build`; `BROWSER_SUITE=swingpals` (extended: level 7 with one wrong guess, never a miss, and one hint; level 8 with one wrong hook, one miss; portrait screenshot) on a dev server; `fingerdemo FINGER_ONLY=swing-pals FINGER_LEVELS=7,8` (27.6 s at 7 in pre-K, 30.7 s at 8 in school). `game-reviewer`: one finding (hint wording after a guess), fixed.
 Not run: offline check, any device or child. Open: level 9 gated on its layout probe.
 
-## 2026-11-06 — Circuit Garden level 3, Mend the lantern (energy/waves E3)
-
-Changed: `circuit-garden` level 3 (PR #1338, branch `claude/circuit-garden-3`): two bridges, Check, counted misses and automatic glow; pre-K and school {1,3}; three voice lines and how-to steps.
-Ran (commit f46bcc55, base ed7f6536): `npm run typecheck`; `npm test` (321 files; the only failures were how-to card ones, fixed, then howto and circuit-garden 44 pass); 25 circuit-garden rule tests including a level-3 block; one scripted Playwright play at school level 3 (1024×768, local dev server: two wrong Checks 2 misses, glow, 1 hint; Help filled supply with no new hint; early Done inert; correct Check; Undo cleared it; Done before re-check inert; Check then Done finished 2/1; no page errors) and a portrait 768×1024 screenshot; `BROWSER_SUITE=fingerdemo FINGER_ONLY=circuit-garden` (levels 1 and 3) and `FINGER_LEVELS=2`. `game-reviewer`: no defects; two minor fixes applied.
-Not run: build, smoke and howto suites, device check, science-educator reading of the energy wording.
-Open: legibility of the break outline and 100-unit comfort of Check on the iPad, speech ([device checks](DEVICE-CHECKS.md)).
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| `circuitgarden`, `fingerdemo` (`circuit-garden`) | 2026-11-06 (level 3, `f46bcc55`): typecheck, full `npm test` (321 files), 25 rule tests, one scripted school level 3 play (two wrong Checks 2/1, Help, early Done inert, Undo clears Check, finish) plus portrait screenshot; `fingerdemo` at levels 1, 2 and 3 (levels 1–2 earlier: `circuitgarden` suite) | [Entry](VERIFICATION.md#2026-11-06--circuit-garden-level-3-mend-the-lantern-energywaves-e3) | no build, no device check, no science-educator reading |
+| `circuitgarden`, `fingerdemo` (`circuit-garden`) | 2026-11-06 (level 3, `f46bcc55`): typecheck, full `npm test` (321 files), 25 rule tests, one scripted school level 3 play (two wrong Checks 2/1, Help, early Done inert, Undo clears Check, finish) plus portrait screenshot; `fingerdemo` at levels 1, 2 and 3 (levels 1–2 earlier: `circuitgarden` suite) | [Entry](archive/VERIFICATION-2026-11-06.md#2026-11-06--circuit-garden-level-3-mend-the-lantern-energywaves-e3) | no build, no device check, no science-educator reading |
 | `measuringpost`, `fingerdemo` (`measuring-post`) | 2026-11-06 (commit fcf535cc): typecheck, full `npm test` (321 files, 5,991 tests), `measuringpost` levels 1–4 (level 3 landscape, level 4 portrait), `fingerdemo` at levels 3 and 4 | [Entry](archive/VERIFICATION-2026-11-06.md#2026-11-06--measuring-post-levels-34-measurement-m3m4) | no build, offline or `world` run since levels 3–4; no device check |
 | `playdateworkshop`, `fingerdemo` (`playdate-workshop`) | 2026-11-06 (`974b560b`): typecheck, full units (5789) before review fixes then the game's and content/voice-clip tests (210), build; `playdateworkshop` (level 1, level 3 portrait); `fingerdemo` at 1–3 (8.4 s, 21.8 s, 17.4 s) | [Entry](archive/VERIFICATION-2026-11-06.md#2026-11-06--playdate-workshop-levels-13-new-game-social-emotional-slice-2) | No offline check; full units not re-run after review fixes; whether children understand passing and plan comparison, and iPad speech, are open |
 | `hatband`, `fingerdemo` (`hat-band`) | 2026-11-06 (`95a25da4` plus voice change `56131fb2`): typecheck, full `npm test` (5870 tests), build; `hatband` with `HAT_LEVELS=1,4` (level 1 landscape, level 4 portrait with Undo, empty-part Check, two misses, hint, accepted Check, record [4,2,1]); `fingerdemo` at 1 and 4 | [Entry](archive/VERIFICATION-2026-11-06.md#2026-11-06--hat-band-level-4-build-a-song-music-m6) | Level 3 browser case and offline check not run; speaker clarity of the low hat, speech of low hat and part, the source check and a child's play are open |
