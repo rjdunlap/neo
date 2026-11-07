@@ -8,9 +8,9 @@ A turtle steps from moss tile to moss tile. Levels 1–3 (school) are **path cov
 
 | Level | Plan name | Bands whose window includes it | What she decides |
 | --- | --- | --- | --- |
-| 1 | A winding trail: bloom seven tiles | school | Nothing much: a 3 × 3 corridor with one route |
-| 2 | An open patch: plan a route through twelve tiles | school | Which order covers a 3 × 4 patch without stranding a tile |
-| 3 | Two rocks: visit fourteen tiles through narrow passages | school | Coverage around two rocks and bottlenecks (4 × 4) |
+| 1 | A winding trail: bloom every tile | school | Nothing much: a short corridor (3 × 3, S or L) with one route |
+| 2 | An open patch: plan a route through every tile | school | Which order covers a 3 × 4 patch (or an open 3 × 3) without stranding a tile |
+| 3 | Two rocks: visit fourteen tiles through narrow passages | school | Coverage around two rocks and bottlenecks (4 × 4; the original plan has one complete route) |
 | 4 | Follow the moss: one winding path to the pond | toddler, preschool | Nothing yet: where the path goes (no fork, no miss, no buttons; a pace cue after 4 s) |
 | 5 | Which way? One fork | preschool, pre-K | Which branch reaches the pond (the wrong branch is free exploration) |
 | 6 | Look before you go: dead ends one step deep | pre-K, school (school's entry) | Looking one step ahead at each fork (a wrong branch is one miss per branch) |
@@ -18,7 +18,7 @@ A turtle steps from moss tile to moss tile. Levels 1–3 (school) are **path cov
 
 School plays in `order` 6, 1, 7, 2, 3; `entryLevels` 4, 5, 6.
 
-**Content pools.** Levels 1–3: one frozen plan each, varied only by flips and a transpose (8 symmetries; level 1's corridor is the same route under all of them). Levels 4–7: three frozen mazes each (`MAZES`), flipped left–right and/or top–bottom, never transposed, so 12 boards per level at most. One turtle, one pond, one berry, one moss palette, one flower pair. That makes this the thinnest content of any wave 6 game: a preschooler sees all of level 5 within an afternoon.
+**Content pools.** Levels 1–3: a pool of three frozen plans each (`PLANS`), all within 4 × 4, varied by flips and a transpose (8 symmetries). Level 1: the original C corridor, an S (4 × 3) and an L with a hook (4 × 4), each with one route. Level 2: an open 3 × 4, a 3 × 4 with one rock and an open 3 × 3, each with at least two complete routes. Level 3: the original two-rock plan (exactly one complete route) plus rocks at [0,6] (3 routes) and [1,10] (2 routes). Levels 4–7: six frozen mazes each (`MAZES`), flipped left–right and/or top–bottom, never transposed. Each round also picks a look: spring, autumn (amber hedge leaves) or snow (snowy hedge tops), and a berry (red, blueberry or strawberry). Still one turtle, one pond and one moss palette.
 
 **Known gaps.** The younger bands have the shortest ladders: toddler has one level, preschool two, pre-K two, and none of them has coverage. Two device checks are open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): drag stepping and walking back with a finger on an iPad, with the hedge and berry readability (2026-11-06), and a school-age child playing coverage (2026-10-13). Not drawn: the turtle turning its head toward a far tap. Not on the couch.
 
@@ -110,4 +110,4 @@ All three are added to [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md). Slice
 
 ## What was built in this session
 
-Nothing: research and ideation only. Checked with the link checker and `git diff --check`.
+- **Slice 1 built (2026-11-07):** levels 4–7 have six mazes each; levels 1–3 draw from three plans each (counts and route properties above); `pickLook(rng)` seeds a season and a berry, with one `drawBerry` helper (bush, carried berry, badge) for slice 3 to reuse. Two departures from the dive: the proposed 2 × 5 patch became an open 3 × 3, because a transposed 2 × 5 has five rows and cells of about 88 units, under the 100-unit rule; and the original level-3 plan has one complete route, not two, so "each level-3 plan has two routes" holds only for the new plans. Level 1 and 2 names no longer state a tile count. No voice or palette changes. Checks: [verification entry](../VERIFICATION.md).
