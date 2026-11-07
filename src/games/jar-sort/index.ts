@@ -89,7 +89,7 @@ export function fruitArt(kind: number, size = 1): Container {
   return c;
 }
 
-const JAM = [swatch.red.fill, swatch.blue.fill, swatch.orange.fill, swatch.green.fill, swatch.purple.fill, swatch.red.line, swatch.yellow.fill];
+const JAM = [swatch.red.fill, swatch.blue.fill, swatch.orange.fill, swatch.green.fill, swatch.purple.fill, swatch.pink.fill, swatch.yellow.fill];
 
 /** An empty glass jar of a capacity, its base at (0, 0). */
 function jarArt(cap: number): Graphics {
@@ -124,7 +124,7 @@ function drawPantry(g: Graphics, look: Look, v: View, spots: JarSpot[], cap: num
   g.clear().rect(0, 0, v.w, v.h).fill(wall);
   const jarTop = spots.length ? Math.min(...spots.map((s) => s.y - jarHeight(cap))) : v.h / 2;
   const w = Math.min(360, v.w * 0.42), x = (v.w - w) / 2, y = 20;
-  const h = Math.max(96, Math.min(240, jarTop - 30 - y));
+  const h = Math.max(56, Math.min(240, jarTop - 30 - y));
   g.roundRect(x - 12, y - 12, w + 24, h + 24, 16).fill(wood.fill).stroke({ width: 4, color: wood.line });
   g.rect(x, y, w, h).fill(pane);
   if (look === 'morning') g.circle(x + w * 0.75, y + h * 0.4, Math.min(34, h * 0.28)).fill(swatch.yellow.fill);
