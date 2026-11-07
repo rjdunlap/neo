@@ -2,7 +2,7 @@
 
 Defined 2026-10-23 as slice 1 of the [inventions study](../deep-dives/subjects/inventions.md#build-slices-in-order), from its [proposed ladder](../deep-dives/subjects/inventions.md#first-games-proposed-ladder-gadget-bench) and the [recommendation row](../deep-dives/subjects/RECOMMENDATIONS.md#inventions-recommendations). Docs only: no game, ID registration, voice line, save field or band exists yet.
 
-**Status: built 2026-10-27 (PR #1012), levels 1–3; the neighbors are Bunny, Duck, Cat and Bear, with the hedgehog and mouse standing in as bunny and cat because the island has no hedgehog or mouse critter.** Defined and buildable as follows. Levels 1–3 use five invented parts with fixed, stated properties and say nothing about real inventions, inventors, dates or tools, so no reviewer gates them (the study's reviewer gates are for real inventions, Workshop Cases' registration and the page cards). The only default the developer may want to change is the home land ([decision 1](#open-decisions)): the study's Tinker Lab is **full** since Sense Detective registered, so this packet defaults to **Treehouse**, measured below. Levels 4–7 and Workshop Cases are later definitions.
+**Status: built 2026-10-27 (PR #1012), levels 1–3; the neighbors are Bunny, Duck, Cat and Bear, with the hedgehog and mouse standing in as bunny and cat because the island has no hedgehog or mouse critter.** Defined and buildable as follows. Levels 1–3 use five invented parts with fixed, stated properties and say nothing about real inventions, inventors, dates or tools, so no reviewer gates them (the study's reviewer gates are for real inventions, Workshop Cases' registration and the page cards). The only default the developer may want to change is the home land ([decision 1](#open-decisions)): the study's Tinker Lab is **full** since Sense Detective registered, so this packet defaults to **Treehouse**, measured below. Level 4 is [defined below](#level-4-fix-it-day-definition) and built; levels 5–6 are [defined below](#levels-56-little-gate-and-new-box-definition); level 7 and Workshop Cases are later definitions.
 
 **Fun action and purpose:** a wooden cart stands on a workbench with a few big sockets. A neighbor holds up a picture of what it needs ("my apples must not get wet"). She picks, or drags, parts into the sockets, taps **Try** and watches the cart roll along a little path, stopping at the first thing it cannot handle; then she **gives** it to the neighbor. The learning purpose is the study's engineering-design core for the youngest audiences: **a gadget is made to meet someone's need** (K-2-ETS1-1), **a part's shape and place decide what it does** (K-2-ETS1-2), and **trying two designs shows which works** (K-2-ETS1-3). Order follows Beck et al. (2014): look at a finished gadget, change one that is shown, only then choose parts and places for oneself.
 
@@ -129,7 +129,7 @@ Device and person checks stay open: whether a four-year-old reads the failure fr
 
 ## What comes next
 
-**Gadget Bench 4** (study slice 3) is defined and built [below](#level-4-fix-it-day-definition) as *Fix-It Day*: yesterday's cart on a longer path, the first conflict, one part revised. **Levels 5–6** add a size constraint (the garden gate) and the new-kit transfer round, each with an enumeration test. **Level 7** gives two neighbors different criteria with several accepted designs. **Workshop Cases** (older/family case) is defined after its registration decision. None of those is defined here.
+**Gadget Bench 4** (study slice 3) is defined and built [below](#level-4-fix-it-day-definition) as *Fix-It Day*: yesterday's cart on a longer path, the first conflict, one part revised. **Levels 5–6** are [defined below](#levels-56-little-gate-and-new-box-definition) as *Little Gate* (the garden gate's height limit) and *New Box* (the new-kit transfer round), each with an enumeration test; not built. **Level 7** gives two neighbors different criteria with several accepted designs. **Workshop Cases** (older/family case) is defined after its registration decision. None of those is defined here.
 
 ## Level 4, Fix-It Day (definition)
 
@@ -225,6 +225,112 @@ A new level on the existing drag, Try and Give interaction, so the build session
 
 `npm run build` is needed only if the build touches shared engine or art files beyond the game's own folder, `voice-script.ts` and `howto.ts`. Device and person checks stay open: whether a six-year-old reads two stops at one socket as a conflict, and how the iPad says "paddle wheels".
 
+## Levels 5–6, Little Gate and New Box (definition)
+
+Defined 2026-11-06 as slice 4 of the [inventions study](../deep-dives/subjects/inventions.md#build-slices-in-order): level 5 is the study's **constraint** (*the gadget must fit through the little garden gate, so the big wheels are too big*, 3-5-ETS1-1) and level 6 its **transfer to a new kit** (*the same need as a solved round, but the tray has no wheels*; the step Beck et al. 2014's 4–7-year-olds did not make). Docs only: written against the code as built through level 4 (`src/games/gadget-bench/`, PR #1330). Both levels use invented toy parts with stated properties and name no real device, invention or tool, so no reviewer gates them ([decision 4](#open-decisions) applies to the new parts).
+
+**Fun action and purpose.** *Level 5, Little Gate:* the neighbor lives behind a low arch in the garden hedge. She builds a cart for the path as at level 3, Tries it, and the familiar cart crosses every condition, then bumps its tall big wheels or umbrella on the arch at the end. She swaps in a low part that does the same job and the cart rolls under. The purpose: **a design has to meet the need and stay inside a limit** (a criterion and a constraint, 3-5-ETS1-1), and **a limit applies to the whole gadget**, even a part that does nothing. *Level 6, New Box:* the pet's finished cart works for one neighbor, then its parts go home with that neighbor; a second neighbor needs the same path and the box holds only new parts. She works out which new part does each old part's job and where it goes. The purpose: **the same job can be done by a different part** (transfer to a new kit), and **where a part goes still decides what it does**.
+
+### Identity and overlap (levels 5–6)
+
+- **Level 3, Build it,** is the nearest rung for both: the same empty cart, tray and Try. Level 5 adds a test every part must pass at once (the arch), which no level 1–4 condition is: a condition asks one socket, the arch asks all three. Level 6 removes every part she has used for the path and keeps three open sockets, so a new part's place is a choice again.
+- **Level 4, Fix-It Day,** is one part doing two jobs. Level 5 never has a socket conflict (a rule test), so the only new idea is the limit.
+- **Habitat Helpers overlap test:** at level 5 the familiar right part fails the limit, so "the piece for each picture" is not enough; at level 6 all three sockets are open and the tray holds a new part whose socket is not the old part's (the glow stones, below), so socket position still decides the pass.
+- **Welcome Ways** (a fixed space for several visitors) keeps the shared-structure constraint; level 5 is one cart and one limit.
+
+### The model, extended (`logic.ts`) (levels 5–6)
+
+- **Height.** `PartSpec` gains `tall: boolean`. Tall: the big wheels, the paddle wheels, the umbrella and the flag (a flag on a pole). Low: the float, the lantern and every new part below. The side-view board already shows height, which is why the limit is a low arch rather than the study's narrow gate (width would be depth on this board); the spoken line still calls it "the little gate".
+- **Four new invented parts**, none in `PART_IDS` (as with the paddle wheels), so `need()` keeps returning the original single-job part and levels 1–4 cannot change:
+
+| Part | Right socket | Fixes | Height | Picture and spoken name | Levels |
+| --- | --- | --- | --- | --- | --- |
+| Roller belt | `under` | `bump` | low | a flat loop of little wooden rollers; "the roller belt" | 5, 6 |
+| Lid | `top` | `rain` | low | a snug flat wooden lid; "the lid" | 5, 6 |
+| Raft | `under` | `puddle` | low | three planks tied together; "the raft" | 6 |
+| Glow stones | `top` | `dark` | low | a little bowl of glowing pebbles; "the glow stones" | 6 |
+
+- **One responsible socket per condition, except `dark` at level 6.** `bump` and `puddle` stay `under` and `rain` stays `top`. The glow stones light the path from `top`, where the lantern hangs at `front`: `dark`'s responsible socket becomes **the socket of the part that can fix it in this round**. The model: `runPath(g, path, kit?)` takes the round's kit (its tray, or every part when absent); a condition's responsible socket is the right socket of the kit's parts that fix it (within one kit every part fixing a condition shares one socket, a tested invariant: level 5's twins both sit `under` or both on `top`), so levels 1–5 read exactly as now and level 6 asks `top` for `dark`. A level 6 round with both `rain` and `dark` would put two jobs on `top` and is never authored (a rule test).
+- **The gate.** A new condition `gate`, always the **last** tile of a level 5 path (the neighbor's home). It is a constraint, not a `need()`: `need('gate')` stays null, and `runPath` at `gate` fails when **any** socket holds a tall part, whether or not that part is doing a job there. The failure result is `{ ok: false, at: 'gate', socket, part }` with `socket` the first socket (`under`, `top`, `front`) holding a tall part and `part` that tall part. Conditions earlier on the path are checked first, as now, so a cart that fails the bump stops at the bump.
+- **Help names a part that is on the bench.** From level 5, `runPath`'s `part` is never spoken as "what it needs"; the `glow`, `hint.part` and `installed` lines name the **target design's** part. `targetDesign` (level 4's: the passing design over the round's tray and open sockets that keeps the most of her placed parts, ties to the fewest changed sockets) is used whenever the level is 4 or above (the switch becomes `level >= 4`, not `round.yesterday`; `helpSteps` likewise). A new help kind **`take out`** returns a part to its tray slot when the target leaves that socket empty (a tall part, or the flag, sitting in a socket where it does nothing); the speech is `bench.hint.out`. On levels 1–4 help gives exactly what it gives now (a regression table).
+- **The conflict line** (`bench.conflict`) stays level 4 only: `Tally.stopped` is called only when the round has a `yesterday`. Level 5's arch line is below.
+
+#### Level 5, Little Gate
+
+All three sockets open and an empty cart. Path: `smooth`, two conditions with no socket conflict, then `gate` (four tiles). The tray holds four parts and always includes, for each condition with a tall usual part, **both** the usual part and its low twin (big wheels and the roller belt; the umbrella and the lid). Rounds (`ctx.rng` seeded except the first):
+
+1. **Authored:** Bunny; `smooth, bump, dark, gate`; tray big wheels, roller belt, lantern, flag (in this order, so the familiar part is first). The big-wheels cart stops at the arch.
+2. Seeded from `rain` + `dark` (tray umbrella, lid, lantern, flag) or `rain` + `puddle` (umbrella, lid, float, flag); condition order seeded.
+3. `bump` + `rain` (tray big wheels, roller belt, umbrella, lid): two tall parts to replace; condition order seeded.
+
+Neighbors as at level 4 (Bunny first, a different one each round). **Passing set:** exactly one passing design each round (the low part for each condition in its socket, the third socket empty; the flag is tall, so it cannot ride along). This level states **one** passing design, not two. The "familiar" design (each condition's `need()` part in its socket) passes every condition and fails at `gate` in every round.
+
+#### Level 6, New Box
+
+The round opens with level 2's shown cart: the pet builds the first neighbor's cart from the old parts for a two-condition path, and it rolls along (nothing counts). Then those parts ride home with the first neighbor (`bench.newkit`), the second neighbor arrives needing **the same path**, and the empty cart stays on the bench with **all three sockets open** and a tray of four new parts. Rounds (seeded except the first; the round carries `shown` as level 2 does, plus `kit: true`):
+
+1. **Authored:** Duck shown, then Bear; `smooth, bump, dark`; shown cart big wheels and lantern; tray roller belt, glow stones, raft, lid. The glow stones go on `top`, not where the lantern hung.
+2. Seeded from `puddle` + `dark` (shown float and lantern) or `puddle` + `rain` (shown float and umbrella).
+3. `bump` + `rain` (shown big wheels and umbrella; `bump` + `puddle` would put two jobs `under`); condition order seeded.
+
+No level 6 path needs `front`: the lantern's old socket is open and does nothing for the new kit, so a glow stones drop where the lantern hung stops at the dark.
+
+The tray is always the four new parts (roller belt, lid, raft, glow stones), seeded order after round 1. **Passing set:** the right new part for each condition in its socket; the remaining socket may be empty or hold a new part that does nothing there (it is low, and level 6 has no arch). This level states **at least two** passing designs per round. The cart body's painted small wheels are part of the board, not a part; they appear on every level and handle nothing, so "the tray has no wheels" holds.
+
+### Accounting, help and finishing (levels 5–6)
+
+As at levels 1–3: Try is free, a failing Give is a miss, the glow and each counted Show a hint are hints, a supported finish after the glow plus one miss installs the target design's next part (one hint). The same-condition glow rule holds, with the gate as a condition: two Trys in a row stopping at the arch with the same tall part in that socket light the glow, which rings that socket and wiggles the low twin in the tray (or, for a tall part in a socket where it does nothing, rings the socket and the part's home slot). At level 5 the "That part does not work there" line (`bench.place.wrong`) is **not** spoken at an arch stop: the tall part works there, it is just too tall. Level 6's shown cart counts nothing, as level 2's does. Show a hint counts up to the number of sockets her gadget differs from the target design, then repeats the words. After three rounds, `ctx.finish({ misses, hints })` and one sticker. Nothing is saved or filed.
+
+### Screen and controls (levels 5–6)
+
+- **Level 5:** `benchLayout(5, 4, 4, view)`, the same footprint as level 4's `[4, 4, 4]`. The request card shows the two conditions and a small arch. The `gate` tile is a hedge with a low wooden arch whose opening is drawn at the height of a low cart; a stop there plays the cart rolling up, the tall part tapping the arch top (a leaf shake and a soft wooden tock, `sfx.clunk`), the tall part glowing, and the cart rolling back a step.
+- **Level 6:** `benchLayout(6, 3, 4, view)`, level 3's `[3, 3, 4]` footprint. During the shown build the old parts sit in the tray; when they go, they ride off on the first neighbor's cart and the four new parts drop into the tray slots.
+- The four new parts draw in `art.ts` with `src/art/palette.ts` at the 110-unit part size; the tall parts are drawn as now (the big wheels, umbrella and flag already rise above the cart). Dragging, snapping, swapping, Try, the stop's socket pulse, Give and the version strip are unchanged.
+
+### Speech (`voice-script.ts`) (levels 5–6)
+
+New lines:
+- `bench.instruct.gate`: "{neighbor} lives behind the little gate. Build a cart that gets all the way there!"
+- `bench.fail.gate`: "Bump! Something is too tall for the little gate." (no part name: the glowing tall part shows which)
+- `bench.instruct.newkit`: "Make a cart that works like that one, with the new parts!"
+- `bench.newkit`: "Those parts went home with {neighbor}. Here's a new box of parts."
+- `bench.hint.out`: "{part} does nothing there. I put it back."
+
+`glow`, `hint.part`, `installed`, `give.*`, `ok` and `spread` take the new parts by name through `PARTS`. No line says what real wheels, lids, rafts or lamps do.
+
+### Rule tests (`logic.test.ts`) (levels 5–6)
+
+- **The model:** each new part passes only its condition in its right socket. `tall` is exactly the big wheels, paddle wheels, umbrella and flag. For every assembly of the six level 1–4 parts on every level 1–4 path, `runPath` (with and without a kit argument) and `helpFor` return exactly the level 4 answers (the kept table, extended to help). Level 1–4 briefs (500 seeds) never hold a new part.
+- **The gate:** for every assembly of all ten parts, `runPath(g, [...conditions, 'gate'])` fails at `gate` exactly when every earlier condition passes and some socket holds a tall part, and its `socket` is the first such socket.
+- **Level 5 (500 seeds):** every path is `smooth`, two conditions without `socketConflict`, then `gate`; at least one condition has a tall `need()` part; the tray holds both twins for each such condition and no paddle wheels; the familiar design fails at `gate`; `passingDesigns` holds **exactly one** design, with no tall part anywhere; round 1 matches the authored table; round 3 is `bump` + `rain`; no neighbor repeats.
+- **Level 6 (500 seeds):** the shown cart passes the path; the tray holds **no part from the shown solution** and no wheels; `passingDesigns` over the tray and three open sockets is non-empty with **at least two** members; every condition's fixing part in the kit is unique; no round has both `rain` and `dark`; the authored round 1 has `dark` on `top`, and the shown cart's `dark` part sits in a different socket from the passing design's (the place still matters); round 1 matches the authored table.
+- **Help (levels 5–6):** from every assembly of each round's tray, repeating `helpFor` then `applyHelp` reaches a passing gadget within four steps, every install is a part of the target passing design and comes from the tray, every take-out removes a part the target does not hold there, and help never installs a tall part on a level 5 round. From the familiar design at level 5, help installs the low twin first.
+- **Tally:** a scripted level 5 round (Try the familiar cart, stop at the arch; Try it again, which lights the glow once; Show a hint twice, counting up to the differing sockets, then the words only) counts hints exactly, with no misses, and the conflict line never fires at levels 5–6.
+- **Layout:** the layout cases gain `[5, 4, 4]` and `[6, 3, 4]` in landscape and portrait (parts and sockets at least 100, buttons 110, nothing overlapping or under a corner).
+- **Ghost finger:** `nextMove` at level 5 places the familiar parts first (the `need()` part for each condition), Trys once (the arch stop, free), then follows help, Trys and Gives; at level 6 it waits through the shown build, follows help, Trys and Gives. A simulated bot round passes in each of 200 seeded briefs per level.
+
+### Registration, ladder and how-to card (levels 5–6)
+
+- **Bands:** school `{ min: 2, max: 6 }` once both are built (`{ 2, 5 }` if level 5 lands alone). Pre-K stays `{1,3}`, preschool `{1,1}`. `TOP_LEVEL` becomes 6.
+- **Plans:** `PLANS[5] = { name: 'Little Gate', describe: 'Little Gate: build for the path, and the whole cart must fit under the low garden gate' }`; `PLANS[6] = { name: 'New Box', describe: "New Box: the same job as the pet's cart, from a box of parts it never used" }`.
+- **How-to card** (`src/content/howto.ts`):
+  - New step `{ from: 5, to: 5 }`: "Build the cart, Try it, and if it bumps the little gate, swap in a lower part that does the same job."
+  - New step `{ from: 6, to: 6 }`: "Watch the pet's cart work, then build one from the new box of parts that does the same jobs."
+  - The Give step widens to `{ from: 2, to: 6 }`.
+  - New note `{ from: 5, to: 6 }`: "The gate is a limit on the whole cart: every part must fit under it, even one doing nothing. In the new box, a part that does the same job may sit somewhere new. Trying is never wrong; a Give that does not work counts as a miss, and the glow and Show a hint each count as a hint."
+- **Co-play:** unchanged. **Off-screen:** unchanged. No new page card.
+
+### Build slices and check tier (levels 5–6)
+
+One same-game batch, `gadget-bench` levels 5–6, in one session; if the allowance cannot cover both, land level 5 alone (school `{2,5}`) with a draft-PR checkpoint for level 6. New levels on the existing drag, Try and Give interaction:
+- `npm run typecheck`;
+- `npx vitest run src/games/gadget-bench src/games/registry src/content/howto`;
+- one browser play through the `gadget-bench` case at level 6 (the shown build, a failing Give for a miss with the glow-stones placed at `front`, then the right build and a passing Give), plus one level 5 round (the familiar cart's arch stop, then a passing Give), because the arch is a new path outcome;
+- one portrait screenshot of level 5's arch stop;
+- `fingerdemo` at levels 5 and 6.
+
+`npm run build` only if the build touches shared engine or art files beyond the game's folder, `voice-script.ts` and `howto.ts`. Device and person checks stay open: whether a six-year-old sees the tall part as the reason at the arch rather than hearing it, whether level 6 is transfer or guessing for her, and how the iPad says "glow stones" and "roller belt".
+
 ## Open decisions
 
 1. **Home land (default Treehouse).** Tinker Lab is full at pre-K and school; Treehouse has room. The developer may redirect (Barnyard or Cozy Village fit one or two more); the build can start on the default.
@@ -232,3 +338,4 @@ A new level on the existing drag, Try and Give interaction, so the build session
 3. **Keeping the gadget.** Default: nothing is kept or filed; the version strip lives in the round. Filing a finished gadget as a creation or a journal entry waits for the developer's call on the study's version-strip question.
 4. **Part names and the decoy.** Default: five invented toy parts including a decoy flag. A part-table wording review is optional here (none names a real device) but welcome before the lantern is paired with a real candle or lamp in a later transfer level.
 5. **Level 4's band and the conflict line** (defaults: level 4 is school only, the top of `school`; the conflict line is uncounted). Pre-K could reach level 4 later if a person sees pre-K players read two stops; that is a device observation, not a build blocker.
+6. **Levels 5–6's choices** (defaults: the gate is a **low arch** that rules out tall parts, because the side-view cart shows height and not width; level 6's glow stones work from `top`, so one new part's place differs from the old part's; both levels are school only, at the top of `school`). The developer may prefer the study's narrow gate (a front-view gate tile), or a level 6 where every new part sits where its old twin did; either is a change to this packet, not a build blocker.
