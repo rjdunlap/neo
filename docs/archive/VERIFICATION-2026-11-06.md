@@ -237,3 +237,10 @@ Changed: `measuring-post` levels 3 (*Measure them the same way*) and 4 (*How man
 Ran: `npm run typecheck`; `npm test` (321 files, 5,991 tests); measuring-post rule tests (23); `BROWSER_SUITE=measuringpost` (levels 1–4; level 3 landscape: big between marks no miss, jugs exact, wrong comparison 1 miss, Help 1 hint, 1/1; level 4 portrait: re-choosing free, wrong Check 1 miss, Help points then chooses, 1/1), re-run after review fixes; `fingerdemo` with `FINGER_ONLY=measuring-post FINGER_LEVELS=3,4` (23.0 s, 20.6 s); `game-reviewer`, 4 findings fixed.
 Not run: build (no shared files or assets changed), `world`, offline check, device speech.
 Open: legibility of the small "250 g" stamps on an iPad, child interpretation of level 3 and the table, speech ([device checks](../DEVICE-CHECKS.md)).
+
+## 2026-11-06 — Circuit Garden level 3, Mend the lantern (energy/waves E3)
+
+Changed: `circuit-garden` level 3 (PR #1338, branch `claude/circuit-garden-3`): two bridges, Check, counted misses and automatic glow; pre-K and school {1,3}; three voice lines and how-to steps.
+Ran (commit f46bcc55, base ed7f6536): `npm run typecheck`; `npm test` (321 files; the only failures were how-to card ones, fixed, then howto and circuit-garden 44 pass); 25 circuit-garden rule tests including a level-3 block; one scripted Playwright play at school level 3 (1024×768, local dev server: two wrong Checks 2 misses, glow, 1 hint; Help filled supply with no new hint; early Done inert; correct Check; Undo cleared it; Done before re-check inert; Check then Done finished 2/1; no page errors) and a portrait 768×1024 screenshot; `BROWSER_SUITE=fingerdemo FINGER_ONLY=circuit-garden` (levels 1 and 3) and `FINGER_LEVELS=2`. `game-reviewer`: no defects; two minor fixes applied.
+Not run: build, smoke and howto suites, device check, science-educator reading of the energy wording.
+Open: legibility of the break outline and 100-unit comfort of Check on the iPad, speech ([device checks](../DEVICE-CHECKS.md)).
