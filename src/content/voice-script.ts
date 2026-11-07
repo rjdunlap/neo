@@ -1788,6 +1788,7 @@ export const SCRIPT = {
   'measure.kg.hint.4': ['Each kilogram balances one thousand grams. Four groups of one thousand grams make four thousand grams.'],
   'measure.kg.right.3': ['Yes! Three kilograms is three thousand grams.'],
   'measure.kg.right.4': ['Yes! Four kilograms is four thousand grams.'],
+  'measure.kg.check': ['Now press the tick to check.'],
   'measure.kg.g.1000': ['One thousand grams.'],
   'measure.kg.g.2000': ['Two thousand grams.'],
   'measure.kg.g.3000': ['Three thousand grams.'],

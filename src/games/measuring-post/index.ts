@@ -170,6 +170,8 @@ class MeasuringPost implements Game {
   /** Level 4: the grams pads, the pad she has chosen (changeable freely until Check), and the Check button. */
   readonly tablePads: Container[] = [];
   chosen: number | null = null;
+  /** Level 4: the choice last Checked (wrong), until she changes it. */
+  private checked: number | null = null;
   readonly checkButton: RoundButton;
   /** Level 4: the watch runs once the question is asked; its spoken line, so the question follows it. */
   private rolling = false;
@@ -333,6 +335,7 @@ class MeasuringPost implements Game {
     this.press(this.tablePads[i]);
     sfx.pop(6);
     this.chosen = this.chosen === i ? null : i;
+    this.checked = null;
     if (this.chosen !== null) void this.ctx.say(`measure.kg.g.${this.current.table!.options[i]}` as LineId);
     this.drawnKey = '';
     this.redraw();
@@ -340,7 +343,9 @@ class MeasuringPost implements Game {
 
   /** Level 4: Check the chosen row. Right fills it and offers Send; wrong is one miss and names the groups. */
   check() {
-    if (this.phase !== 'choose' || this.chosen === null) return;
+    // A repeated Check of the same wrong choice is not another miss.
+    if (this.phase !== 'choose' || this.chosen === null || this.checked === this.chosen) return;
+    this.checked = this.chosen;
     const task = this.current, kg = task.table!.kg;
     if (this.chosen === tableAnswer(task)) {
       sfx.bell(9, 0.3);
@@ -393,6 +398,7 @@ class MeasuringPost implements Game {
     this.offerAt = null;
     this.commonSize = null;
     this.chosen = null;
+    this.checked = null;
     if (this.plan.mode === 'table') { this.phase = 'watch'; this.t = 0; this.rolling = false; }
     this.redraw();
     this.askQuestion();
@@ -456,7 +462,11 @@ class MeasuringPost implements Game {
     if (this.pointed.has(id)) {
       if (step === 'tool') this.pickTool(TOOL_FOR[task.attribute]);
       else if (step === 'unit') this.pickUnit('little');
-      else if (this.plan.mode === 'table') { if (this.chosen !== tableAnswer(task)) this.choose(tableAnswer(task)); }
+      else if (this.plan.mode === 'table') {
+        // Help again chooses the right row; once it is chosen, Help points at Check (she still presses it).
+        if (this.chosen !== tableAnswer(task)) this.choose(tableAnswer(task));
+        else { this.glowAt = { p: this.layout.send, w: 100, h: 100 }; void this.ctx.say('measure.kg.check'); }
+      }
       else if (common) this.pickCompare(compareAnswer(task, this.commonSize!));
       else this.pickRow(answerRow(task));
       return;
@@ -478,11 +488,12 @@ class MeasuringPost implements Game {
   replay() {
     const task = this.current;
     if (this.phase === 'tool' || this.phase === 'wrong') this.askQuestion();
+    else if (this.phase === 'send' && this.plan.mode === 'table') void this.ctx.say(`measure.kg.right.${task.table!.kg}` as LineId);
     else if (this.phase === 'send') void this.ctx.say(`measure.result.1.${task.attribute}` as LineId);
-    else if (this.phase === 'choose') void this.ctx.say('measure.kg.watch').then(() => { if (this.alive) this.askQuestion(); });
+    else if (this.phase === 'choose') void this.ctx.say('measure.kg.watch').then(() => { if (this.alive && this.phase === 'choose') this.askQuestion(); });
     else if (this.phase === 'unit') void this.ctx.say(`measure.raw.${task.attribute}` as LineId);
     else if (this.phase === 'answer' && this.plan.mode === 'common') {
-      void this.ctx.say(`measure.common.${task.attribute}.${this.commonSize}` as LineId).then(() => { if (this.alive) this.askQuestion(); });
+      void this.ctx.say(`measure.common.${task.attribute}.${this.commonSize}` as LineId).then(() => { if (this.alive && this.phase === 'answer') this.askQuestion(); });
     }
     else if (this.phase === 'answer') {
       void this.ctx.say(`measure.equal.${task.attribute}` as LineId).then(() => { if (this.alive) void this.ctx.say(`measure.result.2.${task.attribute}` as LineId); });
