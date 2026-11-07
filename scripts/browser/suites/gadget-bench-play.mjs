@@ -176,12 +176,20 @@ async function gadgetBenchPlay() {
   await dragPart('rollers', 'under');
   await tapOn('neo.scene.game.tryButton'); await settle();
   assert.equal((await state()).strip.at(-1), null, 'the low cart gets all the way to the gate');
+  // The flag rides along on top: it does nothing there, but it is too tall, and Show a hint takes it out.
+  await dragPart('flag', 'top');
+  await tapOn('neo.scene.game.tryButton'); await settle();
+  assert.equal((await state()).strip.at(-1), 'gate', 'the flag on top stops the cart at the gate');
+  assert.deepEqual(await help(), { kind: 'out', part: 'flag', socket: 'top', at: 'gate' }, 'help takes the flag out');
+  await page.evaluate(() => neo.scene.game.askForHint()); await settle();
+  assert.deepEqual((await state()).gadget, { under: 'rollers', front: 'lantern' }, 'the flag went back to the tray');
+  assert.deepEqual(await tally(), [0, 1], 'Show a hint counts one hint');
   await tapOn('neo.scene.game.giveButton'); await settle();
   assert.equal((await state()).round, 1, 'the Give ends the round');
   for (let r = 1; r < 3; r++) await buildAndGive();
   await finished('gadget-bench');
-  assert.deepEqual(await score(), [0, 0], 'level 5 saves no misses and no hints');
-  log('Gadget Bench 5: the familiar cart stops free at the little gate, portrait, the roller belt passes, rounds 2–3, passed');
+  assert.deepEqual(await score(), [0, 1], 'level 5 saves no misses and one hint');
+  log('Gadget Bench 5: the familiar cart stops free at the little gate, portrait, the roller belt passes, the flag taken out by a hint, rounds 2–3, passed');
   }
 
   if (wants(6)) {

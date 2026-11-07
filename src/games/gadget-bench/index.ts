@@ -741,6 +741,7 @@ class GadgetBench implements Game {
     if (!live2()) return;
     this.busy = false;
     this.setDrags(true);
+    if (this.relayout) this.build();
     this.takePending();
     void this.ctx.instruct(this.instruction(), { neighbor: this.round.neighbor.name });
   }
