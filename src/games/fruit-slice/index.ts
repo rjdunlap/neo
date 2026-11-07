@@ -133,6 +133,8 @@ class FruitSlice implements Game {
   private glow: { kind: 'fruit' | 'bowl' | 'line' | 'token'; line?: Line; token?: number } | null = null;
   /** Level 10: the fruit in the bowl, in the order they were cut; each has a token in the strip to put it back. */
   private bowlFruit: InBowl[] = [];
+  /** When the last put-back happened: a quick second tap must not land on the token that slides into its place. */
+  private putBackAt = -Infinity;
   private readonly strip = new Container();
   /** Level 9: lines kept on this board (0 or 1). */
   private linesUsed = 0;
@@ -780,8 +782,10 @@ class FruitSlice implements Game {
     if (this.plan.mode !== 'mixed' || this.strip.destroyed) return;
     this.strip.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.clearBowl();
-    this.bowlFruit.forEach((b, i) => {
+    let slot = 0;
+    this.bowlFruit.forEach((b) => {
       if (!b.landed) return;
+      const i = slot++;
       for (let k = 0; k < piecesOf(b.kind); k++) this.addToBowl(b.kind);
       const t = new Container();
       const card = new Graphics().roundRect(-TOKEN / 2 + 2, -TOKEN / 2 + 2, TOKEN - 4, TOKEN - 4, 20).fill(0xffffff).stroke({ width: 5, color: wood.line });
@@ -812,8 +816,9 @@ class FruitSlice implements Game {
   private tapToken(entry: InBowl) {
     const sign = this.current;
     const i = this.bowlFruit.indexOf(entry);
-    if (this.busy || this.finished || !sign || i < 0 || !entry.landed) return;
-    const from = tokenAt(this.view, i);
+    if (this.busy || this.finished || !sign || i < 0 || !entry.landed || this.clock - this.putBackAt < 0.5) return;
+    this.putBackAt = this.clock;
+    const from = { x: this.tokenFor(i)!.x, y: this.tokenFor(i)!.y };
     putBack(sign, this.bowlKinds, i);
     this.bowlFruit.splice(i, 1);
     this.glow = null;
@@ -1009,6 +1014,7 @@ class FruitSlice implements Game {
     sfx.sparkle();
     this.ctx.pet.cheer();
     void this.say('slice.sent');
+    if (!this.strip.destroyed) this.strip.removeChildren().forEach((c) => c.destroy({ children: true }));
     const home = { x: this.bowl.x, y: this.bowl.y };
     await this.ctx.tw.to(this.bowl, { y: -120 }, { duration: 0.6, ease: ease.inQuad });
     this.bowlFill.removeChildren().forEach((c) => c.destroy());
