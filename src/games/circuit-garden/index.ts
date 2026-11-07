@@ -164,7 +164,7 @@ class CircuitGarden implements Game {
     node.hitArea = new Rectangle(-62, -50, 124, 100);
     const piece: Piece = { node, at: null, slot, moved: false, drag: null as unknown as DragHandle };
     piece.drag = draggable(node, this.ctx.tw, {
-      onPick: () => { sfx.tick(); piece.moved = false; node.rotation = 0; },
+      onPick: () => { sfx.tick(); piece.moved = false; },
       onMove: (x, y) => {
         const home = piece.drag.home;
         if (Math.hypot(x - home.x, y - home.y + 40) > 24) piece.moved = true;
@@ -289,6 +289,7 @@ class CircuitGarden implements Game {
       void this.ctx.say('circuit.can-finish');
       return;
     }
+    if ((id === 'return' || id === 'supply') && !this.pieces.some((p) => !p.at && !p.drag.dragging)) return;
     this.tally.give(id);
     if (id === 'show-on' || id === 'show-off') {
       // Flip only if the lantern is not already in the state to be seen (a change waiting for its frame).
@@ -493,7 +494,7 @@ class CircuitGarden implements Game {
     // The tray: a plate where loose pieces rest.
     if (this.pieces.length) for (const t of L.tray) this.background.roundRect(t.x - 80, t.y - 55, 160, 110, 28).fill(cream).stroke({ width: 4, color: swatch.brown.light });
     // A resize drops a selection and returns a piece in a drag; it never completes or checks anything.
-    for (const p of this.pieces) if (p.drag.dragging) { p.drag.destroy(); this.rebuildDrag(p); }
+    for (const p of this.pieces) if (p.drag.dragging) { p.drag.destroy(); this.rebuildDrag(p); p.drag.enabled = !this.finished; }
     this.selected = null;
     for (const [slot, t] of this.targets) {
       t.position.copyFrom(this.bridgeCentre(slot));
@@ -512,7 +513,7 @@ class CircuitGarden implements Game {
 
   private rebuildDrag(p: Piece) {
     p.drag = draggable(p.node, this.ctx.tw, {
-      onPick: () => { sfx.tick(); p.moved = false; p.node.rotation = 0; },
+      onPick: () => { sfx.tick(); p.moved = false; },
       onMove: (x, y) => { if (Math.hypot(x - p.drag.home.x, y - p.drag.home.y + 40) > 24) p.moved = true; },
       onDrop: (x, y) => this.drop(p, x, y),
     });
