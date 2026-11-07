@@ -203,3 +203,9 @@ Changed: `scripts/bolt-boards-puzzles.ts` second pass (seed 20261106) gives 20 f
 ## 2026-11-06 — Bolt Boards level 8 Plenty of holes (PR #1344)
 
 Changed: plan 8 in `src/games/bolt-boards/` (pre-K order 2, 3, 4, 5, 8, 6; school 4, 5, 8, 6, 7), 20 boards from generator seed 20261107, an authored first board, voice line `bolt.instruct-park`, how-to lines, and a search-free level-8 hint (top board's free bolt into the first open hole; the scene skips the after-move search there) after CI's first run timed the shortest-path hint at 104 ms against the 100 ms cap; rule tests (no stuck state on any level-8 board, a hole-closing swing, authored board, plan flags, a legal hint from every reachable state that finishes every board). Ran on the final HEAD (base origin/main 93bdf447): `npm run typecheck`; `npm test` (321 files, 5998 tests); `npm run build` (before the hint change, which touches no shared file); `BROWSER_SUITE=boltboards` (Vite on 5722: levels 1 and 7, level 8 authored swing covering one hole, covered hole free, two scenes with no miss or hint, sticker; level 6 portrait; screenshot `bolt-boards-8-swing.png`); `fingerdemo FINGER_ONLY=bolt-boards FINGER_LEVELS=8` (pre-K, 29.3 s). game-reviewer: no findings. Not run: offline check, any device. Open: no iPad or child; how she reads level 8 without a wander hint.
+
+## 2026-11-06 — Define Gadget Bench levels 5–6, Little Gate and New Box (docs only)
+
+Changed: the Gadget Bench definition gained levels 5–6 (a low garden arch rules out tall parts; a new kit on the same path with glow stones) with build slices and check tier; READY, the inventions dive, the study backlog and the roadmap updated.
+Ran: `node scripts/check-links.mjs` and `git diff --check`. No code checks (docs tier).
+Open: the build (new levels on the existing interaction, `fingerdemo` at 5 and 6) is in READY's Next ten.
