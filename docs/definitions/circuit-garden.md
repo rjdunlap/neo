@@ -1,6 +1,6 @@
 # Circuit Garden 1–3: a visible way back
 
-**Built 2026-11-06 (PR #1335): levels 1–2 ([archive note](../archive/COMPLETED-2026-10-09.md#circuit-garden-levels-12-a-new-tinker-lab-game-2026-11-06)); level 3 *Mend the lantern* (E3) is not built.**
+**Built 2026-11-06 (PR #1335): levels 1–2 ([archive note](../archive/COMPLETED-2026-10-09.md#circuit-garden-levels-12-a-new-tinker-lab-game-2026-11-06)); level 3 *Mend the lantern* (E3) built 2026-11-06 (PR #1338; [archive note](../archive/COMPLETED-2026-10-09.md#circuit-garden-level-3-mend-the-lantern-2026-11-06)).**
 
 **Admitted to the build queue 2026-11-05** ([READY](../READY.md#queued)): the developer asked for the recommendations to be made without waiting, so the build uses this packet's defaults (settled in the [October 23 record](../archive/DECISIONS-2026-10-23.md#decisions)). Its source check and the lands test still run at build time.
 
