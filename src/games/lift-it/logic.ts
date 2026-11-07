@@ -12,8 +12,19 @@ export const RIGS: readonly Rig[] = ['direct', 'fixed', 'movable', 'both'];
 export type HookId = 'branch' | 'crate';
 export interface Hooks { branch: boolean; crate: boolean }
 
-export type Friend = 'bunny' | 'duck' | 'mouse' | 'bear' | 'frog';
-export const FRIENDS: readonly Friend[] = ['bunny', 'duck', 'mouse', 'bear', 'frog'];
+export type Friend = 'bunny' | 'duck' | 'mouse' | 'bear' | 'frog' | 'cat' | 'dog' | 'pig';
+export const FRIENDS: readonly Friend[] = ['bunny', 'duck', 'mouse', 'bear', 'frog', 'cat', 'dog', 'pig'];
+
+/** What the friend is waiting for. The picture agrees with the stones: light things on 1–2 stones, heavy things on 3–6. */
+export type Parcel = 'apples' | 'kite' | 'cake' | 'pumpkin' | 'books' | 'teapot';
+export const LIGHT: readonly Parcel[] = ['apples', 'kite', 'cake'];
+export const HEAVY: readonly Parcel[] = ['pumpkin', 'books', 'teapot'];
+export const PARCELS: readonly Parcel[] = [...LIGHT, ...HEAVY];
+export const parcelsFor = (w: number): readonly Parcel[] => (w <= 2 ? LIGHT : HEAVY);
+
+/** The round's look; the rules never change with it. `meadow` is the game's first look. */
+export type Look = 'meadow' | 'spring' | 'autumn' | 'evening';
+export const LOOKS: readonly Look[] = ['meadow', 'spring', 'autumn', 'evening'];
 
 /** Who a request at levels 5–6 names to do the pulling. */
 export type Ask = 'ground' | 'ledge';
@@ -65,7 +76,12 @@ export interface Line {
   puller: Friend;
   /** Levels 5–6: who the request says pulls. */
   ask?: Ask;
+  /** What rides up on the crate; every line a round makes has one (see `parcelOf`). */
+  parcel?: Parcel;
 }
+
+/** The line's parcel, or the first of its weight group when none was set. */
+export const parcelOf = (line: Line): Parcel => line.parcel ?? parcelsFor(line.w)[0];
 
 export function paws(rig: Rig, line: Line): number {
   return Math.ceil(line.w / ratio(rig));
@@ -181,15 +197,16 @@ export function lineFits(plan: Plan, line: Line): boolean {
   if (line.waiting === line.puller) return false;
   if (w < 1 || w > 6 || h < 1 || h > 3 || g < 0 || g > 3 || l < 0 || l > 2) return false;
   if (!!line.ask !== plan.request) return false;
+  if (line.parcel && !parcelsFor(w).includes(line.parcel)) return false;
   const among = rigsFor(plan);
   if (!bestRig(line, among)) return false;
   switch (plan.id) {
     case 1:
-      return w === 1 && g === 1 && h === 2 && works('fixed', line);
+      return w === 1 && g === 1 && h >= 2 && l === 0 && works('fixed', line);
     case 2:
-      return w === 2 && g === 2 && h === 2 && l === 0 && works('direct', line) && works('fixed', line) && paws('direct', line) === paws('fixed', line);
+      return w <= 2 && g === w && h === 2 && l === 0 && works('direct', line) && works('fixed', line) && paws('direct', line) === paws('fixed', line);
     case 3:
-      return w === 4 && g === 2 && l === 2 && h === 2 && !works('direct', line) && !works('fixed', line) && works('movable', line) && works('both', line) && l >= paws('movable', line);
+      return w >= 3 && w <= 4 && g === 2 && l === 2 && !works('direct', line) && !works('fixed', line) && works('movable', line) && works('both', line) && l >= paws('movable', line);
     case 4:
       return w >= 2 && w <= 4 && h <= 2 && g >= 1;
     case 5:
@@ -223,20 +240,20 @@ export function roundFits(plan: Plan, lines: readonly Line[]): boolean {
 export function authored(plan: Plan): Line[] {
   switch (plan.id) {
     case 1:
-      return [{ w: 1, h: 2, g: 1, l: 0, waiting: 'bunny', puller: 'duck' }];
+      return [{ w: 1, h: 2, g: 1, l: 0, waiting: 'bunny', puller: 'duck', parcel: 'apples' }];
     case 2:
-      return [{ w: 2, h: 2, g: 2, l: 0, waiting: 'frog', puller: 'mouse' }];
+      return [{ w: 2, h: 2, g: 2, l: 0, waiting: 'frog', puller: 'mouse', parcel: 'kite' }];
     case 3:
-      return [{ w: 4, h: 2, g: 2, l: 2, waiting: 'bunny', puller: 'bear' }];
+      return [{ w: 4, h: 2, g: 2, l: 2, waiting: 'bunny', puller: 'bear', parcel: 'pumpkin' }];
     case 4:
-      return [{ w: 4, h: 1, g: 2, l: 2, waiting: 'duck', puller: 'bear' }];
+      return [{ w: 4, h: 1, g: 2, l: 2, waiting: 'duck', puller: 'bear', parcel: 'books' }];
     case 5:
       return [
-        { w: 4, h: 2, g: 3, l: 0, waiting: 'bunny', puller: 'mouse', ask: 'ground' },
-        { w: 2, h: 2, g: 0, l: 2, waiting: 'duck', puller: 'frog', ask: 'ledge' },
+        { w: 4, h: 2, g: 3, l: 0, waiting: 'bunny', puller: 'mouse', ask: 'ground', parcel: 'teapot' },
+        { w: 2, h: 2, g: 0, l: 2, waiting: 'duck', puller: 'frog', ask: 'ledge', parcel: 'cake' },
       ];
     default:
-      return [{ w: 6, h: 3, g: 3, l: 0, waiting: 'frog', puller: 'bear', ask: 'ground' }];
+      return [{ w: 6, h: 3, g: 3, l: 0, waiting: 'frog', puller: 'bear', ask: 'ground', parcel: 'pumpkin' }];
   }
 }
 
@@ -245,11 +262,13 @@ function seededLine(plan: Plan, rng: Rng, want?: Ask): Line {
   const base = { waiting, puller };
   switch (plan.id) {
     case 1:
-      return { ...base, w: 1, h: 2, g: 1, l: 0 };
-    case 2:
-      return { ...base, w: 2, h: 2, g: 2, l: 0 };
+      return { ...base, w: 1, h: rng.int(2, 3), g: 1, l: 0 };
+    case 2: {
+      const w = rng.int(1, 2);
+      return { ...base, w, h: 2, g: w, l: 0 };
+    }
     case 3:
-      return { ...base, w: 4, h: 2, g: 2, l: 2 };
+      return { ...base, w: rng.int(3, 4), h: rng.int(1, 3), g: 2, l: 2 };
     case 4:
       return { ...base, w: rng.int(2, 4), h: rng.int(1, 2), g: rng.int(1, 3), l: rng.int(0, 2) };
     default: {
@@ -272,7 +291,7 @@ export function fallbackRound(plan: Plan): Line[] {
     5: [{ w: 3, h: 3, g: 2, l: 1, waiting: 'frog', puller: 'bear', ask: 'ground' }],
     6: [{ w: 4, h: 2, g: 0, l: 2, waiting: 'mouse', puller: 'duck', ask: 'ledge' }, { w: 4, h: 3, g: 2, l: 0, waiting: 'bunny', puller: 'frog', ask: 'ground' }],
   };
-  return [...first, ...more[plan.id]].slice(0, plan.lines);
+  return [...first, ...more[plan.id]].slice(0, plan.lines).map((l) => ({ ...l, parcel: parcelOf(l) }));
 }
 
 /**
@@ -290,7 +309,7 @@ export function makeRound(plan: Plan, rng: Rng, first: boolean): { lines: Line[]
         const want = wants[i];
         const c = seededLine(plan, rng, want);
         if (plan.id === 6 && i === plan.lines - 1 && !lines.some((l) => l.w === 6 && l.g === 3)) Object.assign(c, { w: 6, g: 3, ask: 'ground' });
-        if (lineFits(plan, c)) line = c;
+        if (lineFits(plan, c)) line = { ...c, parcel: rng.pick(parcelsFor(c.w)) };
       }
       if (!line) break;
       lines.push(line);
@@ -401,6 +420,30 @@ export function cardSpots(v: View, n: number): Pt[] {
   const gap = 30;
   const x0 = v.w / 2 - ((n - 1) * (CARD + gap)) / 2;
   return Array.from({ length: n }, (_, i) => ({ x: x0 + i * (CARD + gap), y: Math.round(v.h * 0.42) }));
+}
+
+/** A paw print's box half-size. */
+export const PAW_HALF = 14;
+
+/**
+ * Where the paw prints sit beside the handle at `H`: right of it, else left, else below its arrow, whichever first stays in
+ * the view and clear of everything in `avoid` (the friends and the wheels), so the prints never cover a face.
+ */
+export function pawSpots(v: View, H: Pt, n: number, avoid: readonly Rect[]): Pt[] {
+  const sides: ((i: number) => Pt)[] = [
+    (i) => ({ x: H.x + 70 + (i % 3) * 26, y: H.y - 16 + Math.floor(i / 3) * 26 }),
+    (i) => ({ x: H.x - 70 - (i % 3) * 26, y: H.y - 16 + Math.floor(i / 3) * 26 }),
+    (i) => ({ x: H.x + ((i % 3) - 1) * 26, y: H.y + 92 + Math.floor(i / 3) * 26 }),
+  ];
+  const fits = (p: Pt) => {
+    const r = circleBox(p, PAW_HALF);
+    return r.x >= 0 && r.y >= 0 && r.x + r.w <= v.w && r.y + r.h <= v.h && avoid.every((a) => !rectsOverlap(r, a));
+  };
+  for (const at of sides) {
+    const pts = Array.from({ length: n }, (_, i) => at(i));
+    if (pts.every(fits)) return pts;
+  }
+  return Array.from({ length: n }, (_, i) => sides[0](i));
 }
 
 export const rectsOverlap = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
