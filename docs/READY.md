@@ -6,7 +6,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **`puddle-gobble`, slices 2–4 in the dive's order** (`bubble-beach`; toddler to school; slice 2 level 9 *Smallest number first*, slice 3 level 10 *Count the dots* after slice 2, slice 4 level 11 *Too full* after slice 2): [build slices](deep-dives/puddle-gobble.md#build-slices-in-order).
+- **`puddle-gobble`, slices 3–4 in the dive's order** (`bubble-beach`; toddler to school; slice 3 level 10 *Count the dots*, slice 4 level 11 *Too full*; slice 2 is built): [build slices](deep-dives/puddle-gobble.md#build-slices-in-order).
 - **`fruit-slice` slice 1, more fruit, beach not-fruit and moods** (toddler to school; typecheck, rule tests, one filtered `fruitslice` play at level 3 with one portrait screenshot in the sunset mood, build, no `fingerdemo`): [build slices](deep-dives/fruit-slice.md#build-slices-in-order).
 - **`cut-along` slice 1, picture themes and new shapes** (toddler to school; typecheck, rule tests, one filtered `cutalong` play at level 7 with a star or moon and one portrait screenshot in a new theme, build, no `fingerdemo`): [build slices](deep-dives/cut-along.md#build-slices-in-order).
 - **`domino-run` slice 2, level 9 *Where will it stop?*** (school; new interaction: typecheck, unit tests, one scripted play with one wrong prediction and one hint, one portrait screenshot, `fingerdemo` at 9, build): [build slices](deep-dives/domino-run.md#build-slices-in-order).
