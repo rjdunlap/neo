@@ -1,5 +1,9 @@
 # Puddle Island verification
 
+## 2026-11-07 — Marble Jump deep dive (docs only)
+
+Changed: `docs/deep-dives/marble-jump.md` and its tracker, READY, STUDY-BACKLOG, IDEAS and waiting-on-developer rows (PR #1369); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; slices 1–4 are queued; three decisions wait on the developer ([list](WAITING-ON-DEVELOPER.md)).
+
 ## 2026-11-07 — Log Roll deep dive (docs only)
 
 Changed: `docs/deep-dives/log-roll.md` and its tracker, READY, STUDY-BACKLOG, IDEAS and waiting-on-developer rows (PR #1368); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; slices 1–5 are queued; three decisions wait on the developer ([list](WAITING-ON-DEVELOPER.md)).
