@@ -120,7 +120,7 @@ These are existing games awaiting research, not new game implementations. One do
 | Fruit Sums (`fruit-sums`) | designed 2026-11-07 ([dive](deep-dives/fruit-sums.md): slice 1 built, slices 2–5 ready; two decisions wait on the developer); wave 6 | [Tracker](deep-dives/README.md#tracker) |
 | Jar Sort (`jar-sort`) | designed 2026-11-07 ([dive](deep-dives/jar-sort.md): slices 1–5 ready; no new decisions); wave 6 | [Tracker](deep-dives/README.md#tracker) |
 | Pile Match (`pile-match`) | designed 2026-11-07 ([dive](deep-dives/pile-match.md): slices 1–4 ready; no new decisions); wave 6 | [Tracker](deep-dives/README.md#tracker) |
-| Lift It (`lift-it`) | not started, wave 6 | [Tracker](deep-dives/README.md#tracker) |
+| Lift It (`lift-it`) | designed 2026-11-07 ([dive](deep-dives/lift-it.md): slices 1–5 ready; two decisions wait on the developer); wave 6 | [Tracker](deep-dives/README.md#tracker) |
 | Block Garden (`block-garden`) | not started, wave 6 | [Tracker](deep-dives/README.md#tracker) |
 | Gem Swap (`gem-swap`) | not started, wave 7 | [Tracker](deep-dives/README.md#tracker) |
 | Log Roll (`log-roll`) | not started, wave 7 | [Tracker](deep-dives/README.md#tracker) |
