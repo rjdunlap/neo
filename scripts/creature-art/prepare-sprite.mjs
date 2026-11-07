@@ -35,6 +35,7 @@ import { chromium } from 'playwright';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { requireConceptArt } from '../art/concept-art-present.mjs';
 import { ALIGNED, alignment, PLATES, cut, keyOut, parseManifest, shrink, TOLERANCE, union } from './sprite-core.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -196,6 +197,8 @@ async function analyse(page, o, file) {
 export async function run(argv) {
   const o = parseArgs(argv);
   const at = (p) => resolve(root, p);
+  // --set reads originals from --generated; a single --in file says its own path.
+  if (o.set && at(o.generated).startsWith(at('docs/rework/concepts'))) requireConceptArt(root);
   const browser = await chromium.launch();
   const page = await browser.newPage();
   const lines = [];

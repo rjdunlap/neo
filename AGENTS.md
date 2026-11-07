@@ -132,7 +132,7 @@ Developer direction, 2026-10-21: an implementation slice is a predeclared same-g
 
 ### Session setup and closeout
 
-Reasons are in the [workflow review](docs/DEVELOPMENT-WORKFLOW.md). In a fresh worktree, use `npm ci` for its own dependencies (`.npmrc` keeps its output to one line); do not borrow another disposable worktree's `node_modules`. Choose an explicit available port, start Vite with `--strictPort`, and set `GAME_URL` to exactly that URL. Keep any custom Vite cache within that worktree; concurrent worktrees must not share a mutable cache. Stop the session's dev, preview and snapshot servers when its checks finish.
+Reasons are in the [workflow review](docs/DEVELOPMENT-WORKFLOW.md). In a fresh worktree, run `scripts/concept-art.sh skip` unless the session does art (150 MB of PNGs), and `npm ci`; never borrow another worktree's `node_modules`. Choose an explicit available port, start Vite with `--strictPort`, and set `GAME_URL` to exactly that URL. Keep any custom Vite cache within that worktree; concurrent worktrees must not share a mutable cache. Stop the session's dev, preview and snapshot servers when its checks finish.
 
 After publication and merge, release a finished worktree and its merged branch only by the [release checklist](docs/DEVELOPMENT-WORKFLOW.md#releasing-a-finished-worktree); never force removal of a dirty worktree.
 

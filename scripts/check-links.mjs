@@ -5,6 +5,7 @@
 //     rewrites links to anchors that left <live.md> and now live in <archive.md>
 import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from 'node:fs'
 import { join, dirname, relative, resolve } from 'node:path'
+import { execFileSync } from 'node:child_process'
 
 const root = resolve(dirname(new URL(import.meta.url).pathname), '..')
 const files = []
@@ -17,6 +18,17 @@ const walk = (d) => {
 }
 walk(join(root, 'docs'))
 for (const f of ['README.md', 'AGENTS.md']) if (existsSync(join(root, f))) files.push(join(root, f))
+
+// Tracked files a sparse checkout left out (scripts/concept-art.sh skip): a link to one is not broken.
+let skippedCache
+const skipped = () => {
+  if (!skippedCache) {
+    let out = ''
+    try { out = execFileSync('git', ['ls-files', '-t'], { cwd: root, encoding: 'utf8', maxBuffer: 64 << 20 }) } catch {}
+    skippedCache = new Set(out.split('\n').filter((l) => l.startsWith('S ')).map((l) => l.slice(2)))
+  }
+  return skippedCache
+}
 
 const slugCache = new Map()
 const slugs = (file) => {
@@ -49,7 +61,7 @@ for (const file of files) {
       if (/^[a-z]+:/i.test(href)) return all
       const [path, hash] = href.split('#')
       const target = path ? resolve(dirname(file), path) : file
-      if (!existsSync(target)) { console.log(`${relative(root, file)}: missing file ${href}`); bad++; return all }
+      if (!existsSync(target) && !skipped().has(relative(root, target))) { console.log(`${relative(root, file)}: missing file ${href}`); bad++; return all }
       if (hash && target.endsWith('.md') && !slugs(target).has(hash)) {
         if (fix && target === live && slugs(arch).has(hash)) {
           changed = true
