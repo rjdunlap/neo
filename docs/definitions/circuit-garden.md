@@ -1,5 +1,7 @@
 # Circuit Garden 1–3: a visible way back
 
+**Built 2026-11-06 (PR #1335): levels 1–2 ([archive note](../archive/COMPLETED-2026-10-09.md#circuit-garden-levels-12-a-new-tinker-lab-game-2026-11-06)); level 3 *Mend the lantern* (E3) is not built.**
+
 **Admitted to the build queue 2026-11-05** ([READY](../READY.md#queued)): the developer asked for the recommendations to be made without waiting, so the build uses this packet's defaults (settled in the [October 23 record](../archive/DECISIONS-2026-10-23.md#decisions)). Its source check and the lands test still run at build time.
 
 E1 definition, 2026-10-22, [PR #846](https://github.com/rjdunlap/neo/pull/846), worker `01a166f1-dbd0-7a70-98ef-503b9c7d5695`, branch `codex/define-circuit-garden`. Based on the [energy/waves study](../deep-dives/subjects/energy-waves.md) and [recommendation packet](../deep-dives/subjects/RECOMMENDATIONS.md#energy-and-waves-recommendations). **Docs only: a proposed screen toy, no game registered or implemented.** Registration/model scope and the existing [developer decisions](../WAITING-ON-DEVELOPER.md), reviewer and [device checks](../DEVICE-CHECKS.md) remain open.

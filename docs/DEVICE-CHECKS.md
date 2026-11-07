@@ -5,6 +5,7 @@
 - [ ] **Hat Band (levels 1–3, 2026-11-06, #1320):** are the drum and tune hats clearly different on an iPad speaker? Does the drum mask the tune at the chosen gains?
 - [ ] **Hat Band:** does a four-year-old read a hat as "mine to put on" and the pending ring as "wait a moment"? Does the one-beat wait feel responsive?
 - [ ] **Hat Band speech of "the drum hat" and "the tune hat":** check actual device speech.
+- [ ] **Circuit Garden levels 1–2 (2026-11-06, #1335):** on an iPad, does a child see both lantern terminals and the return path, and is the connector, the switch and Show me comfortable (100-unit targets) in both layouts? Is the speech clear? Preschool readiness is not opened. A science educator has not reviewed the wording; no practical electrical card exists until a reviewer is named.
 - [ ] **Hat Band:** does a school child still enjoy it, and does it feel like more than Beat Builder? This decides whether M6 (an older arrangement) is worth building.
 - [ ] **Hat Band, a music educator's reading of *drum*, *tune* and *alone/together*:** before any claim about musical roles (recommended; did not block the screen-only build).
 - [ ] **Hat Band level 4 (2026-11-06, #1329):** is the low hat audible and clearly lower than the tune hat on an iPad speaker (one octave down, pluck voice)? The alternative is two octaves down (decision L4-3).

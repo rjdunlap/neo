@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-11-06 — Circuit Garden levels 1–2 (new game, energy/waves E2)
+
+Changed: new `circuit-garden` (PR #1335, branch `claude/circuit-garden`): levels 1–2, pre-K and school {1,2}, Tinker Lab (now 27 games); a `circuitgarden` browser suite. Source check by a science educator: not done.
+Ran: `npm run typecheck`; `npm test` (320 files pass) after updating the Tinker Lab capacity tests to 27 entries (land-pages 9,9,8; example-express capacity) and rendering the title clip with `scripts/voice-clips/render.mjs`; `BROWSER_SUITE=circuitgarden` at http://localhost:5207 (level 1 landscape: early Done free, a drag lights the lantern, Put back, Undo, Done 0/0; Show me twice 0/1; level 2 portrait: the switch shows both states, Done 0/0; Show me then Done 0/1) with landscape and portrait screenshots; `fingerdemo` with `FINGER_ONLY=circuit-garden` at levels 1 and 2. `game-reviewer`: three minor findings fixed and the play rerun.
+Not run: `npm run build`, any device check, the science educator's reading of the wording.
+Open: seeing both terminals and the return path, 100-unit comfort in both layouts, speech, preschool readiness ([device checks](DEVICE-CHECKS.md)); level 3 is unbuilt.
+
 ## 2026-11-06 — Define Gadget Bench levels 5–6, Little Gate and New Box (docs only)
 
 Changed: the Gadget Bench definition gained levels 5–6 (a low garden arch rules out tall parts; a new kit on the same path with glow stones) with build slices and check tier; READY, the inventions dive, the study backlog and the roadmap updated.
@@ -84,16 +91,13 @@ Changed: new game `hat-band` (Music Mountain's eighth; PR #1320, commit 578490ab
 Ran (Vite dev on http://localhost:5282, `VITE_SPEECH=off`): `npm run typecheck`; hat-band rule tests 34/34; registry, lands, howto, content and voice-clip tests (21 files, 248 tests); `npm run build`; `BROWSER_SUITE=hatband` (level 1 landscape: empty-stage Done, drag, tap-then-tap, early Done while a part joins, heard gate, bow, one sticker 0/0; level 3 portrait: replace, both spotlights, alone then together, 0/0; screenshots `hat-band-1-landscape`, `hat-band-3-portrait`); `BROWSER_SUITE=fingerdemo FINGER_ONLY=hat-band FINGER_LEVELS=1,2,3` (14.7 s, 20.7 s, 21.5 s). `game-reviewer` findings (tap judged by hat travel, dim hat on the rack, repeated hat naming) fixed and both suites re-run green. Full `npm test` showed only timing failures in unchanged games (penguin-slide, secret-code; block-garden, block-topple, fluffy-salon, keep-house under load average about 8 and passing alone): known load flakes.
 Not run: offline check (no persistence change). Open: iPad speaker, speech and a child's reading of the hats ([device checks](DEVICE-CHECKS.md)). Deviation: a hat counts as heard alone when it is the only part sounding for a whole loop, solo or not.
 
-## 2026-11-06 — Swing Pals deep dive (docs only)
-
-Changed: `docs/deep-dives/swing-pals.md` and its tracker, READY, backlog and waiting-on-developer rows (PR #1319); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built; three decisions wait on the developer ([list](WAITING-ON-DEVELOPER.md)).
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| `circuitgarden`, `fingerdemo` (`circuit-garden`) | 2026-11-06: typecheck, full `npm test` (320 files) after the Tinker Lab capacity tests moved to 27 entries and the title clip was rendered; `circuitgarden` at http://localhost:5207 (level 1 landscape, level 2 portrait; Done 0/0, Show me 0/1) with both screenshots; `fingerdemo` at levels 1 and 2 | [Entry](VERIFICATION.md#2026-11-06--circuit-garden-levels-12-new-game-energywaves-e2) | no build, no device check, no science-educator reading; level 3 unbuilt |
 | `playdateworkshop`, `fingerdemo` (`playdate-workshop`) | 2026-11-06 (`974b560b`): typecheck, full units (5789) before review fixes then the game's and content/voice-clip tests (210), build; `playdateworkshop` (level 1, level 3 portrait); `fingerdemo` at 1–3 (8.4 s, 21.8 s, 17.4 s) | [Entry](VERIFICATION.md#2026-11-06--playdate-workshop-levels-13-new-game-social-emotional-slice-2) | No offline check; full units not re-run after review fixes; whether children understand passing and plan comparison, and iPad speech, are open |
 | `hatband`, `fingerdemo` (`hat-band`) | 2026-11-06 (`95a25da4` plus voice change `56131fb2`): typecheck, full `npm test` (5870 tests), build; `hatband` with `HAT_LEVELS=1,4` (level 1 landscape, level 4 portrait with Undo, empty-part Check, two misses, hint, accepted Check, record [4,2,1]); `fingerdemo` at 1 and 4 | [Entry](VERIFICATION.md#2026-11-06--hat-band-level-4-build-a-song-music-m6) | Level 3 browser case and offline check not run; speaker clarity of the low hat, speech of low hat and part, the source check and a child's play are open |
 | `logic-grid` (`logicgrid`), `fingerdemo` (`logic-grid`) | 2026-11-06 (`e7536148`): typecheck, full unit tests (5605), build; `logicgrid` with `LOGICGRID_FROM=8` (75 squares, order and pair clues, header drag slides, ruled-out yes 1 miss, Help 1 hint in view, landscape and portrait fit, sticker, saved 1/1); `fingerdemo` at 8 (27.2 s); level 7 last passed at `6aed60f0`, level 6 at `0f0a23ed`, level 5 at at `a99772bd`, levels 3-4 at `49bce450`, levels 1-2 at `9e9d79db` | [Entry](archive/VERIFICATION-2026-11-06.md#2026-11-06--mystery-grid-logic-grid-level-8) | No offline check; levels 1-7 not re-played after the strip refactor; speech of slotted clues, the iPad slide, hat clues and either/neither clues and a child's grasp of "not" are open |

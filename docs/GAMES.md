@@ -872,6 +872,16 @@ Misses and hints: levels 1–3 have no misses; level 4 counts one miss per new f
 
 Deviations from the definition: one generic hint line per action kind (`rain.hint.cloud`, `rain.hint.tile`); the pond friend reacts with its sound and a hop rather than a spoken `rain.friend` line; no idle-triggered demonstration (the shell's instruction repeat only); `rain.compare.back` added for soil to stone.
 
+### Circuit Garden
+
+*pre-K–school · levels 1–2 of 3 · [definition](definitions/circuit-garden.md) · energy/waves slice E2.* A toy flower lantern sits on a toy battery. Level 1 "A way back": the supply wire is drawn but the way back has a gap; she drags (or taps, then taps) one broad connector into it and the lantern lights; Undo takes back one step, Put back returns a piece to the tray, and Done is there once a lit state has been seen. Level 2 "A switch changes it": she taps the switch and watches the light go off and on; Done appears once both states have been seen, and she may finish on either. The lantern is plainly a manufactured toy, never a claim that a living flower runs on a battery.
+
+Rules (`src/games/circuit-garden/logic.ts`): a terminal graph where the lamp lights when the positive side reaches one lamp terminal and the negative side the other with the lamp itself removed, and any positive-to-negative bypass is rejected. Ranges pre-K and school {1,2}; level 3 is not built.
+
+Misses and help: no misses at levels 1–2. Show me (the hand button, also the pause sheet's hint) counts one hint per help identity (return, show-on, show-off); with nothing new it only points at Done. Touch demonstration on the how-to card (`touchDemo`); challenge `noticing`; no off-screen suggestion, since practical electrical cards need a named reviewer. In Tinker Lab.
+
+Deviations from the definition: level 3 *Mend the lantern* (two gaps, Check, misses, automatic glow) is the definition's E3 and is not built.
+
 ### Forecast Detective
 
 *school · levels 1–2 · after the weather and water study; [definition](definitions/forecast-detective.md).* A harbour town sits between Hill Isle (west) and Lighthouse Isle (east). Four covered flaps hold the clues: the town's wind vane, a postcard from each island showing its sky today, and the thermometer. She lifts a flap (the pet says the clue), then picks one of four weather cards and presses Check. The rule is disclosed on a card before any answer: in this pretend world tomorrow's sky comes on the wind from the island it blows from, and freezing turns rain to snow. Checking, not guessing, is the action; the lesson is that evidence narrows the possibilities and that "can't tell yet" can be the right answer.
