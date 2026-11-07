@@ -11,18 +11,12 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { symbol, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { BITE, BITE_SIZES, busyTouch, countedFood, eaterOf, farBarnAt, FAVORITE, FOOD_WORDS, FRIEND_HIT, FRIEND_SCALE, friendFeet, friendXs, makeRounds, nearestFriend, SCENE_SPECS, sceneFor, SOUND_WORDS, planFor, shouldNudge, snackTouch, VOICE, type Food, type Scene, type SnackPlan, type SnackRound } from './logic';
-
-const LEVELS: BandLevels = {
-  lap: { min: 1, max: 2 },
-  toddler: { min: 2, max: 4 },
-  preschool: { min: 3, max: 5 },
-};
+import { LEVELS, BITE, BITE_SIZES, busyTouch, countedFood, eaterOf, farBarnAt, FAVORITE, FOOD_WORDS, FRIEND_HIT, FRIEND_SCALE, friendFeet, friendXs, makeRounds, nearestFriend, SCENE_SPECS, sceneFor, SOUND_WORDS, planFor, shouldNudge, snackTouch, VOICE, type Food, type Scene, type SnackPlan, type SnackRound } from './logic';
 
 const ANIMAL_WORDS: Partial<Record<CritterName, string>> = { cow: 'cow', bunny: 'bunny', dog: 'dog', cat: 'cat', duck: 'duck', pig: 'pig', bear: 'bear' };
 

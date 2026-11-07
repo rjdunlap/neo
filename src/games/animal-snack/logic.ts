@@ -3,6 +3,7 @@ import type { BackdropStyle } from '../../art/scenery';
 import type { AnimalSound, BiteKind } from '../../audio/sfx';
 import type { Rng } from '../../engine/random';
 import { spread } from '../../engine/view';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Animal Snack: farm friends and their favorite foods. Lap levels are cause and effect: tap an
@@ -26,6 +27,12 @@ export const PLANS: SnackPlan[] = [
   { mode: 'match', animals: 3, rounds: 3, name: 'Drag each snack to the animal who eats it' },
   { mode: 'count', animals: 3, rounds: 3, name: 'Give an animal 2 to 4 of its snack, then ring the bell' },
 ];
+
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 2 },
+  toddler: { min: 2, max: 4 },
+  preschool: { min: 3, max: 5 },
+};
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 

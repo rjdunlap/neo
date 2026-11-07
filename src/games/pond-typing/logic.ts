@@ -1,5 +1,6 @@
 import type { Rng } from '../../engine/random';
 import { nameLetters } from '../letter-trails/logic';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Pond Typing's rules: a round is a row of bubbles, each holding what to type (a letter, a name's letter, a word or a
@@ -120,6 +121,8 @@ export const keyName = (key: string) => key === ' ' ? 'space' : key === '.' ? 'f
 export function describeTypingLevel(level: number): string {
   return ['', 'Finds a letter key: one group of four letters', 'Types a name, letter by letter', 'Types words, and the space bar between two words', 'Uses Shift for a capital at the start of a word or name', 'Copies a line with a capital, spaces and a full stop; uses Backspace', 'Mends a line with the arrow keys and Backspace'][typingLevel(level)];
 }
+
+export const LEVELS: BandLevels = { school: { min: 1, max: 6 } };
 
 /** Swap exactly one internal letter; no spaces, first capital or stop are changed. */
 export function muddle(text: string, rng: Rng): string {
