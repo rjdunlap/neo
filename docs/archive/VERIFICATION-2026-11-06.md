@@ -209,3 +209,10 @@ Changed: plan 8 in `src/games/bolt-boards/` (pre-K order 2, 3, 4, 5, 8, 6; schoo
 Changed: the Gadget Bench definition gained levels 5–6 (a low garden arch rules out tall parts; a new kit on the same path with glow stones) with build slices and check tier; READY, the inventions dive, the study backlog and the roadmap updated.
 Ran: `node scripts/check-links.mjs` and `git diff --check`. No code checks (docs tier).
 Open: the build (new levels on the existing interaction, `fingerdemo` at 5 and 6) is in READY's Next ten.
+
+## 2026-11-06 — Gadget Bench levels 5–6, Little Gate and New Box (PR #1336)
+
+Changed: new levels 5 (a low garden arch stops any tall part, even the flag; roller belt) and 6 (the pet's cart parts ride home, a new box with glow stones) in `src/games/gadget-bench/` with voice lines, how-to and the `BENCH_LEVELS=5,6` browser case; school range 2–6. Tested commit 5034d7d4.
+Ran: `npm run typecheck`; `npx vitest run src/games/gadget-bench src/games/registry src/content/howto src/content/lands` 130 passed; `BROWSER_SUITE=gadgetbench BENCH_LEVELS=5,6` passed on Vite (random port, `VITE_SPEECH=off`), level 5 rerun after the review fix (free arch stop, roller belt passes, flag taken out by Show a hint = one hint, rounds 2–3; level 6 pet's cart, parts ride home, glow stones at the front as a failing Give = one miss, then on top, rounds 2–3), one portrait screenshot of the arch stop; `BROWSER_SUITE=fingerdemo FINGER_ONLY=gadget-bench FINGER_LEVELS=5,6` passed (62.3 s and 52.3 s). The browser play found a fifth tray part (the flag) in level 5's bump+rain round that broke the layout; fixed with a test.
+Not run: `npm run build` (no shared engine or art files touched). Gaps: the arch stop reuses the existing stop animation without the definition's arch-top tap, part glow or roll-back; the glow for a tall part doing nothing speaks `bench.fail.gate`.
+Open: device checks (tall part as the reason at the arch, transfer or guessing at level 6, how the iPad says "glow stones" and "roller belt") are in [DEVICE-CHECKS](../DEVICE-CHECKS.md#gadget-bench-levels-13-inventions-i2-2026-10-27).
