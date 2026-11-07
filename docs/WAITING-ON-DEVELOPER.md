@@ -37,6 +37,14 @@ Swing Pals dive (2026-11-06), three calls; slices 1–3 go ahead (slice 2 on dec
 | **Paint the beat as a creative level, and may its painting be kept?** | Reopens the "nothing kept" default for the treehouse; no default, it stays unbuilt | [Swing Pals dive](deep-dives/swing-pals.md#decisions-for-the-developer) |
 | **A journal discovery ("a longer rope swings slower")?** | Reopens the definition's decision 4; default: still none | [Swing Pals dive](deep-dives/swing-pals.md#decisions-for-the-developer) |
 
+Mossy Path dive (2026-11-06), three calls; slices 1–5 go ahead on the defaults ([the dive](deep-dives/mossy-path.md#decisions-for-the-developer)):
+
+| Step | What happens next | Written in |
+| --- | --- | --- |
+| **A lap entry for Mossy Path (appended level 12 *Turtle walk*)?** | Default: no | [Mossy Path dive](deep-dives/mossy-path.md#decisions-for-the-developer) |
+| **Toddler range 4–5 (level 5's free fork) after the toddler device check?** | Default: toddler stays at 4 | [Mossy Path dive](deep-dives/mossy-path.md#decisions-for-the-developer) |
+| **File each berry kind (red, blue, strawberry) as a journal discovery when first eaten?** | Default: no, nothing is filed | [Mossy Path dive](deep-dives/mossy-path.md#decisions-for-the-developer) |
+
 Number Trails dive (2026-11-06), two calls; slices 1–6 go ahead regardless ([the dive](deep-dives/number-trails.md#decisions-for-the-developer)):
 
 | Step | What happens next | Written in |
