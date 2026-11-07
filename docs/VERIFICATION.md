@@ -1,5 +1,9 @@
 # Puddle Island verification
 
+## 2026-11-07 — Log Roll deep dive (docs only)
+
+Changed: `docs/deep-dives/log-roll.md` and its tracker, READY, STUDY-BACKLOG, IDEAS and waiting-on-developer rows (PR #1368); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; slices 1–5 are queued; three decisions wait on the developer ([list](WAITING-ON-DEVELOPER.md)).
+
 ## 2026-11-07 — Gem Swap deep dive (docs only)
 
 Changed: `docs/deep-dives/gem-swap.md` and its tracker, READY, STUDY-BACKLOG, ROADMAP and waiting-on-developer rows (PR #1367); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; slices 1–5 are queued; three decisions wait on the developer ([list](WAITING-ON-DEVELOPER.md)); there was no IDEAS ladder-audit row for Gem Swap to point at.

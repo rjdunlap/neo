@@ -73,6 +73,14 @@ Gem Swap dive (2026-11-07), three calls; slices 1–5 go ahead regardless ([the 
 | **Keep the roadmap's Zen refill proposal or drop it?** | Lean: drop it; levels 5–8 give the grown-up who wants more finite trays instead | [Gem Swap dive](deep-dives/gem-swap.md#decisions-for-the-developer) |
 | **A frozen Gem Swap course, *The Big Trays*?** | Lean: skip unless couch play is staying (it retires at Lands stage E); if built, after slice 2 | [Gem Swap dive](deep-dives/gem-swap.md#decisions-for-the-developer) |
 
+Log Roll dive (2026-11-07), three calls; slices 1–5 go ahead regardless ([the dive](deep-dives/log-roll.md#decisions-for-the-developer)):
+
+| Step | What happens next | Written in |
+| --- | --- | --- |
+| **Open level 1 to the school band, with a two-roll entry (level 8) and a shorter instruction?** | Lean: yes, after a child plays level 1 once on the iPad; it costs a level row, `order`/`entryLevels` and one voice line | [Log Roll dive](deep-dives/log-roll.md#decisions-for-the-developer) |
+| **A controller or couch course for Log Roll?** | Lean: skip; couch play retires at Lands stage E, and a d-pad would only duplicate the arrows | [Log Roll dive](deep-dives/log-roll.md#decisions-for-the-developer) |
+| **Swipe on the board as well as the arrow buttons?** | Lean: yes as an addition, buttons kept, after a person says whether the buttons feel slow; it follows the input pitfalls | [Log Roll dive](deep-dives/log-roll.md#decisions-for-the-developer) |
+
 Number Trails dive (2026-11-06), two calls; slices 1–6 go ahead regardless ([the dive](deep-dives/number-trails.md#decisions-for-the-developer)):
 
 | Step | What happens next | Written in |
