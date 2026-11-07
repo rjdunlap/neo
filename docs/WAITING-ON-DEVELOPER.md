@@ -52,6 +52,13 @@ Fruit Slice dive (2026-11-06), two calls; slices 1–4 go ahead on the defaults 
 | **Close the fractions rung as nowhere in Fruit Slice?** | Default: yes, closed; nothing in levels 1–11 names a half | [Fruit Slice dive](deep-dives/fruit-slice.md#decisions-for-the-developer) |
 | **File each fruit kind as a journal discovery when first sliced?** | Default: no, nothing is filed | [Fruit Slice dive](deep-dives/fruit-slice.md#decisions-for-the-developer) |
 
+Lift It dive (2026-11-07), two calls; slices 1–5 go ahead on the defaults ([the dive](deep-dives/lift-it.md#decisions-for-the-developer)):
+
+| Step | What happens next | Written in |
+| --- | --- | --- |
+| **A toddler entry, level 10 *One big pull*?** | Default: no; if yes, it also needs a person to watch a toddler find the knot | [Lift It dive](deep-dives/lift-it.md#decisions-for-the-developer) |
+| **Pre-K up to level 9 *How many paws?*?** | Default: no, school only, so pre-K keeps no counted misses | [Lift It dive](deep-dives/lift-it.md#decisions-for-the-developer) |
+
 Number Trails dive (2026-11-06), two calls; slices 1–6 go ahead regardless ([the dive](deep-dives/number-trails.md#decisions-for-the-developer)):
 
 | Step | What happens next | Written in |
