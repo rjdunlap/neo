@@ -1,6 +1,6 @@
 # Swing Pals deep dive
 
-*ID `swing-pals` · bands lap, toddler, preschool, pre-K, school · levels 1–6 on 2026-11-06 · session `claude/dive-swing-pals` ([PR #1319](https://github.com/rjdunlap/neo/pull/1319))*
+*ID `swing-pals` · bands lap, toddler, preschool, pre-K, school · levels 1–8 on 2026-11-06 · session `claude/dive-swing-pals` ([PR #1319](https://github.com/rjdunlap/neo/pull/1319))*
 
 ## The game today
 
@@ -14,6 +14,8 @@ She pushes a friend on a tree swing until its feet ring the bell in the leaves. 
 | 4 | *Swing together.* The pet's swing on a seeded hook; hers starts on a wrong one; tap a hook and both let go (3 lines) | pre-K, school | which hook matches the pet's |
 | 5 | *Heavy or light.* As 4, with friends of different weights; at least one line tempts "heavy goes slow" | school | the hook, ignoring weight |
 | 6 | *Big push, small push.* As 5, with different release heights | school | the hook, ignoring weight and height |
+| 7 | *Who comes back first?* Two friends on two hooks are pulled back; tap the one that returns first (3 races) | pre-K (between 3 and 4), school | which rope is shorter; a wrong guess is free |
+| 8 | *Twice as quick.* The hook interaction of 4–6 with a request per line: twice, half or together (3 lines) | school | the hook that beats twice or half as quick |
 
 **Content pools.** Five friends: bunny, duck and bear from `CRITTERS` (`src/art/critter.ts`), mouse and frog as local specs. Weights: light (mouse, duck), middle (bunny, frog), heavy (bear only). Three hooks. Three release heights (`EVEN` 0.8, `BIG` 1, `SMALL` 0.45 of the bell). Levels 1–2 always use the middle rope; level 3 is always short with long (beat ratio 2), on seeded sides. The bell is always a brass bell, with a different pentatonic note per friend. Every level's first line is authored and later lines are seeded from the plan, with a 500-seed test that no plan falls back.
 
@@ -21,8 +23,7 @@ She pushes a friend on a tree swing until its feet ring the bell in the leaves. 
 
 **Known gaps.**
 - **Variety.** Levels 1–2 look the same every round apart from the friend; level 5's heavy side is always the bear; the leaf goal is always the bell.
-- **Pre-K's jump.** Pre-K's window (3–4) goes straight from pushing two swings to choosing a hook with nothing between.
-- **School tops out at 6**, with the prediction mode, the counting mode and the grown-up toy all left out of the first build.
+- **Pre-K's jump** is filled by level 7 (`order` 3, 7, 4); school now runs to 8. The grown-up toy is still left out.
 - **Person checks.** The open [device check](../DEVICE-CHECKS.md) (whether a lap child connects her tap with the push, whether level 2's waiting push reads as lag, whether the parting swings explain a miss) has not been run.
 - **Couch.** None; the [every-band table](../PHYSICS-GAMES.md#every-band)'s calm grown-up toy is a proposal.
 - **IDEAS.** No rows for Swing Pals. Vine Swing is a different idea (a crossing with a release) and must not take this ID.
@@ -103,7 +104,7 @@ Release timing and anything that can fall; pumping; numbers, stopwatches and the
 
 The definition's five decisions stand as decided on 2026-10-23. This dive adds:
 
-1. **Where level 7 plays.** Default: pre-K between 3 and 4 (`order: [3, 7, 4]`) and school after 6. Alternative: school only, leaving pre-K's jump.
+1. **Where level 7 plays.** Built on the default; the developer can still change it. Default: pre-K between 3 and 4 (`order: [3, 7, 4]`) and school after 6. Alternative: school only, leaving pre-K's jump.
 2. **Paint the beat** (a paint pot on her swing paints a wiggle on a sliding paper strip; a short rope paints tight wiggles). Whether to build it as a creative level, and whether its painting may be kept in the treehouse, which reopens the "nothing kept" default. No default; it stays unbuilt.
 3. **A journal discovery** ("a longer rope swings slower", filed once level 3 or 7 has shown it). Reopens the definition's decision 4 (no discovery filed). Default: still none.
 
@@ -112,12 +113,12 @@ Decision 1 has a usable default, so slice 2 stays buildable on it. Decisions 2 a
 ## Build slices, in order
 
 1. **More friends and leaf goals.** Riders cat, dog, pig and (if it clears the short hook) cow; seeded leaf goals (wind chimes, apple and basket, bird's nest) beside the bell. Tier: existing interaction with new content: typecheck, rule tests (the level 5–6 filters over 500 seeds reach the new heavy friends with no fallback; rider heights and short-hook clearance at four views; leaf-goal placement), the voice test, one filtered play of level 1 and level 5 with one portrait screenshot of a new goal; no `fingerdemo` (the bot is unchanged); build, since voice lines change.
-2. **Level 7, *Who comes back first?*** On decision 1's default. Tier: new interaction: typecheck, unit tests (rule tests above, registry, how-to, voice), one scripted play of level 7 with one wrong prediction and one requested hint, and pre-K's `order` step from 3 to 7 to 4; one portrait screenshot; `fingerdemo` at 7; build.
-3. **Level 8, *Twice as quick*.** After slice 2 (school's `order` then ends 7, 8). Tier: new level on the existing hook interaction: typecheck, rule tests, one browser play of level 8 with one wrong hook, `fingerdemo` at 8.
+2. **Level 7, *Who comes back first?*** (built 2026-11-06, [PR #1339](https://github.com/rjdunlap/neo/pull/1339)) On decision 1's default. Tier: new interaction: typecheck, unit tests (rule tests above, registry, how-to, voice), one scripted play of level 7 with one wrong prediction and one requested hint, and pre-K's `order` step from 3 to 7 to 4; one portrait screenshot; `fingerdemo` at 7; build.
+3. **Level 8, *Twice as quick*.** (built 2026-11-06, PR #1339) After slice 2 (school's `order` then ends 7, 8). Tier: new level on the existing hook interaction: typecheck, rule tests, one browser play of level 8 with one wrong hook, `fingerdemo` at 8.
 4. **Level 9, *A row of three*.** First the `swingLayout` probe in `logic.test.ts`; then a definition.
 5. **Paint the beat.** Decision 2, then a definition.
 6. **Journal discovery.** Decision 3.
 
 ## What was built in this session
 
-Nothing: a deep dive session is research and ideation only. Checks: `node scripts/check-links.mjs` and `git diff --check`.
+Slices 2 and 3 were later built (PR #1339); see the archive note. This session built nothing: a deep dive session is research and ideation only. Checks: `node scripts/check-links.mjs` and `git diff --check`.
