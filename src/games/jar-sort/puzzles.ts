@@ -1,11 +1,12 @@
 /**
- * Jar Sort's frozen boards, bottom of each jar first, one jar per `|`-separated part (0 strawberry, 1 blueberry, 2 orange, 3 pear,
- * 4 plum before a round renames them). Made once by a seeded deal filtered by the solver for each level's par range (and, at
+ * Jar Sort's frozen boards, bottom of each jar first, one jar per `|`-separated part (kinds 0 to 4, which a round renames to
+ * any of the seven fruits). Made once by a seeded deal filtered by the solver for each level's par range (and, at
  * level 6, boards the obvious same-kind-first player cannot finish); `logic.test.ts` checks every one again.
  */
 export const BOARDS: Record<number, readonly string[]> = {
-  // Level 1 is authored: two moves, then three. Always in this order.
-  1: ['01|1|0', '10|01|'],
+  // Level 1 is authored pairs: two moves, then three. The seed picks a pair. A 3 × 2 board of two kinds has only two puzzles of
+  // each length, so the pairs differ in where the fruit stand.
+  1: ['01|1|0', '10|01|', '0|10|1', '01||01', '10|0|1', '|01|10', '1|01|0', '|01|01'],
   2: [
     '110||100',
     '011|100|',
@@ -21,6 +22,12 @@ export const BOARDS: Record<number, readonly string[]> = {
     '00|101|1',
     '101|0|01',
     '1|01|100',
+    '011|0|10',
+    '11|010|0',
+    '01|1|001',
+    '10|110|0',
+    '1|010|10',
+    '010|01|1',
   ],
   3: [
     '22|1|010|021',
@@ -37,6 +44,12 @@ export const BOARDS: Record<number, readonly string[]> = {
     '122|021|100|',
     '112|201|002|',
     '201|221|010|',
+    '220|1|10|012',
+    '212|020|1|01',
+    '1|021|200|12',
+    '1|11|202|002',
+    '001||212|102',
+    '11|201|002|2',
   ],
   4: [
     '0001|2111|2202||',
@@ -53,6 +66,12 @@ export const BOARDS: Record<number, readonly string[]> = {
     '2212|0021|0110||',
     '2010|2200|1112||',
     '0012|1122|0021||',
+    '220|1102|11|0|02',
+    '202|1|0021|1|120',
+    '2|102|110|20|021',
+    '11|002|2220|0|11',
+    '010|2|0220|11|21',
+    '002|2|20|210|111',
   ],
   5: [
     '|1130|10|1020|223|323',
@@ -69,6 +88,12 @@ export const BOARDS: Record<number, readonly string[]> = {
     '10|303|0321|30|1|2221',
     '3211|31|0022|0|13|320',
     '1002|1332|3312|2001||',
+    '003|32|100|312|32|211',
+    '03|0022|1203|23|11|13',
+    '2|1132|3013|00|102|32',
+    '|1312|2|2013|003|2310',
+    '1002|00|231|1|2333|21',
+    '1131|22|10|00|33|2302',
   ],
   6: [
     '11|3223|0002|11|2033',
@@ -85,6 +110,12 @@ export const BOARDS: Record<number, readonly string[]> = {
     '100|31|031|2321|2230',
     '3002|1230|2230|1311|',
     '212|322|00|1103|0331',
+    '311|0310|1|2303|0222',
+    '2001||3100|1213|3322',
+    '112|100|230|323|0231',
+    '3332|3100|211|2120|0',
+    '32|2211|0010|12|0333',
+    '3231|2|0313|0202|110',
   ],
   7: [
     '4421|0234|1041|0132|0323||',
@@ -101,6 +132,12 @@ export const BOARDS: Record<number, readonly string[]> = {
     '2130|3110|4202|4403|2134||',
     '4401|0024|2|13|3413|223|10',
     '3423|1110|4203|4240|3102||',
+    '110|22|1|4422|10|3433|0034',
+    '020|4|4431|3130|10|2421|32',
+    '2211|02|31|403|03|2304|144',
+    '4424|112|3303|0|304|21|012',
+    '440|3303|0240|422|1|31|112',
+    '114|0|2301|4430|24|220|133',
   ],
   8: [
     '232|110|1|3100|3232|0',
@@ -117,5 +154,11 @@ export const BOARDS: Record<number, readonly string[]> = {
     '022|113|022|3|10|1330',
     '0033|012|2|121|323|10',
     '03|23|2110||3213|2010',
+    '010|01|203|3|131|2232',
+    '0130|0201|2|32|1|1332',
+    '01|13|13|3001|20|2232',
+    '002|233|211|0|2301|13',
+    '003|10|3312|3110|2|22',
+    '02|0320||12|3311|0312',
   ],
 };

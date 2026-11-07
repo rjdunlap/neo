@@ -1,5 +1,5 @@
 import { Container, Graphics, Rectangle } from 'pixi.js';
-import { ink, swatch, wood } from '../../art/palette';
+import { cream, ink, swatch, wood } from '../../art/palette';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { draggable, type DragHandle } from '../../engine/drag';
@@ -15,8 +15,8 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { BOARDS } from './puzzles';
 import {
-  FRUITS, hintMove, jarHeight, jarLayout, JAR_W, legal, move, moves, PIECE, planFor, present, refusal, render, RIM, search, solve, solved,
-  UNDO_INSET, uniformFull, type Board, type JarPlan, type JarSpot, type Labels, type Move,
+  FRUITS, hintMove, jarHeight, jarLayout, JAR_W, legal, LID_COLOR, LOOKS, move, moves, PIECE, planFor, present, refusal, render, RIM, roundBoards,
+  search, solve, solved, UNDO_INSET, uniformFull, type Board, type JarPlan, type JarSpot, type Labels, type Look, type Move,
 } from './logic';
 
 const LEVELS: BandLevels = {
@@ -34,7 +34,7 @@ const DRAG_START = 20;
 /** The search that looks for a dead end after each move stays small; a bigger one only runs for a hint. */
 const DEAD_END_LIMIT = 20_000;
 /** Each fruit's marimba step when it lands (pentatonic, from `src/audio/notes.ts` through `sfx`). */
-const NOTES = [5, 7, 8, 9, 11];
+const NOTES = [5, 7, 8, 9, 11, 6, 10];
 
 /** A fruit drawn about 44 units across, centred on (0, 0). Each kind has its own outline so colour is never the only cue. */
 export function fruitArt(kind: number, size = 1): Container {
@@ -63,11 +63,25 @@ export function fruitArt(kind: number, size = 1): Container {
         .stroke({ width: 3, color: swatch.green.line, join: 'round' });
       g.moveTo(0, -17).lineTo(3, -24).stroke({ width: 3, color: swatch.brown.line, cap: 'round' });
       break;
-    default: // plum: an oval with a crease and a stem
+    case 4: // plum: an oval with a crease and a stem
       g.ellipse(0, 2, 17, 21).fill(swatch.purple.fill).stroke({ width: 3, color: swatch.purple.line });
       g.moveTo(-2, -16).bezierCurveTo(-8, -4, -8, 10, -2, 21).stroke({ width: 2, color: swatch.purple.line, alpha: 0.7 });
       g.moveTo(0, -18).lineTo(-3, -25).stroke({ width: 3, color: swatch.brown.line, cap: 'round' });
       g.ellipse(7, -8, 4, 6).fill({ color: 0xffffff, alpha: 0.3 });
+      break;
+    case 5: // cherries: two small round berries on stems joined at the top, so never a strawberry
+      g.moveTo(-10, 6).quadraticCurveTo(-8, -12, 2, -22).stroke({ width: 3, color: swatch.green.line, cap: 'round' });
+      g.moveTo(11, 9).quadraticCurveTo(10, -8, 2, -22).stroke({ width: 3, color: swatch.green.line, cap: 'round' });
+      g.ellipse(6, -21, 7, 3.5).fill(swatch.green.fill).stroke({ width: 2, color: swatch.green.line });
+      g.circle(-10, 11, 11).fill(swatch.red.line).stroke({ width: 3, color: ink, alpha: 0.6 });
+      g.circle(11, 13, 11).fill(swatch.red.line).stroke({ width: 3, color: ink, alpha: 0.6 });
+      g.circle(-13, 7, 3).fill({ color: 0xffffff, alpha: 0.45 }).circle(8, 9, 3).fill({ color: 0xffffff, alpha: 0.45 });
+      break;
+    default: // lemon: a pointed oval, a bump at each end
+      g.moveTo(-24, 2).quadraticCurveTo(-20, -18, 0, -18).quadraticCurveTo(20, -18, 24, 2).quadraticCurveTo(20, 20, 0, 20).quadraticCurveTo(-20, 20, -24, 2)
+        .fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line, join: 'round' });
+      g.ellipse(-8, -7, 6, 3).fill({ color: 0xffffff, alpha: 0.4 });
+      for (const [x, y] of [[4, -4], [10, 6], [-4, 9]]) g.circle(x, y, 1.4).fill(swatch.yellow.line);
   }
   const c = new Container();
   c.addChild(g);
@@ -75,7 +89,7 @@ export function fruitArt(kind: number, size = 1): Container {
   return c;
 }
 
-const JAM = [swatch.red.fill, swatch.blue.fill, swatch.orange.fill, swatch.green.fill, swatch.purple.fill];
+const JAM = [swatch.red.fill, swatch.blue.fill, swatch.orange.fill, swatch.green.fill, swatch.purple.fill, swatch.red.line, swatch.yellow.fill];
 
 /** An empty glass jar of a capacity, its base at (0, 0). */
 function jarArt(cap: number): Graphics {
@@ -87,10 +101,50 @@ function jarArt(cap: number): Graphics {
     .roundRect(-w / 2 + 12, -h + RIM + 6, 10, h - RIM - 30, 5).fill({ color: 0xffffff, alpha: 0.45 });
 }
 
-function lidArt(): Graphics {
+function lidArt(look: Look): Graphics {
+  const c = swatch[LID_COLOR[look]];
   return new Graphics()
-    .roundRect(-JAR_W / 2 - 10, -26, JAR_W + 20, 26, 10).fill(swatch.red.fill).stroke({ width: 4, color: swatch.red.line })
+    .roundRect(-JAR_W / 2 - 10, -26, JAR_W + 20, 26, 10).fill(c.fill).stroke({ width: 4, color: c.line })
     .circle(-30, -13, 4).fill(0xffffff).circle(0, -13, 4).fill(0xffffff).circle(30, -13, 4).fill(0xffffff);
+}
+
+/** Each look's wall and window pane. */
+const PANTRY: Record<Look, { wall: number; pane: number }> = {
+  morning: { wall: cream, pane: swatch.blue.light },
+  rain: { wall: swatch.white.light, pane: swatch.teal.light },
+  evening: { wall: wood.light, pane: swatch.purple.light },
+};
+
+/**
+ * The pantry behind the jars, drawn from the view and the jars' places: a window whose pane changes with the look (a morning sun,
+ * rain streaks, an evening lamp) and a wooden shelf with a striped cloth under each row of jars. Decoration only.
+ */
+function drawPantry(g: Graphics, look: Look, v: View, spots: JarSpot[], cap: number) {
+  const { wall, pane } = PANTRY[look];
+  g.clear().rect(0, 0, v.w, v.h).fill(wall);
+  const jarTop = spots.length ? Math.min(...spots.map((s) => s.y - jarHeight(cap))) : v.h / 2;
+  const w = Math.min(360, v.w * 0.42), x = (v.w - w) / 2, y = 20;
+  const h = Math.max(96, Math.min(240, jarTop - 30 - y));
+  g.roundRect(x - 12, y - 12, w + 24, h + 24, 16).fill(wood.fill).stroke({ width: 4, color: wood.line });
+  g.rect(x, y, w, h).fill(pane);
+  if (look === 'morning') g.circle(x + w * 0.75, y + h * 0.4, Math.min(34, h * 0.28)).fill(swatch.yellow.fill);
+  else if (look === 'rain') {
+    for (let i = 0; i < 14; i++) {
+      const sx = x + 14 + ((i * 53) % (w - 28)), sy = y + 10 + ((i * 37) % Math.max(1, h - 34));
+      g.moveTo(sx, sy).lineTo(sx - 5, sy + 16).stroke({ width: 3, color: swatch.teal.line, cap: 'round' });
+    }
+  } else {
+    g.circle(x + w * 0.5, y + h * 0.45, Math.min(46, h * 0.36)).fill({ color: swatch.yellow.light, alpha: 0.7 });
+    g.circle(x + w * 0.5, y + h * 0.45, Math.min(22, h * 0.18)).fill(swatch.yellow.fill);
+  }
+  g.rect(x + w / 2 - 4, y, 8, h).fill(wood.fill).rect(x, y + h / 2 - 4, w, 8).fill(wood.fill);
+  const cloth = swatch[LID_COLOR[look]];
+  for (const base of [...new Set(spots.map((s) => s.y))]) {
+    const row = spots.filter((s) => s.y === base);
+    const left = Math.min(...row.map((s) => s.x)) - JAR_W, right = Math.max(...row.map((s) => s.x)) + JAR_W;
+    g.roundRect(left, base + 10, right - left, 22, 6).fill(wood.fill).stroke({ width: 3, color: wood.line });
+    for (let sx = left, i = 0; sx < right; sx += 24, i++) g.rect(sx, base - 2, Math.min(24, right - sx), 12).fill(i % 2 ? 0xffffff : cloth.light);
+  }
 }
 
 /** Where a jar's `i`-th piece (0 at the bottom) sits, relative to the jar's base. */
@@ -108,6 +162,8 @@ interface JarNode {
 class JarSort implements Game {
   readonly plan: JarPlan;
   readonly puzzles: string[];
+  /** The round's pantry: the window's light and the lids' colour. */
+  readonly look: Look;
   index = -1;
   misses = 0;
   hints = 0;
@@ -121,6 +177,7 @@ class JarSort implements Game {
   hinted: Move | null = null;
 
   private readonly back = new Graphics();
+  private readonly pantry = new Graphics();
   private readonly jarLayer = new Container();
   private readonly pieceLayer = new Container();
   private readonly glow = new Graphics();
@@ -148,12 +205,14 @@ class JarSort implements Game {
     const list = BOARDS[this.plan.id];
     // The how-to card's demonstration shows one board, so two-board levels stay inside its time.
     const boards = ctx.demo ? 1 : this.plan.boards;
-    this.puzzles = this.plan.id === 1 ? list.slice(0, boards) : ctx.rng.shuffle([...list]).slice(0, boards);
+    this.puzzles = roundBoards(list, this.plan, ctx.rng, boards);
+    this.look = ctx.rng.pick(LOOKS);
+    this.pantry.eventMode = 'none';
     onTap(this.back, () => this.setDown());
     this.glow.eventMode = 'none';
     this.undoButton = new RoundButton(againIcon(), swatch.white, 54, () => this.undo());
     this.undoButton.alpha = 0.35;
-    ctx.stage.addChild(this.back, this.jarLayer, this.pieceLayer, this.glow, this.undoButton);
+    ctx.stage.addChild(this.pantry, this.back, this.jarLayer, this.pieceLayer, this.glow, this.undoButton);
     // Capture, so it runs before the drag's own window listener ends the drag.
     window.addEventListener('pointercancel', this.onCancel, { capture: true });
   }
@@ -166,9 +225,10 @@ class JarSort implements Game {
     this.back.clear().rect(0, 0, v.w, v.h).fill({ color: 0xffffff, alpha: 0.001 });
     this.back.hitArea = new Rectangle(0, 0, v.w, v.h);
     this.undoButton.position.set(v.w - UNDO_INSET, v.h - UNDO_INSET);
+    const spots = jarLayout(this.plan.jars, this.plan.cap, v);
+    drawPantry(this.pantry, this.look, v, spots, this.plan.cap);
     if (!this.jars.length) return;
     this.setDown();
-    const spots = jarLayout(this.plan.jars, this.plan.cap, v);
     this.jars.forEach((j, i) => this.placeJar(j, spots[i]));
     if (this.busy) this.relayout = true;
     else this.placePieces();
@@ -270,7 +330,7 @@ class JarSort implements Game {
     const root = new Container();
     root.eventMode = 'none';
     root.addChild(jarArt(this.plan.cap));
-    const lid = lidArt();
+    const lid = lidArt(this.look);
     lid.visible = false;
     root.addChild(lid);
     let mat: Container | null = null;
