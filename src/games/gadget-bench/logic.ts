@@ -302,7 +302,8 @@ export function briefFor(level: number, rng: Rng): Brief {
         const twin = LOW_TWIN[part];
         if (twin) tray.push(twin);
       }
-      tray.push('flag');
+      // Four parts: the flag fills the slot when only one condition has a tall usual part.
+      if (tray.length < 4) tray.push('flag');
       rounds.push({
         neighbor: first ? NEIGHBORS[0] : later[i - 1],
         path: ['smooth', ...conds, 'gate'], open: [...SOCKETS], tray: first ? tray : rng.shuffle(tray),

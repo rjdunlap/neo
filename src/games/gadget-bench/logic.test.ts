@@ -655,6 +655,7 @@ describe('level 5 rules', () => {
         if (isTall(part)) expect(r.tray, msg).toContain(LOW_TWIN[part]);
       }
       expect(r.tray, msg).not.toContain('paddles');
+      expect(r.tray, `${msg}: four tray parts, the footprint benchLayout(5, 4, 4) holds`).toHaveLength(4);
       expect(r.open).toEqual([...SOCKETS]);
       const familiar: Gadget = {};
       for (const c of conds) { const n = need(c)!; familiar[n.socket] = n.part; }
