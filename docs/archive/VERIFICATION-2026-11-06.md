@@ -230,3 +230,10 @@ Changed: new `measuring-post` (PR #1337, branch `claude/measuring-post-1-2`): le
 Ran (commit 0103845b, http://localhost:5270, `VITE_SPEECH=off`): `npm run typecheck`; `npm test` (321 files, 5,953 tests); `BROWSER_SUITE=measuringpost` (level 1 landscape: ribbon first, wrong tool 1 miss, taps inert while measuring, Send three times 1/0; level 2 portrait: Help points then does 1 hint, two wrong rows glow 1 hint, last asks bigger, 2/2); `fingerdemo` with `FINGER_ONLY=measuring-post` at levels 1 and 2 (12.4 s, 17.9 s); `npm run build`. `game-reviewer` findings fixed.
 Not run: offline check, `world` suite, device speech.
 Open: child appeal and legibility, 100-unit comfort on the iPad, speech ([device checks](../DEVICE-CHECKS.md)); levels 3–4 unbuilt.
+
+## 2026-11-06 — Measuring Post levels 3–4 (measurement M3–M4)
+
+Changed: `measuring-post` levels 3 (*Measure them the same way*) and 4 (*How many little ones?*), school band 1–4 (PR #1340, branch `claude/measuring-post-3-4`, commit fcf535cc); `measuringpost` suite extended.
+Ran: `npm run typecheck`; `npm test` (321 files, 5,991 tests); measuring-post rule tests (23); `BROWSER_SUITE=measuringpost` (levels 1–4; level 3 landscape: big between marks no miss, jugs exact, wrong comparison 1 miss, Help 1 hint, 1/1; level 4 portrait: re-choosing free, wrong Check 1 miss, Help points then chooses, 1/1), re-run after review fixes; `fingerdemo` with `FINGER_ONLY=measuring-post FINGER_LEVELS=3,4` (23.0 s, 20.6 s); `game-reviewer`, 4 findings fixed.
+Not run: build (no shared files or assets changed), `world`, offline check, device speech.
+Open: legibility of the small "250 g" stamps on an iPad, child interpretation of level 3 and the table, speech ([device checks](../DEVICE-CHECKS.md)).

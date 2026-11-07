@@ -1,6 +1,6 @@
 # Domino Run deep dive
 
-*ID `domino-run` · bands toddler, preschool, pre-K, school · levels 1–8 on 2026-11-07 · session `claude/dive-domino-run` ([PR #1357](https://github.com/rjdunlap/neo/pull/1357))*
+*ID `domino-run` · bands toddler, preschool, pre-K, school · levels 1–8 on 2026-11-07 · build slice 1 built ([PR #1360](https://github.com/rjdunlap/neo/pull/1360)) · session `claude/dive-domino-run` ([PR #1357](https://github.com/rjdunlap/neo/pull/1357))*
 
 ## The game today
 
@@ -21,13 +21,14 @@ She drags dominoes from a tray into the sockets of a sandy lane, taps the green 
 
 **Content pools.** Each level has one authored first line (`FIRST`) and seeded lines after it: a lane of 3–6 slots (sockets at most 5, tray at most 3), six line colours (`LINE_COLORS`), three sizes and two ends. The lane is always the same sandy strip on the plain game background, and pinned dominoes are always the same brown. The generator builds a lane backward from a random chain (`randomChain`, `chainLane`) and accepts it only through the plan filter (`passes`). A test asserts that 500 seeds per plan never need the fallback.
 
+**Built 2026-11-07 (slice 1, PR #1360).** Every empty slot that is neither pinned nor a socket is a puddle (`puddles(lane)`; two neighbours make one wide puddle). A drop on one splashes and springs back, never a miss or hint. Each round has one of three beach moods (`MOODS`: morning, sunset, low tide) drawn from `ctx.rng` after the lines, and each lane's end has a cosmetic `EndLook` (`LOOK_END`, `looksFor`, spoken via `LOOK_LINE`): bell, chime, horn are bell-sized; gong, drum are gong-sized.
+
 **Known gaps.**
-- **An empty slot that is not a socket is drawn as plain sand** (`chainLane` leaves some, levels 4 and 6–8). It looks the same as the sand around a socket, so nothing tells her a domino cannot stand there. A drop near it just springs back.
-- **Every replay looks the same:** same strip, same sky, and only the bell or the gong at the end.
+- **Puddles on a real iPad:** whether a puddle reads as "nothing can stand here" without speech is a person check (below).
 - **School stops at level 8,** and the ladder's newest idea is level 8's uneven split.
 - **The stalled-chain accounting** is hints-only (misses are always 0). That is a kept default, not a gap.
 - **Nothing is saved, and there is no couch play.**
-- **The device check is still open** in [DEVICE-CHECKS](../DEVICE-CHECKS.md): tap-to-hop at level 2, whether the stall ring reads as "here is the gap", and whether the dot faces tell sizes apart.
+- **The device check is still open** in [DEVICE-CHECKS](../DEVICE-CHECKS.md): tap-to-hop at level 2, whether the stall ring reads as "here is the gap", and whether the dot faces tell sizes apart (puddles to be added).
 - **IDEAS has no ladder-audit rows to repoint:** the 2026-10-09 audit predates the game, and the IDEAS "Dominoes" and "Domino Pond" rows are unrelated tile games.
 
 ## Similar games
@@ -105,11 +106,15 @@ No new decisions. The kept 2026-10-23 defaults stay as recorded: no lap or grown
 
 ## Build slices, in order
 
-1. **Puddles, beach moods and more ends** (fresh content, ready). Tier: typecheck and the game's rule tests (a puddle on every non-socket empty slot and never on a socket; every end look maps to bell or gong size), one filtered `dominorun` play at level 6 with one portrait screenshot in the sunset mood, `npm run build` (voice). No `fingerdemo`: the bot is unchanged.
+1. **Puddles, beach moods and more ends** (built 2026-11-07, PR #1360). Tier: typecheck and the game's rule tests (a puddle on every non-socket empty slot and never on a socket; every end look maps to bell or gong size), one filtered `dominorun` play at level 6 with one portrait screenshot in the sunset mood, `npm run build` (voice). No `fingerdemo`: the bot is unchanged.
 2. **Level 9 *Where will it stop?*** (ready). Tier: new interaction. Typecheck and unit tests (one stall per pre-built line, too-heavy share, one-piece fix, layout of the flag), one scripted `dominorun` play of level 9 with one wrong prediction and one requested hint, one portrait screenshot, `fingerdemo` at 9, build (voice, how-to).
 3. **Level 10 *Over the puddle*** (ready, after slice 1 for the puddle art and after slice 2 so school's range is edited once more). Tier: new level on the existing drag interaction. Typecheck, rule tests (a giant before every puddle, no giantless solution, 500 seeds without fallback), one browser play of level 10, `fingerdemo` at 10, build.
 4. **Level 11 *Under the pier*** (ready, after slice 3). Tier: model change on the existing interaction. Typecheck and rule tests (low sockets in `solutions`, the generator and `hintPlacement`; levels 1–10's first lines and solution counts unchanged), one scripted play of level 11 with one refused tall drop, one portrait screenshot, `fingerdemo` at 11, build.
 
 ## What was built in this session
 
-Nothing: research and ideation only. Checked with the link checker and `git diff --check`.
+Research and ideation only (the dive, PR #1357). Checked with the link checker and `git diff --check`.
+
+### Slice 1, puddles, beach moods and more ends (PR #1360)
+
+Built as defined; rules unchanged and authored first lines have no puddles (seeded lines at levels 4 and 6–8 can). Puddles ripple from `update()`; the three moods draw a backdrop band above the lanes (low tide adds wet sand and shells); the five end looks have their own art, pentatonic ring and voice line (new ids `domino-run.ring-chime`, `ring-horn`, `gong-drum`; no rendered clips). Four new rule tests (21 domino-run tests). The `dominorun` suite now plays level 6 upright in the sunset mood with a drag onto a puddle (misses 0, hints 0).
