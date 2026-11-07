@@ -28,7 +28,7 @@
 
 **Starts as:** tap each thick mark and a pair of big scissors snips it, or put the scissors on the green ring and move them along a dashed line, and the cut piece floats into the host's paper picture
 
-**Grows into:** one thick straight line, longer lines, zigzags and waves, curves and a circle (either way round), a square and a triangle, heart, house, leaf, fish and cloud outlines, and choosing which outline fits a gap; a drag that leaves the line stops the scissors with a boing, no clock
+**Grows into:** one thick straight line, longer lines, zigzags and waves, curves and a circle (either way round), a square, triangle, door and kite, then heart, house, leaf, fish, cloud, star and moon outlines, and choosing which outline fits a gap; each play of levels 1–5 and 7 picks one of a few pictures (hedgehog, gift, raft, river, night, garland); a drag that leaves the line stops the scissors with a boing, no clock
 
 ## Design notes
 
