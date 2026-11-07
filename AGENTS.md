@@ -150,7 +150,7 @@ Before writing pointer input, hit areas, couch controls, textures or long-lived 
 
 ### Scheduled roadmap work
 
-For scheduled roadmap continuation, follow [the execution queue](docs/EXECUTION-QUEUE.md) before claiming work; its policy admits one slice per run, in a fresh chat, on actual usage. Usage limits never justify reporting unfinished work as complete. A recurring Routine or heartbeat starts a fresh session per firing: one bound to a long-lived chat re-reads that whole chat every time ([review](docs/DEVELOPMENT-WORKFLOW.md#token-review-2026-11-06)).
+For scheduled roadmap continuation, follow [the execution queue](docs/EXECUTION-QUEUE.md) before claiming work; its policy admits one slice per run, in a fresh chat, on actual usage. Usage limits never justify reporting unfinished work as complete. Never bind a recurring Routine to a long-lived chat: each firing re-reads all of it. Fresh-session runs lack the session tools ([review](docs/DEVELOPMENT-WORKFLOW.md#token-review-2026-11-06)).
 
 ### Avoid duplicate parallel work
 
