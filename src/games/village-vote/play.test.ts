@@ -1,3 +1,4 @@
+import { Lifetime } from '../../engine/lifetime';
 import { Container, Rectangle } from 'pixi.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Rng } from '../../engine/random';
@@ -8,11 +9,13 @@ const { taps,listeners }=vi.hoisted(()=>({taps:new WeakMap<object,(e:unknown)=>v
 vi.mock('../../engine/input',()=>({onTap:(n:object,f:(e:unknown)=>void)=>taps.set(n,f),gaze:{x:0,y:0,at:0}}));
 vi.mock('../../art/scenery',async()=>{const {Container}=await import('pixi.js');return {Backdrop:class extends Container{resize(){}}};});
 vi.mock('../../audio/sfx',()=>({sfx:{boing:vi.fn(),bell:vi.fn()}}));
+const lifetimes: Lifetime[] = [];
 function make(level:number,seed=1){
  vi.stubGlobal('window',{addEventListener:(kind:string,fn:(e:Event)=>void)=>listeners.set(kind,fn),removeEventListener:vi.fn()});
  vi.stubGlobal('PointerEvent',class extends Event{pointerId:number;constructor(type:string,p:{pointerId:number}){super(type);this.pointerId=p.pointerId;}});
  const tw=new Tweener(),companion=Object.assign(new Container(),{bodyBounds:()=>new Rectangle(-100,-300,200,300)});
- const ctx={level,stage:new Container(),view:{w:1024,h:768,scale:1},rng:new Rng(seed),tw,companion:()=>companion,track:<T>(x:T)=>x,untrack:vi.fn(),say:vi.fn(()=>Promise.resolve()),instruct:vi.fn(()=>Promise.resolve()),finish:vi.fn()} as unknown as GameContext;
+ const lifetime = new Lifetime(); lifetimes.push(lifetime);
+ const ctx={get alive(){return lifetime.alive;},own:lifetime.own,listen:lifetime.listen.bind(lifetime),level,stage:new Container(),view:{w:1024,h:768,scale:1},rng:new Rng(seed),tw,companion:()=>companion,track:<T>(x:T)=>x,untrack:vi.fn(),say:vi.fn(()=>Promise.resolve()),instruct:vi.fn(()=>Promise.resolve()),finish:vi.fn()} as unknown as GameContext;
  const g=new VillageVote(ctx);g.start();
  const event=(node:Container,pointerId=1)=>({pointerId,global:node.toGlobal({x:0,y:0})});
  const down=(n:Container,id=1)=>taps.get(n)!(event(n,id));
@@ -21,7 +24,7 @@ function make(level:number,seed=1){
  const settle=async()=>{for(let i=0;i<100;i++){tw.update(.1);await Promise.resolve();if(!g.busy)break;}};
  return{g,ctx,tap,down,up,settle,tw};
 }
-afterEach(()=>vi.unstubAllGlobals());
+afterEach(()=>{for(const lifetime of lifetimes.splice(0))lifetime.destroy();vi.unstubAllGlobals();});
 describe('Village Vote public taps and lifecycle',()=>{
  it('ignores native cancellation, outside release, wrong pointer and stale node after resize',()=>{
   const {g,down,up}=make(2),n=g.options[0];down(n);listeners.get('pointercancel')!(new PointerEvent('pointercancel',{pointerId:1}));up(n);expect(g.election.pet).toBeNull();

@@ -156,7 +156,7 @@ class Roundup implements Game {
       this.touch.on('pointerup', this.lift);
       this.touch.on('pointerupoutside', this.lift);
       // Pixi does not forward a cancelled touch; without this a lost finger would shoo forever.
-      window.addEventListener('pointercancel', this.lift, true);
+      this.ctx.listen(window, 'pointercancel', this.lift, true);
     } else {
       // Lap: a tap on the grass or a pen makes the nearest loose animal hop and speak. Never a miss or a hint.
       onTap(this.backdrop, (e) => this.nudge(this.ctx.stage.toLocal(e.global)), { cooldown: 500 });
@@ -781,7 +781,6 @@ class Roundup implements Game {
 
   destroy() {
     this.touch.removeAllListeners();
-    window.removeEventListener('pointercancel', this.lift, true);
     this.fingers.clear();
   }
 }

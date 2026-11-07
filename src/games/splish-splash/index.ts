@@ -183,8 +183,8 @@ class SplishSplash implements Game {
     this.scrubZone.on('globalpointermove', (e) => this.plan.mode !== 'pat' && this.last.has(e.pointerId) && this.scrubAt(e));
     this.scrubZone.on('pointerup', this.lift);
     this.scrubZone.on('pointerupoutside', this.lift);
-    window.addEventListener('pointerup', this.lift);
-    window.addEventListener('pointercancel', this.lift);
+    this.ctx.listen(window, 'pointerup', this.lift);
+    this.ctx.listen(window, 'pointercancel', this.lift);
 
     ctx.stage.addChild(this.wall, this.room, this.pip, this.tubFront, this.foam, this.scrubZone, this.rubberDuck);
   }
@@ -266,8 +266,6 @@ class SplishSplash implements Game {
   }
 
   destroy() {
-    window.removeEventListener('pointerup', this.lift);
-    window.removeEventListener('pointercancel', this.lift);
     for (const m of this.muds) m.destroy();
     this.eraser.destroy();
   }

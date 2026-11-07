@@ -87,8 +87,8 @@ class MossyPath implements Game {
       this.pad.on('globalpointermove', this.onMove);
       this.pad.on('pointerup', this.onUp);
       this.pad.on('pointerupoutside', this.onUp);
-      window.addEventListener('pointerup', this.onUp);
-      window.addEventListener('pointercancel', this.onUp, true);
+      this.ctx.listen(window, 'pointerup', this.onUp);
+      this.ctx.listen(window, 'pointercancel', this.onUp, true);
       this.grid.addChild(this.pad);
     }
     for (let i = 0; i < this.board.rows * this.board.cols; i++) {
@@ -362,8 +362,6 @@ class MossyPath implements Game {
   }
   destroy() {
     this.alive = false;
-    window.removeEventListener('pointerup', this.onUp);
-    window.removeEventListener('pointercancel', this.onUp, true);
   }
 }
 function iconArt(seed = 0): Container {

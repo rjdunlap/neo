@@ -261,7 +261,7 @@ class ShapeSorter implements Game {
       for (const ground of [this.bg, this.floor]) onTap(ground, (e) => this.nudge(this.ctx.stage.toLocal(e.global)), { cooldown: 200 });
     }
 
-    if (this.plan.turning) window.addEventListener('pointercancel', this.cancelTurn, true);
+    if (this.plan.turning) this.ctx.listen(window, 'pointercancel', this.cancelTurn, true);
     const specs = pieceKinds(ctx.rng, this.plan, holes);
     if (this.plan.clue) this.clueQueue = clueKinds(ctx.rng, holes);
     const one = ctx.rng.pick(ONE_COLOR);
@@ -361,7 +361,6 @@ class ShapeSorter implements Game {
   }
 
   destroy() {
-    window.removeEventListener('pointercancel', this.cancelTurn, true);
     for (const p of this.pieces) p.drag.destroy();
   }
 

@@ -214,12 +214,12 @@ class PuddleGobble implements Game {
     this.ground.on('pointerup', this.release);
     this.ground.on('pointerupoutside', this.release);
     this.ground.on('pointercancel', this.cancel);
-    window.addEventListener('pointerup', this.release, true);
-    window.addEventListener('pointercancel', this.cancel, true);
-    window.addEventListener('lostpointercapture', this.cancel, true);
-    window.addEventListener('pointerout', this.leaveWindow);
-    window.addEventListener('blur', this.clearSteering);
-    document.addEventListener('visibilitychange', this.clearSteering);
+    this.ctx.listen(window, 'pointerup', this.release, true);
+    this.ctx.listen(window, 'pointercancel', this.cancel, true);
+    this.ctx.listen(window, 'lostpointercapture', this.cancel, true);
+    this.ctx.listen(window, 'pointerout', this.leaveWindow);
+    this.ctx.listen(window, 'blur', this.clearSteering);
+    this.ctx.listen(document, 'visibilitychange', this.clearSteering);
   }
 
   private makeBackdrop() {
@@ -747,12 +747,6 @@ class PuddleGobble implements Game {
     this.clearSteering();
     this.ground.eventMode = 'none';
     this.ground.removeAllListeners();
-    window.removeEventListener('pointerup', this.release, true);
-    window.removeEventListener('pointercancel', this.cancel, true);
-    window.removeEventListener('lostpointercapture', this.cancel, true);
-    window.removeEventListener('pointerout', this.leaveWindow);
-    window.removeEventListener('blur', this.clearSteering);
-    document.removeEventListener('visibilitychange', this.clearSteering);
   }
 }
 

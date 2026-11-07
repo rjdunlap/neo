@@ -52,7 +52,6 @@ class TilePairs implements Game {
   private touch: boolean;
   private view: View;
   private botWait = 0.6;
-  private dead = false;
   private route: Pair[] | null = null;
   private sinceMatch = 0;
 
@@ -124,7 +123,7 @@ class TilePairs implements Game {
     for (const i of this.hinted ?? []) outline(i, swatch.orange.line, 7);
   }
   private choose(i: number) {
-    if (this.busy || this.finished || this.dead || !present(this.mask, i)) return;
+    if (this.busy || this.finished || !this.ctx.alive || !present(this.mask, i)) return;
     if (!free(this.tiles, this.mask, i)) {
       sfx.squeak();
       void this.ctx.say('tile-pairs.blocked');
@@ -156,7 +155,7 @@ class TilePairs implements Game {
     else if (!this.route) void this.ctx.say('tile-pairs.stuck');
   }
   private undo() {
-    if (this.busy || this.finished || this.dead) return;
+    if (this.busy || this.finished || !this.ctx.alive) return;
     const last = this.history.pop();
     if (!last) { this.selected = null; this.hinted = null; this.draw(); return; }
     this.undos++;
@@ -168,7 +167,7 @@ class TilePairs implements Game {
     sfx.tick();
   }
   askForHint() {
-    if (this.busy || this.finished || this.dead) return;
+    if (this.busy || this.finished || !this.ctx.alive) return;
     // Recovery itself is counted once; the hint then identifies a genuinely useful pair.
     if (!this.route) this.restart();
     const pair = this.route?.[0];
@@ -182,7 +181,7 @@ class TilePairs implements Game {
   }
   /** Shuffle is the couch pause menu's restart action. Removed tiles stay removed; each rearrangement counts. */
   restart() {
-    if (this.busy || this.finished || this.dead) return;
+    if (this.busy || this.finished || !this.ctx.alive) return;
     this.history.push(this.snapshot());
     this.tiles = reshuffle(this.tiles, this.mask, this.ctx.rng);
     this.mask = fullMask(this.tiles);
@@ -199,11 +198,11 @@ class TilePairs implements Game {
     sfx.tada();
     this.ctx.particles.burst(this.view.w / 2, this.view.h / 2, { kind: 'star', colors: [swatch.yellow.fill, swatch.teal.fill], count: 20 });
     await this.ctx.say('tile-pairs.done');
-    if (this.dead) return;
+    if (!this.ctx.alive) return;
     this.ctx.finish({ misses: this.misses, hints: this.hints, score: this.undos + this.shuffles });
   }
   update(_dt: number) {}
-  destroy() { this.dead = true; }
+  destroy() {}
 
   /** The first key or pad press on the island: the buttons go and the cursor ring shows. Couch play is already here. */
   private useController() {
@@ -216,7 +215,7 @@ class TilePairs implements Game {
 
   /** A finger came back after keys: the buttons and tappable tiles return. */
   touchReturned() {
-    if (this.touch || this.finished || this.dead) return;
+    if (this.touch || this.finished || !this.ctx.alive) return;
     this.touch = true;
     for (const b of [this.undoButton, this.hintButton, this.shuffleButton]) b.visible = true;
     for (const n of this.nodes) n.eventMode = 'static';
@@ -225,7 +224,7 @@ class TilePairs implements Game {
 
   control(input: CouchControls, dt: number) {
     this.useController();
-    if (this.busy || this.finished || this.dead) return;
+    if (this.busy || this.finished || !this.ctx.alive) return;
     const open = freeTiles(this.tiles, this.mask), spots = open.map(i => this.nodes[i].position);
     for (const dir of this.held.poll(input, dt)) {
       this.cursor = open[nextSpot(spots, Math.max(0, open.indexOf(this.cursor)), dir)] ?? this.cursor;
@@ -243,7 +242,7 @@ class TilePairs implements Game {
     return this.selected ?? pair[0];
   }
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished || this.dead) return null;
+    if (this.busy || this.finished || !this.ctx.alive) return null;
     const to = this.botTarget();
     if (to === null) return { tap: { on: this.shuffleButton } };
     return { tap: { on: this.nodes[to] }, pause: 0.32 };
@@ -251,7 +250,7 @@ class TilePairs implements Game {
   autoplay(dt: number): CouchControls {
     const out = idle();
     this.botWait -= dt;
-    if (this.busy || this.finished || this.dead || this.botWait > 0) return out;
+    if (this.busy || this.finished || !this.ctx.alive || this.botWait > 0) return out;
     const to = this.botTarget();
     if (to === null) return out;
     const p = out.players[0];

@@ -57,9 +57,9 @@ export class PitchGarden implements Game {
     this.pad.on('pointerup', this.up);
     this.pad.on('pointerupoutside', this.cancelEvent);
     this.pad.on('pointercancel', this.cancelEvent);
-    window.addEventListener('pointerup', this.windowEnd);
-    window.addEventListener('pointercancel', this.windowEnd);
-    window.addEventListener('blur', this.cancel);
+    this.ctx.listen(window, 'pointerup', this.windowEnd);
+    this.ctx.listen(window, 'pointercancel', this.windowEnd);
+    this.ctx.listen(window, 'blur', this.cancel);
     this.replay.addChild(this.model);
     this.replay.visible = this.copy;
     onTap(this.replay, () => { if (!this.busy && !this.finished) void this.listen(); }, { radius: 100 });
@@ -223,8 +223,5 @@ export class PitchGarden implements Game {
     this.cancel();
     this.pad.removeAllListeners();
     this.replay.removeAllListeners();
-    window.removeEventListener('pointerup', this.windowEnd);
-    window.removeEventListener('pointercancel', this.windowEnd);
-    window.removeEventListener('blur', this.cancel);
   }
 }

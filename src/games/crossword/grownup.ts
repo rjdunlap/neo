@@ -85,7 +85,7 @@ export class GrownCrossword implements Game {
     this.resize(this.view);
     this.draw();
     // The how-to card's demonstration copy never takes the grown-up's keys.
-    if (!this.ctx.demo) window.addEventListener('keydown', this.onKey);
+    if (!this.ctx.demo) this.ctx.listen(window, 'keydown', this.onKey);
     this.board.alpha = 0;
     void this.ctx.tw.to(this.board, { alpha: 1 }, { duration: 0.35 }).then(() => (this.busy = false));
     void this.intro();
@@ -101,7 +101,6 @@ export class GrownCrossword implements Game {
   }
 
   destroy() {
-    window.removeEventListener('keydown', this.onKey);
   }
 
   // Building -----------------------------------------------------------------------------

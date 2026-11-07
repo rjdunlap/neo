@@ -27,7 +27,7 @@ export class RelayWoods implements Game {
   this.relay=new Relay(ctx.demo?fixture(ctx.level,0,this.companion.color):roundFor(ctx.level,ctx.rng,this.companion.color));this.view=ctx.view;this.boxes=layout(this.view,this.relay.plan);
   this.backdrop=new Backdrop({sky:[0xffe2c4,cream],hills:[0xd8ecb0,0xbfe39a],horizon:.4,seed:127,clouds:2,sun:true},this.view);
   this.ghost=new GhostFinger(this.root,new EventBoundary(this.root));ctx.stage.addChild(this.backdrop,this.root);this.root.addChild(this.board,this.glow,this.companion,this.ghost.hand);this.glow.eventMode='none';
-  window.addEventListener('pointercancel',this.cancel,true);window.addEventListener('blur',this.cancel);
+  this.ctx.listen(window, 'pointercancel',this.cancel,true);this.ctx.listen(window, 'blur',this.cancel);
  }
  start(){this.draw();this.instruct();}
  private instruct(){const line=this.relay.plan.level===1?'relay-woods.one':this.relay.plan.level===2?'relay-woods.two':this.relay.plan.level===3?'relay-woods.three':'relay-woods.four';void this.ctx.instruct(line,{friend:this.relay.plan.names.R});}
@@ -100,7 +100,7 @@ export class RelayWoods implements Game {
   if(r.phase==='flying'){const result=r.settle();this.draw();this.arrival(result,this.generation);return;}
   this.draw();if(r.phase==='done'){this.busy=true;void this.finish(this.generation);}else if(r.phase==='retry'){this.busy=true;void this.retry(this.generation);}else{r.feedbackDone();this.busy=false;}
  }
- destroy(){this.alive=false;this.generation++;this.release();this.ghost.stop();this.ctx.tw.kill(this.message);this.relay.destroy();this.ctx.untrack(this.companion);window.removeEventListener('pointercancel',this.cancel,true);window.removeEventListener('blur',this.cancel);}
+ destroy(){this.alive=false;this.generation++;this.release();this.ghost.stop();this.ctx.tw.kill(this.message);this.relay.destroy();this.ctx.untrack(this.companion);}
 }
 class RelayIcon extends WigglyIcon {constructor(){const c=mosaic(picture('flower'),76);c.addChild(new Graphics().moveTo(-60,55).lineTo(55,55).lineTo(40,40).stroke({width:7,color:wood.line}));super(c);}}
 export const relayWoods:GameModule={id:'relay-woods',name:'Relay Woods',titleLine:'relay-woods.title',region:'tinker-lab',challenge:'space',skills:['connections','route-planning','comparing-hops'],bands:['toddler','preschool','prek','school'],levels:b=>rangeFor(LEVELS,b),describeLevel:l=>NAMES[Math.max(0,Math.min(3,l-1))],music:STYLES.paint,touchDemo:true,coplayHint:'One person points out a path, the other taps. Swap roles.',offScreen:'With a grown-up, pass a drawn picture along a row of toy friends.',hubIcon:()=>new RelayIcon(),sticker:seed=>mosaic(picture(new Rng(seed).pick(['flower','cake','kite','portrait','tune'] as const)),80),create:ctx=>new RelayWoods(ctx)};

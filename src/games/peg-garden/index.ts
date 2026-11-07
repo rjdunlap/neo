@@ -226,7 +226,7 @@ class PegGarden implements Game {
     this.touch.on('pointerup', (e: FederatedPointerEvent) => this.up(e));
     this.touch.on('pointerupoutside', (e: FederatedPointerEvent) => this.up(e));
     // Pixi does not pass a cancelled touch on, so the window is watched for it.
-    window.addEventListener('pointercancel', this.cancel, { capture: true });
+    this.ctx.listen(window, 'pointercancel', this.cancel, { capture: true });
     // Last, so its touch layer stays off.
     if (this.plan.mode === 'plant') this.setUpPlanting();
   }
@@ -394,7 +394,6 @@ class PegGarden implements Game {
     for (const q of this.seeds) q.drag.destroy();
     this.dropButton.removeAllListeners();
     this.sea.texture.destroy(true);
-    window.removeEventListener('pointercancel', this.cancel, { capture: true });
   }
 
   /** Couch play: hold left or right to swing the launcher, press the bottom button to let the pearl go. */

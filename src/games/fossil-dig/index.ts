@@ -171,8 +171,8 @@ class FossilDig implements Game {
     this.stoneNode.on('globalpointermove', (e) => this.brushMove(e));
     this.stoneNode.on('pointerup', this.lift);
     this.stoneNode.on('pointerupoutside', this.lift);
-    window.addEventListener('pointerup', this.lift, true);
-    window.addEventListener('pointercancel', this.lift, true);
+    this.ctx.listen(window, 'pointerup', this.lift, true);
+    this.ctx.listen(window, 'pointercancel', this.lift, true);
 
     FLAGS.forEach((f, i) => {
       const node = new Container();
@@ -740,8 +740,6 @@ class FossilDig implements Game {
 
   destroy() {
     this.destroyed = true;
-    window.removeEventListener('pointerup', this.lift, true);
-    window.removeEventListener('pointercancel', this.lift, true);
     this.stoneNode.removeAllListeners();
     this.bg.removeAllListeners();
   }

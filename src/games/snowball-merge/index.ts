@@ -46,7 +46,6 @@ class SnowballMerge implements Game {
   private nodes = new Map<number, Container>();
   private history: number[][] = [];
   private cell = 108;
-  private dead = false;
   private clock = 0;
   private pressed: Container | null = null;
   private flash = 0;
@@ -81,7 +80,7 @@ class SnowballMerge implements Game {
   }
 
   start() { void this.ctx.instruct('snowball.go', { target: this.puzzle.target }); }
-  private feedback(node: Container) { if (!this.dead && !this.finished) { this.pressed = node; this.flash = 0.18; } }
+  private feedback(node: Container) { if (this.ctx.alive && !this.finished) { this.pressed = node; this.flash = 0.18; } }
   private center(i: number) { return { x: (i % SIZE + 0.5) * this.cell, y: (Math.floor(i / SIZE) + 0.5) * this.cell }; }
 
   resize(v: View) {
@@ -122,7 +121,7 @@ class SnowballMerge implements Game {
   }
 
   private async move(direction: Direction) {
-    if (this.dead || this.busy || this.finished) return;
+    if (!this.ctx.alive || this.busy || this.finished) return;
     const next = slide(this.board, direction);
     if (!next.changed) {
       // An inert arrow is exploration, never evidence of a wrong answer.
@@ -137,42 +136,42 @@ class SnowballMerge implements Game {
       const node = this.nodes.get(m.from)!;
       return this.ctx.tw.to(node, this.center(m.to), { duration: 0.18 });
     }));
-    if (this.dead) return;
+    if (!this.ctx.alive) return;
     this.board = next.board;
     this.busy = false;
     this.refresh();
     if (complete(this.board, this.puzzle.target)) {
       this.finished = true;
       await this.ctx.say('snowball.done', { target: this.puzzle.target });
-      if (!this.dead) this.ctx.finish({ misses: this.misses, hints: this.hints });
+      if (this.ctx.alive) this.ctx.finish({ misses: this.misses, hints: this.hints });
     } else if (this.route === null) void this.ctx.say('snowball.stuck');
   }
 
   undo() {
-    if (this.dead || this.busy || this.finished || !this.history.length) return;
+    if (!this.ctx.alive || this.busy || this.finished || !this.history.length) return;
     this.board = this.history.pop()!; this.hinted = null; this.refresh();
   }
   restart() {
-    if (this.dead || this.busy || this.finished || this.board.every((v, i) => v === this.puzzle.board[i])) return;
+    if (!this.ctx.alive || this.busy || this.finished || this.board.every((v, i) => v === this.puzzle.board[i])) return;
     this.board = this.puzzle.board.slice(); this.history = []; this.hinted = null;
     // Restart is support, so a supported completion cannot appear as independent mastery.
     this.hints++; this.refresh(); void this.ctx.say('snowball.restart');
   }
   askForHint() {
-    if (this.dead || this.busy || this.finished || this.hinted) return;
+    if (!this.ctx.alive || this.busy || this.finished || this.hinted) return;
     this.hinted = this.route?.[0] ?? 'undo'; this.hints++;
     if (this.hinted === 'undo') void this.ctx.say('snowball.stuck');
     else void this.ctx.say(`snowball.${this.hinted}`);
   }
   autotouch(_dt: number): TouchIntent | null {
-    if (this.dead || this.busy || this.finished) return null;
+    if (!this.ctx.alive || this.busy || this.finished) return null;
     const direction = this.route?.[0];
     return direction ? { tap: { on: this.arrows[direction] }, pause: 0.22 } : null;
   }
   update(dt: number) {
     this.clock += dt; this.flash -= dt;
     const g = this.glow.clear();
-    if (this.dead || this.finished) return;
+    if (!this.ctx.alive || this.finished) return;
     const ring = (node: Container, w: number, color: number) => g.roundRect(node.x - w / 2 - 3, node.y - 53, w + 6, 106, 20).stroke({ width: 5, color });
     if (this.flash > 0 && this.pressed) ring(this.pressed, this.pressed === this.undoButton || this.pressed === this.hintButton || this.pressed === this.restartButton ? 160 : 100, swatch.white.fill);
     if (this.hinted && !this.busy) {
@@ -181,7 +180,7 @@ class SnowballMerge implements Game {
       g.alpha = 0.85 + Math.sin(this.clock * 5) * 0.15;
     } else g.alpha = 1;
   }
-  destroy() { this.dead = true; }
+  destroy() {}
 }
 
 function sticker(seed: number) {

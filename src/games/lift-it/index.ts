@@ -206,8 +206,8 @@ class LiftIt implements Game {
     // The ghost finger lets go on the handle itself (it sends no window events); a real release reaches both.
     this.handle.on('pointerup', this.release);
     this.handle.on('pointerupoutside', this.release);
-    window.addEventListener('pointerup', this.release);
-    window.addEventListener('pointercancel', this.release, true);
+    this.ctx.listen(window, 'pointerup', this.release);
+    this.ctx.listen(window, 'pointercancel', this.release, true);
 
     ctx.stage.addChild(this.backdrop, this.tree, this.hookRings, this.crate, this.rope, this.fixedWheel, this.friendLayer, this.counter, this.glow, this.paws, this.handle, this.wheelLayer, this.panel);
     this.crate.addChild(this.parcel);
@@ -883,8 +883,6 @@ class LiftIt implements Game {
 
   destroy() {
     this.destroyed = true;
-    window.removeEventListener('pointerup', this.release);
-    window.removeEventListener('pointercancel', this.release, true);
     this.handle.removeAllListeners();
     for (const w of this.wheels) w.drag.destroy();
     for (const f of this.friends) this.ctx.untrack(f.c);

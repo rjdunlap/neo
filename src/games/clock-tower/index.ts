@@ -110,7 +110,7 @@ class ClockTower implements Game {
     this.face.on('pointerupoutside', (e: FederatedPointerEvent) => this.up(e));
     this.face.on('pointercancel', () => this.cancel());
     // Pixi's pointer event system listens for pointerup, but not native pointercancel.
-    window.addEventListener('pointercancel', this.cancelPointer);
+    this.ctx.listen(window, 'pointercancel', this.cancelPointer);
     this.request.addChild(new Graphics().roundRect(-125, -60, 250, 120, 22).fill(cream).stroke({ width: 4, color: wood.line }), this.requestHeading, this.requestTime);
     this.requestHeading.y = -34;
     this.requestTime.y = 4;
@@ -245,7 +245,6 @@ class ClockTower implements Game {
   }
 
   destroy() {
-    window.removeEventListener('pointercancel', this.cancelPointer);
     this.cancel();
   }
 

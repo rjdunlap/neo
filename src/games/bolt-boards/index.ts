@@ -228,7 +228,7 @@ class BoltBoards implements Game {
     this.basket.visible = this.toolbox.visible = !this.build;
     this.woodpile.visible = this.pileGlow.visible = this.card.visible = this.build;
     ctx.stage.addChild(this.wall, this.toolbox, this.basket, this.woodpile, this.card, this.pileGlow, this.hitLayer, this.undoButton);
-    window.addEventListener('pointercancel', this.onCancel);
+    this.ctx.listen(window, 'pointercancel', this.onCancel);
     this.layout = boardLayout(ctx.view, this.build);
     this.buildScene();
   }
@@ -293,7 +293,6 @@ class BoltBoards implements Game {
   }
 
   destroy() {
-    window.removeEventListener('pointercancel', this.onCancel);
   }
 
   /** Start again: every bolt back in its board. Misses and hints already made still count. */

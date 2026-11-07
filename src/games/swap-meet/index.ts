@@ -35,7 +35,7 @@ class SwapMeet implements Game {
   this.ghost=new GhostFinger(this.root,new EventBoundary(this.root));
   ctx.stage.addChild(this.backdrop,this.root);this.root.addChild(this.board,this.toys,this.glow,this.companion,this.undo,this.help,this.ghost.hand);this.glow.eventMode='none';
   // Capture precedes drag.ts's window fallback, which otherwise treats native cancel as a drop.
-  window.addEventListener('pointercancel',this.cancel,true);window.addEventListener('pointerup',this.outside,true);window.addEventListener('blur',this.cancel);
+  this.ctx.listen(window, 'pointercancel',this.cancel,true);this.ctx.listen(window, 'pointerup',this.outside,true);this.ctx.listen(window, 'blur',this.cancel);
  }
  start(){this.draw();this.instruct();}
  private instruct(){const f=this.state.frame.friends[0];if(this.round.level===1)void this.ctx.instruct('swap-meet.one',{friend:f.id,thing:f.want,returned:f.hold});else if(this.round.level===4)void this.ctx.instruct('swap-meet.four',{goal:this.round.goal!});else void this.ctx.instruct(this.round.level===2?'swap-meet.two':'swap-meet.three');}
@@ -132,7 +132,7 @@ class SwapMeet implements Game {
   // A resize cancels a pending gesture/animation without committing it or creating help/misses.
   this.generation++;this.ghost.stop();this.busy=false;this.draw();if(this.finished)this.busy=true;
  }
- destroy(){this.alive=false;this.generation++;this.ghost.stop();this.clear();this.ctx.untrack(this.companion);window.removeEventListener('pointercancel',this.cancel,true);window.removeEventListener('pointerup',this.outside,true);window.removeEventListener('blur',this.cancel);}
+ destroy(){this.alive=false;this.generation++;this.ghost.stop();this.clear();this.ctx.untrack(this.companion);}
 }
 class SwapIcon extends WigglyIcon {constructor(){const c=new Container(),a=itemArt('leaf'),b=itemArt('shell');a.position.set(-48,-24);b.position.set(48,24);c.addChild(a,b,new Graphics().moveTo(-35,55).lineTo(38,55).lineTo(22,43).moveTo(38,-60).lineTo(-35,-60).lineTo(-19,-48).stroke({width:8,color:swatch.blue.line,cap:'round',join:'round'}));super(c);}}
 export const swapMeet:GameModule={id:'swap-meet',name:'Swap Meet',titleLine:'swap-meet.title',region:'cozy-village',challenge:'logic',skills:['matching','reciprocal-exchange','sequencing'],bands:['toddler','preschool','prek','school'],levels:b=>rangeFor(LEVELS,b),describeLevel:l=>NAMES[Math.max(0,Math.min(3,l-1))],music:STYLES.paint,touchDemo:true,coplayHint:'Voice one friend’s pictured request while she chooses an offer, then exchange roles.',offScreen:'With a grown-up, each hold a toy and say which toy you would like to swap.',hubIcon:()=>new SwapIcon(),sticker:seed=>itemArt(new Rng(seed).pick(['leaf','shell','kite','flower'] as const)),create:ctx=>new SwapMeet(ctx)};

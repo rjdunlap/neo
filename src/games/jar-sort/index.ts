@@ -209,7 +209,7 @@ class JarSort implements Game {
     this.undoButton.alpha = 0.35;
     ctx.stage.addChild(this.pantry, this.back, this.jarLayer, this.pieceLayer, this.glow, this.undoButton);
     // Capture, so it runs before the drag's own window listener ends the drag.
-    window.addEventListener('pointercancel', this.onCancel, { capture: true });
+    this.ctx.listen(window, 'pointercancel', this.onCancel, { capture: true });
   }
 
   start() {
@@ -256,7 +256,6 @@ class JarSort implements Game {
   }
 
   destroy() {
-    window.removeEventListener('pointercancel', this.onCancel, { capture: true });
     for (const j of this.jars) j.handle.destroy();
   }
 

@@ -129,8 +129,8 @@ class PuppetStage implements Game {
       const lift = (e: FederatedPointerEvent) => this.release(e.pointerId);
       this.floorSurface.on('pointerup', lift);
       this.floorSurface.on('pointerupoutside', lift);
-      window.addEventListener('pointerup', this.onWindowUp);
-      window.addEventListener('pointercancel', this.onWindowUp);
+      this.ctx.listen(window, 'pointerup', this.onWindowUp);
+      this.ctx.listen(window, 'pointercancel', this.onWindowUp);
     } else this.floorSurface.eventMode = 'none';
     const story = this.plan.story;
     if (story) {
@@ -145,8 +145,8 @@ class PuppetStage implements Game {
         this.peekHeads.push(peek.head);
         ctx.track(peek.head);
       });
-      window.addEventListener('pointerup', this.onWindowUp);
-      window.addEventListener('pointercancel', this.onWindowUp);
+      this.ctx.listen(window, 'pointerup', this.onWindowUp);
+      this.ctx.listen(window, 'pointercancel', this.onWindowUp);
       this.plan.scenes.forEach((sc, i) => {
         const card = cardArt(sc, i);
         onTap(card.node, () => this.tapCard(i), { cooldown: 400 });
@@ -227,8 +227,6 @@ class PuppetStage implements Game {
   destroy() {
     this.finished = true;
     this.following = null;
-    window.removeEventListener('pointerup', this.onWindowUp);
-    window.removeEventListener('pointercancel', this.onWindowUp);
     for (const d of this.drags.values()) d.destroy();
     this.drags.clear();
     for (const n of this.puppetNodes.values()) { this.ctx.tw.kill(n); this.ctx.tw.kill(n.scale); }

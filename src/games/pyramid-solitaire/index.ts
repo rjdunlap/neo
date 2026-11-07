@@ -30,7 +30,6 @@ class PyramidSolitaire implements Game {
   misses = 0;
   hints = 0;
   finished = false;
-  private alive = true;
   private rejected = 0;
   private history: number[] = [];
   private readonly ground = new Graphics();
@@ -61,7 +60,7 @@ class PyramidSolitaire implements Game {
   }
   start() { void this.ctx.instruct('pyramid.go'); }
   choose(i: number) {
-    if (!this.alive || this.finished || !present(this.mask, i)) return;
+    if (!this.ctx.alive || this.finished || !present(this.mask, i)) return;
     if (!exposed(this.puzzle, this.mask, i)) {
       sfx.tick(); this.status.text = 'Remove both cards directly below this one first.';
       void this.ctx.say('pyramid.covered'); return;
@@ -90,12 +89,12 @@ class PyramidSolitaire implements Game {
     if (!this.mask) {
       this.finished = true; sfx.sparkle();
       void this.ctx.say('pyramid.done').then(() => {
-        if (this.alive) this.ctx.finish({ misses: this.misses, hints: this.hints });
+        if (this.ctx.alive) this.ctx.finish({ misses: this.misses, hints: this.hints });
       });
     } else if (!this.solve(this.mask)) void this.ctx.say('pyramid.blocked');
   }
   askForHint() {
-    if (!this.alive || this.finished || this.hinted) return;
+    if (!this.ctx.alive || this.finished || this.hinted) return;
     let route = this.solve(this.mask);
     const recovered = route === null;
     while (route === null && this.history.length) { this.mask = this.history.pop()!; route = this.solve(this.mask); }
@@ -106,13 +105,13 @@ class PyramidSolitaire implements Game {
     void this.ctx.say(recovered ? 'pyramid.recover' : 'pyramid.hint');
   }
   undo() {
-    if (!this.alive || this.finished) return;
+    if (!this.ctx.alive || this.finished) return;
     const before = this.history.pop();
     if (before !== undefined) this.mask = before;
     this.selected = -1; this.hinted = null; this.rejected = 0; sfx.tick(); this.draw();
   }
   restart() {
-    if (!this.alive || this.finished) return;
+    if (!this.ctx.alive || this.finished) return;
     this.mask = fullMask(this.puzzle.rows); this.history = []; this.selected = -1; this.hinted = null; this.rejected = 0;
     this.draw(); void this.ctx.say('pyramid.restart');
   }
@@ -140,14 +139,14 @@ class PyramidSolitaire implements Game {
     this.draw();
   }
   autotouch(): TouchIntent | null {
-    if (!this.alive || this.finished) return null;
+    if (!this.ctx.alive || this.finished) return null;
     const move = this.solve(this.mask)?.[0];
     if (!move) return { tap: { on: this.hintButton } };
     const i = move.length === 1 || this.selected !== move[0] ? move[0] : move[1];
     return { tap: { on: this.nodes[i] }, pause: 0.3 };
   }
   update(_dt: number) {}
-  destroy() { this.alive = false; }
+  destroy() {}
 }
 function icon(seed = 0): Container {
   const c = new Container();

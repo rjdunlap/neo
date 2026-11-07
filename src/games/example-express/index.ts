@@ -53,7 +53,7 @@ export class ExampleExpress implements Game {
   this.prevButton=button('Previous',()=>this.browse(-1),100,100);this.nextButton=button('Next',()=>this.browse(1),100,100);
   this.replayButton=button('Hear rule',()=>this.speakRule(),100,100);
   this.root.addChild(this.mover,this.finger);this.mover.eventMode=this.finger.eventMode='none';
-  window.addEventListener('pointercancel',this.cancel,true);window.addEventListener('blur',this.cancel);
+  this.ctx.listen(window, 'pointercancel',this.cancel,true);this.ctx.listen(window, 'blur',this.cancel);
   this.resize(ctx.view);
  }
  start(){this.opening=true;this.draw();void this.ctx.instruct(this.round.level===1?'ee.instruction1':'ee.instruction2').then(()=>{if(this.destroyed)return;this.opening=false;if(!this.round.surpriseSeen)this.play('intro');else this.draw();});}
@@ -185,6 +185,6 @@ export class ExampleExpress implements Game {
   if(this.round.level===2&&!this.demoReplayed){if(this.panel!=='tray')return {tap:{on:this.testButton}};if(this.round.tests===0)return {tap:{on:this.sendButton}};this.demoReplayed=true;return {tap:{on:this.backButton}};}
   if(this.panel!=='main')return {tap:{on:this.backButton}};return {tap:{on:this.checkButton}};
  }
- destroy(){this.destroyed=true;this.round.destroy();this.run=null;this.helpRun=null;window.removeEventListener('pointercancel',this.cancel,true);window.removeEventListener('blur',this.cancel);}
+ destroy(){this.destroyed=true;this.round.destroy();this.run=null;this.helpRun=null;}
 }
 export const exampleExpress:GameModule={id:'example-express',name:'Example Express',titleLine:'ee.title',region:'tinker-lab',challenge:'logic',skills:['changing labelled examples','observing a fitted rule','testing and revising'],bands:['school'],levels:b=>rangeFor(LEVELS,b),describeLevel:l=>l<=1?'Show, then send: label two examples and check fresh parcels':'A surprising parcel: repair a color rule with examples',music:STYLES.quiet,touchDemo:true,coplayHint:'One person chooses an example, the other chooses a practice parcel. Watch the route, then swap.',hubIcon:()=>new WigglyIcon(emblem()),sticker:()=>emblem(),create:ctx=>new ExampleExpress(ctx)};

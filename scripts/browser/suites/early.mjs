@@ -43,7 +43,8 @@ async function early() {
         const mixing = g.plan.mode === 'mix' || g.plan.mode === 'recall-mix';
         const wrong = mixing ? (g.picture.thing.color === 'green' ? ['red'] : ['blue']) : [['red', 'blue'].find((c) => c !== g.picture.thing.color)];
         for (let i = 0; i < 2; i++) {
-          await kit.sleep(4200);
+          // The cooldown uses game time, which advances more slowly than wall time on a busy browser.
+          if (!await kit.until(() => g.clock - g.lastNag >= 4.1, 15000)) throw new Error('Paint wrong-color cooldown did not expire');
           await pick(wrong);
           await kit.drag(kit.line(center(g.picture), [center(g.picture)[0] + 30, center(g.picture)[1]], 4));
         }

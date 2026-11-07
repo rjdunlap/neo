@@ -85,7 +85,7 @@ class MeadowPens implements Game {
     this.board.on('globalpointermove', (e: FederatedPointerEvent) => { if (e.pointerId === this.pointer) this.move(e); });
     this.board.on('pointerup', (e: FederatedPointerEvent) => { if (e.pointerId === this.pointer) this.endStroke(); });
     this.board.on('pointerupoutside', (e: FederatedPointerEvent) => { if (e.pointerId === this.pointer) this.endStroke(); });
-    window.addEventListener('pointercancel', this.onCancel, { capture: true });
+    this.ctx.listen(window, 'pointercancel', this.onCancel, { capture: true });
     onTap(this.bell, () => void this.ring(), { cooldown: 500 });
     onTap(this.bubble, () => this.replay(), { cooldown: 800 });
     this.bell.visible = this.plan.level !== 2;
@@ -102,7 +102,6 @@ class MeadowPens implements Game {
 
   destroy() {
     this.alive = false;
-    window.removeEventListener('pointercancel', this.onCancel, { capture: true });
   }
 
   resize(v: View) {

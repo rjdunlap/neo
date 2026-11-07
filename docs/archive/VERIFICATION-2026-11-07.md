@@ -81,3 +81,7 @@ Changed: `docs/deep-dives/number-nook.md` and its tracker, READY, STUDY-BACKLOG,
 ## 2026-11-07 — Pile Match slice 1: looks, windy drop-in, more shapes, varied level 1
 
 Changed: three seeded looks, the windy drop-in, ten shapes a level, a seeded second kind at level 1 (PR #1371). Ran: `npm run typecheck`; `npx vitest run src/games/pile-match src/games/registry` (51 pass, 16 pile-match rule tests); `BROWSER_SUITE=pilematch` (level 1 one wrong kind, level 8 full tray, put-backs and hint, level 4 portrait screenshot in the autumn look); `BROWSER_SUITE=fingerdemo FINGER_ONLY=pile-match FINGER_LEVELS=1` (9.6 s). Open: build, other suites and offline not run; whether the drop-in makes "underneath" clearer to a three-year-old is a [device check](../DEVICE-CHECKS.md).
+
+## 2026-11-07 — Number Trails slice 1: flying hint, four looks, rising tune (PR #1372)
+
+Changed: the stuck hint flies the next stretch (Letter Trails' `showTheWay`/`hintDue`), four seeded ink looks via `pickLook` drawn last in `roundFor`, and a rising marimba (`tuneStep`) in `src/games/number-trails/`. Ran: `npm run typecheck`; 4 new rule tests; `npm test` (322 files, 6035 tests pass); `BROWSER_SUITE=fingerdemo FINGER_ONLY=number-trails FINGER_LEVELS=1,3` pass (5.2 s, 9.2 s). Open: build and a browser play of the hint flight not run; whether the flying hint reads as help on an iPad is a [device check](../DEVICE-CHECKS.md).

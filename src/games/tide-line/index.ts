@@ -171,8 +171,8 @@ class TideLine implements Game {
       // The ghost finger lets go on the sea itself (it sends no window events); a real release reaches both.
       this.seaHit.on('pointerup', this.release);
       this.seaHit.on('pointerupoutside', this.release);
-      window.addEventListener('pointerup', this.release);
-      window.addEventListener('pointercancel', this.release, true);
+      this.ctx.listen(window, 'pointerup', this.release);
+      this.ctx.listen(window, 'pointercancel', this.release, true);
       for (const c of CREATURES) this.addCritter(c.kind, c.h);
     } else if (this.plan.mode === 'pail') {
       this.askForHint = () => this.hint();
@@ -870,8 +870,6 @@ class TideLine implements Game {
   }
 
   destroy() {
-    window.removeEventListener('pointerup', this.release);
-    window.removeEventListener('pointercancel', this.release, true);
     this.pail?.handle.destroy();
     for (const p of this.placed) p.handle.destroy();
     for (const it of this.items) it.handle.destroy();

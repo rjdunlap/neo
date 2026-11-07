@@ -175,8 +175,8 @@ class TrackwayTales implements Game {
     this.scrubArea.cursor = 'grab';
     this.scrubArea.on('pointerdown', (e) => this.scrubDown(e));
     this.scrubArea.on('globalpointermove', (e) => this.scrubMove(e));
-    window.addEventListener('pointerup', this.onWindowUp, true);
-    window.addEventListener('pointercancel', this.onWindowUp, true);
+    this.ctx.listen(window, 'pointerup', this.onWindowUp, true);
+    this.ctx.listen(window, 'pointercancel', this.onWindowUp, true);
     onTap(this.mudArea, (e) => this.tapMud(e), { cooldown: 200 });
 
     s.addChild(this.bg, this.strips, this.lit, this.ghostPrints, this.overlay, this.puddles, this.walker, this.scrubArea, this.mudArea, this.cardLayer, this.slotNode, this.checkBtn, this.glow, this.lens);
@@ -683,8 +683,6 @@ class TrackwayTales implements Game {
 
   destroy() {
     this.destroyed = true;
-    window.removeEventListener('pointerup', this.onWindowUp, true);
-    window.removeEventListener('pointercancel', this.onWindowUp, true);
     this.scrubArea.removeAllListeners();
     this.mudArea.removeAllListeners();
     this.bg.removeAllListeners();

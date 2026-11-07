@@ -155,8 +155,8 @@ class BlockTopple implements Game {
     this.grabber.on('pointerup', this.release);
     this.grabber.on('pointerupoutside', this.release);
     this.grabber.on('pointercancel', this.cancel);
-    window.addEventListener('pointerup', this.release);
-    window.addEventListener('pointercancel', this.cancel);
+    this.ctx.listen(window, 'pointerup', this.release);
+    this.ctx.listen(window, 'pointercancel', this.cancel);
     this.board.addChild(this.scenery, this.trayG, this.trayFruit, this.cushions, this.stacksLayer, this.highG, this.trail, this.hintG, this.ghost, this.bandBack, this.ball, this.bandFront, this.grabber, this.padLayer);
     if (this.plan.kind === 'count') this.drawTray();
     ctx.stage.addChild(this.back, this.board);
@@ -199,8 +199,6 @@ class BlockTopple implements Game {
   }
 
   destroy() {
-    window.removeEventListener('pointerup', this.release);
-    window.removeEventListener('pointercancel', this.cancel);
     this.grab = null;
     this.flying = null;
     this.answered = null;

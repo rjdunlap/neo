@@ -52,7 +52,7 @@ export class WeatherFriends implements Game {
     this.rounds = outfits(this.plan, ctx.rng);
     this.background.eventMode = this.glow.eventMode = 'none';
     ctx.stage.addChild(this.background, this.glow);
-    window.addEventListener('pointercancel', this.cancel, true);
+    this.ctx.listen(window, 'pointercancel', this.cancel, true);
   }
 
   start() { this.ask(); }
@@ -224,7 +224,6 @@ export class WeatherFriends implements Game {
 
   destroy() {
     this.destroyed = true;
-    window.removeEventListener('pointercancel', this.cancel, true);
     this.clear();
   }
 }

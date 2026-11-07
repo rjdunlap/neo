@@ -98,7 +98,7 @@ class VineSnip implements Game {
     this.layer.on('globalpointermove', (e) => this.move(e));
     this.layer.on('pointerup', (e) => this.up(e));
     this.layer.on('pointerupoutside', (e) => this.up(e));
-    window.addEventListener('pointercancel', this.onCancel, { capture: true });
+    this.ctx.listen(window, 'pointercancel', this.onCancel, { capture: true });
     this.drawGrow();
     onTap(this.growBtn, () => this.growBack(), { cooldown: 500 });
     this.growBtn.visible = this.plan.level >= 3;
@@ -137,7 +137,6 @@ class VineSnip implements Game {
   }
 
   destroy() {
-    window.removeEventListener('pointercancel', this.onCancel, { capture: true });
     this.stroke = null;
     for (const h of this.hangs) h.fall = null;
   }

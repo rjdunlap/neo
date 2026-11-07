@@ -89,7 +89,7 @@ export class MovieNight implements Game {
     this.removeButton.face.addChild(new Graphics().roundRect(-32,-13,64,19,4).stroke({color:ink,width:4}).moveTo(0,-40).lineTo(0,-13).lineTo(-9,-23).moveTo(0,-13).lineTo(9,-23).stroke({color:ink,width:4}));
     for(const kind of ['frog','bear','bunny'] as const){const c=kind==='frog'?frogArt():new Critter(CRITTERS[kind]);c.scale.set(kind==='frog'?.6:.25);c.eventMode='none';this.audience.push(c);this.root.addChild(c);if(c instanceof Critter)ctx.track(c);}
     this.root.addChild(this.screenFrame,this.screen);this.screen.eventMode='none';this.screenFrame.eventMode='none';
-    window.addEventListener('pointercancel',this.cancelDrag,true);window.addEventListener('pointerup',this.outsideUp,true);window.addEventListener('blur',this.cancelDrag);
+    this.ctx.listen(window, 'pointercancel',this.cancelDrag,true);this.ctx.listen(window, 'pointerup',this.outsideUp,true);this.ctx.listen(window, 'blur',this.cancelDrag);
     this.resize(ctx.view);
   }
   start(){
@@ -221,7 +221,7 @@ export class MovieNight implements Game {
     const r=unmet(this.plan.level,this.round.strip)[0];if(r)return {drag:{on:this.trays.get(r.pad)!},to:{on:this.slots[r.slot]}};
     return {tap:{on:this.premiereButton}};
   }
-  destroy(){this.destroyed=true;this.run=null;this.round.destroy();this.secondTone=-1;this.pendingLabel=null;window.removeEventListener('pointercancel',this.cancelDrag,true);window.removeEventListener('pointerup',this.outsideUp,true);window.removeEventListener('blur',this.cancelDrag);this.handles.forEach(h=>h.destroy());this.audience.forEach(a=>{if(a instanceof Critter)this.ctx.untrack(a);});}
+  destroy(){this.destroyed=true;this.run=null;this.round.destroy();this.secondTone=-1;this.pendingLabel=null;this.handles.forEach(h=>h.destroy());this.audience.forEach(a=>{if(a instanceof Critter)this.ctx.untrack(a);});}
 }
 export const movieNight:GameModule={id:'movie-night',name:'Movie Night',titleLine:'mn.title',region:'treehouse',challenge:'music',skills:['combining pictures and sound','matching sound to a pictured event','revision'],bands:['preschool','prek','school'],levels:b=>rangeFor(LEVELS,b),describeLevel:l=>['Sound for the show: any sound on any picture','Right on time: splash on Duck’s landing','Two moments: knock on the door tap, hello on the wave'][planIndex(l)],music:silenced(STYLES.quiet),touchDemo:true,coplayHint:'One person places sounds; the other watches, then swap. A grown-up can look away until the premiere and say what they heard.',hubIcon:()=>new WigglyIcon(emblem()),sticker:()=>emblem(),create:ctx=>new MovieNight(ctx)};
 function planIndex(l:number){return Math.max(0,Math.min(2,Math.floor(l)-1));}

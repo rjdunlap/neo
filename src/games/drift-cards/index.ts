@@ -154,8 +154,8 @@ class DriftCards implements Game {
     this.seaHit.on('globalpointermove', this.onSeaMove);
     this.seaHit.on('pointerup', this.onSeaUp);
     this.seaHit.on('pointerupoutside', this.onSeaUp);
-    window.addEventListener('pointerup', this.onSeaUp);
-    window.addEventListener('pointercancel', this.onSeaUp, true);
+    this.ctx.listen(window, 'pointerup', this.onSeaUp);
+    this.ctx.listen(window, 'pointercancel', this.onSeaUp, true);
 
     for (const beach of beachesFor(this.plan.split)) {
       // The plate draws its own sand, so a touch-down press shows on it.
@@ -858,8 +858,6 @@ class DriftCards implements Game {
   }
 
   destroy() {
-    window.removeEventListener('pointerup', this.onSeaUp);
-    window.removeEventListener('pointercancel', this.onSeaUp, true);
   }
 }
 

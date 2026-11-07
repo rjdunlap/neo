@@ -331,8 +331,8 @@ class BouncyLaunch implements Game {
         const p = this.ctx.stage.toLocal(e.global);
         this.pull(this.seat.x + p.x - this.grab.from.x, this.seat.y + p.y - this.grab.from.y);
       });
-      window.addEventListener('pointerup', this.release);
-      window.addEventListener('pointercancel', this.cancel);
+      this.ctx.listen(window, 'pointerup', this.release);
+      this.ctx.listen(window, 'pointercancel', this.cancel);
       this.pet.on('pointercancel', this.cancel);
       // The ghost finger on the how-to card lets go on the pet itself (it sends no window events); a real release reaches both, and the second finds the pull already gone.
       this.pet.on('pointerup', this.release);
@@ -537,8 +537,6 @@ class BouncyLaunch implements Game {
   }
 
   destroy() {
-    window.removeEventListener('pointerup', this.release);
-    window.removeEventListener('pointercancel', this.cancel);
     this.grab = null;
     this.flight = null;
   }

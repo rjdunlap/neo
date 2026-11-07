@@ -224,7 +224,7 @@ class CutAlong implements Game {
     this.layer.on('pointerup', (e) => this.up(e));
     this.layer.on('pointerupoutside', (e) => this.up(e));
     // Pixi does not pass a cancelled touch on, so the window is watched for it.
-    window.addEventListener('pointercancel', this.cancel, { capture: true });
+    this.ctx.listen(window, 'pointercancel', this.cancel, { capture: true });
     onTap(this.picture, () => void this.ctx.instruct(this.instructLine()), { cooldown: 600 });
     ctx.stage.addChild(this.back, this.paper, this.picture, this.flyers, this.layer);
     this.nextSheet();
@@ -643,7 +643,6 @@ class CutAlong implements Game {
 
   destroy() {
     this.drag = null;
-    window.removeEventListener('pointercancel', this.cancel, { capture: true });
     this.layer.removeAllListeners();
   }
 }

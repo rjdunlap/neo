@@ -168,10 +168,10 @@ export class ThirdShow implements Game {
     this.sky.on('globalpointermove', (e) => this.loopMove(e));
     for (const ev of ['pointerup', 'pointerupoutside'] as const) this.sky.on(ev, (e) => this.loopUp(e.pointerId));
 
-    window.addEventListener('pointerup', this.windowUp);
-    window.addEventListener('pointercancel', this.windowCancel);
-    window.addEventListener('blur', this.stopAll);
-    document.addEventListener('visibilitychange', this.stopAll);
+    this.ctx.listen(window, 'pointerup', this.windowUp);
+    this.ctx.listen(window, 'pointercancel', this.windowCancel);
+    this.ctx.listen(window, 'blur', this.stopAll);
+    this.ctx.listen(document, 'visibilitychange', this.stopAll);
   }
 
   start() {
@@ -723,10 +723,6 @@ export class ThirdShow implements Game {
     this.finished = true;
     this.turning = this.pouring = null;
     this.touch = null;
-    window.removeEventListener('pointerup', this.windowUp);
-    window.removeEventListener('pointercancel', this.windowCancel);
-    window.removeEventListener('blur', this.stopAll);
-    document.removeEventListener('visibilitychange', this.stopAll);
     for (const c of [this.handle, this.jug, this.sky]) c.removeAllListeners();
     // The kept holders may be off the stage between steps, so they are freed here.
     for (const c of [this.box, this.handle, this.jug, this.cup, this.tray, this.sky, this.jar, this.stream, this.trail]) if (!c.destroyed) c.destroy({ children: true });

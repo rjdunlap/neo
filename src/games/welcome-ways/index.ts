@@ -107,8 +107,8 @@ export class WelcomeWays implements Game {
     this.hintButton=new Pad(120,120,'',()=>this.askForHint());
     this.hintButton.face.addChild(new Graphics().circle(0,-18,18).fill(swatch.yellow.fill).stroke({width:4,color:ink}).rect(-9,0,18,10).fill(ink),label('Show me',34,20));
     this.root.addChild(this.tryButton,this.undoButton,this.removeButton,this.hintButton);
-    window.addEventListener('pointercancel',this.cancelDrag,true);
-    window.addEventListener('blur',this.cancelDrag);
+    this.ctx.listen(window, 'pointercancel',this.cancelDrag,true);
+    this.ctx.listen(window, 'blur',this.cancelDrag);
     this.resize(ctx.view);this.draw();
   }
   private cancelDrag=()=>{this.cancelled=true;};
@@ -283,7 +283,7 @@ export class WelcomeWays implements Game {
     return next?this.botPlace(next):{tap:{on:this.tryButton}};
   }
   private botPlace(r:Repair):TouchIntent{ return this.selectedPart===r.part?{tap:{on:this.slots[r.socket]}}:{tap:{on:this.trays.get(r.part)!}}; }
-  destroy(){this.destroyed=true;this.run=null;window.removeEventListener('pointercancel',this.cancelDrag,true);window.removeEventListener('blur',this.cancelDrag);this.handles.forEach(h=>h.destroy());this.actors.forEach(a=>this.ctx.untrack(a));}
+  destroy(){this.destroyed=true;this.run=null;this.handles.forEach(h=>h.destroy());this.actors.forEach(a=>this.ctx.untrack(a));}
 }
 function emblem(){const c=new Container();c.addChild(new Graphics().poly([-75,0,-75,-60,75,-110,75,0]).fill(wood.fill).stroke({width:6,color:wood.line}));return c;}
 export const welcomeWays:GameModule={

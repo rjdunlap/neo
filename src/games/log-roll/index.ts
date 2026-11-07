@@ -35,7 +35,6 @@ class LogRoll implements Game {
   private readonly heading = label('Stand the log in the hollow', 32, ink);
   private readonly status = label('', 23, ink);
   private history: State[] = [];
-  private alive = true;
   private cell = 64;
   private bx = 0;
   private by = 180;
@@ -69,7 +68,7 @@ class LogRoll implements Game {
   }
   start() { void this.ctx.instruct('log.go'); }
   choose(d: Direction) {
-    if (this.finished || !this.alive) return;
+    if (this.finished || !this.ctx.alive) return;
     const next = roll(this.state, d, this.puzzle.plan.floor);
     if (!next) {
       this.failed++; sfx.boing(); void this.ctx.say('log.edge');
@@ -81,7 +80,7 @@ class LogRoll implements Game {
     sfx.pop(3); this.draw();
     if (solved(this.state, this.puzzle.plan.floor)) {
       this.finished = true;
-      void this.ctx.say('log.done').then(() => { if (this.alive) this.ctx.finish({ misses: 0, hints: this.hints }); });
+      void this.ctx.say('log.done').then(() => { if (this.ctx.alive) this.ctx.finish({ misses: 0, hints: this.hints }); });
     }
   }
   private draw() {
@@ -138,7 +137,7 @@ class LogRoll implements Game {
     return !this.finished && next ? { tap: { on: this.directions[next] }, pause: 0.5 } : null;
   }
   update(_dt: number) {}
-  destroy() { this.alive = false; }
+  destroy() {}
 }
 function iconArt(seed = 0) {
   const c = new Container();

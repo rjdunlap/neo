@@ -92,7 +92,7 @@ class RecipeWorkshop implements Game {
     this.tapLayer.on('globalpointermove', (e) => this.move(e));
     this.tapLayer.on('pointerup', (e) => this.up(e));
     this.tapLayer.on('pointerupoutside', (e) => this.up(e));
-    window.addEventListener('pointercancel', this.cancel, true);
+    this.ctx.listen(window, 'pointercancel', this.cancel, true);
     this.resize(ctx.view);
   }
 
@@ -512,7 +512,6 @@ class RecipeWorkshop implements Game {
   destroy() {
     this.destroyed = true;
     this.finished = true;
-    window.removeEventListener('pointercancel', this.cancel, true);
     this.carried = null;
     this.press = null;
   }

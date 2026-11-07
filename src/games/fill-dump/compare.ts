@@ -57,10 +57,10 @@ export class CapacityGame implements Game {
     }, { radius: 70, cooldown: 250 });
     this.jug.on('globalpointermove', this.move);
     for (const event of ['pointerup', 'pointerupoutside', 'pointercancel']) this.jug.on(event, this.release);
-    window.addEventListener('pointerup', this.windowRelease);
-    window.addEventListener('pointercancel', this.windowRelease);
-    window.addEventListener('blur', this.stop);
-    document.addEventListener('visibilitychange', this.stop);
+    this.ctx.listen(window, 'pointerup', this.windowRelease);
+    this.ctx.listen(window, 'pointercancel', this.windowRelease);
+    this.ctx.listen(window, 'blur', this.stop);
+    this.ctx.listen(document, 'visibilitychange', this.stop);
     for (const decoration of [this.bg, this.stream, this.halo, this.markers]) decoration.eventMode = 'none';
     ctx.stage.addChild(this.bg, this.halo, this.stream, this.jug, this.cup, this.tray, this.tick, this.markers);
     this.resize(ctx.view);
@@ -198,10 +198,6 @@ export class CapacityGame implements Game {
   }
   destroy() {
     this.gone = true; this.pointer = null;
-    window.removeEventListener('pointerup', this.windowRelease);
-    window.removeEventListener('pointercancel', this.windowRelease);
-    window.removeEventListener('blur', this.stop);
-    document.removeEventListener('visibilitychange', this.stop);
     for (const target of [this.jug, this.cup, this.tray, this.tick]) target.removeAllListeners();
   }
 }

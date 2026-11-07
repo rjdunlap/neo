@@ -33,7 +33,6 @@ class NumberNook implements Game {
   private history: number[][] = [];
   private cell = 120;
   private view: View;
-  private alive = true;
   finished = false;
   misses = 0;
   hints = 0;
@@ -66,7 +65,7 @@ class NumberNook implements Game {
   }
   start() { void this.ctx.instruct('nook.go'); }
   choose(at: number) {
-    if (this.finished || !this.alive || this.board[at] === 0) return;
+    if (this.finished || !this.ctx.alive || this.board[at] === 0) return;
     const next = slide(this.board, this.plan.cols, at);
     if (!next) {
       this.misses++; sfx.boing(); void this.ctx.say('nook.miss');
@@ -78,7 +77,7 @@ class NumberNook implements Game {
     if (solved(this.board)) {
       this.finished = true;
       void this.ctx.say('nook.done').then(() => {
-        if (this.alive) this.ctx.finish({ misses: this.misses, hints: this.hints });
+        if (this.ctx.alive) this.ctx.finish({ misses: this.misses, hints: this.hints });
       });
     }
   }
@@ -141,7 +140,7 @@ class NumberNook implements Game {
     return step && step.next >= 0 ? { tap: { on: this.nodes[step.next] }, pause: 0.5 } : null;
   }
   update(_dt: number) {}
-  destroy() { this.alive = false; }
+  destroy() {}
 }
 function iconArt(seed = 0) {
   const c = new Container();

@@ -124,8 +124,8 @@ class RibbonWorkshop implements Game {
     });
     this.scissors.visible = this.plan.snip;
     ctx.stage.addChild(this.catcher, this.decor, this.giftLayer, this.tag, this.flash, this.benchLayer, this.trayLayer, this.glow, this.bow, this.scissors, this.undo);
-    window.addEventListener('pointercancel', this.cancel, true);
-    window.addEventListener('blur', this.cancel);
+    this.ctx.listen(window, 'pointercancel', this.cancel, true);
+    this.ctx.listen(window, 'blur', this.cancel);
     this.setGift(0);
   }
 
@@ -413,8 +413,6 @@ class RibbonWorkshop implements Game {
   }
 
   destroy() {
-    window.removeEventListener('pointercancel', this.cancel, true);
-    window.removeEventListener('blur', this.cancel);
   }
 }
 

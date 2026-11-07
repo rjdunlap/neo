@@ -150,7 +150,7 @@ class BlockGarden implements Game {
     this.root.addChild(this.bedArt, this.shadowArt, this.packets, this.basket, this.glow, this.undoButton);
     ctx.stage.addChild(this.root);
     for (let i = 0; i < 3; i++) this.slots.push(this.makeSlot(i));
-    window.addEventListener('pointercancel', this.onCancel, { capture: true });
+    this.ctx.listen(window, 'pointercancel', this.onCancel, { capture: true });
   }
 
   private pickGarden(i: number): Garden {
@@ -193,7 +193,6 @@ class BlockGarden implements Game {
   }
 
   destroy() {
-    window.removeEventListener('pointercancel', this.onCancel, { capture: true });
     for (const s of this.slots) s.handle.destroy();
   }
 

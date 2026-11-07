@@ -163,9 +163,9 @@ class PuddleLens implements Game {
     this.stop = firstStop(level);
     this.backdrop = new Backdrop({ sky: [0x9fd8f5, 0xfff6e0], hills: [0x9fd8f5, 0x7cc7ec, 0xffe7a3], horizon: 0.42, clouds: 2, sun: true, seed: 131 }, ctx.view);
     ctx.stage.addChild(this.backdrop, this.board);
-    window.addEventListener('pointerdown', this.down);
-    window.addEventListener('pointerup', this.up);
-    window.addEventListener('pointercancel', this.up);
+    this.ctx.listen(window, 'pointerdown', this.down);
+    this.ctx.listen(window, 'pointerup', this.up);
+    this.ctx.listen(window, 'pointercancel', this.up);
   }
 
   start() {
@@ -179,9 +179,6 @@ class PuddleLens implements Game {
     this.alive = false;
     this.drag?.destroy();
     this.drag = null;
-    window.removeEventListener('pointerdown', this.down);
-    window.removeEventListener('pointerup', this.up);
-    window.removeEventListener('pointercancel', this.up);
   }
 
   resize(v: View) {

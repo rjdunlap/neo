@@ -222,8 +222,8 @@ class FluffySalon implements Game {
     const up = (e: { pointerId: number }) => e.pointerId === this.pointer && (this.pointer = null);
     this.touch.on('pointerup', up);
     this.touch.on('pointerupoutside', up);
-    window.addEventListener('pointercancel', this.cancel, true);
-    window.addEventListener('blur', this.cancel);
+    this.ctx.listen(window, 'pointercancel', this.cancel, true);
+    this.ctx.listen(window, 'blur', this.cancel);
 
     this.card.visible = false;
     this.card.hitArea = new Rectangle(-110, -130, 220, 250);
@@ -391,8 +391,6 @@ class FluffySalon implements Game {
 
   destroy() {
     this.cancel();
-    window.removeEventListener('pointercancel', this.cancel, true);
-    window.removeEventListener('blur', this.cancel);
     this.touch.removeAllListeners();
     this.wall.texture.destroy(true);
   }
@@ -662,10 +660,9 @@ class SalonPair implements Game {
     const up = (e: { pointerId: number }) => { if (e.pointerId === this.pointer) this.cancel(); };
     this.touch.on('pointerup', up);
     this.touch.on('pointerupoutside', up);
-    window.addEventListener('pointercancel', this.cancel, true);
-    window.addEventListener('blur', this.cancel);
-    window.addEventListener('pointerup', up, true);
-    this.releaseUp = () => window.removeEventListener('pointerup', up, true);
+    this.ctx.listen(window, 'pointercancel', this.cancel, true);
+    this.ctx.listen(window, 'blur', this.cancel);
+    this.releaseUp = this.ctx.listen(window, 'pointerup', up, true);
     for (const tool of toolsFor(this.plan.mode)) {
       const b = new ToolButton(tool, 50, () => {
         if (this.busy || this.finished) return;
@@ -851,8 +848,6 @@ class SalonPair implements Game {
     this.destroyed = true;
     this.cancel();
     this.touch.removeAllListeners();
-    window.removeEventListener('pointercancel', this.cancel, true);
-    window.removeEventListener('blur', this.cancel);
     this.releaseUp();
   }
 }

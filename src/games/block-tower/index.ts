@@ -129,7 +129,7 @@ class BlockTower implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
-    window.addEventListener('pointercancel', this.cancelReach, true);
+    this.ctx.listen(window, 'pointercancel', this.cancelReach, true);
     this.plan = planFor(ctx.level);
     this.reachRounds = this.plan.mode === 'reach' ? makeReachRounds(ctx.rng) : [];
     this.rounds = this.plan.mode === 'reach' ? this.reachRounds.map(() => ({ target: 0 })) : makeRounds(this.plan, ctx.rng);
@@ -284,7 +284,6 @@ class BlockTower implements Game {
 
   destroy() {
     this.dead = true;
-    window.removeEventListener('pointercancel', this.cancelReach, true);
     for (const t of this.tray) t.drag.destroy();
   }
 

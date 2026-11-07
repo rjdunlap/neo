@@ -188,7 +188,7 @@ class PileMatch implements Game {
     this.hitLayer.on('pointerupoutside', () => this.letGo());
     this.hitLayer.eventMode = 'static';
     ctx.stage.addChild(this.trayLayer, this.basket, this.tag, this.pieceLayer, this.gust, this.glow, this.hitLayer);
-    window.addEventListener('pointercancel', this.onCancel);
+    this.ctx.listen(window, 'pointercancel', this.onCancel);
     this.pieces = this.board.kinds.map((k) => this.pieceLayer.addChild(new Piece(k)));
   }
 
@@ -334,7 +334,6 @@ class PileMatch implements Game {
   }
 
   destroy() {
-    window.removeEventListener('pointercancel', this.onCancel);
   }
 
   /** Start again: every piece back on the heap. Misses and hints already made still count. */

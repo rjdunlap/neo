@@ -26,7 +26,7 @@ export class VillageVote implements Game {
   this.companion=ctx.companion();this.companion.eventMode='none';ctx.track(this.companion);
   this.backdrop=new Backdrop({sky:[0xffe2c4,cream],hills:[0xd8ecb0,0xbfe39a],horizon:.42,seed:127,clouds:2,sun:true},this.view);
   this.ghost=new GhostFinger(this.root,new EventBoundary(this.root));ctx.stage.addChild(this.backdrop,this.root);this.root.addChild(this.board,this.glow,this.companion,this.ghost.hand);this.glow.eventMode='none';
-  window.addEventListener('pointercancel',this.cancel,true);window.addEventListener('blur',this.cancel);
+  this.ctx.listen(window, 'pointercancel',this.cancel,true);this.ctx.listen(window, 'blur',this.cancel);
  }
  start(){this.draw();this.instruct();}
  private instruct(){void this.ctx.instruct(this.election.phase==='preference'?'village-vote.preference':this.election.plan.level===3?'village-vote.three':this.election.plan.level===2?'village-vote.pet-count':'village-vote.two');}
@@ -105,7 +105,7 @@ export class VillageVote implements Game {
  }
  update(dt:number){this.clock+=dt;this.ghost.update(dt);this.glow.clear();const e=this.election;if(e.glowing&&e.phase==='counting'){const p=this.boxes.options[e.plan.options.indexOf(e.winner)];this.glow.roundRect(p.x-96,p.y-66,192,132,22).stroke({width:6+Math.sin(this.clock*5),color:swatch.yellow.fill});}}
  resize(v:View){this.generation++;this.release();this.ghost.stop();this.ctx.tw.kill(this.companion);for(const n of this.friends.values())this.ctx.tw.kill(n);this.view=v;this.backdrop.resize(v);this.election.arrived();this.election.feedbackDone();this.busy=false;this.draw();if(this.election.phase==='playing'){this.busy=true;void this.sharedPlay(this.generation);}}
- destroy(){this.alive=false;this.generation++;this.release();this.ghost.stop();this.ctx.tw.kill(this.companion);for(const n of this.friends.values())this.ctx.tw.kill(n);this.ctx.untrack(this.companion);window.removeEventListener('pointercancel',this.cancel,true);window.removeEventListener('blur',this.cancel);}
+ destroy(){this.alive=false;this.generation++;this.release();this.ghost.stop();this.ctx.tw.kill(this.companion);for(const n of this.friends.values())this.ctx.tw.kill(n);this.ctx.untrack(this.companion);}
 }
 class VoteIcon extends WigglyIcon{constructor(){const c=toy('slide'),p=paw();p.position.set(45,-65);c.addChild(p);super(c);}}
 export const villageVote:GameModule={id:'village-vote',name:'Village Vote',titleLine:'village-vote.title',region:'cozy-village',challenge:'numbers',skills:['counting','comparing','group-decisions'],bands:['preschool','prek','school'],levels:b=>rangeFor(LEVELS,b),describeLevel:l=>NAMES[Math.max(0,Math.min(2,l-1))],music:STYLES.paint,touchDemo:true,coplayHint:'Count aloud while she taps the paws, then swap roles. Choose freely for the pet.',offScreen:'With a grown-up, let toy friends choose between two toys and count their preferences.',hubIcon:()=>new VoteIcon(),sticker:seed=>toy(new Rng(seed).pick(['slide','swing','sandpit'] as const)),create:ctx=>new VillageVote(ctx)};
