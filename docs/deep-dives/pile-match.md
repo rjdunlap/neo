@@ -24,9 +24,7 @@ A windy-day heap of island things lies on the grass in layers. She taps a piece 
 **Accounting.** Never a miss: an accepted tap, a put-back, a covered touch, Start again. A different kind at levels 1–2 is one miss, with the pet naming both. From level 4 the first tap a full tray refuses is one miss, then free until something leaves the tray. Every second miss glows the hint (one hint); from level 4 three put-backs since the board began or the last hint glow it too. `hintFor` takes a tap a memoized search (capped at 200,000 masks) proves still clears, else the route fallback (put back a stray kind, then follow the clearing route). Level 3 cannot produce a miss, so two rounds there step up.
 
 **Known gaps.**
-- Every round looks the same: one grass patch, no backdrop, no wind. Nothing on screen explains why things are in a heap or which landed on top.
-- Six shapes per level, shared between 1 and 3 and between 2 and 4; a preschooler on 1–4 sees only twelve heap shapes.
-- Level 1 always asks for apples, then shells: the first rung never varies.
+- *Closed by slice 1:* three seeded looks (meadow, sand, autumn; levels 1–2 always meadow), a windy drop-in, ten shapes a level (none shared between 1/3 or 2/4), and a seeded second kind at level 1 (shell, toy duck or leaf after apples).
 - The sticker's kind is from the seed, not from the round. The contract rebuilds a sticker from its seed alone (`sticker(seed)` in `src/games/types.ts`), so this stays as it is.
 - The step from 3 to 4 changes three things at once for preschool and pre-K: a second layer in free play, a third kind, and a tray that can fill (with a miss).
 - The tray is typed `3 | 5`; a 4-slot tray is the one planning step left between level 8 and the genre's tighter trays.
@@ -116,11 +114,11 @@ None new. By the [standing rules](../archive/DECISIONS-2026-10-23.md#standing-ru
 
 ## Build slices, in order
 
-1. **Looks, the windy drop-in, more shapes and a varied level 1** (preschool to school; typecheck, rule tests, one filtered `pilematch` play at level 4 with one portrait screenshot in the autumn look, and `fingerdemo` at 1 because the drop-in changes when the bot may tap; build only if shared files change). The suite's level 1 script must not assume shells come second.
+1. **Built (2026-11-07, PR #1371).** **Looks, the windy drop-in, more shapes and a varied level 1** (preschool to school; typecheck, rule tests, one filtered `pilematch` play at level 4 with one portrait screenshot in the autumn look, and `fingerdemo` at 1 because the drop-in changes when the bot may tap; build only if shared files change). The suite's level 1 script must not assume shells come second.
 2. **Level 9 *A smaller tray*** (new level on the existing interaction: typecheck, rule tests at `t = 4`, one browser play of 9 with one full-tray refusal, `fingerdemo` at 9).
 3. **Level 11 *Any three in a little pile*** placed between 3 and 4 (new level on the existing interaction: typecheck, rule and registry tests with the new `order`, one browser play of 11, `fingerdemo` at 11).
 4. **Two more kinds and level 10 *Look closely*** (model change and new art on the existing interaction: typecheck, rule tests, one browser play of 10 with one refused tap and one portrait screenshot, `fingerdemo` at 10, build because voice lines change). Add a device check: whether the level 10 colour pairs read for a colour-blind child.
 
 ## What was built in this session
 
-Nothing: research and ideation only. Links and `git diff --check` ran.
+Slice 1 (PR #1371): `LOOKS`/`lookFor` in `logic.ts` (meadow; sand with a wet line and two shells; autumn with fallen leaves on the rim and under the heap), each with a sky band behind the header; levels 1–2 always meadow; decor is small, non-interactive and never in a kind's tile style. The windy drop-in: three white gust strokes sweep the header, pieces fall 80 units bottom layer first (`dropDelay` = z × 0.15 s, fall 0.35 s, squash, growing shadow), taps wait on `busy` until the last lands, under 1 s. Ten frozen shapes per level (44 new), so levels 1/3 and 2/4 no longer share pools (preschool sees 40 shapes). Level 1 asks apples, then a seeded second kind from shell, toy duck, leaf (`LEVEL1_SECOND`). No voice-line, level, how-to or bot changes. 16 rule tests. Slices 2–4 not started.
