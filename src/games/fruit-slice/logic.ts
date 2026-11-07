@@ -3,7 +3,7 @@ import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import type { BandLevels } from '../../progress/difficulty';
 
-/** Rules for Fruit Slice: the arcs, the swept slice, what a cut counts as, and the still boards of levels 7–9. */
+/** Rules for Fruit Slice: the arcs, the swept slice, what a cut counts as, the still boards of levels 7–9 and level 10's twos and threes. */
 
 export type Kind = PropKind;
 export const FRUIT: Kind[] = ['apple', 'orange', 'lemon', 'pear', 'blueberries', 'grapes', 'strawberry', 'banana', 'plum'];
@@ -24,7 +24,7 @@ export const MIN_LINE = 150;
 export type Mood = 'morning' | 'picnic' | 'sunset';
 export const MOODS: Mood[] = ['morning', 'picnic', 'sunset'];
 
-export type Mode = 'touch' | 'swipe' | 'kind' | 'fruit' | 'enough' | 'two' | 'line' | 'pieces' | 'cover';
+export type Mode = 'touch' | 'swipe' | 'kind' | 'fruit' | 'enough' | 'two' | 'line' | 'pieces' | 'cover' | 'mixed';
 
 export interface Plan {
   id: number;
@@ -32,7 +32,7 @@ export interface Plan {
   mode: Mode;
   /** Fruit in the air at once. */
   aloft: number;
-  /** Slices in the round (levels 1–4), signs (5, 6, 8) or boards (7, 9). */
+  /** Slices in the round (levels 1–4), signs (5, 6, 8, 10) or boards (7, 9). */
   count: number;
 }
 
@@ -46,13 +46,14 @@ const PLANS: Plan[] = [
   { id: 7, name: 'One straight swipe', mode: 'line', aloft: 0, count: 4 },
   { id: 8, name: 'Pieces by twos', mode: 'pieces', aloft: 3, count: 3 },
   { id: 9, name: 'Two lines clear it', mode: 'cover', aloft: 0, count: 4 },
+  { id: 10, name: 'Twos and threes', mode: 'mixed', aloft: 3, count: 3 },
 ];
 
 export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
   prek: { min: 3, max: 6 },
-  school: { min: 5, max: 9 },
+  school: { min: 5, max: 10 },
 };
 
 export function planFor(level: number): Plan {
@@ -68,7 +69,7 @@ export interface Row { kind: Kind | null; n: number; cut: number }
 /** What one sign (or the whole round, at 1–4) asks for. A row with no kind takes any fruit. */
 export interface Sign {
   rows: Row[];
-  /** Each cut fruit makes this many pieces (2 at level 8). */
+  /** Each cut fruit makes this many pieces (2 at level 8); 0 at level 10, where each kind makes its own (`piecesOf`). */
   per: number;
   /** This sign is a still board cut with the straight line (level 8's last). */
   board: boolean;
@@ -93,6 +94,8 @@ export function signsFor(plan: Plan, rng: Rng): Sign[] {
       });
     case 'pieces':
       return [one(null, 6, 2), one(null, 8, 2), one(null, rng.pick([10, 12]), 2, true)];
+    case 'mixed':
+      return [7, 9, rng.int(10, 12)].map((n) => one(null, n, 0));
     case 'line':
     case 'cover':
       return [];
@@ -107,6 +110,50 @@ export const inBowl = (s: Sign) => s.rows.reduce((a, r) => a + r.cut, 0);
 
 export type Refusal = 'not-kind' | 'not-fruit' | 'full' | 'row-done';
 
+/* ---------------------------------------------------------------------------------------------- */
+/* Level 10: twos and threes                                                                      */
+/* ---------------------------------------------------------------------------------------------- */
+
+/** The two fruit of level 10: an apple cuts into 2 pieces, an orange into 3 wedges. */
+export const MIXED: Kind[] = ['apple', 'orange'];
+const PIECES: Partial<Record<Kind, number>> = { apple: 2, orange: 3 };
+export const piecesOf = (kind: Kind) => PIECES[kind] ?? 2;
+/** The pieces one cut of this kind adds to this sign. */
+export const piecesFor = (sign: Sign, kind: Kind) => sign.per || piecesOf(kind);
+/** Pieces still to make can be made from twos and threes: anything but exactly one. */
+export const finishable = (rest: number) => rest >= 0 && rest !== 1;
+/** Level 10's dead end: one piece left, which no fruit makes. She puts a fruit back (free). */
+export const stuck = (sign: Sign) => sign.per === 0 && left(sign) === 1;
+
+/** Put back the fruit at `index` of the bowl: its pieces leave the count, exactly. Returns the kind put back. */
+export function putBack(sign: Sign, bowl: Kind[], index: number): Kind | null {
+  const k = bowl[index];
+  if (k === undefined) return null;
+  bowl.splice(index, 1);
+  sign.rows[0].cut -= piecesFor(sign, k);
+  return k;
+}
+
+/** Level 10's next step from here: a kind to cut, a bowl fruit to put back, or the send. */
+export type MixedStep = { cut: Kind } | { back: number } | { send: true };
+
+/**
+ * The hint's step at level 10: send a met bowl; from one piece short, put back an apple (then one orange finishes) or
+ * else an orange (then two apples); otherwise cut an orange when what is left stays finishable, or else an apple.
+ */
+export function mixedHint(sign: Sign, bowl: Kind[]): MixedStep {
+  const rest = left(sign);
+  if (rest === 0) return { send: true };
+  if (rest === 1) {
+    const apple = bowl.lastIndexOf('apple');
+    return { back: apple >= 0 ? apple : bowl.length - 1 };
+  }
+  return { cut: finishable(rest - piecesOf('orange')) ? 'orange' : 'apple' };
+}
+
+/** Whether cutting this kind now keeps the sign reachable without a put-back. */
+export const keeps = (sign: Sign, kind: Kind) => finishable(left(sign) - piecesFor(sign, kind));
+
 /** Whether a cut of this kind would count toward the sign now, and if not, why. Levels 1–2 never refuse. */
 export function judge(plan: Plan, sign: Sign, kind: Kind): { ok: true; row: number } | { ok: false; why: Refusal } {
   if (plan.mode === 'touch' || plan.mode === 'swipe') return { ok: true, row: 0 };
@@ -115,7 +162,7 @@ export function judge(plan: Plan, sign: Sign, kind: Kind): { ok: true; row: numb
   const rows = sign.rows;
   if (rows.length === 1 && rows[0].kind === null) {
     // Pieces: a cut that would pass the sign is refused like a full bowl.
-    if (rows[0].cut + sign.per > rows[0].n) return { ok: false, why: 'full' };
+    if (rows[0].cut + piecesFor(sign, kind) > rows[0].n) return { ok: false, why: 'full' };
     return { ok: true, row: 0 };
   }
   const i = rows.findIndex((r) => r.kind === kind);
@@ -130,6 +177,7 @@ export const wanted = (plan: Plan, sign: Sign, kind: Kind) => judge(plan, sign, 
 /**
  * Judge the fruit one stroke crosses, in the order it reached them: right ones are cut until the sign is met, the rest
  * bounce, and the whole stroke counts at most one miss. `missed` carries over between calls for a stroke cut as it goes.
+ * At level 10 a slice while one piece short bounces for free: the way on is a put-back, not a better cut.
  */
 export function judgeStroke(plan: Plan, sign: Sign, kinds: Kind[], missed = false): { cut: boolean[]; reasons: (Refusal | null)[]; miss: boolean } {
   const cut: boolean[] = [];
@@ -138,13 +186,13 @@ export function judgeStroke(plan: Plan, sign: Sign, kinds: Kind[], missed = fals
   for (const k of kinds) {
     const j = judge(plan, sign, k);
     if (j.ok) {
-      sign.rows[j.row].cut += sign.per;
+      sign.rows[j.row].cut += piecesFor(sign, k);
       cut.push(true);
       reasons.push(null);
     } else {
       cut.push(false);
       reasons.push(j.why);
-      if (!missed && !miss) miss = true;
+      if (!missed && !miss && !stuck(sign)) miss = true;
     }
   }
   return { cut, reasons, miss: plan.mode === 'touch' || plan.mode === 'swipe' ? false : miss };
@@ -183,6 +231,12 @@ export function nextKind(plan: Plan, sign: Sign, aloft: Kind[], rng: Rng, index:
       if (right.length === aloft.length) return rng.pick(others);
       return rng.chance(0.35) ? rng.pick(others) : rng.pick(need);
     }
+    case 'mixed': {
+      // A kind that keeps the sign reachable comes when none aloft does; otherwise apples and oranges mix.
+      const good = MIXED.filter((k) => keeps(sign, k));
+      if (good.length && !aloft.some((k) => keeps(sign, k))) return rng.pick(good);
+      return rng.pick(MIXED);
+    }
     default:
       return fruitAny();
   }
@@ -218,6 +272,19 @@ export const basketAt = (v: View) => ({ x: v.w / 2, y: v.h - 70 });
 /** The bowl beside the basket (bottom right of it), the send button at 5, 6 and 8. */
 export const bowlAt = (v: View) => ({ x: v.w / 2 + 230, y: v.h - 80 });
 export const BOWL_R = 80;
+/** Level 10's bowl strip: one token per fruit in the bowl (at most six, since a sign is at most 12 and an apple makes 2). */
+export const STRIP_MAX = 6;
+/** A token's square, hit area included. */
+export const TOKEN = 104;
+const TOKEN_PITCH = 114;
+/**
+ * The token slots: one row right-aligned above the bowl, clear of the bowl's tap area below, the hanging fruit's hit
+ * circles above (at most half the view down) and the corner guide at the bottom left.
+ */
+export function tokenAt(v: View, i: number): Pt {
+  const first = v.w - 70 - (STRIP_MAX - 1) * TOKEN_PITCH;
+  return { x: first + i * TOKEN_PITCH, y: v.h - 80 - BOWL_R - 20 - 4 - TOKEN / 2 };
+}
 /** The sign: top right. */
 export const signAt = (v: View) => ({ x: v.w - 110, y: 110 });
 export const SIGN_W = 160;

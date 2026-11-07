@@ -19,6 +19,7 @@ import {
   MOODS,
   arcAt, basketAt, boardOrigin, boardsFor, coverBoardsFor, coverHint, coverStep, bowlAt, BOWL_R, distToSegment, GAP, HANG, hanging, hintLineFor, HIT_R, inBowl, insideLength, judgeStroke,
   left, LINE_CANCEL, lineHits, makeToss, met, MIN_TRAVEL, nextKind, pairBoard, pairHint, planFor, RISE, signAt, SIGN_W, signsFor,
+  keeps, mixedHint, piecesOf, putBack, stuck, TOKEN, tokenAt,
   type Board, type Kind, type Line, type Mood, type Plan, type Pt, type Refusal, type Sign, type Toss,
 } from './logic';
 
@@ -54,6 +55,25 @@ function halfArt(kind: Kind, angle: number, side: 1 | -1): Container {
   art.mask = mask;
   c.addChild(art, mask);
   return c;
+}
+
+/** One of an orange's three wedges at level 10: the art behind a 120° sector mask, with a pale pith on its cut edges. */
+function wedgeArt(kind: Kind, a0: number, a1: number): Container {
+  const c = new Container();
+  const art = fruitArt(kind);
+  const mask = new Graphics().moveTo(0, 0).arc(0, 0, 90, a0, a1).lineTo(0, 0).fill(0xffffff);
+  art.mask = mask;
+  const pith = new Graphics();
+  for (const a of [a0, a1]) pith.moveTo(0, 0).lineTo(Math.cos(a) * 48, Math.sin(a) * 48);
+  pith.stroke({ width: 5, color: swatch.white.fill, cap: 'round' });
+  c.addChild(art, mask, pith);
+  return c;
+}
+
+/** A fruit in level 10's bowl: its token shows once its pieces have landed. */
+interface InBowl {
+  kind: Kind;
+  landed: boolean;
 }
 
 interface Flyer {
@@ -110,7 +130,12 @@ class FruitSlice implements Game {
   private tossed = 0;
   private slices = 0;
   private signMisses = 0;
-  private glow: { kind: 'fruit' | 'bowl' | 'line'; line?: Line } | null = null;
+  private glow: { kind: 'fruit' | 'bowl' | 'line' | 'token'; line?: Line; token?: number } | null = null;
+  /** Level 10: the fruit in the bowl, in the order they were cut; each has a token in the strip to put it back. */
+  private bowlFruit: InBowl[] = [];
+  /** When the last put-back happened: a quick second tap must not land on the token that slides into its place. */
+  private putBackAt = -Infinity;
+  private readonly strip = new Container();
   /** Level 9: lines kept on this board (0 or 1). */
   private linesUsed = 0;
   private stroke: Stroke | null = null;
@@ -147,7 +172,7 @@ class FruitSlice implements Game {
     // The how-to card's demonstration plays a short round.
     if (ctx.demo) {
       if (this.signs.length > 1) this.signs = this.signs.slice(0, 1);
-      if (this.signs.length && this.signs[0].rows.length === 1 && !this.signs[0].board && this.plan.mode !== 'enough' && this.plan.mode !== 'pieces') this.signs[0].rows[0].n = 3;
+      if (this.signs.length && this.signs[0].rows.length === 1 && !this.signs[0].board && !this.sends) this.signs[0].rows[0].n = 3;
       this.boards = this.boards.slice(0, 1);
     }
     this.wait = Array.from({ length: this.plan.aloft }, (_, c) => 0.4 + c * STAGGER);
@@ -168,8 +193,9 @@ class FruitSlice implements Game {
     this.layer.on('pointercancel', (e) => this.cancel(e));
     onTap(this.sign, () => void this.say(this.instructLine()), { cooldown: 600 });
     onTap(this.bowl, () => this.tapBowl(), { cooldown: 500 });
-    // The slice layer catches touches over the play area; the sign and the bowl sit above it.
-    ctx.stage.addChild(this.back, this.decor, this.basket, this.fruitLayer, this.glowG, this.layer, this.trailG, this.bowl, this.sign);
+    // The slice layer catches touches over the play area; the strip's tokens, the sign and the bowl sit above it. The
+    // fruit draw over the tokens (they rise past them) but never take a touch.
+    ctx.stage.addChild(this.back, this.decor, this.basket, this.layer, this.strip, this.fruitLayer, this.glowG, this.trailG, this.bowl, this.sign);
     this.resize(ctx.view);
   }
 
@@ -189,6 +215,7 @@ class FruitSlice implements Game {
     const s = signAt(v);
     this.sign.position.set(s.x, s.y);
     this.layoutBoard();
+    this.drawStrip();
   }
 
   update(dt: number) {
@@ -204,6 +231,9 @@ class FruitSlice implements Game {
     this.drawGlow(dt);
     const pulse = met(this.current ?? { rows: [], per: 1, board: false }) && this.sends && !this.busy;
     this.bowl.scale.set(pulse ? 1 + 0.06 * Math.sin(this.clock * 6) : 1);
+    // One piece short at level 10: the tokens bob, since a put-back is the way on.
+    const bob = this.isStuck && !this.busy;
+    for (const t of this.strip.children) t.scale.set(bob ? 1 + 0.05 * Math.sin(this.clock * 5) : 1);
   }
 
   destroy() {
@@ -224,13 +254,18 @@ class FruitSlice implements Game {
     if (this.busy || this.finished || this.stroke) return null;
     const sign = this.current;
     if (this.sends && sign && met(sign)) return { tap: { on: this.bowl } };
+    if (this.isStuck) {
+      const h = mixedHint(sign!, this.bowlKinds);
+      const token = 'back' in h ? this.tokenFor(h.back) : null;
+      return token ? { tap: { on: token } } : null;
+    }
     if (this.lineMode) {
       const l = this.solution();
       if (!l) return null;
       const a = this.boardPoint(l.a), b = this.boardPoint(l.b);
       return { trace: { on: this.ctx.stage, x: a.x, y: a.y }, via: [{ on: this.ctx.stage, x: b.x, y: b.y }], receiver: this.layer, pause: 0.3 };
     }
-    const f = this.flyers.find((q) => !q.gone && q.t < RISE + 0.5 && sign && this.rightNow(q.toss.kind));
+    const f = this.flyers.find((q) => !q.gone && q.t < RISE + 0.5 && sign && this.goodNow(q.toss.kind));
     if (!f) return null;
     const ax = f.toss.ax * this.view.w, ay = f.toss.ay * this.view.h;
     const dir = ax < this.view.w / 2 ? 1 : -1;
@@ -261,7 +296,22 @@ class FruitSlice implements Game {
 
   /** Levels where the bowl is sent by a tap. */
   private get sends() {
-    return this.plan.mode === 'enough' || this.plan.mode === 'two' || this.plan.mode === 'pieces';
+    return this.plan.mode === 'enough' || this.plan.mode === 'two' || this.plan.mode === 'pieces' || this.plan.mode === 'mixed';
+  }
+
+  /** Level 10, one piece short: no fruit makes one, so tossing pauses until she puts one back. */
+  private get isStuck() {
+    return this.plan.mode === 'mixed' && !!this.current && stuck(this.current);
+  }
+
+  private get bowlKinds() {
+    return this.bowlFruit.map((b) => b.kind);
+  }
+
+  /** A cut the hint would lead to: at level 10 one that keeps the sign reachable, elsewhere any right one. */
+  private goodNow(kind: Kind) {
+    if (this.plan.mode === 'mixed') return !!this.current && keeps(this.current, kind);
+    return this.rightNow(kind);
   }
 
   private rightNow(kind: Kind) {
@@ -287,6 +337,7 @@ class FruitSlice implements Game {
       case 'line': return 'slice.instruct.line';
       case 'cover': return 'slice.instruct.cover';
       case 'pieces': return s?.board ? 'slice.instruct.pairs' : 'slice.instruct.pieces';
+      case 'mixed': return 'slice.instruct.mixed';
     }
   }
 
@@ -338,7 +389,7 @@ class FruitSlice implements Game {
       f.node.rotation = f.wobble > 0 ? 0.25 * Math.sin(f.wobble * 30) : 0.15 * Math.sin(f.t * 2 + f.toss.column);
     }
     this.flyers = this.flyers.filter((f) => !f.gone);
-    if (this.busy || !this.current || (met(this.current) && !this.sends)) return;
+    if (this.busy || !this.current || (met(this.current) && !this.sends) || this.isStuck) return;
     for (let c = 0; c < this.wait.length; c++) {
       if (this.wait[c] < 0) continue;
       this.wait[c] -= dt;
@@ -488,7 +539,8 @@ class FruitSlice implements Game {
       s?.done.add(f);
       if (r.cut[i]) {
         if (s) s.cutAny = true;
-        this.cutFruit(f.node, f.toss.kind, angle, sign.per);
+        if (this.plan.mode === 'mixed') this.cutIntoBowl(f.node, f.toss.kind, angle);
+        else this.cutFruit(f.node, f.toss.kind, angle, sign.per);
         f.gone = true;
         f.node.destroy({ children: true });
         this.wait[f.toss.column] = GAP + 0.3;
@@ -619,7 +671,8 @@ class FruitSlice implements Game {
     const sign = this.current!;
     if (anyCut) {
       this.glow = null;
-      if (this.sends) void this.say('count', { n: inBowl(sign) });
+      if (this.isStuck) void this.say('slice.one-left');
+      else if (this.sends) void this.say('count', { n: inBowl(sign) });
       // Level 6's rows tick down as she cuts.
       if (this.plan.mode === 'two') this.drawSign();
     }
@@ -629,6 +682,10 @@ class FruitSlice implements Game {
       sfx.boing();
       if (why) void this.say(this.refusalLine(why, sign));
       if (this.signMisses % 2 === 0) this.showGlow();
+    } else if (why && !anyCut && this.isStuck) {
+      // One piece short, a slice just bounces: no miss, and the pet points at the put-back.
+      sfx.boing();
+      void this.say('slice.one-left');
     }
     if (!met(sign)) return;
     if (this.sends) {
@@ -657,7 +714,7 @@ class FruitSlice implements Game {
   }
 
   /** Split a fruit along the stroke: two halves part and tumble into the bowl, with juice and a rising note. */
-  private cutFruit(node: Container, kind: Kind, angle: number, per = 1) {
+  private cutFruit(node: Container, kind: Kind, angle: number, per = 1, onLand?: () => void) {
     const at = { x: node.x, y: node.y };
     node.visible = false;
     this.slices++;
@@ -676,9 +733,111 @@ class FruitSlice implements Game {
         await this.ctx.tw.to(h, { x: bowl.x + side * 20, y: bowl.y - 20, rotation: side * 1.4 }, { duration: 0.45, ease: ease.inQuad });
         h.destroy({ children: true });
         // One piece shows per fruit, two at level 8, so the bowl matches the count she hears.
-        if (per > 1 || side === 1) this.addToBowl(kind);
+        if (onLand) {
+          if (side === 1) onLand();
+        } else if (per > 1 || side === 1) this.addToBowl(kind);
       })();
     }
+  }
+
+  /**
+   * Level 10: an apple splits in two and an orange into three wedges; they tumble into the bowl, and once they land the
+   * bowl shows that many pieces and the strip a token to put the fruit back.
+   */
+  private cutIntoBowl(node: Container, kind: Kind, angle: number) {
+    const entry: InBowl = { kind, landed: false };
+    this.bowlFruit.push(entry);
+    if (kind !== 'orange') return void this.cutFruit(node, kind, angle, piecesOf(kind), () => this.landed(entry));
+    const at = { x: node.x, y: node.y };
+    node.visible = false;
+    this.slices++;
+    sfx.marimba(this.slices % 10, 0.45);
+    sfx.pop(5 + (this.slices % 5));
+    this.ctx.particles.burst(at.x, at.y, { kind: 'dot', colors: [swatch.orange.fill, 0xffffff], count: 14, speed: [80, 220], gravity: 400, life: [0.3, 0.7] });
+    const bowl = this.bowl.position;
+    for (let i = 0; i < 3; i++) {
+      const a0 = angle + (i * 2 * Math.PI) / 3, mid = a0 + Math.PI / 3;
+      const w = wedgeArt(kind, a0, a0 + (2 * Math.PI) / 3);
+      w.position.set(at.x, at.y);
+      w.eventMode = 'none';
+      this.fruitLayer.addChild(w);
+      void (async () => {
+        await this.ctx.tw.to(w, { x: at.x + Math.cos(mid) * 40, y: at.y + Math.sin(mid) * 40, rotation: 0.4 }, { duration: 0.25, ease: ease.outQuad });
+        await this.ctx.tw.to(w, { x: bowl.x + (i - 1) * 22, y: bowl.y - 20, rotation: 1.2 }, { duration: 0.45, ease: ease.inQuad });
+        w.destroy({ children: true });
+        if (i === 0) this.landed(entry);
+      })();
+    }
+  }
+
+  /** A level 10 fruit's pieces are in the bowl: its chips and its token show. */
+  private landed(entry: InBowl) {
+    if (this.finished || this.bowlFill.destroyed || !this.bowlFruit.includes(entry)) return;
+    entry.landed = true;
+    this.drawStrip();
+  }
+
+  /** Level 10's strip of tokens, one per landed fruit, and the bowl's chips to match. */
+  private drawStrip() {
+    if (this.plan.mode !== 'mixed' || this.strip.destroyed) return;
+    this.strip.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.clearBowl();
+    let slot = 0;
+    this.bowlFruit.forEach((b) => {
+      if (!b.landed) return;
+      const i = slot++;
+      for (let k = 0; k < piecesOf(b.kind); k++) this.addToBowl(b.kind);
+      const t = new Container();
+      const card = new Graphics().roundRect(-TOKEN / 2 + 2, -TOKEN / 2 + 2, TOKEN - 4, TOKEN - 4, 20).fill(0xffffff).stroke({ width: 5, color: wood.line });
+      const art = fruitArt(b.kind);
+      art.scale.set(0.55);
+      art.position.set(0, -10);
+      const dots = new Graphics();
+      const n = piecesOf(b.kind);
+      for (let d = 0; d < n; d++) dots.circle((d - (n - 1) / 2) * 18, 34, 6).fill(ink);
+      t.addChild(card, art, dots);
+      const at = tokenAt(this.view, i);
+      t.position.set(at.x, at.y);
+      t.hitArea = new Rectangle(-TOKEN / 2, -TOKEN / 2, TOKEN, TOKEN);
+      onTap(t, () => this.tapToken(b), { cooldown: 400 });
+      this.strip.addChild(t);
+    });
+  }
+
+  /** The token of the bowl fruit at `index`, if its pieces have landed. */
+  private tokenFor(index: number): Container | null {
+    const b = this.bowlFruit[index];
+    if (!b?.landed) return null;
+    const n = this.bowlFruit.slice(0, index).filter((q) => q.landed).length;
+    return (this.strip.children[n] as Container) ?? null;
+  }
+
+  /** A put-back, always free: the fruit hops out of the bowl whole and floats back into the basket. */
+  private tapToken(entry: InBowl) {
+    const sign = this.current;
+    const i = this.bowlFruit.indexOf(entry);
+    if (this.busy || this.finished || !sign || i < 0 || !entry.landed || this.clock - this.putBackAt < 0.5) return;
+    this.putBackAt = this.clock;
+    const from = { x: this.tokenFor(i)!.x, y: this.tokenFor(i)!.y };
+    putBack(sign, this.bowlKinds, i);
+    this.bowlFruit.splice(i, 1);
+    this.glow = null;
+    this.drawLid(false);
+    this.drawStrip();
+    sfx.tick();
+    sfx.pluck(4);
+    const node = fruitArt(entry.kind);
+    node.scale.set(0.6);
+    node.position.set(from.x, from.y);
+    node.eventMode = 'none';
+    this.fruitLayer.addChild(node);
+    const b = basketAt(this.view);
+    void (async () => {
+      await this.ctx.tw.to(node, { y: from.y - 50 }, { duration: 0.2, ease: ease.outQuad });
+      await this.ctx.tw.to(node, { x: b.x, y: b.y - 20 }, { duration: 0.5, ease: ease.inOutSine });
+      node.destroy({ children: true });
+    })();
+    void this.say('slice.put-back', { n: inBowl(sign) });
   }
 
   /** A half lands in the bowl: one little piece shows, up to two rows. */
@@ -698,13 +857,18 @@ class FruitSlice implements Game {
     if (this.glow || this.finished) return;
     const sign = this.current;
     if (this.sends && sign && met(sign)) this.glow = { kind: 'bowl' };
-    else if (this.lineMode) {
+    else if (this.isStuck) {
+      const h = mixedHint(sign!, this.bowlKinds);
+      if (!('back' in h) || !this.tokenFor(h.back)) return;
+      this.glow = { kind: 'token', token: h.back };
+    } else if (this.lineMode) {
       const l = this.solution();
       if (!l) return;
       this.glow = { kind: 'line', line: l };
     } else this.glow = { kind: 'fruit' };
     this.hints++;
-    void this.say(this.glow.kind === 'line' ? 'slice.hint-line' : this.glow.kind === 'bowl' ? 'slice.hint-bowl' : 'slice.hint');
+    const g = this.glow.kind;
+    void this.say(g === 'line' ? 'slice.hint-line' : g === 'bowl' ? 'slice.hint-bowl' : g === 'token' ? 'slice.hint-back' : 'slice.hint');
   }
 
   private drawGlow(dt: number) {
@@ -732,8 +896,15 @@ class FruitSlice implements Game {
         g.moveTo(a.x + ux * d, a.y + uy * d).lineTo(a.x + ux * e, a.y + uy * e);
       }
       g.stroke({ width: 8, color: swatch.yellow.fill, alpha: 0.6 + 0.3 * Math.sin(this.clock * 5), cap: 'round' });
+    } else if (gl.kind === 'token') {
+      const t = this.tokenFor(gl.token ?? -1);
+      if (t) g.roundRect(t.x - TOKEN / 2 - 8, t.y - TOKEN / 2 - 8, TOKEN + 16, TOKEN + 16, 26).stroke({ width: pulse, color: swatch.yellow.fill });
     } else {
-      const f = this.flyers.find((q) => !q.gone && this.rightNow(q.toss.kind));
+      // At level 10 the hint's own kind glows first when one hangs.
+      const h = this.plan.mode === 'mixed' && this.current ? mixedHint(this.current, this.bowlKinds) : null;
+      const want = h && 'cut' in h ? h.cut : null;
+      const live = this.flyers.filter((q) => !q.gone && this.goodNow(q.toss.kind));
+      const f = live.find((q) => q.toss.kind === want) ?? live[0];
       if (f) g.circle(f.node.x, f.node.y, HIT_R + 4).stroke({ width: pulse, color: swatch.yellow.fill });
     }
   }
@@ -831,6 +1002,7 @@ class FruitSlice implements Game {
     if (!sign) return;
     if (!met(sign)) {
       sfx.tick();
+      if (this.isStuck) return void this.say('slice.one-left');
       return void this.say('slice.more', { n: left(sign) });
     }
     void this.sendBowl();
@@ -842,9 +1014,12 @@ class FruitSlice implements Game {
     sfx.sparkle();
     this.ctx.pet.cheer();
     void this.say('slice.sent');
+    if (!this.strip.destroyed) this.strip.removeChildren().forEach((c) => c.destroy({ children: true }));
     const home = { x: this.bowl.x, y: this.bowl.y };
     await this.ctx.tw.to(this.bowl, { y: -120 }, { duration: 0.6, ease: ease.inQuad });
     this.bowlFill.removeChildren().forEach((c) => c.destroy());
+    this.bowlFruit = [];
+    this.drawStrip();
     this.drawLid(false);
     this.bowl.position.set(home.x, this.view.h + 120);
     await this.ctx.tw.to(this.bowl, { y: bowlAt(this.view).y }, { duration: 0.5, ease: ease.outBack });

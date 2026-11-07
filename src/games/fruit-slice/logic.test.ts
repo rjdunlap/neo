@@ -6,6 +6,7 @@ import {
   arcAt, basketAt, clearingLine, COVER_ROWS, coverBoardsFor, coverHint, coverLines, coverStep, oneLineClears, stripWidth, BOARD_H, BOARD_W, boardsFor, bowlAt, BOWL_R, FLIGHT, FRUIT, distToSegment, hangTime, hintLineFor, HIT_R, insideLength, isFruit,
   judge, judgeStroke, lineHits, makeToss, met, MIN_LINE, MIN_TRAVEL, nextKind, pairBoard, pairHint, planFor, reachableCounts, RISE, HANG,
   MOODS, NOT_FRUIT, signAt, SIGN_W, signsFor, sliceHits, type Kind,
+  finishable, keeps, left, MIXED, mixedHint, piecesOf, putBack, STRIP_MAX, stuck, TOKEN, tokenAt, type Sign,
 } from './logic';
 import { VOICE } from './voice';
 
@@ -379,7 +380,7 @@ describe('level 9 two-line boards', () => {
 
 describe('plans', () => {
   it('names each level and keeps the hang the same at every level (harder means choices, not speed)', () => {
-    for (let id = 1; id <= 9; id++) expect(planFor(id).id).toBe(id);
+    for (let id = 1; id <= 10; id++) expect(planFor(id).id).toBe(id);
     expect(RISE + HANG).toBeLessThan(FLIGHT);
     expect(planFor(1).aloft).toBe(1);
     expect(Math.max(...[1, 2, 3, 4, 5, 6, 8].map((i) => planFor(i).aloft))).toBe(3);
@@ -424,4 +425,135 @@ describe('fruit, not-fruit and moods', () => {
     for (let seed = 1; seed <= 60; seed++) seen.add(new Rng(seed).pick(MOODS));
     expect(seen.size).toBe(3);
   });
+});
+
+describe('level 10 twos and threes', () => {
+  const p = planFor(10);
+  const fresh = (n: number): Sign => ({ rows: [{ kind: null, n, cut: 0 }], per: 0, board: false });
+  /** Follow the hint from a bowl to the sign; the steps it took (a send is not a step). */
+  const follow = (sign: Sign, bowl: Kind[]) => {
+    for (let steps = 0; steps <= 8; steps++) {
+      const h = mixedHint(sign, bowl);
+      if ('send' in h) return steps;
+      if ('back' in h) {
+        expect(putBack(sign, bowl, h.back)).not.toBeNull();
+        continue;
+      }
+      const r = judgeStroke(p, sign, [h.cut]);
+      expect(r).toEqual({ cut: [true], reasons: [null], miss: false });
+      bowl.push(h.cut);
+    }
+    return Infinity;
+  };
+
+  it('apples make two pieces and oranges three; signs 7, 9, then 10 to 12, on school only', () => {
+    expect(p.mode).toBe('mixed');
+    expect([piecesOf('apple'), piecesOf('orange')]).toEqual([2, 3]);
+    for (const seed of SEEDS) {
+      const ns = signsFor(p, new Rng(seed)).map((s) => s.rows[0].n);
+      expect(ns.slice(0, 2)).toEqual([7, 9]);
+      expect(ns[2] >= 10 && ns[2] <= 12).toBe(true);
+    }
+  });
+
+  it('every sign is reachable from an empty bowl, and only one piece short is a dead end', () => {
+    for (let n = 2; n <= 12; n++) {
+      const ways = [...Array(7).keys()].some((a) => [...Array(5).keys()].some((o) => 2 * a + 3 * o === n));
+      expect(ways).toBe(finishable(n));
+    }
+    expect(finishable(1)).toBe(false);
+  });
+
+  it('a cut that would pass the sign is refused as one miss; one short, a slice bounces for free', () => {
+    const s = fresh(7);
+    expect(judgeStroke(p, s, ['orange', 'orange']).cut).toEqual([true, true]);
+    expect(left(s)).toBe(1);
+    expect(stuck(s)).toBe(true);
+    expect(judgeStroke(p, s, ['apple'])).toEqual({ cut: [false], reasons: ['full'], miss: false });
+    const t = fresh(7);
+    judgeStroke(p, t, ['orange', 'apple']);
+    expect(judgeStroke(p, t, ['orange'])).toEqual({ cut: [false], reasons: ['full'], miss: true });
+    expect(judgeStroke(p, t, ['apple']).cut).toEqual([true]);
+    expect(met(t)).toBe(true);
+  });
+
+  it('a put-back restores the exact count', () => {
+    const s = fresh(9);
+    const bowl: Kind[] = [];
+    for (const k of ['apple', 'orange', 'apple'] as Kind[]) {
+      judgeStroke(p, s, [k]);
+      bowl.push(k);
+    }
+    expect(left(s)).toBe(2);
+    expect(putBack(s, bowl, 1)).toBe('orange');
+    expect(left(s)).toBe(5);
+    expect(bowl).toEqual(['apple', 'apple']);
+    expect(putBack(s, bowl, 5)).toBeNull();
+    expect(left(s)).toBe(5);
+  });
+
+  it('from every reachable bowl the hint reaches the sign in at most four steps, never with a miss', () => {
+    for (let n = 7; n <= 12; n++) {
+      // Every bowl of apples and oranges up to the sign, in any order of cuts the rules allow.
+      const seen = new Set<string>();
+      const walk = (bowl: Kind[]) => {
+        const key = bowl.join(',');
+        if (seen.has(key)) return;
+        seen.add(key);
+        const sign = fresh(n);
+        for (const k of bowl) sign.rows[0].cut += piecesOf(k);
+        expect(follow({ ...sign, rows: [{ ...sign.rows[0] }] }, [...bowl])).toBeLessThanOrEqual(4);
+        for (const k of MIXED) if (judge(p, sign, k).ok) walk([...bowl, k]);
+      };
+      walk([]);
+      expect(seen.size).toBeGreaterThan(5);
+    }
+  });
+
+  it('only apples and oranges are tossed, and one that keeps the sign reachable comes when none aloft does', () => {
+    for (const seed of SEEDS) {
+      const rng = new Rng(seed);
+      for (const sign of signsFor(p, rng)) {
+        const aloft: Kind[] = [];
+        let tosses = 0;
+        while (!met(sign)) {
+          if (aloft.length >= p.aloft) aloft.shift();
+          const none = !aloft.some((a) => keeps(sign, a));
+          const k = nextKind(p, sign, aloft, rng, tosses++);
+          expect(MIXED).toContain(k);
+          if (none) expect(keeps(sign, k)).toBe(true);
+          aloft.push(k);
+          // A child who follows the sign cuts a keeping fruit now and then.
+          const good = aloft.find((a) => keeps(sign, a));
+          if (good && rng.chance(0.5)) {
+            judgeStroke(p, sign, [good]);
+            aloft.splice(aloft.indexOf(good), 1);
+          }
+          expect(stuck(sign)).toBe(false);
+          expect(tosses).toBeLessThan(100);
+        }
+      }
+    }
+  });
+
+  for (const [name, v] of Object.entries(VIEWS)) {
+    it(`the bowl strip's six tokens are big, apart and clear of the fruit, bowl, basket, sign and pet, in ${name}`, () => {
+      const bw = bowlAt(v), bk = basketAt(v), sg = signAt(v);
+      const lowestHang = 0.5 * v.h + 14 + HIT_R;
+      for (let i = 0; i < STRIP_MAX; i++) {
+        const t = tokenAt(v, i);
+        const [x0, x1, y0, y1] = [t.x - TOKEN / 2, t.x + TOKEN / 2, t.y - TOKEN / 2, t.y + TOKEN / 2];
+        expect(TOKEN).toBeGreaterThanOrEqual(100);
+        expect(x1).toBeLessThanOrEqual(v.w);
+        if (i) expect(t.x - tokenAt(v, i - 1).x).toBeGreaterThanOrEqual(TOKEN);
+        // Above the hanging fruit's hit circles' reach, and above the bowl's tap area and the basket.
+        expect(y0).toBeGreaterThan(lowestHang);
+        expect(y1).toBeLessThanOrEqual(bw.y - BOWL_R - 20);
+        expect(y1).toBeLessThan(bk.y - 50);
+        expect(y0).toBeGreaterThan(sg.y + SIGN_W / 2);
+        // The corner guide stands at the bottom left, about 200 across and 230 tall.
+        expect(x0 > 220 || y1 < v.h - 240).toBe(true);
+      }
+    });
+  }
 });
