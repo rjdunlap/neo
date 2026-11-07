@@ -1,0 +1,113 @@
+# Mossy Path deep dive
+
+*ID `mossy-path` · bands toddler, preschool, pre-K, school · levels 1–7 on 2026-11-06 · session `claude/dive-mossy-path` ([PR #1345](https://github.com/rjdunlap/neo/pull/1345))*
+
+## The game today
+
+A turtle steps from moss tile to moss tile. Levels 1–3 (school) are **path coverage**: tap an adjacent unvisited tile, a flower blooms, and the route must visit every tile once and reach the pond last. Levels 4–7 (toddler to school) are **hedge mazes**: walk the turtle to the pond by tap or slide, walking back free along the trail. The coverage levels teach planning around cut-off tiles. The mazes teach following a path, choosing at a fork, looking one step ahead, and doing two goals in order. Sources: `src/games/mossy-path/` ([definition](../definitions/mossy-path.md), [GAMES entry](../GAMES.md#mossy-path), the [puzzle-pages study's ladder](subjects/puzzle-pages.md#a-first-games-ladder-mossy-path-find-the-way)).
+
+| Level | Plan name | Bands whose window includes it | What she decides |
+| --- | --- | --- | --- |
+| 1 | A winding trail: bloom seven tiles | school | Nothing much: a 3 × 3 corridor with one route |
+| 2 | An open patch: plan a route through twelve tiles | school | Which order covers a 3 × 4 patch without stranding a tile |
+| 3 | Two rocks: visit fourteen tiles through narrow passages | school | Coverage around two rocks and bottlenecks (4 × 4) |
+| 4 | Follow the moss: one winding path to the pond | toddler, preschool | Nothing yet: where the path goes (no fork, no miss, no buttons; a pace cue after 4 s) |
+| 5 | Which way? One fork | preschool, pre-K | Which branch reaches the pond (the wrong branch is free exploration) |
+| 6 | Look before you go: dead ends one step deep | pre-K, school (school's entry) | Looking one step ahead at each fork (a wrong branch is one miss per branch) |
+| 7 | Snack on the way: get the berry, then the pond | school | Two goals in order (the berry-less pond is refused, one miss per round) |
+
+School plays in `order` 6, 1, 7, 2, 3; `entryLevels` 4, 5, 6.
+
+**Content pools.** Levels 1–3: one frozen plan each, varied only by flips and a transpose (8 symmetries; level 1's corridor is the same route under all of them). Levels 4–7: three frozen mazes each (`MAZES`), flipped left–right and/or top–bottom, never transposed, so 12 boards per level at most. One turtle, one pond, one berry, one moss palette, one flower pair. That makes this the thinnest content of any wave 6 game: a preschooler sees all of level 5 within an afternoon.
+
+**Known gaps.** The younger bands have the shortest ladders: toddler has one level, preschool two, pre-K two, and none of them has coverage. Two device checks are open ([DEVICE-CHECKS](../DEVICE-CHECKS.md)): drag stepping and walking back with a finger on an iPad, with the hedge and berry readability (2026-11-06), and a school-age child playing coverage (2026-10-13). Not drawn: the turtle turning its head toward a far tap. Not on the couch.
+
+## Similar games
+
+Store and retailer listings were found by search this session, not opened as manuals; the two research papers were opened by the definition session and are reused here.
+
+| Game | Kind | How its progression grows | What to borrow | What to leave out |
+| --- | --- | --- | --- | --- |
+| Kumon *Easy Mazes* (2–4), *Amazing Mazes* (4–6), *My Book of Mazes* (5–7) ([Amazing Mazes listing](https://www.christianbook.com/kumon-amazing-mazes-ages-4-6/9784774307107/pd/307107), [Rainbow Resource](https://www.rainbowresource.com/000219.html)) | Pencil maze workbooks | Tracing first, then wider mazes with more branches, in small steps; the sequel is "more intricate" | Small steps: more boards at each depth before the next depth; mazes that grow in branches, not just size | A pencil's precision; nothing here grades handwriting |
+| Avokiddo *Thinkrolls* 1 and 2 ([App Store](https://apps.apple.com/us/app/917176209), [Thinkrolls 2](https://apple.co/1PO0fVK)) | Touch maze-logic app, easy mode 3–5 and hard 5–8/9 | Hundreds of mazes; each chapter brings one new element (jelly, ice, fans) with its own property | One new idea per level, then many boards of it; two difficulty strands for two ages | Unlock gates between chapters; physics-property elements overlap Penguin Slide and Light Lab |
+| SmartGames *Little Red Riding Hood Deluxe* ([listing](https://www.rainbowresource.com/023197.html), [Purdue review](https://engineering.purdue.edu/ENE/INSPIRE/EngineeringGiftGuideReviews/logic-toys/little-red-riding-hood)) | Physical path puzzle, 4–7 | 48 challenges; half add the wolf, whose path must be separate | Building or choosing a whole route *before* the walk (the plan is checked after) | Placing tile pieces: a different interaction from stepping |
+| Ravensburger *Labyrinth Junior* ([listing](https://flyingpigtoys.com/products/labyrinth-junior)) | Board game, 4–8 | Collect your treasures in a maze, then return; smaller board and bigger tiles than the adult game | Several goals before home; a smaller board for younger players | The shifting maze and the race to a treasure first |
+| B-Cubed (already in [IDEAS](../IDEAS.md)) and the Pokémon cracked-ice floors ([Bulbapedia](https://bulbapedia.bulbagarden.net/wiki/Cracked_tile)) | Coverage puzzles | Visit every tile once; cracked ice that holds once and breaks on the second step | A tile that takes two visits (*thick moss*), a coverage rule with a new count, not a bigger grid | Falling through, restarting the floor |
+| Lightbot, Robot Path (on the island) | Programming routes | Plan a sequence, then run it | Plan first, then watch it run | The command language: that is Robot Path's job |
+
+**Developmental sources** (from the [definition](../definitions/mossy-path.md#levels-47-find-the-way-definition-pp1), opened there): Völter and Call 2014 (*Cognition* 130(2)): 5-year-olds planned up to two steps ahead in a trap maze, 4-year-olds one, and switching attention across subgoals was the hard part. Miyata, Watanabe and Minagawa 2014 (*PLoS One* 9(12) e115292): on a barrier-free touch grid with two or three goals, children of 39–70 months mostly took the nearer goal first and often went straight until forced to turn. Nothing found on maze planning below 3, and nothing that says mazes improve planning; grown-up wording keeps to "find the way" and "look ahead".
+
+## What makes sense here
+
+- **More boards before more depth.** Kumon and Thinkrolls both hold one idea across many boards. Three mazes per level is too few; six frozen mazes per maze level, and three coverage plans per coverage level, double what a round can draw without a new rule.
+- **Coverage for pre-K.** Coverage starts at school on a twelve-tile patch. A six-to-nine-tile patch with one or two choices gives pre-K the idea of "every tile once" (the open patch is level 2's shape, smaller).
+- **Several goals, any order (school).** Labyrinth Junior's several treasures, and Miyata's finding that children choose the nearer goal, suggest two berries in either order: an ordering choice she makes, not an order imposed. Any order is right; only the pond without both berries is refused.
+- **Plan, then go (school).** Little Red Riding Hood and Lightbot both check a whole route after it is made. A slide that draws the plan before the turtle moves asks for look-ahead across the whole maze, without step-by-step feedback. It stays a maze, not a program.
+- **Thick moss (school, coverage).** The IDEAS proposal: a tile crossed twice. It changes the counting rule rather than the grid size, so it fits the 100-unit floor.
+- **Not here:** bigger mazes (the floor caps maze boards at 4 rows by 7 columns on a 1024 × 768 view), moving hazards or timers, sliding on ice (Penguin Slide), keys and doors that duplicate the berry's subgoal, programming (Robot Path), the couch.
+
+**The long arc.** Toddler follows one path (4). Preschool chooses at a fork (5). Pre-K looks one step ahead (6) and covers a little patch (8). School covers bigger patches (1–3), does two goals in order (7), picks the order of two snacks (9), plans the whole way before walking (10), and covers with a tile that needs two visits (11).
+
+## Experience and presentation
+
+- **First unsupported action:** at level 4 a toddler touches the moss beside the turtle and the turtle steps there; a slide along the corridor walks it all the way. Nothing she touches is wrong.
+- **Touch and consequence:** a tile lifts under the finger at once, the step pops (`sfx.pop`), a paw print stays behind; a back step ticks. The pond splash and the finish are the visible ending. At level 9 each berry eaten fills one of two badge slots; at level 10 the drawn plan shows as dotted paw prints before the turtle moves, then the turtle walks them at a steady pace; at level 11 thick moss is drawn as a tall tuft that flattens on the first visit and blooms on the second.
+- **Variety on replay:** six mazes and two flips per maze level, three coverage plans with their symmetries, a seeded moss season (spring moss with pink and white flowers, autumn moss with amber leaves on the hedges, a snowy top on each hedge) and a seeded berry (red berry, blueberry, strawberry). None of it changes the rule.
+- **Concrete art example:** the autumn hedge is the existing clipped hedge `Graphics` with three to five `swatch.orange.fill` leaf ellipses at seeded offsets along its top edge, drawn once per board in `draw()` with `eventMode: 'none'`; the snowy top is a `swatch.white.fill` rounded cap 0.25 of the hedge's height. A strawberry is a `swatch.red.fill` rounded triangle with yellow seed dots and a green leaf crown, sharing the berry's position and badge.
+- **Reasoning versus precision:** cells stay at least 100 units (the board caps above), drag stepping only accepts orthogonal neighbours, and a far tap is free in every maze level, so the challenge is the route, never the finger.
+- **Supported ending and replay:** every round can finish with Hint (the next tile), Undo and walking back; Start over keeps the same board. One sticker per finished round, help included.
+- **Co-play:** one person points at a fork and guesses; the other walks. At level 10 one draws the plan and the other presses the turtle to go, then they swap. Solo play is unchanged.
+- **For a person or device to judge:** whether a preschooler reads the fork at level 5 as a choice; whether the plan-then-go wait at level 10 feels like suspense or like lag; whether the thick-moss tuft reads as "come back later"; drag feel on an iPad (the open 2026-11-06 device check).
+
+## Proposed ladder
+
+### Fresh content inside existing levels
+
+- **Mazes 4–7:** three more frozen mazes per level (six each), with every property the definition's tests already check per level (a tree; level 4 no fork; level 5 one fork with a free branch of at most two tiles; level 6 two or three forks with one-tile dead ends; level 7 a two-deep wrong branch and the berry's spur before the pond; at most 4 rows by 7 columns; the pond a leaf).
+- **Coverage 1–3:** two more frozen plans per level, each fitting the 16-cell solver (at most 4 × 4 cell indices, since `completion` keys its memo as `mask * 16 + at`): level 1 two more seven-to-nine-tile corridors (an S and an L), level 2 a 3 × 4 patch with one rock and a 2 × 5 patch, level 3 two more 4 × 4 two-rock layouts with a bottleneck. A test asserts each plan has a completing route from the start under every symmetry, and that each level-2 and level-3 plan has at least two distinct complete routes (so it is a choice, not a corridor).
+- **Looks:** a seeded moss season (spring, autumn, snow) and a seeded berry (red, blue, strawberry). Drawn with the existing hedge and berry code; no new voice line, since the berry lines say "berry" (a strawberry is still a berry to her).
+
+### New levels on top
+
+| Level | Name | Band window | First round | What she decides | Mistakes and hints | A rule test asserts | Cost and couplings |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 8 | *A little patch: bloom every tile* | pre-K (after 6), school (after 6) | A 2 × 3 open patch, the turtle in a corner, the pond in the far corner of the other row; later boards 2 × 4, 3 × 3 with one rock, 2 × 5 | Every tile once, pond last, with one or two real choices | Levels 1–3's rules with one change: a far tap is free (a pulse on the adjacent tiles, as in the mazes). Visited and early-pond taps count, two consecutive misses show help, Hint as levels 1–3 (`helpFor`), Undo and Start over | Every board under every allowed symmetry is solvable from the start; at least one board per pool has two complete routes; no board exceeds 4 × 4 cell indices; a far tap at level 8 is never a miss; the bot (`helpFor` taps) finishes with zero misses | Five frozen boards in `logic.ts`; `moveError` gains the level-8 far-tap exception; `entryLevels` unchanged; pre-K `order` 5, 6, 8 and school `order` 6, 8, 1, 7, 2, 3; heading and instruction reuse `moss.go`; how-to step `{ from: 8, to: 8 }`; `describeLevel`; bot as levels 1–3; `fingerdemo` at 8 |
+| 9 | *Two snacks: both berries, then the pond* | school (after 7) | A 4 × 7 tree maze with two berries, each on its own spur off the route, one nearer the start | Which berry first (either order is right) and the way to each | As level 7: a wrong branch is one miss per branch per round (a berry spur is never wrong); a pond step without both berries is refused, one miss per round; Hint lights the next tile toward the *nearer* remaining berry by tree distance, then the pond | Every maze is a tree with two berries on distinct spurs (not on the route, not in a wrong branch), 4 × 7 at most; either eating order finishes; `nextToward` toward the nearer berry is adjacent and strictly closer; the bot finishes every board with zero misses | `Board.berry` becomes a list, or a second `berry2`, with `mainline` adding both spurs; `MazeState.berry` becomes a count; badge with two slots; two voice lines (`moss.maze-berries` instruct: "Two berries for the turtle, in any order. Then the pond."; `moss.berry-one`: "One berry! Where is the other one?"); how-to step `{ from: 9, to: 9 }`; bot taps; `fingerdemo` at 9 |
+| 10 | *Plan, then go* | school (after 9) | A 4 × 7 tree maze with dead ends up to two tiles deep and a fork inside one wrong branch (level 7's depth, no berry). The turtle waits; she slides from the turtle to draw dotted paw prints, then taps the turtle to set off | The whole route before any step happens | Drawing follows drag stepping's rules (orthogonal moss only; sliding back erases the plan's last print). Drawing is free. Tapping the turtle sends it along the plan at 0.25 s a tile. A plan that reaches the pond finishes; a plan that ends short leaves the turtle at its end, which sniffs (`moss.stop` reused) and waits for more plan. A Go whose walked plan entered a wrong branch counts one miss per branch per round, as level 6. Walking back is free between plans. Hint draws the next three route tiles as gold prints (counted once per trail) | Every board's tree and depth properties; a plan is always a simple path from the turtle; a plan on the route never counts a miss; a plan into a counted branch never re-counts; the bot (one trace along the route, then a tap on the turtle) finishes with zero misses | A plan buffer and Go state in `logic.ts` (`planTouch`, `planGo`) beside `mazeTouch`; three frozen mazes; voice `moss.plan` (instruct: "Draw the way with your finger, then tap the turtle to go."); how-to step `{ from: 10, to: 10 }`; the bot uses `{ trace, via }` then a tap; `fingerdemo` at 10. A new interaction (a plan that runs later) |
+| 11 | *Thick moss: some tiles need two visits* | school (after 3) | A 3 × 4 patch with one thick tuft in the middle row; later 4 × 4 boards with one rock and two tufts | Where to come back through: a tuft must be crossed twice, every other tile once, pond last | A step onto a normal visited tile or a twice-visited tuft, and an early pond, count as levels 1–3; a far tap counts as levels 1–3; a first visit to a tuft is never a miss. Hint as levels 1–3 (exact completion), Undo and Start over | Each frozen board is solvable under every symmetry; a tuft is never the start or pond; the solver finishes every board within a time bound (for example under 50 ms on a 4 × 4 with two tufts); `helpFor` from any legal prefix leads to a completion; the bot finishes with zero misses | `completion` rewritten with visit counts (a memo keyed by the count vector and the turtle's tile, not `mask * 16 + at`); `moveError`, `validPath` and `solved` generalised; tuft art (tall tuft, flattened, bloomed); voice `moss.thick` ("Thick moss! The turtle walks over it twice."); how-to step `{ from: 11 }`; `fingerdemo` at 11 |
+
+School's final `order`: 6, 8, 1, 7, 9, 2, 10, 3, 11. Pre-K's: 5, 6, 8. `entryLevels` stays 4, 5, 6 (no appended level is any band's first).
+
+### Younger-band openings
+
+- **Toddler at level 5.** Level 5's wrong branch is already free, so toddler 4–5 would add a fork without any miss. Nothing found supports fork choice below 3; the default keeps toddler at 4 until a toddler has played level 4 on an iPad (a person check; decision 2).
+- **Lap.** A lap level would be a straight corridor where any touch steps the turtle forward: cause and effect, not wayfinding. Decision 1; default no, as with the other wave 5–6 dives.
+
+### Easier entries and levels between existing ones
+
+Level 8 is the easier step between pre-K's maze levels and school's coverage; it goes into both bands through `order`, with stable IDs and no renumbering. A pre-K 8 carried to school is in school's order and stays; a school 8 never moves down. No band gains a new first level, so `entryLevels` is unchanged and the registry's entry test still holds.
+
+### Left out on purpose
+
+Bigger boards (the 100-unit floor caps a maze at 4 × 7 and coverage at the 16-cell solver); keys, doors and switches (the berry already teaches a subgoal); ice, wind and moving hedges (Penguin Slide, Thinkrolls' physics); timers, step counts or "fewest steps" scoring; a race; programming commands; the couch.
+
+## Decisions for the developer
+
+1. **Lap entry.** Open lap with an appended level 12 *Turtle walk* (any touch steps the turtle along a straight corridor; lap 12, `entryLevels` [12])? Default: no.
+2. **Toddler range 4–5.** Let toddler play level 5's free fork once a toddler has tried level 4 on an iPad? Default: toddler stays at 4.
+3. **Journal.** File each berry kind (red, blue, strawberry) as a journal discovery when first eaten? Default: no, nothing is filed.
+
+All three are added to [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md). Slices 1–5 go ahead on the defaults.
+
+## Build slices, in order
+
+1. **More mazes, coverage plans and looks** (fresh content, ready). Tier: typecheck and the game's rule tests (every new maze through the existing property tests; the coverage solvability and two-route tests), then one filtered `mossypath` play at level 6 with one portrait screenshot in the autumn look; no `fingerdemo` (bot unchanged); no build unless `palette.ts` changes.
+2. **Level 8 *A little patch*** (ready). Tier: new level on the existing tap interaction: typecheck, rule tests (plus registry, lands and how-to tests for the new `order`s), one browser play of level 8 with one free far tap and one counted visited tap, `fingerdemo` at 8; build (voice-free, but how-to and registry change).
+3. **Level 9 *Two snacks*** (ready; after slice 1 so the berry art is drawn once). Tier: new level on the existing maze interaction: typecheck, rule tests, one browser play of level 9 eating the farther berry first, `fingerdemo` at 9; build (voice lines).
+4. **Level 10 *Plan, then go*** (ready; after slice 3 so school's `order` is written once more). Tier: new interaction: typecheck, unit tests, one scripted play (a short plan, a Go, a plan into a wrong branch, a Hint, finish) and one portrait screenshot, `fingerdemo` at 10; build.
+5. **Level 11 *Thick moss*** (ready). Tier: new level on the existing tap interaction with a solver rewrite: typecheck, rule tests (solvability, the time bound, hint progress, and levels 1–3 and 8 unchanged under the new solver), one browser play of level 11, `fingerdemo` at 11; build.
+6. **Lap entry, toddler 4–5 and the journal:** decisions 1–3 (decision 2 after the toddler device check).
+
+## What was built in this session
+
+Nothing: research and ideation only. Checked with the link checker and `git diff --check`.
