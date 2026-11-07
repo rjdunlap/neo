@@ -4,7 +4,7 @@ import { computeView } from '../../engine/view';
 import { VOICE } from './voice';
 import {
   arrangements, describe as name, dominoLayout, emptyPlacement, END_SIZE, FIRST, hintPlacement, lane, LOOK_END, LOOK_LINE, looksFor, makeLine,
-  makeRound, MOODS, passes, PITCH, PLANS, planFor, puddles, remaining, rings, run, runLane, slotBox, solutions, SLOT_H, stallReason, TRAY_W, type Line, type Placement,
+  makeRound, MOODS, passes, PITCH, PLANS, planFor, puddles, remaining, rings, run, runLane, slotBox, solutions, SLOT_H, stallReason, standing, stopsAt, TRAY_W, type Line, type Placement,
 } from './logic';
 
 const VIEWS = {
@@ -76,6 +76,8 @@ describe('Domino Run first lines', () => {
     expect(pictures(solutions(FIRST[6]))).toEqual(['0020300', '0023000']);
     expect(pictures(solutions(FIRST[7]))).toEqual(['0020200']);
     expect(pictures(solutions(FIRST[8]))).toEqual(['0020300|0002000', '0023000|0002000']);
+    expect(pictures(solutions(FIRST[9]))).toEqual(['0001000']);
+    expect(stopsAt(FIRST[9])).toEqual({ slot: 2, reason: 'too-far' });
   });
 
   it('their named wrong arrangements stall for the named reason', () => {
@@ -120,7 +122,49 @@ describe('Domino Run generation', () => {
       expect(round).toHaveLength(plan.lines);
     }
     expect(planFor(0).id).toBe(1);
-    expect(planFor(99).id).toBe(8);
+    expect(planFor(99).id).toBe(9);
+  });
+});
+
+describe('Domino Run level 9, Where will it stop?', () => {
+  const plan = planFor(9);
+  const lines = [FIRST[9], ...Array.from({ length: 500 }, (_, i) => makeLine(plan, new Rng(i + 1)).line)];
+
+  it('every line as it stands stops once, at least two dominoes in, at a domino she can tap, with a reason', () => {
+    for (const line of lines) {
+      const stop = stopsAt(line)!;
+      expect(stop, name(line)).not.toBeNull();
+      expect(stop.slot).toBeGreaterThanOrEqual(2);
+      expect(standing(line.lanes[0])).toContain(stop.slot);
+      expect(['too-far', 'too-heavy']).toContain(stop.reason);
+      expect(run(line, emptyPlacement(line))[0].fallen.at(-1)).toBe(stop.slot);
+    }
+  });
+
+  it('a too-heavy stop in at least a third of the lines', () => {
+    const heavy = lines.filter((l) => stopsAt(l)!.reason === 'too-heavy').length;
+    expect(heavy).toBeGreaterThanOrEqual(lines.length / 3);
+    expect(lines.length - heavy).toBeGreaterThanOrEqual(lines.length / 3);
+  });
+
+  it('exactly one tray piece in one socket fixes it, from a tray of one or two', () => {
+    for (const line of lines) {
+      expect(line.tray.length).toBeLessThanOrEqual(2);
+      const sols = solutions(line);
+      expect(sols, name(line)).toHaveLength(1);
+      expect(sols[0][0].filter(Boolean)).toHaveLength(1);
+    }
+  });
+
+  it('every guess is a whole slot column of at least 100 units, apart from its neighbours, at every view', () => {
+    for (const v of Object.values(VIEWS)) {
+      const lay = dominoLayout(1, v);
+      for (const line of lines.slice(0, 50)) {
+        const boxes = standing(line.lanes[0]).map((s) => slotBox(lay.lanes[0], s));
+        for (const b of boxes) expect(Math.min(b.w, b.h)).toBeGreaterThanOrEqual(100);
+        boxes.slice(1).forEach((b, i) => expect(b.x).toBeGreaterThanOrEqual(boxes[i].x + boxes[i].w));
+      }
+    }
   });
 });
 

@@ -77,3 +77,7 @@ Changed: `docs/deep-dives/marble-jump.md` and its tracker, READY, STUDY-BACKLOG,
 ## 2026-11-07 — Number Nook deep dive (docs only)
 
 Changed: `docs/deep-dives/number-nook.md` and its tracker, READY, STUDY-BACKLOG, IDEAS and waiting-on-developer rows (PR #1370); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; slices 1–6 are queued; two decisions wait on the developer ([list](../WAITING-ON-DEVELOPER.md)).
+
+## 2026-11-07 — Pile Match slice 1: looks, windy drop-in, more shapes, varied level 1
+
+Changed: three seeded looks, the windy drop-in, ten shapes a level, a seeded second kind at level 1 (PR #1371). Ran: `npm run typecheck`; `npx vitest run src/games/pile-match src/games/registry` (51 pass, 16 pile-match rule tests); `BROWSER_SUITE=pilematch` (level 1 one wrong kind, level 8 full tray, put-backs and hint, level 4 portrait screenshot in the autumn look); `BROWSER_SUITE=fingerdemo FINGER_ONLY=pile-match FINGER_LEVELS=1` (9.6 s). Open: build, other suites and offline not run; whether the drop-in makes "underneath" clearer to a three-year-old is a [device check](../DEVICE-CHECKS.md).

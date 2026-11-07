@@ -8,12 +8,13 @@ import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
+import type { VOICE } from './voice';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
   DOMINO_H, DOMINO_W, dominoLayout, emptyPlacement, hintPlacement, LOOK_LINE, looksFor, makeRound, MOODS, PITCH, planFor, puddles,
-  remaining, run, sizeAt, slotBox, solutions, SLOT_H, TRAY_H, TRAY_W, type DominoLayout, type EndLook, type Hint, type Line, type Mood,
+  remaining, run, sizeAt, slotBox, solutions, SLOT_H, stopsAt, TRAY_H, TRAY_W, type DominoLayout, type EndLook, type Hint, type Line, type Mood,
   type Placement, type Plan, type Size,
 } from './logic';
 
@@ -161,6 +162,10 @@ class DominoRun implements Game {
   finished = false;
   /** The glowing next step, until she places something. */
   hinted: Hint | null = null;
+  /** Level 9: waiting for her guess at the domino that falls last, before she can build. */
+  predicting = false;
+  /** Level 9: the slot she guessed on this line, flagged until the line rings. */
+  guess: number | null = null;
 
   /** The round's beach and each lane's end look: chosen once, so a new screen size redraws them the same. */
   readonly mood: Mood;
@@ -186,6 +191,8 @@ class DominoRun implements Game {
   private pendingHint = false;
   private told = false;
   private sols: Placement[] = [];
+  /** Level 9's guessable pinned dominoes, tappable only while she is guessing. */
+  private guessNodes: Container[] = [];
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
@@ -226,7 +233,7 @@ class DominoRun implements Game {
     this.puddleNodes.forEach((p, i) => p.scale.set(1 + (2 / p.width) * Math.sin(this.clock * 1.6 + i), 1 + 0.08 * Math.sin(this.clock * 1.6 + i)));
     const g = this.glow.clear();
     for (const s of this.starters) s.scale.set(1);
-    if (!this.line || this.busy || this.finished) return;
+    if (!this.line || this.busy || this.finished || this.predicting) return;
     const pulse = 1 + 0.08 * Math.sin(this.clock * 7);
     // The paw pulses whatever she built, so it never says whether the line is right.
     const left = remaining(this.line, this.placed).length;
@@ -261,7 +268,8 @@ class DominoRun implements Game {
   /** Show a hint, from the pause sheet: the same glow the second stall brings. */
   askForHint() {
     if (this.finished || !this.line) return;
-    if (this.busy) {
+    // A guess is never helped or counted: a hint asked for now waits until she is building.
+    if (this.busy || this.predicting) {
       this.pendingHint = true;
       return;
     }
@@ -272,6 +280,10 @@ class DominoRun implements Game {
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.line || this.pieces.some((p) => p.handle.dragging)) return null;
     if (this.plan.tapAny) return { tap: { on: this.nodes[0][1] ?? this.starters[0], x: 0, y: -40 } };
+    if (this.predicting) {
+      const stop = stopsAt(this.line);
+      return stop ? { tap: { on: this.nodes[0][stop.slot] ?? this.starters[0], x: 0, y: -40 } } : null;
+    }
     const h = hintPlacement(this.line, this.placed, this.sols);
     if (h.kind === 'run') return { tap: { on: this.starters[0], x: 0, y: -40 } };
     if (h.kind === 'remove') {
@@ -293,6 +305,8 @@ class DominoRun implements Game {
     this.hinted = null;
     this.stalls = 0;
     this.ringAt = null;
+    this.guess = null;
+    this.predicting = !!this.plan.predict;
     if (this.index >= this.lines.length) return void this.finale();
     for (const p of this.pieces) p.handle.destroy();
     this.pieces = [];
@@ -310,6 +324,8 @@ class DominoRun implements Game {
     this.busy = false;
     this.idle = 0;
     this.afterBusy();
+    // Level 9: every line opens with a guess, so every line asks for one.
+    if (this.predicting) return void this.ctx.instruct('domino-run.predict');
     if (this.told) return;
     this.told = true;
     const id = this.plan.tapAny ? 'domino-run.instruct-tap' : this.plan.id === 2 ? 'domino-run.instruct-gap' : this.plan.fork ? 'domino-run.instruct-fork' : 'domino-run.instruct';
@@ -336,6 +352,7 @@ class DominoRun implements Game {
     this.nodes = [];
     this.ends = [];
     this.starters = [];
+    this.guessNodes = [];
     line.lanes.forEach((lane, k) => {
       const l = this.lay.lanes[k];
       const x = (s: number) => l.x0 + s * PITCH;
@@ -367,6 +384,12 @@ class DominoRun implements Game {
         if (this.plan.tapAny) {
           d.hitArea = new Rectangle(-PITCH / 2, -SLOT_H, PITCH, SLOT_H);
           onTap(d, () => void this.run(s), { cooldown: 400 });
+        } else if (this.plan.predict && k === 0) {
+          // Level 9: her guess is a tap anywhere in the domino's whole slot column.
+          d.hitArea = new Rectangle(-PITCH / 2, -SLOT_H, PITCH, SLOT_H);
+          onTap(d, () => void this.predict(s), { cooldown: 400 });
+          d.eventMode = this.predicting ? 'static' : 'none';
+          this.guessNodes.push(d);
         } else d.eventMode = 'none';
         this.laneLayer.addChild(d);
         row[s] = d;
@@ -375,7 +398,7 @@ class DominoRun implements Game {
       starter.addChild(dominoArt(1, swatch.green, true));
       starter.position.set(x(0), l.base);
       starter.hitArea = new Rectangle(-PITCH / 2, -SLOT_H, PITCH, SLOT_H);
-      onTap(starter, () => void this.run(0), { cooldown: 400 });
+      onTap(starter, () => void (this.predicting ? this.predict(0) : this.run(0)), { cooldown: 400 });
       this.laneLayer.addChild(starter);
       this.starters.push(starter);
       row[0] = starter;
@@ -393,8 +416,10 @@ class DominoRun implements Game {
       block.eventMode = 'none';
       this.laneLayer.addChildAt(block, 0);
     }
+    if (this.guess !== null) this.laneLayer.addChild(flagArt(this.lay.lanes[0], this.guess, sizeAt(line.lanes[0], this.placed[0], this.guess)));
     const old = this.pieces;
     this.pieces = line.tray.map((size, i) => this.makePiece(size, i, old[i]?.at ?? null));
+    for (const p of this.pieces) p.handle.enabled = !this.predicting;
   }
 
   private makePiece(size: Size, home: number, at: Piece['at']): Piece {
@@ -522,12 +547,75 @@ class DominoRun implements Game {
   /* -------------------------------------------------------------------------------------------- */
 
   private async run(from: number) {
-    if (this.busy || this.finished || !this.line || this.pieces.some((p) => p.handle.dragging)) return;
+    if (this.busy || this.finished || this.predicting || !this.line || this.pieces.some((p) => p.handle.dragging)) return;
     this.busy = true;
     this.hinted = null;
     this.ringAt = null;
     for (const p of this.pieces) p.handle.enabled = false;
     const line = this.line;
+    const { results, fell } = await this.fall(from);
+    if (results.every((r) => r.rung)) {
+      // The pet names the gong-sized end if one rang, else the first lane's.
+      const k = Math.max(0, line.lanes.findIndex((l) => l.end === 'gong'));
+      return void this.lineDone(LOOK_LINE[this.looks[k] ?? line.lanes[k].end]);
+    }
+    const stall = results.find((r) => r.stall)!.stall!;
+    sfx.boing();
+    await this.ctx.say(this.stallLine(stall));
+    await this.standUp(fell);
+    this.stalls++;
+    this.busy = false;
+    this.idle = 0;
+    for (const p of this.pieces) p.handle.enabled = true;
+    // Every second stall lights the next useful placement (never at levels 1–2, where the gap already glows).
+    if (!this.plan.hop && this.stalls % 2 === 0) this.showHint();
+    this.afterBusy();
+  }
+
+  /**
+   * Level 9: she flags the domino she thinks falls last, the line runs as it stands, and the real last one gets the ring.
+   * A guess is never a miss or a hint, and this run is not one of her stalls.
+   */
+  private async predict(slot: number) {
+    if (!this.predicting || this.busy || this.finished || !this.line) return;
+    this.busy = true;
+    this.predicting = false;
+    for (const d of this.guessNodes) d.eventMode = 'none';
+    this.guess = slot;
+    sfx.pop(6);
+    const l = this.lay.lanes[0];
+    const flag = flagArt(l, slot, sizeAt(this.line.lanes[0], this.placed[0], slot));
+    this.laneLayer.addChild(flag);
+    await this.ctx.tw.wait(0.4);
+    const { results, fell } = await this.fall(0, false);
+    const stall = results[0].stall;
+    if (stall) {
+      this.ringAt = { x: l.x0 + stall.from * PITCH, y: l.base - 60, t: 3 };
+      if (stall.from === slot) {
+        sfx.sparkle();
+        this.ctx.pet.cheer();
+        const b = flag.getBounds();
+        this.ctx.particles.burst(b.x + b.width / 2, b.y + b.height / 2, { kind: 'dot', colors: [swatch.yellow.fill, 0xffffff], count: 10, speed: [60, 180], gravity: 0, life: [0.4, 0.8] });
+        await this.ctx.say('domino-run.predict-right');
+      } else await this.ctx.say('domino-run.predict-here');
+      await this.ctx.say(this.stallLine(stall));
+    }
+    await this.standUp(fell);
+    this.busy = false;
+    this.idle = 0;
+    for (const p of this.pieces) p.handle.enabled = true;
+    this.afterBusy();
+    await this.ctx.instruct('domino-run.instruct');
+  }
+
+  private stallLine(stall: { reason: string; at: number }): keyof typeof VOICE {
+    if (stall.reason === 'too-far') return 'domino-run.too-far';
+    return this.plan.id === 6 && sizeAt(this.line!.lanes[0], this.placed[0], stall.at) === 3 ? 'domino-run.too-heavy-giant' : 'domino-run.too-heavy';
+  }
+
+  /** The chain falls, lane by lane, until each end rings or stalls; a stall rings its gap unless `ring` is off. */
+  private async fall(from: number, ring = true) {
+    const line = this.line!;
     const results = run(line, this.placed, from);
     const fell: Container[] = [];
     await Promise.all(results.map(async (r, k) => {
@@ -555,25 +643,10 @@ class DominoRun implements Game {
           await this.ctx.tw.to(last, { rotation: 0.9 }, { duration: 0.1 });
           await this.ctx.tw.to(last, { rotation: 1.15 }, { duration: 0.15, ease: ease.outBack });
         }
-        this.ringAt = { x: l.x0 + r.stall.at * PITCH, y: l.base - 60, t: 2.2 };
+        if (ring) this.ringAt = { x: l.x0 + r.stall.at * PITCH, y: l.base - 60, t: 2.2 };
       }
     }));
-    if (results.every((r) => r.rung)) {
-      // The pet names the gong-sized end if one rang, else the first lane's.
-      const k = Math.max(0, line.lanes.findIndex((l) => l.end === 'gong'));
-      return void this.lineDone(LOOK_LINE[this.looks[k] ?? line.lanes[k].end]);
-    }
-    const stall = results.find((r) => r.stall)!.stall!;
-    sfx.boing();
-    await this.ctx.say(stall.reason === 'too-far' ? 'domino-run.too-far' : (this.plan.id === 6 && sizeAt(line.lanes[0], this.placed[0], stall.at) === 3 ? 'domino-run.too-heavy-giant' : 'domino-run.too-heavy'));
-    await this.standUp(fell);
-    this.stalls++;
-    this.busy = false;
-    this.idle = 0;
-    for (const p of this.pieces) p.handle.enabled = true;
-    // Every second stall lights the next useful placement (never at levels 1–2, where the gap already glows).
-    if (!this.plan.hop && this.stalls % 2 === 0) this.showHint();
-    this.afterBusy();
+    return { results, fell };
   }
 
   private async standUp(fell: Container[]) {
@@ -586,14 +659,14 @@ class DominoRun implements Game {
       this.relayout = false;
       this.build();
     }
-    if (this.pendingHint) {
+    if (this.pendingHint && !this.predicting) {
       this.pendingHint = false;
       this.showHint();
     }
   }
 
   private showHint() {
-    if (this.finished || !this.line || this.busy) return;
+    if (this.finished || !this.line || this.busy || this.predicting) return;
     const h = hintPlacement(this.line, this.placed, this.sols);
     if (h.kind === 'run') return void this.ctx.say('domino-run.start');
     if (h.kind === 'none') return;
@@ -663,6 +736,15 @@ class DominoRun implements Game {
     const a = 0.35 + 0.15 * Math.sin(this.clock * 6);
     g.roundRect(l.x0 + slot * PITCH - w / 2, l.base - h, w, h, 9).fill({ color: swatch.yellow.fill, alpha: a }).stroke({ width: 4, color: swatch.yellow.line, alpha: a + 0.2 });
   }
+}
+
+/** Level 9's guess: a little flag planted above the domino she tapped, apart from it so it stays up when the domino falls. */
+function flagArt(l: { x0: number; base: number }, slot: number, size: number): Graphics {
+  const x = l.x0 + slot * PITCH, foot = l.base - DOMINO_H[size || 1] - 8;
+  const g = new Graphics().roundRect(x - 3, foot - 52, 6, 52, 3).fill(wood.fill).stroke({ width: 2, color: ink2 })
+    .poly([x + 3, foot - 52, x + 38, foot - 41, x + 3, foot - 30]).fill(swatch.orange.fill).stroke({ width: 3, color: swatch.orange.line });
+  g.eventMode = 'none';
+  return g;
 }
 
 class DominoIcon extends WigglyIcon {

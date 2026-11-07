@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, errors, log, scene, tap, screenshot, launch, finished }) {
-/** Domino Run by touch: level 1 tipped by taps, level 8 with a stalled run, a requested hint and the rest by drags, level 5 upright, level 6 upright at sunset with a drop on a puddle. */
+/** Domino Run by touch: level 1 tipped by taps, level 8 with a stalled run, a requested hint and the rest by drags, level 5 upright, level 6 upright at sunset with a drop on a puddle, level 9 upright with a wrong guess and a requested hint. */
 async function dominoRunPlay() {
   const state = () => page.evaluate(() => { const g = neo.scene.game; return { busy: g.busy, misses: g.misses, hints: g.hints, stalls: g.stalls, hinted: !!g.hinted, index: g.index }; });
   const idle = () => page.waitForFunction(() => neo.scene.finished || (neo.scene.game && !neo.scene.game.busy), null, { timeout: 15000 });
@@ -19,12 +19,14 @@ async function dominoRunPlay() {
       const step = await page.evaluate(async () => {
         const L = await import('/src/games/domino-run/logic.ts'), g = neo.scene.game;
         if (g.plan.tapAny) return { kind: 'tap1' };
+        if (g.predicting) return { kind: 'guess', slot: L.stopsAt(g.line).slot };
         const h = L.hintPlacement(g.line, g.placed);
         if (h.kind !== 'place') return h;
         const p = g.pieces.find((q) => !q.at && q.size === h.size), l = g.lay.lanes[h.lane];
         return { kind: 'place', a: p.node.toGlobal({ x: 0, y: -60 }), to: { x: l.x0 + h.slot * L.PITCH, y: l.base } };
       });
       if (step.kind === 'tap1') await tapNode('neo.scene.game.nodes[0][1]');
+      else if (step.kind === 'guess') await tapNode(`neo.scene.game.nodes[0][${step.slot}]`);
       else if (step.kind === 'run') await tapNode('neo.scene.game.starters[0]');
       else if (step.kind === 'remove') await tapNode(`neo.scene.game.pieces.find((q) => q.at && q.at.lane === ${step.lane} && q.at.slot === ${step.slot}).node`);
       else if (step.kind === 'place') {
@@ -85,9 +87,28 @@ async function dominoRunPlay() {
   await screenshot('domino-run-6-portrait-sunset');
   await solveAll();
   await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, stickers6, { timeout: 15000 });
+  // Level 9 upright: a wrong guess (the starter) runs the line as it stands, rings the real last domino and is never a
+  // miss, a hint or one of her stalls; the tray waits until the guess. Then a requested hint, the fix, and line 2's guess.
+  const stickers9 = await page.evaluate(() => kit.store.data.stickers.length);
+  await launch('domino-run', 9); await idle();
+  st = await page.evaluate(() => { const g = neo.scene.game; return { predicting: g.predicting, trayOff: g.pieces.every((p) => !p.handle.enabled) }; });
+  assert.deepEqual(st, { predicting: true, trayOff: true }, 'level 9 opens with a guess and the tray waits');
+  await page.evaluate(() => neo.scene.game.askForHint()); await page.waitForTimeout(200);
+  st = await state(); assert.deepEqual([st.hints, st.hinted], [0, false], 'a hint asked for during the guess waits');
+  await tapNode('neo.scene.game.starters[0]'); await page.waitForTimeout(1500);
+  await screenshot('domino-run-9-portrait-guess');
+  await idle();
+  st = await page.evaluate(async () => {
+    const L = await import('/src/games/domino-run/logic.ts'), g = neo.scene.game;
+    return { guess: g.guess, stop: L.stopsAt(g.line).slot, predicting: g.predicting, stalls: g.stalls, misses: g.misses, hints: g.hints, trayOn: g.pieces.every((p) => p.handle.enabled) };
+  });
+  assert.deepEqual(st, { guess: 0, stop: 2, predicting: false, stalls: 0, misses: 0, hints: 1, trayOn: true }, 'a wrong guess is flagged and never counted; the waiting hint shows once she builds');
+  await solveAll();
+  st = await state(); assert.deepEqual([st.misses, st.hints], [0, 1], 'level 9: no misses, the one requested hint');
+  await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, stickers9, { timeout: 15000 });
   await page.setViewportSize({ width: 1024, height: 768 });
   assert.deepEqual(errors, [], 'page errors');
-  log('Domino Run: level 1 tipped by taps, level 8 with a stall (no miss), a requested hint and drags, level 5 upright, level 6 upright at sunset with a puddle drop that springs back');
+  log('Domino Run: level 1 tipped by taps, level 8 with a stall (no miss), a requested hint and drags, level 5 upright, level 6 upright at sunset with a puddle drop that springs back, level 9 upright with a wrong guess, a waiting hint and the fix');
 }
 
 return { dominoRunPlay };

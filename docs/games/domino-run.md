@@ -11,7 +11,7 @@
 | toddler | 1–2 |
 | preschool | 2–4 |
 | pre-K | 3–5 |
-| school | 4–8 |
+| school | 4–9 |
 
 | Level | Plays like |
 | --- | --- |
@@ -23,12 +23,13 @@
 | 6 | Growing dominoes |
 | 7 | Just enough |
 | 8 | Two bells, one tray |
+| 9 | Where will it stop? |
 
 <!-- end generated -->
 
 **Starts as:** stand dominoes from a tray in a lane's gaps and tap the green starter; the line clacks down to the bell
 
-**Grows into:** one missing, several gaps, tall dominoes that reach farther, a fork with two bells, a giant for the gong, and a tray with just enough; a chain that stops is never a miss and the dominoes stand back up; puddles, beach moods and chime, horn and drum ends
+**Grows into:** one missing, several gaps, tall dominoes that reach farther, a fork with two bells, a giant for the gong, and a tray with just enough; a chain that stops is never a miss and the dominoes stand back up; puddles, beach moods and chime, horn and drum ends; at school a guess-then-fix level where she taps where the line will stop, sees it run, then repairs it
 
 ## Design notes
 
