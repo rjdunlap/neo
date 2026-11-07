@@ -11,7 +11,7 @@
 | toddler | 1–2 |
 | preschool | 2–4 |
 | pre-K | 3–5 |
-| school | 4–8 |
+| school | 4–9 |
 
 | Level | Plays like |
 | --- | --- |
@@ -23,6 +23,7 @@
 | 6 | Growing dominoes |
 | 7 | Just enough |
 | 8 | Two bells, one tray |
+| 9 | Where will it stop? |
 
 <!-- end generated -->
 

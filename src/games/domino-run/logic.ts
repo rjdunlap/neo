@@ -246,6 +246,8 @@ export interface Plan {
   tapAny: boolean;
   /** Levels 1–2: a tray domino tapped hops into the glowing socket, and stalls never add a glow. */
   hop: boolean;
+  /** Level 9: before she builds, she taps the domino she thinks falls last, and the line as it stands runs once. */
+  predict?: boolean;
 }
 
 export const PLANS: Plan[] = [
@@ -257,13 +259,14 @@ export const PLANS: Plan[] = [
   { id: 6, name: 'Growing dominoes', lines: 2, fork: false, tapAny: false, hop: false },
   { id: 7, name: 'Just enough', lines: 2, fork: false, tapAny: false, hop: false },
   { id: 8, name: 'Two bells, one tray', lines: 2, fork: true, tapAny: false, hop: false },
+  { id: 9, name: 'Where will it stop?', lines: 2, fork: false, tapAny: false, hop: false, predict: true },
 ];
 
 export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
   prek: { min: 3, max: 5 },
-  school: { min: 4, max: 8 },
+  school: { min: 4, max: 9 },
 };
 
 export const planFor = (level: number): Plan => PLANS[Math.min(Math.max(1, Math.round(level)), PLANS.length) - 1];
@@ -294,7 +297,17 @@ export const FIRST: Record<number, Line> = {
   6: { lanes: [lane('S____O')], tray: tray('TG') },
   7: { lanes: [lane('S____B')], tray: tray('TT') },
   8: { lanes: [lane('S____O'), lane('SS__TB')], tray: tray('TTG') },
+  9: { lanes: [lane('SS_SSB')], tray: tray('S') },
 };
+
+/** The standing dominoes she can tap as her guess at level 9: the starter and every pinned one. */
+export const standing = (lane: Lane): number[] => [0, ...lane.fixed.map((s, i) => (i > 0 && i < lane.n && s ? i : 0)).filter(Boolean)];
+
+/** Level 9's answer: the domino that falls last when the line runs as it stands, and why the chain stops there. */
+export function stopsAt(line: Line): { slot: number; reason: StallReason } | null {
+  const r = runLane(line.lanes[0], emptyPlacement(line)[0]);
+  return r.stall ? { slot: r.stall.from, reason: r.stall.reason } : null;
+}
 
 const sockets = (line: Line) => line.lanes.reduce((n, l) => n + l.sockets.length, 0);
 
@@ -356,6 +369,11 @@ export function passes(plan: Plan, line: Line): boolean {
       return line.tray.length === 3 && new Set(line.tray).size >= 2 && lanes[0].end !== lanes[1].end && eachLaneNeeds(line)
         && sols.every((p) => unevenSplit(p))
         && arrangements(line).some((p) => run(line, p).some((r) => r.stall?.reason === 'too-heavy'));
+    case 9: {
+      // The line as it stands stops at least two dominoes past the starter, and one tray piece (of one or two) fixes it.
+      const stop = stopsAt(line);
+      return !!stop && stop.slot >= 2 && line.tray.length <= 2 && sols.length === 1 && sols[0][0].filter(Boolean).length === 1;
+    }
   }
   return false;
 }
@@ -460,6 +478,33 @@ function candidate(plan: Plan, rng: Rng): Line | null {
       const opens = rng.chance(0.5) ? [2, 1] : [1, 2];
       const built = chains.map((c, k) => chainLane(rng, 6, ends[k], c!, opens[k]));
       return { lanes: built.map((b) => b.lane), tray: rng.shuffle(built.flatMap((b) => b.tray)) };
+    }
+    case 9: {
+      const decoy = (t: Size[]): Size[] => (rng.chance(0.35) ? rng.shuffle([...t, rng.pick(SIZES.filter((s) => s !== t[0]))]) : t);
+      if (rng.chance(0.4)) {
+        // Too heavy: a tall reaches over an empty socket to the gong, so only a giant stood there rings it.
+        const n = rng.int(4, 6);
+        const fixed = new Array<number>(n + 1).fill(0);
+        fixed[0] = 1;
+        let i = 0, h = 1;
+        while (i < n - 2) {
+          const step = Math.min(rng.int(1, h), n - 2 - i);
+          i += step;
+          h = i === n - 2 ? 2 : rng.int(1, Math.min(2, h + 1));
+          fixed[i] = h;
+        }
+        return { lanes: [{ n, fixed, sockets: [n - 1], end: 'gong' }], tray: decoy([3]) };
+      }
+      // Too far: a chain with one of its pieces taken out and turned into the gap.
+      const end: End = rng.chance(0.3) ? 'gong' : 'bell';
+      const chain = randomChain(rng, 6, end, false);
+      if (!chain) return null;
+      const stand = chain.map((h, i) => (h && i > 0 && i < 6 ? i : 0)).filter(Boolean);
+      // Open a piece whose neighbour before it is at least two dominoes in, so the guess is never the starter.
+      const open = rng.shuffle(stand.filter((_, k) => k > 0 && stand[k - 1] >= 2))[0];
+      if (!open) return null;
+      const fixed = chain.map((h, i) => (i === open || i === 6 ? 0 : h));
+      return { lanes: [{ n: 6, fixed, sockets: [open], end }], tray: decoy([chain[open] as Size]) };
     }
   }
   return null;
