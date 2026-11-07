@@ -11,8 +11,9 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
-  DOMINO_H, DOMINO_W, dominoLayout, emptyPlacement, hintPlacement, makeRound, PITCH, planFor, remaining, run, sizeAt, slotBox, solutions,
-  SLOT_H, TRAY_H, TRAY_W, type DominoLayout, type Hint, type Line, type Placement, type Plan, type Size,
+  DOMINO_H, DOMINO_W, dominoLayout, emptyPlacement, hintPlacement, LOOK_LINE, looksFor, makeRound, MOODS, PITCH, planFor, puddles,
+  remaining, run, sizeAt, slotBox, solutions, SLOT_H, TRAY_H, TRAY_W, type DominoLayout, type EndLook, type Hint, type Line, type Mood,
+  type Placement, type Plan, type Size,
 } from './logic';
 
 const LEVELS: BandLevels = {
@@ -48,22 +49,51 @@ export function dominoArt(size: number, color: Swatch, paw = false): Graphics {
   return g;
 }
 
-/** The bell on its post, or the big gong in its frame, standing on (0, 0); the part that swings is the first child. */
-function endArt(end: 'bell' | 'gong'): Container {
+/**
+ * An end standing on (0, 0): the bell on its post, a shell wind chime, a toy boat with its horn, the big gong in its
+ * frame or a big beach drum. The part that swings or rocks when it rings is always the second child.
+ */
+function endArt(look: EndLook): Container {
   const c = new Container();
   const swing = new Container();
-  if (end === 'bell') {
+  if (look === 'bell' || look === 'chime') {
     const post = new Graphics().rect(-5, -150, 10, 150).fill(wood.fill).stroke({ width: 3, color: wood.line })
       .roundRect(-30, -156, 60, 12, 5).fill(wood.fill).stroke({ width: 3, color: wood.line });
-    const bell = new Graphics()
-      .moveTo(-28, 0).bezierCurveTo(-26, -14, -22, -44, 0, -46).bezierCurveTo(22, -44, 26, -14, 28, 0).closePath()
-      .fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line, join: 'round' })
-      .circle(0, 4, 7).fill(swatch.yellow.line);
-    bell.position.set(0, 46);
-    swing.addChild(bell);
+    const hang = new Graphics();
+    if (look === 'bell') {
+      hang.moveTo(-28, 0).bezierCurveTo(-26, -14, -22, -44, 0, -46).bezierCurveTo(22, -44, 26, -14, 28, 0).closePath()
+        .fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line, join: 'round' })
+        .circle(0, 4, 7).fill(swatch.yellow.line);
+      hang.position.set(0, 46);
+    } else {
+      // A scallop shell with three tubes hanging under it.
+      for (const [x, len] of [[-16, 44], [0, 56], [16, 40]]) {
+        hang.moveTo(x, 10).lineTo(x, 22).stroke({ width: 2, color: swatch.white.line })
+          .roundRect(x - 5, 22, 10, len, 4).fill(swatch.teal.light).stroke({ width: 3, color: swatch.teal.line });
+      }
+      hang.moveTo(-26, 12).bezierCurveTo(-26, -8, -12, -18, 0, -18).bezierCurveTo(12, -18, 26, -8, 26, 12).closePath()
+        .fill(swatch.pink.light).stroke({ width: 3, color: swatch.pink.line, join: 'round' });
+      for (const x of [-12, 0, 12]) hang.moveTo(0, 10).lineTo(x, -14).stroke({ width: 2, color: swatch.pink.line });
+      hang.position.set(0, 24);
+    }
+    swing.addChild(hang);
     swing.position.set(0, -144);
     c.addChild(post, swing);
-  } else {
+  } else if (look === 'horn') {
+    // A toy boat on the sand; it rocks when the horn sounds. Its funnel is the horn.
+    const shadow = new Graphics().ellipse(0, 0, 50, 7).fill({ color: wood.line, alpha: 0.25 });
+    const boat = new Graphics()
+      .moveTo(-52, -40).lineTo(52, -40).lineTo(38, 0).lineTo(-38, 0).closePath()
+      .fill(swatch.red.fill).stroke({ width: 4, color: swatch.red.line, join: 'round' })
+      .rect(-46, -30, 92, 8).fill(swatch.white.fill)
+      .roundRect(-30, -78, 46, 38, 6).fill(swatch.white.fill).stroke({ width: 3, color: swatch.white.line })
+      .circle(-16, -60, 6).fill(swatch.blue.light).stroke({ width: 2, color: swatch.blue.line })
+      .circle(2, -60, 6).fill(swatch.blue.light).stroke({ width: 2, color: swatch.blue.line })
+      .moveTo(8, -76).lineTo(22, -108).lineTo(36, -112).lineTo(32, -96).lineTo(18, -76).closePath()
+      .fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line, join: 'round' });
+    c.addChild(shadow, swing);
+    swing.addChild(boat);
+  } else if (look === 'gong') {
     const frame = new Graphics().rect(-62, -168, 10, 168).rect(52, -168, 10, 168).fill(wood.fill)
       .roundRect(-66, -176, 132, 14, 6).fill(wood.fill).stroke({ width: 3, color: wood.line });
     const gong = new Graphics()
@@ -74,9 +104,42 @@ function endArt(end: 'bell' | 'gong'): Container {
     swing.addChild(gong);
     swing.position.set(0, -164);
     c.addChild(frame, swing);
+  } else {
+    // A big beach drum on short legs; it jumps when the giant hits it.
+    const legs = new Graphics().moveTo(-44, 0).lineTo(-34, -40).moveTo(44, 0).lineTo(34, -40).stroke({ width: 8, color: wood.line, cap: 'round' });
+    const drum = new Graphics()
+      .rect(-56, -110, 112, 100).fill(swatch.teal.fill).stroke({ width: 4, color: swatch.teal.line })
+      .ellipse(0, -10, 56, 12).fill(swatch.teal.fill).stroke({ width: 4, color: swatch.teal.line })
+      .ellipse(0, -110, 56, 14).fill(swatch.yellow.light).stroke({ width: 4, color: wood.line });
+    for (const x of [-56, -18, 18, 56]) drum.moveTo(x, -104).lineTo(x + (x < 0 ? 18 : -18), -16).stroke({ width: 3, color: swatch.white.fill });
+    drum.position.set(0, -30);
+    swing.addChild(drum);
+    c.addChild(legs, swing);
   }
   return c;
 }
+
+/** The beach behind the lanes for a mood, from the view's top down to the first lane's horizon. Drawn once per layout. */
+function backdropArt(mood: Mood, v: View, horizon: number): Graphics {
+  const g = new Graphics();
+  const half = horizon / 2;
+  const sky = mood === 'sunset' ? [swatch.orange.light, swatch.pink.light] : [swatch.blue.light, swatch.white.light];
+  g.rect(0, 0, v.w, half).fill({ color: sky[0], alpha: 0.5 }).rect(0, half, v.w, horizon - half).fill({ color: sky[1], alpha: 0.5 });
+  if (mood === 'sunset') g.circle(v.w * 0.72, horizon, 70).fill({ color: swatch.orange.fill, alpha: 0.45 });
+  else g.circle(v.w - 120, Math.min(110, horizon * 0.35), 34).fill({ color: swatch.yellow.fill, alpha: 0.7 });
+  // The sea: a deep band, or a thin far one with wet sand and shells when the tide is out.
+  const low = mood === 'low-tide';
+  const sea = mood === 'sunset' ? swatch.purple.light : swatch.teal.light;
+  g.rect(0, horizon, v.w, low ? 12 : 30).fill({ color: sea, alpha: 0.8 });
+  if (low) {
+    g.rect(0, horizon + 12, v.w, 26).fill({ color: wood.light, alpha: 0.5 });
+    for (let x = 90; x < v.w; x += 170) g.circle(x, horizon + 25, 5).fill(swatch.pink.light).stroke({ width: 2, color: swatch.pink.line });
+  } else {
+    for (let x = 60; x < v.w; x += 140) g.moveTo(x, horizon + 14).quadraticCurveTo(x + 14, horizon + 8, x + 28, horizon + 14).stroke({ width: 3, color: 0xffffff, alpha: 0.7 });
+  }
+  return g;
+}
+
 interface Piece {
   size: Size;
   /** Its own place in the tray, where it goes back to. */
@@ -105,6 +168,11 @@ class DominoRun implements Game {
   /** The glowing next step, until she places something. */
   hinted: Hint | null = null;
 
+  /** The round's beach and each lane's end look: chosen once, so a new screen size redraws them the same. */
+  readonly mood: Mood;
+  looks: EndLook[] = [];
+
+  private readonly backdrop = new Container();
   private readonly laneLayer = new Container();
   private readonly pieceLayer = new Container();
   private readonly glow = new Graphics();
@@ -114,6 +182,7 @@ class DominoRun implements Game {
   /** Every standing thing by lane and slot (starter, pinned, placed), for the fall. */
   private nodes: (Container | null)[][] = [];
   private ends: Container[] = [];
+  private puddleNodes: Graphics[] = [];
   private starters: Container[] = [];
   private color: Swatch = swatch.blue;
   private clock = 0;
@@ -128,10 +197,13 @@ class DominoRun implements Game {
     this.plan = planFor(ctx.level);
     // The how-to card's demonstration plays one line, so it fits the card's time.
     this.lines = makeRound(this.plan, ctx.rng, ctx.demo ? 1 : this.plan.lines);
+    // Drawn after the lines, so a seed's lines stay what they were before moods existed.
+    this.mood = ctx.rng.pick(MOODS);
     this.lay = dominoLayout(this.plan.fork ? 2 : 1, ctx.view);
     this.glow.eventMode = 'none';
     this.ring.eventMode = 'none';
-    ctx.stage.addChild(this.laneLayer, this.ring, this.glow, this.pieceLayer);
+    this.backdrop.eventMode = 'none';
+    ctx.stage.addChild(this.backdrop, this.laneLayer, this.ring, this.glow, this.pieceLayer);
   }
 
   readonly hintLabel = 'Show a hint';
@@ -156,6 +228,8 @@ class DominoRun implements Game {
       if (this.ringAt.t <= 0) this.ringAt = null;
       else r.circle(this.ringAt.x, this.ringAt.y, 52 + 5 * Math.sin(this.clock * 7)).stroke({ width: 6, color: swatch.orange.fill, alpha: Math.min(1, this.ringAt.t) });
     }
+    // Puddles ripple slowly, about two units either way.
+    this.puddleNodes.forEach((p, i) => p.scale.set(1 + (2 / p.width) * Math.sin(this.clock * 1.6 + i), 1 + 0.08 * Math.sin(this.clock * 1.6 + i)));
     const g = this.glow.clear();
     for (const s of this.starters) s.scale.set(1);
     if (!this.line || this.busy || this.finished) return;
@@ -232,6 +306,7 @@ class DominoRun implements Game {
     this.placed = emptyPlacement(this.line);
     this.sols = solutions(this.line);
     this.color = LINE_COLORS[(this.index + this.ctx.rng.int(0, LINE_COLORS.length - 1)) % LINE_COLORS.length];
+    this.looks = this.line.lanes.map((l) => this.ctx.rng.pick(looksFor(l.end)));
     this.build();
     this.laneLayer.x = this.pieceLayer.x = this.ctx.view.w;
     await Promise.all([
@@ -256,6 +331,9 @@ class DominoRun implements Game {
     this.laneLayer.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.pieceLayer.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.lay = dominoLayout(line.lanes.length, this.ctx.view, line.tray.length);
+    this.backdrop.removeChildren().forEach((c) => c.destroy());
+    this.backdrop.addChild(backdropArt(this.mood, this.ctx.view, this.lay.lanes[0].base - SLOT_H - 10));
+    this.puddleNodes = [];
     for (const t of this.lay.tray.slice(0, line.tray.length)) {
       const mat = new Graphics().roundRect(t.hit.x + 6, t.hit.y + 6, t.hit.w - 12, t.hit.h - 6, 16).fill({ color: wood.light, alpha: 0.45 });
       mat.eventMode = 'none';
@@ -269,6 +347,16 @@ class DominoRun implements Game {
       const x = (s: number) => l.x0 + s * PITCH;
       const sand = new Graphics().roundRect(x(0) - 46, l.base - 4, lane.n * PITCH + 92, 22, 10).fill(swatch.yellow.light).stroke({ width: 3, color: wood.light });
       this.laneLayer.addChild(sand);
+      // No domino can stand on a puddle, which is what it shows.
+      for (const r of puddles(lane)) {
+        const w = 70 + (r.to - r.from) * PITCH, h = r.to > r.from ? 16 : 14;
+        const p = new Graphics().ellipse(0, 0, w / 2, h / 2).fill({ color: swatch.blue.light, alpha: 0.8 }).stroke({ width: 3, color: swatch.blue.fill })
+          .moveTo(-w / 4, -1).quadraticCurveTo(-w / 8, -4, 0, -2).stroke({ width: 2, color: 0xffffff });
+        p.position.set((x(r.from) + x(r.to)) / 2, l.base + 6);
+        p.eventMode = 'none';
+        this.laneLayer.addChild(p);
+        this.puddleNodes.push(p);
+      }
       const row: (Container | null)[] = new Array(lane.n + 1).fill(null);
       for (const s of lane.sockets) {
         const socket = new Graphics().roundRect(-24, -84, 48, 84, 10).stroke({ width: 3, color: wood.line, alpha: 0.45 })
@@ -297,7 +385,7 @@ class DominoRun implements Game {
       this.laneLayer.addChild(starter);
       this.starters.push(starter);
       row[0] = starter;
-      const end = endArt(lane.end);
+      const end = endArt(this.looks[k] ?? lane.end);
       end.position.set(x(lane.n), l.base);
       end.eventMode = 'none';
       this.laneLayer.addChild(end);
@@ -384,7 +472,9 @@ class DominoRun implements Game {
     }
     const target = this.socketNear(x, y, p);
     if (!target) {
-      sfx.tick();
+      // Dropped on a puddle: a little splash, and it springs back. Never a miss.
+      if (this.puddleNear(x, y)) sfx.splash();
+      else sfx.tick();
       return false;
     }
     const other = this.pieces.find((q) => q !== p && q.at?.lane === target.lane && q.at.slot === target.slot);
@@ -408,6 +498,15 @@ class DominoRun implements Game {
       }
     });
     return best;
+  }
+
+  /** Is a carried domino's foot over a puddle, in the same reach a socket would snap from? */
+  private puddleNear(x: number, y: number): boolean {
+    return this.line!.lanes.some((lane, k) => {
+      const l = this.lay.lanes[k], dy = y - l.base;
+      if (dy < -SLOT_H + 20 || dy > 110) return false;
+      return puddles(lane).some((r) => x >= l.x0 + r.from * PITCH - SNAP && x <= l.x0 + r.to * PITCH + SNAP);
+    });
   }
 
   /** Stand a domino in a socket, or send it back to the tray (null). Any placement clears the glow. */
@@ -450,10 +549,7 @@ class DominoRun implements Game {
       }
       if (r.rung) {
         const swing = this.ends[k].children[1];
-        if (lane.end === 'gong') {
-          sfx.bell(0, 0.5);
-          sfx.rumble();
-        } else sfx.bell(10 + k * 2, 0.45);
+        this.ringSound(this.looks[k] ?? lane.end, k);
         await this.ctx.tw.to(swing, { rotation: 0.35 }, { duration: 0.12 });
         await this.ctx.tw.to(swing, { rotation: -0.2 }, { duration: 0.2 });
         await this.ctx.tw.to(swing, { rotation: 0 }, { duration: 0.25, ease: ease.outBack });
@@ -468,7 +564,11 @@ class DominoRun implements Game {
         this.ringAt = { x: l.x0 + r.stall.at * PITCH, y: l.base - 60, t: 2.2 };
       }
     }));
-    if (results.every((r) => r.rung)) return void this.lineDone(results.some((r, k) => r.rung && line.lanes[k].end === 'gong'));
+    if (results.every((r) => r.rung)) {
+      // The pet names the gong-sized end if one rang, else the first lane's.
+      const k = Math.max(0, line.lanes.findIndex((l) => l.end === 'gong'));
+      return void this.lineDone(LOOK_LINE[this.looks[k] ?? line.lanes[k].end]);
+    }
     const stall = results.find((r) => r.stall)!.stall!;
     sfx.boing();
     await this.ctx.say(stall.reason === 'too-far' ? 'domino-run.too-far' : (this.plan.id === 6 && sizeAt(line.lanes[0], this.placed[0], stall.at) === 3 ? 'domino-run.too-heavy-giant' : 'domino-run.too-heavy'));
@@ -509,14 +609,31 @@ class DominoRun implements Game {
     void this.ctx.say('domino-run.hint');
   }
 
-  private async lineDone(gong: boolean) {
+  /** Each end look's ring, on the pentatonic steps; the gong-sized ones are low and long. */
+  private ringSound(look: EndLook, k: number) {
+    if (look === 'gong') {
+      sfx.bell(0, 0.5);
+      sfx.rumble();
+    } else if (look === 'drum') {
+      sfx.drum(0.7);
+      sfx.marimba(-5, 0.5);
+      void this.ctx.tw.wait(0.16).then(() => sfx.drum(0.5));
+    } else if (look === 'chime') {
+      [10, 12, 14].forEach((step, i) => void this.ctx.tw.wait(i * 0.08).then(() => sfx.bell(step + k * 2, 0.3)));
+    } else if (look === 'horn') {
+      sfx.squeak(5 + k * 2);
+      void this.ctx.tw.wait(0.2).then(() => sfx.squeak(5 + k * 2));
+    } else sfx.bell(10 + k * 2, 0.45);
+  }
+
+  private async lineDone(line: (typeof LOOK_LINE)[EndLook]) {
     sfx.sparkle();
     this.ctx.pet.cheer();
     for (const end of this.ends) {
       const b = end.getBounds();
       this.ctx.particles.burst(b.x + b.width / 2, b.y + 30, { kind: 'dot', colors: [swatch.yellow.fill, 0xffffff], count: 10, speed: [60, 180], gravity: 0, life: [0.4, 0.8] });
     }
-    await this.ctx.say(gong ? 'domino-run.gong' : 'domino-run.ring');
+    await this.ctx.say(line);
     const last = this.index === this.lines.length - 1;
     if (!last) {
       await this.standUp(this.nodes.flat().filter((n): n is Container => !!n));

@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
+import { VOICE } from './voice';
 import {
-  arrangements, describe as name, dominoLayout, emptyPlacement, FIRST, hintPlacement, lane, makeLine, makeRound, passes, PITCH, PLANS, planFor,
-  remaining, rings, run, runLane, slotBox, solutions, SLOT_H, stallReason, TRAY_W, type Line, type Placement,
+  arrangements, describe as name, dominoLayout, emptyPlacement, END_SIZE, FIRST, hintPlacement, lane, LOOK_END, LOOK_LINE, looksFor, makeLine,
+  makeRound, MOODS, passes, PITCH, PLANS, planFor, puddles, remaining, rings, run, runLane, slotBox, solutions, SLOT_H, stallReason, TRAY_W, type Line, type Placement,
 } from './logic';
 
 const VIEWS = {
@@ -204,5 +205,49 @@ describe('Domino Run layout', () => {
         expect(slotBox(lay.lanes[0], 0).h).toBe(SLOT_H);
       }
     }
+  });
+});
+
+describe('Domino Run looks', () => {
+  /** Every slot covered by a puddle, from its runs. */
+  const covered = (l: Line['lanes'][number]) => puddles(l).flatMap((r) => Array.from({ length: r.to - r.from + 1 }, (_, i) => r.from + i));
+
+  it('a puddle on every empty slot that is not a socket, and never on a socket, a pinned domino, the starter or the end', () => {
+    let seen = 0;
+    for (const plan of PLANS) {
+      const lines = [FIRST[plan.id], ...Array.from({ length: 500 }, (_, i) => makeLine(plan, new Rng(i + 1)).line)];
+      for (const line of lines) for (const l of line.lanes) {
+        const wet = covered(l);
+        const want = Array.from({ length: l.n - 1 }, (_, i) => i + 1).filter((s) => !l.fixed[s] && !l.sockets.includes(s));
+        expect(wet, `level ${plan.id}`).toEqual(want);
+        for (const s of wet) {
+          expect(l.sockets).not.toContain(s);
+          expect(l.fixed[s]).toBe(0);
+        }
+        for (const r of puddles(l)) expect(r.to >= r.from && r.from >= 1 && r.to < l.n).toBe(true);
+        // Runs are separate: two puddles never touch, or they would be one wide puddle.
+        puddles(l).forEach((r, i, a) => i > 0 && expect(r.from - a[i - 1].to).toBeGreaterThan(1));
+        seen += wet.length;
+      }
+    }
+    expect(seen, 'the generator leaves some puddles').toBeGreaterThan(0);
+  });
+
+  it('the authored first lines have no puddles, so the opening line looks as it always has', () => {
+    for (const plan of PLANS) for (const l of FIRST[plan.id].lanes) expect(puddles(l)).toEqual([]);
+  });
+
+  it('every end look is pushed like its end: bell looks by a small, drum and gong only by a giant', () => {
+    expect(looksFor('bell').sort()).toEqual(['bell', 'chime', 'horn']);
+    expect(looksFor('gong').sort()).toEqual(['drum', 'gong']);
+    for (const [look, end] of Object.entries(LOOK_END)) {
+      expect(END_SIZE[end], look).toBe(end === 'bell' ? 1 : 4);
+      expect(looksFor(end)).toContain(look);
+    }
+  });
+
+  it('every end look has a ringing line, and there are three moods', () => {
+    for (const id of Object.values(LOOK_LINE)) expect(VOICE[id], id).toBeDefined();
+    expect([...MOODS]).toEqual(['morning', 'sunset', 'low-tide']);
   });
 });

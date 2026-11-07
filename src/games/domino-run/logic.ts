@@ -1,5 +1,6 @@
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
+import type { VOICE } from './voice';
 
 /**
  * Domino Run's rules, as a stated toy model (docs/definitions/domino-run.md): a lane is a row of slots, slot 0 the
@@ -198,6 +199,38 @@ export function hintPlacement(line: Line, placed: Placement, sols = solutions(li
   }
   return { kind: 'none' };
 }
+
+/* ---------------------------------------------------------------------------------------------- */
+/* Looks: cosmetic only, never a rule                                                             */
+/* ---------------------------------------------------------------------------------------------- */
+
+/**
+ * The empty slots where no domino can stand (neither pinned nor a socket), drawn as puddles, merged into runs of
+ * neighbouring slots so two in a row make one wide puddle.
+ */
+export function puddles(lane: Lane): { from: number; to: number }[] {
+  const out: { from: number; to: number }[] = [];
+  for (let s = 1; s < lane.n; s++) {
+    if (lane.fixed[s] || lane.sockets.includes(s)) continue;
+    const last = out[out.length - 1];
+    if (last && last.to === s - 1) last.to = s;
+    else out.push({ from: s, to: s });
+  }
+  return out;
+}
+
+/** How an end looks and sounds. The rule only sees its `End`: a chime or a boat's horn is pushed like the bell, a drum like the gong. */
+export type EndLook = 'bell' | 'chime' | 'horn' | 'gong' | 'drum';
+export const LOOK_END: Record<EndLook, End> = { bell: 'bell', chime: 'bell', horn: 'bell', gong: 'gong', drum: 'gong' };
+export const looksFor = (end: End): EndLook[] => (Object.keys(LOOK_END) as EndLook[]).filter((k) => LOOK_END[k] === end);
+/** What the pet says when this end rings. */
+export const LOOK_LINE: Record<EndLook, keyof typeof VOICE> = {
+  bell: 'domino-run.ring', chime: 'domino-run.ring-chime', horn: 'domino-run.ring-horn', gong: 'domino-run.gong', drum: 'domino-run.gong-drum',
+};
+
+/** The beach behind the lanes, picked per round; backdrop only. */
+export type Mood = 'morning' | 'sunset' | 'low-tide';
+export const MOODS: readonly Mood[] = ['morning', 'sunset', 'low-tide'];
 
 /* ---------------------------------------------------------------------------------------------- */
 /* Levels                                                                                         */
