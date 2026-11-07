@@ -49,7 +49,7 @@ Check the working tree before editing. Local work, recorded verification and dep
 6. **Integrate with the island:** icon, title, land, return route, portrait and landscape, pet clearance. More games never mean smaller targets; keep IDs stable so saves and stickers survive.
 7. **Verify and document** at the lightest [tier](#verification-budget). Add a level-scoped how-to card in `howto.ts` and, for a touch game, a ghost-finger `autotouch()`; then its page `docs/games/<id>.md` (the Starts as and Grows into lines and design notes below the generated block; `npm run game-docs` writes the block, the README tables and the GAMES.md index, and `npm test` fails when they are stale), roadmap update and a verification entry. Where subagents exist, `game-reviewer` reviews the diff first and `docs-keeper` does the doc closeout. A registered game or passing build alone is not finished play.
 
-Two smooth rounds (at most one miss, no hints) step up; two struggling rounds (at least four misses or two hints each) step down, clamped to the band's range by `src/progress/difficulty.ts`. Grown-ups pin levels with `store.pin`. Define miss/hint accounting deliberately: assisted completion is not independent mastery.
+Two smooth rounds (at most one miss, no hints) step up; two struggling rounds (at least four misses or two hints each) step down, clamped to the band's range by `src/progress/difficulty.ts`. Grown-ups pin levels with `store.pin`. Define miss/hint accounting deliberately (count with `src/progress/coach.ts`): assisted completion is not independent mastery.
 
 ## Integration and persistence
 

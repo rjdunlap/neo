@@ -8,6 +8,7 @@ import type { CritterName } from '../../art/critter';
 import type { ColorName } from '../../art/palette';
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
+import { hinted, missEvery, type Tally as CoachTally } from '../../progress/coach';
 
 // ——— Properties, fixtures and briefs ———
 
@@ -232,7 +233,7 @@ export function briefFor(level: number, rng: Rng): Brief {
  * Misses and hints for one round. A complete machine whose Check fails is one miss; the second miss (and every
  * second after) lights the glow and counts one hint, once. Requested help counts one hint per press.
  */
-export class Tally {
+export class Tally implements CoachTally {
   misses = 0;
   hints = 0;
   glowing = false;
@@ -241,17 +242,16 @@ export class Tally {
 
   /** A failed Check of a complete machine. Returns whether the glow comes on now. */
   miss(): boolean {
-    this.misses++;
-    if (this.misses % 2 !== 0) return false;
+    if (!missEvery(this)) return false;
     this.glowing = true;
-    if (!this.lit) { this.lit = true; this.hints++; }
+    if (!this.lit) { this.lit = true; hinted(this); }
     return true;
   }
 
   /** A press of the pet's Help: one hint each. */
   help(): number {
     this.presses++;
-    this.hints++;
+    hinted(this);
     return this.presses;
   }
 }
