@@ -35,4 +35,11 @@ describe('AGENTS.md size', () => {
     const bytes = readFileSync(new URL('../AGENTS.md', import.meta.url)).length
     expect(bytes, 'AGENTS.md is near the 64 KiB Codex limit: move detail into DESIGN.md or a linked doc').toBeLessThan(60 * 1024)
   })
+  // Every session and subagent re-reads it on every turn, and a Codex session on another machine reads only 32 KiB. It
+  // was trimmed under that on 2026-10-23, crept back to 33.5 KB by 2026-11-06 and was trimmed again: add a rule by
+  // moving an aside or a duplicated passage to its owning doc, not by growing the file.
+  it('fits the default 32 KiB Codex read', () => {
+    const bytes = readFileSync(new URL('../AGENTS.md', import.meta.url)).length
+    expect(bytes, 'AGENTS.md passed 32 KiB: move an aside or a duplicated passage into its owning doc').toBeLessThanOrEqual(32 * 1024)
+  })
 })
