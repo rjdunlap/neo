@@ -168,6 +168,7 @@ import { keepHouse } from './keep-house';
 import { puddleLens } from './puddle-lens';
 import { farLights } from './far-lights';
 import { circuitGarden } from './circuit-garden';
+import { measuringPost } from './measuring-post';
 import { seedTravelers } from './seed-travelers';
 import { adventureWalk } from './adventure-walk';
 import { readyForAdventure } from './ready-for-adventure';
@@ -328,6 +329,7 @@ export const GAMES: GameModule[] = [
   puddleLens,
   farLights,
   circuitGarden,
+  measuringPost,
   seedTravelers,
   adventureWalk,
   readyForAdventure,

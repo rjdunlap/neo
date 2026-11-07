@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-11-06 — Measuring Post levels 1–2 (new game, measurement M3)
+
+Changed: new `measuring-post` (PR #1337, branch `claude/measuring-post-1-2`): levels 1–2, school {1,2}, Tinker Lab (now 28 games, pages 9/9/9 at school); a `measuringpost` browser suite.
+Ran (commit 0103845b, http://localhost:5270, `VITE_SPEECH=off`): `npm run typecheck`; `npm test` (321 files, 5,953 tests); `BROWSER_SUITE=measuringpost` (level 1 landscape: ribbon first, wrong tool 1 miss, taps inert while measuring, Send three times 1/0; level 2 portrait: Help points then does 1 hint, two wrong rows glow 1 hint, last asks bigger, 2/2); `fingerdemo` with `FINGER_ONLY=measuring-post` at levels 1 and 2 (12.4 s, 17.9 s); `npm run build`. `game-reviewer` findings fixed.
+Not run: offline check, `world` suite, device speech.
+Open: child appeal and legibility, 100-unit comfort on the iPad, speech ([device checks](DEVICE-CHECKS.md)); levels 3–4 unbuilt.
+
 ## 2026-11-06 — Circuit Garden levels 1–2 (new game, energy/waves E2)
 
 Changed: new `circuit-garden` (PR #1335, branch `claude/circuit-garden`): levels 1–2, pre-K and school {1,2}, Tinker Lab (now 27 games); a `circuitgarden` browser suite. Source check by a science educator: not done.
@@ -86,12 +93,6 @@ Ran: `npm run typecheck`; `npx vitest run src/games/gadget-bench src/games/regis
 Not run: `npm run build` (only the game folder, voice script and how-to changed); levels 1–3 browser replay (unchanged; rule tests show level 1–3 help and `runPath` unchanged).
 Open: device checks (two stops at one socket as a conflict; how the iPad says "paddle wheels") are in [DEVICE-CHECKS](DEVICE-CHECKS.md#gadget-bench-levels-13-inventions-i2-2026-10-27).
 
-## 2026-11-06 — Define Gadget Bench level 4, Fix-It Day (docs only)
-
-Changed: Gadget Bench definition gained level 4 (a longer three-condition path with a bump/puddle conflict, fixed by a new paddle-wheels part; school range becomes {2,4}) and its check tier; READY, the inventions and engineering-design dives and the study backlog updated.
-Ran: `node scripts/check-links.mjs` (links ok) and `git diff --check` (clean). No code checks (docs tier).
-Open: the build (new level on the existing interaction, `fingerdemo` at 4) is queued in READY; decision 5 in the definition has defaults, not blockers.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
@@ -99,6 +100,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
 | `circuitgarden`, `fingerdemo` (`circuit-garden`) | 2026-11-06: typecheck, full `npm test` (320 files) after the Tinker Lab capacity tests moved to 27 entries and the title clip was rendered; `circuitgarden` at http://localhost:5207 (level 1 landscape, level 2 portrait; Done 0/0, Show me 0/1) with both screenshots; `fingerdemo` at levels 1 and 2 | [Entry](VERIFICATION.md#2026-11-06--circuit-garden-levels-12-new-game-energywaves-e2) | no build, no device check, no science-educator reading; level 3 unbuilt |
+| `measuringpost`, `fingerdemo` (`measuring-post`) | 2026-11-06 (commit 0103845b): typecheck, full `npm test` (321 files, 5,953 tests), `measuringpost` at http://localhost:5270 (level 1 landscape, level 2 portrait), `fingerdemo` at levels 1 and 2, build | [Entry](VERIFICATION.md#2026-11-06--measuring-post-levels-12-new-game-measurement-m3) | no offline or `world` run, no device check; levels 3–4 unbuilt |
 | `playdateworkshop`, `fingerdemo` (`playdate-workshop`) | 2026-11-06 (`974b560b`): typecheck, full units (5789) before review fixes then the game's and content/voice-clip tests (210), build; `playdateworkshop` (level 1, level 3 portrait); `fingerdemo` at 1–3 (8.4 s, 21.8 s, 17.4 s) | [Entry](VERIFICATION.md#2026-11-06--playdate-workshop-levels-13-new-game-social-emotional-slice-2) | No offline check; full units not re-run after review fixes; whether children understand passing and plan comparison, and iPad speech, are open |
 | `hatband`, `fingerdemo` (`hat-band`) | 2026-11-06 (`95a25da4` plus voice change `56131fb2`): typecheck, full `npm test` (5870 tests), build; `hatband` with `HAT_LEVELS=1,4` (level 1 landscape, level 4 portrait with Undo, empty-part Check, two misses, hint, accepted Check, record [4,2,1]); `fingerdemo` at 1 and 4 | [Entry](VERIFICATION.md#2026-11-06--hat-band-level-4-build-a-song-music-m6) | Level 3 browser case and offline check not run; speaker clarity of the low hat, speech of low hat and part, the source check and a child's play are open |
 | `logic-grid` (`logicgrid`), `fingerdemo` (`logic-grid`) | 2026-11-06 (`e7536148`): typecheck, full unit tests (5605), build; `logicgrid` with `LOGICGRID_FROM=8` (75 squares, order and pair clues, header drag slides, ruled-out yes 1 miss, Help 1 hint in view, landscape and portrait fit, sticker, saved 1/1); `fingerdemo` at 8 (27.2 s); level 7 last passed at `6aed60f0`, level 6 at `0f0a23ed`, level 5 at at `a99772bd`, levels 3-4 at `49bce450`, levels 1-2 at `9e9d79db` | [Entry](archive/VERIFICATION-2026-11-06.md#2026-11-06--mystery-grid-logic-grid-level-8) | No offline check; levels 1-7 not re-played after the strip refactor; speech of slotted clues, the iPad slide, hat clues and either/neither clues and a child's grasp of "not" are open |

@@ -635,6 +635,21 @@ export const HOW_TO: Record<string, GameHowTo> = {
     ],
     note: 'Nothing here is a mistake: trying pieces, flipping the switch and pressing the tick early never count. The hand button counts as a hint once for each thing it shows. A toy model: the flower is a made lamp, and the battery gives energy; nothing is used up.',
   },
+  'measuring-post': {
+    goal: 'Choose the tool that answers how long, how heavy or how much, and see that smaller units take more of them.',
+    steps: [
+      { from: 1, to: 1, text: 'Listen to the friend’s question, then tap the rope, the balance or the cup.' },
+      { from: 1, to: 1, text: 'Watch the tool measure, then press the paper plane to send the answer.' },
+      { from: 2, to: 2, text: 'Tap the tool, watch one big unit match two little ones, then watch both friends measure.' },
+      { from: 2, to: 2, text: 'Tap the friend who used the smaller units; the last friend asks who used the bigger ones.' },
+      'The speaker says the question or the result again. The hand points at what to do next; pressed again, it does it.',
+    ],
+    finish: [
+      { from: 1, to: 1, text: 'The round ends when the third answer is sent.' },
+      { from: 2, to: 2, text: 'The round ends when the third friend’s question is answered.' },
+    ],
+    note: 'A tool that measures something else, or the wrong friend, counts as a miss and says why; after two misses the useful choice glows. The hand counts as one hint per step it helps with. The measurements are made up for the game, not real sizes.',
+  },
   'far-lights': {
     goal: 'See how a light looks brighter when it is nearer.',
     steps: [
