@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, errors, log, scene, tap, screenshot, launch, finished }) {
-/** Pile Match by touch: level 1 with one wrong kind, level 8 with a full tray refused, three put-backs and the hint they bring, level 8 upright; one sticker each. */
+/** Pile Match by touch: level 1 with one wrong kind, level 8 with a full tray refused, three put-backs and the hint they bring, level 4 upright in the autumn look; one sticker each. */
 async function pileMatchPlay() {
   const state = () => page.evaluate(() => { const g = neo.scene.game; return { busy: g.busy, misses: g.misses, hints: g.hints, mask: g.mask, tray: g.trayOrder.length, hinted: !!g.hinted, finished: g.finished }; });
   const idle = () => page.waitForFunction(() => neo.scene.finished || (neo.scene.game && !neo.scene.game.busy), null, { timeout: 15000 });
@@ -22,19 +22,20 @@ async function pileMatchPlay() {
     }
     await page.waitForFunction(() => neo.scene.finished, null, { timeout: 20000 });
   };
-  // Level 1: apples asked first; a free shell is one miss and changes nothing.
+  // Level 1: apples asked first; a free piece of the seeded second kind is one miss and changes nothing.
   await launch('pile-match', 1); await idle(); await page.waitForTimeout(300);
+  assert.equal(await page.evaluate(() => neo.scene.game.look), 'meadow', 'level 1 keeps the meadow');
   const stickers = await page.evaluate(() => kit.store.data.stickers.length);
   const wrong = await page.evaluate(async () => {
     const L = await import('/src/games/pile-match/logic.ts'), g = neo.scene.game;
     if (L.KINDS[L.askedKind(g.board, g.mask)] !== 'apple') return -2;
-    return L.freePieces(g.board.cells, g.mask).find((i) => L.KINDS[g.board.kinds[i]] === 'shell') ?? -1;
+    return L.freePieces(g.board.cells, g.mask).find((i) => L.KINDS[g.board.kinds[i]] !== 'apple') ?? -1;
   });
-  assert.ok(wrong >= 0, 'level 1 asks for apples and shows a shell');
+  assert.ok(wrong >= 0, 'level 1 asks for apples and shows another kind');
   const full = (await state()).mask;
   await tapPiece(wrong);
   let st = await state();
-  assert.deepEqual([st.misses, st.mask, st.tray], [1, full, 0], 'a shell when apples are asked is one miss and stays on the grass');
+  assert.deepEqual([st.misses, st.mask, st.tray], [1, full, 0], 'another kind when apples are asked is one miss and stays on the grass');
   // The screen turns while a piece is in flight: it still lands and the round goes on.
   const apple = await page.evaluate(async () => { const L = await import('/src/games/pile-match/logic.ts'), g = neo.scene.game; return L.hintFor(g.board, g.mask, 3, { asked: L.askedKind(g.board, g.mask) }).take; });
   const p1 = await page.evaluate((i) => neo.scene.game.hitLayer.toGlobal(neo.scene.game.layout.pieces[i]), apple);
@@ -71,13 +72,23 @@ async function pileMatchPlay() {
   await solveAll();
   st = await state(); assert.deepEqual([st.misses, st.hints], [1, 1]);
   await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, stickers8, { timeout: 15000 });
-  // Level 8 upright: one screenshot.
+  // Level 4 upright in the autumn look (relaunched until the seed gives it): taps wait for the drop-in, one screenshot, solved by taps.
   await page.setViewportSize({ width: 768, height: 1024 });
-  await launch('pile-match', 8); await idle(); await page.waitForTimeout(500);
-  await screenshot('pile-match-8-portrait');
+  let look = '';
+  for (let guard = 0; guard < 15 && look !== 'autumn'; guard++) {
+    await launch('pile-match', 4);
+    look = await page.evaluate(() => neo.scene.game.look);
+  }
+  assert.equal(look, 'autumn', 'level 4 can blow down in the autumn look');
+  assert.equal(await page.evaluate(() => neo.scene.game.busy), true, 'the heap is still dropping in, so taps wait');
+  await idle(); await page.waitForTimeout(400);
+  await screenshot('pile-match-4-autumn-portrait');
+  const stickers4 = await page.evaluate(() => kit.store.data.stickers.length);
+  await solveAll();
+  await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, stickers4, { timeout: 15000 });
   await page.setViewportSize({ width: 1024, height: 768 });
   assert.deepEqual(errors, [], 'page errors');
-  log('Pile Match: level 1 with a wrong kind, level 8 with a full-tray refusal, put-backs and a hint, both solved by taps; level 8 upright');
+  log('Pile Match: level 1 with a wrong kind, level 8 with a full-tray refusal, put-backs and a hint, level 4 upright in autumn, all solved by taps');
 }
 
 return { pileMatchPlay };

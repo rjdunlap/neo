@@ -12,7 +12,7 @@ function layer(z: number, rows: string): Cell[] {
 }
 const heap = (...layers: string[]): Cell[] => layers.flatMap((rows, z) => layer(z, rows));
 
-/** Six flat pieces: two kinds at levels 1 and 3. */
+/** Six flat pieces, two kinds: level 1. */
 const FLAT6 = [
   heap('###/###'),
   heap('##/##/##'),
@@ -20,9 +20,27 @@ const FLAT6 = [
   heap('.##./####'),
   heap('#.#.#/.#.#./..#..'),
   heap('##.##/..#../..#..'),
+  heap('#####/..#..'),
+  heap('#####/#'),
+  heap('##/.##/..##'),
+  heap('#..#/####'),
 ];
 
-/** Six on the grass and three on top: levels 2 and 4. */
+/** Six flat pieces in other shapes: level 3, so free play does not repeat level 1's heaps. */
+const FLAT6B = [
+  heap('#.#.#/#.#.#'),
+  heap('.#.#./####'),
+  heap('###/..###'),
+  heap('#...#/.#.#./#...#'),
+  heap('..#../.###./..#.#'),
+  heap('####/#..#'),
+  heap('.#.#./#.#.#/..#..'),
+  heap('#/##/.###'),
+  heap('...##/..##/.##'),
+  heap('.##./#..#/.##.'),
+];
+
+/** Six on the grass and three on top: level 2. */
 const PILE9 = [
   heap('####/.##.', '###'),
   heap('.##./####', '###'),
@@ -30,6 +48,24 @@ const PILE9 = [
   heap('#####/..#..', '#.##'),
   heap('..#../#####', '##.#'),
   heap('###/.../###', '##/.#'),
+  heap('#####/..#..', '.##/..#'),
+  heap('#####/#', '###'),
+  heap('###/###', '##/#'),
+  heap('#..#/####', '#.##'),
+];
+
+/** Six on the grass and three on top, in other shapes: level 4. */
+const PILE9B = [
+  heap('#.#.#/#.#.#', '##/.#'),
+  heap('.#.#./####', '###'),
+  heap('###/..###', '.###'),
+  heap('#...#/.#.#./#...#', '#..#/#'),
+  heap('..#../.###./..#.#', '.##/.#'),
+  heap('####/#..#', '#.#/..#'),
+  heap('.#.#./#.#.#/..#..', '.##/..#'),
+  heap('#/##/.###', '#/.##'),
+  heap('...##/..##/.##', '..##/.#'),
+  heap('.##./#..#/.##.', '#.#/.#'),
 ];
 
 /** Twelve in two layers: level 5. */
@@ -40,6 +76,10 @@ const PILE12 = [
   heap('#####/.###./..#..', '#.#./.#..'),
   heap('..#../.###./#####', '..#./.#.#'),
   heap('####/####/.##.', '#.#'),
+  heap('###/###/###', '#.#/.#.'),
+  heap('#####/#####', '.##.'),
+  heap('#.#.#/#####', '#..#/.##.'),
+  heap('###../.###./..###', '.##/..#'),
 ];
 
 /** Fifteen in three layers: level 6. */
@@ -50,6 +90,10 @@ const PILE15 = [
   heap('.###./#####/.###.', '.##/.#.', '/..#'),
   heap('#####/..#../#####', '#..#/.#..', '#'),
   heap('####/####/####', '#.#', '#'),
+  heap('###/###/###', '##/##', '.#/.#'),
+  heap('#####/#...#/#####', '#..#', '#'),
+  heap('#####/.###./.###.', '.##/..#', '..#'),
+  heap('####/####/###', '##/.#', '.#'),
 ];
 
 /** Eighteen in three layers: level 7. */
@@ -60,9 +104,13 @@ const PILE18 = [
   heap('.###./#####/#####', '.##./#..#', '/..#'),
   heap('#####/####./####.', '#.#/#.#', '/.#'),
   heap('#####/#####/#####', '#..#', '#'),
+  heap('#####/#####/#####', '##', '.#'),
+  heap('####/####/####', '###/##', '/.#'),
+  heap('.###./#####/.###.', '####/.##.', '/.#'),
+  heap('#####/#.#.#/#####', '#..#/#..#', '#'),
 ];
 
-/** The big heap, fifteen, eight and one: level 8. */
+/** The big heap, twenty-four in three layers: level 8. */
 const PILE24 = [
   heap('#####/#####/#####', '####/####', '/.#'),
   heap('#####/#####/#####', '####/####', '/..#'),
@@ -70,9 +118,13 @@ const PILE24 = [
   heap('#####/#####/#####', '####/####', '..#'),
   heap('#####/#####/#####', '####/####', '/./..#'),
   heap('#####/#####/#####', '####/####', '.#'),
+  heap('#####/#####/#####', '####/###.', '/.#/..#'),
+  heap('#####/#####/#####', '####/.##.', '.#.#/..#'),
+  heap('#####/#####/#####', '###./####', '/.#.#'),
+  heap('#####/#####/####.', '####/####', '/.#.#'),
 ];
 
-/** Frozen shapes for each level, by level ID. */
+/** Frozen shapes for each level, by level ID: ten a level, and no two levels share a pool. */
 export const SHAPES: Record<number, Cell[][]> = {
-  1: FLAT6, 2: PILE9, 3: FLAT6, 4: PILE9, 5: PILE12, 6: PILE15, 7: PILE18, 8: PILE24,
+  1: FLAT6, 2: PILE9, 3: FLAT6B, 4: PILE9B, 5: PILE12, 6: PILE15, 7: PILE18, 8: PILE24,
 };

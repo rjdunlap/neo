@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  accepted, askedKind, assign, budget, clearable, covers, free, freePieces, fullMask, HIT, hintFor, KINDS, makeBoard, pieceAt, pileLayout,
-  PLANS, planFor, present, putBack, RADIUS, SLOT_H, SLOT_W, take, tray, trayPieces, trayTotal, type Board,
+  accepted, askedKind, assign, budget, clearable, covers, dropDelay, dropEnd, free, freePieces, fullMask, HIT, hintFor, KINDS, LEVEL1_SECOND, LOOKS, lookFor,
+  makeBoard, pieceAt, pileLayout, PLANS, planFor, present, putBack, RADIUS, SLOT_H, SLOT_W, take, tray, trayPieces, trayTotal, type Board,
 } from './logic';
 import { SHAPES } from './shapes';
 
@@ -107,7 +107,7 @@ describe('Pile Match rules', () => {
   it('every frozen shape matches its plan, lies on its grid and has a clearing route', () => {
     for (const plan of PLANS) {
       const shapes = SHAPES[plan.id];
-      expect(shapes.length).toBeGreaterThanOrEqual(6);
+      expect(shapes.length).toBe(10);
       for (const cells of shapes) {
         expect(cells.length).toBe(plan.pieces);
         expect(cells.length).toBeLessThanOrEqual(24);
@@ -145,15 +145,51 @@ describe('Pile Match rules', () => {
     }
   });
 
-  it('the same seed deals the same board, and level 1 asks for apples then shells', () => {
+  it('no shape repeats within a level, and levels 1 and 3, 2 and 4 share none', () => {
+    // A shape is its cells moved to the corner, since the layout centres every heap.
+    const key = (cells: readonly { x: number; y: number; z: number }[]) => {
+      const x0 = Math.min(...cells.map((c) => c.x)), y0 = Math.min(...cells.map((c) => c.y));
+      return cells.map((c) => `${c.x - x0},${c.y - y0},${c.z}`).sort().join(' ');
+    };
+    const keys = (id: number) => SHAPES[id].map(key);
+    for (const plan of PLANS) expect(new Set(keys(plan.id)).size).toBe(SHAPES[plan.id].length);
+    for (const [a, b] of [[1, 3], [2, 4]]) expect(keys(a).filter((k) => keys(b).includes(k))).toEqual([]);
+  });
+
+  it('the same seed deals the same board, and level 1 asks for apples, then a seeded shell, toy duck or leaf', () => {
     expect(makeBoard(6, new Rng(77))).toEqual(makeBoard(6, new Rng(77)));
-    for (let s = 0; s < 20; s++) {
+    const seconds = new Set<string>();
+    for (let s = 0; s < 40; s++) {
       const b = makeBoard(1, new Rng(s));
       const full = fullMask(b.cells.length);
       expect(KINDS[askedKind(b, full)!]).toBe('apple');
       let mask = full;
       for (const i of b.route.slice(0, 3)) mask &= ~(1 << i);
-      expect(KINDS[askedKind(b, mask)!]).toBe('shell');
+      const second = askedKind(b, mask)!;
+      expect(LEVEL1_SECOND as readonly number[]).toContain(second);
+      seconds.add(KINDS[second]);
+    }
+    expect([...seconds].sort()).toEqual(['duck', 'leaf', 'shell']);
+  });
+
+  it('each look comes from the seed; levels 1 and 2 keep the meadow and every look turns up from level 3', () => {
+    for (let s = 0; s < 20; s++) {
+      expect(lookFor(1, new Rng(s))).toBe('meadow');
+      expect(lookFor(2, new Rng(s))).toBe('meadow');
+      expect(lookFor(5, new Rng(s))).toBe(lookFor(5, new Rng(s)));
+    }
+    for (const level of [3, 4, 5, 6, 7, 8]) {
+      const seen = new Set(Array.from({ length: 40 }, (_, s) => lookFor(level, new Rng(s))));
+      expect([...seen].sort()).toEqual([...LOOKS].sort());
+    }
+  });
+
+  it('the windy drop-in lands the bottom layer first and is over in under a second', () => {
+    for (const plan of PLANS) for (const cells of SHAPES[plan.id]) {
+      const order = cells.map((_, i) => i).sort((a, b) => dropDelay(cells, a) - dropDelay(cells, b));
+      for (let n = 1; n < order.length; n++) expect(cells[order[n]].z).toBeGreaterThanOrEqual(cells[order[n - 1]].z);
+      cells.forEach((a, i) => cells.forEach((b, j) => { if (covers(a, b)) expect(dropDelay(cells, i)).toBeGreaterThan(dropDelay(cells, j)); }));
+      expect(dropEnd(cells)).toBeLessThan(1);
     }
   });
 
