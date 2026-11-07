@@ -51,6 +51,8 @@ Games use four idioms for "this round is gone": `gone` (6 files), `epoch` (14), 
 
 ## 8. A shared helper for misses, hints and glows
 
+**Built 2026-11-07.** `src/progress/coach.ts` holds the counts as plain fields on a game's own state (`Tally`: `misses`, `hints`; `RequestTally` adds `roundMisses`, `helped`), so rule tests keep reading them: `missEvery` (a hint due on misses 2, 4, 6…), `missOnRequest` (due once per request at its second miss), `hinted` (one hint, whatever brought it), `nextRequest` and `tally` for `ctx.finish`. A due hint counts only when the game shows it. Piloted with behaviour unchanged on Fill and Dump (all four cadences in `logic.ts`), Sorting Machine's `Tally` and Rainbow Fingers; the rest migrate as touched. The original analysis follows.
+
 Each game writes the "boing, spoken hint, glow after two misses" rule itself: Fill and Dump hints on `misses % 2 === 0`, while Rainbow Fingers counts `wrongs === 2` separately from `misses` and also hints after 12 seconds idle. Both look intentional, but no test checks the shared contract, and miss accounting drives difficulty changes. A small pure `Coach` (counters, hint cadence, the `finish({ misses, hints })` tally) in a testable module would let games keep their own visuals. Migrate as games are touched.
 
 ## 9. Split the largest files

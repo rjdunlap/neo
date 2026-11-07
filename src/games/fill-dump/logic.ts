@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import { hinted, missEvery, missOnRequest, nextRequest, type RequestTally, type Tally } from '../../progress/coach';
 
 /** One material per round; speech and art share these nouns. Pitch offsets are pentatonic steps. */
 export const FILL_SETS = [
@@ -108,7 +109,7 @@ export function basketSlot(i: number): { x: number; y: number } {
 
 // ---- The rules ----------------------------------------------------------------------------------------------------
 
-export interface FillState {
+export interface FillState extends Tally {
   plan: FillPlan;
   /** The number to put in (counting levels), else null. */
   target: number | null;
@@ -118,8 +119,6 @@ export interface FillState {
   order: number[];
   /** Times the basket has been tipped out so far. */
   dumps: number;
-  misses: number;
-  hints: number;
   done: boolean;
 }
 
@@ -201,10 +200,9 @@ export function tap(s: FillState, t: FillTap): FillEvent {
       s.done = true;
       return { kind: 'done' };
     }
-    s.misses++;
     let hint: Hint | null = null;
-    if (s.misses % 2 === 0) {
-      s.hints++;
+    if (missEvery(s)) {
+      hinted(s);
       hint = hintFor(have, s.target);
     }
     return { kind: 'wrong', have, hint };
@@ -261,16 +259,12 @@ export function nextTouch(s: FillState): FillTap | null {
 export const POUR_DISTANCE = 240;
 export const POUR_TOLERANCE = 0.06;
 export const POUR_TARGETS = [0.5, 0.25, 0.75] as const;
-export interface PourState {
+export interface PourState extends RequestTally {
   jug: number;
   cup: number;
   tray: number;
   targets: number[];
   round: number;
-  misses: number;
-  hints: number;
-  roundMisses: number;
-  helped: boolean;
   done: boolean;
 }
 export function startPour(rng: Rng): PourState {
@@ -304,17 +298,15 @@ export function checkPour(s: PourState): 'again' | 'wrong' | 'next' | 'done' | '
   if (s.done) return 'ignored';
   if (pourHint(s) !== 'check') {
     if (s.cup === 0) return 'again';
-    s.misses++;
-    s.roundMisses++;
-    if (s.roundMisses >= 2 && !s.helped) { s.helped = true; s.hints++; }
+    if (missOnRequest(s)) hinted(s);
     return 'wrong';
   }
   s.round++;
   if (s.round === s.targets.length) { s.done = true; return 'done'; }
   // The filled cup is served, then its water is available again for the next experiment.
   s.jug += s.cup + s.tray;
-  s.cup = s.tray = s.roundMisses = 0;
-  s.helped = false;
+  s.cup = s.tray = 0;
+  nextRequest(s);
   return 'next';
 }
 
@@ -332,14 +324,10 @@ export interface PairRequest {
   full: 0 | 1;
 }
 
-export interface PairState {
+/** `roundMisses` counts misses on this request; the second one glows the right basket. */
+export interface PairState extends RequestTally {
   requests: PairRequest[];
   round: number;
-  misses: number;
-  hints: number;
-  /** Misses on this request; the second one glows the right basket. */
-  roundMisses: number;
-  helped: boolean;
   done: boolean;
 }
 
@@ -366,19 +354,12 @@ export function pairTap(s: PairState, side: 0 | 1): PairEvent {
   if (s.done) return { kind: 'ignored' };
   const r = s.requests[s.round];
   if (side !== rightBasket(r)) {
-    s.misses++;
-    s.roundMisses++;
-    let hint = false;
-    if (s.roundMisses >= 2 && !s.helped) {
-      s.helped = true;
-      s.hints++;
-      hint = true;
-    }
+    const hint = missOnRequest(s);
+    if (hint) hinted(s);
     return { kind: 'wrong', ask: r.ask, hint };
   }
   s.round++;
-  s.roundMisses = 0;
-  s.helped = false;
+  nextRequest(s);
   if (s.round === s.requests.length) s.done = true;
   return { kind: 'right', ask: r.ask, side, done: s.done };
 }
@@ -433,13 +414,13 @@ export function capacityPairs(rng: Rng): CapacityPair[] {
     { left: 'cup', right: 'bucket' }, { left: 'bucket', right: 'mug' },
   ])];
 }
-export interface CapacityState {
+export interface CapacityState extends RequestTally {
   pairs: CapacityPair[];
   round: number;
   phase: 'guess' | 'pour' | 'answer';
   guess: 0 | 1 | null;
   jug: number; cup: number; tray: number;
-  misses: number; hints: number; roundMisses: number; helped: boolean; done: boolean;
+  done: boolean;
 }
 export const capacityPair = (s: CapacityState) => s.pairs[Math.min(s.round, s.pairs.length - 1)];
 export const capacityMore = (p: CapacityPair): 0 | 1 => CAPACITY_VESSELS[p.left].capacity > CAPACITY_VESSELS[p.right].capacity ? 0 : 1;
@@ -465,13 +446,12 @@ export function capacityTap(s: CapacityState, side: 0 | 1): 'ignored' | 'guess' 
   if (s.done || s.phase === 'pour') return 'ignored';
   if (s.phase === 'guess') { s.guess = side; s.phase = 'pour'; return 'guess'; }
   if (side !== capacityMore(capacityPair(s))) {
-    s.misses++; s.roundMisses++;
-    if (s.roundMisses >= 2 && !s.helped) { s.helped = true; s.hints++; }
+    if (missOnRequest(s)) hinted(s);
     return 'wrong';
   }
   s.round++;
   if (s.round === s.pairs.length) { s.done = true; return 'done'; }
-  s.phase = 'guess'; s.guess = null; s.roundMisses = 0; s.helped = false;
+  s.phase = 'guess'; s.guess = null; nextRequest(s);
   // Return this pair's water, then set out the next full source. No water disappears within an experiment.
   s.jug = CAPACITY_VESSELS[capacityPair(s).left].capacity; s.cup = s.tray = 0;
   return 'next';

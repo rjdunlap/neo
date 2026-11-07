@@ -60,7 +60,6 @@ Requested by the developer 2026-11-07 to make the code cheaper for AI to write a
 - **Move level ladders into `logic.ts`** (scripted sweep; typecheck, unit tests, a source-scan test): [item 5](CODEBASE-REVIEW-2026-11-07.md#5-move-level-ladders-into-logicts).
 - **Promote shared code out of `letter-trails`, `word-search`, `pond-typing` and `critter-sort`** (typecheck, unit tests, build, `fingerdemo` filtered to two importing games): [item 6](CODEBASE-REVIEW-2026-11-07.md#6-promote-shared-code-out-of-game-folders).
 - **Scene-owned cleanup helpers on `GameContext`** (shell tier; migrate 2–3 games, the rest as touched): [item 7](CODEBASE-REVIEW-2026-11-07.md#7-one-standard-way-to-clean-up-after-a-round).
-- **A shared misses/hints coach** (pure module with tests; migrate 2–3 games, the rest as touched): [item 8](CODEBASE-REVIEW-2026-11-07.md#8-a-shared-helper-for-misses-hints-and-glows).
 - **Split the largest game and shell files by mode and art** (one file per session, when it next comes up for work; that game's tier): [item 9](CODEBASE-REVIEW-2026-11-07.md#9-split-the-largest-files).
 - **Prettier and a minimal ESLint** (one reformat commit in `.git-blame-ignore-revs`; typecheck, unit tests, build): [item 10](CODEBASE-REVIEW-2026-11-07.md#10-a-formatter-and-a-minimal-lint).
 - **A new-game scaffold script or skill** (after items 1 and 2): [item 11](CODEBASE-REVIEW-2026-11-07.md#11-a-new-game-scaffold).

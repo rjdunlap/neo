@@ -14,6 +14,7 @@ import { RoundButton } from '../../ui/buttons';
 import { foldIcon, frameIcon } from '../../ui/icons';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { blankSpot, BRUSH_RADIUS, capMarks, Coverage, fillPath, FOLD_RADIUS, foldButtonPlace, foldMarks, foldScribbleArea, frameShows, halvedIndex, MARGIN, pageKind, mix, NUDGE_AFTER, nudges, paintStep, PAINTED, pickThings, planFor, POT_MARKS, POT_RADIUS, potLayout, pours, RECIPES, scribble, scribbleArea, SPACING, SPLAT_RADIUS, strokesCounted, touchKind, type PageKind, type PaintPlan, type PotMark, type Primary, type Pt, type Thing, type Touch } from './logic';
+import { hinted, missOnRequest, newRequestTally, nextRequest, tally } from '../../progress/coach';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 
 const PAPER = 0xfffdf6;
@@ -245,11 +246,13 @@ class RainbowFingers implements Game {
   private pictures: Picture[] = [];
   private current = 0;
   private glowing: (ColorName | 'rainbow')[] = [];
-  private misses = 0;
-  private hints = 0;
+  /** Misses and hints for the round; `roundMisses` counts this picture's wrong colors, the second of which lights the pot. */
+  private readonly tally = newRequestTally();
+  /** Read by the browser checks. */
+  get misses() { return this.tally.misses; }
+  get hints() { return this.tally.hints; }
   private lastNag = -10;
   private sinceAsk = 0;
-  private wrongs = 0;
   /** The picked color, or null for rainbow. */
   private brush: number | null = null;
   private brushName: ColorName | null = null;
@@ -438,7 +441,7 @@ class RainbowFingers implements Game {
     const pic = this.picture;
     if (!pic) return;
     this.sinceAsk = 0;
-    this.wrongs = 0;
+    nextRequest(this.tally);
     const s = pic.scale;
     void this.ctx.tw.to(pic.node.scale, { x: s * 1.12, y: s * 1.12 }, { duration: 0.25, ease: ease.outBack }).then(() => this.ctx.tw.to(pic.node.scale, { x: s, y: s }, { duration: 0.3 }));
     const { id: thing, color } = pic.thing;
@@ -462,7 +465,7 @@ class RainbowFingers implements Game {
   }
 
   private showHint() {
-    this.hints++;
+    hinted(this.tally);
     this.glowing = this.rightPots();
   }
 
@@ -483,12 +486,11 @@ class RainbowFingers implements Game {
       void this.ctx.say(pours(this.plan.mode) ? 'paint.mixhow' : 'paint.pick', { color, ...this.recipeVars() });
       return;
     }
-    this.misses++;
-    this.wrongs++;
+    const due = missOnRequest(this.tally);
     sfx.boing();
     if (pours(this.plan.mode)) void this.ctx.say('paint.mixhow', { color, ...this.recipeVars() });
     else void this.ctx.say('paint.wrong', { wrong: this.brushName, thing, color });
-    if (this.wrongs === 2) this.showHint();
+    if (due) this.showHint();
   }
 
   private recipeVars(): Record<string, string> {
@@ -946,7 +948,7 @@ class RainbowFingers implements Game {
     sfx.sparkle();
     await this.ctx.say('paint.done');
     await this.ctx.tw.wait(0.6);
-    this.ctx.finish({ misses: this.misses, hints: this.hints, creation: this.painting() });
+    this.ctx.finish({ ...tally(this.tally), creation: this.painting() });
   }
 }
 
