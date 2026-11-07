@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  angleAt, applyPush, AUTHORED_TEMPT, authoredPush, authoredTogether, BELL_ONE, BELL_TWO, friendBox, heavyTempts, hookTargets, HOOKS, land,
+  angleAt, applyPush, ART_TOP, AUTHORED_TEMPT, BASKET_HALF, FRIENDS, friendHeight, GOALS, ropeOf, authoredPush, authoredTogether, BELL_ONE, BELL_TWO, friendBox, heavyTempts, hookTargets, HOOKS, land,
   LENGTH, makeRound, nextBackTime, nextToPush, period, petCorner, phaseAt, PLANS, planFor, rectsOverlap, rightHook, roundFits, seatAt,
   shellButtons, STEPS, stillSwing, swingLayout, together, watchTime, WEIGHT, widestApart, type Hook, type Line, type Swing,
 } from './logic';
@@ -218,6 +218,93 @@ describe('generation', () => {
     expect(round.lines[0].swings.map((s) => s.hook)).toEqual(['short', 'long']);
     expect(round.lines[1].swings.map((s) => s.hook)).toEqual(['long', 'short']);
     expect(period('long') / period('short')).toBeGreaterThanOrEqual(1.4);
+  });
+});
+
+describe('more friends and leaf goals', () => {
+  const original = ['bunny', 'duck', 'mouse', 'bear', 'frog'] as const;
+  const tallest = Math.max(...original.map(friendHeight));
+
+  it('every rider is drawn at least 110 units tall, and no new one taller than the tallest of the first five', () => {
+    for (const f of FRIENDS) {
+      expect(friendHeight(f), f).toBeGreaterThanOrEqual(110);
+      expect(friendHeight(f), f).toBeLessThanOrEqual(tallest);
+    }
+    // Heavier looks bigger: every heavy friend is drawn taller than every light one.
+    for (const h of FRIENDS.filter((f) => WEIGHT[f] === 'heavy'))
+      for (const l of FRIENDS.filter((f) => WEIGHT[f] === 'light')) expect(friendHeight(h), `${h} ${l}`).toBeGreaterThan(friendHeight(l));
+    expect(Object.keys(ART_TOP).sort()).toEqual([...FRIENDS].sort());
+  });
+
+  it('on the short rope every rider rises no further above the hook than the first five do, and stays inside the view', () => {
+    for (const [name, v] of Object.entries(VIEWS)) {
+      const L = swingLayout(2, v);
+      const firstOver = tallest - ropeOf(L, 'short');
+      for (const col of L.columns) {
+        for (const f of FRIENDS) {
+          expect(friendHeight(f) - ropeOf(L, 'short'), `${name} ${f}`).toBeLessThanOrEqual(firstOver);
+          for (const a of [-L.bell, 0, L.bell]) {
+            const seat = seatAt(L, col, 'short', a);
+            const top = { x: seat.x - 40, y: seat.y - friendHeight(f), w: 80, h: 20 };
+            expect(top.y, `${name} ${f} ${a}`).toBeGreaterThanOrEqual(0);
+            for (const k of shellButtons(v)) expect(rectsOverlap(top, k), `${name} ${f} ${a}`).toBe(false);
+          }
+        }
+      }
+    }
+  });
+
+  it('levels 5 and 6 pair light and heavy from the wider pool and reach every new friend; level 4 keeps same-kind pairs', () => {
+    for (const id of [5, 6]) {
+      const seen = new Set<string>();
+      for (let seed = 1; seed <= 500; seed++) {
+        const { round, fellBack } = makeRound(planFor(id), new Rng(seed), seed % 3 === 0);
+        expect(fellBack).toBe(false);
+        if (round.kind !== 'together') throw new Error('together');
+        for (const l of round.lines) seen.add(l.friend).add(l.petFriend);
+      }
+      for (const f of ['cat', 'pig', 'cow']) expect(seen.has(f), `level ${id} ${f}`).toBe(true);
+    }
+    for (let seed = 1; seed <= 200; seed++) {
+      const { round } = makeRound(planFor(4), new Rng(seed), false);
+      if (round.kind !== 'together') throw new Error('together');
+      for (const l of round.lines) expect(l.friend).toBe(l.petFriend);
+    }
+  });
+
+  it('a push round has one goal kind, the authored round keeps the bell, and seeded rounds reach every kind', () => {
+    for (const id of [1, 2, 3]) {
+      const seen = new Set<string>();
+      for (let seed = 1; seed <= 200; seed++) {
+        const { round } = makeRound(planFor(id), new Rng(seed), false);
+        if (round.kind !== 'push') throw new Error('push');
+        seen.add(round.goal);
+        expect(makeRound(planFor(id), new Rng(seed), true).round).toMatchObject({ goal: 'bell' });
+      }
+      expect([...seen].sort()).toEqual([...GOALS].sort());
+    }
+  });
+
+  it("every goal sits at the arc's forward end inside the view, and the apple's basket is on the grass, clear of the swing and the pet", () => {
+    for (const [name, v] of Object.entries(VIEWS)) {
+      for (const n of [1, 2] as const) {
+        const L = swingLayout(n, v);
+        for (const col of L.columns) {
+          for (const h of HOOKS) {
+            const front = seatAt(L, col, h, L.bell);
+            expect(col.bell[h].x, `${name} ${h}`).toBeGreaterThan(front.x);
+            expect(col.bell[h].y).toBeLessThan(front.y);
+            const b = col.basket[h];
+            const box = { x: b.x - BASKET_HALF.w, y: b.y - BASKET_HALF.h, w: BASKET_HALF.w * 2, h: BASKET_HALF.h * 2 };
+            expect(box.x).toBeGreaterThanOrEqual(0);
+            expect(box.x + box.w).toBeLessThanOrEqual(v.w);
+            expect(box.y + box.h).toBeLessThanOrEqual(v.h);
+            expect(box.y, `${name} basket below the seats`).toBeGreaterThan(L.seatY + 12);
+            expect(rectsOverlap(box, petCorner(v)), `${name} ${n} basket ${h}`).toBe(false);
+          }
+        }
+      }
+    }
   });
 });
 

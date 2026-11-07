@@ -12,8 +12,8 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
-  applyPush, FRIEND_SCALE, HOOKS, land, makeRound, nextBackTime, nextToPush, period, planFor, ropeOf, seatAt,
-  swingLayout, together, watchTime, WEIGHT, type Column, type Friend, type Hook, type Line, type Plan, type PushLine, type Round, type Swing,
+  applyPush, BASKET_HALF, FRIEND_SCALE, HOOKS, land, makeRound, nextBackTime, nextToPush, period, planFor, ropeOf, seatAt,
+  swingLayout, together, watchTime, WEIGHT, type Column, type Friend, type Goal, type Hook, type Line, type Plan, type PushLine, type Round, type Swing,
   type SwingLayout,
 } from './logic';
 
@@ -34,10 +34,19 @@ const SPECS: Record<Friend, CritterSpec> = {
   bear: CRITTERS.bear,
   mouse: { color: 'white', ears: 'round', earColor: 'pink', snout: 'nose', noseColor: 0xff8fa3, whiskers: true },
   frog: { color: 'green', ears: 'none', snout: 'none', belly: true },
+  cat: CRITTERS.cat,
+  dog: CRITTERS.dog,
+  pig: CRITTERS.pig,
+  cow: CRITTERS.cow,
 };
-/** Each friend's bell note (pentatonic steps), so a round plays a little tune. */
-const NOTES: Record<Friend, number> = { bear: 3, bunny: 5, frog: 6, duck: 7, mouse: 9 };
-const NAMES: Record<Friend, string> = { bunny: 'Bunny', duck: 'Duck', mouse: 'Mouse', bear: 'Bear', frog: 'Frog' };
+/** Each friend's bell note (pentatonic steps), so a round plays a little tune; the heaviest sing lowest. */
+const NOTES: Record<Friend, number> = { cow: 1, pig: 2, bear: 3, dog: 4, bunny: 5, frog: 6, duck: 7, cat: 8, mouse: 9 };
+const NAMES: Record<Friend, string> = {
+  bunny: 'Bunny', duck: 'Duck', mouse: 'Mouse', bear: 'Bear', frog: 'Frog', cat: 'Cat', dog: 'Dog', pig: 'Pig', cow: 'Cow',
+};
+/** The goal's name in the instructions, one and two. */
+const GOAL_NAME: Record<Goal, [string, string]> = { bell: ['bell', 'bells'], chimes: ['chimes', 'chimes'], apple: ['apple', 'apples'], nest: ['nest', 'nests'] };
+const GOAL_LINE: Record<Goal, LineId> = { bell: 'swing-pals.ring', chimes: 'swing-pals.ring-chimes', apple: 'swing-pals.ring-apple', nest: 'swing-pals.ring-nest' };
 const BRASS = { fill: 0xf2c14e, line: 0xb8862b };
 const LEAF = [0x6cc070, 0x5bb062, 0x7fd07c];
 const ROPE = 0xa8865a;
@@ -51,6 +60,66 @@ function bellArt(): Graphics {
     .fill(BRASS.fill).stroke({ width: 4, color: BRASS.line, join: 'round' })
     .circle(0, 22, 7).fill(BRASS.line)
     .ellipse(-9, -10, 5, 9).fill({ color: 0xffffff, alpha: 0.45 });
+}
+
+const NEST_BIRD = { hid: 16, up: -14 };
+
+/** Wind chimes: a little bar on a string with four brass tubes. */
+function chimesArt(): Graphics {
+  const g = new Graphics().moveTo(0, -80).lineTo(0, -34).stroke({ width: 3, color: wood.line });
+  g.roundRect(-34, -38, 68, 10, 5).fill(wood.fill).stroke({ width: 3, color: wood.line });
+  for (const [i, len] of [44, 54, 62, 50].entries()) {
+    const x = -24 + i * 16;
+    g.moveTo(x, -28).lineTo(x, -20).stroke({ width: 2, color: wood.line });
+    g.roundRect(x - 5, -20, 10, len, 5).fill(BRASS.fill).stroke({ width: 3, color: BRASS.line });
+  }
+  return g.circle(0, 10, 7).fill(BRASS.line);
+}
+
+/** An apple on a twig: `apple` is the part that drops. */
+function appleArt(): { art: Container; apple: Container } {
+  const art = new Container();
+  art.addChild(
+    new Graphics().moveTo(0, -80).lineTo(0, -12).stroke({ width: 4, color: wood.line })
+      .ellipse(12, -16, 13, 7).fill(LEAF[0]).stroke({ width: 3, color: 0x3f8a46 }),
+  );
+  const apple = new Container();
+  apple.addChild(
+    new Graphics().moveTo(0, 0).bezierCurveTo(-30, -10, -34, 40, -6, 38).quadraticCurveTo(0, 36, 6, 38).bezierCurveTo(34, 40, 30, -10, 0, 0)
+      .closePath().fill(swatch.red.fill).stroke({ width: 4, color: swatch.red.line, join: 'round' })
+      .moveTo(0, -2).lineTo(1, -10).stroke({ width: 4, color: wood.line, cap: 'round' })
+      .ellipse(-10, 6, 5, 8).fill({ color: 0xffffff, alpha: 0.4 }),
+  );
+  art.addChild(apple);
+  return { art, apple };
+}
+
+/** A bird's nest on a twig: `bird` hides behind the rim and peeks out. */
+function nestArt(): { art: Container; bird: Container } {
+  const art = new Container();
+  art.addChild(new Graphics().moveTo(0, -80).lineTo(0, -2).stroke({ width: 4, color: wood.line }));
+  const bird = new Container();
+  bird.addChild(
+    new Graphics().circle(0, 0, 16).fill(swatch.blue.fill).stroke({ width: 4, color: swatch.blue.line })
+      .poly([14, -2, 28, 3, 14, 8]).fill(swatch.yellow.fill).stroke({ width: 2, color: swatch.yellow.line })
+      .circle(6, -4, 3.5).fill(0x2b2b3a),
+  );
+  bird.y = NEST_BIRD.hid;
+  art.addChild(
+    bird,
+    new Graphics().ellipse(0, 22, 36, 16).fill(wood.fill).stroke({ width: 4, color: wood.line })
+      .moveTo(-28, 18).lineTo(26, 26).moveTo(-24, 28).lineTo(30, 18).stroke({ width: 2, color: wood.line }),
+  );
+  return { art, bird };
+}
+
+/** The apple's basket on the grass. */
+function basketArt(): Graphics {
+  const { w, h } = BASKET_HALF;
+  return new Graphics()
+    .poly([-w, -h + 8, w, -h + 8, w - 8, h, -w + 8, h]).fill(wood.fill).stroke({ width: 4, color: wood.line, join: 'round' })
+    .moveTo(-w + 4, 0).lineTo(w - 4, 0).moveTo(-w + 6, h - 10).lineTo(w - 6, h - 10).stroke({ width: 3, color: wood.line })
+    .roundRect(-w - 4, -h + 2, 2 * w + 8, 12, 6).fill(wood.fill).stroke({ width: 4, color: wood.line });
 }
 
 function mittenArt(): Graphics {
@@ -158,6 +227,12 @@ class SwingPals implements Game {
   private readonly tree = new Graphics();
   private readonly swingLayer = new Container();
   private readonly bells: Container[] = [];
+  /** The apple goal: each swing's apple and basket, and whether its apple has dropped this line. */
+  private readonly apples: Container[] = [];
+  private readonly baskets: Container[] = [];
+  private readonly fallen = [false, false];
+  /** The nest goal: each nest's bird. */
+  private readonly birds: Container[] = [];
   private readonly mittens: Container[] = [];
   private readonly waitRings: Graphics[] = [];
   private readonly nowRings: Graphics[] = [];
@@ -190,7 +265,23 @@ class SwingPals implements Game {
 
     for (let i = 0; i < 2; i++) {
       const b = new Container();
-      b.addChild(bellArt());
+      const goal = this.goal;
+      if (goal === 'bell') b.addChild(bellArt());
+      else if (goal === 'chimes') b.addChild(chimesArt());
+      else if (goal === 'apple') {
+        const { art, apple } = appleArt();
+        b.addChild(art);
+        this.apples.push(apple);
+        const basket = new Container();
+        basket.addChild(basketArt());
+        basket.eventMode = 'none';
+        basket.visible = false;
+        this.baskets.push(basket);
+      } else {
+        const { art, bird } = nestArt();
+        b.addChild(art);
+        this.birds.push(bird);
+      }
       b.eventMode = 'none';
       b.visible = false;
       const m = new Container();
@@ -209,7 +300,7 @@ class SwingPals implements Game {
       this.nowRings.push(n);
     }
 
-    ctx.stage.addChild(this.backdrop, this.tree, ...this.bells, this.swingLayer, ...this.nowRings, ...this.waitRings, ...this.mittens, this.ground, this.glow, this.hookLayer);
+    ctx.stage.addChild(this.backdrop, this.tree, ...this.baskets, ...this.bells, this.swingLayer, ...this.nowRings, ...this.waitRings, ...this.mittens, this.ground, this.glow, this.hookLayer);
     this.ground.eventMode = this.plan.mode === 'push' ? 'static' : 'none';
     this.ground.on('pointerdown', this.onGround);
 
@@ -231,7 +322,11 @@ class SwingPals implements Game {
       1: 'swing-pals.instruct-push', 2: 'swing-pals.instruct-back', 3: 'swing-pals.instruct-two',
       4: 'swing-pals.instruct-together', 5: 'swing-pals.instruct-heavy', 6: 'swing-pals.instruct-big',
     };
-    void this.ctx.instruct(lines[this.plan.id], { friend: this.friendName() });
+    void this.ctx.instruct(lines[this.plan.id], { friend: this.friendName(), goal: GOAL_NAME[this.goal][0], goals: GOAL_NAME[this.goal][1] });
+  }
+
+  private get goal(): Goal {
+    return this.round.kind === 'push' ? this.round.goal : 'bell';
   }
 
   private friendName(): string {
@@ -259,6 +354,11 @@ class SwingPals implements Game {
       this.swings = this.pushLine.swings.map((s) => ({ ...s, t0: s.t0 === null ? null : this.t }));
       this.pending = this.swings.map(() => null);
       this.ringAt = this.swings.map(() => null);
+      this.fallen.fill(false);
+      for (const bird of this.birds) {
+        this.ctx.tw.kill(bird);
+        bird.y = NEST_BIRD.hid;
+      }
       this.swings.forEach((s, i) => {
         const rig = new Rig(s.hook, s.friend, cols[i]);
         rig.L = ropeOf(this.layout, s.hook);
@@ -325,6 +425,13 @@ class SwingPals implements Game {
       const rig = this.rigs[i];
       b.visible = this.plan.mode === 'push' && !!rig;
       if (rig) b.position.copyFrom(L.columns[i].bell[rig.hook]);
+      const apple = this.apples[i], basket = this.baskets[i];
+      if (apple && basket) {
+        basket.visible = b.visible;
+        if (rig) basket.position.copyFrom(L.columns[i].basket[rig.hook]);
+        this.ctx.tw.kill(apple);
+        apple.y = this.fallen[i] ? this.appleDrop(i) : 0;
+      }
     });
     if (this.plan.mode === 'together') {
       const col = L.columns[1];
@@ -432,15 +539,56 @@ class SwingPals implements Game {
     });
   }
 
+  /** How far the apple drops, in its own units, to sit in the basket. */
+  private appleDrop(i: number): number {
+    const b = this.bells[i], basket = this.baskets[i];
+    return basket.y - b.y - 18;
+  }
+
+  /** The friend reaches the goal: it rings her note, each kind its own way. */
   private ring(i: number) {
     const rig = this.rigs[i];
     const b = this.bells[i];
-    sfx.bell(NOTES[rig.friend], 0.35);
+    const note = NOTES[rig.friend];
+    const goal = this.goal;
     this.ctx.pet.cheer();
     rig.critter.setMood('happy', 1);
     this.ctx.particles.burst(b.x, b.y, { kind: 'star', colors: [BRASS.fill, 0xffffff, swatch.yellow.light], count: 14, speed: [100, 260], gravity: 0, life: [0.5, 0.9] });
     this.ctx.tw.kill(b);
-    b.rotation = 0.5;
+    if (goal === 'apple') {
+      sfx.marimba(note);
+      const apple = this.apples[i], basket = this.baskets[i];
+      this.fallen[i] = true;
+      this.ctx.tw.kill(apple);
+      void this.ctx.tw.to(apple, { y: this.appleDrop(i) }, { duration: 0.55, ease: ease.inQuad }).then(() => {
+        if (this.destroyed) return;
+        sfx.knock();
+        this.ctx.tw.kill(basket.scale);
+        basket.scale.set(1.12, 0.9);
+        void this.ctx.tw.to(basket.scale, { x: 1, y: 1 }, { duration: 0.5, ease: ease.outElastic });
+      });
+      return;
+    }
+    if (goal === 'nest') {
+      sfx.bell(note, 0.25);
+      sfx.chirp(note + 5);
+      const bird = this.birds[i];
+      this.ctx.tw.kill(bird);
+      void this.ctx.tw.to(bird, { y: NEST_BIRD.up }, { duration: 0.35, ease: ease.outBack }).then(() => {
+        if (this.destroyed) return;
+        sfx.chirp(note + 5);
+        return this.ctx.tw.to(bird, { y: NEST_BIRD.hid }, { duration: 0.4, delay: 0.9, ease: ease.inQuad });
+      });
+      return;
+    }
+    if (goal === 'chimes') {
+      sfx.bell(note, 0.3);
+      sfx.pluck(note + 2, 0.2);
+      b.rotation = 0.3;
+    } else {
+      sfx.bell(note, 0.35);
+      b.rotation = 0.5;
+    }
     void this.ctx.tw.to(b, { rotation: 0 }, { duration: 0.9, ease: ease.outElastic });
   }
 
@@ -451,7 +599,7 @@ class SwingPals implements Game {
   private async finishPushLine() {
     this.busy = true;
     if (this.plan.id === 3) await this.ctx.say('swing-pals.quick-slow');
-    else await this.ctx.say('swing-pals.ring', { friend: NAMES[this.rigs[0].friend] });
+    else await this.ctx.say(GOAL_LINE[this.goal], { friend: NAMES[this.rigs[0].friend] });
     if (this.destroyed) return;
     await this.nextLine();
   }

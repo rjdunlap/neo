@@ -2749,16 +2749,16 @@ export const HOW_TO: Record<string, GameHowTo> = {
   'swing-pals': {
     goal: 'Push your friends on the swing, then find the rope that swings along.',
     steps: [
-      { from: 1, to: 1, text: 'Tap to push. Every push swings a little more, up to the bell.' },
+      { from: 1, to: 1, text: 'Tap to push. Every push swings a little more, up to the bell, the chimes, the apple or the nest.' },
       { from: 2, to: 3, text: 'Tap and the push waits for your friend to come back. One push each swing goes up fastest.' },
-      { from: 3, to: 3, text: 'Push each swing up to its bell. The short rope comes back quicker.' },
+      { from: 3, to: 3, text: 'Push each swing up to its bell, chimes, apple or nest. The short rope comes back quicker.' },
       { from: 4, to: 6, text: 'Tap a hook to hang her rope there. Both swings let go together.' },
       { from: 4, to: 6, text: 'A long rope swings slower, a short rope faster.' },
       { from: 5, to: 6, text: 'A heavy friend swings at the same beat as a light one.' },
       { from: 6, to: 6, text: 'A big swing and a small swing on the same rope come back together.' },
     ],
     finish: [
-      { from: 1, to: 3, text: 'Every friend rings the bell.' },
+      { from: 1, to: 3, text: 'Every friend reaches the bell, chimes, apple or nest.' },
       { from: 4, to: 6, text: 'Every pair swings together.' },
     ],
     note: [
