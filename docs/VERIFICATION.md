@@ -10,6 +10,10 @@ Open: build not run (no shared files changed); `fingerdemo` not run (bot path un
 Changed: `src/games/domino-run` (puddles, three moods, five end looks, three voice ids), four rule tests, the `dominorun` suite. Ran: typecheck; `vitest run src/games/domino-run src/content` (196 tests); filtered `BROWSER_SUITE=dominorun` (levels 1, 8, 5, plus 6 upright in sunset with a drop on a puddle: misses 0, hints 0); `npm run build`; an ad hoc screenshot check of all five end looks and the morning and low-tide moods (no page errors).
 Open: `fingerdemo` not run (bot unchanged); no other suites, offline or full `npm test` (CI); whether a puddle reads without speech on an iPad is a [device check](DEVICE-CHECKS.md).
 
+## 2026-11-07 — Pile Match deep dive (docs only)
+
+Changed: `docs/deep-dives/pile-match.md` and its tracker, READY and STUDY-BACKLOG rows (PR #1363); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; slices 1–4 are queued; no new decisions (the toddler entry needs a person watching a child, a device check).
+
 ## 2026-11-07 — Jar Sort deep dive (docs only)
 
 Changed: `docs/deep-dives/jar-sort.md` and its tracker, READY and STUDY-BACKLOG rows (PR #1361); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; slices 1–5 are queued; no new decisions.
@@ -45,22 +49,6 @@ Changed: `docs/deep-dives/cut-along.md` and its tracker, READY, GAMES (typo), RO
 ## 2026-11-07 — Bolt Boards level 9 definition (docs only)
 
 Changed: `docs/definitions/bolt-boards-put-it-back.md`, READY and the dive (PR #1348); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. The definition's figures (64 states/28 dead on the authored board, dead ends on all 40 level-3/4 boards, 2,561 dead states each with a covered unplaced bolt, max 256 states, `boardLayout` rectangles at the four views) came from a throwaway tsx probe against the real `logic.ts`, not a committed test. Open: no code checks run; nothing built.
-
-## 2026-11-06 — Fruit Slice deep dive (docs only)
-
-Changed: `docs/deep-dives/fruit-slice.md` and its tracker, READY, backlog, IDEAS and waiting-on-developer rows (PR #1346); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; two decisions wait on the developer ([list](WAITING-ON-DEVELOPER.md)).
-
-## 2026-11-06 — Mossy Path deep dive (docs only)
-
-Changed: `docs/deep-dives/mossy-path.md` and its tracker, READY, backlog, IDEAS and waiting-on-developer rows (PR #1345); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; three decisions wait on the developer ([list](WAITING-ON-DEVELOPER.md)).
-
-## 2026-11-06 — Number Trails deep dive (docs only)
-
-Changed: `docs/deep-dives/number-trails.md` and its tracker, READY, backlog, waiting-on-developer, device-check, GAMES and IDEAS rows (PR #1343); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; two decisions wait on the developer ([list](WAITING-ON-DEVELOPER.md)).
-
-## 2026-11-06 — Puddle Gobble deep dive (docs only)
-
-Changed: `docs/deep-dives/puddle-gobble.md` and its tracker, READY, backlog and waiting-on-developer rows (PR #1342); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built; two decisions wait on the developer ([list](WAITING-ON-DEVELOPER.md)).
 
 ## Coverage summary
 

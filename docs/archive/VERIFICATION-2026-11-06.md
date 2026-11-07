@@ -250,3 +250,19 @@ Open: legibility of the break outline and 100-unit comfort of Check on the iPad,
 Changed: `swing-pals` level 7 *Who comes back first?* and level 8 *Twice as quick* (PR #1339, branch `claude/swing-pals-7-8`; base 90721172); pre-K 3, 7, 4 and school 4–8; voice lines and how-to steps.
 Ran: `npm run typecheck`; `npm test` (321 files, 5979 tests; Swing Pals 46 rule tests incl. 500-seed rounds and layout in four views); `npm run build`; `BROWSER_SUITE=swingpals` (extended: level 7 with one wrong guess, never a miss, and one hint; level 8 with one wrong hook, one miss; portrait screenshot) on a dev server; `fingerdemo FINGER_ONLY=swing-pals FINGER_LEVELS=7,8` (27.6 s at 7 in pre-K, 30.7 s at 8 in school). `game-reviewer`: one finding (hint wording after a guess), fixed.
 Not run: offline check, any device or child. Open: level 9 gated on its layout probe.
+
+## 2026-11-06 — Puddle Gobble deep dive (docs only)
+
+Changed: `docs/deep-dives/puddle-gobble.md` and its tracker, READY, backlog and waiting-on-developer rows (PR #1342); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built; two decisions wait on the developer ([list](../WAITING-ON-DEVELOPER.md)).
+
+## 2026-11-06 — Number Trails deep dive (docs only)
+
+Changed: `docs/deep-dives/number-trails.md` and its tracker, READY, backlog, waiting-on-developer, device-check, GAMES and IDEAS rows (PR #1343); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; two decisions wait on the developer ([list](../WAITING-ON-DEVELOPER.md)).
+
+## 2026-11-06 — Mossy Path deep dive (docs only)
+
+Changed: `docs/deep-dives/mossy-path.md` and its tracker, READY, backlog, IDEAS and waiting-on-developer rows (PR #1345); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; three decisions wait on the developer ([list](../WAITING-ON-DEVELOPER.md)).
+
+## 2026-11-06 — Fruit Slice deep dive (docs only)
+
+Changed: `docs/deep-dives/fruit-slice.md` and its tracker, READY, backlog, IDEAS and waiting-on-developer rows (PR #1346); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; two decisions wait on the developer ([list](../WAITING-ON-DEVELOPER.md)).
