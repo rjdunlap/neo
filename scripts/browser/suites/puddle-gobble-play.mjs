@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, errors, log, scene, tap, screenshot, launch, finished }) {
-/** Puddle Gobble by touch: level 1 led by taps, level 8 with a too-big touch (never a miss), a refused overshoot (one miss), a requested hint (one hint), finished by taps; level 4 upright. */
+/** Puddle Gobble by touch: level 1 led by taps, level 8 with a too-big touch (never a miss), a refused overshoot (one miss), a requested hint (one hint), finished by taps; level 4 upright; level 5 upright in the evening mood. */
 async function puddleGobblePlay() {
   const state = () => page.evaluate(() => { const g = neo.scene.game; return { misses: g.misses, hints: g.hints, puddle: g.state.puddle, left: g.state.left.length, glow: g.glow }; });
   /** Wait until the puddle has stopped gliding and nothing is sliding in or hopping out. */
@@ -84,9 +84,21 @@ async function puddleGobblePlay() {
   await page.setViewportSize({ width: 768, height: 1024 });
   await launch('puddle-gobble', 4); await still(); await page.waitForTimeout(400);
   await screenshot('puddle-gobble-4-portrait');
+
+  // Level 5 upright in the evening mood: the low sun and pink rim over a board that may hold the new kinds, played to its sticker.
+  // The first launch is the authored midday round; the second is seeded, so it can show the new kinds.
+  await launch('puddle-gobble', 5); await still();
+  await launch('puddle-gobble', 5); await still();
+  n = await page.evaluate(() => kit.store.data.stickers.length);
+  const kinds = await page.evaluate(() => { const g = neo.scene.game; const before = JSON.stringify(g.board); g.setMood('evening'); return { same: before === JSON.stringify(g.board), mood: g.mood }; });
+  assert.deepEqual(kinds, { same: true, mood: 'evening' }, 'the evening look changes nothing on the sand');
+  await page.waitForTimeout(400);
+  await screenshot('puddle-gobble-5-evening-portrait');
+  for (let guard = 0; guard < 12 && !(await page.evaluate(() => neo.scene.finished)); guard++) await followHint(true);
+  await sticker(n);
   await page.setViewportSize({ width: 1024, height: 768 });
   assert.deepEqual(errors, [], 'page errors');
-  log('Puddle Gobble: level 1 by taps, level 8 with a too-big touch, a refused overshoot and a requested hint, level 4 upright');
+  log('Puddle Gobble: level 1 by taps, level 8 with a too-big touch, a refused overshoot and a requested hint, level 4 upright, level 5 upright in the evening');
 }
 
 return { puddleGobblePlay };

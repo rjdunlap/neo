@@ -31,3 +31,7 @@ Changed: AGENTS.md (32,766 to about 16 KB), new `docs/SESSION-GUIDE.md`, the doc
 ## 2026-11-07 — Fruit Sums deep dive (docs only)
 
 Changed: `docs/deep-dives/fruit-sums.md` and its tracker, READY, STUDY-BACKLOG, IDEAS, algebra-balance study, RECOMMENDATIONS and WAITING-ON-DEVELOPER rows (PR #1358); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; slices 1–5 are queued; two calls (pre-K Partners to five, a grown-up make 24) wait on the developer.
+
+## 2026-11-07 — Jar Sort deep dive (docs only)
+
+Changed: `docs/deep-dives/jar-sort.md` and its tracker, READY and STUDY-BACKLOG rows (PR #1361); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; slices 1–5 are queued; no new decisions.

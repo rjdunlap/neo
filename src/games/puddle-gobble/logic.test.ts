@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
+import { thingArt } from './art';
 import {
   authoredBoard, beachLayout, deadEndReachable, detour, blocker, done, exactSolutions, fieldFor, fits, greedyClears, hintTarget, inPailBox, inPetCorner,
-  LEVEL_COUNT, letGo, makeBoard, MAX_PUDDLE_D, passesFilter, placeOn, planFor, PUDDLE_D, puddleStart, soak, soakable, startState, THING_D, thingDiameter,
+  KINDS_BY_TIER, LEVEL_COUNT, letGo, makeBoard, MAX_PUDDLE_D, moodFor, MOODS, NAMES, NUMBER_KINDS, passesFilter, placeOn, planFor, PUDDLE_D, puddleStart, soak, soakable, startState, THING_D, thingDiameter,
   thingOf, type Board, type State,
 } from './logic';
 
@@ -257,5 +258,60 @@ describe('the beach layout', () => {
   it('gives the same board on every view', () => {
     const b = makeBoard(planFor(4), new Rng(3));
     expect(beachLayout(b, new Rng(9))).toEqual(beachLayout(b, new Rng(9)));
+  });
+});
+
+describe('kinds and beach moods', () => {
+  const allKinds = [...new Set([...Object.values(KINDS_BY_TIER).flat(), ...NUMBER_KINDS])];
+
+  it('every tier has at least four kinds, and no kind is in two tiers', () => {
+    for (const kinds of Object.values(KINDS_BY_TIER)) expect(kinds.length).toBeGreaterThanOrEqual(4);
+    const tiered = Object.values(KINDS_BY_TIER).flat();
+    expect(new Set(tiered).size).toBe(tiered.length);
+  });
+
+  it('numbered levels draw from five alike kinds, sea glass and the button among them', () => {
+    expect(NUMBER_KINDS).toEqual(expect.arrayContaining(['seaglass', 'button']));
+    expect(NUMBER_KINDS.length).toBe(5);
+  });
+
+  it('every kind has a name and draws at every tier size', () => {
+    for (const k of allKinds) {
+      expect(NAMES[k]).toMatch(/^[a-z ]+$/);
+      for (const d of THING_D.slice(1)) {
+        const g = thingArt(k, d);
+        const b = g.getLocalBounds();
+        expect(b.width, `${k} at ${d}`).toBeGreaterThan(d * 0.4);
+        expect(b.width, `${k} at ${d}`).toBeLessThanOrEqual(d * 1.15);
+        g.destroy();
+      }
+    }
+  });
+
+  it('level 5 boards show at least three different tier-4 kinds over 500 seeds, and numbered boards use every number kind', () => {
+    const tier4 = new Set<string>();
+    for (let seed = 1; seed <= 500; seed++) for (const t of makeBoard(planFor(5), new Rng(seed)).things) if (t.size === 4) tier4.add(t.kind);
+    expect(tier4.size).toBeGreaterThanOrEqual(3);
+    for (const id of [6, 7, 8]) {
+      const used = new Set<string>();
+      for (let seed = 1; seed <= 200; seed++) for (const t of makeBoard(planFor(id), new Rng(seed)).things) used.add(t.kind);
+      expect([...used].sort()).toEqual([...NUMBER_KINDS].sort());
+    }
+  });
+
+  it('the mood is seeded, every mood turns up, and drawing it after the board leaves the board unchanged', () => {
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 60; seed++) {
+      const a = new Rng(seed), b = new Rng(seed);
+      const board = makeBoard(planFor(4), a);
+      const layoutSeed = a.int(1, 1e9);
+      const mood = moodFor(new Rng(a.int(1, 1e9)));
+      expect(moodFor(new Rng(seed))).toBe(moodFor(new Rng(seed)));
+      expect(makeBoard(planFor(4), b)).toEqual(board);
+      expect(b.int(1, 1e9)).toBe(layoutSeed);
+      expect(MOODS).toContain(mood);
+      seen.add(mood);
+    }
+    expect(seen.size).toBe(MOODS.length);
   });
 });
