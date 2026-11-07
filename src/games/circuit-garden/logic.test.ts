@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
-  bypass, conductors, doneReady, dressingFor, gaps, HelpTally, initialState, lit, litWith, nextHelp, nextMove, planFor, PLANS,
+  bypass, checkBoard, conductors, doneReady, dressingFor, gaps, GLOW_AFTER, HelpTally, initialState, lit, litWith, nextHelp, nextMove, planFor, PLANS,
   type BoardState, type Edge, type Seen,
 } from './logic';
 
@@ -106,6 +106,82 @@ describe('level 2, a switch changes it', () => {
     }
     expect(flips).toBe(1);
     expect(doneReady(plan, seen)).toBe(true);
+  });
+});
+
+describe('level 3, mend the lantern', () => {
+  const plan = planFor(3);
+  const states: [boolean, boolean, boolean][] = [[false, false, false], [true, false, false], [false, true, false], [true, true, true]];
+
+  it('has two empty gaps, no fixed wires and a Check', () => {
+    expect(plan.fixed).toEqual([]);
+    expect(plan.check).toBe(true);
+    expect(gaps(plan, initialState())).toEqual(['supply', 'return']);
+  });
+
+  it('lights only with both bridges filled, and never bypasses', () => {
+    for (const [supply, ret, on] of states) {
+      expect(lit(plan, state(supply, ret))).toBe(on);
+      expect(bypass(conductors(plan, state(supply, ret)))).toBe(false);
+    }
+  });
+
+  it('a wrong Check names the supply break first, then return; a right one only when lit', () => {
+    expect(checkBoard(plan, state(false, false))).toEqual({ right: false, brk: 'supply' });
+    expect(checkBoard(plan, state(false, true))).toEqual({ right: false, brk: 'supply' });
+    expect(checkBoard(plan, state(true, false))).toEqual({ right: false, brk: 'return' });
+    expect(checkBoard(plan, state(true, true))).toEqual({ right: true });
+    expect(GLOW_AFTER).toBe(2);
+  });
+
+  it('Done ignores what was seen and needs a correct Check', () => {
+    for (const seen of [nothing, { on: true, off: true }]) {
+      expect(doneReady(plan, seen)).toBe(false);
+      expect(doneReady(plan, seen, false)).toBe(false);
+      expect(doneReady(plan, seen, true)).toBe(true);
+    }
+  });
+
+  it('help goes supply, return, then nothing, and each identity counts once', () => {
+    expect(nextHelp(plan, state(false, false), nothing)).toBe('supply');
+    expect(nextHelp(plan, state(true, false), nothing)).toBe('return');
+    expect(nextHelp(plan, state(false, true), nothing)).toBe('supply');
+    expect(nextHelp(plan, state(true, true), nothing)).toBeNull();
+    const t = new HelpTally();
+    t.give('supply'); t.give('supply'); t.give('return');
+    expect(t.count).toBe(2);
+  });
+
+  it('either fill order lights the lantern', () => {
+    for (const order of [['supply', 'return'], ['return', 'supply']] as const) {
+      const s = initialState();
+      order.forEach((slot, i) => {
+        s.filled[slot] = true;
+        expect(lit(plan, s)).toBe(i === 1);
+      });
+    }
+  });
+
+  it('a bot following nextMove fills both, checks, then is done, with no wrong Check', () => {
+    const s = initialState();
+    let checked = false, wrong = 0;
+    const moves: string[] = [];
+    for (let i = 0; i < 10; i++) {
+      const m = nextMove(plan, s, nothing, checked);
+      moves.push(Object.keys(m)[0] + ('fill' in m ? `:${m.fill}` : ''));
+      if ('done' in m) break;
+      if ('fill' in m) s.filled[m.fill] = true;
+      if ('check' in m) { if (checkBoard(plan, s).right) checked = true; else wrong++; }
+    }
+    expect(moves).toEqual(['fill:supply', 'fill:return', 'check', 'done']);
+    expect(wrong).toBe(0);
+  });
+
+  it('levels 1 and 2 ignore the checked default', () => {
+    expect(doneReady(planFor(1), { on: true, off: false })).toBe(true);
+    expect(doneReady(planFor(2), { on: true, off: false })).toBe(false);
+    expect(nextMove(planFor(1), initialState(), nothing)).toEqual({ fill: 'return' });
+    expect(nextMove(planFor(2), initialState(), nothing)).toEqual({ flip: true });
   });
 });
 

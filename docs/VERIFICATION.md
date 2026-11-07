@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-11-06 — Circuit Garden level 3, Mend the lantern (energy/waves E3)
+
+Changed: `circuit-garden` level 3 (PR #1338, branch `claude/circuit-garden-3`): two bridges, Check, counted misses and automatic glow; pre-K and school {1,3}; three voice lines and how-to steps.
+Ran (commit f46bcc55, base ed7f6536): `npm run typecheck`; `npm test` (321 files; the only failures were how-to card ones, fixed, then howto and circuit-garden 44 pass); 25 circuit-garden rule tests including a level-3 block; one scripted Playwright play at school level 3 (1024×768, local dev server: two wrong Checks 2 misses, glow, 1 hint; Help filled supply with no new hint; early Done inert; correct Check; Undo cleared it; Done before re-check inert; Check then Done finished 2/1; no page errors) and a portrait 768×1024 screenshot; `BROWSER_SUITE=fingerdemo FINGER_ONLY=circuit-garden` (levels 1 and 3) and `FINGER_LEVELS=2`. `game-reviewer`: no defects; two minor fixes applied.
+Not run: build, smoke and howto suites, device check, science-educator reading of the energy wording.
+Open: legibility of the break outline and 100-unit comfort of Check on the iPad, speech ([device checks](DEVICE-CHECKS.md)).
+
 ## 2026-11-06 — Measuring Post levels 1–2 (new game, measurement M3)
 
 Changed: new `measuring-post` (PR #1337, branch `claude/measuring-post-1-2`): levels 1–2, school {1,2}, Tinker Lab (now 28 games, pages 9/9/9 at school); a `measuringpost` browser suite.
@@ -86,20 +93,13 @@ Changed: `bond-beads` level 7 *The same atoms, rearranged* (two puzzles: hydroge
 Ran: `npm run typecheck`; `npm test` (317 files, 5759 tests; 146 in bond-beads logic tests, layout test widened to 0–3 card pictures); `npm run build`; `BROWSER_SUITE=bondbeads BOND_LEVELS=7` at http://localhost:5480 (opening miss 1, hint 1, both cards, score 1/1, landscape and portrait screenshots); `BROWSER_SUITE=fingerdemo FINGER_ONLY=bond-beads FINGER_LEVELS=7` (36.1 s).
 Open: offline not run; no iPad, device speech or child check ([DEVICE-CHECKS](DEVICE-CHECKS.md#bond-beads-level-7-chemistry-slice-4-2026-11-06)); level 8 only as a non-ring layout idea.
 
-## 2026-11-06 — Gadget Bench level 4, Fix-It Day (PR #1330)
-
-Changed: new level 4 in `src/games/gadget-bench/` (paddle wheels, yesterday's cart under a faded path, uncounted conflict line, same-condition glow, scene, voice lines, how-to; school range 2–4) and the `BENCH_LEVELS` filter on the `gadgetbench` browser case. Tested commit 7ad01ae9.
-Ran: `npm run typecheck`; `npx vitest run src/games/gadget-bench src/games/registry src/content/howto` 95 passed; `BROWSER_SUITE=gadgetbench BENCH_LEVELS=4` passed on Vite at http://localhost:5977 (free Try stops at the new puddle, the float stops at the bump with the conflict line spoken once and uncounted, a failing Give one miss, help names the paddle wheels, paddle wheels pass, rounds 2–3 built and given, saved [1 miss, 0 hints]) with one portrait screenshot; `BROWSER_SUITE=fingerdemo FINGER_ONLY=gadget-bench FINGER_LEVELS=4 FINGER_BAND=school` passed (46.9 s).
-Not run: `npm run build` (only the game folder, voice script and how-to changed); levels 1–3 browser replay (unchanged; rule tests show level 1–3 help and `runPath` unchanged).
-Open: device checks (two stops at one socket as a conflict; how the iPad says "paddle wheels") are in [DEVICE-CHECKS](DEVICE-CHECKS.md#gadget-bench-levels-13-inventions-i2-2026-10-27).
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| `circuitgarden`, `fingerdemo` (`circuit-garden`) | 2026-11-06: typecheck, full `npm test` (320 files) after the Tinker Lab capacity tests moved to 27 entries and the title clip was rendered; `circuitgarden` at http://localhost:5207 (level 1 landscape, level 2 portrait; Done 0/0, Show me 0/1) with both screenshots; `fingerdemo` at levels 1 and 2 | [Entry](VERIFICATION.md#2026-11-06--circuit-garden-levels-12-new-game-energywaves-e2) | no build, no device check, no science-educator reading; level 3 unbuilt |
+| `circuitgarden`, `fingerdemo` (`circuit-garden`) | 2026-11-06 (level 3, `f46bcc55`): typecheck, full `npm test` (321 files), 25 rule tests, one scripted school level 3 play (two wrong Checks 2/1, Help, early Done inert, Undo clears Check, finish) plus portrait screenshot; `fingerdemo` at levels 1, 2 and 3 (levels 1–2 earlier: `circuitgarden` suite) | [Entry](VERIFICATION.md#2026-11-06--circuit-garden-level-3-mend-the-lantern-energywaves-e3) | no build, no device check, no science-educator reading |
 | `measuringpost`, `fingerdemo` (`measuring-post`) | 2026-11-06 (commit 0103845b): typecheck, full `npm test` (321 files, 5,953 tests), `measuringpost` at http://localhost:5270 (level 1 landscape, level 2 portrait), `fingerdemo` at levels 1 and 2, build | [Entry](VERIFICATION.md#2026-11-06--measuring-post-levels-12-new-game-measurement-m3) | no offline or `world` run, no device check; levels 3–4 unbuilt |
 | `playdateworkshop`, `fingerdemo` (`playdate-workshop`) | 2026-11-06 (`974b560b`): typecheck, full units (5789) before review fixes then the game's and content/voice-clip tests (210), build; `playdateworkshop` (level 1, level 3 portrait); `fingerdemo` at 1–3 (8.4 s, 21.8 s, 17.4 s) | [Entry](VERIFICATION.md#2026-11-06--playdate-workshop-levels-13-new-game-social-emotional-slice-2) | No offline check; full units not re-run after review fixes; whether children understand passing and plan comparison, and iPad speech, are open |
 | `hatband`, `fingerdemo` (`hat-band`) | 2026-11-06 (`95a25da4` plus voice change `56131fb2`): typecheck, full `npm test` (5870 tests), build; `hatband` with `HAT_LEVELS=1,4` (level 1 landscape, level 4 portrait with Undo, empty-part Check, two misses, hint, accepted Check, record [4,2,1]); `fingerdemo` at 1 and 4 | [Entry](VERIFICATION.md#2026-11-06--hat-band-level-4-build-a-song-music-m6) | Level 3 browser case and offline check not run; speaker clarity of the low hat, speech of low hat and part, the source check and a child's play are open |

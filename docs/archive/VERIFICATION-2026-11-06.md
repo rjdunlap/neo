@@ -129,3 +129,10 @@ Not run: offline check (no persistence change). Open: iPad speaker, speech and a
 Changed: Gadget Bench definition gained level 4 (a longer three-condition path with a bump/puddle conflict, fixed by a new paddle-wheels part; school range becomes {2,4}) and its check tier; READY, the inventions and engineering-design dives and the study backlog updated.
 Ran: `node scripts/check-links.mjs` (links ok) and `git diff --check` (clean). No code checks (docs tier).
 Open: the build (new level on the existing interaction, `fingerdemo` at 4) is queued in READY; decision 5 in the definition has defaults, not blockers.
+
+## 2026-11-06 — Gadget Bench level 4, Fix-It Day (PR #1330)
+
+Changed: new level 4 in `src/games/gadget-bench/` (paddle wheels, yesterday's cart under a faded path, uncounted conflict line, same-condition glow, scene, voice lines, how-to; school range 2–4) and the `BENCH_LEVELS` filter on the `gadgetbench` browser case. Tested commit 7ad01ae9.
+Ran: `npm run typecheck`; `npx vitest run src/games/gadget-bench src/games/registry src/content/howto` 95 passed; `BROWSER_SUITE=gadgetbench BENCH_LEVELS=4` passed on Vite at http://localhost:5977 (free Try stops at the new puddle, the float stops at the bump with the conflict line spoken once and uncounted, a failing Give one miss, help names the paddle wheels, paddle wheels pass, rounds 2–3 built and given, saved [1 miss, 0 hints]) with one portrait screenshot; `BROWSER_SUITE=fingerdemo FINGER_ONLY=gadget-bench FINGER_LEVELS=4 FINGER_BAND=school` passed (46.9 s).
+Not run: `npm run build` (only the game folder, voice script and how-to changed); levels 1–3 browser replay (unchanged; rule tests show level 1–3 help and `runPath` unchanged).
+Open: device checks (two stops at one socket as a conflict; how the iPad says "paddle wheels") are in [DEVICE-CHECKS](../DEVICE-CHECKS.md#gadget-bench-levels-13-inventions-i2-2026-10-27).
