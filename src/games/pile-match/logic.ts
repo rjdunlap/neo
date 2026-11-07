@@ -10,7 +10,22 @@ export interface Board { cells: readonly Cell[]; kinds: readonly number[]; route
 /** Each kind has its own silhouette and its own colour, so finding one is a single-feature search. */
 export const KINDS = ['shell', 'acorn', 'apple', 'star', 'leaf', 'duck', 'flower', 'mushroom'] as const;
 export type KindName = (typeof KINDS)[number];
-const APPLE = 2, SHELL = 0;
+const APPLE = 2, SHELL = 0, LEAF = 4, DUCK = 5;
+/** Level 1 always asks for apples first; its second kind is one of these, from the seed. */
+export const LEVEL1_SECOND = [SHELL, DUCK, LEAF] as const;
+
+/** Where the heap blew down: the ground, its edge and the sky band behind the header. Levels 1–2 keep the meadow. */
+export const LOOKS = ['meadow', 'sand', 'autumn'] as const;
+export type Look = (typeof LOOKS)[number];
+export const lookFor = (level: number, rng: Rng): Look => (planFor(level).id <= 2 ? 'meadow' : rng.pick(LOOKS));
+
+/** The windy drop-in: each layer falls this long, the next starting this much later, bottom layer first. */
+export const DROP_FALL = 0.35;
+export const DROP_STAGGER = 0.15;
+/** Seconds before piece `i` starts to fall: upper layers land after the ones they rest on. */
+export const dropDelay = (cells: readonly Cell[], i: number) => cells[i].z * DROP_STAGGER;
+/** When the last piece has landed. */
+export const dropEnd = (cells: readonly Cell[]) => Math.max(...cells.map((_, i) => dropDelay(cells, i))) + DROP_FALL;
 
 export const PITCH = 120;
 export const RADIUS = 56;
@@ -193,12 +208,12 @@ export function assign(cells: readonly Cell[], kinds: readonly number[], rng: Rn
   return { cells, kinds: out, route };
 }
 
-/** The round's heap. Level 1 always asks for apples, then shells. */
+/** The round's heap. Level 1 always asks for apples first, then a seeded second kind. */
 export function makeBoard(level: number, rng: Rng): Board {
   const plan = planFor(level);
   const shapes = SHAPES[plan.id];
   const cells = shapes[rng.int(0, shapes.length - 1)];
-  const kinds = plan.id === 1 ? [APPLE, SHELL] : rng.shuffle(KINDS.map((_, k) => k)).slice(0, plan.kinds);
+  const kinds = plan.id === 1 ? [APPLE, rng.pick(LEVEL1_SECOND)] : rng.shuffle(KINDS.map((_, k) => k)).slice(0, plan.kinds);
   return assign(cells, kinds, rng);
 }
 

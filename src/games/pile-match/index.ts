@@ -11,8 +11,8 @@ import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
-  accepted, askedKind, covers, free, fullMask, HIT, hintFor, KINDS, makeBoard, pieceAt, pileLayout, planFor, present, putBack, RADIUS, slotAt, take,
-  tray, type Board, type Hint, type PileLayout, type PilePlan,
+  accepted, askedKind, covers, DROP_FALL, dropDelay, free, fullMask, HEADER, HIT, hintFor, KINDS, lookFor, makeBoard, pieceAt, pileLayout, planFor, present,
+  putBack, RADIUS, slotAt, take, tray, type Board, type Hint, type Look, type PileLayout, type PilePlan,
 } from './logic';
 
 const LEVELS: BandLevels = {
@@ -29,6 +29,18 @@ const NOTES = [3, 4, 5, 6, 7, 8, 9, 10];
 const FLIGHT = 0.3;
 /** Pieces in the tray are drawn a little smaller, to sit inside a 104-unit slot. */
 const IN_TRAY = 0.85;
+/** How far each piece falls in the windy drop-in. */
+const DROP_HEIGHT = 80;
+const SHADOW_Y = RADIUS - 6;
+
+/** Each look's ground, its rim and the sky band behind the header. Edge things are small and faint, never like a piece. */
+const LOOK_ART: Record<Look, { ground: number; rim: number; sky: number }> = {
+  meadow: { ground: grass, rim: swatch.green.light, sky: swatch.blue.light },
+  sand: { ground: swatch.yellow.light, rim: swatch.yellow.fill, sky: swatch.teal.light },
+  autumn: { ground: swatch.brown.light, rim: swatch.brown.fill, sky: swatch.orange.light },
+};
+/** Fallen leaves in the autumn look: brown, orange and red, never the green of the leaf kind. */
+const AUTUMN_LEAVES = [swatch.brown.fill, swatch.orange.fill, swatch.red.fill];
 
 /** A kind's picture, about 70 units across, centred on (0, 0). */
 function kindArt(kind: number): Graphics {
@@ -88,11 +100,13 @@ function kindArt(kind: number): Graphics {
 /** A piece: the picture on a round tile, with a shade drawn over it while something lies on top. */
 class Piece extends Container {
   readonly shade = new Graphics();
+  readonly shadow = new Graphics().ellipse(0, 0, RADIUS - 6, 10).fill({ color: ink, alpha: 0.15 });
   constructor(readonly kind: number) {
     super();
     const c = swatch[COLORS[kind]];
+    this.shadow.y = SHADOW_Y;
     this.addChild(
-      new Graphics().ellipse(0, RADIUS - 6, RADIUS - 6, 10).fill({ color: ink, alpha: 0.15 }),
+      this.shadow,
       new Graphics().circle(0, 0, RADIUS - 4).fill(0xffffff).stroke({ width: 4, color: c.line }).circle(0, 0, RADIUS - 12).fill(c.light),
       kindArt(kind),
       this.shade.circle(0, 0, RADIUS - 2).fill({ color: ink, alpha: 0.3 }),
@@ -114,6 +128,8 @@ type Press = { piece: number } | { slot: number };
 
 class PileMatch implements Game {
   readonly plan: PilePlan;
+  /** Where the heap blew down this round, from the seed. */
+  readonly look: Look;
   board: Board;
   mask: number;
   /** The tray's pieces, left to right, kept together by kind. */
@@ -149,6 +165,9 @@ class PileMatch implements Game {
   private readonly basket = new Container();
   private readonly basketFill = new Container();
   private readonly tag = new Container();
+  private readonly gust = new Graphics();
+  /** The look's edge things, chosen once: a place round the rim (0–1) or under the heap (0–1 each way), a size and a turn. */
+  private readonly decor: { t: number; u: number; v: number; s: number; a: number; under: boolean }[] = [];
   private tagArt: Container | null = null;
   private pieces: Piece[] = [];
   private readonly onCancel = () => this.letGo();
@@ -157,7 +176,13 @@ class PileMatch implements Game {
     this.plan = planFor(ctx.level);
     this.board = makeBoard(this.plan.id, ctx.rng);
     this.mask = fullMask(this.board.cells.length);
+    this.look = lookFor(this.plan.id, ctx.rng);
+    const things = this.look === 'autumn' ? 9 : this.look === 'sand' ? 2 : 10;
+    for (let n = 0; n < things; n++) {
+      this.decor.push({ t: (n + ctx.rng.next()) / things, u: ctx.rng.next(), v: ctx.rng.next(), s: 0.8 + 0.4 * ctx.rng.next(), a: ctx.rng.next() * Math.PI * 2, under: this.look === 'autumn' && n % 3 === 0 });
+    }
     this.pieceLayer.sortableChildren = true;
+    this.gust.eventMode = 'none';
     this.glow.eventMode = 'none';
     this.trayLayer.eventMode = 'none';
     this.basket.eventMode = 'none';
@@ -167,18 +192,52 @@ class PileMatch implements Game {
     this.hitLayer.on('pointerup', (e) => this.up(e));
     this.hitLayer.on('pointerupoutside', () => this.letGo());
     this.hitLayer.eventMode = 'static';
-    ctx.stage.addChild(this.trayLayer, this.basket, this.tag, this.pieceLayer, this.glow, this.hitLayer);
+    ctx.stage.addChild(this.trayLayer, this.basket, this.tag, this.pieceLayer, this.gust, this.glow, this.hitLayer);
     window.addEventListener('pointercancel', this.onCancel);
     this.pieces = this.board.kinds.map((k) => this.pieceLayer.addChild(new Piece(k)));
   }
 
   start() {
     this.resize(this.ctx.view);
-    this.pieceLayer.alpha = 0;
-    void this.ctx.tw.to(this.pieceLayer, { alpha: 1 }, { duration: 0.3 }).then(() => {
-      this.settle();
-    });
+    void this.dropIn().then(() => this.settle());
     void this.ctx.instruct(this.instruction());
+  }
+
+  /**
+   * The windy drop-in: a gust sweeps the header and the heap falls in, bottom layer first, each piece squashing as its
+   * shadow grows under it, so she has seen what landed on top. Taps wait (busy) until the last has landed.
+   */
+  private async dropIn() {
+    this.relayout = false;
+    this.placeAll();
+    this.blow();
+    const cells = this.board.cells, tw = this.ctx.tw, s = this.layout.scale;
+    await Promise.all(this.pieces.map(async (p, i) => {
+      const home = this.layout.pieces[i], delay = dropDelay(cells, i);
+      p.alpha = 0;
+      p.y = home.y - DROP_HEIGHT;
+      p.shadow.y = SHADOW_Y + DROP_HEIGHT;
+      p.shadow.scale.set(0.4);
+      void tw.to(p, { alpha: 1 }, { duration: 0.08, delay });
+      void tw.to(p.shadow, { y: SHADOW_Y }, { duration: DROP_FALL, delay, ease: ease.inQuad });
+      void tw.to(p.shadow.scale, { x: 1, y: 1 }, { duration: DROP_FALL, delay, ease: ease.inQuad });
+      await tw.to(p, { y: home.y }, { duration: DROP_FALL, delay, ease: ease.inQuad });
+      await tw.to(p.scale, { x: s * 1.1, y: s * 0.9 }, { duration: 0.05 });
+      await tw.to(p.scale, { x: s, y: s }, { duration: 0.06 });
+    }));
+  }
+
+  /** Three curling strokes of wind sweep across the header. */
+  private blow() {
+    const g = this.gust.clear(), w = this.ctx.view.w;
+    for (const [y, r] of [[40, 22], [68, 16], [96, 20]] as const) {
+      g.moveTo(-180, y).bezierCurveTo(-120, y - 14, -60, y + 14, 0, y).arc(0, y - r, r, Math.PI / 2, -Math.PI, true)
+        .stroke({ width: 6, color: 0xffffff, cap: 'round', alpha: 0.9 });
+    }
+    g.position.set(-40, 0);
+    g.alpha = 0;
+    void this.ctx.tw.to(g, { alpha: 1 }, { duration: 0.15 });
+    void this.ctx.tw.to(g, { x: w + 200 }, { duration: 0.7, ease: ease.inOutSine }).then(() => g.clear());
   }
 
   resize(v: View) {
@@ -189,10 +248,13 @@ class PileMatch implements Game {
     const t = this.trayLayer.removeChildren();
     t.forEach((c) => c.destroy());
     const back = new Graphics();
-    // The grass the heap lies on.
+    const look = LOOK_ART[this.look];
+    back.rect(0, 0, v.w, HEADER).fill({ color: look.sky, alpha: 0.6 });
+    // The ground the heap lies on.
     const xs = L.pieces.map((p) => p.x), ys = L.pieces.map((p) => p.y), pad = RADIUS + 26;
-    back.roundRect(Math.min(...xs) - pad, Math.min(...ys) - pad, Math.max(...xs) - Math.min(...xs) + 2 * pad, Math.max(...ys) - Math.min(...ys) + 2 * pad, 60)
-      .fill({ color: grass }).stroke({ width: 4, color: swatch.green.light });
+    const ground = { x: Math.min(...xs) - pad, y: Math.min(...ys) - pad, w: Math.max(...xs) - Math.min(...xs) + 2 * pad, h: Math.max(...ys) - Math.min(...ys) + 2 * pad };
+    back.roundRect(ground.x, ground.y, ground.w, ground.h, 60).fill({ color: look.ground }).stroke({ width: 4, color: look.rim });
+    this.drawEdge(back, ground);
     for (const s of L.slots) back.roundRect(s.x, s.y, s.w, s.h, 20).fill({ color: this.plan.asked ? wood.light : 0xffffff, alpha: 0.75 }).stroke({ width: 4, color: wood.line });
     this.trayLayer.addChild(back);
     this.basket.position.set(L.basket.x + L.basket.w / 2, L.basket.y + L.basket.h / 2);
@@ -206,6 +268,42 @@ class PileMatch implements Game {
     }
     if (this.busy) this.relayout = true;
     else this.placeAll();
+  }
+
+  /** The look's edge: grass tufts round the meadow, a wet line and two little shells on the sand, fallen leaves in autumn. */
+  private drawEdge(g: Graphics, r: { x: number; y: number; w: number; h: number }) {
+    const inset = 14;
+    const rim = (t: number) => {
+      const w = r.w - 2 * inset, h = r.h - 2 * inset;
+      let d = t * 2 * (w + h);
+      if (d < w) return { x: r.x + inset + d, y: r.y + inset };
+      if ((d -= w) < h) return { x: r.x + r.w - inset, y: r.y + inset + d };
+      if ((d -= h) < w) return { x: r.x + r.w - inset - d, y: r.y + r.h - inset };
+      return { x: r.x + inset, y: r.y + r.h - inset - (d - w) };
+    };
+    if (this.look === 'sand') {
+      g.moveTo(r.x + 50, r.y + r.h - 12).bezierCurveTo(r.x + r.w * 0.35, r.y + r.h - 24, r.x + r.w * 0.65, r.y + r.h - 2, r.x + r.w - 50, r.y + r.h - 14)
+        .stroke({ width: 8, color: swatch.teal.light, cap: 'round' });
+      this.decor.forEach((d, n) => {
+        const x = r.x + r.w * (n ? 0.82 : 0.14), y = r.y + r.h - 10, k = 9 * d.s;
+        g.moveTo(x - k, y).bezierCurveTo(x - k, y - 1.6 * k, x + k, y - 1.6 * k, x + k, y).closePath().fill({ color: 0xffffff, alpha: 0.85 })
+          .stroke({ width: 2, color: swatch.white.line, alpha: 0.6 });
+      });
+      return;
+    }
+    for (const d of this.decor) {
+      const p = d.under ? { x: r.x + 40 + d.u * (r.w - 80), y: r.y + 40 + d.v * (r.h - 80) } : rim(d.t);
+      if (this.look === 'meadow') {
+        const k = 8 * d.s;
+        g.moveTo(p.x - k, p.y + k).lineTo(p.x - k / 2, p.y - k).moveTo(p.x, p.y + k).lineTo(p.x, p.y - 1.4 * k).moveTo(p.x + k, p.y + k).lineTo(p.x + k / 2, p.y - k)
+          .stroke({ width: 3, color: swatch.green.fill, alpha: 0.55, cap: 'round' });
+      } else {
+        const k = 15 * d.s, c = Math.cos(d.a), s = Math.sin(d.a);
+        const at = (u: number, w: number) => [p.x + u * c - w * s, p.y + u * s + w * c] as const;
+        g.moveTo(...at(-k, 0)).quadraticCurveTo(...at(0, k * 0.7), ...at(k, 0)).quadraticCurveTo(...at(0, -k * 0.7), ...at(-k, 0))
+          .fill({ color: AUTUMN_LEAVES[Math.floor(d.u * 3) % 3], alpha: 0.9 });
+      }
+    }
   }
 
   /** A flight or put-back has landed: catch up on a resize or a Start again that came during it. */
@@ -323,6 +421,9 @@ class PileMatch implements Game {
     const cells = this.board.cells;
     this.pieces.forEach((p, i) => {
       this.ctx.tw.kill(p);
+      p.alpha = 1;
+      p.shadow.y = SHADOW_Y;
+      p.shadow.scale.set(1);
       if (present(this.mask, i)) {
         p.visible = true;
         p.position.set(this.layout.pieces[i].x, this.layout.pieces[i].y);
