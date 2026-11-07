@@ -1,7 +1,8 @@
 /**
  * Circuit Garden: a toy flower lantern lights only when the wires make a complete loop through it and back to the battery.
  * Level 1 fits a connector into the return gap and watches it light; level 2 flips a switch and sees the lantern on and
- * off. Done waits until she has seen what the level shows; nothing here is ever a miss. Rules: ./logic.ts;
+ * off; level 3 mends two gaps and then Checks that the lantern lights. Done waits until she has seen what the level shows
+ * (or, at 3, on a correct Check); only a wrong Check at 3 is a miss. Rules: ./logic.ts;
  * definition: docs/definitions/circuit-garden.md.
  */
 import { Container, Graphics, Rectangle } from 'pixi.js';
@@ -14,18 +15,18 @@ import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
-import { againIcon, checkIcon } from '../../ui/icons';
+import { againIcon, checkIcon, magnifierIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { backIcon, batteryArt, connectorArt, handIcon, lanternArt, lanternMini, socketArt, stickerArt, WIRE, WIRE_LIT } from './art';
 import {
-  doneReady, dressingFor, gaps, HelpTally, initialState, lit, nextHelp, nextMove, planFor,
+  checkBoard, doneReady, dressingFor, gaps, GLOW_AFTER, HelpTally, initialState, lit, nextHelp, nextMove, planFor,
   type BoardState, type Dressing, type LevelPlan, type Seen, type SlotId,
 } from './logic';
 
 const LEVELS: BandLevels = {
-  prek: { min: 1, max: 2 },
-  school: { min: 1, max: 2 },
+  prek: { min: 1, max: 3 },
+  school: { min: 1, max: 3 },
 };
 
 /** Half a bridge's length along its route, in logical units. */
@@ -55,10 +56,12 @@ interface Layout {
   undo: Pt;
   back: Pt;
   help: Pt;
+  check: Pt;
   done: Pt;
 }
 
-function layoutFor(v: View, mirror: boolean): Layout {
+/** `pieces` loose connectors (one at level 1, two at 3); `checking` puts a Check button between Help and Done. */
+function layoutFor(v: View, mirror: boolean, pieces: number, checking: boolean): Layout {
   const landscape = v.w >= v.h;
   const flip = (u: number) => (mirror ? 1 - u : u);
   if (landscape) {
@@ -69,9 +72,11 @@ function layoutFor(v: View, mirror: boolean): Layout {
       landscape,
       map: (u, w) => ({ x: x0 + (x1 - x0) * flip(u), y: cy + w * 85 }),
       du: HALF / (x1 - x0), dv: 64 / 85,
-      tray: [{ x: 380 * sx, y: bottom - 198 }],
+      tray: (pieces > 1 ? [345, 540] : [380]).map((x) => ({ x: x * sx, y: bottom - 198 })),
       undo: { x: 720 * sx, y: bottom - 198 }, back: { x: 860 * sx, y: bottom - 198 },
-      help: { x: 520 * sx, y: bottom - 68 }, done: { x: 760 * sx, y: bottom - 68 },
+      ...(checking
+        ? { help: { x: 420 * sx, y: bottom - 68 }, check: { x: 620 * sx, y: bottom - 68 }, done: { x: 820 * sx, y: bottom - 68 } }
+        : { help: { x: 520 * sx, y: bottom - 68 }, check: { x: 640 * sx, y: bottom - 68 }, done: { x: 760 * sx, y: bottom - 68 } }),
     };
   }
   const sx = v.w / 768;
@@ -80,9 +85,11 @@ function layoutFor(v: View, mirror: boolean): Layout {
     landscape,
     map: (u, w) => ({ x: cx + w * 160 * sx, y: y0 + (y1 - y0) * flip(u) }),
     du: HALF / (y1 - y0), dv: 64 / (160 * sx),
-    tray: [{ x: 300 * sx, y: v.h - 364 }],
+    tray: (pieces > 1 ? [300, 470] : [300]).map((x) => ({ x: x * sx, y: v.h - 364 })),
     undo: { x: 300 * sx, y: v.h - 224 }, back: { x: 470 * sx, y: v.h - 224 },
-    help: { x: 300 * sx, y: v.h - 84 }, done: { x: 560 * sx, y: v.h - 84 },
+    ...(checking
+      ? { help: { x: 250 * sx, y: v.h - 84 }, check: { x: 420 * sx, y: v.h - 84 }, done: { x: 600 * sx, y: v.h - 84 } }
+      : { help: { x: 300 * sx, y: v.h - 84 }, check: { x: 430 * sx, y: v.h - 84 }, done: { x: 560 * sx, y: v.h - 84 } }),
   };
 }
 
@@ -98,6 +105,13 @@ class CircuitGarden implements Game {
   undoState: BoardState | null = null;
   selected: Piece | null = null;
   finished = false;
+  /** Level 3: the board as it is now passed a Check. Any real edit clears it. */
+  checked = false;
+  /** Wrong Checks this round (kept across a restart): the only misses in the game. */
+  misses = 0;
+  /** A wrong Check's break, flashed on its bridge for a moment. */
+  private breakAt: SlotId | null = null;
+  private breakTime = 0;
   /** A committed change waits for the next frame to count as seen. */
   private pendingLook = false;
   private started = false;
@@ -119,6 +133,7 @@ class CircuitGarden implements Game {
   readonly pieces: Piece[] = [];
   readonly helpButton: RoundButton;
   readonly doneButton: RoundButton;
+  readonly checkButton: RoundButton | null = null;
   readonly undoButton: RoundButton | null = null;
   readonly backButton: RoundButton | null = null;
 
@@ -145,6 +160,10 @@ class CircuitGarden implements Game {
     this.helpButton = new RoundButton(handIcon(), swatch.orange, 50, () => this.help());
     this.doneButton = new RoundButton(checkIcon(), swatch.green, 50, () => this.done());
     ctx.stage.addChild(this.helpButton, this.doneButton);
+    if (this.plan.check) {
+      this.checkButton = new RoundButton(magnifierIcon(), swatch.yellow, 50, () => this.check());
+      ctx.stage.addChild(this.checkButton);
+    }
     if (this.plan.slots.length) {
       this.undoButton = new RoundButton(againIcon(), swatch.white, 50, () => this.undo());
       this.backButton = new RoundButton(backIcon(), swatch.white, 50, () => this.putBack());
@@ -152,7 +171,16 @@ class CircuitGarden implements Game {
       this.plan.slots.forEach((_, i) => this.pieces.push(this.makePiece(i)));
     }
     ctx.stage.addChild(this.selection, this.glow);
-    this.layout = layoutFor(ctx.view, this.dressing.mirror);
+    this.layout = this.layoutNow(ctx.view);
+  }
+
+  private layoutNow(v: View) {
+    return layoutFor(v, this.dressing.mirror, this.plan.slots.length, this.plan.check);
+  }
+
+  /** Hints given this round (each help identity once). */
+  get hints() {
+    return this.tally.count;
   }
 
   get isLit() {
@@ -274,6 +302,9 @@ class CircuitGarden implements Game {
     this.wasLit = on;
     this.pendingLook = true;
     this.glowAt = null;
+    // A real edit means the board she checked is gone: a new Check is needed.
+    this.checked = false;
+    this.breakAt = null;
     this.draw();
     this.placePieces();
     this.drawSelection();
@@ -285,8 +316,10 @@ class CircuitGarden implements Game {
     if (this.finished) return;
     const id = nextHelp(this.plan, this.state, this.seen);
     if (!id) {
-      this.glowAt = { ...this.layout.done };
-      void this.ctx.say('circuit.can-finish');
+      // Nothing left to show: point at Check (level 3, not yet checked) or Done. No new hint.
+      const toCheck = this.plan.check && !this.checked;
+      this.glowAt = { ...(toCheck ? this.layout.check : this.layout.done) };
+      void this.ctx.say(toCheck ? 'circuit.check-first' : this.plan.check ? 'circuit.checked' : 'circuit.can-finish');
       return;
     }
     if ((id === 'return' || id === 'supply') && !this.pieces.some((p) => !p.at && !p.drag.dragging)) return;
@@ -306,9 +339,44 @@ class CircuitGarden implements Game {
     this.help();
   }
 
+  /** Level 3's deliberate Check: does the lantern light now? A wrong Check is a miss with the break named and flashed. */
+  check() {
+    if (this.finished || !this.plan.check) return;
+    if (this.checked) { this.glowAt = { ...this.layout.done }; void this.ctx.say('circuit.checked'); return; }
+    const result = checkBoard(this.plan, this.state);
+    if (result.right) {
+      this.checked = true;
+      this.glowAt = { ...this.layout.done };
+      sfx.bell(11, 0.3);
+      this.ctx.pet.cheer();
+      this.drawMarks();
+      void this.ctx.say('circuit.checked');
+      return;
+    }
+    this.misses++;
+    sfx.boing();
+    this.breakAt = result.brk;
+    this.breakTime = 1.6;
+    // After two wrong Checks the next empty bridge glows by itself: that bridge's one hint.
+    if (this.misses >= GLOW_AFTER) {
+      this.tally.give(result.brk);
+      this.glowAt = this.bridgeCentre(result.brk);
+    }
+    const brk = result.brk;
+    void this.ctx.say('circuit.open').then(() => {
+      if (this.alive && !this.finished) void this.ctx.say(brk === 'supply' ? 'circuit.supply-break' : 'circuit.return-break');
+    });
+  }
+
   private done() {
     if (this.finished) return;
-    if (!doneReady(this.plan, this.seen)) {
+    if (this.plan.check && !this.checked) {
+      // Not checked yet: point at Check. Never a miss.
+      this.glowAt = { ...this.layout.check };
+      void this.ctx.say('circuit.check-first');
+      return;
+    }
+    if (!doneReady(this.plan, this.seen, this.checked)) {
       // Not yet: say what is left to see and point at Help. Never a miss.
       const line: LineId = this.plan.switch ? (this.seen.on ? 'circuit.unseen-off' : 'circuit.unseen-on') : 'circuit.return-break';
       this.glowAt = { ...this.layout.help };
@@ -322,7 +390,7 @@ class CircuitGarden implements Game {
     this.drawSelection();
     sfx.sparkle();
     this.ctx.pet.cheer();
-    void this.ctx.tw.wait(0.6).then(() => this.alive && this.ctx.finish({ misses: 0, hints: this.tally.count }));
+    void this.ctx.tw.wait(0.6).then(() => this.alive && this.ctx.finish({ misses: this.misses, hints: this.tally.count }));
   }
 
   restart() {
@@ -330,6 +398,7 @@ class CircuitGarden implements Game {
     this.state = initialState();
     this.seen = { on: false, off: false };
     this.undoState = null;
+    this.checked = false;
     for (const p of this.pieces) p.at = null;
     this.selected = null;
     this.changed();
@@ -428,7 +497,8 @@ class CircuitGarden implements Game {
       const m = new Container();
       const card = new Graphics().roundRect(-40, -44, 80, 88, 16).fill({ color: 0xffffff, alpha: 0.85 }).stroke({ width: 3, color: swatch.white.line });
       m.addChild(card, lanternMini(k === 'on', 0.42));
-      if (this.seen[k]) {
+      // At level 3 the lit lantern is the request, ticked by a correct Check rather than by seeing it.
+      if (this.plan.check ? this.checked : this.seen[k]) {
         const tick = new Graphics().circle(26, 30, 17).fill(swatch.green.fill);
         tick.addChild(checkIcon());
         tick.children[0].scale.set(0.45);
@@ -467,7 +537,7 @@ class CircuitGarden implements Game {
   start() {
     this.started = true;
     this.changed();
-    void this.ctx.instruct(this.plan.switch ? 'circuit.instruct.2' : 'circuit.instruct.1');
+    void this.ctx.instruct(this.plan.check ? 'circuit.instruct.3' : this.plan.switch ? 'circuit.instruct.2' : 'circuit.instruct.1');
   }
 
   update(dt: number) {
@@ -478,14 +548,21 @@ class CircuitGarden implements Game {
       const k = this.isLit ? 'on' : 'off';
       if (!this.seen[k]) { this.seen[k] = true; this.drawMarks(); }
     }
-    this.doneButton.alpha = doneReady(this.plan, this.seen) ? 1 : 0.55;
+    this.doneButton.alpha = doneReady(this.plan, this.seen, this.checked) ? 1 : 0.55;
     const g = this.glow.clear();
+    if (this.breakAt && this.breakTime > 0) {
+      // A wrong Check's break: a pulsing outline round the empty bridge, shape as well as colour.
+      this.breakTime -= dt;
+      const c = this.bridgeCentre(this.breakAt);
+      const [hw, hh] = this.layout.landscape ? [80, 56] : [56, 80];
+      g.roundRect(c.x - hw, c.y - hh, hw * 2, hh * 2, 20).stroke({ width: 7, color: swatch.red.line, alpha: 0.5 + 0.5 * Math.abs(Math.sin(this.clock * 6)) });
+    }
     const at = this.glowAt;
     if (at) g.circle(at.x, at.y, 66).stroke({ width: 8, color: swatch.yellow.line, alpha: 0.6 + 0.4 * Math.sin(this.clock * 4) });
   }
 
   resize(v: View) {
-    this.layout = layoutFor(v, this.dressing.mirror);
+    this.layout = this.layoutNow(v);
     const L = this.layout;
     this.background.clear().rect(0, 0, v.w, v.h).fill(0xe6f6ef);
     const tl = L.map(0, -1), br = L.map(1, 1);
@@ -503,6 +580,7 @@ class CircuitGarden implements Game {
     if (this.plan.switch) this.switchNode.position.copyFrom(this.bridgeCentre('supply'));
     this.helpButton.position.copyFrom(L.help);
     this.doneButton.position.copyFrom(L.done);
+    this.checkButton?.position.copyFrom(L.check);
     this.undoButton?.position.copyFrom(L.undo);
     this.backButton?.position.copyFrom(L.back);
     this.glowAt = null;
@@ -519,11 +597,12 @@ class CircuitGarden implements Game {
     });
   }
 
-  /** The ghost finger: carry the connector to the gap, or flip the switch to what she has not seen, then press Done. */
+  /** The ghost finger: carry a connector to the next gap, or flip the switch to what she has not seen, Check, then Done. */
   autotouch(): TouchIntent | null {
     if (this.finished || this.pendingLook || !this.started) return null;
-    const move = nextMove(this.plan, this.state, this.seen);
+    const move = nextMove(this.plan, this.state, this.seen, this.checked);
     if ('done' in move) return { tap: { on: this.doneButton } };
+    if ('check' in move) return this.checkButton ? { tap: { on: this.checkButton } } : null;
     if ('flip' in move) return { tap: { on: this.switchNode } };
     const piece = this.pieces.find((p) => !p.at);
     if (!piece || piece.drag.dragging) return null;
@@ -549,7 +628,7 @@ export const circuitGarden: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
   touchDemo: true,
-  coplayHint: 'Take turns: one of you joins the wire or flips the switch, the other watches the lantern, then swap.',
+  coplayHint: 'Take turns: one of you joins a wire or flips the switch, the other watches the lantern (or presses Check), then swap.',
   hubIcon: () => new WigglyIcon(lanternArt(true)),
   sticker: (seed) => stickerArt(seed),
   create: (ctx) => new CircuitGarden(ctx),
