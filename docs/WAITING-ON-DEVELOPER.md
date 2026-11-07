@@ -59,6 +59,12 @@ Lift It dive (2026-11-07), two calls; slices 1–5 go ahead on the defaults ([th
 | **A toddler entry, level 10 *One big pull*?** | Default: no; if yes, it also needs a person to watch a toddler find the knot | [Lift It dive](deep-dives/lift-it.md#decisions-for-the-developer) |
 | **Pre-K up to level 9 *How many paws?*?** | Default: no, school only, so pre-K keeps no counted misses | [Lift It dive](deep-dives/lift-it.md#decisions-for-the-developer) |
 
+Block Garden dive (2026-11-07), one call; slices 1–5 go ahead on the default ([the dive](deep-dives/block-garden.md#decisions-for-the-developer)):
+
+| Step | What happens next | Written in |
+| --- | --- | --- |
+| **A preschool door, level 14 *One little gap*?** | Default: keep pre-K and up until a person sees a four-year-old play level 1 on an iPad; if yes, preschool gets a 4×4 bed at 110 units and one piece | [Block Garden dive](deep-dives/block-garden.md#decisions-for-the-developer) |
+
 Number Trails dive (2026-11-06), two calls; slices 1–6 go ahead regardless ([the dive](deep-dives/number-trails.md#decisions-for-the-developer)):
 
 | Step | What happens next | Written in |
