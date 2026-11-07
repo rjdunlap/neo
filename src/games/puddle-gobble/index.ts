@@ -13,7 +13,7 @@ import { WigglyIcon } from '../shared';
 import { SAND, thingArt } from './art';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
-  authoredBoard, beachLayout, detour, done, fieldFor, hintTarget, letGo, makeBoard, moodFor, NAMES, numeric, PAIL_BOX, placeOn, planFor, puddleDiameter, puddleStart,
+  authoredBoard, beachLayout, blocker, detour, done, fieldFor, hintTarget, letGo, makeBoard, moodFor, NAMES, numeric, PAIL_BOX, placeOn, planFor, puddleDiameter, puddleStart,
   refusal, soak, startState, thingDiameter, type Board, type Hint, type Kind, type Mood, type Placed, type Plan, type Rect, type State, type Thing,
 } from './logic';
 
@@ -531,6 +531,8 @@ class PuddleGobble implements Game {
     this.missesSince = 0;
     this.glowCounted = false;
     this.glow = null;
+    // A soak changes what is smallest, so whatever was refused for the order may go now, even where the puddle still sits on it.
+    if (this.plan.mode === 'order') for (const o of this.items) o.armed = true;
     it.where = 'moving';
     const t = it.thing;
     const tier = numeric(this.plan) ? Math.min(4, Math.ceil(t.size / 5)) : t.size;
@@ -675,7 +677,8 @@ class PuddleGobble implements Game {
     const others = this.items.filter((i) => i.where === 'sand' && i.thing.id !== h.soak).map((i) => ({ x: i.node.x, y: i.node.y, r: thingDiameter(this.plan, i.thing) / 2 }));
     const via = detour(this.puddle, goal, R, others, this.field);
     if (via) return { tap: { on: this.ground, x: via.x, y: via.y }, receiver: this.ground };
-    if (this.plan.id === 1) return { tap: { on: this.ground, x: goal.x, y: goal.y }, receiver: this.ground };
+    // A tap aims only at the goal, so when no way round is clear (level 9's big puddle among six) whatever it passes only wobbles.
+    if (this.plan.id === 1 || blocker(this.puddle, goal, R, others)) return { tap: { on: this.ground, x: goal.x, y: goal.y }, receiver: this.ground };
     return { trace: { on: this.ground, x: this.puddle.x, y: this.puddle.y }, via: [{ on: this.ground, x: goal.x, y: goal.y }], receiver: this.ground };
   }
 
