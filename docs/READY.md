@@ -6,7 +6,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **Define `bolt-boards` level 9 *Put it back*** (docs only): [build slices](deep-dives/bolt-boards.md#build-slices-in-order).
+- **Define `bolt-boards` level 9 *Put it back*** (docs only): [build slices](deep-dives/bolt-boards.md#build-slices-in-order) Claimed by `claude/define-bolt-boards-9`.
 - **Dive `cut-along`** (Cut Along; toddler to school, 8 levels; docs only; the next unstarted game in the tracker's order, so the rest of waves 5–7 follow after it): [procedure](deep-dives/README.md#one-session-one-game).
 - **`number-trails` slice 1, the flying hint, looks and a rising tune** (`letter-trails` helpers reused; preschool and pre-K; typecheck, rule tests, `fingerdemo` at 1 and 3): [build slices](deep-dives/number-trails.md#build-slices-in-order).
 - **`puddle-gobble`, slices 1–4 in the dive's order** (`bubble-beach`; toddler to school; slice 1 more kinds and beach moods, slice 2 level 9 *Smallest number first*, slice 3 level 10 *Count the dots* after slice 2, slice 4 level 11 *Too full* after slice 2): [build slices](deep-dives/puddle-gobble.md#build-slices-in-order).
