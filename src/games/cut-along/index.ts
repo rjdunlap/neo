@@ -14,7 +14,8 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   EDGE, LEVELS, OUTLINES, PAPER_W, RING_R, SNIP_EVERY, STRIP, boardsFor, botRoute, chooseOrder, countsStrays, cutsFor,
   differsLine, fringeMarks, hintStretch, judgeOutline, layoutFor, lengthTo, levelOf, markAt, markBox, pathOf, planFor,
-  stickerShape, tolerance, wrongReached, type Board, type Cut, type Layout, type Mark, type PieceId, type Rect,
+  pieceColor, pieceLine, slotsFor, stickerShape, themeFor, tolerance, wrongReached, type Board, type Cut, type Layout, type Mark,
+  type PieceId, type Rect, type Slot, type Theme,
 } from './logic';
 
 /** One outline's cutting state: which way round, and how far the scissors have come. */
@@ -22,44 +23,10 @@ interface Track { cut: Cut; order: number | null; progress: number; tried: boole
 
 interface Drag { id: number; prev: Point; track: Track | null; missed: boolean; stopped: boolean; travel: number; outside: boolean }
 
-/** Where a piece goes in the host's picture, in the picture's 0–1 units. */
-interface Slot { piece: PieceId; x: number; y: number; w: number; h: number }
-
 const PAPERS: ColorName[] = ['yellow', 'pink', 'blue', 'orange', 'green', 'purple', 'teal'];
-const PIECE_COLOR: Partial<Record<PieceId, ColorName>> = {
-  grass: 'green', tail: 'pink', plank: 'brown', mountain: 'purple', sea: 'blue', hill: 'green', path: 'orange', sun: 'yellow',
-  window: 'blue', sail: 'white', flag: 'red', heart: 'red', house: 'orange', leaf: 'green', fish: 'orange', cloud: 'white', roof: 'red',
-};
-
-/** The picture for each level: the slots its pieces fill, in round order. */
-function slotsFor(level: number, pieces: readonly PieceId[]): Slot[] {
-  const l = levelOf(level);
-  if (l === 1) return pieces.map((piece, i) => ({ piece, x: 0.04 + i * 0.32, y: 0.78, w: 0.3, h: 0.18 }));
-  if (l === 2) return pieces.map((piece, i) => ({ piece, x: 0.36 + i * 0.12, y: 0.42 + i * 0.16, w: 0.2, h: 0.12 }));
-  if (l === 3) return pieces.map((piece, i) => ({ piece, x: 0.12 + i * 0.21, y: 0.5, w: 0.13, h: 0.38 }));
-  if (l === 4) {
-    const spots = [{ x: 0.04, y: 0.28, w: 0.48, h: 0.3 }, { x: 0.48, y: 0.24, w: 0.48, h: 0.34 }, { x: 0.02, y: 0.62, w: 0.96, h: 0.14 }, { x: 0.02, y: 0.78, w: 0.96, h: 0.14 }];
-    return pieces.map((piece, i) => ({ piece, ...spots[i] }));
-  }
-  if (l === 5) {
-    const spots: Record<string, Omit<Slot, 'piece'>> = { hill: { x: 0.04, y: 0.5, w: 0.92, h: 0.32 }, path: { x: 0.3, y: 0.72, w: 0.4, h: 0.24 }, sun: { x: 0.66, y: 0.06, w: 0.28, h: 0.28 } };
-    return pieces.map((piece) => ({ piece, ...spots[piece] }));
-  }
-  if (l === 6) {
-    const spots = [{ x: 0.12, y: 0.46, w: 0.18, h: 0.18 }, { x: 0.62, y: 0.26, w: 0.26, h: 0.36 }, { x: 0.34, y: 0.46, w: 0.18, h: 0.18 }];
-    return pieces.map((piece, i) => (piece === 'flag' ? { piece, x: 0.12, y: 0.06, w: 0.16, h: 0.12 } : { piece, ...spots[i] }));
-  }
-  if (l === 7) return pieces.map((piece, i) => ({ piece, x: 0.06 + i * 0.31, y: 0.3 + (i % 2) * 0.22, w: 0.26, h: 0.26 }));
-  const gaps: Record<string, Omit<Slot, 'piece'>> = {
-    roof: { x: 0.06, y: 0.3, w: 0.4, h: 0.22 }, window: { x: 0.18, y: 0.6, w: 0.16, h: 0.16 },
-    sun: { x: 0.7, y: 0.06, w: 0.22, h: 0.22 }, sail: { x: 0.62, y: 0.38, w: 0.26, h: 0.3 },
-  };
-  return (['roof', 'window', 'sun', 'sail'] as const).map((piece) => ({ piece, ...gaps[piece] }));
-}
-
 /** A piece drawn in the picture (or a soft outline where it will go). */
-function drawPiece(g: Graphics, piece: PieceId, r: Rect, ghost: boolean) {
-  const c = swatch[PIECE_COLOR[piece] ?? 'yellow'];
+function drawPiece(g: Graphics, piece: PieceId, r: Rect, ghost: boolean, theme: Theme) {
+  const c = swatch[pieceColor(theme, piece)];
   const fill = ghost ? { color: 0xffffff, alpha: 0.35 } : { color: c.fill };
   const stroke = ghost ? { width: 3, color: swatch.white.line, alpha: 0.6 } : { width: 3, color: c.line, join: 'round' as const };
   const shape = (kind: keyof typeof OUTLINES) => {
@@ -75,7 +42,11 @@ function drawPiece(g: Graphics, piece: PieceId, r: Rect, ghost: boolean) {
       break;
     }
     case 'tail': g.roundRect(r.x, r.y + r.h * 0.3, r.w, r.h * 0.4, r.h * 0.2).fill(fill).stroke(stroke); break;
-    case 'plank': g.poly([r.x, r.y + r.h * 0.15, r.x + r.w / 2, r.y, r.x + r.w, r.y + r.h * 0.15, r.x + r.w, r.y + r.h, r.x, r.y + r.h]).fill(fill).stroke(stroke); break;
+    case 'plank':
+      // A raft's log is rounded; a fence's plank is pointed.
+      if (theme === 'raft') g.roundRect(r.x, r.y, r.w, r.h, r.w / 2).fill(fill).stroke(stroke);
+      else g.poly([r.x, r.y + r.h * 0.15, r.x + r.w / 2, r.y, r.x + r.w, r.y + r.h * 0.15, r.x + r.w, r.y + r.h, r.x, r.y + r.h]).fill(fill).stroke(stroke);
+      break;
     case 'mountain': g.poly([r.x, r.y + r.h, r.x + r.w * 0.3, r.y + r.h * 0.2, r.x + r.w * 0.5, r.y + r.h * 0.55, r.x + r.w * 0.72, r.y, r.x + r.w, r.y + r.h]).fill(fill).stroke(stroke); break;
     case 'sea': {
       g.moveTo(r.x, r.y + r.h);
@@ -85,33 +56,73 @@ function drawPiece(g: Graphics, piece: PieceId, r: Rect, ghost: boolean) {
     }
     case 'hill': g.moveTo(r.x, r.y + r.h).quadraticCurveTo(r.x + r.w / 2, r.y - r.h * 0.9, r.x + r.w, r.y + r.h).closePath().fill(fill).stroke(stroke); break;
     case 'path': g.moveTo(r.x + r.w * 0.5, r.y).bezierCurveTo(r.x + r.w * 1.1, r.y + r.h * 0.4, r.x - r.w * 0.1, r.y + r.h * 0.6, r.x + r.w * 0.5, r.y + r.h).stroke({ ...stroke, width: ghost ? 10 : 16, color: ghost ? 0xffffff : c.fill }); break;
-    case 'sun': case 'window': shape(piece === 'sun' ? 'circle' : 'square'); if (piece === 'window' && !ghost) g.moveTo(r.x + r.w / 2, r.y).lineTo(r.x + r.w / 2, r.y + r.h).moveTo(r.x, r.y + r.h / 2).lineTo(r.x + r.w, r.y + r.h / 2).stroke({ width: 3, color: c.line }); break;
-    case 'sail': case 'flag': case 'roof': shape('triangle'); break;
+    case 'sun':
+      if (theme === 'night' && !ghost) {
+        // At night the circle is the moon: pale, with two craters.
+        g.circle(r.x + r.w / 2, r.y + r.h / 2, r.w / 2).fill(swatch.yellow.light).stroke({ width: 3, color: swatch.yellow.line });
+        g.circle(r.x + r.w * 0.38, r.y + r.h * 0.4, r.w * 0.1).circle(r.x + r.w * 0.62, r.y + r.h * 0.64, r.w * 0.07).fill({ color: swatch.yellow.line, alpha: 0.5 });
+      } else shape('circle');
+      break;
+    case 'kite':
+      shape('kite');
+      if (!ghost) g.moveTo(r.x + r.w / 2, r.y).lineTo(r.x + r.w / 2, r.y + r.h).moveTo(r.x + r.w * 0.125, r.y + r.h * 0.375).lineTo(r.x + r.w * 0.875, r.y + r.h * 0.375).stroke({ width: 2, color: c.line });
+      break;
+    case 'window': shape('square'); if (!ghost) g.moveTo(r.x + r.w / 2, r.y).lineTo(r.x + r.w / 2, r.y + r.h).moveTo(r.x, r.y + r.h / 2).lineTo(r.x + r.w, r.y + r.h / 2).stroke({ width: 3, color: c.line }); break;
+    case 'sail': case 'roof': shape('triangle'); break;
     default: shape(piece);
   }
 }
 
 /** The host's picture behind the pieces: sky, ground and whatever the pieces belong to. */
-function drawScene(g: Graphics, level: number, w: number, h: number) {
-  const l = levelOf(level);
-  g.roundRect(0, 0, w, h, 18).fill(swatch.blue.light).stroke({ width: 5, color: swatch.white.line });
-  g.rect(4, h * 0.7, w - 8, h * 0.3 - 4).fill(swatch.green.light);
-  if (l === 2) {
-    g.poly([w * 0.3, h * 0.12, w * 0.42, h * 0.26, w * 0.3, h * 0.42, w * 0.18, h * 0.26]).fill(swatch.red.fill).stroke({ width: 3, color: swatch.red.line });
-    g.moveTo(w * 0.3, h * 0.42).lineTo(w * 0.55, h * 0.95).stroke({ width: 2, color: ink, alpha: 0.4 });
-  }
-  if (l === 3) g.rect(w * 0.08, h * 0.62, w * 0.86, h * 0.05).fill(swatch.brown.light);
-  if (l === 6) {
-    g.rect(w * 0.08, h * 0.4, w * 0.48, h * 0.38).fill(swatch.yellow.light).stroke({ width: 3, color: swatch.yellow.line });
-    g.rect(w * 0.12, h * 0.02, w * 0.02, h * 0.38).fill(swatch.brown.line);
-    g.poly([w * 0.56, h * 0.7, w * 0.94, h * 0.7, w * 0.86, h * 0.8, w * 0.62, h * 0.8]).fill(swatch.brown.fill).stroke({ width: 3, color: swatch.brown.line });
-    g.rect(w * 0.745, h * 0.24, w * 0.015, h * 0.46).fill(swatch.brown.line);
-  }
-  if (l === 7) g.ellipse(w * 0.5, h * 0.86, w * 0.3, h * 0.06).fill(swatch.blue.fill);
-  if (l === 8) {
-    g.rect(w * 0.1, h * 0.52, w * 0.32, h * 0.3).fill(swatch.yellow.light).stroke({ width: 3, color: swatch.yellow.line });
-    g.poly([w * 0.56, h * 0.72, w * 0.94, h * 0.72, w * 0.86, h * 0.82, w * 0.62, h * 0.82]).fill(swatch.brown.fill).stroke({ width: 3, color: swatch.brown.line });
-    g.rect(w * 0.745, h * 0.36, w * 0.015, h * 0.36).fill(swatch.brown.line);
+function drawScene(g: Graphics, theme: Theme, w: number, h: number) {
+  g.roundRect(0, 0, w, h, 18).fill(theme === 'night' ? swatch.blue.line : swatch.blue.light).stroke({ width: 5, color: swatch.white.line });
+  g.rect(4, h * 0.7, w - 8, h * 0.3 - 4).fill(theme === 'night' ? swatch.green.line : swatch.green.light);
+  const boat = (y: number) => {
+    g.poly([w * 0.56, h * y, w * 0.94, h * y, w * 0.86, h * (y + 0.1), w * 0.62, h * (y + 0.1)]).fill(swatch.brown.fill).stroke({ width: 3, color: swatch.brown.line });
+    g.rect(w * 0.745, h * (y - 0.36), w * 0.015, h * 0.36).fill(swatch.brown.line);
+  };
+  switch (theme) {
+    case 'hedgehog':
+      g.ellipse(w * 0.5, h * 0.6, w * 0.4, h * 0.18).fill(swatch.brown.light).stroke({ width: 3, color: swatch.brown.line });
+      g.circle(w * 0.86, h * 0.64, w * 0.09).fill(swatch.brown.light).stroke({ width: 3, color: swatch.brown.line });
+      g.circle(w * 0.88, h * 0.61, w * 0.015).circle(w * 0.95, h * 0.66, w * 0.02).fill(ink);
+      break;
+    case 'kite':
+      g.poly([w * 0.3, h * 0.12, w * 0.42, h * 0.26, w * 0.3, h * 0.42, w * 0.18, h * 0.26]).fill(swatch.red.fill).stroke({ width: 3, color: swatch.red.line });
+      g.moveTo(w * 0.3, h * 0.42).lineTo(w * 0.55, h * 0.95).stroke({ width: 2, color: ink, alpha: 0.4 });
+      break;
+    case 'gift':
+      g.rect(w * 0.2, h * 0.38, w * 0.6, h * 0.46).fill(swatch.red.fill).stroke({ width: 3, color: swatch.red.line });
+      g.ellipse(w * 0.43, h * 0.33, w * 0.07, h * 0.05).ellipse(w * 0.57, h * 0.33, w * 0.07, h * 0.05).fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line });
+      break;
+    case 'fence': g.rect(w * 0.08, h * 0.62, w * 0.86, h * 0.05).fill(swatch.brown.light); break;
+    case 'raft':
+      g.rect(4, h * 0.56, w - 8, h * 0.44 - 4).fill(swatch.blue.fill);
+      g.circle(w * 0.84, h * 0.16, w * 0.08).fill(swatch.yellow.fill);
+      break;
+    case 'river':
+      g.rect(4, h * 0.64, w - 8, h * 0.36 - 4).fill(swatch.blue.light);
+      g.roundRect(w * 0.04, h * 0.14, w * 0.92, h * 0.16, h * 0.06).roundRect(w * 0.04, h * 0.52, w * 0.92, h * 0.1, h * 0.04).fill(swatch.green.fill).stroke({ width: 3, color: swatch.green.line });
+      g.circle(w * 0.8, h * 0.14, w * 0.05).fill(cream).circle(w * 0.81, h * 0.14, w * 0.025).fill(ink);
+      break;
+    case 'night':
+      for (const [x, y] of [[0.1, 0.1], [0.3, 0.2], [0.5, 0.08], [0.2, 0.36], [0.58, 0.3], [0.42, 0.42]]) g.circle(w * x, h * y, w * 0.012);
+      g.fill({ color: swatch.white.fill, alpha: 0.7 });
+      break;
+    case 'harbour':
+      g.rect(w * 0.08, h * 0.4, w * 0.48, h * 0.38).fill(swatch.yellow.light).stroke({ width: 3, color: swatch.yellow.line });
+      g.moveTo(w * 0.32, h * 0.26).quadraticCurveTo(w * 0.24, h * 0.32, w * 0.3, h * 0.38).stroke({ width: 2, color: ink, alpha: 0.4 });
+      boat(0.7);
+      break;
+    case 'pond': g.ellipse(w * 0.5, h * 0.86, w * 0.3, h * 0.06).fill(swatch.blue.fill); break;
+    case 'garland':
+      g.moveTo(w * 0.04, h * 0.18).quadraticCurveTo(w * 0.5, h * 0.36, w * 0.96, h * 0.18).stroke({ width: 3, color: ink, alpha: 0.45 });
+      break;
+    case 'boats':
+      g.rect(w * 0.1, h * 0.52, w * 0.32, h * 0.3).fill(swatch.yellow.light).stroke({ width: 3, color: swatch.yellow.line });
+      boat(0.72);
+      break;
+    default: // meadow, mountains and day: sky and ground only
   }
 }
 
@@ -185,6 +196,7 @@ class CutAlong implements Game {
   private snipAt = 0;
   private note = -1;
   private paperColor: ColorName = 'yellow';
+  private theme: Theme = 'meadow';
 
   constructor(private readonly ctx: GameContext) {
 
@@ -197,7 +209,8 @@ class CutAlong implements Game {
     // The how-to card's demonstration plays one piece.
     if (ctx.demo) { this.cuts = this.cuts.slice(-1); this.boards = this.boards.slice(0, 1); }
     const pieces: PieceId[] = this.plan.mode === 'snip' ? Array(ctx.demo ? 1 : 3).fill('grass') : this.cuts.map((c) => c.piece);
-    this.slots = slotsFor(this.level, pieces);
+    this.theme = themeFor(this.level, ctx.rng);
+    this.slots = slotsFor(this.level, this.theme, pieces);
     if (this.plan.mode === 'fits') this.fillUnusedGaps();
 
     this.paper.addChild(this.sheetG, this.lineG, this.slitG, this.cueG, this.scissors, this.bee);
@@ -326,9 +339,9 @@ class CutAlong implements Game {
 
   private drawPicture() {
     const { w, h } = this.layout.picture;
-    this.sceneG.clear(); drawScene(this.sceneG, this.level, w, h);
+    this.sceneG.clear(); drawScene(this.sceneG, this.theme, w, h);
     const g = this.piecesG.clear();
-    this.slots.forEach((slot, i) => drawPiece(g, slot.piece, { x: slot.x * w, y: slot.y * h, w: slot.w * w, h: slot.h * h }, !this.placed.has(i)));
+    this.slots.forEach((slot, i) => drawPiece(g, slot.piece, { x: slot.x * w, y: slot.y * h, w: slot.w * w, h: slot.h * h }, !this.placed.has(i), this.theme));
   }
 
   /* ------------------------------------------------------------ input */
@@ -520,7 +533,7 @@ class CutAlong implements Game {
     this.placed.add(slotIndex);
     this.drawPicture();
     sfx.pop(7);
-    await this.ctx.say(`cut.piece.${slot.piece}` as LineId);
+    await this.ctx.say(pieceLine(this.theme, slot.piece) as LineId);
     this.index++;
     if (this.index >= this.pieceCount) return void this.finish();
     this.nextSheet();

@@ -6,8 +6,9 @@ import { offTrail } from '../letter-trails/logic';
 import {
   DIFFERS, EDGE, botRoute, LEVELS, MARK_HIT, PAPER_W, PLANS, RING_R, STRIP, boardsFor, chooseOrder, countsStrays, cutsFor, differsLine,
   fringeMarks, hintStretch, homeCorner, judgeOutline, layoutFor, markAt, markBox, pathOf, petCorner, planFor, startOf, tolerance,
-  lengthTo, wrongReached, type Cut, type Rect,
+  lengthTo, wrongReached, OUTLINES, PICTURE_SHAPES, THEMES, pieceColor, pieceLine, slotsFor, themeFor, type Cut, type PieceId, type Rect,
 } from './logic';
+import { swatch } from '../../art/palette';
 import { SCRIPT as LINES } from '../../content/voice-script';
 
 const VIEWS = {
@@ -305,5 +306,82 @@ describe('Cut Along level 8 boards', () => {
     expect(wrongReached(0, 101)).toBe(false);
     expect(wrongReached(19, 101)).toBe(false);
     expect(wrongReached(20, 101)).toBe(true);
+  });
+});
+
+describe('Cut Along themes and shapes', () => {
+  const piecesOf = (l: number, seed: number): PieceId[] =>
+    l === 1 ? ['grass', 'grass', 'grass'] : allCuts(l, seed).map((c) => c.piece);
+
+  it('picks only the level’s themes, and shows each of them across seeds', () => {
+    for (let l = 1; l <= 8; l++) {
+      const seen = new Set(SEEDS.map((seed) => themeFor(l, new Rng(seed))));
+      expect([...seen].sort()).toEqual([...THEMES[l - 1]].sort());
+    }
+    expect(THEMES.filter((t) => t.length >= 2).length).toBeGreaterThanOrEqual(6);
+  });
+
+  it('puts every piece of every theme inside the picture, and never two in one place', () => {
+    for (let l = 1; l <= 8; l++) for (const theme of THEMES[l - 1]) for (const seed of SEEDS.slice(0, 12)) {
+      const slots = slotsFor(l, theme, piecesOf(l, seed));
+      for (const sl of slots) {
+        expect(sl.x, `${theme} ${sl.piece}`).toBeGreaterThanOrEqual(0);
+        expect(sl.y).toBeGreaterThanOrEqual(0);
+        expect(sl.x + sl.w, `${theme} ${sl.piece}`).toBeLessThanOrEqual(1);
+        expect(sl.y + sl.h, `${theme} ${sl.piece}`).toBeLessThanOrEqual(1);
+        expect(sl.w * sl.h).toBeGreaterThan(0);
+      }
+      const spots = new Set(slots.map((sl) => `${sl.x},${sl.y}`));
+      expect(spots.size, `${theme} at level ${l}`).toBe(slots.length);
+    }
+  });
+
+  it('gives every piece in every theme a spoken line and a colour', () => {
+    for (let l = 1; l <= 8; l++) for (const theme of THEMES[l - 1]) for (const seed of SEEDS.slice(0, 12)) {
+      for (const sl of slotsFor(l, theme, piecesOf(l, seed))) {
+        expect(LINES[pieceLine(theme, sl.piece) as keyof typeof LINES], pieceLine(theme, sl.piece)).toBeDefined();
+        expect(swatch[pieceColor(theme, sl.piece)], `${theme} ${sl.piece}`).toBeDefined();
+      }
+    }
+  });
+
+  it('offers three of four shapes at level 6 and three of seven at level 7, each at most once', () => {
+    for (const [l, all] of [[6, ['window', 'sail', 'door', 'kite']], [7, [...PICTURE_SHAPES]]] as const) {
+      const seen = new Set<string>();
+      for (const seed of SEEDS) {
+        const pieces = cutsFor(l, new Rng(seed)).map((c) => c.piece);
+        expect(pieces).toHaveLength(3);
+        expect(new Set(pieces).size).toBe(3);
+        pieces.forEach((p) => { expect(all).toContain(p); seen.add(p); });
+      }
+      expect([...seen].sort()).toEqual([...all].sort());
+    }
+  });
+
+  it('keeps the star’s points fat: the notches at least 0.55 of the way out', () => {
+    const radii = OUTLINES.star.loop.map(([x, y]) => Math.hypot(x, y));
+    expect(Math.min(...radii) / Math.max(...radii)).toBeGreaterThanOrEqual(0.55);
+  });
+
+  it('cuts every new shape to the end both ways, by hand and by the ghost finger', () => {
+    // The shared cut tests sample a few seeds; here every new shape is cut on purpose, wherever its level puts it.
+    const wanted = new Set(['door', 'kite', 'star', 'moon']);
+    for (const l of [6, 7]) {
+      const tol = tolerance(l);
+      const cuts = SEEDS.flatMap((seed) => cutsFor(l, new Rng(seed))).filter((c) => wanted.has(c.kind));
+      const kinds = new Set(cuts.map((c) => c.kind));
+      expect(kinds.size).toBe(2);
+      for (const kind of kinds) {
+        const cut = cuts.find((c) => c.kind === kind)!;
+        for (const order of cut.orders) {
+          expect(walk(order, tol), `${kind} walked`).toBe(order.length - 1);
+          const route = botRoute(cut, order, 0);
+          let progress = 0, prev = route[0];
+          for (const to of route.slice(1)) { progress = advanceTrace(order, progress, prev, to, tol); prev = to; }
+          expect(progress, `${kind} by the ghost finger`).toBe(order.length - 1);
+        }
+        for (const corner of cut.corners) expect(cut.orders[0].some((p) => dist(p, corner) < 1e-9), `${kind} corner on the path`).toBe(true);
+      }
+    }
   });
 });
