@@ -1,4 +1,4 @@
-/** Gadget Bench's code-drawn pieces: the cart and its cargo, sockets, the six toy parts, path tiles, the request card, icons. */
+/** Gadget Bench's code-drawn pieces: the cart and its cargo, sockets, the ten toy parts, path tiles, the request card, icons. */
 import { Container, Graphics } from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
 import { cream, ink, shadow, swatch, wood } from '../../art/palette';
@@ -14,6 +14,10 @@ export const UMBRELLA = { fill: 0xffd54a, line: 0xd9a520, handle: 0x9c6b3c };
 export const LANTERN = { fill: 0x8fd48a, line: 0x4f9c4a, glow: 0xfff3a6 };
 export const PADDLES = { fill: swatch.teal.fill, line: swatch.teal.line, blade: swatch.teal.light };
 export const FLAG = { fill: 0xb98ae8, line: 0x7d55b5, pole: 0x9c6b3c };
+export const ROLLERS = { belt: 0x6b6f86, line: 0x44475a, roller: wood.light };
+export const RAFT = { plank: wood.fill, line: wood.line, rope: 0xe8d7a8 };
+export const GLOW = { bowl: swatch.purple.fill, line: swatch.purple.line, stone: 0xfff3a6, halo: 0xfff6c8 };
+export const HEDGE = { fill: swatch.green.fill, line: swatch.green.line };
 export const ROAD = { fill: 0xd9d4c7, line: 0xa89f8e };
 export const NIGHT = { fill: 0x2f3560, line: 0x1c2040, star: 0xfff3a6 };
 
@@ -137,6 +141,29 @@ export function partArt(id: PartId, size = 100): Graphics {
       g.moveTo(-14 * s, -40 * s).lineTo(-14 * s, 40 * s).stroke(line(FLAG.pole, 6 * s));
       g.moveTo(-12 * s, -38 * s).lineTo(36 * s, -22 * s).lineTo(-12 * s, -6 * s).closePath().fill(FLAG.fill).stroke(line(FLAG.line, 4 * s));
       break;
+    // The four low parts of levels 5–6: drawn flat, well under the tall parts' height.
+    case 'rollers':
+      // A flat loop of little wooden rollers.
+      g.roundRect(-42 * s, 2 * s, 84 * s, 26 * s, 13 * s).fill(ROLLERS.belt).stroke(line(ROLLERS.line, 4 * s));
+      for (const x of [-28, -14, 0, 14, 28]) g.circle(x * s, 15 * s, 6 * s).fill(ROLLERS.roller).stroke(line(wood.line, 3 * s));
+      break;
+    case 'lid':
+      // A snug flat wooden lid with a little knob.
+      g.roundRect(-42 * s, -2 * s, 84 * s, 16 * s, 7 * s).fill(wood.fill).stroke(line(wood.line, 5 * s));
+      g.roundRect(-38 * s, 12 * s, 76 * s, 8 * s, 3 * s).fill(wood.light).stroke(line(wood.line, 3 * s));
+      g.roundRect(-8 * s, -12 * s, 16 * s, 10 * s, 4 * s).fill(wood.light).stroke(line(wood.line, 3 * s));
+      break;
+    case 'raft':
+      // Three planks tied together.
+      for (const y of [-10, 2, 14]) g.roundRect(-40 * s, y * s, 80 * s, 11 * s, 4 * s).fill(RAFT.plank).stroke(line(RAFT.line, 3 * s));
+      for (const x of [-24, 24]) g.roundRect((x - 4) * s, -13 * s, 8 * s, 41 * s, 3 * s).fill(RAFT.rope).stroke(line(RAFT.line, 2 * s));
+      break;
+    case 'glowstones':
+      // A little bowl of glowing pebbles.
+      g.ellipse(0, -2 * s, 40 * s, 20 * s).fill({ color: GLOW.halo, alpha: 0.8 });
+      for (const [x, y, r] of [[-16, -2, 8], [0, -6, 9], [16, -2, 8], [-7, 4, 7], [9, 4, 7]]) g.circle(x * s, y * s, r * s).fill(GLOW.stone).stroke(line(swatch.yellow.line, 2 * s));
+      g.moveTo(-34 * s, 4 * s).quadraticCurveTo(0, 46 * s, 34 * s, 4 * s).closePath().fill(GLOW.bowl).stroke(line(GLOW.line, 4 * s));
+      break;
   }
   return g;
 }
@@ -168,6 +195,12 @@ export function conditionTile(c: Condition, size = 96, shaking = false): Graphic
     g.circle(10 * s, -26 * s, 14 * s).fill(0xd6dbe6).stroke(line(0x8a93a6, 3 * s));
     g.ellipse(0, -18 * s, 26 * s, 12 * s).fill(0xd6dbe6);
     for (const x of [-18, -6, 6, 18]) g.moveTo(x * s, -2 * s).lineTo((x - 4) * s, 12 * s).stroke(line(FLOAT.line, 4 * s));
+  } else if (c === 'gate') {
+    // A hedge with a low wooden arch: the opening is just tall enough for a low cart.
+    g.roundRect(-size / 2 + 6 * s, -36 * s, size - 12 * s, 56 * s, 18 * s).fill(HEDGE.fill).stroke(line(HEDGE.line, 3 * s));
+    for (const [x, y] of [[-30, -24], [28, -26], [-34, 4], [32, 2]]) g.circle(x * s, y * s, 6 * s).fill(swatch.green.light);
+    g.moveTo(-20 * s, 20 * s).lineTo(-20 * s, 4 * s).arc(0, 4 * s, 20 * s, Math.PI, 0).lineTo(20 * s, 20 * s).closePath().fill(cream);
+    g.moveTo(-20 * s, 20 * s).lineTo(-20 * s, 4 * s).arc(0, 4 * s, 20 * s, Math.PI, 0).lineTo(20 * s, 20 * s).stroke(line(wood.line, 6 * s));
   } else if (c === 'dark') {
     g.moveTo(10 * s, -30 * s).arc(4 * s, -18 * s, 14 * s, -1.2, 1.9).arc(10 * s, -18 * s, 11 * s, 1.6, -1.4, true).fill(NIGHT.star);
     for (const [x, y] of [[-28, -30], [-16, -8], [-32, -2], [30, 0]]) g.star(x * s, y * s, 4, 4 * s, 2 * s).fill(NIGHT.star);

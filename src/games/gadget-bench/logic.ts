@@ -2,7 +2,8 @@
  * Gadget Bench rules: invented parts with one right socket each, a path of pictured conditions, and the authored
  * check `runPath` that stops a cart at the first condition its gadget cannot handle. Levels 1–4 from
  * docs/definitions/gadget-bench.md: compare two finished gadgets, change one part of a shown cart, build one from parts,
- * and fix yesterday's cart for a longer path where two needs pull on one socket (the paddle wheels do both jobs).
+ * fix yesterday's cart for a longer path where two needs pull on one socket (the paddle wheels do both jobs), build a cart
+ * that fits under the little garden gate (level 5), and do the same jobs with a box of new parts (level 6).
  * Nothing here is a real device, and the run is a rule, never a simulation.
  */
 import type { CritterName } from '../../art/critter';
@@ -10,13 +11,14 @@ import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 
 export type Socket = 'under' | 'top' | 'front';
-export type PartId = 'wheels' | 'float' | 'umbrella' | 'lantern' | 'flag' | 'paddles';
-export type Condition = 'smooth' | 'bump' | 'puddle' | 'rain' | 'dark';
+export type PartId = 'wheels' | 'float' | 'umbrella' | 'lantern' | 'flag' | 'paddles' | 'rollers' | 'lid' | 'raft' | 'glowstones';
+/** `gate` is level 5's limit, always the last tile: no part fixes it, and it stops any cart holding a tall part. */
+export type Condition = 'smooth' | 'bump' | 'puddle' | 'rain' | 'dark' | 'gate';
 /** A gadget: each socket empty or holding one part. */
 export type Gadget = Partial<Record<Socket, PartId>>;
 
 export const SOCKETS: readonly Socket[] = ['under', 'top', 'front'];
-/** The five parts of levels 1–3. The paddle wheels appear only on level 4's reuse shelf. */
+/** The five parts of levels 1–3. The paddle wheels appear only on level 4's reuse shelf, the four new parts only at levels 5–6. */
 export const PART_IDS: readonly PartId[] = ['wheels', 'float', 'umbrella', 'lantern', 'flag'];
 
 export interface PartSpec {
@@ -26,16 +28,27 @@ export interface PartSpec {
   fixes: readonly Condition[];
   /** Spoken, with its article. */
   name: string;
+  /** Too tall for level 5's little gate. */
+  tall: boolean;
 }
 
 export const PARTS: Record<PartId, PartSpec> = {
-  wheels: { socket: 'under', fixes: ['bump'], name: 'the big wheels' },
-  float: { socket: 'under', fixes: ['puddle'], name: 'the float' },
-  umbrella: { socket: 'top', fixes: ['rain'], name: 'the umbrella' },
-  lantern: { socket: 'front', fixes: ['dark'], name: 'the lantern' },
-  flag: { socket: null, fixes: [], name: 'the flag' },
-  paddles: { socket: 'under', fixes: ['bump', 'puddle'], name: 'the paddle wheels' },
+  wheels: { socket: 'under', fixes: ['bump'], name: 'the big wheels', tall: true },
+  float: { socket: 'under', fixes: ['puddle'], name: 'the float', tall: false },
+  umbrella: { socket: 'top', fixes: ['rain'], name: 'the umbrella', tall: true },
+  lantern: { socket: 'front', fixes: ['dark'], name: 'the lantern', tall: false },
+  flag: { socket: null, fixes: [], name: 'the flag', tall: true },
+  paddles: { socket: 'under', fixes: ['bump', 'puddle'], name: 'the paddle wheels', tall: true },
+  rollers: { socket: 'under', fixes: ['bump'], name: 'the roller belt', tall: false },
+  lid: { socket: 'top', fixes: ['rain'], name: 'the lid', tall: false },
+  raft: { socket: 'under', fixes: ['puddle'], name: 'the raft', tall: false },
+  glowstones: { socket: 'top', fixes: ['dark'], name: 'the glow stones', tall: false },
 };
+
+/** Level 5's low twins of the tall single-job parts. */
+export const LOW_TWIN: Partial<Record<PartId, PartId>> = { wheels: 'rollers', umbrella: 'lid' };
+/** Level 6's box of new parts. */
+export const NEW_KIT: readonly PartId[] = ['rollers', 'glowstones', 'raft', 'lid'];
 
 /** Where a socket is, in words. */
 export const SOCKET_WORDS: Record<Socket, string> = { under: 'underneath', top: 'on top', front: 'at the front' };
@@ -59,12 +72,28 @@ export function handles(id: PartId | undefined, s: Socket, c: Condition): boolea
 export type RunResult = { ok: true } | { ok: false; at: Condition; socket: Socket; part: PartId };
 
 /**
- * The first condition the part in its responsible socket does not handle, and that socket; `part` names the single-job
- * part. Parts elsewhere never help or hurt.
+ * The socket responsible for `c` and the part that fixes it there. With a `kit` (level 6's box of new parts) that holds a
+ * part fixing `c`, that part's socket (the glow stones light the dark from on top); otherwise `need(c)`, as at levels 1–5.
  */
-export function runPath(g: Gadget, path: readonly Condition[]): RunResult {
+export function responsible(c: Condition, kit?: readonly PartId[]): { part: PartId; socket: Socket } | null {
+  const fixer = kit?.find((id) => PARTS[id].fixes.length === 1 && PARTS[id].fixes[0] === c && PARTS[id].socket);
+  if (fixer) return { part: fixer, socket: PARTS[fixer].socket! };
+  return need(c);
+}
+
+/**
+ * The first condition the part in its responsible socket does not handle, and that socket; `part` names the single-job
+ * part (the kit's own, with a kit). Parts elsewhere never help or hurt, except at the `gate`, which stops the cart when any
+ * socket holds a tall part (`socket` the first such, `part` that tall part).
+ */
+export function runPath(g: Gadget, path: readonly Condition[], kit?: readonly PartId[]): RunResult {
   for (const c of path) {
-    const n = need(c);
+    if (c === 'gate') {
+      const s = SOCKETS.find((x) => g[x] && PARTS[g[x]!].tall);
+      if (s) return { ok: false, at: c, socket: s, part: g[s]! };
+      continue;
+    }
+    const n = responsible(c, kit);
     if (!n) continue;
     if (!handles(g[n.socket], n.socket, c)) return { ok: false, at: c, socket: n.socket, part: n.part };
   }
@@ -84,11 +113,11 @@ export function socketConflict(path: readonly Condition[]): boolean {
 }
 
 /** Every assembly of the tray's parts over the open sockets (each empty or one part, no part twice) that passes the path. */
-export function passingDesigns(path: readonly Condition[], tray: readonly PartId[], open: readonly Socket[]): Gadget[] {
+export function passingDesigns(path: readonly Condition[], tray: readonly PartId[], open: readonly Socket[], kit?: readonly PartId[]): Gadget[] {
   const out: Gadget[] = [];
   const walk = (i: number, g: Gadget, used: Set<PartId>) => {
     if (i === open.length) {
-      if (runPath(g, path).ok) out.push({ ...g });
+      if (runPath(g, path, kit).ok) out.push({ ...g });
       return;
     }
     walk(i + 1, g, used);
@@ -142,7 +171,14 @@ export interface Round {
    * reuse shelf's two parts first, then a home slot for each part on the cart.
    */
   yesterday?: { path: Condition[]; gadget: Gadget };
+  /** Level 6: the shown cart's parts went home, and the tray is a box of new parts whose own sockets decide the run. */
+  kit?: true;
 }
+
+/** The kit the round's run reads (level 6's tray), or none: the old one-socket rule. */
+export const kitOf = (round: Round): readonly PartId[] | undefined => (round.kit ? round.tray : undefined);
+/** Levels 4–6: help follows a target passing design rather than the first unmet condition's single-job part. */
+export const followsTarget = (round: Round): boolean => !!round.yesterday || !!round.kit || round.path.includes('gate');
 
 export interface Brief {
   level: number;
@@ -159,9 +195,11 @@ export const PLANS: Record<number, Plan> = {
   2: { name: 'Change one part', describe: 'Change one part: the shown cart works for one friend; change it for the next' },
   3: { name: 'Build it', describe: 'Build it: two open sockets, four parts, a path of two' },
   4: { name: 'Fix-It Day', describe: "Fix-It Day: yesterday's cart meets a longer path, and one part has to do two jobs" },
+  5: { name: 'Little Gate', describe: 'Little Gate: build for the path, and the whole cart must fit under the low garden gate' },
+  6: { name: 'New Box', describe: "New Box: the same job as the pet's cart, from a box of parts it never used" },
 };
 
-export const TOP_LEVEL = 4;
+export const TOP_LEVEL = 6;
 export const planFor = (level: number): Plan => PLANS[Math.max(1, Math.min(TOP_LEVEL, level))];
 
 const LEVEL1_CONDITIONS: readonly Condition[] = ['rain', 'dark', 'bump', 'puddle'];
@@ -179,6 +217,19 @@ export const LEVEL4_CARTS: readonly { old: 'bump' | 'puddle'; third: 'rain' | 'd
   { old: 'bump', third: 'dark' },
   { old: 'puddle', third: null },
   { old: 'bump', third: 'rain' },
+];
+
+/** Level 5's rounds: the two conditions (round 2 seeded from the two pairs, round 3 always bump and rain). */
+export const LEVEL5_PAIRS: readonly (readonly [Condition, Condition][])[] = [
+  [['bump', 'dark']],
+  [['rain', 'dark'], ['rain', 'puddle']],
+  [['bump', 'rain']],
+];
+/** Level 6's rounds, likewise; `bump` + `puddle` would put two jobs underneath and `rain` + `dark` two on top. */
+export const LEVEL6_PAIRS: readonly (readonly [Condition, Condition][])[] = [
+  [['bump', 'dark']],
+  [['puddle', 'dark'], ['puddle', 'rain']],
+  [['bump', 'rain']],
 ];
 
 /** Level 4: the condition on today's path that yesterday's did not have (the sparkled tile). */
@@ -238,6 +289,39 @@ export function briefFor(level: number, rng: Rng): Brief {
         yesterday: { path: yesterdayPath, gadget },
       });
     });
+  } else if (l === 5) {
+    const later = rng.shuffle(NEIGHBORS.slice(1));
+    LEVEL5_PAIRS.forEach((pairs, i) => {
+      const first = i === 0;
+      const pair = first ? pairs[0] : rng.pick(pairs);
+      const conds = first ? [...pair] : rng.shuffle([...pair]);
+      const tray: PartId[] = [];
+      for (const c of conds) {
+        const part = need(c)!.part;
+        tray.push(part);
+        const twin = LOW_TWIN[part];
+        if (twin) tray.push(twin);
+      }
+      tray.push('flag');
+      rounds.push({
+        neighbor: first ? NEIGHBORS[0] : later[i - 1],
+        path: ['smooth', ...conds, 'gate'], open: [...SOCKETS], tray: first ? tray : rng.shuffle(tray),
+      });
+    });
+  } else if (l === 6) {
+    LEVEL6_PAIRS.forEach((pairs, i) => {
+      const first = i === 0;
+      const pair = first ? pairs[0] : rng.pick(pairs);
+      const conds = first ? [...pair] : rng.shuffle([...pair]);
+      const path: Condition[] = ['smooth', ...conds];
+      const gadget: Gadget = {};
+      for (const c of conds) { const n = need(c)!; gadget[n.socket] = n.part; }
+      const two = first ? [NEIGHBORS[1], NEIGHBORS[3]] : rng.shuffle([...NEIGHBORS]).slice(0, 2);
+      rounds.push({
+        neighbor: two[1], path, open: [...SOCKETS], tray: first ? [...NEW_KIT] : rng.shuffle([...NEW_KIT]),
+        shown: { neighbor: two[0], path: [...path], gadget }, kit: true,
+      });
+    });
   } else {
     const order = [LEVEL3_PAIRS[0], ...rng.shuffle(LEVEL3_PAIRS.slice(1))].slice(0, 3);
     order.forEach((pair, i) => {
@@ -258,16 +342,18 @@ export function briefFor(level: number, rng: Rng): Brief {
 export type Help =
   /** Put `part` in `socket`; `replaces` is the part there now, if any. */
   | { kind: 'install'; part: PartId; socket: Socket; replaces: PartId | null; at: Condition }
+  /** Take `part` out of `socket` and back to the tray (level 5: a tall part the target design leaves out). */
+  | { kind: 'out'; part: PartId; socket: Socket; at: Condition }
   /** Nothing is unmet: the gadget passes. */
   | { kind: 'done' };
 
 /**
- * Level 4's help target: the passing design (over every socket and the round's parts) that keeps the most of her placed
- * parts, ties going to the one that differs from her gadget in the fewest sockets.
+ * The help target from level 4: the passing design (over the open sockets and the round's parts) that keeps the most of
+ * her placed parts, ties going to the one that differs from her gadget in the fewest sockets.
  */
 export function targetDesign(gadget: Gadget, round: Round): Gadget | null {
   let best: { g: Gadget; kept: number; diff: number } | null = null;
-  for (const d of passingDesigns(round.path, round.tray, round.open)) {
+  for (const d of passingDesigns(round.path, round.tray, round.open, kitOf(round))) {
     const kept = SOCKETS.filter((s) => gadget[s] && d[s] === gadget[s]).length;
     const diff = SOCKETS.filter((s) => d[s] !== gadget[s]).length;
     if (!best || kept > best.kept || (kept === best.kept && diff < best.diff)) best = { g: d, kept, diff };
@@ -275,9 +361,9 @@ export function targetDesign(gadget: Gadget, round: Round): Gadget | null {
   return best?.g ?? null;
 }
 
-/** How many sockets help has to change: level 4 counts against its target design, other levels the unmet conditions. */
+/** How many sockets help has to change: levels 4–6 count against the target design, other levels the unmet conditions. */
 export function helpSteps(gadget: Gadget, round: Round): number {
-  if (round.yesterday) {
+  if (followsTarget(round)) {
     const d = targetDesign(gadget, round);
     return d ? SOCKETS.filter((s) => d[s] !== gadget[s]).length : 0;
   }
@@ -286,19 +372,22 @@ export function helpSteps(gadget: Gadget, round: Round): number {
 
 /**
  * What help does next for a built gadget: the part the first unmet condition needs, in its socket. Correct work stays.
- * Level 4 (`round` with a yesterday) follows its target design instead, so at the conflict it installs the paddle wheels
- * rather than swapping the big wheels and the float back and forth.
+ * Levels 4–6 follow the target design instead, so at the conflict it installs the paddle wheels rather than swapping the
+ * big wheels and the float back and forth, at the gate it swaps in the low twin or takes a tall part out, and with a new
+ * kit it names a part from the box.
  */
 export function helpFor(gadget: Gadget, path: readonly Condition[], round?: Round): Help {
-  const r = runPath(gadget, path);
+  const r = runPath(gadget, path, round && kitOf(round));
   if (r.ok) return { kind: 'done' };
-  const d = round?.yesterday ? targetDesign(gadget, round) : null;
+  const d = round && followsTarget(round) ? targetDesign(gadget, round) : null;
+  if (d && !d[r.socket] && gadget[r.socket]) return { kind: 'out', part: gadget[r.socket]!, socket: r.socket, at: r.at };
   const part = d?.[r.socket] ?? r.part;
   return { kind: 'install', part, socket: r.socket, replaces: gadget[r.socket] ?? null, at: r.at };
 }
 
 /** The gadget after help: the part moves in (from the tray or another socket) and whatever was there goes back to the tray. */
 export function applyHelp(gadget: Gadget, h: Help): Gadget {
+  if (h.kind === 'out') { const g: Gadget = { ...gadget }; delete g[h.socket]; return g; }
   if (h.kind !== 'install') return { ...gadget };
   const g: Gadget = { ...gadget };
   for (const s of SOCKETS) if (g[s] === h.part) delete g[s];
@@ -526,12 +615,15 @@ export type Move =
   | { tryGadget: 0 | 1 }
   | { give: 0 | 1 }
   | { drag: PartId; to: Socket }
+  /** Drag a part from its socket back to its tray slot. */
+  | { takeOut: PartId }
   | { tryCart: true }
   | { giveCart: true };
 
 /**
  * What a capable child does next. Level 1: Try the failing gadget, Try the passing one, Give it. Levels 2–4: Try the shown
- * cart once (levels 2 and 4, a free look at where it stops), put in what help names, Try, Give.
+ * cart once (levels 2 and 4, a free look at where it stops), put in what help names, Try, Give. Level 5 first builds the
+ * familiar cart (each condition's usual part) and Trys it to the gate stop, then follows help.
  */
 export function nextMove(round: Round, gadget: Gadget, tried: readonly boolean[], triedOk: boolean, level: number): Move {
   if (round.pair) {
@@ -541,8 +633,16 @@ export function nextMove(round: Round, gadget: Gadget, tried: readonly boolean[]
     return { give: round.pair.passing };
   }
   if ((level === 2 || level === 4) && !tried[0] && !triedOk) return { tryCart: true };
+  if (level === 5 && !tried[0]) {
+    for (const c of round.path) {
+      const n = need(c);
+      if (n && gadget[n.socket] !== n.part) return { drag: n.part, to: n.socket };
+    }
+    return { tryCart: true };
+  }
   const h = helpFor(gadget, round.path, round);
   if (h.kind === 'install') return { drag: h.part, to: h.socket };
+  if (h.kind === 'out') return { takeOut: h.part };
   if (!triedOk) return { tryCart: true };
   return { giveCart: true };
 }

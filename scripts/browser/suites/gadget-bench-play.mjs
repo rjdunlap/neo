@@ -28,7 +28,7 @@ async function gadgetBenchPlay() {
     await tapOn('neo.scene.game.giveButton'); await settle();
   };
   await page.evaluate(() => { kit.store.data.settings.howToCards = false; });
-  // BENCH_LEVELS=4 plays only those levels (level 4 is Fix-It Day).
+  // BENCH_LEVELS=4 plays only those levels (level 4 is Fix-It Day, 5 Little Gate, 6 New Box).
   const only = (process.env.BENCH_LEVELS ?? '').split(',').filter(Boolean).map(Number);
   const wants = (level) => only.length === 0 || only.includes(level);
   let s;
@@ -152,6 +152,70 @@ async function gadgetBenchPlay() {
   await finished('gadget-bench');
   assert.deepEqual(await score(), [1, 0], 'level 4 saves one miss and no hints');
   log('Gadget Bench 4: yesterday\'s cart, a free stop at the new condition, the conflict line, a failing Give, the paddle wheels, portrait, passed');
+  }
+
+  if (wants(5)) {
+  // Level 5: the familiar cart crosses the bump and the dark, then stops at the little gate (free, portrait screenshot of
+  // the stop); help swaps in the roller belt and the low cart passes.
+  await launch('gadget-bench', 5);
+  await settle();
+  s = await state();
+  assert.deepEqual(s.path, ['smooth', 'bump', 'dark', 'gate'], 'the authored first round ends at the little gate');
+  await dragPart('wheels', 'under');
+  await dragPart('lantern', 'front');
+  assert.deepEqual((await state()).gadget, { under: 'wheels', front: 'lantern' }, 'the familiar cart is built');
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(800);
+  await tapOn('neo.scene.game.tryButton');
+  await page.waitForTimeout(1700);
+  await screenshot('gadget-bench-5-gate-portrait');
+  await settle();
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(500);
+  assert.deepEqual((await state()).strip, ['gate'], 'the familiar cart stops at the little gate');
+  assert.deepEqual(await tally(), [0, 0], 'that Try is free');
+  assert.deepEqual(await help(), { kind: 'install', part: 'rollers', socket: 'under', replaces: 'wheels', at: 'gate' }, 'help names the low twin');
+  await dragPart('rollers', 'under');
+  await tapOn('neo.scene.game.tryButton'); await settle();
+  assert.equal((await state()).strip.at(-1), null, 'the low cart gets all the way to the gate');
+  await tapOn('neo.scene.game.giveButton'); await settle();
+  assert.equal((await state()).round, 1, 'the Give ends the round');
+  for (let r = 1; r < 3; r++) await buildAndGive();
+  await finished('gadget-bench');
+  assert.deepEqual(await score(), [0, 0], 'level 5 saves no misses and no hints');
+  log('Gadget Bench 5: the familiar cart stops free at the little gate, portrait, the roller belt passes, rounds 2–3, passed');
+  }
+
+  if (wants(6)) {
+  // Level 6: the pet's cart crosses, its parts ride home, a new box arrives; the glow stones where the lantern hung fail a
+  // Give (one miss), then on top they pass.
+  await launch('gadget-bench', 6);
+  await page.evaluate(() => {
+    const g = neo.scene.game;
+    window.benchSpoken = [];
+    const say = g.ctx.say.bind(g.ctx);
+    g.ctx.say = (id, ...args) => { window.benchSpoken.push(id); return say(id, ...args); };
+  });
+  await settle();
+  s = await state();
+  assert.deepEqual(s.path, ['smooth', 'bump', 'dark'], 'the authored first round is the bump and the dark');
+  assert.deepEqual(s.gadget, {}, 'the bench is empty after the old parts went home');
+  assert.deepEqual(await page.evaluate(() => neo.scene.game.parts.map((p) => p.id)), ['rollers', 'glowstones', 'raft', 'lid'], 'the tray is the new box');
+  assert.ok((await page.evaluate(() => window.benchSpoken)).includes('bench.newkit'), 'the pet says the parts went home');
+  assert.deepEqual(await tally(), [0, 0], 'the shown cart counts nothing');
+  await dragPart('rollers', 'under');
+  await dragPart('glowstones', 'front');
+  await tapOn('neo.scene.game.giveButton'); await settle();
+  assert.equal((await state()).strip.at(-1), 'dark', 'the glow stones where the lantern hung stop at the dark');
+  assert.deepEqual(await tally(), [1, 0], 'a failing Give is one miss');
+  assert.deepEqual(await help(), { kind: 'install', part: 'glowstones', socket: 'top', replaces: null, at: 'dark' }, 'help puts the glow stones on top');
+  await dragPart('glowstones', 'top');
+  await tapOn('neo.scene.game.tryButton'); await settle();
+  assert.equal((await state()).strip.at(-1), null, 'the new box cart gets all the way along');
+  await tapOn('neo.scene.game.giveButton'); await settle();
+  assert.equal((await state()).round, 1, 'the Give ends the round');
+  for (let r = 1; r < 3; r++) await buildAndGive();
+  await finished('gadget-bench');
+  assert.deepEqual(await score(), [1, 0], 'level 6 saves one miss and no hints');
+  log('Gadget Bench 6: the pet\'s cart, the new box, the glow stones at the front as a miss, then on top, rounds 2–3, passed');
   }
 }
 return { gadgetBenchPlay };
