@@ -115,6 +115,8 @@ class MeasuringPost implements Game {
   misses = 0;
   taskMisses = 0;
   readonly tally = new HelpTally();
+  /** Steps Help has already pointed at this round: Help again there does the step. An automatic glow is not pointing. */
+  private readonly pointed = new Set<string>();
   /** Seconds since the current measurement began. */
   private t = 0;
   private clock = 0;
@@ -171,9 +173,12 @@ class MeasuringPost implements Game {
   // ---- Choices ----
 
   pickTool(tool: Tool) {
-    if (this.phase !== 'tool') return; // taps while a tool measures, or after, do nothing
+    // Taps while a tool measures, or after, do nothing; while a wrong tool is explained, only the right one acts.
+    if (this.phase !== 'tool' && this.phase !== 'wrong') return;
     const task = this.current;
+    const pad = this.toolPads.get(tool)!;
     if (toolAnswers(task, tool)) {
+      this.press(pad);
       sfx.pop(7);
       this.glowAt = null;
       this.phase = 'measure';
@@ -181,12 +186,12 @@ class MeasuringPost implements Game {
       this.redraw();
       return;
     }
+    if (this.phase === 'wrong') return;
     // Another tool measures its own attribute, which does not answer this question: one miss, then try again.
     sfx.boing();
     this.miss('tool');
     this.phase = 'wrong';
-    const pad = this.toolPads.get(tool)!;
-    void this.ctx.tw.to(pad, { rotation: 0.12 }, { duration: 0.08 }).then(() => { if (this.alive) void this.ctx.tw.to(pad, { rotation: 0 }, { duration: 0.12 }); });
+    this.shake(pad);
     void Promise.all([this.ctx.say(`measure.wrong.${tool}.${task.attribute}` as LineId), this.ctx.tw.wait(0.6)]).then(() => {
       if (this.alive && this.phase === 'wrong') { this.phase = 'tool'; this.redraw(); }
     });
@@ -196,7 +201,9 @@ class MeasuringPost implements Game {
   pickRow(i: number) {
     if (this.phase !== 'answer') return;
     const task = this.current;
+    const pad = this.answerPads[i];
     if (i === answerRow(task)) {
+      this.press(pad);
       sfx.bell(9, 0.3);
       this.ctx.pet.cheer();
       this.glowAt = null;
@@ -206,8 +213,20 @@ class MeasuringPost implements Game {
       return;
     }
     sfx.boing();
+    this.shake(pad);
     this.miss('answer');
     void this.ctx.say(`measure.hint.row.${task.attribute}.${task.ask}` as LineId);
+  }
+
+  /** Touch-down feedback: the pad lifts a little and settles. */
+  private press(pad: Container) {
+    this.ctx.tw.kill(pad.scale);
+    pad.scale.set(1.08);
+    void this.ctx.tw.to(pad.scale, { x: 1, y: 1 }, { duration: 0.15 });
+  }
+
+  private shake(pad: Container) {
+    void this.ctx.tw.to(pad, { rotation: 0.12 }, { duration: 0.08 }).then(() => { if (this.alive) void this.ctx.tw.to(pad, { rotation: 0 }, { duration: 0.12 }); });
   }
 
   send() {
@@ -270,7 +289,7 @@ class MeasuringPost implements Game {
    */
   help() {
     const step = this.step;
-    if (!step || this.phase === 'wrong') return;
+    if (!step) return;
     const task = this.current;
     if (step === 'send') {
       this.glowUseful('send');
@@ -278,12 +297,13 @@ class MeasuringPost implements Game {
       return;
     }
     const id = helpId(this.task, step);
-    if (this.tally.has(id)) {
+    if (this.pointed.has(id)) {
       if (step === 'tool') this.pickTool(TOOL_FOR[task.attribute]);
       else this.pickRow(answerRow(task));
       return;
     }
     this.tally.give(id);
+    this.pointed.add(id);
     this.glowUseful(step);
     void this.ctx.say(step === 'tool' ? `measure.hint.tool.${task.attribute}` as LineId : `measure.hint.row.${task.attribute}.${task.ask}` as LineId);
   }
@@ -413,7 +433,6 @@ class MeasuringPost implements Game {
   /** The level-2 strip: one big unit matched by two little ones, in the task's attribute. */
   private stripArt(attr: Attribute): Container {
     const c = new Container();
-    const eq = new Graphics().rect(-14, -10, 28, 6).rect(-14, 4, 28, 6).fill(ink);
     if (attr === 'length') {
       const big = unitArt(attr, 'big');
       big.position.set(-LITTLE.length, -18);
@@ -430,7 +449,7 @@ class MeasuringPost implements Game {
       return c;
     }
     const big = cupArt('big'); big.position.set(-60, 30); c.addChild(big);
-    eq.position.set(0, 0); c.addChild(eq);
+    c.addChild(new Graphics().rect(-14, -10, 28, 6).rect(-14, 4, 28, 6).fill(ink));
     for (let i = 0; i < 2; i++) { const s = cupArt('little'); s.position.set(40 + i * 46, 30); c.addChild(s); }
     return c;
   }
