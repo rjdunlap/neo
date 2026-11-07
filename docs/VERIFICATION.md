@@ -1,6 +1,6 @@
 # Puddle Island verification
 
-## 2026-11-07 — AGENTS.md trimmed to rules and pointers
+## 2026-11-07 — AGENTS.md trimmed to rules and pointers (PR #1359)
 
 Changed: AGENTS.md (32,766 to about 16 KB), new `docs/SESSION-GUIDE.md`, the docs-keeper and game-reviewer agents, the comments in `peek.mjs` and `overlap.sh`, and `scripts/agent-guard.test.mjs` (adds a 24 KiB budget test under the 32 KiB hard test). No game or app code. Ran: `node scripts/check-links.mjs`, `git diff --check`, `npx vitest run scripts/agent-guard.test.mjs` (6 pass). Open: nothing.
 

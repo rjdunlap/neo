@@ -54,6 +54,7 @@ Specifics behind the short rules in [AGENTS.md](../AGENTS.md#rules-for-every-act
 - **Zones and bands.** Separate zone identity from learning band; before adding a band, audit band mappings, levels, places, routes, parent controls, voice, birthdays and saves together. A story that carries a chosen object, amount or tune needs the typed result specified in [DESIGN](DESIGN.md#proposed-story-results).
 - **Reuse.** Choose examples by the mechanic being built ([reuse map](DESIGN.md#reuse-map)): characters and props in `src/art/`; input, motion and physics in `src/engine/` (`ball.ts` `simulate()` also drives rule tests); music and speech in `src/audio/`. Do not copy a game's assumptions about age, scoring, geometry or cleanup without checking them.
 - **Couch play.** A couch game needs seeded boards, `COUCH_IDS`/`UNLOCK_TIERS`/catalog entries and a bot that finishes through `control()`; a grown-up-only game is a `GAMES` entry with `bands: ['grownup']`. A scripted check that opens a game directly turns `settings.howToCards` off or presses Play.
+- **Scheduled runs.** The [execution queue](EXECUTION-QUEUE.md) admits one slice per run, in a fresh chat, on actual usage; fresh-session runs lack the session tools ([review](DEVELOPMENT-WORKFLOW.md#token-review-2026-11-06)).
 
 ## Keeping AGENTS.md small
 
