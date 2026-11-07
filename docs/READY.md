@@ -6,9 +6,11 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **`measuring-post`, levels 3–4** (claimed 2026-11-06 by branch `claude/measuring-post-3-4`; school; level 3 *Same units, then compare* in the new-interaction tier with `fingerdemo` at 3, then level 4 *How many little ones?*, per the definition's build boundaries; Tinker Lab, levels 1–2 built): [definition](definitions/measuring-post.md).
 - **`bolt-boards`, more boards, fruit and a friend** (`tinker-lab`; 20 frozen boards per level, orange, strawberry, banana and the bear; existing-interaction content tier, no `fingerdemo`; promoted from Queued 2026-11-06): [build slices](deep-dives/bolt-boards.md#build-slices-in-order).
 - **`bolt-boards`, level 8 *Plenty of holes*** (pre-K and school between 5 and 6 on decision 1's default; after slice 1 is fine but not required; new level on the existing interaction, `fingerdemo` at 8): [build slices](deep-dives/bolt-boards.md#build-slices-in-order).
+- **Define `bolt-boards` level 9 *Put it back*** (docs only): [build slices](deep-dives/bolt-boards.md#build-slices-in-order).
+- **Dive `puddle-gobble`** (Puddle Gobble; toddler to school, 8 levels; docs only): [procedure](deep-dives/README.md#one-session-one-game), [definition](definitions/puddle-gobble.md).
+- **Dive `number-trails`** (Number Trails; preschool and pre-K, 3 levels, numeral writing; docs only): [procedure](deep-dives/README.md#one-session-one-game). The rest of waves 5–7 follow in the tracker's order.
 
 ## Queued
 
@@ -30,7 +32,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 
 - **`bolt-boards`, remaining slices in the dive's order** (`tinker-lab`; toddler to school; [build slices](deep-dives/bolt-boards.md#build-slices-in-order)):
-  - **Define `bolt-boards` level 9 *Put it back*** (docs only): [build slices](deep-dives/bolt-boards.md#build-slices-in-order).
 
 ### Study follow-ups (docs-only definitions)
 
@@ -45,8 +46,6 @@ Refilled 2026-11-05 from the [study backlog](STUDY-BACKLOG.md#completed-studies-
 
 Added 2026-11-05: 21 games built from definitions have no dive and no study row that plans their next levels ([tracker waves 5–7](deep-dives/README.md#suggested-order-non-binding), [backlog](STUDY-BACKLOG.md#unstarted-game-deep-dives)). Her own band first; one game per docs-only session, queuing its first build slice at closeout. No unstarted subject research remains.
 
-- **Dive `puddle-gobble`** (Puddle Gobble; toddler to school, 8 levels; docs only): [procedure](deep-dives/README.md#one-session-one-game), [definition](definitions/puddle-gobble.md).
-- **Dive `number-trails`** (Number Trails; preschool and pre-K, 3 levels, numeral writing; docs only): [procedure](deep-dives/README.md#one-session-one-game). The rest of waves 5–7 follow in the tracker's order.
 
 ## Blocked work (not routine picks)
 
