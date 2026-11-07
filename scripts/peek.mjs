@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Read big files in small pieces (AGENTS.md, "Read big documents by section"). Every printed line is cut to a width,
+// Read big files in small pieces (docs/SESSION-GUIDE.md, "Read big files by section"). Every printed line is cut to a width,
 // because the one-line-paragraph docs hold lines of 1–28 KB and a plain grep or cat returns them whole.
 //
 //   node scripts/peek.mjs outline docs/definitions/rain-garden.md     headings (Markdown) or top-level declarations, tables

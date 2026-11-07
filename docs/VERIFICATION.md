@@ -1,5 +1,9 @@
 # Puddle Island verification
 
+## 2026-11-07 — AGENTS.md trimmed to rules and pointers (PR #1359)
+
+Changed: AGENTS.md (32,766 to about 16 KB), new `docs/SESSION-GUIDE.md`, the docs-keeper and game-reviewer agents, the comments in `peek.mjs` and `overlap.sh`, and `scripts/agent-guard.test.mjs` (adds a 24 KiB budget test under the 32 KiB hard test). No game or app code. Ran: `node scripts/check-links.mjs`, `git diff --check`, `npx vitest run scripts/agent-guard.test.mjs` (6 pass). Open: nothing.
+
 ## 2026-11-07 — Games discovered from their folders (PR #1356)
 
 Changed: `src/games/registry.ts` builds `GAMES` with `import.meta.glob`, in `LANDS` order (same 175 IDs as sorted sets; 135 positions moved); new registry test (fails when the sort is removed). Ran (ff996ade): `npm run typecheck`; `npm test` (322 files, 6,003 tests, run before the new test was added; registry and `src/content` re-run after, 20 files, 214 tests); `npm run build`; `BROWSER_SUITE=world` at http://localhost:5197 (2 checks). Open: offline check not run (persistence and assets unchanged); no device check.
@@ -66,13 +70,6 @@ Changed: new `measuring-post` (PR #1337, branch `claude/measuring-post-1-2`): le
 Ran (commit 0103845b, http://localhost:5270, `VITE_SPEECH=off`): `npm run typecheck`; `npm test` (321 files, 5,953 tests); `BROWSER_SUITE=measuringpost` (level 1 landscape: ribbon first, wrong tool 1 miss, taps inert while measuring, Send three times 1/0; level 2 portrait: Help points then does 1 hint, two wrong rows glow 1 hint, last asks bigger, 2/2); `fingerdemo` with `FINGER_ONLY=measuring-post` at levels 1 and 2 (12.4 s, 17.9 s); `npm run build`. `game-reviewer` findings fixed.
 Not run: offline check, `world` suite, device speech.
 Open: child appeal and legibility, 100-unit comfort on the iPad, speech ([device checks](DEVICE-CHECKS.md)); levels 3–4 unbuilt.
-
-## 2026-11-06 — Circuit Garden levels 1–2 (new game, energy/waves E2)
-
-Changed: new `circuit-garden` (PR #1335, branch `claude/circuit-garden`): levels 1–2, pre-K and school {1,2}, Tinker Lab (now 27 games); a `circuitgarden` browser suite. Source check by a science educator: not done.
-Ran: `npm run typecheck`; `npm test` (320 files pass) after updating the Tinker Lab capacity tests to 27 entries (land-pages 9,9,8; example-express capacity) and rendering the title clip with `scripts/voice-clips/render.mjs`; `BROWSER_SUITE=circuitgarden` at http://localhost:5207 (level 1 landscape: early Done free, a drag lights the lantern, Put back, Undo, Done 0/0; Show me twice 0/1; level 2 portrait: the switch shows both states, Done 0/0; Show me then Done 0/1) with landscape and portrait screenshots; `fingerdemo` with `FINGER_ONLY=circuit-garden` at levels 1 and 2. `game-reviewer`: three minor findings fixed and the play rerun.
-Not run: `npm run build`, any device check, the science educator's reading of the wording.
-Open: seeing both terminals and the return path, 100-unit comfort in both layouts, speech, preschool readiness ([device checks](DEVICE-CHECKS.md)); level 3 is unbuilt.
 
 ## Coverage summary
 

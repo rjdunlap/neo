@@ -41,11 +41,19 @@ describe('AGENTS.md size', () => {
     const bytes = readFileSync(new URL('../AGENTS.md', import.meta.url)).length
     expect(bytes, 'AGENTS.md is near the 64 KiB Codex limit: move detail into DESIGN.md or a linked doc').toBeLessThan(60 * 1024)
   })
-  // Every session and subagent re-reads it on every turn, and a Codex session on another machine reads only 32 KiB. It
-  // was trimmed under that on 2026-10-23, crept back to 33.5 KB by 2026-11-06 and was trimmed again: add a rule by
-  // moving an aside or a duplicated passage to its owning doc, not by growing the file.
+  // Every session and subagent re-reads it on every turn, and a Codex session on another machine reads only 32 KiB.
   it('fits the default 32 KiB Codex read', () => {
     const bytes = readFileSync(new URL('../AGENTS.md', import.meta.url)).length
-    expect(bytes, 'AGENTS.md passed 32 KiB: move an aside or a duplicated passage into its owning doc').toBeLessThanOrEqual(32 * 1024)
+    expect(bytes, 'AGENTS.md passed 32 KiB: move detail into docs/SESSION-GUIDE.md or its owning doc').toBeLessThanOrEqual(32 * 1024)
+  })
+  // It was trimmed under 32 KiB twice (2026-10-23, 2026-11-06) and crept back each time, so sessions kept shaving a few
+  // bytes. On 2026-11-07 it became rules and pointers only (about 16 KB). This budget leaves 8 KB to grow before it fails,
+  // and when it does fail the fix is to move detail out, not to trim words: see docs/SESSION-GUIDE.md#keeping-agentsmd-small.
+  it('stays within its 24 KiB budget of rules and pointers', () => {
+    const bytes = readFileSync(new URL('../AGENTS.md', import.meta.url)).length
+    expect(
+      bytes,
+      'AGENTS.md passed its 24 KiB budget: it holds rules and pointers only. Move detail, reasons and dates to docs/SESSION-GUIDE.md, DESIGN.md or the owning doc and link to it',
+    ).toBeLessThanOrEqual(24 * 1024)
   })
 })
