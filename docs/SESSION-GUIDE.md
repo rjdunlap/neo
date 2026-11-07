@@ -1,0 +1,83 @@
+# Session guide
+
+The operational detail behind [AGENTS.md](../AGENTS.md): how to keep checks light, set up a worktree, drive the game from a script, avoid parallel duplicates, and where each doc update goes. AGENTS.md holds the rules and the check tiers; this file holds the how. Reasons and history are in the [workflow review](DEVELOPMENT-WORKFLOW.md).
+
+## Keeping checks light
+
+- **Publishing does not widen the check scope.** A one-game fix or level keeps its filtered checks when pushed to `main`; broader suites follow only the shared behavior a change touches (the table above, plus `picnic` for story flow).
+
+- **Unit tests are the main proof.** Put rules in `logic.ts` and test each property you would otherwise check by playing: solvable, fair, valid targets, a hint that leads somewhere. Do not drive the browser to learn something a test can assert.
+- **Do not repeat what is already recorded.** If the [coverage summary](VERIFICATION.md#coverage-summary) records a suite passing and the area has not changed since, it counts. Never re-run a passing suite after a comment, docs or test-only edit, or "to be sure".
+- **One suite at a time, always with a filter.** Never start `npm run test:browser` with no `BROWSER_SUITE`. Take one or two screenshots per new screen, not a gallery.
+- **Do not loop on a failing check.** Probe once with a small script. If the failure also happens on unchanged code, or looks like timing (Peg Garden's touch suite), record it as a known flake and move on.
+- **Cap it.** A feature's browser checking should stay within about ten minutes of wall time and a small fraction of the session. If it would run longer, write the remaining check down as "not run" and go on building.
+- **Snapshots for slow suites.** The couch suites take five to eight minutes; run them on a frozen copy of the tree on another port (`scripts/snapshot-serve.sh`) so edits continue.
+- **Keep sessions and output small.** A turn re-reads the whole conversation, so context built up inside a session is most of what a slice costs. Take one declared same-game batch per session (usually 2–4 related level/content subtasks; [batch plans](GAME-BATCHES.md)), keep that worker through every included substep and usage-window checkpoint, then start fresh after the whole batch merges; do not chain unrelated work. Past about 150K tokens of context, push a checkpoint (draft PR: what is done, what remains) and finish in a fresh session. Delegate verbose work (a long suite log, a broad search) to a subagent that returns only the conclusion. Pipe test and suite output through `tail` or `grep` (`npm test 2>&1 | tail -15`, `npx vitest run <file> 2>&1 | tail -20`); on a failure, re-run once for the part that failed.
+- **Read big files by section.** `docs/ROADMAP.md`, `VERIFICATION.md`, `IDEAS.md`, `GAMES.md`, `GAME-BATCHES.md`, `DESIGN.md` and the README are too large to read whole, and their lines run to 28 KB, so plain `grep` returns pages; so are definitions, deep dives (one section per built level) and game files over about 20 KB. Use `node scripts/peek.mjs outline|section|grep` (headings/declarations, one section, or matches cut short), then read a range with an offset and limit; never open one from the top to look around. In a definition, read only the sections for the levels being built.
+- **Say what was skipped.** "Not run" is an acceptable entry. Hardware, an iPad, a real controller and a child's reaction are never established by Chrome automation.
+
+Suite names, filters and durations are in the [README](../README.md#browser-checks); add cases for new games to `scripts/browser-check.mjs` and the README table rather than keeping a second inventory here. Browser scripts and one-off Playwright probes use `launchTestBrowser` and `createTestContext` from `scripts/test-browser.mjs` so Chromium audio and native text-to-speech stay silent; use `TEST_AUDIO=on` only for a deliberate audible check. Keep contexts isolated; never clear a real player's save.
+
+When a browser check fails, probe with a small logging script before changing the test: many failures here were real bugs, such as a hint glow swallowing touches, a destroyed drawing freezing a show, and overlapping tap targets. Prove a fix by briefly restoring the old rule and watching the check fail. Put one-off Playwright probes in `test-results/` so `import 'playwright'` resolves. Vite listens on IPv6 `localhost`, so use `GAME_URL=http://localhost:5173`. The island game is served at `classic/` and the site root is the creature-world rework (2026-10-19); the browser and offline harnesses add `classic/` to a bare origin. Before an offline run, confirm the preview serves the current build by comparing the `assets/index-*.js` name in the served page with `dist/index.html`.
+
+## Same-game batches
+
+Developer direction, 2026-10-21: an implementation slice is a predeclared same-game batch of usually 2–4 related level/content subtasks, dispatched by [READY](READY.md) from the [batch plans](GAME-BATCHES.md). Claim every included ID and file in one worker, branch and PR; read the game and set up its checks once; the shared final checks still cover every distinct interaction, new entry layout and bot level. A larger new interaction may stay standalone; research stays one game or subject per session; a batch is admitted whole or split into named complete parts, and resumes in its existing worker. Full rules: [workflow guidance](DEVELOPMENT-WORKFLOW.md#same-game-batches-2026-10-21).
+
+## Session setup and closeout
+
+Reasons are in the [workflow review](DEVELOPMENT-WORKFLOW.md). In a fresh worktree, run `scripts/concept-art.sh skip` unless the session does art (150 MB of PNGs), and `npm ci`; never borrow another worktree's `node_modules`. Choose an explicit available port, start Vite with `--strictPort`, and set `GAME_URL` to exactly that URL. Keep any custom Vite cache within that worktree; concurrent worktrees must not share a mutable cache. Stop the session's dev, preview and snapshot servers when its checks finish.
+
+After publication and merge, release a finished worktree and its merged branch only by the [release checklist](DEVELOPMENT-WORKFLOW.md#releasing-a-finished-worktree); never force removal of a dirty worktree.
+
+## Scripted play
+
+Dev-only `neo` exposes the app (`neo.scene`, `neo.view`, `neo.go.game(id, band)`); `kit` in `src/dev/testkit.ts` provides `tap`, `tapOn`, `drag`, `dragTo`, `line`, `until`, `sleep`, and `store`. Start on "Who's playing?" by clicking the first card (`.chooser__play`; the browser harness does it in `pickFirst()`) and wait about three seconds for the transition before navigating. Set the test profile band and `kit.store.stats(id).level`, then drive the game and inspect `neo.scene.game`.
+
+Use scripted input for moving targets, then screenshots for visual review. Finish edits before a play-through: HMR can reload and kill a running script. To keep editing during a long run, serve a detached `git worktree` of HEAD on another port (with its own Vite `cacheDir`) and point `GAME_URL` at it. Re-check `neo.scene` after reloads. To clear an isolated profile's test data only, use `(await import('/node_modules/.vite/deps/idb-keyval.js')).del('neo.save')`.
+
+## Input and rendering pitfalls
+
+Before writing pointer input, hit areas, couch controls, textures or long-lived drawings, read the [input and rendering pitfalls](DESIGN.md#input-and-rendering-pitfalls): Pixi 8 never forwards `pointercancel`; synthetic `pointerup` goes on the canvas; drags ride 40 units above the finger; hit areas use local units; decorations can steal taps; hit-testing uses the last frame; resolve close targets to the nearest; couch stages take no pointer input; free textures you own.
+
+## Rule details
+
+Specifics behind the short rules in [AGENTS.md](../AGENTS.md#rules-for-every-activity), with the developer's decisions:
+
+- **Art and sound.** Generated/imported sprites were decided 2026-10-17; the developer is not expected to draw them. Rendering code-drawn art into a `RenderTexture`, as Puzzle Pals does, is supported. Spoken clips come from `src/content/voice-script.ts` (gathered from each game's `voice.ts`), cached offline, with device speech as the fallback for any line without a clip (decided 2026-10-23). The Sing-Along Barn tune exception was decided 2026-10-23. A registry test lists the games that silence the island's loop; keep a style playing rather than calling `music.stop()`, because playheads read its clock.
+- **Controls.** Continuous steering, slingshots, drawn loops and deliberate multi-touch may need custom pointer handling.
+- **Speech.** Literacy activities may practice reading with replayable spoken support.
+- **Grown-up wording** rule decided 2026-10-23.
+- **How-to cards** (decided 2026-10-12): steps scoped to the levels they hold at; a test fails without a card or on level-relative wording such as "later levels". A couch-only game uses the controller demo ([DESIGN](DESIGN.md#application-and-scenes)).
+- **Registry.** `src/games/registry.ts` builds `GAMES` from every `src/games/<id>/index.ts` and orders it by `LANDS`; no hand-written list.
+- **Review.** Fix what `game-reviewer` finds before the doc closeout; hand the closeout to `docs-keeper` once code and checks are done so it stays out of the build session's context. Mark gaps explicitly.
+- **Zones and bands.** Separate zone identity from learning band; before adding a band, audit band mappings, levels, places, routes, parent controls, voice, birthdays and saves together. A story that carries a chosen object, amount or tune needs the typed result specified in [DESIGN](DESIGN.md#proposed-story-results).
+- **Reuse.** Choose examples by the mechanic being built ([reuse map](DESIGN.md#reuse-map)): characters and props in `src/art/`; input, motion and physics in `src/engine/` (`ball.ts` `simulate()` also drives rule tests); music and speech in `src/audio/`. Do not copy a game's assumptions about age, scoring, geometry or cleanup without checking them.
+- **Couch play.** A couch game needs seeded boards, `COUCH_IDS`/`UNLOCK_TIERS`/catalog entries and a bot that finishes through `control()`; a grown-up-only game is a `GAMES` entry with `bands: ['grownup']`. A scripted check that opens a game directly turns `settings.howToCards` off or presses Play.
+
+## Keeping AGENTS.md small
+
+Every session and subagent re-reads AGENTS.md on every turn, and Codex reads only its first 32 KiB by default (`scripts/agent-guard.test.mjs` fails past that). It was trimmed under the limit on 2026-10-23 and 2026-11-06 and crept back each time, because each session added a rule in place. Since 2026-11-07 it holds rules and pointers only (about 16 KB, with a 24 KiB budget test): add a new rule as one line there and its detail, reasons and dates here, in DESIGN.md or in the owning doc.
+
+## Avoiding duplicate parallel work
+
+Before choosing a roadmap slice or making edits:
+
+1. Fetch `origin` with pruning and make sure the new feature branch starts at the latest `origin/main`; fast-forward a clean local `main` first when needed. Never pull blindly into a dirty worktree.
+2. Inspect active worktrees, unmerged local and remote branches, and open pull requests for the same roadmap chunk, game IDs or files. `scripts/overlap.sh <game-id> <path>…` does steps 1–2 in one compact printout (fetch, how far behind, then the matching pull requests, worktrees and unmerged branches); run it for each recheck below instead of separate `git fetch`, `gh pr list` and `git worktree list` calls. Work that is in flight counts even when it has not reached `main` yet.
+3. If another branch is already implementing the slice, do not build a second version. Reconcile with that branch, help finish it, or choose the next non-overlapping ready slice unless the grown-up explicitly wants competing approaches.
+4. Create a clearly named feature branch before substantial edits. Before coding, publish a small docs-only claim commit and draft pull request naming the game ID, exact batched level/content subtasks and dependencies, and expected files; put the branch/PR on the existing roadmap or deep-dive row. An uncommitted implementation in another worktree also claims that slice. Update that same PR as the playable work becomes coherent.
+
+Fetch and inspect for overlap again immediately before publishing a follow-up commit, and once more before merging or pushing `main`. If `origin/main` moved or overlapping work landed, integrate the current remote version and rerun the proportionate checks before publishing. Never push a local `main` whose view of `origin/main` is stale. Do the upstream integration before the final feature checks when practical. After integration, rerun checks for changed dependencies; a docs-only integration does not invalidate a passing game play-through. Record the tested commit (or base commit plus working diff), exact filters and server URL so reuse is inspectable.
+
+## Where each doc update goes
+
+- **A game added or changed:** its README row, [GAMES.md](GAMES.md) entry and how-to card.
+- **Roadmap work:** edit its line in [ROADMAP.md](ROADMAP.md) (counts live only there and in the README). When a slice from [READY.md](READY.md) lands, delete its line there, mark the slice built in its deep dive and put the build note in the archive; never add "built … PR" history to that list or the chunk table. Refills follow READY’s study cadence (three follow-up definitions and one research slot per ten when eligible); update [the study backlog](STUDY-BACKLOG.md) and promote the first resulting unblocked build into a content slot. When an item is finished, move it and its build notes to the newest completed-work file in `docs/archive/` instead of leaving it checked off, and leave a one-line "built" mention only where a reader needs it. Give each open item a status (ready, sketch, define, decision, person), and add a call that only the developer can make to [WAITING-ON-DEVELOPER.md](WAITING-ON-DEVELOPER.md). Move a built idea out of [IDEAS.md](IDEAS.md); label new ideas as proposals.
+- **Checks run:** a ~six-line [VERIFICATION.md](VERIFICATION.md) entry (what changed, what ran, what is open) and its coverage-summary row: one row per suite or area, overwritten with the latest pass and its caveats, never a new row per slice (the dated entry holds the history). Keep about fifteen dated entries live: when the file holds more than that at closeout, run `node scripts/archive-verification.mjs` (`--keep=15` to trim to the newest fifteen; `--dry-run` to preview), which moves older entries into `docs/archive/VERIFICATION-<entry date>.md`, repoints links to the moved anchors and checks every Markdown link (plain `node scripts/check-links.mjs` does the check alone). Execution-queue dispatch notes do not belong in this file. Checks needing a person or device go in [DEVICE-CHECKS.md](DEVICE-CHECKS.md) and stay open until done.
+- **A contract or system behavior changed:** [DESIGN.md](DESIGN.md), and only then.
+- **Superseded documents:** move to `docs/archive/` with a line in its index, rather than leaving stale status in a live doc.
+
+## Reporting, merging and deploying
+
+Report briefly to the grown-up after each finished game or feature: what it does and which checks ran. When a requested task is complete and verified, commit it on a feature branch and merge that branch into local `main`, unless the grown-up asks to leave it uncommitted or unmerged. After every commit, push the feature branch and create or update its pull request so the commit is published for review; do not create a new pull request for each follow-up commit on the same branch. After merging a verified feature into local `main`, push `main` so it is published and deployed, unless the grown-up explicitly asks not to push. **Standing authorization (the developer, 2026-10-12): merge and deploy completed, verified changes through this repository workflow without asking for confirmation again.** This covers future requested work in this repository; it does not change platform approval controls, and a later instruction to leave work unmerged or undeployed takes precedence. The live site is [Puddle Island](https://rjdunlap.github.io/neo/) (island game at `classic/`); every push to `main` deploys through `.github/workflows/deploy.yml`. Every pull request runs `npm test` and `npm run build` on its merge with `main` (`.github/workflows/ci.yml`): wait for it (`gh pr checks <n> --watch`) and merge only when it passes for the head commit (a pass on a stale base can still fail the deploy). Repo-local identity is `rjdunlap` with the GitHub no-reply email (public repository).

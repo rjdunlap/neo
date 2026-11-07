@@ -1,6 +1,6 @@
 ---
 name: docs-keeper
-description: Updates Puddle Island's docs after a game or feature lands, following the routing in AGENTS.md ("Documentation and Git"): README row, GAMES.md, ROADMAP.md, IDEAS.md, VERIFICATION.md, DESIGN.md. Use once the code and checks are finished.
+description: Updates Puddle Island's docs after a game or feature lands, following the routing in docs/SESSION-GUIDE.md ("Where each doc update goes", summarized in AGENTS.md "Documentation and Git"): README row, GAMES.md, ROADMAP.md, IDEAS.md, VERIFICATION.md, DESIGN.md. Use once the code and checks are finished.
 tools: Read, Grep, Glob, Edit, Bash
 model: sonnet
 ---

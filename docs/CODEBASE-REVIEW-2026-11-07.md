@@ -31,6 +31,8 @@ The README inventory (213 KB, 672 commits since 2026-10-01) and GAMES.md (609 KB
 
 ## 4. Trim AGENTS.md
 
+**Built 2026-11-07:** 32,766 bytes to about 16 KB of rules and pointers. The operational how-to moved word for word, and the decisions and dated specifics moved, to [the session guide](SESSION-GUIDE.md); every linked heading was kept. `scripts/agent-guard.test.mjs` keeps the 32 KiB hard test and adds a 24 KiB budget whose message says to move detail out rather than trim words. The original analysis follows.
+
 It is 32,758 bytes against the 32 KiB test in `scripts/agent-guard.test.mjs`, and every session reads it on every turn. About half is rationale and dated history. Cut it to contracts, commands and pointers, about 10–15 KB, and move the reasons to `DEVELOPMENT-WORKFLOW.md` and DESIGN.md. Items 1–3 shrink the "Adding a minigame" steps further.
 
 ## 5. Move level ladders into `logic.ts`

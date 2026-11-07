@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# One compact overlap check before claiming or publishing a slice (AGENTS.md, "Avoid duplicate parallel work").
+# One compact overlap check before claiming or publishing a slice (docs/SESSION-GUIDE.md, "Avoiding duplicate parallel work").
 #
 #   scripts/overlap.sh penguin tangram src/games/penguin-slide
 #
