@@ -93,3 +93,7 @@ Changed: 175 pages `docs/games/<id>.md` split from README rows and GAMES.md entr
 ## 2026-11-07 — Puddle Gobble slice 1: more kinds and beach moods (PR #1374)
 
 Changed: four tier 3–4 kinds (sun hat, sand spade, beach umbrella, rolled towel), sea glass and buttons for levels 6–8, and seeded morning/midday/evening moods in `src/games/puddle-gobble/` (art moved to `art.ts`). Ran: `npm run typecheck`; 25 rule tests; `BROWSER_SUITE=puddlegobble` pass (new level-5 step: seeded second launch, evening mood leaves the board unchanged, portrait screenshot, played to its sticker via hints). Open: `fingerdemo` (bot unchanged), build and offline not run; whether the evening look reads on an iPad is unchecked.
+
+## 2026-11-07 — Puddle Gobble slice 2: level 9 Smallest number first (PR #1378)
+
+Changed: level 9 (school 5–9; numerals soaked smallest first into a puddle that stays 20), `gobble.smaller-first-number` and `gobble.instruct-order-number`; `order` mode soaks re-arm every thing; the ghost finger taps the goal when no detour is clear. Ran: `npm run typecheck`; `npm test` (325 files, 6061 passed, 1 skipped); `BROWSER_SUITE=puddlegobble` pass (levels 1, 8, 9 with one aimed bigger-number miss then its sticker, 4 upright, 5 evening upright); `fingerdemo` `FINGER_ONLY=puddle-gobble` at 4, 5, 8, 9 clean (9 in 14.0 s); `npm run build`. Open: offline, `world` and any iPad check not run; no screenshot.
