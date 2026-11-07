@@ -6,7 +6,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **`bolt-boards`, more boards, fruit and a friend** (`tinker-lab`; 20 frozen boards per level, orange, strawberry, banana and the bear; existing-interaction content tier, no `fingerdemo`; promoted from Queued 2026-11-06): [build slices](deep-dives/bolt-boards.md#build-slices-in-order).
 - **`bolt-boards`, level 8 *Plenty of holes*** (pre-K and school between 5 and 6 on decision 1's default; after slice 1 is fine but not required; new level on the existing interaction, `fingerdemo` at 8): [build slices](deep-dives/bolt-boards.md#build-slices-in-order).
 - **Define `bolt-boards` level 9 *Put it back*** (docs only): [build slices](deep-dives/bolt-boards.md#build-slices-in-order).
 - **Dive `puddle-gobble`** (Puddle Gobble; toddler to school, 8 levels; docs only): [procedure](deep-dives/README.md#one-session-one-game), [definition](definitions/puddle-gobble.md).

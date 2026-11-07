@@ -127,8 +127,25 @@ describe('Bolt Boards levels 1–5 never dead-end', () => {
 });
 
 describe('Bolt Boards frozen list', () => {
-  it('has ten boards a level (level 6 has its authored first board too)', () => {
-    for (const plan of PLANS) expect(PUZZLES[plan.id].length).toBeGreaterThanOrEqual(plan.id === 6 ? 11 : 10);
+  it('has twenty boards a level (level 6 has its authored first board too)', () => {
+    for (const plan of PLANS) expect(PUZZLES[plan.id].length).toBeGreaterThanOrEqual(plan.id === 6 ? 21 : 20);
+  });
+
+  it('keeps the authored first boards of levels 1 and 6 where they were when the list grew', () => {
+    expect(PUZZLES[1][0]).toEqual({
+      boards: [{ x: 130, y: 260, w: 180, h: 200, z: 1 }, { x: 350, y: 260, w: 180, h: 200, z: 2 }, { x: 570, y: 260, w: 180, h: 200, z: 3 }],
+      bolts: [{ x: 130, y: 200, board: 0 }, { x: 350, y: 200, board: 1 }, { x: 570, y: 200, board: 2 }],
+      holes: [],
+    });
+    expect(PUZZLES[6][0]).toEqual({
+      boards: [{ x: 450, y: 140, w: 280, h: 100, z: 1 }, { x: 380, y: 250, w: 260, h: 180, z: 2 }],
+      bolts: [{ x: 350, y: 156, board: 0 }, { x: 504, y: 131, board: 0 }, { x: 305, y: 285, board: 1 }, { x: 433, y: 256, board: 1 }],
+      holes: [{ x: 390, y: 480 }],
+    });
+  });
+
+  it('holds no board twice in a level', () => {
+    for (const plan of PLANS) expect(new Set(PUZZLES[plan.id].map((p) => JSON.stringify(p))).size).toBe(PUZZLES[plan.id].length);
   });
 
   it('is well formed: distinct layers, bolts inside their boards and apart, holes apart, at most six boards', () => {

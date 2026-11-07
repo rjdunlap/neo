@@ -148,3 +148,11 @@ Open: offline not run; no iPad, device speech or child check ([DEVICE-CHECKS](..
 Changed: Puddle Lens definition gained levels 7 *Wall clue* and 8 *Why green?* (school range becomes {4,8}) with their check tier; READY, the cells-microbes dive and the subject recommendations updated.
 Ran: `node scripts/check-links.mjs` and `git diff --check`. No code checks (docs tier).
 Open: the build (new interaction on the existing game, `fingerdemo` at 7 and 8) is queued in READY. Only the Carolina Elodea page was opened; the onion, cheek-cell and pond-colour facts are from search summaries. No child or device evidence.
+
+## 2026-11-06 — Define Hat Band level 4, Build a song (docs only, music M6)
+
+Changed: [hat-band.md](../definitions/hat-band.md#level-4-build-a-song-m6-definition-2026-11-06) gains level 4 (three friends with drum, tune and low hats, three song parts, a two-clause brief with 7 of 343 accepted, Undo, Play, Check); READY, the music study, STUDY-BACKLOG updated.
+
+Ran: `node scripts/check-links.mjs` and `git diff --check`. No typecheck, unit tests or browser: no code changed.
+
+Open: the build (new-interaction tier, `fingerdemo` at 4) is not started.
