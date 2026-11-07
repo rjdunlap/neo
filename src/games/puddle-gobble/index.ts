@@ -1,5 +1,5 @@
 import { Container, Graphics, Rectangle, Text, type FederatedPointerEvent } from 'pixi.js';
-import { ink, swatch, wood } from '../../art/palette';
+import { ink, swatch } from '../../art/palette';
 import { Backdrop } from '../../art/scenery';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
@@ -10,10 +10,11 @@ import type { View } from '../../engine/view';
 import { rangeFor, type BandLevels } from '../../progress/difficulty';
 import { FONT } from '../../ui/text';
 import { WigglyIcon } from '../shared';
+import { SAND, thingArt } from './art';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
-  authoredBoard, beachLayout, detour, done, fieldFor, hintTarget, letGo, makeBoard, numeric, PAIL_BOX, placeOn, planFor, puddleDiameter, puddleStart,
-  refusal, soak, startState, thingDiameter, type Board, type Hint, type Kind, type Placed, type Plan, type Rect, type State, type Thing,
+  authoredBoard, beachLayout, detour, done, fieldFor, hintTarget, letGo, makeBoard, moodFor, NAMES, numeric, PAIL_BOX, placeOn, planFor, puddleDiameter, puddleStart,
+  refusal, soak, startState, thingDiameter, type Board, type Hint, type Kind, type Mood, type Placed, type Plan, type Rect, type State, type Thing,
 } from './logic';
 
 const LEVELS: BandLevels = {
@@ -29,96 +30,20 @@ const SPEED = 320;
 const REARM = 30;
 const WATER = 0x8fd0f5;
 const WATER_EDGE = 0x4f9fd6;
-const SAND = 0xf3dfa8;
 const WET_SAND = 0xe2c98a;
+
+/** Each beach mood's sky and sea, the wet-sand sheen under the puddle, and (evening) a pink rim on the puddle. */
+const LOOKS: Record<Mood, { sky: [number, number]; hills: number[]; sun: boolean; sheen: number; rim?: number }> = {
+  morning: { sky: [swatch.blue.light, swatch.white.light], hills: [swatch.white.light, swatch.teal.light, SAND], sun: false, sheen: WET_SAND },
+  midday: { sky: [0x9fd8f5, 0xfff6e0], hills: [0x9fd8f5, 0x7cc7ec, SAND], sun: true, sheen: WET_SAND },
+  evening: { sky: [swatch.purple.light, swatch.orange.light], hills: [swatch.orange.light, swatch.purple.light, SAND], sun: false, sheen: 0xecbd88, rim: swatch.pink.fill },
+};
+/** How far the sea's top sits above the ground line, and how far its waves rise (as `Backdrop` draws three layers). */
+const SEA_TOP = 62 + 34;
 /** Each level's authored first board leads its first round of a session. */
 const authoredShown = new Set<number>();
 
-const NAMES: Record<Kind, string> = {
-  shell: 'shell', pebble: 'pebble', leaf: 'leaf', feather: 'feather', pinecone: 'pinecone', boat: 'toy boat', seaweed: 'seaweed',
-  starfish: 'starfish', ball: 'beach ball', driftwood: 'driftwood stick', bucket: 'bucket', ring: 'floaty ring', kite: 'kite',
-};
-
 /* Art -------------------------------------------------------------------------------------------- */
-
-/** A beach thing about `d` across, centered on (0, 0). */
-function thingArt(kind: Kind, d: number): Graphics {
-  const g = new Graphics();
-  const r = d / 2;
-  switch (kind) {
-    case 'shell': {
-      g.moveTo(0, r * 0.75);
-      for (let i = 0; i <= 8; i++) {
-        const a = Math.PI + (i / 8) * Math.PI;
-        g.lineTo(Math.cos(a) * r * 0.9, Math.sin(a) * r * 0.85 + r * 0.15);
-      }
-      g.closePath().fill(swatch.pink.fill).stroke({ width: 3, color: swatch.pink.line, join: 'round' });
-      for (let i = 1; i < 5; i++) {
-        const a = Math.PI + (i / 5) * Math.PI;
-        g.moveTo(0, r * 0.7).lineTo(Math.cos(a) * r * 0.8, Math.sin(a) * r * 0.75 + r * 0.15).stroke({ width: 2, color: swatch.pink.line });
-      }
-      break;
-    }
-    case 'pebble':
-      g.ellipse(0, 0, r * 0.9, r * 0.65).fill(0xb8b8c4).stroke({ width: 3, color: 0x7d7d8c }).ellipse(-r * 0.3, -r * 0.2, r * 0.25, r * 0.12).fill({ color: 0xffffff, alpha: 0.5 });
-      break;
-    case 'leaf':
-      g.moveTo(-r * 0.9, 0).quadraticCurveTo(0, -r * 0.9, r * 0.9, 0).quadraticCurveTo(0, r * 0.9, -r * 0.9, 0).fill(swatch.green.fill).stroke({ width: 3, color: swatch.green.line })
-        .moveTo(-r * 0.9, 0).lineTo(r * 0.8, 0).stroke({ width: 2, color: swatch.green.line });
-      break;
-    case 'feather':
-      g.moveTo(-r, r * 0.3).quadraticCurveTo(-r * 0.2, -r * 0.7, r * 0.9, -r * 0.4).quadraticCurveTo(r * 0.1, r * 0.5, -r, r * 0.3).fill(0xffffff).stroke({ width: 3, color: 0x8c8c9c })
-        .moveTo(-r, r * 0.3).lineTo(r * 0.8, -r * 0.35).stroke({ width: 2, color: 0x8c8c9c });
-      break;
-    case 'pinecone':
-      g.ellipse(0, 0, r * 0.6, r * 0.9).fill(swatch.brown.fill).stroke({ width: 3, color: swatch.brown.line });
-      for (let y = -0.6; y <= 0.6; y += 0.3) g.moveTo(-r * 0.5, r * y).quadraticCurveTo(0, r * (y + 0.2), r * 0.5, r * y).stroke({ width: 2, color: swatch.brown.line });
-      break;
-    case 'boat':
-      g.moveTo(-r * 0.9, r * 0.2).lineTo(r * 0.9, r * 0.2).lineTo(r * 0.6, r * 0.6).lineTo(-r * 0.6, r * 0.6).closePath().fill(swatch.red.fill).stroke({ width: 3, color: swatch.red.line, join: 'round' })
-        .moveTo(0, r * 0.2).lineTo(0, -r * 0.8).stroke({ width: 3, color: wood.line })
-        .moveTo(r * 0.05, -r * 0.75).lineTo(r * 0.65, r * 0.1).lineTo(r * 0.05, r * 0.1).closePath().fill(0xffffff).stroke({ width: 2, color: 0x8c8c9c });
-      break;
-    case 'seaweed':
-      for (const dx of [-0.4, 0, 0.4]) g.moveTo(r * dx, r * 0.8).bezierCurveTo(r * (dx - 0.4), r * 0.2, r * (dx + 0.4), -r * 0.2, r * dx, -r * 0.8).stroke({ width: Math.max(5, r * 0.2), color: swatch.teal.line, cap: 'round' });
-      break;
-    case 'starfish': {
-      for (let i = 0; i < 10; i++) {
-        const a = -Math.PI / 2 + (i * Math.PI) / 5;
-        const k = i % 2 ? r * 0.42 : r * 0.95;
-        if (i === 0) g.moveTo(Math.cos(a) * k, Math.sin(a) * k);
-        else g.lineTo(Math.cos(a) * k, Math.sin(a) * k);
-      }
-      g.closePath().fill(swatch.orange.fill).stroke({ width: 3, color: swatch.orange.line, join: 'round' });
-      break;
-    }
-    case 'ball':
-      g.circle(0, 0, r * 0.9).fill(0xffffff).stroke({ width: 3, color: 0x8c8c9c })
-        .moveTo(0, -r * 0.9).quadraticCurveTo(-r * 0.6, 0, 0, r * 0.9).quadraticCurveTo(-r * 1.1, 0, 0, -r * 0.9).fill(swatch.red.fill)
-        .moveTo(0, -r * 0.9).quadraticCurveTo(r * 0.6, 0, 0, r * 0.9).quadraticCurveTo(r * 1.1, 0, 0, -r * 0.9).fill(swatch.blue.fill)
-        .circle(0, 0, r * 0.9).stroke({ width: 3, color: 0x8c8c9c });
-      break;
-    case 'driftwood':
-      g.roundRect(-r * 0.95, -r * 0.22, r * 1.9, r * 0.44, r * 0.22).fill(wood.fill).stroke({ width: 3, color: wood.line })
-        .moveTo(-r * 0.6, 0).lineTo(r * 0.5, 0).stroke({ width: 2, color: wood.line }).circle(r * 0.3, -r * 0.06, r * 0.06).fill(wood.line);
-      break;
-    case 'bucket':
-      g.moveTo(-r * 0.6, -r * 0.5).lineTo(r * 0.6, -r * 0.5).lineTo(r * 0.45, r * 0.8).lineTo(-r * 0.45, r * 0.8).closePath().fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line, join: 'round' })
-        .moveTo(-r * 0.6, -r * 0.5).quadraticCurveTo(0, -r * 1.2, r * 0.6, -r * 0.5).stroke({ width: 3, color: swatch.yellow.line });
-      break;
-    case 'ring':
-      g.circle(0, 0, r * 0.92).fill(swatch.red.fill).stroke({ width: 3, color: swatch.red.line });
-      for (let i = 0; i < 4; i++) g.arc(0, 0, r * 0.7, (i * Math.PI) / 2, (i * Math.PI) / 2 + 0.6).lineTo(0, 0).closePath().fill(0xffffff);
-      g.circle(0, 0, r * 0.4).fill(SAND).stroke({ width: 3, color: swatch.red.line });
-      break;
-    case 'kite':
-      g.moveTo(0, -r * 0.9).lineTo(r * 0.6, -r * 0.1).lineTo(0, r * 0.6).lineTo(-r * 0.6, -r * 0.1).closePath().fill(swatch.purple.fill).stroke({ width: 3, color: swatch.purple.line, join: 'round' })
-        .moveTo(0, -r * 0.9).lineTo(0, r * 0.6).moveTo(-r * 0.6, -r * 0.1).lineTo(r * 0.6, -r * 0.1).stroke({ width: 2, color: swatch.purple.line })
-        .moveTo(0, r * 0.6).quadraticCurveTo(r * 0.3, r * 0.8, 0, r * 0.95).stroke({ width: 2, color: ink });
-      break;
-  }
-  return g;
-}
 
 /** A thing as it sits on the sand: its picture, and its tier's dots on a small ring or its number on a badge. */
 function thingNode(plan: Plan, t: Thing): Container {
@@ -146,7 +71,7 @@ function tierDots(k: number, x: number, y: number): Graphics {
 }
 
 /** The puddle's face and body at diameter d, centered on (0, 0). */
-function drawPuddle(g: Graphics, d: number, t: number) {
+function drawPuddle(g: Graphics, d: number, t: number, rim?: number) {
   const r = d / 2;
   g.clear();
   g.moveTo(r, 0);
@@ -156,6 +81,7 @@ function drawPuddle(g: Graphics, d: number, t: number) {
     g.lineTo(Math.cos(a) * k, Math.sin(a) * k * 0.92);
   }
   g.closePath().fill({ color: WATER, alpha: 0.92 }).stroke({ width: 5, color: WATER_EDGE });
+  if (rim !== undefined) g.ellipse(0, 0, r * 0.93, r * 0.85).stroke({ width: 3, color: rim, alpha: 0.45 });
   g.ellipse(-r * 0.4, -r * 0.45, r * 0.22, r * 0.08).fill({ color: 0xffffff, alpha: 0.55 });
   const e = Math.max(6, r * 0.09);
   for (const s of [-1, 1]) g.circle(s * r * 0.28, -r * 0.15, e).fill(0xffffff).circle(s * r * 0.28 + 1, -r * 0.13, e * 0.55).fill(ink);
@@ -196,7 +122,11 @@ class PuddleGobble implements Game {
   /** The hint on show, if any. */
   glow: Hint | null = null;
 
-  private readonly backdrop: Backdrop;
+  /** The round's look: midday for each level's authored first round, otherwise seeded. */
+  mood: Mood;
+  private backdrop: Backdrop;
+  /** The mood's low sun or morning mist, drawn over the sky and sea. */
+  private readonly skyline = new Graphics();
   private readonly sand = new Graphics();
   private readonly pail = new Container();
   private readonly trail = new Graphics();
@@ -231,18 +161,21 @@ class PuddleGobble implements Game {
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
-    if (!authoredShown.has(this.plan.id) && !ctx.demo) {
+    const authored = !authoredShown.has(this.plan.id) && !ctx.demo;
+    if (authored) {
       authoredShown.add(this.plan.id);
       this.board = authoredBoard(this.plan);
     } else {
       this.board = makeBoard(this.plan, ctx.rng);
     }
     const layout = beachLayout(this.board, new Rng(ctx.rng.int(1, 1e9)));
+    const moodRng = new Rng(ctx.rng.int(1, 1e9));
+    this.mood = authored ? 'midday' : moodFor(moodRng);
     this.state = startState(this.board);
     this.field = fieldFor(this.plan, ctx.view);
     this.diameter = puddleDiameter(this.plan, this.state.puddle);
-    this.backdrop = new Backdrop({ sky: [0x9fd8f5, 0xfff6e0], hills: [0x9fd8f5, 0x7cc7ec, SAND], horizon: 0.16, clouds: 2, sun: true, seed: 211 }, ctx.view);
-    for (const g of [this.sand, this.trail, this.glowRing, this.destination]) g.eventMode = 'none';
+    this.backdrop = this.makeBackdrop();
+    for (const g of [this.skyline, this.sand, this.trail, this.glowRing, this.destination]) g.eventMode = 'none';
     this.world.eventMode = 'none';
     this.pail.eventMode = 'none';
     this.destination.visible = false;
@@ -260,7 +193,7 @@ class PuddleGobble implements Game {
     this.world.addChild(this.puddle);
 
     // The steering layer takes touches anywhere; the strip's tokens sit above it so a let-go never steers.
-    ctx.stage.addChild(this.backdrop, this.sand, this.pail, this.trail, this.glowRing, this.world, this.destination, this.ground, this.strip);
+    ctx.stage.addChild(this.backdrop, this.skyline, this.sand, this.pail, this.trail, this.glowRing, this.world, this.destination, this.ground, this.strip);
     this.ground.eventMode = 'static';
     this.ground.on('pointerdown', (e: FederatedPointerEvent) => this.steer(e, true));
     this.ground.on('globalpointermove', (e: FederatedPointerEvent) => {
@@ -279,6 +212,35 @@ class PuddleGobble implements Game {
     document.addEventListener('visibilitychange', this.clearSteering);
   }
 
+  private makeBackdrop() {
+    const look = LOOKS[this.mood];
+    return new Backdrop({ sky: look.sky, hills: look.hills, horizon: 0.16, clouds: 2, sun: look.sun, seed: 211 }, this.view);
+  }
+
+  /** Change the round's look in place (the browser check uses it for its screenshot); the board is untouched. */
+  setMood(mood: Mood) {
+    this.mood = mood;
+    const old = this.backdrop;
+    this.backdrop = this.makeBackdrop();
+    this.ctx.stage.addChildAt(this.backdrop, this.ctx.stage.getChildIndex(old));
+    old.destroy({ children: true });
+    this.resize(this.view);
+  }
+
+  /** Evening's half sun sitting on the sea with its glints, or morning's mist along the water; nothing at midday. */
+  private drawSkyline() {
+    const g = this.skyline.clear();
+    const sea = this.backdrop.groundY - SEA_TOP;
+    const w = this.view.w;
+    if (this.mood === 'evening') {
+      const x = w * 0.7, r = 64;
+      g.arc(x, sea, r, Math.PI, Math.PI * 2).closePath().fill({ color: swatch.orange.fill, alpha: 0.9 });
+      for (const [dy, half] of [[14, 60], [30, 42], [46, 26]]) g.roundRect(x - half, sea + dy, half * 2, 6, 3).fill({ color: swatch.yellow.light, alpha: 0.7 });
+    } else if (this.mood === 'morning') {
+      for (let x = 40; x < w; x += 260) g.ellipse(x + 90, sea + 10, 170, 26).fill({ color: 0xffffff, alpha: 0.45 });
+    }
+  }
+
   start() {
     const lines = { grow: 'gobble.instruct', order: 'gobble.instruct-order', plus: 'gobble.instruct-number', add: 'gobble.instruct-add', pail: 'gobble.instruct-pail' } as const;
     if (this.plan.id === 1) void this.ctx.instruct('gobble.instruct-1');
@@ -293,9 +255,10 @@ class PuddleGobble implements Game {
     this.view = v;
     this.field = fieldFor(this.plan, v);
     this.backdrop.resize(v);
+    this.drawSkyline();
     this.ground.hitArea = new Rectangle(0, 0, v.w, v.h);
     const f = this.field;
-    this.sand.clear().roundRect(f.x0 - 20, f.y0 - 10, f.x1 - f.x0 + 40, f.y1 - f.y0 + 40, 40).fill({ color: WET_SAND, alpha: 0.35 });
+    this.sand.clear().roundRect(f.x0 - 20, f.y0 - 10, f.x1 - f.x0 + 40, f.y1 - f.y0 + 40, 40).fill({ color: LOOKS[this.mood].sheen, alpha: 0.35 });
     for (const it of this.items) if (it.where === 'sand') it.node.position.copyFrom(placeOn(f, it.place));
     const start = puddleStart(this.plan, f);
     if (!this.placed) {
@@ -428,7 +391,7 @@ class PuddleGobble implements Game {
     if (!this.finished) this.glide(dt);
     const want = puddleDiameter(this.plan, this.state.puddle);
     this.diameter += (want - this.diameter) * Math.min(1, dt * 5);
-    drawPuddle(this.body, this.diameter, this.clock);
+    drawPuddle(this.body, this.diameter, this.clock, LOOKS[this.mood].rim);
     this.drawMeter();
     this.bob();
     for (const it of this.items) {
