@@ -3,7 +3,7 @@ import { CARRY, PRESS } from '../../engine/ghost';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  arcAt, basketAt, BOARD_H, BOARD_W, boardsFor, bowlAt, BOWL_R, FLIGHT, FRUIT, hangTime, hintLineFor, HIT_R, insideLength, isFruit,
+  arcAt, basketAt, clearingLine, COVER_ROWS, coverBoardsFor, coverHint, coverLines, coverStep, oneLineClears, stripWidth, BOARD_H, BOARD_W, boardsFor, bowlAt, BOWL_R, FLIGHT, FRUIT, distToSegment, hangTime, hintLineFor, HIT_R, insideLength, isFruit,
   judge, judgeStroke, lineHits, makeToss, met, MIN_LINE, MIN_TRAVEL, nextKind, pairBoard, pairHint, planFor, reachableCounts, RISE, HANG,
   MOODS, NOT_FRUIT, signAt, SIGN_W, signsFor, sliceHits, type Kind,
 } from './logic';
@@ -274,9 +274,112 @@ describe('level 8 pair board', () => {
   });
 });
 
+describe('level 9 two-line boards', () => {
+  const SEEDS9 = Array.from({ length: 40 }, (_, i) => i + 1);
+  const hitsOf = (l: { a: { x: number; y: number }; b: { x: number; y: number } }, fruit: { x: number; y: number }[]) => lineHits(l.a, l.b, fruit);
+  /** Every line a hand could draw, sampled: a point on the board and an angle, box edge to box edge. */
+  const handLines = (rng: Rng, n: number) => Array.from({ length: n }, () => {
+    const x = rng.range(0, BOARD_W), y = rng.range(0, BOARD_H), t = rng.range(0, Math.PI);
+    return { a: { x: x - Math.cos(t) * 1200, y: y - Math.sin(t) * 1200 }, b: { x: x + Math.cos(t) * 1200, y: y + Math.sin(t) * 1200 } };
+  });
+
+  it('four boards of two rows (three and two first, then four to six), fruit apart and inside the box', () => {
+    for (const seed of SEEDS9) {
+      const boards = coverBoardsFor(new Rng(seed));
+      expect(boards.map((b) => b.fruit.length)).toEqual(COVER_ROWS.map(([a, b]) => a + b));
+      expect(boards[0].fruit.length).toBe(5);
+      for (const b of boards) {
+        expect(b.n).toBe(2);
+        for (const p of b.fruit) expect(p.x >= 60 && p.x <= BOARD_W - 60 && p.y >= 60 && p.y <= BOARD_H - 60).toBe(true);
+        for (let i = 0; i < b.fruit.length; i++) for (let j = i + 1; j < b.fruit.length; j++) {
+          expect(Math.hypot(b.fruit[i].x - b.fruit[j].x, b.fruit[i].y - b.fruit[j].y)).toBeGreaterThanOrEqual(160);
+        }
+      }
+    }
+  });
+
+  it('two lines clear every board and no single line does, not even a sloppy hand line', () => {
+    for (const seed of SEEDS9) {
+      for (const b of coverBoardsFor(new Rng(seed))) {
+        expect(coverLines(b.fruit).every((l) => hitsOf(l, b.fruit).length < b.fruit.length)).toBe(true);
+        expect(stripWidth(b.fruit)).toBeGreaterThanOrEqual(2 * HIT_R + 20);
+        const first = hitsOf(b.hint, b.fruit);
+        const cut = b.fruit.map((_, i) => first.includes(i));
+        const second = clearingLine(b.fruit, cut)!;
+        expect(second).not.toBeNull();
+        const both = new Set([...first, ...hitsOf(second, b.fruit)]);
+        expect(both.size).toBe(b.fruit.length);
+        expect(coverStep(b.fruit, [], first, 1)).toBe('more');
+        expect(coverStep(b.fruit, cut, hitsOf(second, b.fruit), 2)).toBe('cleared');
+      }
+    }
+  });
+
+  it('the early check agrees with brute force over every reachable first line, and never stops a hand line that would clear the rest', () => {
+    const rng = new Rng(77);
+    for (const seed of SEEDS9.slice(0, 15)) {
+      for (const b of coverBoardsFor(new Rng(seed))) {
+        const pool = coverLines(b.fruit);
+        const firsts = [...pool, ...handLines(rng, 150)].map((l) => hitsOf(l, b.fruit)).filter((h) => h.length && h.length < b.fruit.length);
+        const seen = new Set<string>();
+        for (const h of firsts) {
+          const key = [...h].sort().join(',');
+          if (seen.has(key)) continue;
+          seen.add(key);
+          const cut = b.fruit.map((_, i) => h.includes(i));
+          const rest = b.fruit.map((_, i) => i).filter((i) => !cut[i]);
+          const covers = (l: (typeof pool)[number]) => rest.every((i) => hitsOf(l, b.fruit).includes(i));
+          const check = clearingLine(b.fruit, cut);
+          expect(check !== null).toBe(pool.some(covers) || coverLines(rest.map((i) => b.fruit[i])).some((l) => lineHits(l.a, l.b, rest.map((i) => b.fruit[i])).length === rest.length));
+          // What it says can be done can be done: its line crosses every fruit left.
+          if (check) expect(rest.every((i) => hitsOf(check, b.fruit).includes(i))).toBe(true);
+          if (handLines(rng, 300).some(covers)) expect(oneLineClears(b.fruit, cut)).toBe(true);
+        }
+      }
+    }
+  });
+
+  it('the hint belongs to a cover from the state it is shown in', () => {
+    for (const seed of SEEDS9.slice(0, 15)) {
+      for (const b of coverBoardsFor(new Rng(seed))) {
+        const h = coverHint(b.fruit, b.fruit.map(() => false))!;
+        const first = hitsOf(h, b.fruit);
+        expect(first.length).toBeGreaterThan(0);
+        expect(coverStep(b.fruit, [], first, 1)).toBe('more');
+        // The glow plainly crosses what it cuts: near each fruit's middle, not grazing an edge.
+        for (const i of first) expect(distToSegment(b.fruit[i], h.a, h.b)).toBeLessThanOrEqual(HIT_R / 2);
+        // After any first line that leaves a clearable rest, the hint clears it.
+        for (const l of coverLines(b.fruit)) {
+          const hits = hitsOf(l, b.fruit);
+          if (!hits.length || coverStep(b.fruit, [], hits, 1) !== 'more') continue;
+          const cut = b.fruit.map((_, i) => hits.includes(i));
+          const next = coverHint(b.fruit, cut)!;
+          expect(coverStep(b.fruit, cut, hitsOf(next, b.fruit), 2)).toBe('cleared');
+        }
+      }
+    }
+  });
+
+  it('a first line that strands the rest, or a second that leaves fruit, is stuck', () => {
+    const b = coverBoardsFor(new Rng(3))[0];
+    const stuck = coverLines(b.fruit).map((l) => hitsOf(l, b.fruit)).find((h) => h.length && coverStep(b.fruit, [], h, 1) === 'stuck');
+    expect(stuck).toBeTruthy();
+    const first = hitsOf(b.hint, b.fruit);
+    const cut = b.fruit.map((_, i) => first.includes(i));
+    const left = b.fruit.map((_, i) => i).filter((i) => !cut[i]);
+    expect(coverStep(b.fruit, cut, left.slice(0, 1), 2)).toBe(left.length > 1 ? 'stuck' : 'cleared');
+  });
+
+  it('same seed, same boards; level 9 is school only', () => {
+    expect(coverBoardsFor(new Rng(5))).toEqual(coverBoardsFor(new Rng(5)));
+    expect(planFor(9).mode).toBe('cover');
+    expect(signsFor(planFor(9), new Rng(1))).toEqual([]);
+  });
+});
+
 describe('plans', () => {
   it('names each level and keeps the hang the same at every level (harder means choices, not speed)', () => {
-    for (let id = 1; id <= 8; id++) expect(planFor(id).id).toBe(id);
+    for (let id = 1; id <= 9; id++) expect(planFor(id).id).toBe(id);
     expect(RISE + HANG).toBeLessThan(FLIGHT);
     expect(planFor(1).aloft).toBe(1);
     expect(Math.max(...[1, 2, 3, 4, 5, 6, 8].map((i) => planFor(i).aloft))).toBe(3);

@@ -3,7 +3,7 @@ import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import type { BandLevels } from '../../progress/difficulty';
 
-/** Rules for Fruit Slice: the arcs, the swept slice, what a cut counts as, and the still boards of levels 7–8. */
+/** Rules for Fruit Slice: the arcs, the swept slice, what a cut counts as, and the still boards of levels 7–9. */
 
 export type Kind = PropKind;
 export const FRUIT: Kind[] = ['apple', 'orange', 'lemon', 'pear', 'blueberries', 'grapes', 'strawberry', 'banana', 'plum'];
@@ -24,7 +24,7 @@ export const MIN_LINE = 150;
 export type Mood = 'morning' | 'picnic' | 'sunset';
 export const MOODS: Mood[] = ['morning', 'picnic', 'sunset'];
 
-export type Mode = 'touch' | 'swipe' | 'kind' | 'fruit' | 'enough' | 'two' | 'line' | 'pieces';
+export type Mode = 'touch' | 'swipe' | 'kind' | 'fruit' | 'enough' | 'two' | 'line' | 'pieces' | 'cover';
 
 export interface Plan {
   id: number;
@@ -32,7 +32,7 @@ export interface Plan {
   mode: Mode;
   /** Fruit in the air at once. */
   aloft: number;
-  /** Slices in the round (levels 1–4), signs (5, 6, 8) or boards (7). */
+  /** Slices in the round (levels 1–4), signs (5, 6, 8) or boards (7, 9). */
   count: number;
 }
 
@@ -45,13 +45,14 @@ const PLANS: Plan[] = [
   { id: 6, name: 'Two kinds, two numbers', mode: 'two', aloft: 3, count: 3 },
   { id: 7, name: 'One straight swipe', mode: 'line', aloft: 0, count: 4 },
   { id: 8, name: 'Pieces by twos', mode: 'pieces', aloft: 3, count: 3 },
+  { id: 9, name: 'Two lines clear it', mode: 'cover', aloft: 0, count: 4 },
 ];
 
 export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
   prek: { min: 3, max: 6 },
-  school: { min: 5, max: 8 },
+  school: { min: 5, max: 9 },
 };
 
 export function planFor(level: number): Plan {
@@ -93,6 +94,7 @@ export function signsFor(plan: Plan, rng: Rng): Sign[] {
     case 'pieces':
       return [one(null, 6, 2), one(null, 8, 2), one(null, rng.pick([10, 12]), 2, true)];
     case 'line':
+    case 'cover':
       return [];
   }
 }
@@ -319,7 +321,7 @@ export interface Board {
   /** Fruit centers, in board units (0..BOARD_W, 0..BOARD_H). */
   fruit: Pt[];
   kinds: Kind[];
-  /** Level 7: the count the sign asks for. Level 8: 0 (the sign is in pieces). */
+  /** Level 7: the count the sign asks for. Level 8: 0 (the sign is in pieces). Level 9: 2, the lines. */
   n: number;
   /** A line through exactly `n` (level 7), or one through each pair (level 8). */
   hint: Line;
@@ -489,4 +491,122 @@ export function pairHint(board: Board, cut: boolean[], room: number): Line | nul
   const i = board.fruit.findIndex((_, j) => !cut[j]);
   if (i < 0) return null;
   return throughOnly(board.fruit.map((p, j) => (cut[j] ? { x: -9999, y: -9999 } : p)), [i]);
+}
+
+/* ---------------------------------------------------------------------------------------------- */
+/* Level 9: two lines clear the board                                                             */
+/* ---------------------------------------------------------------------------------------------- */
+
+/**
+ * Level 9's line pool: `candidateLines` plus, along each pair's direction, the line down the middle of every strip
+ * of fruit up to one hit circle wide, so a leftover any hand line could clear is one the check also clears.
+ */
+export function coverLines(pts: Pt[]): Line[] {
+  const out = candidateLines(pts);
+  const strips: Line[] = [];
+  for (let i = 0; i < pts.length; i++) {
+    for (let j = i + 1; j < pts.length; j++) {
+      const dx = pts[j].x - pts[i].x, dy = pts[j].y - pts[i].y, len = Math.hypot(dx, dy);
+      const ux = dx / len, uy = dy / len;
+      const offs = pts.map((p) => (p.x - pts[i].x) * -uy + (p.y - pts[i].y) * ux);
+      for (const lo of offs) {
+        const inStrip = offs.filter((o) => o >= lo && o <= lo + 2 * HIT_R - 0.5);
+        const mid = (lo + Math.max(...inStrip)) / 2;
+        const l = clipToBox({ x: pts[i].x - uy * mid, y: pts[i].y + ux * mid }, ux, uy);
+        if (l && Math.hypot(l.b.x - l.a.x, l.b.y - l.a.y) >= MIN_LINE) strips.push(l);
+      }
+    }
+  }
+  // The narrowest strip lies along a pair's direction, so these find every line a hand could draw; the roomier lines come first.
+  return [...out, ...strips];
+}
+
+const liveOf = (fruit: Pt[], cut: boolean[]) => fruit.map((_, i) => i).filter((i) => !cut[i]);
+
+/** The one straight line that cuts every fruit still whole, or null when no line can (the early check). */
+export function clearingLine(fruit: Pt[], cut: boolean[]): Line | null {
+  const live = liveOf(fruit, cut);
+  if (!live.length) return null;
+  const pts = live.map((i) => fruit[i]);
+  // The leftovers' own lines and the whole board's, so a line placed by fruit already cut still counts; the one
+  // passing closest to every fruit's middle wins, so the glow plainly crosses each.
+  let best: Line | null = null, bestOff = Infinity;
+  for (const l of [...coverLines(pts), ...coverLines(fruit)]) {
+    const hits = lineHits(l.a, l.b, pts);
+    if (hits.length !== pts.length) continue;
+    const tidy = throughOnly(pts, hits) ?? l;
+    const off = farthest(tidy, pts);
+    if (off < bestOff) [best, bestOff] = [tidy, off];
+  }
+  return best;
+}
+
+/** How far the line passes from the middle of the fruit it is farthest from. */
+const farthest = (l: Line, pts: Pt[]) => Math.max(...pts.map((p) => distToSegment(p, l.a, l.b)));
+
+/** Whether one more straight line can cut every fruit still whole. */
+export const oneLineClears = (fruit: Pt[], cut: boolean[]) => liveOf(fruit, cut).length === 0 || clearingLine(fruit, cut) !== null;
+
+export type CoverStep = 'cleared' | 'more' | 'stuck';
+
+/**
+ * Judge a line that cut `hits` (indexes into `fruit`), the `used`th line on the board: every fruit cut clears it; a
+ * first line whose leftovers no single line can reach, or a second that leaves any, is stuck (the board resets).
+ */
+export function coverStep(fruit: Pt[], cutBefore: boolean[], hits: number[], used: number): CoverStep {
+  const after = fruit.map((_, i) => !!cutBefore[i] || hits.includes(i));
+  if (after.every(Boolean)) return 'cleared';
+  if (used >= 2) return 'stuck';
+  return oneLineClears(fruit, after) ? 'more' : 'stuck';
+}
+
+/** The line to glow (and the bot's stroke): a cover's first line on a whole board, else the line that clears the rest. */
+export function coverHint(fruit: Pt[], cut: boolean[]): Line | null {
+  if (cut.some(Boolean)) return clearingLine(fruit, cut);
+  // Lines passing near the middle of every fruit they cut first, then the most fruit, then the closest.
+  const lines = coverLines(fruit)
+    .map((l) => {
+      const hits = lineHits(l.a, l.b, fruit);
+      const tidy = throughOnly(fruit, hits) ?? l;
+      return { tidy, hits, off: farthest(tidy, hits.map((i) => fruit[i])) };
+    })
+    .filter((c) => c.hits.length && c.hits.length < fruit.length)
+    .sort((p, q) => Number(p.off > HIT_R / 2) - Number(q.off > HIT_R / 2) || q.hits.length - p.hits.length || p.off - q.off);
+  for (const { tidy, hits } of lines) if (clearingLine(fruit, fruit.map((_, i) => hits.includes(i)))) return tidy;
+  return null;
+}
+
+/** The narrowest strip, over many directions, that holds every fruit: wider than a hit circle, so no line at all clears the board. */
+export function stripWidth(fruit: Pt[]): number {
+  let best = Infinity;
+  for (let a = 0; a < 90; a++) {
+    const ang = (a * Math.PI) / 90;
+    const offs = fruit.map((p) => -p.x * Math.sin(ang) + p.y * Math.cos(ang));
+    best = Math.min(best, Math.max(...offs) - Math.min(...offs));
+  }
+  return best;
+}
+
+/** Level 9's rows per board: three and two first, then four to six. */
+export const COVER_ROWS: [number, number][] = [[3, 2], [2, 2], [3, 2], [3, 3]];
+
+/** Level 9's boards: two seeded rows (crossing or apart, fruit at least 160 apart) that two lines clear and one cannot. */
+export function coverBoardsFor(rng: Rng, rows = COVER_ROWS): Board[] {
+  return rows.map(([a, b]) => {
+    for (let attempt = 0; attempt < 3000; attempt++) {
+      const first = seededRow(a, a, rng);
+      const second = first && seededRow(b, b, rng);
+      if (!first || !second) continue;
+      const fruit = [...first, ...second];
+      if (fruit.some((p, i) => fruit.some((q, j) => j > i && Math.hypot(p.x - q.x, p.y - q.y) < 160))) continue;
+      if (stripWidth(fruit) < 2 * HIT_R + 20) continue;
+      if (coverLines(fruit).some((l) => lineHits(l.a, l.b, fruit).length === fruit.length)) continue;
+      const hint = coverHint(fruit, []);
+      if (!hint) continue;
+      const order = rng.shuffle(fruit.map((_, i) => i));
+      const mixed = order.map((i) => fruit[i]);
+      return { fruit: mixed, kinds: mixed.map(() => rng.pick(FRUIT)), n: 2, hint: coverHint(mixed, [])! };
+    }
+    throw new Error(`no two-line board for ${a}+${b}`);
+  });
 }
