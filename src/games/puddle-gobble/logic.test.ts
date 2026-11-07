@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
+import { stepLevel } from '../../progress/difficulty';
 import { thingArt } from './art';
 import {
-  authoredBoard, beachLayout, deadEndReachable, detour, blocker, done, exactSolutions, fieldFor, fits, greedyClears, hintTarget, inPailBox, inPetCorner,
+  authoredBoard, beachLayout, deadEndReachable, dotSpots, LEVELS, letGoWays, MAX_HELD, stripSpan, detour, blocker, done, exactSolutions, fieldFor, fits, greedyClears, hintTarget, inPailBox, inPetCorner,
   KINDS_BY_TIER, LEVEL_COUNT, letGo, makeBoard, MAX_PUDDLE_D, moodFor, MOODS, NAMES, NUMBER_KINDS, numeric, passesFilter, placeOn, planFor, PUDDLE_D, puddleStart, soak, soakable, startState, THING_D, thingDiameter,
   refusal, thingOf, type Board, type State,
 } from './logic';
@@ -198,6 +199,159 @@ describe('level 9, smallest number first', () => {
       const h = hintTarget(b, s);
       expect(h && 'soak' in h && thingOf(b, h.soak).size).toBe(smallest);
     }
+  });
+});
+
+describe('level 10, count the dots', () => {
+  it('pebbles 1, 2, 3, 4 and 6 for a puddle of 2 that gains one per soak, dots on the plan', () => {
+    const p = planFor(10);
+    expect(p.mode).toBe('plus');
+    expect(p.dots).toBe(true);
+    expect(numeric(p)).toBe(true);
+    const b = authoredBoard(p);
+    expect(b.start).toBe(2);
+    expect(b.things.map((t) => t.size).sort((x, y) => x - y)).toEqual([1, 2, 3, 4, 6]);
+    expect(passesFilter(b)).toBe(true);
+  });
+
+  it('draws n distinct dots for every number from 1 to 9, so the dots shown equal the value and the puddle (up to 7)', () => {
+    for (let n = 1; n <= 9; n++) {
+      const spots = dotSpots(n);
+      expect(spots.length).toBe(n);
+      expect(new Set(spots.map(([x, y]) => `${x},${y}`)).size).toBe(n);
+      for (const [x, y] of spots) expect(Math.abs(x) <= 1 && Math.abs(y) <= 1).toBe(true);
+    }
+    // The puddle's dots follow its number to the end of the round: 2 at the start, 7 after five soaks.
+    const b = authoredBoard(planFor(10));
+    let s = startState(b);
+    const seen = [s.puddle];
+    for (let i = 0; i < 5; i++) {
+      const h = hintTarget(b, s)!;
+      const r = soak(b, s, (h as { soak: number }).soak);
+      expect(r.ok).toBe(true);
+      if (r.ok) s = r.state;
+      seen.push(s.puddle);
+    }
+    expect(seen).toEqual([2, 3, 4, 5, 6, 7]);
+    expect(dotSpots(s.puddle).length).toBe(7);
+  });
+
+  it('over 500 seeds: five distinct values in 1–6, at least two too big at the start, greedy clears, never the fallback', () => {
+    for (let seed = 1; seed <= 500; seed++) {
+      const b = makeBoard(planFor(10), new Rng(seed));
+      expect(b.fallback).toBeUndefined();
+      const sizes = b.things.map((t) => t.size);
+      expect(sizes.length).toBe(5);
+      expect(new Set(sizes).size).toBe(5);
+      expect(sizes.every((v) => v >= 1 && v <= 6)).toBe(true);
+      expect(b.things.filter((t) => !fits(b.start, t)).length).toBeGreaterThanOrEqual(2);
+      expect(greedyClears(b)).toBe(true);
+    }
+  });
+
+  it('sits between 5 and 6 for pre-K and school, so stepping goes 5, 10, 6 and back', () => {
+    for (const band of ['prek', 'school'] as const) {
+      const r = LEVELS[band]!;
+      expect(r.order).toContain(10);
+      expect(r.max).toBeGreaterThanOrEqual(10);
+      expect(stepLevel(5, 1, r)).toBe(10);
+      expect(stepLevel(10, 1, r)).toBe(6);
+      expect(stepLevel(6, -1, r)).toBe(10);
+      expect(stepLevel(10, -1, r)).toBe(5);
+    }
+    expect(LEVELS.prek!.order).toEqual([3, 4, 5, 10, 6]);
+  });
+});
+
+describe('level 11, too full', () => {
+  /** Every in-puddle set she can reach from the start (let go anything; soak back what the pail allows), by sorted ids. */
+  function reachable(b: Board) {
+    const out = new Map<string, State>();
+    const queue = [startState(b)];
+    while (queue.length) {
+      const s = queue.shift()!;
+      const key = [...s.soaked].sort((x, y) => x - y).join(',');
+      if (out.has(key)) continue;
+      out.set(key, s);
+      if (done(b, s)) continue;
+      for (const id of s.soaked) queue.push(letGo(b, s, id));
+      for (const id of s.left) { const r = soak(b, s, id); if (r.ok) queue.push(r.state); }
+    }
+    return [...out.values()];
+  }
+
+  it('starts with 4, 9, 3 and 6 in a puddle of 2 (24) for a pail of 14; only letting go 4 and 6 together makes it', () => {
+    const b = authoredBoard(planFor(11));
+    const s = startState(b);
+    expect(s.puddle).toBe(24);
+    expect(s.left).toEqual([]);
+    expect(s.soaked.map((id) => thingOf(b, id).size)).toEqual([4, 9, 3, 6]);
+    expect(b.pail).toBe(14);
+    expect(letGoWays(b).map((ids) => ids.map((id) => thingOf(b, id).size))).toEqual([[4, 6]]);
+    for (const id of s.soaked) expect(done(b, letGo(b, s, id))).toBe(false);
+    expect(passesFilter(b)).toBe(true);
+  });
+
+  it('a soak back is never too big; it is refused only when it would go past the pail', () => {
+    const b = authoredBoard(planFor(11));
+    let s = startState(b);
+    for (const id of [1, 0, 3]) s = letGo(b, s, id);
+    // Left in: the 3 (puddle 5). The 9 is bigger than the puddle but goes back in, to 14.
+    expect(s.puddle).toBe(5);
+    expect(refusal(b, s, 1)).toBeNull();
+    const r = soak(b, s, 1);
+    expect(r.ok && r.state.puddle).toBe(14);
+    expect(r.ok && done(b, r.state)).toBe(true);
+    // With the 9 and the 6 let go (4 and 3 in, so 9), either one back would pass the pail.
+    let t = letGo(b, letGo(b, startState(b), 1), 3);
+    expect(t.puddle).toBe(9);
+    expect(refusal(b, t, 1)).toBe('too-much');
+    expect(refusal(b, t, 3)).toBe('too-much');
+    // Let the 4 go too (5): the 6 goes back (11), and then the 4 would make 15.
+    t = letGo(b, t, 0);
+    const u = soak(b, t, 3);
+    expect(u.ok).toBe(true);
+    expect(u.ok && refusal(b, u.state, 0)).toBe('too-much');
+  });
+
+  it('over 500 seeds: all held, start total at most 40, one to three ways of two or more let-gos, never the fallback', () => {
+    for (let seed = 1; seed <= 500; seed++) {
+      const b = makeBoard(planFor(11), new Rng(seed));
+      expect(b.fallback, `seed ${seed}`).toBeUndefined();
+      const s = startState(b);
+      expect(b.held!.length).toBe(b.things.length);
+      expect(b.things.length).toBeLessThanOrEqual(MAX_HELD);
+      expect(s.left).toEqual([]);
+      expect(s.puddle).toBeLessThanOrEqual(40);
+      expect(s.puddle).toBeGreaterThan(b.pail!);
+      const ways = letGoWays(b);
+      expect(ways.length).toBeGreaterThanOrEqual(1);
+      expect(ways.length).toBeLessThanOrEqual(3);
+      for (const w of ways) expect(w.length).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it('from every reachable state, the hint reaches the pail within six steps (authored and 200 seeds)', () => {
+    const boards = [authoredBoard(planFor(11)), ...Array.from({ length: 200 }, (_, i) => makeBoard(planFor(11), new Rng(i + 1)))];
+    for (const [i, b] of boards.entries()) {
+      for (const s of reachable(b)) {
+        const steps = followHints(b, s, 6);
+        expect(steps, `board ${i} at ${s.soaked.join(',')}`).toBeGreaterThanOrEqual(0);
+      }
+    }
+  });
+
+  it('the strip of up to five 100-unit tokens fits inside every view at levels 8 and 11', () => {
+    const views = [{ w: 1024, h: 768 }, { w: 1024, h: 1365 }, { w: 1366, h: 768 }, { w: 1180, h: 768 }];
+    for (const id of [8, 11]) {
+      for (const v of views) {
+        const span = stripSpan(planFor(id), MAX_HELD, v.w);
+        expect(span.x0).toBeGreaterThanOrEqual(150);
+        expect(span.x1).toBeLessThanOrEqual(v.w - 40);
+      }
+    }
+    // Level 8 never holds more than five: its smallest six distinct numbers already pass any pail.
+    expect(1 + 2 + 3 + 4 + 5 + 6 + 3).toBeGreaterThan(20);
   });
 });
 

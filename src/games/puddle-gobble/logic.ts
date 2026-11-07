@@ -3,7 +3,7 @@ import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Puddle Gobble's rules: a puddle soaks up beach things that fit inside it and grows, so what fits depends on what she
- * has already soaked. Levels 1–5 compare pictured sizes (tiers 1–4, with dots); 6–9 compare numbers.
+ * has already soaked. Levels 1–5 compare pictured sizes (tiers 1–4, with dots); 6–10 compare numbers (10 with dots to count).
  */
 
 export type Mode = 'grow' | 'order' | 'plus' | 'add' | 'pail';
@@ -16,6 +16,8 @@ export interface Plan {
   grow: number;
   /** Numerals on alike things rather than pictured tiers (the `order` mode at level 9). */
   numbers?: true;
+  /** Dots under each numeral and on the puddle (level 10), to count or to read. */
+  dots?: true;
 }
 
 const PLANS: Plan[] = [
@@ -28,13 +30,16 @@ const PLANS: Plan[] = [
   { id: 7, name: 'Add to grow', mode: 'add', grow: 0 },
   { id: 8, name: 'Just right', mode: 'pail', grow: 0 },
   { id: 9, name: 'Smallest number first', mode: 'order', grow: 0, numbers: true },
+  { id: 10, name: 'Count the dots', mode: 'plus', grow: 0, dots: true },
+  { id: 11, name: 'Too full', mode: 'pail', grow: 0 },
 ];
 
 export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
-  prek: { min: 3, max: 6 },
-  school: { min: 5, max: 9 },
+  // Level 10 sits between pictured order (5) and bare numerals (6).
+  prek: { min: 3, max: 10, order: [3, 4, 5, 10, 6] },
+  school: { min: 5, max: 11, order: [5, 10, 6, 7, 8, 9, 11] },
 };
 
 export const LEVEL_COUNT = PLANS.length;
@@ -43,8 +48,29 @@ export function planFor(level: number): Plan {
   return PLANS[Math.max(1, Math.min(PLANS.length, Math.round(level))) - 1];
 }
 
-/** True where numbers decide (levels 6–9) rather than pictured tiers. */
+/** True where numbers decide (levels 6–10) rather than pictured tiers. */
 export const numeric = (plan: Plan) => plan.numbers === true || plan.mode === 'plus' || plan.mode === 'add' || plan.mode === 'pail';
+
+/**
+ * Where n dots sit (1–9) on a three-by-three grid of unit steps, as on a die: 5 is four corners and the middle, 6 two
+ * columns of three, 7 those six and the middle.
+ */
+export function dotSpots(n: number): [number, number][] {
+  const c: [number, number][] = [[-1, -1], [1, 1], [1, -1], [-1, 1]];
+  const sides: [number, number][] = [[-1, 0], [1, 0]];
+  const mid: [number, number] = [0, 0];
+  switch (Math.max(1, Math.min(9, Math.round(n)))) {
+    case 1: return [mid];
+    case 2: return c.slice(0, 2);
+    case 3: return [c[0], mid, c[1]];
+    case 4: return c;
+    case 5: return [...c, mid];
+    case 6: return [...c, ...sides];
+    case 7: return [...c, ...sides, mid];
+    case 8: return [...c, ...sides, [0, -1], [0, 1]];
+    default: return [...c, ...sides, [0, -1], [0, 1], mid];
+  }
+}
 
 /* Things ---------------------------------------------------------------------------------------- */
 
@@ -105,8 +131,13 @@ export interface Board {
   plan: Plan;
   /** The puddle's starting tier or number. */
   start: number;
-  /** The pail's number (level 8). */
+  /** The pail's number (levels 8 and 11). */
   pail?: number;
+  /**
+   * Level 11: ids already in the puddle at the start, so it begins too full. Everything on the sand came out of the
+   * puddle, so a soak back is never too big; only the pail can refuse it.
+   */
+  held?: number[];
   things: Thing[];
 }
 
@@ -122,7 +153,9 @@ export interface State {
 }
 
 export function startState(board: Board): State {
-  return { puddle: board.start, drops: 0, soaked: [], left: board.things.map((t) => t.id) };
+  const held = board.held ?? [];
+  const puddle = board.start + held.reduce((sum, id) => sum + thingOf(board, id).size, 0);
+  return { puddle, drops: 0, soaked: [...held], left: board.things.map((t) => t.id).filter((id) => !held.includes(id)) };
 }
 
 export const thingOf = (board: Board, id: number) => board.things.find((t) => t.id === id)!;
@@ -136,7 +169,7 @@ export type Refusal = 'too-big' | 'order' | 'too-much';
 /** Why soaking `id` now is refused, or null when it slides in. */
 export function refusal(board: Board, s: State, id: number): Refusal | null {
   const t = thingOf(board, id);
-  if (!fits(s.puddle, t)) return 'too-big';
+  if (!board.held && !fits(s.puddle, t)) return 'too-big';
   if (board.plan.mode === 'order' && s.left.some((o) => thingOf(board, o).size < t.size)) return 'order';
   if (board.plan.mode === 'pail' && s.puddle + t.size > board.pail!) return 'too-much';
   return null;
@@ -169,7 +202,7 @@ export function soak(board: Board, s: State, id: number): SoakResult {
   return { ok: true, state: next, grew };
 }
 
-/** Level 8: a soaked thing hops back onto the sand and the puddle shrinks by its number. Free, never a miss. */
+/** Levels 8 and 11: a soaked thing hops back onto the sand and the puddle shrinks by its number. Free, never a miss. */
 export function letGo(board: Board, s: State, id: number): State {
   if (board.plan.mode !== 'pail' || !s.soaked.includes(id)) throw new Error(`cannot let ${id} go`);
   return { ...s, puddle: s.puddle - thingOf(board, id).size, soaked: s.soaked.filter((o) => o !== id), left: [...s.left, id] };
@@ -214,7 +247,7 @@ export function exactSolutions(board: Board, s: State = startState(board)): numb
     let ok = true;
     for (const id of ids) {
       const v = thingOf(board, id).size;
-      if (v > p) { ok = false; break; }
+      if (v > p && !board.held) { ok = false; break; }
       p += v;
     }
     if (ok) out.push(ids);
@@ -306,6 +339,8 @@ export function authoredBoard(plan: Plan): Board {
     case 5: return { plan, start: 4, things: things([['feather', 1], ['seaweed', 2], ['ball', 3], ['seaweed', 2], ['ring', 4]]) };
     case 6: return { plan, start: 3, things: things([['pebble', 1], ['pebble', 2], ['pebble', 4], ['pebble', 5], ['pebble', 7], ['pebble', 3]]) };
     case 7: return { plan, start: 5, things: things([['pebble', 2], ['shell', 3], ['pebble', 6], ['starfish', 9], ['pebble', 15], ['shell', 4]]) };
+    case 10: return { plan, start: 2, things: things([['pebble', 3], ['pebble', 1], ['pebble', 6], ['pebble', 2], ['pebble', 4]]) };
+    case 11: return { plan, start: 2, pail: 14, held: [0, 1, 2, 3], things: things([['pebble', 4], ['shell', 9], ['pebble', 3], ['starfish', 6]]) };
     case 9: return { plan, start: 20, things: things([['pebble', 11], ['shell', 3], ['pebble', 17], ['starfish', 8], ['pebble', 19], ['shell', 14]]) };
     default: return { plan, start: 4, pail: 15, things: things([['pebble', 2], ['pebble', 3], ['shell', 5], ['pebble', 6], ['starfish', 8], ['pebble', 9]]) };
   }
@@ -347,10 +382,22 @@ export function passesFilter(board: Board): boolean {
     // Everything fits from the start, so the only refusal is the order; the numbers are distinct, so "smallest" is never a tie.
     case 9: return tooBig.length === 0 && new Set(things.map((t) => t.size)).size === 6 && things.length === 6;
     case 6: return tooBig.length >= 2 && greedyClears(board);
+    // Five distinct numbers 1–6, each small enough to count as dots; at least two wait for the puddle to grow.
+    case 10: return things.length === 5 && new Set(things.map((t) => t.size)).size === 5 && things.every((t) => t.size >= 1 && t.size <= 6) && tooBig.length >= 2 && greedyClears(board);
     case 7: {
       const smallest = Math.min(...things.map((t) => t.size));
       const total = start + things.reduce((sum, t) => sum + t.size, 0);
       return things.some((t) => t.size > start + smallest) && greedyClears(board) && total <= 60;
+    }
+    case 11: {
+      // Every thing starts in the puddle and the total is over the pail; letting go some set of two or more (never one) makes it.
+      const held = board.held ?? [];
+      const s = startState(board);
+      if (held.length !== things.length || s.puddle > 40 || s.puddle <= board.pail!) return false;
+      const over = s.puddle - board.pail!;
+      if (things.some((t) => t.size === over)) return false;
+      const ways = letGoWays(board).length;
+      return ways >= 1 && ways <= 3;
     }
     default: {
       const n = exactSolutions(board).length;
@@ -369,8 +416,29 @@ function draw(plan: Plan, rng: Rng): Board {
     case 6: return { plan, start: 3, things: numbered(rng, distinct(rng, 6, 1, 10)) };
     case 7: return { plan, start: rng.int(4, 6), things: numbered(rng, distinct(rng, 6, 1, 20)) };
     case 9: return { plan, start: 20, things: numbered(rng, distinct(rng, 6, 1, 20)) };
+    case 11: {
+      const things = numbered(rng, distinct(rng, rng.int(4, MAX_HELD), 1, 9));
+      return { plan, start: 2, pail: rng.int(10, 20), held: things.map((t) => t.id), things };
+    }
+    case 10: return { plan, start: 2, things: numbered(rng, distinct(rng, 5, 1, 6)) };
     default: return { plan, start: rng.int(3, 5), pail: rng.int(12, 20), things: numbered(rng, distinct(rng, 6, 1, 9)) };
   }
+}
+
+/** Level 11: at most this many things start in the puddle, so the strip fits. */
+export const MAX_HELD = 5;
+
+/** Level 11: each set of held things whose letting go leaves exactly the pail (ids by size). */
+export function letGoWays(board: Board): number[][] {
+  const s = startState(board);
+  const held = [...(board.held ?? [])].sort((a, b) => thingOf(board, a).size - thingOf(board, b).size || a - b);
+  const over = s.puddle - board.pail!;
+  const out: number[][] = [];
+  for (let mask = 1; mask < 1 << held.length; mask++) {
+    const ids = held.filter((_, i) => mask & (1 << i));
+    if (ids.reduce((sum, id) => sum + thingOf(board, id).size, 0) === over) out.push(ids);
+  }
+  return out;
 }
 
 /** A seeded board that passes the plan's filter (at most 50 tries, then the authored one). */
@@ -409,6 +477,17 @@ export function inPetCorner(v: View2, x: number, y: number, r: number) {
 
 export function inPailBox(plan: Plan, f: Rect, x: number, y: number, r: number) {
   return plan.mode === 'pail' && x + r > f.x1 - PAIL_BOX && y - r < f.y0 + PAIL_BOX;
+}
+
+/** The sum strip along the top (levels 7, 8 and 11): a start chip, then a + and a token per soak, then = and the total. */
+export const STRIP = { chip: 74, gap: 26, tail: 90, y: 75, left: 150 };
+export const stripToken = (plan: Plan) => (plan.mode === 'pail' ? 100 : 86);
+
+/** The strip's left and right edges with n soaked tokens on a view w wide, centred where there is room. */
+export function stripSpan(plan: Plan, n: number, w: number) {
+  const total = STRIP.chip + n * (stripToken(plan) + STRIP.gap) + STRIP.tail;
+  const x0 = Math.max(STRIP.left, w / 2 - total / 2);
+  return { x0, x1: x0 + total };
 }
 
 /** Each thing's place as fractions of the field, laid out once on the design view so every view shows the same beach. */
