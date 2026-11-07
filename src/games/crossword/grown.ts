@@ -1,5 +1,5 @@
 import type { Rng } from '../../engine/random';
-import { BLOCKED } from '../word-search/blocked';
+import { BLOCKED } from '../../learning/words/blocked';
 import { CLUES_5, MINIS, type Mini } from './clues';
 import { crossings, key, lettersOf, problems, squaresOf, wordsAt, type Dir, type Placed, type Plan, type Theme } from './logic';
 

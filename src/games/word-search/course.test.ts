@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { BLOCKED } from './blocked';
+import { BLOCKED } from '../../learning/words/blocked';
 import { COURSES, courseBest, courseGrids, courseMinimum, isWordCourse, type WordCourseId } from './course';
 import { hasBlocked, occurrences, textOf, cellsOfWord } from './logic';
-import { themeById } from './words';
+import { themeById } from '../../learning/words/themes';
 
 const IDS: WordCourseId[] = ['words', 'bigwords'];
 

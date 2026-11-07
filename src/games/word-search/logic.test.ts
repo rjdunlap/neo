@@ -4,9 +4,9 @@ import {
   ALL_DIRS, blankFor, cellOf, cellsOfWord, hasBlocked, HIDDEN_GRID, hiddenHint, hintFor, judgeLine, leftovers, lettersOf, lineBetween, makeGrid, makeGrids, MAX_STONES, MESSAGE_GRID, occurrences, ORDER, parseGrid, PICTURE_GRID, planFor, PLANS, rowsOf, SMALL_GRID, STONE,
   shortestUnfound, textOf, themesFor, wordAt,
 } from './logic';
-import { BLOCKED } from './blocked';
-import { PICTURE_THEMES, THEMES, themeById } from './words';
-import { PICTURE_WORDS } from '../pond-typing/pictures';
+import { BLOCKED } from '../../learning/words/blocked';
+import { PICTURE_THEMES, THEMES, themeById } from '../../learning/words/themes';
+import { PICTURE_WORDS } from '../../learning/words/picture-words';
 import { SCRIPT } from '../../content/voice-script';
 
 describe('the word lists', () => {

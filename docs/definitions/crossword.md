@@ -7,7 +7,7 @@ The fun is finishing a little grid where one letter fills two words at once. The
 ## Identity and overlap
 
 - **Word Monsters** levels 5–6 and 8 drag letters into one word's slots. The crossword adds what only a crossing gives: one letter serves two words, so a square is decided by both its words. Its level 1 blanks *only* the crossing square, so this is the first thing she does.
-- **Word Search** shares the themes (`src/games/word-search/words.ts`), the block list (`blocked.ts`), the frozen-grid helpers (`parseGrid`, `rowsOf`) and the school picture words. It keeps finding; the crossword never asks her to search.
+- **Word Search** shares the themes (`src/learning/words/themes.ts`), the block list (`blocked.ts`), the frozen-grid helpers (`parseGrid`, `rowsOf`) and the school picture words. It keeps finding; the crossword never asks her to search.
 - **Pond Typing** owns typing words to a target; the crossword's grown-up keyboard is only the input for its written-clue levels.
 - **Not here:** daily puzzles, timers, a mistake cap, cryptic clues, an open dictionary, and a preschool rung (a two-word picture cross with one letter is Word Monsters' job at that age, as the study says).
 

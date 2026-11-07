@@ -11,10 +11,10 @@ import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseGrids, courseMinimum, isWordCourse } from './course';
-import { typingPicture } from '../pond-typing/pictures';
+import { typingPicture } from '../../art/word-pictures';
 import { LEVELS, blankFor, cellsOfWord, hiddenHint, hintFor, judgeLine, lineBetween, makeGrids, PICTURE_GRID, planFor, SMALL_GRID, STONE, type WordGrid, type WordPlan } from './logic';
 import { MSG_H, SCHOOL_TOUCH, touchFrame, type Slot, type Viewport } from './layout';
-import { themeById } from './words';
+import { themeById } from '../../learning/words/themes';
 
 const PAPER = 0xfffdf6;
 const BAND_COLORS: ColorName[] = ['pink', 'blue', 'green', 'orange', 'purple', 'teal', 'yellow', 'red'];

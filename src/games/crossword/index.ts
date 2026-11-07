@@ -11,7 +11,7 @@ import { ease } from '../../engine/tween';
 import { safeArea, type View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
-import { typingPicture } from '../pond-typing/pictures';
+import { typingPicture } from '../../art/word-pictures';
 import { WigglyIcon } from '../shared';
 import { GrownCrossword } from './grownup';
 import type { LineId } from '../../content/voice-script';
