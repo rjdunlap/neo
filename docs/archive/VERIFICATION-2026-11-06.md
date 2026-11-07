@@ -191,3 +191,7 @@ Open: low-hat audibility, tune-alone distinguishability, speech of "low hat" and
 ## 2026-11-06 — Bolt Boards deep dive (docs only)
 
 Changed: `docs/deep-dives/bolt-boards.md` and its tracker, READY, backlog and waiting-on-developer rows (PR #1331); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built; two decisions wait on the developer ([list](../WAITING-ON-DEVELOPER.md)).
+
+## 2026-11-06 — Swing Pals more friends and leaf goals (PR #1332)
+
+Changed: riders cat, dog, pig, cow and seeded leaf goals (bell, chimes, apple, nest) in `src/games/swing-pals/`, voice lines and the how-to card. Ran: `npm run typecheck`; `npx vitest run src/games/swing-pals` (28 pass, 5 new); `npx vitest run src/content` (176 pass); one scripted browser probe (dev server, `/classic/`, 768×1024 portrait) at levels 1 and 3 until apple, nest and chimes rounds appeared, with screenshots of the goals and the cat, pig and cow riders. Not run: `fingerdemo` (fresh-content tier), build, offline check, any device. Open: the short-hook clearance rule in the dive was impossible as written, so the test compares against the original five; a cow on the short rope crowding the hook stays a device check.
