@@ -33,9 +33,11 @@ type BoardColor = (typeof COLORS)[number];
 const PATTERN: Record<BoardColor, 'stripes' | 'spots' | 'rings'> = {
   red: 'stripes', green: 'spots', blue: 'rings', purple: 'stripes', yellow: 'rings', orange: 'spots',
 };
-const FRUITS = ['apple', 'pear', 'plum'] as const;
+/** Each fruit has its own outline (round, pear, oval, dimpled, pointed heart, curved) so shape, not only colour, tells them apart. */
+const FRUITS = ['apple', 'pear', 'plum', 'orange', 'strawberry', 'banana'] as const;
 type Fruit = (typeof FRUITS)[number];
-const FRIENDS: CritterName[] = ['cow', 'duck', 'pig', 'cat', 'dog', 'bunny'];
+/** Pip is the island's companion, never hidden behind boards. */
+const FRIENDS: CritterName[] = ['cow', 'duck', 'pig', 'cat', 'dog', 'bunny', 'bear'];
 /** A swing's length: the state has changed at once; this is only for show. */
 const SWING = 0.6;
 /** Level 6's authored first board leads its first round of a session. */
@@ -90,10 +92,32 @@ function fruitArt(kind: Fruit): Graphics {
     const c = swatch.green;
     g.moveTo(0, -30).bezierCurveTo(14, -30, 12, -6, 24, 10).bezierCurveTo(34, 30, 14, 34, 0, 34).bezierCurveTo(-14, 34, -34, 30, -24, 10)
       .bezierCurveTo(-12, -6, -14, -30, 0, -30).fill(c.fill).stroke(line(c.line));
-  } else {
+  } else if (kind === 'plum') {
     const c = swatch.purple;
     g.ellipse(0, 4, 26, 28).fill(c.fill).stroke(line(c.line));
     g.moveTo(0, -20).bezierCurveTo(8, -4, 8, 14, 0, 28).stroke({ width: 3, color: c.line, alpha: 0.5 });
+  } else if (kind === 'orange') {
+    const c = swatch.orange;
+    g.circle(0, 4, 29).fill(c.fill).stroke(line(c.line));
+    for (const [x, y] of [[-12, 14], [6, 20], [14, 2], [-2, -6], [-16, -4]]) g.circle(x, y, 2).fill({ color: c.line, alpha: 0.45 });
+  } else if (kind === 'strawberry') {
+    const c = swatch.red;
+    g.moveTo(0, -18).bezierCurveTo(-26, -26, -38, 0, -16, 22).bezierCurveTo(-8, 30, -4, 34, 0, 36)
+      .bezierCurveTo(4, 34, 8, 30, 16, 22).bezierCurveTo(38, 0, 26, -26, 0, -18).fill(c.fill).stroke(line(c.line));
+    for (const [x, y] of [[-14, -6], [0, -4], [14, -6], [-8, 8], [8, 8], [-2, 20], [0, 30]]) g.ellipse(x, y, 2, 3).fill(swatch.yellow.light);
+    // A leafy cap instead of a stalk.
+    for (const a of [-1, 0, 1]) g.ellipse(a * 10, -20 + Math.abs(a) * 2, 8, 5).fill(swatch.green.fill).stroke({ width: 3, color: swatch.green.line });
+    g.moveTo(0, -22).lineTo(1, -32).stroke({ width: 4, color: swatch.green.line, cap: 'round' });
+    return g;
+  } else {
+    const c = swatch.yellow;
+    g.moveTo(-26, -24).bezierCurveTo(-34, 6, -10, 30, 26, 22).bezierCurveTo(30, 21, 30, 16, 26, 14)
+      .bezierCurveTo(0, 16, -16, 0, -16, -24).closePath().fill(c.fill).stroke(line(c.line));
+    g.moveTo(-23, -22).bezierCurveTo(-26, 2, -6, 22, 22, 18).stroke({ width: 3, color: c.line, alpha: 0.45 });
+    // Brown tips at both ends instead of a stalk and leaf.
+    g.roundRect(-26, -32, 9, 10, 3).fill(swatch.brown.line);
+    g.circle(28, 18, 3.5).fill(swatch.brown.line);
+    return g;
   }
   g.moveTo(0, -18).lineTo(3, -32).stroke({ width: 5, color: swatch.brown.line, cap: 'round' });
   g.ellipse(13, -30, 10, 5).fill(swatch.green.fill).stroke({ width: 3, color: swatch.green.line });
