@@ -128,7 +128,7 @@ describe('Bolt Boards levels 1–5 never dead-end', () => {
 
 describe('Bolt Boards frozen list', () => {
   it('has twenty boards a level (level 6 has its authored first board too)', () => {
-    for (const plan of PLANS) expect(PUZZLES[plan.id].length).toBeGreaterThanOrEqual(plan.id === 6 ? 21 : 20);
+    for (const plan of PLANS.filter((x) => !x.build)) expect(PUZZLES[plan.id].length).toBeGreaterThanOrEqual(plan.id === 6 ? 21 : 20);
   });
 
   it('keeps the authored first boards of levels 1 and 6 where they were when the list grew', () => {
@@ -404,6 +404,225 @@ describe('Bolt Boards layout', () => {
         const hit = boltAt(p, s, b);
         expect(hit?.bolt).toBe(k);
         expect(hit?.free).toBe(!covered(p, s, k));
+      });
+    }
+  });
+});
+
+import {
+  blockingBoard, boardBuilt, buildMoves, canFinish, cardLayout, CARD_H, CARD_W, built, emptyState, hintBuild, inRect, place, solveBuild, woodpileLayout,
+  type Rect,
+} from './logic';
+
+describe('Bolt Boards level 9, Put it back', () => {
+  const lists = [3, 4, 9].flatMap((id) => PUZZLES[id].flatMap((p, k) => [
+    { name: `L${id}#${k}`, p },
+    { name: `L${id}#${k} mirrored`, p: mirror(p) },
+  ]));
+
+  /** Every state reachable by placements from the empty wall. */
+  function buildStates(p: Puzzle): State[] {
+    const seen = new Map<string, State>();
+    const todo: State[] = [emptyState(p)];
+    while (todo.length) {
+      const s = todo.pop()!;
+      const key = s.join(',');
+      if (seen.has(key)) continue;
+      seen.set(key, s);
+      for (const b of buildMoves(p, s)) {
+        const n = [...s];
+        n[b] = b;
+        todo.push(n);
+      }
+    }
+    return [...seen.values()];
+  }
+
+  it('has the plan row', () => {
+    const plan = PLANS[8];
+    expect(plan.id).toBe(9);
+    expect(plan.name).toBe('Put it back');
+    expect(plan.scenes).toBe(2);
+    expect(plan.build).toEqual([3, 4]);
+    expect(plan.coveredMiss).toBe(true);
+    expect(plan.holes).toBe(false);
+    expect(planFor(9)).toBe(plan);
+  });
+
+  it('draws its boards from the frozen lists of levels 3 and 4', () => {
+    expect(PUZZLES[9].length).toBeGreaterThan(0);
+    expect(PUZZLES[3].length).toBeGreaterThan(0);
+    expect(PUZZLES[4].length).toBeGreaterThan(0);
+  });
+
+  it('reverses every legal removal order into a legal build, and every build into a removal', () => {
+    const rng = new Rng(9001);
+    for (const { name, p } of lists) {
+      for (let t = 0; t < 50; t++) {
+        // Take it apart in a random legal order.
+        let s: State = startState(p);
+        const order: number[] = [];
+        while (order.length < p.bolts.length) {
+          const free = freeBolts(p, s);
+          expect(free.length, `${name} removal never stalls`).toBeGreaterThan(0);
+          const b = rng.pick(free);
+          const r = remove(p, s, b, false);
+          expect(removed(r), name).toBe(true);
+          if (!removed(r)) return;
+          s = r.state;
+          order.push(b);
+        }
+        // Played backwards it is a legal build.
+        let w: State = emptyState(p);
+        for (const b of [...order].reverse()) {
+          const r = place(p, w, b);
+          expect('state' in r, `${name} place ${b}`).toBe(true);
+          if (!('state' in r)) return;
+          w = r.state;
+        }
+        expect(built(p, w), name).toBe(true);
+
+        // And a random legal build, played backwards, is a legal removal.
+        let c: State = emptyState(p);
+        const put: number[] = [];
+        while (!built(p, c)) {
+          const opts = buildMoves(p, c);
+          if (!opts.length) break; // a dead end: not a full build
+          const b = rng.pick(opts);
+          const r = place(p, c, b);
+          if (!('state' in r)) return expect.fail(`${name} buildMoves offered a refused bolt`);
+          c = r.state;
+          put.push(b);
+        }
+        if (built(p, c)) {
+          let d: State = startState(p);
+          for (const b of [...put].reverse()) {
+            const r = remove(p, d, b, false);
+            expect(removed(r), `${name} remove ${b}`).toBe(true);
+            if (!removed(r)) return;
+            d = r.state;
+          }
+          expect(d.every((x) => x === -1), name).toBe(true);
+        }
+      }
+    }
+  });
+
+  it('can always be built from the empty wall, and has a reachable dead end', () => {
+    for (const { name, p } of lists) {
+      expect(canFinish(p, emptyState(p)), name).toBe(true);
+      const path = solveBuild(p, emptyState(p))!;
+      expect(path.length, name).toBe(p.bolts.length);
+      const states = buildStates(p);
+      expect(states.some((s) => !canFinish(p, s)), `${name} has a dead end`).toBe(true);
+    }
+  });
+
+  it('hints: finishable states place a legal bolt that keeps it finishable, dead states say undo', () => {
+    for (const { name, p } of lists) {
+      for (const s of buildStates(p)) {
+        const h = hintBuild(p, s);
+        if (built(p, s)) {
+          expect(h, name).toBeNull();
+        } else if (canFinish(p, s)) {
+          expect(h && 'bolt' in h, `${name} ${s}`).toBe(true);
+          if (h && 'bolt' in h) {
+            expect(buildMoves(p, s), name).toContain(h.bolt);
+            const r = place(p, s, h.bolt);
+            expect('state' in r).toBe(true);
+            if ('state' in r) expect(canFinish(p, r.state), `${name} ${s}`).toBe(true);
+          }
+        } else {
+          expect(h, `${name} ${s}`).toEqual({ undo: true });
+        }
+      }
+    }
+  });
+
+  it('names a blocking board and an unplaced covered bolt at every dead end', () => {
+    for (const { name, p } of lists) {
+      for (const s of buildStates(p)) {
+        if (canFinish(p, s)) continue;
+        const board = blockingBoard(p, s);
+        expect(board, `${name} ${s}`).not.toBeNull();
+        expect(board!).toBeGreaterThanOrEqual(0);
+        expect(board!).toBeLessThan(p.boards.length);
+        const stuckBolt = p.bolts.some((_, b) => s[b] === -1 && 'refused' in place(p, s, b));
+        expect(stuckBolt, `${name} ${s} covered bolt`).toBe(true);
+        expect(boardBuilt(p, s, board!), `${name} blocker is already up but unfinished`).toBeDefined();
+      }
+    }
+  });
+
+  it('keeps every build state count small', () => {
+    for (const { name, p } of lists) expect(buildStates(p).length, name).toBeLessThanOrEqual(256);
+  });
+
+  it('keeps the authored level 9 board as designed', () => {
+    const p = PUZZLES[9][0];
+    expect(p.boards).toEqual([
+      { x: 220, y: 300, w: 180, h: 160, z: 1 },
+      { x: 480, y: 300, w: 180, h: 160, z: 2 },
+      { x: 350, y: 200, w: 420, h: 160, z: 3 },
+    ]);
+    expect(p.bolts).toEqual([
+      { x: 180, y: 254, board: 0 }, { x: 260, y: 345, board: 0 },
+      { x: 520, y: 254, board: 1 }, { x: 440, y: 345, board: 1 },
+      { x: 280, y: 155, board: 2 }, { x: 420, y: 155, board: 2 },
+    ]);
+    expect(p.holes).toEqual([]);
+    const states = buildStates(p);
+    expect(states.length).toBe(64);
+    expect(states.filter((s) => !canFinish(p, s)).length).toBe(28);
+    expect(canFinish(p, [-1, -1, -1, -1, 4, 5])).toBe(false);
+    expect(hintBuild(p, [-1, -1, -1, -1, 4, 5])).toEqual({ undo: true });
+  });
+
+  describe('layout', () => {
+    const rectHitsCircle = (r: Rect, c: Pt, rad: number) => {
+      const dx = Math.max(r.x - c.x, 0, c.x - (r.x + r.w));
+      const dy = Math.max(r.y - c.y, 0, c.y - (r.y + r.h));
+      return Math.hypot(dx, dy) < rad;
+    };
+    const rectsOverlap = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+    const counts = [...new Set(lists.map(({ p }) => p.boards.length))];
+
+    for (const [vn, v] of Object.entries(VIEWS)) {
+      it(`fits the woodpile and the card at ${vn}`, () => {
+        const L = boardLayout(v, true);
+        const wall: Rect = { x: L.x, y: L.y, w: WALL_W * L.scale, h: WALL_H * L.scale };
+        const petRect: Rect = { x: 0, y: v.h - PET_H, w: PET_W, h: PET_H };
+        for (const n of counts) {
+          const slots = woodpileLayout(v, n);
+          expect(slots.length).toBe(n);
+          slots.forEach((r, k) => {
+            const tag = `${vn} n=${n} slot ${k} ${JSON.stringify(r)}`;
+            expect(r.x, tag).toBeGreaterThanOrEqual(0);
+            expect(r.y, tag).toBeGreaterThanOrEqual(120);
+            expect(r.x + r.w, tag).toBeLessThanOrEqual(v.w);
+            expect(r.y + r.h, tag).toBeLessThanOrEqual(v.h);
+            expect(r.w, tag).toBeGreaterThanOrEqual(120);
+            expect(r.h, tag).toBeGreaterThanOrEqual(130);
+            expect(r.x, `${tag} pet`).toBeGreaterThanOrEqual(PET_W);
+            expect(rectsOverlap(r, petRect), `${tag} pet`).toBe(false);
+            expect(rectHitsCircle(r, L.undo, 54 + 14), `${tag} undo`).toBe(false);
+            expect(r.y, `${tag} wall`).toBeGreaterThanOrEqual(wall.y + wall.h);
+            slots.slice(k + 1).forEach((o) => expect(rectsOverlap(r, o), `${tag} overlap`).toBe(false));
+          });
+        }
+        const c = cardLayout(v, L);
+        const tag = `${vn} card ${JSON.stringify(c)} wall ${JSON.stringify(wall)}`;
+        expect(c.w).toBe(CARD_W);
+        expect(c.h).toBe(CARD_H);
+        expect(c.x, tag).toBeGreaterThanOrEqual(0);
+        expect(c.x + c.w, tag).toBeLessThanOrEqual(v.w);
+        expect(c.y, tag).toBeGreaterThanOrEqual(120);
+        expect(c.y + c.h, tag).toBeLessThanOrEqual(v.h);
+        expect(rectsOverlap(c, wall), `${tag} wall`).toBe(false);
+        expect(rectsOverlap(c, petRect), `${tag} pet`).toBe(false);
+        expect(rectHitsCircle(c, { x: 62, y: 62 }, 60), `${tag} corner 1`).toBe(false);
+        expect(rectHitsCircle(c, { x: 62, y: 160 }, 60), `${tag} corner 2`).toBe(false);
+        expect(inRect(c, { x: c.x + 1, y: c.y + 1 })).toBe(true);
       });
     }
   });

@@ -53,6 +53,8 @@ export interface BoltPlan {
   scenes: number;
   /** The shortest solution's range, for levels with holes. It is never shown to her. */
   par?: [number, number];
+  /** Level 9 builds the wall back up: scene k draws its board from the frozen list of level `build[k]`. */
+  build?: readonly number[];
 }
 
 export const PLANS: readonly BoltPlan[] = [
@@ -65,6 +67,8 @@ export const PLANS: readonly BoltPlan[] = [
   { id: 7, name: 'Holes and a friend', goal: 'friend', holes: true, litHoles: false, coveredMiss: true, scenes: 1, par: [2, 8] },
   /** Played between 5 and 6: the hole-parking action before the planning it carries. No `par`, since no order gets stuck. */
   { id: 8, name: 'Plenty of holes', goal: 'all', holes: true, litHoles: true, coveredMiss: true, scenes: 2 },
+  /** The take-apart run backwards: every board starts on the woodpile and she bolts the wall up to match a picture. */
+  { id: 9, name: 'Put it back', goal: 'all', holes: false, litHoles: false, coveredMiss: true, scenes: 2, build: [3, 4] },
 ];
 export const planFor = (level: number): BoltPlan => PLANS[Math.max(0, Math.min(PLANS.length - 1, Math.floor(level) - 1))];
 
@@ -285,6 +289,103 @@ export function hintMove(p: Puzzle, s: State, plan: BoltPlan): Hint | null {
 }
 
 /* ---------------------------------------------------------------------------------------------- */
+/* Building (level 9)                                                                             */
+/* ---------------------------------------------------------------------------------------------- */
+
+/** Every board on the woodpile: no bolt in. */
+export const emptyState = (p: Puzzle): number[] => p.bolts.map(() => -1);
+/** The finished wall: every bolt in its own hole. */
+export const built = (p: Puzzle, s: State) => p.bolts.every((_, b) => s[b] === b);
+
+export type Placement = { state: number[] } | { refused: 'gone' | 'covered' };
+
+/**
+ * Put bolt `b` into its own hole, unless it is already in or a board on a higher layer lies over the hole.
+ *
+ * Placing bolt `b` changes the pose of its own board only, and `covered(b)` looks only at boards on higher layers, so
+ * whether `b` is covered is the same just before and just after it goes in. A build order is therefore legal exactly
+ * when its reverse is a legal toolbox removal order, and the reverse of any removal order of a frozen board is a build.
+ */
+export function place(p: Puzzle, s: State, b: number): Placement {
+  if (s[b] !== -1) return { refused: 'gone' };
+  if (covered(p, s, b)) return { refused: 'covered' };
+  const next = [...s];
+  next[b] = b;
+  return { state: next };
+}
+
+/** The bolts that can go in now. */
+export function buildMoves(p: Puzzle, s: State): number[] {
+  const qs = poses(p, s);
+  return p.bolts.map((_, b) => b).filter((b) => s[b] === -1 && !covered(p, s, b, qs));
+}
+
+/**
+ * A shortest list of placements from `s` to the finished wall: `[]` when built, `null` when it can no longer be
+ * finished (a pinned board covers a hole a board behind it still needs). At most 2^bolts states, so it is cheap.
+ */
+export function solveBuild(p: Puzzle, s: State): number[] | null {
+  if (built(p, s)) return [];
+  const key = (x: State) => x.join(',');
+  const prev = new Map<string, { from: string; bolt: number } | null>([[key(s), null]]);
+  const states = new Map<string, State>([[key(s), s]]);
+  let frontier = [key(s)];
+  while (frontier.length) {
+    const next: string[] = [];
+    for (const k of frontier) {
+      const cur = states.get(k)!;
+      for (const b of buildMoves(p, cur)) {
+        const n = [...cur];
+        n[b] = b;
+        const nk = key(n);
+        if (prev.has(nk)) continue;
+        prev.set(nk, { from: k, bolt: b });
+        states.set(nk, n);
+        if (built(p, n)) {
+          const path: number[] = [];
+          for (let at: string | undefined = nk; at !== undefined;) {
+            const e = prev.get(at);
+            if (!e) break;
+            path.unshift(e.bolt);
+            at = e.from;
+          }
+          return path;
+        }
+        next.push(nk);
+      }
+    }
+    frontier = next;
+  }
+  return null;
+}
+
+export const canFinish = (p: Puzzle, s: State) => solveBuild(p, s) !== null;
+
+export type BuildHint = { bolt: number } | { undo: true };
+
+/** The next placement of a shortest build, or undo when the wall can no longer be finished; null once built. */
+export function hintBuild(p: Puzzle, s: State): BuildHint | null {
+  if (built(p, s)) return null;
+  const path = solveBuild(p, s);
+  return path ? { bolt: path[0] } : { undo: true };
+}
+
+/** The board the pet names at a dead end: the topmost board up that lies over a hole still waiting for its bolt. */
+export function blockingBoard(p: Puzzle, s: State): number | null {
+  const qs = poses(p, s);
+  let best: number | null = null;
+  p.bolts.forEach((bolt, b) => {
+    if (s[b] !== -1) return;
+    const top = coveringBoards(p, s, p.boards[bolt.board].z, bolt, HEAD, qs)[0];
+    if (top !== undefined && (best === null || p.boards[top].z > p.boards[best].z)) best = top;
+  });
+  return best;
+}
+
+/** Whether board `i` now matches the picture: all its bolts are in. */
+export const boardBuilt = (p: Puzzle, s: State, i: number) => p.bolts.every((bolt, b) => bolt.board !== i || s[b] === b);
+
+/* ---------------------------------------------------------------------------------------------- */
 /* Mirroring                                                                                      */
 /* ---------------------------------------------------------------------------------------------- */
 
@@ -317,7 +418,7 @@ export interface BoltLayout {
 export const PET_W = 200, PET_H = 205;
 
 /** The wall under the header and above the basket strip, scaled to fit (never larger than 1.1) and clear of the pet. */
-export function boardLayout(v: View): BoltLayout {
+export function boardLayout(v: View, build = false): BoltLayout {
   const top = HEADER, room = v.h - HEADER - STRIP;
   let scale = Math.min(1.1, (v.w - 80) / WALL_W, room / WALL_H);
   let x = (v.w - WALL_W * scale) / 2;
@@ -328,7 +429,33 @@ export function boardLayout(v: View): BoltLayout {
     y = top + (room - WALL_H * scale) / 2;
   }
   const sy = v.h - STRIP / 2;
-  return { x, y, scale, basket: { x: v.w - 130, y: sy }, undo: { x: v.w - 290, y: sy }, toolbox: { x: v.w - 440, y: sy } };
+  // Level 9 has no basket or toolbox: the undo arrow moves to the corner and the woodpile takes the strip.
+  return { x, y, scale, basket: { x: v.w - 130, y: sy }, undo: { x: v.w - (build ? 90 : 290), y: sy }, toolbox: { x: v.w - 440, y: sy } };
+}
+
+export interface Rect { x: number; y: number; w: number; h: number }
+export const inRect = (r: Rect, q: Pt) => q.x >= r.x && q.x <= r.x + r.w && q.y >= r.y && q.y <= r.y + r.h;
+
+/**
+ * Level 9's woodpile: one slot per board in the bottom strip, between the pet's corner and the undo arrow, 120 to 200
+ * wide and 130 tall, centred. A board that is up leaves its slot empty, so slots never shift.
+ */
+export function woodpileLayout(v: View, n: number): Rect[] {
+  const left = PET_W + 20, right = v.w - 90 - 74, h = 130, y = v.h - STRIP + 10;
+  const w = Math.max(120, Math.min(200, (right - left) / n));
+  const x0 = left + (right - left - w * n) / 2;
+  return Array.from({ length: n }, (_, k) => ({ x: x0 + k * w, y, w, h }));
+}
+
+export const CARD_W = 170, CARD_H = 136;
+
+/** Level 9's picture card: right of the wall when there is room, else in the band above it, else left of it. */
+export function cardLayout(v: View, L: BoltLayout): Rect {
+  const right = L.x + WALL_W * L.scale, free = v.w - right;
+  if (free >= CARD_W + 20) return { x: right + (free - CARD_W) / 2, y: HEADER + 10, w: CARD_W, h: CARD_H };
+  const band = L.y - HEADER;
+  if (band >= CARD_H + 20) return { x: (v.w - CARD_W) / 2, y: HEADER + (band - CARD_H) / 2, w: CARD_W, h: CARD_H };
+  return { x: Math.max(10, (L.x - CARD_W) / 2), y: v.h - PET_H - 10 - CARD_H, w: CARD_W, h: CARD_H };
 }
 
 export const toView = (L: BoltLayout, q: Pt): Pt => ({ x: L.x + q.x * L.scale, y: L.y + q.y * L.scale });
