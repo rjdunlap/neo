@@ -286,8 +286,8 @@ class RainbowFingers implements Game {
     this.paper.on('globalpointermove', (e) => this.move(e));
     this.paper.on('pointerup', this.endStroke);
     this.paper.on('pointerupoutside', this.endStroke);
-    window.addEventListener('pointerup', this.endStroke);
-    window.addEventListener('pointercancel', this.endStroke);
+    ctx.listen(window, 'pointerup', this.endStroke);
+    ctx.listen(window, 'pointercancel', this.endStroke);
 
     this.frameButton = new RoundButton(frameIcon(), swatch.white, 52, () => void this.hangItUp());
     this.frameButton.visible = false;
@@ -629,8 +629,6 @@ class RainbowFingers implements Game {
   }
 
   destroy() {
-    window.removeEventListener('pointerup', this.endStroke);
-    window.removeEventListener('pointercancel', this.endStroke);
     this.pool.forEach((s) => s.destroy());
     this.stamps.destroy({ children: true });
     for (const pic of this.pictures) pic.node.destroy({ children: true, texture: true, textureSource: true });

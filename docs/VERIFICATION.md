@@ -6,6 +6,14 @@ Changed: school range now 4–9; predict-then-fix level (guess flag, ring on the
 Ran: `npm run typecheck`; `npm test` (325 files, 6,085 passed); `npm run build`; `BROWSER_SUITE=dominorun` passed (also level 9 upright: wrong guess, waiting hint, 0 misses, 1 hint, sticker; portrait screenshot kept); `FINGER_ONLY=domino-run FINGER_LEVELS=9` `fingerdemo` passed (11.5 s).
 Not run: iPad reading of the flag and ring (open in DEVICE-CHECKS), other suites, offline, `world`.
 
+## 2026-11-07 — Scene-owned cleanup helpers (codebase item 7, PR #1385)
+
+Changed: `Lifetime` and `GameContext.alive`/`own`/`listen`, owned by touch/couch rounds and each demo replay; Rainbow Fingers listeners and Puzzle Pals drag handles migrated without gameplay changes. Fresh-context review found no defects.
+Tested: `a08d04de` plus working diff, full `npm test` (326 files, 6,074 passed, 5 skipped); seven helper/demo tests passed after adding replay integration coverage. After integrating `a800c6ee` as `230d6975`, typecheck, seven targeted files (81 passed, 1 skipped) and production build passed.
+Browser at `http://localhost:5187`: `BROWSER_SUITE=fourth FOURTH_ONLY=puzzle PUZZLE_LEVELS=4` passed exploration, two misses, hint, completion and sticker. `early EARLY_ONLY=paint FROM_LEVEL=3 TO_LEVEL=3` initially missed its second wrong stroke (1/0); original game baseline passed. The logging probe paced the four-second hint cooldown by game clock instead of a 4,200 ms wall wait and passed two misses, hint, all pictures and sticker.
+The same ignored `test-results/cleanup-probe.mjs` verified `alive`/owned cleanup/listener release on leaving a round and real paint demo listeners across replay/destruction (2→0→2→0); no page errors. Server stopped.
+Not run: `world`, offline, device or child play (no navigation, persistence or assets changed); bot gestures unchanged. The wall-time paint harness remains timing-sensitive.
+
 ## 2026-11-07 — Shared tracing and sorting helpers (codebase item 6 complete, PR #1383)
 
 Changed: shared tracing/feedback, sorting predicates/types, name normalization and letter vocabulary in `src/learning/`; letter-picture, sorting-sign and plant art in `src/art/`; game/journal callers and woods harness imports updated. The nine moved bodies/data match exactly; game-specific rules remain local. Tested base `dcc001e4` plus working diff.
@@ -67,16 +75,13 @@ Changed: 175 pages `docs/games/<id>.md` split from README rows and GAMES.md entr
 
 Changed: the stuck hint flies the next stretch (Letter Trails' `showTheWay`/`hintDue`), four seeded ink looks via `pickLook` drawn last in `roundFor`, and a rising marimba (`tuneStep`) in `src/games/number-trails/`. Ran: `npm run typecheck`; 4 new rule tests; `npm test` (322 files, 6035 tests pass); `BROWSER_SUITE=fingerdemo FINGER_ONLY=number-trails FINGER_LEVELS=1,3` pass (5.2 s, 9.2 s). Open: build and a browser play of the hint flight not run; whether the flying hint reads as help on an iPad is a [device check](DEVICE-CHECKS.md).
 
-## 2026-11-07 — Pile Match slice 1: looks, windy drop-in, more shapes, varied level 1
-
-Changed: three seeded looks, the windy drop-in, ten shapes a level, a seeded second kind at level 1 (PR #1371). Ran: `npm run typecheck`; `npx vitest run src/games/pile-match src/games/registry` (51 pass, 16 pile-match rule tests); `BROWSER_SUITE=pilematch` (level 1 one wrong kind, level 8 full tray, put-backs and hint, level 4 portrait screenshot in the autumn look); `BROWSER_SUITE=fingerdemo FINGER_ONLY=pile-match FINGER_LEVELS=1` (9.6 s). Open: build, other suites and offline not run; whether the drop-in makes "underneath" clearer to a three-year-old is a [device check](DEVICE-CHECKS.md).
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| Round cleanup / `early` paint and `fourth` puzzle pilots | 2026-11-07: typecheck, full units (6,074 passed, 5 skipped) plus replay integration and final 81 targeted tests, build; Puzzle Pals level 4 filtered play; Rainbow Fingers level 3 clock-paced play and native round/demo cleanup probe at `http://localhost:5187` | [Scene-owned cleanup](#2026-11-07--scene-owned-cleanup-helpers-codebase-item-7-pr-1385) | Initial wall-time paint hint check failed 1/0; original game baseline passed; game-clock probe passed. No world, offline, device or child checks; bot gestures unchanged. |
 | Ladder scan (`src/games/ladders.test.ts`) | 2026-11-07: typecheck; full units, 6,057 passed / 5 skipped | [Complete sweep](#2026-11-07--level-ladders-into-logicts-complete-codebase-item-5-pr-1379) | No allowlists; 133 table and ten inline-ladder equivalence probes passed; browser/build/offline not run |
 | Shared learning modules | 2026-11-07: typecheck/build; 325 files, 6,068 units passed, 5 skipped; Number Trails/Critter Crossing level-1 demos and woods sort9 passed | [Tracing/sorting completion](#2026-11-07--shared-tracing-and-sorting-helpers-codebase-item-6-complete-pr-1383) | Item 6 complete after the word-learning pilot; no device/offline check |
 | Shared coach (`src/progress/coach.test.ts`) | 2026-11-07: typecheck, full 6,046 units, build | [Shared coach](#2026-11-07--shared-misseshints-coach-codebase-item-8) | Pilots only: Fill and Dump, Sorting Machine, Rainbow Fingers |

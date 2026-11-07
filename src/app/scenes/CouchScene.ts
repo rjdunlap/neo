@@ -1,3 +1,4 @@
+import { Lifetime } from '../../engine/lifetime';
 import { Container, Graphics } from 'pixi.js';
 import { makeCompanion, makeStar } from '../../creatures/companion';
 import { audio } from '../../audio/engine';
@@ -62,6 +63,7 @@ export class CouchScene extends Scene {
   private readonly introLayer = new Container();
   private readonly paper = new Graphics();
   private game: Game | null = null;
+  private readonly lifetime = new Lifetime();
   private buttons: HTMLButtonElement[] = [];
   private focus = 0;
   private gone = false;
@@ -765,7 +767,8 @@ export class CouchScene extends Scene {
     const run = course && courseOf(this.couch.data, course.spec).run;
     const resume = { board: run?.slides.length ?? 0, done: run?.slides.slice() ?? [], attempts: run?.attempts ?? 0, assisted: run?.assisted ?? false };
     const couch = course ? { versus: false, course: { id: course.spec.id, resume, progress: (p: CourseProgress) => this.courseProgress(p) } } : { versus: party!.mode === 'faceoff' && info.faceoff === 'shared' };
-    this.game = mod.create({ stage: this.stage, view: this.view, level: course ? course.info.level : levelFor(id, party!.rounds.length), band: info.band, couch, rng: new Rng(course ? course.token : seedFor(party!, party!.turn ? 1 : 0)), tw: this.tw, particles: this.particles, renderer: this.app.renderer, pet: this.pet, companion: makeStar, childName: mod.typing && party?.mode !== 'faceoff' ? this.couch.data.names[0] || 'friend' : 'friend', track: o => this.track(o), untrack: o => this.untrack(o),
+    const lifetime = this.lifetime;
+    this.game = mod.create({ get alive() { return lifetime.alive; }, own: lifetime.own, listen: lifetime.listen.bind(lifetime), stage: this.stage, view: this.view, level: course ? course.info.level : levelFor(id, party!.rounds.length), band: info.band, couch, rng: new Rng(course ? course.token : seedFor(party!, party!.turn ? 1 : 0)), tw: this.tw, particles: this.particles, renderer: this.app.renderer, pet: this.pet, companion: makeStar, childName: mod.typing && party?.mode !== 'faceoff' ? this.couch.data.names[0] || 'friend' : 'friend', track: o => this.track(o), untrack: o => this.untrack(o),
       instruct: (line, vars) => { const said = speak(line); this.instruction = { id: said, vars }; this.caption.textContent = voice.line(said, vars); return this.whileHere(voice.say(said, vars)); },
       say: (line, vars) => this.whileHere(voice.say(speak(line), vars)), sayIn: (line, preset, vars) => this.whileHere(voice.sayIn(speak(line), preset, vars)), finish: result => this.finish(result),
     });
@@ -1003,7 +1006,7 @@ export class CouchScene extends Scene {
 
   destroy() {
     window.removeEventListener('pointerdown', this.wake); window.removeEventListener('keydown', this.wake);
-    this.gone = true; this.deferred = []; this.input.destroy(); this.demo?.destroy(); this.game?.destroy(); this.closeFinale();
+    this.gone = true; this.deferred = []; this.input.destroy(); this.demo?.destroy(); this.lifetime.destroy(); this.game?.destroy(); this.closeFinale();
     this.overlay.remove(); voice.stop(); music.stop(); applySettings(); super.destroy();
   }
 }

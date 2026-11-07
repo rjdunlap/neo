@@ -98,6 +98,7 @@ class PuzzlePals implements Game {
         },
         onDrop: (x, y) => this.drop(view, x, y),
       });
+      ctx.own(() => view.drag.destroy());
       this.pieces.push(view);
       ctx.stage.addChild(node);
     }
@@ -272,7 +273,6 @@ class PuzzlePals implements Game {
   destroy() {
     // The live picture only joins the stage when finished; otherwise it is ours to clean up.
     if (!this.picture.root.parent) this.picture.root.destroy({ children: true });
-    for (const p of this.pieces) p.drag.destroy();
     for (const t of this.textures) t.destroy();
     this.texture.destroy(true);
   }

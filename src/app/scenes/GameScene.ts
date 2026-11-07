@@ -1,3 +1,4 @@
+import { Lifetime } from '../../engine/lifetime';
 import { Circle, Container, Graphics, Text } from 'pixi.js';
 import { GUIDE_SCALE, makeCompanion, makeGuide, makeStar } from '../../creatures/companion';
 import { ink, RAINBOW, swatch } from '../../art/palette';
@@ -53,6 +54,7 @@ import { Scene } from '../Scene';
 export class GameScene extends Scene {
   /** Built when the round is about to start: after the intro, for a game that is opened for the first time. */
   private game: Game | null = null;
+  private readonly lifetime = new Lifetime();
   private readonly stage = new Container();
   private readonly pet = makeGuide();
   /** Hold to leave. On the island it is a house; at the root it goes back, so it is a back arrow (RW14 slice 3, set in `init`). */
@@ -185,7 +187,11 @@ export class GameScene extends Scene {
   /** The game for this round, drawn onto the stage; nothing in it starts until `begin`. */
   private build(): Game {
     const band = this.band;
+    const lifetime = this.lifetime;
     const ctx: GameContext = {
+      get alive() { return lifetime.alive; },
+      own: lifetime.own,
+      listen: lifetime.listen.bind(lifetime),
       stage: this.stage,
       view: this.view,
       level: this.level,
@@ -326,6 +332,7 @@ export class GameScene extends Scene {
     window.removeEventListener('blur', this.touchUp);
     this.keys?.destroy();
     this.closeHelp();
+    this.lifetime.destroy();
     this.game?.destroy();
     super.destroy();
   }

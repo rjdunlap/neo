@@ -1,3 +1,4 @@
+import type { LifetimeContext } from '../engine/lifetime';
 import type { Container, Renderer } from 'pixi.js';
 import type { Updatable } from '../app/Scene';
 import type { Companion, CompanionRig } from '../creatures/companion';
@@ -221,7 +222,7 @@ export interface CourseProgress {
   assisted: boolean;
 }
 
-export interface GameContext {
+export interface GameContext extends LifetimeContext {
   /** Draw here; it sits under the pet, the home button and the particles. */
   stage: Container;
   view: View;
