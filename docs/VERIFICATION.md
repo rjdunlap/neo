@@ -4,6 +4,13 @@
 
 Changed: strawberry, banana and plum (drawn by `smallFruit()` in `src/art/props.ts`, moved from Bolt Boards), beach ball and shell as not-fruit, a seeded morning, picnic or sunset look, six voice lines. Ran: typecheck; vitest for fruit-slice, bolt-boards and art (350 passed); `BROWSER_SUITE=fruitslice` (levels 1, 3 with misses and glow, 7 upright, new 3 upright at sunset with a banana, 8); `BROWSER_SUITE=boltboards` (regression, its fruit drawing moved); `npm run build`; a one-off picnic level 4 screenshot. Not run: `fingerdemo` (bot unchanged), full `npm test` (CI), offline, any device. Open: iPad checks.
 
+## 2026-11-07 — Shared word-learning helpers pilot (codebase item 6, PR #1381)
+
+Changed: shared themes, blocked-word list and picture vocabulary in `src/learning/words/`; picture-clue renderer in `src/art/word-pictures.ts`; Word Search, Pond Typing and Crossword callers updated with data and behavior unchanged. Tested base `42de1cb3` plus working diff.
+Ran: `npm run typecheck`; `npm test` (6,056 passed, 5 skipped; one unchanged Secret Code timing assertion failed at 277 ms against 250 ms during concurrent browser checking); that unchanged file passed alone (24 tests, 17.19 s); `npm run build`; source review clean.
+Browser: `GAME_URL=http://localhost:5196 BROWSER_SUITE=fingerdemo FINGER_ONLY=word-search,crossword FINGER_LEVELS=1` passed (Crossword pre-K 12.5 s; Word Search grown-up 11.3 s). Server stopped.
+Open: Letter Trails/tracing and Critter Sort remain queued. Offline, `world`, device and child play not run; no assets, persistence or navigation changed.
+
 ## 2026-11-07 — Cut Along slice 1: picture themes and new shapes (PR #1380)
 
 Changed: seeded picture themes at levels 1–5 and 7, level 6 as three of four shapes (door, kite; flag retired), level 7 as three of seven (star, moon), `cut.piece.<theme>.<piece>` lines; slots, colours and themes moved into `logic.ts`; the `cutalong` suite's level-6 portrait shot became a level-7 garland play. Ran: typecheck; `npm test` (325 files, 6,067 passed, 1 skipped; new theme, slot, line, colour and cuttability tests); `npm run build`; `BROWSER_SUITE=cutalong` (pass); a probe screenshot of each new theme. Not run: `fingerdemo` (bot unchanged), world, offline, any device. Open: level 8 themes; iPad checks.
@@ -59,10 +66,6 @@ Changed: `docs/deep-dives/marble-jump.md` and its tracker, READY, STUDY-BACKLOG,
 
 Changed: `docs/deep-dives/log-roll.md` and its tracker, READY, STUDY-BACKLOG, IDEAS and waiting-on-developer rows (PR #1368); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; slices 1–5 are queued; three decisions wait on the developer ([list](WAITING-ON-DEVELOPER.md)).
 
-## 2026-11-07 — Gem Swap deep dive (docs only)
-
-Changed: `docs/deep-dives/gem-swap.md` and its tracker, READY, STUDY-BACKLOG, ROADMAP and waiting-on-developer rows (PR #1367); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; slices 1–5 are queued; three decisions wait on the developer ([list](WAITING-ON-DEVELOPER.md)); there was no IDEAS ladder-audit row for Gem Swap to point at.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
@@ -70,6 +73,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
 | Ladder scan (`src/games/ladders.test.ts`) | 2026-11-07: typecheck; full units, 6,057 passed / 5 skipped | [Complete sweep](#2026-11-07--level-ladders-into-logicts-complete-codebase-item-5-pr-1379) | No allowlists; 133 table and ten inline-ladder equivalence probes passed; browser/build/offline not run |
+| Shared learning modules | 2026-11-07: typecheck/build; 6,056 units passed, 5 skipped, one unrelated timing failure passed alone (24 tests); Word Search/Crossword level-1 demos passed | [Word-learning pilot](#2026-11-07--shared-word-learning-helpers-pilot-codebase-item-6-pr-1381) | Letter Trails/tracing and Critter Sort remain; no device/offline check |
 | Shared coach (`src/progress/coach.test.ts`) | 2026-11-07: typecheck, full 6,046 units, build | [Shared coach](#2026-11-07--shared-misseshints-coach-codebase-item-8) | Pilots only: Fill and Dump, Sorting Machine, Rainbow Fingers |
 | Generated game docs (`src/content/game-docs.test.ts`) | 2026-11-07: typecheck, full 6,034 units; stale check proven to fail on an edited page | [Generated game inventory docs](#2026-11-07--generated-game-inventory-docs-codebase-item-3) | Runs in every `npm test`; rerun `npm run game-docs` after a game, land or page change |
 | `circuitgarden`, `fingerdemo` (`circuit-garden`) | 2026-11-06 (level 3, `f46bcc55`): typecheck, full `npm test` (321 files), 25 rule tests, one scripted school level 3 play (two wrong Checks 2/1, Help, early Done inert, Undo clears Check, finish) plus portrait screenshot; `fingerdemo` at levels 1, 2 and 3 (levels 1–2 earlier: `circuitgarden` suite) | [Entry](archive/VERIFICATION-2026-11-06.md#2026-11-06--circuit-garden-level-3-mend-the-lantern-energywaves-e3) | no build, no device check, no science-educator reading |

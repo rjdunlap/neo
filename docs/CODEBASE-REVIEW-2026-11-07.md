@@ -45,6 +45,8 @@ AGENTS.md puts ladders in `logic.ts`, but 129 games define `const LEVELS: BandLe
 
 ## 6. Promote shared code out of game folders
 
+**Pilot built 2026-11-07 ([PR #1381](https://github.com/rjdunlap/neo/pull/1381)).** Word Search, Pond Typing and Crossword share `src/learning/words/themes.ts`, `blocked.ts` and the Pixi-free `picture-words.ts`; their picture renderer is `src/art/word-pictures.ts`. Data and behavior are unchanged. Letter Trails/tracing and Critter Sort remain ready follow-ups, including the shared renderer's `letterPicture` dependency and Pond Typing's `nameLetters` import. [Build note](archive/COMPLETED-2026-10-09.md#shared-word-learning-helpers-pilot-codebase-item-6-2026-11-07).
+
 Files from other games import `letter-trails/` 18 times, `word-search/` 5, `pond-typing/` 4 and `critter-sort/` 4. That code is shared: move it to `src/learning/…` or `src/art/…` and list it in the [reuse map](DESIGN.md#reuse-map), so refactoring one game cannot break others and agents can find the helpers.
 
 ## 7. One standard way to clean up after a round

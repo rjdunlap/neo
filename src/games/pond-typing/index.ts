@@ -10,7 +10,7 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule } from '../types';
 import { COURSES, courseMinimum, isTypingCourse } from './course';
 import { LEVELS, describeTypingLevel, keyName, roundBubbles, typingLevel, typingLayout, muddle, LineTypist, Typist } from './logic';
-import { typingPicture } from './pictures';
+import { typingPicture } from '../../art/word-pictures';
 
 const INSTRUCTION = ['pt.one', 'pt.one', 'pt.name', 'pt.word', 'pt.capital', 'pt.line', 'pt.mend'] as const;
 

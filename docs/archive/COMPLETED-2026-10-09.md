@@ -1,5 +1,11 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Shared word-learning helpers pilot (codebase item 6, 2026-11-07)
+
+[PR #1381](https://github.com/rjdunlap/neo/pull/1381) moves shared word themes and blocked words into `src/learning/words/`, separates the picture vocabulary from Pixi in `picture-words.ts`, and promotes the picture-clue renderer to `src/art/word-pictures.ts`. Word Search, Pond Typing and Crossword import those shared modules; data, art and game behavior are unchanged. Letter Trails/tracing and Critter Sort remain ready, including `letterPicture` and `nameLetters` dependencies.
+
+Typecheck, build, source review and both level-1 ghost-finger demos passed. Full units: 6,056 passed, 5 skipped; one unchanged Secret Code performance assertion passed on its sole rerun (24 tests). [Verification](../VERIFICATION.md#2026-11-07--shared-word-learning-helpers-pilot-codebase-item-6-pr-1381). No offline, navigation or device checks; the server is stopped.
+
 ### Level ladders into `logic.ts` (codebase item 5, 2026-11-07)
 
 [PR #1379](https://github.com/rjdunlap/neo/pull/1379) completes the three-game pilot [PR #1377](https://github.com/rjdunlap/neo/pull/1377) (Animal Snack, Frog Hop and Pond Typing): 133 remaining `LEVELS` tables and ten inline ladders moved from `index.ts` into `logic.ts`; Playdate Workshop's internal plans are now `PLANS`. The source scan rejects tables and inline ladders in every game `index.ts`, with no allowlists. The codemod also handles tightly spaced imports. Supported-band ranges and order are unchanged; unsupported inline bands use the standard `rangeFor` fallback. No game rules, content or shared runtime changed.

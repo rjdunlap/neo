@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { BLOCKED } from '../word-search/blocked';
+import { BLOCKED } from '../../learning/words/blocked';
 import {
   applyHelp, bankFor, clueOf, crossings, decoysFor, emptyBlanks, firstOpen, helpFor, judge, key, lettersOf, makeRound, nearest, nextFill,
   PLANS, problems, riddleLine, solved, squaresOf, THEMES_3, wordRight, wordsAt, wrongSquares, WORDS_1, WORDS_2, WORDS_4, type Fills,
 } from './logic';
 import { SCRIPT } from '../../content/voice-script';
-import { PICTURE_WORDS } from '../pond-typing/pictures';
+import { PICTURE_WORDS } from '../../learning/words/picture-words';
 
 const SEEDS = 200;
 const rev = (s: string) => s.split('').reverse().join('');
