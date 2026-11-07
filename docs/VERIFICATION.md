@@ -1,5 +1,9 @@
 # Puddle Island verification
 
+## 2026-11-06 — Mossy Path deep dive (docs only)
+
+Changed: `docs/deep-dives/mossy-path.md` and its tracker, READY, backlog, IDEAS and waiting-on-developer rows (PR #1345); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; three decisions wait on the developer ([list](WAITING-ON-DEVELOPER.md)).
+
 ## 2026-11-06 — Number Trails deep dive (docs only)
 
 Changed: `docs/deep-dives/number-trails.md` and its tracker, READY, backlog, waiting-on-developer, device-check, GAMES and IDEAS rows (PR #1343); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; two decisions wait on the developer ([list](WAITING-ON-DEVELOPER.md)).

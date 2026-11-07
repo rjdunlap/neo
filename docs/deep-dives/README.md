@@ -154,7 +154,7 @@ Bands: L lap, T toddler, P preschool, K pre-K, S school, G grown-up. "Top level"
 | Cut Along | `cut-along` | TPKS | 8 | 5 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
 | Domino Run | `domino-run` | TPKS | 8 | 5 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
 | Number Trails | `number-trails` | PK | 3 | 6 | designed (slices 1–6 ready: flying hint, looks and rising tune, more things and arrangements, HWT chart check, level 4 First numbers, level 5 Write how many, level 6 Less help each time; level 7 teens and the journal need decisions) | `claude/dive-number-trails` ([PR #1343](https://github.com/rjdunlap/neo/pull/1343)) | [number-trails.md](number-trails.md) |
-| Mossy Path | `mossy-path` | TPKS | 7 | 6 | in progress | `claude/dive-mossy-path` | — |
+| Mossy Path | `mossy-path` | TPKS | 7 | 6 | designed (slices 1–5 ready: more mazes, coverage plans and looks, level 8 A little patch, level 9 Two snacks, level 10 Plan, then go, level 11 Thick moss; lap entry, toddler 4–5 and the journal need decisions) | `claude/dive-mossy-path` ([PR #1345](https://github.com/rjdunlap/neo/pull/1345)) | [mossy-path.md](mossy-path.md) |
 | Fruit Sums | `fruit-sums` | S | 3 | 6 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
 | Jar Sort | `jar-sort` | PKS | 8 | 6 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
 | Pile Match | `pile-match` | PKS | 8 | 6 | not started (built from a definition; no dive or subject study plans what comes next) | — | — |
