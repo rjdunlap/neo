@@ -1,0 +1,20 @@
+// What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
+export const VOICE = {
+  'game.sand-table': ['Sand table!'],
+  'sand.instruct.1': ['Tap the sand table to pour! Tap the scoop to take some away.'],
+  'sand.instruct.2': ['Tap a side to pour. Tap a scoop to take some away.'],
+  'sand.instruct.3': ['Shape the sand any way you like. Tap the flag when you like it!'],
+  'sand.invite.tall': ['Can you make one tall hill?'],
+  'sand.invite.hills': ['Can you make two hills?'],
+  'sand.invite.flat': ['Can you make it nice and flat?'],
+  'sand.empty': ['The bucket is empty. Scoop some sand back!'],
+  'sand.nothing-here': ['Nothing to scoop here.'],
+  'sand.spill': ["Over the edge! It's in the pail."],
+  'sand.pail': ['Back in the bucket!'],
+  'sand.show.flat': ['Nice and flat, a sandy road!'],
+  'sand.show.hills': ['Up one hill and down, and up another!'],
+  'sand.show.tall': ['What a tall hill!'],
+  'sand.show.bumpy': ['Bumpy, bumpy, what a fun walk!'],
+  'sand.first-heap': ['Look at that sand!'],
+  'sand.done': ['What a lovely sand table!'],
+} satisfies Record<string, string[]>;

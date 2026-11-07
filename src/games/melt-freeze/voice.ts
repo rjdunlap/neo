@@ -1,0 +1,22 @@
+// What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
+export const VOICE = {
+  'game.melt-freeze': ['Melt and freeze!'],
+  'meltfreeze.instruct.watch': ['Tap the sun!'],
+  'meltfreeze.instruct.both': ['Tap the sun. Tap the snowflake!'],
+  'meltfreeze.instruct.make.melt': ['Make the {thing} melt!'],
+  'meltfreeze.instruct.make.hard': ['Make the {thing} hard again!'],
+  'meltfreeze.instruct.tray': ['Warm them all. Cool them all. What do you see?'],
+  'meltfreeze.melt': ['It melts!', 'Look, it melts!'],
+  'meltfreeze.freeze': ['It goes hard again!'],
+  'meltfreeze.freeze.ice': ['It freezes!', 'Brr, it freezes!'],
+  'meltfreeze.stays.stone': ['The stone stays a stone.', 'The stone stays just the same.'],
+  'meltfreeze.stays.spoon': ['The spoon stays a spoon.', 'The spoon stays just the same.'],
+  'meltfreeze.stays.some': ['Some things melt. Some things stay the same!'],
+  'meltfreeze.already.melted': ["It's already melted."],
+  'meltfreeze.already.hard': ["It's already hard."],
+  'meltfreeze.hint.melt': ["It melts when it's warm. Try the sun!"],
+  'meltfreeze.hint.freeze': ['Cool makes it hard again. Try the snowflake!'],
+  'meltfreeze.same': ['Same thing, just changed!', 'Still the same thing!'],
+  'meltfreeze.next': ['Next one!'],
+  'meltfreeze.done': ['Warm and cool, melt and hard again. Lovely!', 'You saw it change and change back!'],
+} satisfies Record<string, string[]>;

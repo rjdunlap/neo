@@ -1,0 +1,22 @@
+// What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
+export const VOICE = {
+  'game.puddle-gobble': ['Puddle gobble!'],
+  'gobble.instruct-1': ['Lead the puddle to the things on the sand. It soaks them up!'],
+  'gobble.instruct': ['Lead the puddle. It soaks up things smaller than itself, and grows!'],
+  'gobble.instruct-grow': ['Lead the puddle. Fill the three drops to grow!'],
+  'gobble.instruct-order': ['Soak them up smallest first!'],
+  'gobble.instruct-number': ['The puddle soaks up any number up to its own. Each one makes it one bigger!'],
+  'gobble.instruct-add': ['The puddle soaks up any number up to its own, and each number adds to it!'],
+  'gobble.instruct-pail': ['Make the puddle just right: exactly {t}, like the pail!'],
+  'gobble.too-big': ['Too big yet! Soak little things to grow.'],
+  'gobble.too-big-number': ['{v}. The puddle is {p}: too big yet.'],
+  'gobble.grow': ['The puddle grew!', 'Bigger!'],
+  'gobble.number': ['{v}! Now the puddle is {p}.'],
+  'gobble.smaller-first': ['The {thing} is smaller. Soak it first.'],
+  'gobble.too-much': ['That makes {sum}. The pail wants {t}.'],
+  'gobble.let-go': ['Back on the sand. Now the puddle is {p}.'],
+  'gobble.hint': ['Try the glowing one.'],
+  'gobble.hint-let-go': ['Tap the glowing one at the top to let it go.'],
+  'gobble.done': ['Thank you! The beach is clean.'],
+  'gobble.done-pail': ['Just right! {t}, like the pail!'],
+} satisfies Record<string, string[]>;

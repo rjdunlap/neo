@@ -1,5 +1,9 @@
 # Puddle Island verification
 
+## 2026-11-07 — Voice lines and how-to cards split per game
+
+Changed: each of the 175 games has `src/games/<id>/voice.ts` and `howto.ts`; `src/content/voice-script.ts` keeps 387 shared lines and gathers the rest, `src/content/howto.ts` gathers the cards, both through blocks `scripts/content-barrels.mjs` writes; new `src/content/barrels.test.ts`; `allowImportingTsExtensions` (Node's voice-clip renderer loads the `.ts` imports). Ran: sorted-JSON comparison of `SCRIPT` and `HOW_TO` before and after (identical, 5,746 lines and 175 cards); `npm run typecheck`; `npm test` (322 files, 6,002 tests); `npm run build`. Open: no browser suite run, since the runtime content is identical and the build passes.
+
 ## 2026-11-07 — Cut Along deep dive (docs only)
 
 Changed: `docs/deep-dives/cut-along.md` and its tracker, READY, GAMES (typo), ROADMAP rows (PR #1351); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; no new decisions wait on the developer.
@@ -74,10 +78,6 @@ Open: the build (new levels on the existing interaction, `fingerdemo` at 5 and 6
 ## 2026-11-06 — Bolt Boards level 8 Plenty of holes (PR #1344)
 
 Changed: plan 8 in `src/games/bolt-boards/` (pre-K order 2, 3, 4, 5, 8, 6; school 4, 5, 8, 6, 7), 20 boards from generator seed 20261107, an authored first board, voice line `bolt.instruct-park`, how-to lines, and a search-free level-8 hint (top board's free bolt into the first open hole; the scene skips the after-move search there) after CI's first run timed the shortest-path hint at 104 ms against the 100 ms cap; rule tests (no stuck state on any level-8 board, a hole-closing swing, authored board, plan flags, a legal hint from every reachable state that finishes every board). Ran on the final HEAD (base origin/main 93bdf447): `npm run typecheck`; `npm test` (321 files, 5998 tests); `npm run build` (before the hint change, which touches no shared file); `BROWSER_SUITE=boltboards` (Vite on 5722: levels 1 and 7, level 8 authored swing covering one hole, covered hole free, two scenes with no miss or hint, sticker; level 6 portrait; screenshot `bolt-boards-8-swing.png`); `fingerdemo FINGER_ONLY=bolt-boards FINGER_LEVELS=8` (pre-K, 29.3 s). game-reviewer: no findings. Not run: offline check, any device. Open: no iPad or child; how she reads level 8 without a wander hint.
-
-## 2026-11-06 — Bolt Boards more boards, fruit and a friend (PR #1341)
-
-Changed: `scripts/bolt-boards-puzzles.ts` second pass (seed 20261106) gives 20 frozen boards per level (21 at 6), orange, strawberry and banana in `fruitArt`, the bear as a friend; new rule tests for the counts and the unchanged authored boards. Ran (Vite on 5516): `npm run typecheck`; `npx vitest run src/games/bolt-boards` (21 tests); `BROWSER_SUITE=boltboards`; a portrait 768×1024 screenshot at level 5 showing the new fruits and the bear; `npm run build`; game-reviewer found nothing. Not run: `fingerdemo` (bot unchanged), full unit suite. Open: no iPad or child.
 
 ## Coverage summary
 

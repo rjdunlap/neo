@@ -43,8 +43,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 Requested by the developer 2026-11-07 to make the code cheaper for AI to write and maintain; evidence and targets are in the [review](CODEBASE-REVIEW-2026-11-07.md). One item per session, in this order unless an item says otherwise. The sweeps (1, 2, 5, 6) touch every game folder, so each pilots on 2–3 games first and merges while no game PR is open on those files.
 
-- **Co-locate voice lines and how-to cards per game** (shell tier: typecheck, unit tests, build, voice-clip test; generated `SCRIPT`/`HOW_TO` barrels keep `LineId` exact): [item 1](CODEBASE-REVIEW-2026-11-07.md#1-co-locate-each-games-voice-lines-and-how-to-card).
-- **Discover games with `import.meta.glob`** (after item 1; explicit order for the order-dependent tests; shell tier plus `world`): [item 2](CODEBASE-REVIEW-2026-11-07.md#2-discover-games-instead-of-listing-them).
+- **Discover games with `import.meta.glob`** (item 1 is built; explicit order for the order-dependent tests; shell tier plus `world`): [item 2](CODEBASE-REVIEW-2026-11-07.md#2-discover-games-instead-of-listing-them).
 - **Generate the README inventory and per-game GAMES.md pages** (after item 2; stale-check in CI; docs plus a script test): [item 3](CODEBASE-REVIEW-2026-11-07.md#3-generate-the-game-inventory-docs).
 - **Trim AGENTS.md to contracts and pointers** (docs only; can go first, independent of the rest): [item 4](CODEBASE-REVIEW-2026-11-07.md#4-trim-agentsmd).
 - **Move level ladders into `logic.ts`** (scripted sweep; typecheck, unit tests, a source-scan test): [item 5](CODEBASE-REVIEW-2026-11-07.md#5-move-level-ladders-into-logicts).

@@ -1,0 +1,26 @@
+// What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
+export const VOICE = {
+  'game.duck-pond': ['Duck pond!'],
+
+  'duck.along': ['Tap a duck to help it swim!'],
+  'duck.bye': ['Bye-bye, duck! {n} left.', 'Bye-bye! {n} left.'],
+  'duck.byeTap': ['Tap a duck to wave bye-bye!'],
+  'duck.byeAll': ['Bye-bye, last duck!'],
+  'duck.callback': ['Quack, quack! Come back, ducks!'],
+  'duck.total': ['{n} ducks!', '{n} ducks swimming!'],
+  'duck.make': ['Put {n} in the pond!'],
+  'duck.made': ["That's {n}!", 'Yes, {n}!'],
+  'duck.howmany': ['How many ducks?', 'How many ducks are swimming?'],
+  'duck.countus': ["Let's count together!"],
+  'duck.more': ['{a} ducks are swimming. {b} more come!'],
+  'duck.away': ['{a} ducks are swimming. {b} swim away!'],
+  'duck.now': ['How many now?'],
+  'duck.plus': ['{a} plus {b} makes {n}!'],
+  'duck.minus': ['{a} minus {b} makes {n}!'],
+  'duck.ten': ['{a} ducks are swimming. How many more to make 10?'],
+  'duck.counton': ["Let's count on from {a}, all the way to 10!"],
+  'duck.tenmade': ['{a} and {b} make 10! A full pond!'],
+  'duck.hiding': ['There are {total} ducks altogether. I can see {visible}. How many are hiding?'],
+  'duck.hidingCount': ['I can see {visible}. Let’s count on to {total}.'],
+  'duck.hidingFound': ['{hidden} were hiding! {visible} and {hidden} make {total}!'],
+} satisfies Record<string, string[]>;

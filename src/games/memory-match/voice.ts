@@ -1,0 +1,20 @@
+// What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
+export const VOICE = {
+  'game.memory-match': ['Memory Match!'],
+  'memory.start': ['Turn over two cards to find a pair!'],
+  'memory.number': ['Find the number and that many dots!'],
+  'memory.letter': ['Find the big letter and its little letter!'],
+  'memory.number-word': ['Find the number word and the numeral that names it!'],
+  'memory.clock': ['Find the clocks that show the same time.'],
+  'memory.clock-pair': ['Both show {card}. A pair!'],
+  'memory.clock-hint': ['You have seen {card}. Look at the glowing card. The long hand points to {minute}, and the short hand is {hour}.'],
+  'memory.fraction': ['Find the fraction picture and the words that name it!'],
+  'memory.fraction-card': ['{amount}.'],
+  'memory.card': ['{card}.'],
+  'memory.pair-card': ['{card}. A pair!'],
+  'memory.explore': ['{first} and {second}. Let us remember where they are.'],
+  'memory.wrong-cards': ['{first} and {second}. Try its matching friend!'],
+  'memory.wrong': ['Let us remember those cards. Try another pair!'],
+  'memory.hint': ['You have seen its friend. Look at the glowing card!'],
+  'memory.pair': ['A pair!'],
+} satisfies Record<string, string[]>;

@@ -467,7 +467,7 @@ Proof: new-interaction tier, as the [definition's Build and check tier](definiti
 
 - **`attic-finds`, levels 7 *Two sources* and 8 *What can we tell?*** (school only; a new paper-copy drag into claim slots plus a two-stamp interaction inside the existing game, one invented bird-box case; school `{2, 8, order [2,5,6,7,8]}`): drag a copy of the paper that shows each claim (level 7), then stamp each claim *The papers show it* or *Can't tell*, where no paper from a house is no proof it had no bird box (level 8); a free read is not a miss. [Definition](definitions/household-casebook.md), [everyday-life study slice H5](deep-dives/subjects/daily-life-long-ago.md#build-slices-in-order)
 
-Proof: new-interaction tier, as the [definition's Build and check tier](definitions/household-casebook.md#build-and-check-tier) sets it (typecheck, unit tests, an `atticcase` scripted play at levels 7–8, `fingerdemo` at both, one portrait screenshot of level 8, one build). Expected files: `src/games/attic-finds/` (`logic.ts`, a new `cases.ts` and its tests, `index.ts`), `src/content/howto.ts`, `src/content/voice-script.ts`, `scripts/browser-check.mjs`, README, `docs/GAMES.md`, `docs/VERIFICATION.md`.
+Proof: new-interaction tier, as the [definition's Build and check tier](definitions/household-casebook.md#build-and-check-tier) sets it (typecheck, unit tests, an `atticcase` scripted play at levels 7–8, `fingerdemo` at both, one portrait screenshot of level 8, one build). Expected files: `src/games/attic-finds/` (`logic.ts`, a new `cases.ts` and its tests, `index.ts`), its `howto.ts`, its `voice.ts`, `scripts/browser-check.mjs`, README, `docs/GAMES.md`, `docs/VERIFICATION.md`.
 
 ### attic-finds 4: Mend the exhibit
 
@@ -559,7 +559,7 @@ Built 2026-11-02, [PR #1134](https://github.com/rjdunlap/neo/pull/1134); [comple
 
 - **`lasso-loops`, teens, decades and a fresh meadow (dive slice 1)** (fresh content on the existing interaction; preschool, pre-K, school): level 1's seeded 6–9 fireflies; level 3's 1–3 jars with an occasional no-ones round; level 4's teen, decade and 21–39 mix; the no-ones voice lines and pad choices. Level 6 unchanged. [Dive](deep-dives/lasso-loops.md#build-slices-in-order)
 
-Files expected: `src/games/lasso-loops/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts` only if a step's wording changes, the README row and `docs/GAMES.md`.
+Files expected: `src/games/lasso-loops/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts` only if a step's wording changes, the README row and `docs/GAMES.md`.
 
 Proof: fresh content on the existing interaction: typecheck, the game's rule tests (every plan's fireflies fit one per cell; a teen, a decade and a 21–39 round all occur at level 4 within a few hundred seeds; level 6 still 21–39; pads stay three distinct positive numbers including the answer; no leaf when there are no ones), one filtered regression play of level 4 on a decade seed with one wrong total, `fingerdemo` at 4 (the bot meets a round with no leaf).
 
@@ -585,7 +585,7 @@ Proof: couch catalog tier: a frozen board list, course tests, `BROWSER_SUITE=cou
 
 - **`light-lab`, levels 8–9 *Place a mirror* and *Two to place* (dive slice 3)** (new interaction; school): she drops a mirror from a tray onto the board so the beam reaches the target, then two mirrors; the school range rises to 9. [Dive](deep-dives/light-lab.md#build-slices-in-order)
 
-Files expected: `src/games/light-lab/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/light-lab/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new-interaction tier: typecheck, rule tests, one play of level 8 with a drop off the board, a missed shine and the glowing cell, level 9 to its sticker, one portrait screenshot with the tray, `fingerdemo` at 8 and 9; stop after 8 if the allowance cannot cover 9.
 
@@ -593,7 +593,7 @@ Proof: new-interaction tier: typecheck, rule tests, one play of level 8 with a d
 
 - **`light-lab`, level 10 *Where's the mirror?* (dive slice 4)** (built 2026-11-04, [PR #1221](https://github.com/rjdunlap/neo/pull/1221)), after batch 3 (the school range rises past 9): a cloud hides one mirror and she chooses its cell from where the beam goes. [Dive](deep-dives/light-lab.md#build-slices-in-order)
 
-Files expected: `src/games/light-lab/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/light-lab/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new-interaction tier: typecheck, rule tests, one play with one wrong cell and its ghost beam, a second for the glow, then the right cell, one portrait screenshot of the cloud, `fingerdemo` at 10.
 
@@ -601,7 +601,7 @@ Proof: new-interaction tier: typecheck, rule tests, one play with one wrong cell
 
 - **`light-lab`, level 11 *Through, bounce or stop?* (dive slice 5)** (built 2026-11-04, [PR #1225](https://github.com/rjdunlap/neo/pull/1225)), after batch 4 (pre-K order [1,2,3,4,11], school order [2,3,4,11,5..10]): a picture object sits on the beam; three free guesses, then two judged choices. [Definition](definitions/light-lab-materials.md), [dive](deep-dives/light-lab.md#build-slices-in-order)
 
-Files expected: `src/games/light-lab/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/light-lab/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new-interaction tier: typecheck, unit tests, one scripted play of level 11 with a mismatched free guess, one wrong choice, a second for the glow, then the right choice, one portrait screenshot, `fingerdemo` at 11.
 
@@ -609,7 +609,7 @@ Proof: new-interaction tier: typecheck, unit tests, one scripted play of level 1
 
 - **`light-lab`, level 12 *Split the sunbeam* (dive slice 6)** (built 2026-11-04, [PR #1229](https://github.com/rjdunlap/neo/pull/1229)), after batch 5 (school order [2,3,4,11,5..10,12]; school top only): a half-mirror sends the beam both straight on and turned, so she tilts mirrors to light both arms. [Definition](definitions/light-lab-split.md), [dive](deep-dives/light-lab.md#build-slices-in-order)
 
-Files expected: `src/games/light-lab/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/light-lab/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: existing-interaction tier with a beam-drawing change: typecheck, rule tests, one scripted play of level 12 with a missed shine, a second miss for the glow, then the solve to the sticker, one portrait screenshot mid-shine with both arms, `fingerdemo` at 12.
 
@@ -808,7 +808,7 @@ Proof: new-game tier, as the [definition's check tier](definitions/puppet-stage.
 
 Proof: new-interaction tier, as the [definition's check tier](definitions/puppet-stage-4-6.md#check-tier-for-the-build) sets it (typecheck, rule tests with the registry, lands, how-to and off-screen tests, one filtered `puppetstage` play of levels 4–6, one portrait screenshot of level 6, `fingerdemo` at 4, 5 and 6, one build).
 
-Expected files: `src/games/puppet-stage/{logic,logic.test,art,index}.ts`, `src/content/howto.ts`, `src/content/voice-script.ts`, `scripts/browser-check.mjs`, README and GAMES docs.
+Expected files: `src/games/puppet-stage/{logic,logic.test,art,index}.ts`, its `howto.ts`, its `voice.ts`, `scripts/browser-check.mjs`, README and GAMES docs.
 
 ## Relay Woods 1: levels 1–4 (NC2)
 
@@ -907,7 +907,7 @@ Proof: new-game tier, as the [definition's check tier](definitions/maker-lane.md
 
 - **`lemonade-stand`, level 5 Two lemon boats, with the co-play hint (dive slice 1)** (extends the built game, new-interaction tier; school; Cozy Village unchanged): each morning two boats offer lemons with the same lemons or the same shells ("2 for 1" vs "2 for 2", "4 for 2" vs "2 for 2"); she taps the cheaper boat, then chooses a batch and a price as level 4 does, at the chosen boat's lemon price. A dearer boat is a gentle boing, a spoken "for 2 lemons" comparison and one counted miss; two misses that morning glow the cheaper boat and count one hint, and a day counts at most one hint whether from the glow or the lightbulb. Batch and price stay experiments. `batchCost`, `bestChoice` and `forecastChoice` take a lemon price; `helps()` gains a boat line and `insight()` the savings; voice lines `lemon.boat.*`; adds the game's `coplayHint` (weather reporter and first friend). [Dive](deep-dives/lemonade-stand.md#build-slices-in-order), [ladder](deep-dives/lemonade-stand.md#proposed-ladder)
 
-Files expected: `src/games/lemonade-stand/logic.ts`, `logic.test.ts`, `index.ts`, `art.ts`, `src/content/voice-script.ts`, `src/content/howto.ts` (a step scoped `{ from: 5 }`), `scripts/browser/suites/woods-batch.mjs`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/lemonade-stand/logic.ts`, `logic.test.ts`, `index.ts`, `art.ts`, its `voice.ts`, its `howto.ts` (a step scoped `{ from: 5 }`), `scripts/browser/suites/woods-batch.mjs`, the README row and `docs/GAMES.md`.
 
 Proof: new-interaction tier, as the [dive's slice 1](deep-dives/lemonade-stand.md#build-slices-in-order) sets it (typecheck; unit tests for the offer pool, no-loss and affordability with the cheaper boat, true comparisons and the savings insight; one scripted play `BROWSER_SUITE=woods WOODS_ONLY=lemon` at level 5 with one wrong boat, a second for the glow, then the right boat, and the lightbulb on a different day, so the round pays 2 misses and 2 hints; one portrait screenshot of the jetty; `fingerdemo` at level 5). Build only if shared files change. Person and device checks stay open.
 
@@ -927,7 +927,7 @@ Proof: typecheck and the game's rule tests (pool sizes, solvability, hint leads 
 
 - **`pixel-pictures`, level 7 Both ways and level 8 Twice as big (dive slice 2, after the built batch 1)** (new levels on an existing interaction; school): level 7 copies a drawn 6×6 quarter across two mirror lines into the other three (`PixelMode` gains `mirror2`; `pixel.notmirror2`, hint glows an open square whose mirror is drawn); level 8 copies a 3×3 model at double size into 2×2 blocks (`scaleUp(p, 2)`; `pixel.notbig`, hint glows one block). Authored four-fold pictures and five 3×3 models; how-to steps scoped from 7; bot through `pixelTouch`. [Dive](deep-dives/pixel-pictures.md#build-slices-in-order), [ladder](deep-dives/pixel-pictures.md#proposed-ladder)
 
-Files expected: `src/games/pixel-pictures/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the suite case, the README row and `docs/GAMES.md`.
+Files expected: `src/games/pixel-pictures/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the suite case, the README row and `docs/GAMES.md`.
 
 Proof: new levels tier: typecheck and rule tests (symmetry, quarter determines the rest, aligned blocks, hint and bot never wrong); one browser play of level 8 with one wrong square and the glow, a level-7 case in the same filtered run, `fingerdemo` at 7 and 8, one portrait screenshot of level 8. Stop after level 7 if the allowance cannot cover 8.
 
@@ -937,7 +937,7 @@ Proof: new levels tier: typecheck and rule tests (symmetry, quarter determines t
 
 - **`pixel-pictures`, level 9 Two colours, small (dive slice 3, after batch 2)** (new level; preschool and pre-K, placed between 1 and 2 by `order`: 1, 9, 2, …): four new 4×4 two-colour pictures (ladybird first), picked as level 2 picks (`pixel.notcolor`); per-band `order` lists every ID once, `entryLevels` unchanged (built with `entryLevels: [9]`, see the dive). [Dive](deep-dives/pixel-pictures.md#build-slices-in-order), [ladder](deep-dives/pixel-pictures.md#easier-entries-and-levels-between-existing-ones)
 
-Files expected: `src/games/pixel-pictures/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/pixel-pictures/logic.ts`, `logic.test.ts`, `index.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: typecheck, rule tests (4×4 with exactly two colours, `order` complete, entry level 1); one browser play of level 9 and `fingerdemo` at 9.
 
@@ -947,7 +947,7 @@ Proof: typecheck, rule tests (4×4 with exactly two colours, `order` complete, e
 
 - **`pixel-pictures`, level 10 My own picture (dive slice 4, after batch 3)** (new interaction; pre-K and school, last in each band's order as a free level): a blank 5×5 with four swatches, a tap on a filled square empties it, a Done button (at least 100 units) appears after four squares; no misses or hints; the kept creation uses the existing pixel shape; adds a `coplayHint`; the demo shows the bot drawing a heart. [Dive](deep-dives/pixel-pictures.md#build-slices-in-order), [ladder](deep-dives/pixel-pictures.md#easier-entries-and-levels-between-existing-ones)
 
-Files expected: `src/games/pixel-pictures/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/pixel-pictures/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new-interaction tier: typecheck, unit tests (fewer than four squares cannot finish, kept creation equals the board); one scripted play to Done with a kept design, one portrait screenshot, `fingerdemo` at 10; the `creations` suite filtered to Pixel Pictures only if the kept shape changes. Person and device checks stay open.
 
@@ -967,7 +967,7 @@ Proof: typecheck and the game's rule tests; one filtered regression play of leve
 
 - **`ferry-jam`, level 7 Rocks in the harbor (dive slice 2)** (new level on the existing drag; school): rocks that never move share the harbor; every rock must matter and `focusPath` must still reach every boat; a rounded grey `Graphics` boulder with a foam ring drawn from existing palette colours. [Dive](deep-dives/ferry-jam.md#build-slices-in-order)
 
-Files expected: `src/games/ferry-jam/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/ferry-jam/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new level tier: typecheck, rule tests (every rock matters, `focusPath` reaches every boat); one browser play of level 7 with a drag on a rock, `fingerdemo` at 7, one portrait screenshot.
 
@@ -977,7 +977,7 @@ Proof: new level tier: typecheck, rule tests (every rock matters, `focusPath` re
 
 - **`ferry-jam`, level 8 Two ferries (dive slice 3, after batch 2)** (new rule on the existing drag; school): two ferries leave by two docks, so the plan serves both; shares the `Harbor` and `parse` changes with batch 2. [Dive](deep-dives/ferry-jam.md#build-slices-in-order)
 
-Files expected: `src/games/ferry-jam/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/ferry-jam/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new rule tier: typecheck and rule tests; one play of level 8 to its sticker with the yellow ferry sailing first, `fingerdemo` at 8, one portrait screenshot of the bottom dock.
 
@@ -987,7 +987,7 @@ Proof: new rule tier: typecheck and rule tests; one play of level 8 to its stick
 
 - **`ferry-jam`, levels 9 and 10 Pre-K entry and Who's in the way (dive slice 4)** (level 9 an easier entry with one slide; level 10 a new tap step naming the boat in the way; pre-K and school): per-band `order` and `entryLevels` as the dive sets them, and level 10's blocker question with its glow after two wrong taps. [Dive](deep-dives/ferry-jam.md#build-slices-in-order)
 
-Files expected: `src/games/ferry-jam/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/ferry-jam/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new-interaction tier: typecheck, unit tests (order, entry and landing); one scripted play of level 9 and of level 10 with one wrong tap, a second for the glow, then the blocker; `fingerdemo` at 9 and 10; one portrait screenshot of level 10's question. Person and device checks stay open.
 
@@ -997,7 +997,7 @@ Proof: new-interaction tier: typecheck, unit tests (order, entry and landing); o
 
 - **`garden-rows`, seeded flower sets and level 7 Mend the bed (dive slice 1)** (existing interaction, new level; school): F1 seeded flower sets and level 7 Mend the bed as written in the [dive](deep-dives/garden-rows.md#build-slices-in-order).
 
-Files expected: `src/games/garden-rows/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/garden-rows/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: typecheck and Garden Rows rule tests (the F1 and Mend the bed assertions in the dive); one browser play of level 7 with one wrong replant and the glow, and level 3 with a non-default flower set; `fingerdemo` at 7. Person and device checks stay open.
 
@@ -1007,7 +1007,7 @@ Proof: typecheck and Garden Rows rule tests (the F1 and Mend the bed assertions 
 
 - **`garden-rows`, levels 8–9 Hedge boxes (dive slice 2, after batch 1)** (new rule on the existing interaction, new drawing; school): shares `PLANS` and the school range with batch 1, as written in the [dive](deep-dives/garden-rows.md#build-slices-in-order).
 
-Files expected: `src/games/garden-rows/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/garden-rows/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: typecheck, rule tests; one play of level 8 with a box clash and one of level 9 to its sticker; one portrait screenshot of the hedges; `fingerdemo` at 9. Person and device checks stay open.
 
@@ -1017,7 +1017,7 @@ Proof: typecheck, rule tests; one play of level 8 with a box clash and one of le
 
 - **`garden-rows`, level 10 One row, preschool opening (dive slice 3, after batch 1)** (new band; adds `order`/`entryLevels` to the same `LEVELS`), as written in the [dive](deep-dives/garden-rows.md#build-slices-in-order).
 
-Files expected: `src/games/garden-rows/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/lands.ts` or registry tests as needed, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/garden-rows/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/lands.ts` or registry tests as needed, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: typecheck and unit tests including the lands and registry band tests; one play of level 10 at preschool; `fingerdemo` at 10; the preschool Puzzle Peaks page screenshot. Person and device checks stay open.
 
@@ -1037,7 +1037,7 @@ Proof: existing-interaction tier: typecheck and the game's rule tests; one filte
 
 - **`habitat-helpers`, level 7 Something changed (dive slice 2)** (new interaction; school 4–7): a working garden loses one need and she names which need is missing and restores it; the need question is the game's first counted miss; satisfies the ecosystems study's F3 definition. [Dive](deep-dives/habitat-helpers.md#build-slices-in-order)
 
-Files expected: `src/games/habitat-helpers/logic.ts`, `logic.test.ts`, `art.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/habitat-helpers/logic.ts`, `logic.test.ts`, `art.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new-interaction tier: typecheck and rule tests; one scripted play of level 7 with one wrong need, a second for the glow, then the right need, one non-restoring card and the right one; one portrait screenshot with the before card; `fingerdemo` at 7; one build. Level 7 at pre-K stays a person check.
 
@@ -1047,7 +1047,7 @@ Proof: new-interaction tier: typecheck and rule tests; one scripted play of leve
 
 - **`habitat-helpers`, levels 8–9 The rocky shore (dive slice 3, after batch 2)** (new interaction; school 4–9): who lives high and who lives low on a rocky shore, decided by needs rather than trivia; shares the level table and the bot rule with batch 2. [Dive](deep-dives/habitat-helpers.md#build-slices-in-order)
 
-Files expected: `src/games/habitat-helpers/logic.ts`, `logic.test.ts`, `art.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/habitat-helpers/logic.ts`, `logic.test.ts`, `art.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new-interaction tier: typecheck and rule tests; one scripted play of level 8 with the anemone on the high rock first and level 9 to its sticker; one portrait screenshot of the shore; `fingerdemo` at 8 and 9; one build.
 
@@ -1057,7 +1057,7 @@ Built 2026-11-02, [PR #1129](https://github.com/rjdunlap/neo/pull/1129), branch 
 
 - **`inchworm`, fresh things and the broken ruler (dive slice 1)** (existing interaction; school): five new things with voice words, the long-jump round at level 3, and level 8 *The broken ruler* (school order `[1, 2, 7, 3, 4, 8, 5, 6]`, school max 8). [Dive](deep-dives/inchworm.md#build-slices-in-order)
 
-Files expected: `src/games/inchworm/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/inchworm/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new levels on the existing interaction: typecheck, the game's rule tests, one browser play of level 8 with the end-mark pad, a second miss for the glow, then the right pad; one level-3 play with a long-jump round; `fingerdemo` at 8; one portrait screenshot of the broken ruler; one build for the new art.
 
@@ -1067,7 +1067,7 @@ Built 2026-11-03, [PR #1172](https://github.com/rjdunlap/neo/pull/1172), branch 
 
 - **`inchworm`, level 9 One worm, hop by hop (dive slice 2, after batch 1)** (new interaction; school): shares the order and the `THINGS` list with batch 1; school order `[1, 2, 7, 9, 3, 4, 8, 5, 6]`; batch 1 is built. [Dive](deep-dives/inchworm.md#build-slices-in-order)
 
-Files expected: `src/games/inchworm/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/inchworm/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new interaction: typecheck, rule tests, one play of level 9 with one wrong count, a second for the glow, then the right pad; one portrait screenshot mid-hop; `fingerdemo` at 9.
 
@@ -1077,7 +1077,7 @@ Built 2026-11-04, [PR #1198](https://github.com/rjdunlap/neo/pull/1198), branch 
 
 - **`inchworm`, level 10 Longer than the ruler (dive slice 3, after batch 1)** (new interaction; school top). [Dive](deep-dives/inchworm.md#build-slices-in-order)
 
-Files expected: `src/games/inchworm/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/inchworm/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new interaction: typecheck, rule tests, one play of level 10 with one drop away from the slot (no miss), the second-part pad (a miss), a second for the glow, then the answer; one portrait screenshot with the chalk mark; `fingerdemo` at 10.
 
@@ -1087,7 +1087,7 @@ Built 2026-11-02, [PR #1130](https://github.com/rjdunlap/neo/pull/1130), branch 
 
 - **`island-bridges`, a small sea to start and named hints (dive slice 1)** (new level on the existing interaction; grown-up): level 5 (order `[5, 1, 2, 3, 4]`, `entryLevels: [5]`) and the `full`, `every-way` and `last-way` hints with their voice lines. [Dive](deep-dives/island-bridges.md#build-slices-in-order)
 
-Files expected: `src/games/island-bridges/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/island-bridges/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new level on the existing interaction: typecheck, the game's rule tests, one browser play of level 5 with one hint (its named line), `fingerdemo` at 5.
 
@@ -1097,7 +1097,7 @@ Built 2026-11-03, [PR #1180](https://github.com/rjdunlap/neo/pull/1180), branch 
 
 - **`island-bridges`, level 6 Keep them joined (dive slice 2, after batch 1)** (new rule on the existing interaction; grown-up): shares `hintFor`'s kinds and the order with batch 1; the isolation step, generator filter, `joined` hint (built name; the dive called it `isolation`) and its ring. [Dive](deep-dives/island-bridges.md#build-slices-in-order)
 
-Files expected: `src/games/island-bridges/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/island-bridges/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: typecheck, rule tests, one play of level 6 asking for hints until the isolation one (ring and line), then to the sticker; one portrait screenshot of the ring; `fingerdemo` at 6.
 
@@ -1107,7 +1107,7 @@ Built 2026-11-03, [PR #1185](https://github.com/rjdunlap/neo/pull/1185), branch 
 
 - **`island-bridges`, level 7 Up to three planks (dive slice 3, after batch 2)** (new rule on the existing tap; grown-up): shares the order with batch 2. [Dive](deep-dives/island-bridges.md#build-slices-in-order)
 
-Files expected: `src/games/island-bridges/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`. The shared rules change, so the couch suite follows.
+Files expected: `src/games/island-bridges/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`. The shared rules change, so the couch suite follows.
 
 Proof: new rule on the existing tap: typecheck, rule tests including the brute force at three, one play of level 7 with a third plank tap and a fourth that bumps, to the sticker; one portrait screenshot of a triple bridge; `fingerdemo` at 7; `BROWSER_SUITE=couchgames` filtered to Island Bridges.
 
@@ -1127,7 +1127,7 @@ Built 2026-11-04, [PR #1199](https://github.com/rjdunlap/neo/pull/1199), branch 
 
 - **`island-bridges`, school opening: levels 5 and 1 at child size (dive slice 5, defined 2026-11-04)** (new entry with a layout change; school): `school` joins `bands` playing existing levels 5 then 1 (order `[5, 1]`), home stays Lantern Lake (Wonder Woods lists it by subject), 100-unit cells and buttons at school only, accounting as built plus the `bridges.trouble` and `bridges.done-school` voice lines, how-to note. [Definition](definitions/island-bridges-school-opening.md)
 
-Files expected: `src/games/island-bridges/index.ts`, `logic.ts` (or `layout.ts`) and their tests, `src/games/registry.test.ts`, `src/content/lands.ts` (the comment), `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/island-bridges/index.ts`, `logic.ts` (or `layout.ts`) and their tests, `src/games/registry.test.ts`, `src/content/lands.ts` (the comment), its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new entry with a layout change: typecheck, the game's rule tests and the registry and lands tests, one scripted school play of level 5 with a stray plank and one hint, then level 1 to the sticker, one portrait screenshot of the 7 by 7 sea, a logged 1024 × 768 layout check (cells and buttons at least 100), `fingerdemo` at school level 1.
 
@@ -1137,7 +1137,7 @@ Built 2026-11-02, [PR #1131](https://github.com/rjdunlap/neo/pull/1131), branch 
 
 - **`lantern-lights`, a 6 by 6 pond (dive slice 1)** (new levels on the existing interaction; grown-up): levels 7–8 (`PLANS` rows, grown-up max 8) and the portrait counts fix: when the room beside the pond is under about 260 units, the two counts sit in one line above it, clear of the top corner buttons. [Dive](deep-dives/lantern-lights.md#build-slices-in-order)
 
-Files expected: `src/games/lantern-lights/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/lantern-lights/logic.ts`, `logic.test.ts`, `index.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new levels on the existing interaction: typecheck, the game's rule tests, one browser play of level 8 (a hint, then to the sticker), one portrait screenshot of level 8 with the counts, `fingerdemo` at 8. Trips stop at level 5 and the course is pinned at 6, so no couch suite.
 
@@ -1147,7 +1147,7 @@ Built 2026-11-04, [PR #1207](https://github.com/rjdunlap/neo/pull/1207), branch 
 
 - **`lantern-lights`, named hints and Show me a short way (dive slice 2)** (new interaction; grown-up): `hintFor` kinds and two voice lines; the after-pond buttons and replay on touch only. Shares the `index.ts` layout with batch 1. [Dive](deep-dives/lantern-lights.md#build-slices-in-order)
 
-Files expected: `src/games/lantern-lights/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/lantern-lights/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new interaction: typecheck, rule tests (hint kinds by `ways`/`best` count; the replay reaches all-lit in `par`), one play at level 3 with one hint (its named line), lighting the pond and the replay, one portrait screenshot mid-replay, `fingerdemo` at 3 (the bot must press Next pond).
 
@@ -1157,7 +1157,7 @@ Built 2026-11-04, [PR #1217](https://github.com/rjdunlap/neo/pull/1217), branch 
 
 - **`lantern-lights`, lily-pad ponds, level 9 (dive slice 3)** (new rule on the existing tap; grown-up): masked `footprint`/`solve`/`parsePond`, authored shapes, pad art and `lantern.pads`. Shares `PLANS` and the max with batch 1. [Dive](deep-dives/lantern-lights.md#build-slices-in-order)
 
-Files expected: `src/games/lantern-lights/logic.ts`, `logic.test.ts`, `index.ts`, `src/games/lantern-lights/course.test.ts` (since `parsePond` changes), `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`. The shared rules change, so the couch suite follows.
+Files expected: `src/games/lantern-lights/logic.ts`, `logic.test.ts`, `index.ts`, `src/games/lantern-lights/course.test.ts` (since `parsePond` changes), its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`. The shared rules change, so the couch suite follows.
 
 Proof: new rule: typecheck, rule tests including the brute force on every shape and the free-dimension cap, one play of level 9 with a tap on a pad (nothing counted) and a hint, to the sticker; one portrait screenshot; `fingerdemo` at 9; `BROWSER_SUITE=couchgames` filtered to Lantern Lights.
 
@@ -1167,7 +1167,7 @@ Built 2026-11-04, [PR #1200](https://github.com/rjdunlap/neo/pull/1200), branch 
 
 - **`lantern-lights`, school opening: levels 1 and 2 (dive slice 4, defined 2026-11-04)** (new band entry on the existing interaction, no layout change; school): `school` joins `bands` playing the two 3 by 3 levels (range 1-2, no `order`), home stays Lantern Lake (Wonder Woods lists it by subject), misses stay 0 with a once-a-pond `lantern.stuck-school` nudge toward Hint, a child's `lantern.go-school` instruction, no footprint preview, co-play and how-to step fixes. [Definition](definitions/lantern-lights-school-opening.md)
 
-Files expected: `src/games/lantern-lights/index.ts`, `logic.ts`, `logic.test.ts`, `src/games/registry.test.ts`, `src/content/lands.ts` (the comment), `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/lantern-lights/index.ts`, `logic.ts`, `logic.test.ts`, `src/games/registry.test.ts`, `src/content/lands.ts` (the comment), its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new band entry, no layout change: typecheck, the game's rule tests and the registry and lands tests, one scripted school play of level 1 with one hint and the stuck nudge, then level 2 to the sticker, one portrait screenshot, a logged 1024 × 768 check (cells and buttons at least 100), `fingerdemo` at school level 2.
 
@@ -1175,7 +1175,7 @@ Proof: new band entry, no layout change: typecheck, the game's rule tests and th
 
 - **`peekaround-island`, truthful support and real choices (dive slice 1)** (**built 2026-11-02**, [PR #1136](https://github.com/rjdunlap/neo/pull/1136); existing-game fix; all bands): a level-scoped how-to, the level-2 hint on the hider when visible, level 4's three shore friends, level 5's pair rule so the turn always names someone, and `lap` dropped from `LEVELS` and the repeated guard. [Dive](deep-dives/peekaround-island.md#build-slices-in-order)
 
-Files: `src/games/peekaround-island/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/howto.ts`, `src/content/voice-script.ts`, `docs/GAMES.md`.
+Files: `src/games/peekaround-island/logic.ts`, `logic.test.ts`, `index.ts`, its `howto.ts`, its `voice.ts`, `docs/GAMES.md`.
 
 Proof: existing-game fix tier: typecheck, rule tests (every request leaving a wrong spot, all three words at level 4, behind in level 5's first pair, the level-2 hint target), one filtered regression play at levels 2 and 5, `fingerdemo` at 5.
 
@@ -1183,7 +1183,7 @@ Proof: existing-game fix tier: typecheck, rule tests (every request leaving a wr
 
 - **`peekaround-island`, level 5 *Who will be in front?* (dive slice 2)** (**built 2026-11-04**, [PR #1219](https://github.com/rjdunlap/neo/pull/1219); existing level, new tap): she guesses who will be in front, from a picture card, before the half turn; any guess is free, not a miss. [Dive](deep-dives/peekaround-island.md#build-slices-in-order)
 
-Files expected: `src/games/peekaround-island/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+Files expected: `src/games/peekaround-island/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, `docs/GAMES.md`.
 
 Proof: typecheck, rule tests, one play of level 5 with one wrong prediction (no miss) and one right, `fingerdemo` at 5.
 
@@ -1191,7 +1191,7 @@ Proof: typecheck, rule tests, one play of level 5 with one wrong prediction (no 
 
 - **`peekaround-island`, level 6 *Who can't see it?* (dive slice 3)**, after batch 1 (new interaction; pre-K and school): she taps the friend who cannot see the pictured spot from where they stand; a wrong friend turns to show it can see; pre-K max 6, school max 6. [Dive](deep-dives/peekaround-island.md#build-slices-in-order)
 
-Files expected: `src/games/peekaround-island/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/peekaround-island/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new-interaction tier: typecheck, rule tests, one play of level 6 with one wrong friend (the turn shows it can see), a second for the glow, then the right friend, one portrait screenshot with the picture card, `fingerdemo` at 6.
 
@@ -1199,7 +1199,7 @@ Proof: new-interaction tier: typecheck, rule tests, one play of level 6 with one
 
 - **`peekaround-island`, level 7 *What does the duck see?* (dive slice 4)** (**built 2026-11-04**, [PR #1227](https://github.com/rjdunlap/neo/pull/1227); new interaction, after batch 3): she chooses which of three picture cards shows what the duck sees from where it stands; pre-K and school max 7; the cards are live mini scenes (Containers), not render textures. [Dive](deep-dives/peekaround-island.md#build-slices-in-order)
 
-Files expected: `src/games/peekaround-island/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/peekaround-island/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new-interaction tier: typecheck, rule tests, one play of level 7 with one wrong card and its turn, a second for the glow, then the right card, one portrait screenshot of the three cards, `fingerdemo` at 7, one build for the render textures.
 
@@ -1207,7 +1207,7 @@ Proof: new-interaction tier: typecheck, rule tests, one play of level 7 with one
 
 - **`peekaround-island`, level 8 *From the sky* (dive slice 5)** (**built 2026-11-04**, [PR #1231](https://github.com/rjdunlap/neo/pull/1231)), after batch 4 (school only, school range 4–8, pre-K unchanged at 7; new interaction): she chooses which of three top-down maps shows the island from above (friends as coloured dots around the tree). [Definition](definitions/peekaround-from-the-sky.md), [dive](deep-dives/peekaround-island.md#build-slices-in-order)
 
-Files expected: `src/games/peekaround-island/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/peekaround-island/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new-interaction tier: typecheck, rule tests, one scripted play of level 8 with a mirror map (a miss), a turned map (a miss, the island turns and back), the ring, then the right map, one portrait screenshot of the three maps, a logged check at a 1024×768 view that the crown's top clears the cards and the shadow ends above the bottom edge, `fingerdemo` at 8. No build needed.
 
@@ -1217,7 +1217,7 @@ Built 2026-11-03, [PR #1138](https://github.com/rjdunlap/neo/pull/1138); [closeo
 
 - **`picture-graph`, Fair meadows, a visible first pick and hints that show why (dive slice 1)** (existing-game fix; pre-K and school): the placement fixes for levels 1–3 and 7, a visible first pick on every level, hints that show why, the `bear` critter and two seeded backdrops. [Dive](deep-dives/picture-graph.md#build-slices-in-order)
 
-Files expected: `src/games/picture-graph/logic.ts`, `logic.test.ts`, `index.ts`, `src/art/`, `src/content/voice-script.ts`, `docs/GAMES.md`.
+Files expected: `src/games/picture-graph/logic.ts`, `logic.test.ts`, `index.ts`, `src/art/`, its `voice.ts`, `docs/GAMES.md`.
 
 Proof: existing-game fix tier: typecheck, rule tests including the placement sweep for levels 1–3 and 7 and the "how many more" distractor, one filtered regression play at levels 4 and 7 with a double tap on one bar and two wrong "how many more" answers; `fingerdemo` only if the bot's taps change.
 
@@ -1227,7 +1227,7 @@ Built 2026-11-03, [PR #1181](https://github.com/rjdunlap/neo/pull/1181); [closeo
 
 - **`picture-graph`, Level 8, *Line them up* (dive slice 2)** (new interaction; pre-K and school): she lines real things (shells, stones, driftwood, feathers; never litter) in rows by kind and reads which row has more; first in pre-K's `order`, declared in `entryLevels`, second-tier in school's order after level 2. [Dive](deep-dives/picture-graph.md#build-slices-in-order)
 
-Files expected: `src/games/picture-graph/logic.ts`, `logic.test.ts`, `index.ts`, `src/art/`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/picture-graph/logic.ts`, `logic.test.ts`, `index.ts`, `src/art/`, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new-interaction tier: typecheck, unit tests including order, entry and lands, one scripted play at pre-K and one at school with one wrong row and the matching-lines hint, one portrait screenshot of the tray, `fingerdemo` at 8, one build for the art and voice.
 
@@ -1237,7 +1237,7 @@ Built 2026-11-03, [PR #1188](https://github.com/rjdunlap/neo/pull/1188); [closeo
 
 - **`picture-graph`, Level 9, *A key of five* (dive slice 3)**, after batch picture-graph 2 (independent except for the level number) (new level on an existing interaction): a keyed graph where one mark stands for five, with a one-per-mark bar and the blocks answer; school. [Dive](deep-dives/picture-graph.md#build-slices-in-order)
 
-Files expected: `src/games/picture-graph/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+Files expected: `src/games/picture-graph/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, `docs/GAMES.md`.
 
 Proof: new-level tier: typecheck, rule tests, one play of level 9 with a one-per-mark bar and the blocks answer, `fingerdemo` at 9, one portrait screenshot.
 
@@ -1247,7 +1247,7 @@ Built 2026-11-03, [PR #1193](https://github.com/rjdunlap/neo/pull/1193); [closeo
 
 - **`picture-graph`, Level 10, *Two pictures, one meadow* (dive slice 4)**, after batch picture-graph 1 (the first-pick lift) (new interaction): she compares two different-looking pictures of one meadow and picks the pair that show the same counts, with a trap picture that does not. [Dive](deep-dives/picture-graph.md#build-slices-in-order)
 
-Files expected: `src/games/picture-graph/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+Files expected: `src/games/picture-graph/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, `docs/GAMES.md`.
 
 Proof: new-interaction tier: typecheck, rule tests, one play with the trap then the right pair, one portrait screenshot, `fingerdemo` at 10.
 
@@ -1257,7 +1257,7 @@ Built 2026-11-04, [PR #1201](https://github.com/rjdunlap/neo/pull/1201); [closeo
 
 - **`picture-graph`, Level 11, *What the graph can say* (dive slice 5)**, after batch picture-graph 4 (built) (new interaction): every claim is decided by what is on the screen; she stamps a claim as what the graph says or what it can't say (it does not measure that), never a guess about another meadow. [Dive](deep-dives/picture-graph.md#build-slices-in-order)
 
-Files expected: `src/games/picture-graph/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+Files expected: `src/games/picture-graph/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, `docs/GAMES.md`.
 
 Proof: new-interaction tier: typecheck, rule tests, one play with one wrong can't-say stamp and the glow, one portrait screenshot, `fingerdemo` at 11, one build for the voice. A person check stays open.
 
@@ -1265,7 +1265,7 @@ Proof: new-interaction tier: typecheck, rule tests, one play with one wrong can'
 
 - **`picture-logic`, Fresh pictures and named hints (dive slice 1)** (**built 2026-11-03**, [PR #1139](https://github.com/rjdunlap/neo/pull/1139); extends the built game; grown-up, no new level): eight easier and eight harder 10 by 10 pictures and five 15 by 15 pictures, and a `why` on fill and cross hints with four voice lines. [Dive](deep-dives/picture-logic.md#build-slices-in-order)
 
-Files expected: `src/games/picture-logic/logic.ts`, `pictures.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts` and `docs/GAMES.md`.
+Files expected: `src/games/picture-logic/logic.ts`, `pictures.ts`, `logic.test.ts`, `index.ts`, its `voice.ts` and `docs/GAMES.md`.
 
 Proof: existing-interaction tier: typecheck, the game's rule tests, one filtered regression play at level 2 asking for one hint (its named line); bot unchanged, no `fingerdemo`.
 
@@ -1273,7 +1273,7 @@ Proof: existing-interaction tier: typecheck, the game's rule tests, one filtered
 
 - **`picture-logic`, Level 5 a small 5 by 5 to start and level 7 a 15 by 15 that needs more care (dive slice 2)** (**built 2026-11-04**, [PR #1220](https://github.com/rjdunlap/neo/pull/1220)), after batch picture-logic 1 (shares `pictures.ts` and the bank tests) (new levels on an existing interaction; grown-up): order `[5, 1, 2, 3, 4, 7]` with `entryLevels: [5]`. [Dive](deep-dives/picture-logic.md#build-slices-in-order)
 
-Files expected: `src/games/picture-logic/logic.ts`, `pictures.ts`, `logic.test.ts`, `index.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/picture-logic/logic.ts`, `pictures.ts`, `logic.test.ts`, `index.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new-level tier: typecheck, rule tests (order, entry, the 5 by 5 frame), one browser play of level 5 and of level 7 with one hint, `fingerdemo` at 5 and 7, one portrait screenshot of level 5.
 
@@ -1281,7 +1281,7 @@ Proof: new-level tier: typecheck, rule tests (order, entry, the 5 by 5 frame), o
 
 - **`picture-logic`, Level 6, *Two colours* (dive slice 3)** (**built 2026-11-04**, [PR #1224](https://github.com/rjdunlap/neo/pull/1224)), after batch picture-logic 2 (shares the order) and [Pixel Pictures batch 1](#pixel-pictures-1-fresh-pictures-and-colour-logic) (its `colorLineSolvable`) (new interaction; grown-up): colour pots and colour clues, a wrong-colour fill and a hint naming it. [Dive](deep-dives/picture-logic.md#build-slices-in-order)
 
-Files expected: `src/games/picture-logic/logic.ts`, `pictures.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/picture-logic/logic.ts`, `pictures.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new-interaction tier: typecheck, rule tests, one play of level 6 with one wrong-colour fill and a hint naming it, then to the sticker; one portrait screenshot of the colour pots and clues; `fingerdemo` at 6; one build. The building session confirms the couch trip keeps to its built levels.
 
@@ -1289,7 +1289,7 @@ Proof: new-interaction tier: typecheck, rule tests, one play of level 6 with one
 
 - **`pond-conga`, Duck-friendly food and a seeded bank (dive slice 1)** (**built 2026-11-03**, [PR #1140](https://github.com/rjdunlap/neo/pull/1140); extends the built game; grown-up, no new level): `foodArt(kind)` with peas, sweetcorn and oats, one kind per pond by seed; reeds on one seeded bank edge; voice, how-to and couch catalog wording without bread. [Dive](deep-dives/pond-conga.md#build-slices-in-order)
 
-Files expected: `src/games/pond-conga/index.ts`, `logic.ts`, `logic.test.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md` and `docs/COUCH-PLAY.md`.
+Files expected: `src/games/pond-conga/index.ts`, `logic.ts`, `logic.test.ts`, its `voice.ts`, its `howto.ts`, `docs/GAMES.md` and `docs/COUCH-PLAY.md`.
 
 Proof: existing-interaction tier: typecheck, the game's rule tests (kind is seeded; pond unchanged; Crumb Trail par unchanged), one filtered regression play at level 1; bot unchanged, no `fingerdemo`; one build for the art.
 
@@ -1297,7 +1297,7 @@ Proof: existing-interaction tier: typecheck, the game's rule tests (kind is seed
 
 - **`pond-conga`, Level 7, *Choose the order* (dive slice 2)** (**built 2026-11-04**, [PR #1223](https://github.com/rjdunlap/neo/pull/1223); builds on the built food art) (new rule on the existing interaction; grown-up): groups of food eaten in an order she chooses, par over orders, a group-aware demo pond and a hint to a best-order item. [Dive](deep-dives/pond-conga.md#build-slices-in-order)
 
-Files expected: `src/games/pond-conga/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/pond-conga/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new-rule tier: typecheck, rule tests (par over orders, group-aware demo pond, hint to a best-order item), one play of level 7 eating a group in a longer order then with one hint, `fingerdemo` at 7, one portrait screenshot of a group of three.
 
@@ -1305,7 +1305,7 @@ Proof: new-rule tier: typecheck, rule tests (par over orders, group-aware demo p
 
 - **`pond-conga`, Level 8, *Step by step* (dive slice 3)** (**built 2026-11-04**, [PR #1226](https://github.com/rjdunlap/neo/pull/1226); new interaction; grown-up, easy entry): the conga moves one step per input, with no movement without input. [Dive](deep-dives/pond-conga.md#build-slices-in-order)
 
-Files expected: `src/games/pond-conga/index.ts`, `logic.ts`, `logic.test.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `scripts/browser-check.mjs` if a case is needed, the README row and `docs/GAMES.md`.
+Files expected: `src/games/pond-conga/index.ts`, `logic.ts`, `logic.test.ts`, its `voice.ts`, its `howto.ts`, `scripts/browser-check.mjs` if a case is needed, the README row and `docs/GAMES.md`.
 
 Proof: new-interaction tier: typecheck, unit tests (order, entry, no movement without input), one scripted play of level 8 to its sticker with one bonk, one portrait screenshot, `fingerdemo` at 8, `BROWSER_SUITE=couchgames` filtered to Pond Conga (the controller path changes).
 
@@ -1313,7 +1313,7 @@ Proof: new-interaction tier: typecheck, unit tests (order, entry, no movement wi
 
 - **`pond-conga`, Level 9, *A long conga* (dive slice 4)** (**built 2026-11-04**, [PR #1230](https://github.com/rjdunlap/neo/pull/1230)), after batch pond-conga 2 (shares the level table and `order`) (new level; grown-up): a longer tail on a pond that rewards planning. [Dive](deep-dives/pond-conga.md#build-slices-in-order)
 
-Files expected: `src/games/pond-conga/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/pond-conga/logic.ts`, `logic.test.ts`, `index.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new-level tier: typecheck, rule tests, one play of level 9 with a tail bonk, `fingerdemo` at 9, one portrait screenshot.
 
@@ -1323,7 +1323,7 @@ Defined 2026-11-04; after batch pond-conga 3 (shares `index.ts`, `PLANS`, `LEVEL
 
 - **`pond-conga`, school opening: levels 10 and 11 step by step (dive slice 5, defined 2026-11-04)** (**built 2026-11-04**, [PR #1233](https://github.com/rjdunlap/neo/pull/1233)) (new band entry with a layout change and a school-only input rule; school): `school` joins `bands` playing two 4-row step-by-step ponds (7 by 4 at 100-unit cells), a swipe or tap-toward step moves the line one cell and it waits otherwise, a bump leaves the line in place with `conga.bonk-school`, the dots appear on the second bump without counting a hint, home stays Lantern Lake, a child's instruction, level-scoped how-to steps and co-play. [Definition](definitions/pond-conga-school-opening.md)
 
-Files expected: `src/games/pond-conga/index.ts`, `logic.ts`, `logic.test.ts`, `src/games/registry.test.ts`, `src/content/lands.ts` (the comment), `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/pond-conga/index.ts`, `logic.ts`, `logic.test.ts`, `src/games/registry.test.ts`, `src/content/lands.ts` (the comment), its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new band entry with a layout change and a school-only input rule: typecheck, the game's rule tests and the registry and lands tests, one scripted school play of level 10 with one bump (the line stays put), a second bump (the dots appear, no hint counted), then a tap-toward step and the sticker, then level 11 to its sticker, one portrait screenshot of the 7 by 4 pond, the logged 1024 × 768 sizes, `fingerdemo` at school level 11, one build for the voice lines. `couchgames` is not needed.
 
@@ -1331,7 +1331,7 @@ Proof: new band entry with a layout change and a school-only input rule: typeche
 
 - **`quick-tricks`, Truthful accounting, a seeded cast and a bow for the second show (dive slice 1)** (**built 2026-11-03**, [PR #1141](https://github.com/rjdunlap/neo/pull/1141); extends the built game; no new level): a leaf dropped below Bunny is free in level 1, show two hides the yellow arrow during Picnic Places and repeats `tricks.next` after ten quiet seconds, ends with a cast bow and `tricks.done`, its friends are `Critter`s, payoffs for the mailbox flag, friend wiggle and berry gulp, and a seeded friend, crosser and monster colour in show one with per-critter instruction lines. [Dive](deep-dives/quick-tricks.md#build-slices-in-order)
 
-Files expected: `src/games/quick-tricks/index.ts`, `logic.ts`, `logic.test.ts`, `src/content/voice-script.ts`, `src/content/howto.ts` and `docs/GAMES.md`.
+Files expected: `src/games/quick-tricks/index.ts`, `logic.ts`, `logic.test.ts`, its `voice.ts`, its `howto.ts` and `docs/GAMES.md`.
 
 Proof: existing-game fix tier: typecheck, the game's rule tests, one filtered regression play of level 1 with a leaf dropped below Bunny (no miss) and of level 4 to its sticker; `fingerdemo` at 4 only if the bot's play changes; one build if voice lines are added.
 
@@ -1339,7 +1339,7 @@ Proof: existing-game fix tier: typecheck, the game's rule tests, one filtered re
 
 - **`quick-tricks`, Level 7, *Two at once* (dive slice 2)** (**built 2026-11-04**, [PR #1228](https://github.com/rjdunlap/neo/pull/1228); shares `index.ts` and the cast; new rule on the existing interaction): two tricks asked at once across three friends. [Dive](deep-dives/quick-tricks.md#build-slices-in-order)
 
-Files expected: `src/games/quick-tricks/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/quick-tricks/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new-rule tier: typecheck, rule tests, one play of level 7 with one leaf over only two friends (kept, no miss), one wrong sock and the glow, then to the sticker, one portrait screenshot of the three friends, `fingerdemo` at 7.
 
@@ -1347,7 +1347,7 @@ Proof: new-rule tier: typecheck, rule tests, one play of level 7 with one leaf o
 
 - **`quick-tricks`, Level 8, *A tiny show*, the toddler entry (dive slice 3)** (**built 2026-11-04**, [PR #1232](https://github.com/rjdunlap/neo/pull/1232)), after batch quick-tricks 1 (new level with `order`): an easy toddler opening. [Dive](deep-dives/quick-tricks.md#build-slices-in-order)
 
-Files expected: `src/games/quick-tricks/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/quick-tricks/logic.ts`, `logic.test.ts`, `index.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new-level tier with `order`: typecheck, unit tests including the registry, lands and order/entry tests, one play of level 8 at toddler with a leaf in front of Bunny (succeeds) and a short pull past halfway, `fingerdemo` at 8.
 
@@ -1355,7 +1355,7 @@ Proof: new-level tier with `order`: typecheck, unit tests including the registry
 
 - **`quick-tricks`, Level 9, *The third show* (dive slice 5)** (**built 2026-11-04**, [PR #1235](https://github.com/rjdunlap/neo/pull/1235)), after batch quick-tricks 1 (independent of batches 2 and 3): music box crank, fill the cups, loop the fireflies. [Dive](deep-dives/quick-tricks.md#build-slices-in-order), [definition](definitions/quick-tricks-third-show.md)
 
-Files expected: `src/games/quick-tricks/third-logic.ts`, `third-logic.test.ts`, `third-show.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/quick-tricks/third-logic.ts`, `third-logic.test.ts`, `third-show.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new-interaction tier: typecheck, unit tests, one scripted play of level 9 at pre-K with a crank released mid-turn, one overfilled cup tipped out (no miss), two wrong loops then the glow, to the sticker, one portrait screenshot of the music box mid-turn, `fingerdemo` at 9, one build for the voice lines.
 
@@ -1365,7 +1365,7 @@ Built 2026-11-03, [PR #1142](https://github.com/rjdunlap/neo/pull/1142); [build 
 
 - **`read-do`, Fresh words and pictures (dive slice 1)** (extends the built game; no new level): level 1's five-colour pool, level 2's seeded animal and third round, level 3's seeded pair, *green, pink, pig, dog* voice lines, and the GAMES.md entry moved under Story Grove. [Dive](deep-dives/read-do.md#build-slices-in-order)
 
-Files expected: `src/games/read-do/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts` and `docs/GAMES.md`.
+Files expected: `src/games/read-do/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts` and `docs/GAMES.md`.
 
 Proof: existing-interaction tier: typecheck, the game's rule tests, one filtered regression play at level 3 on a seed with a pig or dog, one build for the voice lines; bot unchanged, no `fingerdemo`.
 
@@ -1375,7 +1375,7 @@ Built 2026-11-04, [PR #1234](https://github.com/rjdunlap/neo/pull/1234); [build 
 
 - **`read-do`, Levels 4–6, *Capital and stop* (dive slice 2; SS1 A–C)**, after batch read-do 1 (adds *pig* and *dog*; new interaction): capital, full stop, Send and Show it, *jumps/sleeps* and pre-K's `order`. [Dive](deep-dives/read-do.md#build-slices-in-order), [definition](definitions/read-do-capital-stop.md#build-order-for-the-dive)
 
-Files expected: `src/games/read-do/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, a `scripts/browser-check.mjs` case, the README row and `docs/GAMES.md`.
+Files expected: `src/games/read-do/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, a `scripts/browser-check.mjs` case, the README row and `docs/GAMES.md`.
 
 Proof: new-interaction tier: typecheck, unit tests, one filtered `readdo` play of level 4 and level 6 with one failed Send and one hint, one portrait screenshot, `fingerdemo` at 4, 5 and 6.
 
@@ -1385,7 +1385,7 @@ Built 2026-11-04, [PR #1241](https://github.com/rjdunlap/neo/pull/1241); [build 
 
 - **`read-do`, level 7 *Make the sign* (dive slice 3; WC3)**, after batch read-do 2 (new interaction): a friend's wish card, a tray of word tiles dragged into the sign row, Show it and Send. [Dive](deep-dives/read-do.md#build-slices-in-order), [definition](definitions/read-do-make-the-sign.md#build-order-and-check-tier)
 
-Files expected: `src/games/read-do/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, a `readdo` case in the browser check script, the README row and `docs/GAMES.md`.
+Files expected: `src/games/read-do/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, a `readdo` case in the browser check script, the README row and `docs/GAMES.md`.
 
 Proof: new-interaction tier: typecheck, unit tests including registry, lands, how-to and layout, one filtered `readdo` play of level 7 with one failed Send and a second to raise the glow, one portrait screenshot of the tray, `fingerdemo` at 7, one build for the voice lines. The definition asks this build not to hard-code what levels 8–9 change: words that start in the sign with home tray slots, `signLayout(view, level)` taking the level, and drop resolution through one function a swap zone can extend ([couplings](definitions/read-do-mend-the-sign.md#build-order-and-check-tier)).
 
@@ -1395,7 +1395,7 @@ Built 2026-11-05, [PR #1247](https://github.com/rjdunlap/neo/pull/1247); [build 
 
 - **`read-do`, levels 8–9 *Mend the sign* (dive slice 4; KE1)**, after batch read-do 3 (level 8 new levels on level 7's interaction; level 9 a new interaction): the printed sign acted out, one insert or delete at level 8, one swap at level 9. [Dive](deep-dives/read-do.md#build-slices-in-order), [definition](definitions/read-do-mend-the-sign.md#build-order-and-check-tier)
 
-Files expected: `src/games/read-do/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, a `readdo` case in the browser check script, the README row and `docs/GAMES.md`.
+Files expected: `src/games/read-do/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, a `readdo` case in the browser check script, the README row and `docs/GAMES.md`.
 
 Proof: typecheck, unit tests including registry, lands, how-to and layout, one filtered `readdo` play of level 8 with a Send of the unchanged sign then a second failed Send to raise the glow, then level 9 to its sticker via one swap, one portrait screenshot of the swap preview, `fingerdemo` at 8 and 9, one build for the voice lines; stop after 8 with a checkpoint if the allowance cannot cover 9.
 
@@ -1415,7 +1415,7 @@ Built 2026-11-04, [PR #1236](https://github.com/rjdunlap/neo/pull/1236); [build 
 
 - **`rhyme-time`, Level 8 *Silly pairs* (dive slice 2)**, after batch rhyme-time 1 (its three new pairs; new interaction): a place in the middle and three riders below, the one that rhymes hops in; pre-K `order: [1, 8, 2, 3, 5]`, school `order: [2, 8, 3, 4, 5, 6, 7]`. [Dive](deep-dives/rhyme-time.md#build-slices-in-order)
 
-Files expected: `src/games/rhyme-time/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the browser harness's Rhyme Time case, the README row and `docs/GAMES.md`.
+Files expected: `src/games/rhyme-time/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the browser harness's Rhyme Time case, the README row and `docs/GAMES.md`.
 
 Proof: new-interaction tier: typecheck, unit tests including order and entry, one scripted play of level 8 with one wrong rider and a second for the glow then the rider, one portrait screenshot of a scene, `fingerdemo` at 8, one build for the voice lines.
 
@@ -1425,7 +1425,7 @@ Built 2026-11-04, [PR #1242](https://github.com/rjdunlap/neo/pull/1242); [build 
 
 - **`rhyme-time`, Level 9, *Silly pairs, two to choose* (dive slice 3; chunk 18 preschool entry)**, after batch rhyme-time 2 (new band): level 8's scenes with two choices and three scenes per round; preschool `{ min: 8, max: 9, order: [9, 8] }`, `entryLevels: [9]`; Rhyme Time joins Story Grove's preschool page. [Dive](deep-dives/rhyme-time.md#build-slices-in-order)
 
-Files expected: `src/games/rhyme-time/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the lands and registry band tests, the README row and `docs/GAMES.md`.
+Files expected: `src/games/rhyme-time/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the lands and registry band tests, the README row and `docs/GAMES.md`.
 
 Proof: new-band tier: typecheck, unit tests including the lands and registry band tests, one play of level 9 at preschool, `fingerdemo` at 9, the preschool Story Grove page screenshot.
 
@@ -1435,7 +1435,7 @@ Built 2026-11-04, [PR #1239](https://github.com/rjdunlap/neo/pull/1239); [build 
 
 - **`rhyme-time`, Level 10 *Rhyme baskets* (dive slice 4)**, after batch rhyme-time 1 (new interaction): drag each picture into the basket whose key picture it rhymes with; school range 2–10. [Dive](deep-dives/rhyme-time.md#build-slices-in-order)
 
-Files expected: `src/games/rhyme-time/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the browser harness's Rhyme Time case, the README row and `docs/GAMES.md`.
+Files expected: `src/games/rhyme-time/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the browser harness's Rhyme Time case, the README row and `docs/GAMES.md`.
 
 Proof: new-interaction tier: typecheck, unit tests, one scripted play with a wrong basket, a second for the glow and an empty-space drop, one portrait screenshot, `fingerdemo` at 10.
 
@@ -1445,7 +1445,7 @@ Built 2026-11-03, [PR #1144](https://github.com/rjdunlap/neo/pull/1144); [build 
 
 - **`secret-code`, Fair rows, a hint that keeps up and three doors (dive slice 1)** (extends the built game; no new level): misses counted only from tries on screen, the refreshed hint, the "no more of that stone" line and three seeded doors. [Dive](deep-dives/secret-code.md#build-slices-in-order)
 
-Files expected: `src/games/secret-code/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+Files expected: `src/games/secret-code/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, `docs/GAMES.md`.
 
 Proof: existing-game fix tier: typecheck, the game's rule tests including the hidden-row case and the refreshed hint, one filtered regression play of level 5 in landscape with seven tries and a stone ruled out only by a hidden row (no miss), one portrait screenshot of the gate; bot unchanged, no `fingerdemo`.
 
@@ -1455,7 +1455,7 @@ Built 2026-11-04, [PR #1238](https://github.com/rjdunlap/neo/pull/1238); [build 
 
 - **`secret-code`, Level 8 *Four slots, a repeat* (dive slice 2)**, after batch secret-code 1 (shares the plan table and the visible-rows rule; new level): four slots with a repeated colour. [Dive](deep-dives/secret-code.md#build-slices-in-order)
 
-Files expected: `src/games/secret-code/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+Files expected: `src/games/secret-code/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, `docs/GAMES.md`.
 
 Proof: new-level tier: typecheck, rule tests, one play of level 8 to its sticker, `fingerdemo` at 8.
 
@@ -1465,7 +1465,7 @@ Built 2026-11-05, [PR #1246](https://github.com/rjdunlap/neo/pull/1246); [build 
 
 - **`secret-code`, Level 9 *Be the door* (dive slice 3)**, after batch secret-code 1 (new interaction): she chooses the code and marks the pet's tries with gray, yellow and green discs; pre-K and school `order` gain 9. [Dive](deep-dives/secret-code.md#build-slices-in-order)
 
-Files expected: `src/games/secret-code/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+Files expected: `src/games/secret-code/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, `docs/GAMES.md`.
 
 Proof: new-interaction tier: typecheck, unit tests including `order`, one scripted play of level 9 with a made code, one wrong mark and a second for the glow, then to the sticker, one portrait screenshot with the mark discs, `fingerdemo` at 9.
 
@@ -1475,7 +1475,7 @@ Built 2026-11-05, [PR #1249](https://github.com/rjdunlap/neo/pull/1249); [build 
 
 - **`secret-code`, Level 10 *One slot*, the preschool opening (dive slice 4; chunk 18 preschool entry)**, after batch secret-code 1 (new band): one slot, a tap and the key give a green or a crossed-out gray at once; Secret Code joins Puzzle Peaks' preschool page. [Dive](deep-dives/secret-code.md#build-slices-in-order)
 
-Files expected: `src/games/secret-code/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+Files expected: `src/games/secret-code/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, `docs/GAMES.md`.
 
 Proof: new-band tier: typecheck, unit tests including the lands and registry band tests, one play of level 10 at preschool with one crossed-out stone tried, `fingerdemo` at 10, the preschool Puzzle Peaks page screenshot.
 
@@ -1485,7 +1485,7 @@ Built 2026-11-04, [PR #1243](https://github.com/rjdunlap/neo/pull/1243); [build 
 
 - **`secret-code`, Level 11 *A bigger detective door* (dive slice 5)**, after batch secret-code 2 (shares the order; new level): a larger deduction door built on level 8's four slots. [Dive](deep-dives/secret-code.md#build-slices-in-order)
 
-Files expected: `src/games/secret-code/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+Files expected: `src/games/secret-code/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, `docs/GAMES.md`.
 
 Proof: new-level tier with a layout check: typecheck, rule tests (uniqueness and the time bound), one play of level 11 with one contradicting try, one portrait screenshot of four shown rows, `fingerdemo` at 11.
 
@@ -1495,7 +1495,7 @@ Built 2026-11-05, [PR #1255](https://github.com/rjdunlap/neo/pull/1255); [build 
 
 - **`secret-code`, Couch course *The Code Doors* (dive slice 6)**, after batch secret-code 1 (couch catalog): five frozen codes at levels 4–6, par from the fixed reference solver (`nextMove`) per the October 23 rule. [Dive](deep-dives/secret-code.md#build-slices-in-order)
 
-Files expected: `src/games/secret-code/logic.ts`, `logic.test.ts`, `index.ts`, `src/couch/course.ts`, the couch catalog, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+Files expected: `src/games/secret-code/logic.ts`, `logic.test.ts`, `index.ts`, `src/couch/course.ts`, the couch catalog, its `voice.ts`, its `howto.ts`, `docs/GAMES.md`.
 
 Proof: couch catalog tier: course tests, `BROWSER_SUITE=couchgames` filtered to Secret Code.
 
@@ -1505,7 +1505,7 @@ Built 2026-11-05, [PR #1258](https://github.com/rjdunlap/neo/pull/1258); [build 
 
 - **`secret-code`, Level 12 *Swap seats* (dive slice 8)**, after batch secret-code 3 (built; reuses level 9's mark discs; new interaction): school only; a seat question (Two of us / Just me), she makes a code and marks a grown-up's tries under a lid, then swaps and breaks the grown-up's code with levels 3–6 rules; Just me puts the pet in seat 2; two-seat rounds finish through `swapResult` with at least one hint (supported completion); school `order` becomes [2,3,4,9,12,5,6,7,8,11]; seven new `code.*` voice lines. [Dive](deep-dives/secret-code.md#level-12-swap-seats-maker-and-breaker-defined-2026-11-05)
 
-Files expected: `src/games/secret-code/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+Files expected: `src/games/secret-code/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, `docs/GAMES.md`.
 
 Proof: new-interaction tier: typecheck, unit tests including `swapResult` never smooth with two seats and `order`, one scripted Two of us play of level 12 with one wrong mark and one ignored clue to the sticker, portrait screenshots of the seat question and the lid, `fingerdemo` at 12.
 
@@ -1513,7 +1513,7 @@ Proof: new-interaction tier: typecheck, unit tests including `swapResult` never 
 
 - **`shape-buddies`, What grows: three seeds and sprouts (dive slice 1; built 2026-11-03, PR #1145)** (extends the built game; no new level): a seeded bean, sunflower or acorn with its own code-drawn sprout, and the guidance test over every `PLANS` level. [Dive](deep-dives/shape-buddies.md#build-slices-in-order)
 
-Files expected: `src/games/shape-buddies/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+Files expected: `src/games/shape-buddies/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, `docs/GAMES.md`.
 
 Proof: existing-interaction tier: typecheck, the game's rule tests, one filtered regression play of level 1 to its sticker, one portrait screenshot of a non-bean sprout; bot unchanged, no `fingerdemo`.
 
@@ -1523,7 +1523,7 @@ Built 2026-11-04, [PR #1244](https://github.com/rjdunlap/neo/pull/1244); [build 
 
 - **`shape-buddies`, Level 4 *Down and catch* (dive slice 2)** (new level): the near half is raised like level 2's bridge dock and the far half sits at the low bank, so the handle must slope down to a cup. [Dive](deep-dives/shape-buddies.md#build-slices-in-order)
 
-Files expected: `src/games/shape-buddies/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+Files expected: `src/games/shape-buddies/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, `docs/GAMES.md`.
 
 Proof: new-level tier: typecheck, rule tests (the exact accepted set, the step-aware joined lines), one play of level 4 with a flat path first then to its sticker, one portrait screenshot of the raised near half, `fingerdemo` at 4, one build for the voice lines.
 
@@ -1533,7 +1533,7 @@ Built 2026-11-05, [PR #1248](https://github.com/rjdunlap/neo/pull/1248); [build 
 
 - **`shape-buddies`, Level 5 *A cup on the ledge* (dive slice 3)** (batch shape-buddies 2 built; shares `PLANS`, `LEVELS` and the joined-line changes; new rule): a rocky crack with a ledge, solved by a bridge plus a cup or by one cup on the ledge. [Dive](deep-dives/shape-buddies.md#build-slices-in-order)
 
-Files expected: `src/games/shape-buddies/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+Files expected: `src/games/shape-buddies/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, `docs/GAMES.md`.
 
 Proof: new-rule tier: typecheck, rule tests (both families, guidance keeps a working friend, the carry from either dock), one play of level 5 solved with the cup on the ledge and a replay solved with bridge and cup, one portrait screenshot of the ledge, `fingerdemo` at 5, one build.
 
@@ -1543,7 +1543,7 @@ Built 2026-11-05, [PR #1253](https://github.com/rjdunlap/neo/pull/1253); [build 
 
 - **`shape-buddies`, Level 6 *Which way round?* (dive slice 4)**, after batch shape-buddies 3 (new interaction): the stream runs the other way and she presses a new Turn button so a slope faces down toward the low bank; school only. [Dive](deep-dives/shape-buddies.md#build-slices-in-order)
 
-Files expected: `src/games/shape-buddies/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+Files expected: `src/games/shape-buddies/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, `docs/GAMES.md`.
 
 Proof: new-interaction tier: typecheck, unit tests including the four-view layout with Turn, one scripted play with an unturned slope then Turn to the sticker, one portrait screenshot of the mirrored stream, `fingerdemo` at 6, one build.
 
@@ -1553,7 +1553,7 @@ Built 2026-11-05, [PR #1256](https://github.com/rjdunlap/neo/pull/1256); [build 
 
 - **`shape-buddies`, Level 7 *One friend, one job*, the preschool opening (dive slice 5)** (batch shape-buddies 2 built; shares `LEVELS`; new band): one friend, a fixed plank over the gap and a cup at the catch; Shape Buddies joins Tinker Lab's preschool page and pre-K gains `order: [7, 1, 2, 3, 4, 5]` with `entryLevels: [7]`. [Dive](deep-dives/shape-buddies.md#build-slices-in-order)
 
-Files expected: `src/games/shape-buddies/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`, and the lands and registry band tests only if their expectations change.
+Files expected: `src/games/shape-buddies/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, `docs/GAMES.md`, and the lands and registry band tests only if their expectations change.
 
 Proof: new-band tier: typecheck, unit tests including the lands, registry band and order/entry tests, one play of level 7 at preschool with a Flat friend at the catch first, `fingerdemo` at 7, the preschool Tinker Lab page screenshot.
 
@@ -1563,7 +1563,7 @@ Built 2026-11-05, [PR #1265](https://github.com/rjdunlap/neo/pull/1265); [build 
 
 - **`shape-buddies`, Level 8 *Your friend, my friend* (dive slice 7)** (batch shape-buddies 5 built; shares `LEVELS` and the pre-K `order`; new interaction): a seat question, then level 3's spoon built by two people taking turns with one friend each (a drop passes the turn, a failed Try hands it to the friend whose role broke); **Just me** is level 3's solo switch. Pre-K `order: [7, 1, 2, 3, 8, 4, 5]`, school `order: [1, 2, 3, 8, 4, 5, 6]`. [Definition](deep-dives/shape-buddies.md#level-8-your-friend-my-friend-shared-roles-defined-2026-11-05)
 
-Files expected: `src/games/shape-buddies/logic.ts`, `logic.test.ts`, `index.ts`, `src/art/seats.ts` (new, Secret Code's `twoArt()` moved), `src/games/secret-code/index.ts` (the import only), `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+Files expected: `src/games/shape-buddies/logic.ts`, `logic.test.ts`, `index.ts`, `src/art/seats.ts` (new, Secret Code's `twoArt()` moved), `src/games/secret-code/index.ts` (the import only), its `voice.ts`, its `howto.ts`, `docs/GAMES.md`.
 
 Proof: new-interaction tier: typecheck, unit tests including the turn rule, `sharedResult` and both orders, one play of level 8 at pre-K in Two of us with a tap on the dimmed friend and a failed Try that hands the turn over, then to the sticker, one portrait screenshot of the seat question, `fingerdemo` at 8, one build, one filtered Secret Code play of level 12 to its seat question.
 
@@ -1571,7 +1571,7 @@ Proof: new-interaction tier: typecheck, unit tests including the turn rule, `sha
 
 - **`sing-along-barn`, Twinkle and Wheels on the Bus (dive slice 1)** (**built 2026-11-03**, branch `claude/sing-along-barn-1`, PR #1146; extends the built game; two new tunes): the test-guarded exception for tunes with their own notes, the two tunes, the name placeholder, the two-row chooser and the voice lines; the notes source-checked from a score and cited in GAMES. [Dive](deep-dives/sing-along-barn.md#build-slices-in-order)
 
-Files expected: `src/games/sing-along-barn/logic.ts`, `logic.test.ts`, `index.ts`, `src/audio/sfx.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+Files expected: `src/games/sing-along-barn/logic.ts`, `logic.test.ts`, `index.ts`, `src/audio/sfx.ts`, its `voice.ts`, its `howto.ts`, `docs/GAMES.md`.
 
 Proof: existing-interaction tier plus layout: typecheck, the game's rule tests (exception allow-list, one note per syllable, answers, the placeholder), one filtered play at level 5 choosing Twinkle and at level 1 on a Wheels seed, one portrait screenshot of the ten-card chooser, `fingerdemo` at 5, one build for the voice lines and `sfx` change.
 
@@ -1579,7 +1579,7 @@ Proof: existing-interaction tier plus layout: typecheck, the game's rule tests (
 
 - **`sing-along-barn`, Level 7 *Finish the line* (dive slice 2)** (**built 2026-11-05**, branch `claude/sing-along-barn-finish-line`, PR #1259), after batch sing-along-barn 1 (shares the tune tables; Twinkle's gap word; new level): the tune stops before the rhyming word and a picture waits at the door; any touch sings it. [Dive](deep-dives/sing-along-barn.md#build-slices-in-order)
 
-Files expected: `src/games/sing-along-barn/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`, and the lands and registry tests only if their expectations change.
+Files expected: `src/games/sing-along-barn/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, `docs/GAMES.md`, and the lands and registry tests only if their expectations change.
 
 Proof: new-level tier with `order`: typecheck, unit tests including order, lands and the gap table, one play of level 7 at toddler mashing through the pause, one portrait screenshot of the picture at the door, `fingerdemo` at 7, one build.
 
@@ -1587,7 +1587,7 @@ Proof: new-level tier with `order`: typecheck, unit tests including order, lands
 
 - **`sing-along-barn`, Level 8 *Which one finishes it?* (dive slice 3)** (**built 2026-11-05**, branch `claude/sing-along-which-finishes`, PR #1264), after batch sing-along-barn 2 (shares `LEVELS` and the gap table; new interaction): two pictures at the pause, only the rhyming word finishes the line, a non-rhyming pick is a miss. [Dive](deep-dives/sing-along-barn.md#build-slices-in-order)
 
-Files expected: `src/games/sing-along-barn/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+Files expected: `src/games/sing-along-barn/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, `docs/GAMES.md`.
 
 Proof: new-interaction tier: typecheck, rule tests for the rhyme table and seeded side, one play of level 8 with one wrong picture, a second for the glow, then the rhyme, one portrait screenshot, `fingerdemo` at 8.
 
@@ -1595,7 +1595,7 @@ Proof: new-interaction tier: typecheck, rule tests for the rhyme table and seede
 
 - **`sink-float`, Fresh things (dive slice 1)** (**built 2026-11-03**, branch `claude/sink-float-fresh-things`, PR #1147) (extends the built game; fresh content in levels 1–4 and 6): feather, marble, wooden log, ice cube and paperclip with `thingArt`, journal lines and ordering, and property tests replacing the pinned-draws test. [Dive](deep-dives/sink-float.md#build-slices-in-order)
 
-Files expected: `src/games/sink-float/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, the journal source and tests, `docs/GAMES.md`.
+Files expected: `src/games/sink-float/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, the journal source and tests, `docs/GAMES.md`.
 
 Proof: existing-interaction tier plus art: typecheck, the game's rule tests and the journal tests, one filtered regression play of level 4 on a seed with a new thing and of level 6 with a new surprise, one portrait screenshot of the new art in the tank, one build (journal and voice lines are shared). Bot unchanged.
 
@@ -1603,7 +1603,7 @@ Proof: existing-interaction tier plus art: typecheck, the game's rule tests and 
 
 - **`sink-float`, Level 9 *Big and small* (dive slice 2)** (**built 2026-11-05**, branch `claude/sink-float-big-small`, PR #1261), after batch sink-float 1 (the log and pebble art; converts the plans to a table keyed by level ID and moves the bands to `order`; level ID 8 stays reserved for Garden Raft; new level): three pairs of one material at two sizes; the big one is tested, then she guesses the small one, then tests it; guesses are never misses. [Dive](deep-dives/sink-float.md#build-slices-in-order)
 
-Files expected: `src/games/sink-float/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`, and the lands and registry tests only if their expectations change.
+Files expected: `src/games/sink-float/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, `docs/GAMES.md`, and the lands and registry tests only if their expectations change.
 
 Proof: new-level tier with `order`: typecheck, unit tests including order, lands and the keyed-plan clamp, one play of level 9 at school with a surprise guess, `fingerdemo` at 9, one portrait screenshot.
 
@@ -1611,7 +1611,7 @@ Proof: new-level tier with `order`: typecheck, unit tests including order, lands
 
 - **`sink-float`, Level 10 *Salty or fresh* (dive slice 3)** (**built 2026-11-05**, branch `claude/sink-float-salty-or-fresh`, PR #1285), after batch sink-float 2 (built; new interaction, school only, order `[5, 6, 9, 7, 10]`): a new salt mode with two tanks; part 1 unscored, part 2 four scored questions. [Definition](definitions/salty-or-fresh.md), [dive](deep-dives/sink-float.md#build-slices-in-order)
 
-Files expected: `src/games/sink-float/logic.ts`, `logic.test.ts`, `index.ts`, `art.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`, and the registry and lands tests only if their expectations change.
+Files expected: `src/games/sink-float/logic.ts`, `logic.test.ts`, `index.ts`, `art.ts`, its `voice.ts`, its `howto.ts`, `docs/GAMES.md`, and the registry and lands tests only if their expectations change.
 
 Proof: new-interaction tier: typecheck, unit tests including the registry, lands, how-to and voice tests, one play of school level 10 through part 1, two wrong tanks on one egg question, the duck question, to the sticker, one portrait and one landscape screenshot, `fingerdemo` at 10, one direct `control()` call for the two-tank ring, one build; no `couchgames`.
 
@@ -1619,7 +1619,7 @@ Proof: new-interaction tier: typecheck, unit tests including the registry, lands
 
 - **`sudoku-garden`, level 7 A 4 by 4 bed to start (dive slice 1)** (built 2026-11-03; new level on the existing interaction; grown-up): `Size` 4, per-size box width, the plan, `order` `[7, 1, 2, 3, 4, 5, 6]` and `entryLevels: [7]`. [Dive](deep-dives/sudoku-garden.md#build-slices-in-order)
 
-Files expected: `src/games/sudoku-garden/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/sudoku-garden/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new level on the existing interaction: typecheck, the game's rule tests, one play of level 7 with one wrong number and one hint, to the sticker; one portrait screenshot of the 4 by 4 bed; `fingerdemo` at 7.
 
@@ -1627,7 +1627,7 @@ Proof: new level on the existing interaction: typecheck, the game's rule tests, 
 
 - **`sudoku-garden`, Fill marks on big beds (dive slice 2)** (built 2026-11-05; new interaction; grown-up): the button, its layout on 9 by 9 beds and its sweep. [Dive](deep-dives/sudoku-garden.md#build-slices-in-order)
 
-Files expected: `src/games/sudoku-garden/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/sudoku-garden/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new interaction: typecheck, unit tests (marks equal candidates; button only on 9 by 9 plans), one scripted play of level 4 with Fill marks then a placement that clears its peers' marks; one portrait and one landscape screenshot of the tray; bot unchanged, no `fingerdemo`.
 
@@ -1635,7 +1635,7 @@ Proof: new interaction: typecheck, unit tests (marks equal candidates; button on
 
 - **`sudoku-garden`, level 8 A crossing pair of rows (dive slice 3)** (built 2026-11-05; new rule on the existing tap; grown-up): shares the `order` with the built level 7 (batch 1); tier 4, the `xwing` step, generator or authored list, the hint and its lines. [Dive](deep-dives/sudoku-garden.md#build-slices-in-order)
 
-Files expected: `src/games/sudoku-garden/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/sudoku-garden/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new rule on the existing tap: typecheck, rule tests, one play of level 8 asking for hints until the X-Wing one (rings and line), then to the sticker; one portrait screenshot of the hint; `fingerdemo` at 8.
 
@@ -1643,7 +1643,7 @@ Proof: new rule on the existing tap: typecheck, rule tests, one play of level 8 
 
 - **`sudoku-garden`, level 9 Patchwork beds (dive slice 4)** (built 2026-11-05; new bed drawing; grown-up): shares the `order` and the per-size geometry with the built level 7 (batch 1); patch layouts in `geometry`, the borders and tints, the patch hint wording. [Dive](deep-dives/sudoku-garden.md#build-slices-in-order)
 
-Files expected: `src/games/sudoku-garden/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`. The shared geometry changes, so the couch suite follows.
+Files expected: `src/games/sudoku-garden/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`. The shared geometry changes, so the couch suite follows.
 
 Proof: new-interaction tier: typecheck, unit tests including order, one play of level 9 with one wrong number and one hint naming a patch; one portrait screenshot; `fingerdemo` at 9; `BROWSER_SUITE=couchgames` filtered to Sudoku Garden.
 
@@ -1651,7 +1651,7 @@ Proof: new-interaction tier: typecheck, unit tests including order, one play of 
 
 - **`sudoku-garden`, level 10 A 6 by 6 bed with sums in the cages (dive slice 5)** (built 2026-11-05; new interaction; grown-up): cages on `Puzzle`, cage-aware `search`, `cage-last` and `cage-sets`, `makeCageBed` (or its authored fallback), the dashed outlines, sum labels and moved marks, two hint lines, the instruction and the wrong-sum line; 9 by 9 cages are left out. [Dive](deep-dives/sudoku-garden.md#build-slices-in-order), [definition](deep-dives/sudoku-garden.md#cage-beds-level-10-definition-2026-11-03)
 
-Files expected: `src/games/sudoku-garden/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/sudoku-garden/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new interaction: typecheck, rule tests, one play of level 10 with one wrong number and one cage hint, to the sticker; one landscape and one portrait screenshot; `fingerdemo` at 10; one build for the voice lines.
 
@@ -1659,7 +1659,7 @@ Proof: new interaction: typecheck, rule tests, one play of level 10 with one wro
 
 - **`treasure-map`, Fresh maps and true hints (dive slice 1)** (built 2026-11-03; existing-game fix): seeded level 1 headers from a pool of seven pictures and shuffled colours via `headersFor(plan, rng)`, seeded map dressing, level 5's own `map.cluehint`, level 4's hint lighting the first leg, and the how-to level-3 step as a tap.** [Dive](deep-dives/treasure-map.md#build-slices-in-order)
 
-Files expected: `src/games/treasure-map/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+Files expected: `src/games/treasure-map/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, `docs/GAMES.md`.
 
 Proof: existing-game fix tier: typecheck, rule tests, one filtered regression play of levels 1 and 4 with two wrong digs each; one portrait screenshot of level 1; one build for the voice lines; bot unchanged, no `fingerdemo`.
 
@@ -1667,7 +1667,7 @@ Proof: existing-game fix tier: typecheck, rule tests, one filtered regression pl
 
 - **`treasure-map`, Level 6 *Write the card* (dive slice 2, after batch 1)** (built 2026-11-04; new interaction; school): a two-slot card of number and arrow tiles beside the map, footprints as she sets it, Go walks it and a miss names the leg that was off; shares the footprints and the step hint with batch 1. Not on the couch.** [Dive](deep-dives/treasure-map.md#build-slices-in-order)
 
-Files expected: `src/games/treasure-map/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+Files expected: `src/games/treasure-map/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, `docs/GAMES.md`.
 
 Proof: new-interaction tier: typecheck, rule tests; one scripted play with one card whose up leg is one too many, a second wrong card for the glow, then the right card; one portrait screenshot of the card tiles; `fingerdemo` at 6.
 
@@ -1675,7 +1675,7 @@ Proof: new-interaction tier: typecheck, rule tests; one scripted play with one c
 
 - **`treasure-map`, Level 7 *How far?* (dive slice 3, after batch 1)** (built 2026-11-05; new rule on the same tap; school): footprint stacks and a spoken distance after each dig on a 4 by 4 map; the still-fits set; ruled-out digs are misses with a reason. Shares the footprints with batch 1. Not on the couch.** [Dive](deep-dives/treasure-map.md#build-slices-in-order)
 
-Files expected: `src/games/treasure-map/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+Files expected: `src/games/treasure-map/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, `docs/GAMES.md`.
 
 Proof: new-rule tier: typecheck, rule tests including the five-dig bound for fitting digs over every hiding square; one play of level 7 with two fitting digs, a ruled-out dig, then to the sticker; `fingerdemo` at 7; one portrait screenshot of the footprints.
 
@@ -1683,7 +1683,7 @@ Proof: new-rule tier: typecheck, rule tests including the five-dig bound for fit
 
 - **`treasure-map`, Level 8 *Slide it* (dive slice 4, after batch 1)** (built 2026-11-05; new interaction; school): a three-square raft slides by a vector, she taps where the flag lands, then picks the slid outline among three cards. Not on the couch.** [Dive](deep-dives/treasure-map.md#build-slices-in-order)
 
-Files expected: `src/games/treasure-map/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`.
+Files expected: `src/games/treasure-map/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, `docs/GAMES.md`.
 
 Proof: new-interaction tier: typecheck, rule tests; one play with one wrong square and one wrong outline (named reason), then right; one portrait screenshot of the outline cards; `fingerdemo` at 8.
 
@@ -1691,7 +1691,7 @@ Proof: new-interaction tier: typecheck, rule tests; one play with one wrong squa
 
 - **`treasure-map`, Level 9 *One line*, the preschool opening (dive slice 5, after batches 1–4)** (built 2026-11-05; new band; preschool): a 3 by 3 map where any square in the named row or column is right; `order` 9, 1, 2, …, 8 and `entryLevels: [9]`, Treasure Map on the preschool Rainbow Meadow page. Shares the headers with batch 1 and follows ID 8 (IDs stay contiguous).** [Dive](deep-dives/treasure-map.md#build-slices-in-order)
 
-Files expected: `src/games/treasure-map/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`, the README row, and the lands and registry tests.
+Files expected: `src/games/treasure-map/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, `docs/GAMES.md`, the README row, and the lands and registry tests.
 
 Proof: new-band tier: typecheck, unit tests including the lands, registry band and order/entry tests; one play of level 9 at preschool with one wrong line then two right; `fingerdemo` at 9; the preschool Rainbow Meadow page screenshot.
 
@@ -1699,7 +1699,7 @@ Proof: new-band tier: typecheck, unit tests including the lands, registry band a
 
 - **`treasure-map`, Levels 10–11 *Across the river* and *Mirror twin* (dive slice 7, after batches 1–5)** (built 2026-11-05; new interaction; school): a river and a road as the axes with squares named in words, then the mirror across either; IDs follow 9. [Dive](deep-dives/treasure-map.md#levels-1011-across-the-river-defined-2026-11-05)
 
-Files expected: `src/games/treasure-map/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`, the README row.
+Files expected: `src/games/treasure-map/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, `docs/GAMES.md`, the README row.
 
 Proof: new-interaction tier: typecheck, rule, registry, lands and how-to tests; one school play of level 10 with one wrong-side and one wrong-count dig, then right, to the sticker; one play of level 11 with one same-side tap; screenshots of level 10 at 1024 by 768 and 1024 by 1365; `fingerdemo` at 10 and 11; one build for the voice lines; no `couchgames`.
 
@@ -1707,7 +1707,7 @@ Proof: new-interaction tier: typecheck, rule, registry, lands and how-to tests; 
 
 - **`word-search`, Fresh themes and root families (dive slice 1)** (built 2026-11-03; existing-game content; the root line became `wordsearch.root-port` and `wordsearch.root-spect`, SPECTATE and ASPECT replaced EXPECT): six new everyday themes of at least twelve plain words, two root-family themes (*Words that carry*, *Words that look*) drawn only for plans they can fill, the pet's one-line root meaning (`wordsearch.root`), and RAIN removed from `weather`. [Dive](deep-dives/word-search.md#build-slices-in-order)
 
-Files expected: `src/games/word-search/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `docs/GAMES.md`.
+Files expected: `src/games/word-search/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, `docs/GAMES.md`.
 
 Proof: existing-interaction tier: typecheck, rule tests (no theme word contains another, every eligible theme makes a grid, root themes only for eligible plans, block list, course grids still parse); one filtered regression play of level 1 with a root theme forced by seed; one build for the voice line; bot unchanged, no `fingerdemo`. The root lists need an ordinary content review.
 
@@ -1715,7 +1715,7 @@ Proof: existing-interaction tier: typecheck, rule tests (no theme word contains 
 
 - **`word-search`, Level 5 *A small grid to start* (dive slice 2)** (built 2026-11-04; grown-up entry): a 6 by 6 grid, four words of three to six letters, across and down only, at the largest square the view allows (at least 96 units); `order` `[5, 1, 2, 3, 4]` and `entryLevels: [5]`. [Dive](deep-dives/word-search.md#build-slices-in-order)
 
-Files expected: `src/games/word-search/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/howto.ts`, `docs/GAMES.md`, the README row.
+Files expected: `src/games/word-search/logic.ts`, `logic.test.ts`, `index.ts`, its `howto.ts`, `docs/GAMES.md`, the README row.
 
 Proof: new-level tier: typecheck, rule tests including order and entry; one play of level 5 with one wrong line and one hint; one portrait and one landscape screenshot; `fingerdemo` at 5.
 
@@ -1723,7 +1723,7 @@ Proof: new-level tier: typecheck, rule tests including order and entry; one play
 
 - **`word-search`, Level 6 *A message in the leftovers* (dive slice 3, after batch 2)** (built 2026-11-05): an 8 by 8 grid of nine words with at most eight stones; the unused letters spell a short themed sentence revealed when the last word is found. Appends ID 6; `order` becomes `[5, 1, 2, 3, 4, 6]`. [Dive](deep-dives/word-search.md#build-slices-in-order)
 
-Files expected: `src/games/word-search/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`. `makeGrid` changes, so the couch suite follows.
+Files expected: `src/games/word-search/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, `docs/GAMES.md`. `makeGrid` changes, so the couch suite follows.
 
 Proof: new-rule tier: typecheck, rule tests (leftovers in reading order equal the message, stones at most eight and never in a word, every word once, no blocked word readable, messages pass the block list); one play of level 6 with one wrong line and one hint, then to the message reveal; one portrait screenshot of the revealed message; `fingerdemo` at 6; `BROWSER_SUITE=couchgames` filtered to Word Search.
 
@@ -1731,7 +1731,7 @@ Proof: new-rule tier: typecheck, rule tests (leftovers in reading order equal th
 
 - **`word-search`, Level 7 *Just the theme* (dive slice 4, after batch 3)** (built 2026-11-05, [PR #1279](https://github.com/rjdunlap/neo/pull/1279)): a 10 by 10 grid, six hidden words shown only as a theme and blanks with lengths; a non-theme line is free ("Not one of the hidden words"); a two-step hint (first letter, then ring the start). Appends ID 7; `order` becomes `[5, 1, 2, 3, 4, 6, 7]`. [Dive](deep-dives/word-search.md#build-slices-in-order)
 
-Files expected: `src/games/word-search/logic.ts`, `logic.test.ts`, `index.ts`, `src/content/voice-script.ts`, `src/content/howto.ts`, `docs/GAMES.md`. The couch trip stays on levels 1–3.
+Files expected: `src/games/word-search/logic.ts`, `logic.test.ts`, `index.ts`, its `voice.ts`, its `howto.ts`, `docs/GAMES.md`. The couch trip stays on levels 1–3.
 
 Proof: new-interaction tier: typecheck, rule tests (no other theme word readable in the grid, blanks match lengths, hint letter correct, the free-line rule never adds a miss); one play of level 7 with a free non-theme line and two hints on one word, then to the sticker; one portrait screenshot of the blanks; `fingerdemo` at 7.
 
@@ -1739,7 +1739,7 @@ Proof: new-interaction tier: typecheck, rule tests (no other theme word readable
 
 - **`word-search`, School opening, level 8 (dive slice 6, after batch 2)** (built 2026-11-05, [PR #1288](https://github.com/rjdunlap/neo/pull/1288)): a 6 by 6 grid with four picture words across, one a row, picture themes outside `THEMES`, pictures from Pond Typing's `typingPicture`; home stays Lantern Lake. Appends ID 8 for school. [Dive](deep-dives/word-search.md#build-slices-in-order), [definition](definitions/word-search-school-opening.md)
 
-Files expected: `src/games/word-search/index.ts`, `logic.ts`, `words.ts`, `logic.test.ts`, `src/games/registry.test.ts`, `src/content/lands.ts` (the comment), `src/content/voice-script.ts`, `src/content/howto.ts`, the README row and `docs/GAMES.md`.
+Files expected: `src/games/word-search/index.ts`, `logic.ts`, `words.ts`, `logic.test.ts`, `src/games/registry.test.ts`, `src/content/lands.ts` (the comment), its `voice.ts`, its `howto.ts`, the README row and `docs/GAMES.md`.
 
 Proof: new band entry with a layout change and a new list drawing: typecheck, rule tests and the registry, lands and how-to tests, one scripted school play of level 8 with two wrong lines (the second shows the ring without counting a hint), a tile tap, one Hint, to the sticker; one portrait screenshot; logged 1024×768 and 1024×1365 sizes; `fingerdemo` at school 8; one build; no `couchgames`.
 
@@ -1759,6 +1759,6 @@ Proof: game rules tier: `npm run typecheck` and the Orchard Rows rule tests (eve
 
 - **`orchard-rows`, levels 7–9 (dive slice 3, the build of the path definition)** (extends the built game, new-interaction tier; school 7–9, Barnyard unchanged, Counting Cove as the game already sits): a path splits a grown orchard into two parts she counts, then the whole; 7 *A path at five* (the path after row 5), 8 *Choose the path* (she slides the path with arrows and lays it, any split is right), 9 *A path at ten* (the path down the orchard after ten trees in a row). A new scene `PathOrchard`; the built 4–6 code stays unchanged. [Definition](definitions/orchard-rows-path.md), [dive](deep-dives/orchard-rows.md#build-slices-in-order)
 
-Files expected: `src/games/orchard-rows/logic.ts`, `logic.test.ts`, `path.ts` (new), `baskets.ts` (exported arrow and card helpers), `index.ts`, `src/content/howto.ts`, `src/content/voice-script.ts`, a `scripts/browser-check.mjs` case, `README.md` row, `docs/GAMES.md`.
+Files expected: `src/games/orchard-rows/logic.ts`, `logic.test.ts`, `path.ts` (new), `baskets.ts` (exported arrow and card helpers), `index.ts`, its `howto.ts`, its `voice.ts`, a `scripts/browser-check.mjs` case, `README.md` row, `docs/GAMES.md`.
 
 Proof: new-interaction tier, as the [definition's check tier](definitions/orchard-rows-path.md#check-tier-for-the-build) sets it (typecheck, the rule tests with registry, lands, how-to and off-screen tests, a filtered scripted play: level 7 with one wrong part pad, a second for the glow and its hint, then the glowing pad and a sign tap; level 8 with an arrow at the range end and the path laid at 2; level 9 to its sticker; one portrait screenshot of level 9 with both signs; `fingerdemo` at 7, 8 and 9; one build). Stop point: levels 7 and 9 share the fixed path and pads and level 8's moving path is the separable part; if the allowance cannot cover all three, finish 7 and 9 (level 8 skipped through `order`) with a draft-PR checkpoint, and level 8 is then its own run. Person and device checks stay open.

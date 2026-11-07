@@ -1,0 +1,23 @@
+// What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
+export const VOICE = {
+  'game.block-topple': ['Block topple!'],
+  'block-topple.instruct-pull': ['Pull back the ball and let go to tip the tower!'],
+  'block-topple.instruct-far': ['The tower is farther away. Pull back and let go to tip it!'],
+  'block-topple.instruct-high': ['Knock your friend down to the cushion. Where on the stack should the ball hit?'],
+  'block-topple.instruct-hill': ['Send the ball over the hill to tip the tower!'],
+  'block-topple.short': ['Short! Pull a bit harder or aim higher.'],
+  'block-topple.over': ['Over! A gentler pull.'],
+  'block-topple.hill': ["The hill's in the way. Aim higher!"],
+  'block-topple.thump': ['Bump! Try higher up.'],
+  'block-topple.tipped': ['Tipped! Down onto the cushion.', 'Wheee! Onto the cushion.'],
+  'block-topple.hint-high': ['See the golden band? Hit the stack up there to tip it.'],
+  'block-topple.hint-arc': ['See the dotted path? Pull the ball back to the faint ball.'],
+  'block-topple.done': ['Every friend is on a cushion!'],
+  'block-topple.instruct-count': ['Tip each stack, then count the fruit in the tray.'],
+  'block-topple.how-many': ['How many fruits are in the tray?'],
+  'block-topple.how-many-now': ['How many fruits are in the tray now?'],
+  'block-topple.count-before': ['{n} were in already.'],
+  'block-topple.count-again': ["Let's count them together."],
+  'block-topple.counted': ['{n} fruits in the tray!'],
+  'block-topple.hint-count': ['This one!'],
+} satisfies Record<string, string[]>;

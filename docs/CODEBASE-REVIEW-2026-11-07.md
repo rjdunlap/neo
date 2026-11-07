@@ -6,6 +6,8 @@ Baseline: about 245K source lines and 74K test lines across 181 game folders. Ev
 
 ## 1. Co-locate each game's voice lines and how-to card
 
+**Built 2026-11-07** (the developer chose the split over the counterpoint below). All 175 games have `voice.ts` and `howto.ts`; 5,349 of 5,746 lines moved, the 387 left in `src/content/voice-script.ts` (`SHARED`) are used by the shell, journal, couch play, stories or several games. `node scripts/content-barrels.mjs` writes the gathering blocks; `src/content/barrels.test.ts` fails when they are stale, a game lacks either file or a line is defined twice. `SCRIPT` and `HOW_TO` were compared before and after as sorted JSON and are identical. The original analysis follows.
+
 A new game touches about 14 files in 6 places (the Measuring Post commit `1c4b140b`: `registry.ts`, `lands.ts`, `voice-script.ts`, `howto.ts`, `voice-clips.json`, the browser registry and a suite, `land-pages.test.ts`, another game's test). Since 2026-10-01, `voice-script.ts` (435 KB) changed in 588 commits and `howto.ts` (341 KB) in 576. These files cause merge conflicts between parallel worktrees, and agents read sections of half-megabyte files to find one game's lines.
 
 Target:
