@@ -1,0 +1,108 @@
+# Cut Along deep dive
+
+*ID `cut-along` · bands toddler, preschool, pre-K, school · levels 1–8 on 2026-11-07 · session `claude/dive-cut-along` ([PR #1351](https://github.com/rjdunlap/neo/pull/1351))*
+
+## The game today
+
+Big round-tipped scissors sit on a green ring at the edge of a bright sheet. She moves them along a dashed line, the blades snip every 24 units and a note climbs, and the finished piece floats into the host's paper picture (top right). The cut is a trace on Letter Trails' tracer (`sampleStroke`, `advanceTrace`, `offTrail`). The purpose is **following a line in the order occupational therapists teach cutting**: snips, then a straight line, curves, a circle, corners and picture outlines. At level 8 she also **chooses which outline fits** a gap. Nothing moves on its own and nothing is timed. It was built 2026-10-21 from its [definition](../definitions/cut-along.md) ([PR #702](https://github.com/rjdunlap/neo/pull/702)), and its home land is Painted Canyon (`treehouse`).
+
+| Level | Plan name | Bands whose window includes it | What she decides |
+| --- | --- | --- | --- |
+| 1 | Snip, snip | toddler | Nothing: tap each of five thick marks on a strip (3 strips, fringe for grass) |
+| 2 | Cut the ribbon | toddler, preschool | Follow one thick straight line (corridor 0.11; strays never count) |
+| 3 | Straight across | preschool | Longer lines, level and slanted (0.09; strays count from here) |
+| 4 | Zigzag and waves | preschool, pre-K | Turn 3–4 corners, then follow two waves (0.09) |
+| 5 | Curves and a circle | preschool, pre-K | A hill, an S-curve, then a circle cut either way round (0.08) |
+| 6 | Corners | pre-K, school | A square and a triangle, each with a lead-in (0.08) |
+| 7 | Picture shapes | pre-K, school | Three of heart, house, leaf, fish and cloud (0.075) |
+| 8 | The piece that fits | school | Which of two, then three outlines fits the gap (roof, sun, window, sail), then cut it (0.072) |
+
+`BandLevels`: toddler 1–2, preschool 2–5, pre-K 4–7, school 6–8. There is no `order`, no `entryLevels`, and no lap or grown-up range.
+
+**Content pools.** Every level has one fixed picture (`drawScene`, `slotsFor`): fringe grass, a kite's tail, a fence, mountains and sea, hill, path and sun, a house window with a boat's sail and flag, a pond for the shapes, and level 8's house-and-boat. Seeds vary only the paths: line heights and slants (3), zigzag phase and wave phase (4), which of square or triangle comes third (6), three of five outlines (7), three of four gaps and the distractor order (8). Papers come in seven colours. A new outline needs an `OUTLINES` entry, a `drawPiece` case, a `PIECE_COLOR` entry and a `cut.piece.*` line. A new gap also needs a `GAP_NEEDS` row and a `cut.differs.*` line for each distractor pairing.
+
+**Known gaps.** The picture is the same every time she plays a level, so a replay differs only in where the line is drawn. Level 6 offers two shapes, and level 7 three of five. School ends at level 8. The corridor cannot get narrower: at 0.072 it is already at the 30-unit floor at the smallest paper (short side 420 gives 30.2). Anything above level 8 must get harder through the path's shape or a choice, never through precision. Nothing is saved (decided). There is no couch play, since the finger path is the point. The [GAMES](../GAMES.md#cut-along) entry says "Levels 1–2 and 10 never miss", but there is no level 10: it should read "Levels 1–2 never miss". The device check is open in [DEVICE-CHECKS](../DEVICE-CHECKS.md): whether the corridor floor suits a toddler's finger at levels 3–4, whether the scissors hide the line ahead, and whether level 8 reads to a five-year-old.
+
+## Similar games
+
+Listings and reviews below were found by search this session, not played. The definition's references (the paediatric OT progressions, *Dexteria Jr.*, Sago Mini *Toolbox*, *Toca Hair Salon*, paper snowflakes) were found there and are reused here.
+
+| Game | Kind | How its progression grows | What to borrow | What to leave out |
+| --- | --- | --- | --- | --- |
+| Kumon *My First Book of Cutting* and *My Book of Cutting* ([Rainbow Resource](https://www.rainbowresource.com/034386.html), [Timberdoodle](https://timberdoodle.com/products/kumon-my-book-of-cutting), [Toys and Tales](https://www.toysandtales.com.au/products/my-book-of-cutting), [Old Schoolhouse review](https://www.theoldschoolhouse.com/product-reviews/?rid=1538)) | Paper workbook, about 2–5 | Straight horizontal and vertical lines, then zigzags, curves and circles; then "the spiral of a coiled snake", rows of houses, and cutting out and **assembling** small toys | **The spiral** as the step after closed shapes (level 9); a cut that becomes something she then places herself (level 11) | Page-by-page drill with nothing made at the end |
+| Paediatric OT scissor progressions (the definition's [Growing Hands-On Kids](https://www.growinghandsonkids.com/scissor-skill-development-checklist-for-ages-2-6.html), [Swansea Bay NHS](https://sbuhb.nhs.wales/files/paediatric-occupational-therapy/scissor-skills-dcd-2020-doc/), [Oxfordshire SEN toolkit](https://m.oxfordshire.gov.uk/sites/default/files/file/information-childcare-providers-sentoolkit/scissorskills.pdf)) | Developmental checklists | Snips, a line, curves, a circle, a square and triangle, then picture outlines at 5–6, with accuracy narrowing from ½ to ¼ inch | The order the ladder already follows. Past picture outlines the checklists stop; harder path shapes (spirals, many corners) are the workbook's next step, not a narrower line | Ages as a test; accuracy as a score |
+| Eric Carle-style cut-paper collage in preschool ([Crayola lesson](https://www.crayola.com/learning/lesson-plans/eric-carle-inspired-paper-collages), [NAEYC excerpt](https://www.naeyc.org/node/923), [Gryphon House "Totally Tearing"](https://www.gryphonhouse.com/early-childhood-activities/totally-tearing)) | Classroom art | Children tear or cut many pieces first, then choose where each goes on one page | **The child places the pieces** (level 11); seeded picture themes so the same cut builds different pictures | Glue and mess; a correct arrangement |
+| Sago Mini *Hat Maker* and *Toolbox* ([AppSpy, Hat Maker](https://www.appspy.com/app/83786964/sago-mini-hat-maker), [Toy Insider, Toolbox](https://thetoyinsider.com/sago-mini-toolbox-review/), [148Apps](https://www.148apps.com/kids/sago-mini-toolbox-review)) | Free craft toys, 2–4 | No levels; scissors, paint and stickers on a hat, and a cut that ends in a sparkle | Making a thing for someone in the picture; a payoff the moment a cut ends | Free sawing in place of following a line |
+| BinaryLabs *Dexteria Jr.* ([Common Sense Media](https://www.commonsensemedia.org/app-reviews/dexteria-jr)) | Fine-motor exercises, 2–7 | Tracing exercises that harden by shape | The reviewer's warning that plain tracing is dull: every new level here makes a piece that does something | Therapist reports and progress tracking; any claim about scissor grasp |
+| Paper snowflakes and *Make-A-Flake* (the definition's [Wikipedia](https://en.wikipedia.org/wiki/Paper_snowflake) reference) | Fold, cut, unfold | Folding first, then predicting the unfolded result | — | Folding and prediction: decided to stay with Bug Builder (below) |
+| Level 8's own board (this repository) | Choose, then cut | Two, then three outlines; one fits | The choose-then-cut pattern, reused at level 10 with lines in place of outlines | — |
+
+No school standard is claimed. The grown-up's text keeps to "following a line", and the definition's caution stands: screen practice is not shown to build scissor grasp.
+
+## What makes sense here
+
+- **A new picture every time before more levels.** The pieces are already good. What repeats is the picture. Two or three seeded **picture themes per level** let the same cuts build a farm, a beach or a night sky: fringe becomes grass, a lion's mane or the sun's rays; zigzags become mountains or a crocodile's teeth; level 6 gains a door (a tall rectangle) and a kite (a diamond); level 7 gains a star and a moon. No rule changes.
+- **A spiral (school).** The workbooks put the coiled snake after shapes. The challenge is a long path that keeps turning in the same direction, with its rings close but never closer than the corridor allows. It is harder because of the path, not the precision.
+- **Cut it in two (school).** Level 8's choose-then-cut, applied to lines: a paper square shows a diagonal and a middle line, and the picture needs two triangles for two boats' sails. She looks at the sheet and works out what each cut would make before she makes it. Nothing is named as a quiz: the pet names the pieces as they land, as level 8 does. The pieces are equal, but they are never called halves. Equal shares stay with Pet Kitchen and Ribbon Workshop.
+- **Her own picture (pre-K and school).** The collage pattern: she picks which outline to cut from three (any choice is right), cuts it, then drags the piece wherever she likes in the picture. It is creative choice, never graded, with Kumon's "cut out and assemble" as the payoff. The collage is still not saved (decided).
+- **Not here:** a narrower corridor (it is at its floor), holes cut inside a sheet (every cut starts at the edge; an interior hole would need a designed lead-in and a new "inside" rule), folding (decided), timing or speed, accuracy stars, a lap level (decided), the couch.
+
+**The long arc.** Toddler snips, then follows a fat straight line (1–2). Preschool follows longer lines, corners, waves and a circle (3–5). Pre-K adds corners and picture shapes (4–7), and makes her own picture from shapes she chooses (11). School chooses the outline that fits (8), follows a spiral (9), works out which cut makes the pieces the picture needs (10), and makes her own picture (11).
+
+## Experience and presentation
+
+- **First unsupported action:** at level 1 a toddler taps a thick mark and the scissors snip it. Every touch near a mark works, and nothing she does is wrong.
+- **Touch and consequence:** the blades open at touch-down, the dashes turn into a clean slit behind them, and the piece drops free and floats to its place. On the spiral (9) the cut part curls up a little as the snake comes loose, so progress shows even on a long path. At level 10 the square comes apart along her line and the two pieces slide apart before flying to the two boats. At level 11 the cut piece stays under her finger (40 units above, as `drag.ts` does) until she lets go anywhere in the picture.
+- **Variety on replay:** seeded picture themes (two or three per level), nine shapes at level 7, four at level 6, three spirals (a snail shell, a snake, a curled-up cat's tail), seeded squares and rectangles at 10, and her own arrangement at 11. None of this changes a rule.
+- **Concrete art example:** the night theme for level 5 swaps `drawScene`'s sky for `swatch.blue.line` with a few `swatch.white.fill` dots (stars, alpha 0.7), and the circle's piece becomes the moon (`swatch.yellow.light`, with two `swatch.yellow.line` craters). It is drawn once with `eventMode: 'none'`, so it cannot steal a touch. The spiral's snake piece is the cut spiral itself, stroked 16 wide in `swatch.green.fill` with a `swatch.green.line` edge, plus two eye dots at the inner end.
+- **Reasoning versus precision:** the corridor stays at 0.072 above level 8. Level 9 is harder because the path is long and keeps turning, level 10 because she has to think ahead, and level 11 adds a choice that is never wrong. Every new tap target (level 11's three outline rings) is at least 110 units.
+- **Supported ending and replay:** the two-miss bee and stretch glow (strays), and at level 10 the line that makes the needed pieces glows, as level 8's outline does. One sticker per finished round, help included. At level 11 the round finishes when the third piece is placed; she can move pieces again before then.
+- **Co-play:** today a grown-up names the next piece's place. At level 10 one asks "what will that line make?" before the other cuts. At level 11 one picks the outline and the other decides where it goes. Solo play is unchanged.
+- **For a person or device to judge:** whether a seven-year-old keeps the spiral's long cut going without a rest (lifting is always free); whether a diagonal and a middle line crossing on one square read as two separate lines; whether dragging a piece after cutting it at 11 feels like a reward or a chore; plus the existing device check.
+
+## Proposed ladder
+
+### Fresh content inside existing levels
+
+- **Picture themes:** each level's `drawScene` and `slotsFor` get two or three seeded themes. The pieces stay the same shape with a new place and a new spoken line. Examples: level 1 grass, a lion's mane, the sun's rays; level 3 a fence, a raft's logs, a bridge; level 4 mountains and sea, or a crocodile's teeth and a river; level 5 a sunny hill or a night with the moon. Each new place gets a `cut.piece.<theme>.<piece>` line.
+- **Level 6 shapes:** a tall rectangle (a door) and a diamond (a kite) join the square and triangle. The round is three of the four, so the bot and the existing either-way-round rule are unchanged.
+- **Level 7 shapes:** a star (five fat points, inner radius at least 0.55 of the outer) and a moon (a crescent) join the five outlines. The round picks three of seven.
+- **Rule tests:** every new outline passes the existing cuttability tests (no skipping at corners, completable both ways, the no-skip distance rule away from corners; the star's points and the moon's tips are exactly the cases those tests exist for, so a shape that fails is made fatter, not exempted). Every theme's slots lie inside the picture. Every piece in every theme has a voice line and a colour.
+
+### New levels on top
+
+| Level | Name | Band window | First round | What she decides | Mistakes and hints | A rule test asserts | Cost and couplings |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 9 | *Round and round* | school (after 8) | A snail shell: a short lead-in from the sheet's edge, then a spiral of 1½ turns inward, rings 0.17 apart. Then a snake (2 turns), then a seeded third (a cat's tail, or the snake reversed). 3 pieces | Keep turning the same way along a long path; lift and rest anywhere | As levels 3–8: a stray from the scissors is one miss per drag, progress kept; two misses light the next 12 checkpoints and the bee flies them, one hint | Rings stay at least 0.16 apart (more than 2 × tolerance + one sample); the inner end's radius is at least 0.14, so points 6 samples apart are never within 2 × tolerance; the path fits the sheet in every standard view; the `traceWaypoints` route completes it; seeds repeat | A spiral builder in `logic.ts` (`curve` already samples it); three pieces with `drawPiece` cases, colours and lines; one picture (a garden path for the snail and snake); bot unchanged (it follows any path); how-to step range |
+| 10 | *Cut it in two* | school (after 9) | A paper square with a diagonal and a middle line; the picture's two boats need two triangles. Then a rectangle with a middle line and a lengthwise line (two squares for two windows, or two long strips for a fence), then three lines on a square (diagonal, middle, the other middle). 3 boards | Which line makes the pieces the picture needs, then cut it edge to edge | Cutting a fifth of a line that makes the wrong pieces is one miss, once per line: the scissors stop, the slit closes, and the pet says what it would make ("That line makes two long pieces. The boats need triangles"). Starting the right line from either end is never wrong. Two misses glow the line that works, one hint; strays count as before | Exactly one line makes the needed pair; each other line makes a pair with a `cut.makes.*` line; start rings are at least 2 × `RING_R` apart, so a touch picks one line, and a drag on one line never advances another where they cross; the 20 % counts from the line's own ring; seeds repeat | The sheet is a cut paper shape (as level 2's `sheet`), so every line runs edge to edge and needs no lead-in. Crossing lines relax level 8's "never cross" board test to "rings apart, one track per drag". New `cut.makes.*` and `cut.instruct.two` lines; one picture per board; bot cuts the working line; how-to step |
+| 11 | *My own picture* | pre-K (after 7), school (after 10) | Three outline rings on the sheet (seeded from level 7's shapes); she taps any one, cuts it, and drags the piece anywhere in the empty picture. 3 pieces | Which shape to cut, and where it goes: free creative choice | The choice and the placement are never wrong. Strays count as at level 7. Two misses light the stretch, one hint. A piece dropped outside the picture floats back to the middle of it, free | Every outline offered is cuttable (level 7's tests); the placement area's drop always lands inside the picture; tapping an offered outline is never a miss; the round finishes after the third placement | New interaction: a drag of the cut piece with `drag.ts` into the picture; the picture grows to at least 280 units for placing (a layout test in portrait); `cut.instruct.own`, `cut.place`; how-to steps; bot cuts the first offered shape and drops it at a seeded spot |
+
+**Orders:** school 6–11 in numeric order (no `order` needed; max 11). Pre-K becomes 4, 5, 6, 7, 11 and needs `order`. `entryLevels` is unchanged, because no band gains a new first level.
+
+### Younger-band openings
+
+- **Lap:** decided 2026-10-23 (the built default): no lap level, since the sources place single snips at about two. Not reopened.
+- **Toddler 1–2** stays as it is until the open device check says whether the corridor suits a toddler's finger.
+
+### Easier entries and levels between existing ones
+
+None is proposed. The one step that might be steep is from level 2 (no strays counted) to level 3 (strays counted, a narrower corridor, longer lines) for preschool. Whether it is too steep is a device question (the open check at levels 3–4). If that check shows it is, a later dive can add a level between them with a stable appended ID and `order`. Until then, nothing is guessed.
+
+### Left out on purpose
+
+A narrower corridor; holes inside the sheet (no edge start); Fold & Snip and predicting what unfolds (decided: Bug Builder and Mirror Brush own folding); naming the shape to cut as a quiz (Shape Sorter and Tangram Town own naming); halves, quarters or equal-share wording at level 10 (fractions stay with Pet Kitchen and Ribbon Workshop); timing, accuracy stars or a tidiness score; saving the collage or her own picture (decided; RW06 home customization owns any keeping); the couch.
+
+## Decisions for the developer
+
+None new. The definition's five calls (no Fold & Snip, the collage not saved, Painted Canyon, no lap level, the land's music) were decided 2026-10-23 and hold for every slice below. Level 11's own picture is not saved either, which is the same decision applied once more.
+
+## Build slices, in order
+
+1. **Picture themes and new shapes** (fresh content, ready). Tier: typecheck and the game's rule tests (new outlines cuttable, slots inside the picture, a line and a colour for every piece), one filtered `cutalong` play at level 7 with a star or moon and one portrait screenshot in a new theme; `npm run build` (voice); no `fingerdemo` (the bot follows any path, unchanged).
+2. **Level 9 *Round and round*** (ready). Tier: new level on the existing interaction: typecheck, rule tests (ring spacing, inner radius, fit, completable), one browser play of level 9 with one stray, `fingerdemo` at 9; build (voice, how-to).
+3. **Level 10 *Cut it in two*** (ready, after slice 2 so school's range is edited once more). Tier: new level on level 8's choose-then-cut, with crossing lines new: typecheck, rule tests (one working line, rings apart, one track per drag, 20 % rule), one scripted play of level 10 with one wrong line (miss, slit closes) and one hint, one portrait screenshot, `fingerdemo` at 10; build.
+4. **Level 11 *My own picture*** (ready, after slice 3). Tier: new interaction (the drag into the picture): typecheck, unit tests including the portrait layout and the registry `order` for pre-K, one scripted play (an off-picture drop that floats back, three placements, finish) and one portrait screenshot, `fingerdemo` at 11; build.
+
+## What was built in this session
+
+Nothing: research and ideation only. Checked with the link checker and `git diff --check`.

@@ -1,5 +1,9 @@
 # Puddle Island verification
 
+## 2026-11-07 — Cut Along deep dive (docs only)
+
+Changed: `docs/deep-dives/cut-along.md` and its tracker, READY, GAMES (typo), ROADMAP rows (PR #1351); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; no new decisions wait on the developer.
+
 ## 2026-11-07 — Bolt Boards level 9 definition (docs only)
 
 Changed: `docs/definitions/bolt-boards-put-it-back.md`, READY and the dive (PR #1348); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. The definition's figures (64 states/28 dead on the authored board, dead ends on all 40 level-3/4 boards, 2,561 dead states each with a covered unplaced bolt, max 256 states, `boardLayout` rectangles at the four views) came from a throwaway tsx probe against the real `logic.ts`, not a committed test. Open: no code checks run; nothing built.
@@ -74,10 +78,6 @@ Changed: plan 8 in `src/games/bolt-boards/` (pre-K order 2, 3, 4, 5, 8, 6; schoo
 ## 2026-11-06 — Bolt Boards more boards, fruit and a friend (PR #1341)
 
 Changed: `scripts/bolt-boards-puzzles.ts` second pass (seed 20261106) gives 20 frozen boards per level (21 at 6), orange, strawberry and banana in `fruitArt`, the bear as a friend; new rule tests for the counts and the unchanged authored boards. Ran (Vite on 5516): `npm run typecheck`; `npx vitest run src/games/bolt-boards` (21 tests); `BROWSER_SUITE=boltboards`; a portrait 768×1024 screenshot at level 5 showing the new fruits and the bear; `npm run build`; game-reviewer found nothing. Not run: `fingerdemo` (bot unchanged), full unit suite. Open: no iPad or child.
-
-## 2026-11-06 — Swing Pals more friends and leaf goals (PR #1332)
-
-Changed: riders cat, dog, pig, cow and seeded leaf goals (bell, chimes, apple, nest) in `src/games/swing-pals/`, voice lines and the how-to card. Ran: `npm run typecheck`; `npx vitest run src/games/swing-pals` (28 pass, 5 new); `npx vitest run src/content` (176 pass); one scripted browser probe (dev server, `/classic/`, 768×1024 portrait) at levels 1 and 3 until apple, nest and chimes rounds appeared, with screenshots of the goals and the cat, pig and cow riders. Not run: `fingerdemo` (fresh-content tier), build, offline check, any device. Open: the short-hook clearance rule in the dive was impossible as written, so the test compares against the original five; a cow on the short rope crowding the hook stays a device check.
 
 ## Coverage summary
 
