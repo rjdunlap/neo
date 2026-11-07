@@ -886,15 +886,14 @@ class BoltBoards implements Game {
     return best;
   }
 
-  /** The topmost board hanging from one bolt (still missing one) under a touch. */
+  /** The board under a touch, if the topmost one there hangs from one bolt and still misses one. */
   private bodyAt(at: Pt): number | null {
     const p = this.puzzle, qs = poses(p, this.state);
-    let best: number | null = null;
+    let top: number | null = null;
     qs.forEach((q, i) => {
-      if (q.kind !== 'hanging' || boardBuilt(p, this.state, i) || !overlaps(p, i, q, at, 1)) return;
-      if (best === null || p.boards[i].z > p.boards[best].z) best = i;
+      if (overlaps(p, i, q, at, 1) && (top === null || p.boards[i].z > p.boards[top].z)) top = i;
     });
-    return best;
+    return top !== null && qs[top].kind === 'hanging' && !boardBuilt(p, this.state, top) ? top : null;
   }
 
   /** Where the ghost finger picks board `i`: its slot, or a point on its hanging body that resolves to it. */
