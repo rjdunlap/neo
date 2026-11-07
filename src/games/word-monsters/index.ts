@@ -12,7 +12,7 @@ import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import type { LineId } from '../../content/voice-script';
 import { label } from '../../ui/text';
-import { letterPicture } from '../letter-trails/pictures';
+import { letterPicture } from '../../art/letter-pictures';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { LEVELS, fits, FIRST_WORDS, makeQuestions, nextMonster, planFor, sounded, SOUNDS, PICTURE_WORDS, type MonsterPlan, type Question } from './logic';

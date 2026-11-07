@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { fits } from '../critter-sort/logic';
+import { fits } from '../../learning/sorting/rules';
 import { bestTest, consistent, gateKey, gateWords, makeRound, nextStep, passes, PLANS, planFor, sameGate, splits, type CrossPlan, type CrossRound, type Gate } from './logic';
 
 const hatBrown: Gate = { kind: 'and', rules: ['hat', 'brown'] };

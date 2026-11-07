@@ -1,5 +1,5 @@
 import { ANIMALS, FAVORITE, FOOD_WORDS } from '../games/animal-snack/logic';
-import { WORDS } from '../games/letter-trails/pictures';
+import { WORDS } from '../learning/words/letter-words';
 import { ACTIONS, type Action } from '../games/photo-safari/logic';
 import { ALL_THINGS, floats, thingWord, type Thing } from '../games/sink-float/logic';
 import { HELPER, HELPERS } from '../games/mail-carrier/logic';

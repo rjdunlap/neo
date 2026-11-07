@@ -1,4 +1,4 @@
-import type { Stroke } from '../letter-trails/strokes';
+import type { Stroke } from '../../learning/tracing/strokes';
 
 /**
  * Numerals 0 to 9 in a 0..1 writing box, in stroke order, every stroke starting at the top.

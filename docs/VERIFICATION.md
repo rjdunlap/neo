@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-11-07 — Shared tracing and sorting helpers (codebase item 6 complete, PR #1383)
+
+Changed: shared tracing/feedback, sorting predicates/types, name normalization and letter vocabulary in `src/learning/`; letter-picture, sorting-sign and plant art in `src/art/`; game/journal callers and woods harness imports updated. The nine moved bodies/data match exactly; game-specific rules remain local. Tested base `dcc001e4` plus working diff.
+Ran: `npm run typecheck`; `npm test` (325 files, 6,068 passed, 5 skipped, 67.51 s); `npm run build`; source review (caught and fixed the woods level-9 dynamic predicate import).
+Browser: `GAME_URL=http://localhost:5196 BROWSER_SUITE=fingerdemo FINGER_ONLY=number-trails,critter-crossing FINGER_LEVELS=1` passed (Number Trails preschool 5.0 s; Critter Crossing pre-K 7.1 s). Same URL: `BROWSER_SUITE=woods WOODS_ONLY=sort FROM_LEVEL=9 TO_LEVEL=9` passed (both/neither predicates, free bare grass, misses/glow, saved score and sticker). Server stopped.
+Not run: offline, `world`, device and child play; no behavior, assets, persistence or navigation changed.
+
 ## 2026-11-07 — Fruit Slice slice 1: more fruit, beach not-fruit and moods (PR #1382)
 
 Changed: strawberry, banana and plum (drawn by `smallFruit()` in `src/art/props.ts`, moved from Bolt Boards), beach ball and shell as not-fruit, a seeded morning, picnic or sunset look, six voice lines. Ran: typecheck; vitest for fruit-slice, bolt-boards and art (350 passed); `BROWSER_SUITE=fruitslice` (levels 1, 3 with misses and glow, 7 upright, new 3 upright at sunset with a banana, 8); `BROWSER_SUITE=boltboards` (regression, its fruit drawing moved); `npm run build`; a one-off picnic level 4 screenshot. Not run: `fingerdemo` (bot unchanged), full `npm test` (CI), offline, any device. Open: iPad checks.
@@ -73,7 +80,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
 | Ladder scan (`src/games/ladders.test.ts`) | 2026-11-07: typecheck; full units, 6,057 passed / 5 skipped | [Complete sweep](#2026-11-07--level-ladders-into-logicts-complete-codebase-item-5-pr-1379) | No allowlists; 133 table and ten inline-ladder equivalence probes passed; browser/build/offline not run |
-| Shared learning modules | 2026-11-07: typecheck/build; 6,056 units passed, 5 skipped, one unrelated timing failure passed alone (24 tests); Word Search/Crossword level-1 demos passed | [Word-learning pilot](#2026-11-07--shared-word-learning-helpers-pilot-codebase-item-6-pr-1381) | Letter Trails/tracing and Critter Sort remain; no device/offline check |
+| Shared learning modules | 2026-11-07: typecheck/build; 325 files, 6,068 units passed, 5 skipped; Number Trails/Critter Crossing level-1 demos and woods sort9 passed | [Tracing/sorting completion](#2026-11-07--shared-tracing-and-sorting-helpers-codebase-item-6-complete-pr-1383) | Item 6 complete after the word-learning pilot; no device/offline check |
 | Shared coach (`src/progress/coach.test.ts`) | 2026-11-07: typecheck, full 6,046 units, build | [Shared coach](#2026-11-07--shared-misseshints-coach-codebase-item-8) | Pilots only: Fill and Dump, Sorting Machine, Rainbow Fingers |
 | Generated game docs (`src/content/game-docs.test.ts`) | 2026-11-07: typecheck, full 6,034 units; stale check proven to fail on an edited page | [Generated game inventory docs](#2026-11-07--generated-game-inventory-docs-codebase-item-3) | Runs in every `npm test`; rerun `npm run game-docs` after a game, land or page change |
 | `circuitgarden`, `fingerdemo` (`circuit-garden`) | 2026-11-06 (level 3, `f46bcc55`): typecheck, full `npm test` (321 files), 25 rule tests, one scripted school level 3 play (two wrong Checks 2/1, Help, early Done inert, Undo clears Check, finish) plus portrait screenshot; `fingerdemo` at levels 1, 2 and 3 (levels 1–2 earlier: `circuitgarden` suite) | [Entry](archive/VERIFICATION-2026-11-06.md#2026-11-06--circuit-garden-level-3-mend-the-lantern-energywaves-e3) | no build, no device check, no science-educator reading |

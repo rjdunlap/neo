@@ -1,7 +1,7 @@
 import type { Rng } from '../../engine/random';
 import type { BandLevels } from '../../progress/difficulty';
-import { advanceTrace, sampleStroke, type Point } from '../letter-trails/strokes';
-import { showTheWay } from '../letter-trails/logic';
+import { advanceTrace, sampleStroke, type Point } from '../../learning/tracing/strokes';
+import { showTheWay } from '../../learning/tracing/feedback';
 
 /**
  * Draw the Pattern: the pet starts a line or a pattern on a long paper strip, and she carries on from where it stopped.

@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { LETTERS, advanceTrace, sampleStroke } from './strokes';
-import { WORDS } from './pictures';
-import { HINT_AFTER, LEVELS, LOOKS, PLANS, SHORT_WORDS, SHOW_SPAN, hintDue, offTrail, pickLook, showTheWay, startArrow, stickerLetter, trailLevel, trailTolerance, trailWord, tuneStep } from './logic';
+import { LETTERS, advanceTrace, sampleStroke } from '../../learning/tracing/strokes';
+import { WORDS } from '../../learning/words/letter-words';
+import { HINT_AFTER, LOOKS, SHOW_SPAN, hintDue, offTrail, pickLook, showTheWay, startArrow, tuneStep } from '../../learning/tracing/feedback';
+import { LEVELS, PLANS, SHORT_WORDS, stickerLetter, trailLevel, trailTolerance, trailWord } from './logic';
 
 describe('Letter Trails plans', () => {
   it('keeps each band inside the authored ladder and every pool traceable', () => {

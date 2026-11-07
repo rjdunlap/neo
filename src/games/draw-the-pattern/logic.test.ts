@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
-import { advanceTrace, traceWaypoints, type Point } from '../letter-trails/strokes';
-import { offTrail } from '../letter-trails/logic';
+import { advanceTrace, traceWaypoints, type Point } from '../../learning/tracing/strokes';
+import { offTrail } from '../../learning/tracing/feedback';
 import {
   LEVELS, PAIRS, PLANS, POOLS, SHAPE_SETS, RING_R, STRIP_W, botRoute, chooseOrder, core, divergence, hintStretch, homeCorner, layoutFor, lengthTo,
   markCount, nextDot, nextUnit, DOT_COUNT, DOT_HIT, onPaper, pathOf, petCorner, planFor, stones, stripsFor, tolerance, wrongReached, type Rect, type Stroke,

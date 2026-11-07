@@ -12,8 +12,9 @@ import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import { hatArt } from '../../art/props';
-import { KIND_WORDS, ruleIcon } from '../critter-sort/index';
-import type { Rule, SortCritter } from '../critter-sort/logic';
+import { KIND_WORDS } from '../../learning/sorting/rules';
+import { ruleIcon } from '../../art/sort-rule-icon';
+import type { Rule, SortCritter } from '../../learning/sorting/rules';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { LEVELS, bestTest, consistent, gateKey, gateWords, makeRound, nextStep, passes, planFor, sameGate, splits, type CrossPlan, type CrossRound, type Gate } from './logic';
 

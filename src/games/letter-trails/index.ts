@@ -8,10 +8,12 @@ import type { View } from '../../engine/view';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { letterPicture, WORDS } from './pictures';
-import { advanceTrace, LETTERS, sampleStroke, traceWaypoints, type Point } from './strokes';
+import { letterPicture } from '../../art/letter-pictures';
+import { WORDS } from '../../learning/words/letter-words';
+import { advanceTrace, LETTERS, sampleStroke, traceWaypoints, type Point } from '../../learning/tracing/strokes';
 import { rangeFor } from '../../progress/difficulty';
-import { LEVELS, PLANS, hintDue, offTrail, pickLook, showTheWay, startArrow, stickerLetter, trailLevel, trailTolerance, trailWord, tuneStep, type Look } from './logic';
+import { LEVELS, PLANS, stickerLetter, trailLevel, trailTolerance, trailWord } from './logic';
+import { hintDue, offTrail, pickLook, showTheWay, startArrow, tuneStep, type Look } from '../../learning/tracing/feedback';
 
 class LetterTrails implements Game {
   readonly word: string;

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { advanceTrace, LETTERS, sampleStroke, traceWaypoints, type Point } from './strokes';
-import { WORDS } from './pictures';
-import { nameLetters } from './logic';
+import { advanceTrace, LETTERS, sampleStroke, traceWaypoints, type Point } from '../../learning/tracing/strokes';
+import { WORDS } from '../../learning/words/letter-words';
+import { nameLetters } from '../../learning/words/name-letters';
 
 describe('capital trails', () => {
   it('starts every capital in the top quarter of its writing box', () => {
