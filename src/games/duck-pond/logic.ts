@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 export type DuckMode = 'along' | 'make' | 'howmany' | 'add' | 'ten' | 'hide' | 'bye';
 
@@ -32,6 +33,14 @@ export const PLANS: DuckPlan[] = [
   // Below level 1 (placed first for lap and toddler): five ducks wave bye-bye one at a time, then all swim back. One song is a round.
   { mode: 'bye', rounds: 1, min: 5, max: 5 },
 ];
+
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 12, order: [12, 1, 2] },
+  toddler: { min: 1, max: 12, order: [12, 1, 2, 3, 4, 5] },
+  preschool: { min: 3, max: 7 },
+  prek: { min: 5, max: 9 },
+  school: { min: 8, max: 11 },
+};
 
 export interface HidingPuzzle {
   total: number;

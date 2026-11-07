@@ -8,12 +8,13 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { playIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  LEVELS,
   CARD_H,
   CARD_W,
   changed,
@@ -57,11 +58,6 @@ import {
   type TellCase,
   type TrialRecord,
 } from './logic';
-
-const LEVELS: BandLevels = {
-  prek: { min: 1, max: 2 },
-  school: { min: 1, max: 7 },
-};
 
 /** Trial Shelf card art: a mark on a card's ruler, and where the ruler and the mini ramp's foot sit. */
 const CARD_MARK = 29;

@@ -1,3 +1,4 @@
+import type { BandLevels } from '../../progress/difficulty';
 import type { LineId } from '../../content/voice-script';
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
@@ -236,3 +237,9 @@ function spots(n: number, table: Box, size: number) {
 
 export const overlaps = (a: Box, b: Box) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 export const petCorner = (view: View): Box => ({ x: 0, y: view.h - PET.h, w: PET.w, h: PET.h });
+
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 2 },
+  toddler: { min: 1, max: 3 },
+  preschool: { min: 3, max: 4 },
+};

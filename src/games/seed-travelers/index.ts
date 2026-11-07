@@ -7,20 +7,15 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { basketArt, BellowsArt, boardFrame, boardMark, burrArt, hillArt, iconArt, plumeArt, ringArt, sceneArt, trayArt } from './art';
 import {
+  LEVELS,
   BASKET, BELLOWS, CARRIERS, CRITTER_R, CRITTER_SCALE, FURRY, planFor, roundFor, SEED_HIT, SeedState, tripPoint, UNITS,
   type Carrier, type Furry, type Pt, type Round, type SeedLayout, seedLayout, type Target, type Trip, type Unit,
 } from './logic';
-
-const LEVELS: BandLevels = {
-  toddler: { min: 1, max: 2 },
-  preschool: { min: 1, max: 3 },
-  prek: { min: 2, max: 3 },
-};
 
 const ASK: Record<number, LineId> = { 1: 'seeds.ask.breeze', 2: 'seeds.ask.fur', 3: 'seeds.ask.both' };
 /** How far up the critter's body its centre (and a seed riding its fur) sits, in its own units. */

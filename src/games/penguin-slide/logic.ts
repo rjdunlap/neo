@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Penguin Slide, after the ice puzzles in Pokémon and Zelda: the penguin slides until something
@@ -57,6 +58,15 @@ export const PLANS: SlidePlan[] = [
   { cols: 6, rows: 5, fish: 0, soft: 1, rocks: 3, blocks: 1, stars: 1, moves: [3, 6], puzzles: 2, name: 'A block onto the star: plan where to push the ice block from so it stops on the star' },
   { cols: 6, rows: 5, fish: 1, soft: 0, rocks: 4, pal: true, moves: [4, 7], puzzles: 2, name: 'Two penguins: choose which to slide, and park one as a stop for the other' },
 ];
+
+export const LEVELS: BandLevels = {
+  // Level 11 (Where will it stop?) is the easier step between 2 and 3.
+  preschool: { min: 1, max: 11, order: [1, 2, 11] },
+  prek: { min: 1, max: 11, order: [1, 2, 11, 3, 4] },
+  // Level 12 (A block onto the star) follows 10; 11 is the younger bands' prediction step.
+  // Level 13 (Two penguins) is the top.
+  school: { min: 2, max: 13, order: [2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13] },
+};
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 

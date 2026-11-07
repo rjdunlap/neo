@@ -7,18 +7,16 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
 import {
+  LEVELS,
   NEEDS, byId, extend, hatch, helpFor, judge, makeRound, missing, ordered, planFor, sharedRelative, suits,
   type Feature, type Pair, type Round, type Site, type Turtle,
 } from './logic';
-
-/** Lantern Lake: levels 1–3 in this slice; level 4 (the keeper's two plans) is the next. */
-const LEVELS: BandLevels = { grownup: { min: 1, max: 3 } };
 
 export const SHELLS: readonly Swatch[] = [swatch.teal, swatch.green, swatch.brown, swatch.yellow, swatch.orange, swatch.blue];
 const CARD = 0xfff8ea;

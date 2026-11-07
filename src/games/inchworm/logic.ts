@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Inchworm Measure: measuring length with units. Lay inchworms end to end along a leaf (they
@@ -42,6 +43,11 @@ export const PLANS: MeasurePlan[] = [
   { mode: 'hop', max: 8, rounds: 3, name: 'One worm, hop by hop: tap it along, then count the chalk marks' },
   { mode: 'slide', max: 12, rounds: 3, name: 'Longer than the ruler: lay a short ruler twice, then add the two parts' },
 ];
+
+export const LEVELS: BandLevels = {
+  prek: { min: 1, max: 7, order: [1, 2, 7] },
+  school: { min: 1, max: 10, order: [1, 2, 7, 9, 3, 4, 8, 5, 6, 10] },
+};
 
 /** Longer than the ruler: the short ruler's length (it reads 0 to this). */
 export const SLIDE_RULER = { min: 4, max: 6 } as const;

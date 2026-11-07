@@ -1,5 +1,6 @@
 import { simulate, stepBall, type Ball, type BallWorld, type Peg } from '../../engine/ball';
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Bumper Garden, after Pokémon Pinball and Space Cadet: a ladybug ball bounces around flower bumpers
@@ -32,6 +33,13 @@ export const PLANS: Record<number, BumperPlan> = {
   8: { mode: 'color', not: true, bumpers: 8, goal: 2, name: 'Bloom every flower that is not the color asked for; those ones are asleep' },
   6: { mode: 'order', bumpers: 6, goal: 3, start: 3, name: 'Count on from a number between 2 and 6: three or four flowers in order' },
   9: { mode: 'order', bumpers: 8, goal: 5, start: 5, descend: true, name: 'Count back to 1 from a starting number between 5 and 8' },
+};
+
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 1 },
+  toddler: { min: 1, max: 2 },
+  preschool: { min: 2, max: 4 },
+  prek: { min: 3, max: 9, order: [3, 4, 6, 8, 5, 9] },
 };
 
 export function planFor(level: number, rng?: Rng): BumperPlan {

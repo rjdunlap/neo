@@ -8,21 +8,14 @@ import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { returnGate, returnHint, returnMove, returnStarter, type SectionOrder } from './logic';
+import { LEVELS, returnGate, returnHint, returnMove, returnStarter, type SectionOrder } from './logic';
 import { clonePiece, newPiece, pieceGate, previewOrder, sectionsMove, type Piece, type SectionId } from './logic';
 import { oneHit } from './logic';
 import { beatMove, firstMismatch, mendCopy, repairs, replayTick, empty, freeBeat, givenCell, givenStep, hits, reviseStart, INSTRUMENTS, roundPhrases, planFor, same, type Beat, type BeatPlan } from './logic';
-
-const LEVELS: BandLevels = {
-  toddler: { min: 1, max: 1 },
-  preschool: { min: 1, max: 2 },
-  prek: { min: 1, max: 6 },
-  school: { min: 3, max: 9 },
-};
 
 const CELL = 100;
 const STEP_SECONDS = 0.32;

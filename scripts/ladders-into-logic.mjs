@@ -93,8 +93,8 @@ export function moveLadder(id, { write = true } = {}) {
   const iEdits = [{ at: cut, end, text: '' }];
   if (fromLogic) {
     const brace = index.indexOf('{', fromLogic.start) + 1;
-    const pad = index[brace] === '\n' ? '' : ' ';
-    iEdits.push({ at: brace, end: brace + pad.length, text: `${pad}LEVELS, ` });
+    const pad = index[brace] === ' ' ? ' ' : '';
+    iEdits.push({ at: brace, end: brace + pad.length, text: index[brace] === '\n' ? '\n  LEVELS,' : `${pad}LEVELS, ` });
   } else {
     const last = iAst.body.filter((s) => s.type === 'ImportDeclaration').at(-1);
     iEdits.push({ at: last.end, end: last.end, text: `\nimport { LEVELS } from './logic';` });

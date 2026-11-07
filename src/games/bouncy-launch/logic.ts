@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Bouncy Launch, after Kass Basher, Toss the Turtle and the other launcher games: pull the
@@ -22,6 +23,17 @@ export const PLANS: LaunchPlan[] = [
   { mode: 'compare', shots: 4, name: 'Farther or not as far as last time' },
   { mode: 'predict', shots: 4, name: 'Watch a shown pull and predict which cloud the pet will reach' },
 ];
+
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 1 },
+  // Level 8, Near or far, is an easy entry: two big clouds before the star level's single small one.
+  toddler: { min: 1, max: 8, order: [1, 2, 8, 3] },
+  preschool: { min: 2, max: 8, order: [2, 8, 3, 4] },
+  // Level 7, Feed the friend, comes after the numbered clouds and before comparing.
+  prek: { min: 3, max: 7, order: [3, 4, 7, 5] },
+  // Level 9, Between two flights, follows the single shown pull of level 6.
+  school: { min: 4, max: 12, order: [4, 5, 7, 6, 9, 12] },
+};
 
 /** Level 7, Feed the friend: the next free ID after the six first levels. */
 export const FRIEND_LEVEL = 7;

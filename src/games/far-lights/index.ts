@@ -8,7 +8,7 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
@@ -16,18 +16,11 @@ import {
   shiftLine, sideLight, stopTicks, stripArt, Tassel, touchRing, windowArt, WindowLight,
 } from './art';
 import {
+  LEVELS,
   boardsFor, brighterOf, closerHelp, CloserWalk, farLayout, fartherOf, FarTally, GLOW, GlowTaps, judgeBrighter, judgeFarther, judgeMatch, judgeOrder,
   LANES, look, movable, nearestStop, orderBoardsFor, OrderMarks, pairsFor, planFor, STOPS, type Board, type FarLayout, type Lane, type OrderBoard,
   type Pair, type PlanInfo, type Stop, openingStop, shiftOf, StepBoard, stopsOf, strongBoardsFor, strongOf, type StrongBoard,
 } from './logic';
-
-const LEVELS: BandLevels = {
-  lap: { min: 1, max: 1 },
-  toddler: { min: 1, max: 2 },
-  preschool: { min: 2, max: 3 },
-  prek: { min: 3, max: 4 },
-  school: { min: 4, max: 8 },
-};
 
 const INSTRUCT: LineId[] = ['far.instruct.glow', 'far.instruct.closer', 'far.instruct.brighter', 'far.instruct.match', 'far.instruct.farther', 'far.instruct.order', 'far.instruct.strong', 'far.instruct.cant-tell'];
 

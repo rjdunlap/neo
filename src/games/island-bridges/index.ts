@@ -6,21 +6,16 @@ import { HeldDirection, idle, type CouchControls } from '../../engine/controller
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
 import { courseMinimum, courseSeas, isBridgeCourse } from './course';
 import {
-  canAdd, directionOf, edgeToward, focusPath, hintFor, isSolved, islandToward, makePuzzles, otherEnd, planFor, planksAt, edgeAt, headStart, trouble, touchLayout, waterOf, LEVEL_ORDER, type Slot, type BridgePlan, type Forced, type Hint, type Puzzle,
+  LEVELS,
+  canAdd, directionOf, edgeToward, focusPath, hintFor, isSolved, islandToward, makePuzzles, otherEnd, planFor, planksAt, edgeAt, headStart, trouble, touchLayout, waterOf, type Slot, type BridgePlan, type Forced, type Hint, type Puzzle,
 } from './logic';
-
-/** Grown-ups get every sea; school plays the two small ones, 5 by 5 then 7 by 7, at 100-unit cells. */
-const LEVELS: BandLevels = {
-  school: { min: 1, max: 5, order: [5, 1] },
-  grownup: { min: 1, max: 7, order: [...LEVEL_ORDER] },
-};
 
 const SEA = 0xcfe8f7;
 const SEA_LINE = 0x7aa7c7;

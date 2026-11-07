@@ -19,19 +19,8 @@ import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { CLOUDS } from './course';
-import { betweenTriples, type BetweenTriple, cloudAt, cloudCount, NEAR_FAR_LEVEL, NEAR_FAR_WINDOW, airtimeFor, gravityFor, planetPairs, planetSide, planetBotLanding, type PlanetPair, friendSpots, judge, judgeFriend, MAX_PULL, MIN_PULL, nextAsk, padAt, PADS, planFor, pullFor, pullToTake, reach, revealsPullRule, targets, type LaunchPlan } from './logic';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
-
-const LEVELS: BandLevels = {
-  lap: { min: 1, max: 1 },
-  // Level 8, Near or far, is an easy entry: two big clouds before the star level's single small one.
-  toddler: { min: 1, max: 8, order: [1, 2, 8, 3] },
-  preschool: { min: 2, max: 8, order: [2, 8, 3, 4] },
-  // Level 7, Feed the friend, comes after the numbered clouds and before comparing.
-  prek: { min: 3, max: 7, order: [3, 4, 7, 5] },
-  // Level 9, Between two flights, follows the single shown pull of level 6.
-  school: { min: 4, max: 12, order: [4, 5, 7, 6, 9, 12] },
-};
+import { LEVELS, betweenTriples, type BetweenTriple, cloudAt, cloudCount, NEAR_FAR_LEVEL, NEAR_FAR_WINDOW, airtimeFor, gravityFor, planetPairs, planetSide, planetBotLanding, type PlanetPair, friendSpots, judge, judgeFriend, MAX_PULL, MIN_PULL, nextAsk, padAt, PADS, planFor, pullFor, pullToTake, reach, revealsPullRule, targets, type LaunchPlan } from './logic';
+import { rangeFor } from '../../progress/difficulty';
 
 const PET_SCALE = 0.5;
 /** The friend is smaller than the pet, so it reads as someone to feed rather than something to land on. */

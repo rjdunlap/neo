@@ -14,15 +14,8 @@ import type { CompanionRig } from '../../creatures/companion';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { anchors, colorTargets, BOTTLE_RADIUS, CUSTOMER_NAMES, describe, FACE_TAP, faceSpot, FLOOF, furFit, growFor, HAIR_COLORS, helps, isFree, makeRoom, PAT_MIRROR, PAT_QUIET, PAT_START, pickCustomer, selfChecks, SNIP_START, SNIP_TOOL_RADIUS, startLook, stats, scalpFor, makeRequests, moreLine, needs, oldStrands, PIP_SCALP, planFor, QUIET_HINT, salonMove, strandPoints, strokePath, toolFor, toolsFor, touchStrands, WRONG_BOTTLES, wrongBottle, type Anchor, type Look, type Request, type Room, type SalonPlan, type Scalp, type Strand, type Tool } from './logic';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
-
-const LEVELS: BandLevels = {
-  lap: { min: 1, max: 7, order: [6, 1, 7, 2] },
-  toddler: { min: 1, max: 8, order: [6, 1, 7, 2, 8] },
-  preschool: { min: 2, max: 9, order: [2, 8, 3, 4, 9] },
-  prek: { min: 3, max: 12, order: [3, 4, 5, 9, 10, 11, 12] },
-};
+import { LEVELS, anchors, colorTargets, BOTTLE_RADIUS, CUSTOMER_NAMES, describe, FACE_TAP, faceSpot, FLOOF, furFit, growFor, HAIR_COLORS, helps, isFree, makeRoom, PAT_MIRROR, PAT_QUIET, PAT_START, pickCustomer, selfChecks, SNIP_START, SNIP_TOOL_RADIUS, startLook, stats, scalpFor, makeRequests, moreLine, needs, oldStrands, PIP_SCALP, planFor, QUIET_HINT, salonMove, strandPoints, strokePath, toolFor, toolsFor, touchStrands, WRONG_BOTTLES, wrongBottle, type Anchor, type Look, type Request, type Room, type SalonPlan, type Scalp, type Strand, type Tool } from './logic';
+import { rangeFor } from '../../progress/difficulty';
 
 const PET_SCALE = 1.15;
 

@@ -6,14 +6,13 @@ import {voice} from '../../audio/voice';
 import type {LineId} from '../../content/voice-script';
 import {onTap} from '../../engine/input';
 import type {View} from '../../engine/view';
-import {rangeFor,type BandLevels} from '../../progress/difficulty';
+import {rangeFor} from '../../progress/difficulty';
 import {finish} from '../../ui/buttons';
 import {WigglyIcon} from '../shared';
 import type {Game,GameContext,GameModule,TouchIntent} from '../types';
-import {Round,PARCELS,RULES,SHELF,requested,predict,solution,type Dock,type Trace,type Action} from './logic';
+import { LEVELS, Round,PARCELS,RULES,SHELF,requested,predict,solution,type Dock,type Trace,type Action} from './logic';
 import {layout,type Box} from './layout';
 import {dockArt,parcelArt,ruleArt,featureArt,emblem} from './art';
-const LEVELS:BandLevels={school:{min:1,max:2}};
 function text(value:string,size=23){const t=new Text({text:value,style:{fontFamily:'Nunito, sans-serif',fontSize:size,fontWeight:'800',fill:ink,align:'center'}});t.anchor.set(.5);t.eventMode='none';return t;}
 function clear(c:Container){for(const n of c.removeChildren())n.destroy({children:true});}
 class Button extends Container {

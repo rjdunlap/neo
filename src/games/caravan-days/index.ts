@@ -17,7 +17,7 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
@@ -26,17 +26,11 @@ import {
   oasisArt, offerArt, peaksArt, SAND, shellRow, siteArt, skinArt, snowArt, stickerArt, sunArt, treeArt, wellArt,
 } from './art';
 import {
+  LEVELS,
   afterTooLong, BALE_COLORS, checkWells, DAY, DAY_CARDS, days, ghostFor, goPass, minWells, nextPassMove, nextWellMove, passHint, passPlan, passStart, wellHint, wellsPlan,
   type PassMap, type PassPlan, type PassRoad, type PassState, type WellRoad, type WellsPlan, better, camelAt, centre, choose, go, goLive, goSwap, hintFor, LANDMARKS, legSuns, legsOf, loadPlan, nextWant, loadStart, nextLoad, nextPlanMove, nextWorthMove, offersAt, pickOffer, planFor, planPlan, planStart, price, reachable, reachPlan, roadLayout, sell, SKIN, sunPoints, swapHint, swapPlan, swapStart, Tally, tapBale, tapCamel, tapStop, total, worthPlan, worthStart,
   type CaravanMap, type Good, type LoadPlan, type LoadState, type PlanPlan, type PlanState, type Pt, type ReachPlan, type RoadLayout, type RoadLine, type SwapPlan, type SwapRoad, type SwapState, type WorthPlan, type WorthState, type WorthStop,
 } from './logic';
-
-const LEVELS: BandLevels = {
-  toddler: { min: 1, max: 1 },
-  preschool: { min: 1, max: 2 },
-  prek: { min: 2, max: 3 },
-  school: { min: 3, max: 7 },
-};
 
 /** The next useful thing glows when nothing has been tapped for this long at level 1 (uncounted). */
 const IDLE_GLOW = 8;

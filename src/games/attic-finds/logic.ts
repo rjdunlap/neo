@@ -1,6 +1,7 @@
 import type { LineId } from '../../content/voice-script';
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
+import type { BandLevels } from '../../progress/difficulty';
 
 /*
  * Attic Finds: an invented attic thing with a crank. She turns it over, looks at its parts up close and cranks it; at
@@ -104,6 +105,14 @@ export const PLANS: readonly Plan[] = [
   { id: 8, name: "What can we tell?: stamp each claim shown by the papers, or can't tell (no paper is no proof)", mode: 'tell' },
   { id: 9, name: 'Mend the exhibit: swap three overclaiming captions for ones the papers show, and pick a paper that could answer an open question', mode: 'mend' },
 ];
+
+export const LEVELS: BandLevels = {
+  lap: { min: 3, max: 3 },
+  toddler: { min: 3, max: 4 },
+  preschool: { min: 1, max: 1 },
+  prek: { min: 1, max: 5, order: [1, 2, 5] },
+  school: { min: 2, max: 9, order: [2, 5, 6, 7, 8, 9] },
+};
 /** The plan with this level's ID; an unknown level is level 1. */
 export const planFor = (level: number): Plan => PLANS.find((p) => p.id === level) ?? PLANS[0];
 export const isFree = (plan: Plan): boolean => plan.mode === 'lever' || plan.mode === 'peek';

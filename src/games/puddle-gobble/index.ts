@@ -7,22 +7,16 @@ import { onTap, palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { FONT } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import { SAND, thingArt } from './art';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  LEVELS,
   authoredBoard, beachLayout, blocker, detour, done, fieldFor, hintTarget, letGo, makeBoard, moodFor, NAMES, numeric, PAIL_BOX, placeOn, planFor, puddleDiameter, puddleStart,
   refusal, soak, startState, thingDiameter, type Board, type Hint, type Kind, type Mood, type Placed, type Plan, type Rect, type State, type Thing,
 } from './logic';
-
-const LEVELS: BandLevels = {
-  toddler: { min: 1, max: 2 },
-  preschool: { min: 2, max: 4 },
-  prek: { min: 3, max: 6 },
-  school: { min: 5, max: 9 },
-};
 
 /** Top speed of the puddle, units per second. */
 const SPEED = 320;

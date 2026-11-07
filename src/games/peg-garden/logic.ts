@@ -1,5 +1,6 @@
 import { simulate, type BallWorld } from '../../engine/ball';
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Peg Garden, after Peggle and pachinko: drop a pearl into a sea garden of flower buds.
@@ -26,6 +27,13 @@ export const PLANS: PegPlan[] = [
   { mode: 'cup', pegs: 12, count: 3, name: 'Into the cup: aim the pearl into the cup with that many dots' },
   { mode: 'plant', pegs: 11, count: 2, name: 'Plant a bud: drag a seed onto a marked spot so the dropped pearl rolls into the cup' },
 ];
+
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 8, order: [8, 1] },
+  toddler: { min: 1, max: 8, order: [8, 1, 2] },
+  preschool: { min: 2, max: 4 },
+  prek: { min: 3, max: 7 },
+};
 
 /** Level 8, the lap entry: four huge buds, and every touch blooms one. Plans are keyed by ID, so it sits outside the ladder's order. */
 export const BIG_LEVEL = 8;

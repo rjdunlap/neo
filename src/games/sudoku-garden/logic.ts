@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Sudoku Garden's rules. A bed is a square of numbered flowers: every row, every column and every box
@@ -514,6 +515,10 @@ export const PLANS: SudokuPlan[] = [
   { name: 'A 6 by 6 patchwork bed of odd-shaped patches', size: 6, tier: 2, blanks: 20, beds: 1, patchwork: true },
   { name: 'A 6 by 6 bed with sums in the cages', size: 6, tier: 2, blanks: 30, beds: 1, cages: true },
 ];
+
+/** Grown-up play only: this game lives on the couch, not on the child's island. */
+/** Level 7, a 4 by 4 bed, is the easy entry played first; the ladder then climbs 1 to 6, with patchwork (9) and cage (10) beds after 3. */
+export const LEVELS: BandLevels = { grownup: { min: 1, max: 10, order: [7, 1, 2, 3, 9, 10, 4, 5, 6, 8] } };
 
 /**
  * Level 9's patch layouts, one letter a patch. Each has six connected patches of six squares, none a straight line and

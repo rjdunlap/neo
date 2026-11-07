@@ -8,22 +8,16 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import type { CompanionRig } from '../../creatures/companion';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { blanket, drawTrail, friendBadge, walkSticker, wayPicture } from './art';
 import {
+  LEVELS,
   FRIEND_NAMES, LANDMARKS, STOPS, askHint, askedSlot, botSlot, callAt, describeWalk, groupOf, restart, startWalk, step, stopLayout, waysAt,
   type Stop, type StopLayout, type StepSound, type WalkState,
 } from './logic';
-
-const LEVELS: BandLevels = {
-  toddler: { min: 1, max: 1 },
-  preschool: { min: 1, max: 2 },
-  prek: { min: 2, max: 3 },
-  school: { min: 3, max: 3 },
-};
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const SCALE = 0.5;

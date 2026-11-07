@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * A flower bed is a grid, square except One row's single row; each cell holds a flower (0 to size - 1) or nothing yet
@@ -38,6 +39,13 @@ export const PLANS: RowsPlan[] = [
   { name: 'Hedge boxes with fewer flowers to start (4 by 4, ten spots empty)', size: 4, rule: 'boxes', blanks: 10, beds: 1 },
   { name: 'One row of three flowers: plant the missing one (three rows in turn)', size: 3, rows: 1, rule: 'rows', blanks: 1, beds: 3 },
 ];
+
+export const LEVELS: BandLevels = {
+  // One row (10) opens preschool, then the 3 by 3 rows-only bed.
+  preschool: { min: 1, max: 10, order: [10, 1] },
+  prek: { min: 1, max: 3 },
+  school: { min: 3, max: 9 },
+};
 
 /** How many rows the plan's beds have. */
 export const rowsOf = (plan: RowsPlan) => plan.rows ?? plan.size;

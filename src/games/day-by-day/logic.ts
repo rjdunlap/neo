@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 export const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as const;
 export const WEATHER = ['sunny', 'cloudy', 'rainy'] as const;
@@ -10,6 +11,8 @@ export const PLANS = [
   { name: 'Count this weather, including none', relatives: true, tally: true },
   { name: 'Weather Window: compare two supplied weeks', relatives: false, tally: false },
 ] as const;
+
+export const LEVELS: BandLevels = { prek: { min: 1, max: 4, order: [1, 2, 4] }, school: { min: 2, max: 10, order: [2, 4, 10, 3, 5, 6] } };
 /** The level whose tomorrow and yesterday questions start from seeded days, not only the week's turn. */
 export const ANCHOR_LEVEL = 4;
 export const COUNT_LEVEL = 10;

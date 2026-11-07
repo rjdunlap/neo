@@ -8,7 +8,7 @@ import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { DIRECTIONS, footprint, makePuzzle, planFor, roll, solutionStep, solved, type Direction, type State } from './logic';
+import { LEVELS, DIRECTIONS, footprint, makePuzzle, planFor, roll, solutionStep, solved, type Direction, type State } from './logic';
 
 /** Code-drawn wood: rings distinguish the standing end from a log lying across two stones. */
 function logArt(w: number, h: number, upright: boolean) {
@@ -149,7 +149,7 @@ function iconArt(seed = 0) {
 export const logRoll: GameModule = {
   id: 'log-roll', name: 'Log Roll', titleLine: 'game.log-roll', region: 'puzzle-peaks', challenge: 'space',
   skills: ['spatial-reasoning', 'planning', 'mental-rotation'], bands: ['grownup'], touchDemo: true,
-  levels: band => rangeFor({ grownup: { min: 1, max: 3 } }, band),
+  levels: (band) => rangeFor(LEVELS, band),
   describeLevel: level => planFor(level).name, music: STYLES.lullaby,
   coplayHint: 'Predict which stones the log will cover before each roll. Take turns planning and tipping.',
   offScreen: 'Tip a small rectangular box across a paper grid. Mark a space where it should finish standing.',

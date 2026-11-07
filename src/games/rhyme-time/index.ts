@@ -9,24 +9,12 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { andList, basketFor, chipsFor, FAMILIES, familySong, guessFor, makeQuestions, makeRiddles, makeTap, makeTrays, planFor, rhymes, sceneFor, spokenList, TAGS, wordToTap, type Riddle, type RhymePlan, type RhymeQuestion, type Tag, type Tray } from './logic';
+import { LEVELS, andList, basketFor, chipsFor, FAMILIES, familySong, guessFor, makeQuestions, makeRiddles, makeTap, makeTrays, planFor, rhymes, sceneFor, spokenList, TAGS, wordToTap, type Riddle, type RhymePlan, type RhymeQuestion, type Tag, type Tray } from './logic';
 import { picture, tagGlyph } from './pictures';
-
-/**
- * Pre-K plays the first riddle (5) after pairs; odd one out (4) and the meaning-first and make-it riddles (6–7) stay school.
- * Silly pairs (8) is a single rhyme judgment with a place to say it in, so it sits second on both ladders. Rhyme baskets (10)
- * holds three families at once, so it tops the school ladder only. Level 9 is level 8 with two pictures and three scenes, the
- * place's word said twice: recognising a rhyme between two pictures is the preschool opening, an entry level the older ladders skip.
- */
-const LEVELS: BandLevels = {
-  preschool: { min: 8, max: 9, order: [9, 8] },
-  prek: { min: 1, max: 8, order: [1, 8, 2, 3, 5] },
-  school: { min: 2, max: 10, order: [2, 8, 3, 4, 5, 6, 7, 10] },
-};
 
 /** Level 8's place is drawn this much larger than a card picture, its rider this much smaller inside it. */
 const PLACE_SCALE = 1.6;

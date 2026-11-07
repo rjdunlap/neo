@@ -7,18 +7,13 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseMinimum, coursePonds, isLanternCourse } from './course';
-import { allLit, footprint, hintFor, isLantern, lanternCount, litCount, makePonds, namedHint, planFor, press, shortWay, stuckAt, type LanternPlan, type Pond } from './logic';
+import { LEVELS, allLit, footprint, hintFor, isLantern, lanternCount, litCount, makePonds, namedHint, planFor, press, shortWay, stuckAt, type LanternPlan, type Pond } from './logic';
 
-/**
- * Lantern Lake's grown-up puzzle. The island plays it by touch; couch play drives the same board with a controller. School
- * plays the two 3 by 3 ponds.
- */
-const LEVELS: BandLevels = { school: { min: 1, max: 2 }, grownup: { min: 1, max: 9 } };
 /** The room beside the pond the two counts need; under it they move above the pond. */
 const SIDE_ROOM = 240;
 

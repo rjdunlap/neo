@@ -9,20 +9,15 @@ import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import type { CompanionRig } from '../../creatures/companion';
 import type { LineId } from '../../content/voice-script';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { bellPic, beaterPic, cardPic, drawBag, drawBench, flagPic, partPic, propPic, railTick, readySticker, ribbonPic, wagonPic, type Look } from './art';
 import {
+  LEVELS,
   PART_OF, apply, askHint, botAction, describeReady, done, hintFor, judge, readyLayout, restart, startState,
   type Action, type Dragged, type PartId, type PropId, type ReadyState, type Target,
 } from './logic';
-
-const LEVELS: BandLevels = {
-  toddler: { min: 1, max: 1 },
-  preschool: { min: 1, max: 2 },
-  prek: { min: 2, max: 3 },
-};
 
 interface Obj {
   key: string;

@@ -12,15 +12,8 @@ import { label } from '../../ui/text';
 import { RoundButton } from '../../ui/buttons';
 import { symbol, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { animalsFor, emptierPen, enter, fairBell, fairNeeds, fleeFrom, BEACON_S, FOLLOW_SPEED, nearestFinger, followSpeed, inRect, leadGoal, makeHerd, PLACE, pensFull, planFor, PLURAL, ringBell, SHOO_SPEED, shooPoint, signDots, spreadApart, startSpots, throughGate, usesBell, wanted, type Herd, type HerdPlan, type Kind, type Pen, type Rect, type Size, sizeScale } from './logic';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
-
-const LEVELS: BandLevels = {
-  lap: { min: 1, max: 11, order: [1, 11] },
-  toddler: { min: 1, max: 11, order: [1, 11, 10, 2, 3] },
-  preschool: { min: 2, max: 5 },
-  prek: { min: 3, max: 12, order: [3, 4, 5, 6, 7, 8, 9, 12] },
-};
+import { LEVELS, animalsFor, emptierPen, enter, fairBell, fairNeeds, fleeFrom, BEACON_S, FOLLOW_SPEED, nearestFinger, followSpeed, inRect, leadGoal, makeHerd, PLACE, pensFull, planFor, PLURAL, ringBell, SHOO_SPEED, shooPoint, signDots, spreadApart, startSpots, throughGate, usesBell, wanted, type Herd, type HerdPlan, type Kind, type Pen, type Rect, type Size, sizeScale } from './logic';
+import { rangeFor } from '../../progress/difficulty';
 
 /** How far from the finger animals start to scoot, and their top speed. */
 const SHOO_R = 190;

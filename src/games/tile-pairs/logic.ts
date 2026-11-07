@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 export interface Tile { x: number; y: number; z: number; kind: number }
 export type Pair = [number, number];
@@ -10,6 +11,8 @@ export const PLANS = [
   { name: 'Twin terraces · 24 tiles', cols: 6, rows: 2, layers: 3, layout: 'twins', kinds: 5 },
   { name: 'Crown · 24 tiles, six of each picture', cols: 6, rows: 3, layers: 3, layout: 'crown', kinds: 4 },
 ] as const;
+
+export const LEVELS: BandLevels = { grownup: { min: 1, max: 6 } };
 export const planFor = (level: number) => PLANS[Math.max(0, Math.min(PLANS.length - 1, Math.floor(level) - 1))];
 export const fullMask = (tiles: readonly Tile[]) => (1 << tiles.length) - 1;
 export const present = (mask: number, i: number) => !!(mask & (1 << i));

@@ -1,3 +1,4 @@
+import type { BandLevels } from '../../progress/difficulty';
 import type { Rng } from '../../engine/random';
 
 export const PLANS = [
@@ -65,3 +66,7 @@ export function nookLayout(w: number, h: number, rows: number, cols: number) {
     buttons: [0, 1, 2].map(i => ({ x: Math.max(w / 2 - 184, 220) + i * 184, y: h - 110 })),
   };
 }
+
+export const LEVELS: BandLevels = {
+  grownup: { min: 1, max: 3 },
+};

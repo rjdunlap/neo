@@ -8,6 +8,7 @@
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import type { Band } from '../../progress/bands';
+import type { BandLevels } from '../../progress/difficulty';
 
 export type Side = 'left' | 'right';
 export type Block = 'tray' | Side;
@@ -300,6 +301,13 @@ export function planFor(level: number): { level: 1 | 2 | 3 | 4 | 5; id: 'keyston
   if (level === 2) return { level: 2, id: 'pairs', name: 'Which one stands? pull two frames and see which ring holds (two free pairs), then on the last pair tap the one that will stand before pulling' };
   return { level: 3, id: 'buttress', name: 'Hold it up: drag the block to the side with no wall and pull the frame; a pull with nothing pushing back spreads the ring (two arches)' };
 }
+
+export const LEVELS: BandLevels = {
+  toddler: { min: 1, max: 1 },
+  preschool: { min: 1, max: 2 },
+  prek: { min: 2, max: 4 },
+  school: { min: 3, max: 5 },
+};
 
 // ——— Layout ———
 

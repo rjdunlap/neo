@@ -12,7 +12,7 @@ import { sfx } from '../../audio/sfx';
 import type { LineId } from '../../content/voice-script';
 import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { FONT } from '../../ui/text';
 import { WigglyIcon } from '../shared';
@@ -22,12 +22,12 @@ import {
   stickerArt, tickIcon, toolArt, unitArt,
 } from './art';
 import {
+  LEVELS,
   answerRow, commonExact, compareAnswer, GLOW_AFTER, gramsFor, PER_GROUP, tableAnswer, helpId, HelpTally, planFor, remeasure, tasksFor, TOOL_FOR, TOOLS,
   toolAnswers, UNIT_VALUE, type Attribute, type LevelPlan, type MeasureRecord, type Pick, type Step, type Task, type Tool,
   type UnitSize,
 } from './logic';
 
-const LEVELS: BandLevels = { school: { min: 1, max: 4 } };
 const SIZES: readonly UnitSize[] = ['big', 'little'];
 
 /** Seconds between units laid, poured or stacked while a tool measures. */

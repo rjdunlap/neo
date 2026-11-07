@@ -11,16 +11,8 @@ import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { repairBoards, repairTarget, repairGate, flipflopBoards, type RepairBoard, laneChoice, HEN_NOTES, HEN_SHELLS, SHELL, pairBoards, pairNeeds, pairGateToFlip, type PairBoard, basketMove, exitOffsets, farBarnAt, HORIZON, laneXs, routeCx, caught, glowLane, HenPace, exitFor, exitWanted, gatesFor, gateToFlip, routeTouch, LANES, makeEggs, planFor, predictGates, targetsFor, type Egg, type EggPlan, type Shell } from './logic';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
-
-const LEVELS: BandLevels = {
-  lap: { min: 1, max: 1 },
-  toddler: { min: 1, max: 8, order: [1, 8, 2] },
-  preschool: { min: 2, max: 9, order: [2, 3, 9, 4] },
-  prek: { min: 3, max: 9, order: [3, 9, 4, 5] },
-  school: { min: 4, max: 11, order: [4, 5, 6, 7, 10, 11] },
-};
+import { LEVELS, repairBoards, repairTarget, repairGate, flipflopBoards, type RepairBoard, laneChoice, HEN_NOTES, HEN_SHELLS, SHELL, pairBoards, pairNeeds, pairGateToFlip, type PairBoard, basketMove, exitOffsets, farBarnAt, HORIZON, laneXs, routeCx, caught, glowLane, HenPace, exitFor, exitWanted, gatesFor, gateToFlip, routeTouch, LANES, makeEggs, planFor, predictGates, targetsFor, type Egg, type EggPlan, type Shell } from './logic';
+import { rangeFor } from '../../progress/difficulty';
 
 const HAY = { fill: 0xf3dc8a, line: 0xd9b95a };
 

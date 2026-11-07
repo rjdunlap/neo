@@ -5,13 +5,12 @@ import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { complete, DIRECTIONS, makePuzzle, planFor, SIZE, slide, solve, type Direction } from './logic';
+import { LEVELS, complete, DIRECTIONS, makePuzzle, planFor, SIZE, slide, solve, type Direction } from './logic';
 
-const LEVELS: BandLevels = { grownup: { min: 1, max: 3 } };
 const ARROWS = { left: '←', up: '↑', right: '→', down: '↓' };
 
 function snowball(value: number, radius: number) {

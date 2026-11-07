@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Ramp Race: a toy car rolls down a ramp and across the floor. A higher ramp sends it farther;
@@ -28,6 +29,11 @@ export const PLANS: RampPlan[] = [
   { mode: 'change', rounds: 2, name: 'One Change: fix the orange lane so only one thing differs, then read the cards' },
   { mode: 'tell', rounds: 2, name: 'What can we tell? Read two cards: did one thing change, or both? Then make it fair' },
 ];
+
+export const LEVELS: BandLevels = {
+  prek: { min: 1, max: 2 },
+  school: { min: 1, max: 7 },
+};
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 

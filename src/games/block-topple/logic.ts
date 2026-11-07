@@ -1,5 +1,6 @@
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Block Topple, after Angry Birds and Crush the Castle with no enemies: pull a springy sling back, let go, and a soft ball
@@ -373,6 +374,13 @@ export const PLANS: Plan[] = [
   { kind: 'high', name: 'Hit it high: a short wide stack only tips from a bump high up', lines: 3, counts: true, trail: true },
   { kind: 'count', name: 'Count the basket: tip each stack, then count the fruit in the tray', lines: 3, counts: true, trail: true },
 ];
+
+/** Level 5 (counting the fruit tray) is school only (docs/definitions/block-topple.md). */
+export const LEVELS: BandLevels = {
+  preschool: { min: 1, max: 2 },
+  prek: { min: 1, max: 4 },
+  school: { min: 2, max: 5 },
+};
 /** Level 5's stacks are level 4's: the same authored line, seeded shapes and filter. */
 const shapeOf = (plan: Plan): Exclude<PlanKind, 'count'> => (plan.kind === 'count' ? 'high' : plan.kind);
 export const planFor = (level: number): Plan => PLANS[Math.min(PLANS.length, Math.max(1, Math.round(level))) - 1];

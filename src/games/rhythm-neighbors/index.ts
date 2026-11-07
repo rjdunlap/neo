@@ -8,20 +8,12 @@ import { idle, type CouchControls } from '../../engine/controller';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { arrowIcon, againIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game,GameContext,GameModule,TouchIntent } from '../types';
-import { BOT_CALLS, CALL_MAX, CALL_ROUNDS, FREE_TAPS, IDLE_WIGGLE, KNOCKS, KNOCK_ANSWER, KNOCK_FINALE, PAUSE_SECONDS, accepts, answerDelay, callEnded, callPhrase, finaleEvents, makePhrases, nextNote, planFor, schedule } from './logic';
-
-const LEVELS: BandLevels = {
- lap: { min: 1, max: 7, order: [7, 1, 2] },
- toddler: { min: 2, max: 9, order: [2, 8, 9, 3] },
- preschool: { min: 3, max: 9, order: [9, 3, 4] },
- prek: { min: 4, max: 6 },
- school: { min: 5, max: 6 },
-};
+import { LEVELS, BOT_CALLS, CALL_MAX, CALL_ROUNDS, FREE_TAPS, IDLE_WIGGLE, KNOCKS, KNOCK_ANSWER, KNOCK_FINALE, PAUSE_SECONDS, accepts, answerDelay, callEnded, callPhrase, finaleEvents, makePhrases, nextNote, planFor, schedule } from './logic';
 
 function frog(which:number,r=65){const s=which?swatch.teal:swatch.green,g=new Graphics();g.ellipse(0,10,r,r*0.65).fill(s.fill).stroke({width:5,color:s.line});for(const x of [-r*.5,r*.5])g.circle(x,-r*.35,r*.28).fill(s.fill).stroke({width:4,color:s.line}).circle(x,-r*.36,r*.13).fill(swatch.white.fill).circle(x,-r*.36,r*.06).fill(swatch.purple.line);g.moveTo(-r*.4,12).quadraticCurveTo(0,35,r*.4,12).stroke({width:4,color:s.line});return g;}
 /** Level 7's big tree: trunk, leafy crown and the woodpecker, drawn around (0, 0) on the trunk. */

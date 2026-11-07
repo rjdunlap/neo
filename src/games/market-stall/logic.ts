@@ -1,5 +1,6 @@
 import type { PropKind } from '../../art/props';
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Market Stall: buy fruit with shell coins worth 1, 2 and 5 by tapping them onto the counter,
@@ -26,6 +27,12 @@ export const PLANS: ShopPlan[] = [
   { mode: 'change', coins: [1, 2, 5], price: [2, 9], orders: 3, name: 'Keep the stall: a customer pays 10, give the change' },
   { mode: 'fewest', coins: [1, 2, 5], price: [4, 10], orders: 3, name: 'Pay 4 to 10 with as few shell coins as possible' },
 ];
+
+export const LEVELS: BandLevels = {
+  preschool: { min: 1, max: 2 },
+  prek: { min: 2, max: 4 },
+  school: { min: 3, max: PLANS.length },
+};
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 

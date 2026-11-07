@@ -1,3 +1,4 @@
+import type { BandLevels } from '../../progress/difficulty';
 /**
  * Stop and Go: a traffic light and friendly cars. First the light is a toy (tap it and the car
  * stops or goes). Then the light changes by itself and the child sends a car only on green: the
@@ -23,6 +24,14 @@ export const PLANS: GoPlan[] = [
   { mode: 'lanes', goal: 6, name: 'Whose light? A car lane and a bike lane each have their own light: send the front one whose own light is green' },
   { mode: 'busy', goal: 8, name: 'Busy crossing: cars arrive one at a time on both roads; hand over one road at a time' },
 ];
+
+export const LEVELS: BandLevels = {
+  // Level 9 is the easiest, so lap plays it first and then 1 (see `order`).
+  lap: { min: 1, max: 9, order: [9, 1] },
+  toddler: { min: 1, max: 2 },
+  preschool: { min: 2, max: 5 },
+  prek: { min: 3, max: 6 },
+};
 
 /** The two crossing levels: the preset crossing (4) and the busy one where cars arrive (6). */
 export const isCross = (mode: GoMode) => mode === 'cross' || mode === 'busy';

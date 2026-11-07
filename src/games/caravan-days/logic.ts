@@ -12,6 +12,7 @@ import type { ColorName } from '../../art/palette';
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import type { Band } from '../../progress/bands';
+import type { BandLevels } from '../../progress/difficulty';
 
 /** The waterskin holds two days at every level. */
 export const SKIN = 2;
@@ -843,6 +844,13 @@ export function planFor(level: number): { level: number; id: 'load' | 'reach' | 
   if (level === 6) return { level: 6, id: 'pass', name: 'Mountains or sand: choose either road and say how many days it takes, counting the snow day on the pass (two maps; about 9 and up)' };
   return { level: 7, id: 'wells', name: 'A well every day\'s walk: dig wells so no stretch of road is longer than a day\'s walk, with as few wells as she can (two roads; about 9 and up)' };
 }
+
+export const LEVELS: BandLevels = {
+  toddler: { min: 1, max: 1 },
+  preschool: { min: 1, max: 2 },
+  prek: { min: 2, max: 3 },
+  school: { min: 3, max: 7 },
+};
 
 /** Level 4–5's road: home and three stops in a row across the upper part, evenly spaced. */
 function rowStops(v: View, y: number): Pt[] {

@@ -9,22 +9,15 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { arrowArt, backArt, flowerArt, GEAR_COLORS, gearArt, gearPair, handleArt, miniMachine, panelArt, socketArt, trayArt } from './art';
 import {
+  LEVELS,
   centre, choiceLayout, dropsInGap, FLOWER_COLORS, FLOWERS, gapOf, GearTally, gearLayout, helpFor, inputOf, Machine, outputOf, phases,
   planFor, roundFor, TIP, toScreen, type GearLayout, type MachineSpec, type Plan, type Rect, type Step,
 } from './logic';
-
-const LEVELS: BandLevels = {
-  lap: { min: 1, max: 1 },
-  toddler: { min: 1, max: 1 },
-  preschool: { min: 1, max: 2 },
-  prek: { min: 2, max: 3 },
-  school: { min: 3, max: 3 },
-};
 
 /** Seconds one quarter turn takes. */
 const TURN_TIME = 0.3;

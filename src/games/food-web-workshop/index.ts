@@ -9,18 +9,17 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { finish as finishArt, RoundButton, spring, squash } from '../../ui/buttons';
 import { againIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { arrowShape, badgeArt, cardArt, iconArt, stationArt, webIcon, webPicture } from './art';
 import {
+  LEVELS,
   applyHint, BADGE, CARD, caseRecords, check, connect, demoNext, dropTarget, faultRecord, faults, layout, makeRound, newState, planFor,
   restartState, SHOW, STATION_R, undo, type Arrow, type Fault, type FeedingRecord, type Organism, type Pt, type RecordId, type WebState,
 } from './logic';
-
-const LEVELS: BandLevels = { school: { min: 1, max: 3 } };
 
 const ASK: Record<number, LineId> = { 1: 'web.ask.make', 2: 'web.ask.turn', 3: 'web.ask.branch' };
 const CARD_LINE: Record<RecordId, LineId> = { r1: 'web.card.r1', r2: 'web.card.r2', r3: 'web.card.r3', r4: 'web.card.r4', r5: 'web.card.r5', r6: 'web.card.r6' };

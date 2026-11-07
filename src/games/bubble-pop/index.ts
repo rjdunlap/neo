@@ -14,17 +14,8 @@ import { BubbleBackdrop } from './backdrop';
 import { LOOKS, sceneFor } from './scenes';
 import { modePicture } from './mode-art';
 import { TargetSignView } from './sign';
-import { bondNumbers, bubbleToPop, choosePalette, countRun, modeCardFor, signFor, FRIEND_SOUND, FRIENDS, inReach, isRight, meant, nearestShown, planFor, spawnTarget, showsDots, staysPut, TAP_REACH, type BubblePlan, type Friend } from './logic';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
-
-const LEVELS: BandLevels = {
-  // Level 15 is the easiest, so lap plays it first and then 1, 2, 3 (see `order`).
-  lap: { min: 1, max: 15, order: [15, 1, 2, 3] },
-  toddler: { min: 1, max: 6 },
-  preschool: { min: 4, max: 9 },
-  prek: { min: 6, max: 12 },
-  school: { min: 10, max: 14 },
-};
+import { LEVELS, bondNumbers, bubbleToPop, choosePalette, countRun, modeCardFor, signFor, FRIEND_SOUND, FRIENDS, inReach, isRight, meant, nearestShown, planFor, spawnTarget, showsDots, staysPut, TAP_REACH, type BubblePlan, type Friend } from './logic';
+import { rangeFor } from '../../progress/difficulty';
 
 class BubblePop implements Game {
   private readonly plan: BubblePlan;

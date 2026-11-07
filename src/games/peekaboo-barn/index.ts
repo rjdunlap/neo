@@ -10,8 +10,8 @@ import { Rng } from '../../engine/random';
 import { ease, type Tweener } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { STICKER_ANIMALS, COVER_NAMES, FEELING_WORDS, roundScene, type SceneId, nearestSpot, shouldNudge, shouldSelfOpen, deal, newcomer, pickFeeling, pickTarget, planFor, spotToTap, type Animal, type Feeling, type PeekPlan, type CoverKind } from './logic';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { LEVELS, STICKER_ANIMALS, COVER_NAMES, FEELING_WORDS, roundScene, type SceneId, nearestSpot, shouldNudge, shouldSelfOpen, deal, newcomer, pickFeeling, pickTarget, planFor, spotToTap, type Animal, type Feeling, type PeekPlan, type CoverKind } from './logic';
+import { rangeFor } from '../../progress/difficulty';
 
 const VOICES: Record<Animal, { sound: AnimalSound; word: string }> = {
   cow: { sound: 'moo', word: 'Moo' },
@@ -21,14 +21,6 @@ const VOICES: Record<Animal, { sound: AnimalSound; word: string }> = {
   dog: { sound: 'woof', word: 'Woof woof' },
   bunny: { sound: 'hop', word: 'Hop hop' },
   bear: { sound: 'growl', word: 'Grrr' },
-};
-
-const LEVELS: BandLevels = {
-  // Level 16 (One door) is the easiest, so lap plays it first and then 1, 2 (see `order`).
-  lap: { min: 1, max: 16, order: [16, 1, 2] },
-  toddler: { min: 1, max: 5 },
-  preschool: { min: 4, max: 8 },
-  prek: { min: 6, max: 8 },
 };
 
 const GRASS = 0x9edb86;

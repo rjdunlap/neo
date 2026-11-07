@@ -15,20 +15,16 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
 import { BUD_H, BUD_W, BudCard, CARD, CHECK_R, ChoiceCard, claimPic, iconArt, leafArt, lookPic, PACKET_R, packetArt, plantArt, slotArt, Sprout, stickerArt, TILE, tileArt } from './art';
-import { acceptedClaim, buildingBud, builtBud, checkClaim, checkLooks, freshRound, levelName, looks, nextStep, CONSERVATORY_LEVEL, HIDDEN_LEVEL, PAIRS_LEVEL, PETAL_COLORS, setupFor, support, type Claim, type Look, type Round, type Setup } from './logic';
+import { LEVELS, acceptedClaim, buildingBud, builtBud, checkClaim, checkLooks, freshRound, levelName, looks, nextStep, CONSERVATORY_LEVEL, HIDDEN_LEVEL, PAIRS_LEVEL, PETAL_COLORS, setupFor, support, type Claim, type Look, type Round, type Setup } from './logic';
 import { SproutPairs } from './pairs';
 import { SproutHidden } from './hidden';
 import { SproutConservatory } from './conservatory';
-
-const LEVELS: BandLevels = {
-  school: { min: 1, max: 8 },
-};
 
 type Side = 0 | 1;
 

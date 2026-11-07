@@ -11,6 +11,7 @@
  */
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
+import type { BandLevels } from '../../progress/difficulty';
 
 /* The model -------------------------------------------------------------------------------------- */
 
@@ -288,6 +289,8 @@ export const PLANS: readonly Plan[] = [
   { id: 2, name: 'Which way? Three replays, two that differ only by the way the toes point' },
   { id: 3, name: "Can we tell? A puddle hides the middle; one card fits, or two leave the same marks and Can't tell is right" },
 ];
+
+export const LEVELS: BandLevels = { school: { min: 1, max: 3 } };
 export const planFor = (level: number): Plan => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 
 /* Layout ----------------------------------------------------------------------------------------- */

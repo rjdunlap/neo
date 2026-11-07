@@ -10,17 +10,9 @@ import type { View } from '../../engine/view';
 import { idle, type CouchControls } from '../../engine/controller';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { DUEL_PLAN, duelServeDir, duelWinner, countFor, isZoneMode, makeSequence, serveAngleFor, petLob, afterHit, afterMiss, courtFor, farWall, isGoalMode, keeperSpeed, paddleBounce, paddleForLanding, paddleTarget, planFor, predictY, reachableZones, versusMisses, volleySpeed, zoneOf, ZONES, type AimGeometry, type BallKind, type BouncePlan, type Court } from './logic';
+import { LEVELS, DUEL_PLAN, duelServeDir, duelWinner, countFor, isZoneMode, makeSequence, serveAngleFor, petLob, afterHit, afterMiss, courtFor, farWall, isGoalMode, keeperSpeed, paddleBounce, paddleForLanding, paddleTarget, planFor, predictY, reachableZones, versusMisses, volleySpeed, zoneOf, ZONES, type AimGeometry, type BallKind, type BouncePlan, type Court } from './logic';
 import { FONT } from '../../ui/text';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
-
-const LEVELS: BandLevels = {
-  lap: { min: 1, max: 1 },
-  toddler: { min: 1, max: 2 },
-  preschool: { min: 2, max: 4 },
-  prek: { min: 3, max: 6 },
-  school: { min: 6, max: 11 },
-};
+import { rangeFor } from '../../progress/difficulty';
 
 const BALL_R = 26;
 const PADDLE_W = 34;

@@ -9,6 +9,7 @@
 import type { ColorName } from '../../art/palette';
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
+import type { BandLevels } from '../../progress/difficulty';
 
 export type PlanId = 'tokens' | 'envelope' | 'rows' | 'tens' | 'check' | 'disagree';
 export type Kind = 'sheep' | 'jar';
@@ -28,6 +29,12 @@ export const PLANS: readonly Plan[] = [
   { level: 5, id: 'check', name: 'Check the delivery: short, right or extra, and by how many (two carts against tablets of 12–29)' },
   { level: 6, id: 'disagree', name: "Two tablets disagree: which one matches the cart, or can we tell? (a farm and a storehouse tablet of 12–29)" },
 ];
+
+export const LEVELS: BandLevels = {
+  preschool: { min: 1, max: 2 },
+  prek: { min: 2, max: 3 },
+  school: { min: 3, max: 6 },
+};
 export const MAX_LEVEL = PLANS.length;
 
 export function planFor(level: number): Plan {

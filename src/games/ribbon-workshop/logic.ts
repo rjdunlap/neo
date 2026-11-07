@@ -1,3 +1,4 @@
+import type { BandLevels } from '../../progress/difficulty';
 import type { Rng } from '../../engine/random';
 
 /**
@@ -217,3 +218,7 @@ export function trayLayout(tray: readonly Piece[]): { id: number; row: number; x
     return { id: p.id, row, x };
   });
 }
+
+export const LEVELS: BandLevels = {
+  school: { min: 1, max: 3 },
+};

@@ -15,7 +15,7 @@ import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { finish, RoundButton } from '../../ui/buttons';
 import { arrowIcon, checkIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
@@ -26,16 +26,11 @@ import {
   warmthFill, watchArt,
 } from './art';
 import {
+  LEVELS,
   briefFor, centre, chipsFor, GAPS, gapAt, gapY, handleRect, helperFor, helpFor, HOUSE_COLORS, houseLayout, JAR, nextMove, offersSetup, onGauge, openRows, placeSensor, planFor, runDay, sameBoard, setLine,
   setRow, solutions, SPECIES, STEPS, Tally, TILE, warmthY, zoneOf,
   type Board, type Brief, type Chip, type GaugeLayout, type HouseLayout, type LinePiece, type Outcome, type Piece, type Pt, type Reading, type SensorKind, type Socket, type SunLevel, type Trace,
 } from './logic';
-
-const LEVELS: BandLevels = {
-  preschool: { min: 1, max: 1 },
-  prek: { min: 1, max: 3 },
-  school: { min: 2, max: 7 },
-};
 
 /** The friend stands about 250 tall at scale 1. */
 const CRITTER_SCALE = 0.4;

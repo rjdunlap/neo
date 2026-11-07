@@ -12,6 +12,7 @@ import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  LEVELS,
   BOX_FRONT,
   CORNERS,
   cornerClass,
@@ -42,7 +43,7 @@ import {
   type Size,
   type SorterPlan,
 } from './logic';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 
 /** Each shape's own color, used while colors still help. */
 const SHAPE_COLOR: Record<ShapeKind, ColorName> = {
@@ -61,13 +62,6 @@ const SHAPE_COLOR: Record<ShapeKind, ColorName> = {
 
 /** The one colour of a round where colour no longer helps: the rainbow, less the floor's orange. */
 const ONE_COLOR: ColorName[] = ['red', 'yellow', 'green', 'teal', 'blue', 'purple', 'pink'];
-
-const LEVELS: BandLevels = {
-  lap: { min: 9, max: 9, order: [9] },
-  toddler: { min: 1, max: 10, order: [9, 1, 2, 10, 3, 4, 5] },
-  preschool: { min: 3, max: 11, order: [3, 4, 5, 6, 7, 11] },
-  prek: { min: 5, max: 14, order: [5, 6, 7, 11, 8, 12, 13, 14] },
-};
 
 const PIECE_R = 48;
 const line = (color: number, width = 6) => ({ width, color, join: 'round' as const, cap: 'round' as const });

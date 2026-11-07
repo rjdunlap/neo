@@ -1,5 +1,6 @@
 import type { Rng } from '../../engine/random';
 import { spread } from '../../engine/view';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Egg Catch, after the Atari 2600's Big Bird's Egg Catch (made for preschoolers) and Kaboom!:
@@ -32,6 +33,14 @@ export const PLANS: EggPlan[] = [
   { mode: 'repair', eggs: 4, fall: 0, name: 'Fix the run: follow the dotted trace, repair one gate and roll again' },
   { mode: 'flipflop', eggs: 3, fall: 0, name: 'Flip-flop gate: set a spring gate for brown then white with one arrangement' },
 ];
+
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 1 },
+  toddler: { min: 1, max: 8, order: [1, 8, 2] },
+  preschool: { min: 2, max: 9, order: [2, 3, 9, 4] },
+  prek: { min: 3, max: 9, order: [3, 9, 4, 5] },
+  school: { min: 4, max: 11, order: [4, 5, 6, 7, 10, 11] },
+};
 
 /** Predict levels: gate settings for each egg, never landing in the same place twice running. */
 export function predictGates(rng: Rng, count: number): [boolean, boolean, boolean][] {

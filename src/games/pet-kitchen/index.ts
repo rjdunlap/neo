@@ -12,8 +12,8 @@ import { againIcon, arrowIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { canPour, CUP, CUP_CAP, cupFix, cupFull, cupTrouble, cupWay, cupWords, SCOOP_QUARTERS, SCOOPS, wayStep, type Scoop, compareCut, compareFriends, comparePair, firstUnmet, kitchenDiscoveries, morePlate, needs, servesBoth, type ComparePair, countAloud, CUT_WAYS, SHAPES_LEVEL, cutShares, dealCut, dealFriends, dealTo, DEAL_LEVEL, doubled, fair, fairAreas, fairCut, fractionCut, fractionRequest, fruitPair, halfIngredientHint, halved, ingredientHint, isPizzaLevel, nextPlate, nextWay, overlayPair, pieceAreas, pieceShape, PIZZAS_LEVEL, planFor, plateAt, recipe, SAME_LEVEL, servesFraction, serveTrouble, shapesLine, wholeFor, type CutWay, type FractionRequest, type PieceShape, type Whole } from './logic';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { LEVELS, canPour, CUP, CUP_CAP, cupFix, cupFull, cupTrouble, cupWay, cupWords, SCOOP_QUARTERS, SCOOPS, wayStep, type Scoop, compareCut, compareFriends, comparePair, firstUnmet, kitchenDiscoveries, morePlate, needs, servesBoth, type ComparePair, countAloud, CUT_WAYS, SHAPES_LEVEL, cutShares, dealCut, dealFriends, dealTo, DEAL_LEVEL, doubled, fair, fairAreas, fairCut, fractionCut, fractionRequest, fruitPair, halfIngredientHint, halved, ingredientHint, isPizzaLevel, nextPlate, nextWay, overlayPair, pieceAreas, pieceShape, PIZZAS_LEVEL, planFor, plateAt, recipe, SAME_LEVEL, servesFraction, serveTrouble, shapesLine, wholeFor, type CutWay, type FractionRequest, type PieceShape, type Whole } from './logic';
+import { rangeFor } from '../../progress/difficulty';
 import { entryId } from '../../content/journal';
 
 function sandwich(parts = 1) {
@@ -678,8 +678,6 @@ class PetKitchen implements Game {
   }
   destroy(){this.clearPieces();}
 }
-/** Level 10 (tap dealing) is the lap band's only level and toddler's first; it steps to the cutting levels after two smooth rounds. */
-const LEVELS:BandLevels={lap:{min:10,max:10},toddler:{min:1,max:10,order:[10,1]},preschool:{min:1,max:11,order:[1,11,2,3,4]},prek:{min:3,max:14,order:[11,3,4,14,5,6]},school:{min:5,max:15,order:[14,5,6,7,8,9,12,13,15]}};
 export const petKitchen:GameModule={
   id:'pet-kitchen',name:'Pet Kitchen',titleLine:'game.pet-kitchen',region:'counting-cove',challenge:'numbers',
   skills:['equal-shares','fractions','doubling','measuring'],bands:['lap','toddler','preschool','prek','school'],

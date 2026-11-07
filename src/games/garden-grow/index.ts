@@ -8,18 +8,11 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { drawKind } from './kinds';
-import { BEDS, bigFinished, bigTouch, BIG_STAGES, CHOOSE_MODES, gardenTouch, GRID_MODES, judgeGrid, KINDS, makeRequests, matches, packetsFor, planFor, ROW_LEN, total, type BigState, type FlowerKind, type GardenPlan, type Request } from './logic';
-
-const LEVELS: BandLevels = {
-  lap: { min: 1, max: 8, order: [8, 1, 2] },
-  toddler: { min: 2, max: 4 },
-  preschool: { min: 3, max: 5 },
-  prek: { min: 6, max: 11, order: [6, 7, 9, 10, 11] },
-};
+import { LEVELS, BEDS, bigFinished, bigTouch, BIG_STAGES, CHOOSE_MODES, gardenTouch, GRID_MODES, judgeGrid, KINDS, makeRequests, matches, packetsFor, planFor, ROW_LEN, total, type BigState, type FlowerKind, type GardenPlan, type Request } from './logic';
 
 /** A smiling flower on a stem: the stem rises, two leaves unfold, a bud swells, then the head opens. */
 class Bloom extends Container {

@@ -1,6 +1,7 @@
 import type { Rng } from '../../engine/random';
 import { clues, colorClues, colorLineSolvable, colorPlacements, colorRuns, lineSolvable, PICTURES as KID_PICTURES, placements, runs } from '../pixel-pictures/logic';
 import { BIG_15, EASY_10, HARD_10, HARD_15, TWO_COLOUR_10, type DrawnPicture } from './pictures';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Picture Logic's rules (nonograms, Picross). A grid hides a picture; the numbers along each row and column say how long the
@@ -343,6 +344,9 @@ export const PLANS: Readonly<Record<number, PicturePlan>> = {
 
 /** The order the levels are played in, easiest first, and the appended easy entry. */
 export const ORDER = [5, 1, 2, 3, 6, 4, 7];
+
+/** Grown-up play only. */
+export const LEVELS: BandLevels = { grownup: { min: 1, max: 7, order: ORDER } };
 export const ENTRY_LEVELS = [5];
 
 /** A level's plan; an ID with no plan (below 1, or above the top) plays the nearest end of the ladder. */

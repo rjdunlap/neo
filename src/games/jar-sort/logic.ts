@@ -1,5 +1,6 @@
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Jar Sort's rules. A jar is a bottom-to-top list of fruit kinds (0 strawberry, 1 blueberry, 2 orange, 3 pear, 4 plum, 5 cherries, 6 lemon); a move
@@ -50,6 +51,12 @@ export const PLANS: JarPlan[] = [
   { id: 7, name: 'Five kinds', jars: 7, cap: 4, kinds: 5, par: [12, 18], boards: 1, lit: false, labels: false },
   { id: 8, name: 'Every fruit has its jar', jars: 6, cap: 4, kinds: 4, par: [10, 16], boards: 1, lit: false, labels: true },
 ];
+
+export const LEVELS: BandLevels = {
+  preschool: { min: 1, max: 3 },
+  prek: { min: 2, max: 5 },
+  school: { min: 4, max: 8 },
+};
 
 export function planFor(level: number): JarPlan {
   return PLANS[Math.min(PLANS.length, Math.max(1, Math.round(level))) - 1];

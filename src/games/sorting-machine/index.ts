@@ -13,7 +13,7 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { finish, RoundButton } from '../../ui/buttons';
 import { arrowIcon, checkIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
@@ -22,13 +22,10 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
 import { cardArt, Door, doorMark, failBadge, fixtureCritter, iconArt, propPicture, sendArt, signArt, slotFrame, stickerArt, turtleArt, valueToken } from './art';
 import {
+  LEVELS,
   briefFor, centre, check, evaluate, helpFor, machineLayout, nextMove, planFor, PROPS, setSlot, slots, SPECIES, COLORS, Tally, wanted,
   type Brief, type MachineLayout, type Node, type Prop, type Pt, type Value,
 } from './logic';
-
-const LEVELS: BandLevels = {
-  school: { min: 1, max: 2 },
-};
 
 /** The critters stand about 250 tall at scale 1; on a card they are a little over 100. */
 const CRITTER_SCALE = 0.42;

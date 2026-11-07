@@ -8,22 +8,15 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { cardArt, iconArt, madeArt, partArt, type Made } from './art';
 import {
+  LEVELS,
   applyHint, canDrag, CARD, COMPOUNDS, currentAsk, drop, dropTarget, hintFor, MADE, makeRound, newState, planFor, restartState, SHELF,
   shelfLayout, tableCentre, tableLayout, type Ask, type Compound, type GlueState, type Pt,
 } from './logic';
-
-const LEVELS: BandLevels = {
-  lap: { min: 1, max: 1 },
-  toddler: { min: 1, max: 2 },
-  preschool: { min: 2, max: 3 },
-  prek: { min: 3, max: 3 },
-  school: { min: 3, max: 3 },
-};
 
 /** The made thing is drawn about 160 across. */
 const MADE_ART = 160;

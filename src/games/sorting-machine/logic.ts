@@ -9,6 +9,7 @@ import type { ColorName } from '../../art/palette';
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import { hinted, missEvery, type Tally as CoachTally } from '../../progress/coach';
+import type { BandLevels } from '../../progress/difficulty';
 
 // ——— Properties, fixtures and briefs ———
 
@@ -181,6 +182,10 @@ const PLANS: readonly Plan[] = [
   { level: 1, name: 'See the signal' },
   { level: 2, name: 'Choose the sensor' },
 ];
+
+export const LEVELS: BandLevels = {
+  school: { min: 1, max: 2 },
+};
 
 export const MAX_LEVEL = PLANS.length;
 

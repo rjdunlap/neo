@@ -1,3 +1,4 @@
+import type { BandLevels } from '../../progress/difficulty';
 import type { Rng } from '../../engine/random';
 
 export type Pose = 'up' | 'across' | 'along';
@@ -57,3 +58,7 @@ export function makePuzzle(level: number, rng: Rng) {
   if (!candidates.length) throw new Error(`No Log Roll starts at depth ${plan.depth}`);
   return { plan, start: { ...rng.pick(candidates).state } };
 }
+
+export const LEVELS: BandLevels = {
+  grownup: { min: 1, max: 3 },
+};

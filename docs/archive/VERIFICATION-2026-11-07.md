@@ -48,3 +48,8 @@ Changed: `docs/deep-dives/pile-match.md` and its tracker, READY and STUDY-BACKLO
 
 Changed: `src/games/domino-run` (puddles, three moods, five end looks, three voice ids), four rule tests, the `dominorun` suite. Ran: typecheck; `vitest run src/games/domino-run src/content` (196 tests); filtered `BROWSER_SUITE=dominorun` (levels 1, 8, 5, plus 6 upright in sunset with a drop on a puddle: misses 0, hints 0); `npm run build`; an ad hoc screenshot check of all five end looks and the morning and low-tide moods (no page errors).
 Open: `fingerdemo` not run (bot unchanged); no other suites, offline or full `npm test` (CI); whether a puddle reads without speech on an iPad is a [device check](../DEVICE-CHECKS.md).
+
+## 2026-11-07 — Fruit Sums slice 1, looks, the drop and a hint that follows through (PR #1362)
+
+Changed: `src/games/fruit-sums` (three seeded looks, the drop, hopping fruit, `hintWay`/`hintGlow` follow-through, `fsums.hint` line and how-to notes), rule tests, the `fruitsums` suite. Ran: typecheck; `npm test` (322 files, 6026 tests); filtered `BROWSER_SUITE=fruitsums` (level 1: two misses and one hint glowing start fruit, partner, check; level 3 portrait 768×1024 in the cove look, screenshot `test-results/browser/fruitsums/fruit-sums-3-portrait-cove.png`).
+Open: build not run (no shared files changed); `fingerdemo` not run (bot path unchanged); the level-3 hint is covered by unit tests, not a browser play; whether the drop and glow read on an iPad is a [device check](../DEVICE-CHECKS.md).

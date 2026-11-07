@@ -1,5 +1,6 @@
 import type { LineId } from '../../content/voice-script';
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /** Jellies on the stage, biggest (lowest) first. */
 export const JELLIES = 5;
@@ -27,6 +28,15 @@ export const PLANS: JellyPlan[] = [
   // Level 10, "One big jelly": the easiest entry, placed first for lap by the band's `order`.
   { mode: 'wake', goal: 24, length: 0 },
 ];
+
+export const LEVELS: BandLevels = {
+  // Level 10 (one big jelly) is the easiest, so lap plays it first and then 1, 2, 3 (see `order`).
+  lap: { min: 1, max: 10, order: [10, 1, 2, 3] },
+  toddler: { min: 1, max: 3 },
+  preschool: { min: 4, max: 7 },
+  prek: { min: 5, max: 9 },
+  school: { min: 8, max: 9 },
+};
 
 /** The order the jellies wake in on the wake level: the big low one, the little high one, then the rest one by one. */
 export const WAKE_ORDER = [0, 4, 2, 1, 3];

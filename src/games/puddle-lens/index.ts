@@ -10,7 +10,7 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
@@ -18,6 +18,7 @@ import {
   swimmerArt, thingArt, trayIcon, viewLayer, waterLayer, wallLayer, greenLayer, plantIcon, livingIcon, throughIcon,
 } from './art';
 import {
+  LEVELS,
   ART_R, clampGlass, DECIDING, dropScale, dropsFor, GLASS_R, helpFor, judgeSwimmers, judgeView, lensLayout, LensTally, LookTracker, looksFor,
   nearestSwimmer, planFor, questionsFor, STOPS, SWIMMER_LENGTH, swimmerAt, THINGS, windowOf, acceptedStops,
   CANDIDATES, CLASSES, decidingStop, judgeLife, judgeSort, lifeDropsFor, lookLine, PAIRS, rightLife, seeLine, SORT_SAMPLES, sortRoundFor,
@@ -26,14 +27,6 @@ import {
   greenDeciding, greenDriftAt, greenRoundFor, GREEN_DROPS, greenSeeLine, judgeGreen, judgeWall, looks78For, wallDeciding, wallRoundFor, WALL_SLIDES, wallSeeLine,
   type GreenAnswer, type GreenDropId, type Looks78, type WallAnswer, type WallSlideId,
 } from './logic';
-
-const LEVELS: BandLevels = {
-  lap: { min: 1, max: 1 },
-  toddler: { min: 1, max: 2 },
-  preschool: { min: 2, max: 3 },
-  prek: { min: 3, max: 4 },
-  school: { min: 4, max: 8 },
-};
 
 /** Each level's authored first round leads its first round of a session, and every demonstration. */
 const authoredShown = new Set<number>();

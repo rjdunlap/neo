@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 export type Removal = readonly number[];
 export interface Puzzle { rows: number; ranks: number[] }
@@ -7,6 +8,8 @@ export const PLANS = [
   { rows: 4, name: 'Ten cards: uncover the next pair' },
   { rows: 5, name: 'Fifteen cards: plan through five rows' },
 ] as const;
+
+export const LEVELS: BandLevels = { grownup: { min: 1, max: 3 } };
 export const planFor = (level: number) => PLANS[Math.max(0, Math.min(2, level - 1))];
 export const countFor = (rows: number) => rows * (rows + 1) / 2;
 export const fullMask = (rows: number) => (1 << countFor(rows)) - 1;

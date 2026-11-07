@@ -6,6 +6,7 @@
  * current calculation. Definition: docs/definitions/circuit-garden.md.
  */
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /** Battery `P`/`N`, lamp `L`/`R`, and the switch's two ends `U`/`V`. */
 export type Terminal = 'P' | 'N' | 'L' | 'R' | 'U' | 'V';
@@ -34,6 +35,11 @@ export const PLANS: readonly LevelPlan[] = [
   { level: 2, name: 'A switch changes it: see the lantern on and off', fixed: [['P', 'U'], ['V', 'L'], SLOT_EDGES.return], slots: [], switch: true, check: false },
   { level: 3, name: 'Mend the lantern: fill both gaps, then check it lights', fixed: [], slots: ['supply', 'return'], switch: false, check: true },
 ];
+
+export const LEVELS: BandLevels = {
+  prek: { min: 1, max: 3 },
+  school: { min: 1, max: 3 },
+};
 
 export const planFor = (level: number) => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 

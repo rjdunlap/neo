@@ -10,22 +10,16 @@ import { onTap, palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { FONT } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  LEVELS,
   allStanding, arc, BALL_R, basketAfter, BOARD_H, BOARD_W, boardLayout, countPads, fallFootprint, flight, GRAB_R, GRASS, isMiss, nearestWorking, NET_X,
   padLayout, planFor, positionAt, tipLine, pullFrom, pulledBall, roundLines, SLING, solve, trayLayout, type Block, type Flight, type Line, type Plan, type Pt,
   type Pull, type Stack, type Standing,
 } from './logic';
-
-/** Level 5 (counting the fruit tray) is school only (docs/definitions/block-topple.md). */
-const LEVELS: BandLevels = {
-  preschool: { min: 1, max: 2 },
-  prek: { min: 1, max: 4 },
-  school: { min: 2, max: 5 },
-};
 
 const INSTRUCT: Record<Plan['kind'], LineId> = {
   close: 'block-topple.instruct-pull',

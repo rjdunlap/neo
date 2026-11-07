@@ -2,6 +2,7 @@ import type { Rng } from '../../engine/random';
 import { BLOCKED } from '../word-search/blocked';
 import { PICTURE_THEMES, THEMES } from '../word-search/words';
 import { CLUES_5 } from './clues';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Crossword rules (docs/definitions/crossword.md). Little grids where one letter fills two words: at levels 1–4 each word has a
@@ -97,6 +98,13 @@ export const PLANS: readonly Plan[] = [
   { level: 5, name: 'Written clues', words: WORDS_5, themes: THEMES_5, puzzles: 1, count: 8, layout: 'free', max: 8, blank: 'all', decoys: 0, grown: 'free' },
   { level: 6, name: 'The mini', words: [], puzzles: 1, count: 10, layout: 'free', max: 5, blank: 'all', decoys: 0, grown: 'mini' },
 ];
+
+/** School starts one step above pre-K's opening; levels 5–6 are the grown-ups' written-clue grids (`grownup.ts`). */
+export const LEVELS: BandLevels = {
+  prek: { min: 1, max: 2 },
+  school: { min: 2, max: 4 },
+  grownup: { min: 5, max: 6 },
+};
 
 export const planFor = (level: number): Plan => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 

@@ -15,7 +15,7 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
@@ -23,17 +23,11 @@ import type { CompanionRig } from '../../creatures/companion';
 import { WaterFlow } from './flow';
 import { arrowArt, blockArt, frameArt, groundArt, iconArt, SKY, slotArt, stickerArt, stoneArt, wallArt } from './art';
 import {
+  LEVELS,
   BLOCK, botMove, buttressPlan, buttressStart, centre, explain, hintFor, inner, isAsked, keystone, keystoneArch, keystonePlan, keystoneStart, nextArch, nextPair, outer, pairsPlan,
   pairsStart, place, placeOrder, planFor, predict, pull, pullFree, pullKeystone, SLOT, stoneAngles, stoneCentre, Tally, tapPile, waterRoadLayout, withBlock,
   type Arch, type Block, type ButtressPlan, type ButtressState, type KeystonePlan, type KeystoneState, type PairsPlan, type PairsState, type Pt, type Side, type WrLayout,
 } from './logic';
-
-const LEVELS: BandLevels = {
-  toddler: { min: 1, max: 1 },
-  preschool: { min: 1, max: 2 },
-  prek: { min: 2, max: 4 },
-  school: { min: 3, max: 5 },
-};
 
 /** The handle glows brighter when nothing has been tapped for this long after the ring closes (level 1, uncounted). */
 const IDLE_GLOW = 6;

@@ -9,23 +9,14 @@ import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { idle, type CouchControls } from '../../engine/controller';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { RoundButton } from '../../ui/buttons';
 import { againIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseBoards, courseMinimum, isPondCourse } from './course';
-import { beside, cellAt, eaten, HINT_AFTER, makePrediction, makePuzzle, move, movePair, pickLook, planFor, solve, solvePair, solved, stopper, tapDirection, type Cell, type Dir, type FishColor, type RockLook, type ShownSlide, type SlidePlan, type SlidePuzzle } from './logic';
-
-const LEVELS: BandLevels = {
-  // Level 11 (Where will it stop?) is the easier step between 2 and 3.
-  preschool: { min: 1, max: 11, order: [1, 2, 11] },
-  prek: { min: 1, max: 11, order: [1, 2, 11, 3, 4] },
-  // Level 12 (A block onto the star) follows 10; 11 is the younger bands' prediction step.
-  // Level 13 (Two penguins) is the top.
-  school: { min: 2, max: 13, order: [2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13] },
-};
+import { LEVELS, beside, cellAt, eaten, HINT_AFTER, makePrediction, makePuzzle, move, movePair, pickLook, planFor, solve, solvePair, solved, stopper, tapDirection, type Cell, type Dir, type FishColor, type RockLook, type ShownSlide, type SlidePlan, type SlidePuzzle } from './logic';
 
 const CELL = 100;
 const ICE = 0xe3f4ff;

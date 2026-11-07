@@ -1,5 +1,6 @@
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
+import type { BandLevels } from '../../progress/difficulty';
 
 /*
  * Lift It's rules: an ideal pulley stated as a toy. Ropes and wheels weigh nothing and nothing rubs; the pull a crate needs
@@ -150,6 +151,12 @@ export const PLANS: readonly Plan[] = [
   { id: 5, name: 'Who pulls?', hooks: ['branch', 'crate'], tray: 2, counter: false, ask: 'none', request: true, lines: 3 },
   { id: 6, name: 'By the numbers', hooks: ['branch', 'crate'], tray: 2, counter: true, ask: 'numbers', request: true, lines: 3 },
 ];
+
+export const LEVELS: BandLevels = {
+  preschool: { min: 1, max: 2 },
+  prek: { min: 2, max: 4 },
+  school: { min: 3, max: 6 },
+};
 
 export function planFor(level: number): Plan {
   return PLANS.find((p) => p.id === level) ?? PLANS[0];

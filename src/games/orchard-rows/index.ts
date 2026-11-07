@@ -6,15 +6,13 @@ import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { BasketOrchard, tree } from './baskets';
 import { PathOrchard } from './path';
-import { choicesFor, countGroup, isBasketLevel, isPathLevel, makeOrchards, missingTrees, orchardLayout, planFor, total, turn, type Orchard } from './logic';
-
-const LEVELS: BandLevels = { school: { min: 1, max: 9 } };
+import { LEVELS, choicesFor, countGroup, isBasketLevel, isPathLevel, makeOrchards, missingTrees, orchardLayout, planFor, total, turn, type Orchard } from './logic';
 
 class OrchardRows implements Game {
   readonly plan;

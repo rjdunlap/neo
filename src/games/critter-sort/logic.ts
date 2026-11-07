@@ -1,5 +1,6 @@
 import type { CritterName } from '../../art/critter';
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Critter Sort: sorting by what you can see, the way scientists and librarians do. Drag critters
@@ -36,6 +37,11 @@ export const PLANS: SortPlan[] = [
   { mode: 'resort', critters: 6, rounds: 1, name: 'A new sign: sort six critters into a hoop or onto the leaf mat, then sort the same six again by a new rule' },
   { mode: 'butnot', critters: 6, rounds: 2, name: 'This but not that: one hoop for critters that fit the first sign but not the crossed-out sign; all others go on the leaf mat' },
 ];
+
+export const LEVELS: BandLevels = {
+  prek: { min: 1, max: 13, order: [6, 1, 12, 2, 3, 13] },
+  school: { min: 2, max: 13, order: [2, 12, 3, 13, 4, 5, 7, 8, 9, 11] },
+};
 
 // ID 10 remains reserved for Pick the signs; existing plan IDs never move.
 export const COUNT_PLAN: SortPlan = { mode: 'two', critters: 6, rounds: 2, count: true, name: 'How many? Sort six critters, tap to count each hoop and the leaf mat aloud, then choose the part with more' };

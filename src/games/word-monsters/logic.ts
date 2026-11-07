@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Word Monsters, after Endless Alphabet and Reader Rabbit: every letter is a little monster
@@ -26,6 +27,14 @@ export const PLANS: MonsterPlan[] = [
   { mode: 'family', rounds: 6, choices: 4, name: 'Word families: change the first sound to make hat, cat, bat (two families)' },
   { mode: 'end', rounds: 3, choices: 3, name: 'Change the end: keep the first two sounds and make cat, cap, can' },
 ];
+
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 1 },
+  toddler: { min: 1, max: 2 },
+  preschool: { min: 2, max: 5 },
+  prek: { min: 3, max: 6 },
+  school: { min: 5, max: PLANS.length },
+};
 
 /** Word families: the ending stays, the first sound changes. Each word's onset is a plain consonant sound. */
 export const FAMILIES: Record<string, string[]> = {

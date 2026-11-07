@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Rhyme Time: pictures that say their names. Find the one that rhymes with a word, then the two
@@ -26,6 +27,18 @@ export const PLANS: RhymePlan[] = [
   { mode: 'scene', choices: 3, questions: 4, name: 'Silly pairs: who rides in the truck? The rider that rhymes hops in' },
   { mode: 'scene', choices: 2, questions: 3, name: 'Silly pairs, two to choose: three scenes, the rider or one other picture' },
 ];
+
+/**
+ * Pre-K plays the first riddle (5) after pairs; odd one out (4) and the meaning-first and make-it riddles (6–7) stay school.
+ * Silly pairs (8) is a single rhyme judgment with a place to say it in, so it sits second on both ladders. Rhyme baskets (10)
+ * holds three families at once, so it tops the school ladder only. Level 9 is level 8 with two pictures and three scenes, the
+ * place's word said twice: recognising a rhyme between two pictures is the preschool opening, an entry level the older ladders skip.
+ */
+export const LEVELS: BandLevels = {
+  preschool: { min: 8, max: 9, order: [9, 8] },
+  prek: { min: 1, max: 8, order: [1, 8, 2, 3, 5] },
+  school: { min: 2, max: 10, order: [2, 8, 3, 4, 5, 6, 7, 10] },
+};
 
 /** Level 10 sits on its own ID, after level 9 (the preschool opening). */
 export const BASKETS: RhymePlan = { mode: 'baskets', choices: 6, questions: 2, name: 'Rhyme baskets: drag six pictures into three baskets by rhyme, two trays' };

@@ -8,7 +8,7 @@ import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { goal, makeBoard, nookLayout, planFor, slide, solutionStep, solved } from './logic';
+import { LEVELS, goal, makeBoard, nookLayout, planFor, slide, solutionStep, solved } from './logic';
 
 function numberArt(value: number, size: number, correct = false): Container {
   const c = new Container();
@@ -155,7 +155,7 @@ function iconArt(seed = 0) {
 export const numberNook: GameModule = {
   id: 'number-nook', name: 'Number Nook', titleLine: 'game.number-nook', region: 'puzzle-peaks', challenge: 'numbers',
   skills: ['spatial-reasoning', 'planning', 'number-order'], bands: ['grownup'], touchDemo: true,
-  levels: band => rangeFor({ grownup: { min: 1, max: 3 } }, band),
+  levels: (band) => rangeFor(LEVELS, band),
   describeLevel: level => planFor(level).name, music: STYLES.lullaby, upright: true,
   coplayHint: 'Plan together: which tile needs the empty space next? A green tile can still move.',
   offScreen: 'Arrange numbered paper squares on a tray with one empty space. Slide one neighbour into the gap at a time.',

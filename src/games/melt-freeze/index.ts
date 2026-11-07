@@ -1,3 +1,4 @@
+import { rangeFor } from '../../progress/difficulty';
 import { Container, Graphics, Rectangle } from 'pixi.js';
 import { swatch } from '../../art/palette';
 import { STYLES } from '../../audio/music';
@@ -9,7 +10,7 @@ import type { View } from '../../engine/view';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { drawTable, ghostArt, iconArt, puddleArt, snowArt, solidArt, sunArt, targetArt } from './art';
-import { MakeRound, meltPlan, melts, requestsFor, sayAfter, step, SUBSTANCES, tableLayout, thingsFor, toolFor, traysFor, type Plan, type State, type Substance, type TableLayout, type Tool } from './logic';
+import { LEVELS, MakeRound, meltPlan, melts, requestsFor, sayAfter, step, SUBSTANCES, tableLayout, thingsFor, toolFor, traysFor, type Plan, type State, type Substance, type TableLayout, type Tool } from './logic';
 
 /** Each level's authored first round leads its first round of a session, and every demonstration. */
 const authoredShown = new Set<number>();
@@ -492,7 +493,7 @@ export const meltFreeze: GameModule = {
   challenge: 'noticing',
   skills: ['states-of-matter', 'cause-and-effect', 'observation'],
   bands: ['lap', 'toddler', 'preschool'],
-  levels: (b) => (b === 'preschool' ? { min: 3, max: 4 } : b === 'toddler' ? { min: 1, max: 3 } : { min: 1, max: 2 }),
+  levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (l) => meltPlan(l).name,
   music: STYLES.bubbles,
   coplayHint: 'Ask {name} what the sun did, then what the snowflake did.',

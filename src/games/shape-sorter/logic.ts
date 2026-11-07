@@ -1,5 +1,6 @@
 import { MORE_SHAPES, SHAPES, type ShapeKind } from '../../art/shapes';
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /** Little, middle, big. */
 export type Size = 0 | 1 | 2;
@@ -90,6 +91,13 @@ export const PLANS: SorterPlan[] = [
   { holes: [], pieces: 6, coded: false, sameColor: true, tilt: false, attribute: 'curves' },
   { holes: [], pieces: 7, coded: false, sameColor: true, tilt: false, attribute: 'count' },
 ];
+
+export const LEVELS: BandLevels = {
+  lap: { min: 9, max: 9, order: [9] },
+  toddler: { min: 1, max: 10, order: [9, 1, 2, 10, 3, 4, 5] },
+  preschool: { min: 3, max: 11, order: [3, 4, 5, 6, 7, 11] },
+  prek: { min: 5, max: 14, order: [5, 6, 7, 11, 8, 12, 13, 14] },
+};
 
 /** A touch let go sooner than this (in seconds) is a tap. The ghost finger presses for 0.22 s. */
 export const TAP_HOLD = 0.4;

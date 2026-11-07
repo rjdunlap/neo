@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Pond Conga: a line of ducklings paddles on at a steady pace, and the leader is steered to each bit of duck food in
@@ -53,6 +54,10 @@ export const PLANS: CongaPlan[] = [
   { cols: 6, rows: 4, pads: 0, crumbs: 3, minLeg: 2, maxLeg: 5, speed: 2.4, paced: false, name: 'A little pond, one step at a time' },
   { cols: 7, rows: 4, pads: 2, crumbs: 4, minLeg: 3, maxLeg: 6, speed: 2.4, paced: false, name: 'Round the lily pads, one step at a time' },
 ];
+
+/** A grown-up game in Lantern Lake, played by touch or on the couch, with two small step-by-step ponds (10 and 11) for school. */
+/** Level 8, Step by step, is the easy way in: first by `order` and a new player's entry. Level 9, A long conga, is the top. */
+export const LEVELS: BandLevels = { school: { min: 10, max: 11 }, grownup: { min: 1, max: 9, order: [8, 1, 2, 3, 4, 5, 6, 7, 9] } };
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 /** How long a step-by-step line takes to glide one cell, in seconds; one asked-for step waits until the last has landed. */

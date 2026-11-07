@@ -1,5 +1,6 @@
 import type { ColorName } from '../../art/palette';
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Garden Grow: tap the soil and a seed goes in; rain makes it grow into a smiling flower that
@@ -30,6 +31,13 @@ export const PLANS: GardenPlan[] = [
   { mode: 'columns', requests: 3, name: 'Columns of colors: plant each column its color' },
   { mode: 'equal', requests: 3, name: 'Same in every row: plant the same number in each row, in any beds' },
 ];
+
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 8, order: [8, 1, 2] },
+  toddler: { min: 2, max: 4 },
+  preschool: { min: 3, max: 5 },
+  prek: { min: 6, max: 11, order: [6, 7, 9, 10, 11] },
+};
 
 /** Levels 2–3 beds are a 2×3 grid: beds 0–2 are the top row, 3–5 the bottom, and a column is a bed's index mod 3. */
 export const GRID_MODES: GardenMode[] = ['array', 'rows', 'columns', 'equal'];

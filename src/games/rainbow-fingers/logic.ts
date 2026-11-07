@@ -1,6 +1,7 @@
 import { RAINBOW, type ColorName } from '../../art/palette';
 import { PAINTING_MAX_MARKS, type PaintingMark } from '../../content/creations';
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 export type Primary = 'red' | 'yellow' | 'blue';
 export type ThingId = 'sun' | 'apple' | 'leaf' | 'pumpkin' | 'grapes' | 'blueberry';
@@ -44,6 +45,15 @@ export const PLANS: PaintPlan[] = [
   { mode: 'mix', count: 2 },
   { mode: 'recall-mix', count: 1 },
 ];
+
+/** Rainbows, then pots, then coloring pages: named colors, remembered colors, mixed colors, and a recalled mix (`logic.ts`). */
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 2 },
+  toddler: { min: 1, max: 3 },
+  preschool: { min: 2, max: 5 },
+  prek: { min: 3, max: 6 },
+  school: { min: 5, max: 7 },
+};
 
 export function planFor(level: number): PaintPlan {
   return PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];

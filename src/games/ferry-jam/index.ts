@@ -8,7 +8,7 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { againIcon } from '../../ui/icons';
@@ -16,13 +16,7 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseHarbors, courseMinimum, isHarborCourse } from './course';
 import { HARBORS } from './harbors';
-import { blockers, boatToward, distance, docked, FERRY, ferries, focusPath, hintSlide, parse, planFor, reach, sailed, settle, solve, solved, start, stuck, YELLOW, type FerryPlan, type Harbor, type Layout, type Slide } from './logic';
-
-const LEVELS: BandLevels = {
-  // 9 (one boat in the way) and 10 (who's in the way?) are easy entries above the ladder, played first.
-  prek: { min: 1, max: 10, order: [9, 1, 10, 2, 3, 4] },
-  school: { min: 3, max: 8 },
-};
+import { LEVELS, blockers, boatToward, distance, docked, FERRY, ferries, focusPath, hintSlide, parse, planFor, reach, sailed, settle, solve, solved, start, stuck, YELLOW, type FerryPlan, type Harbor, type Layout, type Slide } from './logic';
 
 const CELL = 100;
 /** Colors for the boats besides the ferry. */

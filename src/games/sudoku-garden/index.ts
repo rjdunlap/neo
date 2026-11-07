@@ -8,19 +8,16 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import type { LineId } from '../../content/voice-script';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { FONT, label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseBeds, courseMinimum, isBedCourse } from './course';
 import {
+  LEVELS,
   cageLabelCell, conflicts, deadEnds, fillMarksRow, geo, hintFor, patchTints, shapeOf, offersFillMarks, houseName, isSolved, makeBeds, placements, planFor, remaining, shortBed, wrongSums, type Hint, type Puzzle, type SudokuPlan,
 } from './logic';
 import { COLS, touchLayout, type Slot } from './layout';
-
-/** Grown-up play only: this game lives on the couch, not on the child's island. */
-/** Level 7, a 4 by 4 bed, is the easy entry played first; the ladder then climbs 1 to 6, with patchwork (9) and cage (10) beds after 3. */
-const LEVELS: BandLevels = { grownup: { min: 1, max: 10, order: [7, 1, 2, 3, 9, 10, 4, 5, 6, 8] } };
 
 /** One soft color for each number, so a bed can be read at a glance as well as by its digits. */
 const DIGIT_COLORS: ColorName[] = ['red', 'orange', 'yellow', 'green', 'teal', 'blue', 'purple', 'pink', 'white'];

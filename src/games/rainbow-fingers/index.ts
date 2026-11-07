@@ -13,22 +13,14 @@ import type { View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
 import { foldIcon, frameIcon } from '../../ui/icons';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { blankSpot, BRUSH_RADIUS, capMarks, Coverage, fillPath, FOLD_RADIUS, foldButtonPlace, foldMarks, foldScribbleArea, frameShows, halvedIndex, MARGIN, pageKind, mix, NUDGE_AFTER, nudges, paintStep, PAINTED, pickThings, planFor, POT_MARKS, POT_RADIUS, potLayout, pours, RECIPES, scribble, scribbleArea, SPACING, SPLAT_RADIUS, strokesCounted, touchKind, type PageKind, type PaintPlan, type PotMark, type Primary, type Pt, type Thing, type Touch } from './logic';
+import { LEVELS, blankSpot, BRUSH_RADIUS, capMarks, Coverage, fillPath, FOLD_RADIUS, foldButtonPlace, foldMarks, foldScribbleArea, frameShows, halvedIndex, MARGIN, pageKind, mix, NUDGE_AFTER, nudges, paintStep, PAINTED, pickThings, planFor, POT_MARKS, POT_RADIUS, potLayout, pours, RECIPES, scribble, scribbleArea, SPACING, SPLAT_RADIUS, strokesCounted, touchKind, type PageKind, type PaintPlan, type PotMark, type Primary, type Pt, type Thing, type Touch } from './logic';
 import { hinted, missOnRequest, newRequestTally, nextRequest, tally } from '../../progress/coach';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 
 const PAPER = 0xfffdf6;
 /** Degrees of hue per unit of stroke: the rainbow comes from moving. */
 const HUE_PER_UNIT = 0.45;
 const FLOWER_COLORS: ColorName[] = ['pink', 'purple', 'red', 'blue', 'orange', 'yellow'];
-/** Rainbows, then pots, then coloring pages: named colors, remembered colors, mixed colors, and a recalled mix (`logic.ts`). */
-const LEVELS: BandLevels = {
-  lap: { min: 1, max: 2 },
-  toddler: { min: 1, max: 3 },
-  preschool: { min: 2, max: 5 },
-  prek: { min: 3, max: 6 },
-  school: { min: 5, max: 7 },
-};
 const POTS: (ColorName | 'rainbow')[] = ['rainbow', ...RAINBOW];
 const PRIMARIES: Primary[] = ['red', 'yellow', 'blue'];
 const LINE = 0x5a4a3c;

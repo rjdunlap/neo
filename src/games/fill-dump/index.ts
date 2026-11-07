@@ -11,9 +11,10 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  LEVELS,
   PIECE_HIT,
   basketSlot,
   countSign,
@@ -34,12 +35,6 @@ import {
   type Hint,
   type Rect,
 } from './logic';
-
-const LEVELS: BandLevels = {
-  lap: { min: 1, max: 2 },
-  toddler: { min: 1, max: 6, order: [1, 2, 6, 3, 4] },
-  preschool: { min: 1, max: 7, order: [1, 2, 6, 3, 4, 5, 7] },
-};
 
 import { BASKET_SCALE, BODY_H, Basket, FRUITS, GROUND_SCALE, fillPiece, line } from './basket';
 

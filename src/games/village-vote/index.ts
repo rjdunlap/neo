@@ -8,13 +8,12 @@ import { GhostFinger } from '../../engine/ghost';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { paw, toy } from './art';
-import { Election, fixture, layout, NAMES, roundFor, type Option, type Point } from './logic';
-const LEVELS:BandLevels={preschool:{min:1,max:2},prek:{min:1,max:3},school:{min:3,max:3}};
+import { LEVELS, Election, fixture, layout, NAMES, roundFor, type Option, type Point } from './logic';
 interface Control {node:Container;w:number;h:number;act:()=>void}
 export class VillageVote implements Game {
  readonly election;readonly root=new Container();readonly board=new Container();readonly glow=new Graphics();readonly ghost;readonly companion;readonly backdrop;

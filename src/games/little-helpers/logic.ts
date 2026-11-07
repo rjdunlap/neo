@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Little Helpers, after Pikmin: tap a fruit and one little helper runs over to carry it.
@@ -30,6 +31,14 @@ export const PLANS: HelperPlan[] = [
   { level: 8, mode: 'strong', fruits: 4, min: 4, max: 8, name: 'Strong helpers: a big helper counts two; send any mix that makes the need' },
   { level: 9, mode: 'whistle', fruits: 4, min: 1, max: 3, name: "Whistle when it's full: fill every ring, then blow the whistle" },
 ];
+
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 2 },
+  toddler: { min: 1, max: 9, order: [1, 2, 9] },
+  preschool: { min: 2, max: 9, order: [2, 9, 3, 4] },
+  prek: { min: 3, max: 7 },
+  school: { min: 5, max: 8 },
+};
 
 /** The plan for a saved level; an unknown level falls to the nearest of 1–6, as before plans were keyed. */
 export const planFor = (level: number) => PLANS.find((p) => p.level === level) ?? PLANS[Math.min(6, Math.max(1, level)) - 1];

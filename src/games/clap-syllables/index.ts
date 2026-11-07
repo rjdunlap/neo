@@ -8,19 +8,13 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { FONT } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { Bead, fitTo, handsArt, wordPicture } from './art';
-import { answerOf, clapsToGo, clapsWord, fitsCar, makeQuestions, nextForTrain, nextToSort, PAUSE, pictureToTap, planFor, CARS, syllables, waitFill, WORDS, type ClapPlan, type Question, type Word } from './logic';
-
-const LEVELS: BandLevels = {
-  preschool: { min: 1, max: 9, order: [9, 1, 2] },
-  prek: { min: 2, max: 4 },
-  school: { min: 5, max: 8, order: [5, 6, 8] },
-};
+import { LEVELS, answerOf, clapsToGo, clapsWord, fitsCar, makeQuestions, nextForTrain, nextToSort, PAUSE, pictureToTap, planFor, CARS, syllables, waitFill, WORDS, type ClapPlan, type Question, type Word } from './logic';
 
 const BEAT_COLORS: ColorName[] = ['red', 'yellow', 'blue'];
 /** Seconds with no clap before the pet shows the word again. */

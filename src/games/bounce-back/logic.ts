@@ -1,3 +1,4 @@
+import type { BandLevels } from '../../progress/difficulty';
 /**
  * Bounce Back, after Pong and air hockey: a big paddle each side and a slow, giggly ball.
  * A grown-up plays one side and the child the other (the pet steps in when nobody is there).
@@ -33,6 +34,14 @@ export const PLANS: BouncePlan[] = [
   { mode: 'skip', goal: 10, step: 2, speed: 340, paddle: 200, name: 'Count a rally by twos to 20' },
   { mode: 'skip', goal: 10, step: 5, speed: 340, paddle: 200, name: 'Count a rally by fives to 50' },
 ];
+
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 1 },
+  toddler: { min: 1, max: 2 },
+  preschool: { min: 2, max: 4 },
+  prek: { min: 3, max: 6 },
+  school: { min: 6, max: 11 },
+};
 
 /** The number the pet says for the `bounce`th bounce of a rally: the bounce count times the level's step (1 when it has none). */
 export const countFor = (plan: BouncePlan, bounce: number) => bounce * (plan.step ?? 1);

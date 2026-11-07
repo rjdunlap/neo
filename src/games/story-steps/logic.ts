@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 export const STORIES = {
   flower: { name: 'A flower grows', steps: ['A seed rests in the soil.', 'A little sprout grows.', 'A bud grows on the stem.', 'The flower opens!'] },
   tower: { name: 'Build a tower', steps: ['One block sits on the ground.', 'We add a second block.', 'We add a third block.', 'A fourth block goes on top!'] },
@@ -140,3 +141,8 @@ export function nextUntangle<C extends { card: StoryCard; placed: boolean }>(row
   }
   return undefined;
 }
+
+export const LEVELS: BandLevels = {
+  toddler: { min: 1, max: 2 }, preschool: { min: 2, max: 5 },
+  prek: { min: 4, max: 8 }, school: { min: 6, max: 13 },
+};
