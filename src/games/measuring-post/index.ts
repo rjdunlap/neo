@@ -19,10 +19,10 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   cupArt, drawBalance, handIcon, hubArt, jugArt, LITTLE, objectArt, padArt, parcelArt, ribbonArt, sendIcon, speakerIcon,
-  stickerArt, toolArt, unitArt,
+  stickerArt, tickIcon, toolArt, unitArt,
 } from './art';
 import {
-  answerRow, commonExact, compareAnswer, GLOW_AFTER, helpId, HelpTally, planFor, remeasure, tasksFor, TOOL_FOR, TOOLS,
+  answerRow, commonExact, compareAnswer, GLOW_AFTER, gramsFor, PER_GROUP, tableAnswer, helpId, HelpTally, planFor, remeasure, tasksFor, TOOL_FOR, TOOLS,
   toolAnswers, UNIT_VALUE, type Attribute, type LevelPlan, type MeasureRecord, type Pick, type Step, type Task, type Tool,
   type UnitSize,
 } from './logic';
@@ -36,6 +36,12 @@ const STEP = 0.4;
 const EQUIV = 1.2;
 
 const TOOL_PAD = { w: 140, h: 110 };
+
+/** Level 4's watch: a 250-gram weight lands every WEIGH seconds, then they group, then two kilograms balance two groups. */
+const WEIGH = 0.6;
+const GROUP_AT = 3.0;
+const TWO_AT = 4.2;
+const WATCH_END = 5.4;
 
 interface Pt { x: number; y: number }
 interface Box { x: number; y: number; w: number; h: number }
@@ -97,7 +103,9 @@ function layoutFor(v: View): Layout {
  * What the round is doing now. Taps only act in `tool`, `send` (level 1), `answer` (levels 2–3) and `unit` (level 3:
  * pick the units to measure both objects; `remeasure` animates them, `between` explains a unit that does not fit).
  */
-type Phase = 'tool' | 'wrong' | 'measure' | 'unit' | 'remeasure' | 'between' | 'send' | 'answer' | 'sending' | 'done';
+type Phase = 'tool' | 'wrong' | 'measure' | 'unit' | 'remeasure' | 'between' | 'send' | 'answer' | 'sending' | 'done'
+  /** Level 4: watch the kilogram balance the grams, then choose a number of grams and Check. */
+  | 'watch' | 'choose';
 
 const FRIENDS: CritterName[] = ['bunny', 'bear', 'duck'];
 const ROW_FRIENDS: [CritterName, CritterName] = ['cat', 'dog'];
@@ -108,6 +116,16 @@ const label = (text: string, size = 34) => {
   t.eventMode = 'none';
   return t;
 };
+
+/** A labelled weight standing on (0, 0). */
+function massWeight(text: string, w: number, h: number, color: number, size = 14): Container {
+  const c = new Container();
+  c.addChild(new Graphics().poly([-w / 2 + 5, -h, w / 2 - 5, -h, w / 2, 0, -w / 2, 0]).fill(color).stroke({ width: 3, color: ink }));
+  const t = label(text, size);
+  t.y = -h / 2;
+  c.addChild(t);
+  return c;
+}
 
 function friendHead(kind: CritterName, scale = 0.32): Container {
   const c = new Critter(CRITTERS[kind]);
@@ -149,6 +167,13 @@ class MeasuringPost implements Game {
   commonSize: UnitSize | null = null;
   /** Level 3: a gentle offer of the little units after big ones fell between marks; not a hint. */
   private offerAt: { p: Pt; w: number; h: number } | null = null;
+  /** Level 4: the grams pads, the pad she has chosen (changeable freely until Check), and the Check button. */
+  readonly tablePads: Container[] = [];
+  chosen: number | null = null;
+  readonly checkButton: RoundButton;
+  /** Level 4: the watch runs once the question is asked; its spoken line, so the question follows it. */
+  private rolling = false;
+  private watchLine: Promise<unknown> = Promise.resolve();
   readonly helpButton: RoundButton;
   readonly replayButton: RoundButton;
   readonly sendButton: RoundButton;
@@ -189,6 +214,18 @@ class MeasuringPost implements Game {
       this.comparePads.push(pad);
       ctx.stage.addChild(pad);
     }
+    for (let i = 0; i < 3; i++) {
+      const pad = new Container();
+      pad.hitArea = new Rectangle(-TOOL_PAD.w / 2, -TOOL_PAD.h / 2, TOOL_PAD.w, TOOL_PAD.h);
+      pad.visible = false;
+      onTap(pad, () => this.choose(i), { cooldown: 250 });
+      this.tablePads.push(pad);
+      ctx.stage.addChild(pad);
+    }
+    this.checkButton = new RoundButton(tickIcon(), swatch.green, 50, () => this.check());
+    this.checkButton.visible = false;
+    ctx.stage.addChild(this.checkButton);
+    if (this.plan.mode === 'table') this.phase = 'watch';
     this.helpButton = new RoundButton(handIcon(), swatch.orange, 50, () => this.help());
     this.replayButton = new RoundButton(speakerIcon(), swatch.white, 50, () => this.replay());
     this.sendButton = new RoundButton(sendIcon(), swatch.green, 50, () => this.send());
@@ -290,6 +327,36 @@ class MeasuringPost implements Game {
     return `measure.hint.compare.${this.current.attribute}.${this.commonSize ?? 'little'}` as LineId;
   }
 
+  /** Level 4: choose a number of grams, or tap the chosen one again to take it back. Never a miss. */
+  choose(i: number) {
+    if (this.phase !== 'choose') return;
+    this.press(this.tablePads[i]);
+    sfx.pop(6);
+    this.chosen = this.chosen === i ? null : i;
+    if (this.chosen !== null) void this.ctx.say(`measure.kg.g.${this.current.table!.options[i]}` as LineId);
+    this.drawnKey = '';
+    this.redraw();
+  }
+
+  /** Level 4: Check the chosen row. Right fills it and offers Send; wrong is one miss and names the groups. */
+  check() {
+    if (this.phase !== 'choose' || this.chosen === null) return;
+    const task = this.current, kg = task.table!.kg;
+    if (this.chosen === tableAnswer(task)) {
+      sfx.bell(9, 0.3);
+      this.ctx.pet.cheer();
+      this.glowAt = null;
+      this.phase = 'send';
+      this.redraw();
+      void this.ctx.say(`measure.kg.right.${kg}` as LineId);
+      return;
+    }
+    sfx.boing();
+    this.shake(this.tablePads[this.chosen]);
+    this.miss('answer');
+    void this.ctx.say(`measure.kg.hint.${kg}` as LineId);
+  }
+
   /** Touch-down feedback: the pad lifts a little and settles. */
   private press(pad: Container) {
     this.ctx.tw.kill(pad.scale);
@@ -325,11 +392,21 @@ class MeasuringPost implements Game {
     this.glowAt = null;
     this.offerAt = null;
     this.commonSize = null;
+    this.chosen = null;
+    if (this.plan.mode === 'table') { this.phase = 'watch'; this.t = 0; this.rolling = false; }
     this.redraw();
     this.askQuestion();
   }
 
   private askQuestion() {
+    if (this.plan.mode === 'table') {
+      // Watch the kilogram balance the grams (again on the second row), then the question.
+      if (this.phase === 'watch' && !this.rolling) {
+        this.rolling = true;
+        this.watchLine = this.ctx.say('measure.kg.watch');
+      } else void this.ctx.say(`measure.kg.ask.${this.current.table!.kg}` as LineId);
+      return;
+    }
     void this.ctx.say(`measure.${this.plan.mode === 'common' ? 'ask3' : 'ask'}.${this.current.attribute}` as LineId);
   }
 
@@ -346,6 +423,7 @@ class MeasuringPost implements Game {
   private glowUseful(step: Step) {
     const L = this.layout;
     if (step === 'tool') this.glowAt = { p: L.tools[TOOLS.indexOf(TOOL_FOR[this.current.attribute])], w: TOOL_PAD.w, h: TOOL_PAD.h };
+    else if (step === 'answer' && this.plan.mode === 'table') this.glowAt = { p: L.tools[tableAnswer(this.current)], ...TOOL_PAD };
     else if (step === 'unit') this.glowAt = { p: L.units[1], ...TOOL_PAD };
     else if (step === 'answer' && this.plan.mode === 'common') this.glowAt = { p: L.tools[compareAnswer(this.current, this.commonSize!)], ...TOOL_PAD };
     else if (step === 'answer') this.glowAt = { p: L.answers[answerRow(this.current)], ...L.answerSize };
@@ -357,7 +435,7 @@ class MeasuringPost implements Game {
   /** The step Help works on now, or null while a tool measures. */
   private get step(): Step | null {
     const p = this.phase;
-    return p === 'tool' || p === 'wrong' ? 'tool' : p === 'unit' ? 'unit' : p === 'answer' ? 'answer' : p === 'send' ? 'send' : null;
+    return p === 'tool' || p === 'wrong' ? 'tool' : p === 'unit' ? 'unit' : p === 'answer' || p === 'choose' ? 'answer' : p === 'send' ? 'send' : null;
   }
 
   /**
@@ -378,6 +456,7 @@ class MeasuringPost implements Game {
     if (this.pointed.has(id)) {
       if (step === 'tool') this.pickTool(TOOL_FOR[task.attribute]);
       else if (step === 'unit') this.pickUnit('little');
+      else if (this.plan.mode === 'table') { if (this.chosen !== tableAnswer(task)) this.choose(tableAnswer(task)); }
       else if (common) this.pickCompare(compareAnswer(task, this.commonSize!));
       else this.pickRow(answerRow(task));
       return;
@@ -388,7 +467,8 @@ class MeasuringPost implements Game {
     this.glowUseful(step);
     void this.ctx.say(step === 'tool' ? `measure.hint.tool.${task.attribute}` as LineId
       : step === 'unit' ? `measure.hint.unit.${task.attribute}` as LineId
-        : common ? this.compareHint() : `measure.hint.row.${task.attribute}.${task.ask}` as LineId);
+        : this.plan.mode === 'table' ? `measure.kg.hint.${task.table!.kg}` as LineId
+          : common ? this.compareHint() : `measure.hint.row.${task.attribute}.${task.ask}` as LineId);
   }
 
   askForHint() {
@@ -399,6 +479,7 @@ class MeasuringPost implements Game {
     const task = this.current;
     if (this.phase === 'tool' || this.phase === 'wrong') this.askQuestion();
     else if (this.phase === 'send') void this.ctx.say(`measure.result.1.${task.attribute}` as LineId);
+    else if (this.phase === 'choose') void this.ctx.say('measure.kg.watch').then(() => { if (this.alive) this.askQuestion(); });
     else if (this.phase === 'unit') void this.ctx.say(`measure.raw.${task.attribute}` as LineId);
     else if (this.phase === 'answer' && this.plan.mode === 'common') {
       void this.ctx.say(`measure.common.${task.attribute}.${this.commonSize}` as LineId).then(() => { if (this.alive) this.askQuestion(); });
@@ -585,14 +666,16 @@ class MeasuringPost implements Game {
 
   private redraw() {
     const shown = this.shownUnits();
-    const key = `${this.task}|${this.phase}|${this.commonSize}|${shown.join(',')}|${this.t > (this.plan.mode === 'rows' ? EQUIV : 0) ? 1 : 0}`;
+    const key = `${this.task}|${this.phase}|${this.commonSize}|${this.watchStage()}|${this.chosen}|${shown.join(',')}|${this.t > (this.plan.mode === 'rows' ? EQUIV : 0) ? 1 : 0}`;
     if (key === this.drawnKey) return;
     this.drawnKey = key;
     const L = this.layout, task = this.current, attr = task.attribute;
     this.board.removeChildren().forEach((c) => c.destroy({ children: true }));
     const measuring = this.phase !== 'tool' && this.phase !== 'wrong';
 
-    if (this.plan.mode === 'common') {
+    if (this.plan.mode === 'table') {
+      this.drawTable(task);
+    } else if (this.plan.mode === 'common') {
       this.drawPair(task, shown, measuring);
     } else if (this.plan.mode === 'tool') {
       // The friend with the question, the object and (once measured) its units and count.
@@ -661,7 +744,81 @@ class MeasuringPost implements Game {
       pad.addChild(n, u);
       pad.hitArea = new Rectangle(-w / 2, -h / 2, w, h);
     });
+    const choosing = this.phase === 'choose';
+    this.tablePads.forEach((pad, i) => {
+      pad.visible = choosing;
+      pad.removeChildren().forEach((c) => c.destroy({ children: true }));
+      if (!choosing) return;
+      pad.addChild(padArt(TOOL_PAD.w, TOOL_PAD.h), label(`${task.table!.options[i]} g`, 30));
+      if (this.chosen === i) pad.addChild(new Graphics().roundRect(-TOOL_PAD.w / 2 - 6, -TOOL_PAD.h / 2 - 6, TOOL_PAD.w + 12, TOOL_PAD.h + 12, 24).stroke({ width: 6, color: swatch.green.line }));
+    });
+    this.checkButton.visible = choosing;
+    this.checkButton.alpha = this.chosen === null ? 0.5 : 1;
     this.sendButton.visible = this.phase === 'send';
+  }
+
+  /** Level 4's watch, as a step count: 0–4 weights landed, 5 grouped into 1000 grams, 6 two kilograms balanced. */
+  watchStage(t = this.t): number {
+    if (this.plan.mode !== 'table') return 0;
+    if (this.phase !== 'watch') return 6;
+    return Math.min(PER_GROUP, Math.floor(t / WEIGH)) + (t >= GROUP_AT ? 1 : 0) + (t >= TWO_AT ? 1 : 0);
+  }
+
+  /**
+   * Level 4's board: the balance (one kilogram against four 250-gram weights, grouped into 1000 grams; then two
+   * kilograms against two groups) and the table, whose rows fill as they are seen, with the row to fill last.
+   */
+  private drawTable(task: Task) {
+    const L = this.layout, table = task.table!, stage = this.watchStage();
+    const grouped = stage >= PER_GROUP + 1, two = stage >= PER_GROUP + 2;
+    const kgs = two ? 2 : 1, smalls = two ? 2 * PER_GROUP : Math.min(PER_GROUP, stage);
+    const c = new Container();
+    const g = new Graphics();
+    const pans = drawBalance(g, 0, 0, 130, (0.32 * (kgs * PER_GROUP - smalls)) / (kgs * PER_GROUP));
+    c.addChild(g);
+    for (let k = 0; k < kgs; k++) {
+      const w = massWeight('1 kg', 44, 46, swatch.white.line);
+      w.position.set(pans.left.x + (kgs === 1 ? 0 : k ? 25 : -25), pans.left.y);
+      c.addChild(w);
+    }
+    for (let i = 0; i < smalls; i++) {
+      const w = massWeight('250 g', 24, 32, swatch.white.fill, 9);
+      w.position.set(pans.right.x - 39 + (i % PER_GROUP) * 26, pans.right.y - Math.floor(i / PER_GROUP) * 42);
+      c.addChild(w);
+    }
+    if (smalls > 0) {
+      // The little weights' stamps are small on screen: say it again under the pan.
+      const each = label('250 g each', 18);
+      each.position.set(pans.right.x, pans.right.y + 30);
+      c.addChild(each);
+    }
+    for (let k = 0; k < (grouped ? kgs : 0); k++) {
+      const y = pans.right.y - k * 42;
+      c.addChild(new Graphics().roundRect(pans.right.x - 56, y - 38, 112, 40, 8).stroke({ width: 3, color: swatch.orange.line }));
+      const t = label('1000 g', 20);
+      t.anchor.set(0, 0.5);
+      t.position.set(pans.right.x + 62, y - 18);
+      c.addChild(t);
+    }
+    this.fit(c, L.pair[0], 1.4, 16);
+
+    const rows = new Container();
+    const answered = this.phase === 'send' || this.phase === 'sending' || this.phase === 'done';
+    [...table.known, table.kg].forEach((kg, r) => {
+      const ask = kg === table.kg;
+      const seen = kg > 2 || (kg === 1 ? grouped : two);
+      const value = ask ? (answered ? gramsFor(kg) : this.chosen !== null ? table.options[this.chosen] : null) : seen ? gramsFor(kg) : null;
+      const y = r * 64;
+      const name = label(`${kg} kg =`, 30);
+      name.anchor.set(1, 0.5);
+      name.position.set(-12, y);
+      const box = new Graphics().roundRect(4, y - 26, 160, 52, 12).fill(ask && answered ? swatch.green.light : 0xffffff)
+        .stroke({ width: 3, color: ask ? swatch.orange.line : swatch.white.line });
+      const v = label(value === null ? (ask ? '?' : '') : `${value} g`, 30);
+      v.position.set(84, y);
+      rows.addChild(name, box, v);
+    });
+    this.fit(rows, L.pair[1], 1.2, 16);
   }
 
   /**
@@ -719,6 +876,15 @@ class MeasuringPost implements Game {
 
   update(dt: number) {
     this.clock += dt;
+    if (this.started && this.phase === 'watch' && this.rolling) {
+      const before = this.watchStage();
+      this.t += dt;
+      if (this.t >= WATCH_END) {
+        this.phase = 'choose';
+        this.redraw();
+        void this.watchLine.then(() => { if (this.alive && this.phase === 'choose') this.askQuestion(); });
+      } else { if (this.watchStage() !== before) sfx.tick(); this.redraw(); }
+    }
     if (this.started && (this.phase === 'measure' || this.phase === 'remeasure')) {
       const before = this.t;
       this.t += dt;
@@ -743,6 +909,8 @@ class MeasuringPost implements Game {
     this.answerPads.forEach((pad, i) => pad.position.copyFrom(L.answers[i]));
     SIZES.forEach((size, i) => this.unitPads.get(size)!.position.copyFrom(L.units[i]));
     this.comparePads.forEach((pad, i) => pad.position.copyFrom(L.tools[i]));
+    this.tablePads.forEach((pad, i) => pad.position.copyFrom(L.tools[i]));
+    this.checkButton.position.copyFrom(L.send);
     this.helpButton.position.copyFrom(L.help);
     this.replayButton.position.copyFrom(L.replay);
     this.sendButton.position.copyFrom(L.send);
@@ -762,6 +930,10 @@ class MeasuringPost implements Game {
     if (this.phase === 'tool') return { tap: { on: this.toolPads.get(TOOL_FOR[this.current.attribute])! } };
     if (this.phase === 'send') return { tap: { on: this.sendButton } };
     if (this.phase === 'unit') return { tap: { on: this.unitPads.get('little')! } };
+    if (this.phase === 'choose') {
+      const ans = tableAnswer(this.current);
+      return { tap: { on: this.chosen === ans ? this.checkButton : this.tablePads[ans] } };
+    }
     if (this.phase === 'answer' && this.plan.mode === 'common') return { tap: { on: this.comparePads[compareAnswer(this.current, this.commonSize!)] } };
     if (this.phase === 'answer') return { tap: { on: this.answerPads[answerRow(this.current)] } };
     return null;

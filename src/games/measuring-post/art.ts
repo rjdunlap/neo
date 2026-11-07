@@ -138,6 +138,11 @@ export function sendIcon(): Graphics {
     .moveTo(0, 6).lineTo(26, -20).stroke({ width: 3, color: ink });
 }
 
+/** A tick: Check the chosen row. */
+export function tickIcon(): Graphics {
+  return new Graphics().moveTo(-20, 0).lineTo(-6, 16).lineTo(22, -18).stroke({ width: 8, color: 0xffffff, cap: 'round', join: 'round' });
+}
+
 /** The help hand. */
 export function handIcon(): Graphics {
   const g = new Graphics();

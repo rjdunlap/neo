@@ -77,6 +77,35 @@ async function measuringPostPlay() {
   await finished('measuring-post');
   assert.deepEqual(await score(), [1, 1], 'level 3 saved 1 miss, 1 hint: big units between marks is exploration');
   log('Measuring Post 3: big units between marks no miss, jugs 3:3 exact, little for both, wrong comparison 1 miss, Help 1 hint, 1/1; passed');
+  // Level 4 in portrait: watch the kilogram balance the grams; changing a choice is free, a wrong Check one miss;
+  // Help points (one hint), then chooses; she still presses Check and Send.
+  await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(600);
+  await launch('measuring-post', 4, 'Mia', 'school');
+  const ans = () => page.evaluate(() => { const t = neo.scene.game.current.table; return t.options.indexOf(t.kg * 1000); });
+  const tapPad = (i) => page.evaluate((i) => kit.tapOn(neo.scene.game.tablePads[i]), i);
+  const tapCheck = () => page.evaluate(() => kit.tapOn(neo.scene.game.checkButton));
+  await phase('choose');
+  await screenshot('measuring-post-4-portrait');
+  const a0 = await ans();
+  await tapPad((a0 + 1) % 3); await page.waitForTimeout(300);
+  await tapPad((a0 + 2) % 3); await page.waitForTimeout(300);
+  assert.equal(await page.evaluate(() => neo.scene.game.misses), 0, 'changing a choice is not a miss');
+  await tapCheck(); await page.waitForTimeout(450);
+  assert.equal(await page.evaluate(() => neo.scene.game.misses), 1, 'a wrong Check is one miss');
+  await page.evaluate(() => kit.tapOn(neo.scene.game.helpButton)); await page.waitForTimeout(450);
+  await page.evaluate(() => kit.tapOn(neo.scene.game.helpButton)); await page.waitForTimeout(450);
+  assert.equal(await page.evaluate(() => neo.scene.game.chosen), a0, 'Help again chooses the right row');
+  assert.equal(await page.evaluate(() => neo.scene.game.phase), 'choose', 'Help never presses Check');
+  await tapCheck(); await phase('send');
+  await page.evaluate(() => kit.tapOn(neo.scene.game.sendButton));
+  await phase('choose');
+  assert.equal(await page.evaluate(() => neo.scene.game.current.table.kg), 4, 'the second row is four kilograms');
+  await tapPad(await ans()); await page.waitForTimeout(300); await tapCheck(); await phase('send');
+  await page.evaluate(() => kit.tapOn(neo.scene.game.sendButton));
+  await finished('measuring-post');
+  assert.deepEqual(await score(), [1, 1], 'level 4 saved 1 miss, 1 hint');
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(400);
+  log('Measuring Post 4: portrait, re-choosing free, wrong Check 1 miss, Help points then chooses (1 hint), Check and Send x2, 1/1; passed');
   log('Measuring Post 1 and 2: level 1 ribbon first, wrong tool a miss, taps while measuring inert, Send x3 1/0; level 2 portrait Help shows then picks (1 hint), two wrong rows glow (1 hint), last asks bigger, 2/2; passed');
 }
 return { measuringPostPlay };
