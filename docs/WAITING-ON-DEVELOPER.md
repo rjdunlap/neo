@@ -139,6 +139,13 @@ Peekaround Island dive (2026-10-31), three calls that wait on you; the build sli
 | **Doghouse Directions (in, on, under, out, off) as a Peekaround mode?** | "under" is Adventure Walk's path word and its test forbids any Peekaround position word in its phrases, so it needs a separate word set or a change of which game owns "under". Recommended: leave it out | [Peekaround Island dive](deep-dives/peekaround-island.md#decisions-for-the-developer) |
 | **A lap opening beside Peekaboo Barn?** | Adds the `lap` band to Peekaround Island. Recommended: no, until an observation of her with level 1 says it is needed | [Peekaround Island dive](deep-dives/peekaround-island.md#decisions-for-the-developer) |
 
+Fruit Sums dive (2026-11-07), two calls that wait on you; the build slices go ahead without them ([the dive](deep-dives/fruit-sums.md#decisions-for-the-developer)):
+
+| Step | What happens next | Written in |
+| --- | --- | --- |
+| **Open `prek` with *Partners to five* (dot fruit) in Fruit Sums?** | Adds the `prek` band, so the band audit comes with it. Recommended: decide after slice 1 is played at school | [Fruit Sums dive](deep-dives/fruit-sums.md#decisions-for-the-developer) |
+| **A grown-up "make 24" level or couch puzzle (four fruit, all four operations, brackets)?** | A `grownup` level or a couch catalog entry, each with its own check tier. Recommended: couch puzzle only, after the school ladder is built | [Fruit Sums dive](deep-dives/fruit-sums.md#decisions-for-the-developer) |
+
 ## Adding a question
 
 Add a row here only for a call the developer alone can make (money, accounts, the child's data, a family reviewer, an irreversible step), with a recommended answer. Anything else: decide it by the [standing rules](archive/DECISIONS-2026-10-23.md#standing-rules), record it in its source, and go on. Checks that need a person or a device go in [DEVICE-CHECKS](DEVICE-CHECKS.md).

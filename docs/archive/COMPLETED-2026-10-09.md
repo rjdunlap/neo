@@ -6,7 +6,7 @@
 
 [PR #1336](https://github.com/rjdunlap/neo/pull/1336), [definition](../definitions/gadget-bench.md#levels-56-little-gate-and-new-box-definition). Level 5: a low garden arch ends the path; the familiar cart crosses the conditions, then any tall part (big wheels, umbrella, even the flag) stops at it, and a low part does the same job; each round holds four tray parts. Level 6: the pet's cart works for one neighbor and its parts ride home, then a new box (glow stones, a roller belt) meets the same path; glow stones at the front fail the Give, on top they work. School range 2–6. Gaps: the arch stop reuses the existing stop animation without the arch-top tap, part glow or roll-back; the glow for a tall part doing nothing speaks `bench.fail.gate`.
 
-Checks are in [VERIFICATION](../VERIFICATION.md#2026-11-06--gadget-bench-levels-56-little-gate-and-new-box-pr-1336).
+Checks are in [VERIFICATION](VERIFICATION-2026-11-06.md#2026-11-06--gadget-bench-levels-56-little-gate-and-new-box-pr-1336).
 
 ### Jelly Drums slice 2, names, twists and co-play (2026-11-03)
 
