@@ -9,6 +9,7 @@ import type { CritterName } from '../../art/critter';
 import type { ColorName } from '../../art/palette';
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
+import type { BandLevels } from '../../progress/difficulty';
 
 // ——— Readings, sensors, rules ———
 
@@ -254,6 +255,12 @@ const PLANS: readonly Plan[] = [
   { level: 6, name: 'The comfy line', bench: 'lines' },
   { level: 7, name: 'Calm heater', bench: 'lines' },
 ];
+
+export const LEVELS: BandLevels = {
+  preschool: { min: 1, max: 1 },
+  prek: { min: 1, max: 3 },
+  school: { min: 2, max: 7 },
+};
 export const MAX_LEVEL = PLANS.length;
 
 export function planFor(level: number): Plan {

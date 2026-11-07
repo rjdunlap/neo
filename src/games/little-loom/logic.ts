@@ -1,4 +1,5 @@
 import type { ClothCreation } from '../../content/creations';
+import type { BandLevels } from '../../progress/difficulty';
 export const COLS=6, ROWS=8;
 export const PEDALS=[ [true,false,true,false,true,false], [false,true,false,true,false,true] ] as const;
 export type Pedal=0|1;
@@ -45,3 +46,5 @@ export class Round {
   }
   destroy(){this.destroyed=true;this.pending=null;}
 }
+
+export const LEVELS:BandLevels={toddler:{min:1,max:2},preschool:{min:2,max:3},prek:{min:3,max:3}};

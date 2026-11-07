@@ -8,20 +8,18 @@ import { onTap, palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import type { LineId } from '../../content/voice-script';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { FONT, label } from '../../ui/text';
 import { LETTERS } from '../pixel-pictures/logic';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseMinimum, coursePictures, isPictureCourse } from './course';
 import {
+  LEVELS,
   allLines, axisOf, brushFor, cellsOf, clueDepths, clueText, CLUE_STEP_X, CLUE_STEP_Y, CROSSED, EMPTY, FILLED, FILLED_2, fillFor, headStart, hintFor, isFill, isSolved, lineName,
-  makePuzzles, PAD, paint, potFor, ENTRY_LEVELS, ORDER, planFor, statusOf, strokeCells, toolForHint, touchFrame, type Axis, type Brush, type Fill, type Hint, type Line, type LineStatus,
+  makePuzzles, PAD, paint, potFor, ENTRY_LEVELS, planFor, statusOf, strokeCells, toolForHint, touchFrame, type Axis, type Brush, type Fill, type Hint, type Line, type LineStatus,
   type Mark, type PicturePlan, type PicturePuzzle, type Tool, type TouchFrame,
 } from './logic';
-
-/** Grown-up play only. */
-const LEVELS: BandLevels = { grownup: { min: 1, max: 7, order: ORDER } };
 
 const PAPER = 0xfffdf6;
 const GRID_LINE = 0xb9b0a0;

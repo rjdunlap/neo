@@ -1,5 +1,6 @@
 import type { Rng } from '../../engine/random';
 import { POOLS } from './boards';
+import type { BandLevels } from '../../progress/difficulty';
 
 export type Board = readonly number[];
 export type Swap = readonly [number, number];
@@ -10,6 +11,8 @@ export const PLANS = [
   { size: 5, gems: 15, name: 'Fifteen gems: plan three swaps through the gaps' },
   { size: 5, gems: 18, name: 'Eighteen gems: plan four swaps and cascades' },
 ];
+
+export const LEVELS: BandLevels = { grownup: { min: 1, max: 4 } };
 export const planFor = (level: number) => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 export const clear = (b: Board) => b.every(k => k < 0);
 export const neighbors = (a: number, b: number, size: number) => a >= 0 && b >= 0 && a < size * size && b < size * size && Math.abs(a % size - b % size) + Math.abs(Math.floor(a / size) - Math.floor(b / size)) === 1;

@@ -17,22 +17,17 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
 import { boardArt, gadgetArt, handArt, iconArt, miniCart, partInSocket, requestArt, socketArt, sparkleArt, standingCritter, stickerArt, stripPicture, conditionTile, tryArt } from './art';
 import {
+  LEVELS,
   applyHelp, benchLayout, briefFor, centre, followsTarget, helpFor, helpSteps, kitOf, NEIGHBORS, newCondition, nextMove, PARTS, planFor, runPath, sameGadget, socketAt, SOCKET, SOCKET_WORDS, SOCKETS, STRIP, Tally,
   type BenchLayout, type Brief, type Condition, type Gadget, type PartId, type Pt, type Round, type Socket,
 } from './logic';
-
-const LEVELS: BandLevels = {
-  preschool: { min: 1, max: 1 },
-  prek: { min: 1, max: 3 },
-  school: { min: 2, max: 6 },
-};
 
 /** Seconds the runner takes between two tiles. */
 const STEP = 0.45;

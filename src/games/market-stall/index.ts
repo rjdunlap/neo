@@ -9,18 +9,12 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { stallFor, stallLayout, goodPlacement, type StallId, PLANS, PIP_LEVELS, PIP_NUMERAL, pips, teachLine, coinToName, missKind, hintCharge, stickerGood, anotherWay, fewest, makeOrders, PAID, paymentFor, payTouch, planFor, sameWay, sum, target, usesFewestCoins, type Order, type ShopPlan } from './logic';
-
-const LEVELS: BandLevels = {
-  preschool: { min: 1, max: 2 },
-  prek: { min: 2, max: 4 },
-  school: { min: 3, max: PLANS.length },
-};
+import { LEVELS, stallFor, stallLayout, goodPlacement, type StallId, PLANS, PIP_LEVELS, PIP_NUMERAL, pips, teachLine, coinToName, missKind, hintCharge, stickerGood, anotherWay, fewest, makeOrders, PAID, paymentFor, payTouch, planFor, sameWay, sum, target, usesFewestCoins, type Order, type ShopPlan } from './logic';
 
 const GOODS: { kind: PropKind; color: ColorName; name: string }[] = [
   { kind: 'apple', color: 'red', name: 'apple' },

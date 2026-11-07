@@ -11,22 +11,13 @@ import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { barsArt, checkArt, drumArt, HEAD, hatArt, line, WORN_SCALE } from './art';
-import { advance, BEATS, botMove, canFinish, earlyDone, HAT, HATS, hatBandLayout, makeRound, newBand, nextStep, PER_BEAT, planFor, spotlight, STAR, takeOff, voices, waitLeft, wear, type Band, type BeatEvent, type Friend, type HatBandLayout, type HatId, type Plan, type Round, HAT_IDS } from './logic';
+import { LEVELS, advance, BEATS, botMove, canFinish, earlyDone, HAT, HATS, hatBandLayout, makeRound, newBand, nextStep, PER_BEAT, planFor, spotlight, STAR, takeOff, voices, waitLeft, wear, type Band, type BeatEvent, type Friend, type HatBandLayout, type HatId, type Plan, type Round, HAT_IDS } from './logic';
 import { SongBand } from './song';
-
-// Lap and toddler stay with Jelly Drums and Little Conductor; school starts at swapping (decision 2's default). Building a
-// song (level 4) tops the school range and is the grown-ups' level (the 2026-10-23 placement, no new band).
-const LEVELS: BandLevels = {
-  preschool: { min: 1, max: 2 },
-  prek: { min: 1, max: 3 },
-  school: { min: 2, max: 4 },
-  grownup: { min: 4, max: 4 },
-};
 
 /** A hat she can lift: drag it onto a friend, or tap it and then tap the friend. */
 class HatPiece extends Container {

@@ -9,19 +9,13 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { finish as finishArt, spring, squash } from '../../ui/buttons';
 import { againIcon, checkIcon, nextIcon, playIcon } from '../../ui/icons';
 import { saysFrame } from '../pet-says/logic';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { canFinish, checkRun, mismatch, demoNext, finishRun, firstEmpty, help, isComplete, newStudio, planFor, playRun, restart, step, stickerRecipe, tapAction, tapSlot, trace, undo, type Cue, type CuePlan, type Studio } from './logic';
-
-// The 2026-10-23 decision separates pre-K creation from school requested repair.
-const LEVELS: BandLevels = {
-  prek: { min: 1, max: 2 },
-  school: { min: 3, max: 3 },
-};
+import { LEVELS, canFinish, checkRun, mismatch, demoNext, finishRun, firstEmpty, help, isComplete, newStudio, planFor, playRun, restart, step, stickerRecipe, tapAction, tapSlot, trace, undo, type Cue, type CuePlan, type Studio } from './logic';
 
 /** Every card, slot and control is this square, in logical units. */
 const BOX = 112;

@@ -1,5 +1,6 @@
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Look It Up: a picture guide of seven real animals. Level 1 touches the labels on a page to hear them; level 2 finds a
@@ -136,6 +137,13 @@ export const PLANS: LookPlan[] = [
   { mode: 'page', name: 'Find the page: tap the visitor\'s tab, then give it the food' },
   { mode: 'row', name: 'The fact box: find the page and the row, then help' },
 ];
+
+export const LEVELS: BandLevels = {
+  toddler: { min: 1, max: 1 },
+  preschool: { min: 1, max: 2 },
+  prek: { min: 2, max: 3 },
+  school: { min: 3, max: 3 },
+};
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 export interface Visit { animal: AnimalId; row: 'eats' | 'where' }

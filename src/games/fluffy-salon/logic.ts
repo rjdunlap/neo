@@ -1,6 +1,7 @@
 import type { CritterName } from '../../art/critter';
 import type { ColorName } from '../../art/palette';
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Fluffy Salon, after Toca Hair Salon: the pet sits in the chair with a head of fluffy fur.
@@ -37,6 +38,13 @@ export const PLANS: SalonPlan[] = [
   { mode: 'colors', requests: 1, name: 'Two colors: put at least 35% of each requested color in the fur' },
   { mode: 'reverse', requests: 2, name: 'Changed my mind: reverse a loved length or curl request on the same hair' },
 ];
+
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 7, order: [6, 1, 7, 2] },
+  toddler: { min: 1, max: 8, order: [6, 1, 7, 2, 8] },
+  preschool: { min: 2, max: 9, order: [2, 8, 3, 4, 9] },
+  prek: { min: 3, max: 12, order: [3, 4, 5, 9, 10, 11, 12] },
+};
 
 /** The buttons a mode shows: tools along the bottom, then the colour bottles. */
 export function toolsFor(mode: SalonMode): Tool[] {

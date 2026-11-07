@@ -6,17 +6,13 @@ import { idle, type CouchControls } from '../../engine/controller';
 import { onTap, palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { COURSES, courseMinimum, coursePonds, isCongaCourse } from './course';
-import { DX, DY, schoolStep, tapToward, firstCrumbs, foodAt, groupOf, openCrumbs, pondLook, headAfter, hintDir, hintPath, makePond, nextCrumb, opposite, planFor, startState, step, stepDue, STEP_GLIDE, swipeDir, SWIPE, type Cell, type Conga, type Dir, type Food, type Pond, type PondLook } from './logic';
+import { LEVELS, DX, DY, schoolStep, tapToward, firstCrumbs, foodAt, groupOf, openCrumbs, pondLook, headAfter, hintDir, hintPath, makePond, nextCrumb, opposite, planFor, startState, step, stepDue, STEP_GLIDE, swipeDir, SWIPE, type Cell, type Conga, type Dir, type Food, type Pond, type PondLook } from './logic';
 import { pondTouchLayout, type Slot } from './layout';
-
-/** A grown-up game in Lantern Lake, played by touch or on the couch, with two small step-by-step ponds (10 and 11) for school. */
-/** Level 8, Step by step, is the easy way in: first by `order` and a new player's entry. Level 9, A long conga, is the top. */
-const LEVELS: BandLevels = { school: { min: 10, max: 11 }, grownup: { min: 1, max: 9, order: [8, 1, 2, 3, 4, 5, 6, 7, 9] } };
 
 const WATER = 0xa9e0f2;
 const WATER_LINE = 0x4f9fbf;

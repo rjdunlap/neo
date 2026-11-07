@@ -1,5 +1,6 @@
 import type { ColorName } from '../../art/palette';
 import { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Secret Code, after Mastermind and Neopets' Time Tunnel, made gentle: a door opens with a hidden
@@ -44,6 +45,14 @@ export const PLANS: Readonly<Record<number, CodePlan>> = {
   10: { slots: 1, colors: 3, yellow: false, repeats: false, codes: 3, oneSlot: true, name: 'One slot, three stones: which stone is behind the door? A gray cross rules a stone out' },
   11: { slots: 4, colors: 5, yellow: true, repeats: false, codes: 2, detective: true, clues: { min: 3, max: 3 }, name: 'A bigger detective door: four slots, five colors, and three shown guesses' },
   12: { slots: 3, colors: 4, yellow: true, repeats: true, codes: 1, maker: true, swap: true, name: 'Swap seats: she makes a code and marks a grown-up’s tries, then cracks the code they make (or plays it with the pet)' },
+};
+
+export const LEVELS: BandLevels = {
+  // Level 10, One slot, opens preschool before level 1's two slots.
+  preschool: { min: 1, max: 10, order: [10, 1] },
+  prek: { min: 1, max: 3 },
+  // Level 9, Be the door, marks yellow before four slots; level 12, Swap seats, uses 9's plan, so it follows it.
+  school: { min: 2, max: 12, order: [2, 3, 4, 9, 12, 5, 6, 7, 8, 11] },
 };
 
 /** The plan for a level; an out-of-range ID falls back to an end (below 1, to 1; above 12, to 11, the top of the school order, never the two-seat 12). */

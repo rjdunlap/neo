@@ -9,13 +9,12 @@ import type {LineId} from '../../content/voice-script';
 import {draggable,type DragHandle} from '../../engine/drag';
 import {onTap} from '../../engine/input';
 import type {View} from '../../engine/view';
-import {rangeFor,type BandLevels} from '../../progress/difficulty';
+import {rangeFor} from '../../progress/difficulty';
 import {WigglyIcon} from '../shared';
 import type {Game,GameContext,GameModule,TouchIntent} from '../types';
-import {Round,unmet,type Pad,type Match} from './logic';
+import { LEVELS, Round,unmet,type Pad,type Match} from './logic';
 import {layout,type Box} from './layout';
 import {glyph,footage,emblem} from './art';
-const LEVELS:BandLevels={preschool:{min:1,max:1},prek:{min:1,max:3},school:{min:2,max:3}};
 const padLines:Record<Pad,LineId>={splash:'mn.splash',boing:'mn.boing',whoosh:'mn.whoosh',bell:'mn.bell',knock:'mn.knock',hello:'mn.hello'};
 const names:Record<Pad,string>={splash:'Splash',boing:'Boing',whoosh:'Whoosh',bell:'Bell',knock:'Knock',hello:'Hello'};
 function label(text:string,y:number,size=21){const t=new Text({text,style:{fontFamily:'Nunito, sans-serif',fontSize:size,fontWeight:'800',fill:ink,align:'center'}});t.anchor.set(.5);t.y=y;t.eventMode='none';return t;}

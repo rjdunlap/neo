@@ -2,6 +2,7 @@ import type { ColorName } from '../../art/palette';
 import type { ShapeKind } from '../../art/shapes';
 import type { CritterName } from '../../art/critter';
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 export interface PatternPlan {
   /** The repeating unit, as symbol slots (0, 1, 2). */
@@ -40,6 +41,8 @@ export const PATTERN_PLANS: PatternPlan[] = [
   { pattern: [0, 0, 1], kind: 'shape', match: 'row', name: 'Find the row with the same pattern in new pieces' },
   { pattern: [0, 0, 1], kind: 'shape', match: 'build', name: 'Build the same pattern in new pieces' },
 ];
+
+export const LEVELS: BandLevels = { lap: { min: 1, max: 1 }, toddler: { min: 1, max: 1 }, preschool: { min: 1, max: 6 }, prek: { min: 3, max: 9 }, school: { min: 8, max: PATTERN_PLANS.length } };
 
 export const patternPlan = (level: number) => PATTERN_PLANS[Math.max(0, Math.min(PATTERN_PLANS.length - 1, level - 1))];
 

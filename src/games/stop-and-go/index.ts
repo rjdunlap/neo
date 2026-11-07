@@ -8,19 +8,11 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { arrivalOrder, canArrive, carTap, crossTouch, doneLine, GO_TARGET, hintOn, IDLE_POINT, isCross, judgeGo, lampRolls, laneCycles, lightAt, nextGreenLane, nextLamp, nextLight, planFor, rightNow, safe, touchCounts, VEHICLES, cycleFor, type Cycle, type GoPlan, type Lamp, type Lane, type Light, type Road, type Vehicle } from './logic';
-
-const LEVELS: BandLevels = {
-  // Level 9 is the easiest, so lap plays it first and then 1 (see `order`).
-  lap: { min: 1, max: 9, order: [9, 1] },
-  toddler: { min: 1, max: 2 },
-  preschool: { min: 2, max: 5 },
-  prek: { min: 3, max: 6 },
-};
+import { LEVELS, arrivalOrder, canArrive, carTap, crossTouch, doneLine, GO_TARGET, hintOn, IDLE_POINT, isCross, judgeGo, lampRolls, laneCycles, lightAt, nextGreenLane, nextLamp, nextLight, planFor, rightNow, safe, touchCounts, VEHICLES, cycleFor, type Cycle, type GoPlan, type Lamp, type Lane, type Light, type Road, type Vehicle } from './logic';
 
 const LAMP: Record<Light, number> = { red: swatch.red.fill, yellow: swatch.yellow.fill, green: swatch.green.fill };
 const CAR_COLORS: ColorName[] = ['blue', 'pink', 'orange', 'purple', 'teal', 'red'];

@@ -6,7 +6,7 @@ import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { FONT } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
@@ -15,19 +15,12 @@ import { isCase, isExhibit } from './cases';
 import { AtticExhibit } from './exhibit';
 import { AtticJobs } from './jobs';
 import {
+  LEVELS,
   atticLayout, canFinish, CARD, check, CHECK_R, CHIP_R, CLAIM, CLAIM_H, CLAIM_W, clueOf, CRANK_HIT, DOOR_AT, DOOR_H, DOOR_W, encounterState,
   FINISH_R, finishLever, glowing, glowTarget, help, isFree, isJobs, leverState, look, makeLeverRound, makeRound, OBJ, objectOf, pick, place, planFor,
   press, SLOT, SPOT_R, toggleDoor, TURN_R, turnEnded, tryIt, WINDOW_R, type AtticLayout, type Clue, type ClueId, type Effect,
   type EncounterState, type LeverRound, type ObjectId, type Plan, type Pt, type Round, type Side,
 } from './logic';
-
-const LEVELS: BandLevels = {
-  lap: { min: 3, max: 3 },
-  toddler: { min: 3, max: 4 },
-  preschool: { min: 1, max: 1 },
-  prek: { min: 1, max: 5, order: [1, 2, 5] },
-  school: { min: 2, max: 9, order: [2, 5, 6, 7, 8, 9] },
-};
 
 /** Each level's authored first round leads its first round of a session. */
 const authoredShown = new Set<number>();

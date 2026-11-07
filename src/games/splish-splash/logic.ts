@@ -1,4 +1,5 @@
 import type { SpeciesId } from '../../creatures/species';
+import type { BandLevels } from '../../progress/difficulty';
 
 export type Part = 'tummy' | 'head' | 'cheeks' | 'ears' | 'nose';
 
@@ -26,6 +27,13 @@ export const PLANS: Plan[] = [
   { mode: 'parts', parts: ['tummy', 'ears', 'head', 'nose'], shuffle: true, pairs: true, ordered: true },
   { mode: 'pat', parts: ['tummy', 'head', 'cheeks'] },
 ];
+
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 9, order: [9, 1, 2] },
+  toddler: { min: 1, max: 4 },
+  preschool: { min: 3, max: 7 },
+  prek: { min: 5, max: 8 },
+};
 
 /** Pats it takes to wash one patch of mud off in `pat` mode. */
 export const PATS_PER_PATCH = 3;

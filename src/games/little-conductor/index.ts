@@ -10,19 +10,12 @@ import type { LineId } from '../../content/voice-script';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { advance, BEATS, botMove, canFinish, choose, conductorLayout, earlyDone, glowTarget, hint, listenAgain, makeRound, marksLit, newRequests, newScore, PACE_IDS, PACES, PAD, planFor, select, SIGN, signBot, submit, type BeatEvent, type ConductorLayout, type PaceId, type Plan, type Requests, type Round, type Score } from './logic';
-
-// Level 3's pictured requests (music M3) are for preschool and pre-K; toddlers stay with free play.
-const LEVELS: BandLevels = {
-  toddler: { min: 1, max: 2 },
-  preschool: { min: 1, max: 3 },
-  prek: { min: 2, max: 3 },
-};
+import { LEVELS, advance, BEATS, botMove, canFinish, choose, conductorLayout, earlyDone, glowTarget, hint, listenAgain, makeRound, marksLit, newRequests, newScore, PACE_IDS, PACES, PAD, planFor, select, SIGN, signBot, submit, type BeatEvent, type ConductorLayout, type PaceId, type Plan, type Requests, type Round, type Score } from './logic';
 
 const line = (color: number, width = 6) => ({ width, color, cap: 'round' as const, join: 'round' as const });
 

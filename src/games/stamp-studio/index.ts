@@ -1,3 +1,4 @@
+import { rangeFor } from '../../progress/difficulty';
 import { Circle, Container, Graphics, Rectangle } from 'pixi.js';
 import { cream, swatch, type ColorName } from '../../art/palette';
 import { STYLES } from '../../audio/music';
@@ -11,7 +12,7 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { stampArt } from './art';
 import { TracePrints } from './trace';
-import { LIMIT, pixel, place, planFor, playOrder, type PlayNote, roundPlan, STAMP_COLORS, STAMP_NAMES, stickerStamp, stampDemo, type Stamp, type StampKind } from './logic';
+import { LEVELS, LIMIT, pixel, place, planFor, playOrder, type PlayNote, roundPlan, STAMP_COLORS, STAMP_NAMES, stickerStamp, stampDemo, type Stamp, type StampKind } from './logic';
 
 interface Mark { data: Stamp; node: Container; drag?: DragHandle }
 class StampStudio implements Game {
@@ -214,7 +215,7 @@ class StampStudio implements Game {
 export const stampStudio: GameModule = {
   id: 'stamp-studio', name: 'Stamp Studio', titleLine: 'game.stamp-studio', region: 'treehouse', challenge: 'space',
   skills: ['composition', 'creative-expression', 'spatial-reasoning'], bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
-  levels: b => b === 'school' ? { min: 5, max: 6 } : b === 'lap' ? { min: 1, max: 8, order: [7, 8, 1, 2] } : b === 'toddler' ? { min: 2, max: 9, order: [9, 2, 3] } : b === 'preschool' ? { min: 3, max: 5 } : { min: 4, max: 6 },
+  levels: (band) => rangeFor(LEVELS, band),
   entryLevels: [7, 8, 9], describeLevel: l => planFor(l).name, music: STYLES.paint, touchDemo: true,
   coplayHint: 'Let {name} choose where the picture goes. The green arrow finishes any creation.',
   offScreen: 'Stamp with a sponge or potato on scrap paper, then tell a story about the picture.',

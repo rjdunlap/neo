@@ -8,22 +8,17 @@ import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import type { LineId } from '../../content/voice-script';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { againIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { BOARDS } from './puzzles';
 import {
+  LEVELS,
   FRUITS, hintMove, jarHeight, jarLayout, JAR_W, legal, LID_COLOR, LOOKS, move, moves, PIECE, planFor, present, refusal, render, RIM, roundBoards,
   search, solve, solved, UNDO_INSET, uniformFull, type Board, type JarPlan, type JarSpot, type Labels, type Look, type Move,
 } from './logic';
-
-const LEVELS: BandLevels = {
-  preschool: { min: 1, max: 3 },
-  prek: { min: 2, max: 5 },
-  school: { min: 4, max: 8 },
-};
 
 /** How far a lifted piece rises above where it sat. */
 const LIFT = 30;

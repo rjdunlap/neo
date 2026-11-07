@@ -7,22 +7,16 @@ import { draggable, type DragHandle } from '../../engine/drag';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { cartArt, itemArt, madeArt, placeArt } from './art';
 import { PlanShed } from './plan';
 import {
+  LEVELS,
   centre, ITEMS, judge, nextDrop, PLACE_H, PLACE_W, placeAt, planFor, roundFor, shedLayout, ShedTally, SORT_MAX,
   type ItemId, type Place, type Plan, type Round, type ShedLayout,
 } from './logic';
-
-const LEVELS: BandLevels = {
-  toddler: { min: 1, max: 2 },
-  preschool: { min: 2, max: 3 },
-  prek: { min: 3, max: 4 },
-  school: { min: 4, max: 6 },
-};
 
 interface PlaceNode { place: Place; node: Container }
 

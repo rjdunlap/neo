@@ -1,3 +1,4 @@
+import type { BandLevels } from '../../progress/difficulty';
 /** Fixed authored footage: no shot ordering or inferred pixel facts. */
 export type Pad = 'splash' | 'boing' | 'whoosh' | 'bell' | 'knock' | 'hello';
 export type Strip = (Pad | null)[];
@@ -23,6 +24,8 @@ export function planFor(level: number) {
       {slot:3,pad:'hello',event:'greets',line:'mn.helloRequest'},
     ]) as Match[] };
 }
+
+export const LEVELS:BandLevels={preschool:{min:1,max:1},prek:{min:1,max:3},school:{min:2,max:3}};
 export function unmet(level:number, strip:Strip):Match[] {
   return planFor(level).requirements.filter(r=>strip[r.slot]!==r.pad);
 }

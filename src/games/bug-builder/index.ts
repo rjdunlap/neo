@@ -1,3 +1,4 @@
+import { rangeFor } from '../../progress/difficulty';
 import { Circle, Container, Graphics } from 'pixi.js';
 import { cream, swatch } from '../../art/palette';
 import { STYLES } from '../../audio/music';
@@ -7,7 +8,7 @@ import { spread, type View } from '../../engine/view';
 import { WigglyIcon, tile } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { bugBody, bugSticker, bugToken, bugWing } from './art';
-import { BUG_PLANS, BUG_TOKENS, bugPuzzle, nextStamp, slotAt, type BugSpot } from './logic';
+import { LEVELS, BUG_PLANS, BUG_TOKENS, bugPuzzle, nextStamp, slotAt, type BugSpot } from './logic';
 
 interface Spot extends BugSpot { node: Container; filled: boolean; wrong: number }
 class BugBuilder implements Game {
@@ -146,7 +147,7 @@ class BugBuilder implements Game {
 export const bugBuilder: GameModule = {
   id: 'bug-builder', name: 'Bug Builder', titleLine: 'game.bug-builder', region: 'tinker-lab', challenge: 'space',
   skills: ['spatial-reasoning', 'symmetry', 'visual-matching'], bands: ['toddler', 'preschool', 'prek', 'school'],
-  levels: (b) => b === 'school' ? { min: 6, max: 7 } : b === 'prek' ? { min: 4, max: 7 } : b === 'preschool' ? { min: 2, max: 5 } : { min: 1, max: 2 },
+  levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (l) => BUG_PLANS[Math.max(0, Math.min(BUG_PLANS.length - 1, l - 1))].name,
   music: STYLES.paint, touchDemo: true, coplayHint: 'Help {name} move a shape to a matching spot on the bug.',
   offScreen: 'Fold paper in half, dab paint on one side, and press it closed to make matching butterfly wings.',

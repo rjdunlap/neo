@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 export interface Orchard { rows: number; columns: number }
 export type Mode = 'plant' | 'turn' | 'missing' | 'equal' | 'every' | 'prime' | 'path' | 'choosepath' | 'pathten';
@@ -15,6 +16,8 @@ export const PLANS: readonly { name: string; mode: Mode; shapes: readonly Orchar
   { name: 'Choose the path: split the orchard, count each part and the whole', mode: 'choosepath', shapes: [] },
   { name: 'A path at ten: rows of ten and the rest, then the whole', mode: 'pathten', shapes: [] },
 ];
+
+export const LEVELS: BandLevels = { school: { min: 1, max: 9 } };
 export const planFor = (level: number) => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 export const total = (o: Orchard) => o.rows * o.columns;
 export const turn = (o: Orchard): Orchard => ({ rows: o.columns, columns: o.rows });

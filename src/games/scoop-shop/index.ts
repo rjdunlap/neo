@@ -13,6 +13,7 @@ import { WigglyIcon } from '../shared';
 import type { LineId } from '../../content/voice-script';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  LEVELS,
   complete,
   countSlots,
   scoopCounts,
@@ -43,15 +44,7 @@ import {
   type ScoopPlan,
   type WindowScene,
 } from './logic';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
-
-const LEVELS: BandLevels = {
-  lap: { min: 1, max: 10, order: [10, 1] },
-  toddler: { min: 1, max: 11, order: [1, 2, 11, 3] },
-  preschool: { min: 2, max: 11, order: [2, 11, 3, 4, 5] },
-  prek: { min: 3, max: 13, order: [3, 4, 12, 13, 5, 6] },
-  school: { min: 5, max: 13, order: [5, 12, 13, 6, 7, 8, 9] },
-};
+import { rangeFor } from '../../progress/difficulty';
 
 const SCOOP_R = 34;
 const SCOOP_STEP = 44;

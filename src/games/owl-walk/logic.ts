@@ -1,5 +1,6 @@
 import type { ColorName } from '../../art/palette';
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Owl Walk Home, after Peaceable Kingdom's Hoot Owl Hoot! and HABA's First Orchard: flip a color card, then tap the
@@ -29,6 +30,12 @@ export const PLANS: OwlPlan[] = [
   { mode: 'choose', owls: 3, colors: 4, stones: 14, twinkle: false, safeCards: false, name: 'Three owls, taking turns: choose an owl, then tap its stone (or the nest when none is left)' },
   { mode: 'farthest', owls: 3, colors: 4, stones: 16, twinkle: false, safeCards: false, name: 'Which owl hops the farthest with this card? Plan to get everyone home sooner' },
 ];
+
+export const LEVELS: BandLevels = {
+  toddler: { min: 1, max: 2 },
+  preschool: { min: 1, max: 3 },
+  prek: { min: 2, max: 4 },
+};
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 

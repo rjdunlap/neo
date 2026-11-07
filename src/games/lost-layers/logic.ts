@@ -1,5 +1,6 @@
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Lost Layers: two invented sea cliffs, laid side by side. Gull Cliff is a whole record of six layers; Shell Cove is three
@@ -337,6 +338,8 @@ export const PLANS: readonly Plan[] = [
   { id: 1, name: 'Two stories: every way the broken cliff fits, then whether the rocks can tell' },
   { id: 2, name: 'One more look: pick the look that tells two stories apart, then the story that still fits' },
 ];
+
+export const LEVELS: BandLevels = { school: { min: 1, max: 2 } };
 export const planFor = (level: number): Plan => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 
 /* Layout ----------------------------------------------------------------------------------------- */

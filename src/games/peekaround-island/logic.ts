@@ -1,5 +1,6 @@
 import type { CritterName } from '../../art/critter';
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Peekaround Island, after Captain Toad's little dioramas: a round island turns a quarter at a
@@ -29,6 +30,13 @@ export const PLANS: PeekPlan[] = [
   { mode: 'view', rounds: 3, name: 'Three pictures of the island from three sides: which one shows what the duck sees from where it stands?' },
   { mode: 'sky', rounds: 3, name: 'From the sky: which map shows the island from above?' },
 ];
+
+export const LEVELS: BandLevels = {
+  toddler: { min: 1, max: 2 },
+  preschool: { min: 2, max: 4 },
+  prek: { min: 3, max: 7 },
+  school: { min: 4, max: 8 },
+};
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 

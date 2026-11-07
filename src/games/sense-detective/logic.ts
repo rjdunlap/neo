@@ -1,5 +1,6 @@
 import type { Rng } from '../../engine/random';
 import { spread, type View } from '../../engine/view';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Sense Detective: a parcel arrives at the toy museum and she chooses how to find out what is inside. A look shows the
@@ -48,6 +49,11 @@ const PLANS: Record<number, Plan> = {
   3: { name: 'Which could it be?', shelf: [...TOY_IDS], channels: ['view'], mode: 'set', parcels: 2 },
   4: { name: 'Narrow it down', shelf: [...TOY_IDS], channels: ['view', 'sound'], mode: 'set', parcels: 1 },
   5: { name: 'Can we tell?', shelf: [...TOY_IDS], channels: ['view'], mode: 'tell', parcels: 2 },
+};
+
+export const LEVELS: BandLevels = {
+  prek: { min: 1, max: 3 },
+  school: { min: 2, max: 5 },
 };
 export const MAX_LEVEL = 5;
 

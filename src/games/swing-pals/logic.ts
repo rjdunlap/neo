@@ -1,5 +1,6 @@
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
+import type { BandLevels } from '../../progress/difficulty';
 
 /*
  * Swing Pals' rules: a small-swing pendulum stated as a toy. Only the rope sets the beat; a push always helps and never
@@ -254,6 +255,15 @@ export const PLANS: readonly Plan[] = [
   { id: 7, name: 'Who comes back first?', mode: 'predict', lines: 3, two: true, weights: true, heights: true },
   { id: 8, name: 'Twice as quick', mode: 'together', lines: 3, two: true, weights: false, heights: false, requests: true },
 ];
+
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 1 },
+  toddler: { min: 1, max: 2 },
+  preschool: { min: 2, max: 3 },
+  // Level 7 sits between 3 and 4 for pre-K, and after 6 for school.
+  prek: { min: 3, max: 7, order: [3, 7, 4] },
+  school: { min: 4, max: 8 },
+};
 
 export function planFor(level: number): Plan {
   return PLANS.find((p) => p.id === level) ?? PLANS[0];

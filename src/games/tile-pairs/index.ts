@@ -8,13 +8,11 @@ import { HeldDirection, idle, type CouchControls } from '../../engine/controller
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { free, freeTiles, fullMask, makeBoard, planFor, present, removePair, reshuffle, solve, type Pair, type Tile } from './logic';
-
-const LEVELS: BandLevels = { grownup: { min: 1, max: 6 } };
+import { LEVELS, free, freeTiles, fullMask, makeBoard, planFor, present, removePair, reshuffle, solve, type Pair, type Tile } from './logic';
 
 /** Pictures differ by shape as well as color. The raised edge makes a covered tile read as a stack. */
 function tileArt(kind: number): Container {

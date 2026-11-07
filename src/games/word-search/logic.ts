@@ -1,6 +1,7 @@
 import type { Rng } from '../../engine/random';
 import { BLOCKED } from './blocked';
 import { PICTURE_THEMES, THEMES, themeById, type Theme } from './words';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Word Search's rules. A grid of letters hides a list of words, each in a straight line, read forwards or (on the harder
@@ -122,6 +123,12 @@ export const HIDDEN_GRID = 7;
 export const PICTURE_GRID = 8;
 /** The grown-up levels easiest first: the small grid, then 1 to 4, then the message in the leftovers, then just the theme. */
 export const ORDER = [SMALL_GRID, 1, 2, 3, 4, MESSAGE_GRID, HIDDEN_GRID];
+
+/**
+ * Lantern Lake holds it, with touch or a controller. Grown-ups: the small grid (5) comes first, then 1–4, the message grid (6), and
+ * just the theme (7) last. School plays one grid of four picture words (8), by touch.
+ */
+export const LEVELS: BandLevels = { school: { min: PICTURE_GRID, max: PICTURE_GRID }, grownup: { min: 1, max: 7, order: ORDER } };
 
 /** A level's plan; a level past the top plays the last in the grown-up ladder, not the small one. */
 export const planFor = (level: number): WordPlan => PLANS[(level > PLANS.length ? ORDER[ORDER.length - 1] : Math.max(1, level)) - 1];

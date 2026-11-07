@@ -10,14 +10,14 @@ import type { PartName } from '../../creatures/parts';
 import type { SpeciesId } from '../../creatures/species';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { WeatherFriends } from './friends';
 import { anchorOf, clothing, itemIcon, PAIRED } from './art';
-import { GROUND_TOUCH, ITEM_NAMES, tripPlays, MISFIT, ITEM_WORDS, ITEMS, itemToTap, outfitFor, outfits, partFor, STICKER_ITEMS, STICKER_WEATHERS, wardrobeFor, wardrobePlan, WEATHERS, type Item, type Misfit, type Outfit, type WardrobePlan, type Weather } from './logic';
+import { LEVELS, GROUND_TOUCH, ITEM_NAMES, tripPlays, MISFIT, ITEM_WORDS, ITEMS, itemToTap, outfitFor, outfits, partFor, STICKER_ITEMS, STICKER_WEATHERS, wardrobeFor, wardrobePlan, WEATHERS, type Item, type Misfit, type Outfit, type WardrobePlan, type Weather } from './logic';
 
 const line = (color: number, width = 6) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 
@@ -62,13 +62,6 @@ interface Burst {
 
 const BURST_LIFE = 0.9;
 
-/** Level 8 is the lap entry, played before level 2 (a lap child tries things on before choosing); 9 (Which sky?) sits after 2 for toddlers and after 3 for preschool. */
-const LEVELS: BandLevels = {
-  lap: { min: 1, max: 8, order: [1, 8, 2] },
-  toddler: { min: 2, max: 9, order: [2, 9, 3, 4] },
-  preschool: { min: 3, max: 9, order: [3, 9, 4, 5] },
-  prek: { min: 4, max: 10, order: [4, 5, 10, 6, 7] },
-};
 const TRY_IDLE = 6;
 
 interface Option {

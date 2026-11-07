@@ -1,3 +1,4 @@
+import type { BandLevels } from '../../progress/difficulty';
 import type { Rng } from '../../engine/random';
 
 export type SongMode = 'free' | 'ghost' | 'card' | 'pattern' | 'listen';
@@ -153,3 +154,11 @@ export function songLayout(plan: SongPlan, v: { w: number; h: number }): SongLay
   const cell = Math.min((right - left) / plan.cols, (bottom - top) / plan.rows, 150);
   return { cell, x0: left + (right - left - cell * plan.cols) / 2, y0: top + (bottom - top - cell * plan.rows) / 2 };
 }
+
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 2 },
+  toddler: { min: 2, max: 4 },
+  preschool: { min: 4, max: 6 },
+  prek: { min: 5, max: 7 },
+  school: { min: 6, max: 7 },
+};

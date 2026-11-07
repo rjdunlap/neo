@@ -6,16 +6,15 @@ import { sfx } from '../../audio/sfx';
 import { onTap, palmOnGlass } from '../../engine/input';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  LEVELS,
   answer, BADGE_R, BRUSH, CARD, caseOf, cellCenter, check, CHECK_R, COLS, digLayout, digState, edgePoint, FLAG, FLAGS, glowing,
   help, leafOf, leafOutline, MAG_R, makeRound, nextBrush, pat, pickLeaf, planFor, RECORD_H, RECORD_W, returnLeaf, ROWS, SLOT, stepOf,
   stoneAt, STONE_H, STONE_W, tapFlag, type DigLayout, type DigState, type FlagId, type LeafId, type Plan, type Pt, type Round,
 } from './logic';
-
-const LEVELS: BandLevels = { prek: { min: 1, max: 2 } };
 
 /** Each level's authored first round leads its first round of a session. */
 const authoredShown = new Set<number>();

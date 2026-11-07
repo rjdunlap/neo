@@ -8,19 +8,14 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import { hatArt } from '../../art/props';
 import { KIND_WORDS, ruleIcon } from '../critter-sort/index';
 import type { Rule, SortCritter } from '../critter-sort/logic';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { bestTest, consistent, gateKey, gateWords, makeRound, nextStep, passes, planFor, sameGate, splits, type CrossPlan, type CrossRound, type Gate } from './logic';
-
-const LEVELS: BandLevels = {
-  prek: { min: 1, max: 8, order: [1, 8, 2, 3] },
-  school: { min: 2, max: 7 },
-};
+import { LEVELS, bestTest, consistent, gateKey, gateWords, makeRound, nextStep, passes, planFor, sameGate, splits, type CrossPlan, type CrossRound, type Gate } from './logic';
 
 const SCALE = 0.32;
 /** The small copies on the bank shelf, and the gap between them. */

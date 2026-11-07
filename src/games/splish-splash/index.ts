@@ -12,15 +12,8 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { allowedParts, askedParts, askedPhrase, cleanPhrase, IdleNudge, MUD_H, MUD_W, Namer, nearestIndex, nearMud, nextToScrub, PATS_PER_PATCH, PHRASES, planFor, planOn, reach, scrubPath, brushOn, spotsOn, STAR, wrongTouches, type Part, type Plan } from './logic';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
-
-const LEVELS: BandLevels = {
-  lap: { min: 1, max: 9, order: [9, 1, 2] },
-  toddler: { min: 1, max: 4 },
-  preschool: { min: 3, max: 7 },
-  prek: { min: 5, max: 8 },
-};
+import { LEVELS, allowedParts, askedParts, askedPhrase, cleanPhrase, IdleNudge, MUD_H, MUD_W, Namer, nearestIndex, nearMud, nextToScrub, PATS_PER_PATCH, PHRASES, planFor, planOn, reach, scrubPath, brushOn, spotsOn, STAR, wrongTouches, type Part, type Plan } from './logic';
+import { rangeFor } from '../../progress/difficulty';
 
 const MUD = { fill: 0x8b5a2b, dark: 0x6b4423, light: 0xa8743f };
 /** A spot counts as clean when this much of it is gone; the last specks vanish on their own. */

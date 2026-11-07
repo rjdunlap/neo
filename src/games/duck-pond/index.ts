@@ -10,16 +10,8 @@ import { ease, type Tweener } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { label } from '../../ui/text';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { HIDING_SLOTS, hidingRevealSlots, numberSentence, stickerDucks, bankSize, duckMove, hidingPuzzle, padValues, planFor, SLOTS, story, tenStarts, type DuckPlan, type PondStory } from './logic';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
-
-const LEVELS: BandLevels = {
-  lap: { min: 1, max: 12, order: [12, 1, 2] },
-  toddler: { min: 1, max: 12, order: [12, 1, 2, 3, 4, 5] },
-  preschool: { min: 3, max: 7 },
-  prek: { min: 5, max: 9 },
-  school: { min: 8, max: 11 },
-};
+import { LEVELS, HIDING_SLOTS, hidingRevealSlots, numberSentence, stickerDucks, bankSize, duckMove, hidingPuzzle, padValues, planFor, SLOTS, story, tenStarts, type DuckPlan, type PondStory } from './logic';
+import { rangeFor } from '../../progress/difficulty';
 
 const WATER = 0x7cc4f2;
 const WATER_EDGE = 0x5aa9e0;

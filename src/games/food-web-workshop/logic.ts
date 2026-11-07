@@ -1,5 +1,6 @@
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Food Web Workshop's rules (docs/definitions/food-web-workshop.md): picture cards record who was seen eating what, and
@@ -57,6 +58,8 @@ export const PLANS: readonly WebPlan[] = [
   { level: 2, name: 'Turn the arrow: one arrow arrives pointing the wrong way', cases: CHAIN, start: 'one-reversed' },
   { level: 3, name: 'One food, two eaters: the arrows branch', cases: BRANCH, start: 'empty' },
 ];
+
+export const LEVELS: BandLevels = { school: { min: 1, max: 3 } };
 export const planFor = (level: number): WebPlan => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 
 /** A directed arrow from a food to an eater. */

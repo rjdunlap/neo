@@ -1,4 +1,5 @@
 import type { View } from '../../engine/view';
+import type { BandLevels } from '../../progress/difficulty';
 
 /*
  * Bolt Boards' rules. Boards hang on a 700 × 560 wall, held by bolts at fixed wall points. A board with two or more of
@@ -70,6 +71,15 @@ export const PLANS: readonly BoltPlan[] = [
   /** The take-apart run backwards: every board starts on the woodpile and she bolts the wall up to match a picture. */
   { id: 9, name: 'Put it back', goal: 'all', holes: false, litHoles: false, coveredMiss: true, scenes: 2, build: [3, 4] },
 ];
+
+export const LEVELS: BandLevels = {
+  toddler: { min: 1, max: 2 },
+  preschool: { min: 1, max: 4 },
+  // Level 8 (Plenty of holes) sits between 5 and 6: parking bolts in holes before the planning holes carry.
+  prek: { min: 2, max: 8, order: [2, 3, 4, 5, 8, 6] },
+  // Level 9 (Put it back) builds the wall up again, after every take-apart level.
+  school: { min: 4, max: 9, order: [4, 5, 8, 6, 7, 9] },
+};
 export const planFor = (level: number): BoltPlan => PLANS[Math.max(0, Math.min(PLANS.length - 1, Math.floor(level) - 1))];
 
 /* ---------------------------------------------------------------------------------------------- */

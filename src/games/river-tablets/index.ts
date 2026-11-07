@@ -17,7 +17,7 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
@@ -26,17 +26,12 @@ import {
   signArt, stampArt, stickerArt, storeArt, stripArt, tabletArt, tenWedgeArt, tokenArt, verdictArt, wedgeArt, yardArt,
 } from './art';
 import {
+  LEVELS,
   answerFor, arrive, askCheck, askDisagree, disagreeTally, pickAnswer, startDisagree, askEnvelope, askTablet, askTens, briefFor, CART_VERDICTS, cartOf, CELL, centre, checkTally, chooseNumber, chooseVerdict, crackEnvelope, envelopeTally, handIn, hintFor, KINDS, lift, lineUp,
   markCount, planFor, press, pressRow, readBack, readyToTip, ROW_CELLS, SCATTER_COLS, SCATTER_ROWS, scatterFor, shortest, SIGN, stamp, startCheck, startEnvelope, startPen, startTablet, startTens, tabletLayout,
   tabletTally, tapJar, tensHint, tensTally, value, verdictFor, waiting,
   type Answer, type Brief, type Cart, type DisagreeState, type CartVerdict, type CheckState, type EnvelopeState, type Kind, type Mark, type PenState, type Pt, type Reading, type Rect, type TabletLayout, type TabletState, type TensState,
 } from './logic';
-
-const LEVELS: BandLevels = {
-  preschool: { min: 1, max: 2 },
-  prek: { min: 2, max: 3 },
-  school: { min: 3, max: 6 },
-};
 
 /** Spoken counts come from bounded slots, never free text. */
 const WORDS = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight'];

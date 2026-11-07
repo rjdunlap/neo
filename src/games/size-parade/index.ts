@@ -9,8 +9,9 @@ import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import {
+  LEVELS,
   askRank, BIG_LITTLE_ASKS, BOOT_COLORS, CRITTER_H, CYCLE_SCALE, CYCLE_TAPS, cycleAt, dealSteps, dropSpot, FIT_PROPS, fitAsks, fitTry, FLAG_COLORS, type Friend, FRIEND_SCALE, FRIENDS,
   gapMids, HIDDEN_LINES, hiddenStart, isSorted, mixedPair, pairTest, SWEEP_START, sweepAfter, sweepNext, type Sweep, type InsertAsk, insertAsks, insertGap, insertGapFor, insertLayout, insertLine, insertWhy, middleAsks, paradeLayout, pickRounds, propSize, SHADE_COLORS, SHADE_STEP,
   shades, type SizeAsk, sizePlan, sizeTouch, sizeWord, stepBell, stepScale, TARGET,
@@ -896,13 +897,6 @@ class SizeParade implements Game {
     this.marchers.forEach((m) => { this.ctx.tw.kill(m); this.ctx.tw.kill(bodyOf(m)); });
   }
 }
-const LEVELS: BandLevels = {
-  lap: { min: 9, max: 16, order: [16, 9] },
-  toddler: { min: 1, max: 17, order: [9, 1, 2, 3, 4, 17] },
-  preschool: { min: 3, max: 17, order: [3, 4, 17, 10, 5, 6, 11] },
-  prek: { min: 5, max: 15, order: [5, 6, 11, 7, 8, 12, 15] },
-  school: { min: 7, max: 15, order: [7, 8, 12, 13, 14, 15] },
-};
 export const sizeParade: GameModule = {
   id: 'size-parade', name: 'Size Parade', titleLine: 'game.size-parade', region: 'puzzle-peaks', challenge: 'numbers',
   skills: ['comparison', 'measurement', 'ordering'], bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],

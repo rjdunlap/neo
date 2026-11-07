@@ -1,6 +1,7 @@
 import type { Rng } from '../../engine/random';
 import type { PartName } from '../../creatures/parts';
 import type { SpeciesId } from '../../creatures/species';
+import type { BandLevels } from '../../progress/difficulty';
 
 /** Four weathers; the sky at level 1 steps through them in this order. Wind came last (slice 7, 2026-10-26). */
 export const WEATHERS = ['sunny', 'rainy', 'snowy', 'windy'] as const;
@@ -266,4 +267,12 @@ export const itemToTap = (outfit: Outfit, used: ReadonlySet<Item>): Item | null 
 export const friendFor = (outfit: Outfit, item: Item): number | null => {
   const index = outfit.weathers.indexOf(ITEMS[item]);
   return index < 0 ? null : index;
+};
+
+/** Level 8 is the lap entry, played before level 2 (a lap child tries things on before choosing); 9 (Which sky?) sits after 2 for toddlers and after 3 for preschool. */
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 8, order: [1, 8, 2] },
+  toddler: { min: 2, max: 9, order: [2, 9, 3, 4] },
+  preschool: { min: 3, max: 9, order: [3, 9, 4, 5] },
+  prek: { min: 4, max: 10, order: [4, 5, 10, 6, 7] },
 };

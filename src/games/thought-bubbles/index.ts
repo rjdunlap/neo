@@ -8,21 +8,17 @@ import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { replayArt, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { actionArt, bubbleArt, cardFace, doorArt, friendNode, lookRoomArt, PLACE_AT, placeArt, reachArm, reasonArt, thingArt, wantSceneArt, whyRoomArt, WINDOW_AT } from './art';
 import {
+  LEVELS,
   answerOf, BUBBLE_H, BUBBLE_MARGIN, BUBBLE_W, CARD_H, CARD_W, clueOf, glowFor, inBubble, planFor, rectToScreen, regionAt, regionRect, roundFor,
   STAGE_H, STAGE_W, Tally, thoughtLayout, toScreen, WHY_FRIEND_AT,
   type Friend, type Glow, type Place, type Reason, type Stage, type Story, type Thing, type ThoughtLayout,
 } from './logic';
-
-const LEVELS: BandLevels = {
-  prek: { min: 1, max: 2 },
-  school: { min: 1, max: 3 },
-};
 
 /** Each level's authored first round leads its first round of a session, and every demonstration. */
 const authoredShown = new Set<number>();

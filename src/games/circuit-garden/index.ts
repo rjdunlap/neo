@@ -13,21 +13,17 @@ import type { LineId } from '../../content/voice-script';
 import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { againIcon, checkIcon, magnifierIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { backIcon, batteryArt, connectorArt, handIcon, lanternArt, lanternMini, socketArt, stickerArt, WIRE, WIRE_LIT } from './art';
 import {
+  LEVELS,
   checkBoard, doneReady, dressingFor, gaps, GLOW_AFTER, HelpTally, initialState, lit, nextHelp, nextMove, planFor,
   type BoardState, type Dressing, type LevelPlan, type Seen, type SlotId,
 } from './logic';
-
-const LEVELS: BandLevels = {
-  prek: { min: 1, max: 3 },
-  school: { min: 1, max: 3 },
-};
 
 /** Half a bridge's length along its route, in logical units. */
 const HALF = 55;

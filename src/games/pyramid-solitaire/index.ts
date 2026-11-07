@@ -4,13 +4,12 @@ import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { at, exposed, fullMask, makePuzzle, present, rankName, remove, solver, planFor, type Removal } from './logic';
+import { LEVELS, at, exposed, fullMask, makePuzzle, present, rankName, remove, solver, planFor, type Removal } from './logic';
 
-const LEVELS: BandLevels = { grownup: { min: 1, max: 3 } };
 function cardArt(rank: number, color: ColorName = 'teal'): Container {
   const c = new Container();
   c.addChild(tile(100, 100, 'white'));

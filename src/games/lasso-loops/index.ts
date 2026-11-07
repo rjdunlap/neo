@@ -7,17 +7,11 @@ import { onTap, palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { choices, compareGuess, demoLoop, guessCards, gridFor, inside, makeRound, nearestGroup, planFor, scatter, type LassoPlan, type LassoRound, type Point } from './logic';
-
-const LEVELS: BandLevels = {
-  preschool: { min: 1, max: 3 },
-  prek: { min: 2, max: 4 },
-  school: { min: 3, max: 6 },
-};
+import { LEVELS, choices, compareGuess, demoLoop, guessCards, gridFor, inside, makeRound, nearestGroup, planFor, scatter, type LassoPlan, type LassoRound, type Point } from './logic';
 
 const JAR_W = 108;
 const JAR_H = 150;

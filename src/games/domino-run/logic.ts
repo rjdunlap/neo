@@ -1,6 +1,7 @@
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import type { VOICE } from './voice';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Domino Run's rules, as a stated toy model (docs/definitions/domino-run.md): a lane is a row of slots, slot 0 the
@@ -257,6 +258,13 @@ export const PLANS: Plan[] = [
   { id: 7, name: 'Just enough', lines: 2, fork: false, tapAny: false, hop: false },
   { id: 8, name: 'Two bells, one tray', lines: 2, fork: true, tapAny: false, hop: false },
 ];
+
+export const LEVELS: BandLevels = {
+  toddler: { min: 1, max: 2 },
+  preschool: { min: 2, max: 4 },
+  prek: { min: 3, max: 5 },
+  school: { min: 4, max: 8 },
+};
 
 export const planFor = (level: number): Plan => PLANS[Math.min(Math.max(1, Math.round(level)), PLANS.length) - 1];
 

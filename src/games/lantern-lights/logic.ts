@@ -1,5 +1,6 @@
 import type { Rng } from '../../engine/random';
 import type { Band } from '../../progress/bands';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Lantern Lights' rules (Lights Out, on a pond at dusk). A board is a square of paper lanterns, each lit or dark.
@@ -160,6 +161,12 @@ export const PLANS: LanternPlan[] = [
   { name: 'A 6 by 6 pond that takes planning', size: 6, scramble: 12, atLeast: 12, boards: 2 },
   { name: 'Lily-pad ponds: a shaped pond where the pads stop the flips', size: 5, scramble: 6, atLeast: 5, boards: 2, shapes: Object.values(SHAPES) },
 ];
+
+/**
+ * Lantern Lake's grown-up puzzle. The island plays it by touch; couch play drives the same board with a controller. School
+ * plays the two 3 by 3 ponds.
+ */
+export const LEVELS: BandLevels = { school: { min: 1, max: 2 }, grownup: { min: 1, max: 9 } };
 
 /**
  * School only: the press count on one pond at which, still unlit, she is told once where Hint is (the fewest plus six).

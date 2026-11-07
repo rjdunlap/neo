@@ -14,15 +14,8 @@ import { RoundButton } from '../../ui/buttons';
 import { arrowIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { fits, frontAfterHalfTurn, makeScene, makeSeeScene, makeSkyScene, makeViewScene, mapPoint, skyFacing, namedHintTarget, nextPair, nextRequest, peekTouch, planFor, seeFacings, spotFacing, turnToFront, viewFacings, whereIs, WHERE_WORDS, type PeekPlan, type SkyKind, type SkyScene, type Where } from './logic';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
-
-const LEVELS: BandLevels = {
-  toddler: { min: 1, max: 2 },
-  preschool: { min: 2, max: 4 },
-  prek: { min: 3, max: 7 },
-  school: { min: 4, max: 8 },
-};
+import { LEVELS, fits, frontAfterHalfTurn, makeScene, makeSeeScene, makeSkyScene, makeViewScene, mapPoint, skyFacing, namedHintTarget, nextPair, nextRequest, peekTouch, planFor, seeFacings, spotFacing, turnToFront, viewFacings, whereIs, WHERE_WORDS, type PeekPlan, type SkyKind, type SkyScene, type Where } from './logic';
+import { rangeFor } from '../../progress/difficulty';
 
 const VOICE: Record<CritterName, AnimalSound> = { pip: 'hop', duck: 'quack', pig: 'oink', cat: 'meow', bunny: 'hop', cow: 'moo', dog: 'woof', bear: 'growl' };
 

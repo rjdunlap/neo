@@ -1,6 +1,7 @@
 import type { CritterName } from '../../art/critter';
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Gear Garden's rules. Every gear is the same size at levels 1–3 (pitch radius 1 in board units, 12 teeth), and sockets
@@ -163,6 +164,14 @@ export const PLANS: readonly Plan[] = [
   { level: 2, name: 'Bridge the gap: put the missing gear in, then turn' },
   { level: 3, name: 'Two machines: pick one, mend it and see which way the flower turns' },
 ];
+
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 1 },
+  toddler: { min: 1, max: 1 },
+  preschool: { min: 1, max: 2 },
+  prek: { min: 2, max: 3 },
+  school: { min: 3, max: 3 },
+};
 
 export function planFor(level: number): Plan {
   return PLANS[Math.min(PLANS.length, Math.max(1, Math.round(level))) - 1];

@@ -6,18 +6,17 @@ import { onTap, palmOnGlass } from '../../engine/input';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import type { LineId } from '../../content/voice-script';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { FONT } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  LEVELS,
   accepted, answer, CARD_H, CARD_W, check, CHECK_H, CHECK_W, colX, contacts, glowing, help, informativeColumn, inPuddle, LENS_R, makeRound,
   MOVEMENTS, nearestCol, observed, orderedCols, planFor, PLAY_R, remaining, roundState, rowY, SLOT_H, SLOT_W, stamp, trackLayout,
   type CardId, type Contact, type Heading, type Mark, type Mismatch, type MoveId, type Observed, type Rect, type Round, type RoundState,
   type TrackLayout,
 } from './logic';
-
-const LEVELS: BandLevels = { school: { min: 1, max: 3 } };
 
 /** Each level's authored first round leads its first round of a session. */
 const authoredShown = new Set<number>();

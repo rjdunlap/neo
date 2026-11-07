@@ -1,6 +1,7 @@
 import type { PropKind } from '../../art/props';
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
+import type { BandLevels } from '../../progress/difficulty';
 
 /** Rules for Fruit Slice: the arcs, the swept slice, what a cut counts as, and the still boards of levels 7–8. */
 
@@ -40,6 +41,13 @@ const PLANS: Plan[] = [
   { id: 7, name: 'One straight swipe', mode: 'line', aloft: 0, count: 4 },
   { id: 8, name: 'Pieces by twos', mode: 'pieces', aloft: 3, count: 3 },
 ];
+
+export const LEVELS: BandLevels = {
+  toddler: { min: 1, max: 2 },
+  preschool: { min: 2, max: 4 },
+  prek: { min: 3, max: 6 },
+  school: { min: 5, max: 8 },
+};
 
 export function planFor(level: number): Plan {
   return PLANS.find((p) => p.id === level) ?? PLANS[0];

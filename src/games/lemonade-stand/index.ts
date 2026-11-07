@@ -11,7 +11,7 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
@@ -19,13 +19,10 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { coinArt } from '../market-stall';
 import { boardArt, boatArt, bulbArt, cupArt, eventIcon, forecastIcon, miniStand, pitcherArt } from './art';
 import {
+  LEVELS,
   affordable, BATCHES, batchCost, boatTalk, cheaperBoat, dayPerTwo, forecastChoice, helps, insight, makeWeek, planFor, priceChoice, rating, sellDay, settle,
   START_PURSE, WEATHER_WORD, type Day, type Help, type Insight, type Offer, type Row, type StandPlan,
 } from './logic';
-
-const LEVELS: BandLevels = {
-  school: { min: 1, max: 5 },
-};
 
 const ROW_H = 100;
 const HEAD_H = 84;

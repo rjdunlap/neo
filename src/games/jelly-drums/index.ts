@@ -13,6 +13,7 @@ import type { View } from '../../engine/view';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { Jelly } from './jelly';
 import {
+  LEVELS,
   awakeJellies,
   drawTune,
   fanAnswering,
@@ -26,21 +27,12 @@ import {
   type JellyPlan,
   type Tune,
 } from './logic';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 
 /** Big jelly, low note: C D E G A from left to right. */
 const COLORS: ColorName[] = ['red', 'orange', 'yellow', 'green', 'blue'];
 const STEPS = [0, 1, 2, 3, 4];
 const BULBS = 8;
-
-const LEVELS: BandLevels = {
-  // Level 10 (one big jelly) is the easiest, so lap plays it first and then 1, 2, 3 (see `order`).
-  lap: { min: 1, max: 10, order: [10, 1, 2, 3] },
-  toddler: { min: 1, max: 3 },
-  preschool: { min: 4, max: 7 },
-  prek: { min: 5, max: 9 },
-  school: { min: 8, max: 9 },
-};
 
 const FANS: CritterName[] = ['duck', 'bunny', 'cat', 'pig'];
 /** Each fan's own voice when it answers on level 2. */

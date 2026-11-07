@@ -1,3 +1,4 @@
+import type { BandLevels } from '../../progress/difficulty';
 /** Authored binary features, not image recognition. Rule order is part of the model. */
 export type Dock='tree'|'house';
 export interface Parcel {id:number;color:'blue'|'yellow';shape:'circle'|'square';stamp:'leaf'|'star'}
@@ -90,3 +91,5 @@ export class Round {
  finish(){if(this.busy||!this.qualified||this.finished||this.destroyed)return null;this.finished=true;return {misses:this.misses,hints:this.hints};}
  destroy(){this.destroyed=true;this.stop();}
 }
+
+export const LEVELS:BandLevels={school:{min:1,max:2}};

@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Opposites: pictures of concept words in pairs (big and small, open and closed). On the lap,
@@ -21,6 +22,13 @@ export const PLANS: OppPlan[] = [
   { level: 4, mode: 'pairs', rounds: 2, name: 'Match three pairs of opposites' },
   { level: 5, mode: 'spot', rounds: 3, name: 'Which two are opposites? One pair hides among five pictures' },
 ];
+
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 1 },
+  toddler: { min: 1, max: 2 },
+  preschool: { min: 2, max: 3 },
+  prek: { min: 3, max: 5 },
+};
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 

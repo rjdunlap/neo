@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Ferry Jam: boats sit in a square harbor, each able to slide only along its own lane (a row for a boat lying
@@ -236,6 +237,12 @@ export const PLANS: FerryPlan[] = [
   { name: 'One boat in the way: a 4 by 4 harbor where one slide of one boat lets the ferry out', size: 4, boats: { min: 2, max: 2 }, moves: { min: 2, max: 2 }, harbors: 2, entry: true },
   { name: 'Who\'s in the way? Tap the boat in front of the ferry, then slide it and the boat that stops it', size: 4, boats: { min: 2, max: 3 }, moves: { min: 3, max: 4 }, harbors: 2, entry: true, ask: true },
 ];
+
+export const LEVELS: BandLevels = {
+  // 9 (one boat in the way) and 10 (who's in the way?) are easy entries above the ladder, played first.
+  prek: { min: 1, max: 10, order: [9, 1, 10, 2, 3, 4] },
+  school: { min: 3, max: 8 },
+};
 
 export const planFor = (level: number): FerryPlan => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 

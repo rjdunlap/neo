@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Clock Tower: set the big clock by dragging its hands, which snap to the marks. First the hour
@@ -25,6 +26,11 @@ export const PLANS: ClockPlan[] = [
   { mode: 'later', rounds: 4, name: "One hour later: set the clock an hour after the time shown (o'clock and half past)" },
   { mode: 'five', rounds: 4, name: 'Five-minute times: count by fives to set 3:25 (the long hand stops at any number)' },
 ];
+
+export const LEVELS: BandLevels = {
+  prek: { min: 1, max: 4 },
+  school: { min: 2, max: PLANS.length },
+};
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 

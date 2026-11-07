@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 export const DIRECTIONS = ['up', 'right', 'down', 'left'] as const;
 export type Direction = (typeof DIRECTIONS)[number];
@@ -242,3 +243,10 @@ export function repairPress(plan: RepairPlan, program: readonly Slot[], loop: nu
   if (have && have.dir === want[i].dir && have.n > want[i].n) return { clear: true };
   return selected === i ? { arrow: want[i].dir } : { slot: i };
 }
+
+/** Levels 1–6 use one step per slot; 7–10 add counts and loops, then predict (11), repair (12), pick up an apple (13) and mend a loop (14). */
+export const LEVELS: BandLevels = {
+  preschool: { min: 1, max: 2 },
+  prek: { min: 1, max: 6 },
+  school: { min: 4, max: 14 },
+};

@@ -7,21 +7,15 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  LEVELS,
   DOMINO_H, DOMINO_W, dominoLayout, emptyPlacement, hintPlacement, LOOK_LINE, looksFor, makeRound, MOODS, PITCH, planFor, puddles,
   remaining, run, sizeAt, slotBox, solutions, SLOT_H, TRAY_H, TRAY_W, type DominoLayout, type EndLook, type Hint, type Line, type Mood,
   type Placement, type Plan, type Size,
 } from './logic';
-
-const LEVELS: BandLevels = {
-  toddler: { min: 1, max: 2 },
-  preschool: { min: 2, max: 4 },
-  prek: { min: 3, max: 5 },
-  school: { min: 4, max: 8 },
-};
 
 /** Seconds between one domino falling and the next. */
 const CLACK = 0.18;

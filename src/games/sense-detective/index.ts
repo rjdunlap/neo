@@ -7,20 +7,16 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { cantTellArt, cardBack, checkButtonArt, listenButtonArt, lookButtonArt, outlineArt, parcelArt, quiltArt, senseChoiceArt, soundArt, toyArt } from './art';
 import {
+  LEVELS,
   check, checkSense, checkSet, checkTell, countsAsMiss, deciding, exhibitLayout, GLOW_AFTER, HEARD, hintEdit, ITS, makeRound, narrowingFor, observe, planFor, possible, SEEN, senseTouch, setKey,
   setTouch, Tally, tellTarget, tellTouch, TOY_IDS, TOY_NAMES, TOYS, type Channel, type Mode, type TellAnswer, type Observation, type Rect, type Round, type SoundValue, type ToyId,
 } from './logic';
 import type { LineId } from '../../content/voice-script';
-
-const LEVELS: BandLevels = {
-  prek: { min: 1, max: 3 },
-  school: { min: 2, max: 5 },
-};
 
 /** Each set level's authored round leads its first round of a session, and every demonstration. */
 const authoredShown = new Set<number>();

@@ -1,5 +1,6 @@
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
+import type { BandLevels } from '../../progress/difficulty';
 
 /*
  * Fossil Dig: brush the dust off a stone in one of three dig squares until a leaf print shows, tap the flag of the
@@ -177,6 +178,8 @@ export const PLANS: readonly Plan[] = [
   { id: 1, name: 'A leaf left a clue: brush, mark where, match the shape', feature: 'outline' },
   { id: 2, name: 'Look more closely: brush, mark where, match the edge up close', feature: 'margin' },
 ];
+
+export const LEVELS: BandLevels = { prek: { min: 1, max: 2 } };
 export const planFor = (level: number): Plan => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 
 export interface Round {

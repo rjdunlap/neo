@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Clap the Syllables: words are made of beats. The pet claps a word one beat at a time and she claps along, then claps
@@ -47,6 +48,12 @@ export const PLANS: ClapPlan[] = [
   { mode: 'sort', count: 8, max: 4, name: 'Sort longer words by one, two, three or four claps' },
   { mode: 'train', count: 3, max: 4, name: 'Beat train: line up three pictures from fewest claps to most' },
 ];
+
+export const LEVELS: BandLevels = {
+  preschool: { min: 1, max: 9, order: [9, 1, 2] },
+  prek: { min: 2, max: 4 },
+  school: { min: 5, max: 8, order: [5, 6, 8] },
+};
 
 /** Cars in a beat train: the pictures in one 'train' question. */
 export const CARS = 3;

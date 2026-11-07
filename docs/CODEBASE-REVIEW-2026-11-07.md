@@ -39,9 +39,7 @@ It is 32,758 bytes against the 32 KiB test in `scripts/agent-guard.test.mjs`, an
 
 ## 5. Move level ladders into `logic.ts`
 
-**Claimed:** `codex/finish-level-ladders` completes the remaining scripted tables, the Playdate Workshop name collision and ten inline ladders; expected files: game `index.ts`/`logic.ts`, the ladder source-scan test and closeout docs. No gameplay changes.
-
-**Piloted 2026-11-07.** `scripts/ladders-into-logic.mjs <id>…` (or `--all`) moves a game's `const LEVELS` table, with the comments above it, into `logic.ts` as `export const LEVELS`, after the plans it reads; it skips a table that uses a name not already imported from `./logic`. Moved: `animal-snack`, `frog-hop` (reads `PLANS.length`) and `pond-typing` (exported it from `index.ts`). `src/games/ladders.test.ts` fails on a table or inline ladder in an `index.ts` outside its two shrinking lists. A dry run moves 132 of the other 133; `playdate-workshop` already has a different `LEVELS` in `logic.ts` and needs a rename by hand. No `describe…` is defined in an `index.ts`. The ten inline `levels:` ladders (most are ternaries whose last branch covers unnamed bands, where `rangeFor` gives `{ min: 1, max: 1 }`) are converted by hand, naming every band. The original analysis follows.
+**Built 2026-11-07 ([PR #1379](https://github.com/rjdunlap/neo/pull/1379)).** After the three-game pilot [PR #1377](https://github.com/rjdunlap/neo/pull/1377), all remaining 133 tables and ten inline ladders now live in `logic.ts`; the source scan has no allowlists. Supported-band ranges and order are unchanged; unsupported inline bands use the standard `rangeFor` fallback. [Build note](archive/COMPLETED-2026-10-09.md#level-ladders-into-logicts-codebase-item-5-2026-11-07). The original analysis follows.
 
 AGENTS.md puts ladders in `logic.ts`, but 129 games define `const LEVELS: BandLevels` in `index.ts` and 26 in `logic.ts`. In `index.ts` the ladder can't be tested without loading Pixi, and agents copy the majority pattern. Move `LEVELS` and each `describe…` with a script, then add a source-scan test so it can't drift back.
 

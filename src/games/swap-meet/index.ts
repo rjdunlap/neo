@@ -8,14 +8,13 @@ import { GhostFinger } from '../../engine/ghost';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { arrowIcon, checkIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { friendArt, itemArt } from './art';
-import { accepted, goal, hint, layout, NAMES, roundFor, start, step, Tally, type Action, type Friend, type Item, type Point } from './logic';
-const LEVELS:BandLevels={toddler:{min:1,max:2},preschool:{min:2,max:3},prek:{min:3,max:4},school:{min:4,max:4}};
+import { LEVELS, accepted, goal, hint, layout, NAMES, roundFor, start, step, Tally, type Action, type Friend, type Item, type Point } from './logic';
 interface ObjectNode { source:Friend|number|null;item:Item;node:Container;drag?:DragHandle }
 /** Round-local objects only. Transactions settle after both objects have visibly crossed. */
 class SwapMeet implements Game {

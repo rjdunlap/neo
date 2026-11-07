@@ -7,19 +7,14 @@ import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import type { LineId } from '../../content/voice-script';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  LEVELS,
   accepted, askedKind, covers, DROP_FALL, dropDelay, free, fullMask, HEADER, HIT, hintFor, KINDS, lookFor, makeBoard, pieceAt, pileLayout, planFor, present,
   putBack, RADIUS, slotAt, take, tray, type Board, type Hint, type Look, type PileLayout, type PilePlan,
 } from './logic';
-
-const LEVELS: BandLevels = {
-  preschool: { min: 1, max: 4 },
-  prek: { min: 3, max: 6 },
-  school: { min: 5, max: 8 },
-};
 
 /** Each kind's colour from the palette: every kind differs from the others in colour and in outline. */
 const COLORS: ColorName[] = ['pink', 'brown', 'red', 'orange', 'green', 'yellow', 'purple', 'teal'];

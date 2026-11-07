@@ -8,15 +8,12 @@ import { sfx } from '../../audio/sfx';
 import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { ANCHOR_LEVEL, COUNT_LEVEL, choicesFor, DAYS, makeCountWeek, makeWeek, makeWeatherWeek, neighbor, planFor, relativeQuestions, tallyWeather, weatherCount, WEATHER_COUNT_LEVEL, toggleMark, WEATHER, weekLayout } from './logic';
+import { LEVELS, ANCHOR_LEVEL, COUNT_LEVEL, choicesFor, DAYS, makeCountWeek, makeWeek, makeWeatherWeek, neighbor, planFor, relativeQuestions, tallyWeather, weatherCount, WEATHER_COUNT_LEVEL, toggleMark, WEATHER, weekLayout } from './logic';
 import { gardenTreatment, wrapPath } from './presentation';
-
-const LEVELS: BandLevels = { prek: { min: 1, max: 4, order: [1, 2, 4] }, school: { min: 2, max: 10, order: [2, 4, 10, 3, 5, 6] } };
-
 
 function flower(color: number, grown: boolean): Graphics {
   const g = new Graphics().moveTo(0, 30).lineTo(0, -10).stroke({ width: 6, color: swatch.green.line })

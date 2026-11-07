@@ -1,5 +1,6 @@
 import type { LineId } from '../../content/voice-script';
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Pet Says, after Simon Says and action songs: the big pet does a move with a sound, and the child copies it
@@ -113,6 +114,14 @@ export const PLANS: SaysPlan[] = [
   { mode: 'says', turns: 6, name: '"Pet says": move only when you hear the pet\'s name first' },
   { mode: 'freeze', turns: 4, name: 'Freeze dance: dance to the music, freeze when it stops' },
 ];
+
+export const LEVELS: BandLevels = {
+  // Level 13, Pat the pet, is the easiest, so lap plays it first, then 1 and 2 (see `order`).
+  lap: { min: 1, max: 13, order: [13, 1, 2] },
+  toddler: { min: 1, max: 3 },
+  preschool: { min: 2, max: 4 },
+  prek: { min: 3, max: 5 },
+};
 
 /**
  * Levels that sit apart from the numbered ladder (its IDs 6–12 are kept for the planned levels), placed by a band's `order`.

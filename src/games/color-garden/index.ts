@@ -11,8 +11,8 @@ import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { basketAt, basketWidth, deal, DROP_ABOVE, nextToSort, planFor, type GardenPlan, type Rule, type SortKey } from './logic';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { LEVELS, basketAt, basketWidth, deal, DROP_ABOVE, nextToSort, planFor, type GardenPlan, type Rule, type SortKey } from './logic';
+import { rangeFor } from '../../progress/difficulty';
 
 /** The two blues of level 7: multiplied tints over white and blue props, and the basket cloth to match. */
 const SHADE_LOOK = {
@@ -26,13 +26,6 @@ const kindOf = (key: SortKey) => (key === 'kind-fruit' ? 'fruit' : key === 'kind
 const kindIcon = (key: SortKey) => prop(key === 'kind-fruit' ? FRUIT_FOR.red! : 'balloon', 'red');
 const clothOf = (key: SortKey) => (kindOf(key) ? KIND_CLOTH : shadeLook(key)?.cloth ?? swatch[key as ColorName]);
 const shadeOf = (key: SortKey) => (key === 'light-blue' ? 'light' : 'dark');
-
-const LEVELS: BandLevels = {
-  lap: { min: 9, max: 9, order: [9] },
-  toddler: { min: 1, max: 9, order: [9, 1, 2, 3, 4, 5] },
-  preschool: { min: 3, max: 8 },
-  prek: { min: 4, max: 8 },
-};
 
 const ITEM_SCALE = 0.78;
 const BASKET = { fill: 0xd9a066, line: 0x9c6b3c, weave: 0xb9844f };

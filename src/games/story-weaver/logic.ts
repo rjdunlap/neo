@@ -1,4 +1,5 @@
 import { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Story Weaver (WC1, docs/definitions/story-weaver.md): a three-page tile story the pet reads back, an owl who can only
@@ -156,6 +157,9 @@ export function planFor(level: number): WeaverPlan {
   if (level === 2) return { level: 2, name: "The owl asks: answer the owl's question about a missing part", pages: 3 };
   return { level: 3, name: 'Because: join a feeling to an event with because', pages: 4 };
 }
+
+/** School only: levels 1–2 never miss, so the step up to 3 is the shell's ordinary one (definition, Bands). */
+export const LEVELS: BandLevels = { school: { min: 1, max: 3 } };
 
 /** What a tap on a tile did, for the scene to show and say. */
 export type PlaceResult = {

@@ -3,6 +3,7 @@
 // and compare how much of the Moon is lit. Definition: docs/definitions/moon-window.md.
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
+import type { BandLevels } from '../../progress/difficulty';
 
 /** Eight samples of one smooth cycle, `k = 0..7`, about 3.7 days apart; not eight named phases and not eight nights. */
 export const STOPS = 8;
@@ -81,6 +82,8 @@ export const PLANS: readonly Plan[] = [
   { level: 2, mode: 'same', name: 'Same view', description: 'Same view: tap the card that matches the Moon in the window, two boards' },
   { level: 3, mode: 'compare', name: 'More light', description: 'More light: tap the Moon that shows more, or less, light; three comparisons' },
 ];
+
+export const LEVELS: BandLevels = { lap: { min: 1, max: 1 }, toddler: { min: 1, max: 2 }, preschool: { min: 2, max: 3 }, prek: { min: 3, max: 3 } };
 export const moonPlan = (level: number): Plan => PLANS[Math.min(Math.max(level, 1), PLANS.length) - 1];
 
 /** Level 1: a start stop and three Later presses, four views in model order. */

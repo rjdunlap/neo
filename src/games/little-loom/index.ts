@@ -5,14 +5,13 @@ import {sfx} from '../../audio/sfx';
 import {CLOTH_PALETTE,CLOTH_COLORS} from '../../content/creations';
 import {onTap,palmOnGlass} from '../../engine/input';
 import type {View} from '../../engine/view';
-import {rangeFor,type BandLevels} from '../../progress/difficulty';
+import {rangeFor} from '../../progress/difficulty';
 import {finish} from '../../ui/buttons';
 import {WigglyIcon} from '../shared';
 import type {Game,GameContext,GameModule,TouchIntent} from '../types';
 import {clothArt,emblem,yarnMark} from './art';
-import {Round,drawdown,PEDALS,type Pedal} from './logic';
+import { LEVELS, Round,drawdown,PEDALS,type Pedal} from './logic';
 import {layout} from './layout';
-const LEVELS:BandLevels={toddler:{min:1,max:2},preschool:{min:2,max:3},prek:{min:3,max:3}};
 class Pad extends Container {
   readonly face=new Container();readonly rim=new Graphics();
   constructor(w:number,h:number){super();this.hitArea=new Rectangle(-w/2,-h/2,w,h);this.addChild(finish({w,h,corner:20},swatch.brown,cream),this.face,this.rim);this.face.eventMode=this.rim.eventMode='none';}

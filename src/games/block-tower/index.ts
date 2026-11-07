@@ -8,20 +8,12 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { symbol, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { compare, finish, makeRounds, makeStandRounds, StandObservation, middleFrom, nextReach, planFor, makeReachRounds, reachX, reachDrop, reached, stackMove, standingTower, topples, W, type DirectedReachRound, type StandRound, type TowerPlan, type TowerRound } from './logic';
-
-const LEVELS: BandLevels = {
-  lap: { min: 1, max: 2 },
-  toddler: { min: 2, max: 3 },
-  preschool: { min: 3, max: 4 },
-  prek: { min: 4, max: 5 },
-  school: { min: 5, max: 6 },
-};
+import { LEVELS, compare, finish, makeRounds, makeStandRounds, StandObservation, middleFrom, nextReach, planFor, makeReachRounds, reachX, reachDrop, reached, stackMove, standingTower, topples, W, type DirectedReachRound, type StandRound, type TowerPlan, type TowerRound } from './logic';
 
 /** A block's size in logical units; positions in the logic are eighths of BW. */
 const BW = 104;

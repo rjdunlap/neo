@@ -13,18 +13,12 @@ import { draggable, type DragHandle } from '../../engine/drag';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
 import { card as cardArt, frameArt, gap as gapArt, iconArt, post as postArt, rope, stickerArt } from './art';
-import { CARD, centre, lineLayout, nextCard, PLACE_IDS, PLACES, place, planFor, POST_PICTURE_Y, roundFor, Tally, validGaps, type LineLayout, type Pt, type Round } from './logic';
-
-const LEVELS: BandLevels = {
-  preschool: { min: 1, max: 2 },
-  prek: { min: 1, max: 3 },
-  school: { min: 2, max: 3 },
-};
+import { LEVELS, CARD, centre, lineLayout, nextCard, PLACE_IDS, PLACES, place, planFor, POST_PICTURE_Y, roundFor, Tally, validGaps, type LineLayout, type Pt, type Round } from './logic';
 
 /** A finger that travels less than this before lifting tapped the card rather than dragging it. */
 const TAP_TRAVEL = 14;

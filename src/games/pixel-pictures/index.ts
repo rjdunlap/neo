@@ -6,7 +6,7 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { checkIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
@@ -14,14 +14,7 @@ import type { PixelPictureCreation } from '../../content/creations';
 import type { LineId } from '../../content/voice-script';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { canFinish, clues, colorClues, colorLogicCell, colorsOf, deduce, FREE_COLORS, freeTap, freeTouch, given, helpCells, LETTERS, makePictures, PICTURES, pixelsOf, pixelTouch, planFor, scaleDown, toGrid, type Grid, type Knowledge, type Picture, type PixelPlan } from './logic';
-
-const LEVELS: BandLevels = {
-  // Level 9 (two colors on the small grid) sits between 1 and 2; level 10 (my own picture, a free level) comes last.
-  preschool: { min: 1, max: 9, order: [1, 9, 2] },
-  prek: { min: 1, max: 10, order: [1, 9, 2, 3, 10] },
-  school: { min: 3, max: 10, order: [3, 4, 5, 6, 7, 8, 10] },
-};
+import { LEVELS, canFinish, clues, colorClues, colorLogicCell, colorsOf, deduce, FREE_COLORS, freeTap, freeTouch, given, helpCells, LETTERS, makePictures, PICTURES, pixelsOf, pixelTouch, planFor, scaleDown, toGrid, type Grid, type Knowledge, type Picture, type PixelPlan } from './logic';
 
 const CELL = 100;
 /** Logic levels draw every filled square in one color, since only filled-or-empty matters. */

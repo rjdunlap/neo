@@ -1,5 +1,6 @@
 import { CRITTERS, type CritterName } from '../../art/critter';
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 export const PLANS = [
   { mode: 'share', wholes: 1, friends: 2, cuts: [2], name: 'Cut one sandwich in halves and share with two friends' },
   { mode: 'share', wholes: 1, friends: 4, cuts: [2,4], name: 'Find equal quarters for four friends' },
@@ -15,6 +16,9 @@ export const PLANS = [
   { mode: 'share', wholes: 2, friends: 3, cuts: [2,3,4], lopsided: false, name: 'Two pizzas for three friends: only thirds share them out' },
   { mode: 'compare', wholes: 1, friends: 2, cuts: [2,4], name: 'Who has more? Serve two friends the amounts they ask for from one sandwich, then tap the friend with more' },
 ] as const;
+
+/** Level 10 (tap dealing) is the lap band's only level and toddler's first; it steps to the cutting levels after two smooth rounds. */
+export const LEVELS:BandLevels={lap:{min:10,max:10},toddler:{min:1,max:10,order:[10,1]},preschool:{min:1,max:11,order:[1,11,2,3,4]},prek:{min:3,max:14,order:[11,3,4,14,5,6]},school:{min:5,max:15,order:[14,5,6,7,8,9,12,13,15]}};
 /** Level 11 offers the middle cut beside a lopsided one; level 12 shares two pizzas among three. */
 export const SAME_LEVEL = 11;
 export const PIZZAS_LEVEL = 12;

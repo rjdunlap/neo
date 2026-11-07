@@ -1,5 +1,6 @@
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Vine Snip's rules (docs/definitions/vine-snip.md): taut vines, a pendulum and a falling arc, all closed-form so every
@@ -62,6 +63,14 @@ const PLANS: Plan[] = [
   { level: 4, name: 'Which vine stays?', mode: 'keep', lines: 3, counts: true },
   { level: 5, name: 'Two friends', mode: 'pair', lines: 2, counts: true },
 ];
+
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 1 },
+  toddler: { min: 1, max: 2 },
+  preschool: { min: 1, max: 3 },
+  prek: { min: 2, max: 4 },
+  school: { min: 3, max: 5 },
+};
 export const MAX_LEVEL = PLANS.length;
 
 export function planFor(level: number): Plan {

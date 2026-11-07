@@ -17,6 +17,7 @@ import { ThirdShow } from './third-show';
 import { showFor, THIRD_NAME } from './third-logic';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  LEVELS,
   bumpLine,
   castFor,
   friendsFor,
@@ -55,16 +56,7 @@ import {
   type Trick,
   type TricksPlan,
 } from './logic';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
-
-const LEVELS: BandLevels = {
-  // A tiny show (8) comes first for the youngest: two tricks, nothing counted.
-  // The third show (9) comes last at every band; its amounts follow the band.
-  toddler: { min: 1, max: 9, order: [8, 1, 9] },
-  preschool: { min: 1, max: 9, order: [8, 1, 2, 3, 4, 9] },
-  prek: { min: 2, max: 9, order: [2, 3, 4, 5, 6, 7, 9] },
-  school: { min: 5, max: 9, order: [5, 6, 7, 9] },
-};
+import { rangeFor } from '../../progress/difficulty';
 
 const line = (color: number, width = 6) => ({ width, color, join: 'round' as const, cap: 'round' as const });
 

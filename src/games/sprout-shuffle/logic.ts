@@ -7,6 +7,7 @@
  */
 import type { Rng } from '../../engine/random';
 import type { ColorName } from '../../art/palette';
+import type { BandLevels } from '../../progress/difficulty';
 
 /** `A` is a spot copy, `a` a plain copy. The letters are a grown-up aid printed small; they are never spoken. */
 export type Copy = 'A' | 'a';
@@ -94,6 +95,10 @@ export const PLANS: readonly Plan[] = [
   { level: 2, name: 'Which sprouts could grow?', parents: [['A', 'a'], ['a', 'a']], task: 'choose-could' },
   { level: 3, name: 'Could be, or always?', parents: [['A', 'a'], ['A', 'a']], task: 'choose-always' },
 ];
+
+export const LEVELS: BandLevels = {
+  school: { min: 1, max: 8 },
+};
 
 export function planFor(level: number): Plan {
   return PLANS[Math.min(PLANS.length, Math.max(1, Math.round(level))) - 1];

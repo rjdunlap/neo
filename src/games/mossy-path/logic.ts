@@ -1,3 +1,4 @@
+import type { BandLevels } from '../../progress/difficulty';
 import type { Rng } from '../../engine/random';
 
 export interface Board { rows: number; cols: number; tiles: number[]; start: number; pond: number; berry?: number }
@@ -239,3 +240,10 @@ export function leafSpots(at: number): [number, number][] {
   const next = () => { h = Math.imul(h ^ (h >>> 15), 2246822519) >>> 0; h ^= h >>> 13; return (h >>> 0) / 4294967296; };
   return Array.from({ length: 3 + Math.floor(next() * 3) }, () => [next() * 2 - 1, next() * 2 - 1]);
 }
+
+export const LEVELS: BandLevels = {
+  toddler: { min: 4, max: 4 },
+  preschool: { min: 4, max: 5 },
+  prek: { min: 5, max: 6 },
+  school: { min: 1, max: 7, order: [6, 1, 7, 2, 3] },
+};

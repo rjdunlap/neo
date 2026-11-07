@@ -7,20 +7,14 @@ import { sfx } from '../../audio/sfx';
 import { idle, type CouchControls } from '../../engine/controller';
 import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { againIcon, arrowIcon, playIcon } from '../../ui/icons';
 import { label } from '../../ui/text';
 import { robotArt, tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { boardFor, DELTAS, DIRECTIONS, expand, FIX_PLANS, MEND_PLANS, repairPress, routePress, PREDICT_PLANS, predictionEnd, ROBOT_PLANS, VIA_PLANS, runPath, shortestPath, slotOfStep, type Cell, type Direction, type PredictPlan, type RepairPlan, type RobotPlan, type Slot } from './logic';
+import { LEVELS, boardFor, DELTAS, DIRECTIONS, expand, FIX_PLANS, MEND_PLANS, repairPress, routePress, PREDICT_PLANS, predictionEnd, ROBOT_PLANS, VIA_PLANS, runPath, shortestPath, slotOfStep, type Cell, type Direction, type PredictPlan, type RepairPlan, type RobotPlan, type Slot } from './logic';
 
-/** Levels 1–6 use one step per slot; 7–10 add counts and loops, then predict (11), repair (12), pick up an apple (13) and mend a loop (14). */
-const LEVELS: BandLevels = {
-  preschool: { min: 1, max: 2 },
-  prek: { min: 1, max: 6 },
-  school: { min: 4, max: 14 },
-};
 const planFor = (level: number) => ROBOT_PLANS[Math.max(0, Math.min(ROBOT_PLANS.length - 1, level - 1))];
 const sameCell = (a: Cell, b: Cell) => a[0] === b[0] && a[1] === b[1];
 

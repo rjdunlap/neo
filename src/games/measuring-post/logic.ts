@@ -8,6 +8,7 @@
  * screen pixels. Definition: docs/definitions/measuring-post.md.
  */
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 export type Attribute = 'length' | 'mass' | 'capacity';
 export type Tool = 'rope' | 'balance' | 'cup';
@@ -61,6 +62,8 @@ export const PLANS: readonly LevelPlan[] = [
   { level: 3, name: 'Measure them the same way: remeasure two things in one unit, then compare', mode: 'common' },
   { level: 4, name: 'How many little ones? One kilogram balances 1000 grams; fill the table', mode: 'table' },
 ];
+
+export const LEVELS: BandLevels = { school: { min: 1, max: 4 } };
 
 export const planFor = (level: number) => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 

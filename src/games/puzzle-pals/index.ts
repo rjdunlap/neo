@@ -1,3 +1,4 @@
+import { rangeFor } from '../../progress/difficulty';
 import { Container, Graphics, Rectangle, RenderTexture, Sprite, Texture } from 'pixi.js';
 import type { Critter } from '../../art/critter';
 import { cream, RAINBOW, swatch, wood } from '../../art/palette';
@@ -10,7 +11,7 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { pictureScene, pictureThumb, puzzleIcon } from './art';
 import { SCENES, type SceneDef } from './scenes';
-import { dropSlot, hintPiece, nextToPlace, outerSides, PICTURE_H, PICTURE_W, piecesFor, puzzlePlan, slotCenter, TAP_HOP, tapHops, trayRows, whereWords, type Piece, type PuzzlePlan } from './logic';
+import { LEVELS, dropSlot, hintPiece, nextToPlace, outerSides, PICTURE_H, PICTURE_W, piecesFor, puzzlePlan, slotCenter, TAP_HOP, tapHops, trayRows, whereWords, type Piece, type PuzzlePlan } from './logic';
 
 interface PieceView {
   piece: Piece;
@@ -285,7 +286,7 @@ export const puzzlePals: GameModule = {
   challenge: 'space',
   skills: ['spatial-reasoning', 'part-whole', 'fine-motor'],
   bands: ['lap', 'toddler', 'preschool', 'prek', 'school'],
-  levels: (b) => (b === 'school' ? { min: 6, max: 7 } : b === 'prek' ? { min: 5, max: 7 } : b === 'preschool' ? { min: 4, max: 6 } : b === 'toddler' ? { min: 2, max: 4 } : { min: 1, max: 2 }),
+  levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (l) => puzzlePlan(l).name,
   music: STYLES.paint,
   touchDemo: true,

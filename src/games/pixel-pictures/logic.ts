@@ -1,5 +1,6 @@
 import type { ColorName } from '../../art/palette';
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Pixel Pictures: tap squares on a grid to make a picture. First copy a small picture shown
@@ -34,6 +35,13 @@ export const PLANS: PixelPlan[] = [
   { mode: 'copy', size: 4, colors: 2, pictures: 3, name: 'Two colors, small: pick a color, then copy a 4 by 4 picture' },
   { mode: 'free', size: 5, colors: 1, pictures: 1, name: 'My own picture: color any squares, then tap Done' },
 ];
+
+export const LEVELS: BandLevels = {
+  // Level 9 (two colors on the small grid) sits between 1 and 2; level 10 (my own picture, a free level) comes last.
+  preschool: { min: 1, max: 9, order: [1, 9, 2] },
+  prek: { min: 1, max: 10, order: [1, 9, 2, 3, 10] },
+  school: { min: 3, max: 10, order: [3, 4, 5, 6, 7, 8, 10] },
+};
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 

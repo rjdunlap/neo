@@ -10,16 +10,11 @@ import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import type { LineVars } from '../../audio/voice';
 import type { LineId } from '../../content/voice-script';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { answerOf, choices, hintSpans, hopTicks, isRuler, isWide, longerShorter, makeMeasures, measureTouch, planFor, RULER, slideSlots, temptingReading, UNIT_SIZE, type Measure, type MeasurePlan, type Thing } from './logic';
-
-const LEVELS: BandLevels = {
-  prek: { min: 1, max: 7, order: [1, 2, 7] },
-  school: { min: 1, max: 10, order: [1, 2, 7, 9, 3, 4, 8, 5, 6, 10] },
-};
+import { LEVELS, answerOf, choices, hintSpans, hopTicks, isRuler, isWide, longerShorter, makeMeasures, measureTouch, planFor, RULER, slideSlots, temptingReading, UNIT_SIZE, type Measure, type MeasurePlan, type Thing } from './logic';
 
 const U = 88;
 export const THING_WORDS: Record<Thing, string> = {

@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 export type Rise = 'gentle' | 'step';
 export type Door = 'narrow' | 'wide';
 export type Turn = 'small' | 'big';
@@ -29,6 +30,8 @@ export function planFor(level: number): Plan {
   return { level: n, rises, visitors: n === 3 ? ['bunny', 'roly'] : n === 4 ? ['roly', 'bear'] : ['roly'], choices: n === 1 ? ['gentle'] : n === 4 ? ['gentle', 'step', 'narrow', 'wide'] : ['gentle', 'step'], doorEditable: n === 4,
     sockets: [...Array<Kind>(rises).fill('rise'), 'door'], start: { rises: Array(rises).fill(null), door: 'narrow' } };
 }
+
+export const LEVELS: BandLevels = { toddler:{min:1,max:2},preschool:{min:1,max:3},prek:{min:2,max:4},school:{min:3,max:7} };
 export function presentation(plan: Plan, rng: Rng): Part[] { return rng.shuffle([...plan.choices]); }
 export const copy = (d: Design): Design => ({ rises: [...d.rises], door: d.door, ...(d.turn !== undefined ? { turn: d.turn } : {}), ...(d.sides ? { sides: [...d.sides] } : {}) });
 export const initial = (p: Plan): Design => copy(p.start);

@@ -1,6 +1,7 @@
 import type { CritterName } from '../../art/critter';
 import type { ColorName } from '../../art/palette';
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Mail Carrier, after Paperboy: the pet delivers letters along a little street. A letter
@@ -41,6 +42,14 @@ export const PLANS: MailPlan[] = [
   { level: 14, mode: 'compare', houses: 5, letters: 6, top: 0, name: 'Plan three deliveries in any order; optionally walk a second order and compare stone counts (two bags)' },
   { level: 15, mode: 'key', houses: 5, letters: 2, top: 0, name: 'Make the picture key: match five signs to their neighbours, then deliver two letters' },
 ];
+
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 1 },
+  toddler: { min: 1, max: 10, order: [1, 2, 10] },
+  preschool: { min: 2, max: 10, order: [2, 10, 3, 4] },
+  prek: { min: 3, max: 12, order: [3, 4, 5, 9, 12, 6] },
+  school: { min: 4, max: 15, order: [4, 5, 9, 12, 6, 13, 7, 8, 11, 14, 15] },
+};
 
 export const isMapMode = (mode: MailMode) => mode === 'map' || mode === 'route' || mode === 'shorter' || mode === 'clue' || mode === 'compare' || mode === 'key';
 

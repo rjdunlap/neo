@@ -8,20 +8,14 @@ import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import { spread } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  LEVELS,
   boxSide, clash, copyBed, deadEnds, FLOWER_NAMES, hintFor, isFull, isSolved, makeBeds, mendTarget, nextMove, planFor, rowsOf, type Bed, type Hint, type Puzzle,
   type RowsPlan,
 } from './logic';
-
-const LEVELS: BandLevels = {
-  // One row (10) opens preschool, then the 3 by 3 rows-only bed.
-  preschool: { min: 1, max: 10, order: [10, 1] },
-  prek: { min: 1, max: 3 },
-  school: { min: 3, max: 9 },
-};
 
 const CELL = 100;
 const PACKET = 52;

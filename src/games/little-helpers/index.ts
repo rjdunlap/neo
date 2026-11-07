@@ -14,6 +14,7 @@ import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  LEVELS,
   badgeRings,
   botTeam,
   CARRY_NEEDS,
@@ -46,15 +47,7 @@ import {
   type HelperPlan,
   type Place,
 } from './logic';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
-
-const LEVELS: BandLevels = {
-  lap: { min: 1, max: 2 },
-  toddler: { min: 1, max: 9, order: [1, 2, 9] },
-  preschool: { min: 2, max: 9, order: [2, 9, 3, 4] },
-  prek: { min: 3, max: 7 },
-  school: { min: 5, max: 8 },
-};
+import { rangeFor } from '../../progress/difficulty';
 
 const HELPER_COLORS: ColorName[] = ['pink', 'blue', 'yellow', 'purple', 'teal', 'orange', 'green'];
 

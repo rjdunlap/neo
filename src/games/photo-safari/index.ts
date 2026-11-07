@@ -14,17 +14,8 @@ import type { View } from '../../engine/view';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { ANIMALS, changeLine, claimTruths, sentence, stillLine, chipsFor, chipPhrase, fewestChips, judgeTell, sameChip, tellHint, toggleChip, type Chip, animalToTap, describe, makeScene, planFor, request, nearestSighting, sightingPositions, spotPosition, type Action, type Animal, type SafariPlan, type Scene, type Sighting, type Spot } from './logic';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
-
-const LEVELS: BandLevels = {
-  lap: { min: 1, max: 2 },
-  // "Who is sleeping?" (12) is the toddler step after naming; younger players never hear a false claim (9 is school only).
-  toddler: { min: 1, max: 12, order: [1, 2, 12] },
-  preschool: { min: 2, max: 4 },
-  prek: { min: 3, max: 5 },
-  school: { min: 4, max: 11, order: [4, 5, 6, 7, 8, 9, 10, 11] },
-};
+import { LEVELS, ANIMALS, changeLine, claimTruths, sentence, stillLine, chipsFor, chipPhrase, fewestChips, judgeTell, sameChip, tellHint, toggleChip, type Chip, animalToTap, describe, makeScene, planFor, request, nearestSighting, sightingPositions, spotPosition, type Action, type Animal, type SafariPlan, type Scene, type Sighting, type Spot } from './logic';
+import { rangeFor } from '../../progress/difficulty';
 
 const SCALE = 0.5;
 

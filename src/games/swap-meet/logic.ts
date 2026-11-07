@@ -1,4 +1,5 @@
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 export type Item = 'ball'|'leaf'|'carrot'|'berry'|'shell'|'ribbon'|'flower'|'acorn'|'star'|'kite';
 export type Friend = 'bunny'|'duck'|'otter'|'frog';
 export interface Trader { id:Friend; hold:Item; want:Item; done:boolean }
@@ -98,3 +99,5 @@ export function layout(v:{w:number;h:number},friends:number,slots:number):Layout
  const positions=friends===1?[{x:v.w*.55,y:ys[0]}]:friends===2?xs.map(x=>({x,y:ys[0]})):[{x:xs[0],y:ys[0]},{x:xs[1],y:ys[0]},{x:xs[0],y:ys[1]},{x:xs[1],y:ys[1]}];
  return {friends:positions,basket:Array.from({length:slots},(_,i)=>({x:v.w*.38+i*190,y:v.h-(tall?300:120)})),undo:{x:190,y:210},help:{x:v.w-85,y:210},goal:{x:v.w*.78,y:v.h-(tall?300:120)},rewards:{x:v.w*.48,y:v.h-43}};
 }
+
+export const LEVELS:BandLevels={toddler:{min:1,max:2},preschool:{min:2,max:3},prek:{min:3,max:4},school:{min:4,max:4}};

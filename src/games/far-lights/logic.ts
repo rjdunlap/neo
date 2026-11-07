@@ -1,5 +1,6 @@
 import type { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
+import type { BandLevels } from '../../progress/difficulty';
 
 /**
  * Far Lights: the same light looks brighter near the window and dimmer far away. Four stops at toy distances 1–4 from the
@@ -534,4 +535,12 @@ export const PLANS: readonly PlanInfo[] = [
   { level: 7, name: 'Strong and gentle: which light is farther when both look the same?' },
   { level: 8, name: "Can't tell yet: both could fit, then step to the side" },
 ];
+
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 1 },
+  toddler: { min: 1, max: 2 },
+  preschool: { min: 2, max: 3 },
+  prek: { min: 3, max: 4 },
+  school: { min: 4, max: 8 },
+};
 export const planFor = (level: number): PlanInfo => PLANS[Math.min(PLANS.length, Math.max(1, Math.round(level))) - 1];

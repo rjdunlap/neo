@@ -10,17 +10,11 @@ import { onTap, palmOnGlass } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
-import { rangeFor, type BandLevels } from '../../progress/difficulty';
+import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { allHome, drawCardFor, farthest, hop, hops, judgeStone, makePath, owlOf, owlToHop, planFor, type OwlPlan, type Spot } from './logic';
-
-const LEVELS: BandLevels = {
-  toddler: { min: 1, max: 2 },
-  preschool: { min: 1, max: 3 },
-  prek: { min: 2, max: 4 },
-};
+import { LEVELS, allHome, drawCardFor, farthest, hop, hops, judgeStone, makePath, owlOf, owlToHop, planFor, type OwlPlan, type Spot } from './logic';
 
 /** Each stone color also has its own shape, so the match never rests on hue alone. */
 const MARK: Partial<Record<ColorName, ShapeKind>> = { red: 'heart', blue: 'circle', yellow: 'star', green: 'triangle' };

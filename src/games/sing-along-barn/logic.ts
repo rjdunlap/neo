@@ -1,6 +1,7 @@
 import { MIDDLE_C, stepToMidi } from '../../audio/notes';
 import type { AnimalSound } from '../../audio/sfx';
 import type { Rng } from '../../engine/random';
+import type { BandLevels } from '../../progress/difficulty';
 
 /** The farm animals that have a synthesized voice. */
 export type Animal = 'cow' | 'pig' | 'duck' | 'cat' | 'dog';
@@ -436,6 +437,15 @@ export const PLANS: readonly SingPlan[] = [
   // Level 8 follows 7 for preschool and tops pre-K's ladder (by `order`): two seeded friends, a rhyming picture to pick.
   { verses: 2, invite: false, each: false, chooseTune: false, full: false, gap: false, rhyme: true },
 ];
+
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 2 },
+  // *Finish the line* (7) sits after choosing friends (3) for the younger bands; pre-K does not play it. *Which one
+  // finishes it?* (8) follows it for preschool and tops pre-K's ladder: the only level with a wrong answer.
+  toddler: { min: 1, max: 7, order: [1, 2, 3, 7] },
+  preschool: { min: 2, max: 8, order: [2, 3, 7, 8] },
+  prek: { min: 3, max: 8, order: [3, 4, 5, 6, 8] },
+};
 
 /** The songs she can choose from at this level: the whole Old MacDonald verse at the top. */
 export const tunesFor = (plan: SingPlan): readonly Tune[] => (plan.full ? [OLD_MACDONALD_FULL, ...TUNES.slice(1)] : TUNES);

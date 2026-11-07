@@ -1,3 +1,4 @@
+import { rangeFor } from '../../progress/difficulty';
 import { Circle, Container, Graphics } from 'pixi.js';
 import { cream, swatch, type ColorName } from '../../art/palette';
 import { STYLES } from '../../audio/music';
@@ -11,7 +12,7 @@ import { RoundButton } from '../../ui/buttons';
 import { againIcon, checkIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game,GameContext,GameModule,TouchIntent } from '../types';
-import { makeRepair, repairAction, repairMismatches, bestTarget, buildFor, completedCover, coverHint, unavailableSlots, viableCovers, hintFor, makePieces, planFor, targetFor, VERTICES, type Piece, type Shape } from './logic';
+import { LEVELS, makeRepair, repairAction, repairMismatches, bestTarget, buildFor, completedCover, coverHint, unavailableSlots, viableCovers, hintFor, makePieces, planFor, targetFor, VERTICES, type Piece, type Shape } from './logic';
 
 function shape(shape:Shape,color:ColorName,outline=true){return new Graphics().poly(VERTICES[shape]).fill(swatch[color].fill).stroke({width:outline?5:0,color:swatch[color].line,join:'round'});}
 /** Name the geometry, even when the picture uses a triangle as a roof or a trapezoid as a hull. */
@@ -156,7 +157,7 @@ class TangramRepair implements Game {
 }
 export const tangramTown:GameModule={
  id:'tangram-town',name:'Tangram Town',titleLine:'game.tangram-town',region:'rainbow-meadow',challenge:'space',skills:['shape-composition','rotation','spatial-reasoning'],bands:['toddler','preschool','prek','school'],
- levels:b=>b==='school'?{min:5,max:8}:b==='toddler'?{min:1,max:2}:b==='preschool'?{min:2,max:4}:{min:3,max:6},describeLevel:l=>planFor(l).name,music:STYLES.paint,touchDemo:true,
+ levels:(band) => rangeFor(LEVELS, band),describeLevel:l=>planFor(l).name,music:STYLES.paint,touchDemo:true,
  coplayHint:'Move the big shapes together. Let {name} try turning a roof before helping.',offScreen:'Cut a paper square diagonally. Turn the two triangles into different pictures.',
  hubIcon:()=>{const c=new Container(),a=shape('square','teal'),b=shape('roof','pink');a.scale.set(0.6);a.y=-42;b.scale.set(0.6);b.y=-120;c.addChild(a,b);return new WigglyIcon(c);},
  sticker:seed=>{const g=shape(new Rng(seed).pick(['square','roof','triangle'] as const),'purple');g.scale.set(0.8);return g;},create:ctx=>planFor(ctx.level).repair?new TangramRepair(ctx):new TangramTown(ctx),
