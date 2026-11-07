@@ -332,6 +332,7 @@ class DominoRun implements Game {
     await this.ctx.instruct(id);
     if (this.plan.id === 4) await this.ctx.say('domino-run.tall');
     if (this.plan.id === 6) await this.ctx.say('domino-run.grow');
+    if (this.plan.id === 10) await this.ctx.say('domino-run.puddle');
   }
 
   /** Draw the line as it stands: lanes, pinned dominoes, starters, ends, and her dominoes in their sockets or the tray. */
@@ -610,7 +611,7 @@ class DominoRun implements Game {
 
   private stallLine(stall: { reason: string; at: number }): keyof typeof VOICE {
     if (stall.reason === 'too-far') return 'domino-run.too-far';
-    return this.plan.id === 6 && sizeAt(this.line!.lanes[0], this.placed[0], stall.at) === 3 ? 'domino-run.too-heavy-giant' : 'domino-run.too-heavy';
+    return (this.plan.id === 6 || this.plan.id === 10) && sizeAt(this.line!.lanes[0], this.placed[0], stall.at) === 3 ? 'domino-run.too-heavy-giant' : 'domino-run.too-heavy';
   }
 
   /** The chain falls, lane by lane, until each end rings or stalls; a stall rings its gap unless `ring` is off. */
