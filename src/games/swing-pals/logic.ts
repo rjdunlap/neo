@@ -11,12 +11,24 @@ export const HOOKS: readonly Hook[] = ['short', 'middle', 'long'];
 /** Rope lengths 1 : 2.25 : 4, so a full back-and-forth takes 1, 1.5 and 2 seconds. */
 export const LENGTH: Record<Hook, number> = { short: 1, middle: 2.25, long: 4 };
 
-export type Friend = 'bunny' | 'duck' | 'mouse' | 'bear' | 'frog';
-export const FRIENDS: readonly Friend[] = ['bunny', 'duck', 'mouse', 'bear', 'frog'];
+export type Friend = 'bunny' | 'duck' | 'mouse' | 'bear' | 'frog' | 'cat' | 'dog' | 'pig' | 'cow';
+export const FRIENDS: readonly Friend[] = ['bunny', 'duck', 'mouse', 'bear', 'frog', 'cat', 'dog', 'pig', 'cow'];
 export type Weight = 'light' | 'middle' | 'heavy';
-export const WEIGHT: Record<Friend, Weight> = { mouse: 'light', duck: 'light', bunny: 'middle', frog: 'middle', bear: 'heavy' };
+export const WEIGHT: Record<Friend, Weight> = {
+  mouse: 'light', duck: 'light', cat: 'light', bunny: 'middle', frog: 'middle', dog: 'middle', bear: 'heavy', pig: 'heavy', cow: 'heavy',
+};
 /** How big a friend is drawn: weight is shown by size, never by a number. A friend is about 250 × scale units tall. */
 export const FRIEND_SCALE: Record<Weight, number> = { light: 0.44, middle: 0.5, heavy: 0.6 };
+/** How far each friend's art reaches above its feet at scale 1 (ears, horns and tufts from `art/critter.ts`). */
+export const ART_TOP: Record<Friend, number> = { bunny: 356, duck: 268, mouse: 256, bear: 256, frog: 250, cat: 292, dog: 250, pig: 292, cow: 276 };
+/** A friend's drawn height in units: the size she reads weight from. */
+export function friendHeight(f: Friend): number {
+  return ART_TOP[f] * FRIEND_SCALE[WEIGHT[f]];
+}
+
+/** What waits at the front of the arc on the push levels, one kind for a whole round. Each rings the friend's note. */
+export type Goal = 'bell' | 'chimes' | 'apple' | 'nest';
+export const GOALS: readonly Goal[] = ['bell', 'chimes', 'apple', 'nest'];
 
 /** Pushes from still to the bell. */
 export const STEPS = 4;
@@ -180,7 +192,7 @@ export interface PushLine {
   swings: Swing[];
 }
 
-export type Round = { kind: 'push'; lines: PushLine[] } | { kind: 'together'; lines: Line[] };
+export type Round = { kind: 'push'; lines: PushLine[]; goal: Goal } | { kind: 'together'; lines: Line[] };
 
 /** Each level's authored first line, from the definition's first rounds. */
 export function authoredPush(plan: Plan): PushLine {
@@ -219,6 +231,7 @@ type LineKind = 'tempt' | 'pair' | 'any';
 
 function seededTogether(plan: Plan, rng: Rng, kind: LineKind): Line {
   const lights = FRIENDS.filter((f) => WEIGHT[f] === 'light');
+  const heavies = FRIENDS.filter((f) => WEIGHT[f] === 'heavy');
   let petHook = rng.pick(HOOKS);
   let hook = rng.pick(HOOKS.filter((h) => h !== petHook));
   const petFriend0 = rng.pick(FRIENDS);
@@ -229,9 +242,9 @@ function seededTogether(plan: Plan, rng: Rng, kind: LineKind): Line {
       petHook = rng.pick(['short', 'middle'] as Hook[]);
       hook = rng.pick(HOOKS.filter((h) => LENGTH[h] > LENGTH[petHook]));
       petFriend = rng.pick(lights);
-      friend = 'bear';
+      friend = rng.pick(heavies);
     } else if (kind === 'pair') {
-      [petFriend, friend] = rng.chance(0.5) ? [rng.pick(lights), 'bear'] : ['bear', rng.pick(lights)];
+      [petFriend, friend] = rng.chance(0.5) ? [rng.pick(lights), rng.pick(heavies)] : [rng.pick(heavies), rng.pick(lights)];
     } else {
       friend = rng.pick(FRIENDS.filter((f) => WEIGHT[f] !== WEIGHT[petFriend]));
     }
@@ -277,7 +290,7 @@ export function fallbackRound(plan: Plan): Round {
   if (plan.mode === 'push') {
     const lines = [authoredPush(plan)];
     while (lines.length < plan.lines) lines.push(plan.two ? { swings: [stillSwing('long', 'duck'), stillSwing('short', 'bear')] } : { swings: [stillSwing('middle', 'duck')] });
-    return { kind: 'push', lines };
+    return { kind: 'push', lines, goal: 'bell' };
   }
   const first = authoredTogether(plan);
   const more: Line[] =
@@ -292,15 +305,17 @@ export function fallbackRound(plan: Plan): Round {
 
 /**
  * A round from the plan, seeded. `authored` puts the level's authored first line first (each level's first round of a
- * session). Tries at most 50 seeded rounds against the plan's filter, then the fallback; `fellBack` says which.
+ * session). Tries at most 50 seeded rounds against the plan's filter, then the fallback; `fellBack` says which. A push
+ * round's leaf goal is seeded too, except that the authored round keeps the bell.
  */
 export function makeRound(plan: Plan, rng: Rng, authored: boolean): { round: Round; fellBack: boolean } {
+  const goal: Goal = authored ? 'bell' : rng.pick(GOALS);
   for (let attempt = 0; attempt < 50; attempt++) {
     let round: Round;
     if (plan.mode === 'push') {
       const lines: PushLine[] = [];
       for (let i = 0; i < plan.lines; i++) lines.push(i === 0 && authored ? authoredPush(plan) : seededPush(plan, rng, i));
-      round = { kind: 'push', lines };
+      round = { kind: 'push', lines, goal };
     } else {
       // Level 5–6 rounds hold one tempting line and one more light-and-heavy pair; the authored first line is the tempting one.
       const kinds: LineKind[] = authored ? ['tempt', ...rng.shuffle(['pair', 'any'] as LineKind[])] : rng.shuffle(['tempt', 'pair', 'any'] as LineKind[]);
@@ -310,7 +325,8 @@ export function makeRound(plan: Plan, rng: Rng, authored: boolean): { round: Rou
     }
     if (roundFits(plan, round)) return { round, fellBack: false };
   }
-  return { round: fallbackRound(plan), fellBack: true };
+  const round = fallbackRound(plan);
+  return { round: round.kind === 'push' ? { ...round, goal } : round, fellBack: true };
 }
 
 /* Layout ------------------------------------------------------------------------------------------- */
@@ -329,6 +345,9 @@ export const FRIEND_DOWN = 12;
 export const HOOK_R = 60;
 /** The short hook sits this far forward of the others, so the three targets never overlap. */
 export const SHORT_SHIFT = 70;
+/** The apple's basket: its middle this far above the bottom of the view, and its half-size. */
+export const BASKET_UP = 62;
+export const BASKET_HALF = { w: 46, h: 30 };
 
 export interface Column {
   /** Pivot of each hook. */
@@ -337,6 +356,8 @@ export interface Column {
   mitten: Record<Hook, Pt>;
   /** The bell, above the friend's head at the front of the arc at the bell height, for each hook. */
   bell: Record<Hook, Pt>;
+  /** Where the apple goal's basket sits on the grass, under the bell. */
+  basket: Record<Hook, Pt>;
   /** Her push target (levels 1–3). */
   zone: Rect;
 }
@@ -387,7 +408,7 @@ export function swingLayout(swings: 1 | 2, v: View): SwingLayout {
     const cx = swings === 1 ? Math.min(x1 - FRIEND_HALF - 10 - sin * scale, Math.max(v.w / 2, x0 + FRIEND_HALF + 10 + sin * scale)) : x0 + half * (2 * i + 1);
     const pivot = {} as Record<Hook, Pt>;
     for (const h of HOOKS) pivot[h] = { x: cx + (h === 'short' ? SHORT_SHIFT : 0), y: seatY - (LENGTH[h] / 4) * scale };
-    const col: Column = { pivot, mitten: {} as Record<Hook, Pt>, bell: {} as Record<Hook, Pt>, zone: { x: 0, y: 0, w: 0, h: 0 } };
+    const col: Column = { pivot, mitten: {} as Record<Hook, Pt>, bell: {} as Record<Hook, Pt>, basket: {} as Record<Hook, Pt>, zone: { x: 0, y: 0, w: 0, h: 0 } };
     columns.push(col);
   }
   const layout: SwingLayout = { scale, seatY, bell, columns };
@@ -397,6 +418,7 @@ export function swingLayout(swings: 1 | 2, v: View): SwingLayout {
       const front = seatAt(layout, col, h, bell);
       col.mitten[h] = { x: back.x - FRIEND_HALF + 10, y: back.y - 40 };
       col.bell[h] = { x: front.x + 20, y: front.y - FRIEND_UP - 26 };
+      col.basket[h] = { x: col.bell[h].x, y: v.h - BASKET_UP };
     }
     // Push targets: the whole play area under the shell's buttons for one swing; each swing's half, split at the midline.
     if (swings === 1) col.zone = { x: 0, y: 130, w: v.w, h: v.h - 130 };
