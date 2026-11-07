@@ -10,8 +10,8 @@
 | --- | --- |
 | toddler | 1–2 |
 | preschool | 2–4 |
-| pre-K | 3–6 |
-| school | 5–9 |
+| pre-K | 3, 4, 5, 10, 6 |
+| school | 5, 10, 6, 7, 8, 9, 11 |
 
 | Level | Plays like |
 | --- | --- |
@@ -24,12 +24,14 @@
 | 7 | Add to grow |
 | 8 | Just right |
 | 9 | Smallest number first |
+| 10 | Count the dots |
+| 11 | Too full |
 
 <!-- end generated -->
 
 **Starts as:** lead a smiling rain puddle with a finger (or taps) and it soaks up the beach things that fit inside it, growing every few
 
-**Grows into:** things bigger than the puddle wobble and wait (never a miss), then smallest first, numbers up to the puddle's own, add to grow, land exactly on the pail's number with a free let-go, and soak numerals smallest first into a puddle that never grows; everything soaked washes up in a row, smallest to biggest
+**Grows into:** things bigger than the puddle wobble and wait (never a miss), then smallest first, numbers up to the puddle's own, add to grow, land exactly on the pail's number with a free let-go, and soak numerals smallest first into a puddle that never grows, read dot cards next to numerals as the puddle grows, and let things go from a too-full puddle until it matches the pail; everything soaked washes up in a row, smallest to biggest
 
 ## Design notes
 

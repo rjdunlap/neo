@@ -14,8 +14,8 @@ import { SAND, thingArt } from './art';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
-  authoredBoard, beachLayout, blocker, detour, done, fieldFor, hintTarget, letGo, makeBoard, moodFor, NAMES, numeric, PAIL_BOX, placeOn, planFor, puddleDiameter, puddleStart,
-  refusal, soak, startState, thingDiameter, type Board, type Hint, type Kind, type Mood, type Placed, type Plan, type Rect, type State, type Thing,
+  authoredBoard, beachLayout, blocker, detour, dotSpots, done, fieldFor, hintTarget, letGo, makeBoard, moodFor, NAMES, numeric, PAIL_BOX, placeOn, planFor, puddleDiameter, puddleStart,
+  refusal, soak, startState, STRIP, stripSpan, stripToken, thingDiameter, type Board, type Hint, type Kind, type Mood, type Placed, type Plan, type Rect, type State, type Thing,
 } from './logic';
 
 /** Top speed of the puddle, units per second. */
@@ -50,6 +50,7 @@ function thingNode(plan: Plan, t: Thing): Container {
     const n = new Text({ text: String(t.size), style: { fontFamily: FONT, fontSize: t.size > 9 ? 30 : 36, fontWeight: '700', fill: ink } });
     n.anchor.set(0.5);
     c.addChild(n);
+    if (plan.dots) c.addChild(dotCard(t.size, 0, 50, ink));
   } else {
     c.addChild(tierDots(t.size, d / 2 + 4, d / 2 - 6));
   }
@@ -61,6 +62,13 @@ function tierDots(k: number, x: number, y: number): Graphics {
   const g = new Graphics().circle(x, y, 20).fill(0xffffff).stroke({ width: 3, color: ink });
   const spots = [[[0, 0]], [[-6, 0], [6, 0]], [[-7, 5], [7, 5], [0, -7]], [[-6, -6], [6, -6], [-6, 6], [6, 6]]][k - 1];
   for (const [dx, dy] of spots) g.circle(x + dx, y + dy, 4).fill(ink);
+  return g;
+}
+
+/** Level 10: n dots on a white card centred on (x, y), laid out as on a die so they can be counted. */
+function dotCard(n: number, x: number, y: number, line: number, g = new Graphics()): Graphics {
+  g.roundRect(x - 26, y - 26, 52, 52, 12).fill(0xffffff).stroke({ width: 3, color: line });
+  for (const [dx, dy] of dotSpots(n)) g.circle(x + dx * 14, y + dy * 14, 5).fill(ink);
   return g;
 }
 
@@ -184,6 +192,14 @@ class PuddleGobble implements Game {
       this.items.push({ thing: t, node, place: layout.find((p) => p.id === t.id)!, where: 'sand', armed: true, disarmedAt: 0, saidAt: -1, missed: false, wobble: 0 });
       this.world.addChild(node);
     }
+    // Level 11: the puddle starts too full, holding these.
+    for (const id of this.board.held ?? []) {
+      const it = this.items[id];
+      it.where = 'in';
+      it.node.visible = false;
+      it.icon = thingArt(it.thing.kind, Math.min(46, thingDiameter(this.plan, it.thing) * 0.4));
+      this.icons.addChild(it.icon);
+    }
     this.world.addChild(this.puddle);
 
     // The steering layer takes touches anywhere; the strip's tokens sit above it so a let-go never steers.
@@ -240,6 +256,7 @@ class PuddleGobble implements Game {
     if (this.plan.id === 1) void this.ctx.instruct('gobble.instruct-1');
     else if (this.plan.grow === 3) void this.ctx.instruct('gobble.instruct-grow');
     else if (this.plan.numbers) void this.ctx.instruct('gobble.instruct-order-number');
+    else if (this.board.held) void this.ctx.instruct('gobble.instruct-too-full', { t: this.board.pail! });
     else void this.ctx.instruct(lines[this.plan.mode], { t: this.board.pail ?? 0 });
   }
 
@@ -295,13 +312,10 @@ class PuddleGobble implements Game {
     this.strip.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.tokens = [];
     if (this.plan.mode !== 'add' && this.plan.mode !== 'pail') return;
-    const size = this.plan.mode === 'pail' ? 100 : 86;
-    const gap = 26;
+    const size = stripToken(this.plan);
+    const { gap, chip, y } = STRIP;
     const ids = this.state.soaked;
-    const chip = 74;
-    const total = chip + ids.length * (size + gap) + 90;
-    let x = Math.max(150, this.view.w / 2 - total / 2);
-    const y = 75;
+    let x = stripSpan(this.plan, ids.length, this.view.w).x0;
     const label = (s: string, at: number, w: number, fill: number, line: number, big = 40) => {
       const c = new Container();
       c.addChild(new Graphics().roundRect(-w / 2, -w / 2, w, w, 18).fill(fill).stroke({ width: 4, color: line }));
@@ -432,6 +446,9 @@ class PuddleGobble implements Game {
       const spots = [[-7, -7], [7, -7], [-7, 7], [7, 7]];
       g.circle(0, -r * 0.92 - 4, 22).fill(0xffffff).stroke({ width: 3, color: WATER_EDGE });
       for (const [dx, dy] of spots) g.circle(dx, -r * 0.92 - 4 + dy, 4.5).fill(ink);
+    } else if (this.plan.dots) {
+      // Its own number as dots, above its numeral, to count against a thing's.
+      dotCard(this.state.puddle, 0, -r * 0.92 - 8, WATER_EDGE, g);
     }
     this.badgeText.text = String(this.state.puddle);
     this.badge.y = r * 0.42;
@@ -554,7 +571,7 @@ class PuddleGobble implements Game {
     if (done(this.board, this.state)) void this.finale();
   }
 
-  /** Level 8: a strip token hops back onto the sand. Free, never a miss. */
+  /** Levels 8 and 11: a strip token hops back onto the sand. Free, never a miss; at 11 it can finish the round. */
   private release_(id: number) {
     if (this.busy || this.finished || this.destroyed || !this.state.soaked.includes(id)) return;
     this.state = letGo(this.board, this.state, id);
@@ -591,8 +608,14 @@ class PuddleGobble implements Game {
     void this.ctx.tw.to(it.node, { x: home.x, y: home.y }, { duration: 0.45, ease: ease.outQuad }).then(() => {
       if (!this.destroyed && it.where === 'moving') it.where = 'sand';
     });
-    this.speak('gobble.let-go', { p: this.state.puddle });
     this.drawStrip();
+    if (done(this.board, this.state)) {
+      void this.finale();
+      return;
+    }
+    // Going under the pail is allowed: she can soak one back.
+    if (this.board.held && this.state.puddle < this.board.pail!) this.speak('gobble.under-pail', { p: this.state.puddle, t: this.board.pail! });
+    else this.speak('gobble.let-go', { p: this.state.puddle });
   }
 
   /* Help ------------------------------------------------------------------------------------------ */
