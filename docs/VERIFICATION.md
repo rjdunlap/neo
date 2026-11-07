@@ -4,6 +4,10 @@
 
 Changed: `docs/deep-dives/fruit-sums.md` and its tracker, READY, STUDY-BACKLOG, IDEAS, algebra-balance study, RECOMMENDATIONS and WAITING-ON-DEVELOPER rows (PR #1358); no code. Ran: `node scripts/check-links.mjs`; `git diff --check`. Open: nothing built or played; slices 1–5 are queued; two calls (pre-K Partners to five, a grown-up make 24) wait on the developer.
 
+## 2026-11-07 — AGENTS.md trimmed to rules and pointers (PR #1359)
+
+Changed: AGENTS.md (32,766 to about 16 KB), new `docs/SESSION-GUIDE.md`, the docs-keeper and game-reviewer agents, the comments in `peek.mjs` and `overlap.sh`, and `scripts/agent-guard.test.mjs` (adds a 24 KiB budget test under the 32 KiB hard test). No game or app code. Ran: `node scripts/check-links.mjs`, `git diff --check`, `npx vitest run scripts/agent-guard.test.mjs` (6 pass). Open: nothing.
+
 ## 2026-11-07 — Games discovered from their folders (PR #1356)
 
 Changed: `src/games/registry.ts` builds `GAMES` with `import.meta.glob`, in `LANDS` order (same 175 IDs as sorted sets; 135 positions moved); new registry test (fails when the sort is removed). Ran (ff996ade): `npm run typecheck`; `npm test` (322 files, 6,003 tests, run before the new test was added; registry and `src/content` re-run after, 20 files, 214 tests); `npm run build`; `BROWSER_SUITE=world` at http://localhost:5197 (2 checks). Open: offline check not run (persistence and assets unchanged); no device check.
@@ -63,13 +67,6 @@ Changed: `measuring-post` levels 3 (*Measure them the same way*) and 4 (*How man
 Ran: `npm run typecheck`; `npm test` (321 files, 5,991 tests); measuring-post rule tests (23); `BROWSER_SUITE=measuringpost` (levels 1–4; level 3 landscape: big between marks no miss, jugs exact, wrong comparison 1 miss, Help 1 hint, 1/1; level 4 portrait: re-choosing free, wrong Check 1 miss, Help points then chooses, 1/1), re-run after review fixes; `fingerdemo` with `FINGER_ONLY=measuring-post FINGER_LEVELS=3,4` (23.0 s, 20.6 s); `game-reviewer`, 4 findings fixed.
 Not run: build (no shared files or assets changed), `world`, offline check, device speech.
 Open: legibility of the small "250 g" stamps on an iPad, child interpretation of level 3 and the table, speech ([device checks](DEVICE-CHECKS.md)).
-
-## 2026-11-06 — Measuring Post levels 1–2 (new game, measurement M3)
-
-Changed: new `measuring-post` (PR #1337, branch `claude/measuring-post-1-2`): levels 1–2, school {1,2}, Tinker Lab (now 28 games, pages 9/9/9 at school); a `measuringpost` browser suite.
-Ran (commit 0103845b, http://localhost:5270, `VITE_SPEECH=off`): `npm run typecheck`; `npm test` (321 files, 5,953 tests); `BROWSER_SUITE=measuringpost` (level 1 landscape: ribbon first, wrong tool 1 miss, taps inert while measuring, Send three times 1/0; level 2 portrait: Help points then does 1 hint, two wrong rows glow 1 hint, last asks bigger, 2/2); `fingerdemo` with `FINGER_ONLY=measuring-post` at levels 1 and 2 (12.4 s, 17.9 s); `npm run build`. `game-reviewer` findings fixed.
-Not run: offline check, `world` suite, device speech.
-Open: child appeal and legibility, 100-unit comfort on the iPad, speech ([device checks](DEVICE-CHECKS.md)); levels 3–4 unbuilt.
 
 ## Coverage summary
 
