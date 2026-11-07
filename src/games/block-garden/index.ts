@@ -14,9 +14,9 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { GARDENS } from './puzzles';
 import {
   LEVELS,
-  apply, decode, FIRST_GARDEN, fits, gardenLayout, goalMet, has, hintPlacement, makeGarden, nearestAnchor, place, placements,
-  planFor, RIDE, search, SHAPES, startState, transformGarden, trayIndex, trayNow, TRAY_CELL, type Anchor, type Family, type Garden,
-  type GardenLayout, type GardenPlan, type Placement, type State,
+  apply, decode, FIRST_GARDEN, fits, flowerAt, gardenLayout, goalMet, has, hintPlacement, makeGarden, nearestAnchor, place, placements,
+  lookFor, planFor, RIDE, search, SHAPES, startState, transformGarden, trayIndex, trayNow, TRAY_CELL, type Anchor, type Family, type Garden,
+  type FlowerKind, type GardenLayout, type GardenLook, type GardenPlan, type Placement, type State,
 } from './logic';
 
 /** The bloom: taps are ignored while the flowers open. */
@@ -46,6 +46,16 @@ const LOOK: Record<Family, { sw: Swatch; pattern: 'dots' | 'stripes' | 'rings' |
 
 const SOIL = { fill: 0x9a6b47, line: 0x6e4a30, light: 0xb8865e };
 const STONE = { fill: 0xb9b6ad, line: 0x7d7a72 };
+
+/** Each look's bed: rim, soil, the sleeping bud's colour, and how a picked line bursts. None changes the garden. */
+const LOOK_ART: Record<GardenLook, { rim: number; soil: { fill: number; light: number }; bud: Swatch; burst: 'petals' | 'leaves' | 'drops' | 'lanterns' }> = {
+  morning: { rim: SOIL.line, soil: SOIL, bud: swatch.pink, burst: 'petals' },
+  autumn: { rim: SOIL.line, soil: SOIL, bud: swatch.orange, burst: 'leaves' },
+  rain: { rim: swatch.blue.line, soil: { fill: SOIL.line, light: SOIL.fill }, bud: swatch.blue, burst: 'drops' },
+  evening: { rim: swatch.purple.line, soil: { fill: SOIL.line, light: SOIL.fill }, bud: swatch.purple, burst: 'lanterns' },
+};
+
+const LEAVES = [swatch.orange.fill, swatch.red.fill, swatch.yellow.fill];
 
 /** One seed-tray square of a piece, `s` units across, its top-left at (x, y). */
 function seedSquare(g: Graphics, x: number, y: number, s: number, family: Family) {
@@ -82,12 +92,43 @@ function pieceArt(shapeId: string, cell: number): Graphics {
   return g;
 }
 
-function flowerArt(g: Graphics, x: number, y: number, size: number, color: number) {
-  for (let i = 0; i < 5; i++) {
-    const a = (i / 5) * Math.PI * 2;
-    g.circle(x + Math.cos(a) * size * 0.45, y + Math.sin(a) * size * 0.45, size * 0.32).fill(color);
+function flowerArt(g: Graphics, x: number, y: number, size: number, color: number, kind: FlowerKind = 'poppy') {
+  switch (kind) {
+    case 'tulip':
+      // A tulip cup: two side petals and a taller middle one.
+      g.ellipse(x - size * 0.26, y + size * 0.05, size * 0.28, size * 0.46).fill(color);
+      g.ellipse(x + size * 0.26, y + size * 0.05, size * 0.28, size * 0.46).fill(color);
+      g.ellipse(x, y - size * 0.08, size * 0.28, size * 0.52).fill(color).stroke({ width: 2, color: ink, alpha: 0.2 });
+      return;
+    case 'daisy':
+      // A daisy ring: eight white petals round a yellow middle.
+      for (let i = 0; i < 8; i++) {
+        const a = (i / 8) * Math.PI * 2;
+        g.circle(x + Math.cos(a) * size * 0.5, y + Math.sin(a) * size * 0.5, size * 0.2).fill(swatch.white.fill).stroke({ width: 1.5, color: swatch.white.line });
+      }
+      g.circle(x, y, size * 0.3).fill(swatch.yellow.fill).stroke({ width: 2, color: swatch.yellow.line });
+      return;
+    case 'sunflower':
+      // A sunflower disc: a ring of yellow petals round a brown middle.
+      for (let i = 0; i < 10; i++) {
+        const a = (i / 10) * Math.PI * 2;
+        g.circle(x + Math.cos(a) * size * 0.52, y + Math.sin(a) * size * 0.52, size * 0.2).fill(swatch.yellow.fill);
+      }
+      g.circle(x, y, size * 0.36).fill(swatch.brown.line).stroke({ width: 2, color: swatch.brown.fill });
+      return;
+    default:
+      for (let i = 0; i < 5; i++) {
+        const a = (i / 5) * Math.PI * 2;
+        g.circle(x + Math.cos(a) * size * 0.45, y + Math.sin(a) * size * 0.45, size * 0.32).fill(color);
+      }
+      g.circle(x, y, size * 0.28).fill(swatch.yellow.fill).stroke({ width: 2, color: swatch.yellow.line });
   }
-  g.circle(x, y, size * 0.28).fill(swatch.yellow.fill).stroke({ width: 2, color: swatch.yellow.line });
+}
+
+/** A five-point maple leaf on a short stem (the autumn look's picked flowers). */
+function leafArt(g: Graphics, x: number, y: number, size: number, color: number) {
+  g.moveTo(x, y + size * 0.2).lineTo(x, y + size * 0.7).stroke({ width: 2.5, color: swatch.brown.line, cap: 'round' });
+  g.star(x, y, 5, size * 0.6, size * 0.3).fill(color).stroke({ width: 2, color: ink, alpha: 0.2 });
 }
 
 const PETALS = [swatch.pink.fill, swatch.red.fill, swatch.purple.fill, swatch.orange.fill, swatch.blue.fill];
@@ -122,6 +163,10 @@ class BlockGarden implements Game {
   private readonly glow = new Graphics();
   private readonly packets = new Graphics();
   private readonly basket = new Graphics();
+  /** The flowers she woke this round, peeking out of the basket. */
+  private readonly basketPile = new Container();
+  /** The bed's look for this round: drawing only. */
+  look: GardenLook;
   private readonly undoButton: RoundButton;
   private slots: Slot[] = [];
   private history: State[] = [];
@@ -140,14 +185,17 @@ class BlockGarden implements Game {
     this.plan = planFor(ctx.level);
     const count = ctx.demo ? 1 : this.plan.gardens;
     for (let i = 0; i < count; i++) this.gardens.push(this.pickGarden(i));
+    // After the gardens, so a seed gives the same gardens in every look.
+    this.look = lookFor(ctx.rng);
     this.glow.eventMode = 'none';
     this.shadowArt.eventMode = 'none';
     this.packets.eventMode = 'none';
     this.basket.eventMode = 'none';
+    this.basketPile.eventMode = 'none';
     this.bedArt.eventMode = 'none';
     this.undoButton = new RoundButton(againIcon(), swatch.white, 54, () => this.undo());
     this.undoButton.alpha = 0.35;
-    this.root.addChild(this.bedArt, this.shadowArt, this.packets, this.basket, this.glow, this.undoButton);
+    this.root.addChild(this.bedArt, this.shadowArt, this.packets, this.basketPile, this.basket, this.glow, this.undoButton);
     ctx.stage.addChild(this.root);
     for (let i = 0; i < 3; i++) this.slots.push(this.makeSlot(i));
     this.ctx.listen(window, 'pointercancel', this.onCancel, { capture: true });
@@ -421,18 +469,19 @@ class BlockGarden implements Game {
     if (lines) {
       const { x, y, cell } = this.lay;
       const n = this.plan.n;
+      const { burst } = LOOK_ART[this.look];
+      // The evening run sits an octave lower (five pentatonic steps).
+      const drop = this.look === 'evening' ? 5 : 0;
       let k = 0;
       const ring = (cells: [number, number][]) => {
-        sfx.marimba(RUN[Math.min(RUN.length - 1, k++)], 0.4);
-        for (const [r, c] of cells) {
-          const bud = has(before.bed.buds, r, c);
-          this.ctx.particles.burst(x + (c + 0.5) * cell, y + (r + 0.5) * cell, { kind: 'dot', colors: [bud ? swatch.yellow.fill : PETALS[(r + c) % PETALS.length], 0xffffff], count: bud ? 10 : 3, speed: [40, 140], gravity: 0, life: [0.3, 0.7] });
-        }
+        sfx.marimba(RUN[Math.min(RUN.length - 1, k++)] - drop, 0.4);
+        for (const [r, c] of cells) this.burstAt(x + (c + 0.5) * cell, y + (r + 0.5) * cell, has(before.bed.buds, r, c), r + c, burst);
       };
       for (const r of out.rows) ring(Array.from({ length: n }, (_, c) => [r, c] as [number, number]));
       for (const c of out.cols) ring(Array.from({ length: n }, (_, r) => [r, c] as [number, number]));
+      if (burst === 'lanterns') this.lanterns(out.bloomed);
       if (out.bloomed.length) void this.ctx.say('block-garden.bloom');
-      this.flyToBasket(out.bloomed.length + lines);
+      this.flyToBasket(lines, out.bloomed.map(([r, c]) => flowerAt(this.index, r, c)));
       await this.ctx.tw.wait(BLOOM);
     } else await this.ctx.tw.wait(0.15);
     this.sinceHint++;
@@ -457,18 +506,57 @@ class BlockGarden implements Game {
     slot.carrier.position.set(r.x + r.w / 2, r.y + r.h / 2);
   }
 
-  private flyToBasket(count: number) {
+  /** One picked square's burst, in the round's look. */
+  private burstAt(px: number, py: number, bud: boolean, i: number, burst: (typeof LOOK_ART)[GardenLook]['burst']) {
+    const p = this.ctx.particles;
+    if (burst === 'leaves') p.burst(px, py, { kind: 'confetti', colors: LEAVES, count: bud ? 8 : 3, speed: [30, 110], gravity: 120, spin: 2, life: [0.5, 0.9] });
+    else if (burst === 'drops') p.burst(px, py, { kind: 'dot', colors: [swatch.blue.light, swatch.white.fill], count: bud ? 10 : 3, speed: [60, 160], gravity: 500, life: [0.3, 0.6] });
+    else if (burst === 'lanterns') p.burst(px, py, { kind: 'dot', colors: [bud ? swatch.yellow.fill : swatch.purple.light, swatch.yellow.light], count: bud ? 6 : 2, speed: [20, 80], gravity: 0, life: [0.3, 0.6] });
+    else p.burst(px, py, { kind: 'dot', colors: [bud ? swatch.yellow.fill : PETALS[i % PETALS.length], 0xffffff], count: bud ? 10 : 3, speed: [40, 140], gravity: 0, life: [0.3, 0.7] });
+  }
+
+  /** Evening: each bud that wakes glows like a little lantern on the bed, fading inside the bloom. */
+  private lanterns(cells: readonly (readonly [number, number])[]) {
+    if (!cells.length) return;
+    const { x, y, cell } = this.lay;
+    const g = new Graphics();
+    g.eventMode = 'none';
+    for (const [r, c] of cells) {
+      const px = x + (c + 0.5) * cell, py = y + (r + 0.5) * cell;
+      g.circle(px, py, cell * 0.42).fill({ color: swatch.yellow.light, alpha: 0.45 }).circle(px, py, cell * 0.22).fill({ color: swatch.yellow.fill, alpha: 0.8 });
+    }
+    this.root.addChildAt(g, this.root.getChildIndex(this.shadowArt) + 1);
+    void this.ctx.tw.to(g, { alpha: 0 }, { duration: BLOOM, ease: ease.inOutSine }).then(() => g.destroy());
+  }
+
+  /** The picked lines fly to the basket (as leaves in autumn); each bud she woke flies as its flower and stays in the basket. */
+  private flyToBasket(lines: number, woke: FlowerKind[]) {
     const b = this.basketAt();
     const { x, y, cell } = this.lay;
     const size = this.plan.n * cell;
-    for (let i = 0; i < Math.min(6, count); i++) {
+    const flyers = Math.min(6, lines + woke.length);
+    for (let i = 0; i < flyers; i++) {
+      const kind = woke[i];
       const f = new Graphics();
-      flowerArt(f, 0, 0, 22, PETALS[i % PETALS.length]);
+      if (!kind && this.look === 'autumn') leafArt(f, 0, 0, 22, LEAVES[i % LEAVES.length]);
+      else flowerArt(f, 0, 0, 22, PETALS[i % PETALS.length], kind);
       f.eventMode = 'none';
       f.position.set(x + size * (0.2 + 0.6 * Math.random()), y + size * (0.2 + 0.6 * Math.random()));
       this.root.addChild(f);
-      void this.ctx.tw.to(f, { x: b.x, y: b.y, alpha: 0.2 }, { duration: 0.7 + i * 0.08, ease: ease.inOutSine }).then(() => f.destroy());
+      void this.ctx.tw.to(f, { x: b.x, y: b.y, alpha: 0.2 }, { duration: 0.7 + i * 0.08, ease: ease.inOutSine }).then(() => {
+        f.destroy();
+        if (kind) this.addToBasket(kind, i);
+      });
     }
+  }
+
+  /** A woken flower peeks out of the basket; the newest few stay. */
+  private addToBasket(kind: FlowerKind, i: number) {
+    const f = new Graphics();
+    flowerArt(f, 0, 0, 13, PETALS[i % PETALS.length], kind);
+    this.basketPile.addChild(f);
+    while (this.basketPile.children.length > 7) this.basketPile.removeChildAt(0).destroy();
+    this.basketPile.children.forEach((c, k) => c.position.set(-21 + k * 7, -8 - (k % 2) * 6));
   }
 
   private undo() {
@@ -534,24 +622,29 @@ class BlockGarden implements Game {
 
   private drawBed(bed = this.state.bed) {
     const { x, y, cell, n } = this.lay;
+    const look = this.look, art = LOOK_ART[look];
     const g = this.bedArt.clear();
     const size = n * cell;
-    g.roundRect(x - 14, y - 14, size + 28, size + 28, 24).fill(SOIL.line);
+    g.roundRect(x - 14, y - 14, size + 28, size + 28, 24).fill(art.rim);
+    this.drawRim(g, x, y, size);
     // Striped lines that still hold a sleeping bud (levels 1–2).
     const budRows = new Set<number>(), budCols = new Set<number>();
     if (this.plan.tinted) for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (has(bed.buds, r, c)) { budRows.add(r); budCols.add(c); }
     for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
       const px = x + c * cell, py = y + r * cell;
-      g.roundRect(px + 2, py + 2, cell - 4, cell - 4, cell * 0.12).fill(SOIL.fill);
+      g.roundRect(px + 2, py + 2, cell - 4, cell - 4, cell * 0.12).fill(art.soil.fill);
       if (budRows.has(r) || budCols.has(c)) g.roundRect(px + 2, py + 2, cell - 4, cell - 4, cell * 0.12).fill({ color: swatch.yellow.light, alpha: 0.45 });
-      else g.circle(px + cell / 2, py + cell / 2, cell * 0.06).fill(SOIL.light);
+      else g.circle(px + cell / 2, py + cell / 2, cell * 0.06).fill(art.soil.light);
       if (!has(bed.filled, r, c)) continue;
       if (has(bed.stones, r, c)) {
         g.roundRect(px + cell * 0.1, py + cell * 0.12, cell * 0.8, cell * 0.76, cell * 0.3).fill(STONE.fill).stroke({ width: 3, color: STONE.line });
+        // Autumn stones wear a moss cap; rain leaves them shining.
+        if (look === 'autumn') g.ellipse(px + cell / 2, py + cell * 0.2, cell * 0.3, cell * 0.08).fill(swatch.green.light);
+        else if (look === 'rain') g.ellipse(px + cell * 0.3, py + cell * 0.26, cell * 0.1, cell * 0.05).fill({ color: swatch.white.fill, alpha: 0.8 });
         if (has(bed.buds, r, c)) {
           // A sleeping bud: a closed green bud on a stem.
           g.moveTo(px + cell / 2, py + cell * 0.72).lineTo(px + cell / 2, py + cell * 0.46).stroke({ width: cell * 0.06, color: swatch.green.line, cap: 'round' });
-          g.ellipse(px + cell / 2, py + cell * 0.38, cell * 0.14, cell * 0.2).fill(swatch.pink.fill).stroke({ width: 3, color: swatch.pink.line });
+          g.ellipse(px + cell / 2, py + cell * 0.38, cell * 0.14, cell * 0.2).fill(art.bud.fill).stroke({ width: 3, color: art.bud.line });
           g.ellipse(px + cell * 0.4, py + cell * 0.52, cell * 0.1, cell * 0.05).fill(swatch.green.fill);
         }
       } else {
@@ -561,6 +654,31 @@ class BlockGarden implements Game {
         g.ellipse(px + cell * 0.38, py + cell * 0.42, cell * 0.12, cell * 0.06).fill(swatch.green.fill);
         g.ellipse(px + cell * 0.62, py + cell * 0.36, cell * 0.12, cell * 0.06).fill(swatch.green.fill);
       }
+    }
+  }
+
+  /** Each look's touch on the rim: a woven fence in autumn, raindrops in rain, fireflies in the evening. */
+  private drawRim(g: Graphics, x: number, y: number, size: number) {
+    const o = 7, w = size + 14;
+    if (this.look === 'autumn') {
+      // Two strands woven in and out along each side of the rim.
+      const corners = [[x - o, y - o], [x - o + w, y - o], [x - o + w, y - o + w], [x - o, y - o + w]];
+      for (const [strand, color] of [[1, swatch.brown.light], [-1, swatch.brown.fill]] as const) {
+        g.moveTo(corners[0][0], corners[0][1]);
+        for (let side = 0; side < 4; side++) {
+          const [ax, ay] = corners[side], [bx, by] = corners[(side + 1) % 4];
+          const nx = (ay - by) / w, ny = (bx - ax) / w;
+          for (let i = 1; i <= 12; i++) {
+            const d = i === 12 ? 0 : strand * (i % 2 ? 4 : -4);
+            g.lineTo(ax + ((bx - ax) * i) / 12 + nx * d, ay + ((by - ay) * i) / 12 + ny * d);
+          }
+        }
+        g.stroke({ width: 4, color, cap: 'round', join: 'round' });
+      }
+    } else if (this.look === 'rain') {
+      for (let i = 0; i < 8; i++) g.ellipse(x - o + (w * (i + 0.5)) / 8, i % 2 ? y - o : y + size + o, 3, 5).fill(swatch.blue.light);
+    } else if (this.look === 'evening') {
+      for (let i = 0; i < 6; i++) g.circle(i % 2 ? x - o : x + size + o, y + (size * (i + 0.5)) / 6, 3.5).fill(swatch.yellow.light);
     }
   }
 
@@ -607,6 +725,7 @@ class BlockGarden implements Game {
 
   private drawBasket(_v: View) {
     const b = this.basketAt();
+    this.basketPile.position.set(b.x, b.y);
     this.basket.clear()
       .roundRect(b.x - 30, b.y - 6, 60, 34, 10).fill(swatch.brown.fill).stroke({ width: 3, color: swatch.brown.line })
       .moveTo(b.x - 24, b.y - 4).arc(b.x, b.y - 4, 24, Math.PI, 0).stroke({ width: 4, color: swatch.brown.line });

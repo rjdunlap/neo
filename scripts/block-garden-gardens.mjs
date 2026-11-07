@@ -5,7 +5,7 @@ import { writeFileSync } from 'node:fs';
 import { Rng } from '../src/engine/random.ts';
 import { candidate, encode, planFor } from '../src/games/block-garden/logic.ts';
 
-const PER_LEVEL = 14;
+const PER_LEVEL = 24;
 const CAP = 2_000_000;
 const out = {};
 for (const level of [5, 6, 7, 8]) {

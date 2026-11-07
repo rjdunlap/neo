@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, errors, log, scene, tap, screenshot, launch, finished }) {
-/** Block Garden by touch: levels 1 and 8 planted by drags along the solver's way, two refused drops at 3 (two misses, one hint), undo, level 6 upright. */
+/** Block Garden by touch: levels 1 and 8 planted by drags along the solver's way, two refused drops at 3 (two misses, one hint), undo, level 6 upright, level 5 upright in autumn. */
 async function blockGardenPlay() {
   const state = () => page.evaluate(() => { const g = neo.scene.game; return { busy: g.busy, misses: g.misses, hints: g.hints, hinted: !!g.hinted, index: g.index, filled: g.state.bed.filled.join(','), used: g.state.used }; });
   const idle = () => page.waitForFunction(() => neo.scene.finished || (neo.scene.game && !neo.scene.game.busy), null, { timeout: 15000 });
@@ -83,6 +83,15 @@ async function blockGardenPlay() {
     await page.evaluate(({ x, y }) => kit.tap(x, y), { x: tall.x, y: tall.y }); await page.waitForTimeout(500);
     const now = await state(); assert.deepEqual([now.misses, now.used], [was.misses, was.used], 'a tap on a slot is never a miss');
   }
+  // Level 5 upright in the autumn look: the look changes only the drawing; planted by drags, no misses or hints.
+  await launch('block-garden', 5); await idle();
+  const garden5 = await page.evaluate(() => { const g = neo.scene.game; g.look = 'autumn'; g.resize(g.ctx.view); return g.state.bed.filled.join(','); });
+  await page.waitForTimeout(300);
+  await screenshot('block-garden-5-autumn-portrait');
+  assert.equal((await state()).filled, garden5, 'the look leaves the garden alone');
+  await plantAll();
+  st = await state(); assert.deepEqual([st.misses, st.hints], [0, 0]);
+  assert.ok(await page.evaluate(() => neo.scene.game.basketPile.children.length > 0), 'the buds she woke sit in the basket');
   await page.setViewportSize({ width: 1024, height: 768 });
   // Level 8 (grown-up): the whole bed emptied by drags, no misses or hints, one more sticker.
   const stickers8 = await page.evaluate(() => kit.store.data.stickers.length);
@@ -91,7 +100,7 @@ async function blockGardenPlay() {
   st = await state(); assert.deepEqual([st.misses, st.hints], [0, 0]);
   await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, stickers8, { timeout: 15000 });
   assert.deepEqual(errors, [], 'page errors');
-  log('Block Garden: levels 1 and 8 planted by drags, refused drops at 3 (two misses, one hint), the hint planted, undo, level 6 upright');
+  log('Block Garden: levels 1 and 8 planted by drags, refused drops at 3 (two misses, one hint), the hint planted, undo, level 6 upright, level 5 upright in autumn');
 }
 
 return { blockGardenPlay };
