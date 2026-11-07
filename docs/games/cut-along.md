@@ -11,7 +11,7 @@
 | toddler | 1–2 |
 | preschool | 2–5 |
 | pre-K | 4–7 |
-| school | 6–9 |
+| school | 6–10 |
 
 | Level | Plays like |
 | --- | --- |
@@ -24,6 +24,7 @@
 | 7 | Picture shapes: three of heart, house, leaf, fish, cloud, star and moon |
 | 8 | The piece that fits: choose the outline for the gap, then cut it |
 | 9 | Round and round: spirals for a snail, a snake and a curly tail |
+| 10 | Cut it in two: choose the line that makes the two pieces the picture needs, then cut it edge to edge |
 
 <!-- end generated -->
 

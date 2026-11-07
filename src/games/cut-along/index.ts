@@ -16,6 +16,7 @@ import {
   differsLine, fringeMarks, hintStretch, judgeOutline, layoutFor, lengthTo, levelOf, markAt, markBox, pathOf, planFor,
   pieceColor, pieceLine, slotsFor, stickerShape, themeFor, tolerance, wrongReached, type Board, type Cut, type Layout, type Mark,
   type PieceId, type Rect, type Slot, type Theme,
+  PAIR_PIECE, judgeLine, lineOfCut, makesLine, splitBoardsFor, splitSheet, twinOf, type SplitBoard,
 } from './logic';
 
 /** One outline's cutting state: which way round, and how far the scissors have come. */
@@ -158,6 +159,18 @@ function drawScene(g: Graphics, theme: Theme, w: number, h: number, slots: reado
       g.rect(w * 0.1, h * 0.52, w * 0.32, h * 0.3).fill(swatch.yellow.light).stroke({ width: 3, color: swatch.yellow.line });
       boat(0.72);
       break;
+    case 'twos':
+      // A house waiting for two windows, two boats for two sails, and a fence with two boards missing.
+      g.poly([w * 0.03, h * 0.36, w * 0.26, h * 0.16, w * 0.49, h * 0.36]).fill(swatch.red.fill).stroke({ width: 3, color: swatch.red.line });
+      g.rect(w * 0.06, h * 0.36, w * 0.4, h * 0.32).fill(swatch.yellow.light).stroke({ width: 3, color: swatch.yellow.line });
+      g.rect(w * 0.5, h * 0.62, w * 0.46, h * 0.1).fill(swatch.blue.fill);
+      for (const x of [0.52, 0.76]) {
+        g.poly([w * x, h * 0.57, w * (x + 0.2), h * 0.57, w * (x + 0.17), h * 0.64, w * (x + 0.03), h * 0.64]).fill(swatch.brown.fill).stroke({ width: 3, color: swatch.brown.line });
+        g.rect(w * (x + 0.09), h * 0.28, w * 0.012, h * 0.29).fill(swatch.brown.line);
+      }
+      g.rect(w * 0.04, h * 0.8, w * 0.44, h * 0.03).rect(w * 0.04, h * 0.89, w * 0.44, h * 0.03).fill(swatch.brown.light);
+      for (const x of [0.03, 0.22, 0.41]) g.rect(w * x, h * 0.76, w * 0.06, h * 0.2).fill(swatch.brown.fill).stroke({ width: 2, color: swatch.brown.line });
+      break;
     case 'garden': {
       // A garden path: a snail waiting for its shell, flowers, and a sitting cat when a tail is wanted.
       g.moveTo(w * 0.3, h * 0.94).quadraticCurveTo(w * 0.5, h * 0.8, w * 0.7, h * 0.72).stroke({ width: h * 0.06, color: swatch.brown.light, cap: 'round' });
@@ -229,6 +242,8 @@ class CutAlong implements Game {
   private cuts: Cut[] = [];
   // Level 8
   private boards: Board[] = [];
+  // Level 10
+  private splits: SplitBoard[] = [];
   private index = 0;
   private tracks: Track[] = [];
   private active: Track | null = null;
@@ -258,9 +273,10 @@ class CutAlong implements Game {
     this.tol = tolerance(this.level);
     this.layout = layoutFor(ctx.view);
     if (this.plan.mode === 'fits') this.boards = boardsFor(ctx.rng);
+    else if (this.plan.mode === 'two') this.splits = splitBoardsFor(ctx.rng);
     else if (this.plan.mode === 'cut') this.cuts = cutsFor(this.level, ctx.rng);
     // The how-to card's demonstration plays one piece.
-    if (ctx.demo) { this.cuts = this.cuts.slice(-1); this.boards = this.boards.slice(0, 1); }
+    if (ctx.demo) { this.cuts = this.cuts.slice(-1); this.boards = this.boards.slice(0, 1); this.splits = this.splits.slice(0, 1); }
     const pieces: PieceId[] = this.plan.mode === 'snip' ? Array(ctx.demo ? 1 : 3).fill('grass') : this.cuts.map((c) => c.piece);
     this.theme = themeFor(this.level, ctx.rng);
     this.slots = slotsFor(this.level, this.theme, pieces);
@@ -292,11 +308,12 @@ class CutAlong implements Game {
 
   private instructLine(): LineId {
     if (this.level === 9) return 'cut.instruct.round';
+    if (this.plan.mode === 'two') return `cut.instruct.two.${this.splits[Math.min(this.index, this.splits.length - 1)].need}`;
     return this.plan.mode === 'snip' ? 'cut.instruct.snip' : this.plan.mode === 'fits' ? 'cut.instruct.fits' : 'cut.instruct.ring';
   }
 
   private get pieceCount() {
-    return this.plan.mode === 'snip' ? this.slots.length : this.plan.mode === 'fits' ? this.boards.length : this.cuts.length;
+    return this.plan.mode === 'snip' ? this.slots.length : this.plan.mode === 'fits' ? this.boards.length : this.plan.mode === 'two' ? this.splits.length : this.cuts.length;
   }
 
   /** Lay out the next sheet (or the next strip, or the next board). */
@@ -309,6 +326,8 @@ class CutAlong implements Game {
       this.tracks = [];
     } else if (this.plan.mode === 'fits') {
       this.tracks = this.boards[this.index].cuts.map((cut) => ({ cut, order: null, progress: 0, tried: false }));
+    } else if (this.plan.mode === 'two') {
+      this.tracks = this.splits[this.index].cuts.map((cut) => ({ cut, order: null, progress: 0, tried: false }));
     } else {
       this.tracks = [{ cut: this.cuts[this.index], order: null, progress: 0, tried: false }];
       this.active = this.tracks[0];
@@ -335,9 +354,10 @@ class CutAlong implements Game {
       const sh = this.tracks[0].cut.sheet;
       sheet.rect(sh.x * s, sh.y * s, sh.w * s, sh.h * s).fill(color.fill).stroke({ width: 4, color: color.line });
       const thick = this.level <= 2 ? 12 : 7;
-      for (const t of this.tracks) this.dashes(lines, t.cut.orders[0], thick);
-      if (this.glow && this.plan.mode === 'fits') {
-        const fit = this.tracks[this.boards[this.index].fits];
+      // At level 10 each line has a cut from either end; its dashes are drawn once.
+      this.tracks.forEach((t, i) => { if (this.plan.mode !== 'two' || i % 2 === 0) this.dashes(lines, t.cut.orders[0], thick); });
+      const fit = this.fitTrack();
+      if (this.glow && fit) {
         const pts = fit.cut.orders[0];
         lines.moveTo(pts[0][0] * s, pts[0][1] * s);
         pts.forEach((p) => lines.lineTo(p[0] * s, p[1] * s));
@@ -361,6 +381,20 @@ class CutAlong implements Game {
     }
     g.stroke({ width, color: ink, alpha: 0.7, cap: 'round' });
   }
+
+  /** The outline (level 8) or line (level 10) that works: at level 10 the cut from whichever end she has started. */
+  private fitTrack(): Track | null {
+    if (this.plan.mode === 'fits') return this.tracks[this.boards[this.index].fits];
+    if (this.plan.mode !== 'two') return null;
+    const i = 2 * this.splits[this.index].fits;
+    return this.tracks[i + 1].progress > 0 ? this.tracks[i + 1] : this.tracks[i];
+  }
+
+  /** At level 10, the cut from the other end of the same line; a line cut from one end hides the other end's ring. */
+  private twin(t: Track): Track | null {
+    return this.plan.mode === 'two' ? this.tracks[twinOf(this.tracks.indexOf(t))] : null;
+  }
+  private startable(t: Track): boolean { return t.progress > 0 || !(this.twin(t)?.progress); }
 
   private drawSlit() {
     const g = this.slitG.clear(), s = this.s;
@@ -418,6 +452,7 @@ class CutAlong implements Game {
     const reach = (RING_R + 12) / this.s;
     let best: Track | null = null, bestD = Infinity;
     for (const t of this.tracks) {
+      if (!this.startable(t)) continue;
       const at = pathOf(t.cut, t.order)[t.progress];
       const d = Math.hypot(p[0] - at[0], p[1] - at[1]);
       if (d <= reach && d < bestD) { best = t; bestD = d; }
@@ -466,6 +501,10 @@ class CutAlong implements Game {
     if (step !== this.note) { this.note = step; sfx.bell(5 + step, 0.12); }
     this.drawSlit();
     if (this.plan.mode === 'fits' && !judgeOutline(this.boards[this.index], this.tracks.indexOf(t)) && wrongReached(t.progress, pts.length)) {
+      void this.wrongOutline(t);
+      return;
+    }
+    if (this.plan.mode === 'two' && !judgeLine(this.splits[this.index], lineOfCut(this.tracks.indexOf(t))) && wrongReached(t.progress, pts.length)) {
       void this.wrongOutline(t);
       return;
     }
@@ -525,16 +564,20 @@ class CutAlong implements Game {
     }
   }
 
+  /** A fifth into an outline that does not fit (level 8) or a line that makes the wrong pair (level 10): once each, a miss. */
   private async wrongOutline(t: Track) {
-    const board = this.boards[this.index];
-    const i = this.tracks.indexOf(t);
+    const i = this.tracks.indexOf(t), twin = this.twin(t);
     if (this.drag) this.drag.stopped = true;
     this.busy = true;
-    if (!t.tried) { t.tried = true; this.misses++; this.wrong++; if (this.wrong % 2 === 0) { this.hints++; this.glow = true; } }
+    if (!t.tried) {
+      t.tried = true; if (twin) twin.tried = true;
+      this.misses++; this.wrong++; if (this.wrong % 2 === 0) { this.hints++; this.glow = true; }
+    }
     sfx.boing();
-    await this.ctx.say(differsLine(board, i));
-    // Its slit closes back up; the outline that fits is still uncut.
+    await this.ctx.say(this.plan.mode === 'two' ? makesLine(this.splits[this.index], lineOfCut(i)) : differsLine(this.boards[this.index], i));
+    // Its slit closes back up; the outline (or line) that works is still uncut.
     t.progress = 0; t.order = null;
+    if (twin) { twin.progress = 0; twin.order = null; }
     this.active = null;
     this.busy = false;
     this.drawPaper();
@@ -545,49 +588,55 @@ class CutAlong implements Game {
     await this.pieceDone(t);
   }
 
-  /** The piece drops free and floats into its place in the picture. */
+  /** The piece drops free and floats into its place in the picture (at level 10, both halves, each into one of a pair). */
   private async pieceDone(t: Track | null) {
     this.busy = true;
     this.placeScissors();
     sfx.sparkle();
-    const s = this.s;
-    const piece = new Graphics();
-    const color = swatch[this.paperColor];
+    const s = this.s, color = swatch[this.paperColor];
+    const parts: { poly: readonly Point[]; slot: number }[] = [];
     if (!t) {
-      piece.rect(STRIP.x * s, STRIP.y * s, STRIP.w * s, STRIP.h * s).fill(color.fill).stroke({ width: 4, color: color.line });
+      parts.push({ poly: [[STRIP.x, STRIP.y], [STRIP.x + STRIP.w, STRIP.y], [STRIP.x + STRIP.w, STRIP.y + STRIP.h], [STRIP.x, STRIP.y + STRIP.h]], slot: this.index });
+    } else if (this.plan.mode === 'two') {
+      const board = this.splits[this.index], piece = PAIR_PIECE[board.need];
+      const pair = this.slots.flatMap((sl, i) => (sl.piece === piece ? [i] : []));
+      splitSheet(board.sheet, board.lines[board.fits]).forEach((poly, k) => parts.push({ poly, slot: pair[k] }));
     } else {
       const cut = t.cut, sh = cut.sheet;
       const poly = cut.outline ?? [...[...cut.orders[0]].sort((a, b) => a[0] - b[0]), [sh.x + sh.w, sh.y + sh.h] as Point, [sh.x, sh.y + sh.h] as Point];
-      piece.poly(poly.flatMap((p) => [p[0] * s, p[1] * s])).fill(color.fill).stroke({ width: 4, color: color.line });
+      const slot = this.plan.mode === 'fits'
+        ? this.slots.findIndex((sl) => sl.piece === (this.boards[this.index].gap === 'roof' ? 'roof' : this.boards[this.index].gap))
+        : this.index;
+      parts.push({ poly, slot });
     }
-    const slotIndex = this.plan.mode === 'fits'
-      ? this.slots.findIndex((sl) => sl.piece === (this.boards[this.index].gap === 'roof' ? 'roof' : this.boards[this.index].gap))
-      : this.index;
-    const slot = this.slots[slotIndex];
-    const holder = new Container();
-    holder.addChild(piece);
-    const b = piece.getLocalBounds();
-    piece.position.set(-b.x - b.width / 2, -b.y - b.height / 2);
-    const p = this.layout.paper;
-    holder.position.set(p.x + b.x + b.width / 2, p.y + b.y + b.height / 2);
-    this.flyers.addChild(holder);
+    const p = this.layout.paper, pic = this.layout.picture;
+    const flying = parts.map(({ poly, slot }) => {
+      const piece = new Graphics().poly(poly.flatMap((q) => [q[0] * s, q[1] * s])).fill(color.fill).stroke({ width: 4, color: color.line });
+      const holder = new Container();
+      holder.addChild(piece);
+      const b = piece.getLocalBounds();
+      piece.position.set(-b.x - b.width / 2, -b.y - b.height / 2);
+      holder.position.set(p.x + b.x + b.width / 2, p.y + b.y + b.height / 2);
+      this.flyers.addChild(holder);
+      const sl = this.slots[slot], sw = sl.w * pic.w, sh = sl.h * pic.h;
+      // At level 10 a long piece turns to lie the way its gap does (a fence board stands up).
+      const turn = this.plan.mode === 'two' && (b.width > b.height * 1.2) !== (sw > sh * 1.2);
+      const k = turn ? Math.min(sw / b.height, sh / b.width) : Math.min(sw / b.width, sh / b.height);
+      return { holder, slot, turn, k, tx: pic.x + (sl.x + sl.w / 2) * pic.w, ty: pic.y + (sl.y + sl.h / 2) * pic.h };
+    });
     // The rest of the sheet clears while the piece floats.
     this.sheetG.clear(); this.lineG.clear(); this.slitG.clear(); this.cueG.clear();
     this.curls.forEach((c) => c.destroy()); this.curls = [];
     this.scissors.visible = false;
-    await this.ctx.tw.to(holder, { y: holder.y + 30 }, { duration: 0.25, ease: ease.outQuad });
-    const pic = this.layout.picture;
-    const tx = pic.x + (slot.x + slot.w / 2) * pic.w, ty = pic.y + (slot.y + slot.h / 2) * pic.h;
-    const k = Math.min((slot.w * pic.w) / b.width, (slot.h * pic.h) / b.height);
-    await Promise.all([
-      this.ctx.tw.to(holder, { x: tx, y: ty }, { duration: 0.7, ease: ease.inOutSine }),
-      this.ctx.tw.to(holder.scale, { x: k, y: k }, { duration: 0.7, ease: ease.inOutSine }),
-    ]);
-    holder.destroy({ children: true });
-    this.placed.add(slotIndex);
+    await Promise.all(flying.map((f) => this.ctx.tw.to(f.holder, { y: f.holder.y + 30 }, { duration: 0.25, ease: ease.outQuad })));
+    await Promise.all(flying.flatMap((f) => [
+      this.ctx.tw.to(f.holder, { x: f.tx, y: f.ty, rotation: f.turn ? Math.PI / 2 : 0 }, { duration: 0.7, ease: ease.inOutSine }),
+      this.ctx.tw.to(f.holder.scale, { x: f.k, y: f.k }, { duration: 0.7, ease: ease.inOutSine }),
+    ]));
+    for (const f of flying) { f.holder.destroy({ children: true }); this.placed.add(f.slot); }
     this.drawPicture();
     sfx.pop(7);
-    await this.ctx.say(pieceLine(this.theme, slot.piece) as LineId);
+    await this.ctx.say(pieceLine(this.theme, this.slots[flying[0].slot].piece) as LineId);
     this.index++;
     if (this.index >= this.pieceCount) return void this.finish();
     this.nextSheet();
@@ -664,7 +713,7 @@ class CutAlong implements Game {
     if (this.busy || this.finished || this.plan.mode === 'snip') return;
     const pulse = 1 + 0.05 * Math.sin(this.clock * 4);
     for (const t of this.tracks) {
-      if (t.progress > 0) continue;
+      if (t.progress > 0 || !this.startable(t)) continue;
       const at = t.cut.orders[0][0];
       g.circle(at[0] * s, at[1] * s, RING_R * pulse).fill({ color: swatch.green.light, alpha: 0.45 }).stroke({ width: 7, color: swatch.green.fill });
     }
@@ -688,7 +737,7 @@ class CutAlong implements Game {
       const box = markBox(this.marks[m], this.s);
       return { tap: { on: this.paper, x: this.marks[m].x * this.s, y: (box.y + box.h * 0.6) * this.s }, receiver: this.layer, pause: 0.25 };
     }
-    const t = this.plan.mode === 'fits' ? this.tracks[this.boards[this.index].fits] : this.active;
+    const t = this.fitTrack() ?? this.active;
     if (!t) return null;
     const route = botRoute(t.cut, pathOf(t.cut, t.order), t.progress).map((p) => ({ on: this.paper, ...this.toPaper(p) }));
     if (route.length < 2) return null;
