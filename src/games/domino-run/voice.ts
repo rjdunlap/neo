@@ -15,6 +15,7 @@ export const VOICE = {
   'domino-run.ring-horn': ['Toot toot! The little boat honked!'],
   'domino-run.gong': ['Bong! The giant rang the gong!'],
   'domino-run.gong-drum': ['Boom! The giant banged the big drum!'],
+  'domino-run.puddle': ['A big puddle! Only a giant can reach over it. Grow the chain to a giant right before the water.'],
   'domino-run.predict': ['Where will it stop? Tap the domino you think falls last.'],
   'domino-run.predict-right': ['You saw it coming! That\'s where it stopped.'],
   'domino-run.predict-here': ['Ooh, it stopped here instead. Look where it stopped.'],

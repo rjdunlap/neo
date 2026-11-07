@@ -260,18 +260,22 @@ export const PLANS: Plan[] = [
   { id: 7, name: 'Just enough', lines: 2, fork: false, tapAny: false, hop: false },
   { id: 8, name: 'Two bells, one tray', lines: 2, fork: true, tapAny: false, hop: false },
   { id: 9, name: 'Where will it stop?', lines: 2, fork: false, tapAny: false, hop: false, predict: true },
+  { id: 10, name: 'Over the puddle', lines: 2, fork: false, tapAny: false, hop: false },
 ];
 
 export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
   prek: { min: 3, max: 5 },
-  school: { min: 4, max: 9 },
+  school: { min: 4, max: 10 },
 };
 
 export const planFor = (level: number): Plan => PLANS[Math.min(Math.max(1, Math.round(level)), PLANS.length) - 1];
 
-/** A lane from a picture: `S` small, `T` tall, `G` giant (pinned), `_` a socket, ending in `B` bell or `O` gong; the starter is implied. */
+/**
+ * A lane from a picture: `S` small, `T` tall, `G` giant (pinned), `_` a socket, `~` a puddle (an empty slot where nothing
+ * can stand), ending in `B` bell or `O` gong; the starter is implied.
+ */
 export function lane(picture: string): Lane {
   const n = picture.length;
   const fixed = new Array<number>(n + 1).fill(0);
@@ -280,7 +284,7 @@ export function lane(picture: string): Lane {
   [...picture.slice(0, -1)].forEach((c, i) => {
     const slot = i + 1;
     if (c === '_') sockets.push(slot);
-    else fixed[slot] = 'STG'.indexOf(c) + 1;
+    else if (c !== '~') fixed[slot] = 'STG'.indexOf(c) + 1;
   });
   return { n, fixed, sockets, end: picture.endsWith('O') ? 'gong' : 'bell' };
 }
@@ -298,6 +302,7 @@ export const FIRST: Record<number, Line> = {
   7: { lanes: [lane('S____B')], tray: tray('TT') },
   8: { lanes: [lane('S____O'), lane('SS__TB')], tray: tray('TTG') },
   9: { lanes: [lane('SS_SSB')], tray: tray('S') },
+  10: { lanes: [lane('S__~~B')], tray: tray('TG') },
 };
 
 /** The standing dominoes she can tap as her guess at level 9: the starter and every pinned one. */
@@ -374,8 +379,25 @@ export function passes(plan: Plan, line: Line): boolean {
       const stop = stopsAt(line);
       return !!stop && stop.slot >= 2 && line.tray.length <= 2 && sols.length === 1 && sols[0][0].filter(Boolean).length === 1;
     }
+    case 10: {
+      // One two-wide puddle, a socket just before it that every solution fills with the tray's one giant, and a bell.
+      const l = lanes[0], wet = puddles(l), g = puddleGiantSlot(l);
+      if (l.end !== 'bell' || wet.length !== 1 || wet[0].to - wet[0].from !== 1 || g === null || !l.sockets.includes(g)) return false;
+      const giants = line.tray.filter((t) => t === 3).length;
+      const without = [...line.tray];
+      without.splice(without.indexOf(3), 1);
+      // At most one decoy: the fullest solution leaves at most one tray piece unused.
+      const most = Math.max(...sols.map((p) => p[0].filter(Boolean).length));
+      return giants === 1 && sols.every((p) => p[0][g] === 3) && !solutions({ ...line, tray: without }).length && most >= line.tray.length - 1;
+    }
   }
   return false;
+}
+
+/** Level 10: the slot just before a lane's first puddle (the one a giant must stand on), or null if it has none. */
+export function puddleGiantSlot(lane: Lane): number | null {
+  const wet = puddles(lane)[0];
+  return wet ? wet.from - 1 : null;
 }
 
 /** A tall domino in this arrangement reaches over an empty slot to the next standing piece. */
@@ -505,6 +527,29 @@ function candidate(plan: Plan, rng: Rng): Line | null {
       if (!open) return null;
       const fixed = chain.map((h, i) => (i === open || i === 6 ? 0 : h));
       return { lanes: [{ n: 6, fixed, sockets: [open], end }], tray: decoy([chain[open] as Size]) };
+    }
+    case 10: {
+      // Puddle first: a giant at g, the puddle at g+1 and g+2, then the bell or one more piece and the bell.
+      const g = rng.int(2, 3);
+      const n = g === 3 ? 6 : rng.int(5, 6);
+      const pieces = new Array<number>(n + 1).fill(0);
+      pieces[0] = 1;
+      pieces[g] = 3;
+      if (g + 3 < n) pieces[g + 3] = rng.int(1, 3);
+      // Before the giant, a chain from the starter whose last piece is a tall: a small, then a tall (or a tall straight away).
+      if (g === 2) pieces[1] = 2;
+      else if (rng.chance(0.5)) [pieces[1], pieces[2]] = [1, 2];
+      else [pieces[1], pieces[2]] = [2, 2];
+      // The giant is always hers to place, and sometimes one piece before it too; a gap left by the chain is a socket.
+      const before = Array.from({ length: g - 1 }, (_, i) => i + 1);
+      const open = [g, ...rng.shuffle(before).slice(0, rng.int(0, 1))];
+      const fixed = new Array<number>(n + 1).fill(0);
+      fixed[0] = 1;
+      for (let s = 1; s < n; s++) if (pieces[s] && !open.includes(s)) fixed[s] = pieces[s];
+      const sockets = [...open].sort((a, b) => a - b);
+      const t: Size[] = open.map((s) => pieces[s] as Size);
+      if (t.length < 3 && rng.chance(0.35)) t.push(rng.pick([1, 2] as Size[]));
+      return { lanes: [{ n, fixed, sockets, end: 'bell' }], tray: rng.shuffle(t) };
     }
   }
   return null;

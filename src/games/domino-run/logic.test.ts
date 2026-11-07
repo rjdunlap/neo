@@ -4,7 +4,7 @@ import { computeView } from '../../engine/view';
 import { VOICE } from './voice';
 import {
   arrangements, describe as name, dominoLayout, emptyPlacement, END_SIZE, FIRST, hintPlacement, lane, LOOK_END, LOOK_LINE, looksFor, makeLine,
-  makeRound, MOODS, passes, PITCH, PLANS, planFor, puddles, remaining, rings, run, runLane, slotBox, solutions, SLOT_H, stallReason, standing, stopsAt, TRAY_W, type Line, type Placement,
+  makeRound, MOODS, passes, PITCH, PLANS, planFor, puddleGiantSlot, puddles, remaining, rings, run, runLane, slotBox, solutions, SLOT_H, stallReason, standing, stopsAt, TRAY_W, type Line, type Placement,
 } from './logic';
 
 const VIEWS = {
@@ -78,6 +78,8 @@ describe('Domino Run first lines', () => {
     expect(pictures(solutions(FIRST[8]))).toEqual(['0020300|0002000', '0023000|0002000']);
     expect(pictures(solutions(FIRST[9]))).toEqual(['0001000']);
     expect(stopsAt(FIRST[9])).toEqual({ slot: 2, reason: 'too-far' });
+    expect(pictures(solutions(FIRST[10]))).toEqual(['0023000']);
+    expect(puddles(FIRST[10].lanes[0])).toEqual([{ from: 4, to: 5 }]);
   });
 
   it('their named wrong arrangements stall for the named reason', () => {
@@ -85,6 +87,10 @@ describe('Domino Run first lines', () => {
     expect(run(FIRST[6], at(FIRST[6], { 2: 3 }))[0].stall?.reason).toBe('too-heavy');
     expect(run(FIRST[7], at(FIRST[7], { 2: 2, 3: 2 }))[0].stall?.reason).toBe('too-far');
     expect(run(FIRST[8], at(FIRST[8], { 2: 2, 3: 3 }, { 3: 3 }))[1].stall?.reason).toBe('too-heavy');
+    // Level 10: a tall alone, a giant straight after the pinned small, a giant alone.
+    expect(run(FIRST[10], at(FIRST[10], { 2: 2 }))[0].stall).toMatchObject({ reason: 'too-far', at: 3 });
+    expect(run(FIRST[10], at(FIRST[10], { 2: 3 }))[0].stall).toMatchObject({ reason: 'too-heavy', at: 2 });
+    expect(run(FIRST[10], at(FIRST[10], { 3: 3 }))[0].stall).toMatchObject({ reason: 'too-far', at: 2 });
   });
 
   it('pass their own plan filters', () => {
@@ -122,7 +128,7 @@ describe('Domino Run generation', () => {
       expect(round).toHaveLength(plan.lines);
     }
     expect(planFor(0).id).toBe(1);
-    expect(planFor(99).id).toBe(9);
+    expect(planFor(99).id).toBe(10);
   });
 });
 
@@ -165,6 +171,60 @@ describe('Domino Run level 9, Where will it stop?', () => {
         boxes.slice(1).forEach((b, i) => expect(b.x).toBeGreaterThanOrEqual(boxes[i].x + boxes[i].w));
       }
     }
+  });
+});
+
+describe('Domino Run level 10, Over the puddle', () => {
+  const plan = planFor(10);
+  const lines = [FIRST[10], ...Array.from({ length: 500 }, (_, i) => makeLine(plan, new Rng(i + 1)).line)];
+
+  it('every line has one two-wide puddle and ends in a bell', () => {
+    for (const line of lines) {
+      const l = line.lanes[0], wet = puddles(l);
+      expect(l.end, name(line)).toBe('bell');
+      expect(wet, name(line)).toHaveLength(1);
+      expect(wet[0].to - wet[0].from, name(line)).toBe(1);
+    }
+  });
+
+  it('every solution stands a giant from the tray directly before the puddle', () => {
+    for (const line of lines) {
+      const g = puddleGiantSlot(line.lanes[0])!;
+      expect(line.lanes[0].sockets, name(line)).toContain(g);
+      const sols = solutions(line);
+      expect(sols.length, name(line)).toBeGreaterThan(0);
+      for (const p of sols) expect(p[0][g], name(line)).toBe(3);
+    }
+  });
+
+  it('no solution with the giant taken out of the tray', () => {
+    for (const line of lines) {
+      const tray = [...line.tray];
+      tray.splice(tray.indexOf(3), 1);
+      expect(line.tray.filter((t) => t === 3), name(line)).toHaveLength(1);
+      expect(solutions({ ...line, tray }), name(line)).toHaveLength(0);
+    }
+  });
+
+  it('a tray of at most three with at most one decoy', () => {
+    for (const line of lines) {
+      expect(line.tray.length).toBeLessThanOrEqual(3);
+      const most = Math.max(...solutions(line).map((p) => p[0].filter(Boolean).length));
+      expect(line.tray.length - most, name(line)).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it('a tall just before the puddle stalls too far, at the puddle\'s near edge', () => {
+    for (const line of lines) {
+      const g = puddleGiantSlot(line.lanes[0])!;
+      const p = solutions(line)[0].map((l) => [...l]);
+      p[0][g] = 2;
+      expect(run(line, p)[0].stall, name(line)).toMatchObject({ reason: 'too-far', from: g, at: g + 1 });
+    }
+  });
+
+  it('the seeds give more than one picture', () => {
+    expect(new Set(lines.map(name)).size).toBeGreaterThanOrEqual(6);
   });
 });
 
@@ -278,7 +338,8 @@ describe('Domino Run looks', () => {
   });
 
   it('the authored first lines have no puddles, so the opening line looks as it always has', () => {
-    for (const plan of PLANS) for (const l of FIRST[plan.id].lanes) expect(puddles(l)).toEqual([]);
+    // Level 10 is about the puddle, so its first line has one.
+    for (const plan of PLANS.filter((p) => p.id < 10)) for (const l of FIRST[plan.id].lanes) expect(puddles(l)).toEqual([]);
   });
 
   it('every end look is pushed like its end: bell looks by a small, drum and gong only by a giant', () => {

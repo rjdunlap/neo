@@ -11,7 +11,7 @@
 | toddler | 1–2 |
 | preschool | 2–4 |
 | pre-K | 3–5 |
-| school | 4–9 |
+| school | 4–10 |
 
 | Level | Plays like |
 | --- | --- |
@@ -24,6 +24,7 @@
 | 7 | Just enough |
 | 8 | Two bells, one tray |
 | 9 | Where will it stop? |
+| 10 | Over the puddle |
 
 <!-- end generated -->
 

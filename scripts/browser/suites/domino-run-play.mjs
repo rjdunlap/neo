@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, errors, log, scene, tap, screenshot, launch, finished }) {
-/** Domino Run by touch: level 1 tipped by taps, level 8 with a stalled run, a requested hint and the rest by drags, level 5 upright, level 6 upright at sunset with a drop on a puddle, level 9 upright with a wrong guess and a requested hint. */
+/**
+ * Domino Run by touch: level 1 tipped by taps, level 8 with a stalled run, a requested hint and the rest by drags, level 5
+ * upright, level 6 upright at sunset with a drop on a puddle, level 9 upright with a wrong guess and a requested hint,
+ * level 10 upright with a giant stood too soon. `DOMINO_LEVELS=10` (a comma list) plays only those levels.
+ */
 async function dominoRunPlay() {
   const state = () => page.evaluate(() => { const g = neo.scene.game; return { busy: g.busy, misses: g.misses, hints: g.hints, stalls: g.stalls, hinted: !!g.hinted, index: g.index }; });
   const idle = () => page.waitForFunction(() => neo.scene.finished || (neo.scene.game && !neo.scene.game.busy), null, { timeout: 15000 });
@@ -37,12 +41,19 @@ async function dominoRunPlay() {
     }
     await page.waitForFunction(() => neo.scene.finished, null, { timeout: 30000 });
   };
+  const want = (l) => !process.env.DOMINO_LEVELS || process.env.DOMINO_LEVELS.split(',').map(Number).includes(l);
+  const played = [];
+  let st = null;
   // Level 1: three lines, each tipped by a tap on a domino; no misses or hints; one sticker.
+  if (want(1)) {
   await launch('domino-run', 1); await idle();
   const stickers = await page.evaluate(() => kit.store.data.stickers.length);
   await solveAll();
-  let st = await state(); assert.deepEqual([st.misses, st.hints], [0, 0], 'level 1 has no misses or hints');
+  st = await state(); assert.deepEqual([st.misses, st.hints], [0, 0], 'level 1 has no misses or hints');
   await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, stickers, { timeout: 15000 });
+  played.push('level 1 tipped by taps');
+  }
+  if (want(8)) {
   // Level 8: a run with gaps stalls (never a miss); Show a hint glows once and counts once; then the hint's way by drags.
   const stickers8 = await page.evaluate(() => kit.store.data.stickers.length);
   await launch('domino-run', 8); await idle();
@@ -54,10 +65,16 @@ async function dominoRunPlay() {
   st = await state(); assert.equal(st.misses, 0); assert.ok(st.hints >= 1);
   await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, stickers8, { timeout: 15000 });
   assert.deepEqual(errors, [], 'page errors');
-  // Level 5 upright: two lanes and the tray row, one screenshot.
+  played.push('level 8 with a stall (no miss), a requested hint and drags');
+  }
   await page.setViewportSize({ width: 768, height: 1024 });
+  if (want(5)) {
+  // Level 5 upright: two lanes and the tray row, one screenshot.
   await launch('domino-run', 5); await idle(); await page.waitForTimeout(500);
   await screenshot('domino-run-5-portrait');
+  played.push('level 5 upright');
+  }
+  if (want(6)) {
   // Level 6 upright: the second line is a seeded one with a puddle; at sunset, a domino dropped on the puddle springs back
   // (never a miss), then the round finishes with one sticker.
   const stickers6 = await page.evaluate(() => kit.store.data.stickers.length);
@@ -87,6 +104,9 @@ async function dominoRunPlay() {
   await screenshot('domino-run-6-portrait-sunset');
   await solveAll();
   await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, stickers6, { timeout: 15000 });
+  played.push('level 6 upright at sunset with a puddle drop that springs back');
+  }
+  if (want(9)) {
   // Level 9 upright: a wrong guess (the starter) runs the line as it stands, rings the real last domino and is never a
   // miss, a hint or one of her stalls; the tray waits until the guess. Then a requested hint, the fix, and line 2's guess.
   const stickers9 = await page.evaluate(() => kit.store.data.stickers.length);
@@ -106,9 +126,38 @@ async function dominoRunPlay() {
   await solveAll();
   st = await state(); assert.deepEqual([st.misses, st.hints], [0, 1], 'level 9: no misses, the one requested hint');
   await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, stickers9, { timeout: 15000 });
+  played.push('level 9 upright with a wrong guess, a waiting hint and the fix');
+  }
+  if (want(10)) {
+  // Level 10 upright: the first line has the two-wide puddle; the giant stood straight after the pinned small stalls too
+  // heavy (a stall, never a miss); a requested hint sends it back, and the hint's way (tall, then giant) rings the bell.
+  const stickers10 = await page.evaluate(() => kit.store.data.stickers.length);
+  await launch('domino-run', 10); await idle(); await page.waitForTimeout(500);
+  const first = await page.evaluate(async () => {
+    const L = await import('/src/games/domino-run/logic.ts'), g = neo.scene.game, l = g.lay.lanes[0];
+    const p = g.pieces.find((q) => !q.at && q.size === 3);
+    return { wet: L.puddles(g.line.lanes[0]), drawn: g.puddleNodes.length, a: p.node.toGlobal({ x: 0, y: -60 }), b: g.pieceLayer.parent.toGlobal({ x: l.x0 + 2 * L.PITCH, y: l.base + 40 }) };
+  });
+  assert.deepEqual(first.wet, [{ from: 4, to: 5 }], 'level 10 opens with the two-wide puddle');
+  assert.equal(first.drawn, 1, 'one wide puddle is drawn');
+  await screenshot('domino-run-10-portrait');
+  await page.evaluate(({ a, b }) => kit.drag(kit.line([a.x, a.y], [b.x, b.y], 16)), first); await page.waitForTimeout(500);
+  await tapNode('neo.scene.game.starters[0]'); await idle();
+  st = await page.evaluate(async () => {
+    const L = await import('/src/games/domino-run/logic.ts'), g = neo.scene.game;
+    return { stall: L.run(g.line, g.placed)[0].stall?.reason, stalls: g.stalls, misses: g.misses };
+  });
+  assert.deepEqual(st, { stall: 'too-heavy', stalls: 1, misses: 0 }, 'a giant straight after the small stalls too heavy, never a miss');
+  await page.evaluate(() => neo.scene.game.askForHint()); await page.waitForTimeout(200);
+  st = await state(); assert.deepEqual([st.hints, st.hinted], [1, true], 'a requested hint glows and counts once');
+  await solveAll();
+  st = await state(); assert.deepEqual([st.misses, st.hints], [0, 1], 'level 10: no misses, the one requested hint');
+  await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, stickers10, { timeout: 15000 });
+  played.push('level 10 upright with a giant too soon, a requested hint and the fix');
+  }
   await page.setViewportSize({ width: 1024, height: 768 });
   assert.deepEqual(errors, [], 'page errors');
-  log('Domino Run: level 1 tipped by taps, level 8 with a stall (no miss), a requested hint and drags, level 5 upright, level 6 upright at sunset with a puddle drop that springs back, level 9 upright with a wrong guess, a waiting hint and the fix');
+  log(`Domino Run: ${played.join(', ')}`);
 }
 
 return { dominoRunPlay };
