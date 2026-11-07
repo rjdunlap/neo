@@ -2,8 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { rangeFor } from '../../progress/difficulty';
 import {
-  LEVELS, MAX_THINGS, PLANS, SPARE, THINGS, THING_GAP, THING_HIT, groupSize, numeralFor, planFor, stickerDigit, thingFor, thingSpots, thingWord,
+  LEVELS, MAX_THINGS, PLANS, SPARE, THINGS, THING_GAP, THING_HIT, groupSize, numeralFor, planFor, roundFor, stickerDigit, thingFor, thingSpots, thingWord,
 } from './logic';
+import { LOOKS, hintDue, showTheWay, tuneStep } from '../letter-trails/logic';
+import { sampleStroke } from '../letter-trails/strokes';
+import { DIGITS } from './digits';
 
 describe('number trails levels', () => {
   it('describes every level and clamps the ones outside the ladder', () => {
@@ -79,5 +82,44 @@ describe('where things sit', () => {
   it('draws a sticker numeral for any seed', () => {
     for (const seed of [0, 1, 9, 10, 12345, -7]) expect(stickerDigit(seed)).toBeGreaterThanOrEqual(0);
     expect(stickerDigit(23)).toBe(3);
+  });
+});
+
+describe('number trails hint, looks and tune', () => {
+  it('draws the look after the numeral and the thing, so a seed keeps its round', () => {
+    for (let seed = 1; seed <= 200; seed++) for (const level of [1, 2, 3]) {
+      const a = new Rng(seed), round = roundFor(level, a);
+      const b = new Rng(seed);
+      expect(round.n).toBe(numeralFor(level, b));
+      expect(round.thing).toBe(thingFor(b));
+      expect(LOOKS).toContain(round.look);
+    }
+    const looks = new Set(Array.from({ length: 200 }, (_, i) => roundFor(2, new Rng(i + 1)).look));
+    expect(looks.size).toBe(LOOKS.length);
+  });
+  it('counts the hint at the second wander on a stroke, once', () => {
+    expect([1, 2, 3, 4].map(hintDue)).toEqual([false, true, false, false]);
+  });
+  it('flies the shown stretch forward along every numeral stroke, from where she is, never past its end', () => {
+    for (const strokes of Object.values(DIGITS)) for (const stroke of strokes) {
+      const points = sampleStroke(stroke);
+      for (let progress = 0; progress < points.length - 1; progress++) {
+        const shown = showTheWay(points, progress);
+        expect(shown[0]).toBe(points[progress]);
+        expect(shown.length).toBeGreaterThan(1);
+        expect(points.indexOf(shown[shown.length - 1])).toBeGreaterThan(progress);
+        expect(points.indexOf(shown[shown.length - 1])).toBeLessThan(points.length);
+      }
+    }
+  });
+  it('climbs the tune one pentatonic step a fifth of the way, from the first note to the top at the end', () => {
+    for (const strokes of Object.values(DIGITS)) for (const stroke of strokes) {
+      const n = sampleStroke(stroke).length;
+      const steps = Array.from({ length: n }, (_, i) => tuneStep(i, n));
+      expect(steps[0]).toBe(0);
+      expect(steps[n - 1]).toBe(4);
+      steps.slice(1).forEach((s, i) => expect(s - steps[i]).toBeGreaterThanOrEqual(0));
+      expect(new Set(steps).size).toBe(5);
+    }
   });
 });
