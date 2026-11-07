@@ -1,0 +1,110 @@
+# Puddle Gobble deep dive
+
+*ID `puddle-gobble` · bands toddler, preschool, pre-K, school · levels 1–8 on 2026-11-06 · session `claude/dive-puddle-gobble` ([PR #1342](https://github.com/rjdunlap/neo/pull/1342))*
+
+## The game today
+
+A smiling rain puddle sits on the beach. She leads it with a finger (a drag, or a tap where it should go; the whole screen steers) and it soaks up whatever fits inside it, growing as it goes, so what fits depends on what she has already soaked. The learning purpose is **size comparison against a moving reference**, then seriation, then comparing and adding numbers, and at the top an exact total that needs planning and undo. Built 2026-10-21 from its [definition](../definitions/puddle-gobble.md) ([PR #687](https://github.com/rjdunlap/neo/pull/687)); home land Bubble Beach (14 games).
+
+| Level | Plan name | Band windows | What she decides |
+| --- | --- | --- | --- |
+| 1 | Soak it up | toddler | where to lead the puddle; everything fits, no growth |
+| 2 | Too big yet | toddler, preschool | the toy boat waits until two soaks have grown the puddle |
+| 3 | Bigger and bigger | preschool, pre-K | two growth steps: the tier-3 thing needs four soaks first |
+| 4 | Count to grow | preschool, pre-K | a three-drop meter; the tier-3 thing is the last that can go |
+| 5 | Smallest first | pre-K, school | a stated order: five pictured things, tiers 1–4, smallest first (a bigger one aimed while a smaller is out is a miss) |
+| 6 | Bigger number | pre-K, school | numerals 1–10 on alike pebbles; the puddle gains 1 per soak |
+| 7 | Add to grow | school | numerals 1–20; the puddle gains each number, a sum strip along the top |
+| 8 | Just right | school | land exactly on the pail's number (12–20); an overshoot is refused (a miss when aimed); a strip token lets a thing go, free |
+
+`BandLevels`: toddler 1–2, preschool 2–4, pre-K 3–6, school 5–8; no `order`, no `entryLevels`, no lap or grown-up range.
+
+**Content pools.** Thirteen code-drawn kinds by tier (`KINDS_BY_TIER` in `logic.ts`): tier 1 shell, pebble, leaf, feather; tier 2 pinecone, toy boat, seaweed, starfish; tier 3 beach ball, driftwood stick, bucket; tier 4 floaty ring, kite. Numbered levels draw only pebbles, shells and starfish (all at tier 2's size). Boards are seeded from each plan and kept only if they pass its filter (50 tries, then the authored board, which a test shows is never needed); each level's first round is authored once per session. One beach backdrop; no host friend is drawn (the finish line is "Thank you! The beach is clean.").
+
+**Known gaps.** Tier 3 has three kinds and tier 4 two, so a level-5 board almost always shows the same ring or kite; every round is the same midday beach. Level 8 is the only exact-total level and the ladder stops there for school (six to eight); there is no subtraction or "too full" direction although `letGo` already exists. Pre-K meets bare numerals at level 6 straight after pictured tiers (decision 5's alternative, dot cards, was not built). No lap entry. Nothing is saved, nothing goes into the journal, no couch play. Device checks open in [DEVICE-CHECKS](../DEVICE-CHECKS.md): tap-to-lead for a toddler, tier 1 versus tier 2 with dots on an iPad, and whether "Too big yet" while steering feels like a scold.
+
+## Similar games
+
+| Game | Kind | How its progression grows | What to borrow | What to leave out |
+| --- | --- | --- | --- | --- |
+| [Hole.io](https://appsamurai.com/blog/mobile-app-success-story-hole-io/) (Voodoo, 2018) | grow-by-swallowing arcade | bigger city objects become reachable as the hole grows; new cities | the visible "now it fits" moment | two-minute matches, rival holes, swallowing people and buildings |
+| [Donut County](https://store.epicgames.com/p/donut-county) (Ben Esposito, 2018) | authored puzzle levels around one growing hole | each level adds one twist (catapult things out, fire, water) and ends on its biggest object | one new twist per level on a fixed mechanic; things that come back out (our let-go) | swallowing friends' homes |
+| [Katamari Damacy](https://en.wikipedia.org/wiki/Katamari_Damacy) (Namco, 2004) | grow-by-rolling | stages raise the target size; small things stick, big ones are hurdles until you grow | the moving threshold; different stage *places* with the same rule | the timer and collisions that knock things off |
+| Feeding Frenzy (PopCap, 2004; recalled) | eat-smaller-to-grow | new seas and fish | "smaller than you" as the rule | being eaten; lives |
+| [DragonBox Numbers](https://www.commonsensemedia.org/app-reviews/dragonbox-numbers) (Kahoot! DragonBox) | number characters that eat and split | Nooms combine (3 eats 5 and becomes 8) and slice apart; puzzle, ladder and sandbox modes | the number *is* the body: adding is growing, letting go is taking apart; a free sandbox mode beside the puzzles | subscription, parent-report upsell |
+| [Osmo Numbers](https://playosmo.zendesk.com/hc/en-us/articles/115010324547-What-is-the-Osmo-Numbers-game) (Tangible Play) | tiles summed to pop bubbles | dots first, numerals later; add by more tiles, subtract by removing; ages 3–10 | **dots before numerals** for the youngest numbered level; removing to subtract | the timed bubble pops |
+| [Shut the Box](https://en.wikipedia.org/wiki/Shut_the_box) (traditional) | exact-sum tile game | close tiles that sum to the roll; choosing which tiles matters for later rolls | several ways to make a total, and a choice now that spoils a later total (our level 8 dead end) | the dice luck and the score as loss |
+| Montessori [Pink Tower](https://montessoriacademy.com.au/montessori-at-home/toddler-resources/montessori-pink-tower/) and nesting cups | physical seriation | from a few widely spaced sizes to ten close ones | ordering widely spaced sizes before close ones | — |
+
+**Learning references.** Common Core [K.MD.A.2](https://www.thecorestandards.org/Math/Content/K/MD/) (compare two objects, "more of"/"less of") and [1.MD.A.1](https://www.thecorestandards.org/Math/Content/1/MD/) (order three objects by length) for levels 1–5; [K.CC.C.7](https://www.thecorestandards.org/Math/Content/K/CC/) (compare two numerals 1–10) for level 6; [1.OA.C.6](https://www.thecorestandards.org/Math/Content/1/OA/) (add and subtract within 20, making ten, relating addition and subtraction) for 7–8 and the proposed "too full" level; [2.NBT.A.4](https://www.thecorestandards.org/Math/Content/2/NBT/) (compare numbers) for ordering numerals to 20. The Stanford pre-K seriation summary cited in the definition still sets the pace: a few widely spaced sizes before many close ones.
+
+## What makes sense here
+
+The game's one action, steering a body whose size is a number, carries two directions it does not yet use: **ordering numbers** (seriation moved from pictures to numerals, the natural partner of level 5) and **taking away** (the puddle too full, letting things go until it is just right, the subtraction side of level 8). Both reuse what is built: `order` mode's refusal and hint already work for any `size`, and `letGo` plus `hintTarget`'s let-go search already solve a board that starts full. A dot-card numbered level gives pre-K the Osmo-style bridge from tiers with dots to bare numerals. Fresh kinds and a few beach moods fix the most visible repetition without touching rules.
+
+Left for decisions or later definitions: a lap entry (decision 1 of the definition left it out), a doubling rain cloud (multiplication is outside the game's skills), two pails in one round (planning across two totals; needs a layout probe first), and filing the tidy row in the journal. The long arc: toddler soaks and sees "too big yet" turn into "fits now"; preschool and pre-K count growth and order sizes, then meet numbers through dots; school compares, orders, adds and takes away within 20, ending on planning an exact total from either side.
+
+## Experience and presentation
+
+- **First unsupported action:** touching the sand anywhere; the puddle glides there and the nearest shell slides in with a plop. No adult has to give an answer.
+- **Pleasure and feedback:** touch-down draws the fading destination ring at once; a soak is a 0.35 s slide with a pentatonic plop (bigger things sing lower); a growth step swells the body and empties the drop meter; a too-big thing wobbles on top of the water and re-arms 30 units away, so steering back and forth never nags.
+- **Variety without changing the rule:** new kinds per tier and a seeded beach mood (morning mist, midday, pink evening: backdrop tint, a low sun, wet-sand sheen) change what a replay looks like; the plan filter, not the art, decides solvability.
+- **Reasoning versus precision:** the decisions are *which thing next* and, at 8 and 11, *which set*; contact is a whole-puddle overlap, at least 100 units, with no aiming precision. Numerals are read aloud on touch, so the numbered levels are not reading tests; the dot level makes count-to-compare possible without numeral knowledge.
+- **Supported ending and replay:** the glow after two too-big tries or misses, "Show a hint" on the pause sheet, the free let-go; every board finishes, every finish washes the things into the smallest-to-biggest row. Replay is a fresh seeded beach.
+- **Co-play:** one steers, the other names the next target ("Can it soak the ball yet?"); at the exact-total levels, one says the number they need and the other finds it. Solo stays the default.
+- **Art and feel example:** a *pink evening* mood is a `Backdrop` tint plus one code-drawn half sun on the horizon and a 20 % warmer `WET_SAND` sheen under the puddle's trail; the puddle's body picks up a faint pink rim stroke. All `Graphics`, palette colors, no new texture.
+- **Needs a person or device:** whether a toddler finds tap-to-lead; whether dot cards and numerals read on an iPad at tier-2 size; whether "too full" (letting things go) reads as subtraction or as undoing a mistake; whether five-year-olds enjoy level 5's order or find it a scold.
+
+## Proposed ladder
+
+### Fresh content inside existing levels
+
+- **More kinds** so every tier has at least four: tier 3 adds a sun hat and a sand spade; tier 4 adds a beach umbrella (closed) and a rolled towel. Numbered levels add sea glass and a button to `NUMBER_KINDS` (drawn at tier 2's size, numeral badge as now). Never a critter, a friend's home or a friend's belonging, as the definition rules. Each gets a `NAMES` entry for "The {thing} is smaller."
+- **Beach moods:** morning, midday, evening, seeded per round; the authored first round stays midday.
+- Rule tests: every tier has at least four kinds; every kind has a name; `thingArt` draws every kind at 70–220 without throwing; level-5 boards over 500 seeds show at least three different tier-4 kinds; the mood is seeded and leaves the board unchanged.
+
+### New levels on top
+
+| Level | Name | Band window | First round | What she decides | Mistakes and hints | A rule test asserts | Cost and couplings |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 9 | *Smallest number first* | school (after 8; school 5–9) | puddle `P` = 20, no growth; six pebbles 3, 8, 11, 14, 17, 19 | soak numerals in order, smallest to biggest, within 20 | aiming at a bigger number while a smaller is still out: a miss (aimed, as level 5), a boing and "{v} is smaller. Soak it first."; the glow after two misses names the smallest left | every value fits from the start; values distinct; the only refusals are `order`; the hint is always the smallest left; filter over 500 seeds never falls back | `order` mode with numerals (a `numeric` flag on the plan rather than a new mode); one new voice line (`gobble.smaller-first-number`) and an instruction (`gobble.instruct-order-number`); bot unchanged (it follows `hintTarget`); how-to step scoped 9–9 |
+| 10 | *Count the dots* | pre-K (placed between 5 and 6 by `order`), school | `P` = 2, `+1` per soak; five pebbles 1, 2, 3, 4, 6 with dots under each numeral; the puddle shows its dots too | compare by counting dots or by numeral, soak what is not more than the puddle | a too-big touch is never a miss (as 6); "{v}. The puddle is {p}: too big yet."; glow after two too-big tries, counting one hint from this level as at 4 | values distinct within 1–6; at least two too big at the start; greedy clears; dots shown equal the value; the puddle's dots equal `P` | dot card under the badge (reuse `tierDots` at a fixed small size); a `dots` flag on the plan; pre-K `order` becomes 3, 4, 5, 10, 6; school `order` 5, 10, 6, 7, 8, 9 (school can meet it once, cheap); no new voice; bot unchanged |
+| 11 | *Too full* | school (school 5–11) | the puddle already holds 4, 9, 3, 6 (sum strip shows 2 + 4 + 9 + 3 + 6 = 24 from a start of 2); the pail says 14; the sand is empty (letting go 4 and 6 makes 14; no single let-go does) | which things to let go so what stays makes exactly the pail's number | letting go is free and never a miss; going under the pail is not refused: the line says "Now the puddle is {p}. The pail wants {t}." and she can soak a thing back (an overshoot on re-soak is refused as at 8); the glow points at a strip token to let go | at least one subset of held things whose removal makes the pail; no single let-go solves it (two or more); `hintTarget` reaches the pail within six steps from every reachable state; start total ≤ 40 | `Board` gains `held` (ids soaked at the start; `startState` puts them in `soaked`); the hint already searches let-go subsets; strip of up to six 100-unit tokens checked at four views; instruction line `gobble.instruct-too-full`; bot taps tokens as at 8; how-to step 11–11 |
+
+Band windows after slices 2–4: school 5–11 with `order` 5, 10, 6, 7, 8, 9, 11 once 10 lands (the next band up begins where school's window starts, so nothing renumbers); pre-K 3–6 with `order` 3, 4, 5, 10, 6.
+
+### Younger-band openings
+
+A lap entry (the puddle splashes toward any touch, three shells beside it, no growth, no voice beyond the plop) is close to level 1 but changes the game's band list and the lap land page; the definition left it out. **Decision**, below.
+
+### Easier entries and levels between existing ones
+
+Level 10 *Count the dots* is the between-level: appended ID 10, placed by pre-K's `order` between 5 and 6. No `entryLevels` change is needed, since pre-K's first level stays 3. No saved level is renumbered.
+
+### Left out on purpose
+
+- **Rain that doubles the puddle** (multiplication by 2): outside the game's skills and the school band's 1.OA focus; a decision if the developer wants a multiplication strand here.
+- **Two pails in one round** (two exact totals from one beach): genuine planning, but the pail box and strip need a layout probe at four views first; a definition after that probe.
+- **A rival puddle, a timer, a shrinking-in-the-sun clock, "biggest puddle" scores:** pressure the rules forbid.
+- **Soaking critters or friends' things:** the theme rule from the definition stands.
+- **Free sandbox puddle** (DragonBox's sandbox): pleasant, but an endless beach has no gentle finish; revisit only with a defined stopping point.
+
+## Decisions for the developer
+
+1. **Lap entry.** Open lap with an appended level 12 *Splash* (lap 12, `entryLevels` [12])? Default: no, as the definition left it.
+2. **Journal.** File the finish's tidy row (the things she soaked, smallest to biggest) as a journal discovery the first time each kind is soaked? Default: no, nothing is filed.
+
+Both are added to [WAITING-ON-DEVELOPER](../WAITING-ON-DEVELOPER.md).
+
+## Build slices, in order
+
+1. **More kinds and beach moods** (fresh content, ready). Tier: existing interaction with new content: typecheck, the game's rule tests (the content tests above), one filtered play of level 5 with one portrait screenshot in the evening mood; no `fingerdemo` (bot unchanged); `npm run build` only if `palette.ts` or the shared scenery changes.
+2. **Level 9 *Smallest number first*** (ready). Tier: new level on the existing interaction: typecheck, rule tests, one browser play of level 9 with one aimed out-of-order touch, `fingerdemo` at 9; build (voice and how-to change).
+3. **Level 10 *Count the dots*** (ready; after slice 2 so school's `order` is written once). Tier: new level on the existing interaction: typecheck, rule tests (plus the `order` and registry tests), one browser play of level 10 and pre-K's step from 5 to 10 to 6, `fingerdemo` at 10; build.
+4. **Level 11 *Too full*** (ready; after slice 2). Tier: new level on the existing let-go interaction: typecheck, rule tests (the held-start state, hint reach, strip fits), one browser play of level 11 with one under-shoot and one requested hint, `fingerdemo` at 11; build.
+5. **Two pails:** a `beachLayout` and strip probe in `logic.test.ts` at four views, then a definition (define).
+6. **Lap entry** and **journal**: decisions 1 and 2.
+
+## What was built in this session
+
+Nothing: a deep dive session is research and ideation only. Checks: `node scripts/check-links.mjs` and `git diff --check`.
