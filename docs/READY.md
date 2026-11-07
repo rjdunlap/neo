@@ -8,7 +8,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 - **`bolt-boards`, level 8 *Plenty of holes*** (pre-K and school between 5 and 6 on decision 1's default; after slice 1 is fine but not required; new level on the existing interaction, `fingerdemo` at 8): [build slices](deep-dives/bolt-boards.md#build-slices-in-order).
 - **Define `bolt-boards` level 9 *Put it back*** (docs only): [build slices](deep-dives/bolt-boards.md#build-slices-in-order).
-- **Dive `puddle-gobble`** (Puddle Gobble; toddler to school, 8 levels; docs only): [procedure](deep-dives/README.md#one-session-one-game), [definition](definitions/puddle-gobble.md).
 - **Dive `number-trails`** (Number Trails; preschool and pre-K, 3 levels, numeral writing; docs only): [procedure](deep-dives/README.md#one-session-one-game). The rest of waves 5–7 follow in the tracker's order.
 
 ## Queued
@@ -30,6 +29,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 
 
+- **`puddle-gobble`, slices 1–4 in the dive's order** (`bubble-beach`; toddler to school; slice 1 more kinds and beach moods, slice 2 level 9 *Smallest number first*, slice 3 level 10 *Count the dots* after slice 2, slice 4 level 11 *Too full* after slice 2): [build slices](deep-dives/puddle-gobble.md#build-slices-in-order).
 - **`bolt-boards`, remaining slices in the dive's order** (`tinker-lab`; toddler to school; [build slices](deep-dives/bolt-boards.md#build-slices-in-order)):
 
 ### Study follow-ups (docs-only definitions)
