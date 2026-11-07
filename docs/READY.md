@@ -6,7 +6,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **`domino-run` slice 2, level 9 *Where will it stop?*** (school; new interaction: typecheck, unit tests, one scripted play with one wrong prediction and one hint, one portrait screenshot, `fingerdemo` at 9, build): [build slices](deep-dives/domino-run.md#build-slices-in-order).
+- **`domino-run` slice 2, level 9 *Where will it stop?*** (claimed 2026-11-07 by `claude/domino-run-where-will-it-stop`; school; new interaction: typecheck, unit tests, one scripted play with one wrong prediction and one hint, one portrait screenshot, `fingerdemo` at 9, build): [build slices](deep-dives/domino-run.md#build-slices-in-order).
 - **`lift-it` slice 1, looks, parcels, three more friends and varied lines at 1–3** (preschool to school; typecheck, rule tests, one filtered `liftit` play at level 3 with one portrait screenshot in the autumn look; no `fingerdemo`, since the bot's actions do not change; build only if shared files change): [build slices](deep-dives/lift-it.md#build-slices-in-order).
 - **`block-garden` slice 1, looks, flower kinds, more gardens and a longer pre-K round** (pre-K to grown-up; typecheck, rule tests, one filtered `blockgarden` play at level 5 with one portrait screenshot in the autumn look; no `fingerdemo`, since the bot's actions do not change; build only if shared files change): [build slices](deep-dives/block-garden.md#build-slices-in-order).
 - **`fruit-slice` slice 2, level 9 *Two lines clear it*** (school; new level on the existing line interaction: typecheck, rule tests, one browser play of 9, `fingerdemo` at 9, build): [build slices](deep-dives/fruit-slice.md#build-slices-in-order).
