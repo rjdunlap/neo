@@ -164,3 +164,8 @@ Tested: base `88da9a39` plus diff, full `npm test` (327 files, 6,084 passed, 5 s
 Browser at `http://localhost:5188`: `BROWSER_SUITE=early EARLY_ONLY=paint FROM_LEVEL=3 TO_LEVEL=3` passed two misses, hint, all pictures and sticker; `BROWSER_SUITE=blocktopple TOPPLE_LEVELS=3` passed portrait wrong/hill shots, two misses, hint, three tips and saved 2/1.
 The retained ignored `test-results/cleanup-sweep.mjs`, its results JSON and `migrated-listener-files.txt` record 296 level/mode demo restart/destruction checks across 46 games, with no retained native listeners or page errors in those checks. Draw the Pattern level 5 separately fails in its demo constructor reading an undefined piece; unchanged HEAD’s game module reproduces it (baseline script retained), so it remains a pre-existing gap outside this migration.
 Not run: `world`, offline, device or child play; no navigation, persistence or assets changed. Server stopped. No new gameplay or bot actions.
+
+## 2026-11-07 — Fruit Slice slice 2: level 9 Two lines clear it (PR #1388)
+
+Changed: level 9 (two straight lines cover every fruit of a still board; `coverLines`, `coverHint` and friends in `logic.ts`), five voice lines, a how-to step, a level 9 segment in `fruitslice`. Ran: typecheck; 45 fruit-slice rule tests (six new); `npm test` (327 files, 6,098 passed); `BROWSER_SUITE=fruitslice` (level 9 upright: one stranding first line = 1 miss, one requested hint, portrait screenshot, four boards, sticker); `fingerdemo` `FINGER_ONLY=fruit-slice FINGER_LEVELS=9` (5.3 s); build.
+Late follow-up (0.8 s wait before the next level 9 board): only typecheck and the rule tests were rerun. Not run: offline, `world`, couch, device; a six-year-old drawing two lines is open.

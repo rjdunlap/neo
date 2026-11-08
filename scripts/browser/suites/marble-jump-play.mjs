@@ -2,8 +2,19 @@ import assert from 'node:assert/strict';
 
 export function createSuite({ page, errors, log, scene, tap, screenshot, turnToGame, launch, finished, next }) {
 async function marbleJumpPlay() {
-  const tapHole = async i => { await page.evaluate(i => kit.tapOn(neo.scene.game.nodes[i]), i); await page.waitForTimeout(160); };
-  for (const level of [1, 6]) {
+  const tapHole = async i => { await page.evaluate(i => kit.tapOn(neo.scene.game.nodes[i]), i); await page.waitForFunction(() => !neo.scene.game.flight); await page.waitForTimeout(120); };
+  await page.setViewportSize({ width: 768, height: 1024 });
+  let look = 'oak';
+  for (let tries = 0; look === 'oak' && tries < 12; tries++) {
+    await launch('marble-jump', 2); await page.waitForTimeout(300);
+    look = await page.evaluate(() => neo.scene.game.look.name);
+  }
+  assert.notEqual(look, 'oak', 'a new tray look comes up within a few rounds');
+  const opening = await page.evaluate(async () => (await import('/src/games/marble-jump/logic.ts')).solve(neo.scene.game.board)[0]);
+  await tapHole(opening.from); await tapHole(opening.to);
+  await screenshot(`marble-jump-2-${look}-portrait`);
+  await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
+  for (const level of [1, 2, 6]) {
     await launch('marble-jump', level); await page.waitForTimeout(400);
     const before = await page.evaluate(() => kit.store.data.stickers.length);
     const start = await page.evaluate(() => neo.scene.game.board);
@@ -20,7 +31,13 @@ async function marbleJumpPlay() {
     await tap('neo.scene.game.hintButton');
     assert.equal(await page.evaluate(() => neo.scene.game.hints), 1, 'repeating the same hint counts once');
     const first = await page.evaluate(() => neo.scene.game.hinted);
-    await tapHole(first.from); await tapHole(first.to);
+    const colour = await page.evaluate(i => neo.scene.game.colors[i], first.from);
+    await page.evaluate(i => kit.tapOn(neo.scene.game.nodes[i]), first.from); await page.waitForTimeout(160);
+    await page.evaluate(i => kit.tapOn(neo.scene.game.nodes[i]), first.to);
+    assert.ok(await page.evaluate(() => !!neo.scene.game.flight), 'the jump is shown, not swapped in one redraw');
+    await page.waitForFunction(() => !neo.scene.game.flight);
+    assert.equal(await page.evaluate(i => neo.scene.game.colors[i], first.to), colour, 'the marble keeps its colour as it lands');
+    assert.equal(await page.evaluate(() => neo.scene.game.taken.length), 1, 'the jumped marble is in the pocket');
     await tap('neo.scene.game.undoButton');
     assert.equal(await page.evaluate(() => neo.scene.game.board), start);
     await tap('neo.scene.game.restartButton');
@@ -48,7 +65,7 @@ async function marbleJumpPlay() {
       assert.equal(await page.evaluate(() => neo.scene.game.misses), 1, 'legal experiments add no miss');
       const expected = await page.evaluate(async () => {
         const L = await import('/src/games/marble-jump/logic.ts'), g = neo.scene.game;
-        return g.history[L.recovery(g.history)];
+        return g.history[L.recovery(g.history.map(s => s.board))].board;
       });
       await tap('neo.scene.game.hintButton');
       assert.equal(await page.evaluate(() => neo.scene.game.board), expected, 'hint returns to the nearest clearing route');
