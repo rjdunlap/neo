@@ -1360,10 +1360,10 @@ export function gardenLayout(plan: Pick<GardenPlan, 'n' | 'cell' | 'preview'>, v
       w: SLOT,
       h: SLOT,
     }));
-    // The next tray stands in the free strip left of the bed, between the shell's buttons and the pet.
-    const nh = Math.min(146, (v.h - 170 - 136 - 12) / 3);
+    // The next tray stands in the free strip left of the bed, below the shell's Home and ? (to y 210) and above the pet.
+    const nh = Math.min(146, (v.h - 170 - 214 - 12) / 3);
     const next = plan.preview
-      ? [0, 1, 2].map((i) => ({ x: x - 20 - NEXT_W, y: 136 + i * (nh + 6), w: NEXT_W, h: nh }))
+      ? [0, 1, 2].map((i) => ({ x: x - 20 - NEXT_W, y: 214 + i * (nh + 6), w: NEXT_W, h: nh }))
       : [];
     return {
       x,

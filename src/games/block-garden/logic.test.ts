@@ -452,14 +452,16 @@ describe('gardenLayout', () => {
       expect(bed.x + bed.w).toBeLessThanOrEqual(v.w);
       expect(bed.y).toBeGreaterThanOrEqual(0);
       expect(bed.y + bed.h + RIDE).toBeLessThanOrEqual(v.h - 40);
-      // Clear of the shell's Home and ? (top-left, about 124 square) and the pet's corner (bottom-left 150 × 170).
+      // Clear of the shell's Home and ? (top-left: Home about 124 square, ? centred at 62, 160) and the pet's corner (bottom-left 150 × 170).
       const shell = { x: 0, y: 0, w: 124, h: 124 },
+        help = { x: 0, y: 112, w: 112, h: 98 },
         pet = { x: 0, y: v.h - 170, w: 150, h: 170 };
       const undo = { x: lay.undo.x - 54, y: lay.undo.y - 54, w: 108, h: 108 };
       expect(lay.next.length).toBe(plan.preview ? 3 : 0);
       for (const r of lay.next) expect(Math.min(r.w, r.h)).toBeGreaterThanOrEqual(100);
       for (const r of [bed, ...lay.slots, ...lay.next, undo]) {
         expect(overlap(r, shell)).toBe(false);
+        expect(overlap(r, help)).toBe(false);
         expect(overlap(r, pet)).toBe(false);
         expect(r.x).toBeGreaterThanOrEqual(0);
         expect(r.x + r.w).toBeLessThanOrEqual(v.w);

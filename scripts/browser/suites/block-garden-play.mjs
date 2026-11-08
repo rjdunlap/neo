@@ -71,19 +71,6 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       }
       await page.waitForFunction(() => neo.scene.finished, null, { timeout: 20000 });
     };
-    // Level 1: the authored row first; planted by drags, no misses or hints, one sticker.
-    await launch('block-garden', 1);
-    await idle();
-    const stickers = await page.evaluate(() => kit.store.data.stickers.length);
-    assert.equal(
-      await page.evaluate(() => neo.scene.game.state.bed.buds[2]),
-      0b10,
-      'level 1 starts with the authored row',
-    );
-    await plantAll();
-    let st = await state();
-    assert.deepEqual([st.misses, st.hints], [0, 0]);
-    await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, stickers, { timeout: 15000 });
     const refusedSpot = () =>
       page.evaluate(async () => {
         const L = await import('/src/games/block-garden/logic.ts'),
@@ -100,6 +87,89 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
         }
         return null;
       });
+    // Level 10 (school, between 5 and 6), upright: the next tray shows faded under the tray; a tap on a faded piece wiggles it and
+    // is never a miss; a refused drop is one miss; planted by drags, one sticker. GARDEN_LEVELS=10 runs this part alone.
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await launch('block-garden', 10);
+    await idle();
+    const stickers10 = await page.evaluate(() => kit.store.data.stickers.length);
+    const ghosts = await page.evaluate(() => {
+      const g = neo.scene.game;
+      return g.ghosts.map((gh, i) => ({
+        piece: gh.piece,
+        visible: gh.node.visible,
+        at: gh.node.toGlobal({ x: 0, y: 0 }),
+        rect: g.lay.next[i],
+      }));
+    });
+    assert.deepEqual(
+      ghosts.map((gh) => [gh.piece, gh.visible]),
+      [
+        [3, true],
+        [4, true],
+        [5, true],
+      ],
+      'level 10 shows the second tray faded',
+    );
+    for (const gh of ghosts)
+      assert.ok(Math.min(gh.rect.w, gh.rect.h) >= 100, 'a faded card is at least 100 across');
+    await page.waitForTimeout(400);
+    await screenshot('block-garden-10-portrait');
+    let st0 = await state();
+    await page.evaluate(({ x, y }) => kit.tap(x, y), ghosts[1].at);
+    await page.waitForTimeout(150);
+    assert.ok(await page.evaluate(() => neo.scene.game.ghosts[1].wiggle > 0), 'a tapped faded piece wiggles');
+    let st1 = await state();
+    assert.deepEqual(
+      [st1.misses, st1.hints, st1.used],
+      [st0.misses, st0.hints, 0],
+      'a faded piece is never a miss',
+    );
+    // A drag that starts on a faded piece lifts nothing.
+    await page.evaluate(({ a }) => kit.drag(kit.line([a.x, a.y], [a.x, a.y - 400], 12)), { a: ghosts[0].at });
+    await page.waitForTimeout(300);
+    st1 = await state();
+    assert.deepEqual([st1.misses, st1.used], [0, 0], 'a faded piece cannot be lifted');
+    const spot10 = await refusedSpot();
+    assert.ok(spot10, 'level 10 has a spot where a piece cannot fit');
+    await dragTo(spot10.piece, spot10.r, spot10.c);
+    await page.waitForTimeout(400);
+    assert.deepEqual(
+      [(await state()).misses, (await state()).used],
+      [1, 0],
+      'a refused drop at 10 is one miss',
+    );
+    await plantAll();
+    st1 = await state();
+    assert.equal(st1.misses, 1);
+    await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, stickers10, {
+      timeout: 15000,
+    });
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await launch('block-garden', 10);
+    await idle();
+    await page.waitForTimeout(400);
+    await screenshot('block-garden-10');
+    assert.deepEqual(errors, [], 'page errors');
+    if (process.env.GARDEN_LEVELS === '10') {
+      log(
+        'Block Garden level 10: the faded next tray upright and wide, a tapped and a dragged faded piece (never a miss), one refused drop (one miss), planted by drags, one sticker',
+      );
+      return;
+    }
+    // Level 1: the authored row first; planted by drags, no misses or hints, one sticker.
+    await launch('block-garden', 1);
+    await idle();
+    const stickers = await page.evaluate(() => kit.store.data.stickers.length);
+    assert.equal(
+      await page.evaluate(() => neo.scene.game.state.bed.buds[2]),
+      0b10,
+      'level 1 starts with the authored row',
+    );
+    await plantAll();
+    let st = await state();
+    assert.deepEqual([st.misses, st.hints], [0, 0]);
+    await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, stickers, { timeout: 15000 });
     // Level 9 (pre-K, between 2 and 3): level 3's corner gardens with the stripes on; a refused drop is free; planted by drags, one sticker.
     await launch('block-garden', 9);
     await idle();
