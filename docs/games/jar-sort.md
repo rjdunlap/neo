@@ -8,8 +8,8 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| preschool | 1–3 |
-| pre-K | 2–5 |
+| preschool | 1, 2, 9, 3 |
+| pre-K | 2, 9, 3, 4, 5 |
 | school | 4–8 |
 
 | Level | Plays like |
@@ -22,6 +22,7 @@
 | 6 | Four kinds, one spare jar: plan ahead |
 | 7 | Five kinds |
 | 8 | Every fruit has its jar |
+| 9 | Three kinds, bright jars |
 
 <!-- end generated -->
 
