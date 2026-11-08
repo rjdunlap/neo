@@ -196,3 +196,8 @@ Not run: levels 1, 5, 6, 8, 9 of `dominorun` (unchanged), offline, `world`, othe
 
 Changed: level 10 (apples 2 pieces, oranges 3; put-back strip of fruit tokens; `piecesFor`, `stuck`, `putBack`, `mixedHint`, `tokenAt` and friends in `logic.ts`), four voice lines, how-to steps, a level 10 segment and `FRUIT_LEVELS` filter in `fruitslice`. Ran: typecheck; 55 fruit-slice rule tests (ten new); `npm test` (6,126 passed); `BROWSER_SUITE=fruitslice` at level 10 (stuck total, bowl tap, requested hint on a token, put-back, overshoot miss, finish, portrait screenshot); `fingerdemo` at 10 (11.2 s); build. game-reviewer findings applied (double-tap lock, slot order, strip cleared on send).
 Not run: offline, `world`, couch, device; whether a seven-year-old finds the put-back unaided is open.
+
+## 2026-11-07 — Fruit Slice slice 4: level 11 Just a few (PR #1396)
+
+Changed: level 11 (plan on level 5's path: two aloft, signs 2, 3, 3; `FEW`), preschool 2–11 and pre-K 3–11 with new `order`s, `entryLevels: [11]`, how-to steps, five rule tests, a level 11 segment in `fruitslice`. Ran: typecheck; vitest fruit-slice (60), registry, content, progress; `BROWSER_SUITE=fruitslice FRUIT_LEVELS=11` (two aloft, sign 2, free early bowl tap, overshoot miss, signs 3 and 3, portrait screenshot); `fingerdemo` at 11 in preschool (11.1 s); build. game-reviewer: no blocking issues.
+Not run: full `npm test` locally (CI runs it), offline, `world`, device; whether a preschooler stops at 2 unprompted is open.
