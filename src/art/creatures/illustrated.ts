@@ -77,7 +77,10 @@ export function loadArt(species: SpeciesId): Promise<ArtSet> {
         }),
       );
       const plate = files[`./illustrated/${species}-nohead.png`];
-      return { ...(Object.fromEntries(entries) as Record<Expression, Texture>), ...(plate ? { nohead: await one(plate) } : {}) };
+      return {
+        ...(Object.fromEntries(entries) as Record<Expression, Texture>),
+        ...(plate ? { nohead: await one(plate) } : {}),
+      };
     })();
     sets.set(species, p);
   }
@@ -85,7 +88,8 @@ export function loadArt(species: SpeciesId): Promise<ArtSet> {
 }
 
 /** One texture for every expression (tests, and a still). */
-export const sameArt = (t: Texture): ArtSet => Object.fromEntries(EXPRESSIONS.map((e) => [e, t])) as Record<Expression, Texture>;
+export const sameArt = (t: Texture): ArtSet =>
+  Object.fromEntries(EXPRESSIONS.map((e) => [e, t])) as Record<Expression, Texture>;
 
 export const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 /** 0 at `a`, 1 at `b`, eased between; `a` may be the larger. */
@@ -148,7 +152,12 @@ export abstract class IllustratedCreature extends Creature {
     rows: number,
   ) {
     super();
-    const geometry = new PlaneGeometry({ width: A.width, height: A.height, verticesX: cols, verticesY: rows });
+    const geometry = new PlaneGeometry({
+      width: A.width,
+      height: A.height,
+      verticesX: cols,
+      verticesY: rows,
+    });
     this.mesh = new Mesh({ geometry, texture: textures.base });
     this.rest = geometry.positions.slice();
     this.mesh.position.set(-A.centre.x, -A.centre.y);
@@ -174,7 +183,9 @@ export abstract class IllustratedCreature extends Creature {
   pin(node: Container, at: Point, behind = false, ride: Point = at) {
     const { mesh, rest: pos } = this.carrier(ride);
     let k = 0;
-    for (let i = 0; i < pos.length; i += 2) if (Math.hypot(pos[i] - ride.x, pos[i + 1] - ride.y) < Math.hypot(pos[k] - ride.x, pos[k + 1] - ride.y)) k = i;
+    for (let i = 0; i < pos.length; i += 2)
+      if (Math.hypot(pos[i] - ride.x, pos[i + 1] - ride.y) < Math.hypot(pos[k] - ride.x, pos[k + 1] - ride.y))
+        k = i;
     const cols = mesh.geometry.verticesX;
     // The row neighbour that gives the vertex's turn: the next one, or the previous at the row's end.
     const j = (k / 2) % cols === cols - 1 ? k - 2 : k + 2;
@@ -192,7 +203,10 @@ export abstract class IllustratedCreature extends Creature {
   protected carrier(_ride: Point): { mesh: Mesh<PlaneGeometry>; rest: Float32Array } {
     return { mesh: this.mesh, rest: this.rest };
   }
-  private readonly riders = new Map<Container, { mesh: Mesh<PlaneGeometry>; rest: Float32Array; k: number; j: number; at: Point }>();
+  private readonly riders = new Map<
+    Container,
+    { mesh: Mesh<PlaneGeometry>; rest: Float32Array; k: number; j: number; at: Point }
+  >();
   private ride(node: Container) {
     const r = this.riders.get(node)!;
     const pos = r.mesh.geometry.positions;
@@ -200,7 +214,8 @@ export abstract class IllustratedCreature extends Creature {
     const p = this.px({ x: r.at.x + pos[r.k] - rest[r.k], y: r.at.y + pos[r.k + 1] - rest[r.k + 1] });
     node.position.set(p.x, p.y);
     node.rotation =
-      Math.atan2(pos[r.j + 1] - pos[r.k + 1], pos[r.j] - pos[r.k]) - Math.atan2(rest[r.j + 1] - rest[r.k + 1], rest[r.j] - rest[r.k]);
+      Math.atan2(pos[r.j + 1] - pos[r.k + 1], pos[r.j] - pos[r.k]) -
+      Math.atan2(rest[r.j + 1] - rest[r.k + 1], rest[r.j] - rest[r.k]);
   }
 
   /** The mesh that shows the expression: the whole picture, or the head layer on a rig that has one. */

@@ -20,7 +20,12 @@ export interface IslandDemo {
  * matches the card's "this level" line. A game that only the couch bots can play keeps its controller demonstration at
  * the couch's demo level for now. Everything else is text alone.
  */
-export function islandDemo(mod: GameModule, level: number, band: Band, kind = pointerKind()): IslandDemo | null {
+export function islandDemo(
+  mod: GameModule,
+  level: number,
+  band: Band,
+  kind = pointerKind(),
+): IslandDemo | null {
   if (mod.touchDemo) return { input: kind === 'mouse' ? 'mouse' : 'finger', level, band };
   const couch = demoFor(mod.id);
   return couch ? { input: 'controller', ...couch } : null;

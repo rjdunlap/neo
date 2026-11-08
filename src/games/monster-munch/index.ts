@@ -13,8 +13,44 @@ import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { symbol } from '../shared';
 import type { Game, GameContext, GameModule, HubIcon, TouchIntent } from '../types';
-import { drawPlace, FOOD_TINT, foodArt, Monster, monsterLooks, monsterSticker, MOUTH_Y, MUNCH_PLACES, type MunchPlace } from './art';
-import { LEVELS, canCallFriend, friendsReady, munchAnswer, shareReturns, complete, extras, foodWord, FOODS, isTapMode, missing, munchHint, munchPlan, munchRounds, munchTouch, noFood, numberChoices, orderWords, wantsMore, type Food, type MunchQuestion, type MunchPlan, type MunchRound, type MunchTable, type Order } from './logic';
+import {
+  drawPlace,
+  FOOD_TINT,
+  foodArt,
+  Monster,
+  monsterLooks,
+  monsterSticker,
+  MOUTH_Y,
+  MUNCH_PLACES,
+  type MunchPlace,
+} from './art';
+import {
+  LEVELS,
+  canCallFriend,
+  friendsReady,
+  munchAnswer,
+  shareReturns,
+  complete,
+  extras,
+  foodWord,
+  FOODS,
+  isTapMode,
+  missing,
+  munchHint,
+  munchPlan,
+  munchRounds,
+  munchTouch,
+  noFood,
+  numberChoices,
+  orderWords,
+  wantsMore,
+  type Food,
+  type MunchQuestion,
+  type MunchPlan,
+  type MunchRound,
+  type MunchTable,
+  type Order,
+} from './logic';
 
 interface Snack {
   food: Food;
@@ -22,7 +58,6 @@ interface Snack {
   drag: DragHandle | null;
   eatenBy: Monster | null;
 }
-
 
 class MonsterMunch implements Game {
   readonly plan: MunchPlan;
@@ -59,9 +94,20 @@ class MonsterMunch implements Game {
     this.rounds = munchRounds(this.plan, ctx.rng);
     this.place = ctx.rng.pick(MUNCH_PLACES);
     this.bell = new RoundButton(symbol('bell', 0, 34), swatch.yellow, 56, () => this.ring());
-    this.bell.visible = this.plan.mode === 'exact' || this.plan.mode === 'two' || this.plan.mode === 'leftover' || this.plan.mode === 'friends';
-    const door = new Graphics().roundRect(-40, -45, 80, 95, 38).fill(wood.line)
-      .circle(0, -10, 18).fill(swatch.green.fill).circle(-6, -14, 3).fill(wood.line).circle(6, -14, 3).fill(wood.line);
+    this.bell.visible =
+      this.plan.mode === 'exact' ||
+      this.plan.mode === 'two' ||
+      this.plan.mode === 'leftover' ||
+      this.plan.mode === 'friends';
+    const door = new Graphics()
+      .roundRect(-40, -45, 80, 95, 38)
+      .fill(wood.line)
+      .circle(0, -10, 18)
+      .fill(swatch.green.fill)
+      .circle(-6, -14, 3)
+      .fill(wood.line)
+      .circle(6, -14, 3)
+      .fill(wood.line);
     this.cave = new RoundButton(door, swatch.purple, 60, () => this.callFriend());
     this.cave.visible = this.plan.mode === 'friends';
     ctx.stage.addChild(this.background, this.tray, this.sign, this.bell, this.cave, this.glow);
@@ -97,8 +143,9 @@ class MonsterMunch implements Game {
     this.wrong = 0;
     this.asking = 'each';
     this.clear();
-    const looks = this.looks = monsterLooks(r.monsters, ctx.rng);
-    for (let i = 0; i < (this.plan.mode === 'friends' ? 1 : r.monsters); i++) this.addMonster(looks[i], i * 0.15);
+    const looks = (this.looks = monsterLooks(r.monsters, ctx.rng));
+    for (let i = 0; i < (this.plan.mode === 'friends' ? 1 : r.monsters); i++)
+      this.addMonster(looks[i], i * 0.15);
     const foods: Food[] = ctx.rng.shuffle(r.kinds.flatMap((f) => Array<Food>(r.tray[f]).fill(f)));
     const big = this.plan.mode === 'big';
     foods.forEach((food, i) => {
@@ -114,23 +161,46 @@ class MonsterMunch implements Game {
         });
       }
       node.scale.set(0);
-      void ctx.tw.to(node.scale, { x: this.foodScale, y: this.foodScale }, { duration: 0.35, delay: 0.3 + i * 0.06, ease: ease.outBack });
+      void ctx.tw.to(
+        node.scale,
+        { x: this.foodScale, y: this.foodScale },
+        { duration: 0.35, delay: 0.3 + i * 0.06, ease: ease.outBack },
+      );
       this.snacks.push(snack);
       ctx.stage.addChild(node);
     });
     this.drawSign(r.want);
     this.resize(this.view);
     switch (this.plan.mode) {
-      case 'tap': void this.instruct('munch.tap'); break;
-      case 'big': void this.instruct('munch.big'); break;
-      case 'eachkind': void this.instruct('munch.each-kind'); break;
-      case 'count': void this.instruct('munch.count'); break;
-      case 'each': void this.instruct('munch.each'); break;
-      case 'friends': void this.instruct('munch.friends', { n: r.want[this.kind] }); break;
-      case 'sharekind': void this.instruct('munch.share-kinds'); break;
-      case 'share': void this.instruct('munch.share', this.kindVars); break;
-      case 'leftover': void this.instruct('munch.leftover', this.kindVars); break;
-      default: void this.instruct('munch.want', { food: orderWords(r.want) });
+      case 'tap':
+        void this.instruct('munch.tap');
+        break;
+      case 'big':
+        void this.instruct('munch.big');
+        break;
+      case 'eachkind':
+        void this.instruct('munch.each-kind');
+        break;
+      case 'count':
+        void this.instruct('munch.count');
+        break;
+      case 'each':
+        void this.instruct('munch.each');
+        break;
+      case 'friends':
+        void this.instruct('munch.friends', { n: r.want[this.kind] });
+        break;
+      case 'sharekind':
+        void this.instruct('munch.share-kinds');
+        break;
+      case 'share':
+        void this.instruct('munch.share', this.kindVars);
+        break;
+      case 'leftover':
+        void this.instruct('munch.leftover', this.kindVars);
+        break;
+      default:
+        void this.instruct('munch.want', { food: orderWords(r.want) });
     }
     this.busy = false;
   }
@@ -145,9 +215,15 @@ class MonsterMunch implements Game {
     void this.ctx.tw.to(m, { alpha: 1 }, { duration: 0.4, delay });
     onTap(m, () => {
       // At the tapping level the big friendly monster is the easiest thing to reach, so tapping it feeds it too.
-      const next = isTapMode(this.plan.mode) && !this.busy && !this.done ? this.snacks.find((s) => !s.eatenBy) : undefined;
+      const next =
+        isTapMode(this.plan.mode) && !this.busy && !this.done
+          ? this.snacks.find((s) => !s.eatenBy)
+          : undefined;
       if (next) this.feed(m, next);
-      else { m.beam(0.6); sfx.giggle(); }
+      else {
+        m.beam(0.6);
+        sfx.giggle();
+      }
     });
     m.hitArea = new Circle(0, -150, 140);
     this.monsters.push(m);
@@ -197,7 +273,9 @@ class MonsterMunch implements Game {
 
   private drawSign(want: Order) {
     this.sign.removeChildren().forEach((c) => c.destroy({ children: true }));
-    this.sign.visible = !this.pads.length && (this.plan.mode === 'exact' || this.plan.mode === 'two' || this.plan.mode === 'friends');
+    this.sign.visible =
+      !this.pads.length &&
+      (this.plan.mode === 'exact' || this.plan.mode === 'two' || this.plan.mode === 'friends');
     if (!this.sign.visible) return;
     const board = new Graphics()
       .roundRect(-12, 60, 24, 90, 6)
@@ -228,7 +306,10 @@ class MonsterMunch implements Game {
     if (this.plan.dots) {
       const g = new Graphics();
       const n = want[this.kind];
-      for (let i = 0; i < n; i++) g.circle((i - (n - 1) / 2) * 34, 46, 12).fill(wood.fill).stroke({ width: 3, color: wood.line });
+      for (let i = 0; i < n; i++)
+        g.circle((i - (n - 1) / 2) * 34, 46, 12)
+          .fill(wood.fill)
+          .stroke({ width: 3, color: wood.line });
       this.sign.addChild(g);
     }
   }
@@ -238,11 +319,17 @@ class MonsterMunch implements Game {
   private drop(snack: Snack, x: number, y: number): boolean {
     if (this.busy || this.done) return false;
     const targets = this.monsters.filter((m) => m.covers(x, y));
-    if (this.plan.mode === 'friends') targets.sort((a, b) => Math.hypot(a.mouthPoint().x - x, a.mouthPoint().y - y) - Math.hypot(b.mouthPoint().x - x, b.mouthPoint().y - y));
+    if (this.plan.mode === 'friends')
+      targets.sort(
+        (a, b) =>
+          Math.hypot(a.mouthPoint().x - x, a.mouthPoint().y - y) -
+          Math.hypot(b.mouthPoint().x - x, b.mouthPoint().y - y),
+      );
     let monster = targets[0];
     // A plain tap on a cookie feeds it too while counting along.
     const home = snack.drag!.home;
-    if (!monster && this.plan.mode === 'count' && Math.hypot(x - home.x, y - home.y) < 60) monster = this.monsters[0];
+    if (!monster && this.plan.mode === 'count' && Math.hypot(x - home.x, y - home.y) < 60)
+      monster = this.monsters[0];
     if (!monster) {
       // Dropped short: not a miss, but the nearest monster leans towards it, wondering.
       const near = this.monsters.reduce((a, b) => (Math.abs(b.x - x) < Math.abs(a.x - x) ? b : a));
@@ -263,7 +350,10 @@ class MonsterMunch implements Game {
       this.mistake(monster, 'munch.enough', { kind: foodWord(snack.food, 2) });
       return false;
     }
-    if ((this.plan.mode === 'exact' || this.plan.mode === 'two') && !wantsMore(r.want, this.have(monster), snack.food)) {
+    if (
+      (this.plan.mode === 'exact' || this.plan.mode === 'two') &&
+      !wantsMore(r.want, this.have(monster), snack.food)
+    ) {
       this.mistake(monster, 'munch.enough', { kind: foodWord(snack.food, 2) });
       return false;
     }
@@ -285,10 +375,18 @@ class MonsterMunch implements Game {
     const mouth = monster.mouthPoint();
     ctx.tw.kill(snack.node);
     void ctx.tw.to(snack.node, { x: mouth.x, y: mouth.y }, { duration: 0.22, ease: ease.inQuad });
-    void ctx.tw.to(snack.node.scale, { x: 0.3, y: 0.3 }, { duration: 0.22 }).then(() => { snack.node.visible = false; });
+    void ctx.tw.to(snack.node.scale, { x: 0.3, y: 0.3 }, { duration: 0.22 }).then(() => {
+      snack.node.visible = false;
+    });
     sfx.munch();
     void ctx.tw.wait(0.22).then(() => sfx.munch());
-    ctx.particles.burst(mouth.x, mouth.y, { colors: [FOOD_TINT[snack.food]], count: 6, speed: [80, 180], gravity: 500, size: [0.25, 0.4] });
+    ctx.particles.burst(mouth.x, mouth.y, {
+      colors: [FOOD_TINT[snack.food]],
+      count: 6,
+      speed: [80, 180],
+      gravity: 500,
+      size: [0.25, 0.4],
+    });
     const left = this.snacks.filter((s) => !s.eatenBy).length;
     switch (this.plan.mode) {
       case 'tap':
@@ -301,7 +399,8 @@ class MonsterMunch implements Game {
       case 'eachkind':
         monster.gape(false);
         monster.beam();
-        if (this.monsters.every((m) => complete(this.current.want, this.have(m)))) void this.roundWon('munch.everyone');
+        if (this.monsters.every((m) => complete(this.current.want, this.have(m))))
+          void this.roundWon('munch.everyone');
         else void ctx.say('munch.thanks');
         break;
       case 'sharekind':
@@ -347,7 +446,11 @@ class MonsterMunch implements Game {
     const r = this.current;
     const have = this.have(this.monsters[0]);
     if (complete(r.want, have)) void this.roundWon('munch.right', { food: orderWords(r.want) });
-    else this.mistake(null, 'munch.need', { have: orderWords(have), food: orderWords(missing(r.want, have), true) });
+    else
+      this.mistake(null, 'munch.need', {
+        have: orderWords(have),
+        food: orderWords(missing(r.want, have), true),
+      });
   }
 
   // Sharing -------------------------------------------------------------------
@@ -357,7 +460,10 @@ class MonsterMunch implements Game {
     this.busy = true;
     await this.ctx.tw.wait(0.7);
     const r = this.current;
-    const back = shareReturns(r.want, this.monsters.map((m) => this.have(m)));
+    const back = shareReturns(
+      r.want,
+      this.monsters.map((m) => this.have(m)),
+    );
     if (back.every((o) => FOODS.every((f) => o[f] === 0))) {
       this.monsters.forEach((m) => m.beam(2));
       sfx.sparkle();
@@ -458,12 +564,21 @@ class MonsterMunch implements Game {
     for (const value of numberChoices(answer, this.ctx.rng)) {
       const node = new Container();
       node.addChild(
-        new Graphics().circle(0, 6, 62).fill({ color: swatch.blue.line, alpha: 0.25 }).circle(0, 0, 62).fill(swatch.white.fill).stroke({ width: 7, color: swatch.blue.fill }),
+        new Graphics()
+          .circle(0, 6, 62)
+          .fill({ color: swatch.blue.line, alpha: 0.25 })
+          .circle(0, 0, 62)
+          .fill(swatch.white.fill)
+          .stroke({ width: 7, color: swatch.blue.fill }),
         label(String(value), 64, swatch.blue.line),
       );
       onTap(node, () => this.pick(value, answer), { radius: 70 });
       node.scale.set(0);
-      void this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.35, delay: this.pads.length * 0.08, ease: ease.outBack });
+      void this.ctx.tw.to(
+        node.scale,
+        { x: 1, y: 1 },
+        { duration: 0.35, delay: this.pads.length * 0.08, ease: ease.outBack },
+      );
       this.pads.push({ value, node });
       this.ctx.stage.addChild(node);
     }
@@ -527,7 +642,9 @@ class MonsterMunch implements Game {
       if (!waiting.length) await this.ctx.say('count', { n: 0 });
       for (let i = 0; i < waiting.length; i++) {
         const node = waiting[i].node;
-        void this.ctx.tw.to(node.scale, { x: 1.25, y: 1.25 }, { duration: 0.15 }).then(() => this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.2 }));
+        void this.ctx.tw
+          .to(node.scale, { x: 1.25, y: 1.25 }, { duration: 0.15 })
+          .then(() => this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.2 }));
         await this.ctx.say('count', { n: i + 1 });
       }
     } else if (this.asking === 'friends') {
@@ -538,7 +655,7 @@ class MonsterMunch implements Game {
     } else {
       const m = this.monsters[0];
       const food = this.current.kinds[this.asking === 'second' ? 1 : 0];
-      const indices = m.eaten.flatMap((f, i) => f === food ? [i] : []);
+      const indices = m.eaten.flatMap((f, i) => (f === food ? [i] : []));
       for (const [i, index] of indices.entries()) {
         m.light(index);
         await this.ctx.say('count', { n: i + 1 });
@@ -582,12 +699,20 @@ class MonsterMunch implements Game {
     const rows = this.snacks.length > 7 ? 2 : 1;
     const trayTop = v.h - (rows === 2 ? 235 : 165);
     drawPlace(this.background, this.place, v.w, v.h);
-    this.tray.clear().roundRect(160, trayTop, v.w - 190, v.h - trayTop - 15, 32).fill({ color: wood.light, alpha: 0.85 }).stroke({ width: 5, color: wood.fill });
+    this.tray
+      .clear()
+      .roundRect(160, trayTop, v.w - 190, v.h - trayTop - 15, 32)
+      .fill({ color: wood.light, alpha: 0.85 })
+      .stroke({ width: 5, color: wood.fill });
 
     const n = this.monsters.length;
     const friends = this.plan.mode === 'friends';
     const scale = friends ? 0.52 : n === 1 ? 0.95 : n === 2 ? 0.75 : 0.66;
-    const xs = friends ? spread(4, 245, v.w - 30, 200) : n === 1 ? [v.w * 0.62] : spread(n, 230, v.w - 50, n === 2 ? 340 : 290);
+    const xs = friends
+      ? spread(4, 245, v.w - 30, 200)
+      : n === 1
+        ? [v.w * 0.62]
+        : spread(n, 230, v.w - 50, n === 2 ? 340 : 290);
     this.monsters.forEach((m, i) => {
       m.scale.set(scale);
       m.position.set(xs[i], trayTop - 25);
@@ -617,7 +742,8 @@ class MonsterMunch implements Game {
   private drawGlow() {
     const g = this.glow.clear();
     if (this.wrong < 2 || this.done) return;
-    const ring = (x: number, y: number, r: number) => g.circle(x, y, r).stroke({ width: 8, color: swatch.yellow.line });
+    const ring = (x: number, y: number, r: number) =>
+      g.circle(x, y, r).stroke({ width: 8, color: swatch.yellow.line });
     const r = this.current;
     switch (munchHint(this.plan, this.table())) {
       case 'pad': {
@@ -672,7 +798,11 @@ class MonsterMunch implements Game {
   autotouch(): TouchIntent | null {
     if (this.busy || this.done || !this.monsters.length) return null;
     // Wait for the foods and the answer pads to finish popping in.
-    if (this.snacks.some((s) => !s.eatenBy && s.node.scale.x < 0.95) || this.pads.some((p) => p.node.scale.x < 0.95)) return null;
+    if (
+      this.snacks.some((s) => !s.eatenBy && s.node.scale.x < 0.95) ||
+      this.pads.some((p) => p.node.scale.x < 0.95)
+    )
+      return null;
     const move = munchTouch(this.plan, this.table());
     if (!move) return null;
     if (move === 'call') return { tap: { on: this.cave } };
@@ -680,7 +810,11 @@ class MonsterMunch implements Game {
     if ('pad' in move) return { tap: { on: this.pads.find((p) => p.value === move.pad)!.node } };
     if ('tap' in move) return { tap: { on: this.snacks[move.tap].node }, pause: 0.25 };
     // Dropped on the monster's mouth, which is well inside the area that counts.
-    return { drag: { on: this.snacks[move.give].node }, to: { on: this.monsters[move.to], x: 0, y: MOUTH_Y }, pause: 0.2 };
+    return {
+      drag: { on: this.snacks[move.give].node },
+      to: { on: this.monsters[move.to], x: 0, y: MOUTH_Y },
+      pause: 0.2,
+    };
   }
 
   destroy() {
@@ -720,7 +854,8 @@ export const monsterMunch: GameModule = {
   describeLevel: (l) => munchPlan(l).name,
   music: STYLES.bubbles,
   coplayHint: 'Count each bite out loud with {name} as the monster munches.',
-  offScreen: 'At snack time, share crackers between two plates so each has the same, and count them together.',
+  offScreen:
+    'At snack time, share crackers between two plates so each has the same, and count them together.',
   hubIcon: () => new MunchIcon(),
   touchDemo: true,
   sticker: (seed) => monsterSticker(seed),

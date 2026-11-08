@@ -20,7 +20,11 @@ export function marks(copy: Copy, r: number): Container {
   const c = new Container();
   c.eventMode = 'none';
   if (copy === 'A') {
-    for (const [dx, dy, rot] of [[-0.4, 0.14, 0.5], [0, -0.36, 0], [0.4, 0.14, -0.5]] as const) {
+    for (const [dx, dy, rot] of [
+      [-0.4, 0.14, 0.5],
+      [0, -0.36, 0],
+      [0.4, 0.14, -0.5],
+    ] as const) {
       const o = new Graphics().ellipse(0, 0, r * 0.2, r * 0.3).fill(ink);
       o.position.set(dx * r, dy * r);
       o.rotation = rot;
@@ -43,7 +47,15 @@ export function tileArt(copy: Copy, size = TILE, letter = true): Container {
   g.ellipse(-r * 0.3, -r * 0.45, r * 0.3, r * 0.16).fill({ color: 0xffffff, alpha: 0.5 });
   c.addChild(g, marks(copy, r * 0.62));
   if (letter) {
-    const t = new Text({ text: copy, style: { fontFamily: 'Nunito, sans-serif', fontSize: Math.max(14, size * 0.17), fontWeight: '800', fill: swatch.brown.line } });
+    const t = new Text({
+      text: copy,
+      style: {
+        fontFamily: 'Nunito, sans-serif',
+        fontSize: Math.max(14, size * 0.17),
+        fontWeight: '800',
+        fill: swatch.brown.line,
+      },
+    });
     t.anchor.set(0.5);
     t.position.set(r * 0.58, r * 0.58);
     t.eventMode = 'none';
@@ -67,12 +79,15 @@ export function bloomArt(look: Look | Face, color: ColorName, r: number): Contai
   const c = new Container();
   c.eventMode = 'none';
   const sw = swatch[color];
-  const face: Face = typeof look === 'string' ? { spots: look === 'spotted', rim: null, rimColor: color } : look;
+  const face: Face =
+    typeof look === 'string' ? { spots: look === 'spotted', rim: null, rimColor: color } : look;
   for (let i = 0; i < 5; i++) {
     const a = -Math.PI / 2 + (i * Math.PI * 2) / 5;
     const p = new Graphics();
     if (face.rim) p.ellipse(0, 0, r * 0.3 + 5, r * 0.46 + 5).fill(swatch[face.rimColor].line);
-    p.ellipse(0, 0, r * 0.3, r * 0.46).fill(sw.fill).stroke({ width: 4, color: face.rim ? swatch[face.rimColor].fill : sw.line });
+    p.ellipse(0, 0, r * 0.3, r * 0.46)
+      .fill(sw.fill)
+      .stroke({ width: 4, color: face.rim ? swatch[face.rimColor].fill : sw.line });
     p.position.set(Math.cos(a) * r * 0.55, Math.sin(a) * r * 0.55);
     p.rotation = a + Math.PI / 2;
     c.addChild(p);
@@ -82,7 +97,12 @@ export function bloomArt(look: Look | Face, color: ColorName, r: number): Contai
     m.rotation = p.rotation;
     c.addChild(m);
   }
-  c.addChild(new Graphics().circle(0, 0, r * 0.28).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line }));
+  c.addChild(
+    new Graphics()
+      .circle(0, 0, r * 0.28)
+      .fill(swatch.yellow.fill)
+      .stroke({ width: 4, color: swatch.yellow.line }),
+  );
   return c;
 }
 
@@ -90,12 +110,21 @@ export function bloomArt(look: Look | Face, color: ColorName, r: number): Contai
 export function plantArt(look: Look | Face, color: ColorName, h = 190): Container {
   const c = new Container();
   const g = new Graphics();
-  g.ellipse(0, 0, h * 0.34, h * 0.09).fill(swatch.brown.fill).stroke({ width: 4, color: swatch.brown.line });
-  g.moveTo(0, -4).bezierCurveTo(h * 0.04, -h * 0.3, -h * 0.04, -h * 0.5, 0, -h * 0.72).stroke({ width: 10, color: swatch.green.line, cap: 'round' });
-  g.moveTo(0, -4).bezierCurveTo(h * 0.04, -h * 0.3, -h * 0.04, -h * 0.5, 0, -h * 0.72).stroke({ width: 5, color: swatch.green.fill, cap: 'round' });
+  g.ellipse(0, 0, h * 0.34, h * 0.09)
+    .fill(swatch.brown.fill)
+    .stroke({ width: 4, color: swatch.brown.line });
+  g.moveTo(0, -4)
+    .bezierCurveTo(h * 0.04, -h * 0.3, -h * 0.04, -h * 0.5, 0, -h * 0.72)
+    .stroke({ width: 10, color: swatch.green.line, cap: 'round' });
+  g.moveTo(0, -4)
+    .bezierCurveTo(h * 0.04, -h * 0.3, -h * 0.04, -h * 0.5, 0, -h * 0.72)
+    .stroke({ width: 5, color: swatch.green.fill, cap: 'round' });
   c.addChild(g);
   for (const side of [-1, 1]) {
-    const leaf = new Graphics().ellipse(0, 0, h * 0.17, h * 0.075).fill(swatch.green.fill).stroke({ width: 4, color: swatch.green.line });
+    const leaf = new Graphics()
+      .ellipse(0, 0, h * 0.17, h * 0.075)
+      .fill(swatch.green.fill)
+      .stroke({ width: 4, color: swatch.green.line });
     leaf.position.set(side * h * 0.14, -h * (side < 0 ? 0.3 : 0.42));
     leaf.rotation = side * -0.5;
     c.addChild(leaf);
@@ -115,9 +144,18 @@ export class Sprout extends Container {
   constructor(private readonly h: number) {
     super();
     this.eventMode = 'none';
-    this.stem.moveTo(0, 0).bezierCurveTo(h * 0.05, -h * 0.3, -h * 0.03, -h * 0.5, 0, -h * 0.7).stroke({ width: 9, color: swatch.green.line, cap: 'round' });
-    this.stem.moveTo(0, 0).bezierCurveTo(h * 0.05, -h * 0.3, -h * 0.03, -h * 0.5, 0, -h * 0.7).stroke({ width: 4, color: swatch.green.fill, cap: 'round' });
-    const leaf = new Graphics().ellipse(0, 0, h * 0.15, h * 0.065).fill(swatch.green.fill).stroke({ width: 4, color: swatch.green.line });
+    this.stem
+      .moveTo(0, 0)
+      .bezierCurveTo(h * 0.05, -h * 0.3, -h * 0.03, -h * 0.5, 0, -h * 0.7)
+      .stroke({ width: 9, color: swatch.green.line, cap: 'round' });
+    this.stem
+      .moveTo(0, 0)
+      .bezierCurveTo(h * 0.05, -h * 0.3, -h * 0.03, -h * 0.5, 0, -h * 0.7)
+      .stroke({ width: 4, color: swatch.green.fill, cap: 'round' });
+    const leaf = new Graphics()
+      .ellipse(0, 0, h * 0.15, h * 0.065)
+      .fill(swatch.green.fill)
+      .stroke({ width: 4, color: swatch.green.line });
     leaf.position.set(-h * 0.12, -h * 0.34);
     leaf.rotation = 0.5;
     this.drawBud(1);
@@ -130,8 +168,15 @@ export class Sprout extends Container {
     this.bud.clear();
     if (t <= 0) return;
     this.bud.position.set(0, -h * 0.7);
-    this.bud.ellipse(0, -h * 0.08 * t, h * 0.11 * t, h * 0.17 * t).fill(swatch.green.fill).stroke({ width: 4, color: swatch.green.line });
-    this.bud.moveTo(-h * 0.08 * t, -h * 0.02).lineTo(0, -h * 0.26 * t).lineTo(h * 0.08 * t, -h * 0.02).stroke({ width: 3, color: swatch.green.line });
+    this.bud
+      .ellipse(0, -h * 0.08 * t, h * 0.11 * t, h * 0.17 * t)
+      .fill(swatch.green.fill)
+      .stroke({ width: 4, color: swatch.green.line });
+    this.bud
+      .moveTo(-h * 0.08 * t, -h * 0.02)
+      .lineTo(0, -h * 0.26 * t)
+      .lineTo(h * 0.08 * t, -h * 0.02)
+      .stroke({ width: 3, color: swatch.green.line });
   }
 
   /** Closed again, for a new sprout. */
@@ -157,7 +202,10 @@ export class Sprout extends Container {
 /** A slot ring under a parent's side of the sprout, outlined in that parent's colour. */
 export function slotArt(color: ColorName, size = SLOT): Graphics {
   const sw = swatch[color];
-  return new Graphics().circle(0, 0, size / 2).fill({ color: 0xffffff, alpha: 0.45 }).stroke({ width: 7, color: sw.line, alpha: 0.9 });
+  return new Graphics()
+    .circle(0, 0, size / 2)
+    .fill({ color: 0xffffff, alpha: 0.45 })
+    .stroke({ width: 7, color: sw.line, alpha: 0.9 });
 }
 
 /** A bud card: two small source tiles at the top (left parent's, right parent's) and a closed bud, or its open sprout. */
@@ -167,7 +215,13 @@ export class BudCard extends Container {
   private readonly glowRing = new Graphics();
 
   /** At levels 7–8 a rim fan's source tiles are petal-shaped, in the round's rim colour. */
-  constructor(copies: readonly [Copy, Copy], colors: readonly [ColorName, ColorName], positions: readonly [0 | 1, 0 | 1], marking: Marking = 'spots', rimColor: ColorName = 'blue') {
+  constructor(
+    copies: readonly [Copy, Copy],
+    colors: readonly [ColorName, ColorName],
+    positions: readonly [0 | 1, 0 | 1],
+    marking: Marking = 'spots',
+    rimColor: ColorName = 'blue',
+  ) {
     super();
     this.face = finish({ w: BUD_W, h: BUD_H, corner: 26 }, swatch.green, cream);
     this.addChild(this.glowRing, this.face);
@@ -184,7 +238,12 @@ export class BudCard extends Container {
       ring.eventMode = t.eventMode = dot.eventMode = 'none';
       this.addChild(ring, t, dot);
     }
-    const plus = new Graphics().moveTo(-8, 0).lineTo(8, 0).moveTo(0, -8).lineTo(0, 8).stroke({ width: 4, color: swatch.brown.line, cap: 'round' });
+    const plus = new Graphics()
+      .moveTo(-8, 0)
+      .lineTo(8, 0)
+      .moveTo(0, -8)
+      .lineTo(0, 8)
+      .stroke({ width: 4, color: swatch.brown.line, cap: 'round' });
     plus.position.set(0, -BUD_H / 2 + 42);
     plus.eventMode = 'none';
     this.sproutArt = new Sprout(118);
@@ -205,7 +264,9 @@ export class BudCard extends Container {
   glow(r: number | null) {
     this.glowRing.clear();
     if (r === null) return;
-    this.glowRing.roundRect(-BUD_W / 2 - 10 * r, -BUD_H / 2 - 10 * r, BUD_W + 20 * r, BUD_H + 20 * r, 32).stroke({ width: 8, color: swatch.yellow.fill });
+    this.glowRing
+      .roundRect(-BUD_W / 2 - 10 * r, -BUD_H / 2 - 10 * r, BUD_W + 20 * r, BUD_H + 20 * r, 32)
+      .stroke({ width: 8, color: swatch.yellow.fill });
   }
 }
 
@@ -219,7 +280,8 @@ export function lookPic(look: Look, color: ColorName): Container {
 /** A claim card's picture: a spotted sprout beside a plain one (sometimes), or a row of three spotted sprouts (always). */
 export function claimPic(claim: Claim, color: ColorName): Container {
   const c = new Container();
-  const row: readonly Look[] = claim === 'sometimes' ? ['spotted', 'plain'] : ['spotted', 'spotted', 'spotted'];
+  const row: readonly Look[] =
+    claim === 'sometimes' ? ['spotted', 'plain'] : ['spotted', 'spotted', 'spotted'];
   const gap = claim === 'sometimes' ? 82 : 60;
   for (const [i, look] of row.entries()) {
     const p = plantArt(look, color, claim === 'sometimes' ? 128 : 112);
@@ -235,7 +297,10 @@ export class ChoiceCard<K extends string = Look | Claim> extends Container {
   private readonly glowRing = new Graphics();
   chosen = false;
 
-  constructor(readonly key: K, pic: Container) {
+  constructor(
+    readonly key: K,
+    pic: Container,
+  ) {
     super();
     const face = finish({ w: CARD, h: CARD, corner: 28 }, swatch.blue, cream);
     pic.eventMode = 'none';
@@ -248,14 +313,23 @@ export class ChoiceCard<K extends string = Look | Claim> extends Container {
     this.chosen = on;
     this.badge.clear();
     if (!on) return;
-    this.badge.circle(CARD / 2 - 28, -CARD / 2 + 28, 26).fill(swatch.green.fill).stroke({ width: 4, color: swatch.green.line });
-    this.badge.moveTo(CARD / 2 - 40, -CARD / 2 + 28).lineTo(CARD / 2 - 31, -CARD / 2 + 38).lineTo(CARD / 2 - 15, -CARD / 2 + 18).stroke({ width: 6, color: 0xffffff, cap: 'round', join: 'round' });
+    this.badge
+      .circle(CARD / 2 - 28, -CARD / 2 + 28, 26)
+      .fill(swatch.green.fill)
+      .stroke({ width: 4, color: swatch.green.line });
+    this.badge
+      .moveTo(CARD / 2 - 40, -CARD / 2 + 28)
+      .lineTo(CARD / 2 - 31, -CARD / 2 + 38)
+      .lineTo(CARD / 2 - 15, -CARD / 2 + 18)
+      .stroke({ width: 6, color: 0xffffff, cap: 'round', join: 'round' });
   }
 
   glow(r: number | null) {
     this.glowRing.clear();
     if (r === null) return;
-    this.glowRing.roundRect(-CARD / 2 - 10 * r, -CARD / 2 - 10 * r, CARD + 20 * r, CARD + 20 * r, 34).stroke({ width: 8, color: swatch.yellow.fill });
+    this.glowRing
+      .roundRect(-CARD / 2 - 10 * r, -CARD / 2 - 10 * r, CARD + 20 * r, CARD + 20 * r, 34)
+      .stroke({ width: 8, color: swatch.yellow.fill });
   }
 }
 
@@ -268,7 +342,12 @@ export function packetArt(): Container {
   g.moveTo(0, 22).lineTo(0, -4).stroke({ width: 4, color: swatch.green.line, cap: 'round' });
   g.ellipse(-8, 0, 9, 5).fill(swatch.green.fill);
   g.ellipse(8, -6, 9, 5).fill(swatch.green.fill);
-  for (const [x, y] of [[30, 18], [36, 30], [24, 32]] as const) g.ellipse(x, y, 4, 6).fill(swatch.brown.line);
+  for (const [x, y] of [
+    [30, 18],
+    [36, 30],
+    [24, 32],
+  ] as const)
+    g.ellipse(x, y, 4, 6).fill(swatch.brown.line);
   c.addChild(g);
   return c;
 }
@@ -276,7 +355,11 @@ export function packetArt(): Container {
 /** The green leaf on the Check button. */
 export function leafArt(): Graphics {
   const g = new Graphics();
-  g.moveTo(-34, 26).bezierCurveTo(-40, -20, 0, -40, 36, -30).bezierCurveTo(40, 10, 10, 40, -34, 26).fill(swatch.green.light).stroke({ width: 5, color: swatch.green.line, join: 'round' });
+  g.moveTo(-34, 26)
+    .bezierCurveTo(-40, -20, 0, -40, 36, -30)
+    .bezierCurveTo(40, 10, 10, 40, -34, 26)
+    .fill(swatch.green.light)
+    .stroke({ width: 5, color: swatch.green.line, join: 'round' });
   g.moveTo(-30, 24).lineTo(28, -24).stroke({ width: 4, color: swatch.green.line, cap: 'round' });
   return g;
 }
@@ -288,8 +371,14 @@ export function iconArt(): Container {
   g.ellipse(0, 0, 54, 14).fill(swatch.brown.fill).stroke({ width: 4, color: swatch.brown.line });
   g.moveTo(0, -4).lineTo(0, -110).stroke({ width: 9, color: swatch.green.line, cap: 'round' });
   c.addChild(g);
-  for (const [side, copy, color] of [[-1, 'A', 'pink'], [1, 'a', 'purple']] as const) {
-    const p = new Graphics().ellipse(0, 0, 26, 44).fill(swatch[color].fill).stroke({ width: 4, color: swatch[color].line });
+  for (const [side, copy, color] of [
+    [-1, 'A', 'pink'],
+    [1, 'a', 'purple'],
+  ] as const) {
+    const p = new Graphics()
+      .ellipse(0, 0, 26, 44)
+      .fill(swatch[color].fill)
+      .stroke({ width: 4, color: swatch[color].line });
     p.position.set(side * 30, -130);
     p.rotation = side * 0.55;
     const m = marks(copy, 22);
@@ -297,7 +386,12 @@ export function iconArt(): Container {
     m.rotation = p.rotation;
     c.addChild(p, m);
   }
-  c.addChild(new Graphics().circle(0, -108, 16).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line }));
+  c.addChild(
+    new Graphics()
+      .circle(0, -108, 16)
+      .fill(swatch.yellow.fill)
+      .stroke({ width: 4, color: swatch.yellow.line }),
+  );
   return c;
 }
 
@@ -320,7 +414,10 @@ export class PairCard extends Container {
   private readonly glowRing = new Graphics();
   chosen = false;
 
-  constructor(pair: readonly [readonly [Copy, Copy], readonly [Copy, Copy]], colors: readonly [ColorName, ColorName]) {
+  constructor(
+    pair: readonly [readonly [Copy, Copy], readonly [Copy, Copy]],
+    colors: readonly [ColorName, ColorName],
+  ) {
     super();
     const face = finish({ w: PAIR_W, h: PAIR_H, corner: 28 }, swatch.blue, cream);
     this.badge.eventMode = this.glowRing.eventMode = 'none';
@@ -346,14 +443,23 @@ export class PairCard extends Container {
     this.chosen = on;
     this.badge.clear();
     if (!on) return;
-    this.badge.circle(PAIR_W / 2 - 28, -PAIR_H / 2 + 28, 26).fill(swatch.green.fill).stroke({ width: 4, color: swatch.green.line });
-    this.badge.moveTo(PAIR_W / 2 - 40, -PAIR_H / 2 + 28).lineTo(PAIR_W / 2 - 31, -PAIR_H / 2 + 38).lineTo(PAIR_W / 2 - 15, -PAIR_H / 2 + 18).stroke({ width: 6, color: 0xffffff, cap: 'round', join: 'round' });
+    this.badge
+      .circle(PAIR_W / 2 - 28, -PAIR_H / 2 + 28, 26)
+      .fill(swatch.green.fill)
+      .stroke({ width: 4, color: swatch.green.line });
+    this.badge
+      .moveTo(PAIR_W / 2 - 40, -PAIR_H / 2 + 28)
+      .lineTo(PAIR_W / 2 - 31, -PAIR_H / 2 + 38)
+      .lineTo(PAIR_W / 2 - 15, -PAIR_H / 2 + 18)
+      .stroke({ width: 6, color: 0xffffff, cap: 'round', join: 'round' });
   }
 
   glow(r: number | null) {
     this.glowRing.clear();
     if (r === null) return;
-    this.glowRing.roundRect(-PAIR_W / 2 - 10 * r, -PAIR_H / 2 - 10 * r, PAIR_W + 20 * r, PAIR_H + 20 * r, 34).stroke({ width: 8, color: swatch.yellow.fill });
+    this.glowRing
+      .roundRect(-PAIR_W / 2 - 10 * r, -PAIR_H / 2 - 10 * r, PAIR_W + 20 * r, PAIR_H + 20 * r, 34)
+      .stroke({ width: 8, color: swatch.yellow.fill });
   }
 }
 
@@ -398,7 +504,12 @@ export function canArt(): Container {
   g.ellipse(46, -28, 9, 6).fill(swatch.green.line);
   g.roundRect(-30, -20, 46, 44, 10).fill(swatch.green.fill).stroke({ width: 5, color: swatch.green.line });
   g.arc(-8, -20, 16, Math.PI, 0).stroke({ width: 6, color: swatch.green.line });
-  for (const [x, y] of [[50, -12], [56, 2], [46, 6]] as const) g.ellipse(x, y, 4, 6).fill(swatch.blue.fill);
+  for (const [x, y] of [
+    [50, -12],
+    [56, 2],
+    [46, 6],
+  ] as const)
+    g.ellipse(x, y, 4, 6).fill(swatch.blue.fill);
   c.addChild(g);
   c.position.set(-8, 4);
   return c;
@@ -411,9 +522,17 @@ export function coverArt(): Container {
   const g = new Graphics();
   g.roundRect(-92, -48, 184, 96, 12).fill(cream).stroke({ width: 5, color: swatch.brown.line });
   g.moveTo(-92, -28).lineTo(92, -28).stroke({ width: 3, color: swatch.brown.line });
-  g.moveTo(60, 48).lineTo(92, 16).lineTo(92, 48).closePath().fill(swatch.yellow.light).stroke({ width: 3, color: swatch.brown.line });
+  g.moveTo(60, 48)
+    .lineTo(92, 16)
+    .lineTo(92, 48)
+    .closePath()
+    .fill(swatch.yellow.light)
+    .stroke({ width: 3, color: swatch.brown.line });
   c.addChild(g);
-  const q = new Text({ text: '?', style: { fontFamily: 'Nunito, sans-serif', fontSize: 64, fontWeight: '900', fill: ink } });
+  const q = new Text({
+    text: '?',
+    style: { fontFamily: 'Nunito, sans-serif', fontSize: 64, fontWeight: '900', fill: ink },
+  });
   q.anchor.set(0.5);
   q.position.set(0, 12);
   c.addChild(q);
@@ -423,8 +542,11 @@ export function coverArt(): Container {
 /** The record card: a long wooden garden label with eight sprout slots. Slots are not touch targets. */
 export function recordArt(): Graphics {
   const g = new Graphics();
-  g.roundRect(-RECORD_W / 2, -RECORD_H / 2, RECORD_W, RECORD_H, 20).fill(swatch.brown.light).stroke({ width: 6, color: swatch.brown.line });
-  for (let i = 0; i < 8; i++) g.ellipse(slotX(i), RECORD_H / 2 - 18, 26, 8).fill({ color: swatch.brown.line, alpha: 0.35 });
+  g.roundRect(-RECORD_W / 2, -RECORD_H / 2, RECORD_W, RECORD_H, 20)
+    .fill(swatch.brown.light)
+    .stroke({ width: 6, color: swatch.brown.line });
+  for (let i = 0; i < 8; i++)
+    g.ellipse(slotX(i), RECORD_H / 2 - 18, 26, 8).fill({ color: swatch.brown.line, alpha: 0.35 });
   return g;
 }
 
@@ -449,9 +571,14 @@ export function cantTellArt(): Container {
   const c = new Container();
   c.eventMode = 'none';
   const g = new Graphics();
-  g.roundRect(-110, -26, 220, 52, 26).fill(swatch.yellow.light).stroke({ width: 5, color: swatch.yellow.line });
+  g.roundRect(-110, -26, 220, 52, 26)
+    .fill(swatch.yellow.light)
+    .stroke({ width: 5, color: swatch.yellow.line });
   c.addChild(g);
-  const t = new Text({ text: "Can't tell yet", style: { fontFamily: 'Nunito, sans-serif', fontSize: 28, fontWeight: '800', fill: ink } });
+  const t = new Text({
+    text: "Can't tell yet",
+    style: { fontFamily: 'Nunito, sans-serif', fontSize: 28, fontWeight: '800', fill: ink },
+  });
   t.anchor.set(0.5);
   c.addChild(t);
   return c;
@@ -485,7 +612,9 @@ export function testerArt(look: Look, copies: readonly [Copy, Copy], color: Colo
 export function benchArt(w: number): Graphics {
   const g = new Graphics();
   for (const x of [-w / 2 + 30, w / 2 - 30]) g.roundRect(x - 8, 0, 16, 34, 4).fill(swatch.brown.line);
-  g.roundRect(-w / 2, -14, w, 24, 10).fill(swatch.brown.light).stroke({ width: 5, color: swatch.brown.line });
+  g.roundRect(-w / 2, -14, w, 24, 10)
+    .fill(swatch.brown.light)
+    .stroke({ width: 5, color: swatch.brown.line });
   g.eventMode = 'none';
   return g;
 }
@@ -510,7 +639,12 @@ function petalPath(g: Graphics, r: number, dy = 0) {
  * A petal-shaped cream copy tile for the rim marking: a thick edge in the rim colour (a rim copy), or a thin dotted
  * outline (a no-rim copy). The shape tells the marking, the edge tells the copy; the small `B`/`b` is for grown-ups.
  */
-export function petalTileArt(copy: Copy, size = TILE, letter = true, rimColor: ColorName = 'blue'): Container {
+export function petalTileArt(
+  copy: Copy,
+  size = TILE,
+  letter = true,
+  rimColor: ColorName = 'blue',
+): Container {
   const c = new Container();
   c.eventMode = 'none';
   const r = size / 2;
@@ -518,7 +652,8 @@ export function petalTileArt(copy: Copy, size = TILE, letter = true, rimColor: C
   g.ellipse(0, r * 0.95, r * 0.6, r * 0.14).fill({ color: 0x2b2440, alpha: 0.18 });
   petalPath(g, r).fill(swatch.brown.line);
   petalPath(g, r - 6, -2).fill(cream);
-  if (copy === 'A') petalPath(g, r * 0.62, -2).stroke({ width: Math.max(5, r * 0.22), color: swatch[rimColor].line });
+  if (copy === 'A')
+    petalPath(g, r * 0.62, -2).stroke({ width: Math.max(5, r * 0.22), color: swatch[rimColor].line });
   else {
     for (let i = 0; i < 12; i++) {
       const a = (i / 12) * Math.PI * 2;
@@ -527,7 +662,15 @@ export function petalTileArt(copy: Copy, size = TILE, letter = true, rimColor: C
   }
   c.addChild(g);
   if (letter) {
-    const t = new Text({ text: copy === 'A' ? 'B' : 'b', style: { fontFamily: 'Nunito, sans-serif', fontSize: Math.max(14, size * 0.17), fontWeight: '800', fill: swatch.brown.line } });
+    const t = new Text({
+      text: copy === 'A' ? 'B' : 'b',
+      style: {
+        fontFamily: 'Nunito, sans-serif',
+        fontSize: Math.max(14, size * 0.17),
+        fontWeight: '800',
+        fill: swatch.brown.line,
+      },
+    });
     t.anchor.set(0.5);
     t.position.set(r * 0.62, r * 0.62);
     t.eventMode = 'none';
@@ -537,7 +680,13 @@ export function petalTileArt(copy: Copy, size = TILE, letter = true, rimColor: C
 }
 
 /** A copy tile for either marking: G1's round tile for spots, the petal tile for the rim. */
-export function copyTileArt(marking: Marking, copy: Copy, size = TILE, letter = true, rimColor: ColorName = 'blue'): Container {
+export function copyTileArt(
+  marking: Marking,
+  copy: Copy,
+  size = TILE,
+  letter = true,
+  rimColor: ColorName = 'blue',
+): Container {
   return marking === 'spots' ? tileArt(copy, size, letter) : petalTileArt(copy, size, letter, rimColor);
 }
 
@@ -546,7 +695,13 @@ export function potArt(): Graphics {
   const g = new Graphics();
   g.eventMode = 'none';
   g.ellipse(0, 78, 74, 12).fill({ color: 0x2b2440, alpha: 0.16 });
-  g.moveTo(-70, 10).lineTo(70, 10).lineTo(54, 76).lineTo(-54, 76).closePath().fill(swatch.orange.fill).stroke({ width: 5, color: swatch.orange.line, join: 'round' });
+  g.moveTo(-70, 10)
+    .lineTo(70, 10)
+    .lineTo(54, 76)
+    .lineTo(-54, 76)
+    .closePath()
+    .fill(swatch.orange.fill)
+    .stroke({ width: 5, color: swatch.orange.line, join: 'round' });
   g.roundRect(-84, -8, 168, 24, 10).fill(swatch.orange.light).stroke({ width: 5, color: swatch.orange.line });
   return g;
 }
@@ -559,7 +714,13 @@ export class PlantCard extends Container {
   private readonly glowRing = new Graphics();
   private readonly tiles: { marking: Marking; node: Container }[] = [];
 
-  constructor(readonly index: number, spots: readonly [Copy, Copy], rim: readonly [Copy, Copy], color: ColorName, rimColor: ColorName) {
+  constructor(
+    readonly index: number,
+    spots: readonly [Copy, Copy],
+    rim: readonly [Copy, Copy],
+    color: ColorName,
+    rimColor: ColorName,
+  ) {
     super();
     const face = finish({ w: PLANT_W, h: PLANT_H, corner: 28 }, swatch.green, cream);
     this.glowRing.eventMode = 'none';
@@ -569,10 +730,17 @@ export class PlantCard extends Container {
     plant.position.set(0, 36);
     plant.eventMode = 'none';
     this.addChild(plant);
-    const tray = new Graphics().roundRect(-94, PLANT_H / 2 - 60, 188, 52, 16).fill({ color: swatch.brown.light, alpha: 0.6 });
+    const tray = new Graphics()
+      .roundRect(-94, PLANT_H / 2 - 60, 188, 52, 16)
+      .fill({ color: swatch.brown.light, alpha: 0.6 });
     tray.eventMode = 'none';
     this.addChild(tray);
-    const copies: [Marking, Copy][] = [['spots', spots[0]], ['spots', spots[1]], ['rim', rim[0]], ['rim', rim[1]]];
+    const copies: [Marking, Copy][] = [
+      ['spots', spots[0]],
+      ['spots', spots[1]],
+      ['rim', rim[0]],
+      ['rim', rim[1]],
+    ];
     for (const [i, [marking, copy]] of copies.entries()) {
       const node = copyTileArt(marking, copy, 42, false, rimColor);
       node.position.set(-69 + i * 46, PLANT_H / 2 - 34);
@@ -591,7 +759,9 @@ export class PlantCard extends Container {
   glow(r: number | null) {
     this.glowRing.clear();
     if (r === null) return;
-    this.glowRing.roundRect(-PLANT_W / 2 - 10 * r, -PLANT_H / 2 - 10 * r, PLANT_W + 20 * r, PLANT_H + 20 * r, 34).stroke({ width: 8, color: swatch.yellow.fill });
+    this.glowRing
+      .roundRect(-PLANT_W / 2 - 10 * r, -PLANT_H / 2 - 10 * r, PLANT_W + 20 * r, PLANT_H + 20 * r, 34)
+      .stroke({ width: 8, color: swatch.yellow.fill });
   }
 }
 

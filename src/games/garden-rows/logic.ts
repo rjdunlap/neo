@@ -29,15 +29,59 @@ export interface RowsPlan {
 /** The ladder: one missing flower per row, then columns too, then bigger beds with fewer flowers to start. */
 export const PLANS: RowsPlan[] = [
   { name: 'Plant the missing flower in each row of a 3 by 3 bed', size: 3, rule: 'rows', blanks: 3, beds: 2 },
-  { name: 'Rows and columns: no flower repeats in a row or a column (3 by 3)', size: 3, rule: 'both', blanks: 4, beds: 2 },
+  {
+    name: 'Rows and columns: no flower repeats in a row or a column (3 by 3)',
+    size: 3,
+    rule: 'both',
+    blanks: 4,
+    beds: 2,
+  },
   { name: 'A 4 by 4 bed with a few flowers missing', size: 4, rule: 'both', blanks: 6, beds: 2 },
   { name: 'A 4 by 4 bed with more flowers to work out', size: 4, rule: 'both', blanks: 9, beds: 2 },
-  { name: 'A 4 by 4 bed with only a few flowers planted to start', size: 4, rule: 'both', blanks: 11, beds: 1 },
-  { name: 'A 5 by 5 bed: rows and columns, five kinds of flower', size: 5, rule: 'both', blanks: 14, beds: 1 },
-  { name: 'Mend the bed: two flowers in one row swapped places; find them and swap them back (4 by 4)', size: 4, rule: 'both', blanks: 0, beds: 2, mend: true },
-  { name: 'Hedge boxes: no flower repeats in a row, a column or a 2 by 2 hedge box (4 by 4)', size: 4, rule: 'boxes', blanks: 6, beds: 2 },
-  { name: 'Hedge boxes with fewer flowers to start (4 by 4, ten spots empty)', size: 4, rule: 'boxes', blanks: 10, beds: 1 },
-  { name: 'One row of three flowers: plant the missing one (three rows in turn)', size: 3, rows: 1, rule: 'rows', blanks: 1, beds: 3 },
+  {
+    name: 'A 4 by 4 bed with only a few flowers planted to start',
+    size: 4,
+    rule: 'both',
+    blanks: 11,
+    beds: 1,
+  },
+  {
+    name: 'A 5 by 5 bed: rows and columns, five kinds of flower',
+    size: 5,
+    rule: 'both',
+    blanks: 14,
+    beds: 1,
+  },
+  {
+    name: 'Mend the bed: two flowers in one row swapped places; find them and swap them back (4 by 4)',
+    size: 4,
+    rule: 'both',
+    blanks: 0,
+    beds: 2,
+    mend: true,
+  },
+  {
+    name: 'Hedge boxes: no flower repeats in a row, a column or a 2 by 2 hedge box (4 by 4)',
+    size: 4,
+    rule: 'boxes',
+    blanks: 6,
+    beds: 2,
+  },
+  {
+    name: 'Hedge boxes with fewer flowers to start (4 by 4, ten spots empty)',
+    size: 4,
+    rule: 'boxes',
+    blanks: 10,
+    beds: 1,
+  },
+  {
+    name: 'One row of three flowers: plant the missing one (three rows in turn)',
+    size: 3,
+    rows: 1,
+    rule: 'rows',
+    blanks: 1,
+    beds: 3,
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -72,7 +116,8 @@ export function boxSpots(size: number, r: number, c: number): { r: number; c: nu
   return Array.from({ length: b * b }, (_, i) => ({ r: r0 + Math.floor(i / b), c: c0 + (i % b) }));
 }
 
-export const emptyBed = (size: number, rows = size): Bed => Array.from({ length: rows }, () => Array<number | null>(size).fill(null));
+export const emptyBed = (size: number, rows = size): Bed =>
+  Array.from({ length: rows }, () => Array<number | null>(size).fill(null));
 export const copyBed = (bed: Bed): Bed => bed.map((row) => [...row]);
 
 /** Which flowers can still go in a spot without repeating one already in its row (or column, or hedge box). */
@@ -80,8 +125,11 @@ export function candidates(bed: Bed, rule: Rule, r: number, c: number): number[]
   const n = bed[r].length;
   const used = new Set<number>();
   for (let i = 0; i < n; i++) if (i !== c && bed[r][i] !== null) used.add(bed[r][i]!);
-  if (rule !== 'rows') for (let i = 0; i < bed.length; i++) if (i !== r && bed[i][c] !== null) used.add(bed[i][c]!);
-  if (rule === 'boxes') for (const s of boxSpots(n, r, c)) if ((s.r !== r || s.c !== c) && bed[s.r][s.c] !== null) used.add(bed[s.r][s.c]!);
+  if (rule !== 'rows')
+    for (let i = 0; i < bed.length; i++) if (i !== r && bed[i][c] !== null) used.add(bed[i][c]!);
+  if (rule === 'boxes')
+    for (const s of boxSpots(n, r, c))
+      if ((s.r !== r || s.c !== c) && bed[s.r][s.c] !== null) used.add(bed[s.r][s.c]!);
   return Array.from({ length: n }, (_, f) => f).filter((f) => !used.has(f));
 }
 
@@ -89,21 +137,34 @@ export function candidates(bed: Bed, rule: Rule, r: number, c: number): number[]
  * The flower that stops `flower` going at (r, c): the same kind already in its row or column, else (with hedges) in its
  * box. A box clash is named only when the repeat shares neither the row nor the column, so the line she hears is the new rule.
  */
-export function clash(bed: Bed, rule: Rule, r: number, c: number, flower: number): { by: 'row' | 'column' | 'box'; r: number; c: number } | null {
+export function clash(
+  bed: Bed,
+  rule: Rule,
+  r: number,
+  c: number,
+  flower: number,
+): { by: 'row' | 'column' | 'box'; r: number; c: number } | null {
   const n = bed[r].length;
   // Row and column together, nearest index first, as the square bed has always named them.
   for (let i = 0; i < Math.max(n, bed.length); i++) {
     if (i < n && i !== c && bed[r][i] === flower) return { by: 'row', r, c: i };
-    if (rule !== 'rows' && i < bed.length && i !== r && bed[i][c] === flower) return { by: 'column', r: i, c };
+    if (rule !== 'rows' && i < bed.length && i !== r && bed[i][c] === flower)
+      return { by: 'column', r: i, c };
   }
-  if (rule === 'boxes') for (const s of boxSpots(n, r, c)) if (s.r !== r && s.c !== c && bed[s.r][s.c] === flower) return { by: 'box', ...s };
+  if (rule === 'boxes')
+    for (const s of boxSpots(n, r, c))
+      if (s.r !== r && s.c !== c && bed[s.r][s.c] === flower) return { by: 'box', ...s };
   return null;
 }
 
 /** Empty spots where no flower fits any more: the bed cannot be finished without taking something out. */
 export function deadEnds(bed: Bed, rule: Rule): { r: number; c: number }[] {
   const out: { r: number; c: number }[] = [];
-  bed.forEach((row, r) => row.forEach((v, c) => { if (v === null && candidates(bed, rule, r, c).length === 0) out.push({ r, c }); }));
+  bed.forEach((row, r) =>
+    row.forEach((v, c) => {
+      if (v === null && candidates(bed, rule, r, c).length === 0) out.push({ r, c });
+    }),
+  );
   return out;
 }
 
@@ -169,10 +230,14 @@ export function solve(bed: Bed, rule: Rule): Bed | null {
  * boxes: bands of rows, rows inside a band, stacks of columns, columns inside a stack, and the flowers themselves.
  */
 export function fullBed(size: number, rule: Rule, rng: Rng, height = size): Bed {
-  if (rule === 'rows') return Array.from({ length: height }, () => rng.shuffle(Array.from({ length: size }, (_, f) => f)));
+  if (rule === 'rows')
+    return Array.from({ length: height }, () => rng.shuffle(Array.from({ length: size }, (_, f) => f)));
   if (rule === 'boxes') {
     const b = boxSide(size);
-    const order = () => rng.shuffle(Array.from({ length: b }, (_, i) => i)).flatMap((band) => rng.shuffle(Array.from({ length: b }, (_, i) => band * b + i)));
+    const order = () =>
+      rng
+        .shuffle(Array.from({ length: b }, (_, i) => i))
+        .flatMap((band) => rng.shuffle(Array.from({ length: b }, (_, i) => band * b + i)));
     const rows = order();
     const cols = order();
     const kinds = rng.shuffle(Array.from({ length: size }, (_, i) => i));
@@ -196,7 +261,10 @@ export interface Puzzle {
 
 /** `size` of the five flowers, chosen by the seed and listed in palette order. */
 export const chooseKinds = (size: number, rng: Rng): number[] =>
-  rng.shuffle(Array.from({ length: FLOWER_NAMES.length }, (_, f) => f)).slice(0, size).sort((a, b) => a - b);
+  rng
+    .shuffle(Array.from({ length: FLOWER_NAMES.length }, (_, f) => f))
+    .slice(0, size)
+    .sort((a, b) => a - b);
 
 /** Mend the bed: a full bed with two flowers in one row swapped, so each of their two columns holds a repeat. */
 export function makeMend(plan: RowsPlan, rng: Rng): Puzzle {
@@ -224,7 +292,12 @@ export function makePuzzle(plan: RowsPlan, rng: Rng): Puzzle {
       for (let r = 0; r < start.length; r++) start[r][rng.int(0, plan.size - 1)] = null;
       return { start, solution, kinds };
     }
-    const spots = rng.shuffle(Array.from({ length: plan.size * plan.size }, (_, i) => ({ r: Math.floor(i / plan.size), c: i % plan.size })));
+    const spots = rng.shuffle(
+      Array.from({ length: plan.size * plan.size }, (_, i) => ({
+        r: Math.floor(i / plan.size),
+        c: i % plan.size,
+      })),
+    );
     let blanks = 0;
     for (const { r, c } of spots) {
       if (blanks >= plan.blanks) break;
@@ -262,7 +335,8 @@ export type Hint =
  */
 export function hintFor(bed: Bed, given: boolean[][], solution: Bed, rule: Rule): Hint | null {
   for (let r = 0; r < bed.length; r++)
-    for (let c = 0; c < bed[r].length; c++) if (!given[r][c] && bed[r][c] !== null && bed[r][c] !== solution[r][c]) return { kind: 'fix', r, c };
+    for (let c = 0; c < bed[r].length; c++)
+      if (!given[r][c] && bed[r][c] !== null && bed[r][c] !== solution[r][c]) return { kind: 'fix', r, c };
   let best: { r: number; c: number; options: number } | null = null;
   for (let r = 0; r < bed.length; r++)
     for (let c = 0; c < bed[r].length; c++) {
@@ -278,7 +352,12 @@ export function hintFor(bed: Bed, given: boolean[][], solution: Bed, rule: Rule)
  * is one), planted with the flower of the one way to finish. Among equally tight spots it prefers one that takes the packet
  * already chosen, so the seeds are not swapped more than needed. Null when the bed is full.
  */
-export function nextPlanting(bed: Bed, solution: Bed, rule: Rule, selected: number): { r: number; c: number; flower: number } | null {
+export function nextPlanting(
+  bed: Bed,
+  solution: Bed,
+  rule: Rule,
+  selected: number,
+): { r: number; c: number; flower: number } | null {
   let best: { r: number; c: number; flower: number; key: number } | null = null;
   for (let r = 0; r < bed.length; r++)
     for (let c = 0; c < bed[r].length; c++) {
@@ -293,7 +372,11 @@ export function nextPlanting(bed: Bed, solution: Bed, rule: Rule, selected: numb
 /** Every planted spot that repeats a flower in its row (or column). */
 export function clashing(bed: Bed, rule: Rule): { r: number; c: number }[] {
   const out: { r: number; c: number }[] = [];
-  bed.forEach((row, r) => row.forEach((v, c) => { if (v !== null && clash(bed, rule, r, c, v)) out.push({ r, c }); }));
+  bed.forEach((row, r) =>
+    row.forEach((v, c) => {
+      if (v !== null && clash(bed, rule, r, c, v)) out.push({ r, c });
+    }),
+  );
   return out;
 }
 
@@ -309,10 +392,15 @@ export function mendTarget(bed: Bed, rule: Rule, solution: Bed): Bed {
 
 /** The ghost finger's next move toward `target`: lift a flower that differs from it, else plant as `nextPlanting` does. */
 export function nextMove(
-  bed: Bed, given: boolean[][], target: Bed, rule: Rule, selected: number,
+  bed: Bed,
+  given: boolean[][],
+  target: Bed,
+  rule: Rule,
+  selected: number,
 ): { lift: true; r: number; c: number } | { lift: false; r: number; c: number; flower: number } | null {
   for (let r = 0; r < bed.length; r++)
-    for (let c = 0; c < bed[r].length; c++) if (!given[r][c] && bed[r][c] !== null && bed[r][c] !== target[r][c]) return { lift: true, r, c };
+    for (let c = 0; c < bed[r].length; c++)
+      if (!given[r][c] && bed[r][c] !== null && bed[r][c] !== target[r][c]) return { lift: true, r, c };
   const step = nextPlanting(bed, target, rule, selected);
   return step && { lift: false, ...step };
 }

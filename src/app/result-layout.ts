@@ -29,7 +29,10 @@ export function resultSpots(v: Pick<View, 'w' | 'h'>, withHouse = true): ResultS
   const cx = v.w / 2;
   const row = v.h * 0.72;
   const house = { x: Math.min(cx + 380, v.w - 60 - RESULT_RADIUS.house), y: row };
-  const home = { x: withHouse ? Math.min(cx + 240, house.x - RESULT_RADIUS.house - 20 - RESULT_RADIUS.home) : cx + 240, y: row };
+  const home = {
+    x: withHouse ? Math.min(cx + 240, house.x - RESULT_RADIUS.house - 20 - RESULT_RADIUS.home) : cx + 240,
+    y: row,
+  };
   return {
     sticker: { x: cx, y: v.h * 0.33 },
     pill: { x: cx, y: v.h * 0.555 },

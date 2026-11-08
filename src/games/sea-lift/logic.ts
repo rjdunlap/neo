@@ -15,7 +15,10 @@ export const STOPS = [5, 4, 3, 2, 1, 0, -1, -2, -3, -4, -5] as const;
 export const LEVELS: BandLevels = { school: { min: 1, max: 5 } };
 
 export type LevelId = 1 | 2 | 3 | 4 | 5;
-export interface Plan { id: LevelId; name: string }
+export interface Plan {
+  id: LevelId;
+  name: string;
+}
 export const PLANS: readonly Plan[] = [
   { id: 1, name: 'Up or down? Stops from the water' },
   { id: 2, name: 'Through the water: rides that cross zero' },
@@ -23,7 +26,8 @@ export const PLANS: readonly Plan[] = [
   { id: 4, name: 'How far? Count the stops between two friends across the water' },
   { id: 5, name: 'Twin stops: the same distance from the water on the other side' },
 ];
-export const planFor = (level: number): Plan => PLANS[Math.max(0, Math.min(PLANS.length - 1, Math.round(level) - 1))];
+export const planFor = (level: number): Plan =>
+  PLANS[Math.max(0, Math.min(PLANS.length - 1, Math.round(level) - 1))];
 
 /** Friends who live above the water (critters) and below it (sea friends). */
 export type LandFriend = 'duck' | 'cat' | 'bunny' | 'pig';
@@ -33,13 +37,27 @@ export const LAND_FRIENDS: readonly LandFriend[] = ['duck', 'cat', 'bunny', 'pig
 export const SEA_FRIENDS: readonly SeaFriend[] = ['fish', 'turtle', 'penguin'];
 
 /** A ride: level 1 always starts at the dock (0); level 2 starts on one side of the water and ends on the other. */
-export interface Ride { friend: Friend; from: number; to: number }
+export interface Ride {
+  friend: Friend;
+  from: number;
+  to: number;
+}
 /** Level 3: three friends at different stops, picked up deepest or highest first. */
-export interface PickCase { mode: 'deepest' | 'highest'; friends: { friend: Friend; stop: number }[] }
+export interface PickCase {
+  mode: 'deepest' | 'highest';
+  friends: { friend: Friend; stop: number }[];
+}
 /** Level 4: two friends at two stops; the answer is how many stops apart they are, offered on three number cards. */
-export interface HowFar { from: { friend: Friend; stop: number }; to: { friend: Friend; stop: number }; cards: [number, number, number] }
+export interface HowFar {
+  from: { friend: Friend; stop: number };
+  to: { friend: Friend; stop: number };
+  cards: [number, number, number];
+}
 /** Level 5: a friend rides at a stop; the answer is the twin's stop, the same distance from the water on the other side. */
-export interface Twin { friend: Friend; stop: number }
+export interface Twin {
+  friend: Friend;
+  stop: number;
+}
 export type Item =
   | { kind: 'ride'; ride: Ride }
   | { kind: 'pick'; pick: PickCase }
@@ -62,7 +80,8 @@ export const numeral = (stop: number) => (stop < 0 ? `−${-stop}` : String(stop
 
 /** Every stop a ride passes, after its start, in order. */
 export function path(from: number, to: number): number[] {
-  const out: number[] = [], dir = Math.sign(to - from);
+  const out: number[] = [],
+    dir = Math.sign(to - from);
   for (let s = from + dir; dir !== 0 && s !== to + dir; s += dir) out.push(s);
   return out;
 }
@@ -70,19 +89,35 @@ export const crossesZero = (r: { from: number; to: number }) => Math.sign(r.from
 
 /** The ride counted aloud: "One, two, the water, four" — the water is named where the lift passes it. */
 export function countAloud(from: number, to: number): string {
-  return cap(path(from, to).map((s, i) => (s === 0 ? 'the water' : word(i + 1))).join(', '));
+  return cap(
+    path(from, to)
+      .map((s, i) => (s === 0 ? 'the water' : word(i + 1)))
+      .join(', '),
+  );
 }
 
 /** What a friend asks: level 1 names the stop ("three above the water"), level 2 only the count and direction ("five down"). */
-export function request(level: LevelId, ride: Ride): { line: 'sealift.ask.up' | 'sealift.ask.down' | 'sealift.ride.up' | 'sealift.ride.down'; n: string; up: boolean; count: number } {
-  const d = ride.to - ride.from, up = d > 0, count = Math.abs(d);
-  const line = level === 1 ? (up ? 'sealift.ask.up' : 'sealift.ask.down') : up ? 'sealift.ride.up' : 'sealift.ride.down';
+export function request(
+  level: LevelId,
+  ride: Ride,
+): {
+  line: 'sealift.ask.up' | 'sealift.ask.down' | 'sealift.ride.up' | 'sealift.ride.down';
+  n: string;
+  up: boolean;
+  count: number;
+} {
+  const d = ride.to - ride.from,
+    up = d > 0,
+    count = Math.abs(d);
+  const line =
+    level === 1 ? (up ? 'sealift.ask.up' : 'sealift.ask.down') : up ? 'sealift.ride.up' : 'sealift.ride.down';
   return { line, n: word(count), up, count };
 }
 
 /* Rounds -------------------------------------------------------------------------------------------- */
 
-const friendFor = (rng: Rng, stop: number): Friend => (stop > 0 ? rng.pick(LAND_FRIENDS) : rng.pick(SEA_FRIENDS));
+const friendFor = (rng: Rng, stop: number): Friend =>
+  stop > 0 ? rng.pick(LAND_FRIENDS) : rng.pick(SEA_FRIENDS);
 
 export function level1(rng: Rng): Ride[] {
   for (;;) {
@@ -109,7 +144,8 @@ export function level2(rng: Rng): Ride[] {
       if (last && last.from === s && last.to === to) continue;
       rides.push({ friend: friendFor(rng, s), from: s, to });
     }
-    if (rides.filter((r) => r.from > 0).length >= 2 && rides.filter((r) => r.from < 0).length >= 2) return rides;
+    if (rides.filter((r) => r.from > 0).length >= 2 && rides.filter((r) => r.from < 0).length >= 2)
+      return rides;
   }
 }
 
@@ -123,23 +159,34 @@ function pickCase(rng: Rng, mode: PickCase['mode'], above: boolean): PickCase {
 }
 
 export function level3(rng: Rng): PickCase[] {
-  const modes = rng.shuffle<PickCase['mode']>(['deepest', 'highest', rng.pick(['deepest', 'highest'] as const)]);
+  const modes = rng.shuffle<PickCase['mode']>([
+    'deepest',
+    'highest',
+    rng.pick(['deepest', 'highest'] as const),
+  ]);
   const withAbove = rng.int(0, 2);
   return modes.map((m, i) => pickCase(rng, m, i === withAbove || rng.chance(0.4)));
 }
 
 /* Level 4: how far ---------------------------------------------------------------------------------- */
 
-export const howFarAnswer = (c: { from: { stop: number }; to: { stop: number } }) => Math.abs(c.from.stop - c.to.stop);
-export const sameSide = (c: { from: { stop: number }; to: { stop: number } }) => Math.sign(c.from.stop) === Math.sign(c.to.stop);
+export const howFarAnswer = (c: { from: { stop: number }; to: { stop: number } }) =>
+  Math.abs(c.from.stop - c.to.stop);
+export const sameSide = (c: { from: { stop: number }; to: { stop: number } }) =>
+  Math.sign(c.from.stop) === Math.sign(c.to.stop);
 
 /**
  * The three cards: the answer; the magnitude mistake (across the water, the difference of the numerals as if the water were
  * not there, "4 − 3 = 1"; on one side, their sum); and the both-ends mistake (one more than the answer, counting both friends'
  * landings rather than the rides between them). Distinct by construction: see the definition's card table.
  */
-export function howFarCards(from: number, to: number): { right: number; magnitude: number; bothEnds: number } {
-  const right = Math.abs(from - to), a = Math.abs(from), b = Math.abs(to);
+export function howFarCards(
+  from: number,
+  to: number,
+): { right: number; magnitude: number; bothEnds: number } {
+  const right = Math.abs(from - to),
+    a = Math.abs(from),
+    b = Math.abs(to);
   const magnitude = Math.sign(from) === Math.sign(to) ? a + b : Math.abs(a - b);
   return { right, magnitude, bothEnds: right + 1 };
 }
@@ -161,7 +208,8 @@ export function level4(rng: Rng): HowFar[] {
     while (cases.length < 5) {
       let from: number, to: number;
       if (cases.length === sideCase) {
-        from = -rng.int(1, 5); to = -rng.int(1, 5);
+        from = -rng.int(1, 5);
+        to = -rng.int(1, 5);
         if (from === to) continue;
       } else {
         from = rng.int(1, 5) * (rng.chance(0.5) ? 1 : -1);
@@ -185,7 +233,10 @@ export function level5(rng: Rng): Twin[] {
     const stops = distances.map((d) => d * (rng.chance(0.5) ? 1 : -1));
     if (stops.filter((s) => s > 0).length < 2 || stops.filter((s) => s < 0).length < 2) continue;
     stops.splice(rng.int(1, 4), 0, 0);
-    return stops.map((stop) => ({ friend: stop === 0 ? rng.pick([...LAND_FRIENDS, ...SEA_FRIENDS]) : friendFor(rng, stop), stop }));
+    return stops.map((stop) => ({
+      friend: stop === 0 ? rng.pick([...LAND_FRIENDS, ...SEA_FRIENDS]) : friendFor(rng, stop),
+      stop,
+    }));
   }
 }
 
@@ -206,9 +257,30 @@ export const AUTHORED: Record<LevelId, Item[]> = {
     { friend: 'fish', from: -3, to: 1 },
   ].map((ride) => ({ kind: 'ride' as const, ride: ride as Ride })),
   3: [
-    { mode: 'deepest', friends: [{ friend: 'fish', stop: -5 }, { friend: 'penguin', stop: -2 }, { friend: 'cat', stop: 3 }] },
-    { mode: 'highest', friends: [{ friend: 'turtle', stop: -1 }, { friend: 'duck', stop: 4 }, { friend: 'fish', stop: -4 }] },
-    { mode: 'deepest', friends: [{ friend: 'bunny', stop: 2 }, { friend: 'penguin', stop: -3 }, { friend: 'fish', stop: -1 }] },
+    {
+      mode: 'deepest',
+      friends: [
+        { friend: 'fish', stop: -5 },
+        { friend: 'penguin', stop: -2 },
+        { friend: 'cat', stop: 3 },
+      ],
+    },
+    {
+      mode: 'highest',
+      friends: [
+        { friend: 'turtle', stop: -1 },
+        { friend: 'duck', stop: 4 },
+        { friend: 'fish', stop: -4 },
+      ],
+    },
+    {
+      mode: 'deepest',
+      friends: [
+        { friend: 'bunny', stop: 2 },
+        { friend: 'penguin', stop: -3 },
+        { friend: 'fish', stop: -1 },
+      ],
+    },
   ].map((pick) => ({ kind: 'pick' as const, pick: pick as PickCase })),
   // The definition's card table, rows 1–5: answers 7, 6, 7, 3, 5, the right card in every position, one same-side case fourth.
   4: [
@@ -237,7 +309,8 @@ export function makeRound(level: LevelId, rng: Rng, authored: boolean): Item[] {
 }
 
 /** A case's friends in the order asked: lowest first for deepest, highest first for highest. */
-export const pickOrder = (c: PickCase) => [...c.friends].sort((a, b) => (c.mode === 'deepest' ? a.stop - b.stop : b.stop - a.stop));
+export const pickOrder = (c: PickCase) =>
+  [...c.friends].sort((a, b) => (c.mode === 'deepest' ? a.stop - b.stop : b.stop - a.stop));
 
 /* Play ---------------------------------------------------------------------------------------------- */
 
@@ -260,7 +333,18 @@ export interface RoundState {
 }
 
 export function roundState(level: LevelId, items: Item[]): RoundState {
-  const s: RoundState = { level, items, index: 0, picked: [], car: 0, wrong: [], hinted: false, misses: 0, hints: 0, done: false };
+  const s: RoundState = {
+    level,
+    items,
+    index: 0,
+    picked: [],
+    car: 0,
+    wrong: [],
+    hinted: false,
+    misses: 0,
+    hints: 0,
+    done: false,
+  };
   s.car = startStop(s);
   return s;
 }
@@ -269,7 +353,13 @@ export function roundState(level: LevelId, items: Item[]): RoundState {
 export function startStop(s: RoundState): number {
   const it = s.items[s.index];
   if (!it) return 0;
-  return it.kind === 'ride' ? it.ride.from : it.kind === 'howfar' ? it.howfar.from.stop : it.kind === 'twin' ? it.twin.stop : 0;
+  return it.kind === 'ride'
+    ? it.ride.from
+    : it.kind === 'howfar'
+      ? it.howfar.from.stop
+      : it.kind === 'twin'
+        ? it.twin.stop
+        : 0;
 }
 
 /** The answer now: the right stop, or at level 4 the right card's value (a count of stops, never a stop). */
@@ -319,7 +409,8 @@ export function check(s: RoundState, stop: number): Check {
 /** Show the glow: once per request, and it counts as a hint. */
 export function giveHint(s: RoundState): boolean {
   if (s.done || s.hinted) return false;
-  s.hinted = true; s.hints++;
+  s.hinted = true;
+  s.hints++;
   return true;
 }
 
@@ -328,17 +419,24 @@ export function apply(s: RoundState, c: Check) {
   if (c.kind === 'ignore') return;
   if (c.kind === 'wrong') {
     if (!c.counted) return;
-    s.wrong.push(c.stop); s.misses++;
+    s.wrong.push(c.stop);
+    s.misses++;
     if (s.wrong.length >= 2) giveHint(s);
-    if (!c.support) { if (s.items[s.index].kind === 'pick') s.car = c.stop; return; }
+    if (!c.support) {
+      if (s.items[s.index].kind === 'pick') s.car = c.stop;
+      return;
+    }
   }
   advance(s);
 }
 
 /** The right stop is reached (by her tap or the supported finish). */
 function advance(s: RoundState) {
-  const it = s.items[s.index], right = hintFor(s);
-  s.wrong = []; s.hinted = false; s.car = arrivalStop(s);
+  const it = s.items[s.index],
+    right = hintFor(s);
+  s.wrong = [];
+  s.hinted = false;
+  s.car = arrivalStop(s);
   if (it.kind === 'pick') {
     s.picked.push(right);
     if (s.picked.length < it.pick.friends.length) return;
@@ -351,7 +449,12 @@ function advance(s: RoundState) {
 
 /* Layout -------------------------------------------------------------------------------------------- */
 
-export interface Box { x: number; y: number; w: number; h: number }
+export interface Box {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
 export interface ShaftLayout {
   /** Even pitch between neighbouring stops: the scale is the point. */
   pitch: number;
@@ -406,24 +509,36 @@ export function cardLayout(v: { w: number; h: number }): { card: Box; cards: [Bo
   const leftmost = Math.min(...[...L.landings.values()].map((b) => b.x));
   if (x + NUMBER_CARD.w > leftmost - 10) return null;
   const top = card.y + card.h + NUMBER_CARD.gap;
-  const cards = [0, 1, 2].map((i) => ({ x, y: top + i * (NUMBER_CARD.h + NUMBER_CARD.gap), w: NUMBER_CARD.w, h: NUMBER_CARD.h })) as [Box, Box, Box];
+  const cards = [0, 1, 2].map((i) => ({
+    x,
+    y: top + i * (NUMBER_CARD.h + NUMBER_CARD.gap),
+    w: NUMBER_CARD.w,
+    h: NUMBER_CARD.h,
+  })) as [Box, Box, Box];
   if (cards[2].y + cards[2].h > v.h - MARGIN) return null;
   return { card, cards };
 }
 
 /** The card (by index) under a touch, with a 10-unit margin, or null. */
 export function cardAt(cards: readonly Box[], x: number, y: number): number | null {
-  const i = cards.findIndex((b) => x >= b.x - 10 && x <= b.x + b.w + 10 && y >= b.y - 10 && y <= b.y + b.h + 10);
+  const i = cards.findIndex(
+    (b) => x >= b.x - 10 && x <= b.x + b.w + 10 && y >= b.y - 10 && y <= b.y + b.h + 10,
+  );
   return i < 0 ? null : i;
 }
 
 /** The landing nearest a touch (AGENTS: close targets resolve to the nearest, not the one drawn on top), or null when no landing is near. */
 export function nearestLanding(L: ShaftLayout, x: number, y: number): number | null {
-  let best: number | null = null, bestD = Infinity;
+  let best: number | null = null,
+    bestD = Infinity;
   for (const [stop, b] of L.landings) {
-    const dx = Math.max(b.x - x, 0, x - (b.x + b.w)), dy = Math.max(b.y - y, 0, y - (b.y + b.h));
+    const dx = Math.max(b.x - x, 0, x - (b.x + b.w)),
+      dy = Math.max(b.y - y, 0, y - (b.y + b.h));
     const d = Math.hypot(dx, dy) * 1000 + Math.hypot(x - (b.x + b.w / 2), y - (b.y + b.h / 2));
-    if (d < bestD) { bestD = d; best = stop; }
+    if (d < bestD) {
+      bestD = d;
+      best = stop;
+    }
   }
   if (best === null) return null;
   const b = L.landings.get(best)!;

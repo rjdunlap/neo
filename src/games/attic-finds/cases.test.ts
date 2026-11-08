@@ -3,9 +3,41 @@ import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import { landing, stepLevel } from '../../progress/difficulty';
 import {
-  answerFor, ATOMS, CASE_CARD_H, CASE_CARD_W, CASE_CHECK_R, CASE_CLAIMS, CASE_SLOT, caseLayout, caseState, caseTargets, checkCase, CLAIM_TABLE,
-  claimStatus, glowFor, helpCase, holds, isCase, makeCaseRound, PAPER_H, PAPER_IDS, PAPER_W, PAPERS, paperSupports, placePaper, readPaper,
-  SHOWN_CLAIMS, stampClaim, STAMP_R, status, supportingPaper, worlds, type CaseBoard, type CaseClaimId, type PaperId, type Stamp,
+  answerFor,
+  ATOMS,
+  CASE_CARD_H,
+  CASE_CARD_W,
+  CASE_CHECK_R,
+  CASE_CLAIMS,
+  CASE_SLOT,
+  caseLayout,
+  caseState,
+  caseTargets,
+  checkCase,
+  CLAIM_TABLE,
+  claimStatus,
+  glowFor,
+  helpCase,
+  holds,
+  isCase,
+  makeCaseRound,
+  PAPER_H,
+  PAPER_IDS,
+  PAPER_W,
+  PAPERS,
+  paperSupports,
+  placePaper,
+  readPaper,
+  SHOWN_CLAIMS,
+  stampClaim,
+  STAMP_R,
+  status,
+  supportingPaper,
+  worlds,
+  type CaseBoard,
+  type CaseClaimId,
+  type PaperId,
+  type Stamp,
 } from './cases';
 import { atticFinds } from './index';
 import { petCorner, planFor, shellButtons, type Rect } from './logic';
@@ -16,11 +48,15 @@ const VIEWS = {
   phone: computeView(844, 390),
   notch: computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
 };
-const overlap = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
-const inside = (a: Rect, v: { w: number; h: number }) => a.x >= 0 && a.y >= 0 && a.x + a.w <= v.w && a.y + a.h <= v.h;
+const overlap = (a: Rect, b: Rect) =>
+  a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+const inside = (a: Rect, v: { w: number; h: number }) =>
+  a.x >= 0 && a.y >= 0 && a.x + a.w <= v.w && a.y + a.h <= v.h;
 
-const sources = planFor(7), tell = planFor(8);
-const subsets = <T>(xs: readonly T[]): T[][] => xs.reduce<T[][]>((acc, x) => [...acc, ...acc.map((s) => [...s, x])], [[]]);
+const sources = planFor(7),
+  tell = planFor(8);
+const subsets = <T>(xs: readonly T[]): T[][] =>
+  xs.reduce<T[][]>((acc, x) => [...acc, ...acc.map((s) => [...s, x])], [[]]);
 const EXPECTED: Record<CaseClaimId, { status: string; by: PaperId | null }> = {
   'hilltop-had': { status: 'shown', by: 'list' },
   'fair-cranked': { status: 'shown', by: 'drawing' },
@@ -32,8 +68,12 @@ const EXPECTED: Record<CaseClaimId, { status: string; by: PaperId | null }> = {
 };
 const STAMPS: (Stamp | null)[] = ['shown', 'unknown', null];
 const PAIR_WHY: Record<string, string> = {
-  'list:fair-cranked': 'list-crank', 'list:shop-sold': 'list-shop', 'drawing:hilltop-had': 'drawing-hilltop',
-  'drawing:shop-sold': 'drawing-shop', 'poster:hilltop-had': 'poster-house', 'poster:fair-cranked': 'poster-crank',
+  'list:fair-cranked': 'list-crank',
+  'list:shop-sold': 'list-shop',
+  'drawing:hilltop-had': 'drawing-hilltop',
+  'drawing:shop-sold': 'drawing-shop',
+  'poster:hilltop-had': 'poster-house',
+  'poster:fair-cranked': 'poster-crank',
 };
 
 describe('Attic Finds casebook model', () => {
@@ -46,7 +86,11 @@ describe('Attic Finds casebook model', () => {
       if (holds({ atom: 'crank.seaside' }, w)) expect(holds({ atom: 'has.seaside' }, w)).toBe(true);
       if (holds({ atom: 'loved.all' }, w)) expect(holds({ atom: 'loved.hilltop' }, w)).toBe(true);
     }
-    for (const p of PAPER_IDS) expect(ws.some((w) => holds(PAPERS[p].shows, w)), p).toBe(true);
+    for (const p of PAPER_IDS)
+      expect(
+        ws.some((w) => holds(PAPERS[p].shows, w)),
+        p,
+      ).toBe(true);
   });
 
   it('gives each claim the table status with all three papers, each shown claim exactly one paper, and ignores paper order', () => {
@@ -55,7 +99,10 @@ describe('Attic Finds casebook model', () => {
       const by = PAPER_IDS.filter((p) => paperSupports(p, c));
       expect(by, c).toEqual(EXPECTED[c].by ? [EXPECTED[c].by] : []);
       expect(supportingPaper(c)).toBe(EXPECTED[c].by);
-      for (const order of [['poster', 'list', 'drawing'], ['drawing', 'poster', 'list']] as PaperId[][]) {
+      for (const order of [
+        ['poster', 'list', 'drawing'],
+        ['drawing', 'poster', 'list'],
+      ] as PaperId[][]) {
         expect(status(CLAIM_TABLE[c].formula, order)).toBe(claimStatus(c));
       }
     }
@@ -83,70 +130,84 @@ describe('Attic Finds casebook model', () => {
       expect(status(CLAIM_TABLE['seaside-none'].formula, sub)).toBe('unknown');
     }
     // Removing a paper never shrinks the worlds it allows.
-    const count = (ps: PaperId[]) => worlds().filter((w) => ps.every((p) => holds(PAPERS[p].shows, w))).length;
-    for (const sub of subs) for (const p of sub) expect(count(sub.filter((x) => x !== p))).toBeGreaterThanOrEqual(count(sub));
+    const count = (ps: PaperId[]) =>
+      worlds().filter((w) => ps.every((p) => holds(PAPERS[p].shows, w))).length;
+    for (const sub of subs)
+      for (const p of sub) expect(count(sub.filter((x) => x !== p))).toBeGreaterThanOrEqual(count(sub));
   });
 });
 
 describe('Attic Finds casebook Checks', () => {
   const boardsOf = (mode: 'sources' | 'tell') => {
     const seen = new Map<string, CaseBoard>();
-    for (let seed = 0; seed < 60; seed++) for (const b of makeCaseRound(mode === 'sources' ? sources : tell, new Rng(seed)).boards) seen.set(b.claims.join(','), b);
+    for (let seed = 0; seed < 60; seed++)
+      for (const b of makeCaseRound(mode === 'sources' ? sources : tell, new Rng(seed)).boards)
+        seen.set(b.claims.join(','), b);
     return [...seen.values()];
   };
 
   it('level 7: done exactly when each slot holds its paper, miss when one holds a wrong one, empty otherwise; right slots stay', () => {
     for (const b of boardsOf('sources')) {
-      for (const a of [...PAPER_IDS, null]) for (const z of [...PAPER_IDS, null]) {
-        const s = caseState('sources', b);
-        placePaper(s, 0, a);
-        placePaper(s, 1, z);
-        const right = [a === supportingPaper(b.claims[0]), z === supportingPaper(b.claims[1])];
-        const r = checkCase(s);
-        if (a === null || z === null) {
-          expect(r.result).toBe('empty');
-          expect(s.misses).toBe(0);
-        } else if (right[0] && right[1]) expect(r.result).toBe('done');
-        else {
-          expect(r.result).toBe('miss');
-          expect(s.misses).toBe(1);
-          if (r.result !== 'miss') continue;
-          const placed = [a, z];
-          for (const w of r.wrong) {
-            expect(right[w.row]).toBe(false);
-            expect(w.reason).toBe(`attic-finds.why-${PAIR_WHY[`${placed[w.row]}:${b.claims[w.row]}`]}`);
+      for (const a of [...PAPER_IDS, null])
+        for (const z of [...PAPER_IDS, null]) {
+          const s = caseState('sources', b);
+          placePaper(s, 0, a);
+          placePaper(s, 1, z);
+          const right = [a === supportingPaper(b.claims[0]), z === supportingPaper(b.claims[1])];
+          const r = checkCase(s);
+          if (a === null || z === null) {
+            expect(r.result).toBe('empty');
+            expect(s.misses).toBe(0);
+          } else if (right[0] && right[1]) expect(r.result).toBe('done');
+          else {
+            expect(r.result).toBe('miss');
+            expect(s.misses).toBe(1);
+            if (r.result !== 'miss') continue;
+            const placed = [a, z];
+            for (const w of r.wrong) {
+              expect(right[w.row]).toBe(false);
+              expect(w.reason).toBe(`attic-finds.why-${PAIR_WHY[`${placed[w.row]}:${b.claims[w.row]}`]}`);
+            }
+            [0, 1].forEach((i) => expect(s.slots[i]).toBe(right[i] ? placed[i] : null));
           }
-          [0, 1].forEach((i) => expect(s.slots[i]).toBe(right[i] ? placed[i] : null));
         }
-      }
     }
   });
 
   it('level 8: done exactly when every stamp matches the status, miss when one is wrong, empty otherwise; right stamps stay', () => {
     for (const b of boardsOf('tell')) {
-      for (const x of STAMPS) for (const y of STAMPS) for (const z of STAMPS) {
-        const s = caseState('tell', b);
-        const set = [x, y, z];
-        set.forEach((st, i) => stampClaim(s, i, st));
-        const want = b.claims.map((c) => (claimStatus(c) === 'shown' ? 'shown' : 'unknown'));
-        const r = checkCase(s);
-        if (set.includes(null)) expect(r.result).toBe('empty');
-        else if (set.every((st, i) => st === want[i])) expect(r.result).toBe('done');
-        else {
-          expect(r.result).toBe('miss');
-          set.forEach((st, i) => expect(s.stamps[i]).toBe(st === want[i] ? st : null));
-        }
-      }
+      for (const x of STAMPS)
+        for (const y of STAMPS)
+          for (const z of STAMPS) {
+            const s = caseState('tell', b);
+            const set = [x, y, z];
+            set.forEach((st, i) => stampClaim(s, i, st));
+            const want = b.claims.map((c) => (claimStatus(c) === 'shown' ? 'shown' : 'unknown'));
+            const r = checkCase(s);
+            if (set.includes(null)) expect(r.result).toBe('empty');
+            else if (set.every((st, i) => st === want[i])) expect(r.result).toBe('done');
+            else {
+              expect(r.result).toBe('miss');
+              set.forEach((st, i) => expect(s.stamps[i]).toBe(st === want[i] ? st : null));
+            }
+          }
     }
   });
 
   it('gives the definition reasons for wrong stamps', () => {
-    const s = caseState('tell', { claims: ['hilltop-had', 'seaside-none', 'all-loved'], papers: [...PAPER_IDS] });
+    const s = caseState('tell', {
+      claims: ['hilltop-had', 'seaside-none', 'all-loved'],
+      papers: [...PAPER_IDS],
+    });
     stampClaim(s, 0, 'unknown');
     stampClaim(s, 1, 'shown');
     stampClaim(s, 2, 'shown');
     const r = checkCase(s);
-    expect(r.result === 'miss' && r.wrong.map((w) => w.reason)).toEqual(['attic-finds.look-list', 'attic-finds.why-seaside', 'attic-finds.why-all-loved']);
+    expect(r.result === 'miss' && r.wrong.map((w) => w.reason)).toEqual([
+      'attic-finds.look-list',
+      'attic-finds.why-seaside',
+      'attic-finds.why-all-loved',
+    ]);
   });
 });
 
@@ -169,8 +230,13 @@ describe('Attic Finds casebook rounds, help and registration', () => {
   it('level 8: each board holds one Seaside claim, one shown claim and one other trap, so all "can\'t tell" always fails', () => {
     for (let seed = 0; seed < 500; seed++) {
       const r = makeCaseRound(tell, new Rng(seed));
-      expect(r.boards.map((b) => b.claims.find((c) => c.startsWith('seaside'))).sort()).toEqual(['seaside-had', 'seaside-none']);
-      expect(r.boards.map((b) => b.claims.find((c) => c === 'hilltop-cranked' || c === 'all-loved')).sort()).toEqual(['all-loved', 'hilltop-cranked']);
+      expect(r.boards.map((b) => b.claims.find((c) => c.startsWith('seaside'))).sort()).toEqual([
+        'seaside-had',
+        'seaside-none',
+      ]);
+      expect(
+        r.boards.map((b) => b.claims.find((c) => c === 'hilltop-cranked' || c === 'all-loved')).sort(),
+      ).toEqual(['all-loved', 'hilltop-cranked']);
       for (const b of r.boards) {
         expect(b.claims.filter((c) => claimStatus(c) === 'shown')).toHaveLength(1);
         expect([...b.papers].sort()).toEqual([...PAPER_IDS].sort());
@@ -184,11 +250,16 @@ describe('Attic Finds casebook rounds, help and registration', () => {
 
   it('starts each level with the authored first board', () => {
     const a = makeCaseRound(sources, new Rng(3), true);
-    expect(a.boards[0]).toEqual({ claims: ['hilltop-had', 'fair-cranked'], papers: ['list', 'poster', 'drawing'] });
+    expect(a.boards[0]).toEqual({
+      claims: ['hilltop-had', 'fair-cranked'],
+      papers: ['list', 'poster', 'drawing'],
+    });
     expect(a.boards[1].claims).toContain('shop-sold');
     const b = makeCaseRound(tell, new Rng(3), true);
     expect(b.boards[0].claims).toEqual(['hilltop-had', 'seaside-none', 'all-loved']);
-    expect([...b.boards[1].claims].sort()).toEqual(expect.arrayContaining(['hilltop-cranked', 'seaside-had']));
+    expect([...b.boards[1].claims].sort()).toEqual(
+      expect.arrayContaining(['hilltop-cranked', 'seaside-had']),
+    );
     expect(b.boards[1].claims.filter((c) => claimStatus(c) === 'shown')).toHaveLength(1);
   });
 
@@ -199,7 +270,11 @@ describe('Attic Finds casebook rounds, help and registration', () => {
         const b = makeCaseRound(plan, new Rng(seed)).boards[seed % 2];
         const s = caseState(mode, b);
         const rng = new Rng(seed + 1000);
-        b.claims.forEach((_, i) => (mode === 'sources' ? placePaper(s, i, rng.pick([...PAPER_IDS, null])) : stampClaim(s, i, rng.pick(STAMPS))));
+        b.claims.forEach((_, i) =>
+          mode === 'sources'
+            ? placePaper(s, i, rng.pick([...PAPER_IDS, null]))
+            : stampClaim(s, i, rng.pick(STAMPS)),
+        );
         expect(helpCase(s)).toBe(true);
         expect(helpCase(s)).toBe(false);
         for (let step = 0; step < 5 && glowFor(s); step++) {
@@ -215,11 +290,18 @@ describe('Attic Finds casebook rounds, help and registration', () => {
   });
 
   it('counts a scripted level-8 board as two misses and one hint, and reading or an empty Check as nothing', () => {
-    const s = caseState('tell', { claims: ['hilltop-had', 'seaside-none', 'all-loved'], papers: [...PAPER_IDS] });
+    const s = caseState('tell', {
+      claims: ['hilltop-had', 'seaside-none', 'all-loved'],
+      papers: [...PAPER_IDS],
+    });
     for (let k = 0; k < 5; k++) for (const p of PAPER_IDS) readPaper(s, p);
     expect(checkCase(s).result).toBe('empty');
     expect([s.misses, s.hints]).toEqual([0, 0]);
-    const wrongly = () => { stampClaim(s, 0, 'shown'); stampClaim(s, 1, 'shown'); stampClaim(s, 2, 'unknown'); };
+    const wrongly = () => {
+      stampClaim(s, 0, 'shown');
+      stampClaim(s, 1, 'shown');
+      stampClaim(s, 2, 'unknown');
+    };
     wrongly();
     expect(checkCase(s).result).toBe('miss');
     expect(glowFor(s)).toBeNull();
@@ -256,7 +338,9 @@ describe('Attic Finds casebook rounds, help and registration', () => {
   });
 
   it('lays out papers, cards, slots, stamps and Check as large, separate targets clear of the pet and shell buttons', () => {
-    expect(Math.min(PAPER_W, PAPER_H, CASE_CARD_W, CASE_CARD_H, CASE_SLOT, 2 * STAMP_R, 2 * CASE_CHECK_R)).toBeGreaterThanOrEqual(100);
+    expect(
+      Math.min(PAPER_W, PAPER_H, CASE_CARD_W, CASE_CARD_H, CASE_SLOT, 2 * STAMP_R, 2 * CASE_CHECK_R),
+    ).toBeGreaterThanOrEqual(100);
     for (const [name, v] of Object.entries(VIEWS)) {
       for (const level of [7, 8]) {
         const L = caseLayout(v, level);
@@ -266,8 +350,10 @@ describe('Attic Finds casebook rounds, help and registration', () => {
         for (const [i, a] of ts.entries()) {
           expect(inside(a.r, v), `${name} ${level} ${a.label} inside`).toBe(true);
           expect(overlap(a.r, petCorner(v)), `${name} ${level} ${a.label}/pet`).toBe(false);
-          for (const b of shellButtons(v)) expect(overlap(a.r, b), `${name} ${level} ${a.label}/shell`).toBe(false);
-          for (const b of ts.slice(i + 1)) expect(overlap(a.r, b.r), `${name} ${level} ${a.label}/${b.label}`).toBe(false);
+          for (const b of shellButtons(v))
+            expect(overlap(a.r, b), `${name} ${level} ${a.label}/shell`).toBe(false);
+          for (const b of ts.slice(i + 1))
+            expect(overlap(a.r, b.r), `${name} ${level} ${a.label}/${b.label}`).toBe(false);
         }
       }
     }

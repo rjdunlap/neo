@@ -44,10 +44,29 @@ describe('controllerPlays', () => {
 
   it('is on for the games that switch to a controller while they run', () => {
     expect(live.map((g) => g.id).sort()).toEqual([
-      'bounce-back', 'bouncy-launch', 'bumper-garden', 'egg-catch', 'ferry-jam', 'frog-hop', 'gem-swap', 'island-bridges', 'lantern-lights', 'light-lab', 'memory-match',
+      'bounce-back',
+      'bouncy-launch',
+      'bumper-garden',
+      'egg-catch',
+      'ferry-jam',
+      'frog-hop',
+      'gem-swap',
+      'island-bridges',
+      'lantern-lights',
+      'light-lab',
+      'memory-match',
       'pattern-train',
-      'peg-garden', 'penguin-slide', 'picture-logic', 'pond-conga', 'rhythm-neighbors', 'robot-path', 'secret-code', 'sink-float',
-      'sudoku-garden', 'tile-pairs', 'word-search',
+      'peg-garden',
+      'penguin-slide',
+      'picture-logic',
+      'pond-conga',
+      'rhythm-neighbors',
+      'robot-path',
+      'secret-code',
+      'sink-float',
+      'sudoku-garden',
+      'tile-pairs',
+      'word-search',
     ]);
   });
 
@@ -68,7 +87,8 @@ describe('controllerPlays', () => {
   });
 
   it('leaves out the games that choose touch or controller when they are built', () => {
-    for (const mod of GAMES.filter((g) => !g.liveController)) expect(controllerPlays(mod, 1), mod.id).toBe(false);
+    for (const mod of GAMES.filter((g) => !g.liveController))
+      expect(controllerPlays(mod, 1), mod.id).toBe(false);
   });
 
   it('holds back the levels with no controller play (Pattern Train bell levels, Egg Catch chutes)', () => {

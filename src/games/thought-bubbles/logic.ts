@@ -4,21 +4,61 @@ import type { BandLevels } from '../../progress/difficulty';
 
 /** A tiny picture story, then a friend's empty thought bubble: what she wants (1), where he will look (2), why she did it (3). */
 
-export type Thing = 'apple' | 'ball' | 'kite' | 'cup' | 'book' | 'drum' | 'boat' | 'balloon' | 'teddy' | 'shell';
+export type Thing =
+  'apple' | 'ball' | 'kite' | 'cup' | 'book' | 'drum' | 'boat' | 'balloon' | 'teddy' | 'shell';
 export type Place = 'redBox' | 'blueBasket' | 'shelf';
-export type Reason = 'rain' | 'cold' | 'visitor' | 'sleeping' | 'birthday' | 'droopy' | 'bedtime' | 'thirsty' | 'beach' | 'dance' | 'bath' | 'hungry';
+export type Reason =
+  | 'rain'
+  | 'cold'
+  | 'visitor'
+  | 'sleeping'
+  | 'birthday'
+  | 'droopy'
+  | 'bedtime'
+  | 'thirsty'
+  | 'beach'
+  | 'dance'
+  | 'bath'
+  | 'hungry';
 /** The island friends a story names, fixed per story so every line is slot-free. Bear and dog never share one. */
 export type Friend = 'bunny' | 'bear' | 'duck' | 'cat' | 'pig' | 'dog';
 
-export const THINGS: readonly Thing[] = ['apple', 'ball', 'kite', 'cup', 'book', 'drum', 'boat', 'balloon', 'teddy', 'shell'];
+export const THINGS: readonly Thing[] = [
+  'apple',
+  'ball',
+  'kite',
+  'cup',
+  'book',
+  'drum',
+  'boat',
+  'balloon',
+  'teddy',
+  'shell',
+];
 export const PLACES: readonly Place[] = ['redBox', 'blueBasket', 'shelf'];
-export const REASONS: readonly Reason[] = ['rain', 'cold', 'visitor', 'sleeping', 'birthday', 'droopy', 'bedtime', 'thirsty', 'beach', 'dance', 'bath', 'hungry'];
+export const REASONS: readonly Reason[] = [
+  'rain',
+  'cold',
+  'visitor',
+  'sleeping',
+  'birthday',
+  'droopy',
+  'bedtime',
+  'thirsty',
+  'beach',
+  'dance',
+  'bath',
+  'hungry',
+];
 
 /** The stage is a 640 × 400 picture, origin top-left. */
 export const STAGE_W = 640;
 export const STAGE_H = 400;
 
-export interface Pt { x: number; y: number }
+export interface Pt {
+  x: number;
+  y: number;
+}
 
 // ---------------------------------------------------------------- level 1
 
@@ -39,18 +79,90 @@ export interface WantStory {
 
 /** Authored; the first round at level 1 is the first three in order. */
 export const WANT_STORIES: readonly WantStory[] = [
-  { id: 'apple-tree', friend: 'bunny', cued: 'apple', scene: 'tree', friendAt: { x: 300, y: 370 }, pawAt: { x: 330, y: 300 }, reach: -68,
-    items: [{ thing: 'apple', x: 390, y: 150 }, { thing: 'ball', x: 250, y: 350 }, { thing: 'kite', x: 520, y: 330 }] },
-  { id: 'cup-table', friend: 'bear', cued: 'cup', scene: 'table', friendAt: { x: 180, y: 370 }, pawAt: { x: 215, y: 305 }, reach: -8,
-    items: [{ thing: 'cup', x: 520, y: 265 }, { thing: 'book', x: 250, y: 255 }, { thing: 'drum', x: 300, y: 360 }] },
-  { id: 'boat-pond', friend: 'duck', cued: 'boat', scene: 'pond', friendAt: { x: 220, y: 360 }, pawAt: { x: 255, y: 300 }, reach: 8,
-    items: [{ thing: 'boat', x: 470, y: 330 }, { thing: 'ball', x: 140, y: 350 }, { thing: 'balloon', x: 300, y: 140 }] },
-  { id: 'book-shelf', friend: 'cat', cued: 'book', scene: 'shelf', friendAt: { x: 330, y: 370 }, pawAt: { x: 360, y: 280 }, reach: -71,
-    items: [{ thing: 'book', x: 420, y: 110 }, { thing: 'cup', x: 420, y: 320 }, { thing: 'teddy', x: 230, y: 350 }] },
-  { id: 'balloon-bush', friend: 'pig', cued: 'balloon', scene: 'bush', friendAt: { x: 260, y: 370 }, pawAt: { x: 290, y: 300 }, reach: -55,
-    items: [{ thing: 'balloon', x: 380, y: 170 }, { thing: 'apple', x: 320, y: 355 }, { thing: 'kite', x: 520, y: 250 }] },
-  { id: 'ball-bed', friend: 'dog', cued: 'ball', scene: 'bed', friendAt: { x: 150, y: 370 }, pawAt: { x: 230, y: 355 }, reach: 2,
-    items: [{ thing: 'ball', x: 420, y: 360 }, { thing: 'book', x: 340, y: 240 }, { thing: 'teddy', x: 410, y: 205 }] },
+  {
+    id: 'apple-tree',
+    friend: 'bunny',
+    cued: 'apple',
+    scene: 'tree',
+    friendAt: { x: 300, y: 370 },
+    pawAt: { x: 330, y: 300 },
+    reach: -68,
+    items: [
+      { thing: 'apple', x: 390, y: 150 },
+      { thing: 'ball', x: 250, y: 350 },
+      { thing: 'kite', x: 520, y: 330 },
+    ],
+  },
+  {
+    id: 'cup-table',
+    friend: 'bear',
+    cued: 'cup',
+    scene: 'table',
+    friendAt: { x: 180, y: 370 },
+    pawAt: { x: 215, y: 305 },
+    reach: -8,
+    items: [
+      { thing: 'cup', x: 520, y: 265 },
+      { thing: 'book', x: 250, y: 255 },
+      { thing: 'drum', x: 300, y: 360 },
+    ],
+  },
+  {
+    id: 'boat-pond',
+    friend: 'duck',
+    cued: 'boat',
+    scene: 'pond',
+    friendAt: { x: 220, y: 360 },
+    pawAt: { x: 255, y: 300 },
+    reach: 8,
+    items: [
+      { thing: 'boat', x: 470, y: 330 },
+      { thing: 'ball', x: 140, y: 350 },
+      { thing: 'balloon', x: 300, y: 140 },
+    ],
+  },
+  {
+    id: 'book-shelf',
+    friend: 'cat',
+    cued: 'book',
+    scene: 'shelf',
+    friendAt: { x: 330, y: 370 },
+    pawAt: { x: 360, y: 280 },
+    reach: -71,
+    items: [
+      { thing: 'book', x: 420, y: 110 },
+      { thing: 'cup', x: 420, y: 320 },
+      { thing: 'teddy', x: 230, y: 350 },
+    ],
+  },
+  {
+    id: 'balloon-bush',
+    friend: 'pig',
+    cued: 'balloon',
+    scene: 'bush',
+    friendAt: { x: 260, y: 370 },
+    pawAt: { x: 290, y: 300 },
+    reach: -55,
+    items: [
+      { thing: 'balloon', x: 380, y: 170 },
+      { thing: 'apple', x: 320, y: 355 },
+      { thing: 'kite', x: 520, y: 250 },
+    ],
+  },
+  {
+    id: 'ball-bed',
+    friend: 'dog',
+    cued: 'ball',
+    scene: 'bed',
+    friendAt: { x: 150, y: 370 },
+    pawAt: { x: 230, y: 355 },
+    reach: 2,
+    items: [
+      { thing: 'ball', x: 420, y: 360 },
+      { thing: 'book', x: 340, y: 240 },
+      { thing: 'teddy', x: 410, y: 205 },
+    ],
+  },
 ];
 
 const deg = (r: number) => (r * 180) / Math.PI;
@@ -60,7 +172,7 @@ export function cueAngle(story: WantStory, thing: Thing): number {
   const item = story.items.find((i) => i.thing === thing);
   if (!item) return 180;
   const to = deg(Math.atan2(item.y - story.pawAt.y, item.x - story.pawAt.x));
-  const d = Math.abs(((to - story.reach) % 360 + 540) % 360 - 180);
+  const d = Math.abs(((((to - story.reach) % 360) + 540) % 360) - 180);
   return d;
 }
 
@@ -71,7 +183,8 @@ export function pawDistance(story: WantStory, thing: Thing): number {
 }
 
 /** Above the friend's head (0.45 scale stands about 112 tall). */
-export const isAbove = (story: WantStory) => story.items.find((i) => i.thing === story.cued)!.y < story.friendAt.y - 120;
+export const isAbove = (story: WantStory) =>
+  story.items.find((i) => i.thing === story.cued)!.y < story.friendAt.y - 120;
 
 // ---------------------------------------------------------------- level 2
 
@@ -99,7 +212,8 @@ export function compile(cast: readonly Friend[], actions: readonly Action[]): St
 /** Where `who` thinks the thing is: the last put or move of it that they saw. */
 export function believedPlace(events: readonly StoryEvent[], who: Friend, thing: Thing): Place | null {
   let at: Place | null = null;
-  for (const e of events) if ((e.kind === 'put' || e.kind === 'move') && e.thing === thing && e.saw.includes(who)) at = e.to;
+  for (const e of events)
+    if ((e.kind === 'put' || e.kind === 'move') && e.thing === thing && e.saw.includes(who)) at = e.to;
   return at;
 }
 
@@ -110,7 +224,12 @@ export function actualPlace(events: readonly StoryEvent[], thing: Thing): Place 
   return at;
 }
 
-export interface LookTemplate { id: string; owner: Friend; thing: Thing; mover: Who }
+export interface LookTemplate {
+  id: string;
+  owner: Friend;
+  thing: Thing;
+  mover: Who;
+}
 
 /** Every move is kind: tidying, sharing, a puppy or the wind, never a trick. */
 export const LOOK_TEMPLATES: readonly LookTemplate[] = [
@@ -130,7 +249,12 @@ export interface LookStory {
   events: StoryEvent[];
 }
 
-export function lookStory(template: LookTemplate, kind: 'away' | 'watching', start: Place, end: Place): LookStory {
+export function lookStory(
+  template: LookTemplate,
+  kind: 'away' | 'watching',
+  start: Place,
+  end: Place,
+): LookStory {
   const cast: Friend[] = template.mover === 'wind' ? [template.owner] : [template.owner, template.mover];
   const events = compile(cast, [
     { kind: 'put', who: template.owner, thing: template.thing, to: start },
@@ -141,7 +265,8 @@ export function lookStory(template: LookTemplate, kind: 'away' | 'watching', sta
   return { template, kind, start, end, events };
 }
 
-export const lookAnswer = (s: LookStory): Place => believedPlace(s.events, s.template.owner, s.template.thing)!;
+export const lookAnswer = (s: LookStory): Place =>
+  believedPlace(s.events, s.template.owner, s.template.thing)!;
 export const thirdPlace = (s: LookStory): Place => PLACES.find((p) => p !== s.start && p !== s.end)!;
 
 const tpl = (id: string) => LOOK_TEMPLATES.find((t) => t.id === id)!;
@@ -167,12 +292,30 @@ export const SLOTS: Record<Slot, { x: number; y: number; w: number; h: number }>
 
 /** What a region shows; each has its own picture and spoken name. */
 export type RegionArt =
-  | 'clouds' | 'sunny' | 'friendPath' | 'snow'
-  | 'sunDoor' | 'droopyDoor' | 'coatHook' | 'toyBox' | 'chair' | 'doormat' | 'plant'
-  | 'vase' | 'kettle' | 'lamp' | 'cake'
-  | 'rug' | 'cot' | 'bucket';
+  | 'clouds'
+  | 'sunny'
+  | 'friendPath'
+  | 'snow'
+  | 'sunDoor'
+  | 'droopyDoor'
+  | 'coatHook'
+  | 'toyBox'
+  | 'chair'
+  | 'doormat'
+  | 'plant'
+  | 'vase'
+  | 'kettle'
+  | 'lamp'
+  | 'cake'
+  | 'rug'
+  | 'cot'
+  | 'bucket';
 
-export interface Region { id: RegionArt; slot: Slot; supports: Reason | null }
+export interface Region {
+  id: RegionArt;
+  slot: Slot;
+  supports: Reason | null;
+}
 
 /** The friend's surprising action, drawn with the friend. */
 export type WhyAction = 'umbrella' | 'cups' | 'scarf' | 'tiptoe' | 'present' | 'watering';
@@ -187,18 +330,84 @@ export interface WhyStory {
 }
 
 export const WHY_STORIES: readonly WhyStory[] = [
-  { id: 'duck-umbrella', friend: 'duck', action: 'umbrella', reasons: ['rain', 'birthday', 'bedtime'], supported: 'rain',
-    regions: [{ id: 'clouds', slot: 'window', supports: 'rain' }, { id: 'sunDoor', slot: 'left', supports: null }, { id: 'vase', slot: 'back', supports: null }, { id: 'rug', slot: 'floor', supports: null }] },
-  { id: 'bear-cups', friend: 'bear', action: 'cups', reasons: ['visitor', 'thirsty', 'bedtime'], supported: 'visitor',
-    regions: [{ id: 'friendPath', slot: 'window', supports: 'visitor' }, { id: 'kettle', slot: 'back', supports: null }, { id: 'plant', slot: 'midFloor', supports: null }, { id: 'rug', slot: 'floor', supports: null }] },
-  { id: 'cat-scarf', friend: 'cat', action: 'scarf', reasons: ['cold', 'beach', 'dance'], supported: 'cold',
-    regions: [{ id: 'snow', slot: 'window', supports: 'cold' }, { id: 'coatHook', slot: 'left', supports: null }, { id: 'lamp', slot: 'back', supports: null }, { id: 'rug', slot: 'floor', supports: null }] },
-  { id: 'bunny-tiptoe', friend: 'bunny', action: 'tiptoe', reasons: ['sleeping', 'dance', 'hungry'], supported: 'sleeping',
-    regions: [{ id: 'cot', slot: 'floor', supports: 'sleeping' }, { id: 'toyBox', slot: 'midFloor', supports: null }, { id: 'sunny', slot: 'window', supports: null }, { id: 'lamp', slot: 'back', supports: null }] },
-  { id: 'pig-present', friend: 'pig', action: 'present', reasons: ['birthday', 'cold', 'bath'], supported: 'birthday',
-    regions: [{ id: 'cake', slot: 'back', supports: 'birthday' }, { id: 'sunny', slot: 'window', supports: null }, { id: 'chair', slot: 'midFloor', supports: null }, { id: 'rug', slot: 'floor', supports: null }] },
-  { id: 'dog-watering', friend: 'dog', action: 'watering', reasons: ['droopy', 'bath', 'rain'], supported: 'droopy',
-    regions: [{ id: 'droopyDoor', slot: 'left', supports: 'droopy' }, { id: 'sunny', slot: 'window', supports: null }, { id: 'doormat', slot: 'midFloor', supports: null }, { id: 'bucket', slot: 'floor', supports: null }] },
+  {
+    id: 'duck-umbrella',
+    friend: 'duck',
+    action: 'umbrella',
+    reasons: ['rain', 'birthday', 'bedtime'],
+    supported: 'rain',
+    regions: [
+      { id: 'clouds', slot: 'window', supports: 'rain' },
+      { id: 'sunDoor', slot: 'left', supports: null },
+      { id: 'vase', slot: 'back', supports: null },
+      { id: 'rug', slot: 'floor', supports: null },
+    ],
+  },
+  {
+    id: 'bear-cups',
+    friend: 'bear',
+    action: 'cups',
+    reasons: ['visitor', 'thirsty', 'bedtime'],
+    supported: 'visitor',
+    regions: [
+      { id: 'friendPath', slot: 'window', supports: 'visitor' },
+      { id: 'kettle', slot: 'back', supports: null },
+      { id: 'plant', slot: 'midFloor', supports: null },
+      { id: 'rug', slot: 'floor', supports: null },
+    ],
+  },
+  {
+    id: 'cat-scarf',
+    friend: 'cat',
+    action: 'scarf',
+    reasons: ['cold', 'beach', 'dance'],
+    supported: 'cold',
+    regions: [
+      { id: 'snow', slot: 'window', supports: 'cold' },
+      { id: 'coatHook', slot: 'left', supports: null },
+      { id: 'lamp', slot: 'back', supports: null },
+      { id: 'rug', slot: 'floor', supports: null },
+    ],
+  },
+  {
+    id: 'bunny-tiptoe',
+    friend: 'bunny',
+    action: 'tiptoe',
+    reasons: ['sleeping', 'dance', 'hungry'],
+    supported: 'sleeping',
+    regions: [
+      { id: 'cot', slot: 'floor', supports: 'sleeping' },
+      { id: 'toyBox', slot: 'midFloor', supports: null },
+      { id: 'sunny', slot: 'window', supports: null },
+      { id: 'lamp', slot: 'back', supports: null },
+    ],
+  },
+  {
+    id: 'pig-present',
+    friend: 'pig',
+    action: 'present',
+    reasons: ['birthday', 'cold', 'bath'],
+    supported: 'birthday',
+    regions: [
+      { id: 'cake', slot: 'back', supports: 'birthday' },
+      { id: 'sunny', slot: 'window', supports: null },
+      { id: 'chair', slot: 'midFloor', supports: null },
+      { id: 'rug', slot: 'floor', supports: null },
+    ],
+  },
+  {
+    id: 'dog-watering',
+    friend: 'dog',
+    action: 'watering',
+    reasons: ['droopy', 'bath', 'rain'],
+    supported: 'droopy',
+    regions: [
+      { id: 'droopyDoor', slot: 'left', supports: 'droopy' },
+      { id: 'sunny', slot: 'window', supports: null },
+      { id: 'doormat', slot: 'midFloor', supports: null },
+      { id: 'bucket', slot: 'floor', supports: null },
+    ],
+  },
 ];
 
 /** The friend stands between the regions, feet on the floor. */
@@ -216,7 +425,10 @@ export type Story =
 
 export const STORIES_PER_ROUND = 3;
 
-export interface LevelPlan { level: 1 | 2 | 3; name: string }
+export interface LevelPlan {
+  level: 1 | 2 | 3;
+  name: string;
+}
 export const PLANS: readonly LevelPlan[] = [
   { level: 1, name: 'What does she want? A friend reaches for one of three things' },
   { level: 2, name: 'Where will he look? Was the friend there when his thing moved?' },
@@ -252,21 +464,41 @@ export function roundFor(level: number, rng: Rng, first: boolean): Story[] {
   const lv = planFor(level).level;
   if (lv === 1) {
     const picks = first ? WANT_STORIES.slice(0, 3) : rng.shuffle([...WANT_STORIES]).slice(0, 3);
-    return picks.map((want, i) => ({ level: 1, want, cards: first ? placed(want.cued, want.items.map((it) => it.thing), i) : rng.shuffle(want.items.map((it) => it.thing)) }));
+    return picks.map((want, i) => ({
+      level: 1,
+      want,
+      cards: first
+        ? placed(
+            want.cued,
+            want.items.map((it) => it.thing),
+            i,
+          )
+        : rng.shuffle(want.items.map((it) => it.thing)),
+    }));
   }
   if (lv === 2) {
-    const looks = first ? [...FIRST_LOOK] : (() => {
-      const tpls = rng.shuffle([...LOOK_TEMPLATES]).slice(0, 3);
-      const kinds = rng.shuffle<'away' | 'watching'>(['away', 'watching', rng.pick(['away', 'watching'] as const)]);
-      return tpls.map((t, i) => {
-        const [start, end] = rng.shuffle([...PLACES]);
-        return lookStory(t, kinds[i], start, end);
-      });
-    })();
+    const looks = first
+      ? [...FIRST_LOOK]
+      : (() => {
+          const tpls = rng.shuffle([...LOOK_TEMPLATES]).slice(0, 3);
+          const kinds = rng.shuffle<'away' | 'watching'>([
+            'away',
+            'watching',
+            rng.pick(['away', 'watching'] as const),
+          ]);
+          return tpls.map((t, i) => {
+            const [start, end] = rng.shuffle([...PLACES]);
+            return lookStory(t, kinds[i], start, end);
+          });
+        })();
     return looks.map((look) => ({ level: 2, look, cards: first ? [...PLACES] : rng.shuffle([...PLACES]) }));
   }
   const whys = first ? WHY_STORIES.slice(0, 3) : rng.shuffle([...WHY_STORIES]).slice(0, 3);
-  return whys.map((why, i) => ({ level: 3, why, cards: first ? placed(why.supported, why.reasons, i) : rng.shuffle([...why.reasons]) }));
+  return whys.map((why, i) => ({
+    level: 3,
+    why,
+    cards: first ? placed(why.supported, why.reasons, i) : rng.shuffle([...why.reasons]),
+  }));
 }
 
 // ---------------------------------------------------------------- accounting and help
@@ -328,15 +560,20 @@ export class Tally {
 
   /** Show me: glows the current target and counts a hint, unless that stage's glow is already on. */
   showMe(stage: Stage): boolean {
-    if (stage === 'card' && !this.cardHinted) return (this.cardHinted = true, this.hints++, true);
-    if (stage === 'point' && !this.pointHinted) return (this.pointHinted = true, this.hints++, true);
+    if (stage === 'card' && !this.cardHinted) return ((this.cardHinted = true), this.hints++, true);
+    if (stage === 'point' && !this.pointHinted) return ((this.pointHinted = true), this.hints++, true);
     return false;
   }
 }
 
 // ---------------------------------------------------------------- layout
 
-export interface Box { x: number; y: number; w: number; h: number }
+export interface Box {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
 
 export interface ThoughtLayout {
   /** The stage's top-left and its scale. */
@@ -396,7 +633,10 @@ export function thoughtLayout(v: Pick<View, 'w' | 'h'>): ThoughtLayout {
 }
 
 /** A stage point on screen. */
-export const toScreen = (l: ThoughtLayout, p: Pt): Pt => ({ x: l.stage.x + p.x * l.stage.scale, y: l.stage.y + p.y * l.stage.scale });
+export const toScreen = (l: ThoughtLayout, p: Pt): Pt => ({
+  x: l.stage.x + p.x * l.stage.scale,
+  y: l.stage.y + p.y * l.stage.scale,
+});
 
 /** A stage rectangle on screen. */
 export function rectToScreen(l: ThoughtLayout, r: Box): Box {
@@ -406,13 +646,18 @@ export function rectToScreen(l: ThoughtLayout, r: Box): Box {
 
 /** The region under a stage point, or null. */
 export function regionAt(story: WhyStory, p: Pt): Region | null {
-  return story.regions.find((r) => {
-    const b = SLOTS[r.slot];
-    return p.x >= b.x && p.x <= b.x + b.w && p.y >= b.y && p.y <= b.y + b.h;
-  }) ?? null;
+  return (
+    story.regions.find((r) => {
+      const b = SLOTS[r.slot];
+      return p.x >= b.x && p.x <= b.x + b.w && p.y >= b.y && p.y <= b.y + b.h;
+    }) ?? null
+  );
 }
 
 /** Whether a card let go at (x, y) lands in the bubble's hit area. */
 export function inBubble(l: ThoughtLayout, x: number, y: number): boolean {
-  return Math.abs(x - l.bubble.x) <= BUBBLE_W / 2 + BUBBLE_MARGIN && Math.abs(y - l.bubble.y) <= BUBBLE_H / 2 + BUBBLE_MARGIN;
+  return (
+    Math.abs(x - l.bubble.x) <= BUBBLE_W / 2 + BUBBLE_MARGIN &&
+    Math.abs(y - l.bubble.y) <= BUBBLE_H / 2 + BUBBLE_MARGIN
+  );
 }

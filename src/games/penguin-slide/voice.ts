@@ -4,19 +4,36 @@ export const VOICE = {
   'slide.two': ['Two fish this time! Slide past both of them.'],
   'slide.three': ['Three fish! Which one will you eat first? Plan your slides to reach all three.'],
   'slide.soft': ['Soft snow stops the penguin. Use it to stop in just the right place!'],
-  'slide.ice-snow': ['Collect both fish! Soft snow stops you and the ice block. Plan where to park the block and where the snow will stop your slide.'],
-  'slide.paired': ['Two ice blocks! Park them to make stopping places on your way to the fish. You can undo a slide if the way gets blocked.'],
-  'slide.ice-two': ['Collect both fish! Push the ice block to make a stopping place, then plan your next slide.'],
-  'slide.ice': ['An ice block! Slide into it to push it. It skates until it bumps into something, so you can park it in just the right place!'],
-  'slide.star': ['Push the ice block so it stops right on the star! It skates until it bumps into something, so plan where to push it from.'],
+  'slide.ice-snow': [
+    'Collect both fish! Soft snow stops you and the ice block. Plan where to park the block and where the snow will stop your slide.',
+  ],
+  'slide.paired': [
+    'Two ice blocks! Park them to make stopping places on your way to the fish. You can undo a slide if the way gets blocked.',
+  ],
+  'slide.ice-two': [
+    'Collect both fish! Push the ice block to make a stopping place, then plan your next slide.',
+  ],
+  'slide.ice': [
+    'An ice block! Slide into it to push it. It skates until it bumps into something, so you can park it in just the right place!',
+  ],
+  'slide.star': [
+    'Push the ice block so it stops right on the star! It skates until it bumps into something, so plan where to push it from.',
+  ],
   'slide.star.stuck': ['Oh no, the block cannot reach the star from here. Tap the round arrow to go back.'],
-  'slide.pals': ['Two penguins! Tap a penguin to choose it, then tap the ice to slide it. A penguin can stop when it bumps into its friend!'],
+  'slide.pals': [
+    'Two penguins! Tap a penguin to choose it, then tap the ice to slide it. A penguin can stop when it bumps into its friend!',
+  ],
   'slide.star.done': ['The block is on the star! What clever pushing!'],
   'slide.hint': ['Follow the yellow arrow.'],
   'slide.yum': ['Yum!', 'A fish!', 'Gulp!'],
   'slide.done': ['A full and happy penguin! What clever sliding!'],
-  'slide.predict': ['The yellow arrow shows which way the penguin will slide. Where will it stop? Tap that spot on the ice!'],
-  'slide.predict.right': ['You guessed it! It stopped right there.', 'Right there! You knew where it would stop.'],
+  'slide.predict': [
+    'The yellow arrow shows which way the penguin will slide. Where will it stop? Tap that spot on the ice!',
+  ],
+  'slide.predict.right': [
+    'You guessed it! It stopped right there.',
+    'Right there! You knew where it would stop.',
+  ],
   'slide.predict.rock': ['It slid on until it bumped into that! That is what stopped it.'],
   'slide.predict.edge': ['It kept sliding all the way to the edge of the pond!'],
 } satisfies Record<string, string[]>;

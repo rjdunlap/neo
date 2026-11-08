@@ -1,5 +1,8 @@
 /** Moving a focus ring between things scattered over a board, for games whose targets are not a tidy grid. */
-export interface Spot { x: number; y: number }
+export interface Spot {
+  x: number;
+  y: number;
+}
 
 const UX = [1, 0, -1, 0];
 const UY = [0, 1, 0, -1];
@@ -11,15 +14,20 @@ const UY = [0, 1, 0, -1];
  */
 export function nextSpot(spots: readonly Spot[], from: number, dir: number): number {
   const a = spots[from];
-  let best = from, bestCost = Infinity;
+  let best = from,
+    bestCost = Infinity;
   spots.forEach((s, i) => {
     if (i === from) return;
-    const dx = s.x - a.x, dy = s.y - a.y;
+    const dx = s.x - a.x,
+      dy = s.y - a.y;
     const along = dx * UX[dir] + dy * UY[dir];
     if (along <= 0) return;
     const across = Math.abs(dx * UY[dir] - dy * UX[dir]);
     const cost = along + 2 * across;
-    if (cost < bestCost) { best = i; bestCost = cost; }
+    if (cost < bestCost) {
+      best = i;
+      bestCost = cost;
+    }
   });
   return best;
 }

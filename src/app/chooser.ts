@@ -23,13 +23,24 @@ export const POINTER_WINDOW_MS = 1500;
  * a tap on couch play. A click with neither (Enter, or an assistive technology's "activate") takes the couch, the way Enter
  * does, rather than an island it cannot drive.
  */
-export const sourceOfClick = (detail: number, pointerSeen = false): Source => (pointerSeen || detail > 0 ? 'pointer' : 'key');
+export const sourceOfClick = (detail: number, pointerSeen = false): Source =>
+  pointerSeen || detail > 0 ? 'pointer' : 'key';
 
 /** A person's name as the island keeps it (`migrate` allows 40 characters). */
 export const NAME_LIMIT = 40;
 
 export const cleanPlayerName = (v: unknown): string =>
-  typeof v === 'string' ? [...v.replace(/[\u0000-\u001f\u007f]/g, '').replace(/\s+/g, ' ').trim()].slice(0, NAME_LIMIT).join('').trim() : '';
+  typeof v === 'string'
+    ? [
+        ...v
+          .replace(/[\u0000-\u001f\u007f]/g, '')
+          .replace(/\s+/g, ' ')
+          .trim(),
+      ]
+        .slice(0, NAME_LIMIT)
+        .join('')
+        .trim()
+    : '';
 
 /**
  * The name that fills couch Player 1 when someone enters couch play: theirs, as the couch shows names (at most 14 letters), or
@@ -40,7 +51,8 @@ export const couchNameFor = (profileName: string): string | null => cleanName(pr
 
 /** From this age a person is offered their friend to choose, with no egg to hatch. A UI choice made from the age typed, never stored. */
 export const ADULT_YEARS = 13;
-export const skipsEgg = (birth: Birth | null, now: Date): boolean => birth !== null && completedYears(birth, now) >= ADULT_YEARS;
+export const skipsEgg = (birth: Birth | null, now: Date): boolean =>
+  birth !== null && completedYears(birth, now) >= ADULT_YEARS;
 
 export type NewPlayer = { ok: true; name: string; birth: Birth } | { ok: false; problem: 'name' | 'birth' };
 
@@ -48,6 +60,10 @@ export type NewPlayer = { ok: true; name: string; birth: Birth } | { ok: false; 
 export function readNewPlayer(name: unknown, month: unknown, year: unknown, now: Date): NewPlayer {
   const clean = cleanPlayerName(name);
   if (!clean) return { ok: false, problem: 'name' };
-  const birth = checkBirthInput(typeof month === 'string' ? Number(month.trim() || NaN) : month, typeof year === 'string' ? Number(year.trim() || NaN) : year, now);
+  const birth = checkBirthInput(
+    typeof month === 'string' ? Number(month.trim() || NaN) : month,
+    typeof year === 'string' ? Number(year.trim() || NaN) : year,
+    now,
+  );
   return birth ? { ok: true, name: clean, birth } : { ok: false, problem: 'birth' };
 }

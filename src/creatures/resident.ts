@@ -60,7 +60,11 @@ export class Resident extends Container {
     // the host's spot: capped at `TOUCH_RADIUS`, reaching at most `TOUCH_BELOW` units below the feet and `TOUCH_SIDE` to a side.
     const r = Math.min(t.r * fit.scale, TOUCH_RADIUS);
     const side = TOUCH_SIDE - r - 10;
-    this.touch = { x: Math.max(-side, Math.min(side, t.x * fit.scale + dx)), y: Math.min(t.y * fit.scale - fit.lift, TOUCH_BELOW - r - 10), r };
+    this.touch = {
+      x: Math.max(-side, Math.min(side, t.x * fit.scale + dx)),
+      y: Math.min(t.y * fit.scale - fit.lift, TOUCH_BELOW - r - 10),
+      r,
+    };
     this.addChild(this.rig);
   }
 

@@ -1,6 +1,42 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { alternates, botTeam, BIG_POWER, CREW, keepWithin, nearestTeam, nextStrong, partsOf, partThing, SPLITS, strongMixes, teamCenters, teamedPlan, teamsResult, badgeRings, BASKET_HALF, BUNCHES, CARRY_NEEDS, CROWD, dressRound, fieldTouch, helperTouch, makeFruits, pileSpot, PLACE_THINGS, PLACES, planFor, PLANS, ringsSayWhen, skipCount, thingsFor, tryLift, usesWhistle, whistleFor, whistleMisses } from './logic';
+import {
+  alternates,
+  botTeam,
+  BIG_POWER,
+  CREW,
+  keepWithin,
+  nearestTeam,
+  nextStrong,
+  partsOf,
+  partThing,
+  SPLITS,
+  strongMixes,
+  teamCenters,
+  teamedPlan,
+  teamsResult,
+  badgeRings,
+  BASKET_HALF,
+  BUNCHES,
+  CARRY_NEEDS,
+  CROWD,
+  dressRound,
+  fieldTouch,
+  helperTouch,
+  makeFruits,
+  pileSpot,
+  PLACE_THINGS,
+  PLACES,
+  planFor,
+  PLANS,
+  ringsSayWhen,
+  skipCount,
+  thingsFor,
+  tryLift,
+  usesWhistle,
+  whistleFor,
+  whistleMisses,
+} from './logic';
 
 describe('Little Helpers', () => {
   it('never needs more helpers than the crowd, and leaves something to send', () => {
@@ -10,7 +46,9 @@ describe('Little Helpers', () => {
         expect(fruits).toHaveLength(plan.fruits);
         for (const f of fruits) {
           expect(f.need).toBeGreaterThanOrEqual(plan.min);
-          expect(f.need).toBeLessThanOrEqual(plan.mode === 'split' ? CROWD : plan.mode === 'strong' ? plan.max : Math.min(plan.max, CROWD - 1));
+          expect(f.need).toBeLessThanOrEqual(
+            plan.mode === 'split' ? CROWD : plan.mode === 'strong' ? plan.max : Math.min(plan.max, CROWD - 1),
+          );
           if (plan.mode === 'more') {
             expect(f.already).toBeGreaterThanOrEqual(1);
             expect(f.already).toBeLessThan(f.need);
@@ -23,17 +61,22 @@ describe('Little Helpers', () => {
             expect(f.need / f.groups).toBeGreaterThanOrEqual(2);
           }
           // Neighbouring bunches differ in shape, even when the totals match (3 twos, 2 threes).
-          fruits.slice(1).forEach((f, i) => expect([f.groups, f.need]).not.toEqual([fruits[i].groups, fruits[i].need]));
+          fruits
+            .slice(1)
+            .forEach((f, i) => expect([f.groups, f.need]).not.toEqual([fruits[i].groups, fruits[i].need]));
         } else if (plan.mode === 'split') {
           for (const f of fruits) expect(f.groups).toBe(2);
         } else {
           for (const f of fruits) expect(f.groups).toBe(1);
           const needs = fruits.map((f) => f.need);
           // Never a plain swap (1, 2, 1, 2); with three or more values, never the same twice in a row either.
-          if (plan.max > plan.min) expect(alternates(needs), `${plan.name} seed ${seed}: ${needs}`).toBe(false);
-          if (plan.max - plan.min >= 2) fruits.slice(1).forEach((f, i) => expect(f.need).not.toBe(fruits[i].need));
+          if (plan.max > plan.min)
+            expect(alternates(needs), `${plan.name} seed ${seed}: ${needs}`).toBe(false);
+          if (plan.max - plan.min >= 2)
+            fruits.slice(1).forEach((f, i) => expect(f.need).not.toBe(fruits[i].need));
           // Two values come equally often, so both sizes are met every round.
-          if (plan.max - plan.min === 1) expect(needs.filter((n) => n === plan.min).length).toBe(plan.fruits / 2);
+          if (plan.max - plan.min === 1)
+            expect(needs.filter((n) => n === plan.min).length).toBe(plan.fruits / 2);
         }
       }
     }
@@ -58,7 +101,9 @@ describe('Little Helpers', () => {
           while (helperTouch(plan, f.need, carrying) === 'send') {
             carrying++;
             sent++;
-            expect(carrying).toBeLessThanOrEqual(plan.mode === 'strong' ? CREW.small + CREW.big * BIG_POWER : CROWD);
+            expect(carrying).toBeLessThanOrEqual(
+              plan.mode === 'strong' ? CREW.small + CREW.big * BIG_POWER : CROWD,
+            );
           }
           expect(carrying, `${plan.name} seed ${seed}`).toBe(f.need);
           expect(tryLift(f.need, carrying)).toBe('lift');
@@ -110,7 +155,9 @@ describe('Little Helpers', () => {
   });
 
   it('every place has something for every need, heavier needs draw the bigger things, and no thing comes twice running', () => {
-    for (const place of PLACES) for (let need = 1; need < CROWD; need++) expect(thingsFor(place, need).length, `${place} ${need}`).toBeGreaterThan(0);
+    for (const place of PLACES)
+      for (let need = 1; need < CROWD; need++)
+        expect(thingsFor(place, need).length, `${place} ${need}`).toBeGreaterThan(0);
     for (const place of PLACES) expect(PLACE_THINGS[place].every((k) => k in CARRY_NEEDS)).toBe(true);
     // The pumpkin and watermelon never stand for a light need, the acorn never for a heavy one.
     expect(CARRY_NEEDS.pumpkin[0]).toBeGreaterThan(CARRY_NEEDS.acorn[1]);
@@ -127,7 +174,8 @@ describe('Little Helpers', () => {
           expect(PLACE_THINGS[place]).toContain(k);
           expect(each).toBeGreaterThanOrEqual(CARRY_NEEDS[k][0]);
           expect(each).toBeLessThanOrEqual(CARRY_NEEDS[k][1]);
-          if (i > 0 && thingsFor(place, each).filter((x) => x !== things[i - 1]).length) expect(k).not.toBe(things[i - 1]);
+          if (i > 0 && thingsFor(place, each).filter((x) => x !== things[i - 1]).length)
+            expect(k).not.toBe(things[i - 1]);
         });
       }
     }
@@ -179,7 +227,12 @@ describe('Little Helpers', () => {
     expect(teamsResult([2, 3], [3, 2])).toMatchObject({ lift: false, short: [1], over: [0] });
     expect(teamsResult([2, 3], [0, 0]).empty).toBe(true);
     expect(teamsResult([2, 2], [2, 1])).toMatchObject({ lift: false, short: [1], over: [] });
-    for (const parts of [[2, 3], [1, 4], [2, 2, 2], [3, 3]]) {
+    for (const parts of [
+      [2, 3],
+      [1, 4],
+      [2, 2, 2],
+      [3, 3],
+    ]) {
       const counts = parts.map(() => 0);
       for (let guard = 0; guard < 20; guard++) {
         const g = botTeam(parts, counts);
@@ -191,7 +244,12 @@ describe('Little Helpers', () => {
   });
 
   it('tap resolves to the nearest fruit and the teams never overlap', () => {
-    for (const parts of [[2, 2], [1, 5], [2, 2, 2], [3, 4]]) {
+    for (const parts of [
+      [2, 2],
+      [1, 5],
+      [2, 2, 2],
+      [3, 4],
+    ]) {
       const c = teamCenters(parts);
       c.forEach((x, i) => {
         expect(nearestTeam(parts, x)).toBe(i);
@@ -238,7 +296,8 @@ describe('Little Helpers', () => {
   });
 
   it('level 8 needs of 7 and 8 still have something to carry', () => {
-    for (const place of PLACES) for (const need of [7, 8]) expect(thingsFor(place, need).length, `${place} ${need}`).toBeGreaterThan(0);
+    for (const place of PLACES)
+      for (const need of [7, 8]) expect(thingsFor(place, need).length, `${place} ${need}`).toBeGreaterThan(0);
   });
 
   it('lifts only with exactly enough helpers', () => {
@@ -261,13 +320,17 @@ describe('Little Helpers', () => {
       expect(whistleMisses(whistleFor(need, 0))).toBe(false);
       expect(whistleFor(need, need)).toBe('lift');
       expect(whistleMisses(whistleFor(need, need))).toBe(false);
-      for (let n = 1; n < CROWD + 1; n++) if (n !== need) expect(whistleMisses(whistleFor(need, n))).toBe(true);
+      for (let n = 1; n < CROWD + 1; n++)
+        if (n !== need) expect(whistleMisses(whistleFor(need, n))).toBe(true);
     }
   });
 
   it('keeps every carried fruit inside the basket, a whole bunch included', () => {
     // The most a round can carry: four bunches of up to three fruits.
-    const most = PLANS.reduce((m, p) => Math.max(m, p.mode === 'groups' ? p.fruits * Math.max(...BUNCHES.map(([g]) => g)) : p.fruits), 0);
+    const most = PLANS.reduce(
+      (m, p) => Math.max(m, p.mode === 'groups' ? p.fruits * Math.max(...BUNCHES.map(([g]) => g)) : p.fruits),
+      0,
+    );
     const seen = new Set<string>();
     for (let n = 0; n < most; n++) {
       const p = pileSpot(n);
@@ -278,4 +341,3 @@ describe('Little Helpers', () => {
     expect(seen.size).toBe(most);
   });
 });
-

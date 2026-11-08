@@ -4,7 +4,9 @@ export const VOICE = {
   'says.copy': ['Copy {pet}! Do what {pet} does. A grown-up taps the green arrow for the next one.'],
   'says.body': ['Copy {pet}, and find each part on you!'],
   'says.pairs': ['Watch two moves, then do them both, in order!'],
-  'says.rule': ['Let us play {pet} says! Only move when you hear {pet} says. If I just say the move, stay still!'],
+  'says.rule': [
+    'Let us play {pet} says! Only move when you hear {pet} says. If I just say the move, stay still!',
+  ],
   'says.freeze': ['Dance while the music plays. When it stops, freeze!'],
   'says.move.clap': ['Clap, clap, clap!'],
   'says.move.stomp': ['Stomp, stomp, stomp!'],

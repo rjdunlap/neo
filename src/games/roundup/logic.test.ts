@@ -1,6 +1,38 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { animalsFor, BEACON_S, sizeScale, emptierPen, enter, fairBell, fairNeeds, fleeFrom, fleeSpeed, FOLLOW_SPEED, nearestFinger, FOLLOW_STOP, followSpeed, KINDS, leadGoal, makeHerd, PLACE, pensFull, planFor, PLANS, PLURAL, ringBell, SHOO_SPEED, usesBell, shooPoint, signDots, spreadApart, startSpots, throughGate, wanted, type Kind } from './logic';
+import {
+  animalsFor,
+  BEACON_S,
+  sizeScale,
+  emptierPen,
+  enter,
+  fairBell,
+  fairNeeds,
+  fleeFrom,
+  fleeSpeed,
+  FOLLOW_SPEED,
+  nearestFinger,
+  FOLLOW_STOP,
+  followSpeed,
+  KINDS,
+  leadGoal,
+  makeHerd,
+  PLACE,
+  pensFull,
+  planFor,
+  PLANS,
+  PLURAL,
+  ringBell,
+  SHOO_SPEED,
+  usesBell,
+  shooPoint,
+  signDots,
+  spreadApart,
+  startSpots,
+  throughGate,
+  wanted,
+  type Kind,
+} from './logic';
 
 describe('Roundup', () => {
   it('Come along: one tap ahead carries the herd at least half a screen before the beacon fades', () => {
@@ -8,31 +40,71 @@ describe('Roundup', () => {
     expect(BEACON_S).toBeLessThanOrEqual(5);
   });
 
-  it('two shepherds: pushes add, capped at one finger\'s top speed, and one finger is unchanged', () => {
+  it("two shepherds: pushes add, capped at one finger's top speed, and one finger is unchanged", () => {
     const at = { x: 500, y: 400 };
     // One finger: exactly the old single-pointer flee.
     const one = fleeFrom(at, [{ x: 400, y: 400 }], 190, SHOO_SPEED);
     expect(one.x).toBeCloseTo(fleeSpeed(100, 190, SHOO_SPEED));
     expect(one.y).toBeCloseTo(0);
     // Nobody in range: no push.
-    expect(fleeFrom(at, [{ x: 100, y: 100 }, { x: 900, y: 700 }], 190, SHOO_SPEED)).toEqual({ x: 0, y: 0 });
+    expect(
+      fleeFrom(
+        at,
+        [
+          { x: 100, y: 100 },
+          { x: 900, y: 700 },
+        ],
+        190,
+        SHOO_SPEED,
+      ),
+    ).toEqual({ x: 0, y: 0 });
     expect(fleeFrom(at, [], 190, SHOO_SPEED)).toEqual({ x: 0, y: 0 });
     // Two fingers on the same side never make it faster than one finger can.
-    const both = fleeFrom(at, [{ x: 450, y: 400 }, { x: 455, y: 410 }], 190, SHOO_SPEED);
+    const both = fleeFrom(
+      at,
+      [
+        { x: 450, y: 400 },
+        { x: 455, y: 410 },
+      ],
+      190,
+      SHOO_SPEED,
+    );
     expect(Math.hypot(both.x, both.y)).toBeLessThanOrEqual(SHOO_SPEED + 1e-9);
     expect(both.x).toBeGreaterThan(0);
     // Two fingers either side: the pushes cancel along that line, never NaN; a third finger below sends it up.
-    const pinched = fleeFrom(at, [{ x: 400, y: 400 }, { x: 600, y: 400 }], 190, SHOO_SPEED);
+    const pinched = fleeFrom(
+      at,
+      [
+        { x: 400, y: 400 },
+        { x: 600, y: 400 },
+      ],
+      190,
+      SHOO_SPEED,
+    );
     expect(Number.isFinite(pinched.x) && Number.isFinite(pinched.y)).toBe(true);
     expect(Math.abs(pinched.x)).toBeLessThan(1e-9);
-    const squeezed = fleeFrom(at, [{ x: 400, y: 400 }, { x: 600, y: 400 }, { x: 500, y: 480 }], 190, SHOO_SPEED);
+    const squeezed = fleeFrom(
+      at,
+      [
+        { x: 400, y: 400 },
+        { x: 600, y: 400 },
+        { x: 500, y: 480 },
+      ],
+      190,
+      SHOO_SPEED,
+    );
     expect(squeezed.y).toBeLessThan(0);
     // A finger right on the animal still pushes it somewhere, never NaN.
     const on = fleeFrom(at, [at], 190, SHOO_SPEED);
     expect(Number.isFinite(on.x) && Number.isFinite(on.y)).toBe(true);
     // Following: each animal goes to its own nearest finger.
     expect(nearestFinger(at, [])).toBeNull();
-    expect(nearestFinger(at, [{ x: 900, y: 400 }, { x: 520, y: 380 }])).toEqual({ x: 520, y: 380 });
+    expect(
+      nearestFinger(at, [
+        { x: 900, y: 400 },
+        { x: 520, y: 380 },
+      ]),
+    ).toEqual({ x: 520, y: 380 });
   });
 
   it('Fill it up starts short of 4 or 5 with 1–3 home and six loose, for every seed', () => {
@@ -67,7 +139,15 @@ describe('Roundup', () => {
 
   it('gives Shoo one two successes, ordinary flee steering and a wider accepting gate', () => {
     const plan = planFor(10);
-    expect(plan).toMatchObject({ mode: 'shoo', animals: 2, sequential: true, gate: 0.8, fleeRadius: 190, hintAfter: 10, helpAfter: 20 });
+    expect(plan).toMatchObject({
+      mode: 'shoo',
+      animals: 2,
+      sequential: true,
+      gate: 0.8,
+      fleeRadius: 190,
+      hintAfter: 10,
+      helpAfter: 20,
+    });
     const pen = { x: 500, y: 100, w: 200, h: 200 };
     // A crossing outside the old opening is accepted; the fence ends still hold.
     expect(throughGate(pen, { x: 490, y: 130 }, { x: 510, y: 130 }, plan.gate)).toBe(true);
@@ -98,7 +178,8 @@ describe('Roundup', () => {
       expect(herd.animals).toHaveLength(6);
       expect(new Set(herd.pens.map((p) => p.kind)).size).toBe(2);
       expect(herd.pens.every((p) => p.kind !== herd.stay)).toBe(true);
-      for (const kind of ['pig', 'bunny', 'cow']) expect(herd.animals.filter((k) => k === kind)).toHaveLength(2);
+      for (const kind of ['pig', 'bunny', 'cow'])
+        expect(herd.animals.filter((k) => k === kind)).toHaveLength(2);
       for (const pen of herd.pens) {
         expect(enter(pen, herd.stay!)).toBe('wrong-pen');
         expect(enter(pen, pen.kind)).toBe('in');
@@ -138,7 +219,8 @@ describe('Roundup', () => {
       }
       for (let i = 0; i < 3; i++) {
         expect(Math.hypot(herd[i].x - finger.x, herd[i].y - finger.y)).toBeLessThan(FOLLOW_STOP + 80);
-        for (let j = i + 1; j < 3; j++) expect(Math.hypot(herd[i].x - herd[j].x, herd[i].y - herd[j].y)).toBeGreaterThan(60);
+        for (let j = i + 1; j < 3; j++)
+          expect(Math.hypot(herd[i].x - herd[j].x, herd[i].y - herd[j].y)).toBeGreaterThan(60);
       }
     }
     for (let seed = 1; seed <= 100; seed++) {
@@ -170,7 +252,9 @@ describe('Roundup', () => {
             expect(pen.target).toBeGreaterThanOrEqual(plan.min!);
           }
         }
-        expect(herd.pens.length).toBe(plan.mode.startsWith('sort') || plan.mode === 'fair' || plan.mode === 'size' ? 2 : 1);
+        expect(herd.pens.length).toBe(
+          plan.mode.startsWith('sort') || plan.mode === 'fair' || plan.mode === 'size' ? 2 : 1,
+        );
       }
     }
   });
@@ -187,7 +271,12 @@ describe('Roundup', () => {
           expect(herd.pens.some((p) => p.kind === kind)).toBe(true);
           kinds.add(kind);
         }
-        pairs.add(herd.pens.map((p) => p.kind).sort().join(','));
+        pairs.add(
+          herd.pens
+            .map((p) => p.kind)
+            .sort()
+            .join(','),
+        );
         for (const pen of herd.pens) {
           expect(PLURAL[pen.kind]).toBeTruthy();
           expect(PLACE[pen.kind]).toBeTruthy();
@@ -198,7 +287,12 @@ describe('Roundup', () => {
             expect(pen.target).toBeLessThanOrEqual(plan.max!);
           }
         }
-        expect(ringBell(herd, herd.pens.map((p) => wanted(herd, p))).every((r) => r.extra === 0 && r.short === 0)).toBe(true);
+        expect(
+          ringBell(
+            herd,
+            herd.pens.map((p) => wanted(herd, p)),
+          ).every((r) => r.extra === 0 && r.short === 0),
+        ).toBe(true);
       }
       expect([...kinds].sort()).toEqual([...KINDS].sort());
       expect(pairs.size).toBe(plan.mode.startsWith('sort') ? 10 : 5);
@@ -221,10 +315,22 @@ describe('Roundup', () => {
   it('lets animals into their own pen, and the bell finds too many or too few', () => {
     expect(enter({ kind: 'pig' }, 'bunny')).toBe('wrong-pen');
     expect(enter({ kind: 'pig', target: 2 }, 'pig')).toBe('in');
-    const herd = { animals: ['pig', 'pig', 'pig', 'bunny', 'bunny'] as const, pens: [{ kind: 'pig' as const, target: 2 }, { kind: 'bunny' as const, target: 1 }] };
+    const herd = {
+      animals: ['pig', 'pig', 'pig', 'bunny', 'bunny'] as const,
+      pens: [
+        { kind: 'pig' as const, target: 2 },
+        { kind: 'bunny' as const, target: 1 },
+      ],
+    };
     const h = { ...herd, animals: [...herd.animals] };
-    expect(ringBell(h, [3, 0])).toEqual([{ extra: 1, short: 0 }, { extra: 0, short: 1 }]);
-    expect(ringBell(h, [2, 1])).toEqual([{ extra: 0, short: 0 }, { extra: 0, short: 0 }]);
+    expect(ringBell(h, [3, 0])).toEqual([
+      { extra: 1, short: 0 },
+      { extra: 0, short: 1 },
+    ]);
+    expect(ringBell(h, [2, 1])).toEqual([
+      { extra: 0, short: 0 },
+      { extra: 0, short: 0 },
+    ]);
   });
 
   it('only lets animals in through the gate, and shooing is stronger up close', () => {
@@ -238,13 +344,24 @@ describe('Roundup', () => {
 
   it('puts the demonstration finger behind the animal, aimed away from the gate', () => {
     for (const [animal, gate] of [
-      [{ x: 200, y: 300 }, { x: 700, y: 300 }],
-      [{ x: 300, y: 500 }, { x: 700, y: 200 }],
-      [{ x: 650, y: 120 }, { x: 700, y: 400 }],
+      [
+        { x: 200, y: 300 },
+        { x: 700, y: 300 },
+      ],
+      [
+        { x: 300, y: 500 },
+        { x: 700, y: 200 },
+      ],
+      [
+        { x: 650, y: 120 },
+        { x: 700, y: 400 },
+      ],
     ]) {
       const finger = shooPoint(animal, gate);
       expect(Math.hypot(finger.x - animal.x, finger.y - animal.y)).toBeCloseTo(105);
-      expect((gate.x - animal.x) * (finger.x - animal.x) + (gate.y - animal.y) * (finger.y - animal.y)).toBeLessThan(0);
+      expect(
+        (gate.x - animal.x) * (finger.x - animal.x) + (gate.y - animal.y) * (finger.y - animal.y),
+      ).toBeLessThan(0);
     }
   });
 
@@ -317,7 +434,8 @@ describe('Roundup', () => {
           expect(bell.less).toBe(emptierPen([a, b]));
           // The extras leave the fuller pen level with the other, unless that would empty both.
           expect(bell.extra).toBe(Math.min(a, b) === 0 ? 0 : Math.abs(a - b));
-          if (bell.extra) expect(fairBell(bell.more === 0 ? [a - bell.extra, b] : [a, b - bell.extra]).fair).toBe(true);
+          if (bell.extra)
+            expect(fairBell(bell.more === 0 ? [a - bell.extra, b] : [a, b - bell.extra]).fair).toBe(true);
         } else expect(bell.extra).toBe(0);
       }
     }
@@ -330,7 +448,11 @@ describe('Roundup', () => {
 
   it('Make it fair: help and the demonstration fill the emptier pen up to half each', () => {
     for (const n of [6, 8]) {
-      const herd = { animals: Array<Kind>(n).fill('pig'), pens: [{ kind: 'pig' as Kind }, { kind: 'pig' as Kind }], fair: true };
+      const herd = {
+        animals: Array<Kind>(n).fill('pig'),
+        pens: [{ kind: 'pig' as Kind }, { kind: 'pig' as Kind }],
+        fair: true,
+      };
       const inside = [0, 0];
       // Following the help one animal at a time always ends level at half each.
       for (let step = 0; step < n; step++) {

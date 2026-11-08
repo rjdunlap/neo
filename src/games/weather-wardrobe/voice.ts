@@ -2,8 +2,12 @@
 export const VOICE = {
   'game.weather-wardrobe': ['Weather Wardrobe!'],
 
-  'weather.friends': ['Two friends, two places! One is in {a} weather, and one is in {b} weather. Drag each thing to the friend who needs it.'],
-  'weather.friend.wrong': ['{item} for {weather} days. This friend has {other} weather. Try the other friend.'],
+  'weather.friends': [
+    'Two friends, two places! One is in {a} weather, and one is in {b} weather. Drag each thing to the friend who needs it.',
+  ],
+  'weather.friend.wrong': [
+    '{item} for {weather} days. This friend has {other} weather. Try the other friend.',
+  ],
   'weather.friend.hint': ['Drag the glowing thing to the glowing friend in {weather} weather.'],
   'weather.friends.ready': ['Both friends are dressed for their weather!'],
   'weather.play': ['Tap the sky to change the weather!'],
@@ -22,6 +26,8 @@ export const VOICE = {
   'weather.sky.wrong': ['That is {weather}, but look at what {pet} is wearing. Try another sky!'],
   'weather.hint': ['Try the glowing one!'],
   'weather.name': ['{item}!'],
-  'weather.change.remove': ['The weather is changing to {weather}. Tap the clothes that do not fit to take them off.'],
+  'weather.change.remove': [
+    'The weather is changing to {weather}. Tap the clothes that do not fit to take them off.',
+  ],
   'weather.change.add': ['Now it is {weather}. What should {pet} wear?'],
 } satisfies Record<string, string[]>;

@@ -17,7 +17,15 @@ import type { View } from '../../engine/view';
 import { gameById } from '../../games/registry';
 import { store } from '../../progress/store';
 import { RoundButton } from '../../ui/buttons';
-import { againIcon, arrowIcon, basketIcon, crossIcon, flipIcon, islandIcon, magnifierIcon } from '../../ui/icons';
+import {
+  againIcon,
+  arrowIcon,
+  basketIcon,
+  crossIcon,
+  flipIcon,
+  islandIcon,
+  magnifierIcon,
+} from '../../ui/icons';
 import { Sparkle } from '../../ui/sparkle';
 import { BOARD, PLAQUE, pictureBoard, TunePlaque } from '../../ui/creation-art';
 import { StickerPicker } from '../../ui/sticker-picker';
@@ -58,7 +66,9 @@ export class RoomScene extends Scene {
   private readonly plaque = new TunePlaque();
   private readonly undoPicture = new RoundButton(undoIcon(), swatch.white, 36, () => this.undo('picture'));
   private readonly undoTune = new RoundButton(undoIcon(), swatch.white, 36, () => this.undo('tune'));
-  private readonly takePicture = new RoundButton(crossIcon(), swatch.white, 36, () => this.takeDown('picture'));
+  private readonly takePicture = new RoundButton(crossIcon(), swatch.white, 36, () =>
+    this.takeDown('picture'),
+  );
   private readonly takeTune = new RoundButton(crossIcon(), swatch.white, 36, () => this.takeDown('tune'));
   private readonly stage = new Container();
   private readonly dim = new Graphics();
@@ -67,7 +77,10 @@ export class RoomScene extends Scene {
   private readonly flip = new RoundButton(flipIcon(), swatch.white, 50, () => this.flipSelected());
   private readonly tidyButton = new RoundButton(againIcon(), swatch.white, 50, () => this.tidy());
   /** The discovery journal. It twinkles while there is something in it she has not looked at. */
-  private readonly journalButton = new RoundButton(magnifierIcon(), swatch.white, 50, () => { void voice.say('journal.hello'); this.app.go.journal(); });
+  private readonly journalButton = new RoundButton(magnifierIcon(), swatch.white, 50, () => {
+    void voice.say('journal.hello');
+    this.app.go.journal();
+  });
   private readonly ring = new Graphics();
   /** Friends' way in until RW08's Home (RW05): her friend goes to look in the basket, then Friends opens. */
   readonly basket = new Container();
@@ -89,10 +102,27 @@ export class RoomScene extends Scene {
     this.stage.addChild(this.ring);
     for (const id of ROOM_ITEMS) this.addPiece(id);
     this.pet.scale.set(0.62);
-    onTap(this.pet, () => { this.pet.poke(); sfx.giggle(); }, { radius: 90 });
+    onTap(
+      this.pet,
+      () => {
+        this.pet.poke();
+        sfx.giggle();
+      },
+      { radius: 90 },
+    );
     this.pet.hitArea = new Rectangle(-150, -300, 300, 320);
     this.stage.addChild(this.track(this.pet));
-    this.ui.addChild(this.dim, this.home, this.flip, this.tidyButton, this.journalButton, this.undoPicture, this.undoTune, this.takePicture, this.takeTune);
+    this.ui.addChild(
+      this.dim,
+      this.home,
+      this.flip,
+      this.tidyButton,
+      this.journalButton,
+      this.undoPicture,
+      this.undoTune,
+      this.takePicture,
+      this.takeTune,
+    );
     if (store.journalHasNew) {
       const sparkle = this.track(new Sparkle(24));
       sparkle.position.set(36, -36);
@@ -140,7 +170,12 @@ export class RoomScene extends Scene {
     }
     const { w, h } = ITEM_SIZE[id];
     // Wide enough and tall enough for a finger even on the thin lamp and the low rug.
-    node.hitArea = new Rectangle(-Math.max(w, 110) / 2, -Math.max(h, 110), Math.max(w, 110), Math.max(h, 110));
+    node.hitArea = new Rectangle(
+      -Math.max(w, 110) / 2,
+      -Math.max(h, 110),
+      Math.max(w, 110),
+      Math.max(h, 110),
+    );
     this.stage.addChild(node);
     const piece = { id, node, art, down: null } as Piece;
     piece.handle = draggable(node, this.tw, {
@@ -195,16 +230,23 @@ export class RoomScene extends Scene {
   private drawWall(v: View) {
     const g = this.paint.clear();
     g.rect(0, 0, v.w, v.h * FLOOR_LINE).fill(swatch.brown.light);
-    for (let x = 0; x < v.w; x += 96) g.rect(x, 0, 4, v.h * FLOOR_LINE).fill({ color: swatch.brown.line, alpha: 0.18 });
+    for (let x = 0; x < v.w; x += 96)
+      g.rect(x, 0, 4, v.h * FLOOR_LINE).fill({ color: swatch.brown.line, alpha: 0.18 });
     g.rect(0, v.h * FLOOR_LINE, v.w, v.h * (1 - FLOOR_LINE)).fill(wood.fill);
-    for (let y = v.h * FLOOR_LINE + 46; y < v.h; y += 62) g.rect(0, y, v.w, 4).fill({ color: wood.line, alpha: 0.3 });
+    for (let y = v.h * FLOOR_LINE + 46; y < v.h; y += 62)
+      g.rect(0, y, v.w, 4).fill({ color: wood.line, alpha: 0.3 });
     g.rect(0, v.h * FLOOR_LINE - 14, v.w, 18).fill(wood.line);
     this.window.position.set(v.w * 0.2, v.h * 0.26);
     this.frame.position.set(v.w * 0.6, v.h * 0.26);
     this.board.position.set(v.w * 0.845, v.h * 0.26);
     this.plaque.position.set(v.w * 0.4, v.h * 0.26);
     // Bring-back and take-down buttons sit just above what they change. drawCreations centers one or separates both.
-    this.placeCreationButtons(this.board.x, this.board.y - BOARD.h / 2 - 48, this.undoPicture, this.takePicture);
+    this.placeCreationButtons(
+      this.board.x,
+      this.board.y - BOARD.h / 2 - 48,
+      this.undoPicture,
+      this.takePicture,
+    );
     this.placeCreationButtons(this.plaque.x, this.plaque.y - PLAQUE.h / 2 - 48, this.undoTune, this.takeTune);
   }
 
@@ -220,7 +262,14 @@ export class RoomScene extends Scene {
       this.frame.addChild(s);
     } else {
       // An empty frame invites a touch: a soft plus.
-      this.frame.addChild(new Graphics().moveTo(-26, 0).lineTo(26, 0).moveTo(0, -26).lineTo(0, 26).stroke({ width: 10, color: wood.line, alpha: 0.35, cap: 'round' }));
+      this.frame.addChild(
+        new Graphics()
+          .moveTo(-26, 0)
+          .lineTo(26, 0)
+          .moveTo(0, -26)
+          .lineTo(0, 26)
+          .stroke({ width: 10, color: wood.line, alpha: 0.35, cap: 'round' }),
+      );
     }
     this.frame.hitArea = new Rectangle(-FRAME / 2 - 10, -FRAME / 2 - 10, FRAME + 20, FRAME + 20);
   }
@@ -237,7 +286,12 @@ export class RoomScene extends Scene {
     this.undoTune.visible = store.hasEarlier('tune');
     this.takePicture.visible = picture.current !== null;
     this.takeTune.visible = tune.current !== null;
-    this.placeCreationButtons(this.board.x, this.board.y - BOARD.h / 2 - 48, this.undoPicture, this.takePicture);
+    this.placeCreationButtons(
+      this.board.x,
+      this.board.y - BOARD.h / 2 - 48,
+      this.undoPicture,
+      this.takePicture,
+    );
     this.placeCreationButtons(this.plaque.x, this.plaque.y - PLAQUE.h / 2 - 48, this.undoTune, this.takeTune);
   }
 
@@ -292,7 +346,10 @@ export class RoomScene extends Scene {
     const piece = this.selected && this.pieces.get(this.selected);
     if (!piece) return;
     const { w } = ITEM_SIZE[piece.id];
-    g.ellipse(piece.node.x, piece.node.y + 4, w * 0.6, 20).stroke({ width: 7 + Math.sin(this.clock * 5), color: swatch.yellow.fill });
+    g.ellipse(piece.node.x, piece.node.y + 4, w * 0.6, 20).stroke({
+      width: 7 + Math.sin(this.clock * 5),
+      color: swatch.yellow.fill,
+    });
     this.ring.zIndex = piece.node.y - 1;
   }
 
@@ -338,7 +395,11 @@ export class RoomScene extends Scene {
     if (dist < 40) return;
     this.pet.hop(0.8);
     sfx.animal('hop');
-    await this.tw.to(this.pet, { x, y }, { duration: Math.min(0.9, 0.25 + dist / 900), ease: ease.inOutSine });
+    await this.tw.to(
+      this.pet,
+      { x, y },
+      { duration: Math.min(0.9, 0.25 + dist / 900), ease: ease.inOutSine },
+    );
   }
 
   /** A friend does something with each furnishing. One thing at a time, nothing that can go wrong. */
@@ -348,7 +409,8 @@ export class RoomScene extends Scene {
     const piece = this.pieces.get(id)!;
     const { x, y } = piece.node;
     const side = x < this.view.w / 2 ? 1 : -1;
-    const at = (dx: number) => clampSpot((x + dx) / this.view.w, Math.max(y, this.view.h * 0.84) / this.view.h);
+    const at = (dx: number) =>
+      clampSpot((x + dx) / this.view.w, Math.max(y, this.view.h * 0.84) / this.view.h);
     const stand = (dx: number) => {
       const s = at(dx);
       return { x: s.x * this.view.w, y: s.y * this.view.h };
@@ -391,7 +453,12 @@ export class RoomScene extends Scene {
         const p = stand(side * 120);
         await this.walkTo(p.x, p.y);
         this.pet.setMood('calm', 2.6);
-        const book = new Graphics().roundRect(-34, -20, 68, 44, 6).fill(swatch.red.fill).stroke({ width: 4, color: swatch.red.line }).rect(-3, -20, 6, 44).fill(swatch.red.line);
+        const book = new Graphics()
+          .roundRect(-34, -20, 68, 44, 6)
+          .fill(swatch.red.fill)
+          .stroke({ width: 4, color: swatch.red.line })
+          .rect(-3, -20, 6, 44)
+          .fill(swatch.red.line);
         book.position.set(this.pet.x, this.pet.y - 110);
         book.zIndex = this.pet.y + 1;
         this.stage.addChild(book);
@@ -405,7 +472,16 @@ export class RoomScene extends Scene {
         await this.walkTo(p.x, p.y);
         sfx.splash();
         const drops = this.particles;
-        drops.burst(x, y - 220, { kind: 'dot', colors: [swatch.blue.fill, swatch.blue.light], count: 14, speed: [30, 120], gravity: 380, life: [0.5, 0.9], angle: Math.PI / 2, spread: 0.6 });
+        drops.burst(x, y - 220, {
+          kind: 'dot',
+          colors: [swatch.blue.fill, swatch.blue.light],
+          count: 14,
+          speed: [30, 120],
+          gravity: 380,
+          life: [0.5, 0.9],
+          angle: Math.PI / 2,
+          spread: 0.6,
+        });
         void voice.say('room.plant');
         if (!this.bloomed) {
           this.bloomed = true;
@@ -426,7 +502,14 @@ export class RoomScene extends Scene {
         const tune = [4, 6, 8, 6, 9, 8];
         for (const step of tune) {
           sfx.bell(step, 0.35);
-          this.particles.burst(x, y - 100, { kind: 'note', colors: [swatch.yellow.fill, swatch.pink.fill, swatch.blue.fill], count: 2, speed: [40, 120], gravity: -60, life: [0.8, 1.2] });
+          this.particles.burst(x, y - 100, {
+            kind: 'note',
+            colors: [swatch.yellow.fill, swatch.pink.fill, swatch.blue.fill],
+            count: 2,
+            speed: [40, 120],
+            gravity: -60,
+            life: [0.8, 1.2],
+          });
           await this.tw.wait(0.4);
         }
         break;
@@ -465,7 +548,14 @@ export class RoomScene extends Scene {
     this.pet.cheer();
     sfx.sparkle();
     void voice.say('room.picture');
-    this.particles.burst(this.board.x, this.board.y, { kind: 'star', colors: [swatch.yellow.fill, swatch.pink.fill, 0xffffff], count: 12, speed: [90, 210], gravity: 0, life: [0.5, 0.9] });
+    this.particles.burst(this.board.x, this.board.y, {
+      kind: 'star',
+      colors: [swatch.yellow.fill, swatch.pink.fill, 0xffffff],
+      count: 12,
+      speed: [90, 210],
+      gravity: 0,
+      life: [0.5, 0.9],
+    });
     await this.tw.to(this.board.scale, { x: 1.06, y: 1.06 }, { duration: 0.25 });
     await this.tw.to(this.board.scale, { x: 1, y: 1 }, { duration: 0.25 });
     await this.tw.wait(1);
@@ -493,7 +583,15 @@ export class RoomScene extends Scene {
     for (let col = 0; col < beats.length; col++) {
       this.plaque.lightColumn(col);
       for (const step of beats[col]) sfx.marimba(step, 0.45);
-      if (beats[col].length) this.particles.burst(this.plaque.x, this.plaque.y, { kind: 'note', colors: [swatch.yellow.fill, swatch.pink.fill, swatch.blue.fill], count: 2, speed: [40, 120], gravity: -60, life: [0.8, 1.2] });
+      if (beats[col].length)
+        this.particles.burst(this.plaque.x, this.plaque.y, {
+          kind: 'note',
+          colors: [swatch.yellow.fill, swatch.pink.fill, swatch.blue.fill],
+          count: 2,
+          speed: [40, 120],
+          gravity: -60,
+          life: [0.8, 1.2],
+        });
       await this.tw.wait(0.42);
     }
     this.plaque.lightColumn(-1);

@@ -6,13 +6,32 @@ import { audio } from '../../audio/engine';
 import { music, STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
-import { arcadeFilters, arcadeList, arcadeMemory, arcadePage, arcadePages, clampArcadePage, filterLine, filterName, tagsFor, type ArcadeFilter } from '../../content/arcade';
+import {
+  arcadeFilters,
+  arcadeList,
+  arcadeMemory,
+  arcadePage,
+  arcadePages,
+  clampArcadePage,
+  filterLine,
+  filterName,
+  tagsFor,
+  type ArcadeFilter,
+} from '../../content/arcade';
 import { islandDemo } from '../../content/demos';
 import { ageOf, exploreMemory } from '../../content/explore';
 import { LANDS } from '../../content/lands';
 import type { LineId } from '../../content/voice-script';
 import { Demo } from '../../couch/demo';
-import { ARCADE_CARD, ARCADE_PLAY_RADIUS, arcadeLayout, TOPIC_TILE, TOPICS, topicsLayout, type ArcadeLayout } from '../../creatures/arcade-layout';
+import {
+  ARCADE_CARD,
+  ARCADE_PLAY_RADIUS,
+  arcadeLayout,
+  TOPIC_TILE,
+  TOPICS,
+  topicsLayout,
+  type ArcadeLayout,
+} from '../../creatures/arcade-layout';
 import { CORNER_RADIUS, PAGE_ARROW_RADIUS } from '../../creatures/home-layout';
 import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
@@ -48,19 +67,50 @@ export interface ArcadeCard {
  */
 export class ArcadeScene extends Scene {
   private readonly backdrop = homeBackdrop();
-  readonly back = new RoundButton(arrowIcon(-1), swatch.white, CORNER_RADIUS, () => (this.sheet ? this.closeTopics() : this.leave(() => this.app.go.explore(), voice.say('nav.back')))).means('back');
-  readonly home = new RoundButton(houseIcon(), swatch.white, CORNER_RADIUS, () => this.leave(() => this.app.go.hub(), voice.say('nav.home'))).means('home');
+  readonly back = new RoundButton(arrowIcon(-1), swatch.white, CORNER_RADIUS, () =>
+    this.sheet ? this.closeTopics() : this.leave(() => this.app.go.explore(), voice.say('nav.back')),
+  ).means('back');
+  readonly home = new RoundButton(houseIcon(), swatch.white, CORNER_RADIUS, () =>
+    this.leave(() => this.app.go.hub(), voice.say('nav.home')),
+  ).means('home');
   readonly prev = new RoundButton(arrowIcon(-1), swatch.yellow, PAGE_ARROW_RADIUS, () => this.turn(-1));
   readonly next = new RoundButton(arrowIcon(1), swatch.yellow, PAGE_ARROW_RADIUS, () => this.turn(1));
-  readonly play = new RoundButton(playIcon(), swatch.green, ARCADE_PLAY_RADIUS, () => !this.sheet && this.spotlit && this.launch(this.spotlit));
+  readonly play = new RoundButton(
+    playIcon(),
+    swatch.green,
+    ARCADE_PLAY_RADIUS,
+    () => !this.sheet && this.spotlit && this.launch(this.spotlit),
+  );
   readonly topics = new Container();
   /** The window's frame, the demonstration (or a still picture) and the caption under it. */
   private readonly frame = new Graphics();
   /** A cream panel under the name and details, so they read over the backdrop. */
   private readonly plate = new Graphics();
   private readonly still = new Container();
-  private readonly title = new Text({ text: '', style: { fontFamily: FONT, fontSize: 26, fill: ink, fontWeight: '600', wordWrap: true, wordWrapWidth: 300, lineHeight: 30 } });
-  private readonly detail = new Text({ text: '', style: { fontFamily: FONT, fontSize: 15, fill: MUTED, fontWeight: '500', wordWrap: true, wordWrapWidth: 300, lineHeight: 19 } });
+  private readonly title = new Text({
+    text: '',
+    style: {
+      fontFamily: FONT,
+      fontSize: 26,
+      fill: ink,
+      fontWeight: '600',
+      wordWrap: true,
+      wordWrapWidth: 300,
+      lineHeight: 30,
+    },
+  });
+  private readonly detail = new Text({
+    text: '',
+    style: {
+      fontFamily: FONT,
+      fontSize: 15,
+      fill: MUTED,
+      fontWeight: '500',
+      wordWrap: true,
+      wordWrapWidth: 300,
+      lineHeight: 19,
+    },
+  });
   private readonly empty = label('', 22, MUTED, '500');
   /** The cards on this page, in reading order. */
   cards: ArcadeCard[] = [];
@@ -104,17 +154,34 @@ export class ArcadeScene extends Scene {
 
   init() {
     this.content.addChild(this.backdrop);
-    this.ui.addChild(this.frame, this.still, this.plate, this.title, this.detail, this.empty, this.topics, this.back, this.home, this.prev, this.next, this.play);
+    this.ui.addChild(
+      this.frame,
+      this.still,
+      this.plate,
+      this.title,
+      this.detail,
+      this.empty,
+      this.topics,
+      this.back,
+      this.home,
+      this.prev,
+      this.next,
+      this.play,
+    );
     for (const b of [this.prev, this.next]) b.children[1]?.scale.set(1.4);
     this.play.children[1]?.scale.set(1.5);
-    onTap(this.topics, () => {
-      if (this.leaving) return;
-      sfx.tick();
-      this.topics.scale.set(0.94);
-      window.setTimeout(() => !this.topics.destroyed && this.topics.scale.set(1), 110);
-      if (this.sheet) this.closeTopics();
-      else this.openTopics();
-    }, { cooldown: 400 });
+    onTap(
+      this.topics,
+      () => {
+        if (this.leaving) return;
+        sfx.tick();
+        this.topics.scale.set(0.94);
+        window.setTimeout(() => !this.topics.destroyed && this.topics.scale.set(1), 110);
+        if (this.sheet) this.closeTopics();
+        else this.openTopics();
+      },
+      { cooldown: 400 },
+    );
     this.drawTopics();
     this.build();
     if (!this.spotlit) this.spotlight(this.cards[0]?.mod ?? null);
@@ -128,7 +195,14 @@ export class ArcadeScene extends Scene {
     art.x -= TOPICS.w / 2 - 50;
     const name = label(filterName(this.filter), 22, ink);
     name.x = 30;
-    this.topics.addChild(new Graphics().roundRect(-TOPICS.w / 2, -TOPICS.h / 2, TOPICS.w, TOPICS.h, TOPICS.h / 2).fill(cream).stroke({ color: swatch.purple.line, width: 5 }), art, name);
+    this.topics.addChild(
+      new Graphics()
+        .roundRect(-TOPICS.w / 2, -TOPICS.h / 2, TOPICS.w, TOPICS.h, TOPICS.h / 2)
+        .fill(cream)
+        .stroke({ color: swatch.purple.line, width: 5 }),
+      art,
+      name,
+    );
     if (name.width > TOPICS.w - 110) name.scale.set((TOPICS.w - 110) / name.width);
     this.topics.hitArea = new Rectangle(-TOPICS.w / 2, -TOPICS.h / 2, TOPICS.w, TOPICS.h);
   }
@@ -143,7 +217,10 @@ export class ArcadeScene extends Scene {
     for (const i of this.icons) this.untrack(i);
     this.icons = [];
     const band = store.data.profile.band;
-    this.cards = arcadePage(this.list, this.page, this.perPage).map((mod) => ({ mod, node: this.card(mod, band) }));
+    this.cards = arcadePage(this.list, this.page, this.perPage).map((mod) => ({
+      mod,
+      node: this.card(mod, band),
+    }));
     const pages = arcadePages(this.list.length, this.perPage);
     this.prev.visible = this.page > 0;
     this.next.visible = this.page < pages - 1;
@@ -163,30 +240,75 @@ export class ArcadeScene extends Scene {
     const art = new Container();
     art.addChild(icon);
     fitArt(art, ARCADE_CARD - 34);
-    const ring = new Graphics().roundRect(-half - 7, -half - 7, ARCADE_CARD + 14, ARCADE_CARD + 14, 32).stroke({ color: swatch.yellow.fill, width: 9 });
+    const ring = new Graphics()
+      .roundRect(-half - 7, -half - 7, ARCADE_CARD + 14, ARCADE_CARD + 14, 32)
+      .stroke({ color: swatch.yellow.fill, width: 9 });
     ring.label = 'ring';
-    const name = new Text({ text: mod.name, style: { fontFamily: FONT, fontSize: 18, fill: ink, fontWeight: '600', align: 'center', wordWrap: true, wordWrapWidth: ARCADE_CARD, lineHeight: 20 } });
+    const name = new Text({
+      text: mod.name,
+      style: {
+        fontFamily: FONT,
+        fontSize: 18,
+        fill: ink,
+        fontWeight: '600',
+        align: 'center',
+        wordWrap: true,
+        wordWrapWidth: ARCADE_CARD,
+        lineHeight: 20,
+      },
+    });
     name.anchor.set(0.5, 0);
     name.y = half + 10;
-    const pill = new Graphics().roundRect(-Math.max(name.width, 60) / 2 - 10, name.y - 4, Math.max(name.width, 60) + 20, name.height + 8, 14).fill(cream);
-    const tags = new Text({ text: tagsFor(mod, band).join(' · '), style: { fontFamily: FONT, fontSize: 14, fill: 0xffffff, fontWeight: '600', align: 'center' } });
+    const pill = new Graphics()
+      .roundRect(
+        -Math.max(name.width, 60) / 2 - 10,
+        name.y - 4,
+        Math.max(name.width, 60) + 20,
+        name.height + 8,
+        14,
+      )
+      .fill(cream);
+    const tags = new Text({
+      text: tagsFor(mod, band).join(' · '),
+      style: { fontFamily: FONT, fontSize: 14, fill: 0xffffff, fontWeight: '600', align: 'center' },
+    });
     tags.anchor.set(0.5, 0);
     tags.y = name.y + name.height + 8;
-    const tagPill = new Graphics().roundRect(-tags.width / 2 - 8, tags.y - 2, tags.width + 16, tags.height + 4, 10).fill(swatch.purple.line);
+    const tagPill = new Graphics()
+      .roundRect(-tags.width / 2 - 8, tags.y - 2, tags.width + 16, tags.height + 4, 10)
+      .fill(swatch.purple.line);
     if (tags.width > ARCADE_CARD + 4) {
       const s = (ARCADE_CARD + 4) / tags.width;
       tags.scale.set(s);
-      tagPill.clear().roundRect(-(tags.width) / 2 - 8, tags.y - 2, tags.width + 16, tags.height + 4, 10).fill(swatch.purple.line);
+      tagPill
+        .clear()
+        .roundRect(-tags.width / 2 - 8, tags.y - 2, tags.width + 16, tags.height + 4, 10)
+        .fill(swatch.purple.line);
     }
-    node.addChild(ring, new Graphics().roundRect(-half, -half, ARCADE_CARD, ARCADE_CARD, 26).fill(cream).stroke({ color: swatch.green.line, width: 5 }), art, pill, name, tagPill, tags);
+    node.addChild(
+      ring,
+      new Graphics()
+        .roundRect(-half, -half, ARCADE_CARD, ARCADE_CARD, 26)
+        .fill(cream)
+        .stroke({ color: swatch.green.line, width: 5 }),
+      art,
+      pill,
+      name,
+      tagPill,
+      tags,
+    );
     node.hitArea = new Rectangle(-half, -half, ARCADE_CARD, ARCADE_CARD);
-    onTap(node, () => {
-      if (this.leaving || this.sheet) return;
-      sfx.tick();
-      node.scale.set(0.92);
-      window.setTimeout(() => !node.destroyed && node.scale.set(1), 110);
-      this.pick(mod);
-    }, { cooldown: 300 });
+    onTap(
+      node,
+      () => {
+        if (this.leaving || this.sheet) return;
+        sfx.tick();
+        node.scale.set(0.92);
+        window.setTimeout(() => !node.destroyed && node.scale.set(1), 110);
+        this.pick(mod);
+      },
+      { cooldown: 300 },
+    );
     return node;
   }
 
@@ -212,7 +334,9 @@ export class ArcadeScene extends Scene {
 
   private nameLine(mod: GameModule): [LineId, { who: string }?] {
     const age = ageOf(mod, store.data.profile.band);
-    return age === 'hers' ? [mod.titleLine] : ['explore.other-age', { who: age === 'bigger' ? 'bigger kids' : 'little ones' }];
+    return age === 'hers'
+      ? [mod.titleLine]
+      : ['explore.other-age', { who: age === 'bigger' ? 'bigger kids' : 'little ones' }];
   }
 
   /** Put a game in the window: its bot's demonstration at her level, or its picture when it has no bot. */
@@ -238,7 +362,9 @@ export class ArcadeScene extends Scene {
     const band = playBand(mod.bands, store.data.profile.band);
     // Looking changes nothing: a game she has never played shows its first level without making a save entry for it.
     const range = mod.levels(band);
-    const level = store.data.games[mod.id] ? store.levelFor(mod.id, range, mod.entryLevels) : levelsInOrder(range)[0];
+    const level = store.data.games[mod.id]
+      ? store.levelFor(mod.id, range, mod.entryLevels)
+      : levelsInOrder(range)[0];
     const spec = islandDemo(mod, level, band);
     if (spec) {
       this.demo = new Demo(mod, { ...spec, renderer: this.app.renderer });
@@ -259,7 +385,13 @@ export class ArcadeScene extends Scene {
     }
     this.title.text = mod.name;
     const describe = mod.describeLevel(spec?.level ?? level);
-    this.detail.text = [tagsFor(mod, store.data.profile.band).join(' · '), describe, mod.skills.slice(0, 3).join(', ')].filter(Boolean).join('\n');
+    this.detail.text = [
+      tagsFor(mod, store.data.profile.band).join(' · '),
+      describe,
+      mod.skills.slice(0, 3).join(', '),
+    ]
+      .filter(Boolean)
+      .join('\n');
     this.ring();
     this.place();
   }
@@ -268,7 +400,10 @@ export class ArcadeScene extends Scene {
   private launch(mod: GameModule) {
     arcadeMemory.spotlight = mod.id;
     const origin = { explore: 'arcade' as const, page: this.page };
-    this.leave(() => this.app.go.game(mod.id, undefined, undefined, false, origin), voice.say(...this.nameLine(mod)));
+    this.leave(
+      () => this.app.go.game(mod.id, undefined, undefined, false, origin),
+      voice.say(...this.nameLine(mod)),
+    );
   }
 
   /** The arrows: a page back or on. Before she has chosen, the spotlight follows to the new page's first card. */
@@ -298,17 +433,27 @@ export class ArcadeScene extends Scene {
       const name = label(filterName(filter), 20, ink);
       name.y = half + 22;
       tile.addChild(
-        new Graphics().roundRect(-half, -half, TOPIC_TILE, TOPIC_TILE, 26).fill(0xffffff).stroke({ color: filter === this.filter ? swatch.yellow.fill : swatch.purple.line, width: filter === this.filter ? 9 : 5 }),
+        new Graphics()
+          .roundRect(-half, -half, TOPIC_TILE, TOPIC_TILE, 26)
+          .fill(0xffffff)
+          .stroke({
+            color: filter === this.filter ? swatch.yellow.fill : swatch.purple.line,
+            width: filter === this.filter ? 9 : 5,
+          }),
         fitArt(this.filterArt(filter), TOPIC_TILE - 40),
         name,
       );
       tile.position.set(spots[i].x, spots[i].y);
       tile.hitArea = new Rectangle(-half, -half, TOPIC_TILE, TOPIC_TILE);
-      onTap(tile, () => {
-        sfx.tick();
-        tile.scale.set(0.92);
-        this.choose(filter);
-      }, { cooldown: 400 });
+      onTap(
+        tile,
+        () => {
+          sfx.tick();
+          tile.scale.set(0.92);
+          this.choose(filter);
+        },
+        { cooldown: 400 },
+      );
       node.addChild(tile);
       return { filter, node: tile };
     });
@@ -387,7 +532,11 @@ export class ArcadeScene extends Scene {
     this.play.position.set(l.play.x, l.play.y);
     const w = l.window.w;
     const h = (w * 3) / 4;
-    this.frame.clear().roundRect(l.window.x - 8, l.window.y - 8, w + 16, h + 16, 26).fill(0xffffff).stroke({ color: swatch.purple.line, width: 6 });
+    this.frame
+      .clear()
+      .roundRect(l.window.x - 8, l.window.y - 8, w + 16, h + 16, 26)
+      .fill(0xffffff)
+      .stroke({ color: swatch.purple.line, width: 6 });
     this.demo?.layout(l.window.x, l.window.y, w);
     this.still.position.set(l.window.x + w / 2, l.window.y + h / 2);
     this.title.position.set(l.caption.x, l.caption.y);
@@ -395,10 +544,21 @@ export class ArcadeScene extends Scene {
     this.detail.position.set(l.caption.x, l.caption.y + this.title.height + 4);
     this.detail.style.wordWrapWidth = l.caption.w;
     this.plate.clear();
-    if (this.title.text) this.plate.roundRect(l.caption.x - 12, l.caption.y - 6, l.caption.w + 24, this.title.height + this.detail.height + 20, 18).fill({ color: cream, alpha: 0.92 });
+    if (this.title.text)
+      this.plate
+        .roundRect(
+          l.caption.x - 12,
+          l.caption.y - 6,
+          l.caption.w + 24,
+          this.title.height + this.detail.height + 20,
+          18,
+        )
+        .fill({ color: cream, alpha: 0.92 });
     const g = this.layout.cards;
     this.cards.forEach((c, i) => c.node.position.set(g[i].x, g[i].y));
-    const mid = g.length ? { x: (g[0].x + g[g.length - 1].x) / 2, y: (g[0].y + g[g.length - 1].y) / 2 } : { x: v.w / 2, y: v.h / 2 };
+    const mid = g.length
+      ? { x: (g[0].x + g[g.length - 1].x) / 2, y: (g[0].y + g[g.length - 1].y) / 2 }
+      : { x: v.w / 2, y: v.h / 2 };
     this.empty.position.set(mid.x, mid.y);
   }
 

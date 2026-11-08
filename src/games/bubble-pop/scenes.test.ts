@@ -21,14 +21,19 @@ describe('Bubble Pop scenes', () => {
     // The shore\'s weakest pair (a blue bubble on the sky) is the floor; no new scene is worse than a plain-different pair.
     for (const scene of SCENES) {
       for (const bg of backgroundsOf(LOOKS[scene])) {
-        for (const color of RAINBOW) expect(colorGap(bubbleOver(color, bg), bg), `${scene} ${color} over ${bg.toString(16)}`).toBeGreaterThanOrEqual(18);
+        for (const color of RAINBOW)
+          expect(
+            colorGap(bubbleOver(color, bg), bg),
+            `${scene} ${color} over ${bg.toString(16)}`,
+          ).toBeGreaterThanOrEqual(18);
       }
     }
   });
 
   it('gives a plain bubble a rim that shows in the new scenes', () => {
     for (const scene of SCENES.filter((s) => s !== 'shore')) {
-      for (const bg of backgroundsOf(LOOKS[scene])) expect(colorGap(LOOKS[scene].rim, bg), `${scene} over ${bg.toString(16)}`).toBeGreaterThanOrEqual(20);
+      for (const bg of backgroundsOf(LOOKS[scene]))
+        expect(colorGap(LOOKS[scene].rim, bg), `${scene} over ${bg.toString(16)}`).toBeGreaterThanOrEqual(20);
     }
   });
 

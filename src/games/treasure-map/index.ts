@@ -15,7 +15,57 @@ import { finish, spring, squash } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { LEVELS, riverWords, acrossWords, HALF, mirrorPath, mirrorReason, riverReason, upDownWords, type Mirror, flagWalk, slideWords, bestDig, distance, dugAt, ruledOutBy, stepsWord, stillFits, type FarDig, cardDone, cardFor, cardReason, CELL, cellCenter, clueDirection, compare, digSpot, directions, dressingFor, EMPTY_CARD, firstDirection, firstLeg, headersFor, inLine, lineSquares, makeFinds, name, ONE_LINE, nextCount, nextWay, planFor, squareAt, walkCard, type Card, type Doodle, type Find, type Headers, type MapPlan, type RowPicture, type Square } from './logic';
+import {
+  LEVELS,
+  riverWords,
+  acrossWords,
+  HALF,
+  mirrorPath,
+  mirrorReason,
+  riverReason,
+  upDownWords,
+  type Mirror,
+  flagWalk,
+  slideWords,
+  bestDig,
+  distance,
+  dugAt,
+  ruledOutBy,
+  stepsWord,
+  stillFits,
+  type FarDig,
+  cardDone,
+  cardFor,
+  cardReason,
+  CELL,
+  cellCenter,
+  clueDirection,
+  compare,
+  digSpot,
+  directions,
+  dressingFor,
+  EMPTY_CARD,
+  firstDirection,
+  firstLeg,
+  headersFor,
+  inLine,
+  lineSquares,
+  makeFinds,
+  name,
+  ONE_LINE,
+  nextCount,
+  nextWay,
+  planFor,
+  squareAt,
+  walkCard,
+  type Card,
+  type Doodle,
+  type Find,
+  type Headers,
+  type MapPlan,
+  type RowPicture,
+  type Square,
+} from './logic';
 
 /** Level 9's squares are bigger: 120 units on screen. */
 const LINE_SCALE = 1.2;
@@ -42,7 +92,12 @@ function rowPicture(kind: RowPicture): Container {
       shapePath(g, 'heart', 22).fill(swatch.red.fill).stroke({ width: 3, color: swatch.red.line });
       break;
     case 'fish':
-      g.poly([14, 0, 28, -10, 28, 10]).fill(swatch.blue.fill).ellipse(0, 0, 20, 12).fill(swatch.blue.fill).circle(-8, -3, 3).fill(ink);
+      g.poly([14, 0, 28, -10, 28, 10])
+        .fill(swatch.blue.fill)
+        .ellipse(0, 0, 20, 12)
+        .fill(swatch.blue.fill)
+        .circle(-8, -3, 3)
+        .fill(ink);
       break;
     case 'star':
       g.poly(starPoints(22, 9)).fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line });
@@ -51,7 +106,12 @@ function rowPicture(kind: RowPicture): Container {
       flower(g, 20, swatch.pink.fill, swatch.pink.line);
       break;
     case 'shell':
-      g.moveTo(0, 18).lineTo(-22, -4).quadraticCurveTo(0, -30, 22, -4).closePath().fill(swatch.pink.light).stroke({ width: 3, color: swatch.pink.line });
+      g.moveTo(0, 18)
+        .lineTo(-22, -4)
+        .quadraticCurveTo(0, -30, 22, -4)
+        .closePath()
+        .fill(swatch.pink.light)
+        .stroke({ width: 3, color: swatch.pink.line });
       break;
   }
   c.addChild(g);
@@ -63,7 +123,12 @@ function doodleArt(kind: Doodle): Graphics {
   const g = new Graphics();
   const pen = { width: 3, color: wood.line, alpha: 0.55, cap: 'round' as const };
   if (kind === 'compass') {
-    g.circle(0, 0, 24).stroke(pen).poly([0, -30, 6, 0, 0, 30, -6, 0]).fill({ color: wood.line, alpha: 0.45 }).poly([-30, 0, 0, -6, 30, 0, 0, 6]).stroke(pen);
+    g.circle(0, 0, 24)
+      .stroke(pen)
+      .poly([0, -30, 6, 0, 0, 30, -6, 0])
+      .fill({ color: wood.line, alpha: 0.45 })
+      .poly([-30, 0, 0, -6, 30, 0, 0, 6])
+      .stroke(pen);
   } else if (kind === 'sun') {
     g.circle(0, 0, 13).stroke(pen);
     for (let i = 0; i < 8; i++) {
@@ -74,7 +139,11 @@ function doodleArt(kind: Doodle): Graphics {
   } else {
     g.moveTo(-26, 4).lineTo(26, 4).lineTo(16, 18).lineTo(-16, 18).closePath().stroke(pen);
     g.moveTo(0, 4).lineTo(0, -26).lineTo(18, 0).lineTo(0, 0).stroke(pen);
-    g.moveTo(-30, 26).quadraticCurveTo(-22, 20, -14, 26).quadraticCurveTo(-6, 32, 2, 26).quadraticCurveTo(10, 20, 18, 26).stroke(pen);
+    g.moveTo(-30, 26)
+      .quadraticCurveTo(-22, 20, -14, 26)
+      .quadraticCurveTo(-6, 32, 2, 26)
+      .quadraticCurveTo(10, 20, 18, 26)
+      .stroke(pen);
   }
   return g;
 }
@@ -83,11 +152,34 @@ function thingArt(thing: Find['thing']): Graphics {
   const g = new Graphics();
   if (thing === 'tree') {
     g.rect(-6, 0, 12, 26).fill(wood.fill);
-    puffs(g, [[-14, -8, 16], [14, -8, 16], [0, -22, 18]], swatch.green.fill, swatch.green.line, 4);
+    puffs(
+      g,
+      [
+        [-14, -8, 16],
+        [14, -8, 16],
+        [0, -22, 18],
+      ],
+      swatch.green.fill,
+      swatch.green.line,
+      4,
+    );
   } else if (thing === 'house') {
-    g.rect(-22, -8, 44, 34).fill(swatch.white.fill).stroke({ width: 3, color: wood.line }).poly([-28, -8, 0, -32, 28, -8]).fill(swatch.red.fill).rect(-6, 10, 12, 16).fill(wood.fill);
+    g.rect(-22, -8, 44, 34)
+      .fill(swatch.white.fill)
+      .stroke({ width: 3, color: wood.line })
+      .poly([-28, -8, 0, -32, 28, -8])
+      .fill(swatch.red.fill)
+      .rect(-6, 10, 12, 16)
+      .fill(wood.fill);
   } else if (thing === 'boat') {
-    g.poly([-30, 6, 30, 6, 20, 22, -20, 22]).fill(wood.fill).stroke({ width: 3, color: wood.line }).moveTo(0, 6).lineTo(0, -30).stroke({ width: 3, color: wood.line }).poly([2, -28, 24, 2, 2, 2]).fill(0xffffff);
+    g.poly([-30, 6, 30, 6, 20, 22, -20, 22])
+      .fill(wood.fill)
+      .stroke({ width: 3, color: wood.line })
+      .moveTo(0, 6)
+      .lineTo(0, -30)
+      .stroke({ width: 3, color: wood.line })
+      .poly([2, -28, 24, 2, 2, 2])
+      .fill(0xffffff);
   } else {
     g.rect(-3, -30, 6, 56).fill(wood.line).poly([3, -30, 30, -20, 3, -10]).fill(swatch.red.fill);
   }
@@ -104,7 +196,15 @@ function arrowArt(dx: number, dy: number): Graphics {
   const g = new Graphics();
   const a = Math.atan2(dy, dx);
   const pt = (x: number, y: number) => [x * Math.cos(a) - y * Math.sin(a), x * Math.sin(a) + y * Math.cos(a)];
-  const shaft = [[-30, -8], [6, -8], [6, -22], [34, 0], [6, 22], [6, 8], [-30, 8]].flatMap(([x, y]) => pt(x, y));
+  const shaft = [
+    [-30, -8],
+    [6, -8],
+    [6, -22],
+    [34, 0],
+    [6, 22],
+    [6, 8],
+    [-30, 8],
+  ].flatMap(([x, y]) => pt(x, y));
   return g.poly(shaft).fill(ink);
 }
 
@@ -122,8 +222,14 @@ const MINI = 24;
 
 /** A raft square: a wooden deck the size of a map square, centered on (0, 0). */
 function plankArt(): Graphics {
-  const g = new Graphics().roundRect(-CELL / 2 + 6, -CELL / 2 + 6, CELL - 12, CELL - 12, 14).fill(wood.light).stroke({ width: 5, color: wood.line });
-  for (const y of [-16, 16]) g.moveTo(-CELL / 2 + 14, y).lineTo(CELL / 2 - 14, y).stroke({ width: 3, color: wood.line, alpha: 0.5 });
+  const g = new Graphics()
+    .roundRect(-CELL / 2 + 6, -CELL / 2 + 6, CELL - 12, CELL - 12, 14)
+    .fill(wood.light)
+    .stroke({ width: 5, color: wood.line });
+  for (const y of [-16, 16])
+    g.moveTo(-CELL / 2 + 14, y)
+      .lineTo(CELL / 2 - 14, y)
+      .stroke({ width: 3, color: wood.line, alpha: 0.5 });
   return g;
 }
 
@@ -131,7 +237,8 @@ function plankArt(): Graphics {
 function riverStrip(w: number): Graphics {
   const g = new Graphics().roundRect(-w / 2, -12, w, 24, 10).fill(swatch.blue.light);
   g.moveTo(-w / 2 + 6, 0);
-  for (let x = -w / 2 + 6; x < w / 2 - 6; x += 16) g.quadraticCurveTo(x + 4, -6, x + 8, 0).quadraticCurveTo(x + 12, 6, x + 16, 0);
+  for (let x = -w / 2 + 6; x < w / 2 - 6; x += 16)
+    g.quadraticCurveTo(x + 4, -6, x + 8, 0).quadraticCurveTo(x + 12, 6, x + 16, 0);
   return g.stroke({ width: 3, color: swatch.blue.line, alpha: 0.8 });
 }
 
@@ -158,7 +265,10 @@ function mirrorMark(line: Mirror): Container {
   else bar.rect(-26, -3, 52, 6).fill(ink);
   const a = arrowArt(line === 'road' ? 1 : 0, line === 'road' ? 0 : 1);
   const b = arrowArt(line === 'road' ? -1 : 0, line === 'road' ? 0 : -1);
-  for (const [arrow, k] of [[a, -1], [b, 1]] as const) {
+  for (const [arrow, k] of [
+    [a, -1],
+    [b, 1],
+  ] as const) {
     arrow.scale.set(0.42);
     arrow.position.set(line === 'road' ? k * 22 : 0, line === 'road' ? 0 : k * 22);
     c.addChild(arrow);
@@ -168,7 +278,17 @@ function mirrorMark(line: Mirror): Container {
 }
 
 function chestArt(): Graphics {
-  return new Graphics().roundRect(-30, -10, 60, 34, 6).fill(wood.fill).stroke({ width: 4, color: wood.line }).roundRect(-30, -28, 60, 22, 10).fill(wood.light).stroke({ width: 4, color: wood.line }).rect(-6, -12, 12, 14).fill(swatch.yellow.fill).circle(0, -30, 6).fill(swatch.yellow.light);
+  return new Graphics()
+    .roundRect(-30, -10, 60, 34, 6)
+    .fill(wood.fill)
+    .stroke({ width: 4, color: wood.line })
+    .roundRect(-30, -28, 60, 22, 10)
+    .fill(wood.light)
+    .stroke({ width: 4, color: wood.line })
+    .rect(-6, -12, 12, 14)
+    .fill(swatch.yellow.fill)
+    .circle(0, -30, 6)
+    .fill(swatch.yellow.light);
 }
 
 class TreasureMap implements Game {
@@ -270,7 +390,13 @@ class TreasureMap implements Game {
     }
     // Last, so the ring sits over the pet and the dig marks.
     this.grid.addChild(this.ring);
-    ctx.stage.addChild(new Graphics().rect(0, 0, 4000, 4000).fill(0x9fd3e8), this.grid, this.sign, this.cardBox, this.outlineBox);
+    ctx.stage.addChild(
+      new Graphics().rect(0, 0, 4000, 4000).fill(0x9fd3e8),
+      this.grid,
+      this.sign,
+      this.cardBox,
+      this.outlineBox,
+    );
   }
 
   get find() {
@@ -292,14 +418,24 @@ class TreasureMap implements Game {
     const w = n * CELL;
     const k = this.plan.mode === 'line' ? LINE_SCALE : 1;
     this.grid.scale.set(k);
-    this.grid.position.set(Math.max(240, (v.w - w * k) / 2 + 40 * k), Math.max(this.plan.mode === 'clues' ? 220 : 150, (v.h - w * k) / 2 + 40 * k));
+    this.grid.position.set(
+      Math.max(240, (v.w - w * k) / 2 + 40 * k),
+      Math.max(this.plan.mode === 'clues' ? 220 : 150, (v.h - w * k) / 2 + 40 * k),
+    );
     if (this.plan.mode === 'write') this.layoutCard(v, w);
     if (this.plan.mode === 'slide') this.layoutOutlines(w);
     this.grid.hitArea = new Rectangle(0, 0, w, w);
     if (this.crossed) return this.layoutRiver(v, w);
     const g = this.paper.clear();
-    g.roundRect(-90, -80, w + 110, w + 100, 26).fill(TINT_COLORS[this.dressing.tint]).stroke({ width: 6, color: wood.line });
-    for (let i = 0; i <= n; i++) g.moveTo(i * CELL, 0).lineTo(i * CELL, w).moveTo(0, i * CELL).lineTo(w, i * CELL).stroke({ width: 3, color: wood.line, alpha: 0.5 });
+    g.roundRect(-90, -80, w + 110, w + 100, 26)
+      .fill(TINT_COLORS[this.dressing.tint])
+      .stroke({ width: 6, color: wood.line });
+    for (let i = 0; i <= n; i++)
+      g.moveTo(i * CELL, 0)
+        .lineTo(i * CELL, w)
+        .moveTo(0, i * CELL)
+        .lineTo(w, i * CELL)
+        .stroke({ width: 3, color: wood.line, alpha: 0.5 });
     this.headerArt.removeChildren().forEach((c) => c.destroy({ children: true }));
     const doodle = doodleArt(this.dressing.doodle);
     doodle.position.set(-45, -40);
@@ -308,7 +444,12 @@ class TreasureMap implements Game {
     const { cols, rows } = this.headers;
     for (let i = 0; i < n; i++) {
       // Column headers above, row headers to the left (row 1 at the bottom).
-      const col = pictures ? new Graphics().circle(0, 0, 22).fill(swatch[cols[i]].fill).stroke({ width: 3, color: swatch[cols[i]].line }) : label(String.fromCharCode(65 + i), 36, ink);
+      const col = pictures
+        ? new Graphics()
+            .circle(0, 0, 22)
+            .fill(swatch[cols[i]].fill)
+            .stroke({ width: 3, color: swatch[cols[i]].line })
+        : label(String.fromCharCode(65 + i), 36, ink);
       col.position.set(i * CELL + CELL / 2, -40);
       const row = pictures ? rowPicture(rows[i]) : label(String(i + 1), 36, ink);
       row.position.set(-45, (n - 1 - i) * CELL + CELL / 2);
@@ -342,8 +483,15 @@ class TreasureMap implements Game {
     }
     this.sign.visible = true;
     const g = this.paper.clear();
-    g.roundRect(-20, -20, w + 40, w + 40, 26).fill(TINT_COLORS[this.dressing.tint]).stroke({ width: 6, color: wood.line });
-    for (let i = 0; i <= this.plan.size; i++) g.moveTo(i * CELL, 0).lineTo(i * CELL, w).moveTo(0, i * CELL).lineTo(w, i * CELL).stroke({ width: 3, color: wood.line, alpha: 0.5 });
+    g.roundRect(-20, -20, w + 40, w + 40, 26)
+      .fill(TINT_COLORS[this.dressing.tint])
+      .stroke({ width: 6, color: wood.line });
+    for (let i = 0; i <= this.plan.size; i++)
+      g.moveTo(i * CELL, 0)
+        .lineTo(i * CELL, w)
+        .moveTo(0, i * CELL)
+        .lineTo(w, i * CELL)
+        .stroke({ width: 3, color: wood.line, alpha: 0.5 });
     this.headerArt.removeChildren().forEach((c) => c.destroy({ children: true }));
     // Both sit on grid lines, drawn over them: a tap there still digs the square under the finger.
     const mid = HALF * CELL;
@@ -351,7 +499,10 @@ class TreasureMap implements Game {
     road.position.set(mid, w / 2);
     const river = riverStrip(w);
     river.position.set(w / 2, mid);
-    const bridge = new Graphics().roundRect(mid - 22, mid - 18, 44, 36, 6).fill(wood.light).stroke({ width: 4, color: wood.line });
+    const bridge = new Graphics()
+      .roundRect(mid - 22, mid - 18, 44, 36, 6)
+      .fill(wood.light)
+      .stroke({ width: 4, color: wood.line });
     for (const x of [-10, 0, 10]) bridge.moveTo(mid + x, mid - 14).lineTo(mid + x, mid + 14);
     bridge.stroke({ width: 2, color: wood.line, alpha: 0.6 });
     this.headerArt.addChild(road, river, bridge);
@@ -363,13 +514,16 @@ class TreasureMap implements Game {
     if (this.plan.mode === 'mirror' && this.find?.across && !this.finished) {
       const w = this.plan.size * CELL;
       const a = 0.45 + 0.25 * Math.sin(this.clock * 4);
-      if (this.find.across === 'river') sh.roundRect(-6, HALF * CELL - 26, w + 12, 52, 20).fill({ color: swatch.yellow.light, alpha: a });
+      if (this.find.across === 'river')
+        sh.roundRect(-6, HALF * CELL - 26, w + 12, 52, 20).fill({ color: swatch.yellow.light, alpha: a });
       else sh.roundRect(HALF * CELL - 26, -6, 52, w + 12, 20).fill({ color: swatch.yellow.light, alpha: a });
     }
     const ring = this.ring.clear();
     if (this.couchOn && !this.busy && !this.finished) {
       const at = this.cellAt(this.cursor);
-      ring.roundRect(at.x - CELL / 2 + 6, at.y - CELL / 2 + 6, CELL - 12, CELL - 12, 16).stroke({ width: 8, color: swatch.teal.line });
+      ring
+        .roundRect(at.x - CELL / 2 + 6, at.y - CELL / 2 + 6, CELL - 12, CELL - 12, 16)
+        .stroke({ width: 8, color: swatch.teal.line });
     }
     const g = this.glow.clear();
     const cg = this.cardGlow.clear();
@@ -381,7 +535,9 @@ class TreasureMap implements Game {
       for (const clue of this.find.clues) {
         const from = this.cellAt(clue.landmark);
         const to = this.cellAt(this.find.square);
-        g.moveTo(from.x, from.y).lineTo(to.x, to.y).stroke({ width: 18, color: swatch.yellow.fill, alpha: pulse });
+        g.moveTo(from.x, from.y)
+          .lineTo(to.x, to.y)
+          .stroke({ width: 18, color: swatch.yellow.fill, alpha: pulse });
       }
       return;
     }
@@ -389,7 +545,10 @@ class TreasureMap implements Game {
       // The squares that still fit every dig, so she picks among them and the search stays hers.
       for (const sq of stillFits(this.digs, n)) {
         const c = this.cellAt(sq);
-        g.roundRect(c.x - CELL / 2 + 4, c.y - CELL / 2 + 4, CELL - 8, CELL - 8, 12).fill({ color: swatch.yellow.fill, alpha: pulse });
+        g.roundRect(c.x - CELL / 2 + 4, c.y - CELL / 2 + 4, CELL - 8, CELL - 8, 12).fill({
+          color: swatch.yellow.fill,
+          alpha: pulse,
+        });
       }
       return;
     }
@@ -397,12 +556,21 @@ class TreasureMap implements Game {
       if (this.part === 'cards') {
         // The right card glows too, so the hint leads somewhere on the cards as well.
         const card = this.outlineCards[this.find.outlines!.findIndex((o) => o.kind === 'right')];
-        cg.roundRect(card.x - OUTLINE / 2 - 10, card.y - OUTLINE / 2 - 10, OUTLINE + 20, OUTLINE + 20, 28).fill({ color: swatch.yellow.fill, alpha: pulse + 0.2 });
+        cg.roundRect(
+          card.x - OUTLINE / 2 - 10,
+          card.y - OUTLINE / 2 - 10,
+          OUTLINE + 20,
+          OUTLINE + 20,
+          28,
+        ).fill({ color: swatch.yellow.fill, alpha: pulse + 0.2 });
       }
       // The flag's walk, across then up or down: every square of the raft moves the same.
       for (const sq of flagWalk(this.find, n)) {
         const c = this.cellAt(sq);
-        g.roundRect(c.x - CELL / 2 + 4, c.y - CELL / 2 + 4, CELL - 8, CELL - 8, 12).fill({ color: swatch.yellow.fill, alpha: pulse });
+        g.roundRect(c.x - CELL / 2 + 4, c.y - CELL / 2 + 4, CELL - 8, CELL - 8, 12).fill({
+          color: swatch.yellow.fill,
+          alpha: pulse,
+        });
       }
       return;
     }
@@ -410,7 +578,10 @@ class TreasureMap implements Game {
       // The first leg lights up from the pet to the turning square, so she still counts the walk.
       for (const sq of firstLeg(this.find)) {
         const c = this.cellAt(sq);
-        g.roundRect(c.x - CELL / 2 + 4, c.y - CELL / 2 + 4, CELL - 8, CELL - 8, 12).fill({ color: swatch.yellow.fill, alpha: pulse });
+        g.roundRect(c.x - CELL / 2 + 4, c.y - CELL / 2 + 4, CELL - 8, CELL - 8, 12).fill({
+          color: swatch.yellow.fill,
+          alpha: pulse,
+        });
       }
       return;
     }
@@ -418,7 +589,10 @@ class TreasureMap implements Game {
       // From the thing to the line, then just as many across: she counts both halves.
       for (const sq of mirrorPath(this.find.stands, this.find.across!)) {
         const c = this.cellAt(sq);
-        g.roundRect(c.x - CELL / 2 + 4, c.y - CELL / 2 + 4, CELL - 8, CELL - 8, 12).fill({ color: swatch.yellow.fill, alpha: pulse });
+        g.roundRect(c.x - CELL / 2 + 4, c.y - CELL / 2 + 4, CELL - 8, CELL - 8, 12).fill({
+          color: swatch.yellow.fill,
+          alpha: pulse,
+        });
       }
       return;
     }
@@ -426,7 +600,10 @@ class TreasureMap implements Game {
       // Only the line asked for lights up: any square on it is right.
       for (const sq of lineSquares(this.find.line, n)) {
         const c = this.cellAt(sq);
-        g.roundRect(c.x - CELL / 2 + 4, c.y - CELL / 2 + 4, CELL - 8, CELL - 8, 12).fill({ color: swatch.yellow.fill, alpha: pulse });
+        g.roundRect(c.x - CELL / 2 + 4, c.y - CELL / 2 + 4, CELL - 8, CELL - 8, 12).fill({
+          color: swatch.yellow.fill,
+          alpha: pulse,
+        });
       }
       return;
     }
@@ -441,7 +618,16 @@ class TreasureMap implements Game {
     if (this.plan.mode === 'write') {
       const want = cardFor(this.find);
       const c = this.card;
-      const kind: TileKind = c.across !== want.across ? 'across' : c.acrossWay !== want.acrossWay ? 'acrossWay' : c.upDown !== want.upDown ? 'upDown' : c.upDownWay !== want.upDownWay ? 'upDownWay' : 'go';
+      const kind: TileKind =
+        c.across !== want.across
+          ? 'across'
+          : c.acrossWay !== want.acrossWay
+            ? 'acrossWay'
+            : c.upDown !== want.upDown
+              ? 'upDown'
+              : c.upDownWay !== want.upDownWay
+                ? 'upDownWay'
+                : 'go';
       return { tap: { on: this.tiles.get(kind)!, x: 0, y: 0 } };
     }
     if (this.plan.mode === 'slide' && this.part === 'cards') {
@@ -449,7 +635,10 @@ class TreasureMap implements Game {
       return { tap: { on: this.outlineCards[i], x: 0, y: 0 } };
     }
     // Level 7's finger hunts honestly: a corner, then the square that best splits what still fits.
-    const at = this.plan.mode === 'far' ? cellCenter(bestDig(this.digs, this.plan.size), this.plan.size) : digSpot(this.find, this.plan.size);
+    const at =
+      this.plan.mode === 'far'
+        ? cellCenter(bestDig(this.digs, this.plan.size), this.plan.size)
+        : digSpot(this.find, this.plan.size);
     return { tap: { on: this.grid, x: at.x, y: at.y } };
   }
 
@@ -457,7 +646,15 @@ class TreasureMap implements Game {
   control(input: CouchControls) {
     this.couchOn = true;
     // The couch's trips stop at level 5; the card and the outlines have no ring to pick them.
-    if (this.busy || this.finished || !this.find || this.plan.mode === 'write' || this.plan.mode === 'slide' || this.crossed) return;
+    if (
+      this.busy ||
+      this.finished ||
+      !this.find ||
+      this.plan.mode === 'write' ||
+      this.plan.mode === 'slide' ||
+      this.crossed
+    )
+      return;
     const last = this.plan.size - 1;
     for (const p of input.players) {
       const c = this.cursor;
@@ -507,7 +704,14 @@ class TreasureMap implements Game {
     this.part = 'flag';
     this.tried.clear();
     // The card names one chest, each hunt hides a new one and each raft is a new raft, so the last find's marks are cleared.
-    if (this.plan.mode === 'write' || this.plan.mode === 'far' || this.plan.mode === 'slide' || this.plan.mode === 'line' || this.crossed) this.marks.removeChildren().forEach((c) => c.destroy({ children: true }));
+    if (
+      this.plan.mode === 'write' ||
+      this.plan.mode === 'far' ||
+      this.plan.mode === 'slide' ||
+      this.plan.mode === 'line' ||
+      this.crossed
+    )
+      this.marks.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.resize(this.view);
     this.drawCard();
     this.drawLandmarks(f);
@@ -519,15 +723,39 @@ class TreasureMap implements Game {
       if (this.index === 0) await this.ctx.say('map.riverintro');
       return this.ctx.instruct('map.river', { across: acrossWords(f.square), updown: upDownWords(f.square) });
     }
-    if (mode === 'mirror') return this.ctx.instruct('map.mirror', { thing: f.thing!, across: acrossWords(f.stands!), updown: upDownWords(f.stands!), line: f.across! });
-    if (mode === 'line') return f.line!.axis === 'col' ? this.ctx.instruct('map.linecol', { color: this.headers.cols[f.line!.at] }) : this.ctx.instruct('map.linerow', { pic: this.headers.rows[f.line!.at] });
-    if (mode === 'pictures') return this.ctx.instruct('map.pictures', { pic: this.headers.rows[f.square.row], color: this.headers.cols[f.square.col] });
-    if (mode === 'letters') return this.ctx.instruct('map.letters', { sq: name(f.square), col: String.fromCharCode(65 + f.square.col), row: f.square.row + 1 });
+    if (mode === 'mirror')
+      return this.ctx.instruct('map.mirror', {
+        thing: f.thing!,
+        across: acrossWords(f.stands!),
+        updown: upDownWords(f.stands!),
+        line: f.across!,
+      });
+    if (mode === 'line')
+      return f.line!.axis === 'col'
+        ? this.ctx.instruct('map.linecol', { color: this.headers.cols[f.line!.at] })
+        : this.ctx.instruct('map.linerow', { pic: this.headers.rows[f.line!.at] });
+    if (mode === 'pictures')
+      return this.ctx.instruct('map.pictures', {
+        pic: this.headers.rows[f.square.row],
+        color: this.headers.cols[f.square.col],
+      });
+    if (mode === 'letters')
+      return this.ctx.instruct('map.letters', {
+        sq: name(f.square),
+        col: String.fromCharCode(65 + f.square.col),
+        row: f.square.row + 1,
+      });
     if (mode === 'place') return this.ctx.instruct('map.place', { thing: f.thing!, sq: name(f.square) });
     if (mode === 'write') return this.ctx.instruct('map.write');
     if (mode === 'far') return this.ctx.instruct('map.far');
     if (mode === 'slide') return this.ctx.instruct('map.slide', { dirs: slideWords(f.right!, f.up!) });
-    if (mode === 'clues') return this.ctx.instruct('map.clues', { first: clueDirection(f.clues![0]), firstThing: f.clues![0].thing, second: clueDirection(f.clues![1]), secondThing: f.clues![1].thing });
+    if (mode === 'clues')
+      return this.ctx.instruct('map.clues', {
+        first: clueDirection(f.clues![0]),
+        firstThing: f.clues![0].thing,
+        second: clueDirection(f.clues![1]),
+        secondThing: f.clues![1].thing,
+      });
     return this.ctx.instruct('map.steps', { dirs: directions(f) });
   }
 
@@ -576,7 +804,10 @@ class TreasureMap implements Game {
   /** The request in pictures and letters, so nothing depends on reading alone. */
   private drawSign(f: Find) {
     this.sign.removeChildren().forEach((c) => c.destroy({ children: true }));
-    const bg = new Graphics().roundRect(-130, -42, 260, 84, 22).fill(0xffffff).stroke({ width: 5, color: wood.line });
+    const bg = new Graphics()
+      .roundRect(-130, -42, 260, 84, 22)
+      .fill(0xffffff)
+      .stroke({ width: 5, color: wood.line });
     this.sign.addChild(bg);
     const mode = this.plan.mode;
     if (mode === 'river' || mode === 'mirror') return this.drawRiverSign(f, bg);
@@ -590,7 +821,10 @@ class TreasureMap implements Game {
       // Just the one header, with an arrow along its line: down the column, or across the row.
       const line = f.line!;
       const color = swatch[this.headers.cols[line.at]];
-      const head = line.axis === 'col' ? new Graphics().circle(0, 0, 26).fill(color.fill).stroke({ width: 3, color: color.line }) : rowPicture(this.headers.rows[line.at]);
+      const head =
+        line.axis === 'col'
+          ? new Graphics().circle(0, 0, 26).fill(color.fill).stroke({ width: 3, color: color.line })
+          : rowPicture(this.headers.rows[line.at]);
       head.x = -40;
       const arrow = line.axis === 'col' ? arrowArt(0, 1) : arrowArt(1, 0);
       arrow.x = 45;
@@ -669,7 +903,13 @@ class TreasureMap implements Game {
   private tapGrid(e: FederatedPointerEvent) {
     // Level 8's second part is on the cards: a tap on the map then is nothing.
     if (this.plan.mode === 'slide' && this.part !== 'flag' && !this.busy) sfx.tick();
-    if (this.busy || this.finished || this.plan.mode === 'write' || (this.plan.mode === 'slide' && this.part !== 'flag')) return;
+    if (
+      this.busy ||
+      this.finished ||
+      this.plan.mode === 'write' ||
+      (this.plan.mode === 'slide' && this.part !== 'flag')
+    )
+      return;
     const p = this.grid.toLocal(e.global);
     const guess = squareAt(p.x, p.y, this.plan.size);
     if (guess) return this.dig(guess);
@@ -691,7 +931,14 @@ class TreasureMap implements Game {
     sfx.boing();
     // A little dig mark stays where she tried.
     const at = this.cellAt({ col, row });
-    this.marks.addChild(new Graphics().moveTo(at.x - 14, at.y - 14).lineTo(at.x + 14, at.y + 14).moveTo(at.x + 14, at.y - 14).lineTo(at.x - 14, at.y + 14).stroke({ width: 6, color: wood.line, alpha: 0.6, cap: 'round' }));
+    this.marks.addChild(
+      new Graphics()
+        .moveTo(at.x - 14, at.y - 14)
+        .lineTo(at.x + 14, at.y + 14)
+        .moveTo(at.x + 14, at.y - 14)
+        .lineTo(at.x - 14, at.y + 14)
+        .stroke({ width: 6, color: wood.line, alpha: 0.6, cap: 'round' }),
+    );
     if (this.plan.mode === 'steps') await this.ctx.say('map.stepswrong', { dirs: directions(this.find) });
     else await this.ctx.say(result === 'column' ? 'map.col' : result === 'row' ? 'map.row' : 'map.neither');
     if (this.wrongs >= 2 && !this.hinting) {
@@ -699,7 +946,8 @@ class TreasureMap implements Game {
       this.hints++;
       const mode = this.plan.mode;
       if (mode === 'steps') void this.ctx.say('map.stepshint', { first: firstDirection(this.find) });
-      else if (mode === 'slide') void this.ctx.say('map.slidehint', { dirs: slideWords(this.find.right!, this.find.up!) });
+      else if (mode === 'slide')
+        void this.ctx.say('map.slidehint', { dirs: slideWords(this.find.right!, this.find.up!) });
       else void this.ctx.say(mode === 'clues' ? 'map.cluehint' : 'map.hint');
     }
     this.busy = false;
@@ -716,13 +964,21 @@ class TreasureMap implements Game {
     this.wrongs++;
     sfx.boing();
     const at = this.cellAt(guess);
-    this.marks.addChild(new Graphics().moveTo(at.x - 14, at.y - 14).lineTo(at.x + 14, at.y + 14).moveTo(at.x + 14, at.y - 14).lineTo(at.x - 14, at.y + 14).stroke({ width: 6, color: wood.line, alpha: 0.6, cap: 'round' }));
+    this.marks.addChild(
+      new Graphics()
+        .moveTo(at.x - 14, at.y - 14)
+        .lineTo(at.x + 14, at.y + 14)
+        .moveTo(at.x + 14, at.y - 14)
+        .lineTo(at.x - 14, at.y + 14)
+        .stroke({ width: 6, color: wood.line, alpha: 0.6, cap: 'round' }),
+    );
     await this.ctx.say(reason.line, { ...reason.slots, thing: f.thing ?? '' });
     if (this.wrongs >= 2 && !this.hinting) {
       this.hinting = true;
       this.hints++;
       if (mirror) void this.ctx.say('map.mirrorhint', { thing: f.thing!, line: f.across! });
-      else void this.ctx.say('map.riverhint', { across: acrossWords(f.square), updown: upDownWords(f.square) });
+      else
+        void this.ctx.say('map.riverhint', { across: acrossWords(f.square), updown: upDownWords(f.square) });
     }
     this.busy = false;
   }
@@ -738,10 +994,21 @@ class TreasureMap implements Game {
     twin.scale.set(0);
     this.marks.addChild(twin);
     const k = 0.9;
-    await this.ctx.tw.to(twin.scale, { x: f.across === 'road' ? -k : k, y: f.across === 'river' ? -k : k }, { duration: 0.35, ease: ease.outBack });
+    await this.ctx.tw.to(
+      twin.scale,
+      { x: f.across === 'road' ? -k : k, y: f.across === 'river' ? -k : k },
+      { duration: 0.35, ease: ease.outBack },
+    );
     sfx.sparkle();
     const g = this.ctx.stage.toLocal(this.grid.toGlobal(at));
-    this.ctx.particles.burst(g.x, g.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.yellow.fill], count: 16, speed: [100, 260], gravity: 0, life: [0.5, 0.9] });
+    this.ctx.particles.burst(g.x, g.y, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0, swatch.yellow.fill],
+      count: 16,
+      speed: [100, 260],
+      gravity: 0,
+      life: [0.5, 0.9],
+    });
     this.ctx.pet.cheer();
     await this.ctx.say('map.mirrored');
     await this.next();
@@ -756,9 +1023,17 @@ class TreasureMap implements Game {
     this.wrongs++;
     sfx.boing();
     const at = this.cellAt(guess);
-    this.marks.addChild(new Graphics().moveTo(at.x - 14, at.y - 14).lineTo(at.x + 14, at.y + 14).moveTo(at.x + 14, at.y - 14).lineTo(at.x - 14, at.y + 14).stroke({ width: 6, color: wood.line, alpha: 0.6, cap: 'round' }));
+    this.marks.addChild(
+      new Graphics()
+        .moveTo(at.x - 14, at.y - 14)
+        .lineTo(at.x + 14, at.y + 14)
+        .moveTo(at.x + 14, at.y - 14)
+        .lineTo(at.x - 14, at.y + 14)
+        .stroke({ width: 6, color: wood.line, alpha: 0.6, cap: 'round' }),
+    );
     const { cols, rows } = this.headers;
-    if (line.axis === 'col') await this.ctx.say('map.linecolwrong', { got: cols[guess.col], want: cols[line.at] });
+    if (line.axis === 'col')
+      await this.ctx.say('map.linecolwrong', { got: cols[guess.col], want: cols[line.at] });
     else await this.ctx.say('map.linerowwrong', { got: rows[guess.row], want: rows[line.at] });
     if (this.wrongs >= 2 && !this.hinting) {
       this.hinting = true;
@@ -789,15 +1064,30 @@ class TreasureMap implements Game {
       await this.ctx.say('map.farsteps', { steps: stepsWord(said) });
     } else if (this.ruledOut.some((s) => s.col === guess.col && s.row === guess.row)) {
       sfx.tick();
-      await this.ctx.say('map.farout', { got: stepsWord(distance(guess, against.square)), sq: name(against.square), said: stepsWord(against.said) });
+      await this.ctx.say('map.farout', {
+        got: stepsWord(distance(guess, against.square)),
+        sq: name(against.square),
+        said: stepsWord(against.said),
+      });
     } else {
       this.ruledOut.push(guess);
       this.misses++;
       this.wrongs++;
       sfx.boing();
       const at = this.cellAt(guess);
-      this.marks.addChild(new Graphics().moveTo(at.x - 14, at.y - 14).lineTo(at.x + 14, at.y + 14).moveTo(at.x + 14, at.y - 14).lineTo(at.x - 14, at.y + 14).stroke({ width: 6, color: wood.line, alpha: 0.6, cap: 'round' }));
-      await this.ctx.say('map.farout', { got: stepsWord(distance(guess, against.square)), sq: name(against.square), said: stepsWord(against.said) });
+      this.marks.addChild(
+        new Graphics()
+          .moveTo(at.x - 14, at.y - 14)
+          .lineTo(at.x + 14, at.y + 14)
+          .moveTo(at.x + 14, at.y - 14)
+          .lineTo(at.x - 14, at.y + 14)
+          .stroke({ width: 6, color: wood.line, alpha: 0.6, cap: 'round' }),
+      );
+      await this.ctx.say('map.farout', {
+        got: stepsWord(distance(guess, against.square)),
+        sq: name(against.square),
+        said: stepsWord(against.said),
+      });
       if (this.wrongs >= 2 && !this.hinting) {
         this.hinting = true;
         this.hints++;
@@ -815,7 +1105,10 @@ class TreasureMap implements Game {
       // Two columns, filled from the bottom, every print with its toes up.
       const x = at.x - 32 + (i % 2) * 20;
       const y = at.y + 30 - Math.floor(i / 2) * 25;
-      g.ellipse(x, y, 6, 8).fill({ color: wood.line, alpha: 0.6 }).circle(x, y - 12, 3.5).fill({ color: wood.line, alpha: 0.6 });
+      g.ellipse(x, y, 6, 8)
+        .fill({ color: wood.line, alpha: 0.6 })
+        .circle(x, y - 12, 3.5)
+        .fill({ color: wood.line, alpha: 0.6 });
     }
     const words = label(String(n), 46, ink);
     words.position.set(at.x + 22, at.y);
@@ -835,7 +1128,9 @@ class TreasureMap implements Game {
       const shine = new Graphics();
       for (const sq of lineSquares(f.line, this.plan.size)) {
         const c = this.cellAt(sq);
-        shine.roundRect(c.x - CELL / 2 + 4, c.y - CELL / 2 + 4, CELL - 8, CELL - 8, 12).fill({ color: swatch.yellow.fill, alpha: 0.7 });
+        shine
+          .roundRect(c.x - CELL / 2 + 4, c.y - CELL / 2 + 4, CELL - 8, CELL - 8, 12)
+          .fill({ color: swatch.yellow.fill, alpha: 0.7 });
       }
       this.marks.addChild(shine);
     }
@@ -844,17 +1139,25 @@ class TreasureMap implements Game {
       const tw = this.ctx.tw;
       this.walking = true;
       const mid = this.cellAt({ col: f.square.col, row: f.from.row });
-      for (const [to, n] of [[mid, Math.abs(f.right!)], [at, Math.abs(f.up!)]] as const) {
+      for (const [to, n] of [
+        [mid, Math.abs(f.right!)],
+        [at, Math.abs(f.up!)],
+      ] as const) {
         const from = { x: this.pirate.x, y: this.pirate.y };
         for (let k = 1; k <= n; k++) {
           this.pirate.hop(0.5);
-          await tw.to(this.pirate, { x: from.x + ((to.x - from.x) * k) / n, y: from.y + ((to.y + 36 - from.y) * k) / n }, { duration: 0.28 });
+          await tw.to(
+            this.pirate,
+            { x: from.x + ((to.x - from.x) * k) / n, y: from.y + ((to.y + 36 - from.y) * k) / n },
+            { duration: 0.28 },
+          );
           void this.ctx.say('count', { n: k });
         }
       }
       this.walking = false;
     }
-    if (this.plan.mode === 'write') this.landmarks.removeChildren().forEach((c) => c.destroy({ children: true }));
+    if (this.plan.mode === 'write')
+      this.landmarks.removeChildren().forEach((c) => c.destroy({ children: true }));
     const art = this.plan.mode === 'place' ? thingArt(f.thing) : chestArt();
     art.position.set(at.x, at.y);
     art.scale.set(0);
@@ -862,7 +1165,14 @@ class TreasureMap implements Game {
     await this.ctx.tw.to(art.scale, { x: 1.4, y: 1.4 }, { duration: 0.3, ease: ease.outBack });
     sfx.sparkle();
     const g = this.ctx.stage.toLocal(this.grid.toGlobal(at));
-    this.ctx.particles.burst(g.x, g.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.yellow.fill], count: 16, speed: [100, 260], gravity: 0, life: [0.5, 0.9] });
+    this.ctx.particles.burst(g.x, g.y, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0, swatch.yellow.fill],
+      count: 16,
+      speed: [100, 260],
+      gravity: 0,
+      life: [0.5, 0.9],
+    });
     this.ctx.pet.cheer();
     await this.ctx.say(this.plan.mode === 'place' ? 'map.placed' : 'map.found');
     await this.next();
@@ -894,7 +1204,10 @@ class TreasureMap implements Game {
     spring(card, 90);
     if (o.kind === 'right') return void this.slideRaft();
     this.busy = true;
-    const say = () => (o.kind === 'flipped' ? this.ctx.say('map.flipped') : this.ctx.say('map.slidefar', { got: slideWords(o.right, o.up), want: slideWords(f.right!, f.up!) }));
+    const say = () =>
+      o.kind === 'flipped'
+        ? this.ctx.say('map.flipped')
+        : this.ctx.say('map.slidefar', { got: slideWords(o.right, o.up), want: slideWords(f.right!, f.up!) });
     if (this.tried.has(i)) {
       sfx.tick();
       await say();
@@ -923,12 +1236,23 @@ class TreasureMap implements Game {
     const raft = this.raftArt!;
     this.walking = true;
     sfx.whoosh();
-    await this.ctx.tw.to(raft, { x: f.right! * CELL, y: -f.up! * CELL }, { duration: 0.9, ease: ease.inOutSine });
+    await this.ctx.tw.to(
+      raft,
+      { x: f.right! * CELL, y: -f.up! * CELL },
+      { duration: 0.9, ease: ease.inOutSine },
+    );
     this.walking = false;
     sfx.sparkle();
     const at = this.cellAt(f.square);
     const g = this.ctx.stage.toLocal(this.grid.toGlobal(at));
-    this.ctx.particles.burst(g.x, g.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.yellow.fill], count: 16, speed: [100, 260], gravity: 0, life: [0.5, 0.9] });
+    this.ctx.particles.burst(g.x, g.y, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0, swatch.yellow.fill],
+      count: 16,
+      speed: [100, 260],
+      gravity: 0,
+      life: [0.5, 0.9],
+    });
     this.ctx.pet.cheer();
     await this.ctx.say('map.slid');
     await this.next();
@@ -950,21 +1274,33 @@ class TreasureMap implements Game {
     if (!f?.outlines) return;
     const n = this.plan.size;
     const half = (n * MINI) / 2;
-    const at = (s: Square) => ({ x: -half + s.col * MINI + MINI / 2, y: -half + (n - 1 - s.row) * MINI + MINI / 2 });
+    const at = (s: Square) => ({
+      x: -half + s.col * MINI + MINI / 2,
+      y: -half + (n - 1 - s.row) * MINI + MINI / 2,
+    });
     f.outlines.forEach((o, i) => {
       const card = this.outlineCards[i];
       card.removeChildren().forEach((c) => c.destroy({ children: true }));
       card.addChild(finish({ w: OUTLINE, h: OUTLINE, corner: 22 }, swatch.white, 0xfffaf0));
       const g = new Graphics();
-      for (let k = 0; k <= n; k++) g.moveTo(-half + k * MINI, -half).lineTo(-half + k * MINI, half).moveTo(-half, -half + k * MINI).lineTo(half, -half + k * MINI);
+      for (let k = 0; k <= n; k++)
+        g.moveTo(-half + k * MINI, -half)
+          .lineTo(-half + k * MINI, half)
+          .moveTo(-half, -half + k * MINI)
+          .lineTo(half, -half + k * MINI);
       g.stroke({ width: 2, color: wood.line, alpha: 0.35 });
       for (const sq of f.raft!) {
         const c = at(sq);
-        g.rect(c.x - MINI / 2 + 2, c.y - MINI / 2 + 2, MINI - 4, MINI - 4).fill({ color: wood.line, alpha: 0.18 });
+        g.rect(c.x - MINI / 2 + 2, c.y - MINI / 2 + 2, MINI - 4, MINI - 4).fill({
+          color: wood.line,
+          alpha: 0.18,
+        });
       }
       for (const sq of o.cells) {
         const c = at(sq);
-        g.roundRect(c.x - MINI / 2 + 1, c.y - MINI / 2 + 1, MINI - 2, MINI - 2, 4).fill(wood.light).stroke({ width: 3, color: wood.line });
+        g.roundRect(c.x - MINI / 2 + 1, c.y - MINI / 2 + 1, MINI - 2, MINI - 2, 4)
+          .fill(wood.light)
+          .stroke({ width: 3, color: wood.line });
       }
       // Where she put the flag, so every card is read from the same square.
       const flag = at(f.square);
@@ -972,7 +1308,14 @@ class TreasureMap implements Game {
       card.addChild(g);
       if (this.tried.has(i)) {
         card.alpha = 0.5;
-        card.addChild(new Graphics().moveTo(-40, -40).lineTo(40, 40).moveTo(40, -40).lineTo(-40, 40).stroke({ width: 8, color: wood.line, alpha: 0.7, cap: 'round' }));
+        card.addChild(
+          new Graphics()
+            .moveTo(-40, -40)
+            .lineTo(40, 40)
+            .moveTo(40, -40)
+            .lineTo(-40, 40)
+            .stroke({ width: 8, color: wood.line, alpha: 0.7, cap: 'round' }),
+        );
       } else card.alpha = 1;
     });
   }
@@ -1080,7 +1423,14 @@ class TreasureMap implements Game {
     this.wrongs++;
     sfx.boing();
     const at = this.cellAt(walk.end);
-    this.marks.addChild(new Graphics().moveTo(at.x - 14, at.y - 14).lineTo(at.x + 14, at.y + 14).moveTo(at.x + 14, at.y - 14).lineTo(at.x - 14, at.y + 14).stroke({ width: 6, color: wood.line, alpha: 0.6, cap: 'round' }));
+    this.marks.addChild(
+      new Graphics()
+        .moveTo(at.x - 14, at.y - 14)
+        .lineTo(at.x + 14, at.y + 14)
+        .moveTo(at.x + 14, at.y - 14)
+        .lineTo(at.x - 14, at.y + 14)
+        .stroke({ width: 6, color: wood.line, alpha: 0.6, cap: 'round' }),
+    );
     await this.ctx.say(reason.line, reason.slots);
     // Back to the start; the card stays as she wrote it, to mend.
     const start = this.cellAt(f.from!);
@@ -1108,9 +1458,21 @@ class TreasureMap implements Game {
 class MapIcon extends WigglyIcon {
   constructor() {
     const c = new Container();
-    const g = new Graphics().roundRect(-100, -200, 200, 180, 18).fill(PARCHMENT).stroke({ width: 5, color: wood.line });
-    for (let i = 1; i < 4; i++) g.moveTo(-100 + i * 50, -200).lineTo(-100 + i * 50, -20).moveTo(-100, -200 + i * 45).lineTo(100, -200 + i * 45).stroke({ width: 3, color: wood.line, alpha: 0.4 });
-    g.moveTo(10, -110).lineTo(40, -80).moveTo(40, -110).lineTo(10, -80).stroke({ width: 8, color: swatch.red.fill, cap: 'round' });
+    const g = new Graphics()
+      .roundRect(-100, -200, 200, 180, 18)
+      .fill(PARCHMENT)
+      .stroke({ width: 5, color: wood.line });
+    for (let i = 1; i < 4; i++)
+      g.moveTo(-100 + i * 50, -200)
+        .lineTo(-100 + i * 50, -20)
+        .moveTo(-100, -200 + i * 45)
+        .lineTo(100, -200 + i * 45)
+        .stroke({ width: 3, color: wood.line, alpha: 0.4 });
+    g.moveTo(10, -110)
+      .lineTo(40, -80)
+      .moveTo(40, -110)
+      .lineTo(10, -80)
+      .stroke({ width: 8, color: swatch.red.fill, cap: 'round' });
     c.addChild(g);
     super(c);
   }
@@ -1122,7 +1484,10 @@ function sticker(seed: number): Container {
   const chest = chestArt();
   chest.scale.set(2.4);
   c.addChild(chest);
-  if (rng.chance(0.5)) c.addChild(new Graphics().poly(starPoints(20, 8).map((n, i) => n + (i % 2 ? -90 : 60))).fill(swatch.yellow.fill));
+  if (rng.chance(0.5))
+    c.addChild(
+      new Graphics().poly(starPoints(20, 8).map((n, i) => n + (i % 2 ? -90 : 60))).fill(swatch.yellow.fill),
+    );
   return c;
 }
 

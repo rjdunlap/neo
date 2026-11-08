@@ -11,8 +11,22 @@ import type { BandLevels } from '../../progress/difficulty';
 export type Kind = 'duck' | 'pig' | 'bunny' | 'cat' | 'cow' | 'dog';
 export const KINDS: readonly Kind[] = ['duck', 'pig', 'bunny', 'cat', 'cow', 'dog'];
 /** Each critter's body colour (the same as `CRITTERS`; a test compares them). Two critters of one colour never share a wheel. */
-export const COLOR_OF: Record<Kind, string> = { duck: 'yellow', pig: 'pink', bunny: 'white', cat: 'orange', cow: 'white', dog: 'brown' };
-export const NAME_OF: Record<Kind, string> = { duck: 'Duck', pig: 'Pig', bunny: 'Bunny', cat: 'Cat', cow: 'Cow', dog: 'Dog' };
+export const COLOR_OF: Record<Kind, string> = {
+  duck: 'yellow',
+  pig: 'pink',
+  bunny: 'white',
+  cat: 'orange',
+  cow: 'white',
+  dog: 'brown',
+};
+export const NAME_OF: Record<Kind, string> = {
+  duck: 'Duck',
+  pig: 'Pig',
+  bunny: 'Bunny',
+  cat: 'Cat',
+  cow: 'Cow',
+  dog: 'Dog',
+};
 
 /** Every spinner has six wedges of 60°, each owner's wedges one contiguous section from wedge 0. */
 export const WEDGES = 6;
@@ -51,7 +65,14 @@ export function planFor(level: number): Plan {
 }
 
 /** Level 3's favourite wedge counts on the two spinners: a gap of at least two wedges, possible on both, certain on neither. */
-export const PICK_PAIRS: readonly (readonly [number, number])[] = [[1, 3], [1, 4], [1, 5], [2, 4], [2, 5], [3, 5]];
+export const PICK_PAIRS: readonly (readonly [number, number])[] = [
+  [1, 3],
+  [1, 4],
+  [1, 5],
+  [2, 4],
+  [2, 5],
+  [3, 5],
+];
 
 export interface SetSpec {
   /** One spinner (levels 1–2, 5), two side by side (level 3) or three in a row (level 4). */
@@ -92,7 +113,11 @@ export function wheelWith(rng: Rng, fav: Kind, count: number): Wheel {
   const split = rest >= 2 && rng.chance(0.5);
   const others = pickCritters(rng, split ? 2 : 1, [fav]);
   const k = split ? rng.int(1, rest - 1) : rest;
-  return [...Array(count).fill(fav), ...Array(k).fill(others[0]), ...(split ? Array(rest - k).fill(others[1]) : [])];
+  return [
+    ...Array(count).fill(fav),
+    ...Array(k).fill(others[0]),
+    ...(split ? Array(rest - k).fill(others[1]) : []),
+  ];
 }
 
 /** Level 4: six of the favourite, some (2–4), and none (one or two other critters), in a seeded order. */
@@ -120,16 +145,32 @@ export function makeRound(level: number, rng: Rng): SetSpec[] {
   const out: SetSpec[] = [];
   for (let i = 0; i < plan.sets; i++) {
     if (plan.ask === 'sure') {
-      const fav = pickCritters(rng, 1, out.map((s) => s.favourite!))[0] ?? pickCritters(rng, 1)[0];
+      const fav =
+        pickCritters(
+          rng,
+          1,
+          out.map((s) => s.favourite!),
+        )[0] ?? pickCritters(rng, 1)[0];
       out.push(sureSet(rng, fav));
       continue;
     }
-    if (plan.ask === 'fair') { out.push(raceSet(rng, i === 0)); continue; }
-    if (plan.ask !== 'pick') { out.push({ wheels: [evenWheel(rng)] }); continue; }
+    if (plan.ask === 'fair') {
+      out.push(raceSet(rng, i === 0));
+      continue;
+    }
+    if (plan.ask !== 'pick') {
+      out.push({ wheels: [evenWheel(rng)] });
+      continue;
+    }
     const [a, b] = rng.pick(PICK_PAIRS);
     const flip = rng.chance(0.5);
     const counts = flip ? [b, a] : [a, b];
-    const favourite = pickCritters(rng, 1, out.map((s) => s.favourite!))[0] ?? pickCritters(rng, 1)[0];
+    const favourite =
+      pickCritters(
+        rng,
+        1,
+        out.map((s) => s.favourite!),
+      )[0] ?? pickCritters(rng, 1)[0];
     out.push({ wheels: counts.map((c) => wheelWith(rng, favourite, c)), favourite, better: flip ? 0 : 1 });
   }
   return out;
@@ -177,16 +218,20 @@ export function cardFor(wheel: Wheel, kind: Kind): Card {
 export const fits = (card: Card, wheel: Wheel, kind: Kind) => cardFor(wheel, kind) === card;
 
 /** The spinner (index) each card fits on a level-4 set. */
-export const homeOf = (set: SetSpec, card: Card) => set.wheels.findIndex((w) => fits(card, w, set.favourite!));
+export const homeOf = (set: SetSpec, card: Card) =>
+  set.wheels.findIndex((w) => fits(card, w, set.favourite!));
 
 // ---- level 5: fair or unfair? ----
 
 /** The racers' wheel: `a` wedges of the first racer, then the rest of the second, so each owner is one section. */
-export const raceWheel = (racers: readonly [Kind, Kind], a: number): Wheel =>
-  [...Array(a).fill(racers[0]), ...Array(WEDGES - a).fill(racers[1])];
+export const raceWheel = (racers: readonly [Kind, Kind], a: number): Wheel => [
+  ...Array(a).fill(racers[0]),
+  ...Array(WEDGES - a).fill(racers[1]),
+];
 
 /** Fair means both racers have the same share: three wedges each. */
-export const isFair = (wheel: Wheel, racers: readonly [Kind, Kind]) => countOf(wheel, racers[0]) === countOf(wheel, racers[1]);
+export const isFair = (wheel: Wheel, racers: readonly [Kind, Kind]) =>
+  countOf(wheel, racers[0]) === countOf(wheel, racers[1]);
 
 /**
  * Hand one wedge to `to` from the other racer; the wheel re-sorts so each owner stays one section. A racer always keeps at
@@ -255,10 +300,24 @@ export function tallest(counts: readonly number[]): number[] {
 
 // ---- layout (logical units; the pet keeps the bottom-left corner, the shell the top corners) ----
 
-export interface Pt { x: number; y: number }
-export interface Circle extends Pt { r: number }
-export interface Box extends Pt { w: number; h: number }
-export const BIG = 210, SMALL = 150, COL_W = 120, COL_GAP = 20, FACE = 70, BAR_H = 320, STAND = 50;
+export interface Pt {
+  x: number;
+  y: number;
+}
+export interface Circle extends Pt {
+  r: number;
+}
+export interface Box extends Pt {
+  w: number;
+  h: number;
+}
+export const BIG = 210,
+  SMALL = 150,
+  COL_W = 120,
+  COL_GAP = 20,
+  FACE = 70,
+  BAR_H = 320,
+  STAND = 50;
 
 export interface Layout {
   portrait: boolean;
@@ -281,7 +340,9 @@ export function layout(view: { w: number; h: number }, bars: number): Layout {
   const portrait = h > w;
   const span = bars * COL_W + (bars - 1) * COL_GAP;
   const cols = (left: number, base: number) =>
-    Array.from({ length: bars }, (_, i) => box(left + COL_W / 2 + i * (COL_W + COL_GAP), base - BAR_H / 2 + FACE / 2, COL_W, BAR_H + FACE));
+    Array.from({ length: bars }, (_, i) =>
+      box(left + COL_W / 2 + i * (COL_W + COL_GAP), base - BAR_H / 2 + FACE / 2, COL_W, BAR_H + FACE),
+    );
   if (!portrait) {
     const cy = Math.max(140 + BIG, Math.min(h / 2 - 20, 350));
     const spinner = { x: 140 + BIG, y: cy, r: BIG };
@@ -291,7 +352,10 @@ export function layout(view: { w: number; h: number }, bars: number): Layout {
     return {
       portrait,
       spinner,
-      pair: [{ x: w / 2 - SMALL - 50, y: pcy, r: SMALL }, { x: w / 2 + SMALL + 50, y: pcy, r: SMALL }],
+      pair: [
+        { x: w / 2 - SMALL - 50, y: pcy, r: SMALL },
+        { x: w / 2 + SMALL + 50, y: pcy, r: SMALL },
+      ],
       favourite: box(w / 2, pcy - SMALL - 20, 120, 120),
       base,
       columns: cols(left, base),
@@ -303,7 +367,10 @@ export function layout(view: { w: number; h: number }, bars: number): Layout {
   return {
     portrait,
     spinner,
-    pair: [{ x: cx - 40, y: 130 + SMALL, r: SMALL }, { x: cx - 40, y: 130 + SMALL * 3 + 110, r: SMALL }],
+    pair: [
+      { x: cx - 40, y: 130 + SMALL, r: SMALL },
+      { x: cx - 40, y: 130 + SMALL * 3 + 110, r: SMALL },
+    ],
     favourite: box(Math.min(w - 90, cx + SMALL + 110), 130 + SMALL * 2 + 55, 120, 120),
     base,
     columns: cols(cx - span / 2 + 40, base),
@@ -311,7 +378,9 @@ export function layout(view: { w: number; h: number }, bars: number): Layout {
 }
 
 /** Level 4: three 240-unit spinners (each a drop zone), a slot under or beside each for its card, and the tray of three cards. */
-export const MID = 120, CARD_W = 130, CARD_H = 150;
+export const MID = 120,
+  CARD_W = 130,
+  CARD_H = 150;
 export interface SureLayout {
   portrait: boolean;
   spinners: Circle[];
@@ -341,7 +410,8 @@ export function sureLayout(view: { w: number; h: number }): SureLayout {
   }
   // Upright: a column of spinners clear of the pet, each card's slot beside it, and the tray as a column on the right.
   const cx = Math.min(300, w - 428);
-  const top = 160, bottom = h - 170 - rim;
+  const top = 160,
+    bottom = h - 170 - rim;
   const ys = [top, (top + bottom) / 2, bottom];
   const trayX = w - 20 - CARD_W / 2;
   const trayTop = 130 + CARD_H / 2 + 10;
@@ -355,7 +425,10 @@ export function sureLayout(view: { w: number; h: number }): SureLayout {
 }
 
 /** Level 5: one 420-unit spinner with its wedges, two racers on six-step tracks, and the fair, unfair and Check buttons. */
-export const RACER = 140, BTN_W = 140, BTN_H = 110, CHECK_W = 130;
+export const RACER = 140,
+  BTN_W = 140,
+  BTN_H = 110,
+  CHECK_W = 130;
 export interface RaceLayout {
   portrait: boolean;
   spinner: Circle;
@@ -377,7 +450,8 @@ export function raceLayout(view: { w: number; h: number }): RaceLayout {
     const by = h - 20 - BTN_H / 2;
     const right = w - 30 - RACER / 2;
     const xs = [right - RACER - 30, right];
-    const top = 140, bottom = h - 20;
+    const top = 140,
+      bottom = h - 20;
     const step = (bottom - top - RACER) / TRACK;
     return {
       portrait: false,
@@ -391,7 +465,8 @@ export function raceLayout(view: { w: number; h: number }): RaceLayout {
   }
   const spinner = { x: w / 2, y: 120 + BIG, r: BIG };
   const ys = [spinner.y + rim + 10 + RACER / 2, spinner.y + rim + 20 + RACER * 1.5];
-  const left = 30, right = w - 30;
+  const left = 30,
+    right = w - 30;
   const step = (right - left - RACER) / TRACK;
   const by = h - 20 - BTN_H / 2;
   return {
@@ -408,8 +483,18 @@ export function raceLayout(view: { w: number; h: number }): RaceLayout {
 /** A sticker's spinner and its bar of spins, from the seed. */
 export function stickerSet(seed: number): { wheel: Wheel; counts: number[] } {
   const n = Math.abs(Math.floor(seed));
-  const kinds: Kind[][] = [['duck', 'pig', 'bunny'], ['cat', 'duck', 'cow'], ['pig', 'dog', 'duck'], ['bunny', 'cat', 'pig']];
+  const kinds: Kind[][] = [
+    ['duck', 'pig', 'bunny'],
+    ['cat', 'duck', 'cow'],
+    ['pig', 'dog', 'duck'],
+    ['bunny', 'cat', 'pig'],
+  ];
   const [a, b, c] = kinds[n % kinds.length];
-  const counts = [[3, 2, 1], [2, 3, 1], [1, 2, 3], [2, 1, 3]][(n >> 2) % 4];
+  const counts = [
+    [3, 2, 1],
+    [2, 3, 1],
+    [1, 2, 3],
+    [2, 1, 3],
+  ][(n >> 2) % 4];
   return { wheel: [a, a, b, b, c, c], counts };
 }

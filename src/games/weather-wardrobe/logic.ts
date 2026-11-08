@@ -28,7 +28,8 @@ export const ITEMS = {
 export type Item = keyof typeof ITEMS;
 export const ALL_ITEMS = Object.keys(ITEMS) as Item[];
 /** A weather's items, out of those the pet can wear. */
-export const itemsFor = (w: Weather, wearable: readonly Item[] = ALL_ITEMS) => wearable.filter((i) => ITEMS[i] === w);
+export const itemsFor = (w: Weather, wearable: readonly Item[] = ALL_ITEMS) =>
+  wearable.filter((i) => ITEMS[i] === w);
 
 export type Slot = 'head' | 'eyes' | 'neck' | 'body' | 'hands' | 'feet' | 'held';
 
@@ -74,7 +75,8 @@ export const NOT_WORN: Record<SpeciesId, Partial<Record<Item, string>>> = {
   sprout: {},
   river: {
     mittens: 'its front paws walk: boots go on them, and mittens would be a second pair of shoes',
-    raincoat: 'drawn upright from the front, and its body runs level from the neck to the tail, so it would hang off the back like a flag',
+    raincoat:
+      'drawn upright from the front, and its body runs level from the neck to the tail, so it would hang off the back like a flag',
     puffycoat: 'drawn upright from the front, like the raincoat',
     windbreaker: 'drawn upright from the front, like the raincoat',
   },
@@ -97,12 +99,22 @@ export function wardrobeFor(species: SpeciesId, has: (part: PartName) => boolean
 /** One whole outfit for a weather: an item for each slot that weather fills (that the pet can wear), chosen by seed where two share a slot. */
 export function outfitFor(w: Weather, rng: Rng, wearable: readonly Item[] = ALL_ITEMS): Item[] {
   const bySlot = new Map<Slot, Item[]>();
-  for (const item of itemsFor(w, wearable)) bySlot.set(SLOTS[item], [...(bySlot.get(SLOTS[item]) ?? []), item]);
+  for (const item of itemsFor(w, wearable))
+    bySlot.set(SLOTS[item], [...(bySlot.get(SLOTS[item]) ?? []), item]);
   return [...bySlot.values()].map((items) => rng.pick(items));
 }
 
 /** The items the sticker draws from: the original eight, so stickers from before the new clothes look the same. */
-export const STICKER_ITEMS: readonly Item[] = ['sunhat', 'sunglasses', 'raincoat', 'umbrella', 'boots', 'beanie', 'scarf', 'mittens'];
+export const STICKER_ITEMS: readonly Item[] = [
+  'sunhat',
+  'sunglasses',
+  'raincoat',
+  'umbrella',
+  'boots',
+  'beanie',
+  'scarf',
+  'mittens',
+];
 /** The weathers the sticker draws from: the original three, every one with a sticker item, so old seeds keep their picture. */
 export const STICKER_WEATHERS: readonly Weather[] = ['sunny', 'rainy', 'snowy'];
 
@@ -145,7 +157,12 @@ export const ITEM_NAMES: Record<Item, string> = {
 };
 
 /** What the grass does when she touches it at level 1: a puddle splashes, snow crunches, a flower pops up, leaves scatter. */
-export const GROUND_TOUCH = { sunny: 'flower', rainy: 'splash', snowy: 'crunch', windy: 'leaves' } as const satisfies Record<Weather, string>;
+export const GROUND_TOUCH = {
+  sunny: 'flower',
+  rainy: 'splash',
+  snowy: 'crunch',
+  windy: 'leaves',
+} as const satisfies Record<Weather, string>;
 
 /** What a wrong item shows for a moment before it hops back: the weather it was not made for. */
 export type Misfit = 'cold' | 'hot' | 'wet' | 'blown';
@@ -154,7 +171,12 @@ export type Misfit = 'cold' | 'hot' | 'wet' | 'blown';
 export const MISFIT: Record<Weather, Misfit> = { sunny: 'hot', rainy: 'wet', snowy: 'cold', windy: 'blown' };
 
 /** The one item per weather that stops it on the pet at level 8: a hat in sun, an umbrella in rain, a coat in snow, a zipped windbreaker in wind. */
-export const SHIELD: Record<Weather, Item> = { sunny: 'sunhat', rainy: 'umbrella', snowy: 'puffycoat', windy: 'windbreaker' };
+export const SHIELD: Record<Weather, Item> = {
+  sunny: 'sunhat',
+  rainy: 'umbrella',
+  snowy: 'puffycoat',
+  windy: 'windbreaker',
+};
 
 /** What stops a weather, best first, for a pet that cannot wear the `SHIELD` (a glider in snow gets the warm hat; in wind, the hat with a strap). */
 const SHIELDS: Record<Weather, Item[]> = {
@@ -163,7 +185,8 @@ const SHIELDS: Record<Weather, Item[]> = {
   snowy: ['puffycoat', 'beanie', 'earmuffs', 'scarf', 'mittens'],
   windy: ['windbreaker', 'straphat', 'kite'],
 };
-export const shieldFor = (w: Weather, wearable: readonly Item[] = ALL_ITEMS): Item => SHIELDS[w].find((i) => wearable.includes(i))!;
+export const shieldFor = (w: Weather, wearable: readonly Item[] = ALL_ITEMS): Item =>
+  SHIELDS[w].find((i) => wearable.includes(i))!;
 
 export type WardrobeMode = 'play' | 'pick' | 'all' | 'trip' | 'change' | 'try' | 'sky' | 'friends';
 
@@ -178,19 +201,50 @@ export interface WardrobePlan {
 }
 
 export const WARDROBE_PLANS: WardrobePlan[] = [
-  { mode: 'play', choices: 0, need: 0, rounds: 0, name: 'Tap the sky to change the weather; the pet dresses itself' },
+  {
+    mode: 'play',
+    choices: 0,
+    need: 0,
+    rounds: 0,
+    name: 'Tap the sky to change the weather; the pet dresses itself',
+  },
   { mode: 'pick', choices: 2, need: 1, rounds: 3, name: 'Pick the one thing to wear, out of two' },
   { mode: 'pick', choices: 3, need: 1, rounds: 3, name: 'Pick the one thing to wear, out of three' },
   { mode: 'all', choices: 4, need: 2, rounds: 3, name: 'Find both things to wear, out of four' },
   { mode: 'all', choices: 5, need: 3, rounds: 3, name: 'Find everything to wear, out of five' },
   { mode: 'trip', choices: 6, need: 4, rounds: 2, name: 'Pack for a trip with two kinds of weather' },
-  { mode: 'change', choices: 5, need: 0, rounds: 3, name: 'Take off clothes that do not fit the new weather, then dress for it' },
-  { mode: 'try', choices: 2, need: 1, rounds: 3, name: 'Try things on in the weather: the one that fits stops it (no mistakes)' },
-  { mode: 'sky', choices: 3, need: 1, rounds: 3, name: 'See what the pet is wearing and pick the weather it is dressed for' },
-  { mode: 'friends', choices: 4, need: 4, rounds: 3, name: 'Drag four items to two friends in different weather' },
+  {
+    mode: 'change',
+    choices: 5,
+    need: 0,
+    rounds: 3,
+    name: 'Take off clothes that do not fit the new weather, then dress for it',
+  },
+  {
+    mode: 'try',
+    choices: 2,
+    need: 1,
+    rounds: 3,
+    name: 'Try things on in the weather: the one that fits stops it (no mistakes)',
+  },
+  {
+    mode: 'sky',
+    choices: 3,
+    need: 1,
+    rounds: 3,
+    name: 'See what the pet is wearing and pick the weather it is dressed for',
+  },
+  {
+    mode: 'friends',
+    choices: 4,
+    need: 4,
+    rounds: 3,
+    name: 'Drag four items to two friends in different weather',
+  },
 ];
 
-export const wardrobePlan = (level: number) => WARDROBE_PLANS[Math.max(0, Math.min(WARDROBE_PLANS.length - 1, level - 1))];
+export const wardrobePlan = (level: number) =>
+  WARDROBE_PLANS[Math.max(0, Math.min(WARDROBE_PLANS.length - 1, level - 1))];
 
 export interface Outfit {
   weathers: Weather[];
@@ -206,7 +260,8 @@ export interface Outfit {
 }
 
 /** What a trip unpacks, weather by weather in forecast order: each weather's packed things, then the next weather's. */
-export const tripPlays = (o: Outfit): { weather: Weather; items: Item[] }[] => o.weathers.map((weather) => ({ weather, items: o.needed.filter((i) => ITEMS[i] === weather) }));
+export const tripPlays = (o: Outfit): { weather: Weather; items: Item[] }[] =>
+  o.weathers.map((weather) => ({ weather, items: o.needed.filter((i) => ITEMS[i] === weather) }));
 
 /**
  * One round's weather and choices. Weathers change from round to round. Everything is drawn from `wearable`, what this
@@ -217,7 +272,8 @@ export function outfits(plan: WardrobePlan, rng: Rng, wearable: readonly Item[] 
   const out: Outfit[] = [];
   let order: Weather[] = [];
   // Weather-change rounds wear one outfit per weather all game, so the clothes to take off are the ones she just put on.
-  const dress = plan.mode === 'change' ? new Map(WEATHERS.map((w) => [w, outfitFor(w, rng, wearable)])) : null;
+  const dress =
+    plan.mode === 'change' ? new Map(WEATHERS.map((w) => [w, outfitFor(w, rng, wearable)])) : null;
   for (let r = 0; r < plan.rounds; r++) {
     if (plan.mode === 'friends') {
       // These upright critters wear the full wardrobe, independently of the player's companion species.
@@ -231,8 +287,18 @@ export function outfits(plan: WardrobePlan, rng: Rng, wearable: readonly Item[] 
       if (!order.length) order = rng.shuffle([...WEATHERS]);
       const answer = order.shift()!;
       // The answer is always among the skies on offer; the others come from the rest (there are four weathers, three cards).
-      const skies = rng.shuffle([answer, ...rng.shuffle(WEATHERS.filter((w) => w !== answer)).slice(0, plan.choices - 1)]);
-      out.push({ weathers: [answer], needed: [], options: [], worn: rng.shuffle(outfitFor(answer, rng, wearable)).slice(0, 2), skies, answer });
+      const skies = rng.shuffle([
+        answer,
+        ...rng.shuffle(WEATHERS.filter((w) => w !== answer)).slice(0, plan.choices - 1),
+      ]);
+      out.push({
+        weathers: [answer],
+        needed: [],
+        options: [],
+        worn: rng.shuffle(outfitFor(answer, rng, wearable)).slice(0, 2),
+        skies,
+        answer,
+      });
       continue;
     }
     if (plan.mode === 'change') {
@@ -241,7 +307,12 @@ export function outfits(plan: WardrobePlan, rng: Rng, wearable: readonly Item[] 
       const to = order[(r + 1) % order.length];
       const needed = dress!.get(to)!;
       const others = rng.shuffle(wearable.filter((i) => ITEMS[i] !== to));
-      out.push({ weathers: [from, to], remove: [...dress!.get(from)!], needed: [...needed], options: rng.shuffle([...needed, ...others.slice(0, plan.choices - needed.length)]) });
+      out.push({
+        weathers: [from, to],
+        remove: [...dress!.get(from)!],
+        needed: [...needed],
+        options: rng.shuffle([...needed, ...others.slice(0, plan.choices - needed.length)]),
+      });
       continue;
     }
     if (order.length < (plan.mode === 'trip' ? 2 : 1)) order = rng.shuffle([...WEATHERS]);
@@ -251,8 +322,8 @@ export function outfits(plan: WardrobePlan, rng: Rng, wearable: readonly Item[] 
       plan.mode === 'try'
         ? [shieldFor(weathers[0], wearable)]
         : plan.mode === 'trip'
-        ? weathers.flatMap((w) => rng.shuffle(outfitFor(w, rng, wearable)).slice(0, 2))
-        : rng.shuffle(outfitFor(weathers[0], rng, wearable)).slice(0, plan.need);
+          ? weathers.flatMap((w) => rng.shuffle(outfitFor(w, rng, wearable)).slice(0, 2))
+          : rng.shuffle(outfitFor(weathers[0], rng, wearable)).slice(0, plan.need);
     const others = rng.shuffle(wearable.filter((i) => !weathers.includes(ITEMS[i])));
     const options = rng.shuffle([...needed, ...others.slice(0, plan.choices - needed.length)]);
     out.push({ weathers, needed, options });
@@ -261,7 +332,8 @@ export function outfits(plan: WardrobePlan, rng: Rng, wearable: readonly Item[] 
 }
 
 /** The first thing to wear (or pack) that she has not chosen yet, or null once she has them all. Always a right one. */
-export const itemToTap = (outfit: Outfit, used: ReadonlySet<Item>): Item | null => outfit.needed.find((i) => !used.has(i)) ?? null;
+export const itemToTap = (outfit: Outfit, used: ReadonlySet<Item>): Item | null =>
+  outfit.needed.find((i) => !used.has(i)) ?? null;
 
 /** The one friend whose sign fits this item, or null for something outside this round. */
 export const friendFor = (outfit: Outfit, item: Item): number | null => {

@@ -7,7 +7,11 @@ export const HOW_TO: GameHowTo = {
     'The numbers beside each row and column say how many squares in a row to fill. Touch a square to fill it, or drag along a row or column.',
     { from: 1, to: 5, text: 'Cross marks an empty square. Fill on a filled square empties it.' },
     { from: 7, to: 7, text: 'Cross marks an empty square. Fill on a filled square empties it.' },
-    { from: 6, to: 6, text: 'Each number is in its run\'s colour; different colours may touch. Choose a colour pot, then fill: a pot paints over the other colour and empties its own. Cross marks an empty square.' },
+    {
+      from: 6,
+      to: 6,
+      text: "Each number is in its run's colour; different colours may touch. Choose a colour pot, then fill: a pot paints over the other colour and empties its own. Cross marks an empty square.",
+    },
     { from: 2, to: 4, text: 'A big picture slides: choose Slide, or drag the numbers.' },
     { from: 6, to: 7, text: 'A big picture slides: choose Slide, or drag the numbers.' },
     'Hint rings a square; Start over empties the picture.',

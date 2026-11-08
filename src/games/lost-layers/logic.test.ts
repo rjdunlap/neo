@@ -2,9 +2,49 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  alignments, allGreen, authored, BTN_H, BTN_W, CARD_H, CARD_W, claim, COL_W, commitLook, cove, currentStep, fits, glowing, glowTarget,
-  gull, help, informative, layersLayout, LENS_R, LOOK_H, LOOK_W, LOOKS, lostRow, makeCase, move, nearestRow, petCorner, PICTURES,
-  problems, ROW_H, roundState, rowY, shellButtons, SLOT_H, SLOT_W, story, ties, valid, type Case, type Placement, type Rect, type RoundState,
+  alignments,
+  allGreen,
+  authored,
+  BTN_H,
+  BTN_W,
+  CARD_H,
+  CARD_W,
+  claim,
+  COL_W,
+  commitLook,
+  cove,
+  currentStep,
+  fits,
+  glowing,
+  glowTarget,
+  gull,
+  help,
+  informative,
+  layersLayout,
+  LENS_R,
+  LOOK_H,
+  LOOK_W,
+  LOOKS,
+  lostRow,
+  makeCase,
+  move,
+  nearestRow,
+  petCorner,
+  PICTURES,
+  problems,
+  ROW_H,
+  roundState,
+  rowY,
+  shellButtons,
+  SLOT_H,
+  SLOT_W,
+  story,
+  ties,
+  valid,
+  type Case,
+  type Placement,
+  type Rect,
+  type RoundState,
 } from './logic';
 
 const VIEWS = {
@@ -14,10 +54,13 @@ const VIEWS = {
   notch: computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
 };
 
-const cases = (level: number, n = 500): Case[] => Array.from({ length: n }, (_, i) => makeCase(level, new Rng(i + 1)));
+const cases = (level: number, n = 500): Case[] =>
+  Array.from({ length: n }, (_, i) => makeCase(level, new Rng(i + 1)));
 const triples = (): Placement[] => {
   const out: Placement[] = [];
-  for (let a = 1; a <= 6; a++) for (let b = 1; b <= 6; b++) for (let c = 1; c <= 6; c++) if (a !== b && b !== c && a !== c) out.push([a, b, c]);
+  for (let a = 1; a <= 6; a++)
+    for (let b = 1; b <= 6; b++)
+      for (let c = 1; c <= 6; c++) if (a !== b && b !== c && a !== c) out.push([a, b, c]);
   return out;
 };
 const put = (s: RoundState, rows: Placement) => rows.forEach((r, i) => move(s, i, r));
@@ -29,7 +72,8 @@ describe('pictures and columns', () => {
       const roles = [new Set<string>(), new Set<string>(), new Set<string>()];
       for (const c of cases(level)) {
         expect(new Set(c.pictures).size).toBe(3);
-        const g = gull(c), b = cove(c);
+        const g = gull(c),
+          b = cove(c);
         expect(g).toHaveLength(6);
         const pics = g.map((l) => l.picture).filter(Boolean);
         expect(new Set(pics).size).toBe(pics.length);
@@ -78,7 +122,10 @@ describe('level 1: two stories fit', () => {
   it('always has exactly the two fits, one of each story', () => {
     for (const c of cases(1)) {
       const a = alignments(c);
-      expect(a).toEqual([[1, 3, 6], [1, 4, 6]]);
+      expect(a).toEqual([
+        [1, 3, 6],
+        [1, 4, 6],
+      ]);
       expect(new Set(a.map((p) => story(c, p)))).toEqual(new Set(['in-the-mud', 'washed-away']));
       for (const r of [2, 5]) expect(problems(c, [1, r, 6]).map((p) => p.reason)).toEqual(['wavy-squeezed']);
     }
@@ -186,8 +233,10 @@ describe('accounting and hints', () => {
       const s = roundState(c);
       for (let guard = 0; guard < 6 && !s.done; guard++) {
         const g = glowTarget(s)!;
-        if (g.kind === 'fit') { put(s, g.placement); expect(fits(s).kind).toBe('stamped'); }
-        else if (g.kind === 'look') expect(commitLook(s, g.look).kind).toBe('informative');
+        if (g.kind === 'fit') {
+          put(s, g.placement);
+          expect(fits(s).kind).toBe('stamped');
+        } else if (g.kind === 'look') expect(commitLook(s, g.look).kind).toBe('informative');
         else expect(claim(s, g.claim).kind).toBe('right');
       }
       expect([s.done, s.misses]).toEqual([true, 0]);
@@ -205,17 +254,28 @@ describe('accounting and hints', () => {
 });
 
 describe('layout', () => {
-  const box = (p: { x: number; y: number }, w: number, h: number): Rect => ({ x: p.x - w / 2, y: p.y - h / 2, w, h });
-  const overlap = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
-  const inside = (a: Rect, v: { w: number; h: number }) => a.x >= 0 && a.y >= 0 && a.x + a.w <= v.w && a.y + a.h <= v.h;
+  const box = (p: { x: number; y: number }, w: number, h: number): Rect => ({
+    x: p.x - w / 2,
+    y: p.y - h / 2,
+    w,
+    h,
+  });
+  const overlap = (a: Rect, b: Rect) =>
+    a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+  const inside = (a: Rect, v: { w: number; h: number }) =>
+    a.x >= 0 && a.y >= 0 && a.x + a.w <= v.w && a.y + a.h <= v.h;
   for (const [name, v] of Object.entries(VIEWS)) {
     for (const level of [1, 2]) {
       it(`fits ${name} at level ${level}`, () => {
         const L = layersLayout(v, level);
         const top = L.bottom - 6 * ROW_H;
-        const cols: [string, Rect][] = [['gull', { x: L.gullX, y: top, w: COL_W, h: 6 * ROW_H }], ['cove', { x: L.coveX, y: top, w: COL_W, h: 6 * ROW_H }]];
+        const cols: [string, Rect][] = [
+          ['gull', { x: L.gullX, y: top, w: COL_W, h: 6 * ROW_H }],
+          ['cove', { x: L.coveX, y: top, w: COL_W, h: 6 * ROW_H }],
+        ];
         const targets: [string, Rect][] = [
-          ['action', box(L.action, BTN_W, BTN_H)], ['cant', box(L.cantTell, BTN_W, BTN_H)],
+          ['action', box(L.action, BTN_W, BTN_H)],
+          ['cant', box(L.cantTell, BTN_W, BTN_H)],
           ...L.cards.map((c, i): [string, Rect] => [`card${i}`, box(c, CARD_W, CARD_H)]),
         ];
         if (level >= 2) {
@@ -229,7 +289,9 @@ describe('layout', () => {
           for (const f of fixed) expect(overlap(r, f), `${n} vs shell`).toBe(false);
           expect(Math.min(r.w, r.h), n).toBeGreaterThanOrEqual(100);
         }
-        for (let i = 0; i < all.length; i++) for (let j = i + 1; j < all.length; j++) expect(overlap(all[i][1], all[j][1]), `${all[i][0]} vs ${all[j][0]}`).toBe(false);
+        for (let i = 0; i < all.length; i++)
+          for (let j = i + 1; j < all.length; j++)
+            expect(overlap(all[i][1], all[j][1]), `${all[i][0]} vs ${all[j][0]}`).toBe(false);
         expect(L.coveX - (L.gullX + COL_W)).toBeGreaterThanOrEqual(60);
         expect(inside(box(L.lens, 2 * LENS_R, 2 * LENS_R), v)).toBe(true);
         for (let r = 1; r <= 6; r++) expect(nearestRow(L, rowY(L, r) + 30)).toBe(r);

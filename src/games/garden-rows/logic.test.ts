@@ -1,8 +1,30 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
-  candidates, clash, clashing, copyBed, countSolutions, deadEnds, emptyBed, FLOWER_NAMES, hintFor, isFull, isSolved, makeBeds, makePuzzle,
-  boxSpots, fullBed, mendTarget, nextMove, nextPlanting, PLANS, planFor, rowsOf, sameBox, solve, type Bed,
+  candidates,
+  clash,
+  clashing,
+  copyBed,
+  countSolutions,
+  deadEnds,
+  emptyBed,
+  FLOWER_NAMES,
+  hintFor,
+  isFull,
+  isSolved,
+  makeBeds,
+  makePuzzle,
+  boxSpots,
+  fullBed,
+  mendTarget,
+  nextMove,
+  nextPlanting,
+  PLANS,
+  planFor,
+  rowsOf,
+  sameBox,
+  solve,
+  type Bed,
 } from './logic';
 
 const givenOf = (start: Bed) => start.map((row) => row.map((v) => v !== null));
@@ -24,7 +46,10 @@ describe('Garden Rows', () => {
         if (p.size === before.size) expect(p.blanks, p.name).toBeGreaterThanOrEqual(before.blanks);
       });
     }
-    expect(PLANS.slice(7, 9).map((p) => [p.rule, p.size, p.blanks, p.beds])).toEqual([['boxes', 4, 6, 2], ['boxes', 4, 10, 1]]);
+    expect(PLANS.slice(7, 9).map((p) => [p.rule, p.size, p.blanks, p.beds])).toEqual([
+      ['boxes', 4, 6, 2],
+      ['boxes', 4, 10, 1],
+    ]);
     for (const p of PLANS) {
       expect(p.size, p.name).toBeLessThanOrEqual(FLOWER_NAMES.length);
       expect(p.blanks, p.name).toBeLessThan(p.size * p.size);
@@ -39,10 +64,17 @@ describe('Garden Rows', () => {
     for (const plan of FILL) {
       for (let seed = 1; seed <= 60; seed++) {
         const { start, solution } = makePuzzle(plan, new Rng(seed));
-        expect(start.flat().filter((v) => v === null), `${plan.name} #${seed}`).toHaveLength(plan.blanks);
+        expect(
+          start.flat().filter((v) => v === null),
+          `${plan.name} #${seed}`,
+        ).toHaveLength(plan.blanks);
         expect(countSolutions(start, plan.rule), `${plan.name} #${seed}`).toBe(1);
         expect(isSolved(solution, plan.rule), `${plan.name} #${seed}`).toBe(true);
-        start.forEach((row, r) => row.forEach((v, c) => { if (v !== null) expect(v).toBe(solution[r][c]); }));
+        start.forEach((row, r) =>
+          row.forEach((v, c) => {
+            if (v !== null) expect(v).toBe(solution[r][c]);
+          }),
+        );
         expect(solve(start, plan.rule)).toEqual(solution);
       }
     }
@@ -124,9 +156,13 @@ describe('Garden Rows', () => {
           for (let c = 0; c < plan.size && !wrong; c++)
             if (bed[r][c] === null) {
               const f = candidates(bed, plan.rule, r, c).find((x) => x !== solution[r][c]);
-              if (f !== undefined) { bed[r][c] = f; wrong = { r, c }; }
+              if (f !== undefined) {
+                bed[r][c] = f;
+                wrong = { r, c };
+              }
             }
-        if (wrong) expect(hintFor(bed, given, solution, plan.rule)).toEqual({ kind: 'fix', r: wrong.r, c: wrong.c });
+        if (wrong)
+          expect(hintFor(bed, given, solution, plan.rule)).toEqual({ kind: 'fix', r: wrong.r, c: wrong.c });
         // Following hints from a clean bed always finishes it.
         const play = copyBed(start);
         for (let step = 0; step < plan.size * plan.size && !isFull(play); step++) {
@@ -152,7 +188,7 @@ describe('Garden Rows', () => {
     expect(isSolved(emptyBed(3), 'rows')).toBe(false);
   });
 
-  it("plants a bed with no clash and no dead end at any step, to the one finished bed, so the demonstration never bounces", () => {
+  it('plants a bed with no clash and no dead end at any step, to the one finished bed, so the demonstration never bounces', () => {
     for (const plan of FILL) {
       for (let seed = 1; seed <= 25; seed++) {
         const { start, solution } = makePuzzle(plan, new Rng(seed));
@@ -160,7 +196,11 @@ describe('Garden Rows', () => {
         let selected = 0;
         let swaps = 0;
         let steps = 0;
-        for (let step = nextPlanting(bed, solution, plan.rule, selected); step; step = nextPlanting(bed, solution, plan.rule, selected)) {
+        for (
+          let step = nextPlanting(bed, solution, plan.rule, selected);
+          step;
+          step = nextPlanting(bed, solution, plan.rule, selected)
+        ) {
           expect(bed[step.r][step.c]).toBeNull();
           expect(clash(bed, plan.rule, step.r, step.c, step.flower), `${plan.name} seed ${seed}`).toBeNull();
           if (step.flower !== selected) swaps++;
@@ -178,13 +218,26 @@ describe('Garden Rows', () => {
   });
 
   it('plants the spot with the fewest choices first, and keeps the packet in hand when two spots are as tight', () => {
-    const solution: Bed = [[0, 1, 2], [1, 2, 0], [2, 0, 1]];
+    const solution: Bed = [
+      [0, 1, 2],
+      [1, 2, 0],
+      [2, 0, 1],
+    ];
     // A rows-only bed: row 1 is missing one flower (one choice), row 0 two (two choices each).
-    const bed: Bed = [[null, null, 2], [1, null, 0], [2, 0, 1]];
-    for (const selected of [0, 1, 2]) expect(nextPlanting(bed, solution, 'rows', selected)).toEqual({ r: 1, c: 1, flower: 2 });
+    const bed: Bed = [
+      [null, null, 2],
+      [1, null, 0],
+      [2, 0, 1],
+    ];
+    for (const selected of [0, 1, 2])
+      expect(nextPlanting(bed, solution, 'rows', selected)).toEqual({ r: 1, c: 1, flower: 2 });
     expect(nextPlanting(solution, solution, 'rows', 0)).toBeNull();
     // Two equally tight spots: the one that takes the flower already in hand goes first, else the first in reading order.
-    const tie: Bed = [[null, null, 2], [1, 2, 0], [2, 0, 1]];
+    const tie: Bed = [
+      [null, null, 2],
+      [1, 2, 0],
+      [2, 0, 1],
+    ];
     expect(nextPlanting(tie, solution, 'rows', 1)).toEqual({ r: 0, c: 1, flower: 1 });
     expect(nextPlanting(tie, solution, 'rows', 0)).toEqual({ r: 0, c: 0, flower: 0 });
     expect(nextPlanting(tie, solution, 'rows', 2)).toEqual({ r: 0, c: 0, flower: 0 });
@@ -201,13 +254,16 @@ describe('Garden Rows', () => {
         for (const k of kinds) expect(k >= 0 && k < FLOWER_NAMES.length).toBe(true);
         kinds.forEach((k) => seen.add(k));
         // The bed itself holds flowers 0 to size - 1, which the kinds name.
-        for (const v of [...start.flat(), ...solution.flat()]) if (v !== null) expect(v >= 0 && v < plan.size).toBe(true);
+        for (const v of [...start.flat(), ...solution.flat()])
+          if (v !== null) expect(v >= 0 && v < plan.size).toBe(true);
       }
       // Across 50 seeds every one of the five flowers turns up, even on a 3 by 3 bed.
       expect(seen.size, plan.name).toBe(FLOWER_NAMES.length);
     }
     expect(makePuzzle(PLANS[0], new Rng(9))).toEqual(makePuzzle(PLANS[0], new Rng(9)));
-    const sets = new Set(Array.from({ length: 20 }, (_, i) => makePuzzle(PLANS[2], new Rng(i + 1)).kinds.join()));
+    const sets = new Set(
+      Array.from({ length: 20 }, (_, i) => makePuzzle(PLANS[2], new Rng(i + 1)).kinds.join()),
+    );
     expect(sets.size).toBeGreaterThan(1);
   });
 
@@ -220,7 +276,11 @@ describe('Garden Rows', () => {
         expect(isFull(start)).toBe(true);
         expect(isSolved(solution, 'both')).toBe(true);
         const diff: { r: number; c: number }[] = [];
-        start.forEach((row, r) => row.forEach((v, c) => { if (v !== solution[r][c]) diff.push({ r, c }); }));
+        start.forEach((row, r) =>
+          row.forEach((v, c) => {
+            if (v !== solution[r][c]) diff.push({ r, c });
+          }),
+        );
         expect(diff, `#${seed}`).toHaveLength(2);
         expect(diff[0].r).toBe(diff[1].r);
         // Rows still hold one of each; each of the two columns holds one repeat.
@@ -238,7 +298,12 @@ describe('Garden Rows', () => {
     });
 
     it('accepts any bed with no repeat, not only the one before the swap', () => {
-      const other: Bed = [[1, 0, 3, 2], [0, 1, 2, 3], [3, 2, 1, 0], [2, 3, 0, 1]];
+      const other: Bed = [
+        [1, 0, 3, 2],
+        [0, 1, 2, 3],
+        [3, 2, 1, 0],
+        [2, 3, 0, 1],
+      ];
       expect(isSolved(other, 'both')).toBe(true);
       // Its hint target keeps a valid bed as it is.
       expect(mendTarget(other, 'both', makePuzzle(MEND, new Rng(1)).solution)).toEqual(other);
@@ -292,7 +357,11 @@ describe('Garden Rows', () => {
         const byBot = copyBed(puzzle.start);
         let selected = 0;
         let moves = 0;
-        for (let m = nextMove(byBot, given, mendTarget(byBot, 'both', puzzle.solution), 'both', selected); m && moves < 40; moves++) {
+        for (
+          let m = nextMove(byBot, given, mendTarget(byBot, 'both', puzzle.solution), 'both', selected);
+          m && moves < 40;
+          moves++
+        ) {
           if (m.lift) byBot[m.r][m.c] = null;
           else {
             expect(clash(byBot, 'both', m.r, m.c, m.flower)).toBeNull();
@@ -316,7 +385,17 @@ describe('Garden Rows', () => {
         expect([...bed[i]].sort()).toEqual(all);
         expect(bed.map((row) => row[i]).sort()).toEqual(all);
       }
-      for (const [r, c] of [[0, 0], [0, 2], [2, 0], [2, 2]]) expect(boxSpots(4, r, c).map((s) => bed[s.r][s.c]).sort()).toEqual(all);
+      for (const [r, c] of [
+        [0, 0],
+        [0, 2],
+        [2, 0],
+        [2, 2],
+      ])
+        expect(
+          boxSpots(4, r, c)
+            .map((s) => bed[s.r][s.c])
+            .sort(),
+        ).toEqual(all);
     };
 
     it('levels 8 and 9 are the boxes rule on a 4 by 4 bed', () => {
@@ -330,7 +409,10 @@ describe('Garden Rows', () => {
           const { start, solution } = makePuzzle(plan, new Rng(seed));
           validBoxes(solution);
           expect(isSolved(solution, 'boxes'), `${plan.name} #${seed}`).toBe(true);
-          expect(start.flat().filter((v) => v === null), `${plan.name} #${seed}`).toHaveLength(plan.blanks);
+          expect(
+            start.flat().filter((v) => v === null),
+            `${plan.name} #${seed}`,
+          ).toHaveLength(plan.blanks);
           expect(countSolutions(start, 'boxes'), `${plan.name} #${seed}`).toBe(1);
           expect(solve(start, 'boxes')).toEqual(solution);
           expect(deadEnds(start, 'boxes')).toEqual([]);
@@ -339,7 +421,9 @@ describe('Garden Rows', () => {
     });
 
     it('generation never throws over 300 seeds', () => {
-      for (const plan of BOXES) for (let seed = 1; seed <= 300; seed++) expect(() => makePuzzle(plan, new Rng(seed)), `${plan.name} #${seed}`).not.toThrow();
+      for (const plan of BOXES)
+        for (let seed = 1; seed <= 300; seed++)
+          expect(() => makePuzzle(plan, new Rng(seed)), `${plan.name} #${seed}`).not.toThrow();
     });
 
     it('fullBed makes box-valid squares and varies with the seed', () => {
@@ -358,7 +442,12 @@ describe('Garden Rows', () => {
       expect(sameBox(4, 1, 1, 2, 2)).toBe(false);
       expect(sameBox(4, 2, 3, 3, 2)).toBe(true);
       expect(sameBox(4, 1, 1, 1, 2)).toBe(false);
-      expect(boxSpots(4, 3, 1)).toEqual([{ r: 2, c: 0 }, { r: 2, c: 1 }, { r: 3, c: 0 }, { r: 3, c: 1 }]);
+      expect(boxSpots(4, 3, 1)).toEqual([
+        { r: 2, c: 0 },
+        { r: 2, c: 1 },
+        { r: 3, c: 0 },
+        { r: 3, c: 1 },
+      ]);
       expect(boxSpots(4, 0, 3)).toContainEqual({ r: 0, c: 3 });
     });
 
@@ -388,7 +477,11 @@ describe('Garden Rows', () => {
           const { start, solution } = makePuzzle(plan, new Rng(seed));
           const given = givenOf(start);
           const byHint = copyBed(start);
-          for (let h = hintFor(byHint, given, solution, 'boxes'); h; h = hintFor(byHint, given, solution, 'boxes')) {
+          for (
+            let h = hintFor(byHint, given, solution, 'boxes');
+            h;
+            h = hintFor(byHint, given, solution, 'boxes')
+          ) {
             expect(h.kind, `${plan.name} #${seed}`).toBe('plant');
             if (h.kind !== 'plant') break;
             expect(clash(byHint, 'boxes', h.r, h.c, h.flower)).toBeNull();
@@ -399,7 +492,11 @@ describe('Garden Rows', () => {
           const byBot = copyBed(start);
           let selected = 0;
           let steps = 0;
-          for (let m = nextPlanting(byBot, solution, 'boxes', selected); m; m = nextPlanting(byBot, solution, 'boxes', selected)) {
+          for (
+            let m = nextPlanting(byBot, solution, 'boxes', selected);
+            m;
+            m = nextPlanting(byBot, solution, 'boxes', selected)
+          ) {
             expect(clash(byBot, 'boxes', m.r, m.c, m.flower), `${plan.name} #${seed}`).toBeNull();
             byBot[m.r][m.c] = m.flower;
             selected = m.flower;
@@ -415,7 +512,13 @@ describe('Garden Rows', () => {
 
   describe('One row (level 10, the preschool entry)', () => {
     it('is one row of three spots with one empty, three beds in a round', () => {
-      expect([ONE_ROW.size, rowsOf(ONE_ROW), ONE_ROW.rule, ONE_ROW.blanks, ONE_ROW.beds]).toEqual([3, 1, 'rows', 1, 3]);
+      expect([ONE_ROW.size, rowsOf(ONE_ROW), ONE_ROW.rule, ONE_ROW.blanks, ONE_ROW.beds]).toEqual([
+        3,
+        1,
+        'rows',
+        1,
+        3,
+      ]);
       for (let seed = 1; seed <= 60; seed++)
         for (const { start, solution } of makeBeds(ONE_ROW, new Rng(seed))) {
           expect(start).toHaveLength(1);
@@ -452,8 +555,18 @@ describe('Garden Rows', () => {
       for (let seed = 1; seed <= 30; seed++)
         for (const { start, solution } of makeBeds(ONE_ROW, new Rng(seed))) {
           const gap = start[0].indexOf(null);
-          expect(hintFor(start, givenOf(start), solution, 'rows')).toEqual({ kind: 'plant', r: 0, c: gap, flower: solution[0][gap] });
-          expect(nextMove(start, givenOf(start), solution, 'rows', 0)).toEqual({ lift: false, r: 0, c: gap, flower: solution[0][gap] });
+          expect(hintFor(start, givenOf(start), solution, 'rows')).toEqual({
+            kind: 'plant',
+            r: 0,
+            c: gap,
+            flower: solution[0][gap],
+          });
+          expect(nextMove(start, givenOf(start), solution, 'rows', 0)).toEqual({
+            lift: false,
+            r: 0,
+            c: gap,
+            flower: solution[0][gap],
+          });
         }
     });
   });

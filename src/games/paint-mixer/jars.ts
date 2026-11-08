@@ -24,7 +24,14 @@ export interface JarCase {
 }
 
 /** Bases in lowest terms, each total at most 5. */
-export const JAR_BASES: readonly Label[] = [[1, 2], [2, 1], [1, 3], [3, 1], [2, 3], [3, 2]];
+export const JAR_BASES: readonly Label[] = [
+  [1, 2],
+  [2, 1],
+  [1, 3],
+  [3, 1],
+  [2, 3],
+  [3, 2],
+];
 /** The sample's table at level 6 has four columns; only column 1 is shown until a lid opens. */
 export const TABLE_COLUMNS = 4;
 export const JARS = 4;
@@ -42,8 +49,12 @@ export function multipleOfBase(base: Label, label: Label): number | null {
 function wrongLabel(kind: WrongKind, base: Label, rng: Rng): Label {
   const [a, b] = base;
   if (kind === 'swapped') return [b, a];
-  if (kind === 'added') { const n = rng.int(1, 3); return [a + n, b + n]; }
-  const k = rng.int(1, 4), d = rng.int(0, 1) ? 1 : -1;
+  if (kind === 'added') {
+    const n = rng.int(1, 3);
+    return [a + n, b + n];
+  }
+  const k = rng.int(1, 4),
+    d = rng.int(0, 1) ? 1 : -1;
   return rng.int(0, 1) ? [k * a, k * b + d] : [k * a + d, k * b];
 }
 
@@ -91,7 +102,8 @@ export function reveal(base: Label, label: Label): Reveal {
   const k = multipleOfBase(base, label);
   if (k !== null) return { kind: 'fills', k };
   const k1 = label[0] / base[0];
-  if (Number.isInteger(k1) && k1 >= 1 && k1 <= TABLE_COLUMNS) return { kind: 'second', k: k1, expected: k1 * base[1] };
+  if (Number.isInteger(k1) && k1 >= 1 && k1 <= TABLE_COLUMNS)
+    return { kind: 'second', k: k1, expected: k1 * base[1] };
   return { kind: 'first' };
 }
 
@@ -140,7 +152,8 @@ export interface JarLayout {
 }
 /** A lid knob: the top 100 × 60 of a jar, in the jar's own coordinates (the rest of the jar chooses it). */
 export const LID: Box = { x: 0, y: -JAR_H / 2 + 30, w: 100, h: 60 };
-export const inLid = (x: number, y: number) => Math.abs(x - LID.x) <= LID.w / 2 && Math.abs(y - LID.y) <= LID.h / 2;
+export const inLid = (x: number, y: number) =>
+  Math.abs(x - LID.x) <= LID.w / 2 && Math.abs(y - LID.y) <= LID.h / 2;
 
 const box = (x: number, y: number, w: number, h: number): Box => ({ x, y, w, h });
 
@@ -155,11 +168,14 @@ export function layoutJars(view: { w: number; h: number }): JarLayout {
   const TABLE_H = tableH(2);
   const gap = 16;
   if (!portrait) {
-    const left = 330, right = w - 24;
+    const left = 330,
+      right = w - 24;
     const cx = (left + right) / 2;
     const rowW = JARS * JAR_W + (JARS - 1) * gap;
     const y = Math.min(h / 2 - 50, 300);
-    const jars = Array.from({ length: JARS }, (_, i) => box(cx - rowW / 2 + JAR_W / 2 + i * (JAR_W + gap), y, JAR_W, JAR_H));
+    const jars = Array.from({ length: JARS }, (_, i) =>
+      box(cx - rowW / 2 + JAR_W / 2 + i * (JAR_W + gap), y, JAR_W, JAR_H),
+    );
     const last = jars[JARS - 1];
     return {
       portrait,
@@ -174,8 +190,11 @@ export function layoutJars(view: { w: number; h: number }): JarLayout {
   const jarY = 180;
   const tableBottom = jarY + 20 + TABLE_H;
   const top = Math.max(jarY + JAR_H / 2, tableBottom) + 40 + JAR_H / 2;
-  const dx = (JAR_W + gap) / 2, dy = JAR_H + 24;
-  const jars = [0, 1, 2, 3].map((i) => box(cx + (i % 2 ? dx : -dx), top + Math.floor(i / 2) * dy, JAR_W, JAR_H));
+  const dx = (JAR_W + gap) / 2,
+    dy = JAR_H + 24;
+  const jars = [0, 1, 2, 3].map((i) =>
+    box(cx + (i % 2 ? dx : -dx), top + Math.floor(i / 2) * dy, JAR_W, JAR_H),
+  );
   return {
     portrait,
     sample: box(cx - 120, jarY, JAR_W, JAR_H),

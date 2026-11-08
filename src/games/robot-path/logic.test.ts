@@ -1,6 +1,26 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { allowed, boardFor, compress, expand, FIX_PLANS, MEND_PLANS, repairPress, routePress, PREDICT_PLANS, predictionEnd, VIA_PLANS, ROBOT_BOARDS, ROBOT_PLANS, runPath, shortestPath, slotOfStep, type Direction, type RepairPlan, type Slot } from './logic';
+import {
+  allowed,
+  boardFor,
+  compress,
+  expand,
+  FIX_PLANS,
+  MEND_PLANS,
+  repairPress,
+  routePress,
+  PREDICT_PLANS,
+  predictionEnd,
+  VIA_PLANS,
+  ROBOT_BOARDS,
+  ROBOT_PLANS,
+  runPath,
+  shortestPath,
+  slotOfStep,
+  type Direction,
+  type RepairPlan,
+  type Slot,
+} from './logic';
 
 describe('robot routes', () => {
   it('keeps every preschool board small, rock-free and solvable in at most three single steps', () => {
@@ -86,7 +106,10 @@ describe('robot routes', () => {
       const end = predictionEnd(plan);
       const withoutRocks = predictionEnd({ ...plan, rocks: [] });
       const readBackwards = predictionEnd({ ...plan, program: [...plan.program].reverse() });
-      expect(end.every((n) => n >= 0 && n < plan.size), plan.name).toBe(true);
+      expect(
+        end.every((n) => n >= 0 && n < plan.size),
+        plan.name,
+      ).toBe(true);
       expect(end).not.toEqual(plan.goal);
       expect(end).not.toEqual(withoutRocks);
       expect(end).not.toEqual(readBackwards);
@@ -124,9 +147,29 @@ describe('robot routes', () => {
   });
 
   it('expands counted slots and loops, and knows which slot each step comes from', () => {
-    expect(expand([{ dir: 'right', n: 2 }, { dir: 'down', n: 1 }], 2)).toEqual(['right', 'right', 'down', 'right', 'right', 'down']);
-    expect(slotOfStep([{ dir: 'right', n: 2 }, { dir: 'down', n: 1 }], 2)).toEqual([0, 0, 1, 0, 0, 1]);
-    expect(compress(['up', 'up', 'left', 'up'])).toEqual([{ dir: 'up', n: 2 }, { dir: 'left', n: 1 }, { dir: 'up', n: 1 }]);
+    expect(
+      expand(
+        [
+          { dir: 'right', n: 2 },
+          { dir: 'down', n: 1 },
+        ],
+        2,
+      ),
+    ).toEqual(['right', 'right', 'down', 'right', 'right', 'down']);
+    expect(
+      slotOfStep(
+        [
+          { dir: 'right', n: 2 },
+          { dir: 'down', n: 1 },
+        ],
+        2,
+      ),
+    ).toEqual([0, 0, 1, 0, 0, 1]);
+    expect(compress(['up', 'up', 'left', 'up'])).toEqual([
+      { dir: 'up', n: 2 },
+      { dir: 'left', n: 1 },
+      { dir: 'up', n: 1 },
+    ]);
   });
 });
 
@@ -176,7 +219,7 @@ describe('feedback and alternative-route help', () => {
 
   it('keeps every prefix of every shortest route, including a route the default BFS did not choose', () => {
     let alternatives = 0;
-    for (const plan of ROBOT_BOARDS.flat().filter(p => !p.mode)) {
+    for (const plan of ROBOT_BOARDS.flat().filter((p) => !p.mode)) {
       const length = shortestPath(plan).length;
       const visit = (route: import('./logic').Direction[]) => {
         const result = runPath(plan, route);
@@ -185,7 +228,7 @@ describe('feedback and alternative-route help', () => {
           if (route.length !== length) return;
           if (route.join() !== shortestPath(plan).join()) alternatives++;
           for (let i = 0; i <= route.length; i++) {
-            const prefix = route.slice(0, i).map(dir => ({ dir, n: 1 }));
+            const prefix = route.slice(0, i).map((dir) => ({ dir, n: 1 }));
             const press = routePress(plan, prefix, 1);
             expect('clear' in press, JSON.stringify([plan.goal, prefix])).toBe(false);
             if ('arrow' in press) {
@@ -198,7 +241,8 @@ describe('feedback and alternative-route help', () => {
           }
           return;
         }
-        if (route.length < length) for (const dir of ['up', 'right', 'down', 'left'] as const) visit([...route, dir]);
+        if (route.length < length)
+          for (const dir of ['up', 'right', 'down', 'left'] as const) visit([...route, dir]);
       };
       visit([]);
     }
@@ -207,17 +251,24 @@ describe('feedback and alternative-route help', () => {
 });
 
 describe('level 13: pick up the apple on the way', () => {
-  const dist = (plan: (typeof VIA_PLANS)[number], to: readonly [number, number]) => shortestPath({ ...plan, goal: to as [number, number] }).length;
+  const dist = (plan: (typeof VIA_PLANS)[number], to: readonly [number, number]) =>
+    shortestPath({ ...plan, goal: to as [number, number] }).length;
   it('puts each apple off every shortest route, on open ground, and its authored route passes it', () => {
     for (const plan of VIA_PLANS) {
       const apple = plan.via!;
       expect(allowed(apple, plan), plan.name).toBe(true);
       expect(plan.goal).not.toEqual(apple);
       // Going via the apple is strictly longer than going straight, so the plain way skips it.
-      expect(dist(plan, apple) + shortestPath({ ...plan, goal: plan.goal }, apple as [number, number]).length, plan.name).toBeGreaterThan(dist(plan, plan.goal));
+      expect(
+        dist(plan, apple) + shortestPath({ ...plan, goal: plan.goal }, apple as [number, number]).length,
+        plan.name,
+      ).toBeGreaterThan(dist(plan, plan.goal));
       const result = runPath(plan, expand(plan.solution!.slots));
       expect(result.success, plan.name).toBe(true);
-      expect(result.path.some(([x, y]) => x === apple[0] && y === apple[1]), plan.name).toBe(true);
+      expect(
+        result.path.some(([x, y]) => x === apple[0] && y === apple[1]),
+        plan.name,
+      ).toBe(true);
       expect(plan.solution!.slots.length, plan.name).toBeLessThanOrEqual(plan.limit);
     }
   });
@@ -240,7 +291,8 @@ describe('level 13: pick up the apple on the way', () => {
         else if ('clear' in press) program.length = 0;
         else if ('arrow' in press) {
           const last = program[program.length - 1];
-          if (last && last.dir === press.arrow && last.n < 5) last.n++; else program.push({ dir: press.arrow, n: 1 });
+          if (last && last.dir === press.arrow && last.n < 5) last.n++;
+          else program.push({ dir: press.arrow, n: 1 });
         }
       }
       expect(done, plan.name).toBe(true);
@@ -266,7 +318,8 @@ describe('level 14: mend the loop', () => {
         edits.push({ fix: i, program, loop: plan.brokenLoop });
       }
     }
-    for (let loop = 1; loop <= 4; loop++) if (loop !== plan.brokenLoop) edits.push({ fix: 'loop', program: plan.broken, loop });
+    for (let loop = 1; loop <= 4; loop++)
+      if (loop !== plan.brokenLoop) edits.push({ fix: 'loop', program: plan.broken, loop });
     return edits;
   }
 
@@ -302,7 +355,10 @@ describe('level 14: mend the loop', () => {
       // A loop board accepts any count of turns that gets there (the robot stops on the star); a slot board only its slot.
       for (const e of fixes) expect(e.fix, plan.name).toBe(plan.fixSlot);
       if (plan.fixSlot === 'loop') expect(fixes.every((e) => e.loop >= plan.solution.loop)).toBe(true);
-      else expect(fixes).toEqual([{ fix: plan.fixSlot, program: plan.solution.slots, loop: plan.solution.loop }]);
+      else
+        expect(fixes).toEqual([
+          { fix: plan.fixSlot, program: plan.solution.slots, loop: plan.solution.loop },
+        ]);
     }
   });
 
@@ -315,17 +371,24 @@ describe('level 14: mend the loop', () => {
   /** Press the glowing button the way the ghost finger does, from any program. */
   function followGlow(plan: RepairPlan, start: Slot[], startLoop: number) {
     const program = start.map((s) => ({ ...s }));
-    let loop = startLoop, selected = -1;
+    let loop = startLoop,
+      selected = -1;
     for (let presses = 0; presses < 40; presses++) {
       const press = repairPress(plan, program, loop, selected);
       if ('play' in press) return runPath(plan, expand(program, loop)).success;
       if ('loop' in press) loop = (loop % 4) + 1;
-      else if ('clear' in press) { program.length = 0; loop = 1; selected = -1; }
-      else if ('slot' in press) selected = press.slot;
+      else if ('clear' in press) {
+        program.length = 0;
+        loop = 1;
+        selected = -1;
+      } else if ('slot' in press) selected = press.slot;
       else {
-        const dir: Direction = press.arrow, slot = program[selected];
-        if (slot) { if (slot.dir === dir && slot.n < 5) slot.n++; else slot.dir = dir; }
-        else if (selected === program.length && program.length < plan.limit) program.push({ dir, n: 1 });
+        const dir: Direction = press.arrow,
+          slot = program[selected];
+        if (slot) {
+          if (slot.dir === dir && slot.n < 5) slot.n++;
+          else slot.dir = dir;
+        } else if (selected === program.length && program.length < plan.limit) program.push({ dir, n: 1 });
       }
     }
     return false;
@@ -336,13 +399,17 @@ describe('level 14: mend the loop', () => {
       const brokenLoop = 'brokenLoop' in plan ? plan.brokenLoop : 1;
       expect(followGlow(plan, plan.broken, brokenLoop), plan.name).toBe(true);
       expect(followGlow(plan, [], 1), plan.name).toBe(true);
-      const turned = plan.broken.map((s, i) => (i === 0 ? { dir: s.dir === 'up' ? 'left' as const : 'up' as const, n: s.n + 1 } : { ...s }));
+      const turned = plan.broken.map((s, i) =>
+        i === 0 ? { dir: s.dir === 'up' ? ('left' as const) : ('up' as const), n: s.n + 1 } : { ...s },
+      );
       expect(followGlow(plan, turned, brokenLoop), plan.name).toBe(true);
     }
     const first = MEND_PLANS.find((plan) => plan.fixSlot === 'loop')!;
     expect(repairPress(first, first.broken, first.brokenLoop, -1)).toEqual({ loop: true });
     const slotted = MEND_PLANS.find((plan) => plan.fixSlot !== 'loop')!;
     expect(repairPress(slotted, slotted.broken, slotted.brokenLoop, -1)).toEqual({ slot: slotted.fixSlot });
-    expect(repairPress(slotted, slotted.broken, slotted.brokenLoop, slotted.fixSlot as number)).toEqual({ arrow: slotted.solution.slots[slotted.fixSlot as number].dir });
+    expect(repairPress(slotted, slotted.broken, slotted.brokenLoop, slotted.fixSlot as number)).toEqual({
+      arrow: slotted.solution.slots[slotted.fixSlot as number].dir,
+    });
   });
 });

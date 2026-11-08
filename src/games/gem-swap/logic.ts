@@ -4,7 +4,11 @@ import type { BandLevels } from '../../progress/difficulty';
 
 export type Board = readonly number[];
 export type Swap = readonly [number, number];
-export interface Puzzle { size: number; board: number[]; par: number }
+export interface Puzzle {
+  size: number;
+  board: number[];
+  par: number;
+}
 export const PLANS = [
   { size: 4, gems: 6, name: 'Six gems: one swap clears two lines' },
   { size: 4, gems: 12, name: 'Twelve gems: plan two swaps and falling lines' },
@@ -15,8 +19,13 @@ export const PLANS = [
 
 export const LEVELS: BandLevels = { grownup: { min: 1, max: 5 } };
 export const planFor = (level: number) => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
-export const clear = (b: Board) => b.every(k => k < 0);
-export const neighbors = (a: number, b: number, size: number) => a >= 0 && b >= 0 && a < size * size && b < size * size && Math.abs(a % size - b % size) + Math.abs(Math.floor(a / size) - Math.floor(b / size)) === 1;
+export const clear = (b: Board) => b.every((k) => k < 0);
+export const neighbors = (a: number, b: number, size: number) =>
+  a >= 0 &&
+  b >= 0 &&
+  a < size * size &&
+  b < size * size &&
+  Math.abs((a % size) - (b % size)) + Math.abs(Math.floor(a / size) - Math.floor(b / size)) === 1;
 
 /** Every horizontal/vertical run of at least three; intersections are removed once. */
 export function matches(board: Board, size: number): number[] {
@@ -26,7 +35,8 @@ export function matches(board: Board, size: number): number[] {
     if (kind < 0) continue;
     for (const d of [1, size]) {
       if (d === 1 ? i % size > size - 3 : Math.floor(i / size) > size - 3) continue;
-      if (board[i + d] === kind && board[i + d * 2] === kind) [i, i + d, i + d * 2].forEach(c => out.add(c));
+      if (board[i + d] === kind && board[i + d * 2] === kind)
+        [i, i + d, i + d * 2].forEach((c) => out.add(c));
     }
   }
   return [...out].sort((a, b) => a - b);
@@ -36,8 +46,10 @@ export function matches(board: Board, size: number): number[] {
 export function fall(board: Board, size: number): number[] {
   const out = Array<number>(size * size).fill(-1);
   for (let x = 0; x < size; x++) {
-    const column = Array.from({ length: size }, (_, y) => board[y * size + x]).filter(k => k >= 0);
-    column.forEach((k, y) => { out[(size - column.length + y) * size + x] = k; });
+    const column = Array.from({ length: size }, (_, y) => board[y * size + x]).filter((k) => k >= 0);
+    column.forEach((k, y) => {
+      out[(size - column.length + y) * size + x] = k;
+    });
   }
   return out;
 }
@@ -56,7 +68,10 @@ export function drops(board: Board, removed: readonly number[], size: number): n
   }
   return out;
 }
-export interface Step { board: number[]; waves: { board: number[]; removed: number[] }[] }
+export interface Step {
+  board: number[];
+  waves: { board: number[]; removed: number[] }[];
+}
 /** A swap is accepted only between occupied neighbours and only if it immediately makes a line. */
 export function swap(board: Board, size: number, [a, b]: Swap): Step | null {
   if (!neighbors(a, b, size) || board[a] < 0 || board[b] < 0 || board[a] === board[b]) return null;
@@ -66,16 +81,19 @@ export function swap(board: Board, size: number, [a, b]: Swap): Step | null {
   const waves: Step['waves'] = [];
   for (let removed = matches(next, size); removed.length; removed = matches(next, size)) {
     waves.push({ board: [...next], removed });
-    removed.forEach(i => { next[i] = -1; });
+    removed.forEach((i) => {
+      next[i] = -1;
+    });
     next = fall(next, size);
   }
   return { board: next, waves };
 }
 export function moves(board: Board, size: number): Swap[] {
   const out: Swap[] = [];
-  for (let a = 0; a < board.length; a++) for (const b of [a + 1, a + size]) {
-    if (swap(board, size, [a, b])) out.push([a, b]);
-  }
+  for (let a = 0; a < board.length; a++)
+    for (const b of [a + 1, a + size]) {
+      if (swap(board, size, [a, b])) out.push([a, b]);
+    }
   return out;
 }
 /**
@@ -103,10 +121,12 @@ export function solve(board: Board, size: number, stats?: { nodes: number }): Sw
 /** Board choice, left/right reflection and shape/color permutation preserve gravity and exact par. */
 export function makePuzzle(level: number, rng: Rng): Puzzle {
   const index = Math.max(0, Math.min(PLANS.length - 1, level - 1));
-  const source = rng.pick(POOLS[index]), size = PLANS[index].size;
-  const colors = rng.shuffle([0, 1, 2, 3, 4, 5]), mirror = rng.chance(0.5);
+  const source = rng.pick(POOLS[index]),
+    size = PLANS[index].size;
+  const colors = rng.shuffle([0, 1, 2, 3, 4, 5]),
+    mirror = rng.chance(0.5);
   const board = source.board.map((_, i) => {
-    const k = source.board[Math.floor(i / size) * size + (mirror ? size - 1 - i % size : i % size)];
+    const k = source.board[Math.floor(i / size) * size + (mirror ? size - 1 - (i % size) : i % size)];
     return k < 0 ? -1 : colors[k];
   });
   return { board, size, par: source.par };

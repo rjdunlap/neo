@@ -2,13 +2,62 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  AUTHORED_1, AUTHORED_2, AUTHORED_3, CHECK, COAST, PATCH_CARD, PatchTurn, contradictedBy, filled, fits, fitsReturn, inPatch, patchCase, patchCells, patchRound, shownSea, traceShown, validCase, MAX_PATH, MIN_CELL, PLANS, Turn, beachesFor, boatsFor, cellAt, cellCentre, cornerButtons, drift, driftFrom, driftLayout,
-  nextStep, overlaps, petCorner, predict, predictRound, predictSea, randomSea, sendRound, sideways, tally, targetsOf, traceAhead, validSea,
-  type Beach, type Box, type Cell, type Sea,
+  AUTHORED_1,
+  AUTHORED_2,
+  AUTHORED_3,
+  CHECK,
+  COAST,
+  PATCH_CARD,
+  PatchTurn,
+  contradictedBy,
+  filled,
+  fits,
+  fitsReturn,
+  inPatch,
+  patchCase,
+  patchCells,
+  patchRound,
+  shownSea,
+  traceShown,
+  validCase,
+  MAX_PATH,
+  MIN_CELL,
+  PLANS,
+  Turn,
+  beachesFor,
+  boatsFor,
+  cellAt,
+  cellCentre,
+  cornerButtons,
+  drift,
+  driftFrom,
+  driftLayout,
+  nextStep,
+  overlaps,
+  petCorner,
+  predict,
+  predictRound,
+  predictSea,
+  randomSea,
+  sendRound,
+  sideways,
+  tally,
+  targetsOf,
+  traceAhead,
+  validSea,
+  type Beach,
+  type Box,
+  type Cell,
+  type Sea,
 } from './logic';
 
 const seeds = Array.from({ length: 300 }, (_, i) => i + 1);
-const views = [computeView(1024, 768), computeView(768, 1024), computeView(844, 390), computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 })];
+const views = [
+  computeView(1024, 768),
+  computeView(768, 1024),
+  computeView(844, 390),
+  computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
+];
 const [P1, P2] = PLANS;
 const cellsOf = (sea: Sea): Cell[] => sea.cells.flatMap((row, r) => row.map((_, c) => ({ r, c })));
 const pathStr = (p: Cell[]) => p.map((x) => `(${x.r},${x.c})`).join(' ');
@@ -157,7 +206,9 @@ describe('level 2 requests', () => {
   it('the same seed gives the same round', () => {
     for (const seed of seeds) {
       for (const authored of [true, false]) {
-        expect(JSON.stringify(sendRound(new Rng(seed), authored))).toBe(JSON.stringify(sendRound(new Rng(seed), authored)));
+        expect(JSON.stringify(sendRound(new Rng(seed), authored))).toBe(
+          JSON.stringify(sendRound(new Rng(seed), authored)),
+        );
       }
     }
   });
@@ -213,7 +264,10 @@ describe('accounting', () => {
 
 describe('hints lead somewhere', () => {
   it('a drift ends where nextStep leaves the sea, on the predicted beach', () => {
-    const seas: [Sea, readonly number[]][] = [[AUTHORED_1, P1.boats], [AUTHORED_2, P2.boats]];
+    const seas: [Sea, readonly number[]][] = [
+      [AUTHORED_1, P1.boats],
+      [AUTHORED_2, P2.boats],
+    ];
     for (const seed of seeds) {
       seas.push([predictSea(new Rng(seed)), P1.boats]);
       for (const q of sendRound(new Rng(seed), false)) seas.push([q.sea, P2.boats]);
@@ -224,7 +278,8 @@ describe('hints lead somewhere', () => {
         const last = d.path[d.path.length - 1];
         expect(nextStep(sea, last).next).toBeNull();
         expect(predict(sea, col, d.beach)).toBe(true);
-        for (let i = 0; i + 1 < d.path.length; i++) expect(nextStep(sea, d.path[i]).next).toEqual(d.path[i + 1]);
+        for (let i = 0; i + 1 < d.path.length; i++)
+          expect(nextStep(sea, d.path[i]).next).toEqual(d.path[i + 1]);
       }
     }
   });
@@ -295,7 +350,11 @@ describe('level 3: the fogged patch', () => {
   const isAuthored = (pc: typeof A) => pc.sea === A.sea;
 
   it('the authored case: A fits, B and C are ruled out by the right cards', () => {
-    expect(A.options).toEqual([['e', 's', 's', 'e'], ['e', 's', 'e', 'e'], ['e', 's', 's', 'w']]);
+    expect(A.options).toEqual([
+      ['e', 's', 's', 'e'],
+      ['e', 's', 'e', 'e'],
+      ['e', 's', 's', 'w'],
+    ]);
     expect(A.answer).toBe(0);
     expect(fits(A, 0)).toBe(true);
     const b = contradictedBy(A, 1)!;
@@ -334,7 +393,8 @@ describe('level 3: the fogged patch', () => {
         expect(drift(pc.sea, ret.col).path.some((p) => inPatch(pc.at, p))).toBe(true);
         expect(pc.options.filter((_, i) => fitsReturn(pc, i, ret)).length).toBeGreaterThanOrEqual(2);
       }
-      for (let i = 1; i < pc.returns.length; i++) expect(pc.returns[i].col - pc.returns[i - 1].col).toBeGreaterThanOrEqual(2);
+      for (let i = 1; i < pc.returns.length; i++)
+        expect(pc.returns[i].col - pc.returns[i - 1].col).toBeGreaterThanOrEqual(2);
       expect(pc.sea.cols).toBe(plan.cols);
     });
   });
@@ -371,7 +431,14 @@ describe('level 3: the fogged patch', () => {
   });
   it('the fogged shown sea does not vary with the true patch', () => {
     for (const pc of cases.slice(0, 50)) {
-      const other = { ...pc, sea: filled(pc.sea, pc.at, pc.options.find((_, i) => i !== pc.answer)!) };
+      const other = {
+        ...pc,
+        sea: filled(
+          pc.sea,
+          pc.at,
+          pc.options.find((_, i) => i !== pc.answer)!,
+        ),
+      };
       expect(shownSea(other, null)).toEqual(shownSea(pc, null));
     }
   });
@@ -421,13 +488,22 @@ describe('level 3: the fogged patch', () => {
         expect(c.beach).toBe(d.beach);
         expect(c.path).toEqual(d.path);
         // Cards before it fit.
-        for (let k = 0; k < c.card - 1; k++) expect(drift(filled(pc.sea, pc.at, o), pc.returns[k].col).beach).toBe(pc.returns[k].beach);
+        for (let k = 0; k < c.card - 1; k++)
+          expect(drift(filled(pc.sea, pc.at, o), pc.returns[k].col).beach).toBe(pc.returns[k].beach);
       });
     }
   });
 
   it('layout: three big patch cards and Check fit every view for every boat set', () => {
-    const sets = [[1, 4], [0, 2, 4], [1, 3, 5], [0, 5], [0, 2, 5], [0, 3, 5], [0, 3]];
+    const sets = [
+      [1, 4],
+      [0, 2, 4],
+      [1, 3, 5],
+      [0, 5],
+      [0, 2, 5],
+      [0, 3, 5],
+      [0, 3],
+    ];
     for (const view of views) {
       for (const boats of sets) {
         const L = driftLayout(view, 3, boats);

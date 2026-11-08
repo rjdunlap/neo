@@ -4,20 +4,38 @@ export const VOICE = {
   'orchard.plant': ['Plant {rows} rows with {each} trees in each row. Tap an empty row to make it grow!'],
   'orchard.planted': ['{each} trees in this row. {total} trees planted altogether!'],
   'orchard.rows': ['Count by rows. Each row has {each} trees. Tap each row once to count it.'],
-  'orchard.columns': ['We turned the same orchard! Its columns now run across the screen. Each has {each} trees. Tap each one to count by columns.'],
+  'orchard.columns': [
+    'We turned the same orchard! Its columns now run across the screen. Each has {each} trees. Tap each one to count by columns.',
+  ],
   'orchard.counted': ['{each} trees in each {group}. We have counted {total} trees altogether.'],
-  'orchard.total': ['How many trees altogether? Tap that number. You can tap the rows to hear the count again.'],
-  'orchard.totalhint': ['There are {groups} equal groups with {each} trees in each. Count them together: {total} trees.'],
-  'orchard.missing': ['We want {rows} rows of {each}, making {total} trees. One row is empty. How many trees will fill that row? Tap that number.'],
-  'orchard.missinghint': ['Every row needs the same number of trees. Look at a full row: {each} trees. That is how many the empty row needs too.'],
+  'orchard.total': [
+    'How many trees altogether? Tap that number. You can tap the rows to hear the count again.',
+  ],
+  'orchard.totalhint': [
+    'There are {groups} equal groups with {each} trees in each. Count them together: {total} trees.',
+  ],
+  'orchard.missing': [
+    'We want {rows} rows of {each}, making {total} trees. One row is empty. How many trees will fill that row? Tap that number.',
+  ],
+  'orchard.missinghint': [
+    'Every row needs the same number of trees. Look at a full row: {each} trees. That is how many the empty row needs too.',
+  ],
   'orchard.fill': ['Yes, {each} trees! Tap the empty row to plant them.'],
   'orchard.yes': ['{rows} rows of {each} make {total} trees!'],
-  'orchard.turn': ['Tap the turning arrow. We will look at the same orchard from the side and count by columns.'],
+  'orchard.turn': [
+    'Tap the turning arrow. We will look at the same orchard from the side and count by columns.',
+  ],
   'orchard.same': ['Still {total} trees! Rows or columns, no trees were added or taken away.'],
   'orchard.done': ['Two orchards planted and counted! Equal groups help us count.'],
-  'orchard.equal': ['Here are {n} saplings. Tap the arrows to change how many rows. When none are left in the basket, tap Plant!'],
-  'orchard.every': ['Here are {n} saplings. Plant every different orchard they can make, in equal rows with none left over. Each one fills a frame.'],
-  'orchard.onerow': ['Three baskets of saplings. Tap a basket to try it in rows. Which basket only makes one long row? Tap the long row button for it.'],
+  'orchard.equal': [
+    'Here are {n} saplings. Tap the arrows to change how many rows. When none are left in the basket, tap Plant!',
+  ],
+  'orchard.every': [
+    'Here are {n} saplings. Plant every different orchard they can make, in equal rows with none left over. Each one fills a frame.',
+  ],
+  'orchard.onerow': [
+    'Three baskets of saplings. Tap a basket to try it in rows. Which basket only makes one long row? Tap the long row button for it.',
+  ],
   'orchard.basket': ['{n} saplings in this basket.'],
   'orchard.yesone': ['One long row of {total} trees!'],
   'orchard.deal': ['{rows} rows of {each}, and {left} left in the basket.'],
@@ -36,14 +54,20 @@ export const VOICE = {
   'orchard.done.prime': ['You found the baskets that only make one long row!'],
   'orchard.pathtop': ['A path splits this orchard. How many trees are above the path? Tap that number.'],
   'orchard.pathbottom': ['How many trees are below the path? Tap that number.'],
-  'orchard.pathten': ['A path runs down the orchard after ten trees in every row. How many trees are on the side with ten in each row? Tap that number.'],
+  'orchard.pathten': [
+    'A path runs down the orchard after ten trees in every row. How many trees are on the side with ten in each row? Tap that number.',
+  ],
   'orchard.pathones': ['How many trees are on the other side of the path? Tap that number.'],
   'orchard.pathwhole': ['How many trees are in the whole orchard? Tap that number.'],
-  'orchard.choosepath': ['Here are {rows} rows of {each}. Tap the arrows to move the path, then tap the path button to split the orchard where you like.'],
+  'orchard.choosepath': [
+    'Here are {rows} rows of {each}. Tap the arrows to move the path, then tap the path button to split the orchard where you like.',
+  ],
   'orchard.pathlaid': ['{above} rows above the path and {below} rows below.'],
   'orchard.partcount': ['{rows} rows of {each}: {count}.'],
   'orchard.partone': ['One row of {each}: {each} trees.'],
-  'orchard.wholehint': ['{a} trees on one side of the path and {b} on the other. {a} and {b} more make {total}.'],
+  'orchard.wholehint': [
+    '{a} trees on one side of the path and {b} on the other. {a} and {b} more make {total}.',
+  ],
   'orchard.pathjoin': ['{a} and {b} make {total}. {rows} rows of {each} make {total} trees!'],
   'orchard.done.path': ['Two orchards split by a path! Two parts you know make the whole.'],
 } satisfies Record<string, string[]>;

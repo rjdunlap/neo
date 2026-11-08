@@ -33,18 +33,103 @@ export interface CodePlan {
 
 /** Plans by level ID. ID 10, *One slot*, is the preschool opening, easier than level 1. */
 export const PLANS: Readonly<Record<number, CodePlan>> = {
-  1: { slots: 2, colors: 3, yellow: false, repeats: false, codes: 3, name: 'Two slots, three colors; each slot says yes or no' },
-  2: { slots: 3, colors: 4, yellow: false, repeats: false, codes: 3, name: 'Three slots, four colors; each slot says yes or no' },
-  3: { slots: 3, colors: 4, yellow: true, repeats: false, codes: 2, name: 'Yellow marks: the color is in the code, but in another slot' },
-  4: { slots: 3, colors: 5, yellow: true, repeats: false, codes: 2, name: 'Three slots and five colors, with yellow marks' },
+  1: {
+    slots: 2,
+    colors: 3,
+    yellow: false,
+    repeats: false,
+    codes: 3,
+    name: 'Two slots, three colors; each slot says yes or no',
+  },
+  2: {
+    slots: 3,
+    colors: 4,
+    yellow: false,
+    repeats: false,
+    codes: 3,
+    name: 'Three slots, four colors; each slot says yes or no',
+  },
+  3: {
+    slots: 3,
+    colors: 4,
+    yellow: true,
+    repeats: false,
+    codes: 2,
+    name: 'Yellow marks: the color is in the code, but in another slot',
+  },
+  4: {
+    slots: 3,
+    colors: 5,
+    yellow: true,
+    repeats: false,
+    codes: 2,
+    name: 'Three slots and five colors, with yellow marks',
+  },
   5: { slots: 4, colors: 5, yellow: true, repeats: false, codes: 2, name: 'Four slots and five colors' },
-  6: { slots: 3, colors: 4, yellow: true, repeats: true, codes: 2, name: 'A color can be used twice in the code' },
-  7: { slots: 3, colors: 4, yellow: true, repeats: false, codes: 2, detective: true, clues: { min: 2, max: 3 }, name: 'Detective door: work out the one code that fits the shown guesses' },
-  8: { slots: 4, colors: 5, yellow: true, repeats: true, codes: 2, name: 'Four slots, five colors, and one color used twice' },
-  9: { slots: 3, colors: 4, yellow: true, repeats: true, codes: 2, maker: true, name: 'Be the door: she makes a code and marks the pet’s tries green, yellow or gray' },
-  10: { slots: 1, colors: 3, yellow: false, repeats: false, codes: 3, oneSlot: true, name: 'One slot, three stones: which stone is behind the door? A gray cross rules a stone out' },
-  11: { slots: 4, colors: 5, yellow: true, repeats: false, codes: 2, detective: true, clues: { min: 3, max: 3 }, name: 'A bigger detective door: four slots, five colors, and three shown guesses' },
-  12: { slots: 3, colors: 4, yellow: true, repeats: true, codes: 1, maker: true, swap: true, name: 'Swap seats: she makes a code and marks a grown-up’s tries, then cracks the code they make (or plays it with the pet)' },
+  6: {
+    slots: 3,
+    colors: 4,
+    yellow: true,
+    repeats: true,
+    codes: 2,
+    name: 'A color can be used twice in the code',
+  },
+  7: {
+    slots: 3,
+    colors: 4,
+    yellow: true,
+    repeats: false,
+    codes: 2,
+    detective: true,
+    clues: { min: 2, max: 3 },
+    name: 'Detective door: work out the one code that fits the shown guesses',
+  },
+  8: {
+    slots: 4,
+    colors: 5,
+    yellow: true,
+    repeats: true,
+    codes: 2,
+    name: 'Four slots, five colors, and one color used twice',
+  },
+  9: {
+    slots: 3,
+    colors: 4,
+    yellow: true,
+    repeats: true,
+    codes: 2,
+    maker: true,
+    name: 'Be the door: she makes a code and marks the pet’s tries green, yellow or gray',
+  },
+  10: {
+    slots: 1,
+    colors: 3,
+    yellow: false,
+    repeats: false,
+    codes: 3,
+    oneSlot: true,
+    name: 'One slot, three stones: which stone is behind the door? A gray cross rules a stone out',
+  },
+  11: {
+    slots: 4,
+    colors: 5,
+    yellow: true,
+    repeats: false,
+    codes: 2,
+    detective: true,
+    clues: { min: 3, max: 3 },
+    name: 'A bigger detective door: four slots, five colors, and three shown guesses',
+  },
+  12: {
+    slots: 3,
+    colors: 4,
+    yellow: true,
+    repeats: true,
+    codes: 1,
+    maker: true,
+    swap: true,
+    name: 'Swap seats: she makes a code and marks a grown-up’s tries, then cracks the code they make (or plays it with the pet)',
+  },
 };
 
 export const LEVELS: BandLevels = {
@@ -113,11 +198,18 @@ export function ruledOut(plan: CodePlan, history: Guess[], slot: number): Set<nu
     g.stones.forEach((s, i) => {
       if (g.marks[i] === 'green') return;
       if (i === slot) out.add(s);
-      else if (plan.yellow && !plan.repeats && g.marks[i] === 'gray' && !g.stones.some((t, j) => t === s && g.marks[j] !== 'gray')) out.add(s);
+      else if (
+        plan.yellow &&
+        !plan.repeats &&
+        g.marks[i] === 'gray' &&
+        !g.stones.some((t, j) => t === s && g.marks[j] !== 'gray')
+      )
+        out.add(s);
     });
   }
   // A slot already solved rules out everything else.
-  for (const g of history) if (g.marks[slot] === 'green') for (let c = 0; c < plan.colors; c++) if (c !== g.stones[slot]) out.add(c);
+  for (const g of history)
+    if (g.marks[slot] === 'green') for (let c = 0; c < plan.colors; c++) if (c !== g.stones[slot]) out.add(c);
   return out;
 }
 
@@ -125,7 +217,8 @@ export function ruledOut(plan: CodePlan, history: Guess[], slot: number): Set<nu
 export const rowsThatFit = (doorY: number) => Math.max(1, Math.floor((doorY - 150 - 120) / 62) + 1);
 
 /** The tries she can still see: only these count when a stone ignores a clue, so a scrolled-away mark is never a miss. */
-export const visibleRows = (history: Guess[], fit: number) => history.slice(Math.max(0, history.length - fit));
+export const visibleRows = (history: Guess[], fit: number) =>
+  history.slice(Math.max(0, history.length - fit));
 
 /**
  * Slots where the new guess ignores an earlier clue: each counts as one miss. Pass only the rows
@@ -136,7 +229,8 @@ export function ignoredClues(plan: CodePlan, history: Guess[], guess: number[]):
 }
 
 /** *One slot*: the tray stones a gray has crossed out on this door (tapping one is the level's only miss). */
-export const crossedOut = (plan: CodePlan, history: Guess[]): Set<number> => (plan.oneSlot ? ruledOut(plan, history, 0) : new Set());
+export const crossedOut = (plan: CodePlan, history: Guess[]): Set<number> =>
+  plan.oneSlot ? ruledOut(plan, history, 0) : new Set();
 
 /** Every code still possible after these guesses. */
 export function candidates(plan: CodePlan, history: Guess[]): number[][] {
@@ -144,7 +238,8 @@ export function candidates(plan: CodePlan, history: Guess[]): number[][] {
   const build = (prefix: number[]) => {
     if (prefix.length === plan.slots) {
       if (!plan.repeats && new Set(prefix).size < plan.slots) return;
-      if (history.every((h) => score(prefix, h.stones, plan.yellow).join() === h.marks.join())) out.push(prefix);
+      if (history.every((h) => score(prefix, h.stones, plan.yellow).join() === h.marks.join()))
+        out.push(prefix);
       return;
     }
     for (let c = 0; c < plan.colors; c++) build([...prefix, c]);
@@ -166,7 +261,12 @@ export function suggestion(plan: CodePlan, history: Guess[], code: number[]): nu
  * What a player who reasons from the clues does next (the couch bot and the how-to card's ghost finger): put the next
  * stone of the first code that fits every mark so far into the first empty slot, and turn the key once every slot is full.
  */
-export function nextMove(plan: CodePlan, history: Guess[], code: number[], guess: readonly (number | null)[]): { stone: number } | { key: true } {
+export function nextMove(
+  plan: CodePlan,
+  history: Guess[],
+  code: number[],
+  guess: readonly (number | null)[],
+): { stone: number } | { key: true } {
   const empty = guess.indexOf(null);
   if (empty < 0) return { key: true };
   return { stone: (candidates(plan, history)[0] ?? code)[empty] };
@@ -177,7 +277,12 @@ export function solverTries(plan: CodePlan, code: number[]): number {
   const history: Guess[] = [];
   for (;;) {
     const guess: (number | null)[] = Array(plan.slots).fill(null);
-    for (let move = nextMove(plan, history, code, guess); 'stone' in move; move = nextMove(plan, history, code, guess)) guess[guess.indexOf(null)] = move.stone;
+    for (
+      let move = nextMove(plan, history, code, guess);
+      'stone' in move;
+      move = nextMove(plan, history, code, guess)
+    )
+      guess[guess.indexOf(null)] = move.stone;
     const marks = score(code, guess as number[], plan.yellow);
     history.push({ stones: guess as number[], marks });
     if (marks.every((m) => m === 'green')) return history.length;
@@ -201,7 +306,10 @@ export function detectiveDoor(plan: CodePlan, rng: Rng): { code: number[]; histo
         if (history.some((h) => h.stones.join() === stones.join())) continue;
         const clue = { stones, marks: score(code, stones, plan.yellow) };
         const count = candidates(plan, [...history, clue]).length;
-        if (count < remaining) { best = clue; remaining = count; }
+        if (count < remaining) {
+          best = clue;
+          remaining = count;
+        }
       }
       if (!best) break;
       history.push(best);
@@ -230,7 +338,8 @@ export function doorKinds(rng: Rng, count: number): DoorKind[] {
 }
 
 /** *Be the door*: a code she might make (any stones, repeats allowed); the how-to card's ghost finger makes this one. */
-export const madeCode = (plan: CodePlan, rng: Rng): number[] => Array.from({ length: plan.slots }, () => rng.int(0, plan.colors - 1));
+export const madeCode = (plan: CodePlan, rng: Rng): number[] =>
+  Array.from({ length: plan.slots }, () => rng.int(0, plan.colors - 1));
 
 /** The pet's next try on *Be the door*: a seeded pick among the codes that fit every mark she has given so far. */
 export function petTry(plan: CodePlan, history: Guess[], rng: Rng): number[] {
@@ -239,7 +348,8 @@ export function petTry(plan: CodePlan, history: Guess[], rng: Rng): number[] {
 }
 
 /** Tapping a mark disc: blank, then gray, yellow, green and round again. */
-export const nextMark = (mark: Mark | null): Mark => (mark === 'gray' ? 'yellow' : mark === 'yellow' ? 'green' : 'gray');
+export const nextMark = (mark: Mark | null): Mark =>
+  mark === 'gray' ? 'yellow' : mark === 'yellow' ? 'green' : 'gray';
 
 /** Slots where her mark is not the one the pet's stone earns (`score`); each Show with any is one miss. Her code is never wrong. */
 export function wrongMarks(code: number[], stones: number[], marks: readonly (Mark | null)[]): number[] {
@@ -269,7 +379,10 @@ export function demoCode(plan: CodePlan, rng: Rng): number[] {
   for (let k = 0; k < 12; k++) {
     const code = madeCode(plan, draw);
     const tries = petTries(plan, code, rng.clone());
-    if (tries < fewest) { best = code; fewest = tries; }
+    if (tries < fewest) {
+      best = code;
+      fewest = tries;
+    }
   }
   return best;
 }
@@ -279,7 +392,11 @@ export function demoCode(plan: CodePlan, rng: Rng): number[] {
  * second person is supported completion: never smooth, so a grown-up's easy code or play cannot step her up. A struggle
  * still reads her own misses. Playing with the pet (*Just me*) passes her result unchanged.
  */
-export function swapResult(twoSeats: boolean, misses: number, hints: number): { misses: number; hints: number } {
+export function swapResult(
+  twoSeats: boolean,
+  misses: number,
+  hints: number,
+): { misses: number; hints: number } {
   return { misses, hints: twoSeats ? Math.max(hints, 1) : hints };
 }
 
@@ -294,7 +411,10 @@ export function quickCode(plan: CodePlan, rng: Rng, salt: number): number[] {
   for (let k = 0; k < 12; k++) {
     const code = madeCode(plan, draw);
     const tries = solverTries(plan, code);
-    if (tries < fewest) { best = code; fewest = tries; }
+    if (tries < fewest) {
+      best = code;
+      fewest = tries;
+    }
   }
   return best;
 }

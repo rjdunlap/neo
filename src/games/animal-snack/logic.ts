@@ -39,7 +39,15 @@ export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(
 export type Food = 'hay' | 'grass' | 'bone' | 'fish' | 'seeds' | 'apple' | 'honey';
 
 /** Food names in ordinary speech, and the countable thing drawn on the blanket. */
-export const FOOD_WORDS: Record<Food, string> = { hay: 'hay', grass: 'grass', bone: 'bones', fish: 'fish', seeds: 'seeds', apple: 'apples', honey: 'honey' };
+export const FOOD_WORDS: Record<Food, string> = {
+  hay: 'hay',
+  grass: 'grass',
+  bone: 'bones',
+  fish: 'fish',
+  seeds: 'seeds',
+  apple: 'apples',
+  honey: 'honey',
+};
 export const FOOD_UNITS: Record<Food, { one: string; many: string }> = {
   hay: { one: 'bale of hay', many: 'bales of hay' },
   grass: { one: 'tuft of grass', many: 'tufts of grass' },
@@ -57,7 +65,10 @@ export function nearestFriend(points: { x: number; y: number }[], x: number, y: 
   let distance = 114;
   points.forEach((p, i) => {
     const d = Math.hypot(p.x - x, p.y - y);
-    if (d <= distance) { closest = i; distance = d; }
+    if (d <= distance) {
+      closest = i;
+      distance = d;
+    }
   });
   return closest;
 }
@@ -86,10 +97,54 @@ export interface SceneSpec {
   spot: Spot;
 }
 export const SCENE_SPECS: Record<Scene, SceneSpec> = {
-  meadow: { name: 'the meadow', backdrop: { sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0x9edb86], horizon: 0.5, clouds: 2, sun: true, seed: 73 }, spot: 'blanket' },
-  orchard: { name: 'the orchard', backdrop: { sky: [0xa4dcf2, 0xf6f9e4], hills: [0xbfe49c, 0x8fcf6c], horizon: 0.5, clouds: 1, sun: true, seed: 41 }, spot: 'trough' },
-  garden: { name: 'the kitchen garden', backdrop: { sky: [0xb3e0f7, 0xf0f8ff], hills: [0xcde6a6, 0xa6d27a], horizon: 0.5, clouds: 2, sun: true, seed: 58 }, spot: 'tub' },
-  dusk: { name: 'the yard at dusk', backdrop: { sky: [0x3d4a8c, 0xf4a96e], hills: [0x6c7f6c, 0x4b5f4d], horizon: 0.5, clouds: 1, sun: false, seed: 19 }, spot: 'bowl' },
+  meadow: {
+    name: 'the meadow',
+    backdrop: {
+      sky: [0x8fd3f7, 0xe9f7ff],
+      hills: [0xc8ecb0, 0x9edb86],
+      horizon: 0.5,
+      clouds: 2,
+      sun: true,
+      seed: 73,
+    },
+    spot: 'blanket',
+  },
+  orchard: {
+    name: 'the orchard',
+    backdrop: {
+      sky: [0xa4dcf2, 0xf6f9e4],
+      hills: [0xbfe49c, 0x8fcf6c],
+      horizon: 0.5,
+      clouds: 1,
+      sun: true,
+      seed: 41,
+    },
+    spot: 'trough',
+  },
+  garden: {
+    name: 'the kitchen garden',
+    backdrop: {
+      sky: [0xb3e0f7, 0xf0f8ff],
+      hills: [0xcde6a6, 0xa6d27a],
+      horizon: 0.5,
+      clouds: 2,
+      sun: true,
+      seed: 58,
+    },
+    spot: 'tub',
+  },
+  dusk: {
+    name: 'the yard at dusk',
+    backdrop: {
+      sky: [0x3d4a8c, 0xf4a96e],
+      hills: [0x6c7f6c, 0x4b5f4d],
+      horizon: 0.5,
+      clouds: 1,
+      sun: false,
+      seed: 19,
+    },
+    spot: 'bowl',
+  },
 };
 /** Picked after the rounds are dealt, so a seed's animals and questions are the same in every scene. */
 export const sceneFor = (rng: Rng): Scene => rng.pick(SCENES);
@@ -138,20 +193,50 @@ export function farBarnAt(scene: Scene, w: number, h: number, animals: number): 
   return { x: (best[0] + best[1]) / 2, base, height };
 }
 
-
 /** Who eats what: one food each, so every question has one answer. */
-export const FAVORITE: Partial<Record<CritterName, Food>> = { cow: 'hay', bunny: 'grass', dog: 'bone', cat: 'fish', duck: 'seeds', pig: 'apple', bear: 'honey' };
+export const FAVORITE: Partial<Record<CritterName, Food>> = {
+  cow: 'hay',
+  bunny: 'grass',
+  dog: 'bone',
+  cat: 'fish',
+  duck: 'seeds',
+  pig: 'apple',
+  bear: 'honey',
+};
 export const ANIMALS = Object.keys(FAVORITE) as CritterName[];
 /** How each food sounds when bitten: a crunch, a swish, a gnaw, a gulp, pecks or a lick. */
-export const BITE: Record<Food, BiteKind> = { grass: 'swish', apple: 'crunch', hay: 'swish', bone: 'gnaw', fish: 'gulp', seeds: 'peck', honey: 'lick' };
+export const BITE: Record<Food, BiteKind> = {
+  grass: 'swish',
+  apple: 'crunch',
+  hay: 'swish',
+  bone: 'gnaw',
+  fish: 'gulp',
+  seeds: 'peck',
+  honey: 'lick',
+};
 /** Bites per snack, and the size left after each one: the last leaves nothing. */
 export const BITE_SIZES = [0.7, 0.4, 0] as const;
 export const eaterOf = (food: Food) => ANIMALS.find((a) => FAVORITE[a] === food)!;
 
 /** Each animal's own voice. Every animal present has a different one, so a sound names exactly one animal. */
-export const VOICE: Partial<Record<CritterName, AnimalSound>> = { cow: 'moo', bunny: 'hop', dog: 'woof', cat: 'meow', duck: 'quack', pig: 'oink', bear: 'growl' };
+export const VOICE: Partial<Record<CritterName, AnimalSound>> = {
+  cow: 'moo',
+  bunny: 'hop',
+  dog: 'woof',
+  cat: 'meow',
+  duck: 'quack',
+  pig: 'oink',
+  bear: 'growl',
+};
 /** What the voice is called aloud. The bunny's hop is no sound she could name, so it is never the clue. */
-export const SOUND_WORDS: Partial<Record<CritterName, string>> = { cow: 'moo', dog: 'woof', cat: 'meow', duck: 'quack', pig: 'oink', bear: 'grr' };
+export const SOUND_WORDS: Partial<Record<CritterName, string>> = {
+  cow: 'moo',
+  dog: 'woof',
+  cat: 'meow',
+  duck: 'quack',
+  pig: 'oink',
+  bear: 'grr',
+};
 export const SOUNDERS = ANIMALS.filter((a) => SOUND_WORDS[a]);
 
 export interface SnackRound {

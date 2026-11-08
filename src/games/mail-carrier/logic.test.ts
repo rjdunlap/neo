@@ -1,13 +1,67 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { keyMatches, COMPARE_EDGES, comparisonRoute, compareCounts, clueMatches, clueNode, makeClues, sideColumns, sideLayout, parity, houseLooks, mailboxColor, MAILBOX_COLORS, NEAR, mapNode, mapX, NEIGHBORS, WOODS_NEIGHBORS, addressedHouse, checkStop, countedAloud, countsAloud, INVITE_AFTER, nearestHouse, planFor, shouldInvite, HELPER, HELPERS, TOOLS, helpFixed, helpWrong, letterShows, mailboxShows, teenSpoken, HOUSE_NODES, isMapMode, makeLetters, makeStreet, makeTrips, makeWoods, MAP_EDGES, MAP_NODES, PLANS, POST_OFFICE, route, routeChoices, routeLength, shorterRoutes, SHORTER_EDGES, SIGNS, walk, woodsTouch } from './logic';
+import {
+  keyMatches,
+  COMPARE_EDGES,
+  comparisonRoute,
+  compareCounts,
+  clueMatches,
+  clueNode,
+  makeClues,
+  sideColumns,
+  sideLayout,
+  parity,
+  houseLooks,
+  mailboxColor,
+  MAILBOX_COLORS,
+  NEAR,
+  mapNode,
+  mapX,
+  NEIGHBORS,
+  WOODS_NEIGHBORS,
+  addressedHouse,
+  checkStop,
+  countedAloud,
+  countsAloud,
+  INVITE_AFTER,
+  nearestHouse,
+  planFor,
+  shouldInvite,
+  HELPER,
+  HELPERS,
+  TOOLS,
+  helpFixed,
+  helpWrong,
+  letterShows,
+  mailboxShows,
+  teenSpoken,
+  HOUSE_NODES,
+  isMapMode,
+  makeLetters,
+  makeStreet,
+  makeTrips,
+  makeWoods,
+  MAP_EDGES,
+  MAP_NODES,
+  PLANS,
+  POST_OFFICE,
+  route,
+  routeChoices,
+  routeLength,
+  shorterRoutes,
+  SHORTER_EDGES,
+  SIGNS,
+  walk,
+  woodsTouch,
+} from './logic';
 
 describe('Mail Carrier', () => {
   it('counts the dots aloud at levels 3 and 5, up to the number delivered', () => {
     expect([1, 2, 3, 4, 5].filter((l) => countsAloud(planFor(l).mode))).toEqual([3, 5]);
     expect(countedAloud(4)).toBe('One, two, three, four.');
     expect(countedAloud(1)).toBe('One.');
-    for (const level of [3, 5]) expect(countedAloud(planFor(level).top).split(', ')).toHaveLength(planFor(level).top);
+    for (const level of [3, 5])
+      expect(countedAloud(planFor(level).top).split(', ')).toHaveLength(planFor(level).top);
   });
 
   it('invites only at level 1, after six quiet seconds while a letter waits', () => {
@@ -16,7 +70,8 @@ describe('Mail Carrier', () => {
     expect(shouldInvite('drop', 5.9, false, false)).toBe(false);
     expect(shouldInvite('drop', 9, true, false)).toBe(false);
     expect(shouldInvite('drop', 9, false, true)).toBe(false);
-    for (const mode of ['color', 'dots', 'numeral', 'count'] as const) expect(shouldInvite(mode, 60, false, false)).toBe(false);
+    for (const mode of ['color', 'dots', 'numeral', 'count'] as const)
+      expect(shouldInvite(mode, 60, false, false)).toBe(false);
   });
 
   it('waves the mailbox nearest a touch off the houses', () => {
@@ -52,7 +107,8 @@ describe('Mail Carrier in Wonder Woods', () => {
 
   it('has a connected map where every walk follows the paths', () => {
     expect(mapPlans.map((p) => p.mode)).toEqual(['map', 'route', 'shorter', 'clue', 'compare', 'key']);
-    const edge = (a: number, b: number) => MAP_EDGES.some(([x, y]) => (x === a && y === b) || (x === b && y === a));
+    const edge = (a: number, b: number) =>
+      MAP_EDGES.some(([x, y]) => (x === a && y === b) || (x === b && y === a));
     for (const h of HOUSE_NODES) {
       const w = walk(POST_OFFICE, h);
       expect(w[0]).toBe(POST_OFFICE);
@@ -62,18 +118,24 @@ describe('Mail Carrier in Wonder Woods', () => {
       expect(w.slice(1, -1).some((n) => HOUSE_NODES.includes(n))).toBe(false);
     }
     // Houses stand far enough apart on the map for big taps.
-    for (const a of HOUSE_NODES) for (const b of HOUSE_NODES) if (a < b) expect(Math.hypot(MAP_NODES[a].x - MAP_NODES[b].x, MAP_NODES[a].y - MAP_NODES[b].y)).toBeGreaterThan(0.25);
+    for (const a of HOUSE_NODES)
+      for (const b of HOUSE_NODES)
+        if (a < b)
+          expect(
+            Math.hypot(MAP_NODES[a].x - MAP_NODES[b].x, MAP_NODES[a].y - MAP_NODES[b].y),
+          ).toBeGreaterThan(0.25);
   });
 
   it('routes visit both stops in the planned order', () => {
-    for (const a of HOUSE_NODES.keys()) for (const b of HOUSE_NODES.keys()) {
-      if (a === b) continue;
-      const r = route([a, b]);
-      expect(r[0]).toBe(POST_OFFICE);
-      expect(r.at(-1)).toBe(HOUSE_NODES[b]);
-      expect(r.indexOf(HOUSE_NODES[a])).toBeGreaterThan(0);
-      expect(r.indexOf(HOUSE_NODES[a])).toBeLessThan(r.length - 1);
-    }
+    for (const a of HOUSE_NODES.keys())
+      for (const b of HOUSE_NODES.keys()) {
+        if (a === b) continue;
+        const r = route([a, b]);
+        expect(r[0]).toBe(POST_OFFICE);
+        expect(r.at(-1)).toBe(HOUSE_NODES[b]);
+        expect(r.indexOf(HOUSE_NODES[a])).toBeGreaterThan(0);
+        expect(r.indexOf(HOUSE_NODES[a])).toBeLessThan(r.length - 1);
+      }
   });
 
   it('gives every house a different neighbor and sign, and sensible trips', () => {
@@ -100,7 +162,8 @@ describe('Mail Carrier in Wonder Woods', () => {
   });
 
   it('accepts all six three-stop orders, with real differences on the loop and a counted return', () => {
-    const permutations = (t: number[]) => t.flatMap((a) => t.filter((b) => b !== a).map((b) => [a, b, t.find((c) => c !== a && c !== b)!]));
+    const permutations = (t: number[]) =>
+      t.flatMap((a) => t.filter((b) => b !== a).map((b) => [a, b, t.find((c) => c !== a && c !== b)!]));
     for (let seed = 1; seed <= 300; seed++) {
       const trips = makeTrips(planFor(14), new Rng(seed));
       expect(trips).toHaveLength(2);
@@ -113,13 +176,26 @@ describe('Mail Carrier in Wonder Woods', () => {
             planned.push(h);
           }
           expect(checkStop(trip, planned, order[0], true)).toBe('planned');
-          expect(checkStop(trip, [], [0, 1, 2, 3, 4].find((h) => !trip.includes(h))!, true)).toBe('nobody');
+          expect(
+            checkStop(
+              trip,
+              [],
+              [0, 1, 2, 3, 4].find((h) => !trip.includes(h))!,
+              true,
+            ),
+          ).toBe('nobody');
           expect(woodsTouch('compare', trip, planned)).toBe('go');
           const path = comparisonRoute(order);
           expect(path[0]).toBe(POST_OFFICE);
           expect(path.at(-1)).toBe(POST_OFFICE);
           expect(path.filter((n) => HOUSE_NODES.includes(n))).toEqual(order.map((h) => HOUSE_NODES[h]));
-          path.slice(1).forEach((n, i) => expect(COMPARE_EDGES.some(([a, b]) => (a === path[i] && b === n) || (a === n && b === path[i]))).toBe(true));
+          path
+            .slice(1)
+            .forEach((n, i) =>
+              expect(
+                COMPARE_EDGES.some(([a, b]) => (a === path[i] && b === n) || (a === n && b === path[i])),
+              ).toBe(true),
+            );
           const count = routeLength(path, COMPARE_EDGES);
           expect(count).toBe(path.length - 1); // One drawn stone per edge, including repeated edges.
           lengths.push(count);
@@ -158,7 +234,12 @@ describe('Mail Carrier in Wonder Woods', () => {
         expect(routeLength(long) - routeLength(short)).toBeGreaterThanOrEqual(2);
         for (const path of [short, long]) {
           expect(new Set(path).size).toBe(path.length);
-          for (let i = 1; i < path.length; i++) expect(SHORTER_EDGES.some(([a, b]) => (a === path[i - 1] && b === path[i]) || (b === path[i - 1] && a === path[i]))).toBe(true);
+          for (let i = 1; i < path.length; i++)
+            expect(
+              SHORTER_EDGES.some(
+                ([a, b]) => (a === path[i - 1] && b === path[i]) || (b === path[i - 1] && a === path[i]),
+              ),
+            ).toBe(true);
         }
       }
     }
@@ -234,7 +315,9 @@ describe('Mail Carrier street and map variety', () => {
         expect(color).not.toBe('white');
         expect(street.map((h) => h.door)).not.toContain(color);
         // When some colour is far from every door, the mailbox takes one of those.
-        const anyFar = MAILBOX_COLORS.some((c) => !street.some((h) => h.door === c || NEAR[h.door]?.includes(c)));
+        const anyFar = MAILBOX_COLORS.some(
+          (c) => !street.some((h) => h.door === c || NEAR[h.door]?.includes(c)),
+        );
         if (anyFar) expect(street.some((h) => NEAR[h.door]?.includes(color))).toBe(false);
       }
     }
@@ -265,20 +348,27 @@ describe('Mail Carrier street and map variety', () => {
       expect(m.x).toBeCloseTo(mapX(MAP_NODES[n].x, true));
       expect(mapNode(n, false)).toEqual(MAP_NODES[n]);
     });
-    const len = (a: number, b: number, mirrored: boolean) => Math.hypot(mapNode(a, mirrored).x - mapNode(b, mirrored).x, mapNode(a, mirrored).y - mapNode(b, mirrored).y);
+    const len = (a: number, b: number, mirrored: boolean) =>
+      Math.hypot(
+        mapNode(a, mirrored).x - mapNode(b, mirrored).x,
+        mapNode(a, mirrored).y - mapNode(b, mirrored).y,
+      );
     for (const [a, b] of SHORTER_EDGES) expect(len(a, b, true)).toBeCloseTo(len(a, b, false));
   });
 
   it('the mirror swaps left and right: the houses stand in reverse order across the map', () => {
     const order = (m: boolean) => [...HOUSE_NODES].sort((a, b) => mapNode(a, m).x - mapNode(b, m).x);
     expect(order(true)).toEqual(order(false).reverse());
-    for (const [a, b] of MAP_EDGES) for (const m of [false, true]) expect(mapNode(a, m)).not.toEqual(mapNode(b, m));
+    for (const [a, b] of MAP_EDGES)
+      for (const m of [false, true]) expect(mapNode(a, m)).not.toEqual(mapNode(b, m));
   });
 });
 
 describe('Mail Carrier levels 9, 10 and 12', () => {
   it('finds each plan by its level, leaving the woods levels where they were', () => {
-    expect([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12].map((l) => planFor(l).level)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12]);
+    expect([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12].map((l) => planFor(l).level)).toEqual([
+      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12,
+    ]);
     expect(planFor(6).mode).toBe('map');
     expect(planFor(9).mode).toBe('help');
     expect(planFor(10).mode).toBe('tool');
@@ -371,67 +461,84 @@ describe('Mail Carrier levels 9, 10 and 12', () => {
   });
 });
 
-
 describe('Mail Carrier spoken clues and two street sides', () => {
   it('300 seeds in both orientations: four different clue shapes, each naming exactly one drawn house', () => {
-    for (let seed = 1; seed <= 300; seed++) for (const mirrored of [false, true]) {
-      const rng = new Rng(seed), woods = makeWoods(rng), clues = makeClues(woods, mirrored, rng);
-      expect(clues).toHaveLength(4);
-      expect(new Set(clues.map((c) => c.kind)).size).toBe(4);
-      const p = (i: number) => clueNode(HOUSE_NODES[i], mirrored);
-      for (const clue of clues) {
-        expect(clueMatches(clue, woods, mirrored)).toEqual([clue.house]);
-        expect(woods[clue.house]).toBeDefined();
-        for (const sign of [clue.a, clue.b].filter(Boolean)) expect(SIGNS).toContain(sign);
-        // Independent geometry assertions, rather than trusting the generator's resolver.
-        if (clue.kind === 'between') {
-          const a = p(woods.findIndex((h) => h.sign === clue.a)), b = p(woods.findIndex((h) => h.sign === clue.b));
-          expect(p(clue.house).x).toBeGreaterThan(Math.min(a.x, b.x));
-          expect(p(clue.house).x).toBeLessThan(Math.max(a.x, b.x));
-          expect(p(clue.house).y).toBeLessThan(0.25);
-        } else if (clue.kind === 'left') {
-          const a = p(woods.findIndex((h) => h.sign === clue.a));
-          expect(p(clue.house).x).toBeLessThan(a.x);
-          expect(woods.filter((_, i) => p(i).y < 0.25 && p(i).x > p(clue.house).x && p(i).x < a.x)).toHaveLength(0);
-        } else {
-          const office = clueNode(0, mirrored), d = (i: number) => Math.hypot(p(i).x - office.x, p(i).y - office.y);
-          for (const i of woods.keys()) if (i !== clue.house) {
-            const margin = clue.kind === 'nearest' ? d(i) - d(clue.house) : d(clue.house) - d(i);
-            expect(margin).toBeGreaterThan(0.08);
+    for (let seed = 1; seed <= 300; seed++)
+      for (const mirrored of [false, true]) {
+        const rng = new Rng(seed),
+          woods = makeWoods(rng),
+          clues = makeClues(woods, mirrored, rng);
+        expect(clues).toHaveLength(4);
+        expect(new Set(clues.map((c) => c.kind)).size).toBe(4);
+        const p = (i: number) => clueNode(HOUSE_NODES[i], mirrored);
+        for (const clue of clues) {
+          expect(clueMatches(clue, woods, mirrored)).toEqual([clue.house]);
+          expect(woods[clue.house]).toBeDefined();
+          for (const sign of [clue.a, clue.b].filter(Boolean)) expect(SIGNS).toContain(sign);
+          // Independent geometry assertions, rather than trusting the generator's resolver.
+          if (clue.kind === 'between') {
+            const a = p(woods.findIndex((h) => h.sign === clue.a)),
+              b = p(woods.findIndex((h) => h.sign === clue.b));
+            expect(p(clue.house).x).toBeGreaterThan(Math.min(a.x, b.x));
+            expect(p(clue.house).x).toBeLessThan(Math.max(a.x, b.x));
+            expect(p(clue.house).y).toBeLessThan(0.25);
+          } else if (clue.kind === 'left') {
+            const a = p(woods.findIndex((h) => h.sign === clue.a));
+            expect(p(clue.house).x).toBeLessThan(a.x);
+            expect(
+              woods.filter((_, i) => p(i).y < 0.25 && p(i).x > p(clue.house).x && p(i).x < a.x),
+            ).toHaveLength(0);
+          } else {
+            const office = clueNode(0, mirrored),
+              d = (i: number) => Math.hypot(p(i).x - office.x, p(i).y - office.y);
+            for (const i of woods.keys())
+              if (i !== clue.house) {
+                const margin = clue.kind === 'nearest' ? d(i) - d(clue.house) : d(clue.house) - d(i);
+                expect(margin).toBeGreaterThan(0.08);
+              }
           }
+          expect(woodsTouch('clue', [clue.house], [])).toEqual({ house: clue.house });
         }
-        expect(woodsTouch('clue', [clue.house], [])).toEqual({ house: clue.house });
       }
-    }
   });
 
   it('300 seeds: parity determines the side, each side rises, every letter has one house, both number runs occur', () => {
     const starts = new Set<number>();
-    for (let seed = 1; seed <= 300; seed++) for (const columns of [3, 4]) {
-      const rng = new Rng(seed), plan = { ...planFor(11), houses: columns * 2, top: columns === 3 ? 12 : 16 };
-      const street = makeStreet(plan, rng);
-      starts.add(street[0].number);
-      const nums = street.map((h) => h.number);
-      expect(new Set(nums).size).toBe(columns * 2);
-      for (let i = 0; i < street.length; i++) {
-        expect(parity(nums[i])).toBe(i < columns ? 'odd' : 'even');
-        if (i % columns) expect(nums[i] - nums[i - 1]).toBe(2);
+    for (let seed = 1; seed <= 300; seed++)
+      for (const columns of [3, 4]) {
+        const rng = new Rng(seed),
+          plan = { ...planFor(11), houses: columns * 2, top: columns === 3 ? 12 : 16 };
+        const street = makeStreet(plan, rng);
+        starts.add(street[0].number);
+        const nums = street.map((h) => h.number);
+        expect(new Set(nums).size).toBe(columns * 2);
+        for (let i = 0; i < street.length; i++) {
+          expect(parity(nums[i])).toBe(i < columns ? 'odd' : 'even');
+          if (i % columns) expect(nums[i] - nums[i - 1]).toBe(2);
+        }
+        expect(Math.max(...nums)).toBeLessThanOrEqual(plan.top);
+        for (const h of makeLetters(plan, street, rng))
+          expect(nums.filter((n) => n === street[h].number)).toHaveLength(1);
       }
-      expect(Math.max(...nums)).toBeLessThanOrEqual(plan.top);
-      for (const h of makeLetters(plan, street, rng)) expect(nums.filter((n) => n === street[h].number)).toHaveLength(1);
-    }
     expect(starts.has(1) && starts.has(9) && starts.has(7)).toBe(true);
   });
 
   it('keeps 176-unit targets apart in landscape and portrait; fallback uses three houses, never smaller targets', () => {
-    for (const [w, h] of [[1024, 768], [1024, 1365], [1365, 768], [768, 1024]]) {
-      const columns = sideColumns(w), points = sideLayout(w, h, columns * 2);
+    for (const [w, h] of [
+      [1024, 768],
+      [1024, 1365],
+      [1365, 768],
+      [768, 1024],
+    ]) {
+      const columns = sideColumns(w),
+        points = sideLayout(w, h, columns * 2);
       expect(columns).toBe(w === 768 ? 3 : 4);
       for (const a of points) {
         expect(220 * a.scale).toBeGreaterThanOrEqual(100);
         expect(a.x - 110 * a.scale).toBeGreaterThanOrEqual(0);
         expect(a.x + 110 * a.scale).toBeLessThanOrEqual(w);
-        for (const b of points) if (a !== b) expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThanOrEqual(176);
+        for (const b of points)
+          if (a !== b) expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThanOrEqual(176);
       }
     }
   });
@@ -441,10 +548,11 @@ it('constructs exactly the sign-to-neighbour key before two distinct deliveries'
   const plan = planFor(15);
   expect(plan.mode).toBe('key');
   for (let seed = 1; seed <= 300; seed++) {
-    const rng = new Rng(seed), woods = makeWoods(rng);
+    const rng = new Rng(seed),
+      woods = makeWoods(rng);
     const filled = new Map();
     for (const sign of SIGNS) {
-      const matches = woods.flatMap((_, i) => keyMatches(woods, sign, i) ? [i] : []);
+      const matches = woods.flatMap((_, i) => (keyMatches(woods, sign, i) ? [i] : []));
       expect(matches).toHaveLength(1);
       const house = matches[0];
       filled.set(sign, woods[house].resident);

@@ -18,13 +18,29 @@ export interface ClockPlan {
 }
 
 export const PLANS: ClockPlan[] = [
-  { mode: 'hour', rounds: 4, name: "Turn the short hand to the hour: \"3 o'clock\" (the long hand stays at 12)" },
+  {
+    mode: 'hour',
+    rounds: 4,
+    name: 'Turn the short hand to the hour: "3 o\'clock" (the long hand stays at 12)',
+  },
   { mode: 'oclock', rounds: 4, name: "Set both hands for o'clock times" },
   { mode: 'half', rounds: 4, name: 'Half past: the long hand at 6, the short hand between two numbers' },
   { mode: 'quarter', rounds: 4, name: 'Quarter past and quarter to' },
-  { mode: 'read', rounds: 4, name: 'Match the clock to a pictured appointment with a visible, replayable time' },
-  { mode: 'later', rounds: 4, name: "One hour later: set the clock an hour after the time shown (o'clock and half past)" },
-  { mode: 'five', rounds: 4, name: 'Five-minute times: count by fives to set 3:25 (the long hand stops at any number)' },
+  {
+    mode: 'read',
+    rounds: 4,
+    name: 'Match the clock to a pictured appointment with a visible, replayable time',
+  },
+  {
+    mode: 'later',
+    rounds: 4,
+    name: "One hour later: set the clock an hour after the time shown (o'clock and half past)",
+  },
+  {
+    mode: 'five',
+    rounds: 4,
+    name: 'Five-minute times: count by fives to set 3:25 (the long hand stops at any number)',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -67,11 +83,22 @@ export interface Appointment {
 
 /** Existing pictures; none implies a correct time in a player's real routine. */
 export const EVENTS = ['breakfast', 'school', 'lunch', 'park', 'bath', 'bed'] as const;
-export const EVENT_WORDS: Record<string, string> = { breakfast: 'breakfast', school: 'school', lunch: 'lunch', park: 'the park', bath: 'a bath', bed: 'bed' };
+export const EVENT_WORDS: Record<string, string> = {
+  breakfast: 'breakfast',
+  school: 'school',
+  lunch: 'lunch',
+  park: 'the park',
+  bath: 'a bath',
+  bed: 'bed',
+};
 
 /** Both labels and replay describe the same appointment data used to judge the answer. */
 export function appointmentFor(appointment: Appointment) {
-  return { event: EVENT_WORDS[appointment.id], time: digital(appointment.time), speech: spoken(appointment.time) };
+  return {
+    event: EVENT_WORDS[appointment.id],
+    time: digital(appointment.time),
+    speech: spoken(appointment.time),
+  };
 }
 
 const toMinutes = (hour: number, minute: number) => ((hour % 12) * 60 + minute) % 720;
@@ -80,12 +107,23 @@ export function makeTasks(plan: ClockPlan, rng: Rng): ClockTask[] {
   const out: ClockTask[] = [];
   if (plan.mode === 'read') {
     // Start with an authored, visible example; every task supplies its own pretend plan.
-    const first: Appointment[] = [{ id: 'lunch', time: 0 }, { id: 'park', time: 180 }, { id: 'bath', time: 390 }];
+    const first: Appointment[] = [
+      { id: 'lunch', time: 0 },
+      { id: 'park', time: 180 },
+      { id: 'bath', time: 390 },
+    ];
     const times = Array.from({ length: 24 }, (_, i) => i * 30);
     for (let i = 0; i < plan.rounds; i++) {
-      const target = i === 0 ? rng.pick(first).time : rng.pick(times.filter((time) => !out.some((t) => t.time === time)));
+      const target =
+        i === 0 ? rng.pick(first).time : rng.pick(times.filter((time) => !out.some((t) => t.time === time)));
       const boardTimes = [target, ...rng.shuffle(times.filter((time) => time !== target)).slice(0, 2)];
-      const options = i === 0 ? first : rng.shuffle([...EVENTS]).slice(0, 3).map((id, j) => ({ id, time: boardTimes[j] }));
+      const options =
+        i === 0
+          ? first
+          : rng
+              .shuffle([...EVENTS])
+              .slice(0, 3)
+              .map((id, j) => ({ id, time: boardTimes[j] }));
       out.push({ time: target, options: rng.shuffle(options) });
     }
     return out;
@@ -98,9 +136,19 @@ export function makeTasks(plan: ClockPlan, rng: Rng): ClockTask[] {
     const wrapAt = wrapSlots.indexOf(out.length);
     const hour = plan.mode === 'later' && wrapAt >= 0 ? 11 + wrapAt : rng.int(1, 12);
     // Quarter levels show every quarter at least once, half levels mostly ask for half past.
-    const minute = plan.mode === 'five' ? FIVE_ASKED[(out.length * 2 + rng.int(0, 1)) % FIVE_ASKED.length] : plan.mode === 'quarter' ? minutes[(out.length + 1) % 4] : plan.mode === 'half' ? (out.length === halfSlot || rng.chance(0.75) ? 30 : 0) : rng.pick(minutes);
+    const minute =
+      plan.mode === 'five'
+        ? FIVE_ASKED[(out.length * 2 + rng.int(0, 1)) % FIVE_ASKED.length]
+        : plan.mode === 'quarter'
+          ? minutes[(out.length + 1) % 4]
+          : plan.mode === 'half'
+            ? out.length === halfSlot || rng.chance(0.75)
+              ? 30
+              : 0
+            : rng.pick(minutes);
     const shown = toMinutes(hour, minute);
-    const task: ClockTask = plan.mode === 'later' ? { time: (shown + 60) % 720, from: shown } : { time: shown };
+    const task: ClockTask =
+      plan.mode === 'later' ? { time: (shown + 60) % 720, from: shown } : { time: shown };
     if (out.some((t) => t.time === task.time)) continue;
     out.push(task);
   }
@@ -128,9 +176,28 @@ export function spoken(time: number): string {
   if (m === 30) return `half past ${h}`;
   if (m === 15) return `quarter past ${h}`;
   if (m === 45) return `quarter to ${next}`;
-  const words = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
+  const words = [
+    'zero',
+    'one',
+    'two',
+    'three',
+    'four',
+    'five',
+    'six',
+    'seven',
+    'eight',
+    'nine',
+    'ten',
+    'eleven',
+    'twelve',
+  ];
   const tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty'];
-  const minutes = m < 10 ? `oh ${words[m]}` : m === 10 ? 'ten' : `${tens[Math.floor(m / 10)]}${m % 10 ? ` ${words[m % 10]}` : ''}`;
+  const minutes =
+    m < 10
+      ? `oh ${words[m]}`
+      : m === 10
+        ? 'ten'
+        : `${tens[Math.floor(m / 10)]}${m % 10 ? ` ${words[m % 10]}` : ''}`;
   return `${words[h]} ${minutes}`;
 }
 
@@ -158,9 +225,13 @@ export function laterExample(task: ClockTask) {
   const from = task.from!;
   const hourStart = handsFor(from).hour;
   return {
-    from: digital(from), to: digital(task.time),
-    fromSpeech: spoken(from), toSpeech: spoken(task.time),
-    minute: from % 60, hourStart, hourEnd: hourStart + 5,
+    from: digital(from),
+    to: digital(task.time),
+    fromSpeech: spoken(from),
+    toSpeech: spoken(task.time),
+    minute: from % 60,
+    hourStart,
+    hourEnd: hourStart + 5,
   };
 }
 
@@ -172,7 +243,10 @@ export function fiveExample(task: ClockTask) {
 }
 
 /** The request stays visible; later tasks show the starting time, never the answer. */
-export function requestFor(mode: ClockMode, task: ClockTask): { heading: string; time: string; speech: string } {
+export function requestFor(
+  mode: ClockMode,
+  task: ClockTask,
+): { heading: string; time: string; speech: string } {
   const time = mode === 'later' ? task.from! : task.time;
   return {
     heading: mode === 'later' ? 'One hour after' : 'Set the clock to',

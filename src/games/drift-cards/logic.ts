@@ -40,12 +40,37 @@ export interface Plan {
 }
 
 export const PLANS: readonly Plan[] = [
-  { level: 1, mode: 'predict', name: 'Where will it wash up? Tap the beach each card reaches', cols: 5, rows: 4, boats: [0, 2, 4], split: false },
-  { level: 2, mode: 'send', name: 'Send it to a friend: pick the boat whose card reaches them', cols: 6, rows: 4, boats: [1, 3, 5], split: true },
-  { level: 3, mode: 'patch', name: 'Find the hidden current: pick the arrows under the fog that send every returned card where it was found', cols: 6, rows: 4, boats: [1, 4], split: true },
+  {
+    level: 1,
+    mode: 'predict',
+    name: 'Where will it wash up? Tap the beach each card reaches',
+    cols: 5,
+    rows: 4,
+    boats: [0, 2, 4],
+    split: false,
+  },
+  {
+    level: 2,
+    mode: 'send',
+    name: 'Send it to a friend: pick the boat whose card reaches them',
+    cols: 6,
+    rows: 4,
+    boats: [1, 3, 5],
+    split: true,
+  },
+  {
+    level: 3,
+    mode: 'patch',
+    name: 'Find the hidden current: pick the arrows under the fog that send every returned card where it was found',
+    cols: 6,
+    rows: 4,
+    boats: [1, 4],
+    split: true,
+  },
 ];
 
-export const dcPlan = (level: number): Plan => PLANS[Math.max(1, Math.min(PLANS.length, Math.round(level))) - 1];
+export const dcPlan = (level: number): Plan =>
+  PLANS[Math.max(1, Math.min(PLANS.length, Math.round(level))) - 1];
 
 export const BAND_LEVELS: BandLevels = {
   school: { min: 1, max: 3 },
@@ -56,7 +81,8 @@ export const MAX_PATH = 10;
 export const CARDS = 3;
 export const REQUESTS = 3;
 
-export const beachesFor = (split: boolean): readonly Beach[] => (split ? ['W', 'SW', 'SE', 'E'] : ['W', 'S', 'E']);
+export const beachesFor = (split: boolean): readonly Beach[] =>
+  split ? ['W', 'SW', 'SE', 'E'] : ['W', 'S', 'E'];
 /** Order round the coast, west to east along the bottom. */
 export const COAST: Record<Beach, number> = { W: 0, S: 1, SW: 1, SE: 2, E: 3 };
 
@@ -66,11 +92,16 @@ const ARROW: Record<string, Dir> = { '→': 'e', '↓': 's', '←': 'w' };
 
 /** Arrows written row by row, top first (→ east, ↓ south, ← west), as in the definition. */
 export function parseSea(rows: readonly string[], split: boolean): Sea {
-  const cells = rows.map((row) => row.split(/\s+/).filter(Boolean).map((a) => {
-    const d = ARROW[a];
-    if (!d) throw new Error(`not an arrow: ${a}`);
-    return d;
-  }));
+  const cells = rows.map((row) =>
+    row
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((a) => {
+        const d = ARROW[a];
+        if (!d) throw new Error(`not an arrow: ${a}`);
+        return d;
+      }),
+  );
   return { cols: cells[0].length, rows: cells.length, cells, split };
 }
 
@@ -114,12 +145,18 @@ export const drift = (sea: Sea, col: number): Drift => driftFrom(sea, { r: 0, c:
 export const predict = (sea: Sea, col: number, beach: Beach) => drift(sea, col).beach === beach;
 
 /** Level 2: the boats whose card reaches `beach`. Any of them is right. */
-export const boatsFor = (sea: Sea, boats: readonly number[], beach: Beach) => boats.filter((b) => drift(sea, b).beach === beach);
+export const boatsFor = (sea: Sea, boats: readonly number[], beach: Beach) =>
+  boats.filter((b) => drift(sea, b).beach === beach);
 
 /** The free trace and the hint: the current at a cell and the cell it leads to (null when it leaves the sea). */
 export function nextStep(sea: Sea, cell: Cell): { dir: Dir; next: Cell | null } {
   const dir = sea.cells[cell.r][cell.c];
-  const next = dir === 'e' ? { r: cell.r, c: cell.c + 1 } : dir === 'w' ? { r: cell.r, c: cell.c - 1 } : { r: cell.r + 1, c: cell.c };
+  const next =
+    dir === 'e'
+      ? { r: cell.r, c: cell.c + 1 }
+      : dir === 'w'
+        ? { r: cell.r, c: cell.c - 1 }
+        : { r: cell.r + 1, c: cell.c };
   const inside = next.r < sea.rows && next.c >= 0 && next.c < sea.cols;
   return { dir, next: inside ? next : null };
 }
@@ -141,9 +178,11 @@ export const sideways = (sea: Sea, d: Drift) => d.path.filter((p) => sea.cells[p
 /** No neighbours face each other (east just left of west), and every cell reaches a beach within `MAX_PATH` cells. */
 export function validSea(sea: Sea): boolean {
   for (let r = 0; r < sea.rows; r++) {
-    for (let c = 0; c + 1 < sea.cols; c++) if (sea.cells[r][c] === 'e' && sea.cells[r][c + 1] === 'w') return false;
+    for (let c = 0; c + 1 < sea.cols; c++)
+      if (sea.cells[r][c] === 'e' && sea.cells[r][c + 1] === 'w') return false;
   }
-  for (let r = 0; r < sea.rows; r++) for (let c = 0; c < sea.cols; c++) if (driftFrom(sea, { r, c }).path.length > MAX_PATH) return false;
+  for (let r = 0; r < sea.rows; r++)
+    for (let c = 0; c < sea.cols; c++) if (driftFrom(sea, { r, c }).path.length > MAX_PATH) return false;
   return true;
 }
 
@@ -196,7 +235,9 @@ export function sendRequest(rng: Rng, plan: Plan = PLANS[1], two = false, avoid?
       const beach = drift(sea, b).beach;
       reached.set(beach, (reached.get(beach) ?? 0) + 1);
     }
-    let asks = [...reached.entries()].filter(([, n]) => n < plan.boats.length && (!two || n >= 2)).map(([b]) => b);
+    let asks = [...reached.entries()]
+      .filter(([, n]) => n < plan.boats.length && (!two || n >= 2))
+      .map(([b]) => b);
     if (!asks.length) continue;
     if (asks.length > 1 && avoid) asks = asks.filter((b) => b !== avoid);
     return { sea, ask: rng.pick(asks) };
@@ -208,7 +249,8 @@ export function sendRequest(rng: Rng, plan: Plan = PLANS[1], two = false, avoid?
 export function sendRound(rng: Rng, authored: boolean, plan: Plan = PLANS[1]): Request[] {
   const out: Request[] = authored ? [{ sea: AUTHORED_2, ask: AUTHORED_2_ASK }] : [];
   while (out.length < REQUESTS) out.push(sendRequest(rng, plan, false, out[out.length - 1]?.ask));
-  if (!out.some((q) => boatsFor(q.sea, plan.boats, q.ask).length >= 2)) out[REQUESTS - 1] = sendRequest(rng, plan, true, out[REQUESTS - 2].ask);
+  if (!out.some((q) => boatsFor(q.sea, plan.boats, q.ask).length >= 2))
+    out[REQUESTS - 1] = sendRequest(rng, plan, true, out[REQUESTS - 2].ask);
   return out;
 }
 
@@ -238,8 +280,14 @@ export interface PatchCase {
   returns: Return[];
 }
 
-export const patchCells = (at: Cell): Cell[] => [at, { r: at.r, c: at.c + 1 }, { r: at.r + 1, c: at.c }, { r: at.r + 1, c: at.c + 1 }];
-export const inPatch = (at: Cell, cell: Cell) => cell.r >= at.r && cell.r <= at.r + 1 && cell.c >= at.c && cell.c <= at.c + 1;
+export const patchCells = (at: Cell): Cell[] => [
+  at,
+  { r: at.r, c: at.c + 1 },
+  { r: at.r + 1, c: at.c },
+  { r: at.r + 1, c: at.c + 1 },
+];
+export const inPatch = (at: Cell, cell: Cell) =>
+  cell.r >= at.r && cell.r <= at.r + 1 && cell.c >= at.c && cell.c <= at.c + 1;
 
 /** The sea with `patch` laid into the fog. */
 export function filled(sea: Sea, at: Cell, patch: Patch): Sea {
@@ -272,7 +320,10 @@ export function traceShown(shown: ShownSea, cell: Cell, ahead = 2): Cell[] {
 const optionSea = (pc: PatchCase, option: number) => filled(pc.sea, pc.at, pc.options[option]);
 
 /** The first return (in boat order) that lands elsewhere with this option in the fog, and where; null when it fits. */
-export function contradictedBy(pc: PatchCase, option: number): { card: number; beach: Beach; path: Cell[] } | null {
+export function contradictedBy(
+  pc: PatchCase,
+  option: number,
+): { card: number; beach: Beach; path: Cell[] } | null {
   const sea = optionSea(pc, option);
   for (let i = 0; i < pc.returns.length; i++) {
     const d = drift(sea, pc.returns[i].col);
@@ -284,13 +335,19 @@ export function contradictedBy(pc: PatchCase, option: number): { card: number; b
 export const fits = (pc: PatchCase, option: number) => contradictedBy(pc, option) === null;
 
 /** The options a single return leaves fitting. */
-export const fitsReturn = (pc: PatchCase, option: number, ret: Return) => drift(optionSea(pc, option), ret.col).beach === ret.beach;
+export const fitsReturn = (pc: PatchCase, option: number, ret: Return) =>
+  drift(optionSea(pc, option), ret.col).beach === ret.beach;
 
 /** The case's guarantees (definition, "The model"): one fitting option, every wrong one contradicted, every return through the patch, no return decides alone. */
 export function validCase(pc: PatchCase): boolean {
   if (pc.at.r < 1 || pc.at.r + 1 >= pc.sea.rows || pc.at.c < 0 || pc.at.c + 1 >= pc.sea.cols) return false;
   if (pc.options.length !== 3) return false;
-  if (!pc.options.every((o, i) => validSea(optionSea(pc, i)) && pc.options.findIndex((p) => p.join() === o.join()) === i)) return false;
+  if (
+    !pc.options.every(
+      (o, i) => validSea(optionSea(pc, i)) && pc.options.findIndex((p) => p.join() === o.join()) === i,
+    )
+  )
+    return false;
   if (pc.options.filter((_, i) => fits(pc, i)).length !== 1 || !fits(pc, pc.answer)) return false;
   for (const ret of pc.returns) {
     const d = drift(pc.sea, ret.col);
@@ -306,13 +363,22 @@ const AUTHORED_3_SEA = parseSea(['→ ↓ → → ↓ ↓', '← ↓ → ↓ ←
 export const AUTHORED_3: PatchCase = {
   sea: AUTHORED_3_SEA,
   at: { r: 1, c: 2 },
-  options: [['e', 's', 's', 'e'], ['e', 's', 'e', 'e'], ['e', 's', 's', 'w']],
+  options: [
+    ['e', 's', 's', 'e'],
+    ['e', 's', 'e', 'e'],
+    ['e', 's', 's', 'w'],
+  ],
   answer: 0,
-  returns: [{ col: 1, beach: 'SW' }, { col: 4, beach: 'SE' }],
+  returns: [
+    { col: 1, beach: 'SW' },
+    { col: 4, beach: 'SE' },
+  ],
 };
 
 const DIRS: readonly Dir[] = ['e', 's', 'w'];
-const ALL_PATCHES: Patch[] = DIRS.flatMap((a) => DIRS.flatMap((b) => DIRS.flatMap((c) => DIRS.map((d) => [a, b, c, d] as Patch))));
+const ALL_PATCHES: Patch[] = DIRS.flatMap((a) =>
+  DIRS.flatMap((b) => DIRS.flatMap((c) => DIRS.map((d) => [a, b, c, d] as Patch))),
+);
 const differ = (a: Patch, b: Patch) => a.filter((d, i) => d !== b[i]).length;
 
 /** Sets of boat columns at least two apart, largest first. */
@@ -333,14 +399,23 @@ export function patchCase(rng: Rng, plan: Plan = PLANS[2]): PatchCase {
     if (!validSea(sea)) continue;
     const at = { r: 1, c: rng.int(0, plan.cols - 2) };
     const answer = patchCells(at).map((p) => sea.cells[p.r][p.c]) as unknown as Patch;
-    const through = new Set(Array.from({ length: plan.cols }, (_, c) => c).filter((c) => drift(sea, c).path.some((p) => inPatch(at, p))));
+    const through = new Set(
+      Array.from({ length: plan.cols }, (_, c) => c).filter((c) =>
+        drift(sea, c).path.some((p) => inPatch(at, p)),
+      ),
+    );
     for (const n of [3, 2]) {
       const sets = boatSets(plan.cols, n).filter((set) => set.every((c) => through.has(c)));
       if (!sets.length) continue;
       const cols = rng.pick(sets);
       const returns = cols.map((col) => ({ col, beach: drift(sea, col).beach }));
       // Wrong patches that keep the sea valid and are ruled out, closest to the answer first.
-      const wrong = rng.shuffle(ALL_PATCHES.filter((p) => differ(p, answer) > 0 && differ(p, answer) <= 2 && validSea(filled(sea, at, p))))
+      const wrong = rng
+        .shuffle(
+          ALL_PATCHES.filter(
+            (p) => differ(p, answer) > 0 && differ(p, answer) <= 2 && validSea(filled(sea, at, p)),
+          ),
+        )
         .map((p) => ({ p, ok: returns.map((ret) => drift(filled(sea, at, p), ret.col).beach === ret.beach) }))
         .filter((w) => w.ok.some((x) => !x))
         .sort((a, b) => differ(a.p, answer) - differ(b.p, answer));
@@ -414,12 +489,27 @@ export class PatchTurn extends Turn {
   }
 }
 
-export const tally = (turns: readonly Turn[]) => ({ misses: turns.reduce((n, t) => n + t.misses, 0), hints: turns.filter((t) => t.hinted).length });
+export const tally = (turns: readonly Turn[]) => ({
+  misses: turns.reduce((n, t) => n + t.misses, 0),
+  hints: turns.filter((t) => t.hinted).length,
+});
 
 // Speech helpers ------------------------------------------------------------------------------------
 
-export const FRIEND: Record<Beach, string> = { W: 'the turtle', S: 'the frog', SW: 'the frog', SE: 'the duck', E: 'the penguin' };
-export const BEACH_NAME: Record<Beach, string> = { W: 'west', S: 'south', SW: 'south-west', SE: 'south-east', E: 'east' };
+export const FRIEND: Record<Beach, string> = {
+  W: 'the turtle',
+  S: 'the frog',
+  SW: 'the frog',
+  SE: 'the duck',
+  E: 'the penguin',
+};
+export const BEACH_NAME: Record<Beach, string> = {
+  W: 'west',
+  S: 'south',
+  SW: 'south-west',
+  SE: 'south-east',
+  E: 'east',
+};
 export const DIR_WORD: Record<Dir, string> = { e: 'right', s: 'down', w: 'left' };
 
 // Layout --------------------------------------------------------------------------------------
@@ -438,7 +528,8 @@ export const cornerButtons = (view: View): Box[] => [
   { x: 0, y: 0, w: CORNER, h: CORNER },
   { x: view.w - CORNER, y: 0, w: CORNER, h: CORNER },
 ];
-export const overlaps = (a: Box, b: Box) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+export const overlaps = (a: Box, b: Box) =>
+  a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 const inside = (b: Box, v: View) => b.x >= 0 && b.y >= 0 && b.x + b.w <= v.w && b.y + b.h <= v.h;
 
 export const MIN_CELL = 72;
@@ -463,7 +554,10 @@ export interface DriftLayout {
   check: Box | null;
 }
 
-export const cellCentre = (L: DriftLayout, cell: Cell) => ({ x: L.grid.x + (cell.c + 0.5) * L.cell, y: L.grid.y + (cell.r + 0.5) * L.cell });
+export const cellCentre = (L: DriftLayout, cell: Cell) => ({
+  x: L.grid.x + (cell.c + 0.5) * L.cell,
+  y: L.grid.y + (cell.r + 0.5) * L.cell,
+});
 
 /** The nearest cell to a point on the grid. */
 export function cellAt(L: DriftLayout, plan: Plan, x: number, y: number): Cell {
@@ -477,7 +571,11 @@ export function cellAt(L: DriftLayout, plan: Plan, x: number, y: number): Cell {
  * case's return columns as `boats` and adds a row under the sea: the three patch cards, then Check. (A column beside
  * the sea cannot hold three 160-unit cards and Check in a 768-unit-tall view.)
  */
-export function driftLayout(view: View, level: number, boats: readonly number[] = dcPlan(level).boats): DriftLayout | null {
+export function driftLayout(
+  view: View,
+  level: number,
+  boats: readonly number[] = dcPlan(level).boats,
+): DriftLayout | null {
   const plan = { ...dcPlan(level), boats };
   const patch = plan.mode === 'patch';
   for (let cell = MAX_CELL; cell >= MIN_CELL; cell -= 2) {
@@ -510,23 +608,41 @@ function layoutAt(plan: Plan, cell: number, x0: number, y0: number): DriftLayout
   const gh = plan.rows * cell;
   const grid = { x: gx, y: gy, w: gw, h: gh };
   const boats = plan.boats.map((b) => ({ x: gx + (b + 0.5) * cell - BOAT / 2, y: y0, w: BOAT, h: BOAT }));
-  const beaches: Partial<Record<Beach, Box>> = { W: { x: x0, y: gy, w: BEACH, h: gh }, E: { x: gx + gw, y: gy, w: BEACH, h: gh } };
+  const beaches: Partial<Record<Beach, Box>> = {
+    W: { x: x0, y: gy, w: BEACH, h: gh },
+    E: { x: gx + gw, y: gy, w: BEACH, h: gh },
+  };
   if (plan.split) {
     const half = Math.ceil(plan.cols / 2) * cell;
     beaches.SW = { x: gx, y: gy + gh, w: half, h: BEACH };
     beaches.SE = { x: gx + half, y: gy + gh, w: gw - half, h: BEACH };
   } else beaches.S = { x: gx, y: gy + gh, w: gw, h: BEACH };
-  return { cell, grid, wall: { x: gx - 10, y: y0 + BOAT, w: gw + 20, h: WALL }, boats, beaches, cards: [], check: null };
+  return {
+    cell,
+    grid,
+    wall: { x: gx - 10, y: y0 + BOAT, w: gw + 20, h: WALL },
+    boats,
+    beaches,
+    cards: [],
+    check: null,
+  };
 }
 
 /** The touch targets: boats and beach plates (and the sea, which only traces). */
-export const targetsOf = (L: DriftLayout): Box[] => [...L.boats, ...Object.values(L.beaches), L.grid, ...L.cards, ...(L.check ? [L.check] : [])];
+export const targetsOf = (L: DriftLayout): Box[] => [
+  ...L.boats,
+  ...Object.values(L.beaches),
+  L.grid,
+  ...L.cards,
+  ...(L.check ? [L.check] : []),
+];
 
 function layoutFits(L: DriftLayout, view: View): boolean {
   const all = targetsOf(L);
   if (!all.every((b) => inside(b, view))) return false;
   const keepClear = [...cornerButtons(view), petCorner(view)];
   if (all.some((b) => keepClear.some((k) => overlaps(b, k)))) return false;
-  for (let i = 0; i < all.length; i++) for (let j = i + 1; j < all.length; j++) if (overlaps(all[i], all[j])) return false;
+  for (let i = 0; i < all.length; i++)
+    for (let j = i + 1; j < all.length; j++) if (overlaps(all[i], all[j])) return false;
   return true;
 }

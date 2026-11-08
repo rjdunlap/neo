@@ -12,11 +12,40 @@ import type { LineId } from '../../content/voice-script';
 import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { bellPic, beaterPic, cardPic, drawBag, drawBench, flagPic, partPic, propPic, railTick, readySticker, ribbonPic, wagonPic, type Look } from './art';
+import {
+  bellPic,
+  beaterPic,
+  cardPic,
+  drawBag,
+  drawBench,
+  flagPic,
+  partPic,
+  propPic,
+  railTick,
+  readySticker,
+  ribbonPic,
+  wagonPic,
+  type Look,
+} from './art';
 import {
   LEVELS,
-  PART_OF, apply, askHint, botAction, describeReady, done, hintFor, judge, readyLayout, restart, startState,
-  type Action, type Dragged, type PartId, type PropId, type ReadyState, type Target,
+  PART_OF,
+  apply,
+  askHint,
+  botAction,
+  describeReady,
+  done,
+  hintFor,
+  judge,
+  readyLayout,
+  restart,
+  startState,
+  type Action,
+  type Dragged,
+  type PartId,
+  type PropId,
+  type ReadyState,
+  type Target,
 } from './logic';
 
 interface Obj {
@@ -79,7 +108,15 @@ class ReadyForAdventure implements Game {
     this.rig.scale.set(0.5);
     this.rig.eventMode = 'static';
     this.rig.hitArea = this.rig.touchArea(60);
-    onTap(this.rig, () => { this.rig.poke(); sfx.pop(7); this.sayRequest(); }, { cooldown: 400 });
+    onTap(
+      this.rig,
+      () => {
+        this.rig.poke();
+        sfx.pop(7);
+        this.sayRequest();
+      },
+      { cooldown: 400 },
+    );
     ctx.track(this.rig);
     ctx.stage.addChild(this.bg, this.world, this.rail, this.cardNode, this.glow, this.rig);
     drawBag(this.bag, false);
@@ -111,13 +148,21 @@ class ReadyForAdventure implements Game {
     pic.eventMode = 'none';
     node.addChild(pic);
     const o: Obj = {
-      key: k, node, pic, size: isProp ? 150 : 120, gone: false,
-      prop: isProp ? (id as PropId) : undefined, part: isProp ? undefined : (id as PartId),
+      key: k,
+      node,
+      pic,
+      size: isProp ? 150 : 120,
+      gone: false,
+      prop: isProp ? (id as PropId) : undefined,
+      part: isProp ? undefined : (id as PartId),
       drag: undefined as unknown as DragHandle,
     };
     node.hitArea = new Rectangle(-o.size / 2, -o.size / 2, o.size, o.size);
     o.drag = draggable(node, this.ctx.tw, {
-      onPick: () => { sfx.pluck(4, 0.2); this.deselect(); },
+      onPick: () => {
+        sfx.pluck(4, 0.2);
+        this.deselect();
+      },
       onDrop: (x, y) => this.dropped(o, x, y),
     });
     this.drawObj(o);
@@ -127,8 +172,10 @@ class ReadyForAdventure implements Game {
 
   private drawObj(o: Obj) {
     o.pic.removeChildren().forEach((c) => c.destroy({ children: true }));
-    const p = o.prop ? propPic(o.prop, this.state.props[o.prop] !== 'bare', this.look) : partPic(o.part!, this.look);
-    p.scale.set(o.size / 150 * (o.prop ? 1.1 : 1.2));
+    const p = o.prop
+      ? propPic(o.prop, this.state.props[o.prop] !== 'bare', this.look)
+      : partPic(o.part!, this.look);
+    p.scale.set((o.size / 150) * (o.prop ? 1.1 : 1.2));
     o.pic.addChild(p);
   }
 
@@ -140,7 +187,12 @@ class ReadyForAdventure implements Game {
       for (const step of steps) {
         const n = new Container();
         n.addChild(railTick(false));
-        const pic = step === 'attach' ? (job === 'flag' ? ribbonPic(this.look.ribbonPattern) : beaterPic()) : propPic(job, true, this.look);
+        const pic =
+          step === 'attach'
+            ? job === 'flag'
+              ? ribbonPic(this.look.ribbonPattern)
+              : beaterPic()
+            : propPic(job, true, this.look);
         pic.scale.set(0.26);
         n.addChild(pic);
         this.rail.addChild(n);
@@ -196,7 +248,8 @@ class ReadyForAdventure implements Game {
   private targetAt(self: Obj, x: number, y: number): { target: Target; obj?: Obj } | null {
     let best: { target: Target; obj?: Obj; d: number } | null = null;
     const consider = (target: Target, cx: number, cy: number, hw: number, hh: number, obj?: Obj) => {
-      const dx = Math.abs(x - cx), dy = Math.abs(y - cy);
+      const dx = Math.abs(x - cx),
+        dy = Math.abs(y - cy);
       if (dx > hw || dy > hh) return;
       const d = Math.hypot(dx / hw, dy / hh);
       if (!best || d < best.d) best = { target, obj, d };
@@ -204,7 +257,14 @@ class ReadyForAdventure implements Game {
     consider({ bag: true }, this.bagNode.x, this.bagNode.y, 125, 115);
     for (const o of this.objs) {
       if (o === self || o.gone) continue;
-      consider(o.prop ? { prop: o.prop } : { part: o.part! }, o.node.x, o.node.y, o.size / 2 + 25, o.size / 2 + 25, o);
+      consider(
+        o.prop ? { prop: o.prop } : { part: o.part! },
+        o.node.x,
+        o.node.y,
+        o.size / 2 + 25,
+        o.size / 2 + 25,
+        o,
+      );
     }
     return best;
   }
@@ -212,7 +272,10 @@ class ReadyForAdventure implements Game {
   private dropped(o: Obj, x: number, y: number): boolean {
     if (this.finished || this.parading) return false;
     const home = o.drag.home;
-    if (Math.hypot(x - home.x, y - home.y) < TAP_SLOP) { this.tapObj(o); return false; }
+    if (Math.hypot(x - home.x, y - home.y) < TAP_SLOP) {
+      this.tapObj(o);
+      return false;
+    }
     const hit = this.targetAt(o, x, y);
     if (!hit) return false;
     return this.gesture(o, hit.target, hit.obj);
@@ -281,7 +344,8 @@ class ReadyForAdventure implements Game {
     // A refusal: float home, wiggle, say why.
     sfx.boing();
     this.rig.wiggle();
-    if (byTap) void this.ctx.tw.to(from.node, { x: from.drag.home.x, y: from.drag.home.y }, { duration: 0.1 });
+    if (byTap)
+      void this.ctx.tw.to(from.node, { x: from.drag.home.x, y: from.drag.home.y }, { duration: 0.1 });
     void this.ctx.say(this.refusalLine(v) as LineId);
     if (out.glowed) this.drawGlowRings();
     return false;
@@ -301,13 +365,21 @@ class ReadyForAdventure implements Game {
     partObj.gone = true;
     partObj.drag.enabled = false;
     sfx.sparkle();
-    await tw.to(partObj.node, { x: propObj.node.x, y: propObj.node.y - 10 }, { duration: 0.25, ease: ease.outQuad });
+    await tw.to(
+      partObj.node,
+      { x: propObj.node.x, y: propObj.node.y - 10 },
+      { duration: 0.25, ease: ease.outQuad },
+    );
     if (this.gone) return;
     tw.to(partObj.node.scale, { x: 0.1, y: 0.1 }, { duration: 0.2 });
     partObj.node.visible = false;
     this.drawObj(propObj);
     // The prop goes back to its slot (it may have been the dragged one).
-    void tw.to(propObj.node, { x: propObj.drag.home.x, y: propObj.drag.home.y }, { duration: 0.25, ease: ease.outBack });
+    void tw.to(
+      propObj.node,
+      { x: propObj.drag.home.x, y: propObj.drag.home.y },
+      { duration: 0.25, ease: ease.outBack },
+    );
     propObj.node.scale.set(1.15);
     void tw.to(propObj.node.scale, { x: 1, y: 1 }, { duration: 0.3, ease: ease.outBack });
     this.rig.cheer();
@@ -321,14 +393,21 @@ class ReadyForAdventure implements Game {
     o.gone = true;
     o.drag.enabled = false;
     sfx.pop(6);
-    await tw.to(o.node, { x: this.bagNode.x, y: this.bagNode.y - 30 }, { duration: 0.25, ease: ease.outQuad });
+    await tw.to(
+      o.node,
+      { x: this.bagNode.x, y: this.bagNode.y - 30 },
+      { duration: 0.25, ease: ease.outQuad },
+    );
     if (this.gone) return;
     o.node.visible = false;
     this.bagNode.scale.set(1.1);
     void tw.to(this.bagNode.scale, { x: 1, y: 1 }, { duration: 0.3, ease: ease.outBack });
     this.refreshRail();
     this.drawGlowRings();
-    if (done(this.state)) { void this.parade(); return; }
+    if (done(this.state)) {
+      void this.parade();
+      return;
+    }
     void this.ctx.say('ready.packed');
   }
 
@@ -340,7 +419,11 @@ class ReadyForAdventure implements Game {
   }
 
   private find(a: Action): { from: Obj; to: Obj | null } {
-    if ('attach' in a) return { from: this.objs.find((o) => o.part === a.attach)!, to: this.objs.find((o) => o.prop === a.to)! };
+    if ('attach' in a)
+      return {
+        from: this.objs.find((o) => o.part === a.attach)!,
+        to: this.objs.find((o) => o.prop === a.to)!,
+      };
     return { from: this.objs.find((o) => o.prop === a.pack)!, to: null };
   }
 
@@ -354,12 +437,24 @@ class ReadyForAdventure implements Game {
     const a = this.glowAction();
     if (!a || this.finished) return;
     const { from, to } = this.find(a);
-    const ring = (x: number, y: number, r: number) => g.circle(x, y, r).stroke({ width: 10, color: 0xfff08a, alpha: 0.9 });
+    const ring = (x: number, y: number, r: number) =>
+      g.circle(x, y, r).stroke({ width: 10, color: 0xfff08a, alpha: 0.9 });
     ring(from.node.x, from.node.y, from.size / 2 + 12);
     if (to) ring(to.node.x, to.node.y, to.size / 2 + 12);
-    else g.roundRect(this.bagNode.x - 125, this.bagNode.y - 115, 250, 230, 40).stroke({ width: 10, color: 0xfff08a, alpha: 0.9 });
-    const tx = to ? to.node.x : this.bagNode.x, ty = to ? to.node.y : this.bagNode.y;
-    for (let i = 1; i < 8; i++) g.circle(from.node.x + ((tx - from.node.x) * i) / 8, from.node.y + ((ty - from.node.y) * i) / 8, 5).fill({ color: 0xfff08a, alpha: 0.9 });
+    else
+      g.roundRect(this.bagNode.x - 125, this.bagNode.y - 115, 250, 230, 40).stroke({
+        width: 10,
+        color: 0xfff08a,
+        alpha: 0.9,
+      });
+    const tx = to ? to.node.x : this.bagNode.x,
+      ty = to ? to.node.y : this.bagNode.y;
+    for (let i = 1; i < 8; i++)
+      g.circle(
+        from.node.x + ((tx - from.node.x) * i) / 8,
+        from.node.y + ((ty - from.node.y) * i) / 8,
+        5,
+      ).fill({ color: 0xfff08a, alpha: 0.9 });
   }
 
   /** The companion carries the lit thing to where it goes. */
@@ -381,7 +476,10 @@ class ReadyForAdventure implements Game {
     if (!r) return;
     this.drawGlowRings();
     const a = this.glowAction();
-    if (a) void this.ctx.say(('attach' in a ? `ready.hint.attach-${a.attach}` : `ready.hint.pack-${a.pack}`) as LineId);
+    if (a)
+      void this.ctx.say(
+        ('attach' in a ? `ready.hint.attach-${a.attach}` : `ready.hint.pack-${a.pack}`) as LineId,
+      );
   }
 
   restart() {
@@ -419,11 +517,16 @@ class ReadyForAdventure implements Game {
     if (this.gone) return;
     const lane = new Graphics();
     lane.rect(0, view.h * 0.7, view.w, view.h * 0.3).fill(0xe8d9b0);
-    lane.moveTo(0, view.h * 0.7).lineTo(view.w, view.h * 0.7).stroke({ width: 6, color: 0xc9b57f });
+    lane
+      .moveTo(0, view.h * 0.7)
+      .lineTo(view.w, view.h * 0.7)
+      .stroke({ width: 6, color: 0xc9b57f });
     const bunting = new Graphics();
     for (let i = 0; i < 8; i++) {
       const x = (view.w / 7) * i;
-      bunting.poly([x - 30, 20, x + 30, 20, x, 80]).fill([swatch.red, swatch.yellow, swatch.blue, swatch.green][i % 4].fill);
+      bunting
+        .poly([x - 30, 20, x + 30, 20, x, 80])
+        .fill([swatch.red, swatch.yellow, swatch.blue, swatch.green][i % 4].fill);
     }
     this.ctx.stage.addChildAt(lane, 1);
     this.ctx.stage.addChildAt(bunting, 2);
@@ -452,7 +555,9 @@ class ReadyForAdventure implements Game {
     const skip = new Container();
     skip.eventMode = 'static';
     skip.hitArea = new Rectangle(0, 0, view.w, view.h);
-    skip.on('pointerdown', () => { this.skipParade = true; });
+    skip.on('pointerdown', () => {
+      this.skipParade = true;
+    });
     this.ctx.stage.addChild(skip);
     void this.ctx.say('ready.parade');
     const beat = () => {
@@ -466,7 +571,9 @@ class ReadyForAdventure implements Game {
     for (let i = 0; i < stops && !this.skipParade; i++) {
       const frac = (i + 1) / stops;
       beat();
-      riders.forEach((r, k) => { r.rotation = (i % 2 ? 1 : -1) * 0.12 * (k % 2 ? -1 : 1); });
+      riders.forEach((r, k) => {
+        r.rotation = (i % 2 ? 1 : -1) * 0.12 * (k % 2 ? -1 : 1);
+      });
       const wx = -100 + frac * (view.w * 0.85);
       void tw.to(wagon, { x: wx - 200 }, { duration: 0.9, ease: ease.inOutSine });
       await tw.to(this.rig, { x: wx }, { duration: 0.9, ease: ease.inOutSine });
@@ -477,7 +584,14 @@ class ReadyForAdventure implements Game {
     this.finished = true;
     this.rig.cheer();
     sfx.tada();
-    this.ctx.particles.burst(view.w / 2, view.h * 0.45, { kind: 'dot', colors: [0xfff3a0, 0xffffff, 0xff9ac1], count: 26, speed: [120, 300], gravity: 200, life: [0.6, 1] });
+    this.ctx.particles.burst(view.w / 2, view.h * 0.45, {
+      kind: 'dot',
+      colors: [0xfff3a0, 0xffffff, 0xff9ac1],
+      count: 26,
+      speed: [120, 300],
+      gravity: 200,
+      life: [0.6, 1],
+    });
     await tw.wait(0.8);
     if (this.gone) return;
     this.ctx.finish({ misses: this.state.misses, hints: this.state.hints });
@@ -523,7 +637,8 @@ export const readyForAdventure: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: describeReady,
   music: STYLES.paint,
-  coplayHint: 'Point at the card and ask "What does it need first?" Let the child do it, then swap who points.',
+  coplayHint:
+    'Point at the card and ask "What does it need first?" Let the child do it, then swap who points.',
   offScreen: 'Which toy would you bring to a pretend parade? What would it need first?',
   hubIcon: () => new ReadyIcon(),
   touchDemo: true,

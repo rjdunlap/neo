@@ -3,7 +3,22 @@ import { Rng } from '../../engine/random';
 import { clockTower } from './index';
 import { howToFor } from '../../content/howto';
 import { SCRIPT } from '../../content/voice-script';
-import { appointmentFor, demoAction, fiveExample, laterExample, requestFor, EVENTS, FIVE_ASKED, handsFor, hourOf, makeTasks, minuteChoices, PLANS, spoken, timeOf } from './logic';
+import {
+  appointmentFor,
+  demoAction,
+  fiveExample,
+  laterExample,
+  requestFor,
+  EVENTS,
+  FIVE_ASKED,
+  handsFor,
+  hourOf,
+  makeTasks,
+  minuteChoices,
+  PLANS,
+  spoken,
+  timeOf,
+} from './logic';
 
 describe('Clock Tower', () => {
   it('says times the way people do, and places the hour hand between numbers after the hour', () => {
@@ -18,14 +33,16 @@ describe('Clock Tower', () => {
   });
 
   it('keeps every request visible without giving away the later answer, with speech from the same time', () => {
-    for (const plan of PLANS) for (let seed = 1; seed <= 100; seed++) for (const task of makeTasks(plan, new Rng(seed))) {
-      const request = requestFor(plan.mode, task);
-      const time = plan.mode === 'later' ? task.from! : task.time;
-      expect(request.time).toBe(`${hourOf(time)}:${String(time % 60).padStart(2, '0')}`);
-      expect(request.speech).toBe(spoken(time));
-      if (plan.mode === 'later') expect(request.time).not.toBe(requestFor('oclock', task).time);
-      if (plan.mode === 'five') expect(request.speech).not.toContain(':');
-    }
+    for (const plan of PLANS)
+      for (let seed = 1; seed <= 100; seed++)
+        for (const task of makeTasks(plan, new Rng(seed))) {
+          const request = requestFor(plan.mode, task);
+          const time = plan.mode === 'later' ? task.from! : task.time;
+          expect(request.time).toBe(`${hourOf(time)}:${String(time % 60).padStart(2, '0')}`);
+          expect(request.speech).toBe(spoken(time));
+          if (plan.mode === 'later') expect(request.time).not.toBe(requestFor('oclock', task).time);
+          if (plan.mode === 'five') expect(request.speech).not.toContain(':');
+        }
     expect(spoken(timeOf(3, 5))).toBe('three oh five');
     expect(spoken(timeOf(12, 55))).toBe('twelve fifty five');
   });
@@ -50,15 +67,19 @@ describe('Clock Tower', () => {
     const fingerprint = (node: import('pixi.js').Container): number => {
       const paths: unknown[] = [];
       const visit = (n: import('pixi.js').Container) => {
-        if ('context' in n) for (const i of (n as import('pixi.js').Graphics).context.instructions) {
-          if (i.action === 'texture') throw new Error('Clock art stays code-drawn');
-          const { texture: _texture, ...style } = i.data.style;
-          paths.push({ action: i.action, path: i.data.path.instructions, style });
-        }
+        if ('context' in n)
+          for (const i of (n as import('pixi.js').Graphics).context.instructions) {
+            if (i.action === 'texture') throw new Error('Clock art stays code-drawn');
+            const { texture: _texture, ...style } = i.data.style;
+            paths.push({ action: i.action, path: i.data.path.instructions, style });
+          }
         n.children.forEach(visit);
       };
       visit(node);
-      const hash = [...JSON.stringify(paths)].reduce((h, ch) => Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0, 2166136261);
+      const hash = [...JSON.stringify(paths)].reduce(
+        (h, ch) => Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0,
+        2166136261,
+      );
       node.destroy({ children: true });
       return hash;
     };
@@ -66,7 +87,7 @@ describe('Clock Tower', () => {
     expect(fingerprint(clockTower.hubIcon())).toMatchSnapshot();
   });
 
-  it('asks for different times that the level\'s hands can show', () => {
+  it("asks for different times that the level's hands can show", () => {
     for (const plan of PLANS) {
       for (let seed = 1; seed <= 200; seed++) {
         const tasks = makeTasks(plan, new Rng(seed));
@@ -85,10 +106,11 @@ describe('Clock Tower', () => {
   it('five-minute level asks only for new minutes, each on a mark the long hand snaps to', () => {
     const plan = PLANS.find((p) => p.mode === 'five')!;
     expect(minuteChoices('five')).toHaveLength(12);
-    for (let seed = 1; seed <= 200; seed++) for (const t of makeTasks(plan, new Rng(seed))) {
-      expect(FIVE_ASKED).toContain(t.time % 60);
-      expect(minuteChoices('five')).toContain(t.time % 60);
-    }
+    for (let seed = 1; seed <= 200; seed++)
+      for (const t of makeTasks(plan, new Rng(seed))) {
+        expect(FIVE_ASKED).toContain(t.time % 60);
+        expect(minuteChoices('five')).toContain(t.time % 60);
+      }
     expect(spoken(timeOf(3, 25))).toBe('three twenty five');
     expect(handsFor(timeOf(3, 25)).minute).toBe(25);
   });
@@ -101,9 +123,13 @@ describe('Clock Tower', () => {
       const tasks = makeTasks(plan, new Rng(seed));
       expect(tasks).toEqual(makeTasks(plan, new Rng(seed)));
       expect(new Set(tasks.map((task) => task.time)).size).toBe(4);
-      expect(tasks[0].options).toEqual(expect.arrayContaining([
-        { id: 'lunch', time: 0 }, { id: 'park', time: 180 }, { id: 'bath', time: 390 },
-      ]));
+      expect(tasks[0].options).toEqual(
+        expect.arrayContaining([
+          { id: 'lunch', time: 0 },
+          { id: 'park', time: 180 },
+          { id: 'bath', time: 390 },
+        ]),
+      );
       for (const t of tasks) {
         targets.add(t.time);
         expect(t.options).toHaveLength(3);
@@ -120,7 +146,8 @@ describe('Clock Tower', () => {
           expect(evidence.time).toBe(`${hourOf(a.time)}:${String(a.time % 60).padStart(2, '0')}`);
           expect(evidence.speech).toBe(spoken(a.time));
           const times = seen.get(a.id) ?? new Set<number>();
-          times.add(a.time); seen.set(a.id, times);
+          times.add(a.time);
+          seen.set(a.id, times);
         }
       }
     }
@@ -130,28 +157,35 @@ describe('Clock Tower', () => {
   });
 
   it('chooses hand turns, the matching picture, and then the bell for a clean demonstration', () => {
-    for (const plan of PLANS) for (let seed = 1; seed <= 100; seed++) for (const task of makeTasks(plan, new Rng(seed))) {
-      let hour = plan.mode === 'read' ? hourOf(task.time) : plan.mode === 'later' ? hourOf(task.from!) : ((hourOf(task.time) + 4) % 12 || 12);
-      let minute = plan.mode === 'read' ? task.time % 60 : plan.mode === 'later' ? task.from! % 60 : 0;
-      const first = demoAction(plan.mode, hour, minute, task);
-      if (plan.mode === 'read') {
-        expect(first.kind).toBe('pick');
-        const id = (first as { kind: 'pick'; id: string }).id;
-        expect(task.options!.find((a) => a.id === id)!.time).toBe(task.time);
-        continue;
-      }
-      for (let moves = 0; moves < 3; moves++) {
-        const action = demoAction(plan.mode, hour, minute, task);
-        if (action.kind === 'minute') minute = action.minute;
-        else if (action.kind === 'hour') hour = action.hour;
-        else {
-          expect(action.kind).toBe('check');
-          expect(timeOf(hour, minute)).toBe(task.time);
-          break;
+    for (const plan of PLANS)
+      for (let seed = 1; seed <= 100; seed++)
+        for (const task of makeTasks(plan, new Rng(seed))) {
+          let hour =
+            plan.mode === 'read'
+              ? hourOf(task.time)
+              : plan.mode === 'later'
+                ? hourOf(task.from!)
+                : (hourOf(task.time) + 4) % 12 || 12;
+          let minute = plan.mode === 'read' ? task.time % 60 : plan.mode === 'later' ? task.from! % 60 : 0;
+          const first = demoAction(plan.mode, hour, minute, task);
+          if (plan.mode === 'read') {
+            expect(first.kind).toBe('pick');
+            const id = (first as { kind: 'pick'; id: string }).id;
+            expect(task.options!.find((a) => a.id === id)!.time).toBe(task.time);
+            continue;
+          }
+          for (let moves = 0; moves < 3; moves++) {
+            const action = demoAction(plan.mode, hour, minute, task);
+            if (action.kind === 'minute') minute = action.minute;
+            else if (action.kind === 'hour') hour = action.hour;
+            else {
+              expect(action.kind).toBe('check');
+              expect(timeOf(hour, minute)).toBe(task.time);
+              break;
+            }
+          }
+          expect(demoAction(plan.mode, hour, minute, task).kind).toBe('check');
         }
-      }
-      expect(demoAction(plan.mode, hour, minute, task).kind).toBe('check');
-    }
   });
 
   it('always asks half past at level 3, and always crosses the 12 at level 6', () => {
@@ -166,36 +200,42 @@ describe('Clock Tower', () => {
   });
 
   it('explains every hour change using the old/new task times, moving forwards through 12', () => {
-    for (let hour = 1; hour <= 12; hour++) for (const minute of [0, 30]) {
-      const from = timeOf(hour, minute), time = (from + 60) % 720;
-      const e = laterExample({ from, time });
-      expect(e.from).toBe(requestFor('later', { from, time }).time);
-      expect(e.to).toBe(requestFor('oclock', { time }).time);
-      expect(e.fromSpeech).toBe(spoken(from));
-      expect(e.toSpeech).toBe(spoken(time));
-      expect(e.minute).toBe(time % 60);
-      expect(e.hourStart).toBe(handsFor(from).hour);
-      expect(e.hourEnd - e.hourStart).toBe(5);
-      expect(e.hourEnd % 60).toBe(handsFor(time).hour);
-      const speech = SCRIPT['clock.later.example'][0].replace('{from}', e.fromSpeech).replace('{time}', e.toSpeech);
-      expect(speech).toContain(spoken(from));
-      expect(speech).toContain(spoken(time));
-      expect(speech).toContain('minutes stay the same');
-    }
+    for (let hour = 1; hour <= 12; hour++)
+      for (const minute of [0, 30]) {
+        const from = timeOf(hour, minute),
+          time = (from + 60) % 720;
+        const e = laterExample({ from, time });
+        expect(e.from).toBe(requestFor('later', { from, time }).time);
+        expect(e.to).toBe(requestFor('oclock', { time }).time);
+        expect(e.fromSpeech).toBe(spoken(from));
+        expect(e.toSpeech).toBe(spoken(time));
+        expect(e.minute).toBe(time % 60);
+        expect(e.hourStart).toBe(handsFor(from).hour);
+        expect(e.hourEnd - e.hourStart).toBe(5);
+        expect(e.hourEnd % 60).toBe(handsFor(time).hour);
+        const speech = SCRIPT['clock.later.example'][0]
+          .replace('{from}', e.fromSpeech)
+          .replace('{time}', e.toSpeech);
+        expect(speech).toContain(spoken(from));
+        expect(speech).toContain(spoken(time));
+        expect(speech).toContain('minutes stay the same');
+      }
   });
 
   it('counts fives from zero to the requested minute, without confusing :00 with a full turn', () => {
-    for (let hour = 1; hour <= 12; hour++) for (const minute of minuteChoices('five')) {
-      const time = timeOf(hour, minute), e = fiveExample({ time });
-      expect(e.marks).toEqual(Array.from({ length: minute / 5 }, (_, i) => (i + 1) * 5));
-      expect(e.marks.at(-1) ?? 0).toBe(handsFor(time).minute);
-      expect(e.counts).toBe(e.marks.join(', '));
-      expect(e.time).toBe(requestFor('five', { time }).speech);
-      expect(e.marks).not.toContain(60);
-      const speech = SCRIPT['clock.five.help'][0].replace('{counts}', e.counts).replace('{time}', e.time);
-      expect(speech).toContain(`${e.counts} minutes`);
-      expect(speech).toContain(spoken(time));
-    }
+    for (let hour = 1; hour <= 12; hour++)
+      for (const minute of minuteChoices('five')) {
+        const time = timeOf(hour, minute),
+          e = fiveExample({ time });
+        expect(e.marks).toEqual(Array.from({ length: minute / 5 }, (_, i) => (i + 1) * 5));
+        expect(e.marks.at(-1) ?? 0).toBe(handsFor(time).minute);
+        expect(e.counts).toBe(e.marks.join(', '));
+        expect(e.time).toBe(requestFor('five', { time }).speech);
+        expect(e.marks).not.toContain(60);
+        const speech = SCRIPT['clock.five.help'][0].replace('{counts}', e.counts).replace('{time}', e.time);
+        expect(speech).toContain(`${e.counts} minutes`);
+        expect(speech).toContain(spoken(time));
+      }
     expect(howToFor(clockTower, 6)!.steps.join(' ')).toContain('minutes stay the same');
     expect(howToFor(clockTower, 7)!.steps.join(' ')).toContain('zero is at 12');
     expect(howToFor(clockTower, 7)!.note).toContain('spoken counting by fives');

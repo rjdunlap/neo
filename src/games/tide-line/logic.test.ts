@@ -3,13 +3,67 @@ import { SCRIPT } from '../../content/voice-script';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  AUTHORED_STRIP, BAND, BAND_LEVELS, CREATURES, CycleCounter, DOWN, HIGHS, LineRound, PAIL, PET, PIC, PailTurn, SIZES, SLOTS, StripTurn, THINGS, UP, WINDY, answerOf, betweenSpot,
-  drySpots, hitSize, lineTray, linesFor, makeStrip, seaReach, stripLayout, thingBox, wrongLine, type Pic, type Thing, type WrongLine, clampFeet, cornerButtons, creatureSpot, drySpot, fifthCrossed, hAt, highFor, isDry, overlaps,
-  pailBox, petCorner, reach, seaGrab, shoreLayout, tidePlan, waterAt, wetSpot, wrack, yAt, type Box,
+  AUTHORED_STRIP,
+  BAND,
+  BAND_LEVELS,
+  CREATURES,
+  CycleCounter,
+  DOWN,
+  HIGHS,
+  LineRound,
+  PAIL,
+  PET,
+  PIC,
+  PailTurn,
+  SIZES,
+  SLOTS,
+  StripTurn,
+  THINGS,
+  UP,
+  WINDY,
+  answerOf,
+  betweenSpot,
+  drySpots,
+  hitSize,
+  lineTray,
+  linesFor,
+  makeStrip,
+  seaReach,
+  stripLayout,
+  thingBox,
+  wrongLine,
+  type Pic,
+  type Thing,
+  type WrongLine,
+  clampFeet,
+  cornerButtons,
+  creatureSpot,
+  drySpot,
+  fifthCrossed,
+  hAt,
+  highFor,
+  isDry,
+  overlaps,
+  pailBox,
+  petCorner,
+  reach,
+  seaGrab,
+  shoreLayout,
+  tidePlan,
+  waterAt,
+  wetSpot,
+  wrack,
+  yAt,
+  type Box,
 } from './logic';
 
 const seeds = Array.from({ length: 500 }, (_, i) => i + 1);
-const views = [computeView(1024, 768), computeView(768, 1024), computeView(844, 390), computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 })];
+const views = [
+  computeView(1024, 768),
+  computeView(768, 1024),
+  computeView(844, 390),
+  computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
+];
 const inside = (b: Box, w: number, h: number) => b.x >= 0 && b.y >= 0 && b.x + b.w <= w && b.y + b.h <= h;
 
 describe('the sea', () => {
@@ -183,7 +237,9 @@ describe('layout', () => {
       for (const high of HIGHS) {
         const d = drySpot(L, view, high);
         expect(hAt(L, d.y), `${tag} dry ${high}`).toBeGreaterThan(wrack(high).top);
-        expect(d.x >= L.sand.x && d.x <= L.sand.x + L.sand.w && d.y >= L.sand.y && d.y <= L.sand.y + L.sand.h).toBe(true);
+        expect(
+          d.x >= L.sand.x && d.x <= L.sand.x + L.sand.w && d.y >= L.sand.y && d.y <= L.sand.y + L.sand.h,
+        ).toBe(true);
         clear(pailBox(d.x, d.y), `dry ${high}`);
         const w = wetSpot(L, view, high);
         expect(isDry(hAt(L, w.y), [high]), `${tag} wet ${high}`).toBe(false);
@@ -202,10 +258,21 @@ describe('layout', () => {
     });
 
     it(`${tag}: clampFeet keeps feet in the sand and the pail clear of the pet`, () => {
-      const pts = [[-500, -500], [0, view.h + 500], [10, view.h - 10], [PET.w / 2, view.h], [view.w + 500, view.h + 500], [view.w / 2, L.sand.y - 99], [30, L.low]];
+      const pts = [
+        [-500, -500],
+        [0, view.h + 500],
+        [10, view.h - 10],
+        [PET.w / 2, view.h],
+        [view.w + 500, view.h + 500],
+        [view.w / 2, L.sand.y - 99],
+        [30, L.low],
+      ];
       for (const [x, y] of pts) {
         const p = clampFeet(L, view, x, y);
-        expect(p.x >= L.sand.x && p.x <= L.sand.x + L.sand.w && p.y >= L.sand.y && p.y <= L.sand.y + L.sand.h, `${tag} ${x},${y}`).toBe(true);
+        expect(
+          p.x >= L.sand.x && p.x <= L.sand.x + L.sand.w && p.y >= L.sand.y && p.y <= L.sand.y + L.sand.h,
+          `${tag} ${x},${y}`,
+        ).toBe(true);
         expect(overlaps(pailBox(p.x, p.y), pet), `${tag} ${x},${y} pet`).toBe(false);
       }
     });
@@ -217,7 +284,8 @@ describe('layout', () => {
       });
       boxes.forEach((b, i) => {
         clear(b, `creature ${i}`);
-        for (let j = i + 1; j < boxes.length; j++) expect(overlaps(b, boxes[j]), `${tag} creatures ${i},${j}`).toBe(false);
+        for (let j = i + 1; j < boxes.length; j++)
+          expect(overlaps(b, boxes[j]), `${tag} creatures ${i},${j}`).toBe(false);
       });
     });
 
@@ -233,7 +301,12 @@ describe('layout', () => {
 
 describe('levels and bands', () => {
   it('lap 1, toddler 1-2, preschool 2-3, pre-K 3-4, nothing else', () => {
-    expect(BAND_LEVELS).toEqual({ lap: { min: 1, max: 1 }, toddler: { min: 1, max: 2 }, preschool: { min: 2, max: 3 }, prek: { min: 3, max: 4 } });
+    expect(BAND_LEVELS).toEqual({
+      lap: { min: 1, max: 1 },
+      toddler: { min: 1, max: 2 },
+      preschool: { min: 2, max: 3 },
+      prek: { min: 3, max: 4 },
+    });
   });
   it('level 1 is the wave, 2 the pail, 3 the line, 4 the cycle', () => {
     expect(tidePlan(1).mode).toBe('wave');
@@ -243,9 +316,13 @@ describe('levels and bands', () => {
   });
 });
 
-const sandBox = (L: ReturnType<typeof shoreLayout>, p: { x: number; y: number }) => p.x >= L.sand.x && p.x <= L.sand.x + L.sand.w && p.y >= L.sand.y && p.y <= L.sand.y + L.sand.h;
-const roundCases = HIGHS.flatMap((high) => [0, 1].map((round) => ({ high, round, lines: linesFor(round, high) })));
-const feetOf = (L: ReturnType<typeof shoreLayout>, spots: Record<Thing, { y: number }>) => Object.fromEntries(THINGS.map((t) => [t, hAt(L, spots[t].y)])) as Record<Thing, number>;
+const sandBox = (L: ReturnType<typeof shoreLayout>, p: { x: number; y: number }) =>
+  p.x >= L.sand.x && p.x <= L.sand.x + L.sand.w && p.y >= L.sand.y && p.y <= L.sand.y + L.sand.h;
+const roundCases = HIGHS.flatMap((high) =>
+  [0, 1].map((round) => ({ high, round, lines: linesFor(round, high) })),
+);
+const feetOf = (L: ReturnType<typeof shoreLayout>, spots: Record<Thing, { y: number }>) =>
+  Object.fromEntries(THINGS.map((t) => [t, hAt(L, spots[t].y)])) as Record<Thing, number>;
 
 describe('level 3: lines', () => {
   it('round 0 has one line; round 1 adds a higher windy line within 0.12..0.85 of it', () => {
@@ -325,7 +402,8 @@ describe('level 3: lines', () => {
           expect(sandBox(L, spots[t]), `${tag} ${what} ${t} sand`).toBe(true);
           const b = thingBox(t, spots[t].x, spots[t].y);
           clear(b, `${what} ${t}`);
-          for (const u of THINGS.slice(i + 1)) expect(overlaps(b, thingBox(u, spots[u].x, spots[u].y)), `${tag} ${what} ${t}/${u}`).toBe(false);
+          for (const u of THINGS.slice(i + 1))
+            expect(overlaps(b, thingBox(u, spots[u].x, spots[u].y)), `${tag} ${what} ${t}/${u}`).toBe(false);
         });
         for (const asks of [0, 1, 2]) {
           const r = new LineRound(lines);
@@ -362,20 +440,34 @@ describe('level 3: lines', () => {
         clear(b, `tray ${t}`);
         expect(overlaps(b, button), `${tag} ${t}/button`).toBe(false);
         for (const o of boxes.slice(i + 1)) expect(overlaps(b, o.b), `${tag} ${t}/${o.t}`).toBe(false);
-        for (const high of HIGHS) for (const lines of [linesFor(0, high), linesFor(1, high)]) expect(isDry(hAt(L, spots[t].y), lines), `${tag} ${t} tray wet`).toBe(false);
+        for (const high of HIGHS)
+          for (const lines of [linesFor(0, high), linesFor(1, high)])
+            expect(isDry(hAt(L, spots[t].y), lines), `${tag} ${t} tray wet`).toBe(false);
       });
     });
 
     it(`${tag}: clampFeet with sizes keeps a flag's top no higher than a pail's, in the sand, clear of the pet and corners`, () => {
-      const pts = [[-500, -500], [0, view.h + 500], [10, view.h - 10], [PET.w / 2, view.h], [view.w + 500, -500], [view.w / 2, L.sand.y - 99], [30, L.low], [view.w, L.sand.y]];
+      const pts = [
+        [-500, -500],
+        [0, view.h + 500],
+        [10, view.h - 10],
+        [PET.w / 2, view.h],
+        [view.w + 500, -500],
+        [view.w / 2, L.sand.y - 99],
+        [30, L.low],
+        [view.w, L.sand.y],
+      ];
       for (const [x, y] of pts) {
         const pailTop = clampFeet(L, view, x, y).y - PAIL;
         for (const t of THINGS) {
           const p = clampFeet(L, view, x, y, SIZES[t]);
           expect(sandBox(L, p), `${tag} ${t} ${x},${y} sand`).toBe(true);
-          expect(p.y - SIZES[t].h, `${tag} ${t} top ${x},${y}`).toBeGreaterThanOrEqual(L.sand.y - PAIL - 1e-9);
+          expect(p.y - SIZES[t].h, `${tag} ${t} top ${x},${y}`).toBeGreaterThanOrEqual(
+            L.sand.y - PAIL - 1e-9,
+          );
           expect(overlaps(thingBox(t, p.x, p.y), pet), `${tag} ${t} ${x},${y} pet`).toBe(false);
-          for (const c of cornerButtons(view)) expect(overlaps(thingBox(t, p.x, p.y), c), `${tag} ${t} ${x},${y} corner`).toBe(false);
+          for (const c of cornerButtons(view))
+            expect(overlaps(thingBox(t, p.x, p.y), c), `${tag} ${t} ${x},${y} corner`).toBe(false);
         }
         expect(pailTop).toBeGreaterThanOrEqual(L.sand.y - PAIL - 1e-9);
       }
@@ -427,14 +519,21 @@ describe('level 4: the strip', () => {
       const wrong = (['high', 'low'] as const).find((c) => c !== answerOf(s))!;
       const line = wrongLine(s, wrong);
       const neighbour = s.gap > 0 ? s.pics[s.gap - 1] : s.pics[1];
-      const expected: WrongLine = s.gap > 0 ? (neighbour === 'high' ? 'tl.after-in' : 'tl.after-out') : neighbour === 'high' ? 'tl.before-in' : 'tl.before-out';
+      const expected: WrongLine =
+        s.gap > 0
+          ? neighbour === 'high'
+            ? 'tl.after-in'
+            : 'tl.after-out'
+          : neighbour === 'high'
+            ? 'tl.before-in'
+            : 'tl.before-out';
       expect(line).toBe(expected);
       expect(wrong).toBe(neighbour);
     }
   });
 
   const strip = (gap: number) => makeStrip(new Rng(gap + 1));
-  const wrongCard = (s: ReturnType<typeof makeStrip>): Pic => (s.cards.find((c) => c !== answerOf(s)) as Pic);
+  const wrongCard = (s: ReturnType<typeof makeStrip>): Pic => s.cards.find((c) => c !== answerOf(s)) as Pic;
 
   it('StripTurn: a wrong tap is a miss, glow and hint on the second, hint once', () => {
     const s = strip(1);
@@ -481,7 +580,10 @@ describe('level 4: the strip', () => {
       const { pics, cards } = stripLayout(view);
       expect(pics).toHaveLength(SLOTS);
       expect(cards).toHaveLength(3);
-      const all = [...pics.map((b, i) => ({ b, n: `pic${i}` })), ...cards.map((b, i) => ({ b, n: `card${i}` }))];
+      const all = [
+        ...pics.map((b, i) => ({ b, n: `pic${i}` })),
+        ...cards.map((b, i) => ({ b, n: `card${i}` })),
+      ];
       const pet = petCorner(view);
       all.forEach(({ b, n }, i) => {
         expect(inside(b, view.w, view.h), `${tag} ${n} on screen ${JSON.stringify(b)}`).toBe(true);
@@ -498,8 +600,31 @@ describe('level 4: the strip', () => {
 
 describe('voice keys', () => {
   it('every tl.* line the game uses exists', () => {
-    const wrongs: WrongLine[] = ['tl.halfway', 'tl.after-in', 'tl.after-out', 'tl.before-in', 'tl.before-out'];
-    const keys = [...wrongs, 'tl.instruct.3', 'tl.instruct.4', 'tl.place-all', 'tl.wet.pail', 'tl.wet.flag', 'tl.wet.towel', 'tl.top-line', 'tl.windy', 'tl.dry-all', 'tl.look-line', 'tl.pic-in', 'tl.pic-out', 'tl.look-card', 'tl.right', 'tl.next-strip'];
+    const wrongs: WrongLine[] = [
+      'tl.halfway',
+      'tl.after-in',
+      'tl.after-out',
+      'tl.before-in',
+      'tl.before-out',
+    ];
+    const keys = [
+      ...wrongs,
+      'tl.instruct.3',
+      'tl.instruct.4',
+      'tl.place-all',
+      'tl.wet.pail',
+      'tl.wet.flag',
+      'tl.wet.towel',
+      'tl.top-line',
+      'tl.windy',
+      'tl.dry-all',
+      'tl.look-line',
+      'tl.pic-in',
+      'tl.pic-out',
+      'tl.look-card',
+      'tl.right',
+      'tl.next-strip',
+    ];
     for (const k of keys) expect(Object.keys(SCRIPT), k).toContain(k);
     for (const t of THINGS) expect(Object.keys(SCRIPT)).toContain(`tl.wet.${t}`);
   });
@@ -507,7 +632,18 @@ describe('voice keys', () => {
 
 describe('speech', () => {
   it('avoids moon, clock, metres and frightening or litter words', () => {
-    const forbidden = ['moon', 'clock', "o'clock", 'metre', 'meter', 'danger', 'drown', 'litter', 'rubbish', 'trash'];
+    const forbidden = [
+      'moon',
+      'clock',
+      "o'clock",
+      'metre',
+      'meter',
+      'danger',
+      'drown',
+      'litter',
+      'rubbish',
+      'trash',
+    ];
     const ids = Object.keys(SCRIPT).filter((id) => id.startsWith('tl.'));
     expect(ids.length).toBeGreaterThan(0);
     for (const id of ids) {

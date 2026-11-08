@@ -24,7 +24,8 @@ export const COURSES: Record<HarborCourseId, Course> = {
     id: 'harbors',
     version: 1,
     name: 'Busy Harbors',
-    blurb: 'Five harbors in a row, from a 5 by 5 to a crowded 6 by 6 with a long way to the dock. Get the ferry out in the fewest slides.',
+    blurb:
+      'Five harbors in a row, from a 5 by 5 to a crowded 6 by 6 with a long way to the dock. Get the ferry out in the fewest slides.',
     harbors: [
       ['....a', '.ffda', '...da', '..cbb', '..cee'],
       ['..d..', '..dbb', 'aacce', '.ff.e', '..ggg'],

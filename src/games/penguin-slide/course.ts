@@ -64,27 +64,42 @@ export const COURSES: Record<PondCourseId, Course> = {
 
 /** Read a board from its picture. The fewest slides is worked out by the solver, never typed in. */
 export function parseBoard(rows: readonly string[]): SlidePuzzle {
-  const rocks: Cell[] = [], soft: Cell[] = [], fish: Cell[] = [], blocks: Cell[] = [];
+  const rocks: Cell[] = [],
+    soft: Cell[] = [],
+    fish: Cell[] = [],
+    blocks: Cell[] = [];
   let start: Cell | null = null;
-  rows.forEach((row, y) => [...row].forEach((ch, x) => {
-    if (ch === '#') rocks.push({ x, y });
-    else if (ch === '~') soft.push({ x, y });
-    else if (ch === 'F') fish.push({ x, y });
-    else if (ch === 'B') blocks.push({ x, y });
-    else if (ch === 'P') start = { x, y };
-  }));
+  rows.forEach((row, y) =>
+    [...row].forEach((ch, x) => {
+      if (ch === '#') rocks.push({ x, y });
+      else if (ch === '~') soft.push({ x, y });
+      else if (ch === 'F') fish.push({ x, y });
+      else if (ch === 'B') blocks.push({ x, y });
+      else if (ch === 'P') start = { x, y };
+    }),
+  );
   if (!start) throw new Error('a pond needs a penguin');
-  const puzzle: SlidePuzzle = { cols: rows[0].length, rows: rows.length, rocks, soft, ...(blocks.length ? { blocks } : {}), start, fish, best: 0 };
+  const puzzle: SlidePuzzle = {
+    cols: rows[0].length,
+    rows: rows.length,
+    rocks,
+    soft,
+    ...(blocks.length ? { blocks } : {}),
+    start,
+    fish,
+    best: 0,
+  };
   return { ...puzzle, best: solve(puzzle, start).moves };
 }
 
-export const isPondCourse = (v: unknown): v is PondCourseId => v === 'practice' || v === 'ponds' || v === 'frozen';
+export const isPondCourse = (v: unknown): v is PondCourseId =>
+  v === 'practice' || v === 'ponds' || v === 'frozen';
 
 const parsed = new Map<PondCourseId, SlidePuzzle[]>();
 /** The ponds of a course, read once. */
 export function courseBoards(id: PondCourseId): SlidePuzzle[] {
   let boards = parsed.get(id);
-  if (!boards) parsed.set(id, boards = COURSES[id].boards.map(parseBoard));
+  if (!boards) parsed.set(id, (boards = COURSES[id].boards.map(parseBoard)));
   return boards;
 }
 

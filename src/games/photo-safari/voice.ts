@@ -1,7 +1,9 @@
 // What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
 export const VOICE = {
   'game.photo-safari': ['Photo safari!'],
-  'safari.tell': ["A friend wants a photo of the sparkly one, but I can't tell which! Tap picture words to tell me, then press Tell."],
+  'safari.tell': [
+    "A friend wants a photo of the sparkly one, but I can't tell which! Tap picture words to tell me, then press Tell.",
+  ],
   'safari.chip': ['{what}!'],
   'safari.tell-empty': ['Tell me something about it! Tap a picture word.'],
   'safari.which': ['Which one? Two are {what}!'],
@@ -19,7 +21,9 @@ export const VOICE = {
   'safari.same': ['{what}, just like in your photo!'],
   'safari.was': ['You found it! {what}!'],
   'safari.claim': ['I think {claim}. Is that true? Take a picture of the {animal} to check!'],
-  'safari.judge': ['Look at your photo. Is it true that {claim}? Thumbs up for true, thumbs down for not true.'],
+  'safari.judge': [
+    'Look at your photo. Is it true that {claim}? Thumbs up for true, thumbs down for not true.',
+  ],
   'safari.look-again': ['Look again! Your photo shows {shows}.'],
   'safari.true': ["Yes, it's true! {shows}!"],
   'safari.false': ['Right, that was not true! Your photo shows {shows}.'],

@@ -5,7 +5,10 @@ describe('round lifetime', () => {
   it('marks the round dead before releasing resources, in reverse order, exactly once', () => {
     const lifetime = new Lifetime();
     const calls: string[] = [];
-    lifetime.own(() => { expect(lifetime.alive).toBe(false); calls.push('texture'); });
+    lifetime.own(() => {
+      expect(lifetime.alive).toBe(false);
+      calls.push('texture');
+    });
     lifetime.own(() => calls.push('drag'));
     expect(lifetime.alive).toBe(true);
     lifetime.destroy();
@@ -17,7 +20,9 @@ describe('round lifetime', () => {
     const lifetime = new Lifetime();
     const cleanup = vi.fn();
     const release = lifetime.own(cleanup);
-    release(); release(); lifetime.destroy();
+    release();
+    release();
+    lifetime.destroy();
     expect(cleanup).toHaveBeenCalledTimes(1);
   });
 
@@ -47,7 +52,8 @@ describe('round lifetime', () => {
     expect(first).toHaveBeenCalledTimes(1);
     expect(second.handleEvent).toHaveBeenCalledTimes(1);
     options.capture = false;
-    release(); lifetime.destroy();
+    release();
+    lifetime.destroy();
     expect(remove).toHaveBeenCalledWith('touch', first, { capture: true });
     expect(remove).toHaveBeenCalledWith('touch', second, { capture: false });
     target.dispatchEvent(new Event('touch'));
@@ -59,7 +65,9 @@ describe('round lifetime', () => {
     const round = new Lifetime();
     const demo = new Lifetime();
     const target = new EventTarget();
-    const actual = vi.fn(), pretend = vi.fn(), replay = vi.fn();
+    const actual = vi.fn(),
+      pretend = vi.fn(),
+      replay = vi.fn();
     round.listen(target, 'touch', actual);
     demo.listen(target, 'touch', pretend);
     demo.destroy();
@@ -69,7 +77,8 @@ describe('round lifetime', () => {
     expect(actual).toHaveBeenCalledTimes(1);
     expect(pretend).not.toHaveBeenCalled();
     expect(replay).toHaveBeenCalledTimes(1);
-    round.destroy(); nextDemo.destroy();
+    round.destroy();
+    nextDemo.destroy();
     target.dispatchEvent(new Event('touch'));
     expect(actual).toHaveBeenCalledTimes(1);
     expect(replay).toHaveBeenCalledTimes(1);
@@ -79,7 +88,9 @@ describe('round lifetime', () => {
     const lifetime = new Lifetime();
     const cleanup = vi.fn();
     lifetime.own(cleanup);
-    lifetime.own(() => { throw new Error('failed resource'); });
+    lifetime.own(() => {
+      throw new Error('failed resource');
+    });
     expect(() => lifetime.destroy()).toThrow(AggregateError);
     expect(cleanup).toHaveBeenCalledTimes(1);
     expect(lifetime.alive).toBe(false);

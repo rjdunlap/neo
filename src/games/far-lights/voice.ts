@@ -27,7 +27,9 @@ export const VOICE = {
   'far.instruct.cant-tell': ['They look the same. Which one is farther? Or could it be either?'],
   'far.strong-look': ['This one is a strong light.'],
   'far.same-now': ['Now they look the same!'],
-  'far.right-strong': ['That strong light is farther away. It looks just as bright as the gentle light up close.'],
+  'far.right-strong': [
+    'That strong light is farther away. It looks just as bright as the gentle light up close.',
+  ],
   'far.wrong-strong': ["That's the gentle light. It had to come close to look as bright."],
   'far.both-fit': ["Both could fit! Let's step to the side and look again."],
   'far.maybe': ["Maybe! A strong light far away could look the same. We can't tell yet."],

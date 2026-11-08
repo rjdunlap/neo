@@ -7,7 +7,10 @@ export function createSuite({ page, log, launch, finished, screenshot }) {
     await page.waitForTimeout(700);
     await page.evaluate(async () => {
       const g = neo.scene.game;
-      for (let i = 0; i < 6; i++) { kit.tap(500, 200); await kit.sleep(600); }
+      for (let i = 0; i < 6; i++) {
+        kit.tap(500, 200);
+        await kit.sleep(600);
+      }
     });
     await finished('weather-wardrobe');
     await launch('weather-wardrobe', 10, 'Mia', 'prek');
@@ -21,7 +24,8 @@ export function createSuite({ page, log, launch, finished, screenshot }) {
       const g = neo.scene.game;
       const point = (node, y = 0) => node.toGlobal({ x: 0, y });
       const drag = async (o, f) => {
-        const a = point(o.node), b = point(f.node, -150);
+        const a = point(o.node),
+          b = point(f.node, -150);
         await kit.drag(kit.line([a.x, a.y], [b.x, b.y + 40], 18));
         await kit.sleep(120);
       };
@@ -38,9 +42,16 @@ export function createSuite({ page, log, launch, finished, screenshot }) {
         await drag(o, wrong);
         await kit.until(() => !g.busy, 6000);
         await kit.sleep(80);
-        if (o.used || Math.hypot(o.node.x - o.handle.home.x, o.node.y - o.handle.home.y) > 2) throw new Error('Wrong item did not return');
+        if (o.used || Math.hypot(o.node.x - o.handle.home.x, o.node.y - o.handle.home.y) > 2)
+          throw new Error('Wrong item did not return');
       }
-      if (g.misses !== 2 || g.hints !== 1 || !g.glow.context.instructions.length || g.glow.eventMode !== 'none') throw new Error('Paired hint or scores wrong');
+      if (
+        g.misses !== 2 ||
+        g.hints !== 1 ||
+        !g.glow.context.instructions.length ||
+        g.glow.eventMode !== 'none'
+      )
+        throw new Error('Paired hint or scores wrong');
       const hinted = g.options.find((o) => o.item === g.outfit.needed[0]);
       await drag(hinted, g.friends[friendFor(g.outfit, hinted.item)]);
       if (!hinted.used) throw new Error('Glow swallowed drag');
@@ -58,10 +69,22 @@ export function createSuite({ page, log, launch, finished, screenshot }) {
       if (!g.done) throw new Error('Friends did not finish');
       return seen;
     });
-    assert.deepEqual(proof, [[2, 2], [2, 2], [2, 2]]);
+    assert.deepEqual(proof, [
+      [2, 2],
+      [2, 2],
+      [2, 2],
+    ]);
     await finished('weather-wardrobe');
-    assert.deepEqual(await page.evaluate(() => { const r = kit.store.stats('weather-wardrobe').history.at(-1); return [r.misses, r.hints]; }), [2, 1]);
-    log('Weather Wardrobe 1/10: real drags, empty-space return, wrong friend twice, paired glow, three dressed pairs, saved 2/1 and sticker; portrait/landscape captured');
+    assert.deepEqual(
+      await page.evaluate(() => {
+        const r = kit.store.stats('weather-wardrobe').history.at(-1);
+        return [r.misses, r.hints];
+      }),
+      [2, 1],
+    );
+    log(
+      'Weather Wardrobe 1/10: real drags, empty-space return, wrong friend twice, paired glow, three dressed pairs, saved 2/1 and sticker; portrait/landscape captured',
+    );
     await page.setViewportSize({ width: 1024, height: 768 });
   }
   return { wardrobe10 };

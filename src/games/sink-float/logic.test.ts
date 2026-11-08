@@ -2,9 +2,32 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { SCRIPT, type LineId } from '../../content/voice-script';
 import { levelsInOrder, rangeFor } from '../../progress/difficulty';
-import { ALL_PAIRS, ALL_SHAPES, ALL_THINGS, CLAY_SHAPES, floats, floatsIn, SALT_DEPTHS, saltRoundFor, PAIRS, pairsFor, rightBasket, shapesFor, SINK_IDS, SINK_LEVELS, SINK_PLANS, sinkPlan, THINGS, thingsFor, thingWord, type Thing } from './logic';
+import {
+  ALL_PAIRS,
+  ALL_SHAPES,
+  ALL_THINGS,
+  CLAY_SHAPES,
+  floats,
+  floatsIn,
+  SALT_DEPTHS,
+  saltRoundFor,
+  PAIRS,
+  pairsFor,
+  rightBasket,
+  shapesFor,
+  SINK_IDS,
+  SINK_LEVELS,
+  SINK_PLANS,
+  sinkPlan,
+  THINGS,
+  thingsFor,
+  thingWord,
+  type Thing,
+} from './logic';
 
-const THING_PLANS = Object.values(SINK_PLANS).filter((p) => p.mode !== 'shape' && p.mode !== 'pair' && p.mode !== 'salt');
+const THING_PLANS = Object.values(SINK_PLANS).filter(
+  (p) => p.mode !== 'shape' && p.mode !== 'pair' && p.mode !== 'salt',
+);
 
 describe('Sink or Float', () => {
   it('always mixes floaters and sinkers, with surprises only where the level asks for them', () => {
@@ -34,10 +57,20 @@ describe('Sink or Float', () => {
 
   it('floats and sinks every thing as reviewed for plain tap water', () => {
     const reviewed: Record<string, [floats: boolean, obvious: boolean]> = {
-      duck: [true, true], boat: [true, true], ball: [true, true], feather: [true, true],
-      leaf: [true, false], apple: [true, false], log: [true, false], ice: [true, false],
-      rock: [false, true], key: [false, true], marble: [false, true],
-      coin: [false, false], spoon: [false, false], paperclip: [false, false],
+      duck: [true, true],
+      boat: [true, true],
+      ball: [true, true],
+      feather: [true, true],
+      leaf: [true, false],
+      apple: [true, false],
+      log: [true, false],
+      ice: [true, false],
+      rock: [false, true],
+      key: [false, true],
+      marble: [false, true],
+      coin: [false, false],
+      spoon: [false, false],
+      paperclip: [false, false],
     };
     expect(Object.keys(THINGS).sort()).toEqual(Object.keys(reviewed).sort());
     for (const t of ALL_THINGS) expect([THINGS[t].floats, THINGS[t].obvious], t).toEqual(reviewed[t]);
@@ -57,7 +90,8 @@ describe('Sink or Float', () => {
     }
     for (const level of [5, 6]) {
       const seen = new Set<Thing>();
-      for (let seed = 1; seed <= 100; seed++) for (const t of thingsFor(sinkPlan(level), new Rng(seed))) seen.add(t);
+      for (let seed = 1; seed <= 100; seed++)
+        for (const t of thingsFor(sinkPlan(level), new Rng(seed))) seen.add(t);
       expect([...seen].sort(), `level ${level}`).toEqual([...ALL_THINGS].sort());
     }
   });
@@ -87,8 +121,10 @@ describe('Sink or Float', () => {
   it('places Big and small between 5 and 6 for pre-K and between 6 and 7 at school, and never plays the reserved 8', () => {
     expect(levelsInOrder(rangeFor(SINK_LEVELS, 'prek'))).toEqual([4, 5, 9, 6]);
     expect(levelsInOrder(rangeFor(SINK_LEVELS, 'school'))).toEqual([5, 6, 9, 7, 10]);
-    for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const) expect(levelsInOrder(rangeFor(SINK_LEVELS, band))).not.toContain(10);
-    for (const band of ['lap', 'toddler', 'preschool'] as const) expect(levelsInOrder(rangeFor(SINK_LEVELS, band))).not.toContain(9);
+    for (const band of ['lap', 'toddler', 'preschool', 'prek'] as const)
+      expect(levelsInOrder(rangeFor(SINK_LEVELS, band))).not.toContain(10);
+    for (const band of ['lap', 'toddler', 'preschool'] as const)
+      expect(levelsInOrder(rangeFor(SINK_LEVELS, band))).not.toContain(9);
     for (const band of Object.keys(SINK_LEVELS) as (keyof typeof SINK_LEVELS)[]) {
       const order = levelsInOrder(rangeFor(SINK_LEVELS, band));
       expect(order, band).not.toContain(8);
@@ -124,7 +160,8 @@ describe('Sink or Float', () => {
   it('floats only the hollow boat, and explains every shape with a real line', () => {
     expect(ALL_SHAPES.filter((s) => CLAY_SHAPES[s].floats)).toEqual(['boat']);
     for (const s of ALL_SHAPES) expect(SCRIPT[CLAY_SHAPES[s].line], s).toBeDefined();
-    for (const id of ['sink.clay-sinks', 'sink.clay-ask', 'sink.clay-same', 'sink.clay-hint'] as const) expect(SCRIPT[id]).toBeDefined();
+    for (const id of ['sink.clay-sinks', 'sink.clay-ask', 'sink.clay-same', 'sink.clay-hint'] as const)
+      expect(SCRIPT[id]).toBeDefined();
   });
 
   it('offers all three shapes in every experiment, the boat in every place over many seeds, and a new clay color each time', () => {
@@ -167,7 +204,8 @@ describe('Sink or Float', () => {
       expect(q).toHaveLength(plan.count);
       expect(q.map((x) => x.test)).toEqual(['egg', 'egg', 'egg', 'duck']);
       expect(new Set(q.map((x) => x.salty)).size).toBe(2);
-      for (let i = 2; i < q.length; i++) expect(q[i].salty === q[i - 1].salty && q[i].salty === q[i - 2].salty).toBe(false);
+      for (let i = 2; i < q.length; i++)
+        expect(q[i].salty === q[i - 1].salty && q[i].salty === q[i - 2].salty).toBe(false);
       firsts.add(q[0].salty);
       shown.add(round.shown);
     }
@@ -176,7 +214,23 @@ describe('Sink or Float', () => {
   });
 
   it('Salty or fresh: every line the level speaks is in the voice script', () => {
-    const ids = ['shake', 'duck-ask', 'egg-ask', 'test-egg', 'test-duck', 'which', 'duck', 'egg', 'why', 'hide', 'right', 'wrong-egg', 'wrong-duck', 'hint-egg', 'hint-duck'];
+    const ids = [
+      'shake',
+      'duck-ask',
+      'egg-ask',
+      'test-egg',
+      'test-duck',
+      'which',
+      'duck',
+      'egg',
+      'why',
+      'hide',
+      'right',
+      'wrong-egg',
+      'wrong-duck',
+      'hint-egg',
+      'hint-duck',
+    ];
     for (const id of ids) expect(SCRIPT[`sink.salt-${id}` as LineId], id).toBeDefined();
   });
 });

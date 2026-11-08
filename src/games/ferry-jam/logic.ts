@@ -53,7 +53,9 @@ export function parse(rows: readonly string[]): Harbor {
   const cells = new Map<string, { r: number; c: number }[]>();
   rows.forEach((line, r) => {
     if (line.length !== size) throw new Error(`harbor row ${r} is not ${size} wide`);
-    [...line].forEach((ch, c) => { if (ch !== '.') cells.set(ch, [...(cells.get(ch) ?? []), { r, c }]); });
+    [...line].forEach((ch, c) => {
+      if (ch !== '.') cells.set(ch, [...(cells.get(ch) ?? []), { r, c }]);
+    });
   });
   const rocks = (cells.get('x') ?? []).map(({ r, c }) => ({ row: r, col: c }));
   cells.delete('x');
@@ -65,13 +67,22 @@ export function parse(rows: readonly string[]): Harbor {
     const dir = cs.every((p) => p.r === cs[0].r) ? 'h' : 'v';
     if (dir === 'v' && !cs.every((p) => p.c === cs[0].c)) throw new Error('a boat is not in a line');
     if (cs.length !== 2 && cs.length !== 3) throw new Error(`a boat is ${cs.length} cells long`);
-    return { row: Math.min(...cs.map((p) => p.r)), col: Math.min(...cs.map((p) => p.c)), len: cs.length as 2 | 3, dir };
+    return {
+      row: Math.min(...cs.map((p) => p.r)),
+      col: Math.min(...cs.map((p) => p.c)),
+      len: cs.length as 2 | 3,
+      dir,
+    };
   };
-  const others = [...cells.entries()].filter(([ch]) => ch !== 'f').sort(([a], [b]) => (a < b ? -1 : 1)).map(([, cs]) => make(cs));
+  const others = [...cells.entries()]
+    .filter(([ch]) => ch !== 'f')
+    .sort(([a], [b]) => (a < b ? -1 : 1))
+    .map(([, cs]) => make(cs));
   const first = make(ferry);
   if (first.dir !== 'h' || first.len !== 2) throw new Error('the ferry is a sideways boat of length 2');
   const second = yellow && make(yellow);
-  if (second && (second.dir !== 'v' || second.len !== 2)) throw new Error('the yellow ferry is an upright boat of length 2');
+  if (second && (second.dir !== 'v' || second.len !== 2))
+    throw new Error('the yellow ferry is an upright boat of length 2');
   const h: Harbor = { size, boats: second ? [first, second, ...others] : [first, ...others] };
   if (rocks.length) h.rocks = rocks;
   if (second) h.yellow = true;
@@ -83,7 +94,19 @@ const LETTERS = 'abcdeghijklmnopqrstuvwz';
 
 export function render(h: Harbor, layout: Layout = start(h)): string[] {
   const first = h.yellow ? 2 : 1;
-  const g = grid(h, layout).map((row) => row.map((i) => (i === ROCK ? 'x' : i < 0 ? '.' : i === FERRY ? 'f' : h.yellow && i === YELLOW ? 'y' : LETTERS[i - first])));
+  const g = grid(h, layout).map((row) =>
+    row.map((i) =>
+      i === ROCK
+        ? 'x'
+        : i < 0
+          ? '.'
+          : i === FERRY
+            ? 'f'
+            : h.yellow && i === YELLOW
+              ? 'y'
+              : LETTERS[i - first],
+    ),
+  );
   return g.map((row) => row.join(''));
 }
 
@@ -133,10 +156,16 @@ export function settle(h: Harbor, layout: Layout): Layout {
 }
 
 /** The harbor is finished: its ferry is at the dock, or with two ferries, both have sailed. */
-export const solved = (h: Harbor, layout: Layout) => (h.yellow ? sailed(h, layout, FERRY) && sailed(h, layout, YELLOW) : atDock(h, layout));
+export const solved = (h: Harbor, layout: Layout) =>
+  h.yellow ? sailed(h, layout, FERRY) && sailed(h, layout, YELLOW) : atDock(h, layout);
 
 /** The cells a boat can slide to along its lane from where it is now: every free position, not just the next. */
-export function reach(h: Harbor, layout: Layout, boat: number, g = grid(h, layout)): { min: number; max: number } {
+export function reach(
+  h: Harbor,
+  layout: Layout,
+  boat: number,
+  g = grid(h, layout),
+): { min: number; max: number } {
   const b = h.boats[boat];
   const at = layout[boat];
   if (at >= h.size) return { min: at, max: at };
@@ -189,7 +218,7 @@ export function solve(h: Harbor, from: Layout = start(h), cap = Infinity): Slide
         states.set(k, moved);
         if (solved(h, moved)) {
           const path: Slide[] = [];
-          for (let at: number | undefined = k; at !== undefined; ) {
+          for (let at: number | undefined = k; at !== undefined;) {
             const step = seen.get(at);
             if (!step) break;
             path.unshift(step.slide);
@@ -225,17 +254,76 @@ export interface FerryPlan {
 }
 
 export const PLANS: FerryPlan[] = [
-  { name: 'A 4 by 4 harbor: move a boat or two out of the ferry\'s way', size: 4, boats: { min: 2, max: 3 }, moves: { min: 2, max: 3 }, harbors: 2 },
-  { name: 'A 4 by 4 harbor that takes a few more slides', size: 4, boats: { min: 3, max: 4 }, moves: { min: 4, max: 6 }, harbors: 2 },
-  { name: 'A 5 by 5 harbor with more boats', size: 5, boats: { min: 4, max: 6 }, moves: { min: 5, max: 7 }, harbors: 1 },
-  { name: 'A busier 5 by 5 harbor: plan the slides in order', size: 5, boats: { min: 5, max: 7 }, moves: { min: 8, max: 11 }, harbors: 1 },
+  {
+    name: "A 4 by 4 harbor: move a boat or two out of the ferry's way",
+    size: 4,
+    boats: { min: 2, max: 3 },
+    moves: { min: 2, max: 3 },
+    harbors: 2,
+  },
+  {
+    name: 'A 4 by 4 harbor that takes a few more slides',
+    size: 4,
+    boats: { min: 3, max: 4 },
+    moves: { min: 4, max: 6 },
+    harbors: 2,
+  },
+  {
+    name: 'A 5 by 5 harbor with more boats',
+    size: 5,
+    boats: { min: 4, max: 6 },
+    moves: { min: 5, max: 7 },
+    harbors: 1,
+  },
+  {
+    name: 'A busier 5 by 5 harbor: plan the slides in order',
+    size: 5,
+    boats: { min: 5, max: 7 },
+    moves: { min: 8, max: 11 },
+    harbors: 1,
+  },
   { name: 'A 6 by 6 harbor', size: 6, boats: { min: 6, max: 8 }, moves: { min: 8, max: 12 }, harbors: 1 },
-  { name: 'A crowded 6 by 6 harbor: a long way to the dock', size: 6, boats: { min: 7, max: 10 }, moves: { min: 13, max: 18 }, harbors: 1 },
-  { name: 'Rocks in the harbor: a 5 by 5 with a rock that never moves, so a boat has to wait somewhere else', size: 5, boats: { min: 4, max: 5 }, moves: { min: 6, max: 9 }, harbors: 1, rocks: 1 },
-  { name: 'Two ferries: a 5 by 5 where a yellow ferry leaves by a bottom dock, so one ferry has to go first to free the other', size: 5, boats: { min: 3, max: 5 }, moves: { min: 5, max: 8 }, harbors: 1, ferries: 2 },
+  {
+    name: 'A crowded 6 by 6 harbor: a long way to the dock',
+    size: 6,
+    boats: { min: 7, max: 10 },
+    moves: { min: 13, max: 18 },
+    harbors: 1,
+  },
+  {
+    name: 'Rocks in the harbor: a 5 by 5 with a rock that never moves, so a boat has to wait somewhere else',
+    size: 5,
+    boats: { min: 4, max: 5 },
+    moves: { min: 6, max: 9 },
+    harbors: 1,
+    rocks: 1,
+  },
+  {
+    name: 'Two ferries: a 5 by 5 where a yellow ferry leaves by a bottom dock, so one ferry has to go first to free the other',
+    size: 5,
+    boats: { min: 3, max: 5 },
+    moves: { min: 5, max: 8 },
+    harbors: 1,
+    ferries: 2,
+  },
   // Slides here count the ferry's own last slide to the dock, as `solve` does: "one boat slide" is 2, "two or three" is 3–4.
-  { name: 'One boat in the way: a 4 by 4 harbor where one slide of one boat lets the ferry out', size: 4, boats: { min: 2, max: 2 }, moves: { min: 2, max: 2 }, harbors: 2, entry: true },
-  { name: 'Who\'s in the way? Tap the boat in front of the ferry, then slide it and the boat that stops it', size: 4, boats: { min: 2, max: 3 }, moves: { min: 3, max: 4 }, harbors: 2, entry: true, ask: true },
+  {
+    name: 'One boat in the way: a 4 by 4 harbor where one slide of one boat lets the ferry out',
+    size: 4,
+    boats: { min: 2, max: 2 },
+    moves: { min: 2, max: 2 },
+    harbors: 2,
+    entry: true,
+  },
+  {
+    name: "Who's in the way? Tap the boat in front of the ferry, then slide it and the boat that stops it",
+    size: 4,
+    boats: { min: 2, max: 3 },
+    moves: { min: 3, max: 4 },
+    harbors: 2,
+    entry: true,
+    ask: true,
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -248,7 +336,10 @@ export const planFor = (level: number): FerryPlan => PLANS[Math.min(PLANS.length
 
 function place(h: Harbor, boat: Boat, ignore = -1): boolean {
   const layout = start(h);
-  const g = grid({ ...h, boats: h.boats.filter((_, i) => i !== ignore) }, layout.filter((_, i) => i !== ignore));
+  const g = grid(
+    { ...h, boats: h.boats.filter((_, i) => i !== ignore) },
+    layout.filter((_, i) => i !== ignore),
+  );
   for (let k = 0; k < boat.len; k++) {
     const r = boat.dir === 'h' ? boat.row : boat.row + k;
     const c = boat.dir === 'h' ? boat.col + k : boat.col;
@@ -260,7 +351,12 @@ function place(h: Harbor, boat: Boat, ignore = -1): boolean {
 function randomBoat(size: number, rng: Rng): Boat {
   const dir = rng.chance(0.5) ? 'h' : 'v';
   const len = (rng.chance(size <= 4 ? 0.2 : 0.35) ? 3 : 2) as 2 | 3;
-  return { dir, len, row: rng.int(0, dir === 'v' ? size - len : size - 1), col: rng.int(0, dir === 'h' ? size - len : size - 1) };
+  return {
+    dir,
+    len,
+    row: rng.int(0, dir === 'v' ? size - len : size - 1),
+    col: rng.int(0, dir === 'h' ? size - len : size - 1),
+  };
 }
 
 /**
@@ -274,7 +370,10 @@ export function makeHarbor(plan: FerryPlan, rng: Rng): Harbor | null {
   const count = rng.int(plan.boats.min, plan.boats.max);
   const cap = plan.moves.max + 3;
   const target = (plan.moves.min + plan.moves.max) / 2;
-  const off = (moves: number | null) => (moves === null ? Infinity : Math.max(0, plan.moves.min - moves, moves - plan.moves.max) + Math.abs(moves - target) / 100);
+  const off = (moves: number | null) =>
+    moves === null
+      ? Infinity
+      : Math.max(0, plan.moves.min - moves, moves - plan.moves.max) + Math.abs(moves - target) / 100;
 
   let harbor: Harbor = { size, boats: [{ row: exit, col: rng.int(0, 1), len: 2, dir: 'h' }] };
   if (plan.ferries === 2) {
@@ -282,7 +381,12 @@ export function makeHarbor(plan: FerryPlan, rng: Rng): Harbor | null {
     const red = harbor.boats[FERRY];
     const across = exit < 2 || rng.chance(0.6);
     const yellow: Boat = across
-      ? { dir: 'v', len: 2, col: rng.int(red.col + 2, size - 1), row: Math.min(size - 3, exit - rng.int(0, 1)) }
+      ? {
+          dir: 'v',
+          len: 2,
+          col: rng.int(red.col + 2, size - 1),
+          row: Math.min(size - 3, exit - rng.int(0, 1)),
+        }
       : { dir: 'v', len: 2, col: rng.int(red.col, red.col + 1), row: rng.int(0, exit - 2) };
     harbor = { ...harbor, boats: [red, yellow], yellow: true };
   }
@@ -306,7 +410,8 @@ export function makeHarbor(plan: FerryPlan, rng: Rng): Harbor | null {
   for (let step = 0; step < 150; step++) {
     if (current < 1) {
       const moves = length(harbor)!;
-      if (moves >= plan.moves.min && moves <= plan.moves.max && rocksMatter(harbor) && freesFirst(harbor)) return harbor;
+      if (moves >= plan.moves.min && moves <= plan.moves.max && rocksMatter(harbor) && freesFirst(harbor))
+        return harbor;
     }
     const which = rng.int(fixed, harbor.boats.length - 1);
     const boat = randomBoat(size, rng);
@@ -320,7 +425,13 @@ export function makeHarbor(plan: FerryPlan, rng: Rng): Harbor | null {
     }
   }
   const moves = length(harbor);
-  return moves !== null && moves >= plan.moves.min && moves <= plan.moves.max && rocksMatter(harbor) && freesFirst(harbor) ? harbor : null;
+  return moves !== null &&
+    moves >= plan.moves.min &&
+    moves <= plan.moves.max &&
+    rocksMatter(harbor) &&
+    freesFirst(harbor)
+    ? harbor
+    : null;
 }
 
 /**
@@ -331,14 +442,17 @@ export function rocksMatter(h: Harbor): boolean {
   const rocks = h.rocks ?? [];
   if (!rocks.length) return true;
   const fewest = solve(h)?.length ?? Infinity;
-  return rocks.every((_, k) => (solve({ ...h, rocks: rocks.filter((__, j) => j !== k) })?.length ?? Infinity) !== fewest);
+  return rocks.every(
+    (_, k) => (solve({ ...h, rocks: rocks.filter((__, j) => j !== k) })?.length ?? Infinity) !== fewest,
+  );
 }
 
 /** The cells between a ferry and its dock, along its lane, not counting the cells it fills. */
 export function aheadOf(h: Harbor, layout: Layout, i: number): { row: number; col: number }[] {
   const b = h.boats[i];
   const out: { row: number; col: number }[] = [];
-  for (let p = layout[i] + b.len; p < h.size; p++) out.push(b.dir === 'h' ? { row: b.row, col: p } : { row: p, col: b.col });
+  for (let p = layout[i] + b.len; p < h.size; p++)
+    out.push(b.dir === 'h' ? { row: b.row, col: p } : { row: p, col: b.col });
   return out;
 }
 
@@ -379,7 +493,8 @@ export function firstToSail(h: Harbor): { ferry: number; frees: boolean } | null
   for (const s of path) {
     const moved = after(h, layout, s);
     const gone = ferries(h).find((i) => !sailed(h, layout, i) && sailed(h, moved, i));
-    if (gone !== undefined) return { ferry: gone, frees: inTheWay(h, layout, gone, gone === FERRY ? YELLOW : FERRY) };
+    if (gone !== undefined)
+      return { ferry: gone, frees: inTheWay(h, layout, gone, gone === FERRY ? YELLOW : FERRY) };
     layout = moved;
   }
   return null;
@@ -391,7 +506,12 @@ export const freesFirst = (h: Harbor) => !h.yellow || firstToSail(h)?.frees === 
 /** Whether a drawn harbor is well formed: boats inside the water, none overlapping, the ferry on its own row. */
 export function wellFormed(h: Harbor): boolean {
   const layout = start(h);
-  if (h.boats.some((b) => (b.dir === 'h' ? b.col + b.len > h.size || b.row >= h.size : b.row + b.len > h.size || b.col >= h.size))) return false;
+  if (
+    h.boats.some((b) =>
+      b.dir === 'h' ? b.col + b.len > h.size || b.row >= h.size : b.row + b.len > h.size || b.col >= h.size,
+    )
+  )
+    return false;
   if ((h.rocks ?? []).some((r) => r.row < 0 || r.col < 0 || r.row >= h.size || r.col >= h.size)) return false;
   return !grid(h, layout).some((row) => row.some((v) => v === -2));
 }
@@ -488,7 +608,8 @@ function sailingTable(h: Harbor): Map<number, number> {
 }
 
 /** The fewest slides from these boats to the dock (every layout reachable from the start has a way out). */
-export const distance = (h: Harbor, layout: Layout): number => distanceTable(h).get(encode(layout)) ?? Infinity;
+export const distance = (h: Harbor, layout: Layout): number =>
+  distanceTable(h).get(encode(layout)) ?? Infinity;
 
 /** Slides in a row without getting any closer to the dock before the glow helps: never fewer than six, and never fewer than the harbor's own fewest. */
 export const patience = (fewest: number) => Math.max(6, fewest);
@@ -530,7 +651,10 @@ function middle(h: Harbor, i: number, p: number): { x: number; y: number } {
  */
 export function boatToward(h: Harbor, layout: Layout, from: number, dir: number): number | null {
   const at = middle(h, from, layout[from]);
-  let cone: number | null = null, coneScore = Infinity, side: number | null = null, sideScore = Infinity;
+  let cone: number | null = null,
+    coneScore = Infinity,
+    side: number | null = null,
+    sideScore = Infinity;
   h.boats.forEach((_, j) => {
     if (j === from || layout[j] >= h.size) return;
     const c = middle(h, j, layout[j]);
@@ -538,8 +662,14 @@ export function boatToward(h: Harbor, layout: Layout, from: number, dir: number)
     const across = Math.abs(dir % 2 === 0 ? c.y - at.y : c.x - at.x);
     if (along < 0.25) return;
     const score = along + 2 * across;
-    if (across <= along && score < coneScore) { coneScore = score; cone = j; }
-    if (score < sideScore) { sideScore = score; side = j; }
+    if (across <= along && score < coneScore) {
+      coneScore = score;
+      cone = j;
+    }
+    if (score < sideScore) {
+      sideScore = score;
+      side = j;
+    }
   });
   return cone ?? side;
 }

@@ -34,7 +34,12 @@ import {
   type CupsState,
 } from './third-logic';
 
-const stroke = (color: number = ink, width = 6) => ({ color, width, join: 'round' as const, cap: 'round' as const });
+const stroke = (color: number = ink, width = 6) => ({
+  color,
+  width,
+  join: 'round' as const,
+  cap: 'round' as const,
+});
 const CUP_COLORS: ColorName[] = ['pink', 'green', 'orange'];
 /** The music box's tune: pentatonic steps, rising then home. */
 const TUNE = [5, 7, 9, 7, 5, 4, 5];
@@ -43,10 +48,19 @@ class Firefly extends Container {
   readonly glow = new Graphics().circle(0, 0, 34).fill({ color: swatch.yellow.fill, alpha: 0.35 });
   readonly ring = new Graphics();
   caught = false;
-  constructor(readonly phase: number, big: boolean) {
+  constructor(
+    readonly phase: number,
+    big: boolean,
+  ) {
     super();
-    const body = new Graphics().ellipse(0, 4, 13, 17).fill(ink).circle(0, 14, 11).fill(swatch.yellow.fill)
-      .ellipse(-14, -6, 12, 7).ellipse(14, -6, 12, 7).fill({ color: 0xffffff, alpha: 0.7 });
+    const body = new Graphics()
+      .ellipse(0, 4, 13, 17)
+      .fill(ink)
+      .circle(0, 14, 11)
+      .fill(swatch.yellow.fill)
+      .ellipse(-14, -6, 12, 7)
+      .ellipse(14, -6, 12, 7)
+      .fill({ color: 0xffffff, alpha: 0.7 });
     this.glow.blendMode = 'add';
     this.addChild(this.glow, body, this.ring);
     this.scale.set(big ? 1.6 : 1.2);
@@ -137,7 +151,8 @@ export class ThirdShow implements Game {
     this.handle.eventMode = 'static';
     this.handle.on('pointerdown', (e) => this.grab(e));
     this.handle.on('globalpointermove', (e) => this.turn(e));
-    for (const ev of ['pointerup', 'pointerupoutside'] as const) this.handle.on(ev, (e) => this.letGo(e.pointerId));
+    for (const ev of ['pointerup', 'pointerupoutside'] as const)
+      this.handle.on(ev, (e) => this.letGo(e.pointerId));
 
     // The jug, cup and tray, as in Fill & Dump's pour.
     this.jug.addChild(this.jugArt);
@@ -160,13 +175,15 @@ export class ThirdShow implements Game {
       this.drawCups();
     });
     this.jug.on('globalpointermove', this.pourMove);
-    for (const ev of ['pointerup', 'pointerupoutside'] as const) this.jug.on(ev, (e) => this.pourEnd(e.pointerId));
+    for (const ev of ['pointerup', 'pointerupoutside'] as const)
+      this.jug.on(ev, (e) => this.pourEnd(e.pointerId));
 
     // The loop layer catches touches over the meadow.
     this.sky.eventMode = 'static';
     this.sky.on('pointerdown', (e) => this.loopDown(e));
     this.sky.on('globalpointermove', (e) => this.loopMove(e));
-    for (const ev of ['pointerup', 'pointerupoutside'] as const) this.sky.on(ev, (e) => this.loopUp(e.pointerId));
+    for (const ev of ['pointerup', 'pointerupoutside'] as const)
+      this.sky.on(ev, (e) => this.loopUp(e.pointerId));
 
     this.ctx.listen(window, 'pointerup', this.windowUp);
     this.ctx.listen(window, 'pointercancel', this.windowCancel);
@@ -196,11 +213,23 @@ export class ThirdShow implements Game {
     this.friend = null;
     this.served.length = 0;
     this.flies = [];
-    for (const c of [this.box, this.jug, this.cup, this.tray, this.handle, this.sky, this.jar, this.stream, this.trail]) c.parent?.removeChild(c);
+    for (const c of [
+      this.box,
+      this.jug,
+      this.cup,
+      this.tray,
+      this.handle,
+      this.sky,
+      this.jar,
+      this.stream,
+      this.trail,
+    ])
+      c.parent?.removeChild(c);
     for (const c of this.layer.removeChildren()) c.destroy({ children: true });
     // The box, handle and jar are kept; the art drawn into them each step is not.
     const kept: Container[] = [this.lid, this.dots, this.coil, this.arm];
-    for (const holder of [this.box, this.handle, this.jar]) for (const c of holder.removeChildren()) if (!kept.includes(c)) c.destroy({ children: true });
+    for (const holder of [this.box, this.handle, this.jar])
+      for (const c of holder.removeChildren()) if (!kept.includes(c)) c.destroy({ children: true });
     this.glow.clear();
   }
 
@@ -215,7 +244,9 @@ export class ThirdShow implements Game {
       if (a.line) return this.ctx.instruct('tricks.cups-line');
       if (!a.ticks) return this.ctx.instruct('tricks.cups');
       const t = cupTarget(this.cups);
-      return this.ctx.instruct(t === 0.5 ? 'tricks.cups-half' : t === 0.25 ? 'tricks.cups-quarter' : 'tricks.cups-three-quarters');
+      return this.ctx.instruct(
+        t === 0.5 ? 'tricks.cups-half' : t === 0.25 ? 'tricks.cups-quarter' : 'tricks.cups-three-quarters',
+      );
     }
     if (this.band === 'toddler') return this.ctx.instruct('tricks.loop');
     if (this.band === 'school') return this.ctx.instruct('tricks.loop-half');
@@ -229,16 +260,34 @@ export class ThirdShow implements Game {
     if (this.step === 0) {
       const friend = this.critter(0, 0.42);
       this.friend = friend;
-      this.box.addChild(friend, this.coil,
-        new Graphics().roundRect(-150, -110, 300, 220, 22).fill(wood.fill).stroke(stroke(wood.line))
-          .roundRect(-118, -78, 236, 156, 14).stroke(stroke(wood.light, 5))
-          .circle(0, 0, 26).fill(swatch.yellow.fill).stroke(stroke(swatch.yellow.line, 4)),
-        this.lid, this.dots);
+      this.box.addChild(
+        friend,
+        this.coil,
+        new Graphics()
+          .roundRect(-150, -110, 300, 220, 22)
+          .fill(wood.fill)
+          .stroke(stroke(wood.line))
+          .roundRect(-118, -78, 236, 156, 14)
+          .stroke(stroke(wood.light, 5))
+          .circle(0, 0, 26)
+          .fill(swatch.yellow.fill)
+          .stroke(stroke(swatch.yellow.line, 4)),
+        this.lid,
+        this.dots,
+      );
       // The lid hinges at its left end.
       this.lid.clear().roundRect(0, -26, 320, 30, 12).fill(wood.line).stroke(stroke(ink, 4));
       this.lid.position.set(-160, -100);
       this.lid.rotation = 0;
-      this.handle.addChild(new Graphics().rect(-70, -12, 70, 24).fill(swatch.yellow.line).stroke(stroke(ink, 4)).circle(0, 0, 22).fill(swatch.yellow.line), this.arm);
+      this.handle.addChild(
+        new Graphics()
+          .rect(-70, -12, 70, 24)
+          .fill(swatch.yellow.line)
+          .stroke(stroke(ink, 4))
+          .circle(0, 0, 22)
+          .fill(swatch.yellow.line),
+        this.arm,
+      );
       this.layer.addChild(this.box, this.handle);
       this.drawCrank();
     } else if (this.step === 1) {
@@ -246,8 +295,15 @@ export class ThirdShow implements Game {
       this.layer.addChild(this.stream, this.jug, this.cup, this.tray);
     } else {
       this.flies = this.spots.map((_, i) => new Firefly(i * 1.7, this.band === 'toddler'));
-      this.jar.addChild(new Graphics().roundRect(-75, -95, 150, 190, 34).fill({ color: 0xffffff, alpha: 0.25 }).stroke(stroke(0xffffff, 6))
-        .roundRect(-60, -118, 120, 28, 10).fill(wood.fill).stroke(stroke(wood.line, 5)));
+      this.jar.addChild(
+        new Graphics()
+          .roundRect(-75, -95, 150, 190, 34)
+          .fill({ color: 0xffffff, alpha: 0.25 })
+          .stroke(stroke(0xffffff, 6))
+          .roundRect(-60, -118, 120, 28, 10)
+          .fill(wood.fill)
+          .stroke(stroke(wood.line, 5)),
+      );
       this.jar.eventMode = 'none';
       this.layer.addChild(this.jar, this.sky, ...this.flies, this.trail);
     }
@@ -278,7 +334,8 @@ export class ThirdShow implements Game {
   private turn(e: FederatedPointerEvent) {
     if (e.pointerId !== this.turning || this.popped) return;
     const g = this.ctx.stage.toLocal(e.global);
-    if (palmOnGlass() || g.x < 0 || g.y < 0 || g.x > this.view.w || g.y > this.view.h) return this.letGo(e.pointerId);
+    if (palmOnGlass() || g.x < 0 || g.y < 0 || g.x > this.view.w || g.y > this.view.h)
+      return this.letGo(e.pointerId);
     const { angle } = this.angleAt(e);
     const before = halfTurns(this.crank);
     this.crank = crankStep(this.crank, angle);
@@ -324,7 +381,11 @@ export class ThirdShow implements Game {
     sfx.sparkle();
     this.ctx.pet.cheer();
     void this.playTune();
-    await (this.band === 'toddler' ? this.ctx.say('tricks.pop') : this.band === 'school' ? this.ctx.say('tricks.pop-half') : this.ctx.say('tricks.pop-n', { n: this.amounts.halves / 2 }));
+    await (this.band === 'toddler'
+      ? this.ctx.say('tricks.pop')
+      : this.band === 'school'
+        ? this.ctx.say('tricks.pop-half')
+        : this.ctx.say('tricks.pop-n', { n: this.amounts.halves / 2 }));
     if (this.gone) return;
     this.next.visible = !this.finished;
   }
@@ -342,14 +403,21 @@ export class ThirdShow implements Game {
     const kx = CRANK_ARM * Math.cos(a);
     const ky = CRANK_ARM * Math.sin(a);
     const big = this.turning !== null ? 1.1 : 1;
-    this.arm.clear().moveTo(0, 0).lineTo(kx, ky).stroke(stroke(swatch.yellow.line, 22))
-      .circle(kx, ky, 48 * big).fill(swatch.red.fill).stroke(stroke(swatch.red.line, 6));
+    this.arm
+      .clear()
+      .moveTo(0, 0)
+      .lineTo(kx, ky)
+      .stroke(stroke(swatch.yellow.line, 22))
+      .circle(kx, ky, 48 * big)
+      .fill(swatch.red.fill)
+      .stroke(stroke(swatch.red.line, 6));
     const halves = Math.min(halfTurns(this.crank), this.amounts.halves);
     if (this.friend && !this.popped) this.friend.y = -78 - 7 * halves;
     if (this.friend && this.popped) {
       const top = this.friend.y + 30;
       this.coil.clear().moveTo(0, -100);
-      for (let i = 1; i <= 8; i++) this.coil.lineTo(i === 8 ? 0 : i % 2 ? -22 : 22, -100 + ((top + 100) * i) / 8);
+      for (let i = 1; i <= 8; i++)
+        this.coil.lineTo(i === 8 ? 0 : i % 2 ? -22 : 22, -100 + ((top + 100) * i) / 8);
       this.coil.stroke(stroke(swatch.blue.line, 6));
     } else this.coil.clear();
     // The dots under the box: one per turn asked for, a half dot at school.
@@ -361,7 +429,10 @@ export class ThirdShow implements Game {
       const half = this.amounts.halves % 2 === 1 && i === n - 1;
       const filled = halves >= (i + 1) * 2 || (half && halves >= this.amounts.halves);
       const r = half ? 14 : 22;
-      this.dots.circle(x, 160, r).fill(filled ? swatch.yellow.fill : cream).stroke(stroke(swatch.brown.line, 4));
+      this.dots
+        .circle(x, 160, r)
+        .fill(filled ? swatch.yellow.fill : cream)
+        .stroke(stroke(swatch.brown.line, 4));
     }
   }
 
@@ -381,7 +452,8 @@ export class ThirdShow implements Game {
   private pourMove = (e: FederatedPointerEvent) => {
     if (e.pointerId !== this.pouring || this.gone) return;
     const p = this.ctx.stage.toLocal(e.global);
-    if (palmOnGlass() || p.x < 0 || p.y < 0 || p.x > this.view.w || p.y > this.view.h) return this.pourEnd(e.pointerId);
+    if (palmOnGlass() || p.x < 0 || p.y < 0 || p.x > this.view.w || p.y > this.view.h)
+      return this.pourEnd(e.pointerId);
     const dx = Math.max(0, p.x - this.startX);
     // The help pours at half speed; moving back only rights the jug.
     const amount = pourAmount(this.cups.helped ? dx / 2 : dx);
@@ -405,7 +477,8 @@ export class ThirdShow implements Game {
       void this.ctx.say(result === 'help' ? 'tricks.cup-slow' : 'tricks.cup-over');
     } else if (result === 'more' || result === 'none') {
       // Not enough left in the jug for this cup: the tray pours it back.
-      if (this.cups.tray > 0 && this.cups.jug + 1e-9 < cupTarget(this.cups) - this.cups.cup) void this.ctx.say('tricks.cup-tray');
+      if (this.cups.tray > 0 && this.cups.jug + 1e-9 < cupTarget(this.cups) - this.cups.cup)
+        void this.ctx.say('tricks.cup-tray');
       else if (result === 'more' && this.cups.unders === 1) void this.ctx.say('tricks.cup-more');
     }
     if (!this.gone) this.drawCups();
@@ -420,7 +493,10 @@ export class ThirdShow implements Game {
     if (friend) {
       friend.cheer();
       sfx.giggle();
-      const mug = new Graphics().roundRect(-22, -36, 44, 40, 8).fill(swatch[CUP_COLORS[i]].fill).stroke(stroke(swatch[CUP_COLORS[i]].line, 4));
+      const mug = new Graphics()
+        .roundRect(-22, -36, 44, 40, 8)
+        .fill(swatch[CUP_COLORS[i]].fill)
+        .stroke(stroke(swatch[CUP_COLORS[i]].line, 4));
       this.layer.addChild(mug);
       this.served.push(mug);
     }
@@ -429,7 +505,8 @@ export class ThirdShow implements Game {
       this.quiet = 0;
       this.ctx.pet.cheer();
       sfx.sparkle();
-    } else if (this.amounts.ticks) void this.ctx.tw.wait(1.2).then(() => {
+    } else if (this.amounts.ticks)
+      void this.ctx.tw.wait(1.2).then(() => {
         if (!this.gone && this.step === 1) void this.instruct();
       });
     this.resize(this.view);
@@ -438,28 +515,60 @@ export class ThirdShow implements Game {
   private drawCups() {
     const s = this.cups;
     const blue = swatch.blue.fill;
-    this.jugArt.clear()
-      .roundRect(-75, -100, 140, 200, 26).fill(0xffffff).stroke(stroke(swatch.blue.line))
-      .roundRect(-63, 82 - (165 * Math.min(3, s.jug)) / 3, 116, (165 * Math.min(3, s.jug)) / 3 + 1, 12).fill(blue)
-      .moveTo(-75, -60).bezierCurveTo(-145, -90, -145, 70, -75, 55).stroke(stroke(swatch.blue.line, 14))
-      .poly([65, -100, 100, -115, 65, -50]).fill(0xffffff).stroke(stroke(swatch.blue.line));
+    this.jugArt
+      .clear()
+      .roundRect(-75, -100, 140, 200, 26)
+      .fill(0xffffff)
+      .stroke(stroke(swatch.blue.line))
+      .roundRect(-63, 82 - (165 * Math.min(3, s.jug)) / 3, 116, (165 * Math.min(3, s.jug)) / 3 + 1, 12)
+      .fill(blue)
+      .moveTo(-75, -60)
+      .bezierCurveTo(-145, -90, -145, 70, -75, 55)
+      .stroke(stroke(swatch.blue.line, 14))
+      .poly([65, -100, 100, -115, 65, -50])
+      .fill(0xffffff)
+      .stroke(stroke(swatch.blue.line));
     this.jugArt.rotation = this.tilt;
     const color = swatch[CUP_COLORS[Math.min(s.round, 2)]];
-    const g = this.cupArt.clear().roundRect(-80, -220, 160, 230, 20).fill(0xffffff).stroke(stroke(color.line, 7));
+    const g = this.cupArt
+      .clear()
+      .roundRect(-80, -220, 160, 230, 20)
+      .fill(0xffffff)
+      .stroke(stroke(color.line, 7));
     if (s.cup > 0) g.rect(-69, -200 * Math.min(1, s.cup), 138, 200 * Math.min(1, s.cup)).fill(blue);
     const t = cupTarget(s);
-    if (this.amounts.ticks) for (const q of [0.25, 0.5, 0.75]) g.moveTo(-80, -200 * q).lineTo(-52, -200 * q).stroke(stroke(swatch.purple.line, 5));
+    if (this.amounts.ticks)
+      for (const q of [0.25, 0.5, 0.75])
+        g.moveTo(-80, -200 * q)
+          .lineTo(-52, -200 * q)
+          .stroke(stroke(swatch.purple.line, 5));
     if (this.amounts.line) {
       for (let x = -94; x < 94; x += 28) g.moveTo(x, -200 * t).lineTo(x + 16, -200 * t);
       g.stroke(stroke(swatch.purple.line, 8));
     }
     this.cupArt.visible = !this.waiting;
-    this.trayArt.clear().roundRect(-140, -30, 280, 65, 20).fill(swatch.blue.light).stroke(stroke(swatch.blue.line));
-    if (s.tray > 0) this.trayArt.roundRect(-128, 18 - 35 * Math.min(1, s.tray), 256, 35 * Math.min(1, s.tray), 10).fill(blue);
-    this.trayArt.moveTo(45, 8).lineTo(-45, 8).lineTo(-23, -10).moveTo(-45, 8).lineTo(-23, 26).stroke(stroke(ink, 7));
+    this.trayArt
+      .clear()
+      .roundRect(-140, -30, 280, 65, 20)
+      .fill(swatch.blue.light)
+      .stroke(stroke(swatch.blue.line));
+    if (s.tray > 0)
+      this.trayArt
+        .roundRect(-128, 18 - 35 * Math.min(1, s.tray), 256, 35 * Math.min(1, s.tray), 10)
+        .fill(blue);
+    this.trayArt
+      .moveTo(45, 8)
+      .lineTo(-45, 8)
+      .lineTo(-23, -10)
+      .moveTo(-45, 8)
+      .lineTo(-23, 26)
+      .stroke(stroke(ink, 7));
     this.stream.clear();
     if (this.pouring !== null && this.tilt > 0.15 && s.jug > 0) {
-      this.stream.moveTo(this.jug.x + 85, this.jug.y - 65).quadraticCurveTo(this.cup.x, this.jug.y - 90, this.cup.x, this.cup.y - 200 * Math.min(1, s.cup)).stroke(stroke(blue, 12));
+      this.stream
+        .moveTo(this.jug.x + 85, this.jug.y - 65)
+        .quadraticCurveTo(this.cup.x, this.jug.y - 90, this.cup.x, this.cup.y - 200 * Math.min(1, s.cup))
+        .stroke(stroke(blue, 12));
     }
     this.drawGlow();
   }
@@ -494,7 +603,10 @@ export class ThirdShow implements Game {
   private drawTrail(points: Point[], closed = false) {
     const g = this.trail.clear();
     if (points.length < 2) return;
-    for (const [width, color, alpha] of [[16, swatch.yellow.fill, 0.35], [6, 0xffffff, 0.9]] as const) {
+    for (const [width, color, alpha] of [
+      [16, swatch.yellow.fill, 0.35],
+      [6, 0xffffff, 0.9],
+    ] as const) {
       g.moveTo(points[0].x, points[0].y);
       for (const p of points.slice(1)) g.lineTo(p.x, p.y);
       if (closed) g.closePath();
@@ -508,7 +620,13 @@ export class ThirdShow implements Game {
 
   private async closeLoop(points: Point[]) {
     const free = this.free;
-    const { verdict, got } = judgeLoop(this.ctx.band, points, free.map((f) => f.position), this.score, this.loopTrick);
+    const { verdict, got } = judgeLoop(
+      this.ctx.band,
+      points,
+      free.map((f) => f.position),
+      this.score,
+      this.loopTrick,
+    );
     if (verdict === 'small') {
       this.trail.clear();
       return void this.ctx.say('tricks.loop-small');
@@ -520,13 +638,25 @@ export class ThirdShow implements Game {
     if (verdict === 'miss') {
       this.busy = true;
       sfx.boing();
-      for (const f of caught) void this.ctx.tw.to(f.scale, { x: f.scale.x * 1.3, y: f.scale.y * 1.3 }, { duration: 0.2, ease: ease.outQuad })
-        .then(() => this.ctx.tw.to(f.scale, { x: f.scale.x / 1.3, y: f.scale.y / 1.3 }, { duration: 0.3, ease: ease.inOutSine }));
+      for (const f of caught)
+        void this.ctx.tw
+          .to(f.scale, { x: f.scale.x * 1.3, y: f.scale.y * 1.3 }, { duration: 0.2, ease: ease.outQuad })
+          .then(() =>
+            this.ctx.tw.to(
+              f.scale,
+              { x: f.scale.x / 1.3, y: f.scale.y / 1.3 },
+              { duration: 0.3, ease: ease.inOutSine },
+            ),
+          );
       await this.ctx.say('tricks.loop-count', { got: got.length, n: this.amounts.want });
       if (this.gone) return;
       this.busy = false;
       if (this.loopTrick.wrong >= 2) {
-        this.hinted = nearestGroup(this.flies.map((f) => f.position), this.flies.flatMap((f, i) => (f.caught ? [] : [i])), this.amounts.want);
+        this.hinted = nearestGroup(
+          this.flies.map((f) => f.position),
+          this.flies.flatMap((f, i) => (f.caught ? [] : [i])),
+          this.amounts.want,
+        );
         void this.ctx.say('tricks.loop-hint');
       }
       this.drawGlow();
@@ -560,12 +690,16 @@ export class ThirdShow implements Game {
     if (this.waiting) return;
     if (this.step === 1 && this.cups.helped && (this.amounts.line || this.amounts.ticks)) {
       const y = this.cup.y - 200 * cupTarget(this.cups);
-      this.glow.moveTo(this.cup.x - 105, y).lineTo(this.cup.x + 105, y).stroke(stroke(swatch.yellow.fill, 16));
+      this.glow
+        .moveTo(this.cup.x - 105, y)
+        .lineTo(this.cup.x + 105, y)
+        .stroke(stroke(swatch.yellow.fill, 16));
     }
-    if (this.step === 2) for (const i of this.hinted) {
-      const f = this.flies[i];
-      if (f && !f.caught) this.glow.circle(f.x, f.y, 58).stroke(stroke(swatch.yellow.line, 8));
-    }
+    if (this.step === 2)
+      for (const i of this.hinted) {
+        const f = this.flies[i];
+        if (f && !f.caught) this.glow.circle(f.x, f.y, 58).stroke(stroke(swatch.yellow.line, 8));
+      }
   }
 
   // ----- the bow -----
@@ -579,8 +713,13 @@ export class ThirdShow implements Game {
     const v = this.view;
     this.bg.clear().rect(0, 0, v.w, v.h).fill(cream);
     // The jar glows on the box's lid while the music box plays its tune once more.
-    const box = new Graphics().roundRect(-150, -110, 300, 220, 22).fill(wood.fill).stroke(stroke(wood.line))
-      .roundRect(-75, -300, 150, 190, 34).fill({ color: swatch.yellow.fill, alpha: 0.6 }).stroke(stroke(0xffffff, 6));
+    const box = new Graphics()
+      .roundRect(-150, -110, 300, 220, 22)
+      .fill(wood.fill)
+      .stroke(stroke(wood.line))
+      .roundRect(-75, -300, 150, 190, 34)
+      .fill({ color: swatch.yellow.fill, alpha: 0.6 })
+      .stroke(stroke(0xffffff, 6));
     box.position.set(v.w / 2, v.h * 0.48);
     this.layer.addChild(box);
     const n = this.kinds.length;
@@ -589,10 +728,19 @@ export class ThirdShow implements Game {
       f.setMood('happy');
       f.position.set(v.w * (0.5 + (i - (n - 1) / 2) * (0.7 / n)), v.h * 0.78);
       this.layer.addChild(f);
-      void this.ctx.tw.wait(0.3 + i * 0.25).then(() => this.ctx.tw.to(f, { y: f.y - 30 }, { duration: 0.2, ease: ease.outQuad }))
+      void this.ctx.tw
+        .wait(0.3 + i * 0.25)
+        .then(() => this.ctx.tw.to(f, { y: f.y - 30 }, { duration: 0.2, ease: ease.outQuad }))
         .then(() => this.ctx.tw.to(f, { y: f.y + 30 }, { duration: 0.25, ease: ease.inQuad }));
     });
-    this.ctx.particles.burst(v.w / 2, v.h * 0.3, { kind: 'confetti', colors: RAINBOW.map((c) => swatch[c].fill), count: 70, speed: [200, 600], gravity: 600, life: [1.2, 2] });
+    this.ctx.particles.burst(v.w / 2, v.h * 0.3, {
+      kind: 'confetti',
+      colors: RAINBOW.map((c) => swatch[c].fill),
+      count: 70,
+      speed: [200, 600],
+      gravity: 600,
+      life: [1.2, 2],
+    });
     void this.playTune();
     sfx.tada();
     await this.ctx.say('tricks.done');
@@ -607,8 +755,16 @@ export class ThirdShow implements Game {
     this.next.visible = this.waiting && !this.finished && (this.step !== 0 || this.popped);
     if (this.finished) return;
     const night = this.step === 2;
-    this.bg.clear().rect(0, 0, v.w, v.h).fill(night ? shadow : cream);
-    if (!night) this.bg.rect(0, 0, 110, v.h).fill(swatch.purple.light).rect(v.w - 110, 0, 110, v.h).fill(swatch.purple.light);
+    this.bg
+      .clear()
+      .rect(0, 0, v.w, v.h)
+      .fill(night ? shadow : cream);
+    if (!night)
+      this.bg
+        .rect(0, 0, 110, v.h)
+        .fill(swatch.purple.light)
+        .rect(v.w - 110, 0, 110, v.h)
+        .fill(swatch.purple.light);
     if (this.step === 0) {
       this.box.position.set(v.w * 0.38, v.h * 0.48);
       this.handle.position.set(this.box.x + 215, this.box.y);
@@ -642,19 +798,35 @@ export class ThirdShow implements Game {
       if (this.turning !== null) return null;
       const dir = this.crank.dir === -1 ? -1 : 1;
       const via = crankCircle(this.armAngle, dir).map((p) => ({ on: this.handle, x: p.x, y: p.y }));
-      return { trace: { on: this.handle, x: CRANK_ARM * Math.cos(this.armAngle), y: CRANK_ARM * Math.sin(this.armAngle) }, via };
+      return {
+        trace: {
+          on: this.handle,
+          x: CRANK_ARM * Math.cos(this.armAngle),
+          y: CRANK_ARM * Math.sin(this.armAngle),
+        },
+        via,
+      };
     }
     if (this.step === 1) {
       if (this.pouring !== null) return null;
       const s = this.cups;
-      if (this.amounts.counted && !atLine(s) && s.cup > cupTarget(s)) return { tap: { on: this.cup, y: -100 } };
+      if (this.amounts.counted && !atLine(s) && s.cup > cupTarget(s))
+        return { tap: { on: this.cup, y: -100 } };
       const need = this.amounts.counted ? cupTarget(s) - s.cup : 0.5;
       if (s.jug + 1e-9 < need && s.tray > 0) return { tap: { on: this.tray } };
-      return { drag: { on: this.jug }, to: { on: this.jug, x: (this.amounts.counted ? pourNeeded(s) : 0.5) * POUR_DISTANCE }, lift: 0 };
+      return {
+        drag: { on: this.jug },
+        to: { on: this.jug, x: (this.amounts.counted ? pourNeeded(s) : 0.5) * POUR_DISTANCE },
+        lift: 0,
+      };
     }
     if (this.busy || this.touch) return null;
     const free = this.free;
-    const move = demoLoop(free.map((f) => ({ x: f.x, y: f.y })), Math.min(this.amounts.want, free.length), 34);
+    const move = demoLoop(
+      free.map((f) => ({ x: f.x, y: f.y })),
+      Math.min(this.amounts.want, free.length),
+      34,
+    );
     if (!move) return null;
     const spots = move.loop.map((p) => ({ on: this.sky, x: p.x, y: p.y }));
     return { trace: spots[0], via: [...spots.slice(1), spots[0]], pause: 0.12 };
@@ -680,7 +852,9 @@ export class ThirdShow implements Game {
   /** A curved ghost arrow circles the knob once; not a hint and not counted. */
   private nudge() {
     const g = new Graphics();
-    g.arc(0, 0, CRANK_ARM, this.armAngle, this.armAngle + Math.PI * 1.5).stroke(stroke(swatch.yellow.line, 10));
+    g.arc(0, 0, CRANK_ARM, this.armAngle, this.armAngle + Math.PI * 1.5).stroke(
+      stroke(swatch.yellow.line, 10),
+    );
     const end = this.armAngle + Math.PI * 1.5;
     const ex = CRANK_ARM * Math.cos(end);
     const ey = CRANK_ARM * Math.sin(end);
@@ -725,6 +899,17 @@ export class ThirdShow implements Game {
     this.touch = null;
     for (const c of [this.handle, this.jug, this.sky]) c.removeAllListeners();
     // The kept holders may be off the stage between steps, so they are freed here.
-    for (const c of [this.box, this.handle, this.jug, this.cup, this.tray, this.sky, this.jar, this.stream, this.trail]) if (!c.destroyed) c.destroy({ children: true });
+    for (const c of [
+      this.box,
+      this.handle,
+      this.jug,
+      this.cup,
+      this.tray,
+      this.sky,
+      this.jar,
+      this.stream,
+      this.trail,
+    ])
+      if (!c.destroyed) c.destroy({ children: true });
   }
 }

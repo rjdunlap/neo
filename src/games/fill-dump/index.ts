@@ -85,7 +85,11 @@ class CountSignCard extends Container {
     const rows = Math.ceil(sign.slots / DOTS_PER_ROW);
     this.halfW = (cols * DOT_GAP) / 2 + SIGN_PAD;
     this.halfH = (rows * DOT_GAP) / 2 + SIGN_PAD;
-    this.card.clear().roundRect(-this.halfW, -this.halfH, this.halfW * 2, this.halfH * 2, 18).fill(0xfffaf0).stroke(line(wood.line, 5));
+    this.card
+      .clear()
+      .roundRect(-this.halfW, -this.halfH, this.halfW * 2, this.halfH * 2, 18)
+      .fill(0xfffaf0)
+      .stroke(line(wood.line, 5));
     const d = this.dots.clear();
     const fill = swatch[this.color].fill;
     const edge = swatch[this.color].line;
@@ -102,7 +106,9 @@ class CountSignCard extends Container {
     const e = this.extras.clear();
     for (let i = 0; i < sign.extras; i++) {
       const x = (i - (sign.extras - 1) / 2) * DOT_GAP;
-      e.circle(x, this.halfH + DOT_R + 12, DOT_R).fill(fill).stroke(line(edge, 4));
+      e.circle(x, this.halfH + DOT_R + 12, DOT_R)
+        .fill(fill)
+        .stroke(line(edge, 4));
     }
   }
 }
@@ -148,7 +154,15 @@ class FillDump implements Game {
     this.content = contentFor(plan, ctx.rng);
     this.basket = new Basket(1, this.content.set.id);
     this.spotSeed = ctx.rng.int(1, 1e9);
-    ctx.stage.addChild(this.bg, this.floor, this.halo, this.basket.back, this.layer, this.basket.front, this.tick);
+    ctx.stage.addChild(
+      this.bg,
+      this.floor,
+      this.halo,
+      this.basket.back,
+      this.layer,
+      this.basket.front,
+      this.tick,
+    );
     this.tick.visible = this.state.target !== null;
     this.halo.visible = false;
 
@@ -157,14 +171,19 @@ class FillDump implements Game {
     this.basket.back.hitArea = this.basket.front.hitArea;
     onTap(this.tick, () => this.touchTick(), { cooldown: 250 });
 
-    if (this.state.target === null) onTap(this.floor, (e) => {
-      const action = groundTap(this.state, this.spots, this.ctx.stage.toLocal(e.global));
-      if (!action || this.finished || this.busy) return;
-      this.resetInvitation();
-      this.basket.squish();
-      sfx.tick();
-      this.handle(tap(this.state, action));
-    }, { cooldown: 80 });
+    if (this.state.target === null)
+      onTap(
+        this.floor,
+        (e) => {
+          const action = groundTap(this.state, this.spots, this.ctx.stage.toLocal(e.global));
+          if (!action || this.finished || this.busy) return;
+          this.resetInvitation();
+          this.basket.squish();
+          sfx.tick();
+          this.handle(tap(this.state, action));
+        },
+        { cooldown: 80 },
+      );
 
     // Tip-out mixes four designs; counting uses identical pieces, with one shared sign color.
     const colors: ColorName[] = ['red', 'blue', 'yellow', 'green'];
@@ -176,7 +195,14 @@ class FillDump implements Game {
       this.pieces.push({ view, i });
     }
     // The count sign shows the number asked for, in the counted pieces’ color.
-    this.sign = this.state.target === null ? null : new CountSignCard(this.content.set.id === 'fruit' ? FRUITS[this.content.variants[0]].color : colors[this.content.variants[0]]);
+    this.sign =
+      this.state.target === null
+        ? null
+        : new CountSignCard(
+            this.content.set.id === 'fruit'
+              ? FRUITS[this.content.variants[0]].color
+              : colors[this.content.variants[0]],
+          );
     if (this.sign) {
       ctx.stage.addChild(this.sign);
       this.showSign();
@@ -193,7 +219,9 @@ class FillDump implements Game {
 
   start() {
     const t = this.state.target;
-    void (t === null ? this.ctx.instruct('fill.tip', this.content.set) : this.ctx.instruct('fill.put', { n: t, ...this.content.set }));
+    void (t === null
+      ? this.ctx.instruct('fill.tip', this.content.set)
+      : this.ctx.instruct('fill.put', { n: t, ...this.content.set }));
   }
 
   resize(v: View) {
@@ -211,13 +239,17 @@ class FillDump implements Game {
         this.idle += dt;
         if (this.idle >= 6 && !this.invitation) {
           const next = groundTap(this.state, this.spots, { x: this.bx, y: this.rimY });
-          this.invitation = { target: next?.on === 'basket' && next.pick !== undefined ? next.pick : 'basket', elapsed: 0 };
+          this.invitation = {
+            target: next?.on === 'basket' && next.pick !== undefined ? next.pick : 'basket',
+            elapsed: 0,
+          };
           this.idle = 0;
         }
         if (this.invitation) {
           const invite = this.invitation;
           invite.elapsed += dt;
-          const rotation = Math.sin(invite.elapsed * Math.PI * 6) * 0.12 * Math.max(0, 1 - invite.elapsed / 0.7);
+          const rotation =
+            Math.sin(invite.elapsed * Math.PI * 6) * 0.12 * Math.max(0, 1 - invite.elapsed / 0.7);
           if (invite.target === 'basket') this.basket.lean = rotation;
           else this.pieces[invite.target].view.rotation = rotation;
           if (invite.elapsed >= 0.7) this.resetInvitation();
@@ -278,7 +310,10 @@ class FillDump implements Game {
     const rng = new Rng(this.spotSeed + this.landing * 7919);
     this.spots =
       landingSpots(rng, this.pieces.length, this.rect) ??
-      spread(this.pieces.length, 170, this.rect.x + this.rect.w, 130).map((x) => ({ x, y: this.rect.y + this.rect.h / 2 }));
+      spread(this.pieces.length, 170, this.rect.x + this.rect.w, 130).map((x) => ({
+        x,
+        y: this.rect.y + this.rect.h / 2,
+      }));
   }
 
   private slotAt(n: number) {
@@ -424,7 +459,14 @@ class FillDump implements Game {
         this.hop(p, this.spots[p.i], GROUND_SCALE, 110, 0.7).then(async () => {
           if (this.gone) return;
           sfx.pop(4 + (p.i % 4) + this.content.set.pitch);
-          this.ctx.particles.burst(p.view.x, p.view.y + 30, { kind: 'dot', colors: [0xffffff, 0xfff3a0], count: 5, speed: [60, 140], gravity: 300, life: [0.25, 0.4] });
+          this.ctx.particles.burst(p.view.x, p.view.y + 30, {
+            kind: 'dot',
+            colors: [0xffffff, 0xfff3a0],
+            count: 5,
+            speed: [60, 140],
+            gravity: 300,
+            life: [0.25, 0.4],
+          });
           await tw.to(p.view, { y: p.view.y - 22 }, { duration: 0.1, ease: ease.outQuad });
           await tw.to(p.view, { y: p.view.y + 22 }, { duration: 0.1, ease: ease.inQuad });
           p.view.eventMode = 'static';
@@ -481,12 +523,16 @@ class FillDump implements Game {
 
   /** A pulsing glow on what leads somewhere: a piece to add, the basket to take one out of, or the check. */
   private hint(h: Hint) {
-    const target: 'tick' | 'basket' | number = h === 'check' ? 'tick' : h === 'remove' ? 'basket' : outsideIndexes(this.state)[0];
+    const target: 'tick' | 'basket' | number =
+      h === 'check' ? 'tick' : h === 'remove' ? 'basket' : outsideIndexes(this.state)[0];
     if (target === undefined) return;
     this.glow = { target, left: 4 };
     this.halo.visible = true;
     this.followGlow();
-    void this.ctx.say(h === 'check' ? 'fill.hintcheck' : h === 'remove' ? 'fill.hintremove' : 'fill.hintadd', this.content.set);
+    void this.ctx.say(
+      h === 'check' ? 'fill.hintcheck' : h === 'remove' ? 'fill.hintremove' : 'fill.hintadd',
+      this.content.set,
+    );
   }
 
   private followGlow() {
@@ -557,18 +603,26 @@ export const fillDump: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: describeFill,
   music: STYLES.stickers,
-  coplayHint: 'Tip the container together and say "out they come!", then count aloud as {name} puts each piece back in: "one, two, three".',
+  coplayHint:
+    'Tip the container together and say "out they come!", then count aloud as {name} puts each piece back in: "one, two, three".',
   offScreen: {
     all: 'Give a big bowl and some soft toys, blocks or dry beans in a tub: filling, dumping and scooping is the same game.',
     // Under 3: no dry beans (small parts).
     lap: 'Give a big bowl and some soft toys or blocks in a tub: filling, dumping and scooping is the same game.',
-    toddler: 'Give a big bowl and some soft toys or blocks in a tub: filling, dumping and scooping is the same game.',
+    toddler:
+      'Give a big bowl and some soft toys or blocks in a tub: filling, dumping and scooping is the same game.',
   },
   hubIcon: () => new BasketIcon(),
   touchDemo: true,
   sticker,
   create: (ctx) => {
     const kind = kindFor(ctx.level);
-    return kind === 'capacity' ? new CapacityGame(ctx) : kind === 'pour' ? new PourGame(ctx) : kind === 'pair' ? new PairGame(ctx) : new FillDump(ctx);
+    return kind === 'capacity'
+      ? new CapacityGame(ctx)
+      : kind === 'pour'
+        ? new PourGame(ctx)
+        : kind === 'pair'
+          ? new PairGame(ctx)
+          : new FillDump(ctx);
   },
 };

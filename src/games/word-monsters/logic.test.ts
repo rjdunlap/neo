@@ -1,7 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { SCRIPT } from '../../content/voice-script';
-import { ALPHABET, END_WORDS, fits, FIRST_WORDS, lookalike, makeQuestions, soundTwin, WHO_POOL, nextMonster, PLANS, sounded, WORDS } from './logic';
+import {
+  ALPHABET,
+  END_WORDS,
+  fits,
+  FIRST_WORDS,
+  lookalike,
+  makeQuestions,
+  soundTwin,
+  WHO_POOL,
+  nextMonster,
+  PLANS,
+  sounded,
+  WORDS,
+} from './logic';
 
 describe('Word Monsters', () => {
   it('has a spoken sound for every letter', () => {
@@ -18,20 +31,26 @@ describe('Word Monsters', () => {
           expect(q.monsters).toHaveLength(plan.choices);
           expect(new Set(q.monsters).size).toBe(q.monsters.length);
           // Word families offer first sounds; the ending already stands in the slots.
-          if (plan.mode === 'family') expect(q.fixed).toBe(q.answer.slice(1)), expect(q.monsters).toContain(q.answer[0]);
+          if (plan.mode === 'family')
+            (expect(q.fixed).toBe(q.answer.slice(1)), expect(q.monsters).toContain(q.answer[0]));
           else if (plan.mode === 'end') {
             expect(q.fixed).toBe(q.answer.slice(0, 2));
             expect(END_WORDS).toContain(q.answer);
             expect(q.monsters).toContain(q.answer[2]);
-            expect(q.monsters.filter((letter) => END_WORDS.some((word) => word.startsWith(q.fixed!) && word[2] === letter))).toEqual([q.answer[2]]);
-          }
-          else for (const l of q.answer) expect(q.monsters).toContain(l);
+            expect(
+              q.monsters.filter((letter) =>
+                END_WORDS.some((word) => word.startsWith(q.fixed!) && word[2] === letter),
+              ),
+            ).toEqual([q.answer[2]]);
+          } else for (const l of q.answer) expect(q.monsters).toContain(l);
           // Spare letters never look like a letter already in play.
           const spares = q.monsters.filter((l) => !q.answer.includes(l));
-          for (const s of spares) for (const o of q.monsters) expect(lookalike(s, o), `${s} ${o}`).toBe(false);
+          for (const s of spares)
+            for (const o of q.monsters) expect(lookalike(s, o), `${s} ${o}`).toBe(false);
           if (plan.mode === 'first') expect(FIRST_WORDS[q.answer]).toBeDefined();
         }
-        if (plan.mode !== 'build' && plan.mode !== 'spell' && plan.mode !== 'play') expect(new Set(qs.map((q) => q.answer)).size).toBe(qs.length);
+        if (plan.mode !== 'build' && plan.mode !== 'spell' && plan.mode !== 'play')
+          expect(new Set(qs.map((q) => q.answer)).size).toBe(qs.length);
         if (plan.mode === 'family') expect(new Set(qs.map((q) => q.fixed)).size).toBe(2);
       }
     }
@@ -42,7 +61,8 @@ describe('Word Monsters', () => {
     for (const plan of PLANS) {
       for (let seed = 1; seed <= 200; seed++) {
         for (const q of makeQuestions(plan, new Rng(seed))) {
-          for (const a of q.monsters) for (const b of q.monsters) expect(soundTwin(a, b), `${plan.mode} ${a} ${b}`).toBe(false);
+          for (const a of q.monsters)
+            for (const b of q.monsters) expect(soundTwin(a, b), `${plan.mode} ${a} ${b}`).toBe(false);
           if (plan.mode === 'who') expect(q.monsters.some((l) => 'qx'.includes(l))).toBe(false);
         }
       }
@@ -66,14 +86,22 @@ describe('Word Monsters', () => {
           // Free play: every monster in turn, round and round, until the round's taps are done.
           const monsters = questions[0].monsters.map((letter) => ({ letter, placed: false }));
           const heard = new Set<string>();
-          for (let taps = 0; taps < plan.rounds; taps++) heard.add(nextMonster(plan, questions[0], monsters, 0, taps)!.letter);
+          for (let taps = 0; taps < plan.rounds; taps++)
+            heard.add(nextMonster(plan, questions[0], monsters, 0, taps)!.letter);
           expect(heard.size, `${plan.mode} seed ${seed}`).toBe(Math.min(monsters.length, plan.rounds));
           continue;
         }
         for (const q of questions) {
-          const building = plan.mode === 'build' || plan.mode === 'spell' || plan.mode === 'family' || plan.mode === 'end';
+          const building =
+            plan.mode === 'build' || plan.mode === 'spell' || plan.mode === 'family' || plan.mode === 'end';
           // A word family's ending already stands in the slots, as monsters that cannot be picked up.
-          const monsters = [...q.monsters.map((letter) => ({ letter, placed: false })), ...(q.fixed ?? '').split('').filter(Boolean).map((letter) => ({ letter, placed: true }))];
+          const monsters = [
+            ...q.monsters.map((letter) => ({ letter, placed: false })),
+            ...(q.fixed ?? '')
+              .split('')
+              .filter(Boolean)
+              .map((letter) => ({ letter, placed: true })),
+          ];
           if (!building) {
             const pick = nextMonster(plan, q, monsters, 0, 0);
             expect(pick?.letter, `${plan.mode} seed ${seed}`).toBe(q.answer);

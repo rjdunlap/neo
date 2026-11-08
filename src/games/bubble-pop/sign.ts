@@ -13,7 +13,10 @@ const GAP = 16;
 
 /** A small arrow in a bubble color, pointing the way the counting goes. */
 function arrow(dir: 1 | -1, color: number): Graphics {
-  return new Graphics().poly([-12 * dir, -18, 14 * dir, 0, -12 * dir, 18]).fill(color).stroke({ width: 4, color, join: 'round' });
+  return new Graphics()
+    .poly([-12 * dir, -18, 14 * dir, 0, -12 * dir, 18])
+    .fill(color)
+    .stroke({ width: 4, color, join: 'round' });
 }
 
 /** The number to make or count from, shown the whole round beside a little picture of what to do with it. */
@@ -67,7 +70,10 @@ export class TargetSignView extends Container {
       this.addChild(c);
     }
     const w = this.span + PAD * 2;
-    this.pill.roundRect(-w / 2, 0, w, HEIGHT, HEIGHT / 2).fill({ color: 0xffffff, alpha: 0.9 }).stroke({ width: 4, color: swatch.blue.line, alpha: 0.5 });
+    this.pill
+      .roundRect(-w / 2, 0, w, HEIGHT, HEIGHT / 2)
+      .fill({ color: 0xffffff, alpha: 0.9 })
+      .stroke({ width: 4, color: swatch.blue.line, alpha: 0.5 });
     this.addChildAt(this.pill, 0);
     this.y = TOP;
   }

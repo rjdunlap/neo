@@ -2,9 +2,66 @@ import { describe as group, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { bodyBox, restPoints } from '../../creatures/companion';
 import { SPECIES_IDS } from '../../creatures/species';
-import { anchors, colorTargets, BOTTLE_RADIUS, CUSTOMER_NAMES, CUSTOMERS, describe, FACE_TAP, faceSpot, FRIEND_CHANCE, furFit, growFor, HAIR_COLORS, hasCustomers, helps, makeRequests, makeRoom, moreLine, oldStrands, pickCustomer, PIP_SCALP, planFor, QUIET_HINT, scalpFor, MAX_LENGTH, MIN_LENGTH, needs, PLAY_STROKES, PLANS, FLOOF, isFree, PAT_START, selfChecks, SNIP_START, SNIP_TOUR, REACH, SEG, salonMove, START_LOOKS, startLook, startStrands, stats, STRANDS, strandPoints, strokePath, toolsFor, TOUR, toolFor, touchStrands, WRONG_BOTTLES, wrongBottle, type Look, type Pt, type SalonState, type Strand, type Tool } from './logic';
+import {
+  anchors,
+  colorTargets,
+  BOTTLE_RADIUS,
+  CUSTOMER_NAMES,
+  CUSTOMERS,
+  describe,
+  FACE_TAP,
+  faceSpot,
+  FRIEND_CHANCE,
+  furFit,
+  growFor,
+  HAIR_COLORS,
+  hasCustomers,
+  helps,
+  makeRequests,
+  makeRoom,
+  moreLine,
+  oldStrands,
+  pickCustomer,
+  PIP_SCALP,
+  planFor,
+  QUIET_HINT,
+  scalpFor,
+  MAX_LENGTH,
+  MIN_LENGTH,
+  needs,
+  PLAY_STROKES,
+  PLANS,
+  FLOOF,
+  isFree,
+  PAT_START,
+  selfChecks,
+  SNIP_START,
+  SNIP_TOUR,
+  REACH,
+  SEG,
+  salonMove,
+  START_LOOKS,
+  startLook,
+  startStrands,
+  stats,
+  STRANDS,
+  strandPoints,
+  strokePath,
+  toolsFor,
+  TOUR,
+  toolFor,
+  touchStrands,
+  WRONG_BOTTLES,
+  wrongBottle,
+  type Look,
+  type Pt,
+  type SalonState,
+  type Strand,
+  type Tool,
+} from './logic';
 
-const head = (length: number, curl: number, color: Strand['color'], n = 20): Strand[] => Array.from({ length: n }, () => ({ length, curl, color }));
+const head = (length: number, curl: number, color: Strand['color'], n = 20): Strand[] =>
+  Array.from({ length: n }, () => ({ length, curl, color }));
 
 group('Fluffy Salon', () => {
   it('never starts a request already done, and names each look', () => {
@@ -15,7 +72,13 @@ group('Fluffy Salon', () => {
         expect(new Set(rs.map((r) => describe(r.look))).size).toBe(rs.length);
         for (const r of rs) {
           const parts = Object.keys(r.look).length;
-          expect(parts, plan.name).toBe(['ask', 'color', 'compare', 'colors', 'reverse'].includes(plan.mode) ? 1 : ['two', 'customers'].includes(plan.mode) ? 2 : 3);
+          expect(parts, plan.name).toBe(
+            ['ask', 'color', 'compare', 'colors', 'reverse'].includes(plan.mode)
+              ? 1
+              : ['two', 'customers'].includes(plan.mode)
+                ? 2
+                : 3,
+          );
           expect(needs(r.look, head(r.start.length, r.start.curl, r.start.color))).not.toBeNull();
         }
       }
@@ -24,7 +87,11 @@ group('Fluffy Salon', () => {
 
   it('accepts either arrangement at exactly 35% each and rejects either color below it', () => {
     const look: Look = { colors: ['pink', 'blue'] };
-    const mix = (pink: number, blue: number) => [...head(95, 0.35, 'pink', pink), ...head(95, 0.35, 'blue', blue), ...head(95, 0.35, 'yellow', 20 - pink - blue)];
+    const mix = (pink: number, blue: number) => [
+      ...head(95, 0.35, 'pink', pink),
+      ...head(95, 0.35, 'blue', blue),
+      ...head(95, 0.35, 'yellow', 20 - pink - blue),
+    ];
     expect(describe(look)).toBe('pink and blue');
     expect(needs(look, mix(7, 7))).toBeNull();
     expect(needs(look, mix(6, 14))).toBe('pink');
@@ -77,7 +144,12 @@ group('Fluffy Salon', () => {
         }
       }
     }
-    expect([...reversals].sort()).toEqual(['curly to straight', 'long to short', 'short to long', 'straight to curly']);
+    expect([...reversals].sort()).toEqual([
+      'curly to straight',
+      'long to short',
+      'short to long',
+      'straight to curly',
+    ]);
   });
 
   it('keeps two distinct visible requests independent and reachable in either customer order', () => {
@@ -85,12 +157,16 @@ group('Fluffy Salon', () => {
       const requests = makeRequests(planFor(9), new Rng(seed));
       expect(requests).toHaveLength(2);
       expect(describe(requests[0].look)).not.toBe(describe(requests[1].look));
-      for (const order of [[0, 1], [1, 0]]) {
+      for (const order of [
+        [0, 1],
+        [1, 0],
+      ]) {
         const heads = requests.map((r) => anchors().map(() => ({ ...r.start })));
         for (const i of order) {
           const other = JSON.stringify(heads[1 - i]);
           expect(Object.keys(requests[i].look)).toHaveLength(2);
-          for (let n = 0; needs(requests[i].look, heads[i]) && n < 16; n++) sweep(toolFor(needs(requests[i].look, heads[i])!), n % 2 === 0, heads[i], 21);
+          for (let n = 0; needs(requests[i].look, heads[i]) && n < 16; n++)
+            sweep(toolFor(needs(requests[i].look, heads[i])!), n % 2 === 0, heads[i], 21);
           expect(needs(requests[i].look, heads[i])).toBeNull();
           expect(JSON.stringify(heads[1 - i])).toBe(other);
         }
@@ -114,7 +190,8 @@ group('Fluffy Salon', () => {
       expect(needs(r.look, head(length + sign * 25, 0.3, 'pink'))).toBeNull();
       // A hint's named tool and the demonstration use the same rule and reach the accepted side in a few real sweeps.
       const strands = anchors().map(() => ({ ...r.start }));
-      for (let n = 0; needs(r.look, strands) && n < 16; n++) sweep(toolFor(needs(r.look, strands)!), n % 2 === 0, strands, 21);
+      for (let n = 0; needs(r.look, strands) && n < 16; n++)
+        sweep(toolFor(needs(r.look, strands)!), n % 2 === 0, strands, 21);
       expect(needs(r.look, strands), `seed ${seed} ${direction}`).toBeNull();
       expect(sign * (stats(strands).length - length)).toBeGreaterThanOrEqual(25);
     }
@@ -132,13 +209,19 @@ group('Fluffy Salon', () => {
     expect(oldStrands(mixed(15), 'pink')).toEqual([15, 16, 17, 18, 19]);
     // When the length still needs work, the colour line waits for the colour to be what is missing.
     expect(moreLine({ length: 'long', color: 'pink' }, mixed(15))).toBe('salon.more');
-    expect(moreLine({ length: 'long', color: 'pink' }, [...head(200, 0.3, 'pink', 15), ...head(200, 0.3, 'blue', 5)])).toBe('salon.more-color');
+    expect(
+      moreLine({ length: 'long', color: 'pink' }, [
+        ...head(200, 0.3, 'pink', 15),
+        ...head(200, 0.3, 'blue', 5),
+      ]),
+    ).toBe('salon.more-color');
   });
 
   it('counts only a stroke with the tool that helps as progress for the quiet-time hint', () => {
     const look = { length: 'long' as const, color: 'pink' as const };
     expect(helps(look, head(60, 0.3, 'blue'), 'grow')).toBe(true);
-    for (const tool of ['cut', 'comb', 'curl', 'pink', 'blue'] as Tool[]) expect(helps(look, head(60, 0.3, 'blue'), tool), tool).toBe(false);
+    for (const tool of ['cut', 'comb', 'curl', 'pink', 'blue'] as Tool[])
+      expect(helps(look, head(60, 0.3, 'blue'), tool), tool).toBe(false);
     expect(helps(look, head(200, 0.3, 'blue'), 'pink')).toBe(true);
     expect(helps(look, head(200, 0.3, 'blue'), 'grow')).toBe(false);
     expect(helps(look, head(200, 0.3, 'pink'), 'pink')).toBe(false);
@@ -161,13 +244,16 @@ group('Fluffy Salon', () => {
   it('counts a color only when most of the fur has it', () => {
     const mixed = [...head(100, 0.3, 'pink', 15), ...head(100, 0.3, 'blue', 5)];
     expect(needs({ color: 'pink' }, mixed)).toBe('pink');
-    expect(needs({ color: 'pink' }, [...head(100, 0.3, 'pink', 17), ...head(100, 0.3, 'blue', 3)])).toBeNull();
+    expect(
+      needs({ color: 'pink' }, [...head(100, 0.3, 'pink', 17), ...head(100, 0.3, 'blue', 3)]),
+    ).toBeNull();
   });
 
-  it('moved the fur\'s geometry and tool effects out of the game unchanged: who is reached, and what each tool does', () => {
+  it("moved the fur's geometry and tool effects out of the game unchanged: who is reached, and what each tool does", () => {
     const an = anchors();
     expect(an).toHaveLength(STRANDS);
-    const strands = (length: number, curl = 0.3): Strand[] => an.map(() => ({ length, curl, color: 'blue' as const }));
+    const strands = (length: number, curl = 0.3): Strand[] =>
+      an.map(() => ({ length, curl, color: 'blue' as const }));
     // A finger far from the head touches nothing.
     const far = strands(100);
     expect(touchStrands('grow', far, an, { x: 900, y: 900 })).toEqual({ touched: 0, snipped: [] });
@@ -218,11 +304,15 @@ group('Fluffy Salon', () => {
     for (let k = 1; k < path.length; k++) {
       const [a, b] = [path[k - 1], path[k]];
       const len = Math.hypot(b.x - a.x, b.y - a.y);
-      for (let d = 0; d <= len; d += spacing) touchStrands(tool, strands, an, { x: a.x + ((b.x - a.x) * d) / len, y: a.y + ((b.y - a.y) * d) / len });
+      for (let d = 0; d <= len; d += spacing)
+        touchStrands(tool, strands, an, {
+          x: a.x + ((b.x - a.x) * d) / len,
+          y: a.y + ((b.y - a.y) * d) / len,
+        });
     }
   };
 
-  it('does every request with a few sweeps even at the slowest frame rate, inside the one-at-a-time level\'s 15 seconds', () => {
+  it("does every request with a few sweeps even at the slowest frame rate, inside the one-at-a-time level's 15 seconds", () => {
     // The hand's time for a sweep: travel back to the start (the least, as sweeps alternate), press, a leg of at least half a second per corner, lift, rest.
     const seconds = (tool: Tool) => 0.45 + 0.22 + (strokePath(tool).length - 1) * 0.5 + 0.2 + 0.1;
     for (const spacing of [7, 14, 21]) {
@@ -237,7 +327,10 @@ group('Fluffy Salon', () => {
             for (let back = false; needs(r.look, strands) && strokes < 12; back = !back, strokes++) {
               const next = toolFor(needs(r.look, strands)!);
               // Taking another tool costs a tap: travel, press, lift and rest.
-              if (next !== tool) { time += 1.7; tool = next; }
+              if (next !== tool) {
+                time += 1.7;
+                tool = next;
+              }
               sweep(next, back, strands, spacing, r.look);
               time += seconds(next);
             }
@@ -264,17 +357,34 @@ group('Fluffy Salon', () => {
         let mirrorShown = false;
         for (let r = 0; r < Math.max(1, requests.length); r++) {
           const req = requests[r];
-          const st: SalonState = { mode: plan.mode, look: req?.look ?? null, strands: anchors().map(() => ({ ...(req?.start ?? { length: 55, curl: 0.3, color: 'pink' as const }) })), tool: 'grow', strokes: 0, mirror: false };
+          const st: SalonState = {
+            mode: plan.mode,
+            look: req?.look ?? null,
+            strands: anchors().map(() => ({
+              ...(req?.start ?? { length: 55, curl: 0.3, color: 'pink' as const }),
+            })),
+            tool: 'grow',
+            strokes: 0,
+            mirror: false,
+          };
           let finished = false;
           for (let step = 0, back = false; step < 60 && !finished; step++) {
             const m = salonMove(st);
-            if (!m) { expect(selfChecks(plan.mode)).toBe(true); expect(needs(req.look, st.strands)).toBeNull(); finished = true; break; }
+            if (!m) {
+              expect(selfChecks(plan.mode)).toBe(true);
+              expect(needs(req.look, st.strands)).toBeNull();
+              finished = true;
+              break;
+            }
             if (m.do === 'tool') st.tool = m.tool;
             else if (m.do === 'stroke') {
               sweep(st.tool, back, st.strands, 21, st.look ?? undefined);
               back = !back;
               used.add(st.tool);
-              if (!req) { st.strokes++; st.mirror = st.strokes >= 1; }
+              if (!req) {
+                st.strokes++;
+                st.mirror = st.strokes >= 1;
+              }
             } else {
               // The mirror is only ever looked in when nothing is left to do.
               if (req) expect(needs(req.look, st.strands)).toBeNull();
@@ -292,7 +402,7 @@ group('Fluffy Salon', () => {
     expect(PLAY_STROKES).toBeGreaterThanOrEqual(2);
   });
 
-  it('grows the fur on each companion\'s head: roots along the top of its pinned body, its eyes inside the scalp, never shrunk away', () => {
+  it("grows the fur on each companion's head: roots along the top of its pinned body, its eyes inside the scalp, never shrunk away", () => {
     expect(furFit(PIP_SCALP)).toEqual({ x: 0, y: 0, scale: 1 });
     for (const s of SPECIES_IDS) {
       const box = bodyBox(s);
@@ -306,14 +416,16 @@ group('Fluffy Salon', () => {
         expect(p.y >= box.y - 8 && p.y <= box.y + box.height, `${s} root y ${p.y}`).toBe(true);
       }
       expect(Math.min(...roots.map((p) => p.y)) - box.y, s).toBeLessThan(8);
-      for (const eye of restPoints(s, 'eyes')) expect(Math.hypot(eye.x - scalp.x, eye.y - scalp.y), `${s} eye`).toBeLessThan(scalp.r * 0.8);
+      for (const eye of restPoints(s, 'eyes'))
+        expect(Math.hypot(eye.x - scalp.x, eye.y - scalp.y), `${s} eye`).toBeLessThan(scalp.r * 0.8);
       // A small head is drawn larger, so its fur on screen is at least about two thirds of the pip's.
       expect(fit.scale * growFor(scalp), s).toBeGreaterThan(0.65);
       expect(growFor(scalp), s).toBeLessThanOrEqual(2);
       // Free play's tap-the-face spot (the game draws the companion 1.15 × growFor times) never covers a root.
       const scale = 1.15 * growFor(scalp);
       const spot = faceSpot(scalp, restPoints(s, 'eyes')[0], scale);
-      for (const p of roots) expect(Math.hypot(p.x - spot.x, p.y - spot.y) * scale, `${s} face spot`).toBeGreaterThan(FACE_TAP);
+      for (const p of roots)
+        expect(Math.hypot(p.x - spot.x, p.y - spot.y) * scale, `${s} face spot`).toBeGreaterThan(FACE_TAP);
     }
   });
 
@@ -324,7 +436,11 @@ group('Fluffy Salon', () => {
     while (strands.reduce((a, x) => a + x.length, 0) / strands.length < FLOOF) {
       const path = strokePath('grow', sweeps++ % 2 === 1);
       for (let k = 0; k + 1 < path.length; k++) {
-        for (let t = 0; t <= 10; t++) touchStrands('grow', strands, an, { x: path[k].x + ((path[k + 1].x - path[k].x) * t) / 10, y: path[k].y + ((path[k + 1].y - path[k].y) * t) / 10 });
+        for (let t = 0; t <= 10; t++)
+          touchStrands('grow', strands, an, {
+            x: path[k].x + ((path[k + 1].x - path[k].x) * t) / 10,
+            y: path[k].y + ((path[k + 1].y - path[k].y) * t) / 10,
+          });
       }
       expect(sweeps).toBeLessThan(30);
     }
@@ -336,7 +452,14 @@ group('Fluffy Salon', () => {
   it('answers every touch in the fur area at the free levels, and the bot snips after growing at level 7', () => {
     expect(isFree('pat') && isFree('snip') && isFree('play') && !isFree('ask')).toBe(true);
     expect(SNIP_START.length).toBeGreaterThan(MAX_LENGTH / 2);
-    const base: SalonState = { mode: 'snip', look: null, strands: head(SNIP_START.length, SNIP_START.curl, 'pink'), tool: 'grow', strokes: 0, mirror: false };
+    const base: SalonState = {
+      mode: 'snip',
+      look: null,
+      strands: head(SNIP_START.length, SNIP_START.curl, 'pink'),
+      tool: 'grow',
+      strokes: 0,
+      mirror: false,
+    };
     expect(salonMove(base)).toEqual({ do: 'stroke' });
     expect(salonMove({ ...base, strokes: 1 })).toEqual({ do: 'tool', tool: 'cut' });
     expect(salonMove({ ...base, strokes: SNIP_TOUR.length, mirror: true })).toEqual({ do: 'mirror' });
@@ -405,7 +528,7 @@ group('Fluffy Salon', () => {
     }
   });
 
-  it('dresses a seeded room: two different wall colours, a cape stripe that is never the customer\'s colour, and a floor check', () => {
+  it("dresses a seeded room: two different wall colours, a cape stripe that is never the customer's colour, and a floor check", () => {
     const walls = new Set<string>();
     const stripes = new Set<string>();
     const floors = new Set<string>();
@@ -424,7 +547,7 @@ group('Fluffy Salon', () => {
     expect(floors.size).toBeGreaterThanOrEqual(4);
   });
 
-  it('starts free play at one of five looks, each inside the fur\'s bounds and different from the others', () => {
+  it("starts free play at one of five looks, each inside the fur's bounds and different from the others", () => {
     expect(START_LOOKS).toHaveLength(5);
     const seen = new Set<string>();
     const shapes = START_LOOKS.map((look) => startStrands(look, 'pink', 'blue'));

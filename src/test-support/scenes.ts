@@ -14,13 +14,16 @@ export function sceneFixture() {
       if (value instanceof Container && !value.destroyed && !value.parent) value.destroy({ children: true });
     }
   };
-  return Object.assign(<T extends Scene>(scene: T): T => {
-    scenes.add(scene);
-    return scene;
-  }, {
-    dispose,
-    async cleanup() {
-      for (const scene of [...scenes]) await dispose(scene);
+  return Object.assign(
+    <T extends Scene>(scene: T): T => {
+      scenes.add(scene);
+      return scene;
     },
-  });
+    {
+      dispose,
+      async cleanup() {
+        for (const scene of [...scenes]) await dispose(scene);
+      },
+    },
+  );
 }

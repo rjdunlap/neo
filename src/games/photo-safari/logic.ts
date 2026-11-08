@@ -6,7 +6,8 @@ import type { BandLevels } from '../../progress/difficulty';
  * different places. Tap one to take its photo. Requests grow from naming the animal to
  * what it's doing ("jumping") and where it is ("under the tree"), for verbs and positions.
  */
-export type SafariMode = 'snap' | 'who' | 'doing' | 'where' | 'both' | 'not' | 'clues' | 'tell' | 'act' | 'changed' | 'true';
+export type SafariMode =
+  'snap' | 'who' | 'doing' | 'where' | 'both' | 'not' | 'clues' | 'tell' | 'act' | 'changed' | 'true';
 export type Animal = 'cat' | 'dog' | 'bunny' | 'pig' | 'duck' | 'bear';
 export type Action = 'jumping' | 'sleeping' | 'eating' | 'dancing' | 'waving' | 'swimming';
 export type Spot = 'tree' | 'bush' | 'rock' | 'pond';
@@ -27,7 +28,12 @@ export const PLANS: SafariPlan[] = [
   { mode: 'where', photos: 4, animals: 3, name: 'Place words: "the duck under the tree"' },
   { mode: 'both', photos: 4, animals: 3, name: 'Both: "the cat sleeping behind the bush"' },
   { mode: 'not', photos: 4, animals: 3, name: 'Not: "the animal that is not sleeping"' },
-  { mode: 'clues', photos: 4, animals: 4, name: 'Two clues, no name: combine what an animal is doing and where it is' },
+  {
+    mode: 'clues',
+    photos: 4,
+    animals: 4,
+    name: 'Two clues, no name: combine what an animal is doing and where it is',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -41,27 +47,64 @@ export const LEVELS: BandLevels = {
 
 export const TELL_WHICH_LEVEL = 10;
 export const TELL_BOTH_LEVEL = 11;
-export const TELL_WHICH_PLAN: SafariPlan = { mode: 'tell', tell: 'which', photos: 4, animals: 3, name: 'Tell me which: tap the one picture word only the sparkly animal has, then Tell' };
-export const TELL_BOTH_PLAN: SafariPlan = { mode: 'tell', tell: 'both', photos: 4, animals: 4, name: 'Tell me both: every picture word fits two, so tell a doing word and a place word together' };
+export const TELL_WHICH_PLAN: SafariPlan = {
+  mode: 'tell',
+  tell: 'which',
+  photos: 4,
+  animals: 3,
+  name: 'Tell me which: tap the one picture word only the sparkly animal has, then Tell',
+};
+export const TELL_BOTH_PLAN: SafariPlan = {
+  mode: 'tell',
+  tell: 'both',
+  photos: 4,
+  animals: 4,
+  name: 'Tell me both: every picture word fits two, so tell a doing word and a place word together',
+};
 export const CHANGED_LEVEL = 8;
 export const TRUE_LEVEL = 9;
 /** The toddler entry: appended above the ladder, played between 2 and 3 in the toddler order. */
 export const WHO_DOING_LEVEL = 12;
-export const CHANGED_PLAN: SafariPlan = { mode: 'changed', photos: 4, animals: 3, name: 'What changed? Photograph the meadow, then find the friend doing something new or in a new place' };
-export const TRUE_PLAN: SafariPlan = { mode: 'true', photos: 4, animals: 3, name: 'Is it true? Photograph the animal named, then thumbs up or down: does the photo show what was said?' };
-export const WHO_DOING_PLAN: SafariPlan = { mode: 'act', photos: 4, animals: 3, name: 'Doing words only: "Who is sleeping?"' };
+export const CHANGED_PLAN: SafariPlan = {
+  mode: 'changed',
+  photos: 4,
+  animals: 3,
+  name: 'What changed? Photograph the meadow, then find the friend doing something new or in a new place',
+};
+export const TRUE_PLAN: SafariPlan = {
+  mode: 'true',
+  photos: 4,
+  animals: 3,
+  name: 'Is it true? Photograph the animal named, then thumbs up or down: does the photo show what was said?',
+};
+export const WHO_DOING_PLAN: SafariPlan = {
+  mode: 'act',
+  photos: 4,
+  animals: 3,
+  name: 'Doing words only: "Who is sleeping?"',
+};
 const PLANS_BY_ID: Record<number, SafariPlan> = {
   ...Object.fromEntries(PLANS.map((p, i) => [i + 1, p])),
-  [CHANGED_LEVEL]: CHANGED_PLAN, [TRUE_LEVEL]: TRUE_PLAN, 10: TELL_WHICH_PLAN, 11: TELL_BOTH_PLAN, [WHO_DOING_LEVEL]: WHO_DOING_PLAN,
+  [CHANGED_LEVEL]: CHANGED_PLAN,
+  [TRUE_LEVEL]: TRUE_PLAN,
+  10: TELL_WHICH_PLAN,
+  11: TELL_BOTH_PLAN,
+  [WHO_DOING_LEVEL]: WHO_DOING_PLAN,
 };
-export const planFor = (level: number) => PLANS_BY_ID[level] ?? PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+export const planFor = (level: number) =>
+  PLANS_BY_ID[level] ?? PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 export const ANIMALS: Animal[] = ['cat', 'dog', 'bunny', 'pig', 'duck', 'bear'];
 export const ACTIONS: Action[] = ['jumping', 'sleeping', 'eating', 'dancing', 'waving', 'swimming'];
 /** A swimming animal must have water; other actions work at every spot. */
 export const actionsAt = (spot: Spot): Action[] => ACTIONS.filter((a) => a !== 'swimming' || spot === 'pond');
 export const SPOTS: Spot[] = ['tree', 'bush', 'rock', 'pond'];
-export const PLACE_WORDS: Record<Spot, string> = { tree: 'under the tree', bush: 'behind the bush', rock: 'on the rock', pond: 'in the pond' };
+export const PLACE_WORDS: Record<Spot, string> = {
+  tree: 'under the tree',
+  bush: 'behind the bush',
+  rock: 'on the rock',
+  pond: 'in the pond',
+};
 
 export interface Sighting {
   animal: Animal;
@@ -89,7 +132,24 @@ export const TODDLER_ACTIONS: Action[] = ['sleeping', 'eating', 'jumping', 'danc
 export const claimTruths = (rng: Rng): boolean[] => rng.shuffle([true, true, false, false]);
 
 /** What a request talks about at each level. */
-const keys = (mode: SafariMode): (keyof Sighting)[] => (mode === 'act' ? ['action'] : mode === 'true' ? ['animal'] : mode === 'clues' ? ['action', 'spot'] : mode === 'who' ? ['animal'] : mode === 'not' ? ['action'] : mode === 'doing' ? ['animal', 'action'] : mode === 'where' ? ['animal', 'spot'] : mode === 'both' ? ['animal', 'action', 'spot'] : []);
+const keys = (mode: SafariMode): (keyof Sighting)[] =>
+  mode === 'act'
+    ? ['action']
+    : mode === 'true'
+      ? ['animal']
+      : mode === 'clues'
+        ? ['action', 'spot']
+        : mode === 'who'
+          ? ['animal']
+          : mode === 'not'
+            ? ['action']
+            : mode === 'doing'
+              ? ['animal', 'action']
+              : mode === 'where'
+                ? ['animal', 'spot']
+                : mode === 'both'
+                  ? ['animal', 'action', 'spot']
+                  : [];
 
 /** Does a sighting match the target on everything the request mentions? */
 export function matches(mode: SafariMode, s: Sighting, target: Sighting): boolean {
@@ -114,7 +174,12 @@ export function makeScene(plan: SafariPlan, rng: Rng, round = 0, truthy = true):
   if (plan.mode === 'true') {
     const sightings = meadow(rng);
     const target = rng.int(0, sightings.length - 1);
-    return { sightings, target, claim: truthy ? { ...sightings[target] } : falseClaim(sightings[target], rng), truthy };
+    return {
+      sightings,
+      target,
+      claim: truthy ? { ...sightings[target] } : falseClaim(sightings[target], rng),
+      truthy,
+    };
   }
   if (plan.mode === 'both') {
     const [spot, otherSpot] = rng.shuffle([...SPOTS]);
@@ -148,13 +213,21 @@ export function makeScene(plan: SafariPlan, rng: Rng, round = 0, truthy = true):
   }
   for (let tries = 0; tries < 200; tries++) {
     const spots = rng.shuffle([...SPOTS]).slice(0, plan.animals);
-    const target: Sighting = { animal: rng.pick(ANIMALS), action: rng.pick(actionsAt(spots[0])), spot: spots[0] };
+    const target: Sighting = {
+      animal: rng.pick(ANIMALS),
+      action: rng.pick(actionsAt(spots[0])),
+      spot: spots[0],
+    };
     const sightings: Sighting[] = [target];
     for (const spot of spots.slice(1)) {
       let s: Sighting;
       switch (plan.mode) {
         case 'doing':
-          s = { animal: rng.chance(0.7) ? target.animal : rng.pick(ANIMALS), action: rng.pick(actionsAt(spot).filter((a) => a !== target.action)), spot };
+          s = {
+            animal: rng.chance(0.7) ? target.animal : rng.pick(ANIMALS),
+            action: rng.pick(actionsAt(spot).filter((a) => a !== target.action)),
+            spot,
+          };
           break;
         case 'where':
           s = { animal: target.animal, action: rng.pick(actionsAt(spot)), spot };
@@ -162,11 +235,19 @@ export function makeScene(plan: SafariPlan, rng: Rng, round = 0, truthy = true):
         case 'not':
           // Everyone else is doing the same thing; only the target is doing something different.
           // Distractors share an action across distinct spots, including dry land.
-          s = { animal: rng.pick(ANIMALS), action: rng.pick(actionsAt('tree').filter((a) => a !== target.action)), spot };
+          s = {
+            animal: rng.pick(ANIMALS),
+            action: rng.pick(actionsAt('tree').filter((a) => a !== target.action)),
+            spot,
+          };
           if (sightings.length > 1) s.action = sightings[1].action;
           break;
         default:
-          s = { animal: rng.pick(ANIMALS.filter((a) => !sightings.some((x) => x.animal === a))), action: rng.pick(actionsAt(spot)), spot };
+          s = {
+            animal: rng.pick(ANIMALS.filter((a) => !sightings.some((x) => x.animal === a))),
+            action: rng.pick(actionsAt(spot)),
+            spot,
+          };
       }
       sightings.push(s);
     }
@@ -175,7 +256,11 @@ export function makeScene(plan: SafariPlan, rng: Rng, round = 0, truthy = true):
     const t = order.indexOf(0);
     if (plan.mode === 'snap') return { sightings: shuffled, target: -1 };
     if (shuffled.filter((s) => matches(plan.mode, s, shuffled[t])).length === 1) {
-      return { sightings: shuffled, target: t, notAction: plan.mode === 'not' ? sightings[1].action : undefined };
+      return {
+        sightings: shuffled,
+        target: t,
+        notAction: plan.mode === 'not' ? sightings[1].action : undefined,
+      };
     }
   }
   throw new Error('No scene');
@@ -196,7 +281,10 @@ export function changeScene(before: Sighting[], change: 'action' | 'spot', rng: 
   const kind = change === 'spot' && movable.length ? 'spot' : 'action';
   const target = kind === 'spot' ? rng.pick(movable) : rng.int(0, before.length - 1);
   const was = before[target];
-  const now: Sighting = kind === 'spot' ? { ...was, spot: free } : { ...was, action: rng.pick(actionsAt(was.spot).filter((a) => a !== was.action)) };
+  const now: Sighting =
+    kind === 'spot'
+      ? { ...was, spot: free }
+      : { ...was, action: rng.pick(actionsAt(was.spot).filter((a) => a !== was.action)) };
   return { sightings: before.map((b, i) => (i === target ? now : { ...b })), target, before, change: kind };
 }
 
@@ -228,8 +316,18 @@ export function changeLine(scene: Scene): string {
 /** "the bunny jumping behind the bush", for the voice. */
 export function describe(mode: SafariMode, s: Sighting): string {
   const parts = [mode === 'clues' ? 'the animal' : `the ${s.animal}`];
-  if (mode === 'clues' || mode === 'doing' || mode === 'both' || mode === 'snap' || mode === 'not' || mode === 'act' || mode === 'true') parts.push(s.action);
-  if (mode === 'clues' || mode === 'where' || mode === 'both' || mode === 'true') parts.push(PLACE_WORDS[s.spot]);
+  if (
+    mode === 'clues' ||
+    mode === 'doing' ||
+    mode === 'both' ||
+    mode === 'snap' ||
+    mode === 'not' ||
+    mode === 'act' ||
+    mode === 'true'
+  )
+    parts.push(s.action);
+  if (mode === 'clues' || mode === 'where' || mode === 'both' || mode === 'true')
+    parts.push(PLACE_WORDS[s.spot]);
   return parts.join(' ');
 }
 
@@ -242,23 +340,38 @@ export function request(mode: SafariMode, scene: Scene): string {
 }
 
 /** Which animal a capable child photographs next: the one asked for, or in free snapping each in turn. Always a right one. */
-export const animalToTap = (scene: Scene, photos: number): number => (scene.target >= 0 ? scene.target : photos % scene.sightings.length);
+export const animalToTap = (scene: Scene, photos: number): number =>
+  scene.target >= 0 ? scene.target : photos % scene.sightings.length;
 
-export interface SafariPoint { x: number; y: number }
+export interface SafariPoint {
+  x: number;
+  y: number;
+}
 const SPOT_X: Record<Spot, number> = { tree: 0.24, bush: 0.45, rock: 0.66, pond: 0.86 };
 
 /** Shared places get two broad, separated stages; the earlier single-place layout stays intact. */
-export function spotPosition(spot: Spot, sightings: Sighting[], w: number, h: number, ground = h * 0.78): SafariPoint {
+export function spotPosition(
+  spot: Spot,
+  sightings: Sighting[],
+  w: number,
+  h: number,
+  ground = h * 0.78,
+): SafariPoint {
   const shared = new Set(sightings.map((s) => s.spot)).size < sightings.length;
   const occupied = SPOTS.filter((s) => sightings.some((a) => a.spot === s));
   const x = shared ? (occupied.indexOf(spot) === 0 ? 0.3 : 0.76) : SPOT_X[spot];
   return { x: w * x, y: ground + (spot === 'rock' ? -56 : spot === 'pond' ? 26 : 0) };
 }
 
-export function sightingPositions(sightings: Sighting[], w: number, h: number, ground = h * 0.78): SafariPoint[] {
+export function sightingPositions(
+  sightings: Sighting[],
+  w: number,
+  h: number,
+  ground = h * 0.78,
+): SafariPoint[] {
   return sightings.map((s, i) => {
     const at = spotPosition(s.spot, sightings, w, h, ground);
-    const peers = sightings.flatMap((other, j) => other.spot === s.spot ? [j] : []);
+    const peers = sightings.flatMap((other, j) => (other.spot === s.spot ? [j] : []));
     return { x: at.x + (peers.length > 1 ? (peers.indexOf(i) === 0 ? -80 : 80) : 0), y: at.y };
   });
 }
@@ -269,7 +382,10 @@ export function nearestSighting(positions: SafariPoint[], point: SafariPoint): n
   let distance = 95;
   positions.forEach((p, i) => {
     const d = Math.hypot(p.x - point.x, p.y - 60 - point.y);
-    if (d < distance) { nearest = i; distance = d; }
+    if (d < distance) {
+      nearest = i;
+      distance = d;
+    }
   });
   return nearest;
 }
@@ -284,7 +400,7 @@ export function chipsFor(scene: Scene, rng: Rng): Chip[] {
   ]);
 }
 export function fits(chips: Chip[], sightings: Sighting[]): number[] {
-  return sightings.flatMap((s, i) => chips.every((c) => s[c.kind] === c.value) ? [i] : []);
+  return sightings.flatMap((s, i) => (chips.every((c) => s[c.kind] === c.value) ? [i] : []));
 }
 export function toggleChip(chosen: Chip[], chip: Chip): Chip[] {
   const rest = chosen.filter((c) => c.kind !== chip.kind);
@@ -293,14 +409,28 @@ export function toggleChip(chosen: Chip[], chip: Chip): Chip[] {
 export type TellResult = 'empty' | 'right' | 'too-little' | 'other' | 'other-many' | 'nobody';
 export function judgeTell(chips: Chip[], scene: Scene): { result: TellResult; fits: number[] } {
   const found = fits(chips, scene.sightings);
-  const result: TellResult = !chips.length ? 'empty' : !found.length ? 'nobody' : found.includes(scene.target)
-    ? found.length === 1 ? 'right' : 'too-little' : found.length === 1 ? 'other' : 'other-many';
+  const result: TellResult = !chips.length
+    ? 'empty'
+    : !found.length
+      ? 'nobody'
+      : found.includes(scene.target)
+        ? found.length === 1
+          ? 'right'
+          : 'too-little'
+        : found.length === 1
+          ? 'other'
+          : 'other-many';
   return { result, fits: found };
 }
 export function fewestChips(scene: Scene): Chip[] {
   const t = scene.sightings[scene.target];
-  const both: Chip[] = [{ kind: 'action', value: t.action }, { kind: 'spot', value: t.spot }];
-  return both.find((c) => fits([c], scene.sightings).length === 1) ? [both.find((c) => fits([c], scene.sightings).length === 1)!] : both;
+  const both: Chip[] = [
+    { kind: 'action', value: t.action },
+    { kind: 'spot', value: t.spot },
+  ];
+  return both.find((c) => fits([c], scene.sightings).length === 1)
+    ? [both.find((c) => fits([c], scene.sightings).length === 1)!]
+    : both;
 }
 /** Remove contradictions before offering solver chips, so accepting help always works. */
 export function tellHint(chosen: Chip[], scene: Scene): { chosen: Chip[]; glow: Chip[] } {
@@ -310,5 +440,7 @@ export function tellHint(chosen: Chip[], scene: Scene): { chosen: Chip[]; glow: 
 export function chipPhrase(chips: Chip[]): string {
   const action = chips.find((c) => c.kind === 'action');
   const spot = chips.find((c) => c.kind === 'spot');
-  return [action?.value, spot?.kind === 'spot' ? PLACE_WORDS[spot.value] : undefined].filter(Boolean).join(' ');
+  return [action?.value, spot?.kind === 'spot' ? PLACE_WORDS[spot.value] : undefined]
+    .filter(Boolean)
+    .join(' ');
 }

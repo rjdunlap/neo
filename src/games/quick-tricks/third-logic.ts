@@ -5,13 +5,20 @@ import { POUR_TARGETS, POUR_TOLERANCE } from '../fill-dump/logic';
 
 /** Which show a level plays: 1–3, 7 and 8 are show one, 4–6 show two, 9 the third show. */
 export type Show = 'first' | 'second' | 'third';
-export const showFor = (level: number): Show => (level >= 4 && level <= 6 ? 'second' : level === 9 ? 'third' : 'first');
+export const showFor = (level: number): Show =>
+  level >= 4 && level <= 6 ? 'second' : level === 9 ? 'third' : 'first';
 
-export const THIRD_NAME = 'A third show: wind a music box, fill three cups to the line, loop the fireflies asked for';
+export const THIRD_NAME =
+  'A third show: wind a music box, fill three cups to the line, loop the fireflies asked for';
 
 /** The bands the third show plays at; its amounts depend on the band, not on a level number. */
 export type ThirdBand = 'toddler' | 'preschool' | 'prek' | 'school';
-export const thirdBand = (band: Band): ThirdBand => (band === 'toddler' || band === 'preschool' || band === 'prek' ? band : band === 'lap' ? 'toddler' : 'school');
+export const thirdBand = (band: Band): ThirdBand =>
+  band === 'toddler' || band === 'preschool' || band === 'prek'
+    ? band
+    : band === 'lap'
+      ? 'toddler'
+      : 'school';
 
 export interface ThirdAmounts {
   /** Half turns of the crank until the friend pops (toddler: one whole turn of any turning). */
@@ -78,7 +85,12 @@ export function crankStep(s: CrankState, angle: number | null): CrankState {
   return { ...s, anchor: angle, total: s.total + Math.max(0, d * s.dir) };
 }
 /** Letting go keeps the progress; the next grasp may turn either way. */
-export const crankLift = (s: CrankState): CrankState => ({ anchor: null, dir: 0, pending: 0, total: s.total });
+export const crankLift = (s: CrankState): CrankState => ({
+  anchor: null,
+  dir: 0,
+  pending: 0,
+  total: s.total,
+});
 export const halfTurns = (s: CrankState) => Math.floor(s.total / Math.PI + 1e-9);
 export const wholeTurns = (s: CrankState) => Math.floor(s.total / (2 * Math.PI) + 1e-9);
 
@@ -101,8 +113,22 @@ export interface CupsState {
 }
 export function startCups(band: Band, rng: Rng): CupsState {
   const b = thirdBand(band);
-  const targets = b === 'prek' || b === 'school' ? [POUR_TARGETS[0], ...rng.shuffle([POUR_TARGETS[1], POUR_TARGETS[2]])] : [0.5, 0.5, 0.5];
-  return { jug: 3, cup: 0, tray: 0, done: false, targets, round: 0, overfills: 0, helped: false, hinted: false, unders: 0 };
+  const targets =
+    b === 'prek' || b === 'school'
+      ? [POUR_TARGETS[0], ...rng.shuffle([POUR_TARGETS[1], POUR_TARGETS[2]])]
+      : [0.5, 0.5, 0.5];
+  return {
+    jug: 3,
+    cup: 0,
+    tray: 0,
+    done: false,
+    targets,
+    round: 0,
+    overfills: 0,
+    helped: false,
+    hinted: false,
+    unders: 0,
+  };
 }
 export const cupTarget = (s: CupsState) => s.targets[Math.min(s.round, s.targets.length - 1)];
 export const atLine = (s: CupsState) => Math.abs(s.cup - cupTarget(s)) <= POUR_TOLERANCE + 1e-9;
@@ -174,9 +200,14 @@ export function clusters(rng: Rng): Point[] {
   const [three, two] = rng.chance(0.5) ? [a, b] : [b, a];
   const turn = rng.range(0, (2 * Math.PI) / 3);
   const out: Point[] = [];
-  for (let i = 0; i < 3; i++) out.push({ x: three.x + 80 * Math.cos(turn + (i * 2 * Math.PI) / 3), y: three.y + 80 * Math.sin(turn + (i * 2 * Math.PI) / 3) });
+  for (let i = 0; i < 3; i++)
+    out.push({
+      x: three.x + 80 * Math.cos(turn + (i * 2 * Math.PI) / 3),
+      y: three.y + 80 * Math.sin(turn + (i * 2 * Math.PI) / 3),
+    });
   const tilt = rng.range(-0.6, 0.6);
-  for (const side of [-1, 1]) out.push({ x: two.x + side * 65 * Math.cos(tilt), y: two.y + side * 65 * Math.sin(tilt) });
+  for (const side of [-1, 1])
+    out.push({ x: two.x + side * 65 * Math.cos(tilt), y: two.y + side * 65 * Math.sin(tilt) });
   return out;
 }
 
@@ -188,20 +219,30 @@ export function meadow(band: Band, rng: Rng): Point[] {
     if (points && demoLoop(points, a.want, 34)) return points;
   }
   // A plain row always has a loop around any number of its fireflies.
-  return Array.from({ length: a.flies }, (_, i) => ({ x: EDGE + ((MEADOW.w - 2 * EDGE) * (i + 0.5)) / a.flies, y: MEADOW.h / 2 }));
+  return Array.from({ length: a.flies }, (_, i) => ({
+    x: EDGE + ((MEADOW.w - 2 * EDGE) * (i + 0.5)) / a.flies,
+    y: MEADOW.h / 2,
+  }));
 }
 
 export type LoopVerdict = 'small' | 'free' | 'catch' | 'miss';
 
 /** A trail shorter than this is ignored, free (Lasso Loops' rule). */
 export const LOOP_MIN = 120;
-export const trailLength = (points: readonly Point[]) => points.reduce((sum, p, i) => (i ? sum + Math.hypot(p.x - points[i - 1].x, p.y - points[i - 1].y) : 0), 0);
+export const trailLength = (points: readonly Point[]) =>
+  points.reduce((sum, p, i) => (i ? sum + Math.hypot(p.x - points[i - 1].x, p.y - points[i - 1].y) : 0), 0);
 
 /**
  * Judge one loop (it always closes back to its start). Around none: free. At toddler, around any: every firefly follows. From
  * preschool, exactly `want` catches them; any other count is a miss, and the second miss in the trick brings the glow (one hint).
  */
-export function judgeLoop(band: Band, loop: readonly Point[], flies: readonly Point[], score: { misses: number; hints: number }, trick: { wrong: number }): { verdict: LoopVerdict; got: number[] } {
+export function judgeLoop(
+  band: Band,
+  loop: readonly Point[],
+  flies: readonly Point[],
+  score: { misses: number; hints: number },
+  trick: { wrong: number },
+): { verdict: LoopVerdict; got: number[] } {
   if (trailLength(loop) < LOOP_MIN) return { verdict: 'small', got: [] };
   const got = flies.flatMap((f, i) => (inside(loop, f) ? [i] : []));
   if (!got.length) return { verdict: 'free', got };

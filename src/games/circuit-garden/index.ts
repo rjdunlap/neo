@@ -18,11 +18,36 @@ import { RoundButton } from '../../ui/buttons';
 import { againIcon, checkIcon, magnifierIcon } from '../../ui/icons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { backIcon, batteryArt, connectorArt, handIcon, lanternArt, lanternMini, socketArt, stickerArt, WIRE, WIRE_LIT } from './art';
+import {
+  backIcon,
+  batteryArt,
+  connectorArt,
+  handIcon,
+  lanternArt,
+  lanternMini,
+  socketArt,
+  stickerArt,
+  WIRE,
+  WIRE_LIT,
+} from './art';
 import {
   LEVELS,
-  checkBoard, doneReady, dressingFor, gaps, GLOW_AFTER, HelpTally, initialState, lit, nextHelp, nextMove, planFor,
-  type BoardState, type Dressing, type LevelPlan, type Seen, type SlotId,
+  checkBoard,
+  doneReady,
+  dressingFor,
+  gaps,
+  GLOW_AFTER,
+  HelpTally,
+  initialState,
+  lit,
+  nextHelp,
+  nextMove,
+  planFor,
+  type BoardState,
+  type Dressing,
+  type LevelPlan,
+  type Seen,
+  type SlotId,
 } from './logic';
 
 /** Half a bridge's length along its route, in logical units. */
@@ -30,7 +55,10 @@ const HALF = 55;
 /** A drop lands in a bridge whose centre is within this many units. */
 const SNAP = 110;
 
-interface Pt { x: number; y: number }
+interface Pt {
+  x: number;
+  y: number;
+}
 
 interface Piece {
   node: Container;
@@ -62,30 +90,54 @@ function layoutFor(v: View, mirror: boolean, pieces: number, checking: boolean):
   const flip = (u: number) => (mirror ? 1 - u : u);
   if (landscape) {
     const sx = v.w / 1024;
-    const x0 = 260 * sx, x1 = 850 * sx, cy = Math.max(325, (v.h - 768) / 2 + 325);
+    const x0 = 260 * sx,
+      x1 = 850 * sx,
+      cy = Math.max(325, (v.h - 768) / 2 + 325);
     const bottom = v.h;
     return {
       landscape,
       map: (u, w) => ({ x: x0 + (x1 - x0) * flip(u), y: cy + w * 85 }),
-      du: HALF / (x1 - x0), dv: 64 / 85,
+      du: HALF / (x1 - x0),
+      dv: 64 / 85,
       tray: (pieces > 1 ? [345, 540] : [380]).map((x) => ({ x: x * sx, y: bottom - 198 })),
-      undo: { x: 720 * sx, y: bottom - 198 }, back: { x: 860 * sx, y: bottom - 198 },
+      undo: { x: 720 * sx, y: bottom - 198 },
+      back: { x: 860 * sx, y: bottom - 198 },
       ...(checking
-        ? { help: { x: 420 * sx, y: bottom - 68 }, check: { x: 620 * sx, y: bottom - 68 }, done: { x: 820 * sx, y: bottom - 68 } }
-        : { help: { x: 520 * sx, y: bottom - 68 }, check: { x: 640 * sx, y: bottom - 68 }, done: { x: 760 * sx, y: bottom - 68 } }),
+        ? {
+            help: { x: 420 * sx, y: bottom - 68 },
+            check: { x: 620 * sx, y: bottom - 68 },
+            done: { x: 820 * sx, y: bottom - 68 },
+          }
+        : {
+            help: { x: 520 * sx, y: bottom - 68 },
+            check: { x: 640 * sx, y: bottom - 68 },
+            done: { x: 760 * sx, y: bottom - 68 },
+          }),
     };
   }
   const sx = v.w / 768;
-  const y0 = 235, y1 = 545, cx = 445 * sx;
+  const y0 = 235,
+    y1 = 545,
+    cx = 445 * sx;
   return {
     landscape,
     map: (u, w) => ({ x: cx + w * 160 * sx, y: y0 + (y1 - y0) * flip(u) }),
-    du: HALF / (y1 - y0), dv: 64 / (160 * sx),
+    du: HALF / (y1 - y0),
+    dv: 64 / (160 * sx),
     tray: (pieces > 1 ? [300, 470] : [300]).map((x) => ({ x: x * sx, y: v.h - 364 })),
-    undo: { x: 300 * sx, y: v.h - 224 }, back: { x: 470 * sx, y: v.h - 224 },
+    undo: { x: 300 * sx, y: v.h - 224 },
+    back: { x: 470 * sx, y: v.h - 224 },
     ...(checking
-      ? { help: { x: Math.max(250 * sx, 220), y: v.h - 84 }, check: { x: 420 * sx, y: v.h - 84 }, done: { x: 600 * sx, y: v.h - 84 } }
-      : { help: { x: 300 * sx, y: v.h - 84 }, check: { x: 430 * sx, y: v.h - 84 }, done: { x: 560 * sx, y: v.h - 84 } }),
+      ? {
+          help: { x: Math.max(250 * sx, 220), y: v.h - 84 },
+          check: { x: 420 * sx, y: v.h - 84 },
+          done: { x: 600 * sx, y: v.h - 84 },
+        }
+      : {
+          help: { x: 300 * sx, y: v.h - 84 },
+          check: { x: 430 * sx, y: v.h - 84 },
+          done: { x: 560 * sx, y: v.h - 84 },
+        }),
   };
 }
 
@@ -136,10 +188,14 @@ class CircuitGarden implements Game {
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
     this.dressing = dressingFor(ctx.rng);
-    for (const g of [this.wires, this.marks, this.glow, this.selection, this.battery, this.lamp]) g.eventMode = 'none';
+    for (const g of [this.wires, this.marks, this.glow, this.selection, this.battery, this.lamp])
+      g.eventMode = 'none';
     // A tap on the open board clears a selection.
     this.background.eventMode = 'static';
-    onTap(this.background, () => { this.selected = null; this.drawSelection(); });
+    onTap(this.background, () => {
+      this.selected = null;
+      this.drawSelection();
+    });
     ctx.stage.addChild(this.background, this.wires, this.battery, this.lamp, this.marks);
     for (const slot of this.plan.slots) {
       const t = new Container();
@@ -188,7 +244,10 @@ class CircuitGarden implements Game {
     node.hitArea = new Rectangle(-62, -50, 124, 100);
     const piece: Piece = { node, at: null, slot, moved: false, drag: null as unknown as DragHandle };
     piece.drag = draggable(node, this.ctx.tw, {
-      onPick: () => { sfx.tick(); piece.moved = false; },
+      onPick: () => {
+        sfx.tick();
+        piece.moved = false;
+      },
       onMove: (x, y) => {
         const home = piece.drag.home;
         if (Math.hypot(x - home.x, y - home.y + 40) > 24) piece.moved = true;
@@ -215,18 +274,28 @@ class CircuitGarden implements Game {
       return true;
     }
     const slot = this.nearestGap(x, y);
-    if (slot) { this.fill(piece, slot); return true; }
-    if (piece.at && y > this.layout.tray[0].y - 90) { this.remove(piece); return true; }
+    if (slot) {
+      this.fill(piece, slot);
+      return true;
+    }
+    if (piece.at && y > this.layout.tray[0].y - 90) {
+      this.remove(piece);
+      return true;
+    }
     // Not a place it fits: a soft float home, never a miss.
     return false;
   }
 
   private nearestGap(x: number, y: number): SlotId | null {
-    let best: SlotId | null = null, bestD = SNAP;
+    let best: SlotId | null = null,
+      bestD = SNAP;
     for (const slot of gaps(this.plan, this.state)) {
       const c = this.bridgeCentre(slot);
       const d = Math.hypot(c.x - x, c.y - y);
-      if (d < bestD) { best = slot; bestD = d; }
+      if (d < bestD) {
+        best = slot;
+        bestD = d;
+      }
     }
     return best;
   }
@@ -292,7 +361,10 @@ class CircuitGarden implements Game {
   private changed() {
     const on = this.isLit;
     if (on !== this.wasLit && this.started) {
-      if (on) { sfx.bell(9, 0.3); this.ctx.pet.cheer(); }
+      if (on) {
+        sfx.bell(9, 0.3);
+        this.ctx.pet.cheer();
+      }
       void this.ctx.say(on ? 'circuit.closed' : 'circuit.open');
     }
     this.wasLit = on;
@@ -315,7 +387,9 @@ class CircuitGarden implements Game {
       // Nothing left to show: point at Check (level 3, not yet checked) or Done. No new hint.
       const toCheck = this.plan.check && !this.checked;
       this.glowAt = { ...(toCheck ? this.layout.check : this.layout.done) };
-      void this.ctx.say(toCheck ? 'circuit.check-first' : this.plan.check ? 'circuit.checked' : 'circuit.can-finish');
+      void this.ctx.say(
+        toCheck ? 'circuit.check-first' : this.plan.check ? 'circuit.checked' : 'circuit.can-finish',
+      );
       return;
     }
     if ((id === 'return' || id === 'supply') && !this.pieces.some((p) => !p.at && !p.drag.dragging)) return;
@@ -338,7 +412,11 @@ class CircuitGarden implements Game {
   /** Level 3's deliberate Check: does the lantern light now? A wrong Check is a miss with the break named and flashed. */
   check() {
     if (this.finished || !this.plan.check) return;
-    if (this.checked) { this.glowAt = { ...this.layout.done }; void this.ctx.say('circuit.checked'); return; }
+    if (this.checked) {
+      this.glowAt = { ...this.layout.done };
+      void this.ctx.say('circuit.checked');
+      return;
+    }
     const result = checkBoard(this.plan, this.state);
     if (result.right) {
       this.checked = true;
@@ -360,7 +438,8 @@ class CircuitGarden implements Game {
     }
     const brk = result.brk;
     void this.ctx.say('circuit.open').then(() => {
-      if (this.alive && !this.finished && this.breakAt === brk) void this.ctx.say(brk === 'supply' ? 'circuit.supply-break' : 'circuit.return-break');
+      if (this.alive && !this.finished && this.breakAt === brk)
+        void this.ctx.say(brk === 'supply' ? 'circuit.supply-break' : 'circuit.return-break');
     });
   }
 
@@ -374,7 +453,11 @@ class CircuitGarden implements Game {
     }
     if (!doneReady(this.plan, this.seen, this.checked)) {
       // Not yet: say what is left to see and point at Help. Never a miss.
-      const line: LineId = this.plan.switch ? (this.seen.on ? 'circuit.unseen-off' : 'circuit.unseen-on') : 'circuit.return-break';
+      const line: LineId = this.plan.switch
+        ? this.seen.on
+          ? 'circuit.unseen-off'
+          : 'circuit.unseen-on'
+        : 'circuit.return-break';
       this.glowAt = { ...this.layout.help };
       void this.ctx.say(line);
       return;
@@ -386,7 +469,9 @@ class CircuitGarden implements Game {
     this.drawSelection();
     sfx.sparkle();
     this.ctx.pet.cheer();
-    void this.ctx.tw.wait(0.6).then(() => this.alive && this.ctx.finish({ misses: this.misses, hints: this.tally.count }));
+    void this.ctx.tw
+      .wait(0.6)
+      .then(() => this.alive && this.ctx.finish({ misses: this.misses, hints: this.tally.count }));
   }
 
   restart() {
@@ -407,7 +492,9 @@ class CircuitGarden implements Game {
   }
 
   private draw() {
-    const L = this.layout, on = this.isLit, plan = this.plan;
+    const L = this.layout,
+      on = this.isLit,
+      plan = this.plan;
     const w = this.wires.clear();
     const color = on ? WIRE_LIT : WIRE;
     const line = (pts: Pt[]) => {
@@ -415,14 +502,21 @@ class CircuitGarden implements Game {
       for (const p of pts.slice(1)) w.lineTo(p.x, p.y);
     };
     const routes: Record<SlotId, Pt[][]> = {
-      supply: [[L.map(0, -L.dv), L.map(0, -1), L.map(0.5 - L.du, -1)], [L.map(0.5 + L.du, -1), L.map(1, -1), L.map(1, -L.dv)]],
-      return: [[L.map(1, L.dv), L.map(1, 1), L.map(0.5 + L.du, 1)], [L.map(0.5 - L.du, 1), L.map(0, 1), L.map(0, L.dv)]],
+      supply: [
+        [L.map(0, -L.dv), L.map(0, -1), L.map(0.5 - L.du, -1)],
+        [L.map(0.5 + L.du, -1), L.map(1, -1), L.map(1, -L.dv)],
+      ],
+      return: [
+        [L.map(1, L.dv), L.map(1, 1), L.map(0.5 + L.du, 1)],
+        [L.map(0.5 - L.du, 1), L.map(0, 1), L.map(0, L.dv)],
+      ],
     };
     const fixedBridge = (slot: SlotId) => !plan.slots.includes(slot) && !(plan.switch && slot === 'supply');
     // A lit loop gets a soft outline all the way round.
     if (on) {
       for (const slot of ['supply', 'return'] as const) for (const r of routes[slot]) line(r);
-      for (const slot of ['supply', 'return'] as const) line([L.map(0.5 - L.du, SIDE[slot]), L.map(0.5 + L.du, SIDE[slot])]);
+      for (const slot of ['supply', 'return'] as const)
+        line([L.map(0.5 - L.du, SIDE[slot]), L.map(0.5 + L.du, SIDE[slot])]);
       w.stroke({ width: 26, color: swatch.yellow.light, cap: 'round', join: 'round' });
     }
     for (const slot of ['supply', 'return'] as const) {
@@ -432,14 +526,20 @@ class CircuitGarden implements Game {
     w.stroke({ width: 10, color, cap: 'round', join: 'round' });
     // The open bridges: clips at both ends, and a dashed break outline while empty.
     for (const slot of plan.slots) {
-      const a = L.map(0.5 - L.du, SIDE[slot]), b = L.map(0.5 + L.du, SIDE[slot]);
+      const a = L.map(0.5 - L.du, SIDE[slot]),
+        b = L.map(0.5 + L.du, SIDE[slot]);
       if (!this.state.filled[slot]) this.dashedBox(w, this.bridgeCentre(slot), L.landscape);
       socketArt(w, a.x, a.y);
       socketArt(w, b.x, b.y);
     }
     if (plan.switch) this.drawSwitch(w);
     // Terminals at the battery and the lamp, each its own knob.
-    for (const [u, s] of [[0, -1], [0, 1], [1, -1], [1, 1]] as const) {
+    for (const [u, s] of [
+      [0, -1],
+      [0, 1],
+      [1, -1],
+      [1, 1],
+    ] as const) {
       const p = L.map(u, s * L.dv);
       w.circle(p.x, p.y, 11).fill(0x8c9aa6).stroke({ width: 4, color: 0x5a6b7d });
     }
@@ -454,13 +554,25 @@ class CircuitGarden implements Game {
 
   private dashedBox(g: Graphics, c: Pt, landscape: boolean) {
     const [hw, hh] = landscape ? [70, 46] : [46, 70];
-    const corners = [[-hw, -hh], [hw, -hh], [hw, hh], [-hw, hh], [-hw, -hh]];
+    const corners = [
+      [-hw, -hh],
+      [hw, -hh],
+      [hw, hh],
+      [-hw, hh],
+      [-hw, -hh],
+    ];
     for (let i = 0; i < 4; i++) {
-      const [x0, y0] = corners[i], [x1, y1] = corners[i + 1];
-      const len = Math.hypot(x1 - x0, y1 - y0), n = Math.floor(len / 18);
+      const [x0, y0] = corners[i],
+        [x1, y1] = corners[i + 1];
+      const len = Math.hypot(x1 - x0, y1 - y0),
+        n = Math.floor(len / 18);
       for (let k = 0; k < n; k += 2) {
-        const t0 = k / n, t1 = Math.min(1, (k + 1) / n);
-        g.moveTo(c.x + x0 + (x1 - x0) * t0, c.y + y0 + (y1 - y0) * t0).lineTo(c.x + x0 + (x1 - x0) * t1, c.y + y0 + (y1 - y0) * t1);
+        const t0 = k / n,
+          t1 = Math.min(1, (k + 1) / n);
+        g.moveTo(c.x + x0 + (x1 - x0) * t0, c.y + y0 + (y1 - y0) * t0).lineTo(
+          c.x + x0 + (x1 - x0) * t1,
+          c.y + y0 + (y1 - y0) * t1,
+        );
       }
     }
     g.stroke({ width: 5, color: swatch.orange.line, cap: 'round' });
@@ -468,9 +580,17 @@ class CircuitGarden implements Game {
 
   private drawSwitch(g: Graphics) {
     const L = this.layout;
-    const a = L.map(0.5 - L.du, -1), b = L.map(0.5 + L.du, -1);
-    g.roundRect(Math.min(a.x, b.x) - 30, Math.min(a.y, b.y) - 30, Math.abs(b.x - a.x) + 60, Math.abs(b.y - a.y) + 60, 20)
-      .fill(cream).stroke({ width: 4, color: swatch.brown.line });
+    const a = L.map(0.5 - L.du, -1),
+      b = L.map(0.5 + L.du, -1);
+    g.roundRect(
+      Math.min(a.x, b.x) - 30,
+      Math.min(a.y, b.y) - 30,
+      Math.abs(b.x - a.x) + 60,
+      Math.abs(b.y - a.y) + 60,
+      20,
+    )
+      .fill(cream)
+      .stroke({ width: 4, color: swatch.brown.line });
     socketArt(g, a.x, a.y);
     socketArt(g, b.x, b.y);
     // Closed lies flat onto the far clip; open tilts away from the board's middle.
@@ -478,8 +598,13 @@ class CircuitGarden implements Game {
     const along = { x: (b.x - a.x) / len, y: (b.y - a.y) / len };
     const away = L.landscape ? { x: 0, y: -1 } : { x: -1, y: 0 };
     const tilt = this.state.closed ? 0 : 0.6;
-    const end = { x: a.x + (along.x * Math.cos(tilt) + away.x * Math.sin(tilt)) * len, y: a.y + (along.y * Math.cos(tilt) + away.y * Math.sin(tilt)) * len };
-    g.moveTo(a.x, a.y).lineTo(end.x, end.y).stroke({ width: 14, color: this.isLit ? WIRE_LIT : swatch.red.fill, cap: 'round' });
+    const end = {
+      x: a.x + (along.x * Math.cos(tilt) + away.x * Math.sin(tilt)) * len,
+      y: a.y + (along.y * Math.cos(tilt) + away.y * Math.sin(tilt)) * len,
+    };
+    g.moveTo(a.x, a.y)
+      .lineTo(end.x, end.y)
+      .stroke({ width: 14, color: this.isLit ? WIRE_LIT : swatch.red.fill, cap: 'round' });
     g.circle(end.x, end.y, 14).fill(swatch.red.fill).stroke({ width: 4, color: swatch.red.line });
     g.circle(a.x, a.y, 9).fill(0x5a6b7d);
   }
@@ -491,7 +616,10 @@ class CircuitGarden implements Game {
     const mid = this.layout.map(0.5, 0);
     kinds.forEach((k, i) => {
       const m = new Container();
-      const card = new Graphics().roundRect(-40, -44, 80, 88, 16).fill({ color: 0xffffff, alpha: 0.85 }).stroke({ width: 3, color: swatch.white.line });
+      const card = new Graphics()
+        .roundRect(-40, -44, 80, 88, 16)
+        .fill({ color: 0xffffff, alpha: 0.85 })
+        .stroke({ width: 3, color: swatch.white.line });
       m.addChild(card, lanternMini(k === 'on', 0.42));
       // At level 3 the lit lantern is the request, ticked by a correct Check rather than by seeing it.
       if (this.plan.check ? this.checked : this.seen[k]) {
@@ -524,7 +652,10 @@ class CircuitGarden implements Game {
     if (!p || this.finished) return;
     const vertical = p.at && !this.layout.landscape;
     const [hw, hh] = vertical ? [52, 72] : [72, 52];
-    g.roundRect(p.node.x - hw, p.node.y - hh, hw * 2, hh * 2, 22).stroke({ width: 7, color: swatch.blue.line });
+    g.roundRect(p.node.x - hw, p.node.y - hh, hw * 2, hh * 2, 22).stroke({
+      width: 7,
+      color: swatch.blue.line,
+    });
     g.circle(p.node.x + hw - 4, p.node.y - hh + 4, 12).fill(swatch.blue.fill);
   }
 
@@ -533,7 +664,9 @@ class CircuitGarden implements Game {
   start() {
     this.started = true;
     this.changed();
-    void this.ctx.instruct(this.plan.check ? 'circuit.instruct.3' : this.plan.switch ? 'circuit.instruct.2' : 'circuit.instruct.1');
+    void this.ctx.instruct(
+      this.plan.check ? 'circuit.instruct.3' : this.plan.switch ? 'circuit.instruct.2' : 'circuit.instruct.1',
+    );
   }
 
   update(dt: number) {
@@ -542,7 +675,10 @@ class CircuitGarden implements Game {
       // The state has now been on screen for a frame: it counts as seen.
       this.pendingLook = false;
       const k = this.isLit ? 'on' : 'off';
-      if (!this.seen[k]) { this.seen[k] = true; this.drawMarks(); }
+      if (!this.seen[k]) {
+        this.seen[k] = true;
+        this.drawMarks();
+      }
     }
     this.doneButton.alpha = doneReady(this.plan, this.seen, this.checked) ? 1 : 0.55;
     const g = this.glow.clear();
@@ -551,23 +687,49 @@ class CircuitGarden implements Game {
       this.breakTime -= dt;
       const c = this.bridgeCentre(this.breakAt);
       const [hw, hh] = this.layout.landscape ? [80, 56] : [56, 80];
-      g.roundRect(c.x - hw, c.y - hh, hw * 2, hh * 2, 20).stroke({ width: 7, color: swatch.red.line, alpha: 0.5 + 0.5 * Math.abs(Math.sin(this.clock * 6)) });
+      g.roundRect(c.x - hw, c.y - hh, hw * 2, hh * 2, 20).stroke({
+        width: 7,
+        color: swatch.red.line,
+        alpha: 0.5 + 0.5 * Math.abs(Math.sin(this.clock * 6)),
+      });
     }
     const at = this.glowAt;
-    if (at) g.circle(at.x, at.y, 66).stroke({ width: 8, color: swatch.yellow.line, alpha: 0.6 + 0.4 * Math.sin(this.clock * 4) });
+    if (at)
+      g.circle(at.x, at.y, 66).stroke({
+        width: 8,
+        color: swatch.yellow.line,
+        alpha: 0.6 + 0.4 * Math.sin(this.clock * 4),
+      });
   }
 
   resize(v: View) {
     this.layout = this.layoutNow(v);
     const L = this.layout;
     this.background.clear().rect(0, 0, v.w, v.h).fill(0xe6f6ef);
-    const tl = L.map(0, -1), br = L.map(1, 1);
-    const x0 = Math.min(tl.x, br.x) - 90, y0 = Math.min(tl.y, br.y) - 80, x1 = Math.max(tl.x, br.x) + 90, y1 = Math.max(tl.y, br.y) + 80;
-    this.background.roundRect(x0, y0, x1 - x0, y1 - y0, 36).fill(0xfbfdf6).stroke({ width: 4, color: swatch.green.light });
+    const tl = L.map(0, -1),
+      br = L.map(1, 1);
+    const x0 = Math.min(tl.x, br.x) - 90,
+      y0 = Math.min(tl.y, br.y) - 80,
+      x1 = Math.max(tl.x, br.x) + 90,
+      y1 = Math.max(tl.y, br.y) + 80;
+    this.background
+      .roundRect(x0, y0, x1 - x0, y1 - y0, 36)
+      .fill(0xfbfdf6)
+      .stroke({ width: 4, color: swatch.green.light });
     // The tray: a plate where loose pieces rest.
-    if (this.pieces.length) for (const t of L.tray) this.background.roundRect(t.x - 80, t.y - 55, 160, 110, 28).fill(cream).stroke({ width: 4, color: swatch.brown.light });
+    if (this.pieces.length)
+      for (const t of L.tray)
+        this.background
+          .roundRect(t.x - 80, t.y - 55, 160, 110, 28)
+          .fill(cream)
+          .stroke({ width: 4, color: swatch.brown.light });
     // A resize drops a selection and returns a piece in a drag; it never completes or checks anything.
-    for (const p of this.pieces) if (p.drag.dragging) { p.drag.destroy(); this.rebuildDrag(p); p.drag.enabled = !this.finished; }
+    for (const p of this.pieces)
+      if (p.drag.dragging) {
+        p.drag.destroy();
+        this.rebuildDrag(p);
+        p.drag.enabled = !this.finished;
+      }
     this.selected = null;
     for (const [slot, t] of this.targets) {
       t.position.copyFrom(this.bridgeCentre(slot));
@@ -587,8 +749,13 @@ class CircuitGarden implements Game {
 
   private rebuildDrag(p: Piece) {
     p.drag = draggable(p.node, this.ctx.tw, {
-      onPick: () => { sfx.tick(); p.moved = false; },
-      onMove: (x, y) => { if (Math.hypot(x - p.drag.home.x, y - p.drag.home.y + 40) > 24) p.moved = true; },
+      onPick: () => {
+        sfx.tick();
+        p.moved = false;
+      },
+      onMove: (x, y) => {
+        if (Math.hypot(x - p.drag.home.x, y - p.drag.home.y + 40) > 24) p.moved = true;
+      },
       onDrop: (x, y) => this.drop(p, x, y),
     });
   }
@@ -624,9 +791,9 @@ export const circuitGarden: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
   touchDemo: true,
-  coplayHint: 'Take turns: one of you joins a wire or flips the switch, the other watches the lantern (or presses Check), then swap.',
+  coplayHint:
+    'Take turns: one of you joins a wire or flips the switch, the other watches the lantern (or presses Check), then swap.',
   hubIcon: () => new WigglyIcon(lanternArt(true)),
   sticker: (seed) => stickerArt(seed),
   create: (ctx) => new CircuitGarden(ctx),
 };
-

@@ -16,7 +16,13 @@ export const later = (k: number) => (k + 1) % STOPS;
 
 /** The five amounts the game names; the words are fixed and never a phase name. */
 export type Amount = 'none' | 'slice' | 'half' | 'most' | 'full';
-export const AMOUNT_WORDS: Record<Amount, string> = { none: 'no light', slice: 'a little light', half: 'half', most: 'most', full: 'all' };
+export const AMOUNT_WORDS: Record<Amount, string> = {
+  none: 'no light',
+  slice: 'a little light',
+  half: 'half',
+  most: 'most',
+  full: 'all',
+};
 export function amountOf(k: number): Amount {
   const f = lit(k);
   return f < 0.01 ? 'none' : f < 0.3 ? 'slice' : f < 0.7 ? 'half' : f < 0.99 ? 'most' : 'full';
@@ -38,7 +44,11 @@ export interface Point {
 export function moonShape(k: number, r: number, steps = 48): Point[] {
   const c = Math.cos(theta(k));
   if (lit(k) < 1e-9) return [];
-  if (lit(k) > 1 - 1e-9) return Array.from({ length: steps * 2 }, (_, i) => ({ x: r * Math.cos((i / (steps * 2)) * Math.PI * 2), y: r * Math.sin((i / (steps * 2)) * Math.PI * 2) }));
+  if (lit(k) > 1 - 1e-9)
+    return Array.from({ length: steps * 2 }, (_, i) => ({
+      x: r * Math.cos((i / (steps * 2)) * Math.PI * 2),
+      y: r * Math.sin((i / (steps * 2)) * Math.PI * 2),
+    }));
   const side = k < 4 ? 1 : -1;
   // A crescent's terminator bulges toward the lit side; a mostly lit Moon's bulges into the dark side.
   const bulge = c > 0 ? side : -side;
@@ -78,12 +88,32 @@ export interface Plan {
   description: string;
 }
 export const PLANS: readonly Plan[] = [
-  { level: 1, mode: 'look', name: 'Look again', description: 'Look again: press Later three times and watch the Moon change' },
-  { level: 2, mode: 'same', name: 'Same view', description: 'Same view: tap the card that matches the Moon in the window, two boards' },
-  { level: 3, mode: 'compare', name: 'More light', description: 'More light: tap the Moon that shows more, or less, light; three comparisons' },
+  {
+    level: 1,
+    mode: 'look',
+    name: 'Look again',
+    description: 'Look again: press Later three times and watch the Moon change',
+  },
+  {
+    level: 2,
+    mode: 'same',
+    name: 'Same view',
+    description: 'Same view: tap the card that matches the Moon in the window, two boards',
+  },
+  {
+    level: 3,
+    mode: 'compare',
+    name: 'More light',
+    description: 'More light: tap the Moon that shows more, or less, light; three comparisons',
+  },
 ];
 
-export const LEVELS: BandLevels = { lap: { min: 1, max: 1 }, toddler: { min: 1, max: 2 }, preschool: { min: 2, max: 3 }, prek: { min: 3, max: 3 } };
+export const LEVELS: BandLevels = {
+  lap: { min: 1, max: 1 },
+  toddler: { min: 1, max: 2 },
+  preschool: { min: 2, max: 3 },
+  prek: { min: 3, max: 3 },
+};
 export const moonPlan = (level: number): Plan => PLANS[Math.min(Math.max(level, 1), PLANS.length) - 1];
 
 /** Level 1: a start stop and three Later presses, four views in model order. */
@@ -147,7 +177,9 @@ export const AUTHORED_COMPARE: Board[] = [
 ];
 export const COMPARISONS = 3;
 export function compareBoards(rng: Rng, authored: boolean): Board[] {
-  const boards: Board[] = authored ? AUTHORED_COMPARE.map((b) => ({ ...b, cards: [...b.cards] as [number, number] })) : [];
+  const boards: Board[] = authored
+    ? AUTHORED_COMPARE.map((b) => ({ ...b, cards: [...b.cards] as [number, number] }))
+    : [];
   while (boards.length < COMPARISONS) {
     const a = rng.pick(CARD_STOPS);
     const b = partner(rng, a);
@@ -272,7 +304,12 @@ export function windowLayout(view: View, level: number): WindowLayout | null {
   const portrait = view.h > view.w;
   const cardMoonR = level >= 3 ? MOON_R : 70;
   const ribbonY = view.h - 10 - RIBBON;
-  const ribbon = Array.from({ length: LOOK_PRESSES + 1 }, (_, i) => ({ x: PET.w + 20 + i * (RIBBON + RIBBON_GAP), y: ribbonY, w: RIBBON, h: RIBBON }));
+  const ribbon = Array.from({ length: LOOK_PRESSES + 1 }, (_, i) => ({
+    x: PET.w + 20 + i * (RIBBON + RIBBON_GAP),
+    y: ribbonY,
+    w: RIBBON,
+    h: RIBBON,
+  }));
   let L: WindowLayout;
   if (portrait) {
     const cx = view.w / 2;
@@ -282,7 +319,10 @@ export function windowLayout(view: View, level: number): WindowLayout | null {
       window,
       moonR: MOON_R,
       later: { x: cx - LATER / 2, y: window.y + WINDOW + 80, w: LATER, h: LATER },
-      cards: [{ x: cx - CARD - 40, y: cardY, w: CARD, h: CARD }, { x: cx + 40, y: cardY, w: CARD, h: CARD }],
+      cards: [
+        { x: cx - CARD - 40, y: cardY, w: CARD, h: CARD },
+        { x: cx + 40, y: cardY, w: CARD, h: CARD },
+      ],
       cardMoonR,
       request: { x: cx - 100, y: window.y + WINDOW + 30, w: 200, h: 130 },
       ribbon,
@@ -295,19 +335,27 @@ export function windowLayout(view: View, level: number): WindowLayout | null {
       window,
       moonR: MOON_R,
       later: { x: left, y: cy - LATER / 2, w: LATER, h: LATER },
-      cards: [{ x: left, y: cy - CARD / 2, w: CARD, h: CARD }, { x: left + CARD + 30, y: cy - CARD / 2, w: CARD, h: CARD }],
+      cards: [
+        { x: left, y: cy - CARD / 2, w: CARD, h: CARD },
+        { x: left + CARD + 30, y: cy - CARD / 2, w: CARD, h: CARD },
+      ],
       cardMoonR,
       request: { x: left + CARD + 15 - 100, y: cy - CARD / 2 - 160, w: 200, h: 130 },
       ribbon,
     };
   }
   const boxes = shownBoxes(L, level);
-  const clear = [petCorner(view), { x: 0, y: 0, w: CORNER, h: CORNER }, { x: view.w - CORNER, y: 0, w: CORNER, h: CORNER }];
+  const clear = [
+    petCorner(view),
+    { x: 0, y: 0, w: CORNER, h: CORNER },
+    { x: view.w - CORNER, y: 0, w: CORNER, h: CORNER },
+  ];
   for (const b of boxes) {
     if (!inside(b, view)) return null;
     if (clear.some((c) => overlaps(b, c))) return null;
   }
-  for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++) if (overlaps(boxes[i], boxes[j])) return null;
+  for (let i = 0; i < boxes.length; i++)
+    for (let j = i + 1; j < boxes.length; j++) if (overlaps(boxes[i], boxes[j])) return null;
   return L;
 }
 
@@ -328,7 +376,9 @@ export function missSpot(view: View, L: WindowLayout): Box {
     : { x: L.cards[0].x, y: L.cards[0].y + CARD + 10, w: CARD, h: CARD };
 }
 
-export const overlaps = (a: Box, b: Box) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
-export const inside = (b: Box, view: View) => b.x >= 0 && b.y >= 0 && b.x + b.w <= view.w && b.y + b.h <= view.h;
+export const overlaps = (a: Box, b: Box) =>
+  a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+export const inside = (b: Box, view: View) =>
+  b.x >= 0 && b.y >= 0 && b.x + b.w <= view.w && b.y + b.h <= view.h;
 export const petCorner = (view: View): Box => ({ x: 0, y: view.h - PET.h, w: PET.w, h: PET.h });
 export const center = (b: Box) => ({ x: b.x + b.w / 2, y: b.y + b.h / 2 });

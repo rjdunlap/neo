@@ -95,11 +95,13 @@ export function tunesOf(length: number): Tune[] {
       if (gap === 1 && length >= 3) out.push({ notes: alternate(a, b, length), kind: 'wiggle' });
     }
   }
-  for (const song of SONGS) if (song.notes.length === length) out.push({ notes: [...song.notes], kind: song.id, title: song.title });
+  for (const song of SONGS)
+    if (song.notes.length === length) out.push({ notes: [...song.notes], kind: song.id, title: song.title });
   return out;
 }
 
-const same = (a: readonly number[], b: readonly number[]) => a.length === b.length && a.every((n, k) => n === b[k]);
+const same = (a: readonly number[], b: readonly number[]) =>
+  a.length === b.length && a.every((n, k) => n === b[k]);
 
 /**
  * The next tune to copy. A kind is picked first, so a song comes round as often as a shape; never the kind just
@@ -140,7 +142,8 @@ export const fanAnswering = (notes: number, fans: number): number | null =>
   notes > 0 && notes % FAN_EVERY === 0 ? (notes / FAN_EVERY - 1) % fans : null;
 
 /** Three notes on neighbouring jellies in order, up or down: 0 1 2, 3 2 1 and so on. */
-export const isScale = (a: number, b: number, c: number): boolean => (b - a === 1 && c - b === 1) || (a - b === 1 && b - c === 1);
+export const isScale = (a: number, b: number, c: number): boolean =>
+  (b - a === 1 && c - b === 1) || (a - b === 1 && b - c === 1);
 
 /** Level 3's scale watch: true on the note that finishes a run of three neighbours; a run is used once, so 0 1 2 3 sparkles once. */
 export class ScaleWatch {
@@ -183,13 +186,20 @@ export class JellyNamer {
 }
 
 /** Each jelly's color and size, biggest and lowest first. */
-export const JELLY_NAMES: readonly LineId[] = ['jelly.name.red', 'jelly.name.orange', 'jelly.name.yellow', 'jelly.name.green', 'jelly.name.blue'];
+export const JELLY_NAMES: readonly LineId[] = [
+  'jelly.name.red',
+  'jelly.name.orange',
+  'jelly.name.yellow',
+  'jelly.name.green',
+  'jelly.name.blue',
+];
 
 /** The little song the ghost finger plays in free play: the scale climbing and coming back, so every note is the jelly next door. */
 export const FREE_SONG = [0, 1, 2, 3, 4, 3, 2, 1];
 
 /** The jelly for the `n`th note of free play (counting from 0), looping the song. */
-export const freeNote = (n: number): number => FREE_SONG[((n % FREE_SONG.length) + FREE_SONG.length) % FREE_SONG.length];
+export const freeNote = (n: number): number =>
+  FREE_SONG[((n % FREE_SONG.length) + FREE_SONG.length) % FREE_SONG.length];
 
 /** Where a round is: free play is all `play`; a tune round listens (`play` before the first tune, then `listen`) and takes a `turn`. */
 export type JellyPhase = 'play' | 'listen' | 'turn' | 'done';
@@ -199,7 +209,13 @@ export type JellyPhase = 'play' | 'listen' | 'turn' | 'done';
  * she waits through the first pause and the tune itself (a tap then is only music, but it is not her answer) and then
  * taps the tune in order.
  */
-export function jellyToTap(mode: JellyPlan['mode'], phase: JellyPhase, tune: readonly number[], at: number, notes: number): number | null {
+export function jellyToTap(
+  mode: JellyPlan['mode'],
+  phase: JellyPhase,
+  tune: readonly number[],
+  at: number,
+  notes: number,
+): number | null {
   if (mode === 'wake') {
     const awake = awakeJellies(notes);
     return phase === 'play' ? awake[notes % awake.length] : null;

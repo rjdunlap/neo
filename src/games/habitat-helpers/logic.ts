@@ -42,7 +42,11 @@ export const PIECES: Record<PieceId, HabitatPiece> = {
   'seed-grass': { id: 'seed-grass', name: 'seed grass', for: { duck: ['food'] } },
   'tall-reeds': { id: 'tall-reeds', name: 'tall reeds', for: { duck: ['shelter'] } },
   'berry-hedge': { id: 'berry-hedge', name: 'berry hedge', for: { bunny: ['food', 'shelter'] } },
-  'pond-reeds': { id: 'pond-reeds', name: 'pond with reeds', for: { bunny: ['water'], duck: ['water', 'shelter'] } },
+  'pond-reeds': {
+    id: 'pond-reeds',
+    name: 'pond with reeds',
+    for: { bunny: ['water'], duck: ['water', 'shelter'] },
+  },
   dandelions: { id: 'dandelions', name: 'dandelions', for: { bunny: ['food'] } },
   'log-burrow': { id: 'log-burrow', name: 'log burrow', for: { bunny: ['shelter'] } },
   'pond-weed': { id: 'pond-weed', name: 'pond weed', for: { duck: ['food'] } },
@@ -64,9 +68,21 @@ export const PLANS: readonly HabitatPlan[] = [
   { mode: 'predict', rounds: 3, name: 'Inspect a prepared habitat and predict which visitor will come' },
   { mode: 'build', rounds: 2, name: 'Use a multipurpose piece to fit each habitat into two spaces' },
   { mode: 'build', rounds: 1, name: 'Build one three-piece habitat that welcomes Bunny and Duck together' },
-  { mode: 'change', rounds: 2, name: 'Something changed: name the need a working garden lost, then restore it' },
-  { mode: 'shore', rounds: 2, name: 'High rock or rock pool? Place shore friends so each has what it needs when the sea goes out' },
-  { mode: 'shore', rounds: 2, name: 'Who lives where? Three shore places, and the rock pool has room for one' },
+  {
+    mode: 'change',
+    rounds: 2,
+    name: 'Something changed: name the need a working garden lost, then restore it',
+  },
+  {
+    mode: 'shore',
+    rounds: 2,
+    name: 'High rock or rock pool? Place shore friends so each has what it needs when the sea goes out',
+  },
+  {
+    mode: 'shore',
+    rounds: 2,
+    name: 'Who lives where? Three shore places, and the rock pool has room for one',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -101,10 +117,34 @@ export interface ChangeCase {
 }
 
 export const CHANGES: readonly ChangeCase[] = [
-  { id: 'pool-dried', visitor: 'bunny', garden: ['clover', 'shallow-pool', 'brush-pile'], changed: 'shallow-pool', repairs: ['pond-reeds', 'seed-grass'] },
-  { id: 'reeds-flattened', visitor: 'duck', garden: ['seed-grass', 'shallow-pool', 'tall-reeds'], changed: 'tall-reeds', repairs: ['reed-island', 'clover'] },
-  { id: 'clover-finished', visitor: 'bunny', garden: ['clover', 'shallow-pool', 'brush-pile'], changed: 'clover', repairs: ['berry-hedge', 'pond-weed'] },
-  { id: 'seeds-gone', visitor: 'duck', garden: ['seed-grass', 'shallow-pool', 'tall-reeds'], changed: 'seed-grass', repairs: ['pond-weed', 'log-burrow'] },
+  {
+    id: 'pool-dried',
+    visitor: 'bunny',
+    garden: ['clover', 'shallow-pool', 'brush-pile'],
+    changed: 'shallow-pool',
+    repairs: ['pond-reeds', 'seed-grass'],
+  },
+  {
+    id: 'reeds-flattened',
+    visitor: 'duck',
+    garden: ['seed-grass', 'shallow-pool', 'tall-reeds'],
+    changed: 'tall-reeds',
+    repairs: ['reed-island', 'clover'],
+  },
+  {
+    id: 'clover-finished',
+    visitor: 'bunny',
+    garden: ['clover', 'shallow-pool', 'brush-pile'],
+    changed: 'clover',
+    repairs: ['berry-hedge', 'pond-weed'],
+  },
+  {
+    id: 'seeds-gone',
+    visitor: 'duck',
+    garden: ['seed-grass', 'shallow-pool', 'tall-reeds'],
+    changed: 'seed-grass',
+    repairs: ['pond-weed', 'log-burrow'],
+  },
 ];
 
 /** The pieces still giving something after the change. */
@@ -114,7 +154,8 @@ export const afterChange = (c: ChangeCase): PieceId[] => c.garden.filter((piece)
 export const lostNeed = (c: ChangeCase): Need => missingNeeds(afterChange(c), [c.visitor])[0].need;
 
 /** Whether placing this repair card welcomes the visitor back. */
-export const restores = (c: ChangeCase, piece: PieceId): boolean => welcomes([...afterChange(c), piece], [c.visitor]);
+export const restores = (c: ChangeCase, piece: PieceId): boolean =>
+  welcomes([...afterChange(c), piece], [c.visitor]);
 
 /** Two pictured pieces that do the same single job; levels 1–3 pick one of each pair per round. */
 export const EQUIVALENTS: Record<Visitor, Record<'food' | 'shelter', readonly [PieceId, PieceId]>> = {
@@ -148,7 +189,12 @@ const compact: Record<Visitor, PieceId[]> = {
 };
 
 export function makeRounds(level: number, rng: Rng): HabitatRound[] {
-  const round = (visitors: Visitor[], offered: PieceId[], capacity: number, prepared?: PieceId[]): HabitatRound => ({
+  const round = (
+    visitors: Visitor[],
+    offered: PieceId[],
+    capacity: number,
+    prepared?: PieceId[],
+  ): HabitatRound => ({
     visitors,
     offered: rng.shuffle(offered),
     capacity,
@@ -156,9 +202,17 @@ export function makeRounds(level: number, rng: Rng): HabitatRound[] {
   });
 
   // One food and one shelter for this visitor, each picked from its two equivalent pieces.
-  const starter = (v: Visitor): PieceId[] => [rng.pick(EQUIVALENTS[v].food), WATER, rng.pick(EQUIVALENTS[v].shelter)];
+  const starter = (v: Visitor): PieceId[] => [
+    rng.pick(EQUIVALENTS[v].food),
+    WATER,
+    rng.pick(EQUIVALENTS[v].shelter),
+  ];
   // Level 3's distractors: the other visitor's food and shelter, so exactly one set still works.
-  const withDistractors = (v: Visitor): PieceId[] => [...starter(v), rng.pick(EQUIVALENTS[other(v)].food), rng.pick(EQUIVALENTS[other(v)].shelter)];
+  const withDistractors = (v: Visitor): PieceId[] => [
+    ...starter(v),
+    rng.pick(EQUIVALENTS[other(v)].food),
+    rng.pick(EQUIVALENTS[other(v)].shelter),
+  ];
 
   switch (Math.min(PLANS.length, Math.max(1, level))) {
     case 1:
@@ -171,20 +225,33 @@ export function makeRounds(level: number, rng: Rng): HabitatRound[] {
       // The first visitor comes twice, once to each of its gardens, so no prepared garden repeats in a play.
       const first = rng.pick(VISITORS);
       const [a, b] = rng.shuffle([...PREDICTION_GARDENS[first]]);
-      const gardens: [Visitor, readonly PieceId[]][] = [[first, a], [other(first), rng.pick(PREDICTION_GARDENS[other(first)])], [first, b]];
+      const gardens: [Visitor, readonly PieceId[]][] = [
+        [first, a],
+        [other(first), rng.pick(PREDICTION_GARDENS[other(first)])],
+        [first, b],
+      ];
       return gardens.map(([v, prepared]) => round([v], [], 2, [...prepared]));
     }
     case 5:
       return rng.shuffle([...VISITORS]).map((v) => round([v], compact[v], 2));
     case 6:
-      return [round(['bunny', 'duck'], ['berry-hedge', 'seed-grass', 'pond-reeds', 'shallow-pool', 'clover', 'tall-reeds'], 3)];
+      return [
+        round(
+          ['bunny', 'duck'],
+          ['berry-hedge', 'seed-grass', 'pond-reeds', 'shallow-pool', 'clover', 'tall-reeds'],
+          3,
+        ),
+      ];
     case 8:
     case 9:
       return [];
     default: {
       // The dried pool opens every play (the dive's first round); the second change is drawn from the other three.
       const [first, ...rest] = CHANGES;
-      return [first, rng.pick(rest)].map((c) => ({ ...round([c.visitor], [...c.repairs], 1, [...c.garden]), change: c }));
+      return [first, rng.pick(rest)].map((c) => ({
+        ...round([c.visitor], [...c.repairs], 1, [...c.garden]),
+        change: c,
+      }));
     }
   }
 }
@@ -200,13 +267,20 @@ export function covers(piece: PieceId, visitor: Visitor, need: Need): boolean {
 
 /** Every need not supplied by at least one selected piece. */
 export function missingNeeds(selected: readonly PieceId[], visitors: readonly Visitor[]): MissingNeed[] {
-  return visitors.flatMap((visitor) => NEEDS.filter((need) => !selected.some((piece) => covers(piece, visitor, need))).map((need) => ({ visitor, need })));
+  return visitors.flatMap((visitor) =>
+    NEEDS.filter((need) => !selected.some((piece) => covers(piece, visitor, need))).map((need) => ({
+      visitor,
+      need,
+    })),
+  );
 }
 
-export const welcomes = (selected: readonly PieceId[], visitors: readonly Visitor[]) => missingNeeds(selected, visitors).length === 0;
+export const welcomes = (selected: readonly PieceId[], visitors: readonly Visitor[]) =>
+  missingNeeds(selected, visitors).length === 0;
 
 /** Which of the two known visitors would come to this completed garden. */
-export const visitorsFor = (selected: readonly PieceId[]) => VISITORS.filter((visitor) => welcomes(selected, [visitor]));
+export const visitorsFor = (selected: readonly PieceId[]) =>
+  VISITORS.filter((visitor) => welcomes(selected, [visitor]));
 
 /**
  * Unplaced pieces worth a glow: the ones that bring the garden closer to an arrangement that works. They come from the
@@ -220,9 +294,13 @@ export function helpingPieces(round: HabitatRound, selected: readonly PieceId[])
   const all = solutions(round);
   const best = Math.max(0, ...all.map(overlap));
   const wanted = new Set(all.filter((s) => overlap(s) === best).flat());
-  const glow = round.offered.filter((piece) => !selected.includes(piece) && wanted.has(piece) && meetsMissing(piece));
+  const glow = round.offered.filter(
+    (piece) => !selected.includes(piece) && wanted.has(piece) && meetsMissing(piece),
+  );
   // The arrangement they share most with might need nothing the garden lacks (it is a superset of a finished garden); fall back to any useful piece.
-  return glow.length ? glow : round.offered.filter((piece) => !selected.includes(piece) && meetsMissing(piece));
+  return glow.length
+    ? glow
+    : round.offered.filter((piece) => !selected.includes(piece) && meetsMissing(piece));
 }
 
 /** All accepted arrangements, used by tests to prove each generated garden can be completed. */
@@ -244,7 +322,13 @@ export type HabitatTouch = { piece: PieceId } | { visitor: Visitor } | { need: N
  * the order offered), then opens the gate; a prediction round picks the visitor the prepared garden really welcomes
  * and then opens the gate; a change round names the lost need, places the restoring card and opens the gate. Null once the garden is tested or when there is nothing left to touch.
  */
-export function habitatTouch(round: HabitatRound, mode: HabitatMode, selected: readonly PieceId[], prediction: Visitor | null, needNamed = false): HabitatTouch | null {
+export function habitatTouch(
+  round: HabitatRound,
+  mode: HabitatMode,
+  selected: readonly PieceId[],
+  prediction: Visitor | null,
+  needNamed = false,
+): HabitatTouch | null {
   if (mode === 'change') {
     const c = round.change;
     if (!c) return null;
@@ -309,24 +393,35 @@ export interface ShoreRound {
 /** Where each friend is (by its index in `friends`), or null while it waits on the sand. */
 export type Arrangement = (Place | null)[];
 
-export const fits = (friend: ShoreFriend, place: Place) => FRIEND_NEEDS[friend].every((need) => PLACE_GIVES[place].includes(need));
+export const fits = (friend: ShoreFriend, place: Place) =>
+  FRIEND_NEEDS[friend].every((need) => PLACE_GIVES[place].includes(need));
 
 export const roomAt = (round: ShoreRound, place: Place) => round.room[place] ?? 0;
 
-export const countAt = (arrangement: Arrangement, place: Place) => arrangement.filter((p) => p === place).length;
+export const countAt = (arrangement: Arrangement, place: Place) =>
+  arrangement.filter((p) => p === place).length;
 
 /** Whether this place can take one more friend. */
-export const hasRoom = (round: ShoreRound, arrangement: Arrangement, place: Place) => countAt(arrangement, place) < roomAt(round, place);
+export const hasRoom = (round: ShoreRound, arrangement: Arrangement, place: Place) =>
+  countAt(arrangement, place) < roomAt(round, place);
 
 /** The friends whose needs are not met where they are, in the order the pet talks about them (anemone first, then crab). */
 export function unmet(round: ShoreRound, arrangement: Arrangement): number[] {
-  const out = round.friends.map((_, i) => i).filter((i) => arrangement[i] !== null && !fits(round.friends[i], arrangement[i]!));
-  return out.sort((a, b) => SHORE_FRIENDS.indexOf(round.friends[a]) - SHORE_FRIENDS.indexOf(round.friends[b]) || a - b);
+  const out = round.friends
+    .map((_, i) => i)
+    .filter((i) => arrangement[i] !== null && !fits(round.friends[i], arrangement[i]!));
+  return out.sort(
+    (a, b) => SHORE_FRIENDS.indexOf(round.friends[a]) - SHORE_FRIENDS.indexOf(round.friends[b]) || a - b,
+  );
 }
 
 /** Everyone is placed, every place holds no more than its room, and every friend's needs are met at low tide. */
 export function shoreAccepted(round: ShoreRound, arrangement: Arrangement): boolean {
-  if (arrangement.length !== round.friends.length || arrangement.some((p) => p === null || !round.places.includes(p))) return false;
+  if (
+    arrangement.length !== round.friends.length ||
+    arrangement.some((p) => p === null || !round.places.includes(p))
+  )
+    return false;
   if (round.places.some((place) => countAt(arrangement, place) > roomAt(round, place))) return false;
   return unmet(round, arrangement).length === 0;
 }
@@ -339,7 +434,8 @@ export function allArrangements(round: ShoreRound): Place[][] {
 }
 
 /** Every accepted arrangement. */
-export const shoreSolutions = (round: ShoreRound) => allArrangements(round).filter((a) => shoreAccepted(round, a));
+export const shoreSolutions = (round: ShoreRound) =>
+  allArrangements(round).filter((a) => shoreAccepted(round, a));
 
 /** The accepted arrangement that keeps the most friends where they are now. */
 function nearestSolution(round: ShoreRound, arrangement: Arrangement): Place[] | null {
@@ -373,7 +469,11 @@ export function shoreHint(round: ShoreRound, arrangement: Arrangement): ShoreMov
 export type ShoreTouch = { friend: number } | { place: Place | 'sand' } | 'tide';
 
 /** The ghost finger on the shore: take the hinted friend, put it in its place, and let the sea go out once all is well. */
-export function shoreTouch(round: ShoreRound, arrangement: Arrangement, held: number | null): ShoreTouch | null {
+export function shoreTouch(
+  round: ShoreRound,
+  arrangement: Arrangement,
+  held: number | null,
+): ShoreTouch | null {
   if (shoreAccepted(round, arrangement)) return 'tide';
   const move = shoreHint(round, arrangement);
   if (!move) return null;
@@ -387,7 +487,11 @@ export function makeShoreRounds(level: number, rng: Rng): ShoreRound[] {
     const room = { 'high-rock': 2, 'rock-pool': 2 };
     return [
       { friends: rng.shuffle<ShoreFriend>(['anemone', 'barnacle']), places, room },
-      { friends: rng.shuffle<ShoreFriend>(['anemone', 'barnacle', 'barnacle']), places: rng.shuffle([...places]), room },
+      {
+        friends: rng.shuffle<ShoreFriend>(['anemone', 'barnacle', 'barnacle']),
+        places: rng.shuffle([...places]),
+        room,
+      },
     ];
   }
   // Left to right the shore goes up from the sea: pool, seaweed rocks, high rock.

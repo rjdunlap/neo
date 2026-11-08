@@ -26,10 +26,37 @@ import type { LandId } from '../content/lands';
 import { changeWorn, type WearableId } from '../art/creatures/wear-slots';
 import { canUndo, keepCreation, takeDownCreation, undoCreation, type Creation } from '../content/creations';
 import { discover, hasNew, markSeen } from '../content/journal';
-import { beginWelcome, completeWelcome, finishWelcomeStep, newcomerFor, openWelcomeStep, type StepRound, WELCOME_MET_AT, welcomeReady, type WelcomeBand, type WelcomeProject, type WelcomeStep } from '../content/welcome';
+import {
+  beginWelcome,
+  completeWelcome,
+  finishWelcomeStep,
+  newcomerFor,
+  openWelcomeStep,
+  type StepRound,
+  WELCOME_MET_AT,
+  welcomeReady,
+  type WelcomeBand,
+  type WelcomeProject,
+  type WelcomeStep,
+} from '../content/welcome';
 import { isNew, toggleFavorite } from '../content/shelf';
 import { STORY_STEPS, type PetColor, type RoomItemId, type StoryId, type StoryStep } from '../content/world';
-import { companionOf, defaults, HISTORY_LENGTH, meetIn, migrate, remember, repairPrevious, swapWithPrevious, type GameStats, type Individual, type PreviousSave, type RoundRecord, type SaveData, type StoryProgress } from './save';
+import {
+  companionOf,
+  defaults,
+  HISTORY_LENGTH,
+  meetIn,
+  migrate,
+  remember,
+  repairPrevious,
+  swapWithPrevious,
+  type GameStats,
+  type Individual,
+  type PreviousSave,
+  type RoundRecord,
+  type SaveData,
+  type StoryProgress,
+} from './save';
 
 export interface RestoreResult {
   replaced: number;
@@ -100,7 +127,8 @@ export class Store {
     // Ask Safari not to clear our storage when space is low.
     if (typeof navigator !== 'undefined') void navigator.storage?.persist?.();
     // iPadOS may suspend a hidden web app before a pending write's timer runs.
-    if (typeof document !== 'undefined') document.addEventListener('visibilitychange', () => document.hidden && this.flush());
+    if (typeof document !== 'undefined')
+      document.addEventListener('visibilitychange', () => document.hidden && this.flush());
     if (typeof window !== 'undefined') window.addEventListener('pagehide', () => this.flush());
   }
 
@@ -161,7 +189,8 @@ export class Store {
   levelFor(gameId: string, range: LevelRange, entries: readonly number[] = []): number {
     const s = this.stats(gameId);
     // A game she has never finished starts at the band's easiest level, which is not level 1 when the range has an `order`.
-    const start = s.plays === 0 && s.history.length === 0 && s.level === 1 ? levelsInOrder(range)[0] : s.level;
+    const start =
+      s.plays === 0 && s.history.length === 0 && s.level === 1 ? levelsInOrder(range)[0] : s.level;
     return nextLevel(landing(s.pinned ?? start, range, entries), [], range);
   }
 
@@ -335,7 +364,14 @@ export class Store {
     if (!welcomeReady(p)) return undefined;
     const species = p.newcomer ?? newcomerFor(this.data.creatures.owned);
     const names: readonly string[] = SPECIES[species].names;
-    const met = meetIn(this.data.creatures, species, names.includes(name) ? name : names[0], SPECIES[species].color, WELCOME_MET_AT, this.makeId);
+    const met = meetIn(
+      this.data.creatures,
+      species,
+      names.includes(name) ? name : names[0],
+      SPECIES[species].color,
+      WELCOME_MET_AT,
+      this.makeId,
+    );
     p.ended = true;
     this.save();
     this.flush();
@@ -365,7 +401,10 @@ export class Store {
 
   /** Hang one sticker in the frame, or empty it. The sticker stays in the book either way. */
   hangSticker(sticker: { game: string; seed: number } | null) {
-    this.data.room = { ...this.data.room, frame: sticker ? { game: sticker.game, seed: sticker.seed } : null };
+    this.data.room = {
+      ...this.data.room,
+      frame: sticker ? { game: sticker.game, seed: sticker.seed } : null,
+    };
     this.save();
   }
 
@@ -436,7 +475,9 @@ export class Store {
     this.saveIndex();
     if (wasActive) this.syncBand();
     // The index goes first, so a crash leaves a stray save at worst and never an index that points at nothing.
-    await Promise.all([del(saveKey(gone)), del(previousKey(gone))]).catch((e) => console.warn('Could not clear a removed player', e));
+    await Promise.all([del(saveKey(gone)), del(previousKey(gone))]).catch((e) =>
+      console.warn('Could not clear a removed player', e),
+    );
     return true;
   }
 
@@ -491,7 +532,9 @@ export class Store {
       const isActive = r.id === index.active;
       const current = isActive ? this.data : (await this.read(entry)).data;
       const snapshot = remember(current, this.clock());
-      await set(previousKey(entry), snapshot).catch((e) => console.warn('Could not keep the undo snapshot', e));
+      await set(previousKey(entry), snapshot).catch((e) =>
+        console.warn('Could not keep the undo snapshot', e),
+      );
       if (isActive) {
         this.previous = snapshot;
         this.data = r.save;
@@ -502,10 +545,16 @@ export class Store {
       if (r.entry) index = updateEntry(index, r.id, r.entry);
     }
     for (const a of plan.add) {
-      const next = addEntry(index, { ...newEntry(a.id, this.clock()), birth: a.birth, startBand: a.startBand });
+      const next = addEntry(index, {
+        ...newEntry(a.id, this.clock()),
+        birth: a.birth,
+        startBand: a.startBand,
+      });
       if (!next) continue;
       index = next;
-      await set(saveKey({ id: a.id, legacy: false }), a.save).catch((e) => console.warn('Could not save progress', e));
+      await set(saveKey({ id: a.id, legacy: false }), a.save).catch((e) =>
+        console.warn('Could not save progress', e),
+      );
     }
     this.index = index;
     this.saveIndex();
@@ -605,7 +654,10 @@ export class Store {
   }
 
   private persistPrevious() {
-    if (this.previous) set(previousKey(this.entry), this.previous).catch((e) => console.warn('Could not keep the undo snapshot', e));
+    if (this.previous)
+      set(previousKey(this.entry), this.previous).catch((e) =>
+        console.warn('Could not keep the undo snapshot', e),
+      );
   }
 }
 

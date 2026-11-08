@@ -11,14 +11,20 @@ export const VOICE = {
   'scoop.fill': ['Make it {n} {a} scoops, please!'],
   'scoop.mixed': ['{n} {a} and {m} {b} scoops, please!'],
   'scoop.count': ['{n} {a} scoops, please!'],
-  'scoop.two-cones': ['Two friends want ice cream. Tap a cone to choose. Tap a friend to see their order again.'],
+  'scoop.two-cones': [
+    'Two friends want ice cream. Tap a cone to choose. Tap a friend to see their order again.',
+  ],
   'scoop.order-single': ['One {a} scoop, please.'],
   'scoop.order-pair': ['{a} at the bottom, then {b} on top, please.'],
-  'scoop.change-rule': ['One scoop will change. Listen, then build the new order. Tap your friend to see it again.'],
+  'scoop.change-rule': [
+    'One scoop will change. Listen, then build the new order. Tap your friend to see it again.',
+  ],
   'scoop.change-bottom': ['Oh! Change the bottom scoop to {a}, please.'],
   'scoop.change-middle': ['Oh! Change the middle scoop to {a}, please.'],
   'scoop.change-top': ['Oh! Change the top scoop to {a}, please.'],
-  'scoop.top-first-rule': ['Your friend says the top scoop first. Build from the bottom. Tap your friend to see the cone.'],
+  'scoop.top-first-rule': [
+    'Your friend says the top scoop first. Build from the bottom. Tap your friend to see the cone.',
+  ],
   'scoop.top-first': ['{a} on top, then {b} in the middle, then {c} at the bottom, please.'],
   'scoop.stack': ['{a} on the bottom, then {b}, then {c} on top!'],
   'scoop.notthat': ['No {color} for me! I want {want}.'],

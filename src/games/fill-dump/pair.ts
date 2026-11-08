@@ -55,7 +55,14 @@ export class PairGame implements Game {
     this.spots = pairLayout(ctx.view.w, ctx.view.h);
     for (const deco of [this.bg, this.floor, this.halo, this.layer]) deco.eventMode = 'none';
     this.halo.visible = false;
-    ctx.stage.addChild(this.bg, this.floor, this.halo, ...this.baskets.map((b) => b.back), this.layer, ...this.baskets.map((b) => b.front));
+    ctx.stage.addChild(
+      this.bg,
+      this.floor,
+      this.halo,
+      ...this.baskets.map((b) => b.back),
+      this.layer,
+      ...this.baskets.map((b) => b.front),
+    );
     this.baskets.forEach((b, side) => {
       onTap(b.back, () => this.touch(side as 0 | 1), { cooldown: 120 });
       onTap(b.front, () => this.touch(side as 0 | 1), { cooldown: 120 });
@@ -120,7 +127,12 @@ export class PairGame implements Game {
     this.bg.width = v.w;
     this.bg.height = v.h;
     const groundY = v.h * 0.48;
-    this.floor.clear().rect(0, groundY, v.w, v.h - groundY).fill(0xbfe39a).rect(0, groundY, v.w, 14).fill(0xa8dc8f);
+    this.floor
+      .clear()
+      .rect(0, groundY, v.w, v.h - groundY)
+      .fill(0xbfe39a)
+      .rect(0, groundY, v.w, 14)
+      .fill(0xa8dc8f);
     this.spots = pairLayout(v.w, v.h);
     this.baskets.forEach((b, side) => b.place(this.spots.xs[side], this.spots.feetY));
     if (this.glow) this.drawGlow();
@@ -156,7 +168,14 @@ export class PairGame implements Game {
       this.ctx.tw.kill(view.scale);
       const k = i % PAIR_FRUIT;
       const inBasket = i < PAIR_FRUIT ? acted !== 'tip' : acted === 'fill';
-      const at = i < PAIR_FRUIT ? (inBasket ? this.slot(full, k) : this.spots.landing[full][k]) : inBasket ? this.slot(empty, k) : this.spots.pile[k];
+      const at =
+        i < PAIR_FRUIT
+          ? inBasket
+            ? this.slot(full, k)
+            : this.spots.landing[full][k]
+          : inBasket
+            ? this.slot(empty, k)
+            : this.spots.pile[k];
       view.position.set(at.x, at.y);
       view.scale.set(inBasket ? BASKET_SCALE * PAIR_SCALE : PILE_SCALE);
       view.alpha = 1;
@@ -196,7 +215,13 @@ export class PairGame implements Game {
   }
 
   /** Hop a fruit from where it is to `to`, up and then down. */
-  private async hop(view: Container, to: { x: number; y: number }, scale: number, apex: number, seconds: number) {
+  private async hop(
+    view: Container,
+    to: { x: number; y: number },
+    scale: number,
+    apex: number,
+    seconds: number,
+  ) {
     const { tw } = this.ctx;
     tw.kill(view);
     tw.kill(view.scale);

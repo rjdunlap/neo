@@ -6,7 +6,8 @@ import type { BandLevels } from '../../progress/difficulty';
  * from your finger, so you shoo them through a gate into their pen. Nobody escapes for good,
  * and a wrong pen just means a hop back out.
  */
-export type HerdMode = 'tap' | 'follow' | 'shoo' | 'sort' | 'sortStay' | 'count' | 'sortCount' | 'fair' | 'size';
+export type HerdMode =
+  'tap' | 'follow' | 'shoo' | 'sort' | 'sortStay' | 'count' | 'sortCount' | 'fair' | 'size';
 export const KINDS = ['pig', 'bunny', 'cow', 'duck', 'dog'] as const;
 export type Kind = (typeof KINDS)[number];
 
@@ -30,25 +31,62 @@ export interface HerdPlan {
 }
 
 export const SHOO_ONE: HerdPlan = {
-  mode: 'shoo', animals: 2, sequential: true, gate: 0.8, fleeRadius: 190,
-  hintAfter: 10, helpAfter: 20, name: 'Shoo one animal at a time into a wide gate, twice',
+  mode: 'shoo',
+  animals: 2,
+  sequential: true,
+  gate: 0.8,
+  fleeRadius: 190,
+  hintAfter: 10,
+  helpAfter: 20,
+  name: 'Shoo one animal at a time into a wide gate, twice',
 };
 
 /** Lap and toddler: the herd gathers to the finger and comes along, so leading replaces getting behind a runner. */
 export const COME_ALONG: HerdPlan = {
-  mode: 'follow', animals: 3, gate: 0.8, hintAfter: 15, name: 'Lead three animals that follow your finger into a wide pen',
+  mode: 'follow',
+  animals: 3,
+  gate: 0.8,
+  hintAfter: 15,
+  name: 'Lead three animals that follow your finger into a wide pen',
 };
 
 export const PLANS: HerdPlan[] = [
   { mode: 'tap', animals: 3, name: 'Tap an animal and it hops into its pen' },
   { mode: 'shoo', animals: 3, name: 'Shoo three animals into the pen with a finger' },
   { mode: 'shoo', animals: 5, name: 'Shoo five animals into the pen' },
-  { mode: 'sort', animals: 4, maxAnimals: 5, name: 'Sort four or five animals of two kinds into their own pens' },
+  {
+    mode: 'sort',
+    animals: 4,
+    maxAnimals: 5,
+    name: 'Sort four or five animals of two kinds into their own pens',
+  },
   { mode: 'count', animals: 6, min: 2, max: 4, name: 'Put an exact number in the pen (2 to 4)' },
-  { mode: 'sortCount', animals: 7, min: 1, max: 3, name: 'Sort two kinds and put the requested number in each pen' },
-  { mode: 'sortStay', animals: 6, name: 'Sort pigs and bunnies into their pens; leave the cows on the grass' },
-  { mode: 'fair', animals: 6, maxAnimals: 8, name: 'Put the same number of one kind in each of two pens, then ring the bell' },
-  { mode: 'count', animals: 6, min: 4, max: 5, prefilled: true, name: 'Fill a pen asking 4 or 5, starting with 1 to 3 already inside' },
+  {
+    mode: 'sortCount',
+    animals: 7,
+    min: 1,
+    max: 3,
+    name: 'Sort two kinds and put the requested number in each pen',
+  },
+  {
+    mode: 'sortStay',
+    animals: 6,
+    name: 'Sort pigs and bunnies into their pens; leave the cows on the grass',
+  },
+  {
+    mode: 'fair',
+    animals: 6,
+    maxAnimals: 8,
+    name: 'Put the same number of one kind in each of two pens, then ring the bell',
+  },
+  {
+    mode: 'count',
+    animals: 6,
+    min: 4,
+    max: 5,
+    prefilled: true,
+    name: 'Fill a pen asking 4 or 5, starting with 1 to 3 already inside',
+  },
   SHOO_ONE,
   COME_ALONG,
   { mode: 'size', animals: 6, name: 'Sort big and little pigs into pens with matching-sized pictures' },
@@ -63,15 +101,27 @@ export const LEVELS: BandLevels = {
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
-export const PLURAL: Record<Kind, string> = { pig: 'pigs', bunny: 'bunnies', cow: 'cows', duck: 'ducks', dog: 'dogs' };
+export const PLURAL: Record<Kind, string> = {
+  pig: 'pigs',
+  bunny: 'bunnies',
+  cow: 'cows',
+  duck: 'ducks',
+  dog: 'dogs',
+};
 /** What each pen's floor is, for "three pigs in the mud". */
-export const PLACE: Record<Kind, string> = { pig: 'mud', bunny: 'carrots', cow: 'hay', duck: 'pond', dog: 'kennel' };
+export const PLACE: Record<Kind, string> = {
+  pig: 'mud',
+  bunny: 'carrots',
+  cow: 'hay',
+  duck: 'pond',
+  dog: 'kennel',
+};
 
 /** The animal word for a count: "1 pig", "3 pigs". */
 export const animalsFor = (kind: Kind, n: number) => (n === 1 ? kind : PLURAL[kind]);
 
 export type Size = 'big' | 'little';
-export const sizeScale = (size?: Size) => size === 'little' ? 0.22 : 0.32;
+export const sizeScale = (size?: Size) => (size === 'little' ? 0.22 : 0.32);
 
 export interface Pen {
   size?: Size;
@@ -97,10 +147,21 @@ export function makeHerd(plan: HerdPlan, rng: Rng): Herd {
   const n = plan.maxAnimals === undefined ? plan.animals : rng.int(plan.animals, plan.maxAnimals);
   if (plan.mode === 'size') {
     const sizes = rng.shuffle<Size>(['big', 'big', 'big', 'little', 'little', 'little']);
-    return { animals: sizes.map(() => 'pig'), sizes, pens: [{ kind: 'pig', size: 'big' }, { kind: 'pig', size: 'little' }] };
+    return {
+      animals: sizes.map(() => 'pig'),
+      sizes,
+      pens: [
+        { kind: 'pig', size: 'big' },
+        { kind: 'pig', size: 'little' },
+      ],
+    };
   }
   if (plan.mode === 'sortStay') {
-    return { animals: rng.shuffle(['pig', 'pig', 'bunny', 'bunny', 'cow', 'cow'] as Kind[]), pens: [{ kind: 'pig' }, { kind: 'bunny' }], stay: 'cow' };
+    return {
+      animals: rng.shuffle(['pig', 'pig', 'bunny', 'bunny', 'cow', 'cow'] as Kind[]),
+      pens: [{ kind: 'pig' }, { kind: 'bunny' }],
+      stay: 'cow',
+    };
   }
   if (plan.mode === 'fair') {
     // Always an even herd (6 or 8), so all of them can be shared out; fewer each with some left loose is fair too.
@@ -108,12 +169,21 @@ export function makeHerd(plan: HerdPlan, rng: Rng): Herd {
     return { animals: Array(n % 2 ? n + 1 : n).fill(kind), pens: [{ kind }, { kind }], fair: true };
   }
   if (plan.mode === 'sort' || plan.mode === 'sortCount') {
-    const pens: Pen[] = rng.shuffle([...KINDS]).slice(0, 2).map((kind) => ({ kind }));
+    const pens: Pen[] = rng
+      .shuffle([...KINDS])
+      .slice(0, 2)
+      .map((kind) => ({ kind }));
     if (plan.mode === 'sortCount') for (const p of pens) p.target = rng.int(plan.min!, plan.max!);
     // At least one of each, and for counting at least one spare of each.
     const first = plan.mode === 'sortCount' ? pens[0].target! + 1 : rng.int(1, n - 1);
     const second = plan.mode === 'sortCount' ? pens[1].target! + 1 : n - first;
-    return { animals: rng.shuffle([...Array<Kind>(first).fill(pens[0].kind), ...Array<Kind>(second).fill(pens[1].kind)]), pens };
+    return {
+      animals: rng.shuffle([
+        ...Array<Kind>(first).fill(pens[0].kind),
+        ...Array<Kind>(second).fill(pens[1].kind),
+      ]),
+      pens,
+    };
   }
   const kind = rng.pick(KINDS);
   const pen: Pen = { kind };
@@ -126,7 +196,12 @@ export function makeHerd(plan: HerdPlan, rng: Rng): Herd {
  * Where a round's herd starts: spread down the meadow left of the pens, from the round's own seed,
  * so replaying a level starts the herd somewhere new.
  */
-export function startSpots(n: number, field: { x0: number; y0: number; y1: number }, left: number, rng: Rng): { x: number; y: number }[] {
+export function startSpots(
+  n: number,
+  field: { x0: number; y0: number; y1: number },
+  left: number,
+  rng: Rng,
+): { x: number; y: number }[] {
   return Array.from({ length: n }, (_, i) => ({
     x: rng.range(field.x0 + 40, left),
     y: field.y0 + 40 + ((field.y1 - field.y0 - 80) * (i + 0.5)) / n + rng.range(-20, 20),
@@ -159,7 +234,8 @@ export function ringBell(herd: Herd, inside: number[]): { extra: number; short: 
 }
 
 /** Whether filling the pens finishes the round by itself (the counting levels wait for the bell). */
-export const usesBell = (plan: HerdPlan) => plan.mode === 'count' || plan.mode === 'sortCount' || plan.mode === 'fair';
+export const usesBell = (plan: HerdPlan) =>
+  plan.mode === 'count' || plan.mode === 'sortCount' || plan.mode === 'fair';
 
 /** The pen with fewer inside (the first when they are level). */
 export const emptierPen = (inside: number[]) => (inside[1] < inside[0] ? 1 : 0);
@@ -184,11 +260,16 @@ export function fairNeeds(herd: Herd, inside: number[]): number {
 /** How many each pen needs before the round is done. */
 export function wanted(herd: Herd, pen: Pen): number {
   if (herd.fair) return herd.animals.length / 2;
-  return pen.target ?? herd.animals.filter((k, i) => k === pen.kind && (pen.size === undefined || herd.sizes?.[i] === pen.size)).length;
+  return (
+    pen.target ??
+    herd.animals.filter((k, i) => k === pen.kind && (pen.size === undefined || herd.sizes?.[i] === pen.size))
+      .length
+  );
 }
 
 /** All requested animals are home; outsiders are deliberately absent from these totals. */
-export const pensFull = (herd: Herd, inside: number[]) => herd.pens.every((pen, i) => inside[i] >= wanted(herd, pen));
+export const pensFull = (herd: Herd, inside: number[]) =>
+  herd.pens.every((pen, i) => inside[i] >= wanted(herd, pen));
 
 /**
  * How fast an animal scoots away from a finger `d` units off: nothing beyond `radius`,
@@ -204,7 +285,12 @@ export function fleeSpeed(d: number, radius: number, top: number): number {
  * Two shepherds: every finger on the grass pushes an animal at `at` away by its own `fleeSpeed`, the pushes add,
  * and the sum is capped at `top`, so two fingers steer together but never make an animal faster than one finger.
  */
-export function fleeFrom(at: { x: number; y: number }, fingers: readonly { x: number; y: number }[], radius: number, top: number): { x: number; y: number } {
+export function fleeFrom(
+  at: { x: number; y: number },
+  fingers: readonly { x: number; y: number }[],
+  radius: number,
+  top: number,
+): { x: number; y: number } {
   let x = 0;
   let y = 0;
   for (const f of fingers) {
@@ -220,9 +306,13 @@ export function fleeFrom(at: { x: number; y: number }, fingers: readonly { x: nu
 }
 
 /** The finger nearest `at`, which a following animal goes to; null with no finger down. */
-export function nearestFinger<P extends { x: number; y: number }>(at: { x: number; y: number }, fingers: readonly P[]): P | null {
+export function nearestFinger<P extends { x: number; y: number }>(
+  at: { x: number; y: number },
+  fingers: readonly P[],
+): P | null {
   let near: P | null = null;
-  for (const f of fingers) if (!near || Math.hypot(f.x - at.x, f.y - at.y) < Math.hypot(near.x - at.x, near.y - at.y)) near = f;
+  for (const f of fingers)
+    if (!near || Math.hypot(f.x - at.x, f.y - at.y) < Math.hypot(near.x - at.x, near.y - at.y)) near = f;
   return near;
 }
 
@@ -276,7 +366,11 @@ export interface Rect {
 export const inRect = (r: Rect, x: number, y: number) => x > r.x && x < r.x + r.w && y > r.y && y < r.y + r.h;
 
 /** Put a steering finger behind an animal, opposite the gate it should move toward. */
-export function shooPoint(animal: { x: number; y: number }, gate: { x: number; y: number }, distance = 105): { x: number; y: number } {
+export function shooPoint(
+  animal: { x: number; y: number },
+  gate: { x: number; y: number },
+  distance = 105,
+): { x: number; y: number } {
   const dx = gate.x - animal.x;
   const dy = gate.y - animal.y;
   const d = Math.hypot(dx, dy) || 1;
@@ -294,7 +388,12 @@ export function leadGoal(animal: { x: number; y: number }, r: Rect): { x: number
 }
 
 /** Pens open on their left side, across the middle of that wall. */
-export function throughGate(r: Rect, from: { x: number; y: number }, to: { x: number; y: number }, gate = 0.6): boolean {
+export function throughGate(
+  r: Rect,
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+  gate = 0.6,
+): boolean {
   if (!(from.x <= r.x && to.x > r.x)) return false;
   const t = (r.x - from.x) / (to.x - from.x || 1);
   const y = from.y + (to.y - from.y) * t;

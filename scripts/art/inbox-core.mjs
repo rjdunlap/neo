@@ -33,7 +33,18 @@ export const SPECIES = {
 /** Friends (R22 and later): code-drawn in the games today; their prepared sprites go here. */
 export const FRIENDS = { duck: 'src/art/friends' };
 
-const SPECIES_ASSETS = ['base', 'blink', 'happy', 'surprised', 'sleepy', 'sad', 'portrait', 'alt', 'nohead', 'noarms'];
+const SPECIES_ASSETS = [
+  'base',
+  'blink',
+  'happy',
+  'surprised',
+  'sleepy',
+  'sad',
+  'portrait',
+  'alt',
+  'nohead',
+  'noarms',
+];
 const FRIEND_ASSETS = ['base', 'portrait'];
 
 /** The smallest image each kind accepts (the art bible's sizes; larger is fine, smaller is refused). */
@@ -55,13 +66,27 @@ export function parseName(file) {
   const [head, ...rest] = stem.split('-');
   const asset = rest.join('-');
   if (head === 'land' && BACKDROPS[asset]) {
-    return { stem, kind: 'backdrop', group: asset, asset, landId: BACKDROPS[asset], request: asset === 'meadow' ? 'R23' : 'R26' };
+    return {
+      stem,
+      kind: 'backdrop',
+      group: asset,
+      asset,
+      landId: BACKDROPS[asset],
+      request: asset === 'meadow' ? 'R23' : 'R26',
+    };
   }
   if (SPECIES[head] && SPECIES_ASSETS.includes(asset)) {
     return { stem, kind: 'creature', group: head, asset, outDir: SPECIES[head], request: null };
   }
   if (FRIENDS[head] && FRIEND_ASSETS.includes(asset)) {
-    return { stem, kind: 'friend', group: head, asset, outDir: FRIENDS[head], request: head === 'duck' ? 'R22' : null };
+    return {
+      stem,
+      kind: 'friend',
+      group: head,
+      asset,
+      outDir: FRIENDS[head],
+      request: head === 'duck' ? 'R22' : null,
+    };
   }
   return null;
 }
@@ -69,16 +94,20 @@ export function parseName(file) {
 /** Is the image big enough for its kind? Returns a reason when it is not. */
 export function sizeProblem(info, { w, h }) {
   if (info.kind === 'backdrop') {
-    if (w < MIN_SIZE.backdrop.w || h < MIN_SIZE.backdrop.h) return `a backdrop must be at least 1536 × 1024 (got ${w} × ${h})`;
+    if (w < MIN_SIZE.backdrop.w || h < MIN_SIZE.backdrop.h)
+      return `a backdrop must be at least 1536 × 1024 (got ${w} × ${h})`;
     if (w <= h) return `a backdrop must be landscape (got ${w} × ${h})`;
     return null;
   }
   if (info.asset === 'portrait') {
-    if (w < MIN_SIZE.square.w || h < MIN_SIZE.square.h) return `a portrait must be at least 1024 × 1024 (got ${w} × ${h})`;
+    if (w < MIN_SIZE.square.w || h < MIN_SIZE.square.h)
+      return `a portrait must be at least 1024 × 1024 (got ${w} × ${h})`;
     return null;
   }
-  const long = Math.max(w, h), short = Math.min(w, h);
-  if (long < MIN_SIZE.sprite.long || short < MIN_SIZE.sprite.short) return `a creature image must be at least 1536 × 1024 (got ${w} × ${h})`;
+  const long = Math.max(w, h),
+    short = Math.min(w, h);
+  if (long < MIN_SIZE.sprite.long || short < MIN_SIZE.sprite.short)
+    return `a creature image must be at least 1536 × 1024 (got ${w} × ${h})`;
   return null;
 }
 
@@ -145,13 +174,23 @@ export function chosenFor(text, stem) {
  */
 export function plan(drops, { existing, manifest, date, tool, prompts }) {
   const taken = [...existing];
-  const moves = [], refused = [];
+  const moves = [],
+    refused = [];
   for (const d of drops) {
     const info = parseName(d.file);
-    if (!info && /\.(jpe?g|webp|gif|heic)$/i.test(d.file)) { refused.push({ file: d.file, reason: 'only PNG is accepted: download the PNG from ChatGPT' }); continue; }
-    if (!info) { refused.push({ file: d.file, reason: 'not a name the art queue lists (see IMPORT.md)' }); continue; }
+    if (!info && /\.(jpe?g|webp|gif|heic)$/i.test(d.file)) {
+      refused.push({ file: d.file, reason: 'only PNG is accepted: download the PNG from ChatGPT' });
+      continue;
+    }
+    if (!info) {
+      refused.push({ file: d.file, reason: 'not a name the art queue lists (see IMPORT.md)' });
+      continue;
+    }
     const problem = d.size ? sizeProblem(info, d.size) : null;
-    if (problem) { refused.push({ file: d.file, reason: problem }); continue; }
+    if (problem) {
+      refused.push({ file: d.file, reason: problem });
+      continue;
+    }
     const n = nextCandidate(taken, info.stem);
     const to = `${info.stem}-${n}.png`;
     taken.push(to);
@@ -159,12 +198,22 @@ export function plan(drops, { existing, manifest, date, tool, prompts }) {
   }
   const byStem = new Map();
   for (const m of moves) byStem.set(m.info.stem, [...(byStem.get(m.info.stem) ?? []), m]);
-  const rows = [], waiting = [];
+  const rows = [],
+    waiting = [];
   for (const [stem, group] of byStem) {
     const auto = group.length === 1 && chosenFor(manifest, stem).length === 0;
     for (const m of group) {
       m.chosen = auto;
-      rows.push(manifestRow({ file: m.to, request: m.info.request, date, tool, prompt: prompts?.[stem] ?? '[ChatGPT batch](../../art-requests/CHATGPT-BATCH.md)', chosen: auto }));
+      rows.push(
+        manifestRow({
+          file: m.to,
+          request: m.info.request,
+          date,
+          tool,
+          prompt: prompts?.[stem] ?? '[ChatGPT batch](../../art-requests/CHATGPT-BATCH.md)',
+          chosen: auto,
+        }),
+      );
     }
     if (!auto) waiting.push({ stem, files: group.map((m) => m.to) });
   }

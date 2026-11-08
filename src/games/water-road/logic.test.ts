@@ -2,9 +2,43 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  botMove, buttressPlan, buttressStart, corners, explain, hintFor, isAsked, keystone, keystoneArch, keystonePlan, keystoneStart, MIN_TARGET, nextArch,
-  nextPair, overlaps, PAIRS, pairsPlan, pairsStart, place, placeOrder, planFor, predict, pull, pullFree, pullKeystone, stands, stoneAngles, stoneCentre, Tally, tapPile,
-  waterRoadLayout, withBlock, type Arch, type ButtressState, type KeystoneState, type PairsState, type Rect,
+  botMove,
+  buttressPlan,
+  buttressStart,
+  corners,
+  explain,
+  hintFor,
+  isAsked,
+  keystone,
+  keystoneArch,
+  keystonePlan,
+  keystoneStart,
+  MIN_TARGET,
+  nextArch,
+  nextPair,
+  overlaps,
+  PAIRS,
+  pairsPlan,
+  pairsStart,
+  place,
+  placeOrder,
+  planFor,
+  predict,
+  pull,
+  pullFree,
+  pullKeystone,
+  stands,
+  stoneAngles,
+  stoneCentre,
+  Tally,
+  tapPile,
+  waterRoadLayout,
+  withBlock,
+  type Arch,
+  type ButtressState,
+  type KeystoneState,
+  type PairsState,
+  type Rect,
 } from './logic';
 
 const SEEDS = Array.from({ length: 300 }, (_, i) => i + 1);
@@ -15,7 +49,12 @@ const VIEWS = {
   notch: computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
 };
 
-const closed = (stones: number, left = true, right = true): Arch => ({ stones, gap: null, left: { held: left }, right: { held: right } });
+const closed = (stones: number, left = true, right = true): Arch => ({
+  stones,
+  gap: null,
+  left: { held: left },
+  right: { held: right },
+});
 
 describe('the ring', () => {
   it('placeOrder is a permutation from the ends inward that ends at the keystone', () => {
@@ -114,7 +153,10 @@ describe('plans', () => {
           expect(open.gap).not.toBeNull();
           expect(open.gap).not.toBe(0);
           expect(open.gap).not.toBe(pair.count - 1);
-          for (const a of pair.arches) { expect(a.left.held).toBe(true); expect(a.right.held).toBe(true); }
+          for (const a of pair.arches) {
+            expect(a.left.held).toBe(true);
+            expect(a.right.held).toBe(true);
+          }
           (band === 'preschool' ? placesPreschool : placesPrek).add(explain(open)!);
           sides.add(pair.closed);
         }
@@ -183,7 +225,10 @@ describe('level 1', () => {
   it('the bot taps the pile until the ring closes, then the handle, then rests', () => {
     const plan = keystonePlan('toddler', new Rng(3));
     let st = keystoneStart();
-    for (let i = 0; i < 3; i++) { expect(botMove(plan, st)).toEqual({ tap: 'pile' }); st = tapPile(plan, st).state; }
+    for (let i = 0; i < 3; i++) {
+      expect(botMove(plan, st)).toEqual({ tap: 'pile' });
+      st = tapPile(plan, st).state;
+    }
     expect(botMove(plan, st)).toEqual({ tap: 'handle' });
     expect(botMove(plan, pullKeystone(plan, st).state)).toBeNull();
   });
@@ -316,14 +361,19 @@ describe('level 3', () => {
         expect(r.stands).toBe(true);
         st = r.state;
         expect(botMove(plan, st)).toBeNull();
-        if (a === 0) { st = nextArch(st); expect(st.block).toBe('tray'); }
+        if (a === 0) {
+          st = nextArch(st);
+          expect(st.block).toBe('tray');
+        }
       }
     }
   });
 
   it('a tally per arch counts the glow once and resets on the next arch', () => {
     const t = new Tally();
-    t.miss(); t.miss(); t.miss();
+    t.miss();
+    t.miss();
+    t.miss();
     expect([t.misses, t.hints, t.glowing]).toEqual([3, 1, true]);
     t.next();
     expect(t.glowing).toBe(false);
@@ -335,7 +385,8 @@ describe('level 3', () => {
 });
 
 describe('layout', () => {
-  const inside = (r: Rect, v: { w: number; h: number }) => r.x >= 0 && r.y >= 0 && r.x + r.w <= v.w && r.y + r.h <= v.h;
+  const inside = (r: Rect, v: { w: number; h: number }) =>
+    r.x >= 0 && r.y >= 0 && r.x + r.w <= v.w && r.y + r.h <= v.h;
 
   function checkInputs(inputs: Rect[], v: { w: number; h: number }, label: string) {
     const cs = corners(v as never);
@@ -345,7 +396,8 @@ describe('layout', () => {
       expect(inside(r, v), label).toBe(true);
       for (const c of cs) expect(overlaps(r, c), label).toBe(false);
     }
-    for (let i = 0; i < inputs.length; i++) for (let j = i + 1; j < inputs.length; j++) expect(overlaps(inputs[i], inputs[j]), label).toBe(false);
+    for (let i = 0; i < inputs.length; i++)
+      for (let j = i + 1; j < inputs.length; j++) expect(overlaps(inputs[i], inputs[j]), label).toBe(false);
   }
 
   for (const [name, v] of Object.entries(VIEWS)) {
@@ -363,9 +415,16 @@ describe('layout', () => {
       const l2 = waterRoadLayout(2, v)!;
       expect(l2).not.toBeNull();
       expect(l2.frames).toHaveLength(2);
-      checkInputs(l2.frames.map((f) => f.box), v, 'L2');
+      checkInputs(
+        l2.frames.map((f) => f.box),
+        v,
+        'L2',
+      );
       // Side by side or stacked, never shrunk.
-      for (const f of l2.frames) { expect(f.box.w).toBe(300); expect(f.box.h).toBe(260); }
+      for (const f of l2.frames) {
+        expect(f.box.w).toBe(300);
+        expect(f.box.h).toBe(260);
+      }
       if (!l2.stacked) expect(l2.frames[0].centre.y).toBe(l2.frames[1].centre.y);
       else expect(l2.frames[0].centre.x).toBe(l2.frames[1].centre.x);
       const l3 = waterRoadLayout(3, v)!;
@@ -385,7 +444,9 @@ describe('layout', () => {
     expect(l1.frames).toHaveLength(1);
     expect(l1.handles).toHaveLength(1);
     const h = centre(l1.handles[0]);
-    expect(Math.hypot(h.x - l1.frames[0].centre.x, h.y - l1.frames[0].centre.y)).toBeLessThan(l1.ring.r - l1.ring.t / 2);
+    expect(Math.hypot(h.x - l1.frames[0].centre.x, h.y - l1.frames[0].centre.y)).toBeLessThan(
+      l1.ring.r - l1.ring.t / 2,
+    );
   });
 });
 

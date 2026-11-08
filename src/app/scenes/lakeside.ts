@@ -66,13 +66,19 @@ export const garlandY = (g: Garland, x: number) => {
 };
 
 /** A hung lantern's box: its cord from the string, its body and its glow. */
-export const hungRect = (g: Garland, x: number): Rect => ({ x: x - 22, y: garlandY(g, x), w: 44, h: 26 + 44 });
+export const hungRect = (g: Garland, x: number): Rect => ({
+  x: x - 22,
+  y: garlandY(g, x),
+  w: 44,
+  h: 26 + 44,
+});
 
 /** Where each lakeside thing goes for this layout: seeded, so the same view always draws the same lake. */
 export function lakePlan(layout: LandLayout, view: View, ground: number): LakeItem[] {
   const { w, h } = view;
   const keepOut = meadowKeepOut(layout, view);
-  const clear = (r: Rect) => r.x >= 0 && r.y >= 0 && r.x + r.w <= w && r.y + r.h <= h && !keepOut.some((k) => overlaps(r, k));
+  const clear = (r: Rect) =>
+    r.x >= 0 && r.y >= 0 && r.x + r.w <= w && r.y + r.h <= h && !keepOut.some((k) => overlaps(r, k));
   const rng = new Rng(181);
   const items: LakeItem[] = [];
   const add = (item: LakeItem) => {
@@ -127,12 +133,17 @@ export function drawLake(g: Graphics, layout: LandLayout, view: View, ground: nu
   g.rect(-10, ground - WATER_ABOVE, view.w + 20, 10).fill(WATER_DEEP);
   const rng = new Rng(179);
   for (let x = rng.range(0, 60); x < view.w; x += rng.range(70, 140)) {
-    g.roundRect(x, ground - rng.range(10, 30), rng.range(30, 70), 3, 1.5).fill({ color: 0xffe9c4, alpha: 0.6 });
+    g.roundRect(x, ground - rng.range(10, 30), rng.range(30, 70), 3, 1.5).fill({
+      color: 0xffe9c4,
+      alpha: 0.6,
+    });
   }
   // The near bank, a soft grassy edge along the water.
   g.moveTo(-10, ground + WATER_BELOW + 6);
   for (let x = -10; x <= view.w + 10; x += 20) g.lineTo(x, ground + WATER_BELOW + 2 * Math.sin(x * 0.05));
-  g.lineTo(view.w + 10, ground + WATER_BELOW + 6).closePath().fill(BANK);
+  g.lineTo(view.w + 10, ground + WATER_BELOW + 6)
+    .closePath()
+    .fill(BANK);
   g.moveTo(-10, ground + WATER_BELOW);
   for (let x = -10; x <= view.w + 10; x += 20) g.lineTo(x, ground + WATER_BELOW + 2 * Math.sin(x * 0.05));
   g.stroke({ color: BANK_LINE, width: 2 });
@@ -142,7 +153,9 @@ export function drawLake(g: Graphics, layout: LandLayout, view: View, ground: nu
     g.lineTo(garland.right, garland.y).stroke({ color: wood.line, width: 2 });
     for (const [i, x] of garland.hang.entries()) {
       const top = garlandY(garland, x);
-      g.moveTo(x, top).lineTo(x, top + 26).stroke({ color: wood.line, width: 1.5 });
+      g.moveTo(x, top)
+        .lineTo(x, top + 26)
+        .stroke({ color: wood.line, width: 1.5 });
       lantern(g, x, top + 26 + 17 + 4, LANTERNS[(i + k) % LANTERNS.length]);
     }
   }
@@ -158,41 +171,74 @@ export function drawLake(g: Graphics, layout: LandLayout, view: View, ground: nu
 /** A paper lantern 26 across, its glow round it. */
 function lantern(g: Graphics, x: number, y: number, c: (typeof LANTERNS)[number]) {
   g.circle(x, y, 22).fill({ color: swatch[c].fill, alpha: 0.22 });
-  g.roundRect(x - 11, y - 14, 22, 28, 10).fill(swatch[c].fill).stroke({ color: swatch[c].line, width: 3 });
-  g.moveTo(x - 7, y).lineTo(x + 7, y).stroke({ color: swatch[c].line, width: 1.5 });
+  g.roundRect(x - 11, y - 14, 22, 28, 10)
+    .fill(swatch[c].fill)
+    .stroke({ color: swatch[c].line, width: 3 });
+  g.moveTo(x - 7, y)
+    .lineTo(x + 7, y)
+    .stroke({ color: swatch[c].line, width: 1.5 });
   g.roundRect(x - 5, y - 17, 10, 4, 1.5).fill(wood.line);
 }
 
 /** A lantern floating on the water, with its light reflected under it. */
 function floating(g: Graphics, x: number, y: number, c: (typeof LANTERNS)[number]) {
   g.ellipse(x, y + 2, 14, 3.5).fill({ color: swatch[c].light, alpha: 0.8 });
-  g.ellipse(x, y - 1, 13, 3).fill(wood.light).stroke({ color: wood.line, width: 1.5 });
+  g.ellipse(x, y - 1, 13, 3)
+    .fill(wood.light)
+    .stroke({ color: wood.line, width: 1.5 });
   lantern(g, x, y - 13, c);
 }
 
 /** A little rowboat moored on the water, with its oar shipped. */
 function boat(g: Graphics, x: number, y: number) {
   g.ellipse(x, y + 4, 40, 4).fill({ color: WATER_DEEP, alpha: 0.8 });
-  g.moveTo(x - 38, y - 14).lineTo(x + 38, y - 14).lineTo(x + 26, y + 2).lineTo(x - 26, y + 2).closePath()
-    .fill(wood.fill).stroke({ color: wood.line, width: 2.5, join: 'round' });
-  g.moveTo(x - 34, y - 9).lineTo(x + 34, y - 9).stroke({ color: wood.light, width: 2 });
-  g.moveTo(x - 20, y - 30).lineTo(x + 18, y - 4).stroke({ color: wood.line, width: 3, cap: 'round' });
-  g.ellipse(x + 20, y - 3, 6, 3).fill(wood.light).stroke({ color: wood.line, width: 1.5 });
+  g.moveTo(x - 38, y - 14)
+    .lineTo(x + 38, y - 14)
+    .lineTo(x + 26, y + 2)
+    .lineTo(x - 26, y + 2)
+    .closePath()
+    .fill(wood.fill)
+    .stroke({ color: wood.line, width: 2.5, join: 'round' });
+  g.moveTo(x - 34, y - 9)
+    .lineTo(x + 34, y - 9)
+    .stroke({ color: wood.light, width: 2 });
+  g.moveTo(x - 20, y - 30)
+    .lineTo(x + 18, y - 4)
+    .stroke({ color: wood.line, width: 3, cap: 'round' });
+  g.ellipse(x + 20, y - 3, 6, 3)
+    .fill(wood.light)
+    .stroke({ color: wood.line, width: 1.5 });
 }
 
 /** A lantern hung from a crooked post on the bank. */
 function post(g: Graphics, x: number, y: number, c: (typeof LANTERNS)[number]) {
-  g.moveTo(x - 6, y).lineTo(x - 6, y - 78).lineTo(x + 8, y - 78).stroke({ color: wood.line, width: 4, cap: 'round', join: 'round' });
-  g.moveTo(x + 6, y - 78).lineTo(x + 6, y - 66).stroke({ color: wood.line, width: 1.5 });
+  g.moveTo(x - 6, y)
+    .lineTo(x - 6, y - 78)
+    .lineTo(x + 8, y - 78)
+    .stroke({ color: wood.line, width: 4, cap: 'round', join: 'round' });
+  g.moveTo(x + 6, y - 78)
+    .lineTo(x + 6, y - 66)
+    .stroke({ color: wood.line, width: 1.5 });
   lantern(g, x + 6, y - 50, c);
 }
 
 /** A clump of reeds by the water: tall blades and two cattails. */
 function reeds(g: Graphics, x: number, y: number) {
-  for (const [dx, tall, lean] of [[-12, 40, -6], [-4, 48, -2], [4, 44, 3], [12, 36, 8]]) {
-    g.moveTo(x + dx, y).quadraticCurveTo(x + dx, y - tall / 2, x + dx + lean, y - tall).stroke({ color: BANK_LINE, width: 2.5, cap: 'round' });
+  for (const [dx, tall, lean] of [
+    [-12, 40, -6],
+    [-4, 48, -2],
+    [4, 44, 3],
+    [12, 36, 8],
+  ]) {
+    g.moveTo(x + dx, y)
+      .quadraticCurveTo(x + dx, y - tall / 2, x + dx + lean, y - tall)
+      .stroke({ color: BANK_LINE, width: 2.5, cap: 'round' });
   }
-  for (const [dx, top] of [[-4, 48], [12, 36]]) g.roundRect(x + dx - 2, y - top + 2, 5, 12, 2.5).fill(0x8a5a3a);
+  for (const [dx, top] of [
+    [-4, 48],
+    [12, 36],
+  ])
+    g.roundRect(x + dx - 2, y - top + 2, 5, 12, 2.5).fill(0x8a5a3a);
 }
 
 /** A firefly, a small warm glow over the bank. */

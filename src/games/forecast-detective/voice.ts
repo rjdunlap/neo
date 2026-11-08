@@ -2,8 +2,12 @@
 export const VOICE = {
   'game.forecast-detective': ['Forecast detective!'],
   'forecast.instruct.1': ['What will the sky bring tomorrow? Open the clues, then pick the weather.'],
-  'forecast.instruct.2': ["One clue didn't come. Pick the weather, or Can't tell yet if the clues can't decide."],
-  'forecast.rules': ["In our pretend valley, tomorrow's sky comes on the wind from the island it blows from. And if it's freezing, rain comes down as snow."],
+  'forecast.instruct.2': [
+    "One clue didn't come. Pick the weather, or Can't tell yet if the clues can't decide.",
+  ],
+  'forecast.rules': [
+    "In our pretend valley, tomorrow's sky comes on the wind from the island it blows from. And if it's freezing, rain comes down as snow.",
+  ],
   'forecast.wind': ['The wind is blowing from {island}.'],
   'forecast.postcard': ['{island} has {sky} today.'],
   'forecast.freezing': ["It's freezing."],
@@ -17,7 +21,7 @@ export const VOICE = {
   'forecast.ruledout.freezing': ["It's freezing, so rain would come as snow, not rain."],
   'forecast.overclaim': ["It could be {weather}, but it could be {others} too. These clues can't tell."],
   'forecast.overclaim.cant': ['Look again: these clues do tell.'],
-  'forecast.glow': ["I crossed out the ones these clues rule out."],
+  'forecast.glow': ['I crossed out the ones these clues rule out.'],
   'forecast.hint.wind': ["The wind vane could help. The wind tells us which island's sky is coming."],
   'forecast.hint.postcard': ["The {island} postcard could help. Its sky might be the one that's coming."],
   'forecast.hint.temp': ['The thermometer could help. It tells us if rain would be snow.'],
@@ -25,6 +29,10 @@ export const VOICE = {
   'forecast.right': ['Yes! Only {weather} fits every clue.'],
   'forecast.right.cant': ["Yes! It could be {list}. Saying the clues can't tell is good detective work."],
   'forecast.reveal': ['Here comes tomorrow!'],
-  'forecast.reveal.cant': ['It was {weather} this time. With that clue missing, it could have been something else.'],
-  'forecast.real': ['Real weather is trickier. Forecasters use lots of measurements and computer models, and forecasts are still sometimes wrong.'],
+  'forecast.reveal.cant': [
+    'It was {weather} this time. With that clue missing, it could have been something else.',
+  ],
+  'forecast.real': [
+    'Real weather is trickier. Forecasters use lots of measurements and computer models, and forecasts are still sometimes wrong.',
+  ],
 } satisfies Record<string, string[]>;

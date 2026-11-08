@@ -8,10 +8,23 @@ import type { BandLevels } from '../../progress/difficulty';
  * Grow it, snip it, comb it straight, curl it and color it. Free play at first, then requests
  * ("long and pink") checked in the mirror.
  */
-export type SalonMode = 'play' | 'tools' | 'ask' | 'two' | 'match' | 'pat' | 'snip' | 'color' | 'customers' | 'compare' | 'colors' | 'reverse';
+export type SalonMode =
+  | 'play'
+  | 'tools'
+  | 'ask'
+  | 'two'
+  | 'match'
+  | 'pat'
+  | 'snip'
+  | 'color'
+  | 'customers'
+  | 'compare'
+  | 'colors'
+  | 'reverse';
 
 /** Modes with no request: she styles freely and the mirror ends the round. */
-export const isFree = (mode: SalonMode) => mode === 'play' || mode === 'tools' || mode === 'pat' || mode === 'snip';
+export const isFree = (mode: SalonMode) =>
+  mode === 'play' || mode === 'tools' || mode === 'pat' || mode === 'snip';
 /** Request modes with no mirror: each request finishes by itself as soon as the fur is right. */
 export const selfChecks = (mode: SalonMode) => mode === 'ask' || mode === 'color';
 /** Request modes where a seeded friend may sit in the chair instead of her pet (levels 3–5). */
@@ -25,7 +38,7 @@ export interface SalonPlan {
 }
 
 export const PLANS: SalonPlan[] = [
-  { mode: 'play', requests: 0, name: 'Grow and color the pet\'s fluffy fur' },
+  { mode: 'play', requests: 0, name: "Grow and color the pet's fluffy fur" },
   { mode: 'tools', requests: 0, name: 'Free play with every tool: grow, snip, comb, curl, color' },
   { mode: 'ask', requests: 3, name: 'One request at a time: "make it long", "make it pink"' },
   { mode: 'two', requests: 3, name: 'Two-part requests checked in the mirror: "short and blue"' },
@@ -33,10 +46,18 @@ export const PLANS: SalonPlan[] = [
   { mode: 'pat', requests: 0, name: 'Pat the fluff: no buttons, any touch grows the fur' },
   { mode: 'snip', requests: 0, name: 'Snip snip: grow the fur, then snip it' },
   { mode: 'color', requests: 2, name: 'Pink, please: the five bottles and one color at a time' },
-  { mode: 'customers', requests: 2, name: 'Two customers: match each visible two-part request, in either order' },
-  { mode: 'compare', requests: 1, name: "Longer than Pip’s: grow or snip fur to compare two lengths" },
+  {
+    mode: 'customers',
+    requests: 2,
+    name: 'Two customers: match each visible two-part request, in either order',
+  },
+  { mode: 'compare', requests: 1, name: 'Longer than Pip’s: grow or snip fur to compare two lengths' },
   { mode: 'colors', requests: 1, name: 'Two colors: put at least 35% of each requested color in the fur' },
-  { mode: 'reverse', requests: 2, name: 'Changed my mind: reverse a loved length or curl request on the same hair' },
+  {
+    mode: 'reverse',
+    requests: 2,
+    name: 'Changed my mind: reverse a loved length or curl request on the same hair',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -48,7 +69,14 @@ export const LEVELS: BandLevels = {
 
 /** The buttons a mode shows: tools along the bottom, then the colour bottles. */
 export function toolsFor(mode: SalonMode): Tool[] {
-  const tools: Tool[] = mode === 'pat' || mode === 'color' ? [] : mode === 'play' ? ['grow'] : mode === 'snip' ? ['grow', 'cut'] : ['grow', 'cut', 'comb', 'curl'];
+  const tools: Tool[] =
+    mode === 'pat' || mode === 'color'
+      ? []
+      : mode === 'play'
+        ? ['grow']
+        : mode === 'snip'
+          ? ['grow', 'cut']
+          : ['grow', 'cut', 'comb', 'curl'];
   return mode === 'pat' || mode === 'snip' ? tools : [...tools, ...HAIR_COLORS];
 }
 
@@ -59,7 +87,8 @@ export const BOTTLE_RADIUS = 54;
  * Pink, please: a bottle that is not the asked colour still paints, and the first stroke with it names what it is ("That's blue! I want
  * pink"): no miss. Null for the asked colour or a tool that is not a bottle.
  */
-export const wrongBottle = (look: Look, tool: Tool): ColorName | null => (look.color && HAIR_COLORS.includes(tool as ColorName) && tool !== look.color ? (tool as ColorName) : null);
+export const wrongBottle = (look: Look, tool: Tool): ColorName | null =>
+  look.color && HAIR_COLORS.includes(tool as ColorName) && tool !== look.color ? (tool as ColorName) : null;
 /** Wrong bottles named before the asked one glows (one hint). */
 export const WRONG_BOTTLES = 2;
 
@@ -70,7 +99,16 @@ export const CUSTOMERS: CritterName[] = ['cat', 'bunny', 'bear', 'dog', 'pig'];
 /** How often a friend, rather than her pet, is in the chair at a level with customers. */
 export const FRIEND_CHANCE = 0.45;
 /** Spoken names, said as the request line's `{who}`. */
-export const CUSTOMER_NAMES: Record<CritterName, string> = { pip: 'Pip', cow: 'Cow', duck: 'Duck', pig: 'Pig', cat: 'Cat', bear: 'Bear', dog: 'Dog', bunny: 'Bunny' };
+export const CUSTOMER_NAMES: Record<CritterName, string> = {
+  pip: 'Pip',
+  cow: 'Cow',
+  duck: 'Duck',
+  pig: 'Pig',
+  cat: 'Cat',
+  bear: 'Bear',
+  dog: 'Dog',
+  bunny: 'Bunny',
+};
 
 /** Who is in the chair this round: null is her own pet. */
 export function pickCustomer(mode: SalonMode, rng: Rng): CritterName | null {
@@ -164,7 +202,8 @@ export function needs(look: Look, strands: Strand[]): Fix | null {
   const s = stats(strands);
   if (look.comparison) {
     const { direction, length } = look.comparison;
-    if (direction === 'longer' ? s.length < length + COMPARE_MARGIN : s.length > length - COMPARE_MARGIN) return direction;
+    if (direction === 'longer' ? s.length < length + COMPARE_MARGIN : s.length > length - COMPARE_MARGIN)
+      return direction;
   }
   if (look.length === 'long' && s.length < LONG) return 'longer';
   if (look.length === 'short' && s.length > SHORT) return 'shorter';
@@ -190,11 +229,15 @@ export function helps(look: Look, strands: Strand[], tool: Tool): boolean {
  */
 export function moreLine(look: Look, strands: Strand[]): 'salon.more' | 'salon.more-color' {
   const fix = needs(look, strands);
-  return fix && (look.colors?.includes(fix as ColorName) || (look.color === fix && stats(strands).share(fix) >= 0.5)) ? 'salon.more-color' : 'salon.more';
+  return fix &&
+    (look.colors?.includes(fix as ColorName) || (look.color === fix && stats(strands).share(fix) >= 0.5))
+    ? 'salon.more-color'
+    : 'salon.more';
 }
 
 /** The strands not yet the asked colour, which glow once she has been told about them. */
-export const oldStrands = (strands: Strand[], color: ColorName): number[] => strands.flatMap((s, i) => (s.color === color ? [] : [i]));
+export const oldStrands = (strands: Strand[], color: ColorName): number[] =>
+  strands.flatMap((s, i) => (s.color === color ? [] : [i]));
 
 /** Glow paintable strands while reserving enough of the other requested color to keep it satisfied. */
 export function colorTargets(look: Look, strands: Strand[], color: ColorName): number[] {
@@ -210,7 +253,16 @@ export function colorTargets(look: Look, strands: Strand[], color: ColorName): n
 
 /** Which tool fixes what. */
 export type Tool = 'grow' | 'cut' | 'comb' | 'curl' | ColorName;
-export const toolFor = (fix: Fix): Tool => (fix === 'longer' ? 'grow' : fix === 'shorter' ? 'cut' : fix === 'curlier' ? 'curl' : fix === 'straighter' ? 'comb' : fix);
+export const toolFor = (fix: Fix): Tool =>
+  fix === 'longer'
+    ? 'grow'
+    : fix === 'shorter'
+      ? 'cut'
+      : fix === 'curlier'
+        ? 'curl'
+        : fix === 'straighter'
+          ? 'comb'
+          : fix;
 
 /** "long", "short and blue", "long, curly and pink". */
 export function describe(look: Look): string {
@@ -231,7 +283,12 @@ function pickLook(mode: SalonMode, rng: Rng, avoid: string[]): Look {
     else if (mode === 'reverse') look = rng.pick<Look>([{ length }, { curl }]);
     else if (mode === 'ask') look = rng.pick<Look>([{ length }, { color }, { curl }]);
     else if (mode === 'color') look = { color };
-    else if (mode === 'two' || mode === 'customers') look = rng.pick<Look>([{ length, color }, { length, curl }, { curl, color }]);
+    else if (mode === 'two' || mode === 'customers')
+      look = rng.pick<Look>([
+        { length, color },
+        { length, curl },
+        { curl, color },
+      ]);
     else look = { length, curl, color };
     const key = describe(look);
     if (!avoid.includes(key)) return look;
@@ -244,8 +301,25 @@ export function makeRequests(plan: SalonPlan, rng: Rng): Request[] {
   const out: Request[] = [];
   for (let i = 0; i < plan.requests; i++) {
     const previous = out[0]?.look;
-    const look: Look = plan.mode === 'reverse' && previous ? (previous.length ? { length: previous.length === 'long' ? 'short' : 'long' } : { curl: previous.curl === 'curly' ? 'straight' : 'curly' }) : plan.mode === 'compare' ? { comparison: { direction: rng.pick(['longer', 'shorter'] as const), length: rng.int(60, 150) } } : pickLook(plan.mode, rng, out.map((r) => describe(r.look)));
-    const length = look.comparison ? look.comparison.length : look.length === 'long' ? 70 : look.length === 'short' ? 130 : 95;
+    const look: Look =
+      plan.mode === 'reverse' && previous
+        ? previous.length
+          ? { length: previous.length === 'long' ? 'short' : 'long' }
+          : { curl: previous.curl === 'curly' ? 'straight' : 'curly' }
+        : plan.mode === 'compare'
+          ? { comparison: { direction: rng.pick(['longer', 'shorter'] as const), length: rng.int(60, 150) } }
+          : pickLook(
+              plan.mode,
+              rng,
+              out.map((r) => describe(r.look)),
+            );
+    const length = look.comparison
+      ? look.comparison.length
+      : look.length === 'long'
+        ? 70
+        : look.length === 'short'
+          ? 130
+          : 95;
     const curl = look.curl === 'curly' ? 0.1 : look.curl === 'straight' ? 0.75 : 0.35;
     const color = rng.pick(HAIR_COLORS.filter((c) => c !== look.color && !look.colors?.includes(c)));
     out.push({ look, start: { length, curl, color } });
@@ -388,7 +462,12 @@ export function strandPoints(an: Anchor, s: Strand): Pt[] {
  * finger reaches. A snip cuts the strand back to that point (only when it is not the tip), and the strands it cut by more than 10 are
  * returned with their old tips, for the falling fluff.
  */
-export function touchStrands(tool: Tool, strands: Strand[], an: Anchor[], p: Pt): { touched: number; snipped: { tip: Pt; color: ColorName }[] } {
+export function touchStrands(
+  tool: Tool,
+  strands: Strand[],
+  an: Anchor[],
+  p: Pt,
+): { touched: number; snipped: { tip: Pt; color: ColorName }[] } {
   let touched = 0;
   const snipped: { tip: Pt; color: ColorName }[] = [];
   strands.forEach((s, i) => {

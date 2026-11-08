@@ -20,7 +20,11 @@ export const PLANS = [
   { pairs: 3, mode: 'fractions', name: 'Match fraction pictures to names' },
   { pairs: 3, mode: 'clocks', name: 'Same time: match hour and half-hour clocks' },
 ] as const;
-export const LEVELS: BandLevels = { preschool: { min: 1, max: 5 }, prek: { min: 3, max: 9 }, school: { min: 8, max: 12, order: [8, 12, 9, 10, 11] } };
+export const LEVELS: BandLevels = {
+  preschool: { min: 1, max: 5 },
+  prek: { min: 3, max: 9 },
+  school: { min: 8, max: 12, order: [8, 12, 9, 10, 11] },
+};
 const COLORS: ColorName[] = ['red', 'blue', 'yellow', 'purple', 'green', 'pink', 'orange', 'teal'];
 const SHAPES: ShapeKind[] = ['circle', 'star', 'square', 'heart', 'triangle', 'hexagon', 'circle', 'star'];
 
@@ -31,19 +35,52 @@ export type MemoryPicture =
   | { kind: 'vehicle'; id: string; name: string; vehicle: VehicleKind; color: ColorName };
 
 /** Eight vehicles that look different even in outline; drawn in `art.ts`. */
-export const VEHICLES = [['car', 'red'], ['bus', 'yellow'], ['truck', 'blue'], ['train', 'green'],
-  ['boat', 'teal'], ['plane', 'purple'], ['rocket', 'orange'], ['tractor', 'pink']] as const;
-export type VehicleKind = typeof VEHICLES[number][0];
+export const VEHICLES = [
+  ['car', 'red'],
+  ['bus', 'yellow'],
+  ['truck', 'blue'],
+  ['train', 'green'],
+  ['boat', 'teal'],
+  ['plane', 'purple'],
+  ['rocket', 'orange'],
+  ['tractor', 'pink'],
+] as const;
+export type VehicleKind = (typeof VEHICLES)[number][0];
 
 /** Each family has eight visually distinct identities; never mix families on one board. */
 export const PICTURE_POOLS: readonly (readonly MemoryPicture[])[] = [
-  COLORS.map((color, i) => ({ kind: 'shape' as const, id: `shape-${color}-${SHAPES[i]}`, name: `${color} ${SHAPES[i]}`, color, shape: SHAPES[i] })),
-  (['cow', 'duck', 'pig', 'cat', 'bear', 'dog', 'bunny', 'pip'] as const).map(animal =>
-    ({ kind: 'friend' as const, id: `friend-${animal}`, name: animal === 'pip' ? 'Pip' : animal, animal })),
-  ([['apple', 'red'], ['orange', 'orange'], ['lemon', 'yellow'], ['pear', 'green'],
-    ['blueberries', 'blue'], ['grapes', 'purple'], ['balloon', 'pink'], ['flower', 'teal']] as const).map(([prop, color]) =>
-    ({ kind: 'prop' as const, id: `prop-${prop}`, name: prop, prop, color })),
-  VEHICLES.map(([vehicle, color]) => ({ kind: 'vehicle' as const, id: `vehicle-${vehicle}`, name: vehicle, vehicle, color })),
+  COLORS.map((color, i) => ({
+    kind: 'shape' as const,
+    id: `shape-${color}-${SHAPES[i]}`,
+    name: `${color} ${SHAPES[i]}`,
+    color,
+    shape: SHAPES[i],
+  })),
+  (['cow', 'duck', 'pig', 'cat', 'bear', 'dog', 'bunny', 'pip'] as const).map((animal) => ({
+    kind: 'friend' as const,
+    id: `friend-${animal}`,
+    name: animal === 'pip' ? 'Pip' : animal,
+    animal,
+  })),
+  (
+    [
+      ['apple', 'red'],
+      ['orange', 'orange'],
+      ['lemon', 'yellow'],
+      ['pear', 'green'],
+      ['blueberries', 'blue'],
+      ['grapes', 'purple'],
+      ['balloon', 'pink'],
+      ['flower', 'teal'],
+    ] as const
+  ).map(([prop, color]) => ({ kind: 'prop' as const, id: `prop-${prop}`, name: prop, prop, color })),
+  VEHICLES.map(([vehicle, color]) => ({
+    kind: 'vehicle' as const,
+    id: `vehicle-${vehicle}`,
+    name: vehicle,
+    vehicle,
+    color,
+  })),
 ];
 
 /** Pair IDs index this seeded content selection, rather than a fixed renderer index. */
@@ -51,13 +88,23 @@ export function selectPictures(pairs: number, rng: Rng): MemoryPicture[] {
   return rng.shuffle([...rng.pick(PICTURE_POOLS)]).slice(0, pairs);
 }
 
-export type MemoryMode = typeof PLANS[number]['mode'];
-export function planFor(level: number) { return PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))]; }
-export function pictureIdentity(mode: MemoryMode, pair: number) {
-  return { color: mode === 'attributes' ? COLORS[pair % 2] : COLORS[pair],
-    shape: mode === 'attributes' ? SHAPES[Math.floor(pair / 2)] : SHAPES[pair] };
+export type MemoryMode = (typeof PLANS)[number]['mode'];
+export function planFor(level: number) {
+  return PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 }
-export function cardLabel(mode: MemoryMode, card: MemoryCard, letters: readonly string[], pictures?: readonly MemoryPicture[], times: readonly number[] = []): string {
+export function pictureIdentity(mode: MemoryMode, pair: number) {
+  return {
+    color: mode === 'attributes' ? COLORS[pair % 2] : COLORS[pair],
+    shape: mode === 'attributes' ? SHAPES[Math.floor(pair / 2)] : SHAPES[pair],
+  };
+}
+export function cardLabel(
+  mode: MemoryMode,
+  card: MemoryCard,
+  letters: readonly string[],
+  pictures?: readonly MemoryPicture[],
+  times: readonly number[] = [],
+): string {
   if (mode === 'clocks') return clockLabel(times[card.pair]);
   if (mode === 'pictures' && pictures) return pictures[card.pair].name;
   if (mode === 'fractions') return fraction(card.pair).name;
@@ -68,27 +115,82 @@ export function cardLabel(mode: MemoryMode, card: MemoryCard, letters: readonly 
 }
 
 /** Help only points to a partner this player has actually revealed. */
-export function hintPartner(cards: readonly MemoryCard[], first: number, seen: ReadonlySet<number>, wrong: number): number | null {
+export function hintPartner(
+  cards: readonly MemoryCard[],
+  first: number,
+  seen: ReadonlySet<number>,
+  wrong: number,
+): number | null {
   if (wrong < 2) return null;
   const partner = cards.findIndex((card, i) => i !== first && card.pair === cards[first].pair);
   return partner >= 0 && seen.has(partner) ? partner : null;
 }
 
-export interface DotSpot { x: number; y: number }
+export interface DotSpot {
+  x: number;
+  y: number;
+}
 /** Dot radius on a card face; layouts keep every centre this far apart (twice the radius plus a gap) and inside DOT_REACH. */
 export const DOT_RADIUS = 9;
 export const DOT_GAP = 22;
 export const DOT_REACH = { x: 54, y: 50 };
-const grid = (rows: number[], dx: number, dy: number): DotSpot[] => rows.flatMap((count, r) =>
-  Array.from({ length: count }, (_, c) => ({ x: (c - (count - 1) / 2) * dx, y: (r - (rows.length - 1) / 2) * dy })));
+const grid = (rows: number[], dx: number, dy: number): DotSpot[] =>
+  rows.flatMap((count, r) =>
+    Array.from({ length: count }, (_, c) => ({
+      x: (c - (count - 1) / 2) * dx,
+      y: (r - (rows.length - 1) / 2) * dy,
+    })),
+  );
 const SCATTER: Record<number, DotSpot[]> = {
-  2: [{ x: -26, y: -22 }, { x: 26, y: 24 }],
-  3: [{ x: -30, y: -24 }, { x: 30, y: -14 }, { x: 0, y: 30 }],
-  4: [{ x: -28, y: -28 }, { x: 28, y: -28 }, { x: -28, y: 28 }, { x: 28, y: 28 }],
-  5: [{ x: -28, y: -28 }, { x: 28, y: -28 }, { x: 0, y: 0 }, { x: -28, y: 28 }, { x: 28, y: 28 }],
-  6: [{ x: -26, y: -32 }, { x: 26, y: -32 }, { x: -26, y: 0 }, { x: 26, y: 0 }, { x: -26, y: 32 }, { x: 26, y: 32 }],
-  7: [{ x: -40, y: -30 }, { x: 0, y: -38 }, { x: 38, y: -26 }, { x: -22, y: 0 }, { x: 24, y: 6 }, { x: -38, y: 32 }, { x: 8, y: 38 }],
-  8: [{ x: -40, y: -30 }, { x: 0, y: -38 }, { x: 38, y: -26 }, { x: -22, y: 0 }, { x: 24, y: 6 }, { x: -38, y: 32 }, { x: 8, y: 38 }, { x: 42, y: 36 }],
+  2: [
+    { x: -26, y: -22 },
+    { x: 26, y: 24 },
+  ],
+  3: [
+    { x: -30, y: -24 },
+    { x: 30, y: -14 },
+    { x: 0, y: 30 },
+  ],
+  4: [
+    { x: -28, y: -28 },
+    { x: 28, y: -28 },
+    { x: -28, y: 28 },
+    { x: 28, y: 28 },
+  ],
+  5: [
+    { x: -28, y: -28 },
+    { x: 28, y: -28 },
+    { x: 0, y: 0 },
+    { x: -28, y: 28 },
+    { x: 28, y: 28 },
+  ],
+  6: [
+    { x: -26, y: -32 },
+    { x: 26, y: -32 },
+    { x: -26, y: 0 },
+    { x: 26, y: 0 },
+    { x: -26, y: 32 },
+    { x: 26, y: 32 },
+  ],
+  7: [
+    { x: -40, y: -30 },
+    { x: 0, y: -38 },
+    { x: 38, y: -26 },
+    { x: -22, y: 0 },
+    { x: 24, y: 6 },
+    { x: -38, y: 32 },
+    { x: 8, y: 38 },
+  ],
+  8: [
+    { x: -40, y: -30 },
+    { x: 0, y: -38 },
+    { x: 38, y: -26 },
+    { x: -22, y: 0 },
+    { x: 24, y: 6 },
+    { x: -38, y: 32 },
+    { x: 8, y: 38 },
+    { x: 42, y: 36 },
+  ],
 };
 /**
  * Curated ways to show n dots on a card (n 1–8): two columns (the original), a dice-like scatter, rows and a
@@ -98,11 +200,17 @@ const SCATTER: Record<number, DotSpot[]> = {
 export function dotLayouts(n: number): DotSpot[][] {
   const frame = grid(n <= 5 ? [n] : [5, n - 5], 24, 30);
   const rows = n <= 4 ? grid([n], 30, 0) : grid([Math.ceil(n / 2), Math.floor(n / 2)], 30, 32);
-  const columns = Array.from({ length: n }, (_, i) => ({ x: (i % 2) * 34 - (n === 1 ? 0 : 17), y: Math.floor(i / 2) * 25 - (Math.ceil(n / 2) - 1) * 12.5 }));
+  const columns = Array.from({ length: n }, (_, i) => ({
+    x: (i % 2) * 34 - (n === 1 ? 0 : 17),
+    y: Math.floor(i / 2) * 25 - (Math.ceil(n / 2) - 1) * 12.5,
+  }));
   const all = [columns, SCATTER[n] ?? grid([1], 0, 0), rows, frame];
   const seen = new Set<string>();
-  return all.filter(layout => {
-    const key = layout.map(d => `${d.x.toFixed(1)},${d.y.toFixed(1)}`).sort().join('|');
+  return all.filter((layout) => {
+    const key = layout
+      .map((d) => `${d.x.toFixed(1)},${d.y.toFixed(1)}`)
+      .sort()
+      .join('|');
     return seen.has(key) ? false : (seen.add(key), true);
   });
 }
@@ -111,16 +219,34 @@ export function selectDotLayouts(pairs: number, rng: Rng): DotSpot[][] {
   return Array.from({ length: pairs }, (_, pair) => rng.pick(dotLayouts(pair + 1)));
 }
 
-export interface MemoryCard { pair: number; side: 0 | 1 }
+export interface MemoryCard {
+  pair: number;
+  side: 0 | 1;
+}
 /** The reading pairs for level 10. Index zero is the numeral one. */
-export const NUMBER_WORDS = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'] as const;
-export function numberWord(pair: number): string { return NUMBER_WORDS[pair] ?? ''; }
+export const NUMBER_WORDS = [
+  'one',
+  'two',
+  'three',
+  'four',
+  'five',
+  'six',
+  'seven',
+  'eight',
+  'nine',
+  'ten',
+] as const;
+export function numberWord(pair: number): string {
+  return NUMBER_WORDS[pair] ?? '';
+}
 export const FRACTIONS = [
   { name: 'a half', numerator: 1, denominator: 2 },
   { name: 'a quarter', numerator: 1, denominator: 4 },
   { name: 'three quarters', numerator: 3, denominator: 4 },
 ] as const;
-export function fraction(pair: number) { return FRACTIONS[pair]; }
+export function fraction(pair: number) {
+  return FRACTIONS[pair];
+}
 /** A single 64-unit square, partitioned into exactly two or four equal rectangles. */
 export interface FractionSquare {
   rotation: number;
@@ -128,23 +254,44 @@ export interface FractionSquare {
 }
 /** Select the filled parts independently of orientation; neither changes the fraction's identity. */
 export function selectFractionSquares(rng: Rng): FractionSquare[] {
-  return FRACTIONS.map(amount => {
-    const shaded = new Set(rng.shuffle(Array.from({ length: amount.denominator }, (_, i) => i)).slice(0, amount.numerator));
-    const width = 32, height = 128 / amount.denominator;
-    return { rotation: rng.int(0, 7) * Math.PI / 4,
+  return FRACTIONS.map((amount) => {
+    const shaded = new Set(
+      rng.shuffle(Array.from({ length: amount.denominator }, (_, i) => i)).slice(0, amount.numerator),
+    );
+    const width = 32,
+      height = 128 / amount.denominator;
+    return {
+      rotation: (rng.int(0, 7) * Math.PI) / 4,
       parts: Array.from({ length: amount.denominator }, (_, i) => ({
-        x: -32 + i % 2 * width, y: -32 + Math.floor(i / 2) * height,
-        width, height, shaded: shaded.has(i),
-      })) };
+        x: -32 + (i % 2) * width,
+        y: -32 + Math.floor(i / 2) * height,
+        width,
+        height,
+        shaded: shaded.has(i),
+      })),
+    };
   });
 }
 export function makeDeck(pairs: number, rng: Rng): MemoryCard[] {
-  return rng.shuffle(Array.from({ length: pairs }, (_, pair) => [{ pair, side: 0 as const }, { pair, side: 1 as const }]).flat());
+  return rng.shuffle(
+    Array.from({ length: pairs }, (_, pair) => [
+      { pair, side: 0 as const },
+      { pair, side: 1 as const },
+    ]).flat(),
+  );
 }
 
 /** Only penalize a choice when the matching card was already known. */
-export function knownMismatch(cards: MemoryCard[], first: number, second: number, seen: ReadonlySet<number>): boolean {
-  return cards[first].pair !== cards[second].pair && cards.some((card, i) => i !== first && card.pair === cards[first].pair && seen.has(i));
+export function knownMismatch(
+  cards: MemoryCard[],
+  first: number,
+  second: number,
+  seen: ReadonlySet<number>,
+): boolean {
+  return (
+    cards[first].pair !== cards[second].pair &&
+    cards.some((card, i) => i !== first && card.pair === cards[first].pair && seen.has(i))
+  );
 }
 
 /**
@@ -152,7 +299,12 @@ export function knownMismatch(cards: MemoryCard[], first: number, second: number
  * as a second card, the first card's partner if it has been seen, else one nobody has seen; as a first card, one whose
  * partner is already known, else one nobody has seen. -1 when nothing is left to pick.
  */
-export function nextCard(cards: readonly MemoryCard[], seen: ReadonlySet<number>, matched: (i: number) => boolean, first: number | null): number {
+export function nextCard(
+  cards: readonly MemoryCard[],
+  seen: ReadonlySet<number>,
+  matched: (i: number) => boolean,
+  first: number | null,
+): number {
   const open = (k: number) => !matched(k) && k !== first;
   const partner = (k: number) => cards.findIndex((c, j) => j !== k && c.pair === cards[k].pair);
   if (first !== null) {
@@ -166,25 +318,52 @@ export function nextCard(cards: readonly MemoryCard[], seen: ReadonlySet<number>
 /** Normalized minutes on a twelve-hour dial, with both kinds and no repeated displayed hour. */
 export function selectTimes(rng: Rng): number[] {
   const hours = rng.shuffle(Array.from({ length: 12 }, (_, h) => h)).slice(0, 3);
-  const minutes = rng.shuffle([...rng.pick([[0, 0, 30], [0, 30, 30]])]);
+  const minutes = rng.shuffle([
+    ...rng.pick([
+      [0, 0, 30],
+      [0, 30, 30],
+    ]),
+  ]);
   return hours.map((hour, i) => hour * 60 + minutes[i]);
 }
-const HOUR_WORDS = ['twelve', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven'];
+const HOUR_WORDS = [
+  'twelve',
+  'one',
+  'two',
+  'three',
+  'four',
+  'five',
+  'six',
+  'seven',
+  'eight',
+  'nine',
+  'ten',
+  'eleven',
+];
 export function clockLabel(time: number): string {
   const hour = HOUR_WORDS[Math.floor(time / 60) % 12];
   return time % 60 === 0 ? `${hour} o'clock` : `half past ${hour}`;
 }
-export const digitalTime = (time: number): string => `${Math.floor(time / 60) % 12 || 12}:${String(time % 60).padStart(2, '0')}`;
+export const digitalTime = (time: number): string =>
+  `${Math.floor(time / 60) % 12 || 12}:${String(time % 60).padStart(2, '0')}`;
 /** Actual learning-face geometry; reuse Clock Tower's continuous hour motion, in degrees from twelve. */
 export function clockDrawing(time: number) {
   const hands = handsFor(time);
   const hand = (marks: number, length: number, width: number) => {
-    const degrees = marks * 6, angle = degrees * Math.PI / 180;
+    const degrees = marks * 6,
+      angle = (degrees * Math.PI) / 180;
     return { degrees, x: Math.sin(angle) * length, y: -Math.cos(angle) * length, length, width };
   };
-  return { radius: 56, numeralSize: 14, digitalSize: 36,
+  return {
+    radius: 56,
+    numeralSize: 14,
+    digitalSize: 36,
     numerals: Array.from({ length: 12 }, (_, i) => {
-      const hour = i + 1, angle = hour * Math.PI / 6;
+      const hour = i + 1,
+        angle = (hour * Math.PI) / 6;
       return { text: String(hour), x: Math.sin(angle) * 45, y: -Math.cos(angle) * 45 };
-    }), hour: hand(hands.hour, 24, 8), minute: hand(hands.minute, 34, 4) };
+    }),
+    hour: hand(hands.hour, 24, 8),
+    minute: hand(hands.minute, 34, 4),
+  };
 }

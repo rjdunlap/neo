@@ -2,12 +2,30 @@ import { describe, expect, it } from 'vitest';
 import { GAMES, playsByTouch } from '../games/registry';
 import { BANDS } from '../progress/bands';
 import type { GameStats } from '../progress/save';
-import { arcadeFilters, arcadeList, arcadePage, arcadePages, clampArcadePage, filterLine, filterName, forgetArcade, arcadeMemory, lastPlayed, tagsFor, topicWord } from './arcade';
+import {
+  arcadeFilters,
+  arcadeList,
+  arcadePage,
+  arcadePages,
+  clampArcadePage,
+  filterLine,
+  filterName,
+  forgetArcade,
+  arcadeMemory,
+  lastPlayed,
+  tagsFor,
+  topicWord,
+} from './arcade';
 import { LANDS } from './lands';
 import { SCRIPT as LINES } from './voice-script';
 import { SUBJECTS } from './world';
 
-const stats = (at: number[]): GameStats => ({ plays: at.length, level: 1, pinned: null, history: at.map((t) => ({ level: 1, misses: 0, hints: 0, at: t })) as GameStats['history'] });
+const stats = (at: number[]): GameStats => ({
+  plays: at.length,
+  level: 1,
+  pinned: null,
+  history: at.map((t) => ({ level: 1, misses: 0, hints: 0, at: t })) as GameStats['history'],
+});
 
 describe('the Arcade lists (docs/rework/ARCADE.md)', () => {
   it('lists every game once under All games at every band, hers first', () => {
@@ -35,7 +53,11 @@ describe('the Arcade lists (docs/rework/ARCADE.md)', () => {
 
   it('lists only played games under Played before, the most recently played first', () => {
     const [a, b, c] = GAMES;
-    const played = arcadeList('played', 'preschool', GAMES, LANDS, { [a.id]: stats([5, 30]), [b.id]: stats([50]), [c.id]: stats([]) });
+    const played = arcadeList('played', 'preschool', GAMES, LANDS, {
+      [a.id]: stats([5, 30]),
+      [b.id]: stats([50]),
+      [c.id]: stats([]),
+    });
     expect(played.map((g) => g.id)).toEqual([b.id, a.id]);
     expect(arcadeList('played', 'preschool', GAMES, LANDS, {})).toEqual([]);
     expect(lastPlayed(undefined)).toBe(0);

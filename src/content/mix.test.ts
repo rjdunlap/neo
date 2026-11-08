@@ -13,18 +13,30 @@ const finishAt = (s: MixState, p: number, seed = 7) => {
 
 describe('Little surprises eligibility', () => {
   it('is the frozen three-game pool in order at lap and toddler on her own home spot', () => {
-    for (const band of ['lap', 'toddler'] as const) expect(mixGames(band, band, GAMES)?.map(m => m.id)).toEqual([...MIX_IDS]);
+    for (const band of ['lap', 'toddler'] as const)
+      expect(mixGames(band, band, GAMES)?.map((m) => m.id)).toEqual([...MIX_IDS]);
   });
-  it('offers nothing at older bands or on another band\'s home spot', () => {
-    for (const band of BANDS.map(b => b.id).filter(b => b !== 'lap' && b !== 'toddler')) expect(mixGames(band, band, GAMES)).toBeNull();
+  it("offers nothing at older bands or on another band's home spot", () => {
+    for (const band of BANDS.map((b) => b.id).filter((b) => b !== 'lap' && b !== 'toddler'))
+      expect(mixGames(band, band, GAMES)).toBeNull();
     expect(mixGames('lap', 'toddler', GAMES)).toBeNull();
     expect(mixGames('toddler', 'lap', GAMES)).toBeNull();
   });
   it('never makes a partial mix: a missing, controller-only or unsupported game removes the whole entry', () => {
-    expect(mixGames('lap', 'lap', GAMES.filter(m => m.id !== 'sing-along-barn'))).toBeNull();
-    const controller = GAMES.map(m => m.id === 'fill-dump' ? { ...m, inputs: ['controller' as const] } : m);
+    expect(
+      mixGames(
+        'lap',
+        'lap',
+        GAMES.filter((m) => m.id !== 'sing-along-barn'),
+      ),
+    ).toBeNull();
+    const controller = GAMES.map((m) =>
+      m.id === 'fill-dump' ? { ...m, inputs: ['controller' as const] } : m,
+    );
     expect(mixGames('lap', 'lap', controller)).toBeNull();
-    const older = GAMES.map(m => m.id === 'bubble-pop' ? { ...m, bands: m.bands.filter(b => b !== 'toddler') } : m);
+    const older = GAMES.map((m) =>
+      m.id === 'bubble-pop' ? { ...m, bands: m.bands.filter((b) => b !== 'toddler') } : m,
+    );
     expect(mixGames('toddler', 'toddler', older)).toBeNull();
   });
 });
@@ -33,10 +45,17 @@ describe('Little surprises planner', () => {
   it('runs 0 → 1 → 2 → ending, each stop settled once with its first sticker', () => {
     let s = startMix();
     expect(nextUp(s)).toBe(0);
-    s = finishAt(s, 0, 11); expect(nextUp(s)).toBe(1);
-    s = finishAt(s, 1, 22); expect(nextUp(s)).toBe(2);
-    s = finishAt(s, 2, 33); expect(nextUp(s)).toBeNull();
-    expect(s.items).toEqual([{ state: 'played', seed: 11 }, { state: 'played', seed: 22 }, { state: 'played', seed: 33 }]);
+    s = finishAt(s, 0, 11);
+    expect(nextUp(s)).toBe(1);
+    s = finishAt(s, 1, 22);
+    expect(nextUp(s)).toBe(2);
+    s = finishAt(s, 2, 33);
+    expect(nextUp(s)).toBeNull();
+    expect(s.items).toEqual([
+      { state: 'played', seed: 11 },
+      { state: 'played', seed: 22 },
+      { state: 'played', seed: 33 },
+    ]);
     expect(endingLine(s)).toBe('mix.end');
   });
   it('ignores a stale round and a second finish for the same round', () => {
@@ -45,7 +64,10 @@ describe('Little surprises planner', () => {
     s = step(s, { type: 'launch', p: 0 }); // Again before the first finished
     expect(step(s, { type: 'finish', round: stale, seed: 1 })).toBe(s);
     s = step(s, { type: 'finish', round: s.round, seed: 2 });
-    expect(step(s, { type: 'finish', round: s.round, seed: 3 }).items[0]).toEqual({ state: 'played', seed: 2 });
+    expect(step(s, { type: 'finish', round: s.round, seed: 3 }).items[0]).toEqual({
+      state: 'played',
+      seed: 2,
+    });
   });
   it('keeps a played stop played: Again, Next level and a later skip of the replay change nothing', () => {
     let s = finishAt(startMix(), 0, 5);
@@ -61,7 +83,7 @@ describe('Little surprises planner', () => {
     expect(nextUp(s)).toBe(2);
     s = step(s, { type: 'skip', p: 2 });
     expect(nextUp(s)).toBeNull();
-    expect(s.items.map(i => i.state)).toEqual(['skipped', 'unavailable', 'skipped']);
+    expect(s.items.map((i) => i.state)).toEqual(['skipped', 'unavailable', 'skipped']);
     expect(endingLine(s)).toBe('mix.end.quiet');
     // A skipped stop cannot be played later by a late finish.
     expect(step(s, { type: 'finish', round: s.round, seed: 1 })).toBe(s);
@@ -70,7 +92,10 @@ describe('Little surprises planner', () => {
 
 describe('Little surprises session', () => {
   let mix: MixMemory;
-  beforeEach(() => { mix = new MixMemory(); store.data = defaults(); });
+  beforeEach(() => {
+    mix = new MixMemory();
+    store.data = defaults();
+  });
 
   it('belongs to one save: a replaced save (switch, reset, restore, undo) ignores late taps and finishes', () => {
     const owner = store.data;
@@ -123,7 +148,7 @@ describe('Little surprises returns (D3)', () => {
     expect(mixReturn(finishAt(skip(startMix(), 0), 1), false)).toEqual({ kind: 'sheet' });
     expect(mixReturn(finishAt(skip(gone(startMix(), 1), 0), 2), false)).toEqual({ kind: 'ending' });
   });
-  it('with cards on is the next upcoming stop\'s card, past played, skipped and unavailable stops, then the ending', () => {
+  it("with cards on is the next upcoming stop's card, past played, skipped and unavailable stops, then the ending", () => {
     expect(mixReturn(startMix(), true)).toEqual({ kind: 'stop', p: 0 });
     expect(mixReturn(finishAt(startMix(), 0), true)).toEqual({ kind: 'stop', p: 1 });
     expect(mixReturn(skip(finishAt(startMix(), 0), 1), true)).toEqual({ kind: 'stop', p: 2 });
@@ -133,7 +158,11 @@ describe('Little surprises returns (D3)', () => {
   it('never returns a played or skipped stop, and a second or stale skip from a card changes nothing', () => {
     for (let mask = 0; mask < 27; mask++) {
       let s = startMix();
-      [0, 1, 2].forEach((p) => { const k = Math.floor(mask / 3 ** p) % 3; if (k === 1) s = finishAt(s, p); if (k === 2) s = skip(s, p); });
+      [0, 1, 2].forEach((p) => {
+        const k = Math.floor(mask / 3 ** p) % 3;
+        if (k === 1) s = finishAt(s, p);
+        if (k === 2) s = skip(s, p);
+      });
       const r = mixReturn(s, true);
       if (r.kind === 'stop') expect(s.items[r.p].state).toBe('upcoming');
       else expect(nextUp(s)).toBeNull();

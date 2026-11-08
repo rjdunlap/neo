@@ -1,14 +1,47 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
-  affordable, BANDS, BATCHES, batchCost, bestChoice, boatTalk, cheaperBoat, dayPerTwo, demand, EVENT_DELTA, EVENTS, forecastChoice, helps, insight, makeWeek, MIN_PURSE, PER_TWO,
-  PLANS, planFor, perTwo, PRICE_DROP, priceChoice, rating, SAME_OFFERS, sellDay, settle, START_PURSE, WEATHERS, type Day, type Row, type StandPlan,
+  affordable,
+  BANDS,
+  BATCHES,
+  batchCost,
+  bestChoice,
+  boatTalk,
+  cheaperBoat,
+  dayPerTwo,
+  demand,
+  EVENT_DELTA,
+  EVENTS,
+  forecastChoice,
+  helps,
+  insight,
+  makeWeek,
+  MIN_PURSE,
+  PER_TWO,
+  PLANS,
+  planFor,
+  perTwo,
+  PRICE_DROP,
+  priceChoice,
+  rating,
+  SAME_OFFERS,
+  sellDay,
+  settle,
+  START_PURSE,
+  WEATHERS,
+  type Day,
+  type Row,
+  type StandPlan,
 } from './logic';
 
 const SEEDS = Array.from({ length: 200 }, (_, i) => i + 1);
 
 /** Play a whole round with a chooser, the way the game does, and return its table. */
-function play(plan: StandPlan, week: Day[], choose: (day: Day, i: number, purse: number, rows: Row[]) => { made: number; price: number }) {
+function play(
+  plan: StandPlan,
+  week: Day[],
+  choose: (day: Day, i: number, purse: number, rows: Row[]) => { made: number; price: number },
+) {
   const rows: Row[] = [];
   const purses = [START_PURSE];
   let purse = START_PURSE;
@@ -46,7 +79,8 @@ describe('Lemonade Stand plans', () => {
 
 describe('Lemonade Stand forecasts', () => {
   it('rebuilds the same week from the same seed', () => {
-    for (const plan of PLANS) for (const seed of SEEDS) expect(makeWeek(plan, new Rng(seed))).toEqual(makeWeek(plan, new Rng(seed)));
+    for (const plan of PLANS)
+      for (const seed of SEEDS) expect(makeWeek(plan, new Rng(seed))).toEqual(makeWeek(plan, new Rng(seed)));
   });
 
   it('makes a week of the planned length with something to compare', () => {
@@ -55,7 +89,10 @@ describe('Lemonade Stand forecasts', () => {
       for (const seed of SEEDS) {
         const week = makeWeek(plan, new Rng(seed));
         expect(week).toHaveLength(plan.days);
-        expect(new Set(week.map((d) => d.weather)).size, `${plan.days} days, seed ${seed}`).toBeGreaterThanOrEqual(2);
+        expect(
+          new Set(week.map((d) => d.weather)).size,
+          `${plan.days} days, seed ${seed}`,
+        ).toBeGreaterThanOrEqual(2);
         for (const d of week) {
           expect(d.noise).toBeGreaterThanOrEqual(0);
           expect(d.noise).toBeLessThanOrEqual(2);
@@ -86,36 +123,46 @@ describe('Lemonade Stand demand', () => {
     expect(BANDS.cloudy + 2).toBeLessThan(BANDS.sunny);
     expect(BANDS.sunny + 2).toBeLessThanOrEqual(BATCHES.at(-1)!);
     // Whatever the day's noise, the smallest batch that covers the crowd leaves at most two cups: a good choice always exists.
-    for (const w of WEATHERS) for (let noise = 0; noise <= 2; noise++) {
-      const wanted = BANDS[w] + noise;
-      const batch = BATCHES.find((b) => b >= wanted)!;
-      expect(batch - wanted, `${w} ${noise}`).toBeLessThanOrEqual(2);
-      expect(rating(sellDay(PLANS[0], { weather: w, event: null, noise }, 0, batch, 1)), `${w} ${noise}`).toBe('good');
-    }
+    for (const w of WEATHERS)
+      for (let noise = 0; noise <= 2; noise++) {
+        const wanted = BANDS[w] + noise;
+        const batch = BATCHES.find((b) => b >= wanted)!;
+        expect(batch - wanted, `${w} ${noise}`).toBeLessThanOrEqual(2);
+        expect(
+          rating(sellDay(PLANS[0], { weather: w, event: null, noise }, 0, batch, 1)),
+          `${w} ${noise}`,
+        ).toBe('good');
+      }
   });
 
   it('never lets a hotter day lower the demand, nor a higher price raise it', () => {
-    for (const event of [null, ...EVENTS]) for (const noiseA of [0, 1, 2]) for (const noiseB of [0, 1, 2]) for (const price of plansPrices()) {
-      WEATHERS.slice(1).forEach((w, i) => {
-        const cooler = demand({ weather: WEATHERS[i], event, noise: noiseA }, price);
-        const hotter = demand({ weather: w, event, noise: noiseB }, price);
-        expect(hotter, `${w} ${event} ${price}`).toBeGreaterThanOrEqual(cooler);
-      });
-    }
-    for (const w of WEATHERS) for (const event of [null, ...EVENTS]) for (const noise of [0, 1, 2]) {
-      const day: Day = { weather: w, event, noise };
-      expect(demand(day, 2)).toBeLessThanOrEqual(demand(day, 1));
-      expect(demand(day, 3)).toBeLessThanOrEqual(demand(day, 2));
-      expect(demand(day, 3)).toBeGreaterThanOrEqual(1);
-    }
+    for (const event of [null, ...EVENTS])
+      for (const noiseA of [0, 1, 2])
+        for (const noiseB of [0, 1, 2])
+          for (const price of plansPrices()) {
+            WEATHERS.slice(1).forEach((w, i) => {
+              const cooler = demand({ weather: WEATHERS[i], event, noise: noiseA }, price);
+              const hotter = demand({ weather: w, event, noise: noiseB }, price);
+              expect(hotter, `${w} ${event} ${price}`).toBeGreaterThanOrEqual(cooler);
+            });
+          }
+    for (const w of WEATHERS)
+      for (const event of [null, ...EVENTS])
+        for (const noise of [0, 1, 2]) {
+          const day: Day = { weather: w, event, noise };
+          expect(demand(day, 2)).toBeLessThanOrEqual(demand(day, 1));
+          expect(demand(day, 3)).toBeLessThanOrEqual(demand(day, 2));
+          expect(demand(day, 3)).toBeGreaterThanOrEqual(1);
+        }
   });
 
   it('lets a ferry bring friends and a quiet day take them away', () => {
-    for (const w of WEATHERS) for (const noise of [0, 1, 2]) {
-      const base = demand({ weather: w, event: null, noise }, 1);
-      expect(demand({ weather: w, event: 'ferry', noise }, 1)).toBe(base + EVENT_DELTA.ferry);
-      expect(demand({ weather: w, event: 'quiet', noise }, 1)).toBeLessThan(base);
-    }
+    for (const w of WEATHERS)
+      for (const noise of [0, 1, 2]) {
+        const base = demand({ weather: w, event: null, noise }, 1);
+        expect(demand({ weather: w, event: 'ferry', noise }, 1)).toBe(base + EVENT_DELTA.ferry);
+        expect(demand({ weather: w, event: 'quiet', noise }, 1)).toBeLessThan(base);
+      }
   });
 
   it('gives price a real tradeoff: a middle price earns most on a plain sunny day, the lowest in the rain', () => {
@@ -128,7 +175,9 @@ describe('Lemonade Stand demand', () => {
     expect(busy.price).toBe(3);
     // Every price level appears among the best choices somewhere, so none is a dead button.
     const best = new Set<number>();
-    for (const w of WEATHERS) for (const event of [null, ...EVENTS]) for (const noise of [0, 1, 2]) best.add(bestChoice(PLANS[2], { weather: w, event, noise }, 0).price);
+    for (const w of WEATHERS)
+      for (const event of [null, ...EVENTS])
+        for (const noise of [0, 1, 2]) best.add(bestChoice(PLANS[2], { weather: w, event, noise }, 0).price);
     expect([...best].sort()).toEqual([1, 2, 3]);
     expect(Object.keys(PRICE_DROP).map(Number)).toEqual([1, 2, 3]);
   });
@@ -140,24 +189,25 @@ function plansPrices() {
 
 describe('Lemonade Stand selling', () => {
   it('reconciles cups and shells exactly on every day of every round', () => {
-    for (const plan of PLANS) for (const seed of SEEDS) {
-      const rng = new Rng(seed);
-      const week = makeWeek(plan, rng);
-      const { rows } = play(plan, week, randomChooser(plan, rng));
-      for (const r of rows) {
-        expect(r.sold + r.left, 'made').toBe(r.made);
-        expect(r.sold + r.unserved, 'wanted').toBe(r.wanted);
-        expect(r.sold).toBe(Math.min(r.made, r.wanted));
-        expect(r.shells).toBe(r.sold * r.price);
-        expect(r.cost).toBe(plan.purse ? batchCost(r.made, dayPerTwo(week[r.day])) : 0);
-        expect(r.profit).toBe(r.shells - r.cost);
-        expect(r.left).toBeGreaterThanOrEqual(0);
-        expect(r.unserved).toBeGreaterThanOrEqual(0);
-        // Never more cups left than a batch could have been made of, and at most one of the two ever happens.
-        expect(r.left > 0 && r.unserved > 0).toBe(false);
-        expect(r.sold).toBeLessThanOrEqual(BATCHES.at(-1)!);
+    for (const plan of PLANS)
+      for (const seed of SEEDS) {
+        const rng = new Rng(seed);
+        const week = makeWeek(plan, rng);
+        const { rows } = play(plan, week, randomChooser(plan, rng));
+        for (const r of rows) {
+          expect(r.sold + r.left, 'made').toBe(r.made);
+          expect(r.sold + r.unserved, 'wanted').toBe(r.wanted);
+          expect(r.sold).toBe(Math.min(r.made, r.wanted));
+          expect(r.shells).toBe(r.sold * r.price);
+          expect(r.cost).toBe(plan.purse ? batchCost(r.made, dayPerTwo(week[r.day])) : 0);
+          expect(r.profit).toBe(r.shells - r.cost);
+          expect(r.left).toBeGreaterThanOrEqual(0);
+          expect(r.unserved).toBeGreaterThanOrEqual(0);
+          // Never more cups left than a batch could have been made of, and at most one of the two ever happens.
+          expect(r.left > 0 && r.unserved > 0).toBe(false);
+          expect(r.sold).toBeLessThanOrEqual(BATCHES.at(-1)!);
+        }
       }
-    }
   });
 
   it('sells out a small batch on a busy day and leaves cups from a big batch on a quiet one', () => {
@@ -184,10 +234,25 @@ describe('Lemonade Stand selling', () => {
 describe('Lemonade Stand purse', () => {
   it('never lets the purse go below zero or strand a day, whatever is chosen', () => {
     const plan = PLANS[3];
-    const policies: [string, (rng: Rng) => (d: Day, i: number, purse: number, rows: Row[]) => { made: number; price: number }][] = [
+    const policies: [
+      string,
+      (rng: Rng) => (d: Day, i: number, purse: number, rows: Row[]) => { made: number; price: number },
+    ][] = [
       ['random', (rng) => randomChooser(plan, rng)],
-      ['always the biggest batch', () => (d, _i, purse) => ({ made: BATCHES.filter((b) => affordable(plan, purse, b, d)).at(-1)!, price: 1 })],
-      ['always the dearest', () => (d, _i, purse) => ({ made: BATCHES.filter((b) => affordable(plan, purse, b, d)).at(-1)!, price: 3 })],
+      [
+        'always the biggest batch',
+        () => (d, _i, purse) => ({
+          made: BATCHES.filter((b) => affordable(plan, purse, b, d)).at(-1)!,
+          price: 1,
+        }),
+      ],
+      [
+        'always the dearest',
+        () => (d, _i, purse) => ({
+          made: BATCHES.filter((b) => affordable(plan, purse, b, d)).at(-1)!,
+          price: 3,
+        }),
+      ],
       ['always the smallest', () => () => ({ made: BATCHES[0], price: 1 })],
     ];
     for (const [name, policy] of policies) {
@@ -265,12 +330,13 @@ describe('Lemonade Stand help', () => {
         expect(h.vars.n).toBe(r.wanted);
         const hotter = WEATHERS.indexOf(today.weather) > WEATHERS.indexOf(r.weather);
         expect(h.vars.more).toBe(hotter ? 'more' : 'fewer');
-        for (let noise = 0; noise <= 2; noise++) for (let n2 = 0; n2 <= 2; n2++) {
-          const now = demand({ ...today, noise }, r.price);
-          const then = demand({ weather: r.weather, event: r.event, noise: n2 }, r.price);
-          if (hotter) expect(now).toBeGreaterThan(then);
-          else expect(now).toBeLessThan(then);
-        }
+        for (let noise = 0; noise <= 2; noise++)
+          for (let n2 = 0; n2 <= 2; n2++) {
+            const now = demand({ ...today, noise }, r.price);
+            const then = demand({ weather: r.weather, event: r.event, noise: n2 }, r.price);
+            if (hotter) expect(now).toBeGreaterThan(then);
+            else expect(now).toBeLessThan(then);
+          }
       } else if (h.kind === 'event') {
         expect(today.event).toBe(h.vars.event);
         const plain = demand({ ...today, event: null }, 1);
@@ -289,22 +355,27 @@ describe('Lemonade Stand help', () => {
 
   it('says only true things, about rows already in the table, on every day of every round', () => {
     const kinds = new Set<string>();
-    for (const plan of PLANS) for (const seed of SEEDS) {
-      const rng = new Rng(seed);
-      const week = makeWeek(plan, rng);
-      const choose = randomChooser(plan, rng);
-      const rows: Row[] = [];
-      let purse = START_PURSE;
-      week.forEach((day, i) => {
-        const list = check(plan, day, rows);
-        list.forEach((h) => kinds.add(h.kind));
-        if (i === 0) expect(list.every((h) => h.rows.length === 0), 'the first day has no row to point at').toBe(true);
-        const { made, price } = choose(day, i, purse, rows);
-        const row = sellDay(plan, day, i, made, price);
-        rows.push(row);
-        if (plan.purse) purse = settle(purse, row).purse;
-      });
-    }
+    for (const plan of PLANS)
+      for (const seed of SEEDS) {
+        const rng = new Rng(seed);
+        const week = makeWeek(plan, rng);
+        const choose = randomChooser(plan, rng);
+        const rows: Row[] = [];
+        let purse = START_PURSE;
+        week.forEach((day, i) => {
+          const list = check(plan, day, rows);
+          list.forEach((h) => kinds.add(h.kind));
+          if (i === 0)
+            expect(
+              list.every((h) => h.rows.length === 0),
+              'the first day has no row to point at',
+            ).toBe(true);
+          const { made, price } = choose(day, i, purse, rows);
+          const row = sellDay(plan, day, i, made, price);
+          rows.push(row);
+          if (plan.purse) purse = settle(purse, row).purse;
+        });
+      }
     expect([...kinds].sort()).toEqual(['event', 'good', 'left', 'other', 'out', 'price', 'weather']);
   });
 
@@ -319,48 +390,52 @@ describe('Lemonade Stand help', () => {
     const rainy: Day = { weather: 'rainy', event: null, noise: 0 };
     const both = [...rows, sellDay(plan, rainy, 1, 4, 1)];
     expect(helps(plan, sunny, both).map((h) => h.kind)).toEqual(['out', 'other', 'weather']);
-    expect(helps(plan, { weather: 'cloudy', event: null, noise: 0 }, both).map((h) => h.kind)).toEqual(['other', 'weather']);
+    expect(helps(plan, { weather: 'cloudy', event: null, noise: 0 }, both).map((h) => h.kind)).toEqual([
+      'other',
+      'weather',
+    ]);
   });
 });
 
 describe('Lemonade Stand end-of-round comparison', () => {
   it('names a true comparison the table can show, or the best day, and never nothing', () => {
     const kinds = new Set<string>();
-    for (const plan of PLANS) for (const seed of SEEDS) {
-      const rng = new Rng(seed);
-      const week = makeWeek(plan, rng);
-      const { rows } = play(plan, week, randomChooser(plan, rng));
-      const found = insight(plan, rows);
-      kinds.add(found.kind);
-      for (const i of found.rows) expect(rows[i]).toBeDefined();
-      if (found.kind === 'price') {
-        const [a, b] = found.rows.map((i) => rows[i]);
-        expect(priceChoice(plan)).toBe(true);
-        expect(a.weather).toBe(b.weather);
-        expect(a.event).toBe(b.event);
-        expect(b.price).toBeGreaterThan(a.price);
-        expect(b.wanted).toBeLessThan(a.wanted);
-        expect(found.vars).toMatchObject({ low: a.price, high: b.price, lowN: a.wanted, highN: b.wanted });
-      } else if (found.kind === 'weather') {
-        const [cool, hot] = found.rows.map((i) => rows[i]);
-        expect(WEATHERS.indexOf(hot.weather)).toBeGreaterThan(WEATHERS.indexOf(cool.weather));
-        expect(hot.event).toBe(cool.event);
-        expect(hot.price).toBe(cool.price);
-        expect(hot.wanted).toBeGreaterThan(cool.wanted);
-        expect(found.vars).toMatchObject({ hotN: hot.wanted, coolN: cool.wanted });
-      } else if (found.kind === 'best') {
-        // Only where shells are on the table, and it really is the day that kept the most.
-        expect(plan.purse || priceChoice(plan)).toBe(true);
-        const r = rows[found.rows[0]];
-        expect(found.vars).toMatchObject({ day: r.day + 1, shells: r.profit });
-        for (const o of rows) expect(r.profit).toBeGreaterThanOrEqual(o.profit);
-      } else if (found.kind === 'right') {
-        expect(plan.purse || priceChoice(plan)).toBe(false);
-        const r = rows[found.rows[0]];
-        expect(rating(r)).toBe('good');
-        expect(found.vars).toMatchObject({ day: r.day + 1, made: r.made, sold: r.sold });
+    for (const plan of PLANS)
+      for (const seed of SEEDS) {
+        const rng = new Rng(seed);
+        const week = makeWeek(plan, rng);
+        const { rows } = play(plan, week, randomChooser(plan, rng));
+        const found = insight(plan, rows);
+        kinds.add(found.kind);
+        for (const i of found.rows) expect(rows[i]).toBeDefined();
+        if (found.kind === 'price') {
+          const [a, b] = found.rows.map((i) => rows[i]);
+          expect(priceChoice(plan)).toBe(true);
+          expect(a.weather).toBe(b.weather);
+          expect(a.event).toBe(b.event);
+          expect(b.price).toBeGreaterThan(a.price);
+          expect(b.wanted).toBeLessThan(a.wanted);
+          expect(found.vars).toMatchObject({ low: a.price, high: b.price, lowN: a.wanted, highN: b.wanted });
+        } else if (found.kind === 'weather') {
+          const [cool, hot] = found.rows.map((i) => rows[i]);
+          expect(WEATHERS.indexOf(hot.weather)).toBeGreaterThan(WEATHERS.indexOf(cool.weather));
+          expect(hot.event).toBe(cool.event);
+          expect(hot.price).toBe(cool.price);
+          expect(hot.wanted).toBeGreaterThan(cool.wanted);
+          expect(found.vars).toMatchObject({ hotN: hot.wanted, coolN: cool.wanted });
+        } else if (found.kind === 'best') {
+          // Only where shells are on the table, and it really is the day that kept the most.
+          expect(plan.purse || priceChoice(plan)).toBe(true);
+          const r = rows[found.rows[0]];
+          expect(found.vars).toMatchObject({ day: r.day + 1, shells: r.profit });
+          for (const o of rows) expect(r.profit).toBeGreaterThanOrEqual(o.profit);
+        } else if (found.kind === 'right') {
+          expect(plan.purse || priceChoice(plan)).toBe(false);
+          const r = rows[found.rows[0]];
+          expect(rating(r)).toBe('good');
+          expect(found.vars).toMatchObject({ day: r.day + 1, made: r.made, sold: r.sold });
+        }
       }
-    }
     // Every kind of comparison turns up somewhere across the plans and seeds.
     expect(kinds.has('price')).toBe(true);
     expect(kinds.has('weather')).toBe(true);
@@ -372,8 +447,16 @@ describe('Lemonade Stand end-of-round comparison', () => {
     const plan = PLANS[0];
     const rainy: Day = { weather: 'rainy', event: null, noise: 0 };
     const sunny: Day = { weather: 'sunny', event: null, noise: 2 };
-    const rows = [sellDay(plan, rainy, 0, 4, 1), sellDay(plan, sunny, 1, 12, 1), sellDay(plan, rainy, 2, 4, 1)];
-    expect(insight(plan, rows)).toEqual({ kind: 'weather', rows: [0, 1], vars: { hot: 'sunny', cool: 'rainy', hotN: 12, coolN: 2 } });
+    const rows = [
+      sellDay(plan, rainy, 0, 4, 1),
+      sellDay(plan, sunny, 1, 12, 1),
+      sellDay(plan, rainy, 2, 4, 1),
+    ];
+    expect(insight(plan, rows)).toEqual({
+      kind: 'weather',
+      rows: [0, 1],
+      vars: { hot: 'sunny', cool: 'rainy', hotN: 12, coolN: 2 },
+    });
   });
 });
 
@@ -383,7 +466,8 @@ describe('Lemonade Stand demonstration', () => {
       for (const weather of WEATHERS) {
         for (const event of [null, ...EVENTS] as const) {
           const seen = forecastChoice(plan, { weather, event });
-          for (const noise of [0, 1, 2]) expect(forecastChoice(plan, { weather, event, noise } as Day)).toEqual(seen);
+          for (const noise of [0, 1, 2])
+            expect(forecastChoice(plan, { weather, event, noise } as Day)).toEqual(seen);
         }
       }
     }
@@ -419,7 +503,8 @@ describe('Lemonade Stand level 5: two lemon boats', () => {
         expect(cheaperBoat(d.boats!)).toBeGreaterThanOrEqual(0);
       }
     }
-    for (const p of PLANS.slice(0, 4)) for (const seed of SEEDS) for (const d of makeWeek(p, new Rng(seed))) expect('boats' in d).toBe(false);
+    for (const p of PLANS.slice(0, 4))
+      for (const seed of SEEDS) for (const d of makeWeek(p, new Rng(seed))) expect('boats' in d).toBe(false);
     // Both sides turn up as the cheaper boat.
     expect(new Set(days.map((d) => cheaperBoat(d.boats!)))).toEqual(new Set([0, 1]));
     // The weather and events are drawn before the boats, so they match the level 4 week of a plan with the same shape.
@@ -442,7 +527,9 @@ describe('Lemonade Stand level 5: two lemon boats', () => {
       expect(cheaperBoat([a, b])).toBe(perTwo(a) < perTwo(b) ? 0 : 1);
       expect(cheaperBoat([b, a])).toBe(perTwo(b) < perTwo(a) ? 0 : 1);
     }
-    expect(START_PURSE).toBeGreaterThanOrEqual(batchCost(12, Math.min(...SAME_OFFERS.map(([a, b]) => Math.min(perTwo(a), perTwo(b))))));
+    expect(START_PURSE).toBeGreaterThanOrEqual(
+      batchCost(12, Math.min(...SAME_OFFERS.map(([a, b]) => Math.min(perTwo(a), perTwo(b))))),
+    );
     for (const d of days) expect(affordable(plan, START_PURSE, 12, d)).toBe(true);
     expect(dayPerTwo({})).toBe(PER_TWO);
   });
@@ -480,7 +567,9 @@ describe('Lemonade Stand level 5: two lemon boats', () => {
       expect(helps(plan, d, []).some((h) => h.kind === 'boat')).toBe(false);
     }
     // Days without boats never get the boat help, chosen or not.
-    expect(helps(PLANS[3], { weather: 'sunny', event: null, noise: 0 }, [], false).some((h) => h.kind === 'boat')).toBe(false);
+    expect(
+      helps(PLANS[3], { weather: 'sunny', event: null, noise: 0 }, [], false).some((h) => h.kind === 'boat'),
+    ).toBe(false);
   });
 
   it('records the shells the cheaper boat saved, and nothing off the boat level', () => {
@@ -495,11 +584,12 @@ describe('Lemonade Stand level 5: two lemon boats', () => {
         expect(r.cost).toBe(batchCost(r.made, talk.cheap));
       }
     }
-    for (const p of PLANS.slice(0, 4)) for (const seed of SEEDS) {
-      const rng = new Rng(seed);
-      const { rows } = play(p, makeWeek(p, rng), randomChooser(p, rng));
-      for (const r of rows) expect(r.saved).toBe(0);
-    }
+    for (const p of PLANS.slice(0, 4))
+      for (const seed of SEEDS) {
+        const rng = new Rng(seed);
+        const { rows } = play(p, makeWeek(p, rng), randomChooser(p, rng));
+        for (const r of rows) expect(r.saved).toBe(0);
+      }
   });
 
   it('ends the round on the boats, with the total saved, and no other level does', () => {
@@ -511,10 +601,11 @@ describe('Lemonade Stand level 5: two lemon boats', () => {
       expect(found.vars.n).toBe(rows.reduce((n, r) => n + r.saved, 0));
       expect(found.rows).toEqual(rows.map((r) => r.day));
     }
-    for (const p of PLANS.slice(0, 4)) for (const seed of SEEDS) {
-      const rng = new Rng(seed);
-      const { rows } = play(p, makeWeek(p, rng), randomChooser(p, rng));
-      expect(insight(p, rows).kind).not.toBe('boats');
-    }
+    for (const p of PLANS.slice(0, 4))
+      for (const seed of SEEDS) {
+        const rng = new Rng(seed);
+        const { rows } = play(p, makeWeek(p, rng), randomChooser(p, rng));
+        expect(insight(p, rows).kind).not.toBe('boats');
+      }
   });
 });

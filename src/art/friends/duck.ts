@@ -4,12 +4,13 @@ import baseUrl from './duck-base.png?url';
 
 let art: Promise<Texture> | undefined;
 let loaded: Texture | undefined;
-const loadDuck = () => art ??= Assets.load<Texture>(baseUrl).then((texture) => {
-  texture.source.autoGenerateMipmaps = true;
-  texture.source.updateMipmaps();
-  loaded = texture;
-  return texture;
-});
+const loadDuck = () =>
+  (art ??= Assets.load<Texture>(baseUrl).then((texture) => {
+    texture.source.autoGenerateMipmaps = true;
+    texture.source.updateMipmaps();
+    loaded = texture;
+    return texture;
+  }));
 
 /** R22 still, feet at (0, 0), 250 units tall like Critter. Animation never moves its parent's hit circle. */
 export class IllustratedDuck extends Container {
@@ -37,7 +38,10 @@ export class IllustratedDuck extends Container {
     };
     // A sticker may be rendered into a texture immediately, in this same call stack.
     if (loaded) show(loaded);
-    else void loadDuck().then(show).catch((error) => console.warn('Could not load the Duck Pond duck', error));
+    else
+      void loadDuck()
+        .then(show)
+        .catch((error) => console.warn('Could not load the Duck Pond duck', error));
   }
 
   hop(power = 1) {
@@ -45,9 +49,13 @@ export class IllustratedDuck extends Container {
     this.power = power;
   }
 
-  cheer() { this.hop(1.1); }
+  cheer() {
+    this.hop(1.1);
+  }
 
-  setMood(mood: 'sleepy') { this.resting = mood === 'sleepy'; }
+  setMood(mood: 'sleepy') {
+    this.resting = mood === 'sleepy';
+  }
 
   update(dt: number) {
     if (!this.alive) return;

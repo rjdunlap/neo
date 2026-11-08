@@ -54,13 +54,33 @@ export interface SinkPlan {
 export const SINK_PLANS: Record<number, SinkPlan> = {
   1: { mode: 'drop', count: 5, surprises: false, name: 'Tap things to drop them in the water and watch' },
   2: { mode: 'say', count: 5, surprises: false, name: 'Drop things in and hear whether they float or sink' },
-  3: { mode: 'guess', count: 5, surprises: false, name: 'Guess float or sink, then test it (guesses are never wrong answers)' },
+  3: {
+    mode: 'guess',
+    count: 5,
+    surprises: false,
+    name: 'Guess float or sink, then test it (guesses are never wrong answers)',
+  },
   4: { mode: 'sort', count: 5, surprises: false, name: 'Sort familiar things into float and sink baskets' },
-  5: { mode: 'sort', count: 6, surprises: true, name: 'Sort things including surprises, like a floating apple' },
+  5: {
+    mode: 'sort',
+    count: 6,
+    surprises: true,
+    name: 'Sort things including surprises, like a floating apple',
+  },
   6: { mode: 'guess', count: 6, surprises: true, name: 'Guess and test surprising things' },
   7: { mode: 'shape', count: 2, surprises: false, name: 'Make the clay float: change its shape and test it' },
-  9: { mode: 'pair', count: 3, surprises: false, name: 'Big and small: watch the big one, guess the small one of the same stuff, then test it' },
-  10: { mode: 'salt', count: 4, surprises: false, name: 'Salty or fresh: compare two tanks, then test to find the salty one' },
+  9: {
+    mode: 'pair',
+    count: 3,
+    surprises: false,
+    name: 'Big and small: watch the big one, guess the small one of the same stuff, then test it',
+  },
+  10: {
+    mode: 'salt',
+    count: 4,
+    surprises: false,
+    name: 'Salty or fresh: compare two tanks, then test to find the salty one',
+  },
 };
 export const SINK_IDS = Object.keys(SINK_PLANS).map(Number);
 
@@ -84,16 +104,40 @@ export const sinkPlan = (level: number): SinkPlan => {
  * stay as they were. `size` is the scale each is drawn at.
  */
 export const PAIRS = {
-  wood: { floats: true, big: { thing: 'log', word: 'log', size: 1.3 }, small: { art: 'twig', word: 'twig', size: 0.75 }, line: 'sink.pair-wood' },
-  stone: { floats: false, big: { thing: 'rock', word: 'rock', size: 1.3 }, small: { art: 'pebble', word: 'pebble', size: 0.75 }, line: 'sink.pair-stone' },
-  ball: { floats: true, big: { thing: 'ball', word: 'ball', size: 1.4 }, small: { art: 'little-ball', word: 'ball', size: 0.6 }, line: 'sink.pair-ball' },
-} as const satisfies Record<string, { floats: boolean; big: { thing: Thing; word: string; size: number }; small: { art: string; word: string; size: number }; line: LineId }>;
+  wood: {
+    floats: true,
+    big: { thing: 'log', word: 'log', size: 1.3 },
+    small: { art: 'twig', word: 'twig', size: 0.75 },
+    line: 'sink.pair-wood',
+  },
+  stone: {
+    floats: false,
+    big: { thing: 'rock', word: 'rock', size: 1.3 },
+    small: { art: 'pebble', word: 'pebble', size: 0.75 },
+    line: 'sink.pair-stone',
+  },
+  ball: {
+    floats: true,
+    big: { thing: 'ball', word: 'ball', size: 1.4 },
+    small: { art: 'little-ball', word: 'ball', size: 0.6 },
+    line: 'sink.pair-ball',
+  },
+} as const satisfies Record<
+  string,
+  {
+    floats: boolean;
+    big: { thing: Thing; word: string; size: number };
+    small: { art: string; word: string; size: number };
+    line: LineId;
+  }
+>;
 export type PairKind = keyof typeof PAIRS;
 export type SmallArt = (typeof PAIRS)[PairKind]['small']['art'];
 export const ALL_PAIRS = Object.keys(PAIRS) as PairKind[];
 
 /** The round's pairs: distinct, in a seeded order. */
-export const pairsFor = (plan: SinkPlan, rng: Rng): PairKind[] => rng.shuffle([...ALL_PAIRS]).slice(0, Math.min(plan.count, ALL_PAIRS.length));
+export const pairsFor = (plan: SinkPlan, rng: Rng): PairKind[] =>
+  rng.shuffle([...ALL_PAIRS]).slice(0, Math.min(plan.count, ALL_PAIRS.length));
 
 /** The things for a round: always some floaters and some sinkers, surprises included when asked for. */
 export function thingsFor(plan: SinkPlan, rng: Rng): Thing[] {
@@ -120,7 +164,13 @@ export type ClayShape = keyof typeof CLAY_SHAPES;
 export const ALL_SHAPES = Object.keys(CLAY_SHAPES) as ClayShape[];
 
 /** Clay colors from the palette; the two experiments of a round never share one. */
-export const CLAY_COLORS = ['orange', 'purple', 'pink', 'green', 'red'] as const satisfies readonly (keyof typeof swatch)[];
+export const CLAY_COLORS = [
+  'orange',
+  'purple',
+  'pink',
+  'green',
+  'red',
+] as const satisfies readonly (keyof typeof swatch)[];
 export type ClayColor = (typeof CLAY_COLORS)[number];
 
 export interface ClayExperiment {
@@ -132,7 +182,10 @@ export interface ClayExperiment {
 /** The round's experiments: every shape on offer each time, in a seeded order, each in its own clay color. */
 export function shapesFor(plan: SinkPlan, rng: Rng): ClayExperiment[] {
   const colors = rng.shuffle([...CLAY_COLORS]);
-  return Array.from({ length: plan.count }, (_, i) => ({ order: rng.shuffle([...ALL_SHAPES]), color: colors[i % colors.length] }));
+  return Array.from({ length: plan.count }, (_, i) => ({
+    order: rng.shuffle([...ALL_SHAPES]),
+    color: colors[i % colors.length],
+  }));
 }
 
 /**
@@ -169,6 +222,9 @@ export function saltRoundFor(plan: SinkPlan, rng: Rng): SaltRound {
     const sides = Array.from({ length: plan.count }, () => rng.pick(['left', 'right'] as Side[]));
     if (new Set(sides).size < 2 && plan.count > 1) continue;
     if (sides.some((s, i) => i >= 2 && s === sides[i - 1] && s === sides[i - 2])) continue;
-    return { shown, questions: sides.map((salty, i) => ({ salty, test: i === plan.count - 1 ? 'duck' : 'egg' })) };
+    return {
+      shown,
+      questions: sides.map((salty, i) => ({ salty, test: i === plan.count - 1 ? 'duck' : 'egg' })),
+    };
   }
 }

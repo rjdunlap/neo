@@ -61,7 +61,12 @@ export function grovePlanSky(view: View, ground: number): GroveSky {
   const keepOut = [...landButtons(view.w), headingBox(view), moonBox];
   const top = 10;
   const bottom = ground - FAR_HILLS - 4;
-  const clear = (b: Rect) => b.x >= 0 && b.y >= 0 && b.x + b.w <= view.w && b.y + b.h <= bottom && !keepOut.some((k) => overlaps(b, k));
+  const clear = (b: Rect) =>
+    b.x >= 0 &&
+    b.y >= 0 &&
+    b.x + b.w <= view.w &&
+    b.y + b.h <= bottom &&
+    !keepOut.some((k) => overlaps(b, k));
   const rng = new Rng(173);
   const bats: GroveSky['bats'] = [];
   for (let i = 0; i < 60 && bats.length < 2; i++) {
@@ -99,7 +104,7 @@ export function groveEdge(view: View, ground: number): EdgeTree[] {
   const rng = new Rng(179);
   const trees: EdgeTree[] = [];
   // Each crown overlaps the next, so the edge reads as one wood rather than a row of lollipops.
-  for (let x = rng.range(-20, 10); x < view.w + 40; ) {
+  for (let x = rng.range(-20, 10); x < view.w + 40;) {
     const r = rng.range(26, 40);
     const cy = Math.max(130 + r, ground - rng.range(42, 72));
     trees.push({ x, cy, r });
@@ -112,11 +117,20 @@ export function groveEdge(view: View, ground: number): EdgeTree[] {
 export function grovePlan(layout: LandLayout, view: View, ground: number): GroveItem[] {
   const { w, h } = view;
   const keepOut = meadowKeepOut(layout, view);
-  const clear = (r: Rect) => r.x >= 0 && r.y >= 0 && r.x + r.w <= w && r.y + r.h <= h && !keepOut.some((k) => overlaps(r, k));
+  const clear = (r: Rect) =>
+    r.x >= 0 && r.y >= 0 && r.x + r.w <= w && r.y + r.h <= h && !keepOut.some((k) => overlaps(r, k));
   const rng = new Rng(181);
   const items: GroveItem[] = [];
   /** Up to `n` of a thing `size` wide and `tall` high whose feet are between `top` and `bottom`, in up to `tries` tries. */
-  const place = (kind: GroveThing, n: number, size: number, tall: number, top: number, bottom: number, tries = n * 14) => {
+  const place = (
+    kind: GroveThing,
+    n: number,
+    size: number,
+    tall: number,
+    top: number,
+    bottom: number,
+    tries = n * 14,
+  ) => {
     for (let i = 0, placed = 0; i < tries && placed < n; i++) {
       const x = rng.range(size / 2, w - size / 2);
       const y = rng.range(top, bottom);
@@ -156,7 +170,8 @@ export function drawGrove(g: Graphics, layout: LandLayout, view: View, ground: n
   const edge = groveEdge(view, ground);
   for (const t of edge) g.rect(t.x - 5, t.cy, 10, ground + 8 - t.cy).fill(TRUNK);
   for (const t of edge) g.circle(t.x, t.cy, t.r).fill(CROWN).stroke({ color: CROWN_LINE, width: 2 });
-  for (const t of edge) g.circle(t.x - t.r * 0.3, t.cy - t.r * 0.35, t.r * 0.4).fill({ color: 0x3a6a5c, alpha: 0.6 });
+  for (const t of edge)
+    g.circle(t.x - t.r * 0.3, t.cy - t.r * 0.35, t.r * 0.4).fill({ color: 0x3a6a5c, alpha: 0.6 });
   g.rect(-10, ground + 4, view.w + 20, 8).fill(0x45785a);
   for (const { kind, x, y } of grovePlan(layout, view, ground)) {
     const face = x > view.w / 2 ? -1 : 1;
@@ -171,8 +186,16 @@ export function drawGrove(g: Graphics, layout: LandLayout, view: View, ground: n
 /** A star: a dot, the bigger ones with a little four-point twinkle. */
 function star(g: Graphics, x: number, y: number, r: number) {
   if (r > 3) {
-    g.moveTo(x, y - r * 2.2).lineTo(x + r * 0.5, y - r * 0.5).lineTo(x + r * 2.2, y).lineTo(x + r * 0.5, y + r * 0.5)
-      .lineTo(x, y + r * 2.2).lineTo(x - r * 0.5, y + r * 0.5).lineTo(x - r * 2.2, y).lineTo(x - r * 0.5, y - r * 0.5).closePath().fill(0xfff6c8);
+    g.moveTo(x, y - r * 2.2)
+      .lineTo(x + r * 0.5, y - r * 0.5)
+      .lineTo(x + r * 2.2, y)
+      .lineTo(x + r * 0.5, y + r * 0.5)
+      .lineTo(x, y + r * 2.2)
+      .lineTo(x - r * 0.5, y + r * 0.5)
+      .lineTo(x - r * 2.2, y)
+      .lineTo(x - r * 0.5, y - r * 0.5)
+      .closePath()
+      .fill(0xfff6c8);
   } else g.circle(x, y, r).fill({ color: 0xfff6e0, alpha: 0.9 });
 }
 
@@ -180,7 +203,13 @@ function star(g: Graphics, x: number, y: number, r: number) {
 function moon(g: Graphics, x: number, y: number, r: number) {
   g.circle(x, y, r + 12).fill({ color: 0xfff6d0, alpha: 0.15 });
   g.circle(x, y, r).fill(0xfff4cc).stroke({ color: 0xd9c98f, width: 4 });
-  for (const [dx, dy, s] of [[-14, -10, 9], [12, 8, 12], [-8, 18, 6], [16, -16, 5]]) g.circle(x + dx, y + dy, s).fill({ color: 0xe4d6a2, alpha: 0.8 });
+  for (const [dx, dy, s] of [
+    [-14, -10, 9],
+    [12, 8, 12],
+    [-8, 18, 6],
+    [16, -16, 5],
+  ])
+    g.circle(x + dx, y + dy, s).fill({ color: 0xe4d6a2, alpha: 0.8 });
 }
 
 /** A bat in flight: a small dark body between two scalloped wings, lit at the edge so it shows on the night sky. */
@@ -188,12 +217,22 @@ function bat(g: Graphics, x: number, y: number, face: 1 | -1) {
   const body = 0x2a2240;
   const line = 0x9a8ac4;
   for (const side of [-1, 1]) {
-    g.moveTo(x, y - 4).quadraticCurveTo(x + side * 12, y - 14, x + side * 26, y - 6)
-      .quadraticCurveTo(x + side * 20, y - 2, x + side * 18, y + 4).quadraticCurveTo(x + side * 13, y, x + side * 9, y + 6)
-      .quadraticCurveTo(x + side * 5, y + 2, x, y + 4).closePath().fill(body).stroke({ color: line, width: 1.5, join: 'round' });
+    g.moveTo(x, y - 4)
+      .quadraticCurveTo(x + side * 12, y - 14, x + side * 26, y - 6)
+      .quadraticCurveTo(x + side * 20, y - 2, x + side * 18, y + 4)
+      .quadraticCurveTo(x + side * 13, y, x + side * 9, y + 6)
+      .quadraticCurveTo(x + side * 5, y + 2, x, y + 4)
+      .closePath()
+      .fill(body)
+      .stroke({ color: line, width: 1.5, join: 'round' });
   }
   g.ellipse(x, y, 5, 7).fill(body).stroke({ color: line, width: 1.5 });
-  for (const d of [-3, 3]) g.moveTo(x + d, y - 5).lineTo(x + d * 1.4, y - 11).lineTo(x + d * 0.3, y - 7).closePath().fill(body);
+  for (const d of [-3, 3])
+    g.moveTo(x + d, y - 5)
+      .lineTo(x + d * 1.4, y - 11)
+      .lineTo(x + d * 0.3, y - 7)
+      .closePath()
+      .fill(body);
   g.circle(x + face * 2, y - 2, 1.2).fill(0xfff3a0);
 }
 
@@ -201,34 +240,84 @@ function bat(g: Graphics, x: number, y: number, face: 1 | -1) {
 function owl(g: Graphics, x: number, y: number) {
   const line = 0x4a3426;
   // The stump, its top ring showing.
-  g.rect(x - 24, y - 34, 48, 34).fill(0x7a5a40).stroke({ color: line, width: 2 });
-  g.ellipse(x, y - 34, 24, 7).fill(0xc8a070).stroke({ color: line, width: 2 });
+  g.rect(x - 24, y - 34, 48, 34)
+    .fill(0x7a5a40)
+    .stroke({ color: line, width: 2 });
+  g.ellipse(x, y - 34, 24, 7)
+    .fill(0xc8a070)
+    .stroke({ color: line, width: 2 });
   g.ellipse(x, y - 34, 12, 3.5).stroke({ color: 0x9a7650, width: 1.5 });
   const by = y - 38;
-  g.ellipse(x, by - 22, 19, 24).fill(0x9a7452).stroke({ color: line, width: 2 });
-  for (const d of [-1, 1]) g.ellipse(x + d * 14, by - 18, 7, 16).fill(0x7e5c40).stroke({ color: line, width: 1.5 });
-  for (const d of [-1, 1]) g.moveTo(x + d * 8, by - 48).lineTo(x + d * 15, by - 58).lineTo(x + d * 16, by - 44).closePath().fill(0x9a7452).stroke({ color: line, width: 1.5, join: 'round' });
-  g.ellipse(x, by - 34, 16, 13).fill(0xd8bc92).stroke({ color: line, width: 1.5 });
+  g.ellipse(x, by - 22, 19, 24)
+    .fill(0x9a7452)
+    .stroke({ color: line, width: 2 });
+  for (const d of [-1, 1])
+    g.ellipse(x + d * 14, by - 18, 7, 16)
+      .fill(0x7e5c40)
+      .stroke({ color: line, width: 1.5 });
+  for (const d of [-1, 1])
+    g.moveTo(x + d * 8, by - 48)
+      .lineTo(x + d * 15, by - 58)
+      .lineTo(x + d * 16, by - 44)
+      .closePath()
+      .fill(0x9a7452)
+      .stroke({ color: line, width: 1.5, join: 'round' });
+  g.ellipse(x, by - 34, 16, 13)
+    .fill(0xd8bc92)
+    .stroke({ color: line, width: 1.5 });
   for (const d of [-7, 7]) {
     g.circle(x + d, by - 35, 6).fill(ink);
     g.circle(x + d + 1.5, by - 37, 1.8).fill(0xffffff);
   }
-  g.moveTo(x - 3, by - 30).lineTo(x + 3, by - 30).lineTo(x, by - 25).closePath().fill(0xe0a840);
-  for (const [dx, dy] of [[-6, -16], [6, -16], [0, -10], [-5, -6], [5, -6]]) g.moveTo(x + dx - 2, by + dy).lineTo(x + dx, by + dy + 3).lineTo(x + dx + 2, by + dy).stroke({ color: 0x6a4a34, width: 1.2 });
-  for (const d of [-5, 5]) g.moveTo(x + d - 3, by - 1).lineTo(x + d + 3, by - 1).stroke({ color: 0xe0a840, width: 2.5, cap: 'round' });
+  g.moveTo(x - 3, by - 30)
+    .lineTo(x + 3, by - 30)
+    .lineTo(x, by - 25)
+    .closePath()
+    .fill(0xe0a840);
+  for (const [dx, dy] of [
+    [-6, -16],
+    [6, -16],
+    [0, -10],
+    [-5, -6],
+    [5, -6],
+  ])
+    g.moveTo(x + dx - 2, by + dy)
+      .lineTo(x + dx, by + dy + 3)
+      .lineTo(x + dx + 2, by + dy)
+      .stroke({ color: 0x6a4a34, width: 1.2 });
+  for (const d of [-5, 5])
+    g.moveTo(x + d - 3, by - 1)
+      .lineTo(x + d + 3, by - 1)
+      .stroke({ color: 0xe0a840, width: 2.5, cap: 'round' });
 }
 
 /** Evening primrose: three pale yellow four-petalled flowers open on tall stems, with a closed bud. */
 function primrose(g: Graphics, x: number, y: number) {
-  const stems: [number, number][] = [[-14, -40], [2, -52], [16, -36]];
-  for (const [dx, top] of stems) g.moveTo(x + dx * 0.4, y).quadraticCurveTo(x + dx * 0.6, y + top / 2, x + dx, y + top).stroke({ color: 0x3f7a4a, width: 2.5, cap: 'round' });
-  for (const [dx, dy] of [[-8, -10], [8, -14], [-2, -24]]) g.ellipse(x + dx, y + dy, 7, 3).fill(0x4f8f52).stroke({ color: LAWN_LINE, width: 1 });
+  const stems: [number, number][] = [
+    [-14, -40],
+    [2, -52],
+    [16, -36],
+  ];
+  for (const [dx, top] of stems)
+    g.moveTo(x + dx * 0.4, y)
+      .quadraticCurveTo(x + dx * 0.6, y + top / 2, x + dx, y + top)
+      .stroke({ color: 0x3f7a4a, width: 2.5, cap: 'round' });
+  for (const [dx, dy] of [
+    [-8, -10],
+    [8, -14],
+    [-2, -24],
+  ])
+    g.ellipse(x + dx, y + dy, 7, 3)
+      .fill(0x4f8f52)
+      .stroke({ color: LAWN_LINE, width: 1 });
   for (const [dx, top] of stems) {
     const fx = x + dx;
     const fy = y + top;
     for (let k = 0; k < 4; k++) {
       const a = k * (Math.PI / 2) + Math.PI / 4;
-      g.circle(fx + Math.cos(a) * 5, fy + Math.sin(a) * 5, 5.5).fill(0xfff08a).stroke({ color: 0xd9c050, width: 1 });
+      g.circle(fx + Math.cos(a) * 5, fy + Math.sin(a) * 5, 5.5)
+        .fill(0xfff08a)
+        .stroke({ color: 0xd9c050, width: 1 });
     }
     g.circle(fx, fy, 2.2).fill(0xe0b030);
   }
@@ -239,11 +328,18 @@ function primrose(g: Graphics, x: number, y: number) {
 function moth(g: Graphics, x: number, y: number) {
   const cy = y - 12;
   for (const side of [-1, 1]) {
-    g.ellipse(x + side * 7, cy - 3, 8, 6).fill(0xeee4d0).stroke({ color: 0xa89878, width: 1.2 });
-    g.ellipse(x + side * 6, cy + 5, 5.5, 4).fill(0xe0d4bc).stroke({ color: 0xa89878, width: 1.2 });
+    g.ellipse(x + side * 7, cy - 3, 8, 6)
+      .fill(0xeee4d0)
+      .stroke({ color: 0xa89878, width: 1.2 });
+    g.ellipse(x + side * 6, cy + 5, 5.5, 4)
+      .fill(0xe0d4bc)
+      .stroke({ color: 0xa89878, width: 1.2 });
   }
   g.ellipse(x, cy + 1, 2.2, 7).fill(0x8a7a62);
-  for (const side of [-1, 1]) g.moveTo(x, cy - 5).lineTo(x + side * 5, cy - 11).stroke({ color: 0x8a7a62, width: 1 });
+  for (const side of [-1, 1])
+    g.moveTo(x, cy - 5)
+      .lineTo(x + side * 5, cy - 11)
+      .stroke({ color: 0x8a7a62, width: 1 });
 }
 
 /** A firefly: a tiny glowing light with its halo. */

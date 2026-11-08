@@ -22,20 +22,122 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
 import {
-  baleArt, boardArt, bubbleArt, Camel, cityArt, coatArt, counterArt, dayCardArt, dayStickArt, flagArt, goArt, goodArt, homeArt, hoofArt, hutArt, iconArt, loadArt,
-  oasisArt, offerArt, peaksArt, SAND, shellRow, siteArt, skinArt, snowArt, stickerArt, sunArt, treeArt, wellArt,
+  baleArt,
+  boardArt,
+  bubbleArt,
+  Camel,
+  cityArt,
+  coatArt,
+  counterArt,
+  dayCardArt,
+  dayStickArt,
+  flagArt,
+  goArt,
+  goodArt,
+  homeArt,
+  hoofArt,
+  hutArt,
+  iconArt,
+  loadArt,
+  oasisArt,
+  offerArt,
+  peaksArt,
+  SAND,
+  shellRow,
+  siteArt,
+  skinArt,
+  snowArt,
+  stickerArt,
+  sunArt,
+  treeArt,
+  wellArt,
 } from './art';
 import {
   LEVELS,
-  afterTooLong, BALE_COLORS, checkWells, DAY, DAY_CARDS, days, ghostFor, goPass, minWells, nextPassMove, nextWellMove, passHint, passPlan, passStart, wellHint, wellsPlan,
-  type PassMap, type PassPlan, type PassRoad, type PassState, type WellRoad, type WellsPlan, better, camelAt, centre, choose, go, goLive, goSwap, hintFor, LANDMARKS, legSuns, legsOf, loadPlan, nextWant, loadStart, nextLoad, nextPlanMove, nextWorthMove, offersAt, pickOffer, planFor, planPlan, planStart, price, reachable, reachPlan, roadLayout, sell, SKIN, sunPoints, swapHint, swapPlan, swapStart, Tally, tapBale, tapCamel, tapStop, total, worthPlan, worthStart,
-  type CaravanMap, type Good, type LoadPlan, type LoadState, type PlanPlan, type PlanState, type Pt, type ReachPlan, type RoadLayout, type RoadLine, type SwapPlan, type SwapRoad, type SwapState, type WorthPlan, type WorthState, type WorthStop,
+  afterTooLong,
+  BALE_COLORS,
+  checkWells,
+  DAY,
+  DAY_CARDS,
+  days,
+  ghostFor,
+  goPass,
+  minWells,
+  nextPassMove,
+  nextWellMove,
+  passHint,
+  passPlan,
+  passStart,
+  wellHint,
+  wellsPlan,
+  type PassMap,
+  type PassPlan,
+  type PassRoad,
+  type PassState,
+  type WellRoad,
+  type WellsPlan,
+  better,
+  camelAt,
+  centre,
+  choose,
+  go,
+  goLive,
+  goSwap,
+  hintFor,
+  LANDMARKS,
+  legSuns,
+  legsOf,
+  loadPlan,
+  nextWant,
+  loadStart,
+  nextLoad,
+  nextPlanMove,
+  nextWorthMove,
+  offersAt,
+  pickOffer,
+  planFor,
+  planPlan,
+  planStart,
+  price,
+  reachable,
+  reachPlan,
+  roadLayout,
+  sell,
+  SKIN,
+  sunPoints,
+  swapHint,
+  swapPlan,
+  swapStart,
+  Tally,
+  tapBale,
+  tapCamel,
+  tapStop,
+  total,
+  worthPlan,
+  worthStart,
+  type CaravanMap,
+  type Good,
+  type LoadPlan,
+  type LoadState,
+  type PlanPlan,
+  type PlanState,
+  type Pt,
+  type ReachPlan,
+  type RoadLayout,
+  type RoadLine,
+  type SwapPlan,
+  type SwapRoad,
+  type SwapState,
+  type WorthPlan,
+  type WorthState,
+  type WorthStop,
 } from './logic';
 
 /** The next useful thing glows when nothing has been tapped for this long at level 1 (uncounted). */
 const IDLE_GLOW = 8;
 /** A spoken count comes from a bounded slot. */
-const countLine = (prefix: string, n: number, max: number) => `${prefix}.${Math.max(1, Math.min(n, max))}` as LineId;
+const countLine = (prefix: string, n: number, max: number) =>
+  `${prefix}.${Math.max(1, Math.min(n, max))}` as LineId;
 
 class CaravanDays implements Game {
   readonly plan: LoadPlan | ReachPlan | PlanPlan | SwapPlan | WorthPlan | PassPlan | WellsPlan;
@@ -105,8 +207,20 @@ class CaravanDays implements Game {
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.level = planFor(ctx.level).level;
-    this.plan = this.level === 1 ? loadPlan(ctx.band, ctx.rng) : this.level === 2 ? reachPlan(ctx.rng) : this.level === 3 ? planPlan(ctx.rng)
-      : this.level === 4 ? swapPlan(ctx.rng) : this.level === 5 ? worthPlan(ctx.rng) : this.level === 6 ? passPlan(ctx.rng) : wellsPlan(ctx.rng);
+    this.plan =
+      this.level === 1
+        ? loadPlan(ctx.band, ctx.rng)
+        : this.level === 2
+          ? reachPlan(ctx.rng)
+          : this.level === 3
+            ? planPlan(ctx.rng)
+            : this.level === 4
+              ? swapPlan(ctx.rng)
+              : this.level === 5
+                ? worthPlan(ctx.rng)
+                : this.level === 6
+                  ? passPlan(ctx.rng)
+                  : wellsPlan(ctx.rng);
     if (this.plan.level === 1) this.load = loadStart(this.plan);
     if (this.plan.level === 3) this.state = planStart();
     if (this.plan.level === 4) this.swap = swapStart();
@@ -114,7 +228,17 @@ class CaravanDays implements Game {
     if (this.plan.level === 6) this.pass = passStart();
     const reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.stepSeconds = ctx.demo || reduce ? 0.22 : 0.7;
-    this.backdrop = new Backdrop({ sky: [0xbfe3f7, 0xfff1d6], hills: [0xf2d9a4, 0xe6c48a, 0xd9b472], horizon: 0.44, clouds: 1, sun: true, seed: 233 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0xbfe3f7, 0xfff1d6],
+        hills: [0xf2d9a4, 0xe6c48a, 0xd9b472],
+        horizon: 0.44,
+        clouds: 1,
+        sun: true,
+        seed: 233,
+      },
+      ctx.view,
+    );
     this.glow.eventMode = 'none';
     this.roadLayer.eventMode = 'none';
     this.flagLayer.eventMode = 'none';
@@ -158,7 +282,10 @@ class CaravanDays implements Game {
   start() {
     this.build();
     const ask = this.ctx.instruct(`cd.instruct.${this.level}` as LineId);
-    if (this.level >= 2) void ask.then(() => { if (this.alive) void this.ctx.say(`cd.history.${this.level}` as LineId); });
+    if (this.level >= 2)
+      void ask.then(() => {
+        if (this.alive) void this.ctx.say(`cd.history.${this.level}` as LineId);
+      });
     if (this.level === 4) void this.walkIn();
   }
 
@@ -170,7 +297,10 @@ class CaravanDays implements Game {
     this.view = v;
     this.backdrop.resize(v);
     if (!this.layoutNow) return;
-    if (this.busy || this.finished) { this.relayout = true; return; }
+    if (this.busy || this.finished) {
+      this.relayout = true;
+      return;
+    }
     this.build();
   }
 
@@ -227,8 +357,12 @@ class CaravanDays implements Game {
   private drawRoads(l: RoadLayout) {
     l.roads.forEach((r, i) => {
       const g = new Graphics();
-      g.moveTo(r.from.x, r.from.y).lineTo(r.to.x, r.to.y).stroke({ width: 34, color: SAND.line, cap: 'round' });
-      g.moveTo(r.from.x, r.from.y).lineTo(r.to.x, r.to.y).stroke({ width: 24, color: SAND.fill, cap: 'round' });
+      g.moveTo(r.from.x, r.from.y)
+        .lineTo(r.to.x, r.to.y)
+        .stroke({ width: 34, color: SAND.line, cap: 'round' });
+      g.moveTo(r.from.x, r.from.y)
+        .lineTo(r.to.x, r.to.y)
+        .stroke({ width: 24, color: SAND.fill, cap: 'round' });
       g.eventMode = 'none';
       this.roadLayer.addChild(g);
       const suns = sunPoints(r).map((p) => {
@@ -261,7 +395,13 @@ class CaravanDays implements Game {
     skin.position.copyFrom(l.skin);
     skin.addChild(skinArt(this.skinFull));
     skin.hitArea = new Rectangle(-90, -40, 180, 80);
-    onTap(skin, () => { void this.ctx.say('cd.skin'); }, { cooldown: 400 });
+    onTap(
+      skin,
+      () => {
+        void this.ctx.say('cd.skin');
+      },
+      { cooldown: 400 },
+    );
     this.board.addChild(skin);
     this.skinNode = skin;
   }
@@ -273,7 +413,11 @@ class CaravanDays implements Game {
     s.addChild(skinArt(this.skinFull));
   }
 
-  private stopNode(r: { x: number; y: number; w: number; h: number }, art: Container, onTapFn: (() => void) | null): Container {
+  private stopNode(
+    r: { x: number; y: number; w: number; h: number },
+    art: Container,
+    onTapFn: (() => void) | null,
+  ): Container {
     const node = new Container();
     node.position.copyFrom(centre(r));
     node.addChild(art);
@@ -295,7 +439,10 @@ class CaravanDays implements Game {
     onTap(tap, () => this.tapCamel(), { cooldown: 250 });
     this.board.addChild(tap);
     this.camelNode = tap;
-    const camel = this.placeCamel(s.phase === 'walking' || s.phase === 'drinking' ? centre(l.stops[0]) : l.start, 1);
+    const camel = this.placeCamel(
+      s.phase === 'walking' || s.phase === 'drinking' ? centre(l.stops[0]) : l.start,
+      1,
+    );
     camel.fold = s.phase === 'kneeling' ? 1 : 0;
     camel.pose();
     this.baleNodes = plan.colors.map((color, i) => {
@@ -317,7 +464,13 @@ class CaravanDays implements Game {
 
   private buildReach(l: RoadLayout) {
     const road = this.road;
-    this.stopNodes = [0, 1].map((b) => this.stopNode(l.stops[b], oasisArt(road.landmarks[b], 120, this.tallies.glowing && reachable(road) === b), () => this.tapOasis(b as 0 | 1)));
+    this.stopNodes = [0, 1].map((b) =>
+      this.stopNode(
+        l.stops[b],
+        oasisArt(road.landmarks[b], 120, this.tallies.glowing && reachable(road) === b),
+        () => this.tapOasis(b as 0 | 1),
+      ),
+    );
     const camel = this.placeCamel(l.start, 0.75);
     this.loadBales(camel, 2);
     this.placeSkin(l);
@@ -327,7 +480,12 @@ class CaravanDays implements Game {
     const map = this.map;
     const s = this.state!;
     this.stopNodes = map.stops.map((stop) => {
-      const art = stop.kind === 'home' ? homeArt() : stop.kind === 'city' ? cityArt(120, this.cityOpen) : oasisArt(stop.landmark!);
+      const art =
+        stop.kind === 'home'
+          ? homeArt()
+          : stop.kind === 'city'
+            ? cityArt(120, this.cityOpen)
+            : oasisArt(stop.landmark!);
       const node = this.stopNode(l.stops[stop.id], art, () => this.tapStop(stop.id));
       if (stop.kind === 'city') this.cityNode = node;
       return node;
@@ -378,9 +536,10 @@ class CaravanDays implements Game {
       const from = centre(l.stops[at]);
       const to = centre(l.stops[stop]);
       // The lit road: the direct road, or the two roads through a skipped oasis.
-      const via = legSuns(map, at, stop) !== null && !map.legs.some((lg) => lg.a === at && lg.b === stop)
-        ? map.legs.find((lg) => lg.a === at && map.legs.some((n) => n.a === lg.b && n.b === stop))?.b
-        : undefined;
+      const via =
+        legSuns(map, at, stop) !== null && !map.legs.some((lg) => lg.a === at && lg.b === stop)
+          ? map.legs.find((lg) => lg.a === at && map.legs.some((n) => n.a === lg.b && n.b === stop))?.b
+          : undefined;
       const g = new Graphics();
       const pts = via === undefined ? [from, to] : [from, centre(l.stops[via]), to];
       g.moveTo(pts[0].x, pts[0].y);
@@ -415,7 +574,10 @@ class CaravanDays implements Game {
 
   private wobble(node: Container) {
     const x = node.x;
-    void this.ctx.tw.to(node.position, { x: x + 10 }, { duration: 0.08 }).then(() => this.ctx.tw.to(node.position, { x: x - 10 }, { duration: 0.08 })).then(() => this.ctx.tw.to(node.position, { x }, { duration: 0.08 }));
+    void this.ctx.tw
+      .to(node.position, { x: x + 10 }, { duration: 0.08 })
+      .then(() => this.ctx.tw.to(node.position, { x: x - 10 }, { duration: 0.08 }))
+      .then(() => this.ctx.tw.to(node.position, { x }, { duration: 0.08 }));
   }
 
   /** The camel sways along to a point; it faces the way it goes. */
@@ -436,7 +598,11 @@ class CaravanDays implements Game {
     await this.walkTo(p, this.stepSeconds);
     if (!this.alive) return;
     sfx.marimba(4 + day, 0.35);
-    this.ctx.particles.burst(this.camel!.x, this.camel!.y + 4, { colors: [SAND.fill, SAND.dark], count: 5, speed: [20, 70] });
+    this.ctx.particles.burst(this.camel!.x, this.camel!.y + 4, {
+      colors: [SAND.fill, SAND.dark],
+      count: 5,
+      speed: [20, 70],
+    });
     this.skinFull = Math.max(0, this.skinFull - 1);
     this.redrawSkin();
   }
@@ -521,7 +687,9 @@ class CaravanDays implements Game {
     const from = parent.toLocal(node.getGlobalPosition());
     parent.addChild(node);
     node.position.copyFrom(from);
-    void this.ctx.tw.to(node.position, { x: to.x, y: to.y - 60 }, { duration: 0.18, ease: ease.outQuad }).then(() => this.ctx.tw.to(node.position, { y: to.y }, { duration: 0.16, ease: ease.inQuad }));
+    void this.ctx.tw
+      .to(node.position, { x: to.x, y: to.y - 60 }, { duration: 0.18, ease: ease.outQuad })
+      .then(() => this.ctx.tw.to(node.position, { y: to.y }, { duration: 0.16, ease: ease.inQuad }));
   }
 
   /** The loaded camel stands, bells, walks to the oasis and drinks: the ending. */
@@ -543,10 +711,17 @@ class CaravanDays implements Game {
     const to = { x: road.to.x - 60, y: road.to.y + 56 };
     const steps = 3;
     for (let i = 1; i <= steps; i++) {
-      await this.walkTo({ x: camel.x + (to.x - camel.x) / (steps - i + 1), y: camel.y + (to.y - camel.y) / (steps - i + 1) }, this.stepSeconds);
+      await this.walkTo(
+        { x: camel.x + (to.x - camel.x) / (steps - i + 1), y: camel.y + (to.y - camel.y) / (steps - i + 1) },
+        this.stepSeconds,
+      );
       if (!this.live(epoch)) return;
       sfx.marimba(4 + i, 0.3);
-      this.ctx.particles.burst(camel.x, camel.y + 4, { colors: [SAND.fill, SAND.dark], count: 5, speed: [20, 70] });
+      this.ctx.particles.burst(camel.x, camel.y + 4, {
+        colors: [SAND.fill, SAND.dark],
+        count: 5,
+        speed: [20, 70],
+      });
     }
     void this.ctx.say(`cd.arrive.${plan.oasis}` as LineId);
     await this.drink(epoch);
@@ -637,19 +812,45 @@ class CaravanDays implements Game {
     this.tallies.next();
     this.roadIndex++;
     const p = this.plan;
-    const count = p.level === 2 || p.level === 4 || p.level === 7 ? p.roads.length : p.level === 3 || p.level === 6 ? p.maps.length : p.level === 5 ? p.named.length : 1;
-    if (this.roadIndex >= count) { this.celebrate(); return; }
+    const count =
+      p.level === 2 || p.level === 4 || p.level === 7
+        ? p.roads.length
+        : p.level === 3 || p.level === 6
+          ? p.maps.length
+          : p.level === 5
+            ? p.named.length
+            : 1;
+    if (this.roadIndex >= count) {
+      this.celebrate();
+      return;
+    }
     this.skinFull = SKIN;
     this.cityOpen = false;
     if (p.level === 3) this.state = planStart();
-    if (p.level === 4) { this.swap = swapStart(); this.walkedIn = false; }
-    if (p.level === 5) { this.worth = worthStart(); this.seen.clear(); }
+    if (p.level === 4) {
+      this.swap = swapStart();
+      this.walkedIn = false;
+    }
+    if (p.level === 5) {
+      this.worth = worthStart();
+      this.seen.clear();
+    }
     if (p.level === 6) this.pass = passStart();
     if (p.level === 7) this.wells = [];
     this.busy = false;
     this.build();
-    const line: LineId = p.level === 2 ? 'cd.next-road' : p.level === 3 ? 'cd.next-map' : p.level === 4 ? 'cd.next-swap' : p.level === 5 ? 'cd.next-case'
-      : p.level === 6 ? 'cd.next-pass' : 'cd.next-wells';
+    const line: LineId =
+      p.level === 2
+        ? 'cd.next-road'
+        : p.level === 3
+          ? 'cd.next-map'
+          : p.level === 4
+            ? 'cd.next-swap'
+            : p.level === 5
+              ? 'cd.next-case'
+              : p.level === 6
+                ? 'cd.next-pass'
+                : 'cd.next-wells';
     void this.ctx.say(line);
     if (p.level === 4) void this.walkIn();
   }
@@ -665,15 +866,19 @@ class CaravanDays implements Game {
     const { state, event } = tapStop(this.map, s, stop);
     const stood = camelAt(this.map, s);
     this.state = state;
-    if (event === 'flag') { sfx.pop(8); this.redrawPlan(); }
-    else if (event === 'take-out') {
+    if (event === 'flag') {
+      sfx.pop(8);
+      this.redrawPlan();
+    } else if (event === 'take-out') {
       sfx.tick();
       this.redrawPlan();
       // Taking out a flag the camel has reached: it ambles back to the last flag that stays (or home).
       const now = camelAt(this.map, state);
       if (now !== stood && this.camel) void this.amble(this.standAt(now));
+    } else if (event === 'not-adjacent') {
+      this.wobble(node);
+      void this.ctx.say('cd.not-straight');
     }
-    else if (event === 'not-adjacent') { this.wobble(node); void this.ctx.say('cd.not-straight'); }
   }
 
   /** The camel ambles back to the last flag that stays; inputs wait for it, as for every walk. */
@@ -693,7 +898,10 @@ class CaravanDays implements Game {
     if (!node || !s || this.finished || this.plan.level !== 3) return;
     this.bob(node);
     if (this.busy) return;
-    if (!goLive(this.map, s)) { void this.ctx.say('cd.plan-to-city'); return; }
+    if (!goLive(this.map, s)) {
+      void this.ctx.say('cd.plan-to-city');
+      return;
+    }
     void this.walkPlan();
   }
 
@@ -768,7 +976,10 @@ class CaravanDays implements Game {
     sfx.bell(5, 0.25);
     sfx.bell(9, 0.25);
     void this.ctx.say('cd.arrive.city');
-    this.ctx.particles.burst(camel.x, camel.y - 60, { colors: [swatch.yellow.fill, 0x9fd3f2, 0xffffff], count: 12 });
+    this.ctx.particles.burst(camel.x, camel.y - 60, {
+      colors: [swatch.yellow.fill, 0x9fd3f2, 0xffffff],
+      count: 12,
+    });
     await this.drink(epoch);
     if (!this.live(epoch)) return;
     this.nextRoad();
@@ -823,7 +1034,9 @@ class CaravanDays implements Game {
       return f;
     });
     // The want bubbles: a free look that names the good.
-    this.bubbleNodes = (l.bubbles ?? []).map((r, i) => this.stopNode(r, bubbleArt(road.wants[i]), () => this.tapBubble(i)));
+    this.bubbleNodes = (l.bubbles ?? []).map((r, i) =>
+      this.stopNode(r, bubbleArt(road.wants[i]), () => this.tapBubble(i)),
+    );
     const camel = this.placeCamel(this.groundAt(this.walkedIn ? s.at : 0), 0.55);
     this.dressCamel(camel);
     this.offerNodes = (l.offers ?? []).map((r, side) => {
@@ -873,7 +1086,9 @@ class CaravanDays implements Game {
     if (!s || this.plan.level !== 4) return;
     const offers = this.walkedIn ? offersAt(this.swapRoad, s) : null;
     // A stop the camel has reached already took its good: its bubble fades.
-    this.bubbleNodes.forEach((node, i) => { node.alpha = this.walkedIn && i + 1 <= s.at ? 0.55 : 1; });
+    this.bubbleNodes.forEach((node, i) => {
+      node.alpha = this.walkedIn && i + 1 <= s.at ? 0.55 : 1;
+    });
     this.offerNodes.forEach((node, side) => {
       for (const c of node.removeChildren()) c.destroy({ children: true });
       node.visible = !!offers;
@@ -910,24 +1125,36 @@ class CaravanDays implements Game {
     if (this.busy) return;
     if (this.plan.level === 6) {
       const s = this.pass!;
-      if (!s.road || s.guess === null) { void this.ctx.say('cd.choose-first'); return; }
+      if (!s.road || s.guess === null) {
+        void this.ctx.say('cd.choose-first');
+        return;
+      }
       void this.walkPass(s.road, s.guess);
       return;
     }
     if (this.plan.level === 7) {
-      if (this.wells.length === 0) { void this.ctx.say('cd.dig-first'); return; }
+      if (this.wells.length === 0) {
+        void this.ctx.say('cd.dig-first');
+        return;
+      }
       void this.walkWells();
       return;
     }
     if (this.plan.level === 4) {
       if (!this.walkedIn || !this.swap) return;
       const r = goSwap(this.swapRoad, this.swap);
-      if (r.event === 'pick-first') { void this.ctx.say('cd.pick-first'); return; }
+      if (r.event === 'pick-first') {
+        void this.ctx.say('cd.pick-first');
+        return;
+      }
       void this.walkSwap(r.event === 'wanted');
       return;
     }
     const w = this.worth!;
-    if (w.looked === null) { void this.ctx.say('cd.look-first'); return; }
+    if (w.looked === null) {
+      void this.ctx.say('cd.look-first');
+      return;
+    }
     void this.walkSell(w.looked);
   }
 
@@ -970,7 +1197,9 @@ class CaravanDays implements Game {
     const camel = this.camel;
     if (!camel || !this.layoutNow) return;
     this.busy = true;
-    this.offerNodes.forEach((n) => { n.visible = false; });
+    this.offerNodes.forEach((n) => {
+      n.visible = false;
+    });
     await this.walkLeg(s.at, epoch);
     if (!this.live(epoch)) return;
     const friend = this.friendNodes[s.at];
@@ -987,7 +1216,10 @@ class CaravanDays implements Game {
         sfx.bell(5, 0.25);
         sfx.bell(9, 0.25);
         void this.ctx.say('cd.arrive.city');
-        this.ctx.particles.burst(camel.x, camel.y - 60, { colors: [swatch.yellow.fill, 0x9fd3f2, 0xffffff], count: 12 });
+        this.ctx.particles.burst(camel.x, camel.y - 60, {
+          colors: [swatch.yellow.fill, 0x9fd3f2, 0xffffff],
+          count: 12,
+        });
         await this.drink(epoch);
         if (!this.live(epoch)) return;
         this.nextRoad();
@@ -1031,7 +1263,10 @@ class CaravanDays implements Game {
   private loadPrices(load: 0 | 1): number[] {
     const p = this.plan as WorthPlan;
     const [u, d] = p.loads[load];
-    return [...Array<number>(u).fill(price(p, 0, this.named)), ...Array<number>(d).fill(price(p, 1, this.named))];
+    return [
+      ...Array<number>(u).fill(price(p, 0, this.named)),
+      ...Array<number>(d).fill(price(p, 1, this.named)),
+    ];
   }
 
   private buildWorth(l: RoadLayout) {
@@ -1054,7 +1289,11 @@ class CaravanDays implements Game {
     // The price boards: a free look that names each good's price there.
     (l.boards ?? []).forEach((r, i) => {
       const stop = (i + 1) as WorthStop;
-      this.stopNode(r, boardArt(p.goods, [price(p, 0, stop), price(p, 1, stop)], r.w, r.h, stop === this.named), () => this.tapBoard(stop));
+      this.stopNode(
+        r,
+        boardArt(p.goods, [price(p, 0, stop), price(p, 1, stop)], r.w, r.h, stop === this.named),
+        () => this.tapBoard(stop),
+      );
     });
     const camel = this.placeCamel(this.groundAt(0), 0.55);
     this.dressCamel(camel);
@@ -1077,7 +1316,15 @@ class CaravanDays implements Game {
     this.loadNodes.forEach((node, i) => {
       for (const c of node.removeChildren()) c.destroy({ children: true });
       const load = i as 0 | 1;
-      node.addChild(loadArt(this.loadGoods(load), r[i].w, r[i].h, this.seen.has(i) ? this.loadPrices(load) : null, w.looked === i));
+      node.addChild(
+        loadArt(
+          this.loadGoods(load),
+          r[i].w,
+          r[i].h,
+          this.seen.has(i) ? this.loadPrices(load) : null,
+          w.looked === i,
+        ),
+      );
     });
     this.redrawGo(w.looked !== null);
   }
@@ -1086,7 +1333,13 @@ class CaravanDays implements Game {
   private tapBoard(stop: WorthStop) {
     if (this.finished) return;
     const p = this.plan as WorthPlan;
-    void this.sayAll(['cd.price-here', this.goodLine(p.goods[0]), countLine('cd.shells', price(p, 0, stop), 20), this.goodLine(p.goods[1]), countLine('cd.shells', price(p, 1, stop), 20)]);
+    void this.sayAll([
+      'cd.price-here',
+      this.goodLine(p.goods[0]),
+      countLine('cd.shells', price(p, 0, stop), 20),
+      this.goodLine(p.goods[1]),
+      countLine('cd.shells', price(p, 1, stop), 20),
+    ]);
   }
 
   /** Look at a load: it lifts, its shells at the named stop show under its bales and the pet counts them. Free. */
@@ -1122,7 +1375,10 @@ class CaravanDays implements Game {
     for (let stop = 0; stop < this.named; stop++) {
       await this.walkLeg(stop, epoch);
       if (!this.live(epoch)) return;
-      if (stop + 1 < this.named) { sfx.splash(); this.skinFull = SKIN; }
+      if (stop + 1 < this.named) {
+        sfx.splash();
+        this.skinFull = SKIN;
+      }
     }
     camel.scale.x = Math.abs(camel.scale.x);
     const result = sell(p, caseIndex, load);
@@ -1135,7 +1391,10 @@ class CaravanDays implements Game {
     if (result.better) {
       sfx.bell(5, 0.25);
       sfx.bell(9, 0.25);
-      if (this.named === 3) { this.cityOpen = true; this.redrawCity(); }
+      if (this.named === 3) {
+        this.cityOpen = true;
+        this.redrawCity();
+      }
       await this.sayAll([countLine('cd.shells', result.got, 20), 'cd.more-shells']);
       if (!this.live(epoch)) return;
       await this.drink(epoch);
@@ -1143,7 +1402,11 @@ class CaravanDays implements Game {
       this.nextRoad();
       return;
     }
-    void this.sayAll([countLine('cd.shells', result.got, 20), 'cd.other-brings', countLine('cd.shells', result.other, 20)]);
+    void this.sayAll([
+      countLine('cd.shells', result.got, 20),
+      'cd.other-brings',
+      countLine('cd.shells', result.other, 20),
+    ]);
     await this.emptySkin(epoch);
     if (!this.live(epoch)) return;
     await this.ctx.tw.wait(this.stepSeconds * 2);
@@ -1182,7 +1445,10 @@ class CaravanDays implements Game {
       this.board.addChildAt(node, 1);
       return node;
     });
-    this.stopNodes = [this.stopNode(l.stops[0], homeArt(), null), this.stopNode(l.stops[1], cityArt(120, this.cityOpen), null)];
+    this.stopNodes = [
+      this.stopNode(l.stops[0], homeArt(), null),
+      this.stopNode(l.stops[1], cityArt(120, this.cityOpen), null),
+    ];
     this.cityNode = this.stopNodes[1];
     // Inns: small huts close together on the pass (the hut at the top bigger), oases far apart round the sand.
     l.pass!.slice(1).forEach((leg) => {
@@ -1229,8 +1495,16 @@ class CaravanDays implements Game {
       const chosen = s.road === (i === 0 ? 'pass' : 'sand');
       const r = l.bands![i];
       const g = new Graphics();
-      g.roundRect(-r.w / 2, -r.h / 2, r.w, r.h, 40).fill({ color: chosen ? swatch.yellow.fill : 0xffffff, alpha: chosen ? 0.4 : 0.12 });
-      if (chosen) g.roundRect(-r.w / 2, -r.h / 2, r.w, r.h, 40).stroke({ width: 5, color: swatch.orange.fill, alpha: 0.8 });
+      g.roundRect(-r.w / 2, -r.h / 2, r.w, r.h, 40).fill({
+        color: chosen ? swatch.yellow.fill : 0xffffff,
+        alpha: chosen ? 0.4 : 0.12,
+      });
+      if (chosen)
+        g.roundRect(-r.w / 2, -r.h / 2, r.w, r.h, 40).stroke({
+          width: 5,
+          color: swatch.orange.fill,
+          alpha: 0.8,
+        });
       node.addChild(g);
     });
     this.cardNodes.forEach((node, i) => {
@@ -1249,7 +1523,13 @@ class CaravanDays implements Game {
     if (this.busy) return;
     this.pass = { ...s, road };
     sfx.pop(road === 'pass' ? 8 : 5);
-    void this.sayAll(road === 'pass' ? (this.passMap.snow ? ['cd.pass', 'cd.snow-day'] : ['cd.pass', 'cd.coat']) : ['cd.sand']);
+    void this.sayAll(
+      road === 'pass'
+        ? this.passMap.snow
+          ? ['cd.pass', 'cd.snow-day']
+          : ['cd.pass', 'cd.coat']
+        : ['cd.sand'],
+    );
     this.redrawPass();
   }
 
@@ -1271,7 +1551,11 @@ class CaravanDays implements Game {
     const h = passHint(this.passMap, this.pass?.road ?? null);
     const map = this.passMap;
     const suns = h.road === 'pass' ? map.passLegs : days(map, 'sand');
-    const ids: LineId[] = ['cd.help.pass', h.road === 'pass' ? 'cd.pass' : 'cd.sand', countLine('cd.suns', suns, 6)];
+    const ids: LineId[] = [
+      'cd.help.pass',
+      h.road === 'pass' ? 'cd.pass' : 'cd.sand',
+      countLine('cd.suns', suns, 6),
+    ];
     if (h.road === 'pass' && map.snow) ids.push('cd.snow-day');
     ids.push(countLine('cd.days', h.days, 7));
     await this.sayAll(ids);
@@ -1320,7 +1604,11 @@ class CaravanDays implements Game {
       await this.walkTo(foot(leg.to), this.stepSeconds * 0.6);
       if (!this.live(epoch)) return;
       if (road === 'pass' && map.snow && leg.to === l.hut && day < stopAt) {
-        this.ctx.particles.burst(camel.x, camel.y - 80, { colors: [0xffffff, 0xd6dde4], count: 10, speed: [10, 50] });
+        this.ctx.particles.burst(camel.x, camel.y - 80, {
+          colors: [0xffffff, 0xd6dde4],
+          count: 10,
+          speed: [10, 50],
+        });
         void this.ctx.say('cd.snow-day');
         await this.ctx.tw.wait(this.stepSeconds * 1.6);
         if (!this.live(epoch)) return;
@@ -1335,9 +1623,17 @@ class CaravanDays implements Game {
       this.redrawCity();
       sfx.bell(5, 0.25);
       sfx.bell(9, 0.25);
-      this.ctx.particles.burst(camel.x, camel.y - 60, { colors: [swatch.yellow.fill, 0x9fd3f2, 0xffffff], count: 12 });
+      this.ctx.particles.burst(camel.x, camel.y - 60, {
+        colors: [swatch.yellow.fill, 0x9fd3f2, 0xffffff],
+        count: 12,
+      });
       const other: PassRoad = road === 'pass' ? 'sand' : 'pass';
-      await this.sayAll(['cd.took-days', countLine('cd.days', total, 7), other === 'sand' ? 'cd.round-the-sand-was' : 'cd.over-the-pass-was', countLine('cd.days', days(map, other), 7)]);
+      await this.sayAll([
+        'cd.took-days',
+        countLine('cd.days', total, 7),
+        other === 'sand' ? 'cd.round-the-sand-was' : 'cd.over-the-pass-was',
+        countLine('cd.days', days(map, other), 7),
+      ]);
       if (!this.live(epoch)) return;
       await this.drink(epoch);
       if (!this.live(epoch)) return;
@@ -1381,9 +1677,14 @@ class CaravanDays implements Game {
       h.position.copyFrom(p);
       this.roadLayer.addChild(h);
     });
-    this.stopNodes = [this.stopNode(l.stops[0], homeArt(100), null), this.stopNode(l.stops[1], cityArt(110, this.cityOpen), null)];
+    this.stopNodes = [
+      this.stopNode(l.stops[0], homeArt(100), null),
+      this.stopNode(l.stops[1], cityArt(110, this.cityOpen), null),
+    ];
     this.cityNode = this.stopNodes[1];
-    this.stickNode = this.stopNode(l.stick!, dayStickArt(l.stick!.w, l.stick!.h, DAY), () => { void this.ctx.say('cd.day-stick'); });
+    this.stickNode = this.stopNode(l.stick!, dayStickArt(l.stick!.w, l.stick!.h, DAY), () => {
+      void this.ctx.say('cd.day-stick');
+    });
     this.siteNodes = road.sites.map((_, i) => {
       const node = new Container();
       node.position.copyFrom(centre(l.sites![i]));
@@ -1423,7 +1724,10 @@ class CaravanDays implements Game {
     const node = this.siteNodes[i];
     if (!node || this.finished || this.plan.level !== 7) return;
     const site = this.wellRoad.sites[i];
-    if (this.busy) { this.bob(node); return; }
+    if (this.busy) {
+      this.bob(node);
+      return;
+    }
     if (this.wells.includes(site)) {
       this.wobble(node);
       this.wells = this.wells.filter((w) => w !== site);
@@ -1470,19 +1774,24 @@ class CaravanDays implements Game {
       this.redrawCity();
       sfx.bell(5, 0.25);
       sfx.bell(9, 0.25);
-      this.ctx.particles.burst(camel.x, camel.y - 60, { colors: [swatch.yellow.fill, 0x9fd3f2, 0xffffff], count: 12 });
+      this.ctx.particles.burst(camel.x, camel.y - 60, {
+        colors: [swatch.yellow.fill, 0x9fd3f2, 0xffffff],
+        count: 12,
+      });
       await this.drink(epoch);
       if (!this.live(epoch)) return;
       if (check.extra > 0) {
         // Valid with extra wells: not a miss; a fewest placement shows faintly for a moment.
-        const ghosts = ghostFor(road, wells).filter((s) => !wells.includes(s)).map((s) => {
-          const w = wellArt(84, true);
-          const p = centre(l.sites![road.sites.indexOf(s)]);
-          w.position.set(p.x, p.y - 6);
-          w.eventMode = 'none';
-          this.board.addChild(w);
-          return w;
-        });
+        const ghosts = ghostFor(road, wells)
+          .filter((s) => !wells.includes(s))
+          .map((s) => {
+            const w = wellArt(84, true);
+            const p = centre(l.sites![road.sites.indexOf(s)]);
+            w.position.set(p.x, p.y - 6);
+            w.eventMode = 'none';
+            this.board.addChild(w);
+            return w;
+          });
         await this.sayAll(['cd.it-works', 'cd.planners-could', countLine('cd.wells', minWells(road), 7)]);
         if (!this.live(epoch)) return;
         await this.ctx.tw.wait(this.stepSeconds * 2);
@@ -1528,7 +1837,11 @@ class CaravanDays implements Game {
     sfx.tada();
     this.ctx.pet.cheer();
     const camel = this.camel;
-    if (camel) this.ctx.particles.burst(camel.x, camel.y - 80, { colors: [swatch.yellow.fill, swatch.orange.fill, 0xffffff], count: 14 });
+    if (camel)
+      this.ctx.particles.burst(camel.x, camel.y - 80, {
+        colors: [swatch.yellow.fill, swatch.orange.fill, 0xffffff],
+        count: 14,
+      });
     const result = this.tally;
     void this.ctx.say('cd.done').then(() => {
       if (!this.alive || this.finished) return;
@@ -1542,14 +1855,33 @@ class CaravanDays implements Game {
   /** The pet's Help: at level 1 the ask again (free); at levels 2–3 the glow, the road's or map's one hint if not yet spent. */
   askForHint() {
     if (this.finished) return;
-    if (this.plan.level === 1) { void this.ctx.instruct('cd.instruct.1'); return; }
-    const line: LineId = this.plan.level === 2 ? 'cd.help.reach' : this.plan.level === 3 ? 'cd.help.plan' : this.plan.level === 4 ? 'cd.help.swap'
-      : this.plan.level === 5 ? 'cd.help.worth' : this.plan.level === 6 ? 'cd.help.pass' : 'cd.help.wells';
+    if (this.plan.level === 1) {
+      void this.ctx.instruct('cd.instruct.1');
+      return;
+    }
+    const line: LineId =
+      this.plan.level === 2
+        ? 'cd.help.reach'
+        : this.plan.level === 3
+          ? 'cd.help.plan'
+          : this.plan.level === 4
+            ? 'cd.help.swap'
+            : this.plan.level === 5
+              ? 'cd.help.worth'
+              : this.plan.level === 6
+                ? 'cd.help.pass'
+                : 'cd.help.wells';
     // During a walk the answer is spoken but the glow (and its one hint) waits for the road to be hers again.
-    if (this.busy || (this.plan.level === 4 && !this.walkedIn)) { void this.ctx.say(line); return; }
+    if (this.busy || (this.plan.level === 4 && !this.walkedIn)) {
+      void this.ctx.say(line);
+      return;
+    }
     this.tallies.help();
     if (this.plan.level === 2) this.redrawOases();
-    if (this.plan.level === 6) { void this.passCount(); return; }
+    if (this.plan.level === 6) {
+      void this.passCount();
+      return;
+    }
     void this.ctx.say(line);
   }
 
@@ -1557,15 +1889,19 @@ class CaravanDays implements Game {
     this.clock += dt;
     if (this.relayout && !this.busy && !this.finished) this.build();
     const camel = this.camel;
-    if (camel && this.walking) { camel.sway = Math.sin(this.clock * 11); camel.pose(); }
-    else if (camel && camel.dip > 0) camel.pose();
+    if (camel && this.walking) {
+      camel.sway = Math.sin(this.clock * 11);
+      camel.pose();
+    } else if (camel && camel.dip > 0) camel.pose();
     else if (camel && this.ctx.tw.busy(camel)) camel.pose();
     if (this.plan.level === 1 && !this.busy && !this.finished) this.idle += dt;
     this.glow.clear();
     if (this.finished || !this.layoutNow || this.busy) return;
     const r = 1 + 0.05 * Math.sin(this.clock * 5);
     const ring = (node: Container, w: number, h: number) => {
-      this.glow.roundRect(node.x - w / 2 - 10 * r, node.y - h / 2 - 10 * r, w + 20 * r, h + 20 * r, 30).stroke({ width: 8, color: swatch.yellow.fill });
+      this.glow
+        .roundRect(node.x - w / 2 - 10 * r, node.y - h / 2 - 10 * r, w + 20 * r, h + 20 * r, 30)
+        .stroke({ width: 8, color: swatch.yellow.fill });
     };
     if (this.plan.level === 1) {
       const l = this.layoutNow;
@@ -1578,12 +1914,14 @@ class CaravanDays implements Game {
       else if (target) ring(target, 110, 110);
     } else if (this.plan.level === 3 && this.tallies.glowing && this.state) {
       const h = hintFor(this.map, this.state);
-      if ('go' in h) { if (this.goNode) ring(this.goNode, 140, 110); }
-      else ring(this.stopNodes['flag' in h ? h.flag : h.takeOut], 120, 120);
+      if ('go' in h) {
+        if (this.goNode) ring(this.goNode, 140, 110);
+      } else ring(this.stopNodes['flag' in h ? h.flag : h.takeOut], 120, 120);
     } else if (this.plan.level === 4 && this.tallies.glowing && this.swap && this.walkedIn) {
       const h = swapHint(this.swapRoad, this.swap);
-      if (h && 'go' in h) { if (this.goNode) ring(this.goNode, 140, 110); }
-      else if (h && this.offerNodes[h.side]) ring(this.offerNodes[h.side], 120, 120);
+      if (h && 'go' in h) {
+        if (this.goNode) ring(this.goNode, 140, 110);
+      } else if (h && this.offerNodes[h.side]) ring(this.offerNodes[h.side], 120, 120);
     } else if (this.plan.level === 5 && this.tallies.glowing) {
       const node = this.loadNodes[better(this.plan, this.roadIndex)];
       if (node) ring(node, 230, 150);
@@ -1592,8 +1930,9 @@ class CaravanDays implements Game {
       if (node) ring(node, 110, 110);
     } else if (this.plan.level === 7 && this.tallies.glowing) {
       const h = wellHint(this.wellRoad, this.wells);
-      if ('done' in h) { if (this.goNode) ring(this.goNode, 140, 110); }
-      else {
+      if ('done' in h) {
+        if (this.goNode) ring(this.goNode, 140, 110);
+      } else {
         const node = this.siteNodes[this.wellRoad.sites.indexOf(h.site)];
         if (node) ring(node, 110, 110);
       }
@@ -1665,8 +2004,10 @@ export const caravanDays: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
-  coplayHint: 'Crier and driver: one of you counts each road\'s suns aloud, the other taps the water or the stops; swap after each road.',
-  offScreen: 'Play "I packed my camel": take turns adding one thing to the load and saying the whole list from the start.',
+  coplayHint:
+    "Crier and driver: one of you counts each road's suns aloud, the other taps the water or the stops; swap after each road.",
+  offScreen:
+    'Play "I packed my camel": take turns adding one thing to the load and saying the whole list from the start.',
   hubIcon: () => new CamelIcon(),
   touchDemo: true,
   sticker,

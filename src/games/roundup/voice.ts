@@ -7,9 +7,13 @@ export const VOICE = {
   'herd.shoo': ['Help the {animals} into their pen! Wiggle your finger behind them.'],
   'herd.size': ['Big {animals} go with the big picture. Little {animals} go with the little picture!'],
   'herd.wrongsize': ["That's the {size} {animals}' pen. Find the {needed} picture!"],
-  'herd.sizehint': ['Match the size! Big {animals} go with the big picture, little {animals} with the little picture.'],
+  'herd.sizehint': [
+    'Match the size! Big {animals} go with the big picture, little {animals} with the little picture.',
+  ],
   'herd.sort': ['The {a} go in the {placeA}. The {b} go in the {placeB}!'],
-  'herd.sortstay': ['The {a} go in the {placeA}. The {b} go in the {placeB}. The {outsiders} stay on the grass!'],
+  'herd.sortstay': [
+    'The {a} go in the {placeA}. The {b} go in the {placeB}. The {outsiders} stay on the grass!',
+  ],
   'herd.stayout': ['Oops! The {outsiders} stay on the grass.'],
   'herd.staydone': ['The pens are full, and the {outsiders} are happy on the grass!'],
   'herd.fill': ['The pen wants {n} {animals}. {k} are in. Put in the rest, then ring the bell!'],

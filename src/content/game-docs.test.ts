@@ -3,7 +3,16 @@ import { describe, expect, it } from 'vitest';
 import { exists, listDir, readText, writeMode, writeText } from '../../scripts/game-docs-io.mjs';
 import { GAMES } from '../games/registry';
 import { LANDS, landOf } from './lands';
-import { BEGIN, emptyPage, END, gamesIndex, readmeBlocks, renderPage, replaceBlock, type Entry } from './game-docs';
+import {
+  BEGIN,
+  emptyPage,
+  END,
+  gamesIndex,
+  readmeBlocks,
+  renderPage,
+  replaceBlock,
+  type Entry,
+} from './game-docs';
 
 // `npm run game-docs` sets GAME_DOCS=write to rewrite the files; otherwise this fails when one is stale.
 const write: boolean = writeMode;
@@ -18,9 +27,13 @@ function expected(): Map<string, string> {
     return { game, land: landOf(game.id), page };
   });
   let readme = read('README.md');
-  for (const [what, body] of Object.entries(readmeBlocks(entries, LANDS))) readme = replaceBlock(readme, what, body);
+  for (const [what, body] of Object.entries(readmeBlocks(entries, LANDS)))
+    readme = replaceBlock(readme, what, body);
   files.set('README.md', readme);
-  files.set('docs/GAMES.md', replaceBlock(read('docs/GAMES.md'), 'the games by land', gamesIndex(entries, LANDS)));
+  files.set(
+    'docs/GAMES.md',
+    replaceBlock(read('docs/GAMES.md'), 'the games by land', gamesIndex(entries, LANDS)),
+  );
   return files;
 }
 
@@ -45,7 +58,11 @@ describe('generated game docs', () => {
   it('keep each page’s hand-written lines and design notes after the generated block', () => {
     for (const g of GAMES) {
       const page = files.get(`docs/games/${g.id}.md`)!;
-      expect(page.startsWith(`# ${g.name}\n\n${BEGIN(`from src/games/${g.id}; edit the text below the end mark`)}`)).toBe(true);
+      expect(
+        page.startsWith(
+          `# ${g.name}\n\n${BEGIN(`from src/games/${g.id}; edit the text below the end mark`)}`,
+        ),
+      ).toBe(true);
       const hand = page.slice(page.indexOf(END));
       expect(hand, g.id).toMatch(/\*\*Starts as:\*\* \S/);
       expect(hand, g.id).toMatch(/\*\*Grows into:\*\* \S/);

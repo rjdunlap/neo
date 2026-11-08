@@ -16,10 +16,48 @@ export interface Thing {
 
 export const THINGS: Thing[] = [
   { id: 'sun', color: 'yellow', circles: [[0, 0, 84]] },
-  { id: 'apple', color: 'red', circles: [[-38, 8, 62], [38, 8, 62], [0, 22, 66]] },
-  { id: 'leaf', color: 'green', circles: [[-92, 46, 20], [-62, 31, 36], [-22, 11, 50], [20, -10, 50], [58, -29, 36], [86, -43, 20]] },
-  { id: 'pumpkin', color: 'orange', circles: [[-52, 12, 56], [52, 12, 56], [0, 6, 68]] },
-  { id: 'grapes', color: 'purple', circles: [[-62, -36, 36], [0, -36, 36], [62, -36, 36], [-31, 20, 36], [31, 20, 36], [0, 74, 36]] },
+  {
+    id: 'apple',
+    color: 'red',
+    circles: [
+      [-38, 8, 62],
+      [38, 8, 62],
+      [0, 22, 66],
+    ],
+  },
+  {
+    id: 'leaf',
+    color: 'green',
+    circles: [
+      [-92, 46, 20],
+      [-62, 31, 36],
+      [-22, 11, 50],
+      [20, -10, 50],
+      [58, -29, 36],
+      [86, -43, 20],
+    ],
+  },
+  {
+    id: 'pumpkin',
+    color: 'orange',
+    circles: [
+      [-52, 12, 56],
+      [52, 12, 56],
+      [0, 6, 68],
+    ],
+  },
+  {
+    id: 'grapes',
+    color: 'purple',
+    circles: [
+      [-62, -36, 36],
+      [0, -36, 36],
+      [62, -36, 36],
+      [-31, 20, 36],
+      [31, 20, 36],
+      [0, 74, 36],
+    ],
+  },
   { id: 'blueberry', color: 'blue', circles: [[0, 0, 82]] },
 ];
 
@@ -68,7 +106,8 @@ export const RECIPES: Partial<Record<ColorName, [Primary, Primary]>> = {
 /** What two primaries make in the mixing bowl. The same one twice stays itself. */
 export function mix(a: Primary, b: Primary): ColorName {
   if (a === b) return a;
-  for (const [color, pair] of Object.entries(RECIPES)) if (pair!.includes(a) && pair!.includes(b)) return color as ColorName;
+  for (const [color, pair] of Object.entries(RECIPES))
+    if (pair!.includes(a) && pair!.includes(b)) return color as ColorName;
   return a;
 }
 
@@ -93,7 +132,8 @@ export class Coverage {
     const x1 = Math.max(...circles.map(([x, , r]) => x + r));
     const y0 = Math.min(...circles.map(([, y, r]) => y - r));
     const y1 = Math.max(...circles.map(([, y, r]) => y + r));
-    for (let y = y0 + step / 2; y < y1; y += step) for (let x = x0 + step / 2; x < x1; x += step) if (inside(circles, x, y)) this.points.push({ x, y });
+    for (let y = y0 + step / 2; y < y1; y += step)
+      for (let x = x0 + step / 2; x < x1; x += step) if (inside(circles, x, y)) this.points.push({ x, y });
     this.total = this.points.length;
   }
 
@@ -134,7 +174,8 @@ export interface PaintState {
   folded?: boolean;
 }
 
-export type PaintMove = { do: 'pot'; pot: ColorName } | { do: 'bowl' } | { do: 'stroke' } | { do: 'frame' } | { do: 'fold' };
+export type PaintMove =
+  { do: 'pot'; pot: ColorName } | { do: 'bowl' } | { do: 'stroke' } | { do: 'frame' } | { do: 'fold' };
 
 /** On a fold page the ghost finger presses fold after this many strokes (or sooner, once the frame shows); with the fold that makes the five touches the frame needs. */
 export const FOLD_AFTER = 4;
@@ -158,7 +199,12 @@ export function paintStep(s: PaintState): PaintMove | null {
   if (!pours(s.mode)) return { do: 'pot', pot: s.picture };
   const [a, b] = RECIPES[s.picture]!;
   // One primary is in the bowl: add the other. Anything else in a half-full bowl is emptied first (a third pour would also start over).
-  if (s.poured.length === 1) return s.poured[0] === a ? { do: 'pot', pot: b } : s.poured[0] === b ? { do: 'pot', pot: a } : { do: 'bowl' };
+  if (s.poured.length === 1)
+    return s.poured[0] === a
+      ? { do: 'pot', pot: b }
+      : s.poured[0] === b
+        ? { do: 'pot', pot: a }
+        : { do: 'bowl' };
   return { do: 'pot', pot: a };
 }
 
@@ -222,7 +268,14 @@ export function potLayout(n: number, w: number, h: number, bowl = false): { pots
 
 /** A mark on each color pot, so the color is not the only way to tell the pots apart. */
 export type PotMark = 'dot' | 'stripe' | 'star' | 'heart' | 'swirl' | 'ring';
-export const POT_MARKS: Record<string, PotMark> = { red: 'dot', orange: 'stripe', yellow: 'star', green: 'heart', blue: 'swirl', purple: 'ring' };
+export const POT_MARKS: Record<string, PotMark> = {
+  red: 'dot',
+  orange: 'stripe',
+  yellow: 'star',
+  green: 'heart',
+  blue: 'swirl',
+  purple: 'ring',
+};
 
 /** The free levels nudge after this long without a touch: a sparkle on a blank spot and a wiggle from the pet. Never a hint. */
 export const NUDGE_AFTER = 8;
@@ -240,7 +293,12 @@ export function blankSpot(painted: readonly Pt[], candidates: readonly Pt[]): Pt
 }
 
 /** The part of the paper free strokes stay in: clear of the home button, the pet, the pots below and the frame button above right. */
-export const scribbleArea = (w: number, h: number) => ({ x: 150, y: 140, w: Math.max(200, w - 150 - 130), h: Math.max(120, h - 140 - 180) });
+export const scribbleArea = (w: number, h: number) => ({
+  x: 150,
+  y: 140,
+  w: Math.max(200, w - 150 - 130),
+  h: Math.max(120, h - 140 - 180),
+});
 
 /** A wavy band across the paper for the i-th free stroke, long enough to count as a stroke (over 40 units), the bands one above the other. */
 export function scribble(i: number, area: { x: number; y: number; w: number; h: number }): Pt[] {
@@ -267,11 +325,23 @@ export function fillPath(circles: Circle[], scale: number): Pt[] {
   const path: Pt[] = [];
   for (let k = 0; k < rows; k++) {
     const y = y0 + ((k + 0.5) * (y1 - y0)) / rows;
-    const spans = circles.filter(([, cy, r]) => Math.abs(y - cy) < r - 4).map(([cx, cy, r]) => [cx - Math.sqrt(r * r - (y - cy) ** 2), cx + Math.sqrt(r * r - (y - cy) ** 2)]);
+    const spans = circles
+      .filter(([, cy, r]) => Math.abs(y - cy) < r - 4)
+      .map(([cx, cy, r]) => [cx - Math.sqrt(r * r - (y - cy) ** 2), cx + Math.sqrt(r * r - (y - cy) ** 2)]);
     if (!spans.length) continue;
     const x0 = Math.min(...spans.map((q) => q[0])) + 4;
     const x1 = Math.max(...spans.map((q) => q[1])) - 4;
-    path.push(...(k % 2 ? [{ x: x1, y }, { x: x0, y }] : [{ x: x0, y }, { x: x1, y }]));
+    path.push(
+      ...(k % 2
+        ? [
+            { x: x1, y },
+            { x: x0, y },
+          ]
+        : [
+            { x: x0, y },
+            { x: x1, y },
+          ]),
+    );
   }
   return path;
 }
@@ -293,13 +363,24 @@ export const mirrorX = (x: number) => Math.min(1, Math.max(0, 1 - x));
  * `aspect` is the paper's width over its shorter side) is not copied. The result keeps to `max` marks by the same halving the
  * painting uses while it grows.
  */
-export function foldMarks(marks: readonly PaintingMark[], since: number, aspect = 1, max = PAINTING_MAX_MARKS): PaintingMark[] {
-  const copies = marks.slice(since).filter((m) => Math.abs(m.x - 0.5) * aspect >= m.r).map((m) => ({ ...m, x: mirrorX(m.x) }));
+export function foldMarks(
+  marks: readonly PaintingMark[],
+  since: number,
+  aspect = 1,
+  max = PAINTING_MAX_MARKS,
+): PaintingMark[] {
+  const copies = marks
+    .slice(since)
+    .filter((m) => Math.abs(m.x - 0.5) * aspect >= m.r)
+    .map((m) => ({ ...m, x: mirrorX(m.x) }));
   return capMarks([...marks, ...copies], max).marks;
 }
 
 /** Halve a painting's marks (every second one) until it fits `max`; `halvings` says how many times, so sampling can coarsen to match. */
-export function capMarks(marks: PaintingMark[], max = PAINTING_MAX_MARKS): { marks: PaintingMark[]; halvings: number } {
+export function capMarks(
+  marks: PaintingMark[],
+  max = PAINTING_MAX_MARKS,
+): { marks: PaintingMark[]; halvings: number } {
   let halvings = 0;
   while (marks.length > max) {
     marks = marks.filter((_, i) => i % 2 === 0);

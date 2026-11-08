@@ -82,11 +82,17 @@ export class ScreenKeys {
   readonly focus = new SpotFocus();
   private readonly input: CouchInput;
 
-  constructor(private readonly app: App, private readonly options: ScreenKeysOptions) {
+  constructor(
+    private readonly app: App,
+    private readonly options: ScreenKeysOptions,
+  ) {
     this.ring.eventMode = 'none';
     this.ring.visible = false;
     this.input = new CouchInput(
-      () => { audio.unlock(); voice.unlock(); },
+      () => {
+        audio.unlock();
+        voice.unlock();
+      },
       () => undefined,
       { listening: () => !this.app.paused && !isParentPanelOpen() },
     );
@@ -108,7 +114,12 @@ export class ScreenKeys {
     else if (event === 'move') sfx.tick();
     const at = spots[this.focus.indexIn(spots)];
     this.ring.visible = this.app.input.kind === 'controller';
-    this.ring.clear().circle(0, 0, at.r + 10).stroke({ width: 14, color: 0xffffff }).circle(0, 0, at.r + 10).stroke({ width: 5, color: ink });
+    this.ring
+      .clear()
+      .circle(0, 0, at.r + 10)
+      .stroke({ width: 14, color: 0xffffff })
+      .circle(0, 0, at.r + 10)
+      .stroke({ width: 5, color: ink });
     this.ring.position.set(at.x, at.y);
   }
 

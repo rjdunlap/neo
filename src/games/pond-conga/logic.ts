@@ -17,7 +17,10 @@ export const DX = [1, 0, -1, 0];
 export const DY = [0, 1, 0, -1];
 export const opposite = (d: Dir): Dir => ((d + 2) % 4) as Dir;
 
-export interface Cell { x: number; y: number }
+export interface Cell {
+  x: number;
+  y: number;
+}
 const same = (a: Cell, b: Cell) => a.x === b.x && a.y === b.y;
 
 export interface CongaPlan {
@@ -41,23 +44,130 @@ export interface CongaPlan {
 
 /** Depth first: more crumbs and more lily pads to weave through before the pace picks up at all. */
 export const PLANS: CongaPlan[] = [
-  { cols: 11, rows: 7, pads: 0, crumbs: 5, minLeg: 3, maxLeg: 7, speed: 2.4, name: 'A small open pond: five crumbs, no lily pads' },
-  { cols: 13, rows: 9, pads: 4, crumbs: 6, minLeg: 3, maxLeg: 9, speed: 2.6, name: 'A few lily pads to steer round, six crumbs' },
-  { cols: 13, rows: 9, pads: 8, crumbs: 8, minLeg: 4, maxLeg: 10, speed: 2.8, name: 'More lily pads and eight crumbs' },
-  { cols: 15, rows: 9, pads: 12, crumbs: 10, minLeg: 4, maxLeg: 11, speed: 3, name: 'A bigger pond, ten crumbs and a longer line' },
-  { cols: 15, rows: 9, pads: 16, crumbs: 12, minLeg: 4, maxLeg: 12, speed: 3.2, name: 'Twelve crumbs among sixteen lily pads' },
-  { cols: 15, rows: 9, pads: 20, crumbs: 12, minLeg: 5, maxLeg: 13, speed: 3.4, name: 'A crowded pond: twenty lily pads, twelve crumbs' },
-  { cols: 13, rows: 9, pads: 6, crumbs: 9, minLeg: 3, maxLeg: 8, speed: 2.8, group: 3, name: 'Choose the order: three bites show at once, nine in all' },
-  { cols: 11, rows: 7, pads: 2, crumbs: 5, minLeg: 3, maxLeg: 7, speed: 2.4, paced: false, name: 'Step by step: the line waits, one step a swipe' },
-  { cols: 11, rows: 7, pads: 6, crumbs: 8, minLeg: 3, maxLeg: 7, speed: 2.6, long: true, name: 'A long conga: seven ducklings from the start, so the tail is in the way' },
+  {
+    cols: 11,
+    rows: 7,
+    pads: 0,
+    crumbs: 5,
+    minLeg: 3,
+    maxLeg: 7,
+    speed: 2.4,
+    name: 'A small open pond: five crumbs, no lily pads',
+  },
+  {
+    cols: 13,
+    rows: 9,
+    pads: 4,
+    crumbs: 6,
+    minLeg: 3,
+    maxLeg: 9,
+    speed: 2.6,
+    name: 'A few lily pads to steer round, six crumbs',
+  },
+  {
+    cols: 13,
+    rows: 9,
+    pads: 8,
+    crumbs: 8,
+    minLeg: 4,
+    maxLeg: 10,
+    speed: 2.8,
+    name: 'More lily pads and eight crumbs',
+  },
+  {
+    cols: 15,
+    rows: 9,
+    pads: 12,
+    crumbs: 10,
+    minLeg: 4,
+    maxLeg: 11,
+    speed: 3,
+    name: 'A bigger pond, ten crumbs and a longer line',
+  },
+  {
+    cols: 15,
+    rows: 9,
+    pads: 16,
+    crumbs: 12,
+    minLeg: 4,
+    maxLeg: 12,
+    speed: 3.2,
+    name: 'Twelve crumbs among sixteen lily pads',
+  },
+  {
+    cols: 15,
+    rows: 9,
+    pads: 20,
+    crumbs: 12,
+    minLeg: 5,
+    maxLeg: 13,
+    speed: 3.4,
+    name: 'A crowded pond: twenty lily pads, twelve crumbs',
+  },
+  {
+    cols: 13,
+    rows: 9,
+    pads: 6,
+    crumbs: 9,
+    minLeg: 3,
+    maxLeg: 8,
+    speed: 2.8,
+    group: 3,
+    name: 'Choose the order: three bites show at once, nine in all',
+  },
+  {
+    cols: 11,
+    rows: 7,
+    pads: 2,
+    crumbs: 5,
+    minLeg: 3,
+    maxLeg: 7,
+    speed: 2.4,
+    paced: false,
+    name: 'Step by step: the line waits, one step a swipe',
+  },
+  {
+    cols: 11,
+    rows: 7,
+    pads: 6,
+    crumbs: 8,
+    minLeg: 3,
+    maxLeg: 7,
+    speed: 2.6,
+    long: true,
+    name: 'A long conga: seven ducklings from the start, so the tail is in the way',
+  },
   // School only (levels 10 and 11): small 4-row ponds step by step, so the cells and buttons are 100 units on a 768-unit side.
-  { cols: 6, rows: 4, pads: 0, crumbs: 3, minLeg: 2, maxLeg: 5, speed: 2.4, paced: false, name: 'A little pond, one step at a time' },
-  { cols: 7, rows: 4, pads: 2, crumbs: 4, minLeg: 3, maxLeg: 6, speed: 2.4, paced: false, name: 'Round the lily pads, one step at a time' },
+  {
+    cols: 6,
+    rows: 4,
+    pads: 0,
+    crumbs: 3,
+    minLeg: 2,
+    maxLeg: 5,
+    speed: 2.4,
+    paced: false,
+    name: 'A little pond, one step at a time',
+  },
+  {
+    cols: 7,
+    rows: 4,
+    pads: 2,
+    crumbs: 4,
+    minLeg: 3,
+    maxLeg: 6,
+    speed: 2.4,
+    paced: false,
+    name: 'Round the lily pads, one step at a time',
+  },
 ];
 
 /** A grown-up game in Lantern Lake, played by touch or on the couch, with two small step-by-step ponds (10 and 11) for school. */
 /** Level 8, Step by step, is the easy way in: first by `order` and a new player's entry. Level 9, A long conga, is the top. */
-export const LEVELS: BandLevels = { school: { min: 10, max: 11 }, grownup: { min: 1, max: 9, order: [8, 1, 2, 3, 4, 5, 6, 7, 9] } };
+export const LEVELS: BandLevels = {
+  school: { min: 10, max: 11 },
+  grownup: { min: 1, max: 9, order: [8, 1, 2, 3, 4, 5, 6, 7, 9] },
+};
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 /** How long a step-by-step line takes to glide one cell, in seconds; one asked-for step waits until the last has landed. */
@@ -102,13 +212,20 @@ export interface Conga {
 }
 export type Event = 'move' | 'crumb' | 'bonk';
 
-export const startState = (b: Board): Conga => ({ body: b.start.map((c) => ({ ...c })), heading: b.heading, eaten: 0, got: 0 });
+export const startState = (b: Board): Conga => ({
+  body: b.start.map((c) => ({ ...c })),
+  heading: b.heading,
+  eaten: 0,
+  got: 0,
+});
 export const inPond = (b: Board, c: Cell) => c.x >= 0 && c.y >= 0 && c.x < b.cols && c.y < b.rows;
 export const isPad = (b: Board, c: Cell) => b.pads.some((p) => same(p, c));
 export const groupOf = (b: Board) => Math.max(1, b.group ?? 1);
 /** The places in `crumbs` of the crumbs she can eat now: the uneaten ones of the group being eaten (just the next one without groups). */
 export function openIndices(b: Board, s: Conga): number[] {
-  const size = groupOf(b), first = Math.floor(s.eaten / size) * size, out: number[] = [];
+  const size = groupOf(b),
+    first = Math.floor(s.eaten / size) * size,
+    out: number[] = [];
   for (let i = first; i < Math.min(first + size, b.crumbs.length); i++) if (!(s.got & (1 << i))) out.push(i);
   return out;
 }
@@ -139,20 +256,37 @@ export function step(b: Board, s: Conga, want: Dir | null): { state: Conga; even
   const body = eats ? s.body : s.body.slice(0, -1);
   if (!inPond(b, target) || isPad(b, target) || body.some((c) => same(c, target))) {
     const turned = s.body.slice().reverse();
-    return { state: { body: turned, heading: dirBetween(turned[1], turned[0]), eaten: s.eaten, got: s.got }, event: 'bonk' };
+    return {
+      state: { body: turned, heading: dirBetween(turned[1], turned[0]), eaten: s.eaten, got: s.got },
+      event: 'bonk',
+    };
   }
   const grown = [target, ...body];
-  return { state: { body: grown, heading, eaten: s.eaten + (eats ? 1 : 0), got: eats ? s.got | (1 << eatsAt) : s.got }, event: eats ? 'crumb' : 'move' };
+  return {
+    state: {
+      body: grown,
+      heading,
+      eaten: s.eaten + (eats ? 1 : 0),
+      got: eats ? s.got | (1 << eatsAt) : s.got,
+    },
+    event: eats ? 'crumb' : 'move',
+  };
 }
 
 /**
  * A step at school, where a bump is a refused step: the line stays exactly where it was (`held`). Only when every way but
  * straight back would bump does it turn about as `step` does, so she can never be stuck.
  */
-export function schoolStep(b: Board, s: Conga, want: Dir | null): { state: Conga; event: Event; held: boolean } {
+export function schoolStep(
+  b: Board,
+  s: Conga,
+  want: Dir | null,
+): { state: Conga; event: Event; held: boolean } {
   const r = step(b, s, want);
   if (r.event !== 'bonk') return { ...r, held: false };
-  const shut = ([0, 1, 2, 3] as Dir[]).every((d) => d === opposite(s.heading) || step(b, s, d).event === 'bonk');
+  const shut = ([0, 1, 2, 3] as Dir[]).every(
+    (d) => d === opposite(s.heading) || step(b, s, d).event === 'bonk',
+  );
   return shut ? { ...r, held: false } : { state: s, event: 'bonk', held: true };
 }
 
@@ -161,9 +295,10 @@ export function schoolStep(b: Board, s: Conga, want: Dir | null): { state: Conga
  * axis it is further from the leader's centre. A tap on the leader's own cell, or one that points straight back, asks nothing.
  */
 export function tapToward(leader: Cell, x: number, y: number, cell: number, heading: Dir): Dir | null {
-  const dx = x - (leader.x + 0.5) * cell, dy = y - (leader.y + 0.5) * cell;
+  const dx = x - (leader.x + 0.5) * cell,
+    dy = y - (leader.y + 0.5) * cell;
   if (Math.abs(dx) < cell / 2 && Math.abs(dy) < cell / 2) return null;
-  const d: Dir = Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 0 : 2) : (dy > 0 ? 1 : 3);
+  const d: Dir = Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 0 : 2) : dy > 0 ? 1 : 3;
   return d === opposite(heading) ? null : d;
 }
 
@@ -189,14 +324,23 @@ export function distances(b: Board, from: Cell): number[] {
 }
 
 /** Order to try directions in: straight on first, so a route has as few turns as it can. */
-const order = (heading: Dir): Dir[] => [heading, ((heading + 1) % 4) as Dir, ((heading + 3) % 4) as Dir, opposite(heading)];
+const order = (heading: Dir): Dir[] => [
+  heading,
+  ((heading + 1) % 4) as Dir,
+  ((heading + 3) % 4) as Dir,
+  opposite(heading),
+];
 
 /**
  * Every way of taking the leader to one crumb she can eat now (the next one unless given) in the fewest steps the board allows,
  * without a bonk, without the line meeting itself and without eating another crumb on the way, straight routes first. Each
  * comes with the line as it stands after eating the crumb.
  */
-function* legRoutes(b: Board, s: Conga, aim: Cell | undefined = nextCrumb(b, s)): Generator<{ dirs: Dir[]; state: Conga }> {
+function* legRoutes(
+  b: Board,
+  s: Conga,
+  aim: Cell | undefined = nextCrumb(b, s),
+): Generator<{ dirs: Dir[]; state: Conga }> {
   if (!aim) return;
   const target = aim;
   const dist = distances(b, target);
@@ -216,11 +360,17 @@ function* legRoutes(b: Board, s: Conga, aim: Cell | undefined = nextCrumb(b, s))
       const next = step(b, state, d);
       if (next.event === 'bonk') continue;
       if (left === 1) {
-        if (next.event === 'crumb' && same(next.state.body[0], target)) { found = true; yield { dirs: [...dirs, d], state: next.state }; }
+        if (next.event === 'crumb' && same(next.state.body[0], target)) {
+          found = true;
+          yield { dirs: [...dirs, d], state: next.state };
+        }
         continue;
       }
       if (next.event !== 'move') continue;
-      for (const leg of walk(next.state, left - 1, [...dirs, d])) { found = true; yield leg; }
+      for (const leg of walk(next.state, left - 1, [...dirs, d])) {
+        found = true;
+        yield leg;
+      }
     }
     if (!found) dead.add(key);
   }
@@ -261,7 +411,9 @@ function gap(b: Board, from: Cell, to: Cell): number {
 /** All the orders of a few items. */
 function orders(items: readonly number[]): number[][] {
   if (items.length <= 1) return [items.slice()];
-  return items.flatMap((x, k) => orders([...items.slice(0, k), ...items.slice(k + 1)]).map((rest) => [x, ...rest]));
+  return items.flatMap((x, k) =>
+    orders([...items.slice(0, k), ...items.slice(k + 1)]).map((rest) => [x, ...rest]),
+  );
 }
 
 /**
@@ -279,10 +431,15 @@ function restFrom(b: Board, at: Cell, got: number, eaten: number): number {
     const next = new Map<number, number>();
     for (const [end, cost] of ends) {
       for (const order of orders(items)) {
-        let total = cost, from = cellOf(end), ok = true;
+        let total = cost,
+          from = cellOf(end),
+          ok = true;
         for (const k of order) {
           const d = gap(b, from, b.crumbs[k]);
-          if (d < 0) { ok = false; break; }
+          if (d < 0) {
+            ok = false;
+            break;
+          }
           total += d;
           from = b.crumbs[k];
         }
@@ -308,7 +465,10 @@ export function bestFirst(b: Board, s: Conga): { index: number; bound: number }[
   return openIndices(b, s)
     .map((index) => {
       const lead = gap(b, s.body[0], b.crumbs[index]);
-      return { index, bound: lead < 0 ? Infinity : lead + restFrom(b, b.crumbs[index], s.got | (1 << index), s.eaten + 1) };
+      return {
+        index,
+        bound: lead < 0 ? Infinity : lead + restFrom(b, b.crumbs[index], s.got | (1 << index), s.eaten + 1),
+      };
     })
     .sort((x, y) => x.bound - y.bound || x.index - y.index);
 }
@@ -320,7 +480,8 @@ export function bestStarts(b: Board, s: Conga): number[] {
 }
 
 /** Turns the line in a route has to make. */
-export const turnsIn = (start: Dir, route: readonly Dir[]): number => route.filter((d, i) => d !== (i === 0 ? start : route[i - 1])).length;
+export const turnsIn = (start: Dir, route: readonly Dir[]): number =>
+  route.filter((d, i) => d !== (i === 0 ? start : route[i - 1])).length;
 
 /**
  * Where to steer from here to reach the next crumb soonest, however the line got here: the fewest steps that avoid the line,
@@ -377,12 +538,14 @@ export function parsePond(rows: readonly string[]): Pond {
   const line: Cell[] = [];
   const crumbs: (Cell | undefined)[] = [];
   let head: Cell | null = null;
-  rows.forEach((row, y) => [...row].forEach((ch, x) => {
-    if (ch === '#') pads.push({ x, y });
-    else if (ch === 'S') head = { x, y };
-    else if (ch === 's') line.push({ x, y });
-    else if (/[1-9a-c]/.test(ch)) crumbs['123456789abc'.indexOf(ch)] = { x, y };
-  }));
+  rows.forEach((row, y) =>
+    [...row].forEach((ch, x) => {
+      if (ch === '#') pads.push({ x, y });
+      else if (ch === 'S') head = { x, y };
+      else if (ch === 's') line.push({ x, y });
+      else if (/[1-9a-c]/.test(ch)) crumbs['123456789abc'.indexOf(ch)] = { x, y };
+    }),
+  );
   if (!head) throw new Error('no leader');
   const body: Cell[] = [head];
   while (line.length) {
@@ -392,7 +555,14 @@ export function parsePond(rows: readonly string[]): Pond {
     body.push(line.splice(i, 1)[0]);
   }
   const given = crumbs.filter((c): c is Cell => !!c);
-  const board: Board = { cols: rows[0].length, rows: rows.length, pads, start: body, heading: dirBetween(body[1], body[0]), crumbs: given };
+  const board: Board = {
+    cols: rows[0].length,
+    rows: rows.length,
+    pads,
+    start: body,
+    heading: dirBetween(body[1], body[0]),
+    crumbs: given,
+  };
   const route = solveRoute(board);
   if (!route) throw new Error('no bonk-free route');
   return { ...board, route, par: route.length };
@@ -402,8 +572,12 @@ export function parsePond(rows: readonly string[]): Pond {
 export function pictureOf(b: Board): string[] {
   const grid = Array.from({ length: b.rows }, () => new Array<string>(b.cols).fill('.'));
   for (const p of b.pads) grid[p.y][p.x] = '#';
-  b.start.forEach((c, i) => { grid[c.y][c.x] = i === 0 ? 'S' : 's'; });
-  b.crumbs.forEach((c, i) => { grid[c.y][c.x] = '123456789abc'[i]; });
+  b.start.forEach((c, i) => {
+    grid[c.y][c.x] = i === 0 ? 'S' : 's';
+  });
+  b.crumbs.forEach((c, i) => {
+    grid[c.y][c.x] = '123456789abc'[i];
+  });
   return grid.map((r) => r.join(''));
 }
 
@@ -427,7 +601,8 @@ export const LONG_START = 7;
 
 /** A long line's start, leader first: along the bottom bank heading right, its tail turning up the left bank. */
 export function longStart(rows: number): Cell[] {
-  const y = rows - 1, along = 4;
+  const y = rows - 1,
+    along = 4;
   const bottom = Array.from({ length: along }, (_, k) => ({ x: along - 1 - k, y }));
   const up = Array.from({ length: LONG_START - along }, (_, k) => ({ x: 0, y: y - 1 - k }));
   return [...bottom, ...up];
@@ -436,14 +611,29 @@ export function longStart(rows: number): Cell[] {
 function tryPond(plan: CongaPlan, rng: Rng): Pond | null {
   const { cols, rows } = plan;
   const y = plan.long ? rows - 1 : Math.floor(rows / 2);
-  const start: Cell[] = plan.long ? longStart(rows) : [{ x: 3, y }, { x: 2, y }, { x: 1, y }];
+  const start: Cell[] = plan.long
+    ? longStart(rows)
+    : [
+        { x: 3, y },
+        { x: 2, y },
+        { x: 1, y },
+      ];
   // A clear runway in front of the leader, so the line can get going before anything is in the way; a long line's own cells stay clear too.
   const keep = new Set<string>(start.map((c) => `${c.x},${c.y}`));
   for (let x = 0; x <= 7; x++) keep.add(`${x},${y}`);
   const free: Cell[] = [];
-  for (let cy = 0; cy < rows; cy++) for (let cx = 0; cx < cols; cx++) if (!keep.has(`${cx},${cy}`)) free.push({ x: cx, y: cy });
+  for (let cy = 0; cy < rows; cy++)
+    for (let cx = 0; cx < cols; cx++) if (!keep.has(`${cx},${cy}`)) free.push({ x: cx, y: cy });
   const pads = rng.shuffle(free.slice()).slice(0, plan.pads);
-  const base: Board = { cols, rows, pads, start, heading: 0, crumbs: [], ...(plan.group ? { group: plan.group } : {}) };
+  const base: Board = {
+    cols,
+    rows,
+    pads,
+    start,
+    heading: 0,
+    crumbs: [],
+    ...(plan.group ? { group: plan.group } : {}),
+  };
   if (!connected(base)) return null;
   let state = startState(base);
   const crumbs: Cell[] = [];
@@ -451,10 +641,14 @@ function tryPond(plan: CongaPlan, rng: Rng): Pond | null {
     const from = state.body[0];
     const dist = distances(base, from);
     const taken = new Set([...crumbs, ...state.body].map((c) => `${c.x},${c.y}`));
-    const options = rng.shuffle(free.filter((c) => {
-      const d = dist[c.y * cols + c.x];
-      return d >= plan.minLeg && d <= plan.maxLeg && !taken.has(`${c.x},${c.y}`) && !pads.some((p) => same(p, c));
-    }));
+    const options = rng.shuffle(
+      free.filter((c) => {
+        const d = dist[c.y * cols + c.x];
+        return (
+          d >= plan.minLeg && d <= plan.maxLeg && !taken.has(`${c.x},${c.y}`) && !pads.some((p) => same(p, c))
+        );
+      }),
+    );
     let placed = false;
     for (const c of options.slice(0, 14)) {
       const trial: Board = { ...base, crumbs: [...crumbs, c] };
@@ -484,7 +678,8 @@ export const TAIL_LEGS = 4;
  * duckling right behind the leader does not count: straight back is never a way.
  */
 export function tailInWay(b: Board, s: Conga, to: Cell): boolean {
-  const fromHead = distances(b, s.body[0]), toAim = distances(b, to);
+  const fromHead = distances(b, s.body[0]),
+    toAim = distances(b, to);
   const total = toAim[s.body[0].y * b.cols + s.body[0].x];
   return s.body.some((c, i) => {
     const k = c.y * b.cols + c.x;
@@ -494,7 +689,9 @@ export function tailInWay(b: Board, s: Conga, to: Cell): boolean {
 
 /** How many legs of a route start with the line in the way of the next bite's shortest open-water way. */
 export function tailLegs(b: Board, route: readonly Dir[]): number {
-  let s = startState(b), count = 0, aim = nextCrumb(b, s);
+  let s = startState(b),
+    count = 0,
+    aim = nextCrumb(b, s);
   if (aim && tailInWay(b, s, aim)) count++;
   for (const d of route) {
     const next = step(b, s, d);
@@ -508,11 +705,16 @@ export function tailLegs(b: Board, route: readonly Dir[]): number {
 
 /** The steps each order of a group takes from `at`, by the open-water distances (`orders` order). */
 export function groupCosts(b: Board, at: Cell, group: number): number[] {
-  const size = groupOf(b), items: number[] = [];
+  const size = groupOf(b),
+    items: number[] = [];
   for (let i = group * size; i < Math.min((group + 1) * size, b.crumbs.length); i++) items.push(i);
   return orders(items).map((order) => {
-    let from = at, total = 0;
-    for (const k of order) { total += gap(b, from, b.crumbs[k]); from = b.crumbs[k]; }
+    let from = at,
+      total = 0;
+    for (const k of order) {
+      total += gap(b, from, b.crumbs[k]);
+      from = b.crumbs[k];
+    }
     return total;
   });
 }
@@ -520,7 +722,8 @@ export function groupCosts(b: Board, at: Cell, group: number): number[] {
 /** Whether, where the best route reaches each group, some orders of that group are longer than others: so which first is a real choice. */
 export function orderMatters(b: Board, route: readonly Dir[]): boolean {
   const size = groupOf(b);
-  let s = startState(b), at = 0;
+  let s = startState(b),
+    at = 0;
   for (let g = 0; g * size < b.crumbs.length; g++) {
     const costs = groupCosts(b, s.body[0], g);
     if (Math.min(...costs) === Math.max(...costs)) return false;
@@ -534,7 +737,10 @@ export const FOODS = ['peas', 'sweetcorn', 'oats'] as const;
 export type Food = (typeof FOODS)[number];
 
 /** How a pond looks, which never changes the pond itself: the food, and the bank edge where the reeds grow (a `Dir` from the middle). */
-export interface PondLook { food: Food; reeds: Dir }
+export interface PondLook {
+  food: Food;
+  reeds: Dir;
+}
 
 /** The look of a round, a pure function of its seed: it reads a copy of the round's numbers, so the pond made after it is the same. */
 export function pondLook(rng: Rng): PondLook {
@@ -543,7 +749,8 @@ export function pondLook(rng: Rng): PondLook {
 }
 
 /** The food for the `index`th pond of a round: a course of several ponds takes the next kind each time. */
-export const foodAt = (look: PondLook, index: number): Food => FOODS[(FOODS.indexOf(look.food) + index) % FOODS.length];
+export const foodAt = (look: PondLook, index: number): Food =>
+  FOODS[(FOODS.indexOf(look.food) + index) % FOODS.length];
 
 /** How far a finger has to travel, in logical units, before a swipe turns the line. */
 export const SWIPE = 36;
@@ -553,9 +760,10 @@ export const SWIPE = 36;
  * `reach` along one axis and clearly more along that one than the other (a slant waits to become a clear stroke).
  */
 export function swipeDir(dx: number, dy: number, reach = SWIPE): Dir | null {
-  const ax = Math.abs(dx), ay = Math.abs(dy);
+  const ax = Math.abs(dx),
+    ay = Math.abs(dy);
   if (Math.max(ax, ay) < reach || Math.abs(ax - ay) < Math.max(ax, ay) * 0.25) return null;
-  return ax > ay ? (dx > 0 ? 0 : 2) : (dy > 0 ? 1 : 3);
+  return ax > ay ? (dx > 0 ? 0 : 2) : dy > 0 ? 1 : 3;
 }
 
 /** The cell the leader will be in after `steps` more steps of `route`, a bonk-free way on from the state `s`. */
@@ -573,11 +781,20 @@ export function firstCrumbs(pond: Pond, n: number): Pond {
   const size = groupOf(pond);
   n = Math.max(size, Math.floor(n / size) * size);
   if (n >= pond.crumbs.length) return pond;
-  const board: Board = { cols: pond.cols, rows: pond.rows, pads: pond.pads, start: pond.start, heading: pond.heading, crumbs: pond.crumbs.slice(0, n), group: pond.group };
+  const board: Board = {
+    cols: pond.cols,
+    rows: pond.rows,
+    pads: pond.pads,
+    start: pond.start,
+    heading: pond.heading,
+    crumbs: pond.crumbs.slice(0, n),
+    group: pond.group,
+  };
   // With groups, the short pond's best order can differ from the whole pond's; if no route meets its bound, the whole route's start does.
   let route = solveRoute(board);
   if (!route && size > 1) {
-    let s = startState(board), at = 0;
+    let s = startState(board),
+      at = 0;
     while (at < pond.route.length && s.eaten < n) s = step(board, s, pond.route[at++]).state;
     route = pond.route.slice(0, at);
   }

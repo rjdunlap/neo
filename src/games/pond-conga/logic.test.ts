@@ -1,8 +1,49 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
-  DX, DY, FOODS, LONG_START, PLANS, TAIL_LEGS, longStart, tailInWay, tailLegs, STEP_GLIDE, stepDue, bestStarts, groupCosts, groupOf, openCrumbs, orderMatters, restBound, SWIPE, distances, foodAt, firstCrumbs, headAfter, hintDir, hintPath, lowerBound, makePond, pondLook, nextCrumb, opposite, parsePond, pictureOf, planFor, solveRoute, startState, step, swipeDir, turnsIn, schoolStep, tapToward,
-  type Board, type Cell, type Conga, type Dir,
+  DX,
+  DY,
+  FOODS,
+  LONG_START,
+  PLANS,
+  TAIL_LEGS,
+  longStart,
+  tailInWay,
+  tailLegs,
+  STEP_GLIDE,
+  stepDue,
+  bestStarts,
+  groupCosts,
+  groupOf,
+  openCrumbs,
+  orderMatters,
+  restBound,
+  SWIPE,
+  distances,
+  foodAt,
+  firstCrumbs,
+  headAfter,
+  hintDir,
+  hintPath,
+  lowerBound,
+  makePond,
+  pondLook,
+  nextCrumb,
+  opposite,
+  parsePond,
+  pictureOf,
+  planFor,
+  solveRoute,
+  startState,
+  step,
+  swipeDir,
+  turnsIn,
+  schoolStep,
+  tapToward,
+  type Board,
+  type Cell,
+  type Conga,
+  type Dir,
 } from './logic';
 
 /** A small pond for the step rules: the leader at (3, 1) heading right, two ducklings behind it. */
@@ -54,7 +95,13 @@ describe('steps', () => {
     expect(step(pad, startState(pad), null).event).toBe('bonk');
 
     // Turning back into its own line: a long line curled up.
-    const body: Cell[] = [{ x: 2, y: 1 }, { x: 3, y: 1 }, { x: 3, y: 0 }, { x: 2, y: 0 }, { x: 1, y: 0 }];
+    const body: Cell[] = [
+      { x: 2, y: 1 },
+      { x: 3, y: 1 },
+      { x: 3, y: 0 },
+      { x: 2, y: 0 },
+      { x: 1, y: 0 },
+    ];
     const board: Board = { cols: 5, rows: 3, pads: [], start: body, heading: 2, crumbs: [] };
     const curled: Conga = { body, heading: 2, eaten: 0, got: 0 };
     const own = step(board, curled, 3);
@@ -65,7 +112,12 @@ describe('steps', () => {
 
   it('lets the leader take the cell the tail is leaving, but not when the line is growing', () => {
     // A ring of four ducklings: the leader may follow the tail round the square.
-    const body: Cell[] = [{ x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }, { x: 0, y: 0 }];
+    const body: Cell[] = [
+      { x: 1, y: 0 },
+      { x: 1, y: 1 },
+      { x: 0, y: 1 },
+      { x: 0, y: 0 },
+    ];
     const ring: Board = { cols: 3, rows: 3, pads: [], start: body, heading: 2, crumbs: [] };
     const follow = step(ring, { body, heading: 2, eaten: 0, got: 0 }, null);
     expect(follow.event).toBe('move');
@@ -85,9 +137,24 @@ describe('distances', () => {
   });
 
   it('says -1 where the water cannot be reached', () => {
-    const p: Board = { cols: 3, rows: 3, pads: [{ x: 1, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 1 }, { x: 2, y: 1 }, { x: 1, y: 2 }], start: [{ x: 0, y: 0 }], heading: 0, crumbs: [] };
+    const p: Board = {
+      cols: 3,
+      rows: 3,
+      pads: [
+        { x: 1, y: 0 },
+        { x: 0, y: 1 },
+        { x: 1, y: 1 },
+        { x: 2, y: 1 },
+        { x: 1, y: 2 },
+      ],
+      start: [{ x: 0, y: 0 }],
+      heading: 0,
+      crumbs: [],
+    };
     // The three open cells that are shut off from the corner, besides the five lily pads.
-    const shut = distances(p, { x: 0, y: 0 }).filter((d, i) => d === -1 && !p.pads.some((q) => q.y * 3 + q.x === i));
+    const shut = distances(p, { x: 0, y: 0 }).filter(
+      (d, i) => d === -1 && !p.pads.some((q) => q.y * 3 + q.x === i),
+    );
     expect(shut).toHaveLength(3);
   });
 });
@@ -103,7 +170,19 @@ describe('ponds from a picture', () => {
 
   it('refuses a pond whose crumb cannot be reached, or only by a way the line is in the way of', () => {
     expect(() => parsePond(['sS.#.', '...#1', '...#.'])).toThrow();
-    expect(solveRoute({ cols: 3, rows: 1, pads: [], start: [{ x: 1, y: 0 }, { x: 0, y: 0 }], heading: 0, crumbs: [{ x: 0, y: 0 }] })).toBeNull();
+    expect(
+      solveRoute({
+        cols: 3,
+        rows: 1,
+        pads: [],
+        start: [
+          { x: 1, y: 0 },
+          { x: 0, y: 0 },
+        ],
+        heading: 0,
+        crumbs: [{ x: 0, y: 0 }],
+      }),
+    ).toBeNull();
   });
 
   it('plays its own route without a single bonk, eating every crumb, in exactly its par', () => {
@@ -155,15 +234,24 @@ describe('generated ponds', () => {
         // Nothing sits on a lily pad, in the bank, or on the starting line.
         for (const c of p.crumbs) {
           expect(c.x >= 0 && c.y >= 0 && c.x < p.cols && c.y < p.rows, label).toBe(true);
-          expect(p.pads.some((q) => at(q) === at(c)), label).toBe(false);
+          expect(
+            p.pads.some((q) => at(q) === at(c)),
+            label,
+          ).toBe(false);
         }
-        expect(p.start.some((c) => p.crumbs.some((q) => at(q) === at(c))), label).toBe(false);
+        expect(
+          p.start.some((c) => p.crumbs.some((q) => at(q) === at(c))),
+          label,
+        ).toBe(false);
         // Open water is all one pond: a corner is never walled off.
-        expect(distances(p, p.start[0]).filter((d) => d >= 0).length, label).toBe(p.cols * p.rows - p.pads.length);
+        expect(distances(p, p.start[0]).filter((d) => d >= 0).length, label).toBe(
+          p.cols * p.rows - p.pads.length,
+        );
         // The par is the shortest it could be, and a route with no bonk gets there.
         expect(p.par, label).toBe(p.route.length);
         expect(p.par, label).toBe(lowerBound(p));
-        let s = startState(p), bonks = 0;
+        let s = startState(p),
+          bonks = 0;
         for (const d of p.route) {
           const r = step(p, s, d);
           if (r.event === 'bonk') bonks++;
@@ -184,7 +272,9 @@ describe('generated ponds', () => {
   });
 
   it('come from the seed alone, and differ with it', () => {
-    const a = makePond(planFor(4), new Rng(77)), b = makePond(planFor(4), new Rng(77)), c = makePond(planFor(4), new Rng(78));
+    const a = makePond(planFor(4), new Rng(77)),
+      b = makePond(planFor(4), new Rng(77)),
+      c = makePond(planFor(4), new Rng(78));
     expect(pictureOf(a)).toEqual(pictureOf(b));
     expect(a.route).toEqual(b.route);
     expect(pictureOf(a)).not.toEqual(pictureOf(c));
@@ -216,11 +306,12 @@ describe('the look of a pond', () => {
   });
 
   it('leaves the pond made from the same seed unchanged', () => {
-    for (const plan of PLANS) for (const seed of [3, 17, 404]) {
-      const rng = new Rng(seed);
-      pondLook(rng);
-      expect(makePond(plan, rng)).toEqual(makePond(plan, new Rng(seed)));
-    }
+    for (const plan of PLANS)
+      for (const seed of [3, 17, 404]) {
+        const rng = new Rng(seed);
+        pondLook(rng);
+        expect(makePond(plan, rng)).toEqual(makePond(plan, new Rng(seed)));
+      }
   });
 
   it('gives every food and every reed edge across seeds, never bread', () => {
@@ -245,7 +336,9 @@ describe('help and getting stuck', () => {
         const p = makePond(planFor(level), rng);
         const label = `level ${level} seed ${seed}`;
         const lost = wander(p, startState(p), rng, rng.int(5, 60));
-        let s = lost.state, bonks = 0, ticks = 0;
+        let s = lost.state,
+          bonks = 0,
+          ticks = 0;
         while (s.eaten < p.crumbs.length && ticks < 900) {
           const r = step(p, s, hintDir(p, s));
           if (r.event === 'bonk') bonks++;
@@ -286,7 +379,9 @@ describe('help and getting stuck', () => {
       if (s.eaten >= p.crumbs.length) continue;
       // Whatever the line is doing, some direction lets it move or turn about, and the line keeps all of its ducklings.
       expect(s.body).toHaveLength(3 + s.eaten);
-      const choices = ([0, 1, 2, 3] as Dir[]).filter((d) => d !== opposite(s.heading)).map((d) => step(p, s, d));
+      const choices = ([0, 1, 2, 3] as Dir[])
+        .filter((d) => d !== opposite(s.heading))
+        .map((d) => step(p, s, d));
       expect(choices.length).toBe(3);
       for (const c of choices) {
         const length = s.body.length + (c.event === 'crumb' ? 1 : 0);
@@ -325,7 +420,11 @@ describe('swiping to steer by touch', () => {
 
   it('lets one stroke make several turns when the finger starts over after each', () => {
     // Right, then down, then right again: each recognised turn re-anchors, so the leftover travel counts toward the next.
-    const path = [[SWIPE + 4, 3], [2, SWIPE + 5], [SWIPE + 1, -2]];
+    const path = [
+      [SWIPE + 4, 3],
+      [2, SWIPE + 5],
+      [SWIPE + 1, -2],
+    ];
     expect(path.map(([dx, dy]) => swipeDir(dx, dy))).toEqual([0, 1, 0]);
   });
 
@@ -338,7 +437,9 @@ describe('swiping to steer by touch', () => {
       let walk = state;
       for (let i = 0; i < pond.route.length; i++) {
         walk = step(pond, walk, pond.route[i]).state;
-        expect(headAfter(pond, state, pond.route, i + 1), `level ${level} step ${i + 1}`).toEqual(walk.body[0]);
+        expect(headAfter(pond, state, pond.route, i + 1), `level ${level} step ${i + 1}`).toEqual(
+          walk.body[0],
+        );
       }
       expect(walk.eaten).toBe(pond.crumbs.length);
     }
@@ -369,15 +470,26 @@ describe('swiping to steer by touch', () => {
 /** The fewest steps by trying every order of every group, from the distances alone: an independent check of `lowerBound`. */
 function bruteBound(p: Board): number {
   const size = groupOf(p);
-  const perms = (xs: number[]): number[][] => xs.length <= 1 ? [xs] : xs.flatMap((x, k) => perms([...xs.slice(0, k), ...xs.slice(k + 1)]).map((r) => [x, ...r]));
+  const perms = (xs: number[]): number[][] =>
+    xs.length <= 1
+      ? [xs]
+      : xs.flatMap((x, k) => perms([...xs.slice(0, k), ...xs.slice(k + 1)]).map((r) => [x, ...r]));
   const groups: number[][][] = [];
-  for (let g = 0; g < p.crumbs.length; g += size) groups.push(perms(Array.from({ length: Math.min(size, p.crumbs.length - g) }, (_, k) => g + k)));
+  for (let g = 0; g < p.crumbs.length; g += size)
+    groups.push(perms(Array.from({ length: Math.min(size, p.crumbs.length - g) }, (_, k) => g + k)));
   let best = Infinity;
   const go = (gi: number, at: Cell, total: number) => {
-    if (gi === groups.length) { best = Math.min(best, total); return; }
+    if (gi === groups.length) {
+      best = Math.min(best, total);
+      return;
+    }
     for (const order of groups[gi]) {
-      let from = at, t = total;
-      for (const k of order) { t += distances(p, from)[p.crumbs[k].y * p.cols + p.crumbs[k].x]; from = p.crumbs[k]; }
+      let from = at,
+        t = total;
+      for (const k of order) {
+        t += distances(p, from)[p.crumbs[k].y * p.cols + p.crumbs[k].x];
+        from = p.crumbs[k];
+      }
       go(gi + 1, from, t);
     }
   };
@@ -396,7 +508,10 @@ describe('choose the order (level 7)', () => {
     // Walk straight to the third of the group first: it is eaten, and the other two stay.
     const firstPick = 2;
     const route = (() => {
-      for (const order of [[2, 0, 1], [2, 1, 0]]) {
+      for (const order of [
+        [2, 0, 1],
+        [2, 1, 0],
+      ]) {
         const short = { ...p, crumbs: order.map((k) => p.crumbs[k]), group: 1 };
         const found = solveRoute(short);
         if (found) return found;
@@ -412,16 +527,36 @@ describe('choose the order (level 7)', () => {
     }
     // The next group shows only once the first is all eaten.
     let t = startState(p);
-    for (const d of p.route) { t = step(p, t, d).state; if (t.eaten === 3) break; }
+    for (const d of p.route) {
+      t = step(p, t, d).state;
+      if (t.eaten === 3) break;
+    }
     expect(openCrumbs(p, t)).toEqual(p.crumbs.slice(3, 6));
   });
 
-  it('a later group\'s food is plain water until its turn: the line paddles over it', () => {
-    const g: Board = { cols: 9, rows: 3, pads: [], start: [{ x: 2, y: 1 }, { x: 1, y: 1 }, { x: 0, y: 1 }], heading: 0, group: 3,
-      crumbs: [{ x: 6, y: 1 }, { x: 7, y: 1 }, { x: 8, y: 1 }, { x: 4, y: 1 }] };
+  it("a later group's food is plain water until its turn: the line paddles over it", () => {
+    const g: Board = {
+      cols: 9,
+      rows: 3,
+      pads: [],
+      start: [
+        { x: 2, y: 1 },
+        { x: 1, y: 1 },
+        { x: 0, y: 1 },
+      ],
+      heading: 0,
+      group: 3,
+      crumbs: [
+        { x: 6, y: 1 },
+        { x: 7, y: 1 },
+        { x: 8, y: 1 },
+        { x: 4, y: 1 },
+      ],
+    };
     // In groups of three, the fourth bite is in the second group: passing over it first does not eat it.
     let s = startState(g);
-    s = step(g, s, 0).state; s = step(g, s, 0).state;
+    s = step(g, s, 0).state;
+    s = step(g, s, 0).state;
     expect(s.body[0]).toEqual({ x: 4, y: 1 });
     expect(s.eaten).toBe(0);
   });
@@ -461,13 +596,14 @@ describe('choose the order (level 7)', () => {
 
   it('a hint leads to a crumb that starts a best order, from the start and from each group', () => {
     for (const [i, p] of ponds.entries()) {
-      let s = startState(p), at = 0;
+      let s = startState(p),
+        at = 0;
       for (let g = 0; g < 3; g++) {
         const path = hintPath(p, s);
         expect(path.length, `pond ${i} group ${g}`).toBeGreaterThan(0);
         let t = s;
         for (const d of path) t = step(p, t, d).state;
-        const ate = p.crumbs.findIndex((_, k) => (t.got & (1 << k)) && !(s.got & (1 << k)));
+        const ate = p.crumbs.findIndex((_, k) => t.got & (1 << k) && !(s.got & (1 << k)));
         expect(bestStarts(p, s), `pond ${i} group ${g}`).toContain(ate);
         while (at < p.route.length && s.eaten < (g + 1) * 3) s = step(p, s, p.route[at++]).state;
       }
@@ -496,18 +632,27 @@ describe('choose the order (level 7)', () => {
 describe('level 8, step by step', () => {
   const plan = planFor(8);
   it('never moves without input, however long it waits', () => {
-    let acc = 0, steps = 0;
+    let acc = 0,
+      steps = 0;
     for (let t = 0; t < 10000; t++) {
       acc += 1 / 60;
-      if (stepDue(plan, acc, 0)) { steps++; acc = 0; }
+      if (stepDue(plan, acc, 0)) {
+        steps++;
+        acc = 0;
+      }
     }
     expect(steps).toBe(0);
   });
   it('takes one step for each step asked for, each after the last has landed', () => {
     const asked: number[] = [3];
-    let acc = STEP_GLIDE, steps = 0;
+    let acc = STEP_GLIDE,
+      steps = 0;
     for (let t = 0; t < 600; t++) {
-      if (stepDue(plan, acc, asked[0])) { steps++; asked[0]--; acc = 0; }
+      if (stepDue(plan, acc, asked[0])) {
+        steps++;
+        asked[0]--;
+        acc = 0;
+      }
       acc += 1 / 60;
     }
     expect(steps).toBe(3);
@@ -519,7 +664,8 @@ describe('level 8, step by step', () => {
     for (let seed = 1; seed <= 12; seed++) {
       const p = makePond(plan, new Rng(seed));
       expect(p.par).toBe(lowerBound(p));
-      let s = startState(p), bonks = 0;
+      let s = startState(p),
+        bonks = 0;
       for (const d of p.route) {
         const r = step(p, s, d);
         if (r.event === 'bonk') bonks++;
@@ -528,7 +674,7 @@ describe('level 8, step by step', () => {
       expect([s.eaten, bonks, p.route.length], `seed ${seed}`).toEqual([p.crumbs.length, 0, p.par]);
     }
   });
-  it('is the first rung and a new player\'s entry', async () => {
+  it("is the first rung and a new player's entry", async () => {
     const { pondConga } = await import('./index');
     expect(pondConga.levels('grownup')).toMatchObject({ min: 1, max: 9, order: [8, 1, 2, 3, 4, 5, 6, 7, 9] });
     expect(pondConga.entryLevels).toEqual([8, 10, 11]);
@@ -543,13 +689,22 @@ describe('level 9, a long conga', () => {
     const start = longStart(plan.rows);
     expect(start).toHaveLength(LONG_START);
     expect(start[0]).toEqual({ x: 3, y: plan.rows - 1 });
-    for (let i = 1; i < start.length; i++) expect(Math.abs(start[i].x - start[i - 1].x) + Math.abs(start[i].y - start[i - 1].y)).toBe(1);
+    for (let i = 1; i < start.length; i++)
+      expect(Math.abs(start[i].x - start[i - 1].x) + Math.abs(start[i].y - start[i - 1].y)).toBe(1);
     expect(new Set(start.map(at)).size).toBe(start.length);
     for (const seed of seeds) {
       const p = makePond(plan, new Rng(seed));
       expect(p.start).toEqual(start);
       expect(p.heading).toBe(0);
-      for (const c of p.start) expect(c.x >= 0 && c.y >= 0 && c.x < p.cols && c.y < p.rows && !p.pads.some((q) => q.x === c.x && q.y === c.y), at(c)).toBe(true);
+      for (const c of p.start)
+        expect(
+          c.x >= 0 &&
+            c.y >= 0 &&
+            c.x < p.cols &&
+            c.y < p.rows &&
+            !p.pads.some((q) => q.x === c.x && q.y === c.y),
+          at(c),
+        ).toBe(true);
       // The leader can set off straight on: the bottom bank ahead of it is open.
       for (let x = 4; x <= 7; x++) expect(p.pads.some((q) => q.x === x && q.y === plan.rows - 1)).toBe(false);
     }
@@ -559,7 +714,11 @@ describe('level 9, a long conga', () => {
       const p = makePond(plan, new Rng(seed));
       expect(p.par).toBe(lowerBound(p));
       let s = startState(p);
-      for (const d of p.route) { const r = step(p, s, d); expect(r.event).not.toBe('bonk'); s = r.state; }
+      for (const d of p.route) {
+        const r = step(p, s, d);
+        expect(r.event).not.toBe('bonk');
+        s = r.state;
+      }
       expect(s.eaten).toBe(plan.crumbs);
       expect(s.body).toHaveLength(LONG_START + plan.crumbs);
     }
@@ -598,13 +757,21 @@ describe('the school opening, levels 10 and 11 step by step', () => {
     for (const l of [10, 11]) expect(pondConga.describeLevel(l)).toMatch(/one step at a time/);
   });
 
-  for (const [level, cols, pads, crumbs] of [[10, 6, 0, 3], [11, 7, 2, 4]] as const) {
+  for (const [level, cols, pads, crumbs] of [
+    [10, 6, 0, 3],
+    [11, 7, 2, 4],
+  ] as const) {
     it(`level ${level}: every pond is ${cols} by 4 with ${pads} lily pads and ${crumbs} bites, step by step, with a bonk-free route at par`, () => {
       const plan = planFor(level);
       expect(plan.paced).toBe(false);
       for (let seed = 1; seed <= 300; seed++) {
         const p = makePond(plan, new Rng(seed));
-        expect([p.cols, p.rows, p.pads.length, p.crumbs.length], `seed ${seed}`).toEqual([cols, 4, pads, crumbs]);
+        expect([p.cols, p.rows, p.pads.length, p.crumbs.length], `seed ${seed}`).toEqual([
+          cols,
+          4,
+          pads,
+          crumbs,
+        ]);
         expect(p.par, `seed ${seed}`).toBe(lowerBound(p));
         expect(p.start.length).toBe(3);
       }
@@ -612,7 +779,9 @@ describe('the school opening, levels 10 and 11 step by step', () => {
   }
 
   it('a tap steps toward where it lands, the larger distance winning', () => {
-    const lead = { x: 2, y: 1 }, c = 100, mid = { x: 250, y: 150 };
+    const lead = { x: 2, y: 1 },
+      c = 100,
+      mid = { x: 250, y: 150 };
     expect(tapToward(lead, mid.x + 100, mid.y, c, 0)).toBe(0);
     expect(tapToward(lead, mid.x, mid.y + 100, c, 0)).toBe(1);
     expect(tapToward(lead, mid.x, mid.y - 100, c, 0)).toBe(3);
@@ -658,7 +827,9 @@ describe('the school opening, levels 10 and 11 step by step', () => {
     for (const level of [10, 11]) {
       for (let seed = 1; seed <= 100; seed++) {
         const p = makePond(planFor(level), new Rng(seed));
-        let s = startState(p), steps = 0, bonks = 0;
+        let s = startState(p),
+          steps = 0,
+          bonks = 0;
         while (s.eaten < p.crumbs.length && steps < 200) {
           const r = schoolStep(p, s, hintDir(p, s));
           if (r.event === 'bonk') bonks++;

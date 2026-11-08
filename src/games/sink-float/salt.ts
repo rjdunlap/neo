@@ -8,7 +8,16 @@ import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import type { Game, GameContext, TouchIntent } from '../types';
 import { eggArt, shakerArt, thingArt, waterlineMark } from './art';
-import { SALT_DEPTHS, saltRoundFor, sinkPlan, type SaltRound, type SaltTest, type Side, type SinkPlan, type Water } from './logic';
+import {
+  SALT_DEPTHS,
+  saltRoundFor,
+  sinkPlan,
+  type SaltRound,
+  type SaltTest,
+  type Side,
+  type SinkPlan,
+  type Water,
+} from './logic';
 
 /** Where the round is: part 1's shaker, duck and egg, then part 2's test and answer for each question. */
 type Phase = 'shake' | 'duck' | 'egg' | 'test' | 'answer';
@@ -116,7 +125,10 @@ export class SaltTanks implements Game {
 
   /** Which water each tank holds right now: part 1's shaker tank, or the current question's hidden one. */
   private water(tank: number): Water {
-    const salty = this.phase === 'shake' || this.phase === 'duck' || this.phase === 'egg' ? this.round.shown : this.round.questions[this.question].salty;
+    const salty =
+      this.phase === 'shake' || this.phase === 'duck' || this.phase === 'egg'
+        ? this.round.shown
+        : this.round.questions[this.question].salty;
     return SIDES[tank] === salty ? 'salty' : 'fresh';
   }
 
@@ -139,7 +151,16 @@ export class SaltTanks implements Game {
     this.shakerAt = 'moving';
     await tw.to(this.shaker, { x, y: t.top - 60, rotation: tip }, { duration: 0.35, ease: ease.outQuad });
     sfx.tick();
-    this.ctx.particles.burst(x, t.top - 20, { colors: [swatch.white.fill, swatch.white.light], count: 18, speed: [60, 160], gravity: 500, angle: Math.PI / 2, spread: 0.7, size: [0.15, 0.3], life: [0.5, 0.8] });
+    this.ctx.particles.burst(x, t.top - 20, {
+      colors: [swatch.white.fill, swatch.white.light],
+      count: 18,
+      speed: [60, 160],
+      gravity: 500,
+      angle: Math.PI / 2,
+      spread: 0.7,
+      size: [0.15, 0.3],
+      life: [0.5, 0.8],
+    });
     await tw.wait(0.3);
     this.shakes++;
     await tw.to(this.shaker, { ...this.shakerHome(), rotation: 0 }, { duration: 0.3, ease: ease.inOutSine });
@@ -164,7 +185,12 @@ export class SaltTanks implements Game {
 
   /** One tap drops two of the same thing, one into each tank, together. */
   private async drop() {
-    if ((this.phase !== 'duck' && this.phase !== 'egg' && this.phase !== 'test') || this.busy || this.finished) return;
+    if (
+      (this.phase !== 'duck' && this.phase !== 'egg' && this.phase !== 'test') ||
+      this.busy ||
+      this.finished
+    )
+      return;
     this.busy = true;
     this.tray.visible = false;
     const test = this.test;
@@ -204,7 +230,8 @@ export class SaltTanks implements Game {
     node.eventMode = 'none';
     node.addChild(test === 'duck' ? thingArt('duck') : eggArt());
     // The duck carries a dashed mark where plain water meets it, so in salty water the mark rides above the surface.
-    if (test === 'duck') node.addChild(waterlineMark(new Graphics(), 0, HALF.duck - (SALT_DEPTHS.duck.fresh ?? 0), 76));
+    if (test === 'duck')
+      node.addChild(waterlineMark(new Graphics(), 0, HALF.duck - (SALT_DEPTHS.duck.fresh ?? 0), 76));
     node.position.copyFrom(this.tray.position);
     this.ctx.stage.addChildAt(node, this.ctx.stage.getChildIndex(this.tankFront));
     const wet: Wet = { node, test, tank, depth: SALT_DEPTHS[test][this.water(tank)], settled: false };
@@ -213,12 +240,29 @@ export class SaltTanks implements Game {
     await tw.to(node, { x, y: t.top - 70 }, { duration: 0.45, ease: ease.outQuad });
     await tw.to(node, { y: t.surface }, { duration: 0.25, ease: ease.inQuad });
     if (tank === 0) sfx.splash();
-    this.ctx.particles.burst(x, t.surface, { colors: [swatch.blue.fill, swatch.blue.light], count: 12, speed: [150, 300], gravity: 700, angle: -Math.PI / 2, spread: 1.4, size: [0.3, 0.5] });
+    this.ctx.particles.burst(x, t.surface, {
+      colors: [swatch.blue.fill, swatch.blue.light],
+      count: 12,
+      speed: [150, 300],
+      gravity: 700,
+      angle: -Math.PI / 2,
+      spread: 1.4,
+      size: [0.3, 0.5],
+    });
     if (wet.depth !== null) {
       await tw.to(node, { y: this.restY(wet) }, { duration: 0.4, ease: ease.outBack });
       if (tank === 0) sfx.pop(9);
     } else {
-      this.ctx.particles.burst(x, t.surface + 40, { kind: 'ring', colors: [swatch.white.fill], count: 6, speed: [20, 60], gravity: -120, angle: -Math.PI / 2, spread: 0.6, life: [0.8, 1.2] });
+      this.ctx.particles.burst(x, t.surface + 40, {
+        kind: 'ring',
+        colors: [swatch.white.fill],
+        count: 6,
+        speed: [20, 60],
+        gravity: -120,
+        angle: -Math.PI / 2,
+        spread: 0.6,
+        life: [0.8, 1.2],
+      });
       await tw.to(node, { y: this.restY(wet) }, { duration: 1.1, ease: ease.inOutSine });
       sfx.clunk();
     }
@@ -236,7 +280,11 @@ export class SaltTanks implements Game {
   private async liftOut() {
     const tw = this.ctx.tw;
     const old = this.wet.splice(0);
-    await Promise.all(old.map((w) => tw.to(w.node, { y: this.tanks[w.tank].top - 60, alpha: 0 }, { duration: 0.45, ease: ease.inQuad })));
+    await Promise.all(
+      old.map((w) =>
+        tw.to(w.node, { y: this.tanks[w.tank].top - 60, alpha: 0 }, { duration: 0.45, ease: ease.inQuad }),
+      ),
+    );
     for (const w of old) {
       tw.kill(w.node);
       w.node.destroy({ children: true });
@@ -271,7 +319,14 @@ export class SaltTanks implements Game {
       await this.ctx.say(q.test === 'egg' ? 'sink.salt-wrong-egg' : 'sink.salt-wrong-duck');
       this.explaining = false;
       // A right tap during the line may have moved on: the glow belongs only to a question still open.
-      if (this.wrong >= 2 && !this.finished && !this.busy && this.phase === 'answer' && this.question === asked) this.showHint();
+      if (
+        this.wrong >= 2 &&
+        !this.finished &&
+        !this.busy &&
+        this.phase === 'answer' &&
+        this.question === asked
+      )
+        this.showHint();
       return;
     }
     this.busy = true;
@@ -281,7 +336,15 @@ export class SaltTanks implements Game {
     const t = this.tanks[tank];
     sfx.sparkle();
     this.ctx.pet.cheer();
-    this.ctx.particles.burst((t.l + t.r) / 2, t.surface, { kind: 'star', colors: [swatch.yellow.fill, swatch.white.fill], count: 14, speed: [120, 260], gravity: 200, angle: -Math.PI / 2, spread: 2 });
+    this.ctx.particles.burst((t.l + t.r) / 2, t.surface, {
+      kind: 'star',
+      colors: [swatch.yellow.fill, swatch.white.fill],
+      count: 14,
+      speed: [120, 260],
+      gravity: 200,
+      angle: -Math.PI / 2,
+      spread: 2,
+    });
     // The shaker pops up beside the salty tank: that is where the salt went.
     this.shakerSide = q.salty;
     this.shakerAt = 'home';
@@ -334,7 +397,8 @@ export class SaltTanks implements Game {
   private target(): { node: Container; x: number; y: number } | null {
     if (this.finished || this.busy) return null;
     if (this.phase === 'shake') return { node: this.shaker, x: this.shaker.x, y: this.shaker.y };
-    if (this.phase !== 'answer') return this.tray.visible ? { node: this.tray, x: this.tray.x, y: this.tray.y } : null;
+    if (this.phase !== 'answer')
+      return this.tray.visible ? { node: this.tray, x: this.tray.x, y: this.tray.y } : null;
     const i = SIDES.indexOf(this.round.questions[this.question].salty);
     const t = this.tanks[i];
     return { node: this.areas[i], x: (t.l + t.r) / 2, y: (t.surface + t.bottom) / 2 };
@@ -395,26 +459,52 @@ export class SaltTanks implements Game {
   resize(v: View) {
     this.view = v;
     const counter = v.h * 0.74;
-    this.background.clear().rect(0, 0, v.w, v.h).fill(swatch.teal.light).rect(0, counter, v.w, v.h - counter).fill(wood.light).rect(0, counter - 8, v.w, 12).fill(wood.fill);
+    this.background
+      .clear()
+      .rect(0, 0, v.w, v.h)
+      .fill(swatch.teal.light)
+      .rect(0, counter, v.w, v.h - counter)
+      .fill(wood.light)
+      .rect(0, counter - 8, v.w, 12)
+      .fill(wood.fill);
     // Two tanks share the span right of the pet, with a gap between them.
     const l = 190;
     const span = v.w - 40 - l;
     const w = (span - 30) / 2;
-    this.tanks = [0, 1].map((i) => ({ l: l + i * (w + 30), r: l + i * (w + 30) + w, top: 150, surface: 230, bottom: counter }));
+    this.tanks = [0, 1].map((i) => ({
+      l: l + i * (w + 30),
+      r: l + i * (w + 30) + w,
+      top: 150,
+      surface: 230,
+      bottom: counter,
+    }));
     const back = this.tankBack.clear();
     const front = this.tankFront.clear();
     for (const [i, t] of this.tanks.entries()) {
-      back.roundRect(t.l, t.top, t.r - t.l, t.bottom - t.top, 24).fill({ color: swatch.white.fill, alpha: 0.5 }).rect(t.l + 6, t.surface, t.r - t.l - 12, t.bottom - t.surface - 6).fill({ color: swatch.blue.fill, alpha: 0.35 });
+      back
+        .roundRect(t.l, t.top, t.r - t.l, t.bottom - t.top, 24)
+        .fill({ color: swatch.white.fill, alpha: 0.5 })
+        .rect(t.l + 6, t.surface, t.r - t.l - 12, t.bottom - t.surface - 6)
+        .fill({ color: swatch.blue.fill, alpha: 0.35 });
       // A light wash in front, so whatever sits under the surface reads as under water and the floaters' heights compare.
-      front.rect(t.l + 6, t.surface, t.r - t.l - 12, t.bottom - t.surface - 6).fill({ color: swatch.blue.fill, alpha: 0.18 });
+      front
+        .rect(t.l + 6, t.surface, t.r - t.l - 12, t.bottom - t.surface - 6)
+        .fill({ color: swatch.blue.fill, alpha: 0.18 });
       front.moveTo(t.l + 6, t.surface);
       for (let x = t.l + 6; x <= t.r - 6; x += 20) front.lineTo(x, t.surface + Math.sin(x / 30) * 4);
       front.stroke({ width: 4, color: swatch.blue.fill, alpha: 0.8 });
-      front.roundRect(t.l, t.top, t.r - t.l, t.bottom - t.top, 24).stroke({ width: 8, color: swatch.white.fill }).roundRect(t.l + 18, t.top + 20, 14, 120, 7).fill({ color: swatch.white.fill, alpha: 0.6 });
+      front
+        .roundRect(t.l, t.top, t.r - t.l, t.bottom - t.top, 24)
+        .stroke({ width: 8, color: swatch.white.fill })
+        .roundRect(t.l + 18, t.top + 20, 14, 120, 7)
+        .fill({ color: swatch.white.fill, alpha: 0.6 });
       this.areas[i].hitArea = new Rectangle(t.l, t.top, t.r - t.l, t.bottom - t.top);
     }
     const trayX = l + span / 2;
-    this.trayPad.clear().roundRect(trayX - 95, v.h - 150, 190, 130, 30).fill({ color: swatch.white.fill, alpha: 0.6 });
+    this.trayPad
+      .clear()
+      .roundRect(trayX - 95, v.h - 150, 190, 130, 30)
+      .fill({ color: swatch.white.fill, alpha: 0.6 });
     this.tray.position.set(trayX, v.h - 85);
     if (this.shakerAt === 'home') this.shaker.position.copyFrom(this.shakerHome());
     else if (this.shakerAt === 'away') this.shaker.position.copyFrom(this.shakerAway());
@@ -430,7 +520,10 @@ export class SaltTanks implements Game {
     const g = this.glow.clear();
     if (!this.glowOn || this.phase !== 'answer' || this.finished) return;
     const t = this.tanks[SIDES.indexOf(this.round.questions[this.question].salty)];
-    g.roundRect(t.l - 8, t.top - 8, t.r - t.l + 16, t.bottom - t.top + 16, 30).stroke({ width: 8, color: swatch.yellow.line });
+    g.roundRect(t.l - 8, t.top - 8, t.r - t.l + 16, t.bottom - t.top + 16, 30).stroke({
+      width: 8,
+      color: swatch.yellow.line,
+    });
   }
 
   update(dt: number) {
@@ -445,7 +538,9 @@ export class SaltTanks implements Game {
     const ring = this.ring.clear();
     if (this.couchOn && this.phase === 'answer' && !this.busy && !this.finished) {
       const t = this.tanks[this.pick];
-      ring.roundRect(t.l - 14, t.top - 14, t.r - t.l + 28, t.bottom - t.top + 28, 34).stroke({ width: 8, color: swatch.teal.line });
+      ring
+        .roundRect(t.l - 14, t.top - 14, t.r - t.l + 28, t.bottom - t.top + 28, 34)
+        .stroke({ width: 8, color: swatch.teal.line });
     }
   }
 

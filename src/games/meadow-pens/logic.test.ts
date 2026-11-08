@@ -2,15 +2,52 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  CELLS, cellAt, cellOf, cellRect, cellsOfMask, centre, check, COLS, connected, connectedSets, drawnRows, FenceHeap, fenceCount,
-  fenceEdges, FIELDS, fieldCells, flowersOf, GLOW_AFTER, groups, HOME_CORNER, holes, makeTasks, meadowLayout, neighbours,
-  nextCell, PenTally, penOf, PET_CORNER, planFor, PLANS, ROWS, sharedEdges, targetFor, targets, xOf, yOf,
-  type Cell, type Request, type Task,
+  CELLS,
+  cellAt,
+  cellOf,
+  cellRect,
+  cellsOfMask,
+  centre,
+  check,
+  COLS,
+  connected,
+  connectedSets,
+  drawnRows,
+  FenceHeap,
+  fenceCount,
+  fenceEdges,
+  FIELDS,
+  fieldCells,
+  flowersOf,
+  GLOW_AFTER,
+  groups,
+  HOME_CORNER,
+  holes,
+  makeTasks,
+  meadowLayout,
+  neighbours,
+  nextCell,
+  PenTally,
+  penOf,
+  PET_CORNER,
+  planFor,
+  PLANS,
+  ROWS,
+  sharedEdges,
+  targetFor,
+  targets,
+  xOf,
+  yOf,
+  type Cell,
+  type Request,
+  type Task,
 } from './logic';
 
 const SEEDS = 300;
 const VIEWS = [
-  computeView(1024, 768), computeView(768, 1024), computeView(844, 390),
+  computeView(1024, 768),
+  computeView(768, 1024),
+  computeView(844, 390),
   computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
 ];
 
@@ -36,7 +73,10 @@ describe('pen and flowers', () => {
     for (let seed = 1; seed <= SEEDS; seed++) {
       for (const painted of walk(seed)) {
         const pen = penOf(painted);
-        if (!painted.length) { expect(pen.size).toBe(0); continue; }
+        if (!painted.length) {
+          expect(pen.size).toBe(0);
+          continue;
+        }
         const gs = groups(painted);
         expect(gs.map((g) => g.length)).toContain(pen.size);
         expect(pen.size).toBe(Math.max(...gs.map((g) => g.length)));
@@ -93,14 +133,18 @@ describe('check', () => {
       for (let seed = 1; seed <= 40; seed++) {
         for (const painted of walk(seed)) {
           const pen = penOf(painted);
-          if (!pen.size) { expect(check(pen, { squares: n }).kind).toBe('empty'); continue; }
+          if (!pen.size) {
+            expect(check(pen, { squares: n }).kind).toBe('empty');
+            continue;
+          }
           expect(check(pen, { squares: n }).kind).toBe(pen.size === n ? 'ok' : 'squares');
         }
       }
     }
   });
   it('level 1 accepts every connected set of the asked size (full enumeration)', () => {
-    for (let n = 3; n <= 8; n++) for (const cells of allSets(n)) expect(check(cells, { squares: n }).kind).toBe('ok');
+    for (let n = 3; n <= 8; n++)
+      for (const cells of allSets(n)) expect(check(cells, { squares: n }).kind).toBe('ok');
   });
   it('level 3: six-cell fence counts are exactly {10,12,14}; {6,10} only takes 2x3 and 3x2', () => {
     const six = allSets(6);
@@ -117,10 +161,15 @@ describe('check', () => {
     }
     // every 2x3 and 3x2 window is accepted
     expect(tens).toHaveLength((COLS - 2) * (ROWS - 1) + (COLS - 1) * (ROWS - 2));
-    for (const f of [12, 14]) expect(six.some((s) => check(s, { squares: 6, fence: f }).kind === 'ok')).toBe(true);
+    for (const f of [12, 14])
+      expect(six.some((s) => check(s, { squares: 6, fence: f }).kind === 'ok')).toBe(true);
     const wrong = six.find((s) => fenceCount(s) === 12)!;
     expect(check(wrong, { squares: 6, fence: 10 })).toEqual({ kind: 'fence', have: 12, want: 10 });
-    expect(check(new Set([0, 1, 2]), { squares: 6, fence: 10 })).toEqual({ kind: 'squares', have: 3, want: 6 });
+    expect(check(new Set([0, 1, 2]), { squares: 6, fence: 10 })).toEqual({
+      kind: 'squares',
+      have: 3,
+      want: 6,
+    });
   });
 });
 
@@ -196,7 +245,8 @@ describe('hints', () => {
         let guard = 0;
         for (let c = nextCell(painted, target); c !== null; c = nextCell(painted, target)) {
           const at = painted.indexOf(c);
-          if (at >= 0) painted.splice(at, 1); else painted.push(c);
+          if (at >= 0) painted.splice(at, 1);
+          else painted.push(c);
           expect(++guard).toBeLessThan(40);
         }
         expect(mask(painted)).toBe(mask(target));
@@ -329,7 +379,9 @@ describe('rounds', () => {
       expect(new Set(fields).size).toBe(5);
       for (const t of tasks) {
         if (t.kind !== 'field') throw new Error('field expected');
-        expect([...t.cards].sort((a, b) => a - b)).toEqual([t.field.right, t.field.fence, t.field.third].sort((a, b) => a - b));
+        expect([...t.cards].sort((a, b) => a - b)).toEqual(
+          [t.field.right, t.field.fence, t.field.third].sort((a, b) => a - b),
+        );
       }
       sig.add(fields.map((f) => f.right).join());
       expect(makeTasks(planFor(2), new Rng(seed), 3)).toHaveLength(3);
@@ -346,14 +398,16 @@ describe('rounds', () => {
     }
   });
   it('is the same for the same seed and planFor clamps', () => {
-    for (const p of PLANS.filter((p) => p.level <= 3)) expect(makeTasks(p, new Rng(7))).toEqual(makeTasks(p, new Rng(7)));
+    for (const p of PLANS.filter((p) => p.level <= 3))
+      expect(makeTasks(p, new Rng(7))).toEqual(makeTasks(p, new Rng(7)));
     expect(planFor(0).level).toBe(1);
     expect(planFor(9).level).toBe(5);
   });
   it('every task is solvable on the grid', () => {
     for (const p of PLANS.filter((p) => p.level <= 3)) {
       for (const t of makeTasks(p, new Rng(3))) {
-        if (t.kind === 'pen') expect(allSets(t.request.squares).some((s) => check(s, t.request).kind === 'ok')).toBe(true);
+        if (t.kind === 'pen')
+          expect(allSets(t.request.squares).some((s) => check(s, t.request).kind === 'ok')).toBe(true);
         else expect(t.cards).toContain(t.field.right);
       }
     }
@@ -376,7 +430,10 @@ describe('layout', () => {
         expect(l.bell.h).toBeGreaterThanOrEqual(120);
         if (level === 2) {
           expect(l.cards).toHaveLength(3);
-          for (const c of l.cards!) { expect(c.w).toBeGreaterThanOrEqual(130); expect(c.h).toBeGreaterThanOrEqual(130); }
+          for (const c of l.cards!) {
+            expect(c.w).toBeGreaterThanOrEqual(130);
+            expect(c.h).toBeGreaterThanOrEqual(130);
+          }
           expect(l.stack).toBeNull();
         } else {
           expect(l.cards).toBeNull();
@@ -389,7 +446,9 @@ describe('layout', () => {
           expect(r.y).toBeGreaterThanOrEqual(0);
           expect(r.x + r.w).toBeLessThanOrEqual(view.w);
           expect(r.y + r.h).toBeLessThanOrEqual(view.h);
-          expect(overlaps(r, { x: 0, y: view.h - PET_CORNER.h, w: PET_CORNER.w, h: PET_CORNER.h })).toBe(false);
+          expect(overlaps(r, { x: 0, y: view.h - PET_CORNER.h, w: PET_CORNER.w, h: PET_CORNER.h })).toBe(
+            false,
+          );
           expect(overlaps(r, { x: 0, y: 0, w: HOME_CORNER.w, h: HOME_CORNER.h })).toBe(false);
           for (let b = a + 1; b < ts.length; b++) {
             const s = ts[b];
@@ -419,7 +478,12 @@ describe('meadow pens drawing', () => {
     for (const e of fenceEdges(pen)) {
       const r = cellRect(l, e.cell);
       const side = drawnSide(e.side, l.tall);
-      const probe = { right: [r.x + r.w + 20, r.y + r.h / 2], left: [r.x - 20, r.y + r.h / 2], down: [r.x + r.w / 2, r.y + r.h + 20], up: [r.x + r.w / 2, r.y - 20] }[side];
+      const probe = {
+        right: [r.x + r.w + 20, r.y + r.h / 2],
+        left: [r.x - 20, r.y + r.h / 2],
+        down: [r.x + r.w / 2, r.y + r.h + 20],
+        up: [r.x + r.w / 2, r.y - 20],
+      }[side];
       const { cellAt } = await import('./logic');
       const beyond = cellAt(l, probe[0], probe[1]);
       expect(beyond === null || !pen.has(beyond)).toBe(true);

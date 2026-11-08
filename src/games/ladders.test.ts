@@ -10,9 +10,11 @@ describe('level ladders', () => {
   });
 
   it('keeps inline ladders out of rendering modules', () => {
-    expect(Object.keys(SOURCES).filter((path) => {
-      const src = SOURCES[path];
-      return /levels:[^\n]*\bmin:\s*\d/.test(src) || /rangeFor\(\s*\{/.test(src);
-    })).toEqual([]);
+    expect(
+      Object.keys(SOURCES).filter((path) => {
+        const src = SOURCES[path];
+        return /levels:[^\n]*\bmin:\s*\d/.test(src) || /rangeFor\(\s*\{/.test(src);
+      }),
+    ).toEqual([]);
   });
 });

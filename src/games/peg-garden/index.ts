@@ -12,7 +12,44 @@ import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, Spot, TouchIntent } from '../types';
 import { idle, type CouchControls } from '../../engine/controller';
-import { LEVELS, AIM_LIMIT, aimAt, aimInto, aimVelocity, blooms, BOARD, CUP_TOP, CUP_W, cupAt, cupCentre, CUPS, CUTOFF, driftOf, dropAt, guided, HIT, ledgeX, makeBoard, makeCupRound, makePlantRound, pickTheme, planFor, plantDrop, SAMPLE, SEED_HOMES, snapPlace, targets, TRAY, traySlot, worldOf, type Backdrop, type BoardShape, type PegPlan, type PegSpot, type Place } from './logic';
+import {
+  LEVELS,
+  AIM_LIMIT,
+  aimAt,
+  aimInto,
+  aimVelocity,
+  blooms,
+  BOARD,
+  CUP_TOP,
+  CUP_W,
+  cupAt,
+  cupCentre,
+  CUPS,
+  CUTOFF,
+  driftOf,
+  dropAt,
+  guided,
+  HIT,
+  ledgeX,
+  makeBoard,
+  makeCupRound,
+  makePlantRound,
+  pickTheme,
+  planFor,
+  plantDrop,
+  SAMPLE,
+  SEED_HOMES,
+  snapPlace,
+  targets,
+  TRAY,
+  traySlot,
+  worldOf,
+  type Backdrop,
+  type BoardShape,
+  type PegPlan,
+  type PegSpot,
+  type Place,
+} from './logic';
 import { rangeFor } from '../../progress/difficulty';
 import { ease } from '../../engine/tween';
 
@@ -81,7 +118,10 @@ class Bud extends Container {
       const fill = this.spot.kind === 'special' ? sw.light : numbered ? 0xffffff : 0xc8ecb0;
       const line = this.spot.kind === 'special' ? sw.line : numbered ? swatch.blue.line : 0x7cc463;
       g.circle(0, 0, r).fill(fill).stroke({ width: 5, color: line });
-      if (!numbered) g.moveTo(0, -r * 0.6).lineTo(0, r * 0.6).stroke({ width: 3, color: line, alpha: 0.6 });
+      if (!numbered)
+        g.moveTo(0, -r * 0.6)
+          .lineTo(0, r * 0.6)
+          .stroke({ width: 3, color: line, alpha: 0.6 });
       return;
     }
     for (let i = 0; i < 6; i++) {
@@ -209,20 +249,40 @@ class PegGarden implements Game {
     this.buds = spots.map((s) => new Bud(s, ctx.rng));
     this.fixed = this.buds;
     this.world = worldOf(spots);
-    this.pearl.circle(0, 0, BOARD.ball).fill(0xfffaf0).stroke({ width: 3, color: 0xd9cbb0 }).circle(-5, -5, 5).fill({ color: 0xffffff, alpha: 0.9 });
+    this.pearl
+      .circle(0, 0, BOARD.ball)
+      .fill(0xfffaf0)
+      .stroke({ width: 3, color: 0xd9cbb0 })
+      .circle(-5, -5, 5)
+      .fill({ color: 0xffffff, alpha: 0.9 });
     this.pearl.visible = false;
     this.drawTray();
     // Into the cup's pearls rest in the cups instead of the tray.
     this.tray.visible = this.plan.mode !== 'cup' && this.plan.mode !== 'plant';
     for (const g of [this.trail, this.tray, this.trayPearls, this.marks]) g.eventMode = 'none';
-    this.board.addChild(this.frame, this.marks, this.trail, this.guide, ...this.buds, this.tray, this.trayPearls, this.arrow, this.launcher, this.pearl, this.touch);
+    this.board.addChild(
+      this.frame,
+      this.marks,
+      this.trail,
+      this.guide,
+      ...this.buds,
+      this.tray,
+      this.trayPearls,
+      this.arrow,
+      this.launcher,
+      this.pearl,
+      this.touch,
+    );
     ctx.stage.addChild(this.sea, this.board);
     for (const b of this.buds) ctx.track(b);
 
     this.touch.eventMode = 'static';
     this.touch.hitArea = new Rectangle(0, 0, BOARD.w, BOARD.h);
     this.touch.on('pointerdown', (e: FederatedPointerEvent) => this.down(e));
-    this.touch.on('globalpointermove', (e: FederatedPointerEvent) => e.pointerId === this.aiming && this.steerAim(e));
+    this.touch.on(
+      'globalpointermove',
+      (e: FederatedPointerEvent) => e.pointerId === this.aiming && this.steerAim(e),
+    );
     this.touch.on('pointerup', (e: FederatedPointerEvent) => this.up(e));
     this.touch.on('pointerupoutside', (e: FederatedPointerEvent) => this.up(e));
     // Pixi does not pass a cancelled touch on, so the window is watched for it.
@@ -240,8 +300,17 @@ class PegGarden implements Game {
     this.drawMarks();
     const b = this.dropButton;
     b.position.set(this.dropX, 40);
-    b.addChild(new Graphics().circle(0, 0, 40).fill(swatch.pink.light).stroke({ width: 6, color: swatch.pink.line }));
-    b.addChild(new Graphics().circle(0, 0, BOARD.ball).fill(0xfffaf0).stroke({ width: 3, color: 0xd9cbb0 }).circle(-5, -5, 5).fill({ color: 0xffffff, alpha: 0.9 }));
+    b.addChild(
+      new Graphics().circle(0, 0, 40).fill(swatch.pink.light).stroke({ width: 6, color: swatch.pink.line }),
+    );
+    b.addChild(
+      new Graphics()
+        .circle(0, 0, BOARD.ball)
+        .fill(0xfffaf0)
+        .stroke({ width: 3, color: 0xd9cbb0 })
+        .circle(-5, -5, 5)
+        .fill({ color: 0xffffff, alpha: 0.9 }),
+    );
     onTap(b, () => this.runPlanted(), { radius: HIT });
     // Under the pearl, so the pearl is seen leaving it.
     this.board.addChildAt(b, this.board.getChildIndex(this.pearl));
@@ -249,8 +318,15 @@ class PegGarden implements Game {
       const bud = new Bud({ x: home.x, y: home.y, kind: 'plain' }, this.ctx.rng);
       bud.hitArea = new Circle(0, 0, HIT);
       // A sprout on top tells her own seeds from the board's buds, planted or not.
-      const sprout = new Graphics().moveTo(0, -BOARD.peg + 2).lineTo(0, -BOARD.peg - 10).stroke({ width: 4, color: 0x4a9a35, cap: 'round' });
-      sprout.ellipse(-9, -BOARD.peg - 12, 9, 5).ellipse(9, -BOARD.peg - 12, 9, 5).fill(0x6cc04a).stroke({ width: 2, color: 0x4a9a35 });
+      const sprout = new Graphics()
+        .moveTo(0, -BOARD.peg + 2)
+        .lineTo(0, -BOARD.peg - 10)
+        .stroke({ width: 4, color: 0x4a9a35, cap: 'round' });
+      sprout
+        .ellipse(-9, -BOARD.peg - 12, 9, 5)
+        .ellipse(9, -BOARD.peg - 12, 9, 5)
+        .fill(0x6cc04a)
+        .stroke({ width: 2, color: 0x4a9a35 });
       bud.addChild(sprout);
       this.board.addChild(bud);
       this.ctx.track(bud);
@@ -277,14 +353,21 @@ class PegGarden implements Game {
   /** Plant a bud: the marked empty places, faint rings in the water, and a seed's outline over the place that works once hinted. */
   private drawMarks() {
     const g = this.marks.clear();
-    for (const p of this.places) g.circle(p.x, p.y, BOARD.peg + 6).fill({ color: 0xffffff, alpha: 0.18 }).stroke({ width: 4, color: 0xffffff, alpha: 0.7 });
+    for (const p of this.places)
+      g.circle(p.x, p.y, BOARD.peg + 6)
+        .fill({ color: 0xffffff, alpha: 0.18 })
+        .stroke({ width: 4, color: 0xffffff, alpha: 0.7 });
     // The seeds' dishes at the ends of the ledge.
-    for (const h of SEED_HOMES.slice(0, this.plan.count)) g.ellipse(h.x, h.y + 18, 40, 14).fill({ color: swatch.pink.light, alpha: 0.9 }).stroke({ width: 4, color: swatch.pink.line });
+    for (const h of SEED_HOMES.slice(0, this.plan.count))
+      g.ellipse(h.x, h.y + 18, 40, 14)
+        .fill({ color: swatch.pink.light, alpha: 0.9 })
+        .stroke({ width: 4, color: swatch.pink.line });
   }
 
   /** The drop button: let the pearl go from the fixed spot, with whatever is planted. */
   private runPlanted() {
-    if (this.ball || this.finished || this.won || this.seeds.some((q) => q.drag.dragging)) return void sfx.pop(2);
+    if (this.ball || this.finished || this.won || this.seeds.some((q) => q.drag.dragging))
+      return void sfx.pop(2);
     // In place order, as the rules check plantings, so two pegs touched in one step resolve the same way.
     const planted = this.seeds.filter((q) => q.place !== null).sort((a, b) => a.place! - b.place!);
     for (const q of planted) q.bud.position.copyFrom(this.places[q.place!]);
@@ -338,9 +421,12 @@ class PegGarden implements Game {
     this.board.scale.set(s);
     this.board.position.set(Math.max(180, (v.w - BOARD.w * s) / 2), (v.h - BOARD.h * s) / 2 + 10);
     // The whole screen takes touches, the sea beside the board too (couch play takes none).
-    if (!this.ctx.couch) this.touch.hitArea = new Rectangle(-this.board.x / s, -this.board.y / s, v.w / s, v.h / s);
+    if (!this.ctx.couch)
+      this.touch.hitArea = new Rectangle(-this.board.x / s, -this.board.y / s, v.w / s, v.h / s);
     const f = this.frame.clear();
-    f.roundRect(-14, -14, BOARD.w + 28, BOARD.h + 28, 30).fill({ color: 0xffffff, alpha: 0.18 }).stroke({ width: 8, color: 0xffffff, alpha: 0.6 });
+    f.roundRect(-14, -14, BOARD.w + 28, BOARD.h + 28, 30)
+      .fill({ color: 0xffffff, alpha: 0.18 })
+      .stroke({ width: 8, color: 0xffffff, alpha: 0.6 });
     this.drawSeabed(f);
     this.drawLauncher();
   }
@@ -354,7 +440,11 @@ class PegGarden implements Game {
     if (this.plan.mode === 'cup' || this.plan.mode === 'plant') {
       // An aimed cup shot (and Plant a bud's drop) takes the rules' own samples, so it lands exactly where the landing table says; it is drawn between them.
       this.stepLeft = Math.min(this.stepLeft + dt, 0.25);
-      for (; this.stepLeft >= SAMPLE && b.y - b.r < BOARD.h && this.samples < CUTOFF / SAMPLE; this.stepLeft -= SAMPLE) {
+      for (
+        ;
+        this.stepLeft >= SAMPLE && b.y - b.r < BOARD.h && this.samples < CUTOFF / SAMPLE;
+        this.stepLeft -= SAMPLE
+      ) {
         this.prev = { x: b.x, y: b.y };
         for (const i of stepBall(b, this.world, SAMPLE)) this.touchBud(i);
         this.samples++;
@@ -384,7 +474,8 @@ class PegGarden implements Game {
     // A dropped pearl takes fixed steps, as the rules' simulation does, so it goes exactly where the hint, the stall guard
     // and the ghost finger expect whatever the frame rate; a long frame slows it rather than changing its path.
     this.stepLeft = Math.min(this.stepLeft + dt, 0.25);
-    for (; this.stepLeft >= STEP; this.stepLeft -= STEP) for (const i of stepBall(b, this.world, STEP)) this.touchBud(i);
+    for (; this.stepLeft >= STEP; this.stepLeft -= STEP)
+      for (const i of stepBall(b, this.world, STEP)) this.touchBud(i);
     this.pearl.position.set(b.x, b.y);
     if (b.y - b.r > BOARD.h || this.ballAge > 10) void this.shotOver();
   }
@@ -438,7 +529,14 @@ class PegGarden implements Game {
 
   /** An angle near the current one whose shot (and its neighbors) touches the wanted flower; straight down if none does. */
   private bestAim(): number {
-    return aimAt(this.world, this.buds.findIndex((b) => b.spot.kind === this.target), this.aim, [0.012]) ?? 0;
+    return (
+      aimAt(
+        this.world,
+        this.buds.findIndex((b) => b.spot.kind === this.target),
+        this.aim,
+        [0.012],
+      ) ?? 0
+    );
   }
 
   /**
@@ -452,23 +550,42 @@ class PegGarden implements Game {
     if (this.aimed) {
       // After the last wanted flower the round is only waiting for the praise to end.
       if (this.target === undefined) return null;
-      const finger = (a: number): Spot => ({ on: this.touch, x: BOARD.w / 2 + Math.sin(a) * 200, y: 40 + Math.cos(a) * 200 });
-      const to = mode === 'cup' ? aimInto(this.world, this.table, this.askedCup) : aimAt(this.world, this.buds.findIndex((b) => b.spot.kind === this.target), this.aim);
+      const finger = (a: number): Spot => ({
+        on: this.touch,
+        x: BOARD.w / 2 + Math.sin(a) * 200,
+        y: 40 + Math.cos(a) * 200,
+      });
+      const to =
+        mode === 'cup'
+          ? aimInto(this.world, this.table, this.askedCup)
+          : aimAt(
+              this.world,
+              this.buds.findIndex((b) => b.spot.kind === this.target),
+              this.aim,
+            );
       return { trace: finger(this.aim), via: [finger(to ?? 0)] };
     }
     if (mode === 'plant') {
       // Plant one seed on the place that works alone (moving any other planted seed back to its dish first), then let go.
       const at = this.hintPlace;
       const stray = this.seeds.find((q) => q.place !== null && q.place !== at);
-      if (stray) return { drag: { on: stray.bud }, to: { on: this.board, ...SEED_HOMES[this.seeds.indexOf(stray)] } };
-      if (!this.seeds.some((q) => q.place === at)) return { drag: { on: this.seeds[0].bud }, to: { on: this.board, ...this.places[at] } };
+      if (stray)
+        return { drag: { on: stray.bud }, to: { on: this.board, ...SEED_HOMES[this.seeds.indexOf(stray)] } };
+      if (!this.seeds.some((q) => q.place === at))
+        return { drag: { on: this.seeds[0].bud }, to: { on: this.board, ...this.places[at] } };
       return { tap: { on: this.dropButton } };
     }
-    if (mode === 'drop') return { tap: { on: this.touch, x: BOARD.w * DROP_AT[this.shots % DROP_AT.length], y: 40 } };
+    if (mode === 'drop')
+      return { tap: { on: this.touch, x: BOARD.w * DROP_AT[this.shots % DROP_AT.length], y: 40 } };
     // The pearl drifts a little as it is let go; the bot looks at the draw the game is about to make.
     const spread = driftOf(mode);
     const drift = spread ? this.ctx.rng.clone().range(-spread, spread) : 0;
-    const { x } = dropAt(this.world, (i) => !this.buds[i].bloomed && (mode !== 'color' || this.buds[i].spot.kind === 'special'), drift, mode === 'color');
+    const { x } = dropAt(
+      this.world,
+      (i) => !this.buds[i].bloomed && (mode !== 'color' || this.buds[i].spot.kind === 'special'),
+      drift,
+      mode === 'color',
+    );
     return { tap: { on: this.touch, x, y: 40 } };
   }
 
@@ -485,7 +602,8 @@ class PegGarden implements Game {
       this.bubbles(e);
       if (this.ball) {
         // A touch while a pearl falls still answers; on the first level it is the next pearl, so a lap child's tap is never lost.
-        if (this.plan.mode === 'drop' && this.queued === null && this.shots + 2 <= this.plan.count) this.queued = ledgeX(p.x);
+        if (this.plan.mode === 'drop' && this.queued === null && this.shots + 2 <= this.plan.count)
+          this.queued = ledgeX(p.x);
         else sfx.pop(2);
         return;
       }
@@ -513,8 +631,23 @@ class PegGarden implements Game {
     const mode = this.plan.mode;
     const spread = driftOf(mode);
     this.guidedShot = guided(mode, this.stalled, this.hinting);
-    if (this.guidedShot) x = mode === 'color' && this.hintX !== null ? this.hintX : dropAt(this.world, (i) => this.wanted(i), spread ? this.ctx.rng.clone().range(-spread, spread) : 0, mode === 'color').x;
-    this.fire({ x: ledgeX(x), y: 40, vx: spread ? this.ctx.rng.range(-spread, spread) : 0, vy: 60, r: BOARD.ball });
+    if (this.guidedShot)
+      x =
+        mode === 'color' && this.hintX !== null
+          ? this.hintX
+          : dropAt(
+              this.world,
+              (i) => this.wanted(i),
+              spread ? this.ctx.rng.clone().range(-spread, spread) : 0,
+              mode === 'color',
+            ).x;
+    this.fire({
+      x: ledgeX(x),
+      y: 40,
+      vx: spread ? this.ctx.rng.range(-spread, spread) : 0,
+      vy: 60,
+      r: BOARD.ball,
+    });
   }
 
   private wanted(i: number) {
@@ -524,7 +657,15 @@ class PegGarden implements Game {
   /** A ring of bubbles rises where a finger lands on a dropping level. */
   private bubbles(e: FederatedPointerEvent) {
     const p = this.ctx.stage.toLocal(e.global);
-    this.ctx.particles.burst(p.x, p.y, { kind: 'ring', colors: [0xffffff, 0xd8f3ff], count: 7, speed: [40, 110], gravity: -120, size: [0.25, 0.5], life: [0.5, 0.9] });
+    this.ctx.particles.burst(p.x, p.y, {
+      kind: 'ring',
+      colors: [0xffffff, 0xd8f3ff],
+      count: 7,
+      speed: [40, 110],
+      gravity: -120,
+      size: [0.25, 0.5],
+      life: [0.5, 0.9],
+    });
   }
 
   /** A cancelled aim (a system gesture, a palm) lets nothing go. */
@@ -579,8 +720,19 @@ class PegGarden implements Game {
     if (bud.spot.kind === 'special') this.freshSpecial++;
     const g = this.board.toGlobal(bud.position);
     const p = this.ctx.stage.toLocal(g);
-    this.ctx.particles.burst(p.x, p.y, { kind: 'star', colors: [0xffffff, 0xfff3a0], count: 6, speed: [60, 160], gravity: 0, size: [0.3, 0.45], life: [0.4, 0.7] });
-    if (bud.spot.kind === 'special') void this.ctx.say('count', { n: this.buds.filter((x) => x.spot.kind === 'special' && x.bloomed).length });
+    this.ctx.particles.burst(p.x, p.y, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0],
+      count: 6,
+      speed: [60, 160],
+      gravity: 0,
+      size: [0.3, 0.45],
+      life: [0.4, 0.7],
+    });
+    if (bud.spot.kind === 'special')
+      void this.ctx.say('count', {
+        n: this.buds.filter((x) => x.spot.kind === 'special' && x.bloomed).length,
+      });
   }
 
   /** The pearl rolled away: see what this shot did. */
@@ -642,7 +794,8 @@ class PegGarden implements Game {
         if (!this.seeds.some((q) => q.place !== null)) return void this.ctx.say('peg.plantLook');
         this.miss('peg.plantMissed');
         // Once hinted, a seed planted anywhere but the place that works goes back to the tray, so the hinted planting reaches the cup.
-        if (this.hinting) for (const q of this.seeds) if (q.place !== null && q.place !== this.hintPlace) this.unplant(q);
+        if (this.hinting)
+          for (const q of this.seeds) if (q.place !== null && q.place !== this.hintPlace) this.unplant(q);
         return;
       }
       default: {
@@ -674,7 +827,10 @@ class PegGarden implements Game {
     void q.drag.floatHome();
   }
 
-  private miss(line: 'peg.miss' | 'peg.missed' | 'peg.cupMissed' | 'peg.plantMissed', vars?: { n: number; got?: number }) {
+  private miss(
+    line: 'peg.miss' | 'peg.missed' | 'peg.cupMissed' | 'peg.plantMissed',
+    vars?: { n: number; got?: number },
+  ) {
     this.misses++;
     this.wrongs++;
     sfx.boing();
@@ -694,22 +850,37 @@ class PegGarden implements Game {
     const sandTop = BOARD.h - 30;
     f.rect(0, sandTop, BOARD.w, 30).fill({ color: SEAS[backdrop].sand, alpha: 0.9 });
     if (backdrop === 'shallows') {
-      for (let x = 30; x < BOARD.w; x += 90) f.moveTo(x, sandTop).quadraticCurveTo(x - 20, BOARD.h - 80, x + 4, BOARD.h - 110).stroke({ width: 8, color: 0x4a9a35, cap: 'round', alpha: 0.7 });
+      for (let x = 30; x < BOARD.w; x += 90)
+        f.moveTo(x, sandTop)
+          .quadraticCurveTo(x - 20, BOARD.h - 80, x + 4, BOARD.h - 110)
+          .stroke({ width: 8, color: 0x4a9a35, cap: 'round', alpha: 0.7 });
     } else if (backdrop === 'reef') {
       // Branching coral in pink and purple (never orange, the colour level's flowers).
       [40, 150, 530, 640].forEach((x, i) => {
         const color = i % 2 ? swatch.purple.fill : swatch.pink.fill;
         const line = { width: 10, color, cap: 'round' as const, alpha: 0.8 };
-        f.moveTo(x, sandTop).lineTo(x, sandTop - 55).stroke(line);
-        f.moveTo(x, sandTop - 25).lineTo(x - 22, sandTop - 50).stroke(line);
-        f.moveTo(x, sandTop - 35).lineTo(x + 20, sandTop - 62).stroke(line);
-        f.circle(x, sandTop - 58, 7).circle(x - 24, sandTop - 53, 6).circle(x + 22, sandTop - 65, 6).fill({ color, alpha: 0.9 });
+        f.moveTo(x, sandTop)
+          .lineTo(x, sandTop - 55)
+          .stroke(line);
+        f.moveTo(x, sandTop - 25)
+          .lineTo(x - 22, sandTop - 50)
+          .stroke(line);
+        f.moveTo(x, sandTop - 35)
+          .lineTo(x + 20, sandTop - 62)
+          .stroke(line);
+        f.circle(x, sandTop - 58, 7)
+          .circle(x - 24, sandTop - 53, 6)
+          .circle(x + 22, sandTop - 65, 6)
+          .fill({ color, alpha: 0.9 });
       });
     } else {
       // Tall kelp ribbons with leaves, up the sides of the board.
       for (const x of [22, 70, BOARD.w - 70, BOARD.w - 22]) {
-        f.moveTo(x, sandTop).bezierCurveTo(x + 18, sandTop - 120, x - 18, sandTop - 220, x + 6, sandTop - 320).stroke({ width: 9, color: 0x5e8f2e, cap: 'round', alpha: 0.75 });
-        for (let k = 1; k <= 4; k++) f.ellipse(x + (k % 2 ? 12 : -12), sandTop - k * 70, 14, 7).fill({ color: 0x7fb23a, alpha: 0.75 });
+        f.moveTo(x, sandTop)
+          .bezierCurveTo(x + 18, sandTop - 120, x - 18, sandTop - 220, x + 6, sandTop - 320)
+          .stroke({ width: 9, color: 0x5e8f2e, cap: 'round', alpha: 0.75 });
+        for (let k = 1; k <= 4; k++)
+          f.ellipse(x + (k % 2 ? 12 : -12), sandTop - k * 70, 14, 7).fill({ color: 0x7fb23a, alpha: 0.75 });
       }
     }
     if (this.plan.mode === 'cup') this.drawCups(f);
@@ -721,10 +892,16 @@ class PegGarden implements Game {
     const i = this.friendCup;
     const sw = swatch.yellow;
     const x = cupCentre(i);
-    f.ellipse(x, CUP_TOP - 4, 26, 18).fill(swatch.orange.fill).stroke({ width: 4, color: swatch.orange.line });
-    f.poly([x + 22, CUP_TOP - 4, x + 42, CUP_TOP - 18, x + 42, CUP_TOP + 10]).fill(swatch.orange.fill).stroke({ width: 4, color: swatch.orange.line, join: 'round' });
+    f.ellipse(x, CUP_TOP - 4, 26, 18)
+      .fill(swatch.orange.fill)
+      .stroke({ width: 4, color: swatch.orange.line });
+    f.poly([x + 22, CUP_TOP - 4, x + 42, CUP_TOP - 18, x + 42, CUP_TOP + 10])
+      .fill(swatch.orange.fill)
+      .stroke({ width: 4, color: swatch.orange.line, join: 'round' });
     f.circle(x - 10, CUP_TOP - 9, 4).fill(ink);
-    f.roundRect(i * CUP_W + 10, CUP_TOP, CUP_W - 20, 54, 18).fill(sw.light).stroke({ width: 5, color: sw.line });
+    f.roundRect(i * CUP_W + 10, CUP_TOP, CUP_W - 20, 54, 18)
+      .fill(sw.light)
+      .stroke({ width: 5, color: sw.line });
   }
 
   /** Into the cup: four cups side by side along the sand, each showing its count as dots. */
@@ -732,9 +909,14 @@ class PegGarden implements Game {
     for (let i = 0; i < CUPS; i++) {
       const sw = swatch[CUP_COLORS[i]];
       const x = i * CUP_W + 10;
-      f.roundRect(x, CUP_TOP, CUP_W - 20, 54, 18).fill(sw.light).stroke({ width: 5, color: sw.line });
+      f.roundRect(x, CUP_TOP, CUP_W - 20, 54, 18)
+        .fill(sw.light)
+        .stroke({ width: 5, color: sw.line });
       const n = this.dots[i];
-      for (let d = 0; d < n; d++) f.circle(cupCentre(i) + (d - (n - 1) / 2) * 26, BOARD.h - 28, 9).fill(0xffffff).stroke({ width: 3, color: ink });
+      for (let d = 0; d < n; d++)
+        f.circle(cupCentre(i) + (d - (n - 1) / 2) * 26, BOARD.h - 28, 9)
+          .fill(0xffffff)
+          .stroke({ width: 3, color: ink });
     }
   }
 
@@ -743,10 +925,14 @@ class PegGarden implements Game {
     const w = TRAY.slots * TRAY.gap + 16;
     const x = BOARD.w / 2 - w / 2;
     const g = this.tray.clear();
-    g.roundRect(x, TRAY.y - 14, w, 26, 13).fill({ color: swatch.pink.light, alpha: 0.95 }).stroke({ width: 4, color: swatch.pink.line });
+    g.roundRect(x, TRAY.y - 14, w, 26, 13)
+      .fill({ color: swatch.pink.light, alpha: 0.95 })
+      .stroke({ width: 4, color: swatch.pink.line });
     for (let i = 1; i < TRAY.slots; i++) {
       const sx = x + 8 + i * TRAY.gap;
-      g.moveTo(sx, TRAY.y - 10).lineTo(sx, TRAY.y + 8).stroke({ width: 2, color: swatch.pink.line, alpha: 0.4 });
+      g.moveTo(sx, TRAY.y - 10)
+        .lineTo(sx, TRAY.y + 8)
+        .stroke({ width: 2, color: swatch.pink.line, alpha: 0.4 });
     }
   }
 
@@ -757,7 +943,12 @@ class PegGarden implements Game {
       return;
     }
     const slot = traySlot(this.collected++);
-    const p = new Graphics().circle(0, 0, 10).fill(0xfffaf0).stroke({ width: 2, color: 0xd9cbb0 }).circle(-3, -3, 3).fill({ color: 0xffffff, alpha: 0.9 });
+    const p = new Graphics()
+      .circle(0, 0, 10)
+      .fill(0xfffaf0)
+      .stroke({ width: 2, color: 0xd9cbb0 })
+      .circle(-3, -3, 3)
+      .fill({ color: 0xffffff, alpha: 0.9 });
     p.position.set(Math.max(10, Math.min(BOARD.w - 10, x)), TRAY.y - 30);
     this.trayPearls.addChild(p);
     void this.ctx.tw.to(p, { x: slot.x, y: slot.y }, { duration: 0.45, ease: ease.outBack });
@@ -766,16 +957,29 @@ class PegGarden implements Game {
   /** Into the cup: a pearl that rolled out rests in the cup it fell into. */
   private rest(cup: number) {
     const k = this.inCup[cup]++;
-    const p = new Graphics().circle(0, 0, 10).fill(0xfffaf0).stroke({ width: 2, color: 0xd9cbb0 }).circle(-3, -3, 3).fill({ color: 0xffffff, alpha: 0.9 });
+    const p = new Graphics()
+      .circle(0, 0, 10)
+      .fill(0xfffaf0)
+      .stroke({ width: 2, color: 0xd9cbb0 })
+      .circle(-3, -3, 3)
+      .fill({ color: 0xffffff, alpha: 0.9 });
     p.position.set(cupCentre(cup), BOARD.h - 70);
     this.trayPearls.addChild(p);
-    void this.ctx.tw.to(p, { x: cupCentre(cup) + ((k % 5) - 2) * 22, y: BOARD.h - 58 }, { duration: 0.35, ease: ease.outBack });
+    void this.ctx.tw.to(
+      p,
+      { x: cupCentre(cup) + ((k % 5) - 2) * 22, y: BOARD.h - 58 },
+      { duration: 0.35, ease: ease.outBack },
+    );
   }
 
   /** At the finish the tray pours its pearls back up to the top. */
   private pour() {
     this.trayPearls.children.forEach((p, i) => {
-      void this.ctx.tw.to(p, { x: BOARD.w / 2, y: 40, alpha: 0 }, { duration: 0.5, delay: i * 0.06, ease: ease.inQuad });
+      void this.ctx.tw.to(
+        p,
+        { x: BOARD.w / 2, y: 40, alpha: 0 },
+        { duration: 0.5, delay: i * 0.06, ease: ease.inQuad },
+      );
     });
     if (this.trayPearls.children.length) sfx.pop(5);
   }
@@ -797,16 +1001,27 @@ class PegGarden implements Game {
     g.circle(x, 40, 34).fill(swatch.pink.light).stroke({ width: 5, color: swatch.pink.line });
     const dx = Math.sin(this.aim);
     const dy = Math.cos(this.aim);
-    g.moveTo(x, 40).lineTo(x + dx * 66, 40 + dy * 66).stroke({ width: 24, color: swatch.pink.line, cap: 'round' });
-    g.moveTo(x, 40).lineTo(x + dx * 62, 40 + dy * 62).stroke({ width: 14, color: swatch.pink.fill, cap: 'round' });
+    g.moveTo(x, 40)
+      .lineTo(x + dx * 66, 40 + dy * 66)
+      .stroke({ width: 24, color: swatch.pink.line, cap: 'round' });
+    g.moveTo(x, 40)
+      .lineTo(x + dx * 62, 40 + dy * 62)
+      .stroke({ width: 14, color: swatch.pink.fill, cap: 'round' });
     if (this.aiming !== null || this.couchOn) this.drawGuide();
   }
 
   /** While aiming: a short dotted guide, or the whole path once a hint is on. */
   private drawGuide() {
     const g = this.guide.clear();
-    const { path } = simulate(this.shotStart(), this.world, BOARD.h, this.hinting ? (this.plan.mode === 'cup' ? CUTOFF : 6) : 0.35, 1 / 30);
-    for (let i = 1; i < path.length; i += 2) g.circle(path[i].x, path[i].y, 5).fill({ color: 0xffffff, alpha: 0.9 });
+    const { path } = simulate(
+      this.shotStart(),
+      this.world,
+      BOARD.h,
+      this.hinting ? (this.plan.mode === 'cup' ? CUTOFF : 6) : 0.35,
+      1 / 30,
+    );
+    for (let i = 1; i < path.length; i += 2)
+      g.circle(path[i].x, path[i].y, 5).fill({ color: 0xffffff, alpha: 0.9 });
   }
 
   /** Color levels with a hint: a bobbing arrow over a bud still waiting to bloom. */
@@ -818,9 +1033,13 @@ class PegGarden implements Game {
       const p = this.places[this.hintPlace];
       if (!p) return;
       const pulse = 1 + 0.08 * Math.sin(this.clock * 5);
-      g.circle(p.x, p.y, (BOARD.peg + 10) * pulse).fill({ color: swatch.yellow.light, alpha: 0.45 }).stroke({ width: 6, color: swatch.yellow.line });
+      g.circle(p.x, p.y, (BOARD.peg + 10) * pulse)
+        .fill({ color: swatch.yellow.light, alpha: 0.45 })
+        .stroke({ width: 6, color: swatch.yellow.line });
       const y = p.y - 44 - 8 * Math.abs(Math.sin(this.clock * 4));
-      g.poly([p.x - 16, y - 20, p.x + 16, y - 20, p.x, y]).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line, join: 'round' });
+      g.poly([p.x - 16, y - 20, p.x + 16, y - 20, p.x, y])
+        .fill(swatch.yellow.fill)
+        .stroke({ width: 4, color: swatch.yellow.line, join: 'round' });
       return;
     }
     if (this.plan.mode === 'cup') {
@@ -828,10 +1047,14 @@ class PegGarden implements Game {
       const c = this.askedCup;
       if (c < 0) return;
       const pulse = 0.35 + 0.15 * Math.sin(this.clock * 5);
-      g.roundRect(c * CUP_W + 2, BOARD.h - 64, CUP_W - 4, 64, 20).fill({ color: swatch.yellow.light, alpha: pulse }).stroke({ width: 6, color: swatch.yellow.line });
+      g.roundRect(c * CUP_W + 2, BOARD.h - 64, CUP_W - 4, 64, 20)
+        .fill({ color: swatch.yellow.light, alpha: pulse })
+        .stroke({ width: 6, color: swatch.yellow.line });
       const x = cupCentre(c);
       const y = BOARD.h - 78 - 8 * Math.abs(Math.sin(this.clock * 4));
-      g.poly([x - 16, y - 20, x + 16, y - 20, x, y]).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line, join: 'round' });
+      g.poly([x - 16, y - 20, x + 16, y - 20, x, y])
+        .fill(swatch.yellow.fill)
+        .stroke({ width: 4, color: swatch.yellow.line, join: 'round' });
       return;
     }
     let bud: Bud | undefined;
@@ -841,10 +1064,14 @@ class PegGarden implements Game {
     if (this.hintX !== null) {
       // Where to act: a glowing ring on the ledge over the place whose pearl reaches the waiting flower.
       const pulse = 1 + 0.08 * Math.sin(this.clock * 5);
-      g.circle(this.hintX, 40, 30 * pulse).fill({ color: swatch.yellow.light, alpha: 0.45 }).stroke({ width: 6, color: swatch.yellow.line });
+      g.circle(this.hintX, 40, 30 * pulse)
+        .fill({ color: swatch.yellow.light, alpha: 0.45 })
+        .stroke({ width: 6, color: swatch.yellow.line });
     }
     const y = bud.y - 44 - 8 * Math.abs(Math.sin(this.clock * 4));
-    g.poly([bud.x - 16, y - 20, bud.x + 16, y - 20, bud.x, y]).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line, join: 'round' });
+    g.poly([bud.x - 16, y - 20, bud.x + 16, y - 20, bud.x, y])
+      .fill(swatch.yellow.fill)
+      .stroke({ width: 4, color: swatch.yellow.line, join: 'round' });
   }
 
   private async finale() {
@@ -853,7 +1080,14 @@ class PegGarden implements Game {
     sfx.tada();
     for (const b of this.buds) b.bloom();
     const c = this.ctx.stage.toLocal(this.board.toGlobal({ x: BOARD.w / 2, y: BOARD.h / 2 }));
-    this.ctx.particles.burst(c.x, c.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.pink.light], count: 30, speed: [150, 400], gravity: 0, life: [0.8, 1.3] });
+    this.ctx.particles.burst(c.x, c.y, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0, swatch.pink.light],
+      count: 30,
+      speed: [150, 400],
+      gravity: 0,
+      life: [0.8, 1.3],
+    });
     this.pour();
     await this.ctx.say('peg.done');
     await this.ctx.tw.wait(0.8);
@@ -865,9 +1099,21 @@ class PegIcon extends WigglyIcon {
   constructor() {
     const c = new Container();
     const rng = new Rng(5);
-    const frame = new Graphics().roundRect(-110, -230, 220, 220, 26).fill({ color: 0x7cc4f2, alpha: 0.9 }).stroke({ width: 6, color: 0xffffff });
+    const frame = new Graphics()
+      .roundRect(-110, -230, 220, 220, 26)
+      .fill({ color: 0x7cc4f2, alpha: 0.9 })
+      .stroke({ width: 6, color: 0xffffff });
     c.addChild(frame);
-    [[-60, -180], [0, -180], [60, -180], [-30, -120], [30, -120], [-60, -60], [0, -60], [60, -60]].forEach(([x, y], i) => {
+    [
+      [-60, -180],
+      [0, -180],
+      [60, -180],
+      [-30, -120],
+      [30, -120],
+      [-60, -60],
+      [0, -60],
+      [60, -60],
+    ].forEach(([x, y], i) => {
       const b = new Bud({ x, y, kind: i % 3 === 0 ? 'special' : 'plain' }, rng);
       if (i % 2 === 0) b.bloom();
       b.scale.set(0.9);

@@ -47,13 +47,17 @@ export class StickerBookScene extends Scene {
   resize(v: View) {
     this.area = { x: 35, y: 135, w: v.w - 70, h: v.h - 305 };
     this.background.clear().rect(0, 0, v.w, v.h).fill(cream);
-    this.home.position.set(64,  64);
-    this.heading.position.set(v.w / 2,  64);
-    this.prev.position.set(v.w / 2 - 220,  64);
-    this.next.position.set(v.w / 2 + 220,  64);
+    this.home.position.set(64, 64);
+    this.heading.position.set(v.w / 2, 64);
+    this.prev.position.set(v.w / 2 - 220, 64);
+    this.next.position.set(v.w / 2 + 220, 64);
     this.trayPrev.position.set(70, v.h - 72);
     this.trayNext.position.set(v.w - 70, v.h - 72);
-    this.tray.clear().roundRect(25, v.h - 135, v.w - 50, 120, 30).fill(swatch.brown.light).stroke({ width: 4, color: swatch.brown.line });
+    this.tray
+      .clear()
+      .roundRect(25, v.h - 135, v.w - 50, 120, 30)
+      .fill(swatch.brown.light)
+      .stroke({ width: 4, color: swatch.brown.line });
     this.renderPage();
   }
 
@@ -68,7 +72,10 @@ export class StickerBookScene extends Scene {
   private renderStickers() {
     this.handles.forEach((h) => h.destroy());
     this.handles = [];
-    this.entries.forEach(({ node }) => { this.tw.kill(node); this.tw.kill(node.scale); });
+    this.entries.forEach(({ node }) => {
+      this.tw.kill(node);
+      this.tw.kill(node.scale);
+    });
     this.entries = [];
     this.stickers.removeChildren().forEach((c) => c.destroy({ children: true }));
     const all = store.data.stickers.filter((s) => gameById(s.game));
@@ -84,7 +91,10 @@ export class StickerBookScene extends Scene {
       node.hitArea = new Circle(0, 0, 55);
       if (record.placement) {
         const { x, y, w, h } = this.area;
-        node.position.set(x + Math.max(RADIUS, Math.min(w - RADIUS, record.placement.x * w)), y + Math.max(RADIUS, Math.min(h - RADIUS, record.placement.y * h)));
+        node.position.set(
+          x + Math.max(RADIUS, Math.min(w - RADIUS, record.placement.x * w)),
+          y + Math.max(RADIUS, Math.min(h - RADIUS, record.placement.y * h)),
+        );
       } else {
         const i = visibleLoose.indexOf(record);
         node.position.set(this.view.w / 2 + (i - (visibleLoose.length - 1) / 2) * 136, this.view.h - 75);
@@ -97,7 +107,11 @@ export class StickerBookScene extends Scene {
           if (py >= this.view.h - 145 && px >= 25 && px <= this.view.w - 25) {
             delete record.placement;
           } else if (px >= a.x && px <= a.x + a.w && py >= a.y && py <= a.y + a.h) {
-            record.placement = { page: STICKER_PAGES[this.page], x: Math.max(RADIUS, Math.min(a.w - RADIUS, px - a.x)) / a.w, y: Math.max(RADIUS, Math.min(a.h - RADIUS, py - a.y)) / a.h };
+            record.placement = {
+              page: STICKER_PAGES[this.page],
+              x: Math.max(RADIUS, Math.min(a.w - RADIUS, px - a.x)) / a.w,
+              y: Math.max(RADIUS, Math.min(a.h - RADIUS, py - a.y)) / a.h,
+            };
           } else return false;
           store.save();
           sfx.sparkle();
@@ -117,7 +131,18 @@ export class StickerBookScene extends Scene {
     sfx.whoosh();
     void voice.say(`stickers.${STICKER_PAGES[this.page]}`);
   }
-  private turnTray(dir: number) { if (!this.handles.some((h) => h.dragging)) { this.trayPage += dir; this.renderStickers(); } }
-  enter() { music.play(STYLES.stickers); void voice.say('stickers.place'); }
-  destroy() { this.handles.forEach((h) => h.destroy()); super.destroy(); }
+  private turnTray(dir: number) {
+    if (!this.handles.some((h) => h.dragging)) {
+      this.trayPage += dir;
+      this.renderStickers();
+    }
+  }
+  enter() {
+    music.play(STYLES.stickers);
+    void voice.say('stickers.place');
+  }
+  destroy() {
+    this.handles.forEach((h) => h.destroy());
+    super.destroy();
+  }
 }

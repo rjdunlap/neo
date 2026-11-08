@@ -51,7 +51,13 @@ export class River extends Creature {
       this.legs.push(l);
     }
     const tail = new Graphics();
-    tail.moveTo(0, -8).bezierCurveTo(-40, -40, -110, -34, -128, -6).bezierCurveTo(-112, 22, -42, 26, 0, 10).closePath().fill(DARK.fill).stroke(stroke(DARK.line));
+    tail
+      .moveTo(0, -8)
+      .bezierCurveTo(-40, -40, -110, -34, -128, -6)
+      .bezierCurveTo(-112, 22, -42, 26, 0, 10)
+      .closePath()
+      .fill(DARK.fill)
+      .stroke(stroke(DARK.line));
     tail.moveTo(-30, 0).lineTo(-96, -4).stroke(stroke(DARK.line, 4));
     this.tail.addChild(tail);
 
@@ -65,7 +71,9 @@ export class River extends Creature {
       [10, -0.15],
       [18, 0.12],
     ] as const) {
-      h.moveTo(48, y).lineTo(48 + 30 * Math.cos(a), y + 30 * Math.sin(a)).stroke(stroke(FUR.line, 3));
+      h.moveTo(48, y)
+        .lineTo(48 + 30 * Math.cos(a), y + 30 * Math.sin(a))
+        .stroke(stroke(FUR.line, 3));
     }
     blush(h, 2, 14, 10);
     this.head.addChild(h);

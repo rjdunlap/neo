@@ -2,7 +2,16 @@ import { Graphics, type Container } from 'pixi.js';
 import { sfx } from '../audio/sfx';
 import { voice } from '../audio/voice';
 import { SCRIPT } from '../content/voice-script';
-import { endingLine, lineup, MIX_IDS, mixGames, mixPool, mixStop, nextUp, repairLineup } from '../content/mix';
+import {
+  endingLine,
+  lineup,
+  MIX_IDS,
+  mixGames,
+  mixPool,
+  mixStop,
+  nextUp,
+  repairLineup,
+} from '../content/mix';
 import type { Tweener } from '../engine/tween';
 import type { View } from '../engine/view';
 import { GAMES } from '../games/registry';
@@ -15,7 +24,8 @@ import type { App } from './App';
 import { mixMemory } from './discovery';
 
 export const titleOf = (mod: GameModule) => SCRIPT[mod.titleLine][0].replace(/!$/, '');
-const modsOf = (ids: readonly string[]) => ids.map(id => GAMES.find(m => m.id === id)).filter((m): m is GameModule => !!m);
+const modsOf = (ids: readonly string[]) =>
+  ids.map((id) => GAMES.find((m) => m.id === id)).filter((m): m is GameModule => !!m);
 
 /** How long a grown-up holds the mix spot to open the mix table (D5a): a small hand's tap or rest does nothing. */
 export const MIX_HOLD = 0.6;
@@ -35,7 +45,10 @@ export class MixHost {
   private held = false;
 
   constructor(
-    private readonly app: App, private readonly band: Band, private readonly ui: Container, private readonly view: () => View,
+    private readonly app: App,
+    private readonly band: Band,
+    private readonly ui: Container,
+    private readonly view: () => View,
     private readonly tw: Tweener,
     /** The home spot's games, in its order: what the table may add. */
     private readonly placeIds: readonly string[],
@@ -68,7 +81,8 @@ export class MixHost {
     const held = mixMemory.lineup(store.data, this.band);
     if (!held) return MIX_IDS;
     const ids = repairLineup(held, this.pool());
-    if (ids.length !== held.length || ids.some((id, i) => id !== held[i])) mixMemory.hold(store.data, this.band, ids);
+    if (ids.length !== held.length || ids.some((id, i) => id !== held[i]))
+      mixMemory.hold(store.data, this.band, ids);
     return ids;
   }
 
@@ -146,7 +160,9 @@ export class MixHost {
       mixMemory.apply(store.data, { type: 'unavailable', p });
       const state = this.refresh();
       voice.stop();
-      void voice.say('mix.changed').then(() => { if (state && nextUp(state) === null) void voice.say(endingLine(state)); });
+      void voice.say('mix.changed').then(() => {
+        if (state && nextUp(state) === null) void voice.say(endingLine(state));
+      });
       return;
     }
     if (!mixMemory.launch(store.data, p)) return;
@@ -229,12 +245,19 @@ export class MixHost {
       move: (from, to) => this.edit(lineup.move(this.tableIds(), from, to)),
       remove: (p) => {
         const ids = this.tableIds();
-        if (ids.length <= 1) { voice.stop(); void voice.say('mix.one'); return false; }
+        if (ids.length <= 1) {
+          voice.stop();
+          void voice.say('mix.one');
+          return false;
+        }
         this.edit(lineup.remove(ids, p), 'mix.out', ids[p]);
         return true;
       },
       reset: () => this.edit(lineup.reset(), 'mix.reset'),
-      play: () => { this.closeTable(); this.start(); },
+      play: () => {
+        this.closeTable();
+        this.start();
+      },
       back: () => this.closeTable(),
     });
     this.ui.addChild(this.table);
@@ -270,7 +293,7 @@ export class MixHost {
     mixMemory.hold(store.data, this.band, ids);
     this.showTable();
     if (!line) return;
-    const mod = id ? GAMES.find(m => m.id === id) : undefined;
+    const mod = id ? GAMES.find((m) => m.id === id) : undefined;
     voice.stop();
     void voice.say(line, mod ? { title: titleOf(mod) } : undefined);
   }
@@ -288,7 +311,10 @@ export class MixHost {
     if (!h || this.held) return;
     h.t += dt;
     const start = -Math.PI / 2;
-    h.ring.clear().arc(0, 0, h.r, start, start + Math.min(1, h.t / MIX_HOLD) * Math.PI * 2).stroke({ width: 8, color: 0xffffff, cap: 'round' });
+    h.ring
+      .clear()
+      .arc(0, 0, h.r, start, start + Math.min(1, h.t / MIX_HOLD) * Math.PI * 2)
+      .stroke({ width: 8, color: 0xffffff, cap: 'round' });
     if (h.t < MIX_HOLD) return;
     h.ring.destroy();
     this.hold = null;

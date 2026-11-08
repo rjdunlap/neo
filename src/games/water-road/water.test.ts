@@ -2,10 +2,48 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  abutmentsFor, abutmentsInTray, archesInTray, chooseChannel, corners, downhillPlan, downhillStart, emptyArcade, falls, fallingSettings, firstStuck, firstUnsupported,
-  followHint, heights, MAX_STEP, MIN_TARGET, moveAbutment, moveArch, nearestFalling, nextRoad, openSpring, openValley, overlaps, pierHint, planFor, pressArrow, pressesLeft,
-  pressPier, roadNow, standsArcade, stuckKind, Tally, valleyHint, valleyPlan, waterBotMove, waterLayout,
-  type Arcade, type DownhillState, type Rect, type Road, type Valley, type ValleyState,
+  abutmentsFor,
+  abutmentsInTray,
+  archesInTray,
+  chooseChannel,
+  corners,
+  downhillPlan,
+  downhillStart,
+  emptyArcade,
+  falls,
+  fallingSettings,
+  firstStuck,
+  firstUnsupported,
+  followHint,
+  heights,
+  MAX_STEP,
+  MIN_TARGET,
+  moveAbutment,
+  moveArch,
+  nearestFalling,
+  nextRoad,
+  openSpring,
+  openValley,
+  overlaps,
+  pierHint,
+  planFor,
+  pressArrow,
+  pressesLeft,
+  pressPier,
+  roadNow,
+  standsArcade,
+  stuckKind,
+  Tally,
+  valleyHint,
+  valleyPlan,
+  waterBotMove,
+  waterLayout,
+  type Arcade,
+  type DownhillState,
+  type Rect,
+  type Road,
+  type Valley,
+  type ValleyState,
 } from './logic';
 
 const SEEDS = Array.from({ length: 300 }, (_, i) => i + 1);
@@ -32,17 +70,20 @@ describe('level 4: the fall rule', () => {
   });
 
   it('firstStuck is the first non-dropping stretch and null iff falls, over every setting', () => {
-    for (const spring of [5, 6]) for (const fountain of [0, 1]) for (let a = 0; a <= MAX_STEP; a++) for (let b = 0; b <= MAX_STEP; b++) {
-      const r = road(spring, [a, b], fountain);
-      const h = heights(r);
-      expect(falls(r)).toBe(strictlyDown(h));
-      const i = firstStuck(r);
-      expect(i === null).toBe(falls(r));
-      if (i !== null) {
-        expect(h[i + 1]).toBeGreaterThanOrEqual(h[i]);
-        for (let k = 0; k < i; k++) expect(h[k + 1]).toBeLessThan(h[k]);
-      }
-    }
+    for (const spring of [5, 6])
+      for (const fountain of [0, 1])
+        for (let a = 0; a <= MAX_STEP; a++)
+          for (let b = 0; b <= MAX_STEP; b++) {
+            const r = road(spring, [a, b], fountain);
+            const h = heights(r);
+            expect(falls(r)).toBe(strictlyDown(h));
+            const i = firstStuck(r);
+            expect(i === null).toBe(falls(r));
+            if (i !== null) {
+              expect(h[i + 1]).toBeGreaterThanOrEqual(h[i]);
+              for (let k = 0; k < i; k++) expect(h[k + 1]).toBeLessThan(h[k]);
+            }
+          }
   });
 
   it('accepts every falling setting, not only the one the hint aims at', () => {
@@ -52,7 +93,8 @@ describe('level 4: the fall rule', () => {
     for (const p of all) expect(falls({ ...r, piers: p })).toBe(true);
     // And no falling setting is missing.
     let count = 0;
-    for (let a = 0; a <= MAX_STEP; a++) for (let b = 0; b <= MAX_STEP; b++) if (falls({ ...r, piers: [a, b] })) count++;
+    for (let a = 0; a <= MAX_STEP; a++)
+      for (let b = 0; b <= MAX_STEP; b++) if (falls({ ...r, piers: [a, b] })) count++;
     expect(count).toBe(all.length);
   });
 
@@ -77,7 +119,10 @@ describe('level 4: plans', () => {
         const rises = bad.slice(1).map((h, i) => h - bad[i]);
         expect(rises.filter((d) => d >= 2)).toHaveLength(1);
         expect(rises.filter((d) => d >= 0)).toHaveLength(1);
-        for (const h of [...cards[0], ...cards[1]]) { expect(h).toBeGreaterThanOrEqual(0); expect(h).toBeLessThanOrEqual(MAX_STEP); }
+        for (const h of [...cards[0], ...cards[1]]) {
+          expect(h).toBeGreaterThanOrEqual(0);
+          expect(h).toBeLessThanOrEqual(MAX_STEP);
+        }
       }
     }
   });
@@ -106,7 +151,8 @@ describe('level 4: plans', () => {
   });
 
   it('the same seed gives the same plan', () => {
-    for (const band of ['prek', 'school'] as const) expect(downhillPlan(band, new Rng(42))).toEqual(downhillPlan(band, new Rng(42)));
+    for (const band of ['prek', 'school'] as const)
+      expect(downhillPlan(band, new Rng(42))).toEqual(downhillPlan(band, new Rng(42)));
     expect(valleyPlan(new Rng(42))).toEqual(valleyPlan(new Rng(42)));
   });
 });
@@ -120,7 +166,8 @@ describe('level 4: the hint from any reachable state', () => {
         let s = downhillStart(plan, k);
         for (let walk = 0; walk < 6; walk++) {
           // Random presses first (free), then follow the hint from wherever she is.
-          for (let n = rng.int(0, 4); n > 0; n--) s = pressArrow(plan, s, rng.int(0, 1), rng.pick([1, -1] as const)).state;
+          for (let n = rng.int(0, 4); n > 0; n--)
+            s = pressArrow(plan, s, rng.int(0, 1), rng.pick([1, -1] as const)).state;
           let r = roadNow(plan, s)!;
           const budget = pressesLeft(r);
           let presses = 0;
@@ -165,10 +212,14 @@ describe('level 4: accounting', () => {
 
   it('the hint counts at most once per road', () => {
     const t = new Tally();
-    t.miss(); t.miss(); t.help(); t.miss();
+    t.miss();
+    t.miss();
+    t.help();
+    t.miss();
     expect([t.misses, t.hints]).toEqual([3, 1]);
     t.next();
-    t.help(); t.help();
+    t.help();
+    t.help();
     expect(t.hints).toBe(2);
   });
 });
@@ -190,12 +241,19 @@ describe('level 5: the arcade rule', () => {
     expect(firstUnsupported(v, arcade([true, false, true]))).toEqual({ kind: 'gap', span: 1 });
     expect(firstUnsupported(v, arcade([true, true, true]))).toEqual({ kind: 'end', end: 'far' });
     const earth: Valley = { spans: 4, ends: { near: 'earth', far: 'earth' } };
-    expect(firstUnsupported(earth, arcade([true, true, true, true], false, true))).toEqual({ kind: 'end', end: 'near' });
+    expect(firstUnsupported(earth, arcade([true, true, true, true], false, true))).toEqual({
+      kind: 'end',
+      end: 'near',
+    });
     for (const seed of SEEDS) {
       const plan = valleyPlan(new Rng(seed));
       const rng = new Rng(seed + 7);
       for (const vv of plan.valleys) {
-        const a = arcade(Array.from({ length: vv.spans }, () => rng.int(0, 1) === 1), rng.int(0, 1) === 1, rng.int(0, 1) === 1);
+        const a = arcade(
+          Array.from({ length: vv.spans }, () => rng.int(0, 1) === 1),
+          rng.int(0, 1) === 1,
+          rng.int(0, 1) === 1,
+        );
         expect(firstUnsupported(vv, a) === null).toBe(standsArcade(vv, a));
       }
     }
@@ -205,7 +263,11 @@ describe('level 5: the arcade rule', () => {
     const r = openValley(v, arcade([true, true, true], true, false));
     expect(r.stands).toBe(false);
     expect(r.problem).toEqual({ kind: 'end', end: 'far' });
-    expect(valleyHint(v, arcade([true, true, true], true, false))).toEqual({ kind: 'move', from: 'near', to: 'far' });
+    expect(valleyHint(v, arcade([true, true, true], true, false))).toEqual({
+      kind: 'move',
+      from: 'near',
+      to: 'far',
+    });
   });
 
   it('a failed opening returns exactly the unheld arches and keeps held arches and abutments', () => {
@@ -239,7 +301,8 @@ describe('level 5: the arcade rule', () => {
         // A random legal placement: some arches out, the abutments anywhere (rock included).
         let a = emptyArcade(vv);
         for (let i = 0; i < vv.spans; i++) if (rng.int(0, 1)) a = moveArch(vv, a, 'tray', i)!;
-        for (let k = abutmentsFor(vv); k > 0; k--) a = moveAbutment(vv, a, 'tray', rng.pick(['near', 'far'] as const)) ?? a;
+        for (let k = abutmentsFor(vv); k > 0; k--)
+          a = moveAbutment(vv, a, 'tray', rng.pick(['near', 'far'] as const)) ?? a;
         let steps = 0;
         for (let h = valleyHint(vv, a); h; h = valleyHint(vv, a)) {
           a = followHint(vv, a, h);
@@ -274,23 +337,24 @@ describe('level 5: plans', () => {
 
 describe('levels 4–5: the ghost finger', () => {
   it('never opens a road that pools and always reaches the fountain', () => {
-    for (const band of ['prek', 'school'] as const) for (const seed of SEEDS) {
-      const plan = downhillPlan(band, new Rng(seed));
-      let s = downhillStart(plan);
-      for (let guard = 0; guard < 60; guard++) {
-        const m = waterBotMove(plan, s);
-        if (!m) break;
-        if ('drag' in m) throw new Error('no drags at level 4');
-        if (m.tap === 'open') {
-          const o = openSpring(plan, s);
-          expect(o.event).toBe('falls');
-          s = o.state.road + 1 < plan.roads.length ? nextRoad(plan, o.state) : o.state;
-        } else if (m.tap === 'card') s = chooseChannel(plan, s, m.card);
-        else s = pressArrow(plan, s, m.pier, m.dir).state;
+    for (const band of ['prek', 'school'] as const)
+      for (const seed of SEEDS) {
+        const plan = downhillPlan(band, new Rng(seed));
+        let s = downhillStart(plan);
+        for (let guard = 0; guard < 60; guard++) {
+          const m = waterBotMove(plan, s);
+          if (!m) break;
+          if ('drag' in m) throw new Error('no drags at level 4');
+          if (m.tap === 'open') {
+            const o = openSpring(plan, s);
+            expect(o.event).toBe('falls');
+            s = o.state.road + 1 < plan.roads.length ? nextRoad(plan, o.state) : o.state;
+          } else if (m.tap === 'card') s = chooseChannel(plan, s, m.card);
+          else s = pressArrow(plan, s, m.pier, m.dir).state;
+        }
+        expect(s.road).toBe(1);
+        expect(s.done).toBe(true);
       }
-      expect(s.road).toBe(1);
-      expect(s.done).toBe(true);
-    }
   });
 
   it("the bot's placement stands for every seed", () => {
@@ -301,8 +365,14 @@ describe('levels 4–5: the ghost finger', () => {
         const s: ValleyState = { valley: k, arcade: emptyArcade(vv), done: false };
         for (let guard = 0; guard < 12; guard++) {
           const m = waterBotMove(plan, s)!;
-          if ('tap' in m) { expect(m.tap).toBe('open'); break; }
-          s.arcade = m.drag === 'arch' ? moveArch(vv, s.arcade, m.from, m.to)! : moveAbutment(vv, s.arcade, m.from, m.to)!;
+          if ('tap' in m) {
+            expect(m.tap).toBe('open');
+            break;
+          }
+          s.arcade =
+            m.drag === 'arch'
+              ? moveArch(vv, s.arcade, m.from, m.to)!
+              : moveAbutment(vv, s.arcade, m.from, m.to)!;
           if (m.drag === 'abutment') expect(vv.ends[m.to]).toBe('earth');
         }
         expect(standsArcade(vv, s.arcade)).toBe(true);
@@ -319,13 +389,22 @@ describe('levels 4–5: plans and layout', () => {
   });
 
   const inputs = (l: NonNullable<ReturnType<typeof waterLayout>>): Rect[] => [
-    ...l.cards, ...l.arrows.flatMap((a) => [a.up, a.down]), l.open, ...l.spans, ...(l.ends ? [l.ends.near, l.ends.far] : []), ...l.trayArches, ...l.trayAbutments,
+    ...l.cards,
+    ...l.arrows.flatMap((a) => [a.up, a.down]),
+    l.open,
+    ...l.spans,
+    ...(l.ends ? [l.ends.near, l.ends.far] : []),
+    ...l.trayArches,
+    ...l.trayAbutments,
   ];
 
   for (const [name, v] of Object.entries(VIEWS)) {
     it(`fits at ${name}: every input at least 100, inside, clear of the corners and each other`, () => {
       const cases = [
-        waterLayout(4, 'prek', v), waterLayout(4, 'school', v), waterLayout(5, 'school', v, 3), waterLayout(5, 'school', v, 4),
+        waterLayout(4, 'prek', v),
+        waterLayout(4, 'school', v),
+        waterLayout(5, 'school', v, 3),
+        waterLayout(5, 'school', v, 4),
       ];
       for (const l of cases) {
         expect(l).not.toBeNull();
@@ -339,11 +418,15 @@ describe('levels 4–5: plans and layout', () => {
           expect(r.y + r.h).toBeLessThanOrEqual(v.h);
           for (const c of corners(v)) expect(overlaps(r, c)).toBe(false);
         }
-        for (let i = 0; i < rs.length; i++) for (let j = i + 1; j < rs.length; j++) expect(overlaps(rs[i], rs[j])).toBe(false);
+        for (let i = 0; i < rs.length; i++)
+          for (let j = i + 1; j < rs.length; j++) expect(overlaps(rs[i], rs[j])).toBe(false);
       }
       const pk = waterLayout(4, 'prek', v)!;
       expect(pk.cards).toHaveLength(2);
-      for (const c of pk.cards) { expect(c.w).toBe(300); expect(c.h).toBe(200); }
+      for (const c of pk.cards) {
+        expect(c.w).toBe(300);
+        expect(c.h).toBe(200);
+      }
       const sc = waterLayout(4, 'school', v)!;
       expect(sc.xs[3] - sc.xs[0]).toBeGreaterThanOrEqual(600);
       expect(sc.xs[2] - sc.xs[1]).toBeGreaterThanOrEqual(160);

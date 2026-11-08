@@ -2,10 +2,79 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  allPlaced, applyMove, arrives, askPlacement, askPlan, askYard, briefFor, check, CORNERS, distance, doorCount, doorsDone, drawBoard, drop, EDGES, FIGURES, fixedRect, freeCells, glowTarget, hintFor, HOT_STEPS, keep, keepLayout, movePlan, NEEDS, nextDoor, place, PLAN_ROOMS, planFor, planTally, ringBell, SIDE_MIDDLES, solutions, spotRects, startDoors, startPlacement, startPlan, startYard, tapDoor, tapWell, walkTally, workplaceOf, yardDone, yardTally,
-  account, askRuin, askBuild, buildTally, cluesOf, cost, decidingClue, fits, isShared, keepBuild, label, placeBuild, ruinDone, ruinHint, spareLabel, startBuild, startRuin, CLUES,
-  type Build, type BuildBrief, type RuinBrief,
-  type Board, type DoorsBrief, type Figure, type Layout, type PlanBrief, type Room, type WalkBrief, type WorkplacesBrief,
+  allPlaced,
+  applyMove,
+  arrives,
+  askPlacement,
+  askPlan,
+  askYard,
+  briefFor,
+  check,
+  CORNERS,
+  distance,
+  doorCount,
+  doorsDone,
+  drawBoard,
+  drop,
+  EDGES,
+  FIGURES,
+  fixedRect,
+  freeCells,
+  glowTarget,
+  hintFor,
+  HOT_STEPS,
+  keep,
+  keepLayout,
+  movePlan,
+  NEEDS,
+  nextDoor,
+  place,
+  PLAN_ROOMS,
+  planFor,
+  planTally,
+  ringBell,
+  SIDE_MIDDLES,
+  solutions,
+  spotRects,
+  startDoors,
+  startPlacement,
+  startPlan,
+  startYard,
+  tapDoor,
+  tapWell,
+  walkTally,
+  workplaceOf,
+  yardDone,
+  yardTally,
+  account,
+  askRuin,
+  askBuild,
+  buildTally,
+  cluesOf,
+  cost,
+  decidingClue,
+  fits,
+  isShared,
+  keepBuild,
+  label,
+  placeBuild,
+  ruinDone,
+  ruinHint,
+  spareLabel,
+  startBuild,
+  startRuin,
+  CLUES,
+  type Build,
+  type BuildBrief,
+  type RuinBrief,
+  type Board,
+  type DoorsBrief,
+  type Figure,
+  type Layout,
+  type PlanBrief,
+  type Room,
+  type WalkBrief,
+  type WorkplacesBrief,
 } from './logic';
 
 const SEEDS = 300;
@@ -143,7 +212,7 @@ describe('level 2, who works where', () => {
     }
   });
 
-  it('counts a figure\'s first wrong drop as free and its second as a miss; a placed figure cannot be dropped again', () => {
+  it("counts a figure's first wrong drop as free and its second as a miss; a placed figure cannot be dropped again", () => {
     const f = yard.figures[0];
     let d = drop(yard, startYard(), f, wrongRoomFor(f));
     expect([d.miss, d.state.misses]).toEqual([false, 0]);
@@ -155,7 +224,7 @@ describe('level 2, who works where', () => {
     expect([again.taken, again.miss, again.state]).toEqual([false, false, ok.state]);
   });
 
-  it('glows once when a yard\'s misses reach two, names the held or next figure\'s workplace, and following it finishes', () => {
+  it("glows once when a yard's misses reach two, names the held or next figure's workplace, and following it finishes", () => {
     const [a, b] = yard.figures;
     let s = startYard();
     expect(glowTarget(yard, s)).toBeNull();
@@ -195,8 +264,16 @@ describe("level 3, the cook's walk", () => {
     for (const seed of seeds()) {
       const b = briefFor(3, 'prek', new Rng(seed)) as WalkBrief;
       for (const p of b.placements) {
-        expect(place(p, startPlacement(), 'near')).toMatchObject({ spot: 'near', arrived: 'hot', done: true });
-        expect(place(p, startPlacement(), 'far')).toMatchObject({ spot: 'far', arrived: 'cold', done: false });
+        expect(place(p, startPlacement(), 'near')).toMatchObject({
+          spot: 'near',
+          arrived: 'hot',
+          done: true,
+        });
+        expect(place(p, startPlacement(), 'far')).toMatchObject({
+          spot: 'far',
+          arrived: 'cold',
+          done: false,
+        });
       }
     }
   });
@@ -223,7 +300,7 @@ describe("level 3, the cook's walk", () => {
     expect(place(p, s, 'far')).toBe(s);
   });
 
-  it('asked-for help before placing is the placement\'s one hint', () => {
+  it("asked-for help before placing is the placement's one hint", () => {
     const s = askPlacement(askPlacement(startPlacement()));
     expect(walkTally([s])).toEqual({ misses: 0, hints: 1 });
     const p = (briefFor(3, 'prek', new Rng(3)) as WalkBrief).placements[0];
@@ -287,7 +364,9 @@ describe('level 4, fit the household', () => {
         // A random reachable layout: each room in the tray or in a distinct free cell.
         const cells = rng.shuffle(free.slice());
         let l: Layout = {};
-        PLAN_ROOMS.forEach((r, i) => { if (rng.chance(0.75)) l[r] = cells[i]; });
+        PLAN_ROOMS.forEach((r, i) => {
+          if (rng.chance(0.75)) l[r] = cells[i];
+        });
         let d = distance(b, l);
         expect(Number.isFinite(d)).toBe(true);
         expect(d).toBeLessThanOrEqual(PLAN_ROOMS.length);
@@ -312,29 +391,68 @@ describe('level 4, fit the household', () => {
     let s = startPlan();
     let r = ringBell(board, s);
     expect([r.empty, r.unmet, r.state.misses]).toEqual([true, [], 0]);
-    for (const [room, cell] of Object.entries({ hall: 0, kitchen: 2, stable: 4, storeroom: 8, solar: 5 } as Layout)) s = movePlan(board, s, { room: room as keyof Layout, to: cell! });
+    for (const [room, cell] of Object.entries({
+      hall: 0,
+      kitchen: 2,
+      stable: 4,
+      storeroom: 8,
+      solar: 5,
+    } as Layout))
+      s = movePlan(board, s, { room: room as keyof Layout, to: cell! });
     r = ringBell(board, s);
-    expect([r.empty, r.unmet.map((n) => n.index), r.state.misses, r.glowed, r.state.hinted]).toEqual([false, [1, 2, 4], 3, true, true]);
+    expect([r.empty, r.unmet.map((n) => n.index), r.state.misses, r.glowed, r.state.hinted]).toEqual([
+      false,
+      [1, 2, 4],
+      3,
+      true,
+      true,
+    ]);
     s = r.state;
     r = ringBell(board, s);
     expect([r.state.misses, r.glowed]).toEqual([6, false]);
     s = r.state;
-    for (let guard = 0; guard < 8 && hintFor(board, s.layout); guard++) s = movePlan(board, s, hintFor(board, s.layout)!);
+    for (let guard = 0; guard < 8 && hintFor(board, s.layout); guard++)
+      s = movePlan(board, s, hintFor(board, s.layout)!);
     r = ringBell(board, s);
     expect([r.unmet, r.state.done]).toEqual([[], true]);
     expect(movePlan(board, r.state, { room: 'hall', to: 'tray' })).toBe(r.state);
     expect(planTally([r.state, askPlan(startPlan())])).toEqual({ misses: 6, hints: 2 });
     // One unmet need, fixed, is one miss and no glow.
     let t = startPlan();
-    for (const [room, cell] of Object.entries({ storeroom: 6, kitchen: 4, hall: 5, stable: 3, solar: 2 } as Layout)) t = movePlan(board, t, { room: room as keyof Layout, to: cell! });
+    for (const [room, cell] of Object.entries({
+      storeroom: 6,
+      kitchen: 4,
+      hall: 5,
+      stable: 3,
+      solar: 2,
+    } as Layout))
+      t = movePlan(board, t, { room: room as keyof Layout, to: cell! });
     const one = ringBell(board, t);
     expect([one.unmet.map((n) => n.index), one.state.misses, one.glowed]).toEqual([[3], 1, false]);
   });
 });
 
 describe('layout', () => {
-  const views = { landscape: computeView(1024, 768), portrait: computeView(768, 1024), phone: computeView(844, 390), notch: computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }) };
-  const briefs = [briefFor(1, 'toddler', new Rng(1)), briefFor(1, 'preschool', new Rng(2)), briefFor(2, 'preschool', new Rng(3)), briefFor(3, 'prek', new Rng(4)), briefFor(3, 'prek', new Rng(5)), briefFor(4, 'school', new Rng(6)), briefFor(5, 'school', new Rng(7)), briefFor(5, 'school', new Rng(17)), briefFor(5, 'school', new Rng(27)), briefFor(6, 'school', new Rng(8)), briefFor(6, 'school', new Rng(18)), briefFor(6, 'school', new Rng(28))];
+  const views = {
+    landscape: computeView(1024, 768),
+    portrait: computeView(768, 1024),
+    phone: computeView(844, 390),
+    notch: computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
+  };
+  const briefs = [
+    briefFor(1, 'toddler', new Rng(1)),
+    briefFor(1, 'preschool', new Rng(2)),
+    briefFor(2, 'preschool', new Rng(3)),
+    briefFor(3, 'prek', new Rng(4)),
+    briefFor(3, 'prek', new Rng(5)),
+    briefFor(4, 'school', new Rng(6)),
+    briefFor(5, 'school', new Rng(7)),
+    briefFor(5, 'school', new Rng(17)),
+    briefFor(5, 'school', new Rng(27)),
+    briefFor(6, 'school', new Rng(8)),
+    briefFor(6, 'school', new Rng(18)),
+    briefFor(6, 'school', new Rng(28)),
+  ];
 
   it('keeps every input at least 100 units, inside the view, off the corners and apart, at every view', () => {
     for (const [name, v] of Object.entries(views)) {
@@ -343,7 +461,9 @@ describe('layout', () => {
         expect(l, `${b.id} ${name}`).not.toBeNull();
         for (const r of l!.inputs) {
           expect(Math.min(r.w, r.h), `${b.id} ${name}`).toBeGreaterThanOrEqual(100);
-          expect(r.x >= 0 && r.y >= 0 && r.x + r.w <= v.w && r.y + r.h <= v.h, `${b.id} ${name} inside`).toBe(true);
+          expect(r.x >= 0 && r.y >= 0 && r.x + r.w <= v.w && r.y + r.h <= v.h, `${b.id} ${name} inside`).toBe(
+            true,
+          );
         }
       }
     }
@@ -354,7 +474,9 @@ describe('layout', () => {
     const l = keepLayout(b, views.portrait)!;
     expect(l.tray![0].y + l.tray![0].h).toBeLessThanOrEqual(l.cells![0].y);
     expect(l.cells![8].y + l.cells![8].h).toBeLessThanOrEqual(l.bell!.y);
-    expect(Math.abs((l.cells![3].x + l.cells![5].x + l.cells![5].w) / 2 - views.portrait.w / 2)).toBeLessThan(1);
+    expect(Math.abs((l.cells![3].x + l.cells![5].x + l.cells![5].w) / 2 - views.portrait.w / 2)).toBeLessThan(
+      1,
+    );
     const wide = keepLayout(b, views.landscape)!;
     expect(wide.cards![0].x).toBeGreaterThan(wide.bell!.x + wide.bell!.w);
   });
@@ -427,7 +549,7 @@ describe('level 5, read the ruin', () => {
     for (const seed of seeds(40)) expect(ruinsOf(seed)).toEqual(ruinsOf(seed));
   });
 
-  it('settles a label only on its own room; a wrong label is one miss naming that room\'s deciding clue', () => {
+  it("settles a label only on its own room; a wrong label is one miss naming that room's deciding clue", () => {
     for (const seed of seeds(100)) {
       for (const ruin of ruinsOf(seed)) {
         const s0 = startRuin();
@@ -489,14 +611,17 @@ describe('level 5, read the ruin', () => {
         const order = rng.shuffle(ruin.rooms.map((r) => r.room));
         let s = startRuin();
         const k = rng.int(0, 3);
-        for (const room of order.slice(0, k)) s = label(ruin, s, room, ruin.rooms.find((r) => r.room === room)!.cell).state;
+        for (const room of order.slice(0, k))
+          s = label(ruin, s, room, ruin.rooms.find((r) => r.room === room)!.cell).state;
         const askFirst = rng.chance(0.5);
         let hinted = 0;
         if (askFirst) s = askRuin(s);
         else {
           const rest = ruin.rooms.filter((r) => !s.settled.includes(r.room));
           for (let i = 0; i < 2; i++) {
-            const wrong = rng.pick(PLAN_ROOMS.filter((x) => x !== rest[i % rest.length].room && !s.settled.includes(x)));
+            const wrong = rng.pick(
+              PLAN_ROOMS.filter((x) => x !== rest[i % rest.length].room && !s.settled.includes(x)),
+            );
             const r = label(ruin, s, wrong, rest[i % rest.length].cell);
             expect(r.missed).toBe(true);
             if (r.glowed) hinted++;
@@ -596,7 +721,9 @@ describe('level 6, stone or timber', () => {
           expect(s.spent).toBe(5);
         }
         for (const a of [t, s]) {
-          expect(a.steps.map((st) => st.year)).toEqual(Array.from({ length: years / 5 + 1 }, (_, i) => i * 5));
+          expect(a.steps.map((st) => st.year)).toEqual(
+            Array.from({ length: years / 5 + 1 }, (_, i) => i * 5),
+          );
           for (const st of a.steps) {
             expect(st.purse).toBeGreaterThanOrEqual(0);
             expect(st.purse).toBeLessThanOrEqual(8);
@@ -637,7 +764,12 @@ describe('level 6, stone or timber', () => {
   });
 
   it('keeps every row and control at least 100 units and apart at the four views', () => {
-    const views = [computeView(1024, 768), computeView(768, 1024), computeView(844, 390), computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 })];
+    const views = [
+      computeView(1024, 768),
+      computeView(768, 1024),
+      computeView(844, 390),
+      computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
+    ];
     for (const seed of seeds(20)) {
       const b = briefFor(6, 'school', new Rng(seed));
       for (const v of views) {
@@ -645,7 +777,12 @@ describe('level 6, stone or timber', () => {
         expect(l).not.toBeNull();
         const parts = [...l.rows!, l.build!, l.keep!];
         for (const r of parts) expect(Math.min(r.w, r.h)).toBeGreaterThanOrEqual(100);
-        parts.forEach((p, i) => parts.forEach((q, j) => { if (i < j) expect(p.x < q.x + q.w && q.x < p.x + p.w && p.y < q.y + q.h && q.y < p.y + p.h).toBe(false); }));
+        parts.forEach((p, i) =>
+          parts.forEach((q, j) => {
+            if (i < j)
+              expect(p.x < q.x + q.w && q.x < p.x + p.w && p.y < q.y + q.h && q.y < p.y + p.h).toBe(false);
+          }),
+        );
       }
     }
   });

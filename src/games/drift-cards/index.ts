@@ -8,7 +8,22 @@ import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { arrow, boatArt, cardArt, checkArt, fogArt, friendArt, iconArt, patchCardArt, SAND, SAND_LINE, SEA, SEA_DARK, WALL, WALL_LINE } from './art';
+import {
+  arrow,
+  boatArt,
+  cardArt,
+  checkArt,
+  fogArt,
+  friendArt,
+  iconArt,
+  patchCardArt,
+  SAND,
+  SAND_LINE,
+  SEA,
+  SEA_DARK,
+  WALL,
+  WALL_LINE,
+} from './art';
 import {
   BAND_LEVELS,
   BEACH_NAME,
@@ -230,7 +245,10 @@ class DriftCards implements Game {
 
   private layoutFor(v: View): DriftLayout {
     // The layout fits every view the island has; at an untried shape, the iPad's layout is the fallback.
-    return driftLayout(v, this.level, this.boatCols) ?? driftLayout({ w: 1024, h: 768, scale: 1 }, this.level, this.boatCols)!;
+    return (
+      driftLayout(v, this.level, this.boatCols) ??
+      driftLayout({ w: 1024, h: 768, scale: 1 }, this.level, this.boatCols)!
+    );
   }
 
   start() {
@@ -296,7 +314,8 @@ class DriftCards implements Game {
     const end = this.exitPoint(last);
     if (end && tr.hold) pts.push(end);
     for (let i = 0; i + 1 < pts.length; i++) {
-      const a = pts[i], b = pts[i + 1];
+      const a = pts[i],
+        b = pts[i + 1];
       const n = Math.max(1, Math.round(Math.hypot(b.x - a.x, b.y - a.y) / 16));
       for (let k = 0; k < n; k++) g.circle(a.x + ((b.x - a.x) * k) / n, a.y + ((b.y - a.y) * k) / n, 6);
     }
@@ -393,7 +412,11 @@ class DriftCards implements Game {
       // Whoever found it waves it back to the boat; the request stays.
       const req = this.request!;
       await this.ctx.say('drift.wrong.2', { friend2: FRIEND[d.beach], friend: FRIEND[req.ask] });
-      await tw.to(card, { x: boat.node.x - 40, y: boat.node.y - 66, alpha: 0 }, { duration: 0.6, ease: ease.inOutSine });
+      await tw.to(
+        card,
+        { x: boat.node.x - 40, y: boat.node.y - 66, alpha: 0 },
+        { duration: 0.6, ease: ease.inOutSine },
+      );
       if (this.finished) return;
       card.destroy();
       this.busy = false;
@@ -469,8 +492,15 @@ class DriftCards implements Game {
     if (this.finished || !turn || turn.done) return;
     if (this.pc) {
       // The right patch card after two contradicted patches; Check when Show me finds the patch in the fog already fits.
-      const boxes = [...(turn.glow ? [this.L.cards[this.pc.answer]] : []), ...(this.checkGlow && this.L.check ? [this.L.check] : [])];
-      for (const b of boxes) g.roundRect(b.x - 6, b.y - 6, b.w + 12, b.h + 12, 24).stroke({ color: swatch.orange.line, width: 10 });
+      const boxes = [
+        ...(turn.glow ? [this.L.cards[this.pc.answer]] : []),
+        ...(this.checkGlow && this.L.check ? [this.L.check] : []),
+      ];
+      for (const b of boxes)
+        g.roundRect(b.x - 6, b.y - 6, b.w + 12, b.h + 12, 24).stroke({
+          color: swatch.orange.line,
+          width: 10,
+        });
       return;
     }
     if (this.plan.mode === 'predict') {
@@ -566,7 +596,15 @@ class DriftCards implements Game {
     this.clearTrace();
     this.drawGlow();
     const card = cardArt(against.card);
-    if (!(await this.ride(card, ret.col, { path: against.path, beach: against.beach }, this.friends.get(against.beach)!.found))) return;
+    if (
+      !(await this.ride(
+        card,
+        ret.col,
+        { path: against.path, beach: against.beach },
+        this.friends.get(against.beach)!.found,
+      ))
+    )
+      return;
     this.wobble(this.friends.get(ret.beach)!.art);
     await this.ctx.say('drift.wrong.3', { n: against.card, friend: FRIEND[ret.beach] });
     if (this.finished) return;
@@ -704,7 +742,12 @@ class DriftCards implements Game {
 
   private traceIntent(path: Cell[]): TouchIntent {
     const pts = path.map((c) => cellCentre(this.L, c));
-    return { trace: { on: this.seaHit, x: pts[0].x, y: pts[0].y }, via: pts.slice(1).map((p) => ({ on: this.seaHit, x: p.x, y: p.y })), receiver: this.seaHit, pause: 0.3 };
+    return {
+      trace: { on: this.seaHit, x: pts[0].x, y: pts[0].y },
+      via: pts.slice(1).map((p) => ({ on: this.seaHit, x: p.x, y: p.y })),
+      receiver: this.seaHit,
+      pause: 0.3,
+    };
   }
 
   // Round end -------------------------------------------------------------------------------------------
@@ -728,12 +771,16 @@ class DriftCards implements Game {
 
   private press(node: Container) {
     if (this.ctx.tw.busy(node.scale)) return;
-    void this.ctx.tw.to(node.scale, { x: 0.92, y: 0.92 }, { duration: 0.08 }).then(() => this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.3, ease: ease.outBack }));
+    void this.ctx.tw
+      .to(node.scale, { x: 0.92, y: 0.92 }, { duration: 0.08 })
+      .then(() => this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.3, ease: ease.outBack }));
   }
 
   private wobble(node: Container) {
     if (this.ctx.tw.busy(node)) return;
-    void this.ctx.tw.to(node, { rotation: 0.14 }, { duration: 0.1 }).then(() => this.ctx.tw.to(node, { rotation: 0 }, { duration: 0.5, ease: ease.outElastic }));
+    void this.ctx.tw
+      .to(node, { rotation: 0.14 }, { duration: 0.1 })
+      .then(() => this.ctx.tw.to(node, { rotation: 0 }, { duration: 0.5, ease: ease.outElastic }));
   }
 
   resize(v: View) {
@@ -751,7 +798,11 @@ class DriftCards implements Game {
     g.roundRect(L.wall.x, L.wall.y, L.wall.w, L.wall.h, 6).fill(WALL).stroke({ color: WALL_LINE, width: 3 });
     for (const [beach, b] of Object.entries(L.beaches) as [Beach, (typeof L.beaches)[Beach] & object][]) {
       const plate = this.plates.get(beach)!;
-      (plate.children[0] as Graphics).clear().roundRect(-b.w / 2 + 3, -b.h / 2 + 3, b.w - 6, b.h - 6, 16).fill(SAND).stroke({ color: SAND_LINE, width: 3 });
+      (plate.children[0] as Graphics)
+        .clear()
+        .roundRect(-b.w / 2 + 3, -b.h / 2 + 3, b.w - 6, b.h - 6, 16)
+        .fill(SAND)
+        .stroke({ color: SAND_LINE, width: 3 });
       plate.position.set(b.x + b.w / 2, b.y + b.h / 2);
       plate.hitArea = new Rectangle(-b.w / 2, -b.h / 2, b.w, b.h);
       plate.pivot.set(0, 0);
@@ -796,7 +847,8 @@ class DriftCards implements Game {
     g.roundRect(L.grid.x - 6, L.grid.y, L.grid.w + 12, L.grid.h + 6, 10).fill(SEA);
     for (let r = 0; r < this.plan.rows; r++) {
       for (let c = 0; c < this.plan.cols; c++) {
-        const x = L.grid.x + c * L.cell, y = L.grid.y + r * L.cell;
+        const x = L.grid.x + c * L.cell,
+          y = L.grid.y + r * L.cell;
         g.rect(x + 2, y + 2, L.cell - 4, L.cell - 4).stroke({ color: SEA_DARK, width: 1.5, alpha: 0.35 });
         // A fogged cell's entry is a placeholder: never drawn.
         if (!this.fogged(r, c)) arrow(g, x + L.cell / 2, y + L.cell / 2, L.cell * 0.9, this.sea.cells[r][c]);
@@ -822,7 +874,9 @@ class DriftCards implements Game {
       // An empty hand held up: a bubble with a dotted card outline in it.
       // Beside the friend, so it never covers the sea's arrows.
       const side = f.beach === 'E' ? -1 : 1;
-      g.roundRect(side > 0 ? 44 : -132, -92, 88, 60, 16).fill(0xffffff).stroke({ color: SAND_LINE, width: 3 });
+      g.roundRect(side > 0 ? 44 : -132, -92, 88, 60, 16)
+        .fill(0xffffff)
+        .stroke({ color: SAND_LINE, width: 3 });
       g.poly([side * 44, -70, side * 44, -54, side * 34, -50]).fill(0xffffff);
       g.roundRect(side > 0 ? 62 : -114, -80, 52, 36, 6).stroke({ color: SAND_LINE, width: 3, alpha: 0.8 });
     }
@@ -848,7 +902,8 @@ class DriftCards implements Game {
         const d = this.sea.cells[r][c];
         const k = ((this.clock * 0.5 + (r * 0.37 + c * 0.23)) % 1) - 0.5;
         const ctr = { x: L.grid.x + (c + 0.5) * L.cell, y: L.grid.y + (r + 0.5) * L.cell };
-        const dx = d === 'e' ? 1 : d === 'w' ? -1 : 0, dy = d === 's' ? 1 : 0;
+        const dx = d === 'e' ? 1 : d === 'w' ? -1 : 0,
+          dy = d === 's' ? 1 : 0;
         const x = ctr.x + dx * k * L.cell * 0.8 + dy * L.cell * 0.32;
         const y = ctr.y + dy * k * L.cell * 0.8 + (dx ? L.cell * 0.32 : 0);
         g.moveTo(x - dx * 8, y - dy * 8).lineTo(x + dx * 8, y + dy * 8);
@@ -857,8 +912,7 @@ class DriftCards implements Game {
     g.stroke({ color: 0xffffff, width: 3, cap: 'round', alpha: 0.6 });
   }
 
-  destroy() {
-  }
+  destroy() {}
 }
 
 export const driftCards: GameModule = {
@@ -872,8 +926,10 @@ export const driftCards: GameModule = {
   levels: (b) => rangeFor(BAND_LEVELS, b),
   describeLevel: (l) => dcPlan(l).name,
   music: STYLES.quiet,
-  coplayHint: 'One of you is the sea and traces the arrows aloud ("down, down, across"); the other predicts or picks the boat. Swap each card.',
-  offScreen: 'Draw a sea on paper with an arrow in every square. Put a button at the top and take turns moving it along the arrows. Where does it wash up?',
+  coplayHint:
+    'One of you is the sea and traces the arrows aloud ("down, down, across"); the other predicts or picks the boat. Swap each card.',
+  offScreen:
+    'Draw a sea on paper with an arrow in every square. Put a button at the top and take turns moving it along the arrows. Where does it wash up?',
   hubIcon: () => new WigglyIcon(iconArt()),
   touchDemo: true,
   sticker: (seed) => iconArt(seed),

@@ -1,38 +1,61 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { answerOf, choices, hintSpans, HOP_MIN, hopTicks, isRuler, isWide, longerShorter, makeMeasures, measureTouch, planFor, PLANS, RULER, SLIDE_RULER, slideSlots, temptingReading, THINGS, UNIT_SIZE, type Measure } from './logic';
+import {
+  answerOf,
+  choices,
+  hintSpans,
+  HOP_MIN,
+  hopTicks,
+  isRuler,
+  isWide,
+  longerShorter,
+  makeMeasures,
+  measureTouch,
+  planFor,
+  PLANS,
+  RULER,
+  SLIDE_RULER,
+  slideSlots,
+  temptingReading,
+  THINGS,
+  UNIT_SIZE,
+  type Measure,
+} from './logic';
 import { inchworm, THING_WORDS } from '.';
 import { SCRIPT } from '../../content/voice-script';
 import { levelsInOrder } from '../../progress/difficulty';
 
 describe('Inchworm Measure', () => {
   it('demonstrates every mode by filling each row and then choosing the exact reading', () => {
-    for (const plan of PLANS) for (let seed = 1; seed <= 50; seed++) {
-      for (const m of makeMeasures(plan, new Rng(seed))) {
-        const worms = Array(m.other ? 2 : 1).fill(0);
-        for (let step = 0; step < 20; step++) {
-          const move = measureTouch(m, plan.mode, worms);
-          if (!move) break;
-          if (move.kind === 'answer') {
-            expect(move.value).toBe(answerOf(m, plan.mode));
-            break;
+    for (const plan of PLANS)
+      for (let seed = 1; seed <= 50; seed++) {
+        for (const m of makeMeasures(plan, new Rng(seed))) {
+          const worms = Array(m.other ? 2 : 1).fill(0);
+          for (let step = 0; step < 20; step++) {
+            const move = measureTouch(m, plan.mode, worms);
+            if (!move) break;
+            if (move.kind === 'answer') {
+              expect(move.value).toBe(answerOf(m, plan.mode));
+              break;
+            }
+            if (move.kind === 'hop' || move.kind === 'slide') {
+              worms[0]++;
+              continue;
+            }
+            expect(move.row).toBeGreaterThanOrEqual(0);
+            expect(move.row).toBeLessThan(worms.length);
+            worms[move.row]++;
           }
-          if (move.kind === 'hop' || move.kind === 'slide') {
-            worms[0]++;
-            continue;
+          if (plan.mode === 'slide') expect(worms[0]).toBe(2);
+          else if (!isRuler(plan.mode)) {
+            expect(worms[0]).toBe(m.length);
+            if (m.other) expect(worms[1]).toBe(m.other.length);
           }
-          expect(move.row).toBeGreaterThanOrEqual(0);
-          expect(move.row).toBeLessThan(worms.length);
-          worms[move.row]++;
+          expect(measureTouch(m, plan.mode, worms)).toEqual(
+            plan.mode === 'lay' ? null : { kind: 'answer', value: answerOf(m, plan.mode) },
+          );
         }
-        if (plan.mode === 'slide') expect(worms[0]).toBe(2);
-        else if (!isRuler(plan.mode)) {
-          expect(worms[0]).toBe(m.length);
-          if (m.other) expect(worms[1]).toBe(m.other.length);
-        }
-        expect(measureTouch(m, plan.mode, worms)).toEqual(plan.mode === 'lay' ? null : { kind: 'answer', value: answerOf(m, plan.mode) });
       }
-    }
   });
 
   it('makes lengths that fit, different each time, and answers that are offered', () => {
@@ -54,7 +77,8 @@ describe('Inchworm Measure', () => {
           // Things that don't start at 0 offer the tempting wrong reading (the end of the pencil).
           if (plan.mode === 'ruler' && m.start) expect(cs).toContain(m.start + m.length);
         });
-        if (plan.mode === 'ruler') expect(ms.some((m) => m.start === 0) && ms.some((m) => m.start! > 0)).toBe(true);
+        if (plan.mode === 'ruler')
+          expect(ms.some((m) => m.start === 0) && ms.some((m) => m.start! > 0)).toBe(true);
       }
     }
   });
@@ -64,8 +88,24 @@ describe('Inchworm Measure on a ruler: how much longer, and end to end', () => {
   const plan = (mode: string) => PLANS.find((p) => p.mode === mode)!;
 
   it('keeps the ladder in order, with the two new ruler levels appended after reading a ruler', () => {
-    expect(PLANS.map((p) => p.mode)).toEqual(['lay', 'say', 'compare', 'ruler', 'rulerdiff', 'rulersum', 'units', 'broken', 'hop', 'slide']);
-    expect(PLANS.filter((p) => isRuler(p.mode)).map((p) => p.mode)).toEqual(['ruler', 'rulerdiff', 'rulersum', 'broken']);
+    expect(PLANS.map((p) => p.mode)).toEqual([
+      'lay',
+      'say',
+      'compare',
+      'ruler',
+      'rulerdiff',
+      'rulersum',
+      'units',
+      'broken',
+      'hop',
+      'slide',
+    ]);
+    expect(PLANS.filter((p) => isRuler(p.mode)).map((p) => p.mode)).toEqual([
+      'ruler',
+      'rulerdiff',
+      'rulersum',
+      'broken',
+    ]);
   });
 
   it('puts both things on the ruler, with different lengths and different kinds', () => {
@@ -143,7 +183,10 @@ describe('Inchworm Measure on a ruler: how much longer, and end to end', () => {
           for (const s of spans) {
             expect(s.from).toBeGreaterThanOrEqual(0);
             expect(s.from + s.count).toBeLessThanOrEqual(RULER);
-            const owner = s.row === 0 ? { start: m.start!, length: m.length } : { start: m.other!.start!, length: m.other!.length };
+            const owner =
+              s.row === 0
+                ? { start: m.start!, length: m.length }
+                : { start: m.other!.start!, length: m.other!.length };
             // The lit spaces sit inside the thing they belong to.
             expect(s.from).toBeGreaterThanOrEqual(owner.start);
             expect(s.from + s.count).toBeLessThanOrEqual(owner.start + owner.length);
@@ -198,7 +241,12 @@ describe('Inchworm Measure with big worms, then little worms (level 7)', () => {
       const ms = makeMeasures(plan, new Rng(seed));
       expect(ms.slice(0, 2).map((m) => m.ask)).toEqual(['little', 'little']);
       expect([...ms.slice(2).map((m) => m.ask)].sort()).toEqual(['big', 'little']);
-      orders.add(ms.slice(2).map((m) => m.ask).join());
+      orders.add(
+        ms
+          .slice(2)
+          .map((m) => m.ask)
+          .join(),
+      );
       for (const m of ms) expect(answerOf(m, 'units')).toBe(m.ask === 'big' ? m.length : m.other!.length);
     }
     expect(orders).toEqual(new Set(['little,big', 'big,little']));
@@ -219,35 +267,84 @@ describe('Inchworm Measure with big worms, then little worms (level 7)', () => {
   });
 
   it('the finger lays b big worms, then 2b little ones, then taps the count that was asked', () => {
-    for (const seed of seeds.slice(0, 50)) for (const m of makeMeasures(plan, new Rng(seed))) {
-      const worms = [0, 0];
-      const rows: number[] = [];
-      let move = measureTouch(m, 'units', worms);
-      while (move?.kind === 'worm') {
-        rows.push(move.row);
-        worms[move.row]++;
-        move = measureTouch(m, 'units', worms);
+    for (const seed of seeds.slice(0, 50))
+      for (const m of makeMeasures(plan, new Rng(seed))) {
+        const worms = [0, 0];
+        const rows: number[] = [];
+        let move = measureTouch(m, 'units', worms);
+        while (move?.kind === 'worm') {
+          rows.push(move.row);
+          worms[move.row]++;
+          move = measureTouch(m, 'units', worms);
+        }
+        expect(rows).toEqual([...Array(m.length).fill(0), ...Array(2 * m.length).fill(1)]);
+        expect(move).toEqual({ kind: 'answer', value: m.ask === 'big' ? m.length : 2 * m.length });
       }
-      expect(rows).toEqual([...Array(m.length).fill(0), ...Array(2 * m.length).fill(1)]);
-      expect(move).toEqual({ kind: 'answer', value: m.ask === 'big' ? m.length : 2 * m.length });
-    }
   });
 
   it('leaves levels 1-6 as they were', () => {
     // Seed 7's lengths and starts for levels 1-6, as they were before level 7 was appended. Which things
     // appear was refreshed with the five new things, so only the measuring numbers are pinned.
-    const numbers = (m: Measure): unknown => ({ length: m.length, start: m.start, other: m.other && { length: m.other.length, start: m.other.start } });
-    const old = (m: { thing: string; length: number; start?: number; other?: { thing: string; length: number; start?: number } }) => numbers(m as Measure);
-    expect([1, 2, 3, 4, 5, 6].map((l) => makeMeasures(planFor(l), new Rng(7)).map(numbers))).toEqual(([
-      [{thing: 'leaf', length: 2}, {thing: 'snake', length: 4}, {thing: 'pencil', length: 3}],
-      [{thing: 'leaf', length: 2}, {thing: 'snake', length: 6}, {thing: 'pencil', length: 4}],
-      [{thing: 'leaf', length: 2, other: {thing: 'stick', length: 6}}, {thing: 'snake', length: 3, other: {thing: 'leaf', length: 5}}, {thing: 'stick', length: 2, other: {thing: 'leaf', length: 4}}],
-      [{thing: 'leaf', length: 2, start: 0}, {thing: 'snake', length: 8, start: 2}, {thing: 'pencil', length: 4, start: 0}, {thing: 'snake', length: 3, start: 3}],
-      [{thing: 'leaf', length: 2, start: 0, other: {thing: 'stick', length: 8, start: 0}}, {thing: 'snake', length: 3, start: 0, other: {thing: 'stick', length: 7, start: 1}}, {thing: 'snake', length: 4, start: 1, other: {thing: 'pencil', length: 7, start: 3}}, {thing: 'leaf', length: 7, start: 1, other: {thing: 'pencil', length: 3, start: 1}}],
-      [{thing: 'leaf', length: 2, start: 0, other: {thing: 'stick', length: 4, start: 2}}, {thing: 'snake', length: 3, start: 1, other: {thing: 'stick', length: 2, start: 4}}, {thing: 'pencil', length: 2, start: 0, other: {thing: 'snake', length: 2, start: 2}}, {thing: 'leaf', length: 4, start: 1, other: {thing: 'pencil', length: 4, start: 5}}]
-    ] as Parameters<typeof old>[0][][]).map((ms) => ms.map(old)));
-    expect(PLANS.slice(0, 6).map((p) => p.mode)).toEqual(['lay', 'say', 'compare', 'ruler', 'rulerdiff', 'rulersum']);
-    for (let level = 1; level <= 6; level++) for (const m of makeMeasures(planFor(level), new Rng(level))) expect(m.ask).toBeUndefined();
+    const numbers = (m: Measure): unknown => ({
+      length: m.length,
+      start: m.start,
+      other: m.other && { length: m.other.length, start: m.other.start },
+    });
+    const old = (m: {
+      thing: string;
+      length: number;
+      start?: number;
+      other?: { thing: string; length: number; start?: number };
+    }) => numbers(m as Measure);
+    expect([1, 2, 3, 4, 5, 6].map((l) => makeMeasures(planFor(l), new Rng(7)).map(numbers))).toEqual(
+      (
+        [
+          [
+            { thing: 'leaf', length: 2 },
+            { thing: 'snake', length: 4 },
+            { thing: 'pencil', length: 3 },
+          ],
+          [
+            { thing: 'leaf', length: 2 },
+            { thing: 'snake', length: 6 },
+            { thing: 'pencil', length: 4 },
+          ],
+          [
+            { thing: 'leaf', length: 2, other: { thing: 'stick', length: 6 } },
+            { thing: 'snake', length: 3, other: { thing: 'leaf', length: 5 } },
+            { thing: 'stick', length: 2, other: { thing: 'leaf', length: 4 } },
+          ],
+          [
+            { thing: 'leaf', length: 2, start: 0 },
+            { thing: 'snake', length: 8, start: 2 },
+            { thing: 'pencil', length: 4, start: 0 },
+            { thing: 'snake', length: 3, start: 3 },
+          ],
+          [
+            { thing: 'leaf', length: 2, start: 0, other: { thing: 'stick', length: 8, start: 0 } },
+            { thing: 'snake', length: 3, start: 0, other: { thing: 'stick', length: 7, start: 1 } },
+            { thing: 'snake', length: 4, start: 1, other: { thing: 'pencil', length: 7, start: 3 } },
+            { thing: 'leaf', length: 7, start: 1, other: { thing: 'pencil', length: 3, start: 1 } },
+          ],
+          [
+            { thing: 'leaf', length: 2, start: 0, other: { thing: 'stick', length: 4, start: 2 } },
+            { thing: 'snake', length: 3, start: 1, other: { thing: 'stick', length: 2, start: 4 } },
+            { thing: 'pencil', length: 2, start: 0, other: { thing: 'snake', length: 2, start: 2 } },
+            { thing: 'leaf', length: 4, start: 1, other: { thing: 'pencil', length: 4, start: 5 } },
+          ],
+        ] as Parameters<typeof old>[0][][]
+      ).map((ms) => ms.map(old)),
+    );
+    expect(PLANS.slice(0, 6).map((p) => p.mode)).toEqual([
+      'lay',
+      'say',
+      'compare',
+      'ruler',
+      'rulerdiff',
+      'rulersum',
+    ]);
+    for (let level = 1; level <= 6; level++)
+      for (const m of makeMeasures(planFor(level), new Rng(level))) expect(m.ask).toBeUndefined();
   });
 
   it('is the pre-K top and comes after "how many worms long" at school', () => {
@@ -267,17 +364,18 @@ describe('Inchworm Measure: fresh things and the long jump', () => {
 
   it('no thing shows in two rounds running, at any level, and every thing turns up', () => {
     const seen = new Set<string>();
-    for (const plan of PLANS) for (let seed = 1; seed <= 300; seed++) {
-      const ms = makeMeasures(plan, new Rng(seed));
-      ms.forEach((m, i) => {
-        const now = [m.thing, ...(m.other ? [m.other.thing] : [])];
-        now.forEach((t) => seen.add(t));
-        if (i === 0) return;
-        const before = [ms[i - 1].thing, ...(ms[i - 1].other ? [ms[i - 1].other!.thing] : [])];
-        // Big and little worms measure one thing twice in a round; across rounds nothing repeats.
-        for (const t of new Set(now)) expect(before).not.toContain(t);
-      });
-    }
+    for (const plan of PLANS)
+      for (let seed = 1; seed <= 300; seed++) {
+        const ms = makeMeasures(plan, new Rng(seed));
+        ms.forEach((m, i) => {
+          const now = [m.thing, ...(m.other ? [m.other.thing] : [])];
+          now.forEach((t) => seen.add(t));
+          if (i === 0) return;
+          const before = [ms[i - 1].thing, ...(ms[i - 1].other ? [ms[i - 1].other!.thing] : [])];
+          // Big and little worms measure one thing twice in a round; across rounds nothing repeats.
+          for (const t of new Set(now)) expect(before).not.toContain(t);
+        });
+      }
     expect([...seen].sort()).toEqual([...THINGS].sort());
   });
 
@@ -291,7 +389,9 @@ describe('Inchworm Measure: fresh things and the long jump', () => {
       places.add(ms.findIndex((m) => m.jump));
     }
     expect(places).toEqual(new Set([0, 1, 2]));
-    for (const level of [1, 2, 4, 5, 6, 7, 8]) for (let seed = 1; seed <= 50; seed++) expect(makeMeasures(planFor(level), new Rng(seed)).some((m) => m.jump)).toBe(false);
+    for (const level of [1, 2, 4, 5, 6, 7, 8])
+      for (let seed = 1; seed <= 50; seed++)
+        expect(makeMeasures(planFor(level), new Rng(seed)).some((m) => m.jump)).toBe(false);
   });
 });
 
@@ -322,7 +422,9 @@ describe('Inchworm Measure: the broken ruler (level 8)', () => {
       const rng = new Rng(seed);
       for (const m of makeMeasures(plan, rng)) {
         const cs = choices(m, 'broken', rng);
-        expect([...cs].sort((a, b) => a - b)).toEqual([m.length, m.length + 1, m.start! + m.length].sort((a, b) => a - b));
+        expect([...cs].sort((a, b) => a - b)).toEqual(
+          [m.length, m.length + 1, m.start! + m.length].sort((a, b) => a - b),
+        );
         expect(new Set(cs).size).toBe(3);
         expect(temptingReading(m, 'broken')).toBe(m.start! + m.length);
         expect(hintSpans(m, 'broken')).toEqual([{ row: 0, from: m.start, count: m.length }]);
@@ -332,7 +434,15 @@ describe('Inchworm Measure: the broken ruler (level 8)', () => {
   });
 
   it('has its lines', () => {
-    for (const id of ['worm.broken', 'worm.brokenend', 'worm.marks', 'worm.jump', 'worm.jumpmuch', 'worm.pastprints'] as const) expect(SCRIPT[id]).toBeTruthy();
+    for (const id of [
+      'worm.broken',
+      'worm.brokenend',
+      'worm.marks',
+      'worm.jump',
+      'worm.jumpmuch',
+      'worm.pastprints',
+    ] as const)
+      expect(SCRIPT[id]).toBeTruthy();
   });
 });
 
@@ -371,13 +481,14 @@ describe('Inchworm Measure: one worm, hop by hop (level 9)', () => {
   });
 
   it('the finger taps the worm `length` times, then the pad with the hop count', () => {
-    for (const seed of seeds) for (const m of makeMeasures(plan, new Rng(seed))) {
-      const worms = [0];
-      while (measureTouch(m, 'hop', worms)?.kind === 'hop') worms[0]++;
-      expect(worms[0]).toBe(m.length);
-      expect(measureTouch(m, 'hop', worms)).toEqual({ kind: 'answer', value: m.length });
-      expect(answerOf(m, 'hop')).toBe(hopTicks(worms[0]).length);
-    }
+    for (const seed of seeds)
+      for (const m of makeMeasures(plan, new Rng(seed))) {
+        const worms = [0];
+        while (measureTouch(m, 'hop', worms)?.kind === 'hop') worms[0]++;
+        expect(worms[0]).toBe(m.length);
+        expect(measureTouch(m, 'hop', worms)).toEqual({ kind: 'answer', value: m.length });
+        expect(answerOf(m, 'hop')).toBe(hopTicks(worms[0]).length);
+      }
   });
 
   it('offers the hop count and two near it, all different and above zero', () => {
@@ -399,7 +510,8 @@ describe('Inchworm Measure: one worm, hop by hop (level 9)', () => {
   });
 
   it('has its lines', () => {
-    for (const id of ['worm.hop', 'worm.hops', 'worm.hoplong', 'worm.chalk'] as const) expect(SCRIPT[id]).toBeTruthy();
+    for (const id of ['worm.hop', 'worm.hops', 'worm.hoplong', 'worm.chalk'] as const)
+      expect(SCRIPT[id]).toBeTruthy();
   });
 });
 
@@ -467,6 +579,13 @@ describe('Inchworm Measure: longer than the ruler (level 10)', () => {
   });
 
   it('has its lines', () => {
-    for (const id of ['worm.slide', 'worm.slidemark', 'worm.slidehow', 'worm.secondpart', 'worm.firstthenrest'] as const) expect(SCRIPT[id]).toBeTruthy();
+    for (const id of [
+      'worm.slide',
+      'worm.slidemark',
+      'worm.slidehow',
+      'worm.secondpart',
+      'worm.firstthenrest',
+    ] as const)
+      expect(SCRIPT[id]).toBeTruthy();
   });
 });

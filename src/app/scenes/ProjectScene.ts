@@ -4,10 +4,30 @@ import { sfx } from '../../audio/sfx';
 import { homeBackdrop } from '../../art/home/backdrop';
 import { music, STYLES } from '../../audio/music';
 import { voice } from '../../audio/voice';
-import { builtSteps, newcomerFor, nextWelcomeStep, WELCOME_PLAN, welcomeBand, welcomeDoneLine, welcomeFriend, welcomeReady, type WelcomeBand, type WelcomeStep } from '../../content/welcome';
+import {
+  builtSteps,
+  newcomerFor,
+  nextWelcomeStep,
+  WELCOME_PLAN,
+  welcomeBand,
+  welcomeDoneLine,
+  welcomeFriend,
+  welcomeReady,
+  type WelcomeBand,
+  type WelcomeStep,
+} from '../../content/welcome';
 import { Companion, makeCompanion } from '../../creatures/companion';
 import { SPECIES } from '../../creatures/species';
-import { CORNER_RADIUS, ENDING_PICTURE, ENDING_PLATES, endingLayout, NAME_BUTTON, NEWCOMER_REACH, PROJECT_CARD, PROJECT_PLAY_RADIUS } from '../../creatures/home-layout';
+import {
+  CORNER_RADIUS,
+  ENDING_PICTURE,
+  ENDING_PLATES,
+  endingLayout,
+  NAME_BUTTON,
+  NEWCOMER_REACH,
+  PROJECT_CARD,
+  PROJECT_PLAY_RADIUS,
+} from '../../creatures/home-layout';
 import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
 import { store } from '../../progress/store';
@@ -79,17 +99,32 @@ export class ProjectScene extends Scene {
     // The newcomer peeks over the basket's rim, shy: its body is behind the front weave.
     const back = new Graphics().ellipse(0, -10, 120, 46).fill(wood.line);
     const front = new Graphics()
-      .poly([-130, -10, 130, -10, 105, 80, -105, 80]).fill(wood.fill).stroke({ width: 6, color: wood.line })
-      .moveTo(-120, 25).lineTo(120, 25).moveTo(-112, 55).lineTo(112, 55).stroke({ width: 4, color: wood.line });
+      .poly([-130, -10, 130, -10, 105, 80, -105, 80])
+      .fill(wood.fill)
+      .stroke({ width: 6, color: wood.line })
+      .moveTo(-120, 25)
+      .lineTo(120, 25)
+      .moveTo(-112, 55)
+      .lineTo(112, 55)
+      .stroke({ width: 4, color: wood.line });
     this.newcomer.scale.set(0.8);
     this.newcomer.position.set(0, 30);
     this.newcomer.setMood('calm');
     this.basket.addChild(back, this.newcomer, front);
-    this.basket.hitArea = new Rectangle(-NEWCOMER_REACH, -NEWCOMER_REACH - 40, 2 * NEWCOMER_REACH, 2 * NEWCOMER_REACH);
-    onTap(this.basket, () => {
-      this.newcomer.poke();
-      if (this.ending === 'naming') void this.sing();
-    }, { cooldown: 300 });
+    this.basket.hitArea = new Rectangle(
+      -NEWCOMER_REACH,
+      -NEWCOMER_REACH - 40,
+      2 * NEWCOMER_REACH,
+      2 * NEWCOMER_REACH,
+    );
+    onTap(
+      this.basket,
+      () => {
+        this.newcomer.poke();
+        if (this.ending === 'naming') void this.sing();
+      },
+      { cooldown: 300 },
+    );
     for (const step of builtSteps()) {
       const node = new Container();
       const play = new RoundButton(playIcon(), swatch.green, PROJECT_PLAY_RADIUS, () => this.play(step));
@@ -116,15 +151,26 @@ export class ProjectScene extends Scene {
     for (const c of node.removeChildren()) c.destroy({ children: true });
     const done = store.welcome.steps.includes(step);
     const s = PROJECT_CARD;
-    node.addChild(new Graphics()
-      .roundRect(-s / 2 + 4, -s / 2 + 8, s, s, 24).fill({ color: 0x000000, alpha: 0.12 })
-      .roundRect(-s / 2, -s / 2, s, s, 24).fill(cream).stroke({ width: 6, color: done ? swatch.green.line : swatch.yellow.line }));
+    node.addChild(
+      new Graphics()
+        .roundRect(-s / 2 + 4, -s / 2 + 8, s, s, 24)
+        .fill({ color: 0x000000, alpha: 0.12 })
+        .roundRect(-s / 2, -s / 2, s, s, 24)
+        .fill(cream)
+        .stroke({ width: 6, color: done ? swatch.green.line : swatch.yellow.line }),
+    );
     node.hitArea = new Rectangle(-s / 2, -s / 2, s, s);
-    const art = step === 'pretty' ? this.prettyArt() : step === 'yummy' ? this.yummyArt(done) : this.songArt();
+    const art =
+      step === 'pretty' ? this.prettyArt() : step === 'yummy' ? this.yummyArt(done) : this.songArt();
     node.addChild(art);
     if (done) {
       const tick = new Container();
-      tick.addChild(new Graphics().circle(0, 0, 26).fill(swatch.green.fill).stroke({ width: 4, color: swatch.green.line }));
+      tick.addChild(
+        new Graphics()
+          .circle(0, 0, 26)
+          .fill(swatch.green.fill)
+          .stroke({ width: 4, color: swatch.green.line }),
+      );
       const mark = checkIcon();
       mark.scale.set(0.6);
       tick.addChild(mark);
@@ -161,14 +207,29 @@ export class ProjectScene extends Scene {
     const filling = done ? 1 : 0.35;
     if (this.band === 'prek') {
       g.ellipse(0, 18, 56, 30).fill(swatch.blue.fill).stroke({ width: 5, color: swatch.blue.line });
-      const fruit = [[-24, swatch.purple], [-8, swatch.purple], [10, swatch.red], [28, swatch.red]] as const;
-      for (const [x, sw] of fruit) g.circle(x, 4, 12).fill({ color: sw.fill, alpha: filling }).stroke({ width: 3, color: sw.line, alpha: filling });
+      const fruit = [
+        [-24, swatch.purple],
+        [-8, swatch.purple],
+        [10, swatch.red],
+        [28, swatch.red],
+      ] as const;
+      for (const [x, sw] of fruit)
+        g.circle(x, 4, 12)
+          .fill({ color: sw.fill, alpha: filling })
+          .stroke({ width: 3, color: sw.line, alpha: filling });
       return g;
     }
-    for (const [x, y] of [[-32, -30], [32, -30], [-32, 30], [32, 30]]) {
+    for (const [x, y] of [
+      [-32, -30],
+      [32, -30],
+      [-32, 30],
+      [32, 30],
+    ]) {
       g.circle(x, y, 26).fill(0xffffff).stroke({ width: 4, color: swatch.blue.line });
       // A quarter of a sandwich: a little square of bread.
-      g.rect(x - 9, y - 9, 18, 18).fill({ color: wood.fill, alpha: filling }).stroke({ width: 3, color: wood.line, alpha: filling });
+      g.rect(x - 9, y - 9, 18, 18)
+        .fill({ color: wood.fill, alpha: filling })
+        .stroke({ width: 3, color: wood.line, alpha: filling });
     }
     return g;
   }
@@ -226,7 +287,10 @@ export class ProjectScene extends Scene {
     const picked = this.names.find((n) => n.name === this.chosen);
     if (!picked) return;
     const { w, h } = NAME_BUTTON;
-    g.roundRect(picked.node.x - w / 2 - 8, picked.node.y - h / 2 - 8, w + 16, h + 16, 52).stroke({ width: 6, color: swatch.yellow.line });
+    g.roundRect(picked.node.x - w / 2 - 8, picked.node.y - h / 2 - 8, w + 16, h + 16, 52).stroke({
+      width: 6,
+      color: swatch.yellow.line,
+    });
   }
 
   /**
@@ -243,12 +307,15 @@ export class ProjectScene extends Scene {
     board.scale.set(ENDING_PICTURE);
     this.picture.addChild(board);
     const plates = this.yummyArt(true);
-    plates.scale.set(Math.min(ENDING_PLATES.w / Math.max(1, plates.width), ENDING_PLATES.h / Math.max(1, plates.height)));
+    plates.scale.set(
+      Math.min(ENDING_PLATES.w / Math.max(1, plates.width), ENDING_PLATES.h / Math.max(1, plates.height)),
+    );
     this.plates.addChild(plates);
     this.guide = this.track(makeCompanion());
     this.guide.x = (this.view.w - this.lead.x) / this.lead.scale.x + 200;
     this.lead.addChild(this.guide);
-    const say = (line: Parameters<typeof voice.say>[0], vars?: Parameters<typeof voice.say>[1]) => Promise.race([voice.say(line, vars), this.tw.wait(6)]);
+    const say = (line: Parameters<typeof voice.say>[0], vars?: Parameters<typeof voice.say>[1]) =>
+      Promise.race([voice.say(line, vars), this.tw.wait(6)]);
     const gone = () => this.app.scene !== this || this.leaving;
     void say('welcome.here');
     this.guide.hop(0.8);
@@ -265,7 +332,13 @@ export class ProjectScene extends Scene {
     for (const name of SPECIES[species].names) {
       const node = new Container();
       const { w, h } = NAME_BUTTON;
-      node.addChild(new Graphics().roundRect(-w / 2, -h / 2, w, h, 45).fill(swatch.white.fill).stroke({ width: 5, color: swatch.teal.line }), label(name, 36));
+      node.addChild(
+        new Graphics()
+          .roundRect(-w / 2, -h / 2, w, h, 45)
+          .fill(swatch.white.fill)
+          .stroke({ width: 5, color: swatch.teal.line }),
+        label(name, 36),
+      );
       node.hitArea = new Rectangle(-w / 2, -h / 2, w, h);
       onTap(node, () => this.pick(name), { cooldown: 250 });
       this.names.push({ name, node });
@@ -283,11 +356,23 @@ export class ProjectScene extends Scene {
     const tune = store.welcome.results.song;
     const friends = [this.newcomer, this.guide].filter((f): f is Companion => !!f);
     if (tune) {
-      await singTune(tune, (t) => this.tw.wait(t), (_col, steps) => {
-        if (!steps.length) return;
-        friends.forEach((f) => f.hop(0.5));
-        this.particles.burst(this.basket.x, this.basket.y - 120, { kind: 'note', colors: [swatch.yellow.fill, swatch.pink.fill, swatch.blue.fill], count: 2, speed: [40, 120], gravity: -60, life: [0.8, 1.2] });
-      }, () => this.app.scene === this && !this.leaving);
+      await singTune(
+        tune,
+        (t) => this.tw.wait(t),
+        (_col, steps) => {
+          if (!steps.length) return;
+          friends.forEach((f) => f.hop(0.5));
+          this.particles.burst(this.basket.x, this.basket.y - 120, {
+            kind: 'note',
+            colors: [swatch.yellow.fill, swatch.pink.fill, swatch.blue.fill],
+            count: 2,
+            speed: [40, 120],
+            gravity: -60,
+            life: [0.8, 1.2],
+          });
+        },
+        () => this.app.scene === this && !this.leaving,
+      );
     } else {
       friends.forEach((f) => f.setMood('sing', 2.4));
       const hum = Promise.race([voice.say('welcome.done.song-hum'), this.tw.wait(6)]);
@@ -321,7 +406,14 @@ export class ProjectScene extends Scene {
       this.newcomer.cheer();
       this.guide?.cheer();
       sfx.sparkle();
-      this.particles.burst(this.basket.x, this.basket.y - 60, { kind: 'star', colors: [swatch.yellow.fill, swatch.pink.fill, 0xffffff], count: 16, speed: [90, 230], gravity: 0, life: [0.6, 1] });
+      this.particles.burst(this.basket.x, this.basket.y - 60, {
+        kind: 'star',
+        colors: [swatch.yellow.fill, swatch.pink.fill, 0xffffff],
+        count: 16,
+        speed: [90, 230],
+        gravity: 0,
+        life: [0.6, 1],
+      });
       await Promise.race([voice.say('welcome.joined', { new: met.name }), this.tw.wait(6)]);
     } else {
       await Promise.race([voice.say('welcome.full'), this.tw.wait(6)]);
@@ -333,7 +425,8 @@ export class ProjectScene extends Scene {
   async enter() {
     music.play(STYLES.hub);
     const p = store.welcome;
-    const say = (line: Parameters<typeof voice.say>[0], vars?: Parameters<typeof voice.say>[1]) => Promise.race([voice.say(line, vars), this.tw.wait(6)]);
+    const say = (line: Parameters<typeof voice.say>[0], vars?: Parameters<typeof voice.say>[1]) =>
+      Promise.race([voice.say(line, vars), this.tw.wait(6)]);
     // Over already (a reload after the arrow): who joined, then Home.
     if (p.ended) {
       this.leaving = true;

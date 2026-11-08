@@ -17,9 +17,20 @@ export const LINK_COLOR = wood.line;
 function mark(g: Graphics, kind: Kind, r: number, color: number) {
   const s = r * 0.62;
   if (kind === 'H') g.circle(0, 0, s).stroke({ width: Math.max(2, r * 0.09), color, alpha: 0.55 });
-  else if (kind === 'O') g.roundRect(-s, -s, 2 * s, 2 * s, s * 0.4).stroke({ width: Math.max(2, r * 0.09), color, alpha: 0.55 });
-  else if (kind === 'N') g.poly([0, -s * 1.15, s * 1.1, s * 0.75, -s * 1.1, s * 0.75]).stroke({ width: Math.max(2, r * 0.09), color, alpha: 0.55 });
-  else g.poly([0, -s * 1.2, s * 1.2, 0, 0, s * 1.2, -s * 1.2, 0]).stroke({ width: Math.max(2, r * 0.09), color, alpha: 0.55 });
+  else if (kind === 'O')
+    g.roundRect(-s, -s, 2 * s, 2 * s, s * 0.4).stroke({ width: Math.max(2, r * 0.09), color, alpha: 0.55 });
+  else if (kind === 'N')
+    g.poly([0, -s * 1.15, s * 1.1, s * 0.75, -s * 1.1, s * 0.75]).stroke({
+      width: Math.max(2, r * 0.09),
+      color,
+      alpha: 0.55,
+    });
+  else
+    g.poly([0, -s * 1.2, s * 1.2, 0, 0, s * 1.2, -s * 1.2, 0]).stroke({
+      width: Math.max(2, r * 0.09),
+      color,
+      alpha: 0.55,
+    });
 }
 
 /** A bead's ball: a shadow, the rim, the face with a highlight, its shape mark and its letter. */
@@ -57,7 +68,10 @@ export function drawHands(g: Graphics, kind: Kind, r: number, heldAngles: number
     slots.forEach((s, i) => {
       if (used[i]) return;
       const d = Math.abs(Math.atan2(Math.sin(a - s), Math.cos(a - s)));
-      if (d < bestD) { bestD = d; best = i; }
+      if (d < bestD) {
+        bestD = d;
+        best = i;
+      }
     });
     if (best >= 0) used[best] = true;
   }
@@ -93,14 +107,22 @@ export function drawLinks(g: Graphics, beads: readonly Pt[], links: readonly Lin
     for (const o of offs) {
       const ox = (-dy / len) * o;
       const oy = (dx / len) * o;
-      g.moveTo(beads[a].x + ox, beads[a].y + oy).lineTo(beads[b].x + ox, beads[b].y + oy).stroke({ width: w + 6, color: 0x7a5230, cap: 'round' });
-      g.moveTo(beads[a].x + ox, beads[a].y + oy).lineTo(beads[b].x + ox, beads[b].y + oy).stroke({ width: w, color: wood.light, cap: 'round' });
+      g.moveTo(beads[a].x + ox, beads[a].y + oy)
+        .lineTo(beads[b].x + ox, beads[b].y + oy)
+        .stroke({ width: w + 6, color: 0x7a5230, cap: 'round' });
+      g.moveTo(beads[a].x + ox, beads[a].y + oy)
+        .lineTo(beads[b].x + ox, beads[b].y + oy)
+        .stroke({ width: w, color: wood.light, cap: 'round' });
     }
   }
 }
 
 /** A small drawing of a shape: its links and lettered beads, `step` units apart. */
-export function shapePicture(shape: Pick<Shape, 'kinds' | 'links' | 'pic'>, step: number, r: number): Container {
+export function shapePicture(
+  shape: Pick<Shape, 'kinds' | 'links' | 'pic'>,
+  step: number,
+  r: number,
+): Container {
   const c = new Container();
   const pts = shape.pic.map((p) => ({ x: p.x * step, y: p.y * step }));
   const g = new Graphics();
@@ -117,18 +139,38 @@ export function shapePicture(shape: Pick<Shape, 'kinds' | 'links' | 'pic'>, step
 /** The request card's face. */
 export function cardArt(w: number, h: number): Graphics {
   return new Graphics()
-    .roundRect(-w / 2, -h / 2 + 5, w, h, 22).fill({ color: 0x2b2440, alpha: 0.15 })
-    .roundRect(-w / 2, -h / 2, w, h, 22).fill(cream).stroke({ width: 5, color: wood.line });
+    .roundRect(-w / 2, -h / 2 + 5, w, h, 22)
+    .fill({ color: 0x2b2440, alpha: 0.15 })
+    .roundRect(-w / 2, -h / 2, w, h, 22)
+    .fill(cream)
+    .stroke({ width: 5, color: wood.line });
 }
 
 /** The table the beads sit on. */
 export function tableArt(w: number, h: number): Graphics {
   return new Graphics()
-    .roundRect(-w / 2, -h / 2, w, h, 34).fill({ color: wood.light, alpha: 0.55 }).stroke({ width: 5, color: wood.fill, alpha: 0.7 });
+    .roundRect(-w / 2, -h / 2, w, h, 34)
+    .fill({ color: wood.light, alpha: 0.55 })
+    .stroke({ width: 5, color: wood.fill, alpha: 0.7 });
 }
 
 /** Three linked beads, for the hub icon and the sticker. */
 export function beadTrio(r: number, kinds: Kind[] = ['H', 'O', 'H'], bend = 0.35): Container {
   const step = r * 2.3;
-  return shapePicture({ kinds, links: [[0, 1], [1, 2]], pic: [{ x: -1, y: bend }, { x: 0, y: -bend }, { x: 1, y: bend }] }, step, r);
+  return shapePicture(
+    {
+      kinds,
+      links: [
+        [0, 1],
+        [1, 2],
+      ],
+      pic: [
+        { x: -1, y: bend },
+        { x: 0, y: -bend },
+        { x: 1, y: bend },
+      ],
+    },
+    step,
+    r,
+  );
 }

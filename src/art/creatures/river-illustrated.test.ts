@@ -26,7 +26,8 @@ illustratedSuite({
 describe('river weights', () => {
   it('pin the head and paws, run the wave from the neck to the hips and move the tail', () => {
     const A = RIVER_ART;
-    for (const p of [...A.eyes, A.nose, ...A.slots.hands, ...A.slots.feet]) expect(weights(p.x, p.y)).toEqual({ wave: 0, tail: 0 });
+    for (const p of [...A.eyes, A.nose, ...A.slots.hands, ...A.slots.feet])
+      expect(weights(p.x, p.y)).toEqual({ wave: 0, tail: 0 });
     expect(weights(A.wave.root.x, A.wave.root.y).wave).toBe(0);
     expect(weights(A.slots.back.x, A.slots.back.y).wave).toBeGreaterThan(0.3);
     expect(weights(A.wave.tip.x, A.wave.tip.y).wave).toBeGreaterThan(0.9);
@@ -43,22 +44,37 @@ describe('the river’s head turns over the no-head plate (RW02b step 2 follow-u
     const plate = await alphaOf(nohead);
     const art = await alphaOf(base);
     expect([plate.w, plate.h]).toEqual([RIVER_ART.width, RIVER_ART.height]);
-    for (const p of [...RIVER_ART.eyes, RIVER_ART.nose, ...RIVER_ART.ears]) expect(plate.at(p.x, p.y), `${p.x},${p.y}`).toBe(0);
-    for (const p of [RIVER_ART.slots.back, RIVER_ART.slots.tummy, RIVER_ART.slots.neck, RIVER_ART.hips, RIVER_ART.tail.root]) expect(plate.at(p.x, p.y), `${p.x},${p.y}`).toBe(255);
+    for (const p of [...RIVER_ART.eyes, RIVER_ART.nose, ...RIVER_ART.ears])
+      expect(plate.at(p.x, p.y), `${p.x},${p.y}`).toBe(0);
+    for (const p of [
+      RIVER_ART.slots.back,
+      RIVER_ART.slots.tummy,
+      RIVER_ART.slots.neck,
+      RIVER_ART.hips,
+      RIVER_ART.tail.root,
+    ])
+      expect(plate.at(p.x, p.y), `${p.x},${p.y}`).toBe(255);
     // Nothing of the plate lies outside the base's outline, beyond the preparation's 4 px tolerance.
-    for (let y = 0; y < plate.h; y += 2) for (let x = 0; x < plate.w; x += 2) {
-      if (plate.at(x, y) < 128) continue;
-      let near = false;
-      for (let dy = -4; dy <= 4 && !near; dy += 2) for (let dx = -4; dx <= 4 && !near; dx += 2) near = art.at(x + dx, y + dy) > 20;
-      expect(near, `${x},${y}`).toBe(true);
-    }
+    for (let y = 0; y < plate.h; y += 2)
+      for (let x = 0; x < plate.w; x += 2) {
+        if (plate.at(x, y) < 128) continue;
+        let near = false;
+        for (let dy = -4; dy <= 4 && !near; dy += 2)
+          for (let dx = -4; dx <= 4 && !near; dx += 2) near = art.at(x + dx, y + dy) > 20;
+        expect(near, `${x},${y}`).toBe(true);
+      }
   });
 
   it('turns the head and its face while the cut and the paws stay put, with no jump or tear', () => {
     const c = build();
     const near = (p: { x: number; y: number }) => {
       let best = 0;
-      for (let i = 0; i < c.headRest.length; i += 2) if (Math.hypot(c.headRest[i] - p.x, c.headRest[i + 1] - p.y) < Math.hypot(c.headRest[best] - p.x, c.headRest[best + 1] - p.y)) best = i;
+      for (let i = 0; i < c.headRest.length; i += 2)
+        if (
+          Math.hypot(c.headRest[i] - p.x, c.headRest[i + 1] - p.y) <
+          Math.hypot(c.headRest[best] - p.x, c.headRest[best + 1] - p.y)
+        )
+          best = i;
       return best;
     };
     const cols = c.head.geometry.verticesX;
@@ -83,10 +99,15 @@ describe('the river’s head turns over the no-head plate (RW02b step 2 follow-u
       const p = c.head.geometry.positions;
       for (const i of face) travel = Math.max(travel, moved(i));
       // The cut moves only as the back under it does (the wave reaches a little way up behind the ear).
-      for (const i of cut) expect(moved(i)).toBeLessThanOrEqual(16 * weights(c.headRest[i], c.headRest[i + 1]).wave + 1e-3);
+      for (const i of cut)
+        expect(moved(i)).toBeLessThanOrEqual(16 * weights(c.headRest[i], c.headRest[i + 1]).wave + 1e-3);
       for (let i = 0; i < p.length; i += 2) {
         worstStep = Math.max(worstStep, Math.hypot(p[i] - prev[i], p[i + 1] - prev[i + 1]));
-        if ((i / 2) % cols !== cols - 1) worstStretch = Math.max(worstStretch, Math.hypot(p[i + 2] - p[i], p[i + 3] - p[i + 1]) / (c.headRest[i + 2] - c.headRest[i]));
+        if ((i / 2) % cols !== cols - 1)
+          worstStretch = Math.max(
+            worstStretch,
+            Math.hypot(p[i + 2] - p[i], p[i + 3] - p[i + 1]) / (c.headRest[i + 2] - c.headRest[i]),
+          );
       }
       prev = p.slice();
     }
@@ -100,27 +121,38 @@ describe('the river’s head turns over the no-head plate (RW02b step 2 follow-u
     const art = await alphaOf(base);
     let lo = 0;
     let hi = 0;
-    for (let t = 0; t < 20; t += 0.01) for (const ex of [0, 1]) {
-      lo = Math.min(lo, headTurn(t, ex));
-      hi = Math.max(hi, headTurn(t, ex));
-    }
+    for (let t = 0; t < 20; t += 0.01)
+      for (const ex of [0, 1]) {
+        lo = Math.min(lo, headTurn(t, ex));
+        hi = Math.max(hi, headTurn(t, ex));
+      }
     expect(lo).toBeLessThan(-0.19);
     for (const turn of [lo, hi]) {
-      for (let y = H.y; y < H.y + H.h; y += 2) for (let x = H.x; x < H.x + H.w; x += 2) {
-        // A plate pixel the head covers at rest (the neck's cap, the throat) must stay covered.
-        if (plate.at(x, y) < 20 || art.at(x, y) < 250 || headWeight(x, y) === 0) continue;
-        // Where the head layer's picture lands on this plate pixel: turn back about the throat (twice, as the weight varies).
-        let p: { x: number; y: number } = { x, y };
-        for (let n = 0; n < 3; n++) {
-          const a = -turn * headWeight(p.x, p.y);
-          const ox = x - RIVER_ART.nape.x;
-          const oy = y - RIVER_ART.nape.y;
-          p = { x: RIVER_ART.nape.x + ox * Math.cos(a) - oy * Math.sin(a), y: RIVER_ART.nape.y + ox * Math.sin(a) + oy * Math.cos(a) };
+      for (let y = H.y; y < H.y + H.h; y += 2)
+        for (let x = H.x; x < H.x + H.w; x += 2) {
+          // A plate pixel the head covers at rest (the neck's cap, the throat) must stay covered.
+          if (plate.at(x, y) < 20 || art.at(x, y) < 250 || headWeight(x, y) === 0) continue;
+          // Where the head layer's picture lands on this plate pixel: turn back about the throat (twice, as the weight varies).
+          let p: { x: number; y: number } = { x, y };
+          for (let n = 0; n < 3; n++) {
+            const a = -turn * headWeight(p.x, p.y);
+            const ox = x - RIVER_ART.nape.x;
+            const oy = y - RIVER_ART.nape.y;
+            p = {
+              x: RIVER_ART.nape.x + ox * Math.cos(a) - oy * Math.sin(a),
+              y: RIVER_ART.nape.y + ox * Math.sin(a) + oy * Math.cos(a),
+            };
+          }
+          // Within a pixel, for rounding.
+          const under = Math.max(
+            art.at(p.x, p.y),
+            art.at(p.x + 1, p.y),
+            art.at(p.x - 1, p.y),
+            art.at(p.x, p.y + 1),
+            art.at(p.x, p.y - 1),
+          );
+          expect(under, `${x},${y} at ${turn.toFixed(2)}`).toBeGreaterThan(20);
         }
-        // Within a pixel, for rounding.
-        const under = Math.max(art.at(p.x, p.y), art.at(p.x + 1, p.y), art.at(p.x - 1, p.y), art.at(p.x, p.y + 1), art.at(p.x, p.y - 1));
-        expect(under, `${x},${y} at ${turn.toFixed(2)}`).toBeGreaterThan(20);
-      }
     }
   });
 

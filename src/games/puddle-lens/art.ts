@@ -49,7 +49,9 @@ function poly(g: Graphics, pts: Pt[]) {
 export function leafArt(kind: LeafKind, d: number, hairs: boolean): Graphics {
   const g = new Graphics();
   const pts = leafOutline(kind, d);
-  g.moveTo(0, d * 0.45).lineTo(0, d * 0.62).stroke(line(LEAF.line, Math.max(4, d * 0.04)));
+  g.moveTo(0, d * 0.45)
+    .lineTo(0, d * 0.62)
+    .stroke(line(LEAF.line, Math.max(4, d * 0.04)));
   if (hairs) {
     pts.forEach((p, i) => {
       if (i % 2) return;
@@ -63,8 +65,14 @@ export function leafArt(kind: LeafKind, d: number, hairs: boolean): Graphics {
   }
   poly(g, pts);
   g.fill(LEAF.fill).stroke(line(LEAF.line, Math.max(3, d * 0.025)));
-  g.moveTo(0, d * 0.45).lineTo(0, -d * 0.4).stroke(line(LEAF.vein, Math.max(3, d * 0.02)));
-  for (const y of [-0.2, 0, 0.2]) for (const s of [-1, 1]) g.moveTo(0, d * y).lineTo(s * d * 0.2, d * (y - 0.12)).stroke(line(LEAF.vein, Math.max(2, d * 0.014)));
+  g.moveTo(0, d * 0.45)
+    .lineTo(0, -d * 0.4)
+    .stroke(line(LEAF.vein, Math.max(3, d * 0.02)));
+  for (const y of [-0.2, 0, 0.2])
+    for (const s of [-1, 1])
+      g.moveTo(0, d * y)
+        .lineTo(s * d * 0.2, d * (y - 0.12))
+        .stroke(line(LEAF.vein, Math.max(2, d * 0.014)));
   return g;
 }
 
@@ -72,7 +80,9 @@ export function leafArt(kind: LeafKind, d: number, hairs: boolean): Graphics {
 export function dropArt(d: number, specks: boolean): Graphics {
   const g = new Graphics();
   g.ellipse(0, d * 0.06, d / 2, d * 0.45).fill({ color: 0x9fd0e6, alpha: 0.6 });
-  g.circle(0, 0, d / 2).fill({ color: WATER, alpha: 0.9 }).stroke(line(0x7bb8d4, Math.max(3, d * 0.02)));
+  g.circle(0, 0, d / 2)
+    .fill({ color: WATER, alpha: 0.9 })
+    .stroke(line(0x7bb8d4, Math.max(3, d * 0.02)));
   if (specks) {
     const rng = new Rng(41);
     for (let i = 0; i < 14; i++) {
@@ -103,7 +113,9 @@ export function sandArt(colors: ColorName[], d: number, separate: boolean): Grap
     const r = i === 0 ? 0 : d * rng.range(0.22, 0.4);
     const c = swatch[colors[i % colors.length]];
     const s = d * rng.range(0.06, 0.09);
-    g.roundRect(Math.cos(a) * r - s, Math.sin(a) * r - s * 0.8, s * 2, s * 1.6, s * 0.7).fill(c.fill).stroke(line(c.line, 3));
+    g.roundRect(Math.cos(a) * r - s, Math.sin(a) * r - s * 0.8, s * 2, s * 1.6, s * 0.7)
+      .fill(c.fill)
+      .stroke(line(c.line, 3));
   }
   return g;
 }
@@ -123,7 +135,9 @@ export function grainArt(color: ColorName, r: number, close: boolean): Graphics 
   for (let i = 0; i < (close ? 7 : 12); i++) {
     const a = rng.range(0, Math.PI * 2);
     const d = Math.sqrt(rng.next()) * r * 0.7;
-    g.circle(Math.cos(a) * d, Math.sin(a) * d * 0.85, r * rng.range(0.05, 0.1)).fill(c.light).stroke(line(c.line, 2));
+    g.circle(Math.cos(a) * d, Math.sin(a) * d * 0.85, r * rng.range(0.05, 0.1))
+      .fill(c.light)
+      .stroke(line(c.line, 2));
   }
   for (let i = 0; i < (close ? 3 : 4); i++) {
     let x = rng.range(-0.5, 0.5) * r;
@@ -151,8 +165,14 @@ function boxesArt(box: number, beads: boolean): Graphics {
     for (let col = -Math.ceil(span / box) - 1; col <= Math.ceil(span / box); col++) {
       const x = col * box + off;
       const y = row * h;
-      g.roundRect(x + 3, y + 3, box - 6, h - 6, box * 0.08).fill(0xc9eeb0).stroke(line(LEAF.line, Math.max(3, box * 0.04)));
-      if (beads) for (let k = 0; k < 4; k++) g.ellipse(x + box * rng.range(0.22, 0.78), y + h * rng.range(0.28, 0.72), box * 0.09, box * 0.06).fill(0x3fae3a).stroke(line(0x2a7a2a, 2));
+      g.roundRect(x + 3, y + 3, box - 6, h - 6, box * 0.08)
+        .fill(0xc9eeb0)
+        .stroke(line(LEAF.line, Math.max(3, box * 0.04)));
+      if (beads)
+        for (let k = 0; k < 4; k++)
+          g.ellipse(x + box * rng.range(0.22, 0.78), y + h * rng.range(0.28, 0.72), box * 0.09, box * 0.06)
+            .fill(0x3fae3a)
+            .stroke(line(0x2a7a2a, 2));
     }
   }
   return g;
@@ -192,7 +212,9 @@ function specksArt(n: number, r: number, seed: number): Graphics {
     const a = rng.range(0, Math.PI * 2);
     const d = rng.range(0.3, 1.05) * ART_R;
     const s = r * rng.range(0.7, 1.2);
-    g.ellipse(Math.cos(a) * d, Math.sin(a) * d, s, s * 0.8).fill(SPECK).stroke(line(0x7d705f, Math.max(2, s * 0.15)));
+    g.ellipse(Math.cos(a) * d, Math.sin(a) * d, s, s * 0.8)
+      .fill(SPECK)
+      .stroke(line(0x7d705f, Math.max(2, s * 0.15)));
   }
   return g;
 }
@@ -200,7 +222,15 @@ function specksArt(n: number, r: number, seed: number): Graphics {
 /** One stop's view of a sample, centred on (0, 0) and reaching past the view's radius where a feature no longer fits. */
 export function viewLayer(sample: SampleId, stop: Stop, looks: Looks): Container {
   const c = new Container();
-  const bg = new Graphics().circle(0, 0, ART_R + 4).fill(sample === 'leaf' && stop >= 3 ? LEAF.light : (sample === 'drop' || sample === 'drop-empty') && stop >= 3 ? WATER : SLIDE);
+  const bg = new Graphics()
+    .circle(0, 0, ART_R + 4)
+    .fill(
+      sample === 'leaf' && stop >= 3
+        ? LEAF.light
+        : (sample === 'drop' || sample === 'drop-empty') && stop >= 3
+          ? WATER
+          : SLIDE,
+    );
   c.addChild(bg);
   const drop = sample === 'drop' || sample === 'drop-empty';
   if (sample === 'leaf') {
@@ -210,7 +240,13 @@ export function viewLayer(sample: SampleId, stop: Stop, looks: Looks): Container
       // The little boxes fill the view; the leaf's edge, with its tiny hairs, crosses the bottom.
       c.addChild(boxesArt(70, false));
       const edge = new Graphics();
-      edge.moveTo(-ART_R * 1.2, ART_R * 0.55).quadraticCurveTo(0, ART_R * 0.85, ART_R * 1.2, ART_R * 0.5).lineTo(ART_R * 1.2, ART_R * 1.3).lineTo(-ART_R * 1.2, ART_R * 1.3).closePath().fill(SLIDE);
+      edge
+        .moveTo(-ART_R * 1.2, ART_R * 0.55)
+        .quadraticCurveTo(0, ART_R * 0.85, ART_R * 1.2, ART_R * 0.5)
+        .lineTo(ART_R * 1.2, ART_R * 1.3)
+        .lineTo(-ART_R * 1.2, ART_R * 1.3)
+        .closePath()
+        .fill(SLIDE);
       for (let x = -ART_R; x <= ART_R; x += 34) {
         const t = (x + ART_R * 1.2) / (ART_R * 2.4);
         const y = (1 - t) ** 2 * ART_R * 0.55 + 2 * (1 - t) * t * ART_R * 0.85 + t * t * ART_R * 0.5;
@@ -241,7 +277,12 @@ export function viewLayer(sample: SampleId, stop: Stop, looks: Looks): Container
 }
 
 /** A thing as it lies on the level-2 table (`d` across), or as it looks under the glass (`close`). */
-export function thingArt(sample: 'leaf' | 'drop' | 'sand', looks: Looks, d: number, close: boolean): Graphics {
+export function thingArt(
+  sample: 'leaf' | 'drop' | 'sand',
+  looks: Looks,
+  d: number,
+  close: boolean,
+): Graphics {
   if (sample === 'leaf') return leafArt(looks.leaf, d * 0.95, close);
   if (sample === 'drop') return dropArt(d * 0.8, close);
   return close ? sandArt(looks.sand, d, true) : sandArt(looks.sand, d, false);
@@ -251,8 +292,13 @@ export function thingArt(sample: 'leaf' | 'drop' | 'sand', looks: Looks, d: numb
 export function pawArt(color: ColorName, r: number): Graphics {
   const s = swatch[color] ?? swatch.orange;
   const g = new Graphics();
-  g.ellipse(0, r * 0.25, r * 0.75, r * 0.6).fill(s.fill).stroke(line(s.line, 5));
-  for (const k of [-1, 0, 1]) g.circle(k * r * 0.5, -r * 0.42 - (k === 0 ? r * 0.12 : 0), r * 0.27).fill(s.fill).stroke(line(s.line, 4));
+  g.ellipse(0, r * 0.25, r * 0.75, r * 0.6)
+    .fill(s.fill)
+    .stroke(line(s.line, 5));
+  for (const k of [-1, 0, 1])
+    g.circle(k * r * 0.5, -r * 0.42 - (k === 0 ? r * 0.12 : 0), r * 0.27)
+      .fill(s.fill)
+      .stroke(line(s.line, 4));
   g.ellipse(0, r * 0.3, r * 0.35, r * 0.25).fill(s.light);
   return g;
 }
@@ -261,7 +307,12 @@ export function pawArt(color: ColorName, r: number): Graphics {
 export function lensFrame(r: number, microscope: boolean): Graphics {
   const g = new Graphics();
   if (!microscope) {
-    g.moveTo(r * 0.68, r * 0.68).lineTo(r * 1.25, r * 1.25).stroke(line(wood.line, 34)).moveTo(r * 0.68, r * 0.68).lineTo(r * 1.25, r * 1.25).stroke(line(wood.fill, 24));
+    g.moveTo(r * 0.68, r * 0.68)
+      .lineTo(r * 1.25, r * 1.25)
+      .stroke(line(wood.line, 34))
+      .moveTo(r * 0.68, r * 0.68)
+      .lineTo(r * 1.25, r * 1.25)
+      .stroke(line(wood.fill, 24));
     g.circle(0, 0, r + 8).stroke({ width: 18, color: 0x5c6f82 });
     g.circle(0, 0, r + 8).stroke({ width: 8, color: 0x8ea3b6 });
     return g;
@@ -273,7 +324,9 @@ export function lensFrame(r: number, microscope: boolean): Graphics {
 
 /** A soft shine across the glass, drawn over the view. */
 export function lensShine(r: number): Graphics {
-  return new Graphics().ellipse(-r * 0.42, -r * 0.5, r * 0.28, r * 0.12).fill({ color: 0xffffff, alpha: 0.35 });
+  return new Graphics()
+    .ellipse(-r * 0.42, -r * 0.5, r * 0.28, r * 0.12)
+    .fill({ color: 0xffffff, alpha: 0.35 });
 }
 
 /** The draggable hand lens of level 2: glass ring and handle, `r` the glass's radius. */
@@ -286,7 +339,11 @@ export function stopPicture(stop: Stop): Container {
   const c = new Container();
   const g = new Graphics();
   if (stop === 1) {
-    g.moveTo(-34, -6).quadraticCurveTo(0, -38, 34, -6).quadraticCurveTo(0, 26, -34, -6).fill(0xffffff).stroke(line(ink, 5));
+    g.moveTo(-34, -6)
+      .quadraticCurveTo(0, -38, 34, -6)
+      .quadraticCurveTo(0, 26, -34, -6)
+      .fill(0xffffff)
+      .stroke(line(ink, 5));
     g.circle(0, -6, 12).fill(swatch.blue.fill).circle(0, -6, 6).fill(ink);
   } else if (stop === 2) {
     g.moveTo(10, 4).lineTo(30, 24).stroke(line(wood.line, 12));
@@ -296,7 +353,9 @@ export function stopPicture(stop: Stop): Container {
     g.roundRect(-30, 18, 60, 10, 4).fill(0x5c6f82);
     g.moveTo(14, 18).quadraticCurveTo(26, 0, 8, -14).stroke(line(0x5c6f82, 8));
     g.roundRect(-14, -34, 16, 34, 5).fill(0x8ea3b6).stroke(line(0x5c6f82, 4));
-    g.circle(-6, 4, big ? 11 : 7).fill(0xe2b64c).stroke(line(0xb98a2e, 3));
+    g.circle(-6, 4, big ? 11 : 7)
+      .fill(0xe2b64c)
+      .stroke(line(0xb98a2e, 3));
     g.rect(-20, 8, 30, 5).fill(0x5c6f82);
   }
   c.addChild(g);
@@ -309,7 +368,11 @@ export function stopPicture(stop: Stop): Container {
 /** Level 3's No swimmers: a drop with a small empty circle. */
 export function noneIcon(): Graphics {
   const g = new Graphics();
-  g.moveTo(0, -36).bezierCurveTo(26, -6, 30, 30, 0, 32).bezierCurveTo(-30, 30, -26, -6, 0, -36).fill(WATER).stroke(line(0x7bb8d4, 5));
+  g.moveTo(0, -36)
+    .bezierCurveTo(26, -6, 30, 30, 0, 32)
+    .bezierCurveTo(-30, 30, -26, -6, 0, -36)
+    .fill(WATER)
+    .stroke(line(0x7bb8d4, 5));
   g.circle(0, 8, 12).stroke(line(0x5c6f82, 4));
   return g;
 }
@@ -317,7 +380,11 @@ export function noneIcon(): Graphics {
 /** Level 4's Show: a big eye with a sparkle. */
 export function showIcon(): Graphics {
   const g = new Graphics();
-  g.moveTo(-36, 0).quadraticCurveTo(0, -36, 36, 0).quadraticCurveTo(0, 36, -36, 0).fill(0xffffff).stroke(line(ink, 5));
+  g.moveTo(-36, 0)
+    .quadraticCurveTo(0, -36, 36, 0)
+    .quadraticCurveTo(0, 36, -36, 0)
+    .fill(0xffffff)
+    .stroke(line(ink, 5));
   g.circle(0, 0, 14).fill(swatch.green.fill).circle(0, 0, 7).fill(ink).circle(-4, -4, 3).fill(0xffffff);
   g.moveTo(30, -34).lineTo(30, -18).moveTo(22, -26).lineTo(38, -26).stroke(line(0xffc93c, 5));
   return g;
@@ -325,7 +392,10 @@ export function showIcon(): Graphics {
 
 /** A button face: a white rounded square that brightens on touch-down. */
 export function buttonFace(size: number, lit: boolean): Graphics {
-  return new Graphics().roundRect(-size / 2, -size / 2, size, size, 24).fill(lit ? 0xfff6c8 : 0xffffff).stroke({ width: lit ? 8 : 5, color: lit ? swatch.purple.line : 0xb9c6d1 });
+  return new Graphics()
+    .roundRect(-size / 2, -size / 2, size, size, 24)
+    .fill(lit ? 0xfff6c8 : 0xffffff)
+    .stroke({ width: lit ? 8 : 5, color: lit ? swatch.purple.line : 0xb9c6d1 });
 }
 
 export { LEAF };
@@ -352,7 +422,9 @@ function raggedArt(r: number, c: { fill: number; line: number }, seed: number): 
 /** A bubble: a thick dark edge, and nothing but light in the middle. */
 function bubbleArt(r: number): Graphics {
   const g = new Graphics();
-  g.circle(0, 0, r).fill({ color: 0xf6fcff, alpha: 0.9 }).stroke({ width: Math.max(4, r * 0.22), color: 0x3d5566 });
+  g.circle(0, 0, r)
+    .fill({ color: 0xf6fcff, alpha: 0.9 })
+    .stroke({ width: Math.max(4, r * 0.22), color: 0x3d5566 });
   g.ellipse(-r * 0.3, -r * 0.35, r * 0.22, r * 0.12).fill({ color: 0xffffff, alpha: 0.9 });
   return g;
 }
@@ -360,8 +432,15 @@ function bubbleArt(r: number): Graphics {
 /** A small round green ball: an edge all round and a green cup inside it. */
 function greenBallArt(r: number): Graphics {
   const g = new Graphics();
-  g.circle(0, 0, r).fill(BALL.fill).stroke(line(BALL.line, Math.max(3, r * 0.08)));
-  g.moveTo(-r * 0.7, -r * 0.1).arc(0, -r * 0.1, r * 0.7, Math.PI, 0, true).lineTo(r * 0.45, -r * 0.1).arc(0, -r * 0.1, r * 0.45, 0, Math.PI).closePath().fill(BALL.cup);
+  g.circle(0, 0, r)
+    .fill(BALL.fill)
+    .stroke(line(BALL.line, Math.max(3, r * 0.08)));
+  g.moveTo(-r * 0.7, -r * 0.1)
+    .arc(0, -r * 0.1, r * 0.7, Math.PI, 0, true)
+    .lineTo(r * 0.45, -r * 0.1)
+    .arc(0, -r * 0.1, r * 0.45, 0, Math.PI)
+    .closePath()
+    .fill(BALL.cup);
   g.circle(-r * 0.15, -r * 0.35, r * 0.12).fill(0x9db86a);
   return g;
 }
@@ -371,10 +450,21 @@ function dotArt(r: number, color: number): Graphics {
   return new Graphics().circle(0, 0, r).fill(color);
 }
 
-const SPECK_COLOR: Record<string, number> = { swimmer: 0xc9d9a0, 'green-ball': BALL.cup, 'mud-speck': MUD.fill, silt: SILT.fill, bubble: 0x9fb3c0 };
+const SPECK_COLOR: Record<string, number> = {
+  swimmer: 0xc9d9a0,
+  'green-ball': BALL.cup,
+  'mud-speck': MUD.fill,
+  silt: SILT.fill,
+  bubble: 0x9fb3c0,
+};
 
 /** A level-5 or level-6 candidate as it looks at a stop, in art units, centred. Nothing separate shows at stop 1. */
-export function candidateArt(id: 'swimmer' | 'green-ball' | 'mud-speck' | 'silt' | 'bubble', stop: Stop, shape: SwimmerShape, k = 1): Container {
+export function candidateArt(
+  id: 'swimmer' | 'green-ball' | 'mud-speck' | 'silt' | 'bubble',
+  stop: Stop,
+  shape: SwimmerShape,
+  k = 1,
+): Container {
   const z = stop === 4 ? 1.7 : 1;
   if (stop <= 2) return dotArt(stop === 1 ? 2 : 5, SPECK_COLOR[id]);
   if (id === 'swimmer') return swimmerArt(shape, 130 * z * k, stop === 4);
@@ -385,7 +475,10 @@ export function candidateArt(id: 'swimmer' | 'green-ball' | 'mud-speck' | 'silt'
 }
 
 /** About how far a candidate reaches from its centre at a stop, in art units (for the ring round it). */
-export function candidateReach(id: 'swimmer' | 'green-ball' | 'mud-speck' | 'silt' | 'bubble', stop: Stop): number {
+export function candidateReach(
+  id: 'swimmer' | 'green-ball' | 'mud-speck' | 'silt' | 'bubble',
+  stop: Stop,
+): number {
   const z = stop === 4 ? 1.7 : 1;
   if (stop <= 2) return 6;
   if (id === 'swimmer') return 65 * z * (stop === 4 ? 1.07 : 1);
@@ -403,7 +496,11 @@ export function waterLayer(stop: Stop): Container {
   else {
     const g = new Graphics();
     const rng = new Rng(stop * 31);
-    for (let i = 0; i < 10; i++) g.circle(rng.range(-1, 1) * ART_R, rng.range(-1, 1) * ART_R, rng.range(2, 4)).fill({ color: 0xa8c8d6, alpha: 0.6 });
+    for (let i = 0; i < 10; i++)
+      g.circle(rng.range(-1, 1) * ART_R, rng.range(-1, 1) * ART_R, rng.range(2, 4)).fill({
+        color: 0xa8c8d6,
+        alpha: 0.6,
+      });
     c.addChild(g);
   }
   return c;
@@ -420,7 +517,9 @@ function onionArt(box: number, dots: boolean): Graphics {
     for (let col = -Math.ceil(span / box) - 1; col <= Math.ceil(span / box); col++) {
       const x = col * box + off;
       const y = row * h;
-      g.roundRect(x + 2, y + 2, box - 4, h - 4, h * 0.2).fill(0xfffbf2).stroke(line(0xb9a27a, Math.max(2, box * 0.025)));
+      g.roundRect(x + 2, y + 2, box - 4, h - 4, h * 0.2)
+        .fill(0xfffbf2)
+        .stroke(line(0xb9a27a, Math.max(2, box * 0.025)));
       if (dots) g.circle(x + box * 0.5, y + h * 0.5, h * 0.12).fill({ color: 0xc9b48c, alpha: 0.8 });
     }
   }
@@ -433,9 +532,12 @@ function threadArt(box: number, rows: number[]): Graphics {
   const h = box * 0.45;
   for (const y0 of rows) {
     for (let x = -ART_R * 1.4; x < ART_R * 1.4; x += box) {
-      g.roundRect(x, y0 - h / 2, box, h, h * 0.2).fill(0xe3f5d2).stroke(line(LEAF.line, Math.max(3, box * 0.04)));
+      g.roundRect(x, y0 - h / 2, box, h, h * 0.2)
+        .fill(0xe3f5d2)
+        .stroke(line(LEAF.line, Math.max(3, box * 0.04)));
       g.moveTo(x + box * 0.08, y0);
-      for (let t = 0; t <= 1.0001; t += 0.05) g.lineTo(x + box * (0.08 + 0.84 * t), y0 + Math.sin(t * Math.PI * 4) * h * 0.32);
+      for (let t = 0; t <= 1.0001; t += 0.05)
+        g.lineTo(x + box * (0.08 + 0.84 * t), y0 + Math.sin(t * Math.PI * 4) * h * 0.32);
       g.stroke(line(0x3fae3a, Math.max(3, box * 0.06)));
     }
   }
@@ -459,7 +561,12 @@ function skinPieceArt(d: number): Graphics {
 }
 
 /** One stop's view of a level-6 slide. */
-export function sortLayer(id: 'leaf' | 'onion-skin' | 'green-thread' | 'swimmer' | 'green-ball' | 'sand' | 'bubble' | 'mud-speck', stop: Stop, looks: Looks, shape: SwimmerShape): Container {
+export function sortLayer(
+  id: 'leaf' | 'onion-skin' | 'green-thread' | 'swimmer' | 'green-ball' | 'sand' | 'bubble' | 'mud-speck',
+  stop: Stop,
+  looks: Looks,
+  shape: SwimmerShape,
+): Container {
   if (id === 'leaf' || id === 'sand') return viewLayer(id, stop, looks);
   const c = new Container();
   if (id === 'onion-skin') {
@@ -497,7 +604,12 @@ export function answerIcon(kind: 'alive' | 'not-alive' | 'cant-tell'): Graphics 
     g.moveTo(14, 14).lineTo(32, 32).stroke(line(wood.line, 11));
     g.circle(-4, -4, 24).fill(0xd6eefa).stroke(line(0x5c6f82, 7));
     // A question curl, drawn and not lettered.
-    g.moveTo(-12, -12).quadraticCurveTo(-10, -22, -2, -22).quadraticCurveTo(8, -20, 6, -10).quadraticCurveTo(2, -4, -4, 0).lineTo(-4, 4).stroke(line(swatch.purple.line, 5));
+    g.moveTo(-12, -12)
+      .quadraticCurveTo(-10, -22, -2, -22)
+      .quadraticCurveTo(8, -20, 6, -10)
+      .quadraticCurveTo(2, -4, -4, 0)
+      .lineTo(-4, 4)
+      .stroke(line(swatch.purple.line, 5));
     g.circle(-4, 12, 3.5).fill(swatch.purple.line);
   }
   return g;
@@ -505,7 +617,13 @@ export function answerIcon(kind: 'alive' | 'not-alive' | 'cant-tell'): Graphics 
 
 function pebbleArt(): Graphics {
   const g = new Graphics();
-  g.moveTo(-32, 10).quadraticCurveTo(-30, -20, 0, -22).quadraticCurveTo(30, -22, 34, 6).quadraticCurveTo(30, 26, 0, 26).quadraticCurveTo(-30, 26, -32, 10).fill(0xb7b2a8).stroke(line(0x7d776d, 5));
+  g.moveTo(-32, 10)
+    .quadraticCurveTo(-30, -20, 0, -22)
+    .quadraticCurveTo(30, -22, 34, 6)
+    .quadraticCurveTo(30, 26, 0, 26)
+    .quadraticCurveTo(-30, 26, -32, 10)
+    .fill(0xb7b2a8)
+    .stroke(line(0x7d776d, 5));
   g.ellipse(-10, -8, 8, 4).fill({ color: 0xffffff, alpha: 0.5 });
   return g;
 }
@@ -518,15 +636,33 @@ export function trayIcon(kind: 'one' | 'many' | 'not'): Graphics {
     g.circle(0, 0, 30).fill(0xe7f3c8).stroke(line(0x7f9b4c, 5));
     g.circle(4, 2, 9).fill(0x9db86a);
   } else if (kind === 'many') {
-    for (let r = 0; r < 3; r++) for (let k = 0; k < 3; k++) g.rect(-33 + k * 22, -27 + r * 18, 22, 18).fill(0xc9eeb0).stroke(line(LEAF.line, 3));
+    for (let r = 0; r < 3; r++)
+      for (let k = 0; k < 3; k++)
+        g.rect(-33 + k * 22, -27 + r * 18, 22, 18)
+          .fill(0xc9eeb0)
+          .stroke(line(LEAF.line, 3));
   }
   return g;
 }
 
 /** A small slide resting in a tray: a glass rectangle with a dab of the sample's colour. */
 export function miniSlide(id: string): Graphics {
-  const col: Record<string, number> = { leaf: LEAF.fill, 'onion-skin': 0xe8dcc2, 'green-thread': 0x4fa63f, swimmer: 0xc9d9a0, 'green-ball': BALL.cup, sand: 0xe0b95a, bubble: 0x9fb3c0, 'mud-speck': MUD.fill };
-  return new Graphics().roundRect(-16, -6, 32, 12, 3).fill(0xeaf6fb).stroke(line(0x9ab3c2, 2)).circle(0, 0, 4).fill(col[id] ?? 0x999999);
+  const col: Record<string, number> = {
+    leaf: LEAF.fill,
+    'onion-skin': 0xe8dcc2,
+    'green-thread': 0x4fa63f,
+    swimmer: 0xc9d9a0,
+    'green-ball': BALL.cup,
+    sand: 0xe0b95a,
+    bubble: 0x9fb3c0,
+    'mud-speck': MUD.fill,
+  };
+  return new Graphics()
+    .roundRect(-16, -6, 32, 12, 3)
+    .fill(0xeaf6fb)
+    .stroke(line(0x9ab3c2, 2))
+    .circle(0, 0, 4)
+    .fill(col[id] ?? 0x999999);
 }
 
 /** The companion's ring round the speck it asks about: a soft dashed circle, `r` in screen units. */
@@ -590,18 +726,31 @@ function cheekCellsArt(r: number, seed: number): Graphics {
 /** A faint pale smear on the slide (stops 1–2), `d` across; `specks` adds a few. */
 function smearArt(d: number, specks: boolean, seed: number): Graphics {
   const g = new Graphics();
-  g.ellipse(0, 0, d / 2, d * 0.32).fill({ color: CHEEK.fill, alpha: 0.9 }).stroke(line(0xc9b3a6, Math.max(3, d * 0.01)));
+  g.ellipse(0, 0, d / 2, d * 0.32)
+    .fill({ color: CHEEK.fill, alpha: 0.9 })
+    .stroke(line(0xc9b3a6, Math.max(3, d * 0.01)));
   if (specks) {
     const rng = new Rng(seed);
-    for (let i = 0; i < 6; i++) g.circle(rng.range(-0.35, 0.35) * d, rng.range(-0.2, 0.2) * d, d * 0.012).fill(CHEEK.dot);
+    for (let i = 0; i < 6; i++)
+      g.circle(rng.range(-0.35, 0.35) * d, rng.range(-0.2, 0.2) * d, d * 0.012).fill(CHEEK.dot);
   }
   return g;
 }
 
 /** One stop's view of a level-7 slide. Nothing at stops 1–2 shows the walls. */
-export function wallLayer(id: 'onion-skin' | 'leaf' | 'cheek-cells', stop: Stop, looks: Looks, angle: number, seed: number): Container {
-  if (id === 'onion-skin') return stop >= 3 ? tilt(sortLayer('onion-skin', stop, looks, 'round'), angle) : sortLayer('onion-skin', stop, looks, 'round');
-  if (id === 'leaf') return stop >= 3 ? tilt(viewLayer('leaf', stop, looks), angle) : viewLayer('leaf', stop, looks);
+export function wallLayer(
+  id: 'onion-skin' | 'leaf' | 'cheek-cells',
+  stop: Stop,
+  looks: Looks,
+  angle: number,
+  seed: number,
+): Container {
+  if (id === 'onion-skin')
+    return stop >= 3
+      ? tilt(sortLayer('onion-skin', stop, looks, 'round'), angle)
+      : sortLayer('onion-skin', stop, looks, 'round');
+  if (id === 'leaf')
+    return stop >= 3 ? tilt(viewLayer('leaf', stop, looks), angle) : viewLayer('leaf', stop, looks);
   const c = new Container();
   c.addChild(new Graphics().circle(0, 0, ART_R + 4).fill(SLIDE));
   if (stop <= 2) c.addChild(smearArt(stop === 1 ? 120 : 360, stop === 2, seed));
@@ -612,7 +761,9 @@ export function wallLayer(id: 'onion-skin' | 'leaf' | 'cheek-cells', stop: Stop,
 /** An even green drop, `d` across (all three level-8 drops at stops 1–2, except the threads' wisps at 2). */
 function greenDropArt(d: number, pale: boolean): Graphics {
   const g = new Graphics();
-  g.circle(0, 0, d / 2).fill({ color: pale ? PALE_GREEN : GREEN_DROP, alpha: 0.95 }).stroke(line(0x5aa94c, Math.max(3, d * 0.02)));
+  g.circle(0, 0, d / 2)
+    .fill({ color: pale ? PALE_GREEN : GREEN_DROP, alpha: 0.95 })
+    .stroke(line(0x5aa94c, Math.max(3, d * 0.02)));
   g.ellipse(-d * 0.18, -d * 0.2, d * 0.12, d * 0.06).fill({ color: 0xffffff, alpha: 0.6 });
   return g;
 }
@@ -621,7 +772,11 @@ function greenDropArt(d: number, pale: boolean): Graphics {
  * One stop's view of a level-8 drop, and the part that drifts with the water (the threads or the balls), or null. Positions are
  * seeded; the coloured water has nothing in it at any stop.
  */
-export function greenLayer(id: 'green-threads' | 'green-balls' | 'green-water', stop: Stop, seed: number): { layer: Container; drift: Container | null } {
+export function greenLayer(
+  id: 'green-threads' | 'green-balls' | 'green-water',
+  stop: Stop,
+  seed: number,
+): { layer: Container; drift: Container | null } {
   const c = new Container();
   const rng = new Rng(seed + stop * 101);
   if (stop === 1) {
@@ -648,7 +803,10 @@ export function greenLayer(id: 'green-threads' | 'green-balls' | 'green-water', 
   c.addChild(new Graphics().circle(0, 0, ART_R + 4).fill(WATER));
   const drift = new Container();
   if (id === 'green-threads') {
-    const t = threadArt(stop === 3 ? 90 : 170, stop === 3 ? [rng.range(-90, -40), rng.range(50, 100)] : [rng.range(-30, 30)]);
+    const t = threadArt(
+      stop === 3 ? 90 : 170,
+      stop === 3 ? [rng.range(-90, -40), rng.range(50, 100)] : [rng.range(-30, 30)],
+    );
     t.rotation = rng.range(-0.35, 0.35);
     drift.addChild(t);
   } else {
@@ -676,8 +834,16 @@ export function greenLayer(id: 'green-threads' | 'green-balls' | 'green-water', 
 /** Level 7's plant cells: a leaf over a small brick grid. */
 export function plantIcon(): Graphics {
   const g = new Graphics();
-  for (let r = 0; r < 3; r++) for (let k = 0; k < 3; k++) g.rect(-36 + k * 24 + (r % 2) * 6, -4 + r * 14, 22, 14).fill(0xc9eeb0).stroke(line(LEAF.line, 3));
-  g.moveTo(0, -40).quadraticCurveTo(26, -26, 0, 2).quadraticCurveTo(-26, -26, 0, -40).fill(LEAF.fill).stroke(line(LEAF.line, 4));
+  for (let r = 0; r < 3; r++)
+    for (let k = 0; k < 3; k++)
+      g.rect(-36 + k * 24 + (r % 2) * 6, -4 + r * 14, 22, 14)
+        .fill(0xc9eeb0)
+        .stroke(line(LEAF.line, 3));
+  g.moveTo(0, -40)
+    .quadraticCurveTo(26, -26, 0, 2)
+    .quadraticCurveTo(-26, -26, 0, -40)
+    .fill(LEAF.fill)
+    .stroke(line(LEAF.line, 4));
   g.moveTo(0, -34).lineTo(0, -2).stroke(line(LEAF.vein, 3));
   return g;
 }
@@ -685,7 +851,11 @@ export function plantIcon(): Graphics {
 /** Level 8's tiny green living things: three small green balls, a dot in each. */
 export function livingIcon(): Graphics {
   const g = new Graphics();
-  for (const [x, y] of [[-20, 12], [20, 12], [0, -20]]) {
+  for (const [x, y] of [
+    [-20, 12],
+    [20, 12],
+    [0, -20],
+  ]) {
     g.circle(x, y, 17).fill(BALL.fill).stroke(line(BALL.line, 4));
     g.circle(x + 3, y + 2, 6).fill(BALL.cup);
   }
@@ -695,7 +865,13 @@ export function livingIcon(): Graphics {
 /** Level 8's green all through the water: a cup filled evenly green. */
 export function throughIcon(): Graphics {
   const g = new Graphics();
-  g.moveTo(-30, -26).lineTo(-22, 32).lineTo(22, 32).lineTo(30, -26).closePath().fill(0xeaf6fb).stroke(line(0x7d97a8, 4));
+  g.moveTo(-30, -26)
+    .lineTo(-22, 32)
+    .lineTo(22, 32)
+    .lineTo(30, -26)
+    .closePath()
+    .fill(0xeaf6fb)
+    .stroke(line(0x7d97a8, 4));
   g.moveTo(-28, -14).lineTo(-22, 28).lineTo(22, 28).lineTo(28, -14).closePath().fill(GREEN_DROP);
   g.moveTo(-30, -26).lineTo(-22, 32).lineTo(22, 32).lineTo(30, -26).stroke(line(0x7d97a8, 4));
   return g;

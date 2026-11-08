@@ -12,7 +12,17 @@ import type { View } from '../../engine/view';
 import type { BandLevels } from '../../progress/difficulty';
 
 export type Socket = 'under' | 'top' | 'front';
-export type PartId = 'wheels' | 'float' | 'umbrella' | 'lantern' | 'flag' | 'paddles' | 'rollers' | 'lid' | 'raft' | 'glowstones';
+export type PartId =
+  | 'wheels'
+  | 'float'
+  | 'umbrella'
+  | 'lantern'
+  | 'flag'
+  | 'paddles'
+  | 'rollers'
+  | 'lid'
+  | 'raft'
+  | 'glowstones';
 /** `gate` is level 5's limit, always the last tile: no part fixes it, and it stops any cart holding a tall part. */
 export type Condition = 'smooth' | 'bump' | 'puddle' | 'rain' | 'dark' | 'gate';
 /** A gadget: each socket empty or holding one part. */
@@ -52,7 +62,11 @@ export const LOW_TWIN: Partial<Record<PartId, PartId>> = { wheels: 'rollers', um
 export const NEW_KIT: readonly PartId[] = ['rollers', 'glowstones', 'raft', 'lid'];
 
 /** Where a socket is, in words. */
-export const SOCKET_WORDS: Record<Socket, string> = { under: 'underneath', top: 'on top', front: 'at the front' };
+export const SOCKET_WORDS: Record<Socket, string> = {
+  under: 'underneath',
+  top: 'on top',
+  front: 'at the front',
+};
 
 /** What a condition needs: the single-job part in its one socket (never the paddle wheels); `smooth` needs nothing. */
 export function need(c: Condition): { part: PartId; socket: Socket } | null {
@@ -77,7 +91,9 @@ export type RunResult = { ok: true } | { ok: false; at: Condition; socket: Socke
  * part fixing `c`, that part's socket (the glow stones light the dark from on top); otherwise `need(c)`, as at levels 1–5.
  */
 export function responsible(c: Condition, kit?: readonly PartId[]): { part: PartId; socket: Socket } | null {
-  const fixer = kit?.find((id) => PARTS[id].fixes.length === 1 && PARTS[id].fixes[0] === c && PARTS[id].socket);
+  const fixer = kit?.find(
+    (id) => PARTS[id].fixes.length === 1 && PARTS[id].fixes[0] === c && PARTS[id].socket,
+  );
   if (fixer) return { part: fixer, socket: PARTS[fixer].socket! };
   return need(c);
 }
@@ -114,7 +130,12 @@ export function socketConflict(path: readonly Condition[]): boolean {
 }
 
 /** Every assembly of the tray's parts over the open sockets (each empty or one part, no part twice) that passes the path. */
-export function passingDesigns(path: readonly Condition[], tray: readonly PartId[], open: readonly Socket[], kit?: readonly PartId[]): Gadget[] {
+export function passingDesigns(
+  path: readonly Condition[],
+  tray: readonly PartId[],
+  open: readonly Socket[],
+  kit?: readonly PartId[],
+): Gadget[] {
   const out: Gadget[] = [];
   const walk = (i: number, g: Gadget, used: Set<PartId>) => {
     if (i === open.length) {
@@ -179,7 +200,8 @@ export interface Round {
 /** The kit the round's run reads (level 6's tray), or none: the old one-socket rule. */
 export const kitOf = (round: Round): readonly PartId[] | undefined => (round.kit ? round.tray : undefined);
 /** Levels 4–6: help follows a target passing design rather than the first unmet condition's single-job part. */
-export const followsTarget = (round: Round): boolean => !!round.yesterday || !!round.kit || round.path.includes('gate');
+export const followsTarget = (round: Round): boolean =>
+  !!round.yesterday || !!round.kit || round.path.includes('gate');
 
 export interface Brief {
   level: number;
@@ -192,12 +214,27 @@ export interface Plan {
 }
 
 export const PLANS: Record<number, Plan> = {
-  1: { name: 'Which one works?', describe: 'Which one works? Try two finished gadgets, give the one that works' },
-  2: { name: 'Change one part', describe: 'Change one part: the shown cart works for one friend; change it for the next' },
+  1: {
+    name: 'Which one works?',
+    describe: 'Which one works? Try two finished gadgets, give the one that works',
+  },
+  2: {
+    name: 'Change one part',
+    describe: 'Change one part: the shown cart works for one friend; change it for the next',
+  },
   3: { name: 'Build it', describe: 'Build it: two open sockets, four parts, a path of two' },
-  4: { name: 'Fix-It Day', describe: "Fix-It Day: yesterday's cart meets a longer path, and one part has to do two jobs" },
-  5: { name: 'Little Gate', describe: 'Little Gate: build for the path, and the whole cart must fit under the low garden gate' },
-  6: { name: 'New Box', describe: "New Box: the same job as the pet's cart, from a box of parts it never used" },
+  4: {
+    name: 'Fix-It Day',
+    describe: "Fix-It Day: yesterday's cart meets a longer path, and one part has to do two jobs",
+  },
+  5: {
+    name: 'Little Gate',
+    describe: 'Little Gate: build for the path, and the whole cart must fit under the low garden gate',
+  },
+  6: {
+    name: 'New Box',
+    describe: "New Box: the same job as the pet's cart, from a box of parts it never used",
+  },
 };
 
 export const LEVELS: BandLevels = {
@@ -211,7 +248,13 @@ export const planFor = (level: number): Plan => PLANS[Math.max(1, Math.min(TOP_L
 
 const LEVEL1_CONDITIONS: readonly Condition[] = ['rain', 'dark', 'bump', 'puddle'];
 /** Level 3's pairs, the first authored. */
-export const LEVEL3_PAIRS: readonly [Condition, Condition][] = [['rain', 'dark'], ['bump', 'dark'], ['rain', 'bump'], ['puddle', 'rain'], ['puddle', 'dark']];
+export const LEVEL3_PAIRS: readonly [Condition, Condition][] = [
+  ['rain', 'dark'],
+  ['bump', 'dark'],
+  ['rain', 'bump'],
+  ['puddle', 'rain'],
+  ['puddle', 'dark'],
+];
 /** Level 2's rounds in authored order: the first neighbor's condition, then the second's new one. */
 export const LEVEL2_STEPS: readonly { first: Condition; then: Condition }[] = [
   { first: 'bump', then: 'puddle' },
@@ -229,13 +272,19 @@ export const LEVEL4_CARTS: readonly { old: 'bump' | 'puddle'; third: 'rain' | 'd
 /** Level 5's rounds: the two conditions (round 2 seeded from the two pairs, round 3 always bump and rain). */
 export const LEVEL5_PAIRS: readonly (readonly [Condition, Condition][])[] = [
   [['bump', 'dark']],
-  [['rain', 'dark'], ['rain', 'puddle']],
+  [
+    ['rain', 'dark'],
+    ['rain', 'puddle'],
+  ],
   [['bump', 'rain']],
 ];
 /** Level 6's rounds, likewise; `bump` + `puddle` would put two jobs underneath and `rain` + `dark` two on top. */
 export const LEVEL6_PAIRS: readonly (readonly [Condition, Condition][])[] = [
   [['bump', 'dark']],
-  [['puddle', 'dark'], ['puddle', 'rain']],
+  [
+    ['puddle', 'dark'],
+    ['puddle', 'rain'],
+  ],
   [['bump', 'rain']],
 ];
 
@@ -260,7 +309,13 @@ export function briefFor(level: number, rng: Rng): Brief {
       const good: Gadget = { [n.socket]: n.part };
       const bad: Gadget = { [n.socket]: 'flag' };
       const neighbor = i === 0 ? NEIGHBORS[0] : neighborAt(i);
-      rounds.push({ neighbor, path: ['smooth', c], open: [...SOCKETS], tray: [], pair: { gadgets: passing === 0 ? [good, bad] : [bad, good], passing } });
+      rounds.push({
+        neighbor,
+        path: ['smooth', c],
+        open: [...SOCKETS],
+        tray: [],
+        pair: { gadgets: passing === 0 ? [good, bad] : [bad, good], passing },
+      });
     });
   } else if (l === 2) {
     LEVEL2_STEPS.forEach((step, i) => {
@@ -268,14 +323,23 @@ export function briefFor(level: number, rng: Rng): Brief {
       const next = need(step.then)!;
       const shownGadget: Gadget = { [first.socket]: first.part };
       // The second path keeps the first condition unless it would need the same socket (round 1's bump and puddle).
-      const path: Condition[] = first.socket === next.socket ? ['smooth', step.then] : ['smooth', step.first, step.then];
+      const path: Condition[] =
+        first.socket === next.socket ? ['smooth', step.then] : ['smooth', step.first, step.then];
       // The tray: the needed part, the flag, and one part that does not help.
-      const others = PART_IDS.filter((p) => p !== next.part && p !== 'flag' && p !== first.part && PARTS[p].socket !== next.socket);
+      const others = PART_IDS.filter(
+        (p) => p !== next.part && p !== 'flag' && p !== first.part && PARTS[p].socket !== next.socket,
+      );
       const tray = rng.shuffle([next.part, 'flag', rng.pick(others)] as PartId[]);
       const firstNeighbor = i === 0 ? NEIGHBORS[0] : neighborAt(i * 2);
       let neighbor = neighborAt(i * 2 + 1);
       if (neighbor === firstNeighbor) neighbor = neighborAt(i * 2 + 2);
-      rounds.push({ neighbor, path, open: [...SOCKETS], tray, shown: { neighbor: firstNeighbor, path: ['smooth', step.first], gadget: shownGadget } });
+      rounds.push({
+        neighbor,
+        path,
+        open: [...SOCKETS],
+        tray,
+        shown: { neighbor: firstNeighbor, path: ['smooth', step.first], gadget: shownGadget },
+      });
     });
   } else if (l === 4) {
     const later = rng.shuffle(NEIGHBORS.slice(1));
@@ -286,13 +350,23 @@ export function briefFor(level: number, rng: Rng): Brief {
       const oldPart = need(cart.old)!.part;
       const thirdNeed = need(third)!;
       const gadget: Gadget = { under: oldPart, [thirdNeed.socket]: thirdNeed.part };
-      const yesterdayPath: Condition[] = ['smooth', ...(first ? [cart.old, third] : rng.shuffle([cart.old, third]))];
-      const path: Condition[] = ['smooth', ...(first ? [cart.old, fresh, third] : rng.shuffle([cart.old, fresh, third]))];
+      const yesterdayPath: Condition[] = [
+        'smooth',
+        ...(first ? [cart.old, third] : rng.shuffle([cart.old, third])),
+      ];
+      const path: Condition[] = [
+        'smooth',
+        ...(first ? [cart.old, fresh, third] : rng.shuffle([cart.old, fresh, third])),
+      ];
       const freshPart = need(fresh)!.part;
-      const shelf: PartId[] = first ? [freshPart, 'paddles'] : rng.shuffle([freshPart, 'paddles'] as PartId[]);
+      const shelf: PartId[] = first
+        ? [freshPart, 'paddles']
+        : rng.shuffle([freshPart, 'paddles'] as PartId[]);
       rounds.push({
         neighbor: first ? NEIGHBORS[0] : later[i - 1],
-        path, open: [...SOCKETS], tray: [...shelf, oldPart, thirdNeed.part],
+        path,
+        open: [...SOCKETS],
+        tray: [...shelf, oldPart, thirdNeed.part],
         yesterday: { path: yesterdayPath, gadget },
       });
     });
@@ -313,7 +387,9 @@ export function briefFor(level: number, rng: Rng): Brief {
       if (tray.length < 4) tray.push('flag');
       rounds.push({
         neighbor: first ? NEIGHBORS[0] : later[i - 1],
-        path: ['smooth', ...conds, 'gate'], open: [...SOCKETS], tray: first ? tray : rng.shuffle(tray),
+        path: ['smooth', ...conds, 'gate'],
+        open: [...SOCKETS],
+        tray: first ? tray : rng.shuffle(tray),
       });
     });
   } else if (l === 6) {
@@ -323,11 +399,18 @@ export function briefFor(level: number, rng: Rng): Brief {
       const conds = first ? [...pair] : rng.shuffle([...pair]);
       const path: Condition[] = ['smooth', ...conds];
       const gadget: Gadget = {};
-      for (const c of conds) { const n = need(c)!; gadget[n.socket] = n.part; }
+      for (const c of conds) {
+        const n = need(c)!;
+        gadget[n.socket] = n.part;
+      }
       const two = first ? [NEIGHBORS[1], NEIGHBORS[3]] : rng.shuffle([...NEIGHBORS]).slice(0, 2);
       rounds.push({
-        neighbor: two[1], path, open: [...SOCKETS], tray: first ? [...NEW_KIT] : rng.shuffle([...NEW_KIT]),
-        shown: { neighbor: two[0], path: [...path], gadget }, kit: true,
+        neighbor: two[1],
+        path,
+        open: [...SOCKETS],
+        tray: first ? [...NEW_KIT] : rng.shuffle([...NEW_KIT]),
+        shown: { neighbor: two[0], path: [...path], gadget },
+        kit: true,
       });
     });
   } else {
@@ -339,7 +422,12 @@ export function briefFor(level: number, rng: Rng): Brief {
       const closed = SOCKETS.find((s) => !open.includes(s))!;
       const decoys = PART_IDS.filter((p) => PARTS[p].socket === closed);
       const tray = rng.shuffle([needs[0].part, needs[1].part, rng.pick(decoys), 'flag'] as PartId[]);
-      rounds.push({ neighbor: i === 0 ? NEIGHBORS[0] : neighborAt(i), path: ['smooth', ...conds], open, tray });
+      rounds.push({
+        neighbor: i === 0 ? NEIGHBORS[0] : neighborAt(i),
+        path: ['smooth', ...conds],
+        open,
+        tray,
+      });
     });
   }
   return { level: l, rounds };
@@ -375,7 +463,10 @@ export function helpSteps(gadget: Gadget, round: Round): number {
     const d = targetDesign(gadget, round);
     return d ? SOCKETS.filter((s) => d[s] !== gadget[s]).length : 0;
   }
-  return round.path.filter((c) => { const n = need(c); return n && !handles(gadget[n.socket], n.socket, c); }).length;
+  return round.path.filter((c) => {
+    const n = need(c);
+    return n && !handles(gadget[n.socket], n.socket, c);
+  }).length;
 }
 
 /**
@@ -388,14 +479,19 @@ export function helpFor(gadget: Gadget, path: readonly Condition[], round?: Roun
   const r = runPath(gadget, path, round && kitOf(round));
   if (r.ok) return { kind: 'done' };
   const d = round && followsTarget(round) ? targetDesign(gadget, round) : null;
-  if (d && !d[r.socket] && gadget[r.socket]) return { kind: 'out', part: gadget[r.socket]!, socket: r.socket, at: r.at };
+  if (d && !d[r.socket] && gadget[r.socket])
+    return { kind: 'out', part: gadget[r.socket]!, socket: r.socket, at: r.at };
   const part = d?.[r.socket] ?? r.part;
   return { kind: 'install', part, socket: r.socket, replaces: gadget[r.socket] ?? null, at: r.at };
 }
 
 /** The gadget after help: the part moves in (from the tray or another socket) and whatever was there goes back to the tray. */
 export function applyHelp(gadget: Gadget, h: Help): Gadget {
-  if (h.kind === 'out') { const g: Gadget = { ...gadget }; delete g[h.socket]; return g; }
+  if (h.kind === 'out') {
+    const g: Gadget = { ...gadget };
+    delete g[h.socket];
+    return g;
+  }
   if (h.kind !== 'install') return { ...gadget };
   const g: Gadget = { ...gadget };
   for (const s of SOCKETS) if (g[s] === h.part) delete g[s];
@@ -433,8 +529,14 @@ export class Tally {
   miss(): 'glow' | 'install' | 'none' {
     this.misses++;
     this.roundMisses++;
-    if (this.glowing) { this.hints++; return 'install'; }
-    if (this.roundMisses >= 2) { this.light(); return 'glow'; }
+    if (this.glowing) {
+      this.hints++;
+      return 'install';
+    }
+    if (this.roundMisses >= 2) {
+      this.light();
+      return 'glow';
+    }
     return 'none';
   }
 
@@ -449,7 +551,10 @@ export class Tally {
       this.failedTries.push({ ...gadget });
     }
     this.lastFail = { at, part };
-    if (same && !this.glowing) { this.light(); return true; }
+    if (same && !this.glowing) {
+      this.light();
+      return true;
+    }
     return false;
   }
 
@@ -482,17 +587,29 @@ export class Tally {
 
 // ——— Layout ———
 
-export interface Rect { x: number; y: number; w: number; h: number }
-export interface Pt { x: number; y: number }
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+export interface Pt {
+  x: number;
+  y: number;
+}
 export const centre = (r: Rect): Pt => ({ x: r.x + r.w / 2, y: r.y + r.h / 2 });
-export const overlaps = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+export const overlaps = (a: Rect, b: Rect) =>
+  a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 const inside = (a: Rect, v: View) => a.x >= 0 && a.y >= 0 && a.x + a.w <= v.w && a.y + a.h <= v.h;
 
 /** The home and ? buttons (top left) and the guide (bottom left). */
 export const HOME_CORNER = { w: 130, h: 215 };
 export const PET_CORNER = { w: 160, h: 170 };
 export function corners(v: View): Rect[] {
-  return [{ x: 0, y: 0, ...HOME_CORNER }, { x: 0, y: v.h - PET_CORNER.h, ...PET_CORNER }];
+  return [
+    { x: 0, y: 0, ...HOME_CORNER },
+    { x: 0, y: v.h - PET_CORNER.h, ...PET_CORNER },
+  ];
 }
 
 export const SOCKET = 110;
@@ -528,10 +645,23 @@ export function socketAt(s: Socket, w: number, h: number): Pt {
   return { x: w / 2 - SOCKET / 2 - 4, y: 0 };
 }
 
-const button = (cx: number, cy: number): Rect => ({ x: cx - BUTTON_R, y: cy - BUTTON_R, w: 2 * BUTTON_R, h: 2 * BUTTON_R });
+const button = (cx: number, cy: number): Rect => ({
+  x: cx - BUTTON_R,
+  y: cy - BUTTON_R,
+  w: 2 * BUTTON_R,
+  h: 2 * BUTTON_R,
+});
 
 /** The bench's boards, centred in the room between `top` and `bottom`: two gadgets with a hand under each, or one cart. */
-function placeBoards(pair: boolean, left: number, room: number, top: number, bottom: number, boards: Rect[], hands: Rect[]) {
+function placeBoards(
+  pair: boolean,
+  left: number,
+  room: number,
+  top: number,
+  bottom: number,
+  boards: Rect[],
+  hands: Rect[],
+) {
   const gap = 16;
   if (pair) {
     const bw = Math.min(320, (room - 30) / 2);
@@ -586,7 +716,12 @@ export function benchLayout(level: number, tiles: number, trayCount: number, v: 
   const trayX = trayLeft + (trayRight - trayLeft - trayW) / 2;
   for (let i = 0; i < trayCount; i++) tray.push({ x: trayX + i * (PART + gap), y: trayY, w: PART, h: PART });
   const stripY = trayCount > 0 ? trayY - 12 - STRIP : bottomY - 12 - STRIP;
-  const strip: Rect = { x: Math.max(PET_CORNER.w + M, v.w / 2 - 3 * (STRIP + 8)), y: stripY, w: 6 * (STRIP + 8), h: STRIP };
+  const strip: Rect = {
+    x: Math.max(PET_CORNER.w + M, v.w / 2 - 3 * (STRIP + 8)),
+    y: stripY,
+    w: 6 * (STRIP + 8),
+    h: STRIP,
+  };
   if (wide) {
     const top = M + 24;
     request = { x: M, y: HOME_CORNER.h + M, w: 200, h: 190 };
@@ -603,14 +738,24 @@ export function benchLayout(level: number, tiles: number, trayCount: number, v: 
     const tilesW = tiles * TILE + (tiles - 1) * 12;
     const tilesY = strip.y - M - TILE;
     const tilesX = (v.w - tilesW) / 2;
-    for (let i = 0; i < tiles; i++) tileRects.push({ x: tilesX + i * (TILE + 12), y: tilesY, w: TILE, h: TILE });
+    for (let i = 0; i < tiles; i++)
+      tileRects.push({ x: tilesX + i * (TILE + 12), y: tilesY, w: TILE, h: TILE });
     const bottom = tilesY - M;
     const left = M;
     const room = v.w - 2 * M;
     placeBoards(pair, left, room, top, bottom, boards, hands);
   }
   for (const b of boards) if (b.w < 220 || b.h < 180) return null;
-  const parts = [request, ...tileRects, ...boards, ...hands, ...tray, strip, ...(tryButton ? [tryButton] : []), ...(giveButton ? [giveButton] : [])];
+  const parts = [
+    request,
+    ...tileRects,
+    ...boards,
+    ...hands,
+    ...tray,
+    strip,
+    ...(tryButton ? [tryButton] : []),
+    ...(giveButton ? [giveButton] : []),
+  ];
   if (!parts.every((p) => inside(p, v))) return null;
   if (parts.some((p) => corners(v).some((q) => overlaps(p, q)))) return null;
   if (parts.some((p, i) => parts.some((q, j) => i < j && overlaps(p, q)))) return null;
@@ -633,7 +778,13 @@ export type Move =
  * cart once (levels 2 and 4, a free look at where it stops), put in what help names, Try, Give. Level 5 first builds the
  * familiar cart (each condition's usual part) and Trys it to the gate stop, then follows help.
  */
-export function nextMove(round: Round, gadget: Gadget, tried: readonly boolean[], triedOk: boolean, level: number): Move {
+export function nextMove(
+  round: Round,
+  gadget: Gadget,
+  tried: readonly boolean[],
+  triedOk: boolean,
+  level: number,
+): Move {
   if (round.pair) {
     const fail = (1 - round.pair.passing) as 0 | 1;
     if (!tried[fail]) return { tryGadget: fail };

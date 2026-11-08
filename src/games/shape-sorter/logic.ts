@@ -58,14 +58,35 @@ const CLUE_APART: [ShapeKind, ShapeKind][] = [
   ['diamond', 'trapezoid'],
 ];
 /** The kinds level 11 draws in three sizes. */
-export const SIZE_POOL: readonly ShapeKind[] = ['circle', 'square', 'triangle', 'star', 'heart', 'hexagon', 'oval', 'pentagon'];
+export const SIZE_POOL: readonly ShapeKind[] = [
+  'circle',
+  'square',
+  'triangle',
+  'star',
+  'heart',
+  'hexagon',
+  'oval',
+  'pentagon',
+];
 
 /** Heart mixes curves and corners; star has ten corners, so neither belongs in the counting pool. */
-export const CORNERS: Record<ShapeKind, number> = { circle: 0, oval: 0, triangle: 3, square: 4, rectangle: 4, diamond: 4, trapezoid: 4, pentagon: 5, hexagon: 6, star: 10, heart: 1 };
+export const CORNERS: Record<ShapeKind, number> = {
+  circle: 0,
+  oval: 0,
+  triangle: 3,
+  square: 4,
+  rectangle: 4,
+  diamond: 4,
+  trapezoid: 4,
+  pentagon: 5,
+  hexagon: 6,
+  star: 10,
+  heart: 1,
+};
 export const ATTRIBUTE_POOL = POOL.filter((k) => k !== 'heart');
 export const COUNT_POOL = ATTRIBUTE_POOL.filter((k) => k !== 'star');
 export const FOUR_CORNERS = COUNT_POOL.filter((k) => CORNERS[k] === 4);
-export const cornerClass = (kind: ShapeKind) => CORNERS[kind] === 0 ? 'curves' : 'corners';
+export const cornerClass = (kind: ShapeKind) => (CORNERS[kind] === 0 ? 'curves' : 'corners');
 
 const FOUR: ShapeKind[] = ['circle', 'square', 'triangle', 'star'];
 /** Levels 7 and 8: six from the pool, a curve and straight sides among them; the count is pinned, so the pool can grow without widening a lid. */
@@ -76,7 +97,16 @@ export const PLANS: SorterPlan[] = [
   { holes: ['circle', 'square', 'triangle'], pieces: 6, coded: true, sameColor: false, tilt: false },
   { holes: FOUR, pieces: 6, coded: true, sameColor: false, tilt: false },
   { holes: FOUR, pieces: 6, coded: false, sameColor: false, tilt: false, facts: true },
-  { holes: ['circle', 'square'], deal: { pool: POOL, count: 5 }, pieces: 7, coded: false, sameColor: true, tilt: false, sizes: true, facts: true },
+  {
+    holes: ['circle', 'square'],
+    deal: { pool: POOL, count: 5 },
+    pieces: 7,
+    coded: false,
+    sameColor: true,
+    tilt: false,
+    sizes: true,
+    facts: true,
+  },
   { holes: [], deal: MIXED, pieces: 8, coded: false, sameColor: true, tilt: true, sizes: true, facts: true },
   { holes: [], deal: MIXED, pieces: 6, coded: false, sameColor: true, tilt: false, clue: true },
   // 9, Tap and in it goes: the lap entry and toddler's first rung.
@@ -86,7 +116,14 @@ export const PLANS: SorterPlan[] = [
   // 11, Big, middle, little: one kind in three sizes.
   { holes: [], pieces: 3, coded: false, sameColor: false, tilt: false, sized: true },
   // 12, Turn it to fit: three or four corner shapes, sometimes a circle for contrast.
-  { holes: ['square', 'triangle', 'hexagon', 'star'], pieces: 4, coded: false, sameColor: true, tilt: false, turning: true },
+  {
+    holes: ['square', 'triangle', 'hexagon', 'star'],
+    pieces: 4,
+    coded: false,
+    sameColor: true,
+    tilt: false,
+    turning: true,
+  },
   // 13–14 keep the drag, but several shape kinds share one target.
   { holes: [], pieces: 6, coded: false, sameColor: true, tilt: false, attribute: 'curves' },
   { holes: [], pieces: 7, coded: false, sameColor: true, tilt: false, attribute: 'count' },
@@ -109,7 +146,8 @@ export const TAP_HOLD = 0.4;
 export const TAP_REACH = 120;
 
 /** A piece let go away from every hole: at a tap-in level, a quick touch that barely moved it is a tap, and the piece hops in. */
-export const tapsIn = (plan: SorterPlan, heldFor: number, moved: number) => !!plan.tapIn && heldFor < TAP_HOLD && moved < TAP_REACH;
+export const tapsIn = (plan: SorterPlan, heldFor: number, moved: number) =>
+  !!plan.tapIn && heldFor < TAP_HOLD && moved < TAP_REACH;
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
@@ -138,8 +176,16 @@ const clash = (pairs: [ShapeKind, ShapeKind][], kinds: readonly ShapeKind[], k: 
 
 /** The lid's holes for one round: fixed for most levels, drawn from the pool at 6–8, one kind in three sizes at 11. */
 export function dealHoles(rng: Rng, plan: SorterPlan): HoleSpec[] {
-  if (plan.attribute === 'curves') return [{ kind: 'circle', attribute: 'curves' }, { kind: 'triangle', attribute: 'corners' }];
-  if (plan.attribute === 'count') return (['circle', 'triangle', 'square', 'pentagon', 'hexagon'] as ShapeKind[]).map((kind) => ({ kind, attribute: CORNERS[kind] }));
+  if (plan.attribute === 'curves')
+    return [
+      { kind: 'circle', attribute: 'curves' },
+      { kind: 'triangle', attribute: 'corners' },
+    ];
+  if (plan.attribute === 'count')
+    return (['circle', 'triangle', 'square', 'pentagon', 'hexagon'] as ShapeKind[]).map((kind) => ({
+      kind,
+      attribute: CORNERS[kind],
+    }));
   if (plan.turning) {
     const kinds = [...plan.holes];
     if (rng.chance(0.5)) kinds[rng.int(0, kinds.length - 1)] = 'circle';
@@ -159,23 +205,39 @@ export function dealHoles(rng: Rng, plan: SorterPlan): HoleSpec[] {
       if (!kinds.includes(k) && !clash(apart, kinds, k)) kinds.push(k);
     }
     const curves = kinds.filter((k) => CURVES.includes(k)).length;
-    if (kinds.length === deal.count && curves >= (deal.curves ?? 0) && kinds.length - curves >= (deal.straights ?? 0)) {
+    if (
+      kinds.length === deal.count &&
+      curves >= (deal.curves ?? 0) &&
+      kinds.length - curves >= (deal.straights ?? 0)
+    ) {
       return kinds.map((kind) => ({ kind }));
     }
   }
 }
 
 /** Every hole gets at least one piece; the rest are random holes. Shuffled. At 6–7 sizes vary, and a kind dealt twice comes once small and once big. */
-export function pieceKinds(rng: Rng, plan: SorterPlan, holes: readonly HoleSpec[] = dealHoles(rng, plan)): PieceSpec[] {
+export function pieceKinds(
+  rng: Rng,
+  plan: SorterPlan,
+  holes: readonly HoleSpec[] = dealHoles(rng, plan),
+): PieceSpec[] {
   if (plan.attribute) {
-    const kinds: ShapeKind[] = plan.attribute === 'curves'
-      ? [rng.pick(['circle', 'oval'] as const), rng.pick(ATTRIBUTE_POOL.filter((k) => CORNERS[k] > 0))]
-      : [rng.pick(['circle', 'oval'] as const), 'triangle', ...rng.shuffle([...FOUR_CORNERS]).slice(0, 2), 'pentagon', 'hexagon'];
+    const kinds: ShapeKind[] =
+      plan.attribute === 'curves'
+        ? [rng.pick(['circle', 'oval'] as const), rng.pick(ATTRIBUTE_POOL.filter((k) => CORNERS[k] > 0))]
+        : [
+            rng.pick(['circle', 'oval'] as const),
+            'triangle',
+            ...rng.shuffle([...FOUR_CORNERS]).slice(0, 2),
+            'pentagon',
+            'hexagon',
+          ];
     const pool = plan.attribute === 'curves' ? ATTRIBUTE_POOL : COUNT_POOL;
     while (kinds.length < plan.pieces) kinds.push(rng.pick(pool));
     return rng.shuffle(kinds.map((kind) => ({ kind, scale: 1 })));
   }
-  if (plan.sized) return rng.shuffle(holes.map(({ kind, size }) => ({ kind, size, scale: SIZE_SCALE[size!] })));
+  if (plan.sized)
+    return rng.shuffle(holes.map(({ kind, size }) => ({ kind, size, scale: SIZE_SCALE[size!] })));
   const kinds = holes.map((h) => h.kind);
   while (kinds.length < plan.pieces) kinds.push(rng.pick(holes).kind);
   const big = new Map<ShapeKind, boolean>();
@@ -189,12 +251,15 @@ export function pieceKinds(rng: Rng, plan: SorterPlan, holes: readonly HoleSpec[
 }
 
 /** One spoken clue for each shape, in a seeded order. */
-export const clueKinds = (rng: Rng, holes: readonly HoleSpec[]): ShapeKind[] => rng.shuffle(holes.map((h) => h.kind));
+export const clueKinds = (rng: Rng, holes: readonly HoleSpec[]): ShapeKind[] =>
+  rng.shuffle(holes.map((h) => h.kind));
 
 /** The target asks for an attribute, or the piece's own kind (and size at 11). */
 export const fits = (hole: HoleSpec, piece: { kind: ShapeKind; size?: Size }) =>
   hole.attribute !== undefined
-    ? typeof hole.attribute === 'number' ? CORNERS[piece.kind] === hole.attribute : cornerClass(piece.kind) === hole.attribute
+    ? typeof hole.attribute === 'number'
+      ? CORNERS[piece.kind] === hole.attribute
+      : cornerClass(piece.kind) === hole.attribute
     : hole.kind === piece.kind && (hole.size === undefined || hole.size === piece.size);
 
 /** At the sized level, a piece on a hole of its kind but the wrong size: too big or too little. */
@@ -207,7 +272,13 @@ export const sizeMiss = (hole: HoleSpec, piece: { kind: ShapeKind; size?: Size }
 
 /** A hole's drawn radius: sized holes by their size, and a little roomier where pieces vary in size. */
 export const holeRadius = (plan: SorterPlan, hole: HoleSpec) =>
-  plan.attribute === 'curves' ? 72 : hole.size !== undefined ? HOLE_R * SIZE_SCALE[hole.size] : plan.sizes ? HOLE_R * 1.1 : HOLE_R;
+  plan.attribute === 'curves'
+    ? 72
+    : hole.size !== undefined
+      ? HOLE_R * SIZE_SCALE[hole.size]
+      : plan.sizes
+        ? HOLE_R * 1.1
+        : HOLE_R;
 
 /** The lid's holes in rows of up to four (three when there are more), relative to the lid's top middle, spaced for the largest. */
 export function holeLayout(plan: SorterPlan, specs: readonly HoleSpec[]) {
@@ -239,7 +310,11 @@ export const FLOOR_AT = 0.66;
 export const boxTopFor = (viewH: number, lidH: number) => Math.max(40, viewH * FLOOR_AT - lidH - BOX_FRONT);
 
 /** The hole a piece was dropped on: the nearest one within reach, or none. */
-export function holeAt<H extends { x: number; y: number }>(holes: readonly H[], x: number, y: number): H | undefined {
+export function holeAt<H extends { x: number; y: number }>(
+  holes: readonly H[],
+  x: number,
+  y: number,
+): H | undefined {
   let best: H | undefined;
   let bestD = SNAP;
   for (const h of holes) {
@@ -253,11 +328,17 @@ export function holeAt<H extends { x: number; y: number }>(holes: readonly H[], 
  * The hole a capable player takes a piece to, for the how-to card's ghost finger: the one with the piece's own
  * shape, size or attribute. Every piece has one (`pieceKinds` only makes pieces the dealt holes take).
  */
-export const holeFor = <H extends HoleSpec>(holes: readonly H[], piece: { kind: ShapeKind; size?: Size }): H | undefined =>
-  holes.find((h) => fits(h, piece));
+export const holeFor = <H extends HoleSpec>(
+  holes: readonly H[],
+  piece: { kind: ShapeKind; size?: Size },
+): H | undefined => holes.find((h) => fits(h, piece));
 
 /** The waiting thing nearest a touch, for a tap on the floor at level 1 to wiggle and name. */
-export function nearest<T extends { x: number; y: number }>(items: readonly T[], x: number, y: number): T | undefined {
+export function nearest<T extends { x: number; y: number }>(
+  items: readonly T[],
+  x: number,
+  y: number,
+): T | undefined {
   let best: T | undefined;
   let bestD = Infinity;
   for (const it of items) {
@@ -294,11 +375,12 @@ export const TURN_TOLERANCE = Math.PI / 12;
 
 /** Signed distance to the nearest symmetric fit, in radians. Handles wrapped and negative angles. */
 export function turnOffset(kind: TurnKind, angle: number): number {
-  const period = TURN_PERIOD[kind] * Math.PI / 180;
+  const period = (TURN_PERIOD[kind] * Math.PI) / 180;
   if (!period) return 0;
-  return ((angle + period / 2) % period + period) % period - period / 2;
+  return ((((angle + period / 2) % period) + period) % period) - period / 2;
 }
-export const turnFits = (kind: TurnKind, angle: number) => Math.abs(turnOffset(kind, angle)) <= TURN_TOLERANCE + 1e-9;
+export const turnFits = (kind: TurnKind, angle: number) =>
+  Math.abs(turnOffset(kind, angle)) <= TURN_TOLERANCE + 1e-9;
 export const turnNext = (angle: number) => (angle + TURN_NOTCH) % (Math.PI * 2);
 /** Start every corner shape out of fit, on the same notch grid the child can reach. */
 export function turnStart(rng: Rng, kind: TurnKind): number {
@@ -307,7 +389,10 @@ export function turnStart(rng: Rng, kind: TurnKind): number {
 }
 
 /** One orientation miss; a second on this piece self-aligns it. A simultaneous glow is the same hint, never charged twice. */
-export function wrongTurn(help: SorterHelp, piece: { turnMisses: number }): { glow: boolean; align: boolean } {
+export function wrongTurn(
+  help: SorterHelp,
+  piece: { turnMisses: number },
+): { glow: boolean; align: boolean } {
   const glow = wrongDrop(help);
   const align = ++piece.turnMisses >= 2;
   if (align && !glow) {

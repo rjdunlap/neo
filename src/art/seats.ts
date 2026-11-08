@@ -10,5 +10,9 @@ export function twoArt(): Graphics {
 
 /** The "Just me" seat button: one figure on its own. */
 export function oneArt(): Graphics {
-  return new Graphics().circle(0, -16, 11).fill(swatch.blue.fill).roundRect(-14, -2, 28, 32, 12).fill(swatch.blue.fill);
+  return new Graphics()
+    .circle(0, -16, 11)
+    .fill(swatch.blue.fill)
+    .roundRect(-14, -2, 28, 32, 12)
+    .fill(swatch.blue.fill);
 }

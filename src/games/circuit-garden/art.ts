@@ -23,9 +23,16 @@ export function lanternArt(on: boolean, petals: ColorName = 'pink'): Container {
   // Stand and base: plainly a made thing.
   g.roundRect(-34, 34, 68, 22, 8).fill(swatch.brown.fill).stroke({ width: 4, color: swatch.brown.line });
   g.rect(-12, 18, 24, 18).fill(0x9aa4ae).stroke({ width: 3, color: 0x5a6b7d });
-  g.circle(0, -6, 34).fill(on ? 0xfff3a0 : 0xe8eef2).stroke({ width: 5, color: on ? swatch.yellow.line : 0x8c9aa6 });
+  g.circle(0, -6, 34)
+    .fill(on ? 0xfff3a0 : 0xe8eef2)
+    .stroke({ width: 5, color: on ? swatch.yellow.line : 0x8c9aa6 });
   // The filament.
-  g.moveTo(-10, 14).lineTo(-8, -4).lineTo(-3, -12).lineTo(3, -4).lineTo(8, -12).lineTo(10, 14)
+  g.moveTo(-10, 14)
+    .lineTo(-8, -4)
+    .lineTo(-3, -12)
+    .lineTo(3, -4)
+    .lineTo(8, -12)
+    .lineTo(10, 14)
     .stroke({ width: 3, color: on ? swatch.orange.fill : 0x8c9aa6 });
   c.addChild(g);
   const cap = flower(new Graphics(), 18, swatch[petals].fill, swatch[petals].line);
@@ -38,12 +45,20 @@ export function lanternArt(on: boolean, petals: ColorName = 'pink'): Container {
 export function batteryArt(vertical: boolean, plusFirst: boolean): Graphics {
   const g = new Graphics();
   const [w, h] = vertical ? [86, 120] : [120, 86];
-  g.roundRect(-w / 2, -h / 2, w, h, 16).fill(swatch.teal.fill).stroke({ width: 5, color: swatch.teal.line });
+  g.roundRect(-w / 2, -h / 2, w, h, 16)
+    .fill(swatch.teal.fill)
+    .stroke({ width: 5, color: swatch.teal.line });
   // The plus end has a band; marks sit near each end.
   const along = (t: number): [number, number] => (vertical ? [0, t] : [t, 0]);
   const plus = plusFirst ? -1 : 1;
   const [bx, by] = along(plus * (vertical ? h : w) * 0.32);
-  g.roundRect(bx - (vertical ? w / 2 : 10), by - (vertical ? 10 : h / 2), vertical ? w : 20, vertical ? 20 : h, 6).fill(swatch.teal.line);
+  g.roundRect(
+    bx - (vertical ? w / 2 : 10),
+    by - (vertical ? 10 : h / 2),
+    vertical ? w : 20,
+    vertical ? 20 : h,
+    6,
+  ).fill(swatch.teal.line);
   const mark = (t: number, isPlus: boolean) => {
     const [x, y] = along(t);
     g.moveTo(x - 12, y).lineTo(x + 12, y);
@@ -64,8 +79,13 @@ export function socketArt(g: Graphics, x: number, y: number) {
 export function connectorArt(length = 110): Container {
   const c = new Container();
   const g = new Graphics();
-  g.roundRect(-length / 2, -11, length, 22, 11).fill(COPPER).stroke({ width: 4, color: swatch.brown.line });
-  for (const s of [-1, 1]) g.circle((s * length) / 2, 0, 15).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line });
+  g.roundRect(-length / 2, -11, length, 22, 11)
+    .fill(COPPER)
+    .stroke({ width: 4, color: swatch.brown.line });
+  for (const s of [-1, 1])
+    g.circle((s * length) / 2, 0, 15)
+      .fill(swatch.yellow.fill)
+      .stroke({ width: 4, color: swatch.yellow.line });
   c.addChild(g);
   return c;
 }
@@ -82,7 +102,10 @@ export function handIcon(): Graphics {
 export function backIcon(): Graphics {
   const g = new Graphics();
   g.moveTo(0, -24).lineTo(0, 10).stroke({ width: 8, color: ink, cap: 'round' });
-  g.moveTo(-14, -2).lineTo(0, 12).lineTo(14, -2).stroke({ width: 8, color: ink, cap: 'round', join: 'round' });
+  g.moveTo(-14, -2)
+    .lineTo(0, 12)
+    .lineTo(14, -2)
+    .stroke({ width: 8, color: ink, cap: 'round', join: 'round' });
   g.moveTo(-22, 24).lineTo(22, 24).stroke({ width: 8, color: ink, cap: 'round' });
   return g;
 }
@@ -97,7 +120,11 @@ export function lanternMini(on: boolean, scale = 0.5): Container {
 export function stickerArt(seed = 0): Container {
   const c = new Container();
   const g = new Graphics();
-  g.moveTo(-50, 20).lineTo(-50, 50).lineTo(50, 50).lineTo(50, 20).stroke({ width: 7, color: WIRE_LIT, cap: 'round' });
+  g.moveTo(-50, 20)
+    .lineTo(-50, 50)
+    .lineTo(50, 50)
+    .lineTo(50, 20)
+    .stroke({ width: 7, color: WIRE_LIT, cap: 'round' });
   c.addChild(g);
   const lamp = lanternArt(true, (['pink', 'purple', 'orange'] as const)[Math.abs(seed) % 3]);
   lamp.scale.set(0.7);

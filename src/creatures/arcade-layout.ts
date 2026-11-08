@@ -1,5 +1,12 @@
 import { BACK, type Spot } from './friends-layout';
-import { backdropFit, CORNER_RADIUS, GUIDE_CORNER, HOME_BUTTON, PAGE_ARROW_RADIUS, type Backdrop } from './home-layout';
+import {
+  backdropFit,
+  CORNER_RADIUS,
+  GUIDE_CORNER,
+  HOME_BUTTON,
+  PAGE_ARROW_RADIUS,
+  type Backdrop,
+} from './home-layout';
 
 /**
  * The Arcade's screen (docs/rework/ARCADE.md): Back, Home and the Topics button along the top; the spotlight window with
@@ -74,7 +81,12 @@ export function arcadeLayout(v: { w: number; h: number }): ArcadeLayout {
   const rows = Math.max(1, Math.floor((grid.y1 - grid.y0) / ARCADE_CELL_H));
   const left = grid.x0 + (gw - pitch * cols) / 2 + pitch / 2;
   const cards: Spot[] = [];
-  for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) cards.push({ x: Math.round(left + c * pitch), y: Math.round(grid.y0 + ARCADE_CARD / 2 + r * ARCADE_CELL_H) });
+  for (let r = 0; r < rows; r++)
+    for (let c = 0; c < cols; c++)
+      cards.push({
+        x: Math.round(left + c * pitch),
+        y: Math.round(grid.y0 + ARCADE_CARD / 2 + r * ARCADE_CELL_H),
+      });
   const mid = grid.x0 + gw / 2;
   const arrowY = grid.y0 + rows * ARCADE_CELL_H + PAGE_ARROW_RADIUS - 8;
   return {

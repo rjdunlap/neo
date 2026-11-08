@@ -1,6 +1,44 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { cloudAt, cloudCount, NEAR_FAR, NEAR_FAR_LEVEL, NEAR_FAR_PLAN, NEAR_FAR_WINDOW, BETWEEN_LEVEL, BETWEEN_PLAN, BETWEEN_TRIPLES, betweenTriples, PLANET_PLAN, planetPairs, gravityFor, planetBotLanding, planetSide, airtimeFor, FRIEND_GAP, FRIEND_LEVEL, FRIEND_PLAN, FRIEND_RANGE, FRIEND_WINDOW, friendSpots, judge, judgeFriend, MAX_PULL, MIN_PULL, nextAsk, padAt, padHit, PADS, PLANS, planFor, pullFor, pullToTake, reach, revealsPullRule, targets } from './logic';
+import {
+  cloudAt,
+  cloudCount,
+  NEAR_FAR,
+  NEAR_FAR_LEVEL,
+  NEAR_FAR_PLAN,
+  NEAR_FAR_WINDOW,
+  BETWEEN_LEVEL,
+  BETWEEN_PLAN,
+  BETWEEN_TRIPLES,
+  betweenTriples,
+  PLANET_PLAN,
+  planetPairs,
+  gravityFor,
+  planetBotLanding,
+  planetSide,
+  airtimeFor,
+  FRIEND_GAP,
+  FRIEND_LEVEL,
+  FRIEND_PLAN,
+  FRIEND_RANGE,
+  FRIEND_WINDOW,
+  friendSpots,
+  judge,
+  judgeFriend,
+  MAX_PULL,
+  MIN_PULL,
+  nextAsk,
+  padAt,
+  padHit,
+  PADS,
+  PLANS,
+  planFor,
+  pullFor,
+  pullToTake,
+  reach,
+  revealsPullRule,
+  targets,
+} from './logic';
 import { CLOUDS } from './course';
 
 describe('Bouncy Launch', () => {
@@ -103,7 +141,7 @@ describe('Bouncy Launch', () => {
         spots.forEach((s, i) => {
           expect(s).toBeGreaterThanOrEqual(FRIEND_RANGE.min);
           expect(s).toBeLessThanOrEqual(FRIEND_RANGE.max);
-          spots.slice(i + 1).forEach(o => expect(Math.abs(s - o)).toBeGreaterThanOrEqual(FRIEND_GAP));
+          spots.slice(i + 1).forEach((o) => expect(Math.abs(s - o)).toBeGreaterThanOrEqual(FRIEND_GAP));
         });
         expect(friendSpots(FRIEND_PLAN, new Rng(seed))).toEqual(spots);
       }
@@ -124,7 +162,9 @@ describe('Bouncy Launch', () => {
     it('says which way a miss went, and one correction from the last miss lands on the friend', () => {
       for (let seed = 1; seed <= 100; seed++) {
         for (const spot of friendSpots(FRIEND_PLAN, new Rng(seed))) {
-          for (const miss of [spot - 0.3, spot - 0.12, spot + 0.12, spot + 0.3].map(m => Math.min(1, Math.max(0, m)))) {
+          for (const miss of [spot - 0.3, spot - 0.12, spot + 0.12, spot + 0.3].map((m) =>
+            Math.min(1, Math.max(0, m)),
+          )) {
             const verdict = judgeFriend(miss, spot);
             if (verdict === 'yes') continue;
             expect(verdict).toBe(miss < spot ? 'short' : 'long');
@@ -139,12 +179,13 @@ describe('Bouncy Launch', () => {
     it("gives the ghost finger's bot a pull that feeds every friend", () => {
       for (let seed = 1; seed <= 100; seed++) {
         const spots = friendSpots(FRIEND_PLAN, new Rng(seed));
-        spots.forEach((spot, shot) => expect(judgeFriend(reach(pullToTake(FRIEND_PLAN, shot, [], undefined, spots)), spot)).toBe('yes'));
+        spots.forEach((spot, shot) =>
+          expect(judgeFriend(reach(pullToTake(FRIEND_PLAN, shot, [], undefined, spots)), spot)).toBe('yes'),
+        );
       }
     });
   });
 });
-
 
 describe('Planet Hop, level 12', () => {
   it('keeps IDs 1–7, puts Between two flights at 9 and reserves 8, 10 and 11', () => {
@@ -188,8 +229,10 @@ describe('Planet Hop, level 12', () => {
         const round = betweenTriples(new Rng(seed), BETWEEN_PLAN.shots);
         expect(round).toHaveLength(3);
         expect(new Set(round).size).toBe(3);
-        round.forEach((t, i) => { if (i > 0) expect(t.mid).not.toBe(round[i - 1].mid); });
-        round.forEach(t => mids.add(t.mid));
+        round.forEach((t, i) => {
+          if (i > 0) expect(t.mid).not.toBe(round[i - 1].mid);
+        });
+        round.forEach((t) => mids.add(t.mid));
         expect(betweenTriples(new Rng(seed), BETWEEN_PLAN.shots)).toEqual(round);
       }
       expect([...mids].sort()).toEqual([1, 2, 3]);
@@ -197,7 +240,7 @@ describe('Planet Hop, level 12', () => {
 
     it('never judges a prediction, and the bot taps the middle cloud the shown pull reaches', () => {
       for (let seed = 1; seed <= 50; seed++) {
-        const tgs = betweenTriples(new Rng(seed), BETWEEN_PLAN.shots).map(t => t.mid);
+        const tgs = betweenTriples(new Rng(seed), BETWEEN_PLAN.shots).map((t) => t.mid);
         tgs.forEach((mid, shot) => {
           expect(pullToTake(BETWEEN_PLAN, shot, tgs)).toBe(pullFor(padAt(mid)));
           for (let f = 0; f <= 1; f += 0.1) expect(judge(BETWEEN_PLAN, f, mid)).toBe('yes');
@@ -211,8 +254,8 @@ describe('Planet Hop, level 12', () => {
       const pairs = planetPairs(new Rng(seed));
       expect(planetPairs(new Rng(seed))).toEqual(pairs);
       expect(pairs).toHaveLength(3);
-      expect(new Set(pairs.map(p => p.planet)).size).toBe(2);
-      expect(pairs.map(p => p.base).sort()).toEqual([0.2, 0.3, 0.4]);
+      expect(new Set(pairs.map((p) => p.planet)).size).toBe(2);
+      expect(pairs.map((p) => p.base).sort()).toEqual([0.2, 0.3, 0.4]);
       for (const pair of pairs) {
         const landing = reach(pullFor(pair.base), gravityFor(pair.planet));
         for (const f of [pair.base, landing]) {
@@ -221,7 +264,9 @@ describe('Planet Hop, level 12', () => {
         }
         expect(Math.abs(landing - pair.base)).toBeGreaterThanOrEqual(0.1 - 1e-10);
         expect(landing > pair.base).toBe(pair.planet === 'light');
-        expect(planetSide(380 + 564 * planetBotLanding(pair), 380 + 564 * pair.base)).toBe(pair.planet === 'light' ? 'past' : 'before');
+        expect(planetSide(380 + 564 * planetBotLanding(pair), 380 + 564 * pair.base)).toBe(
+          pair.planet === 'light' ? 'past' : 'before',
+        );
         expect(judge(PLANET_PLAN, landing, 0)).toBe('yes');
       }
     }
@@ -258,13 +303,15 @@ describe('Planet Hop, level 12', () => {
     });
 
     it('keeps the windows apart with a clear stretch of grass, and wide (about 28 pull units each way)', () => {
-      const nearTop = NEAR_FAR[0] + NEAR_FAR_WINDOW, farBottom = NEAR_FAR[1] - NEAR_FAR_WINDOW;
+      const nearTop = NEAR_FAR[0] + NEAR_FAR_WINDOW,
+        farBottom = NEAR_FAR[1] - NEAR_FAR_WINDOW;
       expect(farBottom - nearTop).toBeGreaterThan(0);
       // The grass between is at least as wide as a whole finger's worth of pull, never a sliver.
       expect((farBottom - nearTop) * (MAX_PULL - MIN_PULL)).toBeGreaterThanOrEqual(28 - 1e-9);
       expect(NEAR_FAR_WINDOW * (MAX_PULL - MIN_PULL)).toBeCloseTo(28);
       // The same landing is never right for both clouds.
-      for (let f = 0; f <= 1.0001; f += 0.01) expect(judge(plan, f, 0) === 'yes' && judge(plan, f, 1) === 'yes').toBe(false);
+      for (let f = 0; f <= 1.0001; f += 0.01)
+        expect(judge(plan, f, 0) === 'yes' && judge(plan, f, 1) === 'yes').toBe(false);
     });
 
     it('says which way to go on a miss', () => {
@@ -289,14 +336,15 @@ describe('Planet Hop, level 12', () => {
       expect(firsts).toEqual(new Set([0, 1]));
     });
 
-    it("gives the ghost finger a pull that lands on every asked cloud", () => {
+    it('gives the ghost finger a pull that lands on every asked cloud', () => {
       for (let seed = 1; seed <= 20; seed++) {
         const t = targets(plan, new Rng(seed));
-        for (let shot = 0; shot < t.length; shot++) expect(judge(plan, reach(pullToTake(plan, shot, t)), t[shot])).toBe('yes');
+        for (let shot = 0; shot < t.length; shot++)
+          expect(judge(plan, reach(pullToTake(plan, shot, t)), t[shot])).toBe('yes');
       }
     });
 
-    it("leaves Cloud Hopper and the five numbered clouds as they were", () => {
+    it('leaves Cloud Hopper and the five numbered clouds as they were', () => {
       expect(PADS).toBe(5);
       expect([0, 1, 2, 3, 4].map(padAt)).toEqual([0.1, 0.3, 0.5, 0.7, 0.9]);
       for (let i = 0; i < PADS; i++) expect(cloudAt(planFor(3), i)).toBe(padAt(i));
@@ -304,7 +352,8 @@ describe('Planet Hop, level 12', () => {
       expect(CLOUDS.version).toBe(1);
       expect(CLOUDS.padWidth).toBe(0.5);
       expect(CLOUDS.targets).toEqual([2, 4, 0, 3, 1, 4, 2, 0, 3, 1, 4, 2]);
-      for (let i = 0; i < PADS; i++) expect(judge(planFor(3), padAt(i), i, undefined, undefined, CLOUDS.padWidth)).toBe('yes');
+      for (let i = 0; i < PADS; i++)
+        expect(judge(planFor(3), padAt(i), i, undefined, undefined, CLOUDS.padWidth)).toBe('yes');
     });
   });
 });

@@ -15,7 +15,6 @@ interface Fish {
 
 const FISH_COLORS = [swatch.orange, swatch.yellow, swatch.pink];
 
-
 /**
  * The place a round of bubbles floats in: the shore as it always was, a bath, a night sky or the sea. Everything here is
  * decoration (`eventMode = 'none'`), drawn under the bubbles, so nothing in it can take a tap or be mistaken for a bubble.
@@ -36,13 +35,18 @@ export class BubbleBackdrop extends Container {
     super();
     this.view = view;
     const look = LOOKS[scene];
-    this.base = new Backdrop({ sky: look.sky, hills: look.hills, horizon: look.horizon, clouds: look.clouds, sun: look.sun, seed }, view);
+    this.base = new Backdrop(
+      { sky: look.sky, hills: look.hills, horizon: look.horizon, clouds: look.clouds, sun: look.sun, seed },
+      view,
+    );
     this.deco.eventMode = 'none';
     this.addChild(this.base, this.deco);
     const rng = new Rng(seed + 11);
     if (scene === 'night') {
       for (let i = 0; i < 34; i++) {
-        const star = new Graphics().poly(starPoints(rng.range(4, 8), 2, 4)).fill({ color: 0xfff6c8, alpha: 0.9 });
+        const star = new Graphics()
+          .poly(starPoints(rng.range(4, 8), 2, 4))
+          .fill({ color: 0xfff6c8, alpha: 0.9 });
         star.eventMode = 'none';
         // Where it stands is a fraction of the view, set in `resize`.
         this.twinkles.push({ g: star, fx: rng.next(), fy: rng.next() * 0.72, phase: rng.range(0, 6.28) });
@@ -74,18 +78,41 @@ export class BubbleBackdrop extends Container {
       for (let x = tile / 2; x < view.w; x += tile) g.moveTo(x, 0).lineTo(x, ground);
       for (let y = tile / 2; y < ground; y += tile) g.moveTo(0, y).lineTo(view.w, y);
       g.stroke({ width: 4, color: 0x7fc9c8, alpha: 0.35 });
-      for (const [fx, dy] of [[0.18, 18], [0.52, 30], [0.84, 14]]) {
+      for (const [fx, dy] of [
+        [0.18, 18],
+        [0.52, 30],
+        [0.84, 14],
+      ]) {
         const x = view.w * fx;
-        puffs(g, [[x - 30, ground + dy, 20], [x, ground + dy - 12, 26], [x + 32, ground + dy, 18]], 0xffffff, 0xcfeff5, 3);
+        puffs(
+          g,
+          [
+            [x - 30, ground + dy, 20],
+            [x, ground + dy - 12, 26],
+            [x + 32, ground + dy, 18],
+          ],
+          0xffffff,
+          0xcfeff5,
+          3,
+        );
       }
     }
     if (this.scene === 'night') {
       // A sleepy moon where the sun is on the shore.
       const [mx, my] = [Math.max(230, view.w * 0.2), 150];
       g.circle(mx, my, 54).fill(0xfff3c4).stroke({ width: 5, color: 0xe8d38a });
-      g.circle(mx - 22, my - 14, 7).fill({ color: 0xe8d38a, alpha: 0.6 }).circle(mx + 24, my + 20, 10).fill({ color: 0xe8d38a, alpha: 0.6 });
-      g.moveTo(mx - 24, my - 2).quadraticCurveTo(mx - 15, my + 8, mx - 6, my - 2).moveTo(mx + 6, my - 2).quadraticCurveTo(mx + 15, my + 8, mx + 24, my - 2).stroke({ width: 4, color: ink, cap: 'round' });
-      g.moveTo(mx - 10, my + 16).quadraticCurveTo(mx, my + 26, mx + 10, my + 16).stroke({ width: 4, color: ink, cap: 'round' });
+      g.circle(mx - 22, my - 14, 7)
+        .fill({ color: 0xe8d38a, alpha: 0.6 })
+        .circle(mx + 24, my + 20, 10)
+        .fill({ color: 0xe8d38a, alpha: 0.6 });
+      g.moveTo(mx - 24, my - 2)
+        .quadraticCurveTo(mx - 15, my + 8, mx - 6, my - 2)
+        .moveTo(mx + 6, my - 2)
+        .quadraticCurveTo(mx + 15, my + 8, mx + 24, my - 2)
+        .stroke({ width: 4, color: ink, cap: 'round' });
+      g.moveTo(mx - 10, my + 16)
+        .quadraticCurveTo(mx, my + 26, mx + 10, my + 16)
+        .stroke({ width: 4, color: ink, cap: 'round' });
       for (const s of this.twinkles) s.g.position.set(s.fx * view.w, s.fy * view.h);
     }
     if (this.scene === 'sea') {
@@ -97,7 +124,9 @@ export class BubbleBackdrop extends Container {
       for (const fx of [0.06, 0.3, 0.55, 0.78, 0.95]) {
         const x = view.w * fx;
         const h = 90 + ((fx * 977) % 60);
-        g.moveTo(x, ground + 30).bezierCurveTo(x - 30, ground - h * 0.4, x + 30, ground - h * 0.7, x, ground - h).stroke({ width: 14, color: swatch.green.fill, cap: 'round' });
+        g.moveTo(x, ground + 30)
+          .bezierCurveTo(x - 30, ground - h * 0.4, x + 30, ground - h * 0.7, x, ground - h)
+          .stroke({ width: 14, color: swatch.green.fill, cap: 'round' });
       }
     }
   }

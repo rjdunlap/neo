@@ -9,7 +9,8 @@ import type { BandLevels } from '../../progress/difficulty';
  * is one big bed where any touch moves the flower on one stage. Pre-K then chooses a packet and plants it by position:
  * rows of colors (9), columns of colors (10) and the same number in every row (11).
  */
-export type GardenMode = 'plant' | 'water' | 'color' | 'count' | 'mix' | 'more' | 'array' | 'big' | 'rows' | 'columns' | 'equal';
+export type GardenMode =
+  'plant' | 'water' | 'color' | 'count' | 'mix' | 'more' | 'array' | 'big' | 'rows' | 'columns' | 'equal';
 
 export interface GardenPlan {
   mode: GardenMode;
@@ -193,8 +194,15 @@ export function judgeGrid(r: Request, beds: readonly (ColorName | null)[]): Grid
   if (!wrong.length) return { ok: true, wrong, first: null };
   const i = wrong[0];
   // A rows level names the row, a columns level the column; a row is one color all along, so the first wrong bed names it.
-  const byRow = new Set(grid.slice(0, ROW_LEN)).size === 1 && new Set(grid.slice(ROW_LEN)).size === 1 && grid[0] !== grid[ROW_LEN];
-  return { ok: false, wrong, first: byRow ? { row: rowOf(i), color: grid[i] } : { col: colOf(i), color: grid[i] } };
+  const byRow =
+    new Set(grid.slice(0, ROW_LEN)).size === 1 &&
+    new Set(grid.slice(ROW_LEN)).size === 1 &&
+    grid[0] !== grid[ROW_LEN];
+  return {
+    ok: false,
+    wrong,
+    first: byRow ? { row: rowOf(i), color: grid[i] } : { col: colOf(i), color: grid[i] },
+  };
 }
 
 export const total = (r: Request) => Object.values(r.want).reduce((a, b) => a + (b ?? 0), 0);
@@ -213,7 +221,12 @@ export type GardenTouch = { bed: number } | { packet: ColorName } | 'rain';
  * every bed has a seed); a color level takes the packet that was asked for; a counting level takes the packets until the
  * seeds in the beds are exactly what the sign shows, and only then makes it rain. Null while there is nothing left to do.
  */
-export function gardenTouch(plan: GardenPlan, request: Request | undefined, beds: readonly BedState[], chosen: ColorName | null = null): GardenTouch | null {
+export function gardenTouch(
+  plan: GardenPlan,
+  request: Request | undefined,
+  beds: readonly BedState[],
+  chosen: ColorName | null = null,
+): GardenTouch | null {
   if (plan.mode === 'big') return null;
   if (plan.mode === 'plant' || plan.mode === 'water') {
     const empty = beds.findIndex((b) => !b.seed);

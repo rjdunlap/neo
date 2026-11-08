@@ -11,10 +11,42 @@ import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { beginningArt, bubbleArt, cardArt, formArt, giftArt, iconArt, saplingArt, stallArt, stickerArt, toolArt } from './art';
 import {
-  BUBBLE_H, BUBBLE_W, cardChain, cardResult, clampLevel, FORMS, LEVEL_NAMES, LEVELS, makerLaneLayout, makerOf, Play, PATH_H,
-  roundFor, stallAt, THINGS, type Card, type Chain, type Form, type Maker, type MakerLaneLayout, type Outcome, type Rect, type Step,
+  beginningArt,
+  bubbleArt,
+  cardArt,
+  formArt,
+  giftArt,
+  iconArt,
+  saplingArt,
+  stallArt,
+  stickerArt,
+  toolArt,
+} from './art';
+import {
+  BUBBLE_H,
+  BUBBLE_W,
+  cardChain,
+  cardResult,
+  clampLevel,
+  FORMS,
+  LEVEL_NAMES,
+  LEVELS,
+  makerLaneLayout,
+  makerOf,
+  Play,
+  PATH_H,
+  roundFor,
+  stallAt,
+  THINGS,
+  type Card,
+  type Chain,
+  type Form,
+  type Maker,
+  type MakerLaneLayout,
+  type Outcome,
+  type Rect,
+  type Step,
 } from './logic';
 
 /** Each level's authored round leads its first round of a session, and every demonstration. */
@@ -120,7 +152,9 @@ class MakerLane implements Game {
     this.release();
   }
 
-  private layout(): MakerLaneLayout { return makerLaneLayout(this.view, this.level); }
+  private layout(): MakerLaneLayout {
+    return makerLaneLayout(this.view, this.level);
+  }
 
   // Setting up a bundle or a question -----------------------------------------------------------------------------
 
@@ -136,7 +170,9 @@ class MakerLane implements Game {
   }
 
   /** The level-2 bundle starts harvested: the pet says what the first maker did. */
-  private harvestLine(): LineId { return `makerlane.make.${this.play.bundle!.chain}.1` as LineId; }
+  private harvestLine(): LineId {
+    return `makerlane.make.${this.play.bundle!.chain}.1` as LineId;
+  }
 
   private beginArgs: [Chain | null, boolean, Card?] | null = null;
 
@@ -145,7 +181,10 @@ class MakerLane implements Game {
     this.beginHolder.removeChildren().forEach((c) => c.destroy({ children: true }));
     const L = this.layout();
     const r = L.begin;
-    const g = new Graphics().roundRect(r.x, r.y + r.h * 0.45, r.w, r.h * 0.55, 18).fill(swatch.green.light).stroke({ width: 4, color: swatch.green.line });
+    const g = new Graphics()
+      .roundRect(r.x, r.y + r.h * 0.45, r.w, r.h * 0.55, 18)
+      .fill(swatch.green.light)
+      .stroke({ width: 4, color: swatch.green.line });
     this.beginHolder.addChild(g);
     const what: Card | Form | null = card ?? (chain ? FORMS[chain][0] : null);
     if (!what) return;
@@ -172,8 +211,14 @@ class MakerLane implements Game {
     const L = this.layout();
     const r = L.stalls[i];
     s.maker = maker;
-    s.art.removeChildren().forEach((c) => { if (!(c instanceof Critter)) c.destroy({ children: true }); });
-    if (s.critter) { this.ctx.untrack(s.critter); s.critter.destroy({ children: true }); s.critter = null; }
+    s.art.removeChildren().forEach((c) => {
+      if (!(c instanceof Critter)) c.destroy({ children: true });
+    });
+    if (s.critter) {
+      this.ctx.untrack(s.critter);
+      s.critter.destroy({ children: true });
+      s.critter = null;
+    }
     s.bubble?.destroy({ children: true });
     s.bubble = null;
     s.hung = null;
@@ -217,7 +262,10 @@ class MakerLane implements Game {
     this.spot = k;
     const p = this.spotAt(k);
     if (this.drag) this.drag.home = { x: p.x, y: p.y };
-    if (!animate) { this.bundle.position.set(p.x, p.y); return; }
+    if (!animate) {
+      this.bundle.position.set(p.x, p.y);
+      return;
+    }
     sfx.whoosh();
     await this.ctx.tw.to(this.bundle, { x: p.x, y: p.y }, { duration: 0.4 });
   }
@@ -234,14 +282,19 @@ class MakerLane implements Game {
     const s = this.stalls[i];
     // Touch-down: the maker leans forward and their tool twitches.
     s.critter?.hop(0.3);
-    if (s.tool) { s.tool.rotation = 0.15; void this.ctx.tw.to(s.tool, { rotation: 0 }, { duration: 0.3 }); }
+    if (s.tool) {
+      s.tool.rotation = 0.15;
+      void this.ctx.tw.to(s.tool, { rotation: 0 }, { duration: 0.3 });
+    }
     const out = this.play.send(i);
     if (out.kind === 'made') void this.work(i, out);
     else if (out.kind === 'miss') void this.refuse(i, out);
     else if (out.kind === 'free') {
       sfx.tick();
-      if (out.why === 'notme') { s.critter?.cheer(); void this.ctx.say('makerlane.notme'); }
-      else if (out.why === 'bubble' && s.bubble) void this.wiggle(s.bubble);
+      if (out.why === 'notme') {
+        s.critter?.cheer();
+        void this.ctx.say('makerlane.notme');
+      } else if (out.why === 'bubble' && s.bubble) void this.wiggle(s.bubble);
     }
     return out;
   }
@@ -257,13 +310,24 @@ class MakerLane implements Game {
     if (s.tool) void this.swing(s.tool);
     sfx.marimba(5 + out.maker.step);
     const p = this.spotAt(i + 1);
-    this.ctx.particles.burst(p.x, p.y, { kind: 'star', colors: [0xffffff, 0xfff3a0], count: 8, speed: [60, 160], gravity: 0, life: [0.3, 0.6] });
+    this.ctx.particles.burst(p.x, p.y, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0],
+      count: 8,
+      speed: [60, 160],
+      gravity: 0,
+      life: [0.3, 0.6],
+    });
     this.setBundle(out.to);
     if (out.maker.step === 1) this.showBeginning(out.maker.chain, true);
     this.bundle.scale.set(0.6);
     void this.ctx.tw.to(this.bundle.scale, { x: 1, y: 1 }, { duration: 0.3 });
     // The bubbles on the other stalls went with the old form.
-    for (const st of this.stalls) if (st.bubble) { st.bubble.destroy({ children: true }); st.bubble = null; }
+    for (const st of this.stalls)
+      if (st.bubble) {
+        st.bubble.destroy({ children: true });
+        st.bubble = null;
+      }
     await this.ctx.say(`makerlane.make.${out.maker.chain}.${out.maker.step}` as LineId);
     if (!this.alive) return;
     // Done with their step: the maker steps aside and hangs their work on the stall.
@@ -274,7 +338,10 @@ class MakerLane implements Game {
       if (out.done) return void this.finale();
       this.setUp();
       sfx.pop(7);
-      if (this.level === 2) { await this.ctx.say(this.harvestLine()); if (!this.alive) return; }
+      if (this.level === 2) {
+        await this.ctx.say(this.harvestLine());
+        if (!this.alive) return;
+      }
     }
     this.release();
     if (this.drag) this.drag.enabled = true;
@@ -307,7 +374,8 @@ class MakerLane implements Game {
     void this.ctx.tw.to(b.scale, { x: 1, y: 1 }, { duration: 0.25 });
     const index = this.play.index;
     await this.ctx.say(`makerlane.notyet.${maker.chain}.${maker.step}` as LineId);
-    if (this.alive && out.glow && this.play.glowing && this.play.index === index) void this.ctx.say('makerlane.hint');
+    if (this.alive && out.glow && this.play.glowing && this.play.index === index)
+      void this.ctx.say('makerlane.hint');
   }
 
   /** The product goes to the pet, who loves it; nothing is kept. */
@@ -330,7 +398,10 @@ class MakerLane implements Game {
     const L = this.layout();
     const f = L.frame!;
     this.frame.removeChildren().forEach((c) => c.destroy({ children: true }));
-    const back = new Graphics().roundRect(0, 0, f.w, f.h, 24).fill(0xffffff).stroke({ width: 6, color: swatch.yellow.line });
+    const back = new Graphics()
+      .roundRect(0, 0, f.w, f.h, 24)
+      .fill(0xffffff)
+      .stroke({ width: 6, color: swatch.yellow.line });
     const pic = formArt(q.thing, f.w * 0.72);
     pic.position.set(f.w / 2, f.h / 2);
     this.frame.addChild(back, pic);
@@ -404,7 +475,8 @@ class MakerLane implements Game {
     } else {
       await this.ctx.say(`makerlane.this.${this.play.question!.thing}` as LineId);
       if (!this.alive) return;
-      if (out.kind === 'miss' && out.glow && this.play.glowing && this.play.index === index) void this.ctx.say('makerlane.hint');
+      if (out.kind === 'miss' && out.glow && this.play.glowing && this.play.index === index)
+        void this.ctx.say('makerlane.hint');
       this.emptyLane();
       this.showResult(card);
     }
@@ -517,9 +589,19 @@ class MakerLane implements Game {
     if (this.finished) return;
     this.finished = true;
     this.busy = true;
-    sfx.marimba(7); void this.ctx.tw.wait(0.18).then(() => { if (this.alive) sfx.marimba(9); });
+    sfx.marimba(7);
+    void this.ctx.tw.wait(0.18).then(() => {
+      if (this.alive) sfx.marimba(9);
+    });
     for (const s of this.stalls) s.critter?.cheer();
-    this.ctx.particles.burst(this.view.w / 2, this.view.h / 2, { kind: 'star', colors: [0xffffff, 0xfff3a0], count: 14, speed: [100, 260], gravity: 0, life: [0.5, 0.9] });
+    this.ctx.particles.burst(this.view.w / 2, this.view.h / 2, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0],
+      count: 14,
+      speed: [100, 260],
+      gravity: 0,
+      life: [0.5, 0.9],
+    });
     await this.ctx.say('makerlane.done');
     if (!this.alive) return;
     this.ctx.finish({ misses: this.play.misses, hints: this.play.hints });
@@ -534,7 +616,13 @@ class MakerLane implements Game {
     g.rect(0, Math.min(...rows) - 80, v.w, v.h).fill(grass);
     for (const y of rows) {
       const xs = L.spots.filter((p) => p.y === y).map((p) => p.x);
-      g.roundRect(Math.min(...xs) - L.bundle * 0.7, y - L.bundle * 0.45, Math.max(...xs) - Math.min(...xs) + L.bundle * 1.4, L.bundle * 0.9, L.bundle * 0.45).fill(swatch.brown.light);
+      g.roundRect(
+        Math.min(...xs) - L.bundle * 0.7,
+        y - L.bundle * 0.45,
+        Math.max(...xs) - Math.min(...xs) + L.bundle * 1.4,
+        L.bundle * 0.9,
+        L.bundle * 0.45,
+      ).fill(swatch.brown.light);
     }
     if (L.rows === 2) {
       // The bend between the rows, on the right.
@@ -552,8 +640,11 @@ class MakerLane implements Game {
     if (this.beginArgs) this.showBeginning(...this.beginArgs);
     if (L.frame) {
       this.frame.position.set(L.frame.x, L.frame.y);
-      this.cards.forEach((c, i) => c.position.set(L.cards[i].x + L.cards[i].w / 2, L.cards[i].y + L.cards[i].h / 2));
-      for (const c of this.resultHolder.children) c.position.set(L.frame.x - c.width / 2 - 24, L.frame.y + L.frame.h / 2);
+      this.cards.forEach((c, i) =>
+        c.position.set(L.cards[i].x + L.cards[i].w / 2, L.cards[i].y + L.cards[i].h / 2),
+      );
+      for (const c of this.resultHolder.children)
+        c.position.set(L.frame.x - c.width / 2 - 24, L.frame.y + L.frame.h / 2);
     }
     if (!this.busy && !this.play.done) {
       const p = this.spotAt(this.spot);
@@ -575,7 +666,11 @@ class MakerLane implements Game {
     const r = this.glowRect();
     if (!r) return;
     const pulse = 0.6 + 0.4 * Math.sin(this.clock * 4);
-    g.roundRect(r.x - 8, r.y - 8, r.w + 16, r.h + 16, 22).stroke({ width: 8, color: swatch.yellow.fill, alpha: pulse });
+    g.roundRect(r.x - 8, r.y - 8, r.w + 16, r.h + 16, 22).stroke({
+      width: 8,
+      color: swatch.yellow.fill,
+      alpha: pulse,
+    });
     // Level 1: the waving maker waves.
     if (this.level === 1) {
       const t = this.play.target();
@@ -594,7 +689,10 @@ class MakerLane implements Game {
       const r = this.layout().stalls[t.i];
       return { drag: { on: this.bundle }, to: { on: n, x: r.w / 2, y: r.h * 0.6 }, pause: 1.2 };
     }
-    if (this.level === 1) { const r = this.layout().stalls[0]; return { tap: { on: n, x: r.w / 2, y: r.h / 2 }, pause: 1.4 }; }
+    if (this.level === 1) {
+      const r = this.layout().stalls[0];
+      return { tap: { on: n, x: r.w / 2, y: r.h / 2 }, pause: 1.4 };
+    }
     return { tap: { on: n }, pause: 1.4 };
   }
 
@@ -621,7 +719,8 @@ export const makerLane: GameModule = {
   describeLevel: (level) => LEVEL_NAMES[clampLevel(level)],
   music: STYLES.hub,
   touchDemo: true,
-  coplayHint: 'Be the maker and the carrier: one of you moves the bundle, the other says what the maker will do to it. Swap at the next stall.',
+  coplayHint:
+    'Be the maker and the carrier: one of you moves the bundle, the other says what the maker will do to it. Swap at the next stall.',
   offScreen: 'Pick up a sock, a box or some bread together and ask: what did it look like before?',
   hubIcon: () => new WigglyIcon(iconArt()),
   sticker: (seed) => stickerPicture(seed),

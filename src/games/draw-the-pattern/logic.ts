@@ -27,15 +27,27 @@ export interface Plan {
 
 export const PLANS: readonly Plan[] = [
   { mode: 'mark', name: 'Make a mark: any touch draws on the paper, four touches finish a strip', count: 3 },
-  { mode: 'trace', name: 'Straight across, straight down: a long line, then short lines from the top', count: 2 },
+  {
+    mode: 'trace',
+    name: 'Straight across, straight down: a long line, then short lines from the top',
+    count: 2,
+  },
   { mode: 'trace', name: 'Zigzag and wave: carry on the pattern the pet starts', count: 2 },
   { mode: 'trace', name: 'Round and round: a circle either way, then a row of loops', count: 2 },
   { mode: 'trace', name: 'From memory: the dashes fade, dots show where the pattern turns', count: 2 },
   { mode: 'trace', name: 'Cross, square, triangle: each line from its own ring, in order', count: 3 },
   { mode: 'choose', name: 'What comes next? Two kinds take turns; draw the one that continues', count: 2 },
   { mode: 'choose', name: 'Two, then one: patterns like hill, hill, dip; draw what comes next', count: 2 },
-  { mode: 'trace', name: 'Slanting lines: rain from a cloud, then an X, each line from its own ring', count: 2 },
-  { mode: 'dots', name: 'Dot to dot: tap the shining dot and the crayon draws to it; a line, then a zigzag', count: 2 },
+  {
+    mode: 'trace',
+    name: 'Slanting lines: rain from a cloud, then an X, each line from its own ring',
+    count: 2,
+  },
+  {
+    mode: 'dots',
+    name: 'Dot to dot: tap the shining dot and the crayon draws to it; a line, then a zigzag',
+    count: 2,
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -61,7 +73,12 @@ export const markCount = (plan: Plan): number => (plan.mode === 'mark' ? 4 : 0);
 
 /* ---------------------------------------------------------------- layout */
 
-export interface Rect { x: number; y: number; w: number; h: number }
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
 export interface Layout {
   /** The strip's top-left corner and its height `s`, in logical units (it is `STRIP_W × s` wide). */
   strip: Rect & { s: number };
@@ -84,7 +101,8 @@ export const petCorner = (v: { h: number }): Rect => ({ x: 0, y: v.h - 230, w: 1
 export function layoutFor(v: { w: number; h: number }): Layout {
   const P = Math.max(200, Math.min(280, Math.min(v.w, v.h) * 0.26));
   const picture = { x: v.w - PAD - P, y: PAD, w: P, h: P };
-  const top = Math.max(picture.y + P, homeCorner().h) + 16 + EDGE, bottom = v.h - 230 - EDGE;
+  const top = Math.max(picture.y + P, homeCorner().h) + 16 + EDGE,
+    bottom = v.h - 230 - EDGE;
   const s = Math.min(MAX_S, bottom - top, (v.w - 2 * PAD) / STRIP_W);
   const w = s * STRIP_W;
   return { strip: { x: (v.w - w) / 2, y: (top + bottom) / 2 - s / 2, w, h: s, s }, picture };
@@ -95,18 +113,40 @@ export function layoutFor(v: { w: number; h: number }): Layout {
 export type UnitKind = 'zig' | 'wave' | 'loop' | 'hill' | 'dip' | 'peak' | 'vee';
 /** What a finished strip becomes in the picture. */
 export type PieceId =
-  | 'meadow' | 'pond' | 'sky'
-  | 'ground' | 'washing' | 'road'
-  | 'fence' | 'rain' | 'candles'
-  | 'mountains' | 'teeth' | 'crown'
-  | 'sea' | 'snake' | 'tail'
-  | 'sun' | 'balloon' | 'wheel'
-  | 'sheep' | 'clouds' | 'smoke'
-  | 'window' | 'house' | 'roof'
-  | 'ribbon' | 'present' | 'bow'
-  | 'mast' | 'cabin' | 'sail'
-  | 'bridge' | 'bunting'
-  | 'kite' | 'treasure';
+  | 'meadow'
+  | 'pond'
+  | 'sky'
+  | 'ground'
+  | 'washing'
+  | 'road'
+  | 'fence'
+  | 'rain'
+  | 'candles'
+  | 'mountains'
+  | 'teeth'
+  | 'crown'
+  | 'sea'
+  | 'snake'
+  | 'tail'
+  | 'sun'
+  | 'balloon'
+  | 'wheel'
+  | 'sheep'
+  | 'clouds'
+  | 'smoke'
+  | 'window'
+  | 'house'
+  | 'roof'
+  | 'ribbon'
+  | 'present'
+  | 'bow'
+  | 'mast'
+  | 'cabin'
+  | 'sail'
+  | 'bridge'
+  | 'bunting'
+  | 'kite'
+  | 'treasure';
 
 /**
  * What a stroke can become, three things each, chosen by the round's seed. The strokes never change with the piece; only
@@ -137,7 +177,8 @@ export const X_PIECES: readonly PieceId[] = ['kite', 'treasure'];
 export const UNIT_W = 0.6;
 const BASE = 0.5;
 /** The loops sit low so their lobes reach up: baseline, lobe size and roll (one lobe per unit). */
-const LOOP_BASE = 0.85, LOOP_D = 0.36;
+const LOOP_BASE = 0.85,
+  LOOP_D = 0.36;
 /** Loops roll further than other units, so one lobe's back stays two corridors from the next lobe's front. */
 const LOOP_W = 0.72;
 /** How far a hill, dip, peak or valley reaches from the baseline. */
@@ -153,18 +194,24 @@ function unitPath(kind: UnitKind, x0: number, w = UNIT_W): { path: Point[]; corn
   switch (kind) {
     case 'zig': {
       // Up to a peak, down to a trough, back up to the baseline; two units join in one straight leg.
-      const peak: Point = [x0 + w / 4, 0.2], trough: Point = [x0 + (3 * w) / 4, 0.8];
+      const peak: Point = [x0 + w / 4, 0.2],
+        trough: Point = [x0 + (3 * w) / 4, 0.8];
       return { path: [[x0, BASE], peak, trough, [x0 + w, BASE]], corners: [peak, trough] };
     }
-    case 'peak': case 'vee': {
+    case 'peak':
+    case 'vee': {
       const tip: Point = [x0 + w / 2, BASE + (kind === 'peak' ? -ARCH : ARCH)];
       return { path: [[x0, BASE], tip, [x0 + w, BASE]], corners: [tip] };
     }
     case 'wave':
       return { path: curve((u) => [x0 + w * u, BASE - 0.2 * Math.sin(2 * Math.PI * u)]), corners: [] };
-    case 'hill': case 'dip': {
+    case 'hill':
+    case 'dip': {
       const sign = kind === 'hill' ? -1 : 1;
-      return { path: curve((u) => [x0 + w * u, BASE + sign * ARCH * Math.sin(Math.PI * u)], 30), corners: [] };
+      return {
+        path: curve((u) => [x0 + w * u, BASE + sign * ARCH * Math.sin(Math.PI * u)], 30),
+        corners: [],
+      };
     }
     case 'loop': {
       // A garland loop: along the baseline, up and back over itself, down through the crossing and on.
@@ -184,7 +231,19 @@ function unitPath(kind: UnitKind, x0: number, w = UNIT_W): { path: Point[]; corn
 export const baseOf = (kind: UnitKind): number => (kind === 'loop' ? LOOP_BASE : BASE);
 
 export interface Stroke {
-  kind: UnitKind | 'line' | 'post' | 'circle' | 'cross-down' | 'cross-across' | 'square' | 'triangle' | 'slant' | 'x-back' | 'x-fwd' | 'free';
+  kind:
+    | UnitKind
+    | 'line'
+    | 'post'
+    | 'circle'
+    | 'cross-down'
+    | 'cross-across'
+    | 'square'
+    | 'triangle'
+    | 'slant'
+    | 'x-back'
+    | 'x-fwd'
+    | 'free';
   /** One path, or two: a circle's two ways round, or levels 7–8's two candidates (the continuing one is `right`). */
   orders: Point[][];
   /** Points `0..lead` are the pet's part; her checkpoints run from `lead` to the end. */
@@ -216,7 +275,8 @@ const single = (kind: Stroke['kind'], path: Point[], lead = 0, corners: Point[] 
 
 /** Join units into one stroke from x0; the pet draws the first `shown` units. */
 export function patternStroke(kinds: readonly UnitKind[], shown: number, x0: number, w = UNIT_W): Stroke {
-  const path: Point[] = [], corners: Point[] = [];
+  const path: Point[] = [],
+    corners: Point[] = [];
   kinds.forEach((k, i) => {
     const u = unitPath(k, x0 + i * w, w);
     path.push(...(i === 0 ? u.path : u.path.slice(1)));
@@ -225,7 +285,12 @@ export function patternStroke(kinds: readonly UnitKind[], shown: number, x0: num
   // A zig's last leg and the next zig's first leg are one straight line: the join is not a corner.
   const pts = sampleStroke(path, SPACING);
   const end = x0 + shown * w;
-  const lead = shown === 0 ? 0 : pts.findIndex((p) => Math.abs(p[0] - end) < 1e-9 && Math.abs(p[1] - baseOf(kinds[0])) < 1e-9 && p !== pts[0]);
+  const lead =
+    shown === 0
+      ? 0
+      : pts.findIndex(
+          (p) => Math.abs(p[0] - end) < 1e-9 && Math.abs(p[1] - baseOf(kinds[0])) < 1e-9 && p !== pts[0],
+        );
   return { kind: kinds[0], orders: [pts], lead: lead < 0 ? 0 : lead, corners, units: [...kinds] };
 }
 
@@ -263,7 +328,12 @@ export function choiceStroke(right: UnitKind, wrong: UnitKind, x0: number, w: nu
  * Two unit kinds that take turns. Every pair is one that goes up and one that goes down, so the first move tells them
  * apart and the two faint candidates never share a corridor, even at level 8's narrow units.
  */
-export const PAIRS: readonly (readonly [UnitKind, UnitKind])[] = [['hill', 'dip'], ['peak', 'vee'], ['peak', 'dip'], ['hill', 'vee']];
+export const PAIRS: readonly (readonly [UnitKind, UnitKind])[] = [
+  ['hill', 'dip'],
+  ['peak', 'vee'],
+  ['peak', 'dip'],
+  ['hill', 'vee'],
+];
 export type Shape = 'AB' | 'AAB' | 'ABB';
 
 /** The repeating core for a shape over a pair. */
@@ -291,14 +361,40 @@ export function stripsFor(level: number, rng: Rng): Strip[] {
       const piece = rng.pick(POOLS.mark);
       return Array.from({ length: 3 }, () => ({
         piece,
-        strokes: [single('free', curve((u) => [X0 + 3 * u, BASE + 0.18 * Math.sin(rng.range(0, 1) + 3 * Math.PI * u)], 60), -1)],
+        strokes: [
+          single(
+            'free',
+            curve((u) => [X0 + 3 * u, BASE + 0.18 * Math.sin(rng.range(0, 1) + 3 * Math.PI * u)], 60),
+            -1,
+          ),
+        ],
       }));
     }
     case 2: {
-      const line = sampleStroke([[X0, BASE], [3.2, BASE]], SPACING);
-      const posts = [0.8, 1.7, 2.6].map((x, i) => single('post', [[x, 0.25], [x, 0.85]], i === 0 ? -1 : 0));
+      const line = sampleStroke(
+        [
+          [X0, BASE],
+          [3.2, BASE],
+        ],
+        SPACING,
+      );
+      const posts = [0.8, 1.7, 2.6].map((x, i) =>
+        single(
+          'post',
+          [
+            [x, 0.25],
+            [x, 0.85],
+          ],
+          i === 0 ? -1 : 0,
+        ),
+      );
       return [
-        { piece: rng.pick(POOLS.line), strokes: [{ kind: 'line', orders: [line], lead: line.findIndex((p) => p[0] >= 1.2 - 1e-9), corners: [] }] },
+        {
+          piece: rng.pick(POOLS.line),
+          strokes: [
+            { kind: 'line', orders: [line], lead: line.findIndex((p) => p[0] >= 1.2 - 1e-9), corners: [] },
+          ],
+        },
         { piece: rng.pick(POOLS.down), strokes: posts },
       ];
     }
@@ -311,42 +407,137 @@ export function stripsFor(level: number, rng: Rng): Strip[] {
       const c = circle(1.7, 0.5, 0.36);
       return [
         { piece: rng.pick(POOLS.circle), strokes: [{ kind: 'circle', orders: c, lead: 0, corners: [] }] },
-        { piece: rng.pick(POOLS.loop), strokes: [patternStroke(Array(4).fill('loop'), 1, (STRIP_W - 4 * LOOP_W) / 2, LOOP_W)] },
+        {
+          piece: rng.pick(POOLS.loop),
+          strokes: [patternStroke(Array(4).fill('loop'), 1, (STRIP_W - 4 * LOOP_W) / 2, LOOP_W)],
+        },
       ];
     }
     case 5: {
       const kinds = rng.shuffle<'zig' | 'wave' | 'loop'>(['zig', 'wave', 'loop']).slice(0, 2);
       return kinds.map((k) => ({
-        piece: rng.pick(POOLS[k]), memory: true,
+        piece: rng.pick(POOLS[k]),
+        memory: true,
         // Loops are as at level 4: four, the pet draws one.
-        strokes: [k === 'loop' ? patternStroke(Array(4).fill(k), 1, (STRIP_W - 4 * LOOP_W) / 2, LOOP_W) : patternStroke(Array(5).fill(k), 2, X0)],
+        strokes: [
+          k === 'loop'
+            ? patternStroke(Array(4).fill(k), 1, (STRIP_W - 4 * LOOP_W) / 2, LOOP_W)
+            : patternStroke(Array(5).fill(k), 2, X0),
+        ],
       }));
     }
     case 6: {
       const cx = 1.7;
       const [cross, square, triangle] = rng.pick(SHAPE_SETS);
       return [
-        { piece: cross, strokes: [single('cross-down', [[cx, 0.12], [cx, 0.88]]), single('cross-across', [[cx - 0.6, 0.5], [cx + 0.6, 0.5]])] },
-        { piece: square, strokes: [single('square', [[cx - 0.36, 0.14], [cx - 0.36, 0.86], [cx + 0.36, 0.86], [cx + 0.36, 0.14], [cx - 0.36, 0.14]], 0, [[cx - 0.36, 0.86], [cx + 0.36, 0.86], [cx + 0.36, 0.14]])] },
-        { piece: triangle, strokes: [single('triangle', [[cx, 0.12], [cx - 0.5, 0.86], [cx + 0.5, 0.86], [cx, 0.12]], 0, [[cx - 0.5, 0.86], [cx + 0.5, 0.86]])] },
+        {
+          piece: cross,
+          strokes: [
+            single('cross-down', [
+              [cx, 0.12],
+              [cx, 0.88],
+            ]),
+            single('cross-across', [
+              [cx - 0.6, 0.5],
+              [cx + 0.6, 0.5],
+            ]),
+          ],
+        },
+        {
+          piece: square,
+          strokes: [
+            single(
+              'square',
+              [
+                [cx - 0.36, 0.14],
+                [cx - 0.36, 0.86],
+                [cx + 0.36, 0.86],
+                [cx + 0.36, 0.14],
+                [cx - 0.36, 0.14],
+              ],
+              0,
+              [
+                [cx - 0.36, 0.86],
+                [cx + 0.36, 0.86],
+                [cx + 0.36, 0.14],
+              ],
+            ),
+          ],
+        },
+        {
+          piece: triangle,
+          strokes: [
+            single(
+              'triangle',
+              [
+                [cx, 0.12],
+                [cx - 0.5, 0.86],
+                [cx + 0.5, 0.86],
+                [cx, 0.12],
+              ],
+              0,
+              [
+                [cx - 0.5, 0.86],
+                [cx + 0.5, 0.86],
+              ],
+            ),
+          ],
+        },
       ];
     }
     case 9: {
       // Rain: three short slanting lines, each from a ring at its top; the pet draws the first. Then an X, back-slash
       // first, each stroke from its own ring.
-      const rain = [0.6, 1.45, 2.3].map((x, i) => single('slant', [[x, 0.18], [x + 0.5, 0.86]], i === 0 ? -1 : 0));
+      const rain = [0.6, 1.45, 2.3].map((x, i) =>
+        single(
+          'slant',
+          [
+            [x, 0.18],
+            [x + 0.5, 0.86],
+          ],
+          i === 0 ? -1 : 0,
+        ),
+      );
       const cx = 1.7;
       return [
         { piece: 'rain', strokes: rain },
-        { piece: rng.pick(X_PIECES), strokes: [single('x-back', [[cx - 0.45, 0.14], [cx + 0.45, 0.86]]), single('x-fwd', [[cx + 0.45, 0.14], [cx - 0.45, 0.86]])] },
+        {
+          piece: rng.pick(X_PIECES),
+          strokes: [
+            single('x-back', [
+              [cx - 0.45, 0.14],
+              [cx + 0.45, 0.86],
+            ]),
+            single('x-fwd', [
+              [cx + 0.45, 0.14],
+              [cx - 0.45, 0.86],
+            ]),
+          ],
+        },
       ];
     }
     case 10: {
       // Dots along a long line, then on a zigzag's peaks and troughs, a unit apart across the strip.
       const xs = Array.from({ length: DOT_COUNT }, (_, i) => X0 + i * UNIT_W);
       return [
-        { piece: rng.pick(POOLS.line), strokes: [dotStroke('line', xs.map((x): Point => [x, BASE]))] },
-        { piece: rng.pick(POOLS.zig), strokes: [dotStroke('zig', xs.map((x, i): Point => [x, i % 2 ? 0.2 : 0.8]))] },
+        {
+          piece: rng.pick(POOLS.line),
+          strokes: [
+            dotStroke(
+              'line',
+              xs.map((x): Point => [x, BASE]),
+            ),
+          ],
+        },
+        {
+          piece: rng.pick(POOLS.zig),
+          strokes: [
+            dotStroke(
+              'zig',
+              xs.map((x, i): Point => [x, i % 2 ? 0.2 : 0.8]),
+            ),
+          ],
+        },
       ];
     }
     default: {
@@ -360,7 +551,11 @@ export function stripsFor(level: number, rng: Rng): Strip[] {
         const total = shown + 3;
         // Seven or nine units: narrower units so the whole pattern fits the strip.
         const w = Math.min(UNIT_W, 3.2 / total);
-        return { piece: i === 0 ? 'bridge' : 'bunting', pattern, strokes: choiceStrip(pattern, [a, b], shown, total, w, rng) };
+        return {
+          piece: i === 0 ? 'bridge' : 'bunting',
+          pattern,
+          strokes: choiceStrip(pattern, [a, b], shown, total, w, rng),
+        };
       });
     }
   }
@@ -368,20 +563,34 @@ export function stripsFor(level: number, rng: Rng): Strip[] {
 
 /** A circle from the top, both ways round: counterclockwise first (going left, as the pet draws it), then clockwise. */
 function circle(cx: number, cy: number, r: number): Point[][] {
-  const ccw = sampleStroke(curve((u) => [cx - r * Math.sin(2 * Math.PI * u), cy - r * Math.cos(2 * Math.PI * u)], 96), SPACING);
-  const cw = sampleStroke(curve((u) => [cx + r * Math.sin(2 * Math.PI * u), cy - r * Math.cos(2 * Math.PI * u)], 96), SPACING);
+  const ccw = sampleStroke(
+    curve((u) => [cx - r * Math.sin(2 * Math.PI * u), cy - r * Math.cos(2 * Math.PI * u)], 96),
+    SPACING,
+  );
+  const cw = sampleStroke(
+    curve((u) => [cx + r * Math.sin(2 * Math.PI * u), cy - r * Math.cos(2 * Math.PI * u)], 96),
+    SPACING,
+  );
   return [ccw, cw];
 }
 
 /** Levels 7–8: the pet's units as one stroke, then one stroke per chosen unit with both candidates. */
-function choiceStrip(pattern: readonly UnitKind[], pair: readonly [UnitKind, UnitKind], shown: number, total: number, w: number, rng: Rng): Stroke[] {
+function choiceStrip(
+  pattern: readonly UnitKind[],
+  pair: readonly [UnitKind, UnitKind],
+  shown: number,
+  total: number,
+  w: number,
+  rng: Rng,
+): Stroke[] {
   const kinds = patternUnits(pattern, total);
   const x0 = (STRIP_W - total * w) / 2;
   const pet = patternStroke(kinds.slice(0, shown), shown, x0, w);
   pet.lead = pet.orders[0].length - 1;
   const out: Stroke[] = [pet];
   for (let i = shown; i < total; i++) {
-    const right = kinds[i], wrong = right === pair[0] ? pair[1] : pair[0];
+    const right = kinds[i],
+      wrong = right === pair[0] ? pair[1] : pair[0];
     out.push(choiceStroke(right, wrong, x0 + i * w, w, rng));
   }
   return out;
@@ -394,7 +603,14 @@ function choiceStrip(pattern: readonly UnitKind[], pair: readonly [UnitKind, Uni
  * share their start; the first move that clearly leaves the start along one picks it. Returns the order (null while
  * undecided) and the new progress.
  */
-export function chooseOrder(stroke: Stroke, order: number | null, progress: number, from: Point, to: Point, tol: number): { order: number | null; progress: number } {
+export function chooseOrder(
+  stroke: Stroke,
+  order: number | null,
+  progress: number,
+  from: Point,
+  to: Point,
+  tol: number,
+): { order: number | null; progress: number } {
   if (order !== null || stroke.orders.length === 1) {
     const o = order ?? 0;
     return { order: o, progress: advanceTrace(stroke.orders[o], progress, from, to, tol) };
@@ -404,25 +620,30 @@ export function chooseOrder(stroke: Stroke, order: number | null, progress: numb
   // A circle's two ways cover the same ring, so the way is told by how far round from the start each has come; two
   // candidates by how far each has left the other's path.
   const start = stroke.orders[0][0];
-  const away = (o: number, i: number) => (stroke.right === undefined
-    ? Math.hypot(stroke.orders[o][i][0] - start[0], stroke.orders[o][i][1] - start[1])
-    : apart(stroke, o, i));
-  const da = away(0, a), db = away(1, b);
-  if (Math.max(da, db) <= 1.5 * tol || da === db) return { order: null, progress: Math.min(Math.max(a, b), forkOf(stroke, tol)) };
+  const away = (o: number, i: number) =>
+    stroke.right === undefined
+      ? Math.hypot(stroke.orders[o][i][0] - start[0], stroke.orders[o][i][1] - start[1])
+      : apart(stroke, o, i);
+  const da = away(0, a),
+    db = away(1, b);
+  if (Math.max(da, db) <= 1.5 * tol || da === db)
+    return { order: null, progress: Math.min(Math.max(a, b), forkOf(stroke, tol)) };
   return da > db ? { order: 0, progress: a } : { order: 1, progress: b };
 }
 
 /** How far a point on one order is from the other order's path (0 for a single path). */
 export function apart(stroke: Stroke, order: number, index: number): number {
   if (stroke.orders.length === 1) return 0;
-  const p = stroke.orders[order][index], other = stroke.orders[1 - order];
+  const p = stroke.orders[order][index],
+    other = stroke.orders[1 - order];
   let best = Infinity;
   for (let i = 1; i < other.length; i++) best = Math.min(best, segDist(p, other[i - 1], other[i]));
   return best;
 }
 
 function segDist(p: Point, a: Point, b: Point): number {
-  const dx = b[0] - a[0], dy = b[1] - a[1];
+  const dx = b[0] - a[0],
+    dy = b[1] - a[1];
   const t = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / (dx * dx + dy * dy || 1)));
   return Math.hypot(p[0] - a[0] - dx * t, p[1] - a[1] - dy * t);
 }
@@ -433,8 +654,10 @@ function segDist(p: Point, a: Point, b: Point): number {
  */
 export function forkOf(stroke: Stroke, tol: number): number {
   if (stroke.orders.length === 1) return stroke.orders[0].length - 1;
-  const [a, b] = stroke.orders, n = Math.min(a.length, b.length);
-  for (let i = 0; i < n; i++) if (Math.hypot(a[i][0] - b[i][0], a[i][1] - b[i][1]) > tol) return Math.max(0, i - 1);
+  const [a, b] = stroke.orders,
+    n = Math.min(a.length, b.length);
+  for (let i = 0; i < n; i++)
+    if (Math.hypot(a[i][0] - b[i][0], a[i][1] - b[i][1]) > tol) return Math.max(0, i - 1);
   return n - 1;
 }
 
@@ -448,13 +671,16 @@ export function divergence(stroke: Stroke, order: number, tol: number): number {
 /** A wrong candidate is a miss once she has drawn this many checkpoints past its divergence. */
 export const WRONG_AFTER = 4;
 export const wrongReached = (stroke: Stroke, order: number, progress: number, tol: number): boolean =>
-  stroke.right !== undefined && order !== stroke.right && progress >= divergence(stroke, order, tol) + WRONG_AFTER;
+  stroke.right !== undefined &&
+  order !== stroke.right &&
+  progress >= divergence(stroke, order, tol) + WRONG_AFTER;
 
 /** The points she has to reach: the chosen order, or the first one while undecided. */
 export const pathOf = (stroke: Stroke, order: number | null): Point[] => stroke.orders[order ?? 0];
 
 /** The stretch the hint lights: the next 12 checkpoints from where the crayon waits. */
-export const hintStretch = (points: readonly Point[], progress: number): Point[] => showTheWay(points, progress, 12);
+export const hintStretch = (points: readonly Point[], progress: number): Point[] =>
+  showTheWay(points, progress, 12);
 
 /**
  * Level 5's stepping stones: the points where the pattern turns (a peak, a trough, a loop's top), from `from` on.
@@ -486,7 +712,10 @@ export function botRoute(stroke: Stroke, points: readonly Point[], progress: num
   let since = 0;
   for (let i = progress + 1; i < points.length; i++) {
     since += Math.hypot(points[i][0] - points[i - 1][0], points[i][1] - points[i - 1][1]);
-    if (since >= 0.1 || turns.has(i) || i === points.length - 1) { out.push(points[i]); since = 0; }
+    if (since >= 0.1 || turns.has(i) || i === points.length - 1) {
+      out.push(points[i]);
+      since = 0;
+    }
   }
   return out;
 }
@@ -494,7 +723,8 @@ export function botRoute(stroke: Stroke, points: readonly Point[], progress: num
 /** Arc length along a path up to index i. */
 export function lengthTo(points: readonly Point[], i: number): number {
   let d = 0;
-  for (let k = 1; k <= i && k < points.length; k++) d += Math.hypot(points[k][0] - points[k - 1][0], points[k][1] - points[k - 1][1]);
+  for (let k = 1; k <= i && k < points.length; k++)
+    d += Math.hypot(points[k][0] - points[k - 1][0], points[k][1] - points[k - 1][1]);
   return d;
 }
 
@@ -505,7 +735,8 @@ export const onPaper = (p: Point): boolean => p[0] >= 0 && p[0] <= STRIP_W && p[
 export const SCRATCH_EVERY = 22;
 /** The sticker's pattern for a seed. */
 export const STICKER_KINDS: readonly UnitKind[] = ['zig', 'wave', 'loop', 'hill', 'peak'];
-export const stickerKind = (seed: number): UnitKind => STICKER_KINDS[Math.floor(Math.abs(seed)) % STICKER_KINDS.length];
+export const stickerKind = (seed: number): UnitKind =>
+  STICKER_KINDS[Math.floor(Math.abs(seed)) % STICKER_KINDS.length];
 /** The sticker's pattern as points in a 0..1 box. */
 export function stickerPath(kind: UnitKind): Point[] {
   const s = patternStroke(Array(4).fill(kind), 0, 0).orders[0];

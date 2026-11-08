@@ -5,8 +5,21 @@ import { CouchInput } from './controller';
 const g = globalThis as Record<string, unknown>;
 const saved = { window: g.window, document: g.document, HTMLElement: g.HTMLElement, navigator: g.navigator };
 let win: EventTarget;
-const key = (type: 'keydown' | 'keyup', k: string, code: string, extra: Partial<{ repeat: boolean; ctrlKey: boolean; metaKey: boolean; altKey: boolean }> = {}) => {
-  const e = Object.assign(new Event(type, { cancelable: true }), { key: k, code, repeat: false, ctrlKey: false, metaKey: false, altKey: false, ...extra });
+const key = (
+  type: 'keydown' | 'keyup',
+  k: string,
+  code: string,
+  extra: Partial<{ repeat: boolean; ctrlKey: boolean; metaKey: boolean; altKey: boolean }> = {},
+) => {
+  const e = Object.assign(new Event(type, { cancelable: true }), {
+    key: k,
+    code,
+    repeat: false,
+    ctrlKey: false,
+    metaKey: false,
+    altKey: false,
+    ...extra,
+  });
   win.dispatchEvent(e);
   return e;
 };
@@ -20,12 +33,17 @@ describe('the typed-letter channel', () => {
     Object.defineProperty(globalThis, 'navigator', { value: { getGamepads: () => [] }, configurable: true });
   });
   afterEach(() => {
-    g.window = saved.window; g.document = saved.document; g.HTMLElement = saved.HTMLElement;
+    g.window = saved.window;
+    g.document = saved.document;
+    g.HTMLElement = saved.HTMLElement;
     Object.defineProperty(globalThis, 'navigator', { value: saved.navigator, configurable: true });
   });
 
   it('stays empty for every game that does not type, and leaves W and S to the second player', () => {
-    const input = new CouchInput(() => {}, () => {});
+    const input = new CouchInput(
+      () => {},
+      () => {},
+    );
     input.poll(); // a new screen sees keys released before it takes a press
     key('keydown', 'a', 'KeyA');
     key('keydown', 'w', 'KeyW');
@@ -36,7 +54,10 @@ describe('the typed-letter channel', () => {
   });
 
   it('hands a typing game the characters pressed, in order, read from the key, once each', () => {
-    const input = new CouchInput(() => {}, () => {});
+    const input = new CouchInput(
+      () => {},
+      () => {},
+    );
     input.typing = () => true;
     input.poll();
     const a = key('keydown', 'a', 'KeyQ'); // AZERTY: the key says what she meant
@@ -57,21 +78,37 @@ describe('the typed-letter channel', () => {
   });
 
   it('delivers editor keys once in event order only to typing; chords and repeats stay out', () => {
-    const input = new CouchInput(() => {}, () => {});
-    input.typing = () => true; input.poll();
-    for (const [k, code] of [['Shift','ShiftLeft'], ['a','KeyA'], ['ArrowLeft','ArrowLeft'], ['Backspace','Backspace'], ['.','Period']]) {
-      key('keydown', k, code); key('keydown', k, code, { repeat: true }); key('keyup', k, code);
+    const input = new CouchInput(
+      () => {},
+      () => {},
+    );
+    input.typing = () => true;
+    input.poll();
+    for (const [k, code] of [
+      ['Shift', 'ShiftLeft'],
+      ['a', 'KeyA'],
+      ['ArrowLeft', 'ArrowLeft'],
+      ['Backspace', 'Backspace'],
+      ['.', 'Period'],
+    ]) {
+      key('keydown', k, code);
+      key('keydown', k, code, { repeat: true });
+      key('keyup', k, code);
     }
     key('keydown', 'ArrowLeft', 'ArrowLeft', { metaKey: true });
     key('keydown', 'Backspace', 'Backspace', { altKey: true });
-    expect(input.poll().typed).toEqual(['Shift','a','ArrowLeft','Backspace','.']);
-    key('keydown', 'Shift', 'ShiftRight'); win.dispatchEvent(new Event('blur'));
+    expect(input.poll().typed).toEqual(['Shift', 'a', 'ArrowLeft', 'Backspace', '.']);
+    key('keydown', 'Shift', 'ShiftRight');
+    win.dispatchEvent(new Event('blur'));
     expect(input.poll().typed).toEqual([]);
     input.destroy();
   });
 
   it('drops letters pressed while the round is not on screen', () => {
-    const input = new CouchInput(() => {}, () => {});
+    const input = new CouchInput(
+      () => {},
+      () => {},
+    );
     let on = false;
     input.typing = () => on;
     key('keydown', 'b', 'KeyB');

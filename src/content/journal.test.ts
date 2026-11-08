@@ -3,26 +3,67 @@ import { gameById } from '../games/registry';
 import { ANIMALS, FAVORITE } from '../games/animal-snack/logic';
 import { ACTIONS } from '../games/photo-safari/logic';
 import { ALL_THINGS, floats, thingWord } from '../games/sink-float/logic';
-import { cleanJournal, discover, emptyJournal, entriesOf, entryById, entryId, hasNew, JOURNAL, JOURNAL_IDS, markSeen, sourceText } from './journal';
+import {
+  cleanJournal,
+  discover,
+  emptyJournal,
+  entriesOf,
+  entryById,
+  entryId,
+  hasNew,
+  JOURNAL,
+  JOURNAL_IDS,
+  markSeen,
+  sourceText,
+} from './journal';
 import { WORDS } from '../learning/words/letter-words';
 import { HELPER, HELPERS } from '../games/mail-carrier/logic';
 import { SCRIPT } from './voice-script';
 
 describe('the entries', () => {
   it('covers every promised observation from all eight source games, and no others', () => {
-    expect(entriesOf('sink-float').map((e) => e.key).sort()).toEqual([...ALL_THINGS].sort());
-    expect(entriesOf('animal-snack').map((e) => e.key).sort()).toEqual([...ANIMALS].sort());
-    expect(entriesOf('photo-safari').map((e) => e.key).sort()).toEqual([...ACTIONS].sort());
-    expect(entriesOf('seesaw-balance').map((e) => e.key).sort()).toEqual(['equal-level', 'heavy-down']);
+    expect(
+      entriesOf('sink-float')
+        .map((e) => e.key)
+        .sort(),
+    ).toEqual([...ALL_THINGS].sort());
+    expect(
+      entriesOf('animal-snack')
+        .map((e) => e.key)
+        .sort(),
+    ).toEqual([...ANIMALS].sort());
+    expect(
+      entriesOf('photo-safari')
+        .map((e) => e.key)
+        .sort(),
+    ).toEqual([...ACTIONS].sort());
+    expect(
+      entriesOf('seesaw-balance')
+        .map((e) => e.key)
+        .sort(),
+    ).toEqual(['equal-level', 'heavy-down']);
     expect(entriesOf('bouncy-launch').map((e) => e.key)).toEqual(['bigger-pull']);
-    expect(entriesOf('habitat-helpers').map((e) => e.key).sort()).toEqual(['bunny', 'duck']);
+    expect(
+      entriesOf('habitat-helpers')
+        .map((e) => e.key)
+        .sort(),
+    ).toEqual(['bunny', 'duck']);
     expect(entriesOf('letter-trails').map((e) => e.key)).toEqual(Object.keys(WORDS));
     expect(entriesOf('mail-carrier').map((e) => e.key)).toEqual([...HELPERS]);
     expect(entriesOf('rhythm-neighbors').map((e) => e.key)).toEqual(['frogs-answer']);
     expect(entriesOf('pet-kitchen').map((e) => e.key)).toEqual(['half', 'quarter', 'third']);
-    expect(entriesOf('paint-mixer').map((e) => e.key)).toEqual(['peach', 'coral', 'blush', 'lavender', 'rose', 'lilac']);
+    expect(entriesOf('paint-mixer').map((e) => e.key)).toEqual([
+      'peach',
+      'coral',
+      'blush',
+      'lavender',
+      'rose',
+      'lilac',
+    ]);
     expect(entriesOf('far-lights').map((e) => e.key)).toEqual(['strong-far']);
-    expect(JOURNAL).toHaveLength(ALL_THINGS.length + ANIMALS.length + ACTIONS.length + 5 + 26 + 6 + 1 + 4 + 3 + 6 + 1);
+    expect(JOURNAL).toHaveLength(
+      ALL_THINGS.length + ANIMALS.length + ACTIONS.length + 5 + 26 + 6 + 1 + 4 + 3 + 6 + 1,
+    );
   });
 
   it('gives each a stable, unique id from its game and key', () => {
@@ -81,7 +122,9 @@ describe('the entries', () => {
           break;
         case 'mail-carrier':
           expect(said, e.id).toContain(e.key);
-          expect(said, e.id).toContain(HELPER[e.key as (typeof HELPERS)[number]].toolName.replace(/^an? /, ''));
+          expect(said, e.id).toContain(
+            HELPER[e.key as (typeof HELPERS)[number]].toolName.replace(/^an? /, ''),
+          );
           break;
         case 'rhythm-neighbors':
           expect(said, e.id).toContain('woodpecker');
@@ -91,7 +134,13 @@ describe('the entries', () => {
           expect(said, e.id).toContain(`${e.key.toLowerCase()} is for ${WORDS[e.key]}`);
           break;
         case 'pet-kitchen':
-          expect(said, e.id).toContain({ half: 'two halves make a whole', quarter: 'two quarters make a half', third: 'three thirds make a pizza' }[e.key]);
+          expect(said, e.id).toContain(
+            {
+              half: 'two halves make a whole',
+              quarter: 'two quarters make a half',
+              third: 'three thirds make a pizza',
+            }[e.key],
+          );
           break;
         case 'paint-mixer':
           expect(said, e.id).toContain(e.key);
@@ -152,7 +201,9 @@ describe('the entries', () => {
         expect(found).toContain(e.key === 'stays' ? 'stayed the same' : 'melted');
       } else if (e.game === 'pet-kitchen') {
         expect(find).toContain(e.key === 'third' ? 'thirds' : e.key === 'half' ? 'halves' : 'two quarters');
-        expect(found).toContain(e.key === 'third' ? 'three equal slices' : e.key === 'half' ? 'two halves' : 'one half');
+        expect(found).toContain(
+          e.key === 'third' ? 'three equal slices' : e.key === 'half' ? 'two halves' : 'one half',
+        );
       } else if (e.game === 'paint-mixer') {
         expect(find).toContain("Make the bucket the sample's colour with");
         expect(found).toContain(`the bucket was ${e.key}:`);
@@ -217,7 +268,12 @@ describe('a damaged save', () => {
     expect(cleanJournal(undefined)).toEqual(emptyJournal());
     expect(cleanJournal('x')).toEqual(emptyJournal());
     expect(cleanJournal({ found: 'duck', seen: 3 })).toEqual(emptyJournal());
-    expect(cleanJournal({ found: ['sink-float:duck', 'sink-float:duck', 7, 'retired:entry', 'animal-snack:cow'], seen: 1 })).toEqual({ found: ['sink-float:duck', 'animal-snack:cow'], seen: 1 });
+    expect(
+      cleanJournal({
+        found: ['sink-float:duck', 'sink-float:duck', 7, 'retired:entry', 'animal-snack:cow'],
+        seen: 1,
+      }),
+    ).toEqual({ found: ['sink-float:duck', 'animal-snack:cow'], seen: 1 });
   });
 
   it('never claims she has looked at more than she has found', () => {

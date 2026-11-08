@@ -16,7 +16,9 @@ export const VOICE = {
   'cue.help-play': ['Press Play. Watch the moves go in order.'],
   'cue.help-finish': ['Your show is ready. Press Finish when you like.'],
   'cue.done': ['What a show!'],
-  'cue.repair': ['The picture asks for a wave, then a turn. Watch the show. Change the moves, then check it.'],
+  'cue.repair': [
+    'The picture asks for a wave, then a turn. Watch the show. Change the moves, then check it.',
+  ],
   'cue.request-wave': ['First, wave.'],
   'cue.request-turn': ['Second, turn all the way around.'],
   'cue.check': ['Check the show.'],

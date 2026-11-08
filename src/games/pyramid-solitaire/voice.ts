@@ -1,7 +1,9 @@
 // What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
 export const VOICE = {
   'game.pyramid-solitaire': ['Pyramid solitaire!'],
-  'pyramid.go': ['Lift two open cards that add to thirteen. A king is thirteen all by itself. Remove the cards below to uncover the ones above.'],
+  'pyramid.go': [
+    'Lift two open cards that add to thirteen. A king is thirteen all by itself. Remove the cards below to uncover the ones above.',
+  ],
   'pyramid.number': ['{n}. Find an open card to make thirteen together.'],
   'pyramid.covered': ['First lift both cards directly below this one.'],
   'pyramid.miss': ['Those cards do not make thirteen. This first card needs {n}.'],

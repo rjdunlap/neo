@@ -4,7 +4,13 @@ import { voice } from '../audio/voice';
 import { GAMES, playsByTouch } from '../games/registry';
 import { BANDS, playBand, type Band } from '../progress/bands';
 import { levelsInOrder } from '../progress/difficulty';
-import { bandForYears, cardName, checkBirthInput, completedYears, isBlankProfile } from '../progress/profiles';
+import {
+  bandForYears,
+  cardName,
+  checkBirthInput,
+  completedYears,
+  isBlankProfile,
+} from '../progress/profiles';
 import { store } from '../progress/store';
 import { visibleGames } from '../content/lands';
 import { offScreenIdeas } from '../content/offscreen';
@@ -13,7 +19,20 @@ import { placeFor } from '../content/places';
 import { PET_COLORS, type PetColor } from '../content/world';
 import { SPECIES, SPECIES_IDS } from '../creatures/species';
 
-const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const MONTHS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -24,7 +43,8 @@ let current: HTMLElement | null = null;
 /** Whether the grown-ups' page is on screen. It closes itself on Esc, so the app's Esc and keys like C leave it alone. */
 export const isParentPanelOpen = () => current !== null;
 
-const clock = (at: number) => new Date(at).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' });
+const clock = (at: number) =>
+  new Date(at).toLocaleString([], { weekday: 'short', hour: 'numeric', minute: '2-digit' });
 
 /**
  * The grown-up zone: plain HTML over the game, reached by holding the grown-ups gear.
@@ -169,7 +189,12 @@ export function openParentPanel(onClose: () => void, onGone: () => void = onClos
   const fillWho = async () => {
     const items = await Promise.all(store.profiles.map(async (e) => ({ e, save: await store.peek(e.id) })));
     if (closing) return;
-    who.innerHTML = items.map(({ e, save }) => `<option value="${e.id}">${esc(save && !isBlankProfile(save, e) ? cardName(save) : 'New player (not set up)')}</option>`).join('');
+    who.innerHTML = items
+      .map(
+        ({ e, save }) =>
+          `<option value="${e.id}">${esc(save && !isBlankProfile(save, e) ? cardName(save) : 'New player (not set up)')}</option>`,
+      )
+      .join('');
     who.value = store.activeId;
   };
 
@@ -177,7 +202,11 @@ export function openParentPanel(onClose: () => void, onGone: () => void = onClos
   const ageNote = () => {
     const { birth, startBand } = store.entry;
     const age = birth ? `Age ${completedYears(birth, new Date())}. ` : '';
-    const why = startBand ? 'Starting where you chose' : birth ? 'Starting where their age puts them' : 'No birth month and year yet, so they start in the band chosen below';
+    const why = startBand
+      ? 'Starting where you chose'
+      : birth
+        ? 'Starting where their age puts them'
+        : 'No birth month and year yet, so they start in the band chosen below';
     return `${age}${why}: ${placeFor(store.data.profile.band).name}.`;
   };
 
@@ -203,8 +232,12 @@ export function openParentPanel(onClose: () => void, onGone: () => void = onClos
     const undoAt = store.undoAt;
     $('[data-undo]').toggleAttribute('hidden', undoAt === null);
     $('[data-undo-note]').toggleAttribute('hidden', undoAt === null);
-    if (undoAt !== null) $('[data-undo-note]').textContent = `Their progress from before ${clock(undoAt)} is kept, so a reset or restore can be undone. Undoing twice puts it back the way it is now.`;
-    root.querySelectorAll<HTMLButtonElement>('[data-band]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.band === store.data.profile.band)));
+    if (undoAt !== null)
+      $('[data-undo-note]').textContent =
+        `Their progress from before ${clock(undoAt)} is kept, so a reset or restore can be undone. Undoing twice puts it back the way it is now.`;
+    root
+      .querySelectorAll<HTMLButtonElement>('[data-band]')
+      .forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.band === store.data.profile.band)));
     $('[data-week]').innerHTML = weekSummary();
     $('[data-voice-note]').textContent = voiceNote();
     root.querySelectorAll<HTMLSelectElement>('[data-pin]').forEach((sel) =>
@@ -242,7 +275,8 @@ export function openParentPanel(onClose: () => void, onGone: () => void = onClos
   // exist. Absent from a production build.
   if (import.meta.env.DEV) {
     root.querySelector('[data-meet-all]')?.addEventListener('click', () => {
-      for (const id of SPECIES_IDS) if (id !== 'sprout') store.meet(id, SPECIES[id].names[0], SPECIES[id].color, `dev:${id}`);
+      for (const id of SPECIES_IDS)
+        if (id !== 'sprout') store.meet(id, SPECIES[id].names[0], SPECIES[id].color, `dev:${id}`);
       render();
     });
   }
@@ -263,7 +297,10 @@ export function openParentPanel(onClose: () => void, onGone: () => void = onClos
     }
     const birth = checkBirthInput(Number(month.value || NaN), Number(year.value.trim() || NaN), new Date());
     if (!birth) {
-      $('[data-age]').textContent = month.value && year.value.trim() ? 'That month and year have not happened yet, or are too long ago, so it was not kept.' : 'Choose both the month and the year.';
+      $('[data-age]').textContent =
+        month.value && year.value.trim()
+          ? 'That month and year have not happened yet, or are too long ago, so it was not kept.'
+          : 'Choose both the month and the year.';
       return;
     }
     store.setBirth(store.activeId, birth);
@@ -277,7 +314,11 @@ export function openParentPanel(onClose: () => void, onGone: () => void = onClos
       const band = b.dataset.band as Band;
       const { birth } = store.entry;
       // With a birth, a band is a start chosen instead of the age's; the age's own band is no choice at all.
-      if (birth) store.setStartBand(store.activeId, band === bandForYears(completedYears(birth, new Date())) ? null : band);
+      if (birth)
+        store.setStartBand(
+          store.activeId,
+          band === bandForYears(completedYears(birth, new Date())) ? null : band,
+        );
       else store.setBand(band);
       render();
     }),
@@ -294,7 +335,10 @@ export function openParentPanel(onClose: () => void, onGone: () => void = onClos
     store.data.settings.howToCards = howto.checked;
     store.save();
   });
-  layout.addEventListener('change', () => { store.data.settings.placeLayout = layout.value === 'subjects' ? 'subjects' : 'path'; store.save(); });
+  layout.addEventListener('change', () => {
+    store.data.settings.placeLayout = layout.value === 'subjects' ? 'subjects' : 'path';
+    store.save();
+  });
   volume.addEventListener('input', () => {
     store.data.settings.volume = Number(volume.value);
     applySettings();
@@ -325,19 +369,31 @@ export function openParentPanel(onClose: () => void, onGone: () => void = onClos
       return;
     }
     const plural = (n: number) => `${n} player${n === 1 ? '' : 's'}`;
-    alert(`Backup restored: ${plural(result.replaced)} put back${result.added ? `, ${plural(result.added)} added` : ''}${result.skipped ? `. ${plural(result.skipped)} did not fit and were left out` : ''}. If that was a mistake, choose the player at the top and press "Undo the last reset or restore".`);
+    alert(
+      `Backup restored: ${plural(result.replaced)} put back${result.added ? `, ${plural(result.added)} added` : ''}${result.skipped ? `. ${plural(result.skipped)} did not fit and were left out` : ''}. If that was a mistake, choose the player at the top and press "Undo the last reset or restore".`,
+    );
     playerChanged();
     await fillWho();
     render();
   });
   $('[data-reset]').addEventListener('click', () => {
-    if (!confirm(`Clear all game progress and stickers for ${cardName(store.data)}? Their name and settings are kept. You can undo this from this page.`)) return;
+    if (
+      !confirm(
+        `Clear all game progress and stickers for ${cardName(store.data)}? Their name and settings are kept. You can undo this from this page.`,
+      )
+    )
+      return;
     store.reset();
     render();
   });
   $('[data-remove]').addEventListener('click', async () => {
     const label = cardName(store.data);
-    if (!confirm(`Remove ${label} and everything saved for them from this device? A backup file can bring them back; nothing else can.`)) return;
+    if (
+      !confirm(
+        `Remove ${label} and everything saved for them from this device? A backup file can bring them back; nothing else can.`,
+      )
+    )
+      return;
     if (!(await store.removeProfile(store.activeId))) return;
     playerChanged();
     await fillWho();
@@ -371,11 +427,15 @@ export function openParentPanel(onClose: () => void, onGone: () => void = onClos
 
 /** Which device voice speaks, and how to get a clearer one; the voice belongs to the device, not to a player. */
 function voiceNote(): string {
-  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return 'This browser has no speech, so the voice stays quiet here.';
+  if (typeof window === 'undefined' || !('speechSynthesis' in window))
+    return 'This browser has no speech, so the voice stays quiet here.';
   const now = voice.current();
   const shared = 'The voice comes from this device, so it is the same for every player.';
-  if (now && now.quality !== 'standard') return `Speaking: ${now.name}, a downloaded ${now.quality === 'premium' ? 'Premium' : 'Enhanced'} voice. ${shared}`;
-  const who = now ? `Speaking: ${now.name}, the device's standard voice.` : "Speaking: the device's default voice.";
+  if (now && now.quality !== 'standard')
+    return `Speaking: ${now.name}, a downloaded ${now.quality === 'premium' ? 'Premium' : 'Enhanced'} voice. ${shared}`;
+  const who = now
+    ? `Speaking: ${now.name}, the device's standard voice.`
+    : "Speaking: the device's default voice.";
   return `${who} ${shared} For a clearer voice on an iPad, open Settings → Accessibility → Spoken Content → Voices → English, download a voice marked Enhanced or Premium (Ava, Zoe or Samantha), then close and reopen Puddle Island.`;
 }
 
@@ -393,7 +453,9 @@ function weekSummary(): string {
     const now = store.levelFor(g.id, range, g.entryLevels);
     const options = [`<option value="">Automatic</option>`];
     for (const l of levelsInOrder(range)) {
-      options.push(`<option value="${l}" ${stats.pinned === l ? 'selected' : ''}>Stay on ${l}: ${esc(g.describeLevel(l))}</option>`);
+      options.push(
+        `<option value="${l}" ${stats.pinned === l ? 'selected' : ''}>Stay on ${l}: ${esc(g.describeLevel(l))}</option>`,
+      );
     }
     // A game that takes only a controller opens its couch puzzle-shelf course, which sets its own level: a pin would never apply.
     const byTouch = playsByTouch(g);
@@ -402,9 +464,11 @@ function weekSummary(): string {
         ? `<select data-pin="${g.id}" aria-label="Level for ${esc(g.name)}">${options.join('')}</select>`
         : '';
     return `<tr>
-        <td><strong>${esc(g.name)}</strong><br>${byTouch
-          ? `<span class="muted">Level ${now}: ${esc(g.describeLevel(now))}</span>${picker ? `<br>${picker}` : ''}`
-          : `<span class="muted">Needs a keyboard or controller: it opens on the couch puzzle shelf, which sets its own levels.</span>`}</td>
+        <td><strong>${esc(g.name)}</strong><br>${
+          byTouch
+            ? `<span class="muted">Level ${now}: ${esc(g.describeLevel(now))}</span>${picker ? `<br>${picker}` : ''}`
+            : `<span class="muted">Needs a keyboard or controller: it opens on the couch puzzle shelf, which sets its own levels.</span>`
+        }</td>
         <td>${recent.length}</td><td>${minutes}</td>
       </tr>`;
   });
@@ -413,7 +477,9 @@ function weekSummary(): string {
     const recent = store.stats(g.id).history.filter((r) => r.at >= since);
     if (!recent.length) continue;
     const minutes = Math.max(1, Math.round(recent.reduce((t, r) => t + r.seconds, 0) / 60));
-    rows.push(`<tr><td><strong>${esc(g.name)}</strong><br><span class="muted">A game for bigger kids, from a signpost</span></td><td>${recent.length}</td><td>${minutes}</td></tr>`);
+    rows.push(
+      `<tr><td><strong>${esc(g.name)}</strong><br><span class="muted">A game for bigger kids, from a signpost</span></td><td>${recent.length}</td><td>${minutes}</td></tr>`,
+    );
   }
   const played = games.filter((g) => store.stats(g.id).history.some((r) => r.at >= since));
   const stickers = store.data.stickers.filter((s) => s.at >= since).length;
@@ -433,8 +499,16 @@ function weekSummary(): string {
 
 function picnicSummary(): string {
   const p = store.picnic;
-  const words: Record<string, string> = { blanket: 'found the blanket', sandwiches: 'shared the sandwiches', invitation: 'played the invitation' };
-  const now = p.ended ? 'finished.' : p.steps.length ? `${p.steps.map((s) => words[s]).join(', ')} (${p.steps.length} of 3).` : 'not started yet.';
+  const words: Record<string, string> = {
+    blanket: 'found the blanket',
+    sandwiches: 'shared the sandwiches',
+    invitation: 'played the invitation',
+  };
+  const now = p.ended
+    ? 'finished.'
+    : p.steps.length
+      ? `${p.steps.map((s) => words[s]).join(', ')} (${p.steps.length} of 3).`
+      : 'not started yet.';
   return `${now} ${p.keepsake ? 'Its picnic photo is in the journal.' : ''} Its sandwich and invitation steps are Pet Kitchen and Jelly Drums rounds; they play at the story's level and don't change those games' levels.`;
 }
 

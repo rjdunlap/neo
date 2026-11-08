@@ -17,23 +17,69 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { arrowShape, badgeArt, cardArt, iconArt, stationArt, webIcon, webPicture } from './art';
 import {
   LEVELS,
-  applyHint, BADGE, CARD, caseRecords, check, connect, demoNext, dropTarget, faultRecord, faults, layout, makeRound, newState, planFor,
-  restartState, SHOW, STATION_R, undo, type Arrow, type Fault, type FeedingRecord, type Organism, type Pt, type RecordId, type WebState,
+  applyHint,
+  BADGE,
+  CARD,
+  caseRecords,
+  check,
+  connect,
+  demoNext,
+  dropTarget,
+  faultRecord,
+  faults,
+  layout,
+  makeRound,
+  newState,
+  planFor,
+  restartState,
+  SHOW,
+  STATION_R,
+  undo,
+  type Arrow,
+  type Fault,
+  type FeedingRecord,
+  type Organism,
+  type Pt,
+  type RecordId,
+  type WebState,
 } from './logic';
 
 const ASK: Record<number, LineId> = { 1: 'web.ask.make', 2: 'web.ask.turn', 3: 'web.ask.branch' };
-const CARD_LINE: Record<RecordId, LineId> = { r1: 'web.card.r1', r2: 'web.card.r2', r3: 'web.card.r3', r4: 'web.card.r4', r5: 'web.card.r5', r6: 'web.card.r6' };
-const NAME_LINE: Record<Organism, LineId> = {
-  clover: 'web.name.clover', dandelion: 'web.name.dandelion', caterpillar: 'web.name.caterpillar',
-  snail: 'web.name.snail', bunny: 'web.name.bunny', bird: 'web.name.bird',
+const CARD_LINE: Record<RecordId, LineId> = {
+  r1: 'web.card.r1',
+  r2: 'web.card.r2',
+  r3: 'web.card.r3',
+  r4: 'web.card.r4',
+  r5: 'web.card.r5',
+  r6: 'web.card.r6',
 };
-const MISS_LINE: Record<Fault['kind'], LineId> = { reversed: 'web.miss.reversed', missing: 'web.miss.missing', extra: 'web.miss.extra' };
+const NAME_LINE: Record<Organism, LineId> = {
+  clover: 'web.name.clover',
+  dandelion: 'web.name.dandelion',
+  caterpillar: 'web.name.caterpillar',
+  snail: 'web.name.snail',
+  bunny: 'web.name.bunny',
+  bird: 'web.name.bird',
+};
+const MISS_LINE: Record<Fault['kind'], LineId> = {
+  reversed: 'web.miss.reversed',
+  missing: 'web.miss.missing',
+  extra: 'web.miss.extra',
+};
 
 const key = (a: Arrow) => `${a.from}>${a.to}`;
 const faultKey = (f: Fault) => `${f.kind}:${f.kind === 'extra' ? key(f.arrow) : f.record.id}`;
 
-interface StationNode { organism: Organism; node: Container; badge: Container; handle: DragHandle }
-interface CardNode { record: FeedingRecord; node: Container }
+interface StationNode {
+  organism: Organism;
+  node: Container;
+  badge: Container;
+  handle: DragHandle;
+}
+interface CardNode {
+  record: FeedingRecord;
+  node: Container;
+}
 
 class FoodWebWorkshop implements Game {
   readonly s: WebState;
@@ -69,7 +115,17 @@ class FoodWebWorkshop implements Game {
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.s = newState(makeRound(ctx.level, ctx.rng));
-    this.backdrop = new Backdrop({ sky: [0xbfe9ff, 0xf3fbff], hills: [0xc7ebab, 0x9bd581], horizon: 0.3, clouds: 2, sun: true, seed: 211 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0xbfe9ff, 0xf3fbff],
+        hills: [0xc7ebab, 0x9bd581],
+        horizon: 0.3,
+        clouds: 2,
+        sun: true,
+        seed: 211,
+      },
+      ctx.view,
+    );
     this.arrows.eventMode = 'none';
     this.glow.eventMode = 'none';
     this.flyLayer.eventMode = 'none';
@@ -100,7 +156,17 @@ class FoodWebWorkshop implements Game {
       });
       this.stations.push({ organism, node, badge, handle });
     });
-    ctx.stage.addChild(this.backdrop, this.arrows, this.stationLayer, this.glow, this.cardLayer, this.flyLayer, this.badgeLayer, this.showButton, this.undoButton);
+    ctx.stage.addChild(
+      this.backdrop,
+      this.arrows,
+      this.stationLayer,
+      this.glow,
+      this.cardLayer,
+      this.flyLayer,
+      this.badgeLayer,
+      this.showButton,
+      this.undoButton,
+    );
   }
 
   start() {
@@ -146,7 +212,8 @@ class FoodWebWorkshop implements Game {
 
   /** The ghost finger: watch each card, then drag its food's badge onto the eater, then Show our web. */
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished || this.replaying || this.stations.some((st) => st.handle.dragging)) return null;
+    if (this.busy || this.finished || this.replaying || this.stations.some((st) => st.handle.dragging))
+      return null;
     const next = demoNext(this.s, this.replayed);
     if (!next) return null;
     if (next === 'show') return { tap: { on: this.showButton }, pause: 1 };
@@ -191,10 +258,16 @@ class FoodWebWorkshop implements Game {
 
   private drop(i: number, x: number, y: number): boolean {
     if (this.finished) return false;
-    if (this.busy) return void sfx.tick(), false;
-    const target = dropTarget(this.stations.map((st) => ({ x: st.node.x, y: st.node.y })), i, x, y);
+    if (this.busy) return (void sfx.tick(), false);
+    const target = dropTarget(
+      this.stations.map((st) => ({ x: st.node.x, y: st.node.y })),
+      i,
+      x,
+      y,
+    );
     if (target === null) return false;
-    const from = this.stations[i].organism, to = this.stations[target].organism;
+    const from = this.stations[i].organism,
+      to = this.stations[target].organism;
     const result = connect(this.s, from, to);
     const eater = this.stations[target].node;
     if (result === 'added' || result === 'turned') {
@@ -239,9 +312,10 @@ class FoodWebWorkshop implements Game {
     if (this.finished) return;
     this.replayed.add(record.id);
     const card = this.cards.find((c) => c.record.id === record.id);
-    if (card) squash(card.node), spring(card.node, 90);
+    if (card) (squash(card.node), spring(card.node, 90));
     this.replaying++;
-    const a = this.center(record.from), b = this.center(record.to);
+    const a = this.center(record.from),
+      b = this.center(record.to);
     const fly = iconArt(record.from, 56);
     fly.position.set(a.x, a.y - 20);
     this.flyLayer.addChild(fly);
@@ -262,11 +336,11 @@ class FoodWebWorkshop implements Game {
   private async showWeb() {
     if (this.busy || this.finished) return;
     if (!this.s.arrows.length) {
-      squash(this.showButton), spring(this.showButton, 90);
+      (squash(this.showButton), spring(this.showButton, 90));
       sfx.tick();
       return void this.ctx.say(ASK[this.s.round.plan.level]);
     }
-    squash(this.showButton), spring(this.showButton, 90);
+    (squash(this.showButton), spring(this.showButton, 90));
     const result = check(this.s);
     if (!result) return;
     if (result.ok) return void this.celebrate();
@@ -298,7 +372,14 @@ class FoodWebWorkshop implements Game {
     sfx.tada();
     this.ctx.pet.cheer();
     const c = this.center(order[0].to);
-    this.ctx.particles.burst(c.x, c.y, { kind: 'star', colors: [swatch.yellow.fill, swatch.green.fill, swatch.orange.fill], count: 18, speed: [80, 240], gravity: 260, life: [0.6, 1.1] });
+    this.ctx.particles.burst(c.x, c.y, {
+      kind: 'star',
+      colors: [swatch.yellow.fill, swatch.green.fill, swatch.orange.fill],
+      count: 18,
+      speed: [80, 240],
+      gravity: 260,
+      life: [0.6, 1.1],
+    });
     await this.ctx.say('web.done');
     if (this.dead) return;
     await this.ctx.tw.wait(0.3);
@@ -308,12 +389,16 @@ class FoodWebWorkshop implements Game {
   private drawArrows() {
     const g = this.arrows.clear();
     for (const arrow of this.s.arrows) {
-      const a = this.center(arrow.from), b = this.center(arrow.to);
+      const a = this.center(arrow.from),
+        b = this.center(arrow.to);
       const t = this.grow.get(key(arrow)) ?? 1;
       const lit = this.lit === key(arrow);
       const color = lit ? swatch.yellow.fill : swatch.orange.fill;
-      const dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy) || 1;
-      const ux = dx / len, uy = dy / len;
+      const dx = b.x - a.x,
+        dy = b.y - a.y,
+        len = Math.hypot(dx, dy) || 1;
+      const ux = dx / len,
+        uy = dy / len;
       const start = { x: a.x + ux * (STATION_R + 6), y: a.y + uy * (STATION_R + 6) };
       const fullEnd = { x: b.x - ux * (STATION_R + 6), y: b.y - uy * (STATION_R + 6) };
       const end = { x: start.x + (fullEnd.x - start.x) * t, y: start.y + (fullEnd.y - start.y) * t };
@@ -321,14 +406,22 @@ class FoodWebWorkshop implements Game {
       arrowShape(g, start, end, color, lit ? 14 : 10, 18, 2);
       // Dots flowing toward the eater: the way the food goes.
       const span = Math.hypot(end.x - start.x, end.y - start.y);
-      for (let d = (this.clock * 70) % 40; d < span - 30; d += 40) g.circle(start.x + ux * d, start.y + uy * d, lit ? 6 : 4).fill(0xffffff);
+      for (let d = (this.clock * 70) % 40; d < span - 30; d += 40)
+        g.circle(start.x + ux * d, start.y + uy * d, lit ? 6 : 4).fill(0xffffff);
     }
   }
 
   private drawGlow() {
     const g = this.glow.clear();
     const pulse = 7 + 2 * Math.sin(this.clock * 6);
-    if (this.showPulse > 0) g.roundRect(this.showButton.x - SHOW.w / 2 - 10, this.showButton.y - SHOW.h / 2 - 10, SHOW.w + 20, SHOW.h + 20, 34).stroke({ width: pulse, color: swatch.yellow.fill });
+    if (this.showPulse > 0)
+      g.roundRect(
+        this.showButton.x - SHOW.w / 2 - 10,
+        this.showButton.y - SHOW.h / 2 - 10,
+        SHOW.w + 20,
+        SHOW.h + 20,
+        34,
+      ).stroke({ width: pulse, color: swatch.yellow.fill });
     if (!this.glowKey || this.finished) return;
     const f = faults(this.s.arrows, this.s.round.webCase).find((x) => faultKey(x) === this.glowKey);
     if (!f) {
@@ -342,7 +435,14 @@ class FoodWebWorkshop implements Game {
     }
     const record = faultRecord(f);
     const card = record && this.cards.find((c) => c.record.id === record.id);
-    if (card) g.roundRect(card.node.x - CARD.w / 2 - 10, card.node.y - CARD.h / 2 - 10, CARD.w + 20, CARD.h + 20, 28).stroke({ width: pulse, color: swatch.yellow.fill });
+    if (card)
+      g.roundRect(
+        card.node.x - CARD.w / 2 - 10,
+        card.node.y - CARD.h / 2 - 10,
+        CARD.w + 20,
+        CARD.h + 20,
+        28,
+      ).stroke({ width: pulse, color: swatch.yellow.fill });
   }
 }
 
@@ -367,8 +467,10 @@ export const foodWebWorkshop: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
-  coplayHint: 'One of you taps a card and tells what you saw; the other makes the arrow. Swap for the next card.',
-  offScreen: 'Draw three pictures on paper (a plant, something that eats it, and something that eats that) and join them with arrows from the food to the eater.',
+  coplayHint:
+    'One of you taps a card and tells what you saw; the other makes the arrow. Swap for the next card.',
+  offScreen:
+    'Draw three pictures on paper (a plant, something that eats it, and something that eats that) and join them with arrows from the food to the eater.',
   hubIcon: () => new WigglyIcon(webIcon()),
   touchDemo: true,
   sticker,

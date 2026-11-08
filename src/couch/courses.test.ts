@@ -16,21 +16,29 @@ describe('the couch courses', () => {
       expect(COUCH_IDS).toContain(info.game);
       expect(info.version).toBeGreaterThanOrEqual(1);
       expect(info.best.length).toBeGreaterThanOrEqual(2);
-      expect(info.best.every(n => Number.isInteger(n) && n >= 1)).toBe(true);
+      expect(info.best.every((n) => Number.isInteger(n) && n >= 1)).toBe(true);
       expect(info.minimum).toBe(info.best.reduce((a, b) => a + b, 0));
       expect(info.name.length).toBeGreaterThan(3);
       expect(info.part).toMatch(/^[a-z]+$/);
       expect(info.unit).toMatch(/^[a-z]+$/);
       expect(Object.keys(SCRIPT)).toContain(info.done);
-      for (const badge of [info.badges.finish, info.badges.minimum]) expect(badge.title.length > 3 && badge.how.length > 10).toBe(true);
+      for (const badge of [info.badges.finish, info.badges.minimum])
+        expect(badge.title.length > 3 && badge.how.length > 10).toBe(true);
       expect(info.badges.finish.title).not.toBe(info.badges.minimum.title);
     }
   });
 
   it('builds the rules spec from the same numbers, so records and screens agree', () => {
     for (const id of COURSE_IDS) {
-      const info = courseInfo(id), spec = courseSpec(id);
-      expect(spec).toEqual({ id, game: info.game, version: info.version, boards: info.best.length, minimum: info.minimum });
+      const info = courseInfo(id),
+        spec = courseSpec(id);
+      expect(spec).toEqual({
+        id,
+        game: info.game,
+        version: info.version,
+        boards: info.best.length,
+        minimum: info.minimum,
+      });
     }
     expect(courseSpec('ponds')).toMatchObject({ game: 'penguin-slide', boards: 5, minimum: 30 });
     expect(courseSpec('practice')).toMatchObject({ game: 'penguin-slide', boards: 5, minimum: 18 });
@@ -53,9 +61,11 @@ describe('the couch courses', () => {
     expect(courseInfo('sunbeams').reference).toBeUndefined();
   });
 
-  it("is played by a game that is on the couch, at a level its band really has", () => {
+  it('is played by a game that is on the couch, at a level its band really has', () => {
     for (const id of COURSE_IDS) {
-      const info = courseInfo(id), mod = gameById(info.game)!, band = COUCH_INFO[info.game].band;
+      const info = courseInfo(id),
+        mod = gameById(info.game)!,
+        band = COUCH_INFO[info.game].band;
       expect(mod.bands).toContain(band);
       const range = mod.levels(band);
       expect(info.level).toBeGreaterThanOrEqual(range.min);

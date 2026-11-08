@@ -36,9 +36,25 @@ export function tableLayout(view: View) {
   const ox = (view.w - 1024) / 2;
   if (view.h >= 1300) {
     const bottom = view.h - 145;
-    return { tall: true, ox, rowY: 260, play: { x: 512, y: bottom }, poolRows: [520, 680, 840], arrowsY: 680, reset: { x: 220, y: bottom } };
+    return {
+      tall: true,
+      ox,
+      rowY: 260,
+      play: { x: 512, y: bottom },
+      poolRows: [520, 680, 840],
+      arrowsY: 680,
+      reset: { x: 220, y: bottom },
+    };
   }
-  return { tall: false, ox, rowY: 190, play: { x: 905, y: 190 }, poolRows: [400, 560], arrowsY: 480, reset: { x: 512, y: 700 } };
+  return {
+    tall: false,
+    ox,
+    rowY: 190,
+    play: { x: 905, y: 190 },
+    poolRows: [400, 560],
+    arrowsY: 480,
+    reset: { x: 512, y: 700 },
+  };
 }
 export const perPage = (view: View) => tableLayout(view).poolRows.length * POOL_XS.length;
 
@@ -46,7 +62,13 @@ export const perPage = (view: View) => tableLayout(view).poolRows.length * POOL_
 function gameTile(mod: GameModule, color: typeof swatch.yellow): Container {
   const tile = new Container();
   const face = new Container();
-  face.addChild(new Graphics().roundRect(-SLOT / 2, -SLOT / 2, SLOT, SLOT, 22).fill(color.light).stroke({ width: 4, color: color.line }), picture(mod, 0, -4, 96));
+  face.addChild(
+    new Graphics()
+      .roundRect(-SLOT / 2, -SLOT / 2, SLOT, SLOT, 22)
+      .fill(color.light)
+      .stroke({ width: 4, color: color.line }),
+    picture(mod, 0, -4, 96),
+  );
   face.eventMode = 'none';
   tile.addChild(face);
   tile.hitArea = new Rectangle(-SLOT / 2, -SLOT / 2, SLOT, SLOT);
@@ -55,8 +77,14 @@ function gameTile(mod: GameModule, color: typeof swatch.yellow): Container {
 
 /** The picnic blanket, small: Reset's picture (back to Little surprises). */
 function blanketIcon(): Graphics {
-  const g = new Graphics().poly([-30, 14, 30, 14, 22, -14, -22, -14]).fill(swatch.red.light).stroke({ width: 4, color: swatch.red.line });
-  for (let i = -1; i <= 1; i++) g.circle(i * 14, -26, 5).fill(swatch.yellow.fill).stroke({ width: 2, color: swatch.yellow.line });
+  const g = new Graphics()
+    .poly([-30, 14, 30, 14, 22, -14, -22, -14])
+    .fill(swatch.red.light)
+    .stroke({ width: 4, color: swatch.red.line });
+  for (let i = -1; i <= 1; i++)
+    g.circle(i * 14, -26, 5)
+      .fill(swatch.yellow.fill)
+      .stroke({ width: 2, color: swatch.yellow.line });
   return g;
 }
 
@@ -87,28 +115,56 @@ export class MixTable extends Container {
   private dragging = -1;
   private cancelled = false;
   private wiggling = 0;
-  private readonly onCancel = () => { this.cancelled = true; };
+  private readonly onCancel = () => {
+    this.cancelled = true;
+  };
   /** A key or pad press closes the table, as Back does: the table is touch only. */
-  private readonly onKey = (e: KeyboardEvent) => { if (!e.repeat) this.actions.back(); };
+  private readonly onKey = (e: KeyboardEvent) => {
+    if (!e.repeat) this.actions.back();
+  };
 
-  constructor(private readonly tw: Tweener, private readonly actions: TableActions) {
+  constructor(
+    private readonly tw: Tweener,
+    private readonly actions: TableActions,
+  ) {
     super();
     this.scrim.eventMode = 'static'; // nothing on the home spot can be touched under the table
     this.backButton = new RoundButton(arrowIcon(-1), swatch.white, 50, () => actions.back());
     this.playButton = new RoundButton(playIcon(), swatch.green, 70, () => actions.play());
-    this.resetButton = new HoldButton(blanketIcon(), swatch.white, 56, 0.6, () => actions.reset(), swatch.red.line);
+    this.resetButton = new HoldButton(
+      blanketIcon(),
+      swatch.white,
+      56,
+      0.6,
+      () => actions.reset(),
+      swatch.red.line,
+    );
     this.prevButton = new RoundButton(arrowIcon(-1), swatch.white, 50, () => this.turn(-1));
     this.nextButton = new RoundButton(arrowIcon(1), swatch.white, 50, () => this.turn(1));
     this.outlines.eventMode = this.panels.eventMode = 'none';
-    this.addChild(this.scrim, this.panels, this.outlines, this.poolLayer, this.row,
-      this.backButton, this.playButton, this.resetButton, this.prevButton, this.nextButton);
+    this.addChild(
+      this.scrim,
+      this.panels,
+      this.outlines,
+      this.poolLayer,
+      this.row,
+      this.backButton,
+      this.playButton,
+      this.resetButton,
+      this.prevButton,
+      this.nextButton,
+    );
     // Registered before any stop's drag handle, so a cancelled finger is known before the drop is reported.
     window.addEventListener('pointercancel', this.onCancel, true);
     window.addEventListener('keydown', this.onKey);
   }
 
-  get lineup(): readonly string[] { return this.lineupMods.map(m => m.id); }
-  get pageCount(): number { return this.view ? Math.max(1, Math.ceil(this.pool.length / perPage(this.view))) : 1; }
+  get lineup(): readonly string[] {
+    return this.lineupMods.map((m) => m.id);
+  }
+  get pageCount(): number {
+    return this.view ? Math.max(1, Math.ceil(this.pool.length / perPage(this.view))) : 1;
+  }
 
   show(lineup: readonly GameModule[], pool: readonly GameModule[], view: View) {
     this.lineupMods = lineup;
@@ -121,13 +177,17 @@ export class MixTable extends Container {
       const handle = draggable(tile, this.tw, {
         lift: 0,
         keepGrab: true,
-        onPick: () => { this.dragging = p; this.cancelled = false; sfx.tick(); },
+        onPick: () => {
+          this.dragging = p;
+          this.cancelled = false;
+          sfx.tick();
+        },
         onMove: (x) => this.makeRoom(p, x),
         onDrop: (x, y) => this.drop(p, x, y),
       });
       return { tile, handle, x: 0 };
     });
-    this.row.addChild(...this.stops.map(s => s.tile));
+    this.row.addChild(...this.stops.map((s) => s.tile));
     this.buildPool();
     this.layout(view);
   }
@@ -135,22 +195,29 @@ export class MixTable extends Container {
   private buildPool() {
     for (const t of this.poolTiles) this.release(t.tile);
     const view = this.view!;
-    const n = this.builtPer = perPage(view);
+    const n = (this.builtPer = perPage(view));
     const shown = this.pool.slice(this.page * n, this.page * n + n);
     const ids = this.lineup;
-    this.poolTiles = shown.map(mod => {
+    this.poolTiles = shown.map((mod) => {
       const tile = gameTile(mod, swatch.blue);
-      const count = ids.filter(id => id === mod.id).length;
+      const count = ids.filter((id) => id === mod.id).length;
       if (count) {
         const dots = new Graphics();
-        for (let i = 0; i < count; i++) dots.circle((i - (count - 1) / 2) * 16, SLOT / 2 - 14, 6).fill(swatch.yellow.fill).stroke({ width: 2, color: swatch.yellow.line });
+        for (let i = 0; i < count; i++)
+          dots
+            .circle((i - (count - 1) / 2) * 16, SLOT / 2 - 14, 6)
+            .fill(swatch.yellow.fill)
+            .stroke({ width: 2, color: swatch.yellow.line });
         dots.eventMode = 'none';
         tile.addChild(dots);
       }
-      onTap(tile, () => { tile.scale.set(1.08); this.actions.add(mod.id); });
+      onTap(tile, () => {
+        tile.scale.set(1.08);
+        this.actions.add(mod.id);
+      });
       return { tile, id: mod.id };
     });
-    this.poolLayer.addChild(...this.poolTiles.map(t => t.tile));
+    this.poolLayer.addChild(...this.poolTiles.map((t) => t.tile));
   }
 
   private release(tile: Container, handle?: DragHandle) {
@@ -171,7 +238,8 @@ export class MixTable extends Container {
   private nearest(x: number): number {
     const ox = this.view ? tableLayout(this.view).ox : 0;
     let best = 0;
-    for (let i = 1; i < this.stops.length; i++) if (Math.abs(ox + SLOT_XS[i] - x) < Math.abs(ox + SLOT_XS[best] - x)) best = i;
+    for (let i = 1; i < this.stops.length; i++)
+      if (Math.abs(ox + SLOT_XS[i] - x) < Math.abs(ox + SLOT_XS[best] - x)) best = i;
     return best;
   }
 
@@ -191,9 +259,15 @@ export class MixTable extends Container {
     this.dragging = -1;
     const s = this.stops[p];
     const home = s.handle.home;
-    const back = () => { this.restoreSlots(); return false; };
+    const back = () => {
+      this.restoreSlots();
+      return false;
+    };
     if (this.cancelled) return back();
-    if (Math.hypot(x - home.x, y - home.y) < 14) { this.actions.hear(p); return back(); }
+    if (Math.hypot(x - home.x, y - home.y) < 14) {
+      this.actions.hear(p);
+      return back();
+    }
     if (y - home.y > OFF_ROW) return this.actions.remove(p) || back();
     const to = this.nearest(x);
     if (to === p) return back();
@@ -204,11 +278,15 @@ export class MixTable extends Container {
 
   private restoreSlots() {
     const ox = this.view ? tableLayout(this.view).ox : 0;
-    this.stops.forEach((s, i) => { s.x = ox + SLOT_XS[i]; });
+    this.stops.forEach((s, i) => {
+      s.x = ox + SLOT_XS[i];
+    });
   }
 
   /** All five slots are full: one gentle wiggle of the row. Not a wrong answer: no boing, no glow. */
-  wiggle() { this.wiggling = 0.4; }
+  wiggle() {
+    this.wiggling = 0.4;
+  }
 
   layout(view: View) {
     this.view = view;
@@ -219,18 +297,42 @@ export class MixTable extends Container {
     const L = tableLayout(view);
     const { ox, rowY } = L;
     this.scrim.clear().rect(0, 0, view.w, view.h).fill({ color: wood.light, alpha: 0.92 });
-    const poolTop = L.poolRows[0] - SLOT / 2 - 20, poolBottom = L.poolRows[L.poolRows.length - 1] + SLOT / 2 + 20;
-    this.panels.clear()
-      .roundRect(ox + SLOT_XS[0] - SLOT / 2 - 20, rowY - SLOT / 2 - 20, SLOT_XS[4] - SLOT_XS[0] + SLOT + 40, SLOT + 40, 32).fill({ color: 0xffffff, alpha: 0.8 })
-      .roundRect(ox + POOL_XS[0] - SLOT / 2 - 20, poolTop, POOL_XS[4] - POOL_XS[0] + SLOT + 40, poolBottom - poolTop, 32).fill({ color: 0xffffff, alpha: 0.6 });
+    const poolTop = L.poolRows[0] - SLOT / 2 - 20,
+      poolBottom = L.poolRows[L.poolRows.length - 1] + SLOT / 2 + 20;
+    this.panels
+      .clear()
+      .roundRect(
+        ox + SLOT_XS[0] - SLOT / 2 - 20,
+        rowY - SLOT / 2 - 20,
+        SLOT_XS[4] - SLOT_XS[0] + SLOT + 40,
+        SLOT + 40,
+        32,
+      )
+      .fill({ color: 0xffffff, alpha: 0.8 })
+      .roundRect(
+        ox + POOL_XS[0] - SLOT / 2 - 20,
+        poolTop,
+        POOL_XS[4] - POOL_XS[0] + SLOT + 40,
+        poolBottom - poolTop,
+        32,
+      )
+      .fill({ color: 0xffffff, alpha: 0.6 });
     // Room for more: a faint dashed outline in each empty slot.
     this.outlines.clear();
     for (let i = this.stops.length; i < MIX_MAX; i++) {
-      const cx = ox + SLOT_XS[i], h = SLOT / 2 - 6;
+      const cx = ox + SLOT_XS[i],
+        h = SLOT / 2 - 6;
       for (let k = -h; k < h; k += 20) {
         const e = Math.min(k + 10, h);
-        this.outlines.moveTo(cx + k, rowY - h).lineTo(cx + e, rowY - h).moveTo(cx + k, rowY + h).lineTo(cx + e, rowY + h)
-          .moveTo(cx - h, rowY + k).lineTo(cx - h, rowY + e).moveTo(cx + h, rowY + k).lineTo(cx + h, rowY + e);
+        this.outlines
+          .moveTo(cx + k, rowY - h)
+          .lineTo(cx + e, rowY - h)
+          .moveTo(cx + k, rowY + h)
+          .lineTo(cx + e, rowY + h)
+          .moveTo(cx - h, rowY + k)
+          .lineTo(cx - h, rowY + e)
+          .moveTo(cx + h, rowY + k)
+          .lineTo(cx + h, rowY + e);
       }
     }
     this.outlines.stroke({ width: 4, color: ink, alpha: 0.25, cap: 'round' });
@@ -251,18 +353,32 @@ export class MixTable extends Container {
 
   /** Every target as a box in view units, for the layout test and scripted checks. */
   targets(): { name: string; x: number; y: number; w: number; h: number }[] {
-    const box = (name: string, c: Container, w: number) => ({ name, x: c.x - w / 2, y: c.y - w / 2, w, h: w });
+    const box = (name: string, c: Container, w: number) => ({
+      name,
+      x: c.x - w / 2,
+      y: c.y - w / 2,
+      w,
+      h: w,
+    });
     return [
-      box('back', this.backButton, 100), box('play', this.playButton, 140), box('reset', this.resetButton, 112),
-      ...(this.prevButton.visible ? [box('prev', this.prevButton, 100), box('next', this.nextButton, 100)] : []),
+      box('back', this.backButton, 100),
+      box('play', this.playButton, 140),
+      box('reset', this.resetButton, 112),
+      ...(this.prevButton.visible
+        ? [box('prev', this.prevButton, 100), box('next', this.nextButton, 100)]
+        : []),
       ...this.stops.map((s, i) => box(`slot${i}`, s.tile, SLOT)),
       ...this.poolTiles.map((t, i) => box(`pool${i}`, t.tile, SLOT)),
     ];
   }
 
-  slotAt(p: number): Container | undefined { return this.stops[p]?.tile; }
+  slotAt(p: number): Container | undefined {
+    return this.stops[p]?.tile;
+  }
   /** A pool tile on the current page, by game ID. */
-  poolTile(id: string): Container | undefined { return this.poolTiles.find(t => t.id === id)?.tile; }
+  poolTile(id: string): Container | undefined {
+    return this.poolTiles.find((t) => t.id === id)?.tile;
+  }
 
   update(dt: number) {
     this.resetButton.update(dt);
@@ -273,14 +389,18 @@ export class MixTable extends Container {
     for (const t of this.poolTiles) t.tile.scale.set(Math.max(1, t.tile.scale.x - dt * 0.6));
     if (this.wiggling > 0) {
       this.wiggling = Math.max(0, this.wiggling - dt);
-      this.row.x = Math.sin(this.wiggling * 40) * 10 * this.wiggling / 0.4;
+      this.row.x = (Math.sin(this.wiggling * 40) * 10 * this.wiggling) / 0.4;
     }
   }
 
   override destroy(options?: Parameters<Container['destroy']>[0]) {
     window.removeEventListener('pointercancel', this.onCancel, true);
     window.removeEventListener('keydown', this.onKey);
-    for (const s of this.stops) { s.handle.destroy(); this.tw.kill(s.tile); this.tw.kill(s.tile.scale); }
+    for (const s of this.stops) {
+      s.handle.destroy();
+      this.tw.kill(s.tile);
+      this.tw.kill(s.tile.scale);
+    }
     this.stops = [];
     super.destroy(options);
   }

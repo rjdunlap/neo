@@ -44,19 +44,151 @@ export interface SlidePlan {
 }
 
 export const PLANS: SlidePlan[] = [
-  { cols: 5, rows: 4, fish: 1, soft: 0, rocks: 3, moves: [1, 2], fair: true, maxSingles: 1, puzzles: 3, name: 'Slide to the fish in one or two slides' },
-  { cols: 6, rows: 4, fish: 1, soft: 0, rocks: 4, moves: [2, 3], fair: true, puzzles: 3, name: 'Plan two or three slides; rocks are the only way to stop' },
-  { cols: 6, rows: 5, fish: 1, soft: 0, rocks: 5, moves: [3, 4], fair: true, puzzles: 3, name: 'Three or four slides around the rocks' },
-  { cols: 6, rows: 5, fish: 2, soft: 0, rocks: 5, moves: [3, 5], fair: true, puzzles: 2, name: 'Two fish to collect, in any order' },
-  { cols: 7, rows: 5, fish: 2, soft: 2, rocks: 5, moves: [4, 6], puzzles: 2, name: 'Soft snow stops the penguin: use it to plan a longer route' },
-  { cols: 6, rows: 5, fish: 1, soft: 0, rocks: 4, blocks: 1, moves: [3, 5], puzzles: 2, name: 'Push an ice block: it skates until it bumps into something, so park it to make a stop' },
-  { cols: 6, rows: 5, fish: 2, soft: 0, rocks: 4, blocks: 1, moves: [4, 6], puzzles: 2, name: 'Park an ice block to collect two fish: plan how each new stopping place helps the route' },
-  { cols: 6, rows: 5, fish: 2, soft: 1, rocks: 4, blocks: 1, moves: [4, 6], puzzles: 2, name: 'Park a block and use soft snow to stop on a route to both fish' },
-  { cols: 6, rows: 5, fish: 1, soft: 0, rocks: 3, blocks: 2, pairedBlocks: true, moves: [6, 9], puzzles: 2, name: 'Use two blocks to plan stopping places on the way to a fish' },
-  { cols: 7, rows: 5, fish: 3, soft: 0, rocks: 5, moves: [5, 8], apartFromStart: true, puzzles: 2, name: 'Three fish: plan which to eat first, second and third' },
-  { cols: 5, rows: 4, fish: 1, soft: 0, rocks: 3, moves: [3, 3], predict: true, puzzles: 2, name: 'Where will it stop? An arrow shows the slide; tap where the penguin will stop (two ponds, three slides each)' },
-  { cols: 6, rows: 5, fish: 0, soft: 1, rocks: 3, blocks: 1, stars: 1, moves: [3, 6], puzzles: 2, name: 'A block onto the star: plan where to push the ice block from so it stops on the star' },
-  { cols: 6, rows: 5, fish: 1, soft: 0, rocks: 4, pal: true, moves: [4, 7], puzzles: 2, name: 'Two penguins: choose which to slide, and park one as a stop for the other' },
+  {
+    cols: 5,
+    rows: 4,
+    fish: 1,
+    soft: 0,
+    rocks: 3,
+    moves: [1, 2],
+    fair: true,
+    maxSingles: 1,
+    puzzles: 3,
+    name: 'Slide to the fish in one or two slides',
+  },
+  {
+    cols: 6,
+    rows: 4,
+    fish: 1,
+    soft: 0,
+    rocks: 4,
+    moves: [2, 3],
+    fair: true,
+    puzzles: 3,
+    name: 'Plan two or three slides; rocks are the only way to stop',
+  },
+  {
+    cols: 6,
+    rows: 5,
+    fish: 1,
+    soft: 0,
+    rocks: 5,
+    moves: [3, 4],
+    fair: true,
+    puzzles: 3,
+    name: 'Three or four slides around the rocks',
+  },
+  {
+    cols: 6,
+    rows: 5,
+    fish: 2,
+    soft: 0,
+    rocks: 5,
+    moves: [3, 5],
+    fair: true,
+    puzzles: 2,
+    name: 'Two fish to collect, in any order',
+  },
+  {
+    cols: 7,
+    rows: 5,
+    fish: 2,
+    soft: 2,
+    rocks: 5,
+    moves: [4, 6],
+    puzzles: 2,
+    name: 'Soft snow stops the penguin: use it to plan a longer route',
+  },
+  {
+    cols: 6,
+    rows: 5,
+    fish: 1,
+    soft: 0,
+    rocks: 4,
+    blocks: 1,
+    moves: [3, 5],
+    puzzles: 2,
+    name: 'Push an ice block: it skates until it bumps into something, so park it to make a stop',
+  },
+  {
+    cols: 6,
+    rows: 5,
+    fish: 2,
+    soft: 0,
+    rocks: 4,
+    blocks: 1,
+    moves: [4, 6],
+    puzzles: 2,
+    name: 'Park an ice block to collect two fish: plan how each new stopping place helps the route',
+  },
+  {
+    cols: 6,
+    rows: 5,
+    fish: 2,
+    soft: 1,
+    rocks: 4,
+    blocks: 1,
+    moves: [4, 6],
+    puzzles: 2,
+    name: 'Park a block and use soft snow to stop on a route to both fish',
+  },
+  {
+    cols: 6,
+    rows: 5,
+    fish: 1,
+    soft: 0,
+    rocks: 3,
+    blocks: 2,
+    pairedBlocks: true,
+    moves: [6, 9],
+    puzzles: 2,
+    name: 'Use two blocks to plan stopping places on the way to a fish',
+  },
+  {
+    cols: 7,
+    rows: 5,
+    fish: 3,
+    soft: 0,
+    rocks: 5,
+    moves: [5, 8],
+    apartFromStart: true,
+    puzzles: 2,
+    name: 'Three fish: plan which to eat first, second and third',
+  },
+  {
+    cols: 5,
+    rows: 4,
+    fish: 1,
+    soft: 0,
+    rocks: 3,
+    moves: [3, 3],
+    predict: true,
+    puzzles: 2,
+    name: 'Where will it stop? An arrow shows the slide; tap where the penguin will stop (two ponds, three slides each)',
+  },
+  {
+    cols: 6,
+    rows: 5,
+    fish: 0,
+    soft: 1,
+    rocks: 3,
+    blocks: 1,
+    stars: 1,
+    moves: [3, 6],
+    puzzles: 2,
+    name: 'A block onto the star: plan where to push the ice block from so it stops on the star',
+  },
+  {
+    cols: 6,
+    rows: 5,
+    fish: 1,
+    soft: 0,
+    rocks: 4,
+    pal: true,
+    moves: [4, 7],
+    puzzles: 2,
+    name: 'Two penguins: choose which to slide, and park one as a stop for the other',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -93,7 +225,76 @@ export interface SlidePuzzle {
 }
 
 /** Small authored ponds: freezing either block makes the best route worse or impossible. */
-export const PAIRED_BLOCK_PONDS: readonly SlidePuzzle[] = [{"cols":6,"rows":5,"rocks":[{"x":5,"y":3},{"x":3,"y":3},{"x":4,"y":1}],"soft":[],"blocks":[{"x":1,"y":3},{"x":3,"y":2}],"start":{"x":0,"y":3},"fish":[{"x":2,"y":3}],"best":9},{"cols":6,"rows":5,"rocks":[{"x":5,"y":3},{"x":5,"y":4},{"x":4,"y":3}],"soft":[],"blocks":[{"x":0,"y":3},{"x":5,"y":1}],"start":{"x":4,"y":4},"fish":[{"x":0,"y":0}],"best":9},{"cols":6,"rows":5,"rocks":[{"x":4,"y":2},{"x":3,"y":0},{"x":0,"y":0}],"soft":[],"blocks":[{"x":2,"y":2},{"x":1,"y":2}],"start":{"x":1,"y":4},"fish":[{"x":1,"y":0}],"best":7},{"cols":6,"rows":5,"rocks":[{"x":0,"y":0},{"x":5,"y":1},{"x":0,"y":2}],"soft":[],"blocks":[{"x":4,"y":3},{"x":4,"y":4}],"start":{"x":3,"y":2},"fish":[{"x":0,"y":1}],"best":6}];
+export const PAIRED_BLOCK_PONDS: readonly SlidePuzzle[] = [
+  {
+    cols: 6,
+    rows: 5,
+    rocks: [
+      { x: 5, y: 3 },
+      { x: 3, y: 3 },
+      { x: 4, y: 1 },
+    ],
+    soft: [],
+    blocks: [
+      { x: 1, y: 3 },
+      { x: 3, y: 2 },
+    ],
+    start: { x: 0, y: 3 },
+    fish: [{ x: 2, y: 3 }],
+    best: 9,
+  },
+  {
+    cols: 6,
+    rows: 5,
+    rocks: [
+      { x: 5, y: 3 },
+      { x: 5, y: 4 },
+      { x: 4, y: 3 },
+    ],
+    soft: [],
+    blocks: [
+      { x: 0, y: 3 },
+      { x: 5, y: 1 },
+    ],
+    start: { x: 4, y: 4 },
+    fish: [{ x: 0, y: 0 }],
+    best: 9,
+  },
+  {
+    cols: 6,
+    rows: 5,
+    rocks: [
+      { x: 4, y: 2 },
+      { x: 3, y: 0 },
+      { x: 0, y: 0 },
+    ],
+    soft: [],
+    blocks: [
+      { x: 2, y: 2 },
+      { x: 1, y: 2 },
+    ],
+    start: { x: 1, y: 4 },
+    fish: [{ x: 1, y: 0 }],
+    best: 7,
+  },
+  {
+    cols: 6,
+    rows: 5,
+    rocks: [
+      { x: 0, y: 0 },
+      { x: 5, y: 1 },
+      { x: 0, y: 2 },
+    ],
+    soft: [],
+    blocks: [
+      { x: 4, y: 3 },
+      { x: 4, y: 4 },
+    ],
+    start: { x: 3, y: 2 },
+    fish: [{ x: 0, y: 1 }],
+    best: 6,
+  },
+];
 
 /** 0 right, 1 down, 2 left, 3 up. */
 export type Dir = 0 | 1 | 2 | 3;
@@ -102,13 +303,19 @@ const DY = [0, 1, 0, -1];
 const key = (c: Cell) => `${c.x},${c.y}`;
 
 /** Which way a tap on the ice sends the penguin: the side of it the tap is on, along the longer way. */
-export const tapDirection = (dx: number, dy: number): Dir => (Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 0 : 2) : dy > 0 ? 1 : 3);
+export const tapDirection = (dx: number, dy: number): Dir =>
+  Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 0 : 2) : dy > 0 ? 1 : 3;
 
 /** The cell beside `from` in direction `dir`: where the how-to card's ghost finger taps to send the penguin that way. */
 export const beside = (from: Cell, dir: Dir): Cell => ({ x: from.x + DX[dir], y: from.y + DY[dir] });
 
 /** Where a slide stops, and every cell it passes over on the way (including where it stops). */
-export function slide(p: SlidePuzzle, from: Cell, dir: Dir, blocks: Cell[] = p.blocks ?? []): { to: Cell; passed: Cell[] } {
+export function slide(
+  p: SlidePuzzle,
+  from: Cell,
+  dir: Dir,
+  blocks: Cell[] = p.blocks ?? [],
+): { to: Cell; passed: Cell[] } {
   const rocks = new Set([...p.rocks, ...blocks].map(key));
   const soft = new Set(p.soft.map(key));
   let x = from.x;
@@ -172,7 +379,12 @@ export function move(p: SlidePuzzle, from: Cell, dir: Dir, blocks: Cell[] = p.bl
   if (index < 0) return null;
   const dest = skate(p, ahead, dir, blocks);
   if (!dest) return null;
-  return { to: from, passed: [], blocks: blocks.map((b, i) => (i === index ? dest : b)), pushed: { index, to: dest } };
+  return {
+    to: from,
+    passed: [],
+    blocks: blocks.map((b, i) => (i === index ? dest : b)),
+    pushed: { index, to: dest },
+  };
 }
 
 const blockKey = (blocks: Cell[]) => blocks.map(key).sort().join(';');
@@ -187,10 +399,17 @@ export function solved(p: SlidePuzzle, have: number, blocks: Cell[]): boolean {
  * The fewest slides from here (with `have` fish already eaten) to eat them all, and the first
  * slide of one such route; `moves` is -1 when the fish can't be reached any more.
  */
-export function solve(p: SlidePuzzle, from: Cell, have = 0, blocks: Cell[] = p.blocks ?? []): { moves: number; first: Dir | -1 } {
+export function solve(
+  p: SlidePuzzle,
+  from: Cell,
+  have = 0,
+  blocks: Cell[] = p.blocks ?? [],
+): { moves: number; first: Dir | -1 } {
   if (solved(p, have, blocks)) return { moves: 0, first: -1 };
   const seen = new Set<string>([`${key(from)},${have},${blockKey(blocks)}`]);
-  let frontier: { at: Cell; have: number; blocks: Cell[]; first: Dir | -1 }[] = [{ at: from, have, blocks, first: -1 }];
+  let frontier: { at: Cell; have: number; blocks: Cell[]; first: Dir | -1 }[] = [
+    { at: from, have, blocks, first: -1 },
+  ];
   for (let depth = 1; frontier.length && depth <= 30; depth++) {
     const next: typeof frontier = [];
     for (const s of frontier) {
@@ -255,18 +474,29 @@ export interface PairStep {
  * One slide on a two-penguin pond: penguin `who` slides from `spots[who]`, the other one stopping it
  * like a rock. Null when it cannot move (a bump); penguins never push each other.
  */
-export function movePair(p: SlidePuzzle, spots: readonly Cell[], who: 0 | 1, dir: Dir): { spots: Cell[]; passed: Cell[] } | null {
+export function movePair(
+  p: SlidePuzzle,
+  spots: readonly Cell[],
+  who: 0 | 1,
+  dir: Dir,
+): { spots: Cell[]; passed: Cell[] } | null {
   const { to, passed } = slide(p, spots[who], dir, [spots[1 - who]]);
   if (!passed.length) return null;
   return { spots: spots.map((c, i) => (i === who ? to : c)), passed };
 }
 
 /** The fewest slides of either penguin to eat every fish from here, and the first of one such route (null when none is left). */
-export function solvePair(p: SlidePuzzle, spots: readonly Cell[], have = 0): { moves: number; first: PairStep | null } {
+export function solvePair(
+  p: SlidePuzzle,
+  spots: readonly Cell[],
+  have = 0,
+): { moves: number; first: PairStep | null } {
   if (solved(p, have, [])) return { moves: 0, first: null };
   const state = (s: readonly Cell[], h: number) => `${key(s[0])},${key(s[1])},${h}`;
   const seen = new Set<string>([state(spots, have)]);
-  let frontier: { spots: readonly Cell[]; have: number; first: PairStep | null }[] = [{ spots, have, first: null }];
+  let frontier: { spots: readonly Cell[]; have: number; first: PairStep | null }[] = [
+    { spots, have, first: null },
+  ];
   for (let depth = 1; frontier.length && depth <= 30; depth++) {
     const next: typeof frontier = [];
     for (const s of frontier) {
@@ -292,16 +522,32 @@ export function solvePair(p: SlidePuzzle, spots: readonly Cell[], have = 0): { m
 /** How many slides each penguin alone needs with the other frozen like a rock (-1: it cannot reach every fish). */
 export function alone(p: SlidePuzzle): [number, number] {
   const pal = p.pal!;
-  return [solve({ ...p, rocks: [...p.rocks, pal], pal: undefined }, p.start).moves, solve({ ...p, rocks: [...p.rocks, p.start], pal: undefined }, pal).moves];
+  return [
+    solve({ ...p, rocks: [...p.rocks, pal], pal: undefined }, p.start).moves,
+    solve({ ...p, rocks: [...p.rocks, p.start], pal: undefined }, pal).moves,
+  ];
 }
 
 /** A pond, unlike the ones already made this round when the plan caps single-slide ponds. */
 export function makePuzzle(plan: SlidePlan, rng: Rng, earlier: readonly SlidePuzzle[] = []): SlidePuzzle {
-  const singlesLeft = plan.maxSingles === undefined || earlier.filter((e) => e.best === 1).length < plan.maxSingles;
+  const singlesLeft =
+    plan.maxSingles === undefined || earlier.filter((e) => e.best === 1).length < plan.maxSingles;
   if (plan.pairedBlocks) {
-    const p = rng.pick(PAIRED_BLOCK_PONDS), flipX = rng.chance(0.5), flipY = rng.chance(0.5);
-    const cell = (c: Cell): Cell => ({x: flipX ? p.cols - 1 - c.x : c.x, y: flipY ? p.rows - 1 - c.y : c.y});
-    return {...p, start: cell(p.start), rocks: p.rocks.map(cell), soft: p.soft.map(cell), fish: p.fish.map(cell), blocks: p.blocks!.map(cell)};
+    const p = rng.pick(PAIRED_BLOCK_PONDS),
+      flipX = rng.chance(0.5),
+      flipY = rng.chance(0.5);
+    const cell = (c: Cell): Cell => ({
+      x: flipX ? p.cols - 1 - c.x : c.x,
+      y: flipY ? p.rows - 1 - c.y : c.y,
+    });
+    return {
+      ...p,
+      start: cell(p.start),
+      rocks: p.rocks.map(cell),
+      soft: p.soft.map(cell),
+      fish: p.fish.map(cell),
+      blocks: p.blocks!.map(cell),
+    };
   }
   for (let attempt = 0; attempt < 2000; attempt++) {
     const cells: Cell[] = [];
@@ -315,7 +561,18 @@ export function makePuzzle(plan: SlidePlan, rng: Rng, earlier: readonly SlidePuz
     const blocks = pool.splice(0, plan.blocks ?? 0);
     // Stars come from what is left, so never under a rock, a snow patch, a block or the penguin.
     const stars = pool.splice(0, plan.stars ?? 0);
-    const p: SlidePuzzle = { cols: plan.cols, rows: plan.rows, rocks, soft, ...(blocks.length ? { blocks } : {}), ...(stars.length ? { stars } : {}), start, ...(pal ? { pal } : {}), fish, best: 0 };
+    const p: SlidePuzzle = {
+      cols: plan.cols,
+      rows: plan.rows,
+      rocks,
+      soft,
+      ...(blocks.length ? { blocks } : {}),
+      ...(stars.length ? { stars } : {}),
+      start,
+      ...(pal ? { pal } : {}),
+      fish,
+      best: 0,
+    };
     const { moves } = pal ? solvePair(p, [start, pal]) : solve(p, start);
     if (moves < plan.moves[0] || moves > plan.moves[1]) continue;
     if (moves === 1 && !singlesLeft) continue;
@@ -363,13 +620,23 @@ export function makePrediction(plan: SlidePlan, rng: Rng): PredictionPond {
     const pool = rng.shuffle(cells);
     const start = pool.pop()!;
     const rocks = pool.splice(0, plan.rocks);
-    const p: SlidePuzzle = { cols: plan.cols, rows: plan.rows, rocks, soft: [], start, fish: [], best: PREDICTIONS };
+    const p: SlidePuzzle = {
+      cols: plan.cols,
+      rows: plan.rows,
+      rocks,
+      soft: [],
+      start,
+      fish: [],
+      best: PREDICTIONS,
+    };
     const slides: ShownSlide[] = [];
     const passed: Cell[][] = [];
     let at = start;
     for (let n = 0; n < PREDICTIONS; n++) {
       const last = slides[slides.length - 1];
-      const ways = ([0, 1, 2, 3] as Dir[]).filter((d) => slide(p, at, d).passed.length && (!last || d !== (last.dir + 2) % 4));
+      const ways = ([0, 1, 2, 3] as Dir[]).filter(
+        (d) => slide(p, at, d).passed.length && (!last || d !== (last.dir + 2) % 4),
+      );
       if (!ways.length) break;
       const dir = rng.pick(ways);
       const s = slide(p, at, dir);
@@ -392,7 +659,9 @@ const far = (s: ShownSlide) => Math.abs(s.to.x - s.from.x) + Math.abs(s.to.y - s
 /** What stopped a slide that ended at `to` going `dir`: a rock (and which cell it is on), or the pond's edge. */
 export function stopper(p: SlidePuzzle, to: Cell, dir: Dir): { kind: 'rock'; cell: Cell } | { kind: 'edge' } {
   const next = beside(to, dir);
-  return p.rocks.some((r) => r.x === next.x && r.y === next.y) ? { kind: 'rock', cell: next } : { kind: 'edge' };
+  return p.rocks.some((r) => r.x === next.x && r.y === next.y)
+    ? { kind: 'rock', cell: next }
+    : { kind: 'edge' };
 }
 
 /** The pond cell under a point in board units, clamped to the pond. */
@@ -409,7 +678,10 @@ export const FISH_COLORS = ['orange', 'pink', 'teal'] as const;
 export type FishColor = (typeof FISH_COLORS)[number];
 
 /** A pond's seeded look: how its rocks are drawn and its fish's colour. */
-export const pickLook = (rng: Rng): { rock: RockLook; fish: FishColor } => ({ rock: rng.pick(ROCK_LOOKS), fish: rng.pick(FISH_COLORS) });
+export const pickLook = (rng: Rng): { rock: RockLook; fish: FishColor } => ({
+  rock: rng.pick(ROCK_LOOKS),
+  fish: rng.pick(FISH_COLORS),
+});
 
 /** Extra slides allowed before the hint arrow appears. */
 export const HINT_AFTER = 3;

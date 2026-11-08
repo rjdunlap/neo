@@ -1,12 +1,29 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { buildMatch, MATCH_CARS, MATCH_UNITS, structure, validPieces } from './logic';
-import { ODD_CARS, ANIMAL_TRIOS, SHAPE_FAMILIES, buildTrain, CHOICES, NUMBER_CARS, NUMBER_TOP, PAIR_CARS, PAIR_CHOICES, PATTERN_PLANS, TUNNEL_HIDDEN, pieceColor, pieceShape, wantedChoice } from './logic';
+import {
+  ODD_CARS,
+  ANIMAL_TRIOS,
+  SHAPE_FAMILIES,
+  buildTrain,
+  CHOICES,
+  NUMBER_CARS,
+  NUMBER_TOP,
+  PAIR_CARS,
+  PAIR_CHOICES,
+  PATTERN_PLANS,
+  TUNNEL_HIDDEN,
+  pieceColor,
+  pieceShape,
+  wantedChoice,
+} from './logic';
 
 /** The shortest repeat that explains every car showing (empty cars are null). */
 function shortestRepeat(cars: (number | null)[]): number {
   for (let p = 1; p <= cars.length; p++) {
-    const ok = cars.every((c, i) => c === null || cars.every((d, j) => d === null || (i - j) % p !== 0 || c === d));
+    const ok = cars.every(
+      (c, i) => c === null || cars.every((d, j) => d === null || (i - j) % p !== 0 || c === d),
+    );
     if (ok) return p;
   }
   return cars.length;
@@ -20,7 +37,10 @@ describe('Pattern Train', () => {
         if (plan.numberSteps) {
           const step = sequence[1] - sequence[0];
           expect(plan.numberSteps).toContain(step);
-          expect(sequence.every((value, i) => i === 0 || value - sequence[i - 1] === step), plan.name).toBe(true);
+          expect(
+            sequence.every((value, i) => i === 0 || value - sequence[i - 1] === step),
+            plan.name,
+          ).toBe(true);
           expect(new Set(choices[0]).size, plan.name).toBe(CHOICES);
           continue;
         }
@@ -38,7 +58,9 @@ describe('Pattern Train', () => {
         }
         // Different letters of the pattern look (or sound) different.
         const used = new Set(plan.pattern);
-        expect(new Set(plan.pattern.map((slot) => sequence[plan.pattern.indexOf(slot)])).size).toBe(used.size);
+        expect(new Set(plan.pattern.map((slot) => sequence[plan.pattern.indexOf(slot)])).size).toBe(
+          used.size,
+        );
       }
     }
   });
@@ -65,7 +87,8 @@ describe('Pattern Train', () => {
 
   it('fits every train on the track: nine cars at most', () => {
     for (const plan of PATTERN_PLANS) {
-      for (let seed = 1; seed <= 200; seed++) expect(buildTrain(plan, new Rng(seed)).sequence.length, plan.name).toBeLessThanOrEqual(9);
+      for (let seed = 1; seed <= 200; seed++)
+        expect(buildTrain(plan, new Rng(seed)).sequence.length, plan.name).toBeLessThanOrEqual(9);
     }
   });
 
@@ -112,7 +135,9 @@ describe('Pattern Train', () => {
     const plan = PATTERN_PLANS.find((p) => p.numberSteps)!;
     const answers = new Set<number>();
     const places = new Set<number>();
-    let smallest = 0, largest = 0, notStep = 0;
+    let smallest = 0,
+      largest = 0,
+      notStep = 0;
     for (let seed = 1; seed <= 200; seed++) {
       const { sequence, targets, choices } = buildTrain(plan, new Rng(seed));
       const step = sequence[1] - sequence[0];
@@ -148,7 +173,9 @@ describe('Pattern Train', () => {
 
   it('gives color and shape their own cycles, with the half-right pieces on offer', () => {
     const plan = PATTERN_PLANS.find((p) => p.kind === 'pair')!;
-    const places = new Set<number>(), spots = new Set<number>(), looks = new Set<string>();
+    const places = new Set<number>(),
+      spots = new Set<number>(),
+      looks = new Set<string>();
     for (let seed = 1; seed <= 200; seed++) {
       const { sequence, targets, choices, look } = buildTrain(plan, new Rng(seed));
       expect(sequence).toHaveLength(PAIR_CARS);
@@ -157,12 +184,14 @@ describe('Pattern Train', () => {
       expect(new Set(look!.shapes).size).toBe(2);
       looks.add(look!.colors.join() + look!.shapes.join());
       // The two attributes run on different periods: color alternates, shape holds for two cars.
-      const colors = sequence.map(pieceColor), shapes = sequence.map(pieceShape);
+      const colors = sequence.map(pieceColor),
+        shapes = sequence.map(pieceShape);
       expect(colors.every((c, i) => i < 2 || c === colors[i - 2])).toBe(true);
       expect(colors.some((c, i) => i > 0 && c === colors[i - 1])).toBe(false);
       expect(shapes.every((s, i) => i < 4 || s === shapes[i - 4])).toBe(true);
       expect(shapes.some((s, i) => i > 0 && s === shapes[i - 1])).toBe(true);
-      const t = targets[0], answer = sequence[t];
+      const t = targets[0],
+        answer = sequence[t];
       // A car four places away shows the whole answer, and the gap is never the first car.
       expect(t).toBeGreaterThanOrEqual(1);
       expect(sequence[t - 4] ?? sequence[t + 4]).toBe(answer);
@@ -170,10 +199,17 @@ describe('Pattern Train', () => {
       expect(choices[0]).toHaveLength(PAIR_CHOICES);
       expect(new Set(choices[0]).size).toBe(PAIR_CHOICES);
       const rest = choices[0].filter((c) => c !== answer);
-      expect(rest.filter((c) => pieceColor(c) === pieceColor(answer) && pieceShape(c) !== pieceShape(answer))).toHaveLength(1);
-      expect(rest.filter((c) => pieceShape(c) === pieceShape(answer) && pieceColor(c) !== pieceColor(answer))).toHaveLength(1);
-      expect(rest.filter((c) => pieceColor(c) !== pieceColor(answer) && pieceShape(c) !== pieceShape(answer))).toHaveLength(1);
-      places.add(t % 4); spots.add(choices[0].indexOf(answer));
+      expect(
+        rest.filter((c) => pieceColor(c) === pieceColor(answer) && pieceShape(c) !== pieceShape(answer)),
+      ).toHaveLength(1);
+      expect(
+        rest.filter((c) => pieceShape(c) === pieceShape(answer) && pieceColor(c) !== pieceColor(answer)),
+      ).toHaveLength(1);
+      expect(
+        rest.filter((c) => pieceColor(c) !== pieceColor(answer) && pieceShape(c) !== pieceShape(answer)),
+      ).toHaveLength(1);
+      places.add(t % 4);
+      spots.add(choices[0].indexOf(answer));
     }
     expect(places.size).toBe(4);
     expect(spots.size).toBe(PAIR_CHOICES);
@@ -186,7 +222,8 @@ describe('Pattern Train', () => {
     for (const plan of PATTERN_PLANS) {
       const seen = new Set<number | undefined>();
       for (let seed = 1; seed <= 200; seed++) seen.add(buildTrain(plan, new Rng(seed)).family);
-      const count = plan.kind === 'shape' ? SHAPE_FAMILIES.length : plan.kind === 'animal' ? ANIMAL_TRIOS.length : 0;
+      const count =
+        plan.kind === 'shape' ? SHAPE_FAMILIES.length : plan.kind === 'animal' ? ANIMAL_TRIOS.length : 0;
       expect(seen.size, plan.name).toBe(Math.max(count, 1));
       if (!count) expect(seen.has(undefined), plan.name).toBe(true);
     }
@@ -194,13 +231,16 @@ describe('Pattern Train', () => {
 
   it('builds the same train and family for the same seed', () => {
     const plan = PATTERN_PLANS[3];
-    const a = buildTrain(plan, new Rng(9)), b = buildTrain(plan, new Rng(9));
+    const a = buildTrain(plan, new Rng(9)),
+      b = buildTrain(plan, new Rng(9));
     expect(a).toEqual(b);
   });
 
   it('hides one wrong car in the spot-the-mistake trains, and the mended train is a perfect pattern', () => {
-    const extra = PATTERN_PLANS.find((p) => p.odd === 'extra')!, swap = PATTERN_PLANS.find((p) => p.odd === 'swap')!;
-    const extraAt = new Set<number>(), swapAt = new Set<number>();
+    const extra = PATTERN_PLANS.find((p) => p.odd === 'extra')!,
+      swap = PATTERN_PLANS.find((p) => p.odd === 'swap')!;
+    const extraAt = new Set<number>(),
+      swapAt = new Set<number>();
     for (let seed = 1; seed <= 300; seed++) {
       const a = buildTrain(extra, new Rng(seed));
       expect(a.sequence).toHaveLength(ODD_CARS.extra);
@@ -221,9 +261,14 @@ describe('Pattern Train', () => {
       expect(wrong).toEqual(b.targets);
       expect(shortestRepeat(b.sequence)).toBe(3);
       // The other cars show every place of the unit at least twice, so the right piece is certain.
-      for (let slot = 0; slot < 3; slot++) expect(b.shown!.filter((v, i) => i % 3 === slot && i !== b.targets[0] && v === b.sequence[slot])).toHaveLength(slot === b.targets[0] % 3 ? 2 : 3);
+      for (let slot = 0; slot < 3; slot++)
+        expect(
+          b.shown!.filter((v, i) => i % 3 === slot && i !== b.targets[0] && v === b.sequence[slot]),
+        ).toHaveLength(slot === b.targets[0] % 3 ? 2 : 3);
       expect(b.choices[0]).toEqual([0, 1, 2]);
-      expect(wantedChoice(b.sequence, b.targets, b.choices, 0)).toBe(b.choices[0].indexOf(b.sequence[b.targets[0]]));
+      expect(wantedChoice(b.sequence, b.targets, b.choices, 0)).toBe(
+        b.choices[0].indexOf(b.sequence[b.targets[0]]),
+      );
       swapAt.add(b.targets[0]);
     }
     expect(extraAt.size).toBe(ODD_CARS.extra - 2);
@@ -236,17 +281,29 @@ describe('Pattern Train', () => {
   });
 
   it('gives the row level exactly one row that repeats the model, the others other structures', () => {
-    const answers = new Set<number>(), units = new Set<string>();
+    const answers = new Set<number>(),
+      units = new Set<string>();
     for (let seed = 1; seed <= 300; seed++) {
       const r = buildMatch(new Rng(seed));
       expect(r.model).toHaveLength(MATCH_CARS);
       expect(r.rows).toHaveLength(3);
-      r.rows.forEach((row) => { expect(row).toHaveLength(MATCH_CARS); expect(row.every((p) => p >= 0 && p < 3)).toBe(true); });
-      const same = r.rows.map((row, i) => (structure(row) === structure(r.model) ? i : -1)).filter((i) => i >= 0);
+      r.rows.forEach((row) => {
+        expect(row).toHaveLength(MATCH_CARS);
+        expect(row.every((p) => p >= 0 && p < 3)).toBe(true);
+      });
+      const same = r.rows
+        .map((row, i) => (structure(row) === structure(r.model) ? i : -1))
+        .filter((i) => i >= 0);
       expect(same).toEqual([r.answer]);
       expect(new Set(r.rows.map(structure)).size).toBe(3);
-      expect(MATCH_UNITS.some((u) => structure(Array.from({ length: MATCH_CARS }, (_, i) => u[i % u.length])) === structure(r.model))).toBe(true);
-      answers.add(r.answer); units.add(structure(r.model));
+      expect(
+        MATCH_UNITS.some(
+          (u) =>
+            structure(Array.from({ length: MATCH_CARS }, (_, i) => u[i % u.length])) === structure(r.model),
+        ),
+      ).toBe(true);
+      answers.add(r.answer);
+      units.add(structure(r.model));
     }
     expect(answers.size).toBe(3);
     expect(units.size).toBe(MATCH_UNITS.length);

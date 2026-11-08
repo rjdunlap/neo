@@ -26,7 +26,9 @@ type Card = Container & { item: WearableId };
  */
 export class DressScene extends Scene {
   private readonly floor = new Graphics();
-  private readonly back = new RoundButton(arrowIcon(-1), swatch.white, 50, () => this.app.go.friends(this.id));
+  private readonly back = new RoundButton(arrowIcon(-1), swatch.white, 50, () =>
+    this.app.go.friends(this.id),
+  );
   /** At the root (RW06 slice 2): Home, to the right of Back. Classic's Dress keeps Back only. */
   private readonly home = new RoundButton(houseIcon(), swatch.white, 50, () => this.app.go.hub());
   private readonly off = new RoundButton(crossIcon(), swatch.white, OFF_RADIUS, () => this.allOff());
@@ -37,7 +39,10 @@ export class DressScene extends Scene {
   /** Taps since the scene opened: once she has started dressing, the opening instruction stays quiet. */
   private touched = 0;
 
-  constructor(app: App, private readonly id: string) {
+  constructor(
+    app: App,
+    private readonly id: string,
+  ) {
     super(app);
   }
 
@@ -55,16 +60,25 @@ export class DressScene extends Scene {
     const c = (this.friend = this.track(makeIndividual(who)));
     c.hitArea = c.touchArea(20);
     // A large friend instead of the corner guide, so a tap on it repeats the instruction.
-    onTap(c, () => {
-      this.touched++;
-      c.poke();
-      void voice.say('dress.pick', { pet: this.who?.name ?? who.name });
-    }, { cooldown: 300 });
+    onTap(
+      c,
+      () => {
+        this.touched++;
+        c.poke();
+        void voice.say('dress.pick', { pet: this.who?.name ?? who.name });
+      },
+      { cooldown: 300 },
+    );
     this.content.addChildAt(c, 1);
     for (const item of wearableBy(who.species)) {
       const card = new Container() as Card;
       card.item = item;
-      card.addChild(new Graphics().roundRect(-CARD / 2, -CARD / 2, CARD, CARD, 24).fill(0xffffff).stroke({ width: 5, color: swatch.teal.line }));
+      card.addChild(
+        new Graphics()
+          .roundRect(-CARD / 2, -CARD / 2, CARD, CARD, 24)
+          .fill(0xffffff)
+          .stroke({ width: 5, color: swatch.teal.line }),
+      );
       const t = itemTexture(item);
       if (t) {
         const s = new Sprite(t);
@@ -98,7 +112,14 @@ export class DressScene extends Scene {
       if (f) {
         const p = f.toGlobal({ x: f.touch.x, y: f.touch.y });
         const at = this.particles.toLocal(p);
-        this.particles.burst(at.x, at.y, { kind: 'star', colors: [swatch.yellow.fill, 0xffffff], count: 12, speed: [140, 280], gravity: 0, life: [0.4, 0.7] });
+        this.particles.burst(at.x, at.y, {
+          kind: 'star',
+          colors: [swatch.yellow.fill, 0xffffff],
+          count: 12,
+          speed: [140, 280],
+          gravity: 0,
+          life: [0.4, 0.7],
+        });
       }
       void voice.say(`dress.on.${item}`, { pet: who.name });
     } else {
@@ -123,7 +144,10 @@ export class DressScene extends Scene {
   private drawRings() {
     this.rings.clear();
     for (const c of this.cards.children as Card[]) {
-      if (this.worn.includes(c.item)) this.rings.roundRect(c.x - CARD / 2 - 8, c.y - CARD / 2 - 8, CARD + 16, CARD + 16, 28).stroke({ width: 7, color: swatch.yellow.line });
+      if (this.worn.includes(c.item))
+        this.rings
+          .roundRect(c.x - CARD / 2 - 8, c.y - CARD / 2 - 8, CARD + 16, CARD + 16, 28)
+          .stroke({ width: 7, color: swatch.yellow.line });
     }
   }
 

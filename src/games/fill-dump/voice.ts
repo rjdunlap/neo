@@ -3,7 +3,9 @@ export const VOICE = {
   'game.fill-dump': ['Fill and dump!'],
 
   'fill.capacity.guess': ['Which holds more? Tap your guess. Any guess is welcome!'],
-  'fill.capacity.pour': ['Pull the full container to the right to pour it all into the other one. Then tap the check.'],
+  'fill.capacity.pour': [
+    'Pull the full container to the right to pour it all into the other one. Then tap the check.',
+  ],
   'fill.capacity.answer': ['Tap the one that holds more. Tap the tray if you want to pour again.'],
   'fill.capacity.spill': ['Look — the water spilled over. The one we poured from holds more!'],
   'fill.capacity.room': ['Look — there is room left. The one we poured into holds more!'],
@@ -16,7 +18,9 @@ export const VOICE = {
   'fill.toomuch': ['Above the line! Tap the cup to empty it into the tray, then try again.'],
   'fill.more': ['Below the line! Pour a little more.'],
   'fill.emptyhint': ['The glowing cup can tip its water into the tray.'],
-  'fill.morehint': ['Pull the jug to the right until the water reaches the purple line. Tap the tray if the jug is empty.'],
+  'fill.morehint': [
+    'Pull the jug to the right until the water reaches the purple line. Tap the tray if the jug is empty.',
+  ],
   'fill.pourdone': ['Three cups filled to their lines!'],
   'fill.tip': ['Tap the {container} to tip it out!'],
   'fill.pair.tip': ['Tip out the full one!'],

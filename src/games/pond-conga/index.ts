@@ -11,7 +11,37 @@ import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { COURSES, courseMinimum, coursePonds, isCongaCourse } from './course';
-import { LEVELS, DX, DY, schoolStep, tapToward, firstCrumbs, foodAt, groupOf, openCrumbs, pondLook, headAfter, hintDir, hintPath, makePond, nextCrumb, opposite, planFor, startState, step, stepDue, STEP_GLIDE, swipeDir, SWIPE, type Cell, type Conga, type Dir, type Food, type Pond, type PondLook } from './logic';
+import {
+  LEVELS,
+  DX,
+  DY,
+  schoolStep,
+  tapToward,
+  firstCrumbs,
+  foodAt,
+  groupOf,
+  openCrumbs,
+  pondLook,
+  headAfter,
+  hintDir,
+  hintPath,
+  makePond,
+  nextCrumb,
+  opposite,
+  planFor,
+  startState,
+  step,
+  stepDue,
+  STEP_GLIDE,
+  swipeDir,
+  SWIPE,
+  type Cell,
+  type Conga,
+  type Dir,
+  type Food,
+  type Pond,
+  type PondLook,
+} from './logic';
 import { pondTouchLayout, type Slot } from './layout';
 
 const WATER = 0xa9e0f2;
@@ -26,7 +56,11 @@ const CATTAIL = 0x7a4f2e;
 /** What the tally counts: one bite of each food. */
 const FOOD_WORD: Record<Food, string> = { peas: 'peas', sweetcorn: 'bits of corn', oats: 'bites of oats' };
 /** Each food's colours for the pop when it is eaten. */
-const FOOD_SPARK: Record<Food, number[]> = { peas: [swatch.green.fill, 0xd6f5c8], sweetcorn: [swatch.yellow.fill, 0xfff3a0], oats: [OATS, 0xfff8e8] };
+const FOOD_SPARK: Record<Food, number[]> = {
+  peas: [swatch.green.fill, 0xd6f5c8],
+  sweetcorn: [swatch.yellow.fill, 0xfff3a0],
+  oats: [OATS, 0xfff8e8],
+};
 /** How much of a cell a duckling fills: a little less than all of it, so a line that turns does not pile up. */
 const DUCK = 0.86;
 /** A breather after a bonk, so there is time to choose where to go next. */
@@ -40,22 +74,45 @@ const DEMO_CRUMBS = 4;
 /** Seconds from the ghost finger's touch-down until its swipe has gone far enough to turn the line. */
 const DEMO_SWIPE = 0.5;
 /** Touch play: one finger steers, so one finger is followed. `x`, `y` is where it last came down or turned the line. */
-interface Finger { id: number; x: number; y: number; moved?: boolean }
+interface Finger {
+  id: number;
+  x: number;
+  y: number;
+  moved?: boolean;
+}
 
 /** One duckling facing right, filling about `size` units around (0, 0). The leader has a bigger head and a red bow. */
 function ducklingArt(size: number, leader: boolean): Container {
   const c = new Container();
-  const g = new Graphics(), s = size;
-  g.ellipse(-0.06 * s, 0, 0.4 * s, 0.31 * s).fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line });
+  const g = new Graphics(),
+    s = size;
+  g.ellipse(-0.06 * s, 0, 0.4 * s, 0.31 * s)
+    .fill(swatch.yellow.fill)
+    .stroke({ width: 3, color: swatch.yellow.line });
   g.ellipse(-0.14 * s, 0.02 * s, 0.17 * s, 0.1 * s).fill(swatch.yellow.line);
   const head = leader ? 0.25 : 0.2;
-  g.circle(0.27 * s, 0, head * s).fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line });
-  g.poly([0.27 * s + head * s * 0.8, -0.08 * s, 0.27 * s + head * s * 0.8 + 0.17 * s, 0, 0.27 * s + head * s * 0.8, 0.08 * s]).fill(swatch.orange.fill).stroke({ width: 2, color: swatch.orange.line });
+  g.circle(0.27 * s, 0, head * s)
+    .fill(swatch.yellow.fill)
+    .stroke({ width: 3, color: swatch.yellow.line });
+  g.poly([
+    0.27 * s + head * s * 0.8,
+    -0.08 * s,
+    0.27 * s + head * s * 0.8 + 0.17 * s,
+    0,
+    0.27 * s + head * s * 0.8,
+    0.08 * s,
+  ])
+    .fill(swatch.orange.fill)
+    .stroke({ width: 2, color: swatch.orange.line });
   g.circle(0.33 * s, -0.08 * s, 0.035 * s).fill(ink);
   g.circle(0.33 * s, 0.08 * s, 0.035 * s).fill(ink);
   if (leader) {
-    g.poly([0.08 * s, 0, 0.0, -0.1 * s, 0.0, 0.1 * s]).fill(swatch.red.fill).stroke({ width: 2, color: swatch.red.line });
-    g.poly([0.08 * s, 0, 0.16 * s, -0.1 * s, 0.16 * s, 0.1 * s]).fill(swatch.red.fill).stroke({ width: 2, color: swatch.red.line });
+    g.poly([0.08 * s, 0, 0.0, -0.1 * s, 0.0, 0.1 * s])
+      .fill(swatch.red.fill)
+      .stroke({ width: 2, color: swatch.red.line });
+    g.poly([0.08 * s, 0, 0.16 * s, -0.1 * s, 0.16 * s, 0.1 * s])
+      .fill(swatch.red.fill)
+      .stroke({ width: 2, color: swatch.red.line });
   }
   c.addChild(g);
   return c;
@@ -64,21 +121,45 @@ function ducklingArt(size: number, leader: boolean): Container {
 /** A little heap of duck-friendly food, about `size` across: three peas, four kernels of sweetcorn or a pile of oats. */
 function foodArt(kind: Food, size: number): Container {
   const c = new Container();
-  const g = new Graphics(), s = size;
+  const g = new Graphics(),
+    s = size;
   if (kind === 'peas') {
-    for (const [x, y] of [[-0.15, 0.1], [0.15, 0.1], [0, -0.14]]) {
-      g.circle(x * s, y * s, 0.16 * s).fill(swatch.green.fill).stroke({ width: 3, color: swatch.green.line });
+    for (const [x, y] of [
+      [-0.15, 0.1],
+      [0.15, 0.1],
+      [0, -0.14],
+    ]) {
+      g.circle(x * s, y * s, 0.16 * s)
+        .fill(swatch.green.fill)
+        .stroke({ width: 3, color: swatch.green.line });
       g.circle((x - 0.05) * s, (y - 0.05) * s, 0.045 * s).fill({ color: 0xffffff, alpha: 0.8 });
     }
   } else if (kind === 'sweetcorn') {
-    for (const [x, y] of [[-0.14, -0.13], [0.14, -0.13], [-0.14, 0.13], [0.14, 0.13]]) {
-      g.roundRect((x - 0.12) * s, (y - 0.11) * s, 0.24 * s, 0.22 * s, 0.08 * s).fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line });
+    for (const [x, y] of [
+      [-0.14, -0.13],
+      [0.14, -0.13],
+      [-0.14, 0.13],
+      [0.14, 0.13],
+    ]) {
+      g.roundRect((x - 0.12) * s, (y - 0.11) * s, 0.24 * s, 0.22 * s, 0.08 * s)
+        .fill(swatch.yellow.fill)
+        .stroke({ width: 3, color: swatch.yellow.line });
       g.ellipse((x - 0.04) * s, (y - 0.04) * s, 0.05 * s, 0.03 * s).fill({ color: 0xffffff, alpha: 0.6 });
     }
   } else {
     // A small pile of flakes, each turned its own way, the bottom row first.
-    for (const [x, y, t] of [[-0.18, 0.14, 0.4], [0.02, 0.17, -0.3], [0.2, 0.12, 0.6], [-0.1, -0.02, -0.5], [0.12, -0.03, 0.2], [0.0, -0.18, 0.9]]) {
-      const flake = new Graphics().ellipse(0, 0, 0.13 * s, 0.075 * s).fill(OATS).stroke({ width: 2.5, color: OATS_LINE });
+    for (const [x, y, t] of [
+      [-0.18, 0.14, 0.4],
+      [0.02, 0.17, -0.3],
+      [0.2, 0.12, 0.6],
+      [-0.1, -0.02, -0.5],
+      [0.12, -0.03, 0.2],
+      [0.0, -0.18, 0.9],
+    ]) {
+      const flake = new Graphics()
+        .ellipse(0, 0, 0.13 * s, 0.075 * s)
+        .fill(OATS)
+        .stroke({ width: 2.5, color: OATS_LINE });
       flake.position.set(x * s, y * s);
       flake.rotation = t;
       c.addChild(flake);
@@ -106,8 +187,9 @@ function reedArt(side: Dir, w: number, h: number): Graphics {
   };
   for (let t = 18; t < along + 10; t += 15) {
     const k = Math.round(t / 15);
-    const lean = ((k * 7) % 5 - 2) * 2;
-    const root = at(t, 0), tip = at(t + lean, 11 + (k % 3));
+    const lean = (((k * 7) % 5) - 2) * 2;
+    const root = at(t, 0),
+      tip = at(t + lean, 11 + (k % 3));
     g.moveTo(root.x, root.y).lineTo(tip.x, tip.y).stroke({ width: 3, color: REED, cap: 'round' });
     if (k % 3 === 0) {
       const head = at(t + lean * 0.8, 8);
@@ -121,11 +203,21 @@ function reedArt(side: Dir, w: number, h: number): Graphics {
 /** A lily pad about `size` across, with its notch turned to `turn` and, now and then, a pink flower. */
 function padArt(size: number, turn: number, flower: boolean): Container {
   const c = new Container();
-  const g = new Graphics(), r = size * 0.46;
-  g.moveTo(0, 0).arc(0, 0, r, turn + 0.35, turn + Math.PI * 2 - 0.35).closePath().fill(PAD).stroke({ width: 4, color: PAD_LINE });
-  g.moveTo(0, 0).lineTo(Math.cos(turn + Math.PI) * r * 0.6, Math.sin(turn + Math.PI) * r * 0.6).stroke({ width: 2, color: PAD_LINE, alpha: 0.6 });
+  const g = new Graphics(),
+    r = size * 0.46;
+  g.moveTo(0, 0)
+    .arc(0, 0, r, turn + 0.35, turn + Math.PI * 2 - 0.35)
+    .closePath()
+    .fill(PAD)
+    .stroke({ width: 4, color: PAD_LINE });
+  g.moveTo(0, 0)
+    .lineTo(Math.cos(turn + Math.PI) * r * 0.6, Math.sin(turn + Math.PI) * r * 0.6)
+    .stroke({ width: 2, color: PAD_LINE, alpha: 0.6 });
   if (flower) {
-    for (let k = 0; k < 5; k++) g.circle(Math.cos(k * 1.2566) * size * 0.1, Math.sin(k * 1.2566) * size * 0.1, size * 0.07).fill(swatch.pink.fill);
+    for (let k = 0; k < 5; k++)
+      g.circle(Math.cos(k * 1.2566) * size * 0.1, Math.sin(k * 1.2566) * size * 0.1, size * 0.07).fill(
+        swatch.pink.fill,
+      );
     g.circle(0, 0, size * 0.06).fill(swatch.yellow.fill);
   }
   c.addChild(g);
@@ -238,7 +330,18 @@ class PondConga implements Game {
       this.course = null;
     }
     this.school = ctx.band === 'school' && !ctx.couch && !this.paced;
-    for (const part of [this.board, this.water, this.reeds, this.pads, this.trail, this.crumbs, this.line, this.top, this.note]) part.eventMode = 'none';
+    for (const part of [
+      this.board,
+      this.water,
+      this.reeds,
+      this.pads,
+      this.trail,
+      this.crumbs,
+      this.line,
+      this.top,
+      this.note,
+    ])
+      part.eventMode = 'none';
     this.crumbs.addChild(this.crumbAfter, this.crumbThird, this.crumbNext);
     this.board.addChild(this.water, this.reeds, this.pads, this.trail, this.crumbs, this.line);
     ctx.stage.addChild(this.board, this.top, this.note);
@@ -248,14 +351,17 @@ class PondConga implements Game {
       this.tapLayer.cursor = 'pointer';
       this.tapLayer.on('pointerdown', (e) => this.fingerDown(e));
       this.tapLayer.on('globalpointermove', (e) => this.fingerMove(e));
-      for (const end of ['pointerup', 'pointerupoutside', 'pointercancel'] as const) this.tapLayer.on(end, (e) => this.fingerUp(e));
+      for (const end of ['pointerup', 'pointerupoutside', 'pointercancel'] as const)
+        this.tapLayer.on(end, (e) => this.fingerUp(e));
       this.buttons.eventMode = 'none';
       this.buttonText.eventMode = 'none';
       ctx.stage.addChild(this.buttons, this.buttonText, this.tapLayer, this.touchLayer);
     }
   }
 
-  start() { void this.next(); }
+  start() {
+    void this.next();
+  }
 
   /* -------------------------------------------------------------------------------------------- */
   /* Layout and drawing                                                                            */
@@ -266,7 +372,10 @@ class PondConga implements Game {
     if (!this.pond) return;
     if (this.touch) return this.resizeTouch(v);
     // Clear of the buttons along the top, the controller reminder along the bottom, and the pet in the corner (a crumb must never hide behind it).
-    this.cell = Math.max(24, Math.min(80, Math.floor((v.w - 60) / this.pond.cols), Math.floor((v.h - 312) / this.pond.rows)));
+    this.cell = Math.max(
+      24,
+      Math.min(80, Math.floor((v.w - 60) / this.pond.cols), Math.floor((v.h - 312) / this.pond.rows)),
+    );
     this.board.position.set((v.w - this.pond.cols * this.cell) / 2, 138);
     this.top.position.set(v.w / 2, 96);
     this.note.position.set(v.w / 2, v.h - 130);
@@ -280,9 +389,11 @@ class PondConga implements Game {
    * tall view goes below them.
    */
   private resizeTouch(v: View) {
-    const p = this.pond, fit = pondTouchLayout(p.cols, p.rows, v.w, v.h, this.school);
+    const p = this.pond,
+      fit = pondTouchLayout(p.cols, p.rows, v.w, v.h, this.school);
     this.cell = fit.cell;
-    const w = p.cols * this.cell, h = p.rows * this.cell;
+    const w = p.cols * this.cell,
+      h = p.rows * this.cell;
     this.board.position.set(fit.x, fit.y);
     this.top.position.set(v.w / 2, 96);
     this.slots = fit.slots;
@@ -311,7 +422,9 @@ class PondConga implements Game {
       const down = this.pressed?.slot === k && this.clock < this.pressed.until ? 3 : 0;
       const sw = s.kind === 'hint' ? swatch.blue : swatch.teal;
       g.roundRect(s.x, s.y + 4, s.w, s.h, 14).fill(sw.line);
-      g.roundRect(s.x, s.y + down, s.w, s.h, 14).fill(sw.light).stroke({ width: 3, color: sw.line });
+      g.roundRect(s.x, s.y + down, s.w, s.h, 14)
+        .fill(sw.light)
+        .stroke({ width: 3, color: sw.line });
       const t = label(s.kind === 'hint' ? 'Hint ◇' : 'Start over ↺', 24, ink);
       if (t.width > s.w - 14) t.scale.set((s.w - 14) / t.width);
       t.position.set(s.x + s.w / 2, s.y + s.h / 2 + down);
@@ -325,11 +438,22 @@ class PondConga implements Game {
 
   /** The water, the lily pads and the crumbs' size. */
   private layout() {
-    const p = this.pond, cell = this.cell, w = p.cols * cell, h = p.rows * cell;
-    this.water.clear().roundRect(-14, -14, w + 28, h + 28, 26).fill(WATER).stroke({ width: 6, color: WATER_LINE });
+    const p = this.pond,
+      cell = this.cell,
+      w = p.cols * cell,
+      h = p.rows * cell;
+    this.water
+      .clear()
+      .roundRect(-14, -14, w + 28, h + 28, 26)
+      .fill(WATER)
+      .stroke({ width: 6, color: WATER_LINE });
     for (let k = 0; k < p.cols * 2; k++) {
-      const x = (k * 97) % (w - 40), y = (k * 53 + 17) % (h - 8);
-      this.water.moveTo(x + 10, y + 6).lineTo(x + 38, y + 6).stroke({ width: 3, color: RIPPLE, cap: 'round' });
+      const x = (k * 97) % (w - 40),
+        y = (k * 53 + 17) % (h - 8);
+      this.water
+        .moveTo(x + 10, y + 6)
+        .lineTo(x + 38, y + 6)
+        .stroke({ width: 3, color: RIPPLE, cap: 'round' });
     }
     this.reeds.removeChildren().forEach((c) => c.destroy());
     this.reeds.addChild(reedArt(this.look.reeds, w, h));
@@ -341,7 +465,7 @@ class PondConga implements Game {
       this.pads.addChild(art);
     });
     for (const art of [this.crumbNext, this.crumbAfter, this.crumbThird]) art.scale.set(cell / 70);
-    this.ducks.forEach((d, i) => d.scale.set(DUCK * cell / 100 * (i === 0 ? 1.06 : 1)));
+    this.ducks.forEach((d, i) => d.scale.set(((DUCK * cell) / 100) * (i === 0 ? 1.06 : 1)));
   }
 
   /** Make sure there is a duckling picture for every duckling in the line. */
@@ -349,7 +473,7 @@ class PondConga implements Game {
     while (this.ducks.length < this.state.body.length) {
       const leader = this.ducks.length === 0;
       const d = ducklingArt(100, leader);
-      d.scale.set(DUCK * this.cell / 100 * (leader ? 1.06 : 1));
+      d.scale.set(((DUCK * this.cell) / 100) * (leader ? 1.06 : 1));
       d.eventMode = 'none';
       this.ducks.push(d);
       this.line.addChildAt(d, 0);
@@ -359,17 +483,19 @@ class PondConga implements Game {
   /** Every frame: the line glides from where it was to where it is, the next crumb pulses, and the hint's dots show. */
   private draw(glide: number) {
     if (!this.pond) return;
-    const body = this.state.body, before = this.before;
+    const body = this.state.body,
+      before = this.before;
     this.grow();
     this.ducks.forEach((d, i) => {
       d.visible = i < body.length;
       if (i >= body.length) return;
-      const to = this.center(body[i]), from = this.center(before[i] ?? body[i]);
+      const to = this.center(body[i]),
+        from = this.center(before[i] ?? body[i]);
       d.position.set(from.x + (to.x - from.x) * glide, from.y + (to.y - from.y) * glide);
       if (i === 0 && this.clock < this.shakeUntil) d.x += Math.sin(this.clock * 60) * this.cell * 0.06;
       const ahead = i === 0 ? null : body[i - 1];
       const dir = ahead ? this.toward(body[i], ahead) : this.state.heading;
-      d.rotation = dir * Math.PI / 2;
+      d.rotation = (dir * Math.PI) / 2;
     });
     const pulse = 1 + 0.07 * Math.sin(this.clock * 5);
     if (groupOf(this.pond) > 1) {
@@ -380,7 +506,7 @@ class PondConga implements Game {
         if (!open[i]) return;
         const at = this.center(open[i]);
         holder.position.set(at.x, at.y);
-        holder.scale.set(this.cell / 70 * pulse);
+        holder.scale.set((this.cell / 70) * pulse);
         holder.alpha = 1;
       });
     } else this.drawNextAndAfter(pulse);
@@ -388,26 +514,29 @@ class PondConga implements Game {
     if (this.hinted && !this.busy) {
       for (const c of this.hintCells) {
         const m = this.center(c);
-        t.circle(m.x, m.y, this.cell * 0.13).fill({ color: swatch.yellow.fill, alpha: 0.95 }).stroke({ width: 2, color: swatch.yellow.line });
+        t.circle(m.x, m.y, this.cell * 0.13)
+          .fill({ color: swatch.yellow.fill, alpha: 0.95 })
+          .stroke({ width: 2, color: swatch.yellow.line });
       }
     }
   }
 
   /** One bite at a time: the next at full strength and a faint look at the one after. */
   private drawNextAndAfter(pulse: number) {
-    const next = nextCrumb(this.pond, this.state), after = this.pond.crumbs[this.state.eaten + 1];
+    const next = nextCrumb(this.pond, this.state),
+      after = this.pond.crumbs[this.state.eaten + 1];
     this.crumbNext.visible = !!next;
     this.crumbAfter.visible = !!after;
     this.crumbThird.visible = false;
     if (next) {
       const at = this.center(next);
       this.crumbNext.position.set(at.x, at.y);
-      this.crumbNext.scale.set(this.cell / 70 * pulse);
+      this.crumbNext.scale.set((this.cell / 70) * pulse);
     }
     if (after) {
       const at = this.center(after);
       this.crumbAfter.position.set(at.x, at.y);
-      this.crumbAfter.scale.set(this.cell / 70 * 0.62);
+      this.crumbAfter.scale.set((this.cell / 70) * 0.62);
       this.crumbAfter.alpha = 0.5;
     }
   }
@@ -430,12 +559,19 @@ class PondConga implements Game {
   update(dt: number) {
     this.clock += dt;
     if (!this.pond) return;
-    if (this.pressed && this.clock >= this.pressed.until) { this.pressed = null; this.paintButtons(); }
+    if (this.pressed && this.clock >= this.pressed.until) {
+      this.pressed = null;
+      this.paintButtons();
+    }
     let glide = 1;
     if (!this.busy && !this.finished && !this.waiting && !this.paced) {
       // Step by step: a step only when one was asked for, once the one before it has landed.
       this.acc += dt;
-      while (stepDue({ paced: false, speed: this.speed }, this.acc, this.queue.length) && !this.busy && !this.finished) {
+      while (
+        stepDue({ paced: false, speed: this.speed }, this.acc, this.queue.length) &&
+        !this.busy &&
+        !this.finished
+      ) {
         this.acc = 0;
         this.tick();
       }
@@ -511,10 +647,18 @@ class PondConga implements Game {
   private tally() {
     const n = this.pond.crumbs.length;
     this.top.text = `${this.tries} ${this.tries === 1 ? 'step' : 'steps'}  ·  ${Math.min(this.state.eaten, n)} of ${n} ${FOOD_WORD[this.food]}`;
-    this.note.text = this.school && this.touch ? 'Swipe, or tap beside the leader: one step each time'
-      : !this.paced
-      ? (this.touch ? 'Swipe for one step that way, or touch the pond for a step straight on' : 'Press a direction for each step')
-      : this.waiting ? (this.touch ? 'Touch the pond to set off, then swipe to turn' : 'Press a direction to set off') : '';
+    this.note.text =
+      this.school && this.touch
+        ? 'Swipe, or tap beside the leader: one step each time'
+        : !this.paced
+          ? this.touch
+            ? 'Swipe for one step that way, or touch the pond for a step straight on'
+            : 'Press a direction for each step'
+          : this.waiting
+            ? this.touch
+              ? 'Touch the pond to set off, then swipe to turn'
+              : 'Press a direction to set off'
+            : '';
   }
 
   /** Hand a course's numbers to the shell. `finished` means the pond just ended, so none of its steps are "in progress". */
@@ -536,7 +680,9 @@ class PondConga implements Game {
   private tick() {
     const want = this.takeTurn();
     if (want !== null && want !== this.state.heading) sfx.tick();
-    const r = this.school ? schoolStep(this.pond, this.state, want) : { ...step(this.pond, this.state, want), held: false };
+    const r = this.school
+      ? schoolStep(this.pond, this.state, want)
+      : { ...step(this.pond, this.state, want), held: false };
     const heading = r.state.heading;
     this.tries++;
     this.ticks++;
@@ -604,7 +750,14 @@ class PondConga implements Game {
 
   private crumbEaten() {
     const at = this.ctx.stage.toLocal(this.board.toGlobal(this.center(this.state.body[0])));
-    this.ctx.particles.burst(at.x, at.y, { kind: 'star', colors: [...FOOD_SPARK[this.food], 0xffffff], count: 10, speed: [90, 220], gravity: 0, life: [0.35, 0.7] });
+    this.ctx.particles.burst(at.x, at.y, {
+      kind: 'star',
+      colors: [...FOOD_SPARK[this.food], 0xffffff],
+      count: 10,
+      speed: [90, 220],
+      gravity: 0,
+      life: [0.35, 0.7],
+    });
     sfx.pop(2 + (this.state.eaten % 7));
     this.hinted = false;
     this.hintCells = [];
@@ -617,7 +770,14 @@ class PondConga implements Game {
   /** A little burst where the leader bumped, so the bump is seen as well as heard. */
   private bonkAt(cell: Cell) {
     const at = this.ctx.stage.toLocal(this.board.toGlobal(this.center(cell)));
-    this.ctx.particles.burst(at.x, at.y, { kind: 'star', colors: [swatch.orange.fill, 0xffffff], count: 8, speed: [80, 190], gravity: 0, life: [0.3, 0.55] });
+    this.ctx.particles.burst(at.x, at.y, {
+      kind: 'star',
+      colors: [swatch.orange.fill, 0xffffff],
+      count: 8,
+      speed: [80, 190],
+      gravity: 0,
+      life: [0.3, 0.55],
+    });
     const text = label('Bonk!', 34, swatch.orange.line);
     text.position.set(at.x, at.y - this.cell * 0.9);
     this.ctx.stage.addChild(text);
@@ -626,10 +786,12 @@ class PondConga implements Game {
 
   /** The score for the pond just cleared, over the board for a moment. */
   private async pondScore() {
-    const best = this.pond.par, total = this.ponds.length;
-    const text = this.tries === best
-      ? `Pond ${this.index + 1} of ${total}: ${this.tries} steps, the fewest possible!`
-      : `Pond ${this.index + 1} of ${total}: ${this.tries} steps (fewest ${best})`;
+    const best = this.pond.par,
+      total = this.ponds.length;
+    const text =
+      this.tries === best
+        ? `Pond ${this.index + 1} of ${total}: ${this.tries} steps, the fewest possible!`
+        : `Pond ${this.index + 1} of ${total}: ${this.tries} steps (fewest ${best})`;
     const note = label(text, 32, ink);
     note.position.set(this.view.w / 2, 100);
     note.alpha = 0;
@@ -656,10 +818,22 @@ class PondConga implements Game {
     // The whole line does a little hop.
     for (let i = 0; i < this.ducks.length; i++) {
       const d = this.ducks[i];
-      void this.ctx.tw.wait(i * 0.05).then(() => this.ctx.tw.to(d, { y: d.y - this.cell * 0.28 }, { duration: 0.14 })).then(() => this.ctx.tw.to(d, { y: d.y + this.cell * 0.28 }, { duration: 0.16 }));
+      void this.ctx.tw
+        .wait(i * 0.05)
+        .then(() => this.ctx.tw.to(d, { y: d.y - this.cell * 0.28 }, { duration: 0.14 }))
+        .then(() => this.ctx.tw.to(d, { y: d.y + this.cell * 0.28 }, { duration: 0.16 }));
     }
-    const mid = this.ctx.stage.toLocal(this.board.toGlobal({ x: (this.pond.cols * this.cell) / 2, y: (this.pond.rows * this.cell) / 2 }));
-    this.ctx.particles.burst(mid.x, mid.y, { kind: 'star', colors: [0xffffff, ...FOOD_SPARK[this.food]], count: 28, speed: [160, 420], gravity: 0, life: [0.6, 1.1] });
+    const mid = this.ctx.stage.toLocal(
+      this.board.toGlobal({ x: (this.pond.cols * this.cell) / 2, y: (this.pond.rows * this.cell) / 2 }),
+    );
+    this.ctx.particles.burst(mid.x, mid.y, {
+      kind: 'star',
+      colors: [0xffffff, ...FOOD_SPARK[this.food]],
+      count: 28,
+      speed: [160, 420],
+      gravity: 0,
+      life: [0.6, 1.1],
+    });
     // A course moves straight on after a short score; ordinary play praises.
     if (this.course) await this.pondScore();
     else await this.ctx.say('conga.pond');
@@ -721,13 +895,20 @@ class PondConga implements Game {
     if (this.busy || this.finished || !this.pond) return;
     if (!moved && this.school) {
       // School: a tap steps toward where it lands; on the leader or straight back it does nothing.
-      const at = this.tapLayer.toLocal(e.global), from = this.queue.at(-1) ?? this.state.heading;
+      const at = this.tapLayer.toLocal(e.global),
+        from = this.queue.at(-1) ?? this.state.heading;
       const lead = this.queue.length ? null : this.state.body[0];
-      const dir = lead && Number.isFinite(at.x) && Number.isFinite(at.y) ? tapToward(lead, at.x, at.y, this.cell, from) : null;
+      const dir =
+        lead && Number.isFinite(at.x) && Number.isFinite(at.y)
+          ? tapToward(lead, at.x, at.y, this.cell, from)
+          : null;
       if (dir !== null) this.press(dir);
       return;
     }
-    if (!this.paced) { if (!moved) this.press(this.queue.at(-1) ?? this.state.heading); return; }
+    if (!this.paced) {
+      if (!moved) this.press(this.queue.at(-1) ?? this.state.heading);
+      return;
+    }
     if (this.waiting) this.press(this.state.heading);
   }
 
@@ -859,7 +1040,10 @@ class PondConga implements Game {
    */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.pond || !this.touch || this.queue.length) return null;
-    const period = 1 / this.pace(), s0 = this.state, t0 = this.ticks, bonks = this.misses;
+    const period = 1 / this.pace(),
+      s0 = this.state,
+      t0 = this.ticks,
+      bonks = this.misses;
     const plan = this.onRoute ? this.pond.route.slice(this.routeAt) : hintPath(this.pond, this.state);
     if (!plan.length) return null;
     // How many steps until the line has to turn (0: at the very next step).
@@ -873,24 +1057,37 @@ class PondConga implements Game {
     if (!this.paced) {
       // Step by step: one touch or one short stroke a step, once the last step has landed.
       if (!this.waiting && this.acc < STEP_GLIDE) return null;
-      const head = s0.body[0], d = plan[0];
+      const head = s0.body[0],
+        d = plan[0];
       // At school a tap on the leader does nothing: tap the cell it is to go to.
-      if (d === s0.heading) return { tap: spot(head, d, this.school ? this.cell : 0), receiver: this.tapLayer, pause: 0.2 };
-      return { trace: spot(head, d, -reach / 2), via: [spot(head, d, reach / 2)], receiver: this.tapLayer, pause: 0.2 };
+      if (d === s0.heading)
+        return { tap: spot(head, d, this.school ? this.cell : 0), receiver: this.tapLayer, pause: 0.2 };
+      return {
+        trace: spot(head, d, -reach / 2),
+        via: [spot(head, d, reach / 2)],
+        receiver: this.tapLayer,
+        pause: 0.2,
+      };
     }
     // One stroke: back from the turn's cell, along the first direction, then along the direction of each turn on the steps right after it (three at most:
     // the turns wait in line and are made one a step, and a leg of the stroke takes half a second, so the line never holds more than two).
     const stroke = (when?: () => boolean | 'cancel'): TouchIntent => {
-      const head = headAfter(this.pond, s0, plan, j), first = plan[j], from = spot(head, first, -reach / 2);
+      const head = headAfter(this.pond, s0, plan, j),
+        first = plan[j],
+        from = spot(head, first, -reach / 2);
       const via = [spot(head, first, reach / 2)];
       for (let k = 1; k < 3 && turnsAt(j + k); k++) {
-        const last = via[via.length - 1], d = plan[j + k];
+        const last = via[via.length - 1],
+          d = plan[j + k];
         via.push({ on: this.board, x: last.x + DX[d] * reach, y: last.y + DY[d] * reach });
       }
       return { trace: from, via, receiver: this.tapLayer, pause: 0.1, when };
     };
     // Nothing moves until the line is set off, so there is no moment to hit.
-    if (this.waiting) return j === 0 ? stroke() : { tap: spot(s0.body[0], s0.heading, 0), receiver: this.tapLayer, pause: 0.15 };
+    if (this.waiting)
+      return j === 0
+        ? stroke()
+        : { tap: spot(s0.body[0], s0.heading, 0), receiver: this.tapLayer, pause: 0.15 };
     if (j < 0 || (j === 0 && this.breather <= 0)) return null;
     const when = () => {
       if (this.busy || this.finished || this.queue.length || this.misses !== bonks) return 'cancel';
@@ -898,7 +1095,8 @@ class PondConga implements Game {
       if (this.breather > 0) return true;
       // The swipe counts `DEMO_SWIPE` seconds after the hand lands. It has to count after the step before the turn and before the turn's
       // own step, with a tenth of a step to spare at each end: land as soon as that is so, and give it up once it cannot be.
-      const rem = j - (this.ticks - t0), before = rem * period - this.acc;
+      const rem = j - (this.ticks - t0),
+        before = rem * period - this.acc;
       if (rem < 1) return 'cancel';
       if (DEMO_SWIPE > before + period - 0.1 * period) return 'cancel';
       return DEMO_SWIPE >= before + 0.1 * period;
@@ -911,7 +1109,9 @@ class PondConga implements Game {
     const out = idle();
     this.botWait -= dt;
     if (this.busy || this.finished || !this.pond || this.botWait > 0) return out;
-    const want = this.onRoute ? this.pond.route[this.routeAt] ?? this.state.heading : hintDir(this.pond, this.state);
+    const want = this.onRoute
+      ? (this.pond.route[this.routeAt] ?? this.state.heading)
+      : hintDir(this.pond, this.state);
     const p = out.players[0];
     p.active = true;
     if (!this.paced) {
@@ -921,7 +1121,10 @@ class PondConga implements Game {
       this.botWait = 0.25;
       return out;
     }
-    if (this.waiting) { p.direction = want; return out; }
+    if (this.waiting) {
+      p.direction = want;
+      return out;
+    }
     const last = this.queue.at(-1) ?? this.state.heading;
     if (want !== last && this.queue.length === 0) p.direction = want;
     return out;
@@ -935,7 +1138,9 @@ class PondConga implements Game {
 class PondIcon extends WigglyIcon {
   constructor() {
     const c = new Container();
-    c.addChild(new Graphics().roundRect(-130, -190, 260, 170, 26).fill(WATER).stroke({ width: 6, color: WATER_LINE }));
+    c.addChild(
+      new Graphics().roundRect(-130, -190, 260, 170, 26).fill(WATER).stroke({ width: 6, color: WATER_LINE }),
+    );
     const pad = padArt(70, 0.6, true);
     pad.position.set(78, -128);
     c.addChild(pad);
@@ -978,7 +1183,8 @@ export const pondConga: GameModule = {
   music: STYLES.lullaby,
   upright: true,
   coplayHint: 'On the step-by-step ponds, take turns: one of you says which way, the other swipes or taps.',
-  offScreen: 'Walk a duckling line together: the leader picks the way, everyone follows, and nobody crosses the line.',
+  offScreen:
+    'Walk a duckling line together: the leader picks the way, everyone follows, and nobody crosses the line.',
   touchDemo: true,
   hubIcon: () => new PondIcon(),
   sticker,

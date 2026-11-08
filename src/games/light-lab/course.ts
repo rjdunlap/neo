@@ -25,7 +25,8 @@ export const COURSES: Record<LightCourseId, Course> = {
     id: 'sunbeams',
     version: 1,
     name: 'Sunbeam Run',
-    blurb: 'Five mirror boards in a row, from two mirrors to turn to four, with a sun on either side, two flowers and coloured glass. Wake every flower with the fewest turns.',
+    blurb:
+      'Five mirror boards in a row, from two mirrors to turn to four, with a sun on either side, two flowers and coloured glass. Wake every flower with the fewest turns.',
     boards: [
       ['...#..', '..../.', '>../..', '..y\\..'],
       ['.../y/.', '.\\...y.', '.../..<', '#.../..', '..#....'],
@@ -46,23 +47,36 @@ export function parseBoard(rows: readonly string[]): LightPuzzle {
   const things: Thing[] = [];
   const start: Tilt[] = [];
   let sun: { x: number; y: number; dir: 0 | 2 } | null = null;
-  rows.forEach((row, y) => [...row].forEach((c, x) => {
-    if (c === '.') return;
-    if (c === '>' || c === '<') {
-      if (sun) throw new Error('A board has one sun');
-      sun = { x, y, dir: c === '>' ? 0 : 2 };
-      return;
-    }
-    if (c === '/' || c === '\\') things.push({ kind: 'mirror', x, y });
-    else if (c === '#') things.push({ kind: 'rock', x, y });
-    else if (c in WANTS) things.push({ kind: 'flower', x, y, wants: WANTS[c as keyof typeof WANTS] });
-    else if (c in TINTS) things.push({ kind: 'glass', x, y, tint: TINTS[c as keyof typeof TINTS] });
-    else throw new Error(`Unknown board cell ${c}`);
-    start.push(c === '\\' ? 1 : 0);
-  }));
+  rows.forEach((row, y) =>
+    [...row].forEach((c, x) => {
+      if (c === '.') return;
+      if (c === '>' || c === '<') {
+        if (sun) throw new Error('A board has one sun');
+        sun = { x, y, dir: c === '>' ? 0 : 2 };
+        return;
+      }
+      if (c === '/' || c === '\\') things.push({ kind: 'mirror', x, y });
+      else if (c === '#') things.push({ kind: 'rock', x, y });
+      else if (c in WANTS) things.push({ kind: 'flower', x, y, wants: WANTS[c as keyof typeof WANTS] });
+      else if (c in TINTS) things.push({ kind: 'glass', x, y, tint: TINTS[c as keyof typeof TINTS] });
+      else throw new Error(`Unknown board cell ${c}`);
+      start.push(c === '\\' ? 1 : 0);
+    }),
+  );
   const s = sun as { x: number; y: number; dir: 0 | 2 } | null;
   if (!s) throw new Error('A board needs a sun');
-  const p: LightPuzzle = { cols: rows[0].length, rows: rows.length, sunRow: s.y, sunCol: s.x, sunDir: s.dir, things, solution: start, start, pathMirrors: [], tray: [] };
+  const p: LightPuzzle = {
+    cols: rows[0].length,
+    rows: rows.length,
+    sunRow: s.y,
+    sunCol: s.x,
+    sunDir: s.dir,
+    things,
+    solution: start,
+    start,
+    pathMirrors: [],
+    tray: [],
+  };
   const [answer] = nearestSolutions(p, start);
   if (!answer) throw new Error('A board needs an answer');
   const at = new Map(things.map((t, i) => [`${t.x},${t.y}`, i]));
@@ -77,7 +91,7 @@ const parsed = new Map<LightCourseId, LightPuzzle[]>();
 /** The boards of a course, read once. */
 export function courseBoards(id: LightCourseId): LightPuzzle[] {
   let boards = parsed.get(id);
-  if (!boards) parsed.set(id, boards = COURSES[id].boards.map(parseBoard));
+  if (!boards) parsed.set(id, (boards = COURSES[id].boards.map(parseBoard)));
   return boards;
 }
 

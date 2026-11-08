@@ -10,7 +10,37 @@ import type { View } from '../../engine/view';
 import { idle, type CouchControls } from '../../engine/controller';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { LEVELS, DUEL_PLAN, duelServeDir, duelWinner, countFor, isZoneMode, makeSequence, serveAngleFor, petLob, afterHit, afterMiss, courtFor, farWall, isGoalMode, keeperSpeed, paddleBounce, paddleForLanding, paddleTarget, planFor, predictY, reachableZones, versusMisses, volleySpeed, zoneOf, ZONES, type AimGeometry, type BallKind, type BouncePlan, type Court } from './logic';
+import {
+  LEVELS,
+  DUEL_PLAN,
+  duelServeDir,
+  duelWinner,
+  countFor,
+  isZoneMode,
+  makeSequence,
+  serveAngleFor,
+  petLob,
+  afterHit,
+  afterMiss,
+  courtFor,
+  farWall,
+  isGoalMode,
+  keeperSpeed,
+  paddleBounce,
+  paddleForLanding,
+  paddleTarget,
+  planFor,
+  predictY,
+  reachableZones,
+  versusMisses,
+  volleySpeed,
+  zoneOf,
+  ZONES,
+  type AimGeometry,
+  type BallKind,
+  type BouncePlan,
+  type Court,
+} from './logic';
 import { FONT } from '../../ui/text';
 import { rangeFor } from '../../progress/difficulty';
 
@@ -26,8 +56,19 @@ function ballArt(kind: BallKind = 'smile'): Graphics {
   if (kind === 'beach') {
     const g = new Graphics().circle(0, 0, BALL_R).fill(0xffffff);
     const cols = [swatch.red.fill, swatch.yellow.fill, swatch.blue.fill];
-    cols.forEach((c, i) => g.moveTo(0, 0).arc(0, 0, BALL_R, (i * 2 * Math.PI) / 3, ((i * 2 + 1) * Math.PI) / 3).lineTo(0, 0).fill(c));
-    return g.circle(0, 0, BALL_R).stroke({ width: 5, color: swatch.blue.line }).circle(-7, -4, 3.5).circle(7, -4, 3.5).fill(ink);
+    cols.forEach((c, i) =>
+      g
+        .moveTo(0, 0)
+        .arc(0, 0, BALL_R, (i * 2 * Math.PI) / 3, ((i * 2 + 1) * Math.PI) / 3)
+        .lineTo(0, 0)
+        .fill(c),
+    );
+    return g
+      .circle(0, 0, BALL_R)
+      .stroke({ width: 5, color: swatch.blue.line })
+      .circle(-7, -4, 3.5)
+      .circle(7, -4, 3.5)
+      .fill(ink);
   }
   if (kind === 'duck') {
     return new Graphics()
@@ -59,8 +100,14 @@ class Paddle extends Container {
     this.addChild(this.g);
   }
   draw(length: number) {
-    this.g.clear().roundRect(-PADDLE_W / 2, -length / 2, PADDLE_W, length, PADDLE_W / 2).fill(this.sw.fill).stroke({ width: 5, color: this.sw.line });
-    this.g.roundRect(-PADDLE_W / 2 + 7, -length / 2 + 12, 8, length - 24, 4).fill({ color: 0xffffff, alpha: 0.5 });
+    this.g
+      .clear()
+      .roundRect(-PADDLE_W / 2, -length / 2, PADDLE_W, length, PADDLE_W / 2)
+      .fill(this.sw.fill)
+      .stroke({ width: 5, color: this.sw.line });
+    this.g
+      .roundRect(-PADDLE_W / 2 + 7, -length / 2 + 12, 8, length - 24, 4)
+      .fill({ color: 0xffffff, alpha: 0.5 });
   }
 }
 
@@ -113,7 +160,10 @@ class BounceBack implements Game {
   private flash = { zone: -1, t: 0 };
   private readonly zones = new Graphics();
   /** The spoken number, big on the table, on the skip-count levels. */
-  private readonly numeral = new Text({ text: '', style: { fontFamily: FONT, fontSize: 120, fontWeight: '700', fill: ink, align: 'center' } });
+  private readonly numeral = new Text({
+    text: '',
+    style: { fontFamily: FONT, fontSize: 120, fontWeight: '700', fill: ink, align: 'center' },
+  });
 
   /** The "watch me" demo: slide the right paddle to where the ball will arrive, and rest in the middle otherwise. */
   autoplay(dt: number): CouchControls {
@@ -122,11 +172,34 @@ class BounceBack implements Game {
     p.active = true;
     if (this.finished || dt <= 0) return out;
     const b = this.box;
-    let want = this.ball.vx > 0 ? predictY(this.ball.x, this.ball.y, this.ball.vx, this.ball.vy, this.faces().right, b.y0 + BALL_R, b.y1 - BALL_R) : (b.y0 + b.y1) / 2;
+    let want =
+      this.ball.vx > 0
+        ? predictY(
+            this.ball.x,
+            this.ball.y,
+            this.ball.vx,
+            this.ball.vy,
+            this.faces().right,
+            b.y0 + BALL_R,
+            b.y1 - BALL_R,
+          )
+        : (b.y0 + b.y1) / 2;
     // In a face-off the bot aims away from the other paddle, so the rally ends.
     if (this.versus && this.ball.vx > 0) {
       const geometry = this.aim(this.speed());
-      want = paddleForLanding(predictY(this.ball.x, this.ball.y, this.ball.vx, this.ball.vy, geometry.faceX, geometry.top, geometry.bottom), farWall(this.paddles.left, geometry), geometry).y;
+      want = paddleForLanding(
+        predictY(
+          this.ball.x,
+          this.ball.y,
+          this.ball.vx,
+          this.ball.vy,
+          geometry.faceX,
+          geometry.top,
+          geometry.bottom,
+        ),
+        farWall(this.paddles.left, geometry),
+        geometry,
+      ).y;
     }
     p.y = Math.max(-1, Math.min(1, (want - this.targets.right) / (620 * dt)));
     return out;
@@ -139,14 +212,30 @@ class BounceBack implements Game {
   autotouch(): TouchIntent | null {
     const b = this.box;
     if (this.finished || this.ball.vx <= 0) return null;
-    const arrive = predictY(this.ball.x, this.ball.y, this.ball.vx, this.ball.vy, this.faces().right - BALL_R, b.y0 + BALL_R, b.y1 - BALL_R);
+    const arrive = predictY(
+      this.ball.x,
+      this.ball.y,
+      this.ball.vx,
+      this.ball.vy,
+      this.faces().right - BALL_R,
+      b.y0 + BALL_R,
+      b.y1 - BALL_R,
+    );
     const star = this.star.visible ? this.starAt : null;
     const geometry = this.aim(this.speed());
     let y: number;
-    if (isZoneMode(this.plan.mode) && this.wantZone >= 0) y = paddleForLanding(arrive, geometry.top + ((this.wantZone + 0.5) / ZONES.length) * (geometry.bottom - geometry.top), geometry).y;
-    else if (isGoalMode(this.plan.mode)) y = paddleForLanding(arrive, farWall(this.paddles.left, geometry), geometry).y;
+    if (isZoneMode(this.plan.mode) && this.wantZone >= 0)
+      y = paddleForLanding(
+        arrive,
+        geometry.top + ((this.wantZone + 0.5) / ZONES.length) * (geometry.bottom - geometry.top),
+        geometry,
+      ).y;
+    else if (isGoalMode(this.plan.mode))
+      y = paddleForLanding(arrive, farWall(this.paddles.left, geometry), geometry).y;
     else y = paddleTarget(arrive, star, geometry);
-    return Math.abs(this.targets.right - y) < 8 ? null : { tap: { on: this.touch, x: this.faces().right - 60, y }, pause: 0.3 };
+    return Math.abs(this.targets.right - y) < 8
+      ? null
+      : { tap: { on: this.touch, x: this.faces().right - 60, y }, pause: 0.3 };
   }
 
   /** The table as the aiming rules read it. The ball is sent to the pet's paddle, or on the color level to the wall behind it. */
@@ -154,14 +243,27 @@ class BounceBack implements Game {
     const b = this.box;
     const half = this.paddleLength() / 2;
     const leftX = isZoneMode(this.plan.mode) ? b.x0 + BALL_R : this.faces().left + BALL_R;
-    return { faceX: this.faces().right - BALL_R, leftX, top: b.y0 + BALL_R, bottom: b.y1 - BALL_R, low: b.y0 + half, high: b.y1 - half, paddle: this.paddleLength(), speed, starReach: BALL_R + 52 };
+    return {
+      faceX: this.faces().right - BALL_R,
+      leftX,
+      top: b.y0 + BALL_R,
+      bottom: b.y1 - BALL_R,
+      low: b.y0 + half,
+      high: b.y1 - half,
+      paddle: this.paddleLength(),
+      speed,
+      starReach: BALL_R + 52,
+    };
   }
 
   control(input: CouchControls, dt: number) {
     this.controllerRight = true;
     const half = this.paddleLength() / 2;
     const move = (side: 'left' | 'right', y: number) => {
-      this.targets[side] = Math.max(this.box.y0 + half, Math.min(this.box.y1 - half, this.targets[side] + y * 620 * dt));
+      this.targets[side] = Math.max(
+        this.box.y0 + half,
+        Math.min(this.box.y1 - half, this.targets[side] + y * 620 * dt),
+      );
     };
     move('right', input.players[0].y);
     if (this.versus) {
@@ -184,15 +286,37 @@ class BounceBack implements Game {
     this.petFace.position.set(-56, 34);
     ctx.track(this.petFace);
     this.leftNode.addChild(this.petFace);
-    this.star.poly(starPoints(34, 15, 5)).fill(swatch.yellow.fill).stroke({ width: 5, color: swatch.yellow.line, join: 'round' });
+    this.star
+      .poly(starPoints(34, 15, 5))
+      .fill(swatch.yellow.fill)
+      .stroke({ width: 5, color: swatch.yellow.line, join: 'round' });
     this.star.visible = this.plan.mode === 'stars';
     this.leftNode.visible = !isZoneMode(this.plan.mode);
     this.numeral.anchor.set(0.5);
     this.numeral.alpha = 0.22;
     this.numeral.eventMode = 'none';
     this.numeral.visible = this.plan.mode === 'skip';
-    for (const n of [this.table, this.zones, this.marker, this.star, this.ballNode, this.leftNode, this.rightNode]) n.eventMode = 'none';
-    ctx.stage.addChild(this.table, this.numeral, this.zones, this.marker, this.star, this.leftNode, this.rightNode, this.ballNode, this.touch);
+    for (const n of [
+      this.table,
+      this.zones,
+      this.marker,
+      this.star,
+      this.ballNode,
+      this.leftNode,
+      this.rightNode,
+    ])
+      n.eventMode = 'none';
+    ctx.stage.addChild(
+      this.table,
+      this.numeral,
+      this.zones,
+      this.marker,
+      this.star,
+      this.leftNode,
+      this.rightNode,
+      this.ballNode,
+      this.touch,
+    );
 
     this.touch.eventMode = 'static';
     this.touch.on('pointerdown', (e: FederatedPointerEvent) => {
@@ -204,7 +328,10 @@ class BounceBack implements Game {
       this.fingers.set(e.pointerId, side);
       this.point(e);
     });
-    this.touch.on('globalpointermove', (e: FederatedPointerEvent) => this.fingers.has(e.pointerId) && this.point(e));
+    this.touch.on(
+      'globalpointermove',
+      (e: FederatedPointerEvent) => this.fingers.has(e.pointerId) && this.point(e),
+    );
     const up = (e: { pointerId: number }) => this.fingers.delete(e.pointerId);
     this.touch.on('pointerup', up);
     this.touch.on('pointerupoutside', up);
@@ -215,7 +342,19 @@ class BounceBack implements Game {
   }
 
   start() {
-    const line = { solo: 'bounce.solo', rally: 'bounce.rally', together: 'bounce.together', stars: 'bounce.stars', count: 'bounce.count', color: 'bounce.colors', goal: 'bounce.goal', versus: 'bounce.versus', sequence: 'bounce.sequence', skip: 'bounce.skip', duel: 'bounce.faceoff' } as const;
+    const line = {
+      solo: 'bounce.solo',
+      rally: 'bounce.rally',
+      together: 'bounce.together',
+      stars: 'bounce.stars',
+      count: 'bounce.count',
+      color: 'bounce.colors',
+      goal: 'bounce.goal',
+      versus: 'bounce.versus',
+      sequence: 'bounce.sequence',
+      skip: 'bounce.skip',
+      duel: 'bounce.faceoff',
+    } as const;
     void this.ctx.instruct(line[this.plan.mode], { n: this.plan.goal, step: this.plan.step ?? 1 });
     this.serve();
   }
@@ -229,9 +368,12 @@ class BounceBack implements Game {
     const b = this.box;
     const t = this.table.clear();
     t.rect(0, 0, v.w, v.h).fill(this.court.ground);
-    t.roundRect(b.x0 - 14, b.y0 - 14, b.x1 - b.x0 + 28, b.y1 - b.y0 + 28, 40).fill(this.court.table).stroke({ width: 10, color: this.court.edge });
+    t.roundRect(b.x0 - 14, b.y0 - 14, b.x1 - b.x0 + 28, b.y1 - b.y0 + 28, 40)
+      .fill(this.court.table)
+      .stroke({ width: 10, color: this.court.edge });
     const mid = (b.x0 + b.x1) / 2;
-    for (let y = b.y0 + 10; y < b.y1; y += 34) t.roundRect(mid - 4, y, 8, 18, 4).fill({ color: 0xffffff, alpha: 0.8 });
+    for (let y = b.y0 + 10; y < b.y1; y += 34)
+      t.roundRect(mid - 4, y, 8, 18, 4).fill({ color: 0xffffff, alpha: 0.8 });
     t.circle(mid, (b.y0 + b.y1) / 2, 70).stroke({ width: 6, color: 0xffffff, alpha: 0.8 });
     this.numeral.position.set((b.x0 + b.x1) / 2, (b.y0 + b.y1) / 2);
     this.touch.hitArea = new Rectangle(b.x0, b.y0, b.x1 - b.x0, b.y1 - b.y0);
@@ -239,7 +381,8 @@ class BounceBack implements Game {
     const f = this.faces();
     this.leftNode.x = f.left - PADDLE_W / 2;
     this.rightNode.x = f.right + PADDLE_W / 2;
-    if (!this.paddles.left) this.paddles.left = this.paddles.right = this.targets.left = this.targets.right = (b.y0 + b.y1) / 2;
+    if (!this.paddles.left)
+      this.paddles.left = this.paddles.right = this.targets.left = this.targets.right = (b.y0 + b.y1) / 2;
   }
 
   private point(e: FederatedPointerEvent) {
@@ -264,7 +407,10 @@ class BounceBack implements Game {
   }
 
   private speed() {
-    return volleySpeed(this.plan.speed, this.plan.mode === 'versus' || this.versus ? this.volley : 0) * (this.hinting ? 0.75 : 1);
+    return (
+      volleySpeed(this.plan.speed, this.plan.mode === 'versus' || this.versus ? this.volley : 0) *
+      (this.hinting ? 0.75 : 1)
+    );
   }
 
   update(dt: number) {
@@ -282,7 +428,9 @@ class BounceBack implements Game {
             this.beginSequence();
             const b = this.box;
             const tries = Array.from({ length: 12 }, () => this.ctx.rng.range(-0.4, 0.4));
-            angle = serveAngleFor(this.seq[this.step], tries, (b.x0 + b.x1) / 2, (b.y0 + b.y1) / 2, this.aim(s)) ?? angle;
+            angle =
+              serveAngleFor(this.seq[this.step], tries, (b.x0 + b.x1) / 2, (b.y0 + b.y1) / 2, this.aim(s)) ??
+              angle;
           }
           this.ball.vx = Math.cos(angle) * s * this.serveDir;
           this.ball.vy = Math.sin(angle) * s;
@@ -311,14 +459,41 @@ class BounceBack implements Game {
     const f = this.faces();
     // The pet watches the ball and always gets there.
     if (this.petPlays()) {
-      this.targets.left = this.ball.vx < 0 ? this.lob * half + predictY(this.ball.x, this.ball.y, this.ball.vx, this.ball.vy, f.left, b.y0 + BALL_R, b.y1 - BALL_R) : (b.y0 + b.y1) / 2;
+      this.targets.left =
+        this.ball.vx < 0
+          ? this.lob * half +
+            predictY(
+              this.ball.x,
+              this.ball.y,
+              this.ball.vx,
+              this.ball.vy,
+              f.left,
+              b.y0 + BALL_R,
+              b.y1 - BALL_R,
+            )
+          : (b.y0 + b.y1) / 2;
     }
     // At lap, the child's paddle drifts to help when nobody is touching it.
     if (this.plan.mode === 'solo' && !this.childTouch && this.ball.vx > 0) {
-      this.targets.right = predictY(this.ball.x, this.ball.y, this.ball.vx, this.ball.vy, f.right, b.y0 + BALL_R, b.y1 - BALL_R);
+      this.targets.right = predictY(
+        this.ball.x,
+        this.ball.y,
+        this.ball.vx,
+        this.ball.vy,
+        f.right,
+        b.y0 + BALL_R,
+        b.y1 - BALL_R,
+      );
     }
     for (const side of ['left', 'right'] as const) {
-      const max = side === 'left' && this.petPlays() ? (isGoalMode(this.plan.mode) ? keeperSpeed(this.plan.keeper!, this.aim(this.plan.speed)) : PET_SPEED) : this.plan.mode === 'solo' && !this.childTouch ? 220 : 2400;
+      const max =
+        side === 'left' && this.petPlays()
+          ? isGoalMode(this.plan.mode)
+            ? keeperSpeed(this.plan.keeper!, this.aim(this.plan.speed))
+            : PET_SPEED
+          : this.plan.mode === 'solo' && !this.childTouch
+            ? 220
+            : 2400;
       const d = this.targets[side] - this.paddles[side];
       this.paddles[side] += Math.sign(d) * Math.min(Math.abs(d), max * dt);
       this.paddles[side] = Math.max(b.y0 + half, Math.min(b.y1 - half, this.paddles[side]));
@@ -346,17 +521,29 @@ class BounceBack implements Game {
       sfx.tick();
     }
     // Paddles: the ball bounces off whichever face it reaches while the paddle is there.
-    if (ball.vx > 0 && px + BALL_R <= f.right && ball.x + BALL_R >= f.right && Math.abs(ball.y - this.paddles.right) <= half + BALL_R * 0.6) {
+    if (
+      ball.vx > 0 &&
+      px + BALL_R <= f.right &&
+      ball.x + BALL_R >= f.right &&
+      Math.abs(ball.y - this.paddles.right) <= half + BALL_R * 0.6
+    ) {
       ball.x = f.right - BALL_R;
       Object.assign(ball, paddleBounce(ball.y, this.paddles.right, this.paddleLength(), this.speed(), false));
       this.hit('right');
-    } else if (ball.vx < 0 && !isZoneMode(this.plan.mode) && px - BALL_R >= f.left && ball.x - BALL_R <= f.left && Math.abs(ball.y - this.paddles.left) <= half + BALL_R * 0.6) {
+    } else if (
+      ball.vx < 0 &&
+      !isZoneMode(this.plan.mode) &&
+      px - BALL_R >= f.left &&
+      ball.x - BALL_R <= f.left &&
+      Math.abs(ball.y - this.paddles.left) <= half + BALL_R * 0.6
+    ) {
       ball.x = f.left + BALL_R;
       Object.assign(ball, paddleBounce(ball.y, this.paddles.left, this.paddleLength(), this.speed(), true));
       this.hit('left');
     }
     // Stars are generous: brushing past counts.
-    if (this.star.visible && Math.hypot(ball.x - this.starAt.x, ball.y - this.starAt.y) < BALL_R + 52) this.collectStar();
+    if (this.star.visible && Math.hypot(ball.x - this.starAt.x, ball.y - this.starAt.y) < BALL_R + 52)
+      this.collectStar();
     // Past a paddle: a soft cushion, then a new serve.
     if (ball.x + BALL_R >= b.x1) this.through('right');
     else if (ball.x - BALL_R <= b.x0) this.through('left');
@@ -367,10 +554,12 @@ class BounceBack implements Game {
     this.rally++;
     if (side === 'right' && this.court.ball === 'duck') sfx.animal('quack');
     else sfx.bell(side === 'right' ? 7 : 5, 0.3);
-    if (side === 'right' && !isZoneMode(this.plan.mode)) ({ wrongs: this.wrongs, hinting: this.hinting } = afterHit());
+    if (side === 'right' && !isZoneMode(this.plan.mode))
+      ({ wrongs: this.wrongs, hinting: this.hinting } = afterHit());
     this.volley++;
     if (side === 'right') this.lob = petLob(this.ctx.rng.next(), this.plan.mode);
-    if (this.plan.mode === 'stars' || isZoneMode(this.plan.mode) || isGoalMode(this.plan.mode) || this.versus) return;
+    if (this.plan.mode === 'stars' || isZoneMode(this.plan.mode) || isGoalMode(this.plan.mode) || this.versus)
+      return;
     void this.ctx.say('count', { n: countFor(this.plan, this.rally) });
     this.numeral.text = String(countFor(this.plan, this.rally));
     if (this.rally >= this.plan.goal) void this.finale();
@@ -397,13 +586,28 @@ class BounceBack implements Game {
     const g = this.marker.clear();
     if (!this.hinting || this.ball.vx <= 0) return;
     const b = this.box;
-    let y = predictY(this.ball.x, this.ball.y, this.ball.vx, this.ball.vy, this.faces().right, b.y0 + BALL_R, b.y1 - BALL_R);
+    let y = predictY(
+      this.ball.x,
+      this.ball.y,
+      this.ball.vx,
+      this.ball.vy,
+      this.faces().right,
+      b.y0 + BALL_R,
+      b.y1 - BALL_R,
+    );
     // On the color level the ring shows where to hold the paddle so the bounce goes to the called zone.
     if (isZoneMode(this.plan.mode) && this.wantZone >= 0) {
       const geometry = this.aim(this.speed());
-      y = paddleForLanding(y, geometry.top + ((this.wantZone + 0.5) / ZONES.length) * (geometry.bottom - geometry.top), geometry).y;
+      y = paddleForLanding(
+        y,
+        geometry.top + ((this.wantZone + 0.5) / ZONES.length) * (geometry.bottom - geometry.top),
+        geometry,
+      ).y;
     }
-    g.circle(this.faces().right - 20, y, 34 + 4 * Math.sin(this.clock * 8)).stroke({ width: 6, color: swatch.yellow.fill });
+    g.circle(this.faces().right - 20, y, 34 + 4 * Math.sin(this.clock * 8)).stroke({
+      width: 6,
+      color: swatch.yellow.fill,
+    });
   }
 
   private placeStar() {
@@ -416,7 +620,14 @@ class BounceBack implements Game {
   private collectStar() {
     this.stars++;
     sfx.sparkle();
-    this.ctx.particles.burst(this.starAt.x, this.starAt.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.yellow.fill], count: 14, speed: [100, 260], gravity: 0, life: [0.5, 0.9] });
+    this.ctx.particles.burst(this.starAt.x, this.starAt.y, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0, swatch.yellow.fill],
+      count: 14,
+      speed: [100, 260],
+      gravity: 0,
+      life: [0.5, 0.9],
+    });
     void this.ctx.say('count', { n: this.stars });
     if (this.stars >= this.plan.goal) return void this.finale();
     this.placeStar();
@@ -427,7 +638,11 @@ class BounceBack implements Game {
     if (this.seq.length && this.step < this.seq.length) return;
     this.seq = makeSequence(() => this.ctx.rng.next(), this.seq);
     this.step = 0;
-    void this.ctx.say('bounce.order', { a: ZONES[this.seq[0]], b: ZONES[this.seq[1]], c: ZONES[this.seq[2]] });
+    void this.ctx.say('bounce.order', {
+      a: ZONES[this.seq[0]],
+      b: ZONES[this.seq[1]],
+      c: ZONES[this.seq[2]],
+    });
   }
 
   /** The pet calls a color the paddle can send the ball to from where this ball will arrive. */
@@ -437,7 +652,15 @@ class BounceBack implements Game {
       return void this.ctx.say('bounce.color', { color: ZONES[this.wantZone] });
     }
     const b = this.box;
-    const arrive = predictY(this.ball.x, this.ball.y, this.ball.vx, this.ball.vy, this.faces().right - BALL_R, b.y0 + BALL_R, b.y1 - BALL_R);
+    const arrive = predictY(
+      this.ball.x,
+      this.ball.y,
+      this.ball.vx,
+      this.ball.vy,
+      this.faces().right - BALL_R,
+      b.y0 + BALL_R,
+      b.y1 - BALL_R,
+    );
     const options = reachableZones(arrive, this.aim(this.speed()));
     const zone = options[Math.floor(this.ctx.rng.next() * options.length)] ?? 1;
     this.wantZone = zone;
@@ -455,12 +678,26 @@ class BounceBack implements Game {
       if (this.plan.mode === 'sequence') {
         this.step++;
         if (this.step < this.seq.length) {
-          this.ctx.particles.burst(b.x0 + 30, this.ball.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, ZONE_COLOR[ZONES[zone]].fill], count: 10, speed: [100, 220], gravity: 0, life: [0.4, 0.8] });
+          this.ctx.particles.burst(b.x0 + 30, this.ball.y, {
+            kind: 'star',
+            colors: [0xffffff, 0xfff3a0, ZONE_COLOR[ZONES[zone]].fill],
+            count: 10,
+            speed: [100, 220],
+            gravity: 0,
+            life: [0.4, 0.8],
+          });
           return this.serve();
         }
       }
       this.done++;
-      this.ctx.particles.burst(b.x0 + 30, this.ball.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, ZONE_COLOR[ZONES[zone]].fill], count: 14, speed: [100, 260], gravity: 0, life: [0.5, 0.9] });
+      this.ctx.particles.burst(b.x0 + 30, this.ball.y, {
+        kind: 'star',
+        colors: [0xffffff, 0xfff3a0, ZONE_COLOR[ZONES[zone]].fill],
+        count: 14,
+        speed: [100, 260],
+        gravity: 0,
+        life: [0.5, 0.9],
+      });
       void this.ctx.say('count', { n: this.done });
       if (this.done >= this.plan.goal) return void this.finale();
     } else {
@@ -480,7 +717,14 @@ class BounceBack implements Game {
     const scorer = side === 'left' ? 0 : 1;
     this.duel[scorer]++;
     sfx.sparkle();
-    this.ctx.particles.burst(side === 'left' ? b.x0 + 30 : b.x1 - 30, this.ball.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, scorer === 0 ? swatch.blue.fill : swatch.pink.fill], count: 16, speed: [100, 280], gravity: 0, life: [0.5, 0.9] });
+    this.ctx.particles.burst(side === 'left' ? b.x0 + 30 : b.x1 - 30, this.ball.y, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0, scorer === 0 ? swatch.blue.fill : swatch.pink.fill],
+      count: 16,
+      speed: [100, 280],
+      gravity: 0,
+      life: [0.5, 0.9],
+    });
     void this.ctx.say(scorer === 0 ? 'bounce.duel.right' : 'bounce.duel.left');
     if (duelWinner(this.duel) !== null) return void this.finale();
     this.serveDir = duelServeDir(scorer);
@@ -494,7 +738,14 @@ class BounceBack implements Game {
       this.done++;
       ({ wrongs: this.wrongs, hinting: this.hinting } = afterHit());
       sfx.sparkle();
-      this.ctx.particles.burst(b.x0 + 30, this.ball.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.pink.fill], count: 16, speed: [100, 280], gravity: 0, life: [0.5, 0.9] });
+      this.ctx.particles.burst(b.x0 + 30, this.ball.y, {
+        kind: 'star',
+        colors: [0xffffff, 0xfff3a0, swatch.pink.fill],
+        count: 16,
+        speed: [100, 280],
+        gravity: 0,
+        life: [0.5, 0.9],
+      });
       void this.ctx.say('bounce.point');
       if (this.done >= this.plan.goal) return void this.finale(true);
     } else {
@@ -525,32 +776,54 @@ class BounceBack implements Game {
         const y0 = i === 0 ? b.y0 : top + i * h;
         const y1 = i === ZONES.length - 1 ? b.y1 : top + (i + 1) * h;
         const grow = call ? 14 + 6 * Math.sin(this.clock * 6) : 0;
-        g.roundRect(b.x0 - 10, y0 + 4 - grow / 2, 44 + grow, y1 - y0 - 8 + grow, 16).fill(ZONE_COLOR[name].fill).stroke({ width: call ? 7 : 4, color: call ? 0xffffff : ZONE_COLOR[name].line });
-        if (this.flash.zone === i && this.flash.t > 0) g.roundRect(b.x0 - 10, y0 + 4, 120, y1 - y0 - 8, 16).fill({ color: 0xffffff, alpha: this.flash.t * 0.6 });
+        g.roundRect(b.x0 - 10, y0 + 4 - grow / 2, 44 + grow, y1 - y0 - 8 + grow, 16)
+          .fill(ZONE_COLOR[name].fill)
+          .stroke({ width: call ? 7 : 4, color: call ? 0xffffff : ZONE_COLOR[name].line });
+        if (this.flash.zone === i && this.flash.t > 0)
+          g.roundRect(b.x0 - 10, y0 + 4, 120, y1 - y0 - 8, 16).fill({
+            color: 0xffffff,
+            alpha: this.flash.t * 0.6,
+          });
       });
       if (mode === 'sequence') {
         const mid = (b.x0 + b.x1) / 2;
         this.seq.forEach((z, i) => {
           const now = i === this.step;
-          g.circle(mid + (i - 1) * 56, 52, now ? 20 : 14).fill({ color: ZONE_COLOR[ZONES[z]].fill, alpha: i < this.step ? 0.35 : 1 }).stroke({ width: now ? 6 : 4, color: now ? 0xffffff : ZONE_COLOR[ZONES[z]].line });
+          g.circle(mid + (i - 1) * 56, 52, now ? 20 : 14)
+            .fill({ color: ZONE_COLOR[ZONES[z]].fill, alpha: i < this.step ? 0.35 : 1 })
+            .stroke({ width: now ? 6 : 4, color: now ? 0xffffff : ZONE_COLOR[ZONES[z]].line });
         });
       }
     } else if (this.versus) {
-      g.roundRect(b.x0 - 10, b.y0, 26, b.y1 - b.y0, 13).fill(swatch.pink.light).stroke({ width: 5, color: swatch.pink.line });
-      g.roundRect(b.x1 - 16, b.y0, 26, b.y1 - b.y0, 13).fill(swatch.blue.light).stroke({ width: 5, color: swatch.blue.line });
+      g.roundRect(b.x0 - 10, b.y0, 26, b.y1 - b.y0, 13)
+        .fill(swatch.pink.light)
+        .stroke({ width: 5, color: swatch.pink.line });
+      g.roundRect(b.x1 - 16, b.y0, 26, b.y1 - b.y0, 13)
+        .fill(swatch.blue.light)
+        .stroke({ width: 5, color: swatch.blue.line });
       const mid = (b.x0 + b.x1) / 2;
       for (let i = 0; i < this.plan.goal; i++) {
-        g.circle(mid + 28 + i * 34, 52, 12).fill(i < this.duel[0] ? swatch.blue.fill : 0xffffff).stroke({ width: 4, color: swatch.blue.line });
-        g.circle(mid - 28 - i * 34, 52, 12).fill(i < this.duel[1] ? swatch.pink.fill : 0xffffff).stroke({ width: 4, color: swatch.pink.line });
+        g.circle(mid + 28 + i * 34, 52, 12)
+          .fill(i < this.duel[0] ? swatch.blue.fill : 0xffffff)
+          .stroke({ width: 4, color: swatch.blue.line });
+        g.circle(mid - 28 - i * 34, 52, 12)
+          .fill(i < this.duel[1] ? swatch.pink.fill : 0xffffff)
+          .stroke({ width: 4, color: swatch.pink.line });
       }
     } else if (isGoalMode(mode)) {
-      g.roundRect(b.x0 - 10, b.y0, 26, b.y1 - b.y0, 13).fill(swatch.pink.light).stroke({ width: 5, color: swatch.pink.line });
+      g.roundRect(b.x0 - 10, b.y0, 26, b.y1 - b.y0, 13)
+        .fill(swatch.pink.light)
+        .stroke({ width: 5, color: swatch.pink.line });
       const mid = (b.x0 + b.x1) / 2;
       for (let i = 0; i < this.plan.goal; i++) {
         const mine = i < this.done;
         const theirs = i < this.misses;
-        g.circle(mid + 28 + i * 34, 52, 12).fill(mine ? swatch.blue.fill : 0xffffff).stroke({ width: 4, color: swatch.blue.line });
-        g.circle(mid - 28 - i * 34, 52, 12).fill(theirs ? swatch.pink.fill : 0xffffff).stroke({ width: 4, color: swatch.pink.line });
+        g.circle(mid + 28 + i * 34, 52, 12)
+          .fill(mine ? swatch.blue.fill : 0xffffff)
+          .stroke({ width: 4, color: swatch.blue.line });
+        g.circle(mid - 28 - i * 34, 52, 12)
+          .fill(theirs ? swatch.pink.fill : 0xffffff)
+          .stroke({ width: 4, color: swatch.pink.line });
       }
     }
   }
@@ -566,19 +839,43 @@ class BounceBack implements Game {
     sfx.tada();
     this.ctx.pet.cheer();
     this.petFace.cheer();
-    this.ctx.particles.burst(this.ball.x, this.ball.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.teal.light], count: 26, speed: [150, 380], gravity: 0, life: [0.8, 1.2] });
-    await this.ctx.say(this.versus ? 'bounce.done' : isGoalMode(this.plan.mode) ? (won ? 'bounce.won' : 'bounce.lost') : 'bounce.done');
+    this.ctx.particles.burst(this.ball.x, this.ball.y, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0, swatch.teal.light],
+      count: 26,
+      speed: [150, 380],
+      gravity: 0,
+      life: [0.8, 1.2],
+    });
+    await this.ctx.say(
+      this.versus
+        ? 'bounce.done'
+        : isGoalMode(this.plan.mode)
+          ? won
+            ? 'bounce.won'
+            : 'bounce.lost'
+          : 'bounce.done',
+    );
     await this.ctx.tw.wait(0.8);
     if (this.versus) return this.ctx.finish({ misses: 0, hints: 0, scores: [this.duel[0], this.duel[1]] });
-    this.ctx.finish({ misses: isGoalMode(this.plan.mode) ? versusMisses(won, this.misses) : this.misses, hints: this.hints });
+    this.ctx.finish({
+      misses: isGoalMode(this.plan.mode) ? versusMisses(won, this.misses) : this.misses,
+      hints: this.hints,
+    });
   }
 }
 
 class BounceIcon extends WigglyIcon {
   constructor() {
     const c = new Container();
-    const t = new Graphics().roundRect(-120, -170, 240, 150, 26).fill(swatch.teal.light).stroke({ width: 6, color: swatch.teal.line });
-    t.roundRect(-100, -140, 18, 90, 9).fill(swatch.pink.fill).roundRect(82, -130, 18, 90, 9).fill(swatch.blue.fill);
+    const t = new Graphics()
+      .roundRect(-120, -170, 240, 150, 26)
+      .fill(swatch.teal.light)
+      .stroke({ width: 6, color: swatch.teal.line });
+    t.roundRect(-100, -140, 18, 90, 9)
+      .fill(swatch.pink.fill)
+      .roundRect(82, -130, 18, 90, 9)
+      .fill(swatch.blue.fill);
     const b = ballArt();
     b.position.set(10, -100);
     c.addChild(t, b);
@@ -616,7 +913,8 @@ export const bounceBack: GameModule = {
   offScreen: {
     all: 'Roll a ball back and forth across the floor, counting each roll.',
     // School: a build or test with a result, predicting first.
-    school: 'Roll a ball at a wall from three different spots. Before each roll, point to where it will come back, then check.',
+    school:
+      'Roll a ball at a wall from three different spots. Before each roll, point to where it will come back, then check.',
   },
   hubIcon: () => new BounceIcon(),
   touchDemo: true,

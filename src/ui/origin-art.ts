@@ -7,15 +7,26 @@ import { landFor } from '../content/lands';
 import { arcadeIcon, arrowIcon, heartIcon, libraryIcon, meadowIcon, padIcon, tilesIcon } from './icons';
 
 /** Explore's entries at the root (RW08): the name under each card, and its picture (about 60 units across). */
-export const ENTRY_NAMES: Record<ExploreEntry, string> = { places: 'Places', favorites: 'Favorites', all: 'All games', arcade: 'Arcade', family: 'Family play' };
+export const ENTRY_NAMES: Record<ExploreEntry, string> = {
+  places: 'Places',
+  favorites: 'Favorites',
+  all: 'All games',
+  arcade: 'Arcade',
+  family: 'Family play',
+};
 
 export function entryArt(entry: ExploreEntry): Container {
   switch (entry) {
-    case 'places': return meadowIcon();
-    case 'favorites': return heartIcon(swatch.pink.fill, true);
-    case 'all': return tilesIcon();
-    case 'arcade': return arcadeIcon();
-    case 'family': return padIcon();
+    case 'places':
+      return meadowIcon();
+    case 'favorites':
+      return heartIcon(swatch.pink.fill, true);
+    case 'all':
+      return tilesIcon();
+    case 'arcade':
+      return arcadeIcon();
+    case 'family':
+      return padIcon();
   }
 }
 
@@ -34,8 +45,10 @@ export function fitArt(art: Container, size: number): Container {
  * library's picture, and its name. Null for an origin the root does not name (the island's journal keeps Home).
  */
 export function originArt(origin: Origin | undefined): { picture: Container; place: string } | null {
-  if (origin && 'land' in origin) return { picture: landmarkFor(origin.land), place: landFor(origin.land).name };
-  if (origin && 'explore' in origin) return { picture: entryArt(origin.explore), place: ENTRY_NAMES[origin.explore] };
+  if (origin && 'land' in origin)
+    return { picture: landmarkFor(origin.land), place: landFor(origin.land).name };
+  if (origin && 'explore' in origin)
+    return { picture: entryArt(origin.explore), place: ENTRY_NAMES[origin.explore] };
   if (origin && 'library' in origin) return { picture: libraryIcon(), place: 'the library' };
   if (origin && 'daily' in origin) return { picture: tilesIcon(), place: "today's six" };
   // At the root a home spot is All games' first page (`placeAtRoot`), where Little surprises' stops come back to.

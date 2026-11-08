@@ -20,7 +20,12 @@ export function turfCell(g: Graphics, r: Rect, seed: number) {
   for (let i = 0; i < 3; i++) {
     const x = r.x + 22 + ((seed * 37 + i * 29) % 56);
     const y = r.y + 28 + ((seed * 53 + i * 31) % 50);
-    g.moveTo(x - 7, y + 6).lineTo(x - 3, y - 6).lineTo(x, y + 6).lineTo(x + 4, y - 8).lineTo(x + 7, y + 6).stroke({ width: 3, color: TURF.tuft, join: 'round', cap: 'round' });
+    g.moveTo(x - 7, y + 6)
+      .lineTo(x - 3, y - 6)
+      .lineTo(x, y + 6)
+      .lineTo(x + 4, y - 8)
+      .lineTo(x + 7, y + 6)
+      .stroke({ width: 3, color: TURF.tuft, join: 'round', cap: 'round' });
   }
 }
 
@@ -30,10 +35,14 @@ export function flowerCell(g: Graphics, r: Rect, seed: number) {
   const cx = r.x + r.w / 2;
   const cy = r.y + r.h / 2 - 6;
   const petal = [swatch.pink, swatch.purple, swatch.yellow, swatch.orange][seed % 4];
-  g.moveTo(cx, cy + 10).lineTo(cx, cy + 34).stroke({ width: 5, color: TURF.line, cap: 'round' });
+  g.moveTo(cx, cy + 10)
+    .lineTo(cx, cy + 34)
+    .stroke({ width: 5, color: TURF.line, cap: 'round' });
   for (let i = 0; i < 5; i++) {
     const a = (i / 5) * Math.PI * 2;
-    g.circle(cx + Math.cos(a) * 13, cy + Math.sin(a) * 13, 10).fill(petal.fill).stroke({ width: 2, color: petal.line });
+    g.circle(cx + Math.cos(a) * 13, cy + Math.sin(a) * 13, 10)
+      .fill(petal.fill)
+      .stroke({ width: 2, color: petal.line });
   }
   g.circle(cx, cy, 8).fill(swatch.yellow.fill).stroke({ width: 2, color: swatch.yellow.line });
 }
@@ -41,13 +50,18 @@ export function flowerCell(g: Graphics, r: Rect, seed: number) {
 /** A pond inside a pen that rings an unpainted square. */
 export function pondCell(g: Graphics, r: Rect) {
   meadowCell(g, r);
-  g.ellipse(r.x + r.w / 2, r.y + r.h / 2, r.w / 2 - 12, r.h / 2 - 20).fill(POND.fill).stroke({ width: 3, color: POND.line });
+  g.ellipse(r.x + r.w / 2, r.y + r.h / 2, r.w / 2 - 12, r.h / 2 - 20)
+    .fill(POND.fill)
+    .stroke({ width: 3, color: POND.line });
 }
 
 /** The two ends of an edge of a cell rectangle, pushed out by half the gap so neighbouring pieces meet. */
 export function edgeLine(r: Rect, side: Edge['side'], gap: number): [number, number, number, number] {
   const p = gap / 2;
-  const l = r.x - p, t = r.y - p, rt = r.x + r.w + p, b = r.y + r.h + p;
+  const l = r.x - p,
+    t = r.y - p,
+    rt = r.x + r.w + p,
+    b = r.y + r.h + p;
   if (side === 'right') return [rt, t, rt, b];
   if (side === 'left') return [l, t, l, b];
   if (side === 'down') return [l, b, rt, b];
@@ -68,15 +82,25 @@ export function fencePiece(g: Graphics, [x1, y1, x2, y2]: [number, number, numbe
   }
   g.moveTo(x1, y1).lineTo(x2, y2).stroke({ width: 10, color: wood.line, cap: 'round' });
   g.moveTo(x1, y1).lineTo(x2, y2).stroke({ width: 5, color: wood.light, cap: 'round' });
-  for (const [x, y] of [[x1, y1], [x2, y2]]) g.roundRect(x - 7, y - 7, 14, 14, 4).fill(wood.fill).stroke({ width: 3, color: wood.line });
+  for (const [x, y] of [
+    [x1, y1],
+    [x2, y2],
+  ])
+    g.roundRect(x - 7, y - 7, 14, 14, 4)
+      .fill(wood.fill)
+      .stroke({ width: 3, color: wood.line });
 }
 
 /** A loose fence piece lying on the heap or stack, centred on (x, y). */
 export function loosePiece(g: Graphics, x: number, y: number, len = 44, angle = 0) {
   const dx = (Math.cos(angle) * len) / 2;
   const dy = (Math.sin(angle) * len) / 2;
-  g.moveTo(x - dx, y - dy).lineTo(x + dx, y + dy).stroke({ width: 10, color: wood.line, cap: 'round' });
-  g.moveTo(x - dx, y - dy).lineTo(x + dx, y + dy).stroke({ width: 5, color: wood.light, cap: 'round' });
+  g.moveTo(x - dx, y - dy)
+    .lineTo(x + dx, y + dy)
+    .stroke({ width: 10, color: wood.line, cap: 'round' });
+  g.moveTo(x - dx, y - dy)
+    .lineTo(x + dx, y + dy)
+    .stroke({ width: 5, color: wood.light, cap: 'round' });
 }
 
 /** The gate on the grid's edge: two posts and a swinging bar (`open` from 0 to 1). */
@@ -85,7 +109,10 @@ export function drawGate(g: Graphics, r: Rect, open: number) {
   const wide = r.h > r.w;
   const a = { x: wide ? r.x + r.w / 2 : r.x, y: wide ? r.y : r.y + r.h / 2 };
   const b = { x: wide ? r.x + r.w / 2 : r.x + r.w, y: wide ? r.y + r.h : r.y + r.h / 2 };
-  for (const p of [a, b]) g.roundRect(p.x - 10, p.y - 10, 20, 20, 5).fill(wood.fill).stroke({ width: 4, color: wood.line });
+  for (const p of [a, b])
+    g.roundRect(p.x - 10, p.y - 10, 20, 20, 5)
+      .fill(wood.fill)
+      .stroke({ width: 4, color: wood.line });
   const len = Math.hypot(b.x - a.x, b.y - a.y) - 20;
   const base = Math.atan2(b.y - a.y, b.x - a.x) - open * 1.2;
   const ex = a.x + Math.cos(base) * len;
@@ -98,18 +125,32 @@ export function drawGate(g: Graphics, r: Rect, open: number) {
 export function bellArt(): Container {
   const c = new Container();
   const g = new Graphics()
-    .circle(0, 0, 58).fill({ color: 0xffffff, alpha: 0.85 }).stroke({ width: 4, color: swatch.yellow.line })
-    .moveTo(-30, 22).quadraticCurveTo(-32, -34, 0, -36).quadraticCurveTo(32, -34, 30, 22).lineTo(38, 30).lineTo(-38, 30).closePath()
-    .fill(swatch.yellow.fill).stroke({ width: 5, color: swatch.yellow.line, join: 'round' })
-    .circle(0, 36, 9).fill(swatch.orange.fill).stroke({ width: 3, color: swatch.orange.line })
-    .roundRect(-6, -48, 12, 14, 5).fill(swatch.yellow.line);
+    .circle(0, 0, 58)
+    .fill({ color: 0xffffff, alpha: 0.85 })
+    .stroke({ width: 4, color: swatch.yellow.line })
+    .moveTo(-30, 22)
+    .quadraticCurveTo(-32, -34, 0, -36)
+    .quadraticCurveTo(32, -34, 30, 22)
+    .lineTo(38, 30)
+    .lineTo(-38, 30)
+    .closePath()
+    .fill(swatch.yellow.fill)
+    .stroke({ width: 5, color: swatch.yellow.line, join: 'round' })
+    .circle(0, 36, 9)
+    .fill(swatch.orange.fill)
+    .stroke({ width: 3, color: swatch.orange.line })
+    .roundRect(-6, -48, 12, 14, 5)
+    .fill(swatch.yellow.line);
   c.addChild(g);
   return c;
 }
 
 /** A speech bubble's frame, filling a rectangle centred on (0, 0). */
 export function bubbleFrame(w: number, h: number): Graphics {
-  return new Graphics().roundRect(-w / 2, -h / 2, w, h, 26).fill(0xffffff).stroke({ width: 5, color: ink });
+  return new Graphics()
+    .roundRect(-w / 2, -h / 2, w, h, 26)
+    .fill(0xffffff)
+    .stroke({ width: 5, color: ink });
 }
 
 /** The request picture: `squares` grass squares with a dot each, and (level 3) `fence` pieces with a dot each. */
@@ -121,7 +162,9 @@ export function requestPicture(squares: number, fence?: number): Container {
   const x0 = -((squares * (s + 6) - 6) / 2);
   for (let i = 0; i < squares; i++) {
     const x = x0 + i * (s + 6);
-    g.roundRect(x, top - s / 2, s, s, 6).fill(TURF.fill).stroke({ width: 2, color: TURF.line });
+    g.roundRect(x, top - s / 2, s, s, 6)
+      .fill(TURF.fill)
+      .stroke({ width: 2, color: TURF.line });
     g.circle(x + s / 2, top, 4).fill(ink);
   }
   if (fence !== undefined) {
@@ -140,7 +183,9 @@ export function requestPicture(squares: number, fence?: number): Container {
 /** Level 2's bubble: a grass square and a question mark. */
 export function fieldPicture(): Container {
   const c = new Container();
-  c.addChild(new Graphics().roundRect(-70, -26, 52, 52, 8).fill(TURF.fill).stroke({ width: 3, color: TURF.line }));
+  c.addChild(
+    new Graphics().roundRect(-70, -26, 52, 52, 8).fill(TURF.fill).stroke({ width: 3, color: TURF.line }),
+  );
   const q = label('?', 64, swatch.purple.line);
   q.x = 30;
   c.addChild(q);
@@ -154,11 +199,21 @@ export class Card extends Container {
     super();
     const n = label(String(value), 64, 0xffffff);
     n.style.stroke = { color: swatch.blue.line, width: 8, join: 'round' };
-    this.addChild(this.ring, new Graphics().roundRect(-65, -65, 130, 130, 22).fill(swatch.blue.fill).stroke({ width: 6, color: swatch.blue.line }), n);
+    this.addChild(
+      this.ring,
+      new Graphics()
+        .roundRect(-65, -65, 130, 130, 22)
+        .fill(swatch.blue.fill)
+        .stroke({ width: 6, color: swatch.blue.line }),
+      n,
+    );
   }
   glow(on: boolean, t: number) {
     this.ring.clear();
-    if (on) this.ring.roundRect(-80, -80, 160, 160, 30).fill({ color: 0xfff3a0, alpha: 0.6 + 0.3 * Math.sin(t * 6) });
+    if (on)
+      this.ring
+        .roundRect(-80, -80, 160, 160, 30)
+        .fill({ color: 0xfff3a0, alpha: 0.6 + 0.3 * Math.sin(t * 6) });
   }
 }
 
@@ -174,7 +229,12 @@ export function penArt(cells: readonly [number, number][], size = 46): Container
   const rect = (x: number, y: number): Rect => ({ x: ox + x * size, y: oy + y * size, w: size, h: size });
   cells.forEach(([x, y], i) => turfCell(g, rect(x, y), i));
   for (const [x, y] of cells) {
-    for (const [dx, dy, side] of [[1, 0, 'right'], [-1, 0, 'left'], [0, 1, 'down'], [0, -1, 'up']] as const) {
+    for (const [dx, dy, side] of [
+      [1, 0, 'right'],
+      [-1, 0, 'left'],
+      [0, 1, 'down'],
+      [0, -1, 'up'],
+    ] as const) {
       if (!on.has(`${x + dx},${y + dy}`)) fencePiece(g, edgeLine(rect(x, y), side, 0));
     }
   }

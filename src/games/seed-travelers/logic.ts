@@ -165,7 +165,11 @@ export class SeedState {
     }
     if (this.level === 2) {
       const unit = this.loaded;
-      return unit ? this.go(unit, carrier, false) : this.waiting.length ? { kind: 'load-first' } : { kind: 'none' };
+      return unit
+        ? this.go(unit, carrier, false)
+        : this.waiting.length
+          ? { kind: 'load-first' }
+          : { kind: 'none' };
     }
     if (this.chosen.carrier === carrier) {
       this.chosen.carrier = null;
@@ -178,7 +182,8 @@ export class SeedState {
 
   /** Level 1's basket, out after the first arrival. */
   tapFinish(): Outcome {
-    if (this.plan.finish !== 'button' || !this.arrivedOnce || this.trip || this.finished) return { kind: 'none' };
+    if (this.plan.finish !== 'button' || !this.arrivedOnce || this.trip || this.finished)
+      return { kind: 'none' };
     this.finished = true;
     this.glow = false;
     return { kind: 'finish' };
@@ -197,7 +202,8 @@ export class SeedState {
     if (!t) return null;
     this.trip = null;
     this.place[t.unit] = t.arrived ? 'tray' : 'patch';
-    if (!this.tried(t.unit, t.carrier)) this.trials.push({ unit: t.unit, carrier: t.carrier, arrived: t.arrived });
+    if (!this.tried(t.unit, t.carrier))
+      this.trials.push({ unit: t.unit, carrier: t.carrier, arrived: t.arrived });
     if (t.arrived) {
       this.arrivedOnce = true;
       this.staysInRow = 0;
@@ -328,9 +334,13 @@ export function tripPoint(l: SeedLayout, trip: Trip, t: number): Pt {
   const from = l.patch[trip.unit];
   const to = l.inTray[trip.unit];
   if (trip.carrier === 'breeze') {
-    if (!trip.arrived) return { x: from.x + Math.sin(t * Math.PI * 4) * 14 * (1 - t), y: from.y - Math.sin(t * Math.PI) * 18 };
+    if (!trip.arrived)
+      return { x: from.x + Math.sin(t * Math.PI * 4) * 14 * (1 - t), y: from.y - Math.sin(t * Math.PI) * 18 };
     const lift = Math.min(260, from.y - 120);
-    return { x: from.x + (to.x - from.x) * t, y: from.y + (to.y - from.y) * t - Math.sin(t * Math.PI) * lift };
+    return {
+      x: from.x + (to.x - from.x) * t,
+      y: from.y + (to.y - from.y) * t - Math.sin(t * Math.PI) * lift,
+    };
   }
   return { x: from.x, y: from.y };
 }

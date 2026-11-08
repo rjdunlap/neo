@@ -9,11 +9,13 @@ const voices = import.meta.glob<{ VOICE: Record<string, string[]> }>('../games/*
 
 describe('per-game voice lines and how-to cards', () => {
   it('are gathered by current blocks (node scripts/content-barrels.mjs rewrites them)', () => {
-    for (const b of barrels() as { path: string; stale: boolean }[]) expect(b.stale, `${b.path} is stale`).toBe(false);
+    for (const b of barrels() as { path: string; stale: boolean }[])
+      expect(b.stale, `${b.path} is stale`).toBe(false);
   });
 
   it('give every registered game a folder with its own voice.ts and howto.ts', () => {
-    const withVoice = new Set(gamesWith('voice.ts')), withCard = new Set(gamesWith('howto.ts'));
+    const withVoice = new Set(gamesWith('voice.ts')),
+      withCard = new Set(gamesWith('howto.ts'));
     for (const g of GAMES) {
       expect(withVoice.has(g.id), `${g.id}/voice.ts`).toBe(true);
       expect(withCard.has(g.id), `${g.id}/howto.ts`).toBe(true);

@@ -9,7 +9,9 @@ export const VOICE = {
   'grow.mix': ['Plant {n} {a} and {m} {b}. Then tap the cloud!'],
   'grow.more-than': ['The sign shows {n} {color} flowers. Plant one more {color}, then tap the cloud!'],
   'grow.array': ['Plant two rows of three flowers like the sign, then tap the cloud!'],
-  'grow.rows': ['Plant a row of {top} flowers and a row of {bottom} flowers. Pick a seed packet, tap the beds, then tap the cloud!'],
+  'grow.rows': [
+    'Plant a row of {top} flowers and a row of {bottom} flowers. Pick a seed packet, tap the beds, then tap the cloud!',
+  ],
   'grow.columns': ['Plant the columns like the sign. Pick a seed packet, tap the beds, then tap the cloud!'],
   'grow.equal': ['Plant {n} {color} flowers in each row, in any beds. Then tap the cloud!'],
   'grow.choose': ['Pick a seed packet first.'],

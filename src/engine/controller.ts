@@ -18,13 +18,36 @@ export interface PlayerControls {
  * `typed`: the characters pressed since the last frame, in order, from `KeyboardEvent.key` (so the letter meant on any layout).
  * Only a typing game (`CouchInput.typing`) ever sees any; for every other game, and on the island, it stays empty.
  */
-export interface CouchControls { players: [PlayerControls, PlayerControls]; disconnected: boolean; status: string; controllers: number; typed?: string[] }
-export const neutral = (): PlayerControls => ({ x: 0, y: 0, direction: -1, action: false, undo: false, pause: false, back: false, active: false, hold: false, holdUndo: false });
+export interface CouchControls {
+  players: [PlayerControls, PlayerControls];
+  disconnected: boolean;
+  status: string;
+  controllers: number;
+  typed?: string[];
+}
+export const neutral = (): PlayerControls => ({
+  x: 0,
+  y: 0,
+  direction: -1,
+  action: false,
+  undo: false,
+  pause: false,
+  back: false,
+  active: false,
+  hold: false,
+  holdUndo: false,
+});
 /** Nobody pressing anything: the starting point for a bot's frame of input. */
-export const idle = (): CouchControls => ({ players: [neutral(), neutral()], disconnected: false, status: '', controllers: 0 });
+export const idle = (): CouchControls => ({
+  players: [neutral(), neutral()],
+  disconnected: false,
+  status: '',
+  controllers: 0,
+});
 type Pad = Pick<Gamepad, 'index' | 'id' | 'mapping' | 'connected' | 'axes' | 'buttons'>;
-const deadzone = (v = 0) => Math.abs(v) < 0.22 ? 0 : Math.sign(v) * (Math.abs(v) - 0.22) / 0.78;
-const direction = (x: number, y: number) => Math.max(Math.abs(x), Math.abs(y)) < 0.5 ? -1 : Math.abs(x) > Math.abs(y) ? x > 0 ? 0 : 2 : y > 0 ? 1 : 3;
+const deadzone = (v = 0) => (Math.abs(v) < 0.22 ? 0 : (Math.sign(v) * (Math.abs(v) - 0.22)) / 0.78);
+const direction = (x: number, y: number) =>
+  Math.max(Math.abs(x), Math.abs(y)) < 0.5 ? -1 : Math.abs(x) > Math.abs(y) ? (x > 0 ? 0 : 2) : y > 0 ? 1 : 3;
 
 /**
  * Hold-to-repeat for a cursor. The sampler reports a direction once per press, which suits menus; a cursor that has to cross
@@ -36,7 +59,10 @@ export class HeldDirection {
   private dir = -1;
   private held = 0;
   private due = 0;
-  constructor(private readonly after = 0.4, private readonly every = 0.11) {}
+  constructor(
+    private readonly after = 0.4,
+    private readonly every = 0.11,
+  ) {}
   poll(input: CouchControls, dt: number): number[] {
     const pressed = input.players.find((p) => p.direction >= 0)?.direction ?? -1;
     if (pressed >= 0) {
@@ -69,16 +95,17 @@ export class ControllerSampler {
 
   sample(pads: readonly (Pad | null)[], keys: ReadonlySet<string>): CouchControls {
     const standard = pads.filter((p): p is Pad => !!p?.connected && p.mapping === 'standard');
-    for (const p of standard) if (!this.slots.includes(p.index)) {
-      const slot = this.slots.findIndex((index) => index === undefined);
-      if (slot >= 0) this.slots[slot] = p.index;
-    }
-    const connected = new Set(standard.map(p => p.index));
-    const disconnected = [...this.connected].some(index => !connected.has(index));
+    for (const p of standard)
+      if (!this.slots.includes(p.index)) {
+        const slot = this.slots.findIndex((index) => index === undefined);
+        if (slot >= 0) this.slots[slot] = p.index;
+      }
+    const connected = new Set(standard.map((p) => p.index));
+    const disconnected = [...this.connected].some((index) => !connected.has(index));
     this.connected = connected;
     if (keys.has('KeyW') || keys.has('KeyS')) this.keyboardTwo = true;
     const players = [0, 1].map((slot) => {
-      const p = standard.find(p => p.index === this.slots[slot]);
+      const p = standard.find((p) => p.index === this.slots[slot]);
       const held = (index: number) => !!p?.buttons[index]?.pressed;
       const k = (code: string) => Number(keys.has(code));
       const keyboardX = slot === 0 ? k('ArrowRight') - k('ArrowLeft') : 0;
@@ -86,12 +113,16 @@ export class ControllerSampler {
       const x = keyboardX || Number(held(15)) - Number(held(14)) || deadzone(p?.axes[0]);
       const y = keyboardY || Number(held(13)) - Number(held(12)) || deadzone(p?.axes[1]);
       const raw: PlayerControls = {
-        x, y, direction: direction(x, y),
+        x,
+        y,
+        direction: direction(x, y),
         action: held(0) || (slot === 0 && (keys.has('Enter') || keys.has('Space'))),
         undo: held(2) || (slot === 0 && keys.has('Backspace')),
         pause: held(9) || (slot === 0 && keys.has('Escape')),
-        back: held(1), active: !!p || slot === 0 || this.keyboardTwo,
-        hold: false, holdUndo: false,
+        back: held(1),
+        active: !!p || slot === 0 || this.keyboardTwo,
+        hold: false,
+        holdUndo: false,
       };
       raw.hold = raw.action;
       raw.holdUndo = raw.undo;
@@ -99,13 +130,25 @@ export class ControllerSampler {
       // A newly mounted screen must see buttons/sticks released before accepting their edges.
       const prev = this.previous.get(key) ?? raw;
       this.previous.set(key, raw);
-      return { ...raw, direction: raw.direction !== prev.direction ? raw.direction : -1,
-        action: raw.action && !prev.action, undo: raw.undo && !prev.undo,
-        pause: raw.pause && !prev.pause, back: raw.back && !prev.back };
+      return {
+        ...raw,
+        direction: raw.direction !== prev.direction ? raw.direction : -1,
+        action: raw.action && !prev.action,
+        undo: raw.undo && !prev.undo,
+        pause: raw.pause && !prev.pause,
+        back: raw.back && !prev.back,
+      };
     }) as [PlayerControls, PlayerControls];
-    const unknown = pads.some(p => p?.connected && p.mapping !== 'standard');
-    const status = standard.length ? `${Math.min(standard.length, 2)} controller${standard.length === 1 ? '' : 's'} ready · first connected = Player 1` : 'Keyboard ready · press a controller button to connect';
-    return { players, disconnected, controllers: standard.length, status: status + (unknown ? ' · Unmapped controller: use a Pro Controller or keyboard for now' : '') };
+    const unknown = pads.some((p) => p?.connected && p.mapping !== 'standard');
+    const status = standard.length
+      ? `${Math.min(standard.length, 2)} controller${standard.length === 1 ? '' : 's'} ready · first connected = Player 1`
+      : 'Keyboard ready · press a controller button to connect';
+    return {
+      players,
+      disconnected,
+      controllers: standard.length,
+      status: status + (unknown ? ' · Unmapped controller: use a Pro Controller or keyboard for now' : ''),
+    };
   }
 }
 
@@ -129,7 +172,10 @@ export class CouchInput {
   typing: () => boolean = () => false;
   private readonly down = (e: KeyboardEvent) => {
     if (e.metaKey || e.ctrlKey || e.altKey || typing(e) || !this.listening()) return;
-    if (this.typing() && (e.key.length === 1 || ['Shift', 'Backspace', 'ArrowLeft', 'ArrowRight'].includes(e.key))) {
+    if (
+      this.typing() &&
+      (e.key.length === 1 || ['Shift', 'Backspace', 'ArrowLeft', 'ArrowRight'].includes(e.key))
+    ) {
       e.preventDefault();
       if (!e.repeat && this.typedKeys.length < 32) this.typedKeys.push(e.key);
       if (e.code === 'Space') this.keys.add(e.code);
@@ -141,15 +187,36 @@ export class CouchInput {
     this.keys.add(e.code);
     this.unlock();
   };
-  private readonly up = (e: KeyboardEvent) => { this.keys.delete(e.code); };
-  private readonly blur = () => { this.keys.clear(); this.typedKeys = []; this.onBlur(); };
-  private readonly hidden = () => { if (document.hidden) this.blur(); };
+  private readonly up = (e: KeyboardEvent) => {
+    this.keys.delete(e.code);
+  };
+  private readonly blur = () => {
+    this.keys.clear();
+    this.typedKeys = [];
+    this.onBlur();
+  };
+  private readonly hidden = () => {
+    if (document.hidden) this.blur();
+  };
   /**
    * `island`: keys for a round on the island. Esc stays with the app's pause sheet, W and S (the second player) are left alone, and
    * `listening` says when a key belongs to something else (the pause sheet, the grown-ups' page), so Enter still presses its buttons.
    */
-  constructor(private readonly unlock: () => void, private readonly onBlur: () => void, island?: { listening: () => boolean }) {
-    this.codes = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Enter', 'Space', 'Backspace', ...(island ? [] : ['Escape', 'KeyW', 'KeyS'])]);
+  constructor(
+    private readonly unlock: () => void,
+    private readonly onBlur: () => void,
+    island?: { listening: () => boolean },
+  ) {
+    this.codes = new Set([
+      'ArrowLeft',
+      'ArrowRight',
+      'ArrowUp',
+      'ArrowDown',
+      'Enter',
+      'Space',
+      'Backspace',
+      ...(island ? [] : ['Escape', 'KeyW', 'KeyS']),
+    ]);
     this.listening = island?.listening ?? (() => true);
     window.addEventListener('keydown', this.down);
     window.addEventListener('keyup', this.up);
@@ -158,8 +225,13 @@ export class CouchInput {
   }
   poll() {
     let pads: (Gamepad | null)[] = [];
-    try { pads = [...(navigator.getGamepads?.() ?? [])]; } catch { /* restricted embedding: keyboard remains usable */ }
-    const typed = this.typedKeys; this.typedKeys = [];
+    try {
+      pads = [...(navigator.getGamepads?.() ?? [])];
+    } catch {
+      /* restricted embedding: keyboard remains usable */
+    }
+    const typed = this.typedKeys;
+    this.typedKeys = [];
     return { ...this.sampler.sample(pads, this.keys), typed: this.typing() ? typed : [] };
   }
   destroy() {

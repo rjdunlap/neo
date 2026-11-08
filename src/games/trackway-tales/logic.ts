@@ -17,11 +17,23 @@ import type { BandLevels } from '../../progress/difficulty';
 
 export type Heading = 1 | -1;
 export type Row = 0 | 1;
-export interface Mark { col: number; row: Row; heading: Heading }
+export interface Mark {
+  col: number;
+  row: Row;
+  heading: Heading;
+}
 export type Gait = 'walk' | 'hop' | 'stand';
-export interface Segment { gait: Gait; count: number }
+export interface Segment {
+  gait: Gait;
+  count: number;
+}
 export type MoveId = 'walk' | 'hop' | 'walk-back' | 'hop-back' | 'walk-stand-walk' | 'walk-then-hop';
-export interface Movement { id: MoveId; name: string; heading: Heading; segments: readonly Segment[] }
+export interface Movement {
+  id: MoveId;
+  name: string;
+  heading: Heading;
+  segments: readonly Segment[];
+}
 
 /**
  * The six authored movements. A single-gait movement carries on to the end of any strip (its count is the
@@ -30,18 +42,46 @@ export interface Movement { id: MoveId; name: string; heading: Heading; segments
 export const MOVEMENTS: Record<MoveId, Movement> = {
   walk: { id: 'walk', name: 'walked', heading: 1, segments: [{ gait: 'walk', count: 8 }] },
   hop: { id: 'hop', name: 'hopped', heading: 1, segments: [{ gait: 'hop', count: 4 }] },
-  'walk-back': { id: 'walk-back', name: 'walked the other way', heading: -1, segments: [{ gait: 'walk', count: 8 }] },
-  'hop-back': { id: 'hop-back', name: 'hopped the other way', heading: -1, segments: [{ gait: 'hop', count: 4 }] },
-  'walk-stand-walk': {
-    id: 'walk-stand-walk', name: 'walked, stopped to look, walked on', heading: 1,
-    segments: [{ gait: 'walk', count: 4 }, { gait: 'stand', count: 1 }, { gait: 'walk', count: 4 }],
+  'walk-back': {
+    id: 'walk-back',
+    name: 'walked the other way',
+    heading: -1,
+    segments: [{ gait: 'walk', count: 8 }],
   },
-  'walk-then-hop': { id: 'walk-then-hop', name: 'walked, then hopped', heading: 1, segments: [{ gait: 'walk', count: 3 }, { gait: 'hop', count: 3 }] },
+  'hop-back': {
+    id: 'hop-back',
+    name: 'hopped the other way',
+    heading: -1,
+    segments: [{ gait: 'hop', count: 4 }],
+  },
+  'walk-stand-walk': {
+    id: 'walk-stand-walk',
+    name: 'walked, stopped to look, walked on',
+    heading: 1,
+    segments: [
+      { gait: 'walk', count: 4 },
+      { gait: 'stand', count: 1 },
+      { gait: 'walk', count: 4 },
+    ],
+  },
+  'walk-then-hop': {
+    id: 'walk-then-hop',
+    name: 'walked, then hopped',
+    heading: 1,
+    segments: [
+      { gait: 'walk', count: 3 },
+      { gait: 'hop', count: 3 },
+    ],
+  },
 };
 export const MOVE_IDS = Object.keys(MOVEMENTS) as MoveId[];
 
 /** One contact with the ground, in order: a walk step leaves one mark, a hop two, a stand none (it pauses where it is). */
-export interface Contact { col: number; marks: Mark[]; gait: Gait }
+export interface Contact {
+  col: number;
+  marks: Mark[];
+  gait: Gait;
+}
 
 /** The row a foot lands on: the left foot is on the upper half walking right, on the lower half walking left. */
 const rowOf = (left: boolean, heading: Heading): Row => ((left ? 0 : 1) ^ (heading === 1 ? 0 : 1)) as Row;
@@ -66,7 +106,14 @@ export function contacts(m: Movement, cols: number): Contact[] {
         left = !left;
         i += 1;
       } else {
-        out.push({ col, marks: [{ col, row: rowOf(true, h), heading: h }, { col, row: rowOf(false, h), heading: h }].sort((a, b) => a.row - b.row), gait: 'hop' });
+        out.push({
+          col,
+          marks: [
+            { col, row: rowOf(true, h), heading: h },
+            { col, row: rowOf(false, h), heading: h },
+          ].sort((a, b) => a.row - b.row),
+          gait: 'hop',
+        });
         i += 2;
       }
     }
@@ -77,11 +124,18 @@ export function contacts(m: Movement, cols: number): Contact[] {
 /** The marks a movement leaves, in the order it presses them. */
 export const stamp = (m: Movement, cols: number): Mark[] => contacts(m, cols).flatMap((c) => c.marks);
 
-export interface Puddle { from: number; to: number }
+export interface Puddle {
+  from: number;
+  to: number;
+}
 export const inPuddle = (col: number, p?: Puddle): boolean => !!p && col >= p.from && col <= p.to;
 
 /** What the mud shows: the marks outside the puddle. */
-export interface Observed { cols: number; marks: Mark[]; puddle?: Puddle }
+export interface Observed {
+  cols: number;
+  marks: Mark[];
+  puddle?: Puddle;
+}
 
 const key = (m: Mark) => `${m.col}:${m.row}:${m.heading}`;
 const visible = (marks: Mark[], p?: Puddle) => marks.filter((m) => !inPuddle(m.col, p));
@@ -105,7 +159,8 @@ export function orderedCols(m: Movement, o: Observed): number[] {
 export function columnDiff(m: Movement, o: Observed, col: number): Mismatch | null {
   const s = stamp(m, o.cols).filter((x) => x.col === col);
   const ob = o.marks.filter((x) => x.col === col);
-  const sRows = new Set(s.map((x) => x.row)), oRows = new Set(ob.map((x) => x.row));
+  const sRows = new Set(s.map((x) => x.row)),
+    oRows = new Set(ob.map((x) => x.row));
   if ([...sRows].some((r) => !oRows.has(r))) return 'extra';
   if ([...oRows].some((r) => !sRows.has(r))) return 'missing';
   for (const x of s) if (ob.find((y) => y.row === x.row)!.heading !== x.heading) return 'toe';
@@ -124,7 +179,14 @@ export function firstMismatch(m: Movement, o: Observed): { col: number; kind: Mi
 /* Cases ------------------------------------------------------------------------------------------ */
 
 export type CaseId = 'L1-walk' | 'L1-hop' | 'L2-left' | 'L2-right' | 'L3-pause' | 'L3-switch';
-export interface Case { id: CaseId; level: number; cols: number; observedFrom: MoveId; puddle?: Puddle; cards: readonly MoveId[] }
+export interface Case {
+  id: CaseId;
+  level: number;
+  cols: number;
+  observedFrom: MoveId;
+  puddle?: Puddle;
+  cards: readonly MoveId[];
+}
 
 export const COLS: Record<number, number> = { 1: 4, 2: 6, 3: 8 };
 
@@ -133,13 +195,31 @@ export const CASES: readonly Case[] = [
   { id: 'L1-hop', level: 1, cols: 4, observedFrom: 'hop', cards: ['walk', 'hop'] },
   { id: 'L2-left', level: 2, cols: 6, observedFrom: 'walk-back', cards: ['walk', 'walk-back', 'hop-back'] },
   { id: 'L2-right', level: 2, cols: 6, observedFrom: 'walk', cards: ['walk', 'walk-back', 'hop'] },
-  { id: 'L3-pause', level: 3, cols: 8, observedFrom: 'walk', puddle: { from: 3, to: 4 }, cards: ['walk', 'walk-stand-walk', 'hop'] },
-  { id: 'L3-switch', level: 3, cols: 8, observedFrom: 'walk-then-hop', puddle: { from: 3, to: 4 }, cards: ['walk', 'hop', 'walk-then-hop'] },
+  {
+    id: 'L3-pause',
+    level: 3,
+    cols: 8,
+    observedFrom: 'walk',
+    puddle: { from: 3, to: 4 },
+    cards: ['walk', 'walk-stand-walk', 'hop'],
+  },
+  {
+    id: 'L3-switch',
+    level: 3,
+    cols: 8,
+    observedFrom: 'walk-then-hop',
+    puddle: { from: 3, to: 4 },
+    cards: ['walk', 'hop', 'walk-then-hop'],
+  },
 ];
 export const caseById = (id: CaseId): Case => CASES.find((c) => c.id === id)!;
 
 export function observed(c: Case): Observed {
-  return { cols: c.cols, marks: visible(stamp(MOVEMENTS[c.observedFrom], c.cols), c.puddle), puddle: c.puddle };
+  return {
+    cols: c.cols,
+    marks: visible(stamp(MOVEMENTS[c.observedFrom], c.cols), c.puddle),
+    puddle: c.puddle,
+  };
 }
 
 /** The cards whose replay reproduces every visible mark: computed, never authored. */
@@ -178,7 +258,11 @@ export function makeRound(level: number, rng: Rng, first = false): Round {
     const a = AUTHORED[lv];
     const c = caseById(a.id);
     const o = observed(c);
-    return { c, cards: withCantTell(a.cards), magnified: a.magnifiedCol === null ? null : o.marks.find((m) => m.col === a.magnifiedCol) ?? null };
+    return {
+      c,
+      cards: withCantTell(a.cards),
+      magnified: a.magnifiedCol === null ? null : (o.marks.find((m) => m.col === a.magnifiedCol) ?? null),
+    };
   }
   const c = rng.pick(CASES.filter((x) => x.level === lv));
   const cards = rng.shuffle([...c.cards]);
@@ -201,7 +285,15 @@ export interface RoundState {
   done: boolean;
 }
 
-export const roundState = (round: Round): RoundState => ({ round, misses: 0, hints: 0, helped: false, eliminated: new Set(), bothShown: false, done: false });
+export const roundState = (round: Round): RoundState => ({
+  round,
+  misses: 0,
+  hints: 0,
+  helped: false,
+  eliminated: new Set(),
+  bothShown: false,
+  done: false,
+});
 
 export type CheckResult =
   | { kind: 'empty' }
@@ -283,11 +375,17 @@ export const remaining = (s: RoundState): MoveId[] => s.round.c.cards.filter((id
 
 /* Plans ------------------------------------------------------------------------------------------ */
 
-export interface Plan { id: number; name: string }
+export interface Plan {
+  id: number;
+  name: string;
+}
 export const PLANS: readonly Plan[] = [
   { id: 1, name: 'Walk or hop? Two replays; pick the one whose footprints match the mud' },
   { id: 2, name: 'Which way? Three replays, two that differ only by the way the toes point' },
-  { id: 3, name: "Can we tell? A puddle hides the middle; one card fits, or two leave the same marks and Can't tell is right" },
+  {
+    id: 3,
+    name: "Can we tell? A puddle hides the middle; one card fits, or two leave the same marks and Can't tell is right",
+  },
 ];
 
 export const LEVELS: BandLevels = { school: { min: 1, max: 3 } };
@@ -295,8 +393,16 @@ export const planFor = (level: number): Plan => PLANS[Math.max(0, Math.min(PLANS
 
 /* Layout ----------------------------------------------------------------------------------------- */
 
-export interface Pt { x: number; y: number }
-export interface Rect { x: number; y: number; w: number; h: number }
+export interface Pt {
+  x: number;
+  y: number;
+}
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
 
 export const STRIP_H = 160;
 /** A footprint pad, across. */
@@ -327,15 +433,20 @@ export interface TrackLayout {
 }
 
 export const petCorner = (v: View): Rect => ({ x: 0, y: v.h - 205, w: 200, h: 205 });
-export const shellButtons = (v: View): Rect[] => [{ x: 0, y: 0, w: 130, h: 130 }, { x: v.w - 130, y: 0, w: 130, h: 130 }];
+export const shellButtons = (v: View): Rect[] => [
+  { x: 0, y: 0, w: 130, h: 130 },
+  { x: v.w - 130, y: 0, w: 130, h: 130 },
+];
 
 /** The x of a column's centre on a strip. */
 export const colX = (L: TrackLayout, col: number): number => L.mud.x + (col + 0.5) * L.colW;
 /** The y of a mark's centre on a strip. */
-export const rowY = (strip: Rect, row: Row): number => strip.y + strip.h / 2 + (row === 0 ? -ROW_OFF : ROW_OFF);
+export const rowY = (strip: Rect, row: Row): number =>
+  strip.y + strip.h / 2 + (row === 0 ? -ROW_OFF : ROW_OFF);
 
 /** The column nearest an x, clamped to the strip. */
-export const nearestCol = (L: TrackLayout, x: number, cols: number): number => Math.max(0, Math.min(cols - 1, Math.floor((x - L.mud.x) / L.colW)));
+export const nearestCol = (L: TrackLayout, x: number, cols: number): number =>
+  Math.max(0, Math.min(cols - 1, Math.floor((x - L.mud.x) / L.colW)));
 
 /**
  * The strips across the top, the cards in a row under them from the pet's edge, and the study board with
@@ -344,7 +455,8 @@ export const nearestCol = (L: TrackLayout, x: number, cols: number): number => M
 export function trackLayout(v: View, level: number): TrackLayout {
   const lv = planFor(level).id;
   const cols = COLS[lv];
-  const ox = Math.max(0, (v.w - 1024) / 2), oy = Math.max(0, (v.h - 768) / 2);
+  const ox = Math.max(0, (v.w - 1024) / 2),
+    oy = Math.max(0, (v.h - 768) / 2);
   const colW = Math.min(150, 900 / cols);
   const w = colW * cols;
   const sx = ox + 512 - w / 2;
@@ -353,7 +465,8 @@ export function trackLayout(v: View, level: number): TrackLayout {
   const n = lv >= 3 ? 4 : lv === 2 ? 3 : 2;
   const gap = 14;
   const rowY0 = mud.y + STRIP_H + 14 + CARD_H / 2;
-  const left = ox + 210, right = ox + 1014 - SLOT_W - 20;
+  const left = ox + 210,
+    right = ox + 1014 - SLOT_W - 20;
   const span = n * CARD_W + (n - 1) * gap;
   const cx0 = left + Math.max(0, (right - left - span) / 2) + CARD_W / 2;
   const cards = Array.from({ length: n }, (_, i) => ({ x: cx0 + i * (CARD_W + gap), y: rowY0 }));
@@ -361,7 +474,11 @@ export function trackLayout(v: View, level: number): TrackLayout {
   const bx = ox + 1014 - SLOT_W / 2;
   const top = rowY0 - CARD_H / 2;
   return {
-    practice, mud, colW, cards, plays,
+    practice,
+    mud,
+    colW,
+    cards,
+    plays,
     slot: { x: bx, y: top + SLOT_H / 2 },
     check: { x: bx, y: top + SLOT_H + 12 + CHECK_H / 2 },
     lens: { x: ox + 512, y: Math.max(LENS_R + 6, practice.y + STRIP_H / 2 - 10) },

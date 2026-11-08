@@ -41,7 +41,9 @@ if (cmd === 'outline') {
         // Constants only when exported or when they open a body (tables, arrow functions), not one-line scalars.
         /^export\s+(const|let)\s/.test(line) ||
         /^(const|let)\s.*(=>|[{[(])\s*$/.test(line) ||
-        (/^ {2}(private |protected |public |static |readonly |async |get |set )*[A-Za-z_$][\w$]*\s*(<[^>]*>)?\(.*\)\s*(:\s*[^=]+)?\{\s*$/.test(line) &&
+        (/^ {2}(private |protected |public |static |readonly |async |get |set )*[A-Za-z_$][\w$]*\s*(<[^>]*>)?\(.*\)\s*(:\s*[^=]+)?\{\s*$/.test(
+          line,
+        ) &&
           !/^ {2}(if|for|while|switch|catch|with|return|else)\b/.test(line))
       ) {
         console.log(`${num(i + 1)}  ${cut(line, width)}`);
@@ -76,7 +78,8 @@ if (cmd === 'outline') {
   }
   const body = all.slice(start);
   body.slice(0, max).forEach((line, k) => console.log(`${num(start + k + 1)}  ${cut(line, width)}`));
-  if (body.length > max) console.log(`… ${body.length - max} more lines (--max=N, or read from line ${start + max + 1})`);
+  if (body.length > max)
+    console.log(`… ${body.length - max} more lines (--max=N, or read from line ${start + max + 1})`);
 } else if (cmd === 'grep') {
   const pattern = rest.at(-1);
   const files = rest.slice(0, -1);
@@ -94,7 +97,10 @@ if (cmd === 'outline') {
       if (shown >= max) return;
       shown++;
       // Show a window around the match rather than the start of a long paragraph.
-      const from = width > 0 && line.length > width ? Math.max(0, Math.min(m.index - (width >> 2), line.length - width)) : 0;
+      const from =
+        width > 0 && line.length > width
+          ? Math.max(0, Math.min(m.index - (width >> 2), line.length - width))
+          : 0;
       const text = (from > 0 ? '…' : '') + cut(line.slice(from), width);
       console.log(`${files.length > 1 ? `${file}:` : ''}${i + 1}: ${text}`);
     });

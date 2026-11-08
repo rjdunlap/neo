@@ -18,9 +18,19 @@ import umbrella from './wearables/umbrella.png?inline';
 
 const PNGS = { beanie, boot, crown, mitten, raincoat, scarf, sunglasses, sunhat, umbrella };
 const SPECIES = [
-  { id: 'sprout', A: SPROUT_ART, table: SPROUT_WEAR, make: () => new IllustratedSprout(sameArt(Texture.WHITE)) },
+  {
+    id: 'sprout',
+    A: SPROUT_ART,
+    table: SPROUT_WEAR,
+    make: () => new IllustratedSprout(sameArt(Texture.WHITE)),
+  },
   { id: 'river', A: RIVER_ART, table: RIVER_WEAR, make: () => new IllustratedRiver(sameArt(Texture.WHITE)) },
-  { id: 'glider', A: GLIDER_ART, table: GLIDER_WEAR, make: () => new IllustratedGlider(sameArt(Texture.WHITE)) },
+  {
+    id: 'glider',
+    A: GLIDER_ART,
+    table: GLIDER_WEAR,
+    make: () => new IllustratedGlider(sameArt(Texture.WHITE)),
+  },
 ] as const;
 
 /** Where an item sits in the craft (which moves the body as a whole), for comparing frames. */
@@ -29,7 +39,9 @@ const spot = (n: Container) => n.position.clone();
 describe('RW06 prep: the prepared wearables', () => {
   let art: Record<keyof typeof PNGS, Awaited<ReturnType<typeof alphaOf>>>;
   beforeAll(async () => {
-    art = Object.fromEntries(await Promise.all(Object.entries(PNGS).map(async ([k, v]) => [k, await alphaOf(v)] as const))) as typeof art;
+    art = Object.fromEntries(
+      await Promise.all(Object.entries(PNGS).map(async ([k, v]) => [k, await alphaOf(v)] as const)),
+    ) as typeof art;
   });
 
   it('match the recorded sizes, with a clear border and the anchor on the sprite', () => {
@@ -37,7 +49,8 @@ describe('RW06 prep: the prepared wearables', () => {
       const a = ITEM_ART[id];
       const png = art[a.file];
       expect([png.w, png.h], id).toEqual([a.width, a.height]);
-      for (let x = 0; x < png.w; x++) expect(png.at(x, 0) + png.at(x, png.h - 1), `${id} column ${x}`).toBe(0);
+      for (let x = 0; x < png.w; x++)
+        expect(png.at(x, 0) + png.at(x, png.h - 1), `${id} column ${x}`).toBe(0);
       for (let y = 0; y < png.h; y++) expect(png.at(0, y) + png.at(png.w - 1, y), `${id} row ${y}`).toBe(0);
       expect(a.anchor.x).toBeGreaterThan(0);
       expect(a.anchor.x).toBeLessThan(a.width);
@@ -83,7 +96,10 @@ describe.each(SPECIES)('RW06 prep: the nine wearables on the illustrated $id', (
       expect(wearItem(c, t, w, Texture.WHITE), w).toBe(fits(f));
       expect(wearingItem(c, w), w).toBe(fits(f));
     }
-    const placements = WEARABLES.reduce((n, w) => n + (fits(t[w]) ? (t[w] as { fits: unknown[] }).fits.length : 0), 0);
+    const placements = WEARABLES.reduce(
+      (n, w) => n + (fits(t[w]) ? (t[w] as { fits: unknown[] }).fits.length : 0),
+      0,
+    );
     expect(c.children[0].children.length).toBe(before + placements);
     // Wearing it again replaces it rather than adding a second.
     for (const w of WEARABLES) wearItem(c, t, w, Texture.WHITE);

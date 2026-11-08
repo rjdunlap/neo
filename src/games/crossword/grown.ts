@@ -1,7 +1,18 @@
 import type { Rng } from '../../engine/random';
 import { BLOCKED } from '../../learning/words/blocked';
 import { CLUES_5, MINIS, type Mini } from './clues';
-import { crossings, key, lettersOf, problems, squaresOf, wordsAt, type Dir, type Placed, type Plan, type Theme } from './logic';
+import {
+  crossings,
+  key,
+  lettersOf,
+  problems,
+  squaresOf,
+  wordsAt,
+  type Dir,
+  type Placed,
+  type Plan,
+  type Theme,
+} from './logic';
 
 /**
  * Crossword levels 5–6, the grown-ups' grids (docs/definitions/crossword.md): written clues, no clue squares, an A–Z keyboard.
@@ -24,9 +35,15 @@ export interface GrownPuzzle {
 /** Moves a layout so its top-left letter square is (0, 0), and gives its size (no clue squares here). */
 function normalize(words: readonly Placed[]): { words: Placed[]; w: number; h: number } {
   const all = words.flatMap((w) => squaresOf(w));
-  const r0 = Math.min(...all.map((s) => s.row)), c0 = Math.min(...all.map((s) => s.col));
-  const r1 = Math.max(...all.map((s) => s.row)), c1 = Math.max(...all.map((s) => s.col));
-  return { words: words.map((w) => ({ ...w, row: w.row - r0, col: w.col - c0 })), w: c1 - c0 + 1, h: r1 - r0 + 1 };
+  const r0 = Math.min(...all.map((s) => s.row)),
+    c0 = Math.min(...all.map((s) => s.col));
+  const r1 = Math.max(...all.map((s) => s.row)),
+    c1 = Math.max(...all.map((s) => s.col));
+  return {
+    words: words.map((w) => ({ ...w, row: w.row - r0, col: w.col - c0 })),
+    w: c1 - c0 + 1,
+    h: r1 - r0 + 1,
+  };
 }
 
 /** Every way to lay `word` crossing a placed word on a shared letter. */
@@ -34,10 +51,15 @@ function placements(on: readonly Placed[], word: string): Placed[] {
   const out: Placed[] = [];
   for (const o of on) {
     const dir: Dir = o.dir === 'across' ? 'down' : 'across';
-    for (const s of squaresOf(o)) for (let j = 0; j < word.length; j++) {
-      if (word[j] !== s.letter) continue;
-      out.push(dir === 'down' ? { word, dir, row: s.row - j, col: s.col } : { word, dir, row: s.row, col: s.col - j });
-    }
+    for (const s of squaresOf(o))
+      for (let j = 0; j < word.length; j++) {
+        if (word[j] !== s.letter) continue;
+        out.push(
+          dir === 'down'
+            ? { word, dir, row: s.row - j, col: s.col }
+            : { word, dir, row: s.row, col: s.col - j },
+        );
+      }
   }
   return out;
 }
@@ -66,7 +88,14 @@ export function makeFree(plan: Plan, theme: Theme, rng: Rng): GrownPuzzle {
     }
     if (placed.length < MIN_FREE) continue;
     const n = normalize(placed);
-    return { words: n.words, clues: n.words.map((w) => clues[w.word]), w: n.w, h: n.h, title: theme.name, id: theme.id };
+    return {
+      words: n.words,
+      clues: n.words.map((w) => clues[w.word]),
+      w: n.w,
+      h: n.h,
+      title: theme.name,
+      id: theme.id,
+    };
   }
   throw new Error(`no level 5 layout for ${theme.id}`);
 }
@@ -76,16 +105,17 @@ export function miniWords(mini: Mini): Placed[] {
   const out: Placed[] = [];
   const at = (r: number, c: number) => mini.rows[r]?.[c] ?? '#';
   const n = mini.rows.length;
-  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
-    if (at(r, c) === '#') continue;
-    for (const dir of ['across', 'down'] as const) {
-      const [dr, dc] = dir === 'across' ? [0, 1] : [1, 0];
-      if (at(r - dr, c - dc) !== '#') continue;
-      let word = '';
-      for (let rr = r, cc = c; at(rr, cc) !== '#'; rr += dr, cc += dc) word += at(rr, cc);
-      if (word.length > 1) out.push({ word, row: r, col: c, dir });
+  for (let r = 0; r < n; r++)
+    for (let c = 0; c < n; c++) {
+      if (at(r, c) === '#') continue;
+      for (const dir of ['across', 'down'] as const) {
+        const [dr, dc] = dir === 'across' ? [0, 1] : [1, 0];
+        if (at(r - dr, c - dc) !== '#') continue;
+        let word = '';
+        for (let rr = r, cc = c; at(rr, cc) !== '#'; rr += dr, cc += dc) word += at(rr, cc);
+        if (word.length > 1) out.push({ word, row: r, col: c, dir });
+      }
     }
-  }
   return out;
 }
 
@@ -102,7 +132,8 @@ export function makeGrown(plan: Plan, rng: Rng): GrownPuzzle {
 /** Crossword numbers: each square that starts a word, numbered in reading order. */
 export function numbers(p: Pick<GrownPuzzle, 'words'>): Map<string, number> {
   const starts = [...new Set(p.words.map((w) => key(w.row, w.col)))].sort((a, b) => {
-    const [ar, ac] = a.split(',').map(Number), [br, bc] = b.split(',').map(Number);
+    const [ar, ac] = a.split(',').map(Number),
+      [br, bc] = b.split(',').map(Number);
     return ar - br || ac - bc;
   });
   return new Map(starts.map((k, i) => [k, i + 1]));
@@ -116,7 +147,8 @@ export function clueName(p: GrownPuzzle, i: number): string {
 
 const reads = (s: string) => [s.toUpperCase(), s.toUpperCase().split('').reverse().join('')];
 /** Whether any run in the grid reads as a blocked word, either way. */
-export const readsBlocked = (p: Pick<GrownPuzzle, 'words'>) => p.words.some((w) => reads(w.word).some((x) => BLOCKED.includes(x)));
+export const readsBlocked = (p: Pick<GrownPuzzle, 'words'>) =>
+  p.words.some((w) => reads(w.word).some((x) => BLOCKED.includes(x)));
 
 // Typing ----------------------------------------------------------------------------------
 
@@ -128,7 +160,8 @@ export interface Cursor {
 }
 
 /** The word through square `k` in `dir`, or -1. */
-export const wordIn = (p: GrownPuzzle, k: string, dir: Dir) => wordsAt(p.words, k).find((i) => p.words[i].dir === dir) ?? -1;
+export const wordIn = (p: GrownPuzzle, k: string, dir: Dir) =>
+  wordsAt(p.words, k).find((i) => p.words[i].dir === dir) ?? -1;
 
 /** The selected word: the one through the cursor in its direction. */
 export const activeWord = (p: GrownPuzzle, c: Cursor) => wordIn(p, c.key, c.dir);
@@ -156,7 +189,13 @@ export function cursorFor(p: GrownPuzzle, fills: Fills, i: number): Cursor {
  * A letter typed at the cursor: it fills the square (unless Help revealed it) and the cursor moves to the next square of the
  * word that Help has not revealed, staying on the last.
  */
-export function typeLetter(p: GrownPuzzle, fills: Fills, revealed: ReadonlySet<string>, c: Cursor, letter: string): { fills: Map<string, string>; cursor: Cursor } {
+export function typeLetter(
+  p: GrownPuzzle,
+  fills: Fills,
+  revealed: ReadonlySet<string>,
+  c: Cursor,
+  letter: string,
+): { fills: Map<string, string>; cursor: Cursor } {
   const next = new Map(fills);
   if (!revealed.has(c.key)) next.set(c.key, letter.toLowerCase());
   const sq = squaresOf(p.words[activeWord(p, c)]);
@@ -165,14 +204,25 @@ export function typeLetter(p: GrownPuzzle, fills: Fills, revealed: ReadonlySet<s
 }
 
 /** Backspace clears the cursor's square, or when it is empty steps back one square in the word and clears that. */
-export function backspace(p: GrownPuzzle, fills: Fills, revealed: ReadonlySet<string>, c: Cursor): { fills: Map<string, string>; cursor: Cursor } {
+export function backspace(
+  p: GrownPuzzle,
+  fills: Fills,
+  revealed: ReadonlySet<string>,
+  c: Cursor,
+): { fills: Map<string, string>; cursor: Cursor } {
   const next = new Map(fills);
   if (next.has(c.key) && !revealed.has(c.key)) {
     next.delete(c.key);
     return { fills: next, cursor: c };
   }
   const sq = squaresOf(p.words[activeWord(p, c)]);
-  const before = sq.slice(0, sq.findIndex((s) => s.key === c.key)).reverse().find((s) => !revealed.has(s.key));
+  const before = sq
+    .slice(
+      0,
+      sq.findIndex((s) => s.key === c.key),
+    )
+    .reverse()
+    .find((s) => !revealed.has(s.key));
   if (!before) return { fills: next, cursor: c };
   next.delete(before.key);
   return { fills: next, cursor: { ...c, key: before.key } };
@@ -180,8 +230,10 @@ export function backspace(p: GrownPuzzle, fills: Fills, revealed: ReadonlySet<st
 
 // Judging ---------------------------------------------------------------------------------
 
-export const allFilled = (p: GrownPuzzle, fills: Fills) => [...lettersOf(p.words).keys()].every((k) => fills.has(k));
-export const wrongKeys = (p: GrownPuzzle, fills: Fills) => [...lettersOf(p.words)].filter(([k, l]) => fills.get(k) !== l).map(([k]) => k);
+export const allFilled = (p: GrownPuzzle, fills: Fills) =>
+  [...lettersOf(p.words).keys()].every((k) => fills.has(k));
+export const wrongKeys = (p: GrownPuzzle, fills: Fills) =>
+  [...lettersOf(p.words)].filter(([k, l]) => fills.get(k) !== l).map(([k]) => k);
 export const grownSolved = (p: GrownPuzzle, fills: Fills) => wrongKeys(p, fills).length === 0;
 
 /**
@@ -193,13 +245,17 @@ export const readyToCheck = (p: GrownPuzzle, fills: Fills, circled: ReadonlyMap<
   allFilled(p, fills) && [...circled].every(([k, l]) => fills.get(k) !== l);
 
 /** The circled squares still holding the letter they were circled with (a circle goes when its square changes). */
-export const stillCircled = (fills: Fills, circled: ReadonlyMap<string, string>) => [...circled].filter(([k, l]) => fills.get(k) === l).map(([k]) => k);
+export const stillCircled = (fills: Fills, circled: ReadonlyMap<string, string>) =>
+  [...circled].filter(([k, l]) => fills.get(k) === l).map(([k]) => k);
 
 /**
  * A check of a full grid: right, or the wrong squares to circle with the letters they hold. One miss whatever the number of
  * wrong words.
  */
-export function check(p: GrownPuzzle, fills: Fills): { right: true } | { right: false; circled: Map<string, string> } {
+export function check(
+  p: GrownPuzzle,
+  fills: Fills,
+): { right: true } | { right: false; circled: Map<string, string> } {
   const wrong = wrongKeys(p, fills);
   if (!wrong.length) return { right: true };
   return { right: false, circled: new Map(wrong.map((k) => [k, fills.get(k)!])) };
@@ -209,7 +265,11 @@ export function check(p: GrownPuzzle, fills: Fills): { right: true } | { right: 
  * Help reveals one right letter of word `i` (any word not yet right when `i` is), preferring a crossing square. Returns null
  * when the grid is right.
  */
-export function grownHelp(p: GrownPuzzle, fills: Fills, i: number): { key: string; letter: string; word: number } | null {
+export function grownHelp(
+  p: GrownPuzzle,
+  fills: Fills,
+  i: number,
+): { key: string; letter: string; word: number } | null {
   const open = (j: number) => squaresOf(p.words[j]).filter((s) => fills.get(s.key) !== s.letter);
   const word = i >= 0 && open(i).length ? i : p.words.findIndex((_, j) => open(j).length > 0);
   if (word < 0) return null;

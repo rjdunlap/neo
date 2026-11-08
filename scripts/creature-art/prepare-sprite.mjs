@@ -36,19 +36,40 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { requireConceptArt } from '../art/concept-art-present.mjs';
-import { ALIGNED, alignment, PLATES, cut, keyOut, parseManifest, shrink, TOLERANCE, union } from './sprite-core.mjs';
+import {
+  ALIGNED,
+  alignment,
+  PLATES,
+  cut,
+  keyOut,
+  parseManifest,
+  shrink,
+  TOLERANCE,
+  union,
+} from './sprite-core.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 
 export function parseArgs(argv) {
-  const o = { holes: [], bg: 'auto', pad: 8, shrink: 1, tolerance: TOLERANCE, check: false, generated: 'docs/rework/concepts/generated', outDir: 'src/art/creatures/illustrated' };
+  const o = {
+    holes: [],
+    bg: 'auto',
+    pad: 8,
+    shrink: 1,
+    tolerance: TOLERANCE,
+    check: false,
+    generated: 'docs/rework/concepts/generated',
+    outDir: 'src/art/creatures/illustrated',
+  };
   const num = (s, name) => {
     const v = Number(s);
     if (!Number.isFinite(v)) throw new Error(`--${name} needs a number, got ${s}`);
     return v;
   };
   const list = (s, name, count) => {
-    const v = String(s).split(',').map((p) => num(p.trim(), name));
+    const v = String(s)
+      .split(',')
+      .map((p) => num(p.trim(), name));
     if (v.length !== count) throw new Error(`--${name} needs ${count} numbers, got ${s}`);
     return v;
   };
@@ -73,83 +94,103 @@ export function parseArgs(argv) {
       o.holes.push({ x, y });
     } else if (a === '--bg') {
       o.bg = next();
-      if (!['auto', 'paper', 'transparent'].includes(o.bg)) throw new Error(`--bg is auto, paper or transparent, not ${o.bg}`);
+      if (!['auto', 'paper', 'transparent'].includes(o.bg))
+        throw new Error(`--bg is auto, paper or transparent, not ${o.bg}`);
     } else if (a === '--pad') o.pad = num(next(), 'pad');
     else if (a === '--shrink') {
       o.shrink = num(next(), 'shrink');
-      if (!Number.isInteger(o.shrink) || o.shrink < 1) throw new Error(`--shrink wants a whole number of 1 or more, got ${o.shrink}`);
-    }    else if (a === '--scale') o.scale = num(next(), 'scale');
+      if (!Number.isInteger(o.shrink) || o.shrink < 1)
+        throw new Error(`--shrink wants a whole number of 1 or more, got ${o.shrink}`);
+    } else if (a === '--scale') o.scale = num(next(), 'scale');
     else if (a === '--tolerance') o.tolerance = num(next(), 'tolerance');
     else if (a === '--previews') o.previews = next();
     else if (a === '--generated') o.generated = next();
     else if (a === '--out-dir') o.outDir = next();
     else throw new Error(`unknown argument ${a}`);
   }
-  if (o.set ? o.in || o.out : !o.in || !o.out) throw new Error('give --in <png> and --out <png>, or --set <species>');
-  if (!/^[a-z]+$/.test(o.set ?? 'a')) throw new Error(`--set wants a species name such as glider, not ${o.set}`);
+  if (o.set ? o.in || o.out : !o.in || !o.out)
+    throw new Error('give --in <png> and --out <png>, or --set <species>');
+  if (!/^[a-z]+$/.test(o.set ?? 'a'))
+    throw new Error(`--set wants a species name such as glider, not ${o.set}`);
   return o;
 }
 
 /** Decodes a PNG's `box` (or all of it) in the page. Returns 8-bit RGBA pixels and the box actually read. */
 async function decode(page, file, box) {
   const url = 'data:image/png;base64,' + readFileSync(file).toString('base64');
-  const r = await page.evaluate(async ({ url, box }) => {
-    const img = new Image();
-    img.src = url;
-    await img.decode();
-    const b = box ? { ...box } : { x: 0, y: 0, w: img.naturalWidth, h: img.naturalHeight };
-    // Clamp the box to the image.
-    const x1 = Math.min(img.naturalWidth, b.x + b.w);
-    const y1 = Math.min(img.naturalHeight, b.y + b.h);
-    b.x = Math.max(0, b.x);
-    b.y = Math.max(0, b.y);
-    b.w = x1 - b.x;
-    b.h = y1 - b.y;
-    if (b.w <= 0 || b.h <= 0) throw new Error(`box lies outside the ${img.naturalWidth} × ${img.naturalHeight} image`);
-    const c = document.createElement('canvas');
-    c.width = b.w;
-    c.height = b.h;
-    const g = c.getContext('2d', { willReadFrequently: true });
-    g.drawImage(img, b.x, b.y, b.w, b.h, 0, 0, b.w, b.h);
-    const d = g.getImageData(0, 0, b.w, b.h).data;
-    let s = '';
-    for (let i = 0; i < d.length; i += 0x8000) s += String.fromCharCode.apply(null, d.subarray(i, i + 0x8000));
-    return { pixels: btoa(s), box: b, image: [img.naturalWidth, img.naturalHeight] };
-  }, { url, box: box ?? null });
-  return { data: new Uint8ClampedArray(Buffer.from(r.pixels, 'base64')), w: r.box.w, h: r.box.h, box: r.box, image: r.image };
+  const r = await page.evaluate(
+    async ({ url, box }) => {
+      const img = new Image();
+      img.src = url;
+      await img.decode();
+      const b = box ? { ...box } : { x: 0, y: 0, w: img.naturalWidth, h: img.naturalHeight };
+      // Clamp the box to the image.
+      const x1 = Math.min(img.naturalWidth, b.x + b.w);
+      const y1 = Math.min(img.naturalHeight, b.y + b.h);
+      b.x = Math.max(0, b.x);
+      b.y = Math.max(0, b.y);
+      b.w = x1 - b.x;
+      b.h = y1 - b.y;
+      if (b.w <= 0 || b.h <= 0)
+        throw new Error(`box lies outside the ${img.naturalWidth} × ${img.naturalHeight} image`);
+      const c = document.createElement('canvas');
+      c.width = b.w;
+      c.height = b.h;
+      const g = c.getContext('2d', { willReadFrequently: true });
+      g.drawImage(img, b.x, b.y, b.w, b.h, 0, 0, b.w, b.h);
+      const d = g.getImageData(0, 0, b.w, b.h).data;
+      let s = '';
+      for (let i = 0; i < d.length; i += 0x8000)
+        s += String.fromCharCode.apply(null, d.subarray(i, i + 0x8000));
+      return { pixels: btoa(s), box: b, image: [img.naturalWidth, img.naturalHeight] };
+    },
+    { url, box: box ?? null },
+  );
+  return {
+    data: new Uint8ClampedArray(Buffer.from(r.pixels, 'base64')),
+    w: r.box.w,
+    h: r.box.h,
+    box: r.box,
+    image: r.image,
+  };
 }
 
 /** Encodes RGBA pixels as a PNG in the page; with `check`, also the three previews at 2×. */
 async function encode(page, { data, w, h }, check) {
-  const r = await page.evaluate(({ pixels, w, h, check }) => {
-    const bin = atob(pixels);
-    const px = new ImageData(w, h);
-    for (let i = 0; i < bin.length; i++) px.data[i] = bin.charCodeAt(i);
-    const out = document.createElement('canvas');
-    out.width = w;
-    out.height = h;
-    out.getContext('2d').putImageData(px, 0, 0);
-    const previews = [];
-    if (check) {
-      for (const fill of ['#fff8ec', '#2b2340', 'checker']) {
-        const p = document.createElement('canvas');
-        p.width = w * 2;
-        p.height = h * 2;
-        const pg = p.getContext('2d');
-        if (fill === 'checker') for (let y = 0; y < p.height; y += 16) for (let x = 0; x < p.width; x += 16) {
-          pg.fillStyle = (x + y) % 32 ? '#bbb' : '#eee';
-          pg.fillRect(x, y, 16, 16);
+  const r = await page.evaluate(
+    ({ pixels, w, h, check }) => {
+      const bin = atob(pixels);
+      const px = new ImageData(w, h);
+      for (let i = 0; i < bin.length; i++) px.data[i] = bin.charCodeAt(i);
+      const out = document.createElement('canvas');
+      out.width = w;
+      out.height = h;
+      out.getContext('2d').putImageData(px, 0, 0);
+      const previews = [];
+      if (check) {
+        for (const fill of ['#fff8ec', '#2b2340', 'checker']) {
+          const p = document.createElement('canvas');
+          p.width = w * 2;
+          p.height = h * 2;
+          const pg = p.getContext('2d');
+          if (fill === 'checker')
+            for (let y = 0; y < p.height; y += 16)
+              for (let x = 0; x < p.width; x += 16) {
+                pg.fillStyle = (x + y) % 32 ? '#bbb' : '#eee';
+                pg.fillRect(x, y, 16, 16);
+              }
+          else {
+            pg.fillStyle = fill;
+            pg.fillRect(0, 0, p.width, p.height);
+          }
+          pg.drawImage(out, 0, 0, p.width, p.height);
+          previews.push(p.toDataURL('image/png'));
         }
-        else {
-          pg.fillStyle = fill;
-          pg.fillRect(0, 0, p.width, p.height);
-        }
-        pg.drawImage(out, 0, 0, p.width, p.height);
-        previews.push(p.toDataURL('image/png'));
       }
-    }
-    return { png: out.toDataURL('image/png'), previews };
-  }, { pixels: Buffer.from(data.buffer, data.byteOffset, data.byteLength).toString('base64'), w, h, check });
+      return { png: out.toDataURL('image/png'), previews };
+    },
+    { pixels: Buffer.from(data.buffer, data.byteOffset, data.byteLength).toString('base64'), w, h, check },
+  );
   const bytes = (url) => Buffer.from(url.split(',')[1], 'base64');
   return { png: bytes(r.png), previews: r.previews.map(bytes) };
 }
@@ -162,7 +203,10 @@ async function emit(page, o, job) {
   const n = o.shrink;
   const bw = Math.ceil((box.maxX - box.minX + 1) / n) * n;
   const bh = Math.ceil((box.maxY - box.minY + 1) / n) * n;
-  const sprite = shrink(cut(pixels.data, pixels.w, pixels.h, { x: box.minX, y: box.minY, w: bw, h: bh }, o.pad * n), n);
+  const sprite = shrink(
+    cut(pixels.data, pixels.w, pixels.h, { x: box.minX, y: box.minY, w: bw, h: bh }, o.pad * n),
+    n,
+  );
   const { png, previews: pv } = await encode(page, sprite, o.check);
   mkdirSync(dirname(outPath), { recursive: true });
   writeFileSync(outPath, png);
@@ -176,7 +220,12 @@ async function emit(page, o, job) {
     size: [sprite.w, sprite.h],
     // The source pixel under the sprite's top-left corner, padding included.
     origin: [pixels.box.x + box.minX - o.pad * n, pixels.box.y + box.minY - o.pad * n],
-    bounds: [pixels.box.x + bounds.minX, pixels.box.y + bounds.minY, bounds.maxX - bounds.minX + 1, bounds.maxY - bounds.minY + 1],
+    bounds: [
+      pixels.box.x + bounds.minX,
+      pixels.box.y + bounds.minY,
+      bounds.maxX - bounds.minX + 1,
+      bounds.maxY - bounds.minY + 1,
+    ],
     background: mode === 'paper' ? { paper } : 'transparent',
   };
   if (n > 1) line.shrink = n;
@@ -206,14 +255,23 @@ export async function run(argv) {
     if (!o.set) {
       const a = await analyse(page, o, at(o.in));
       const outPath = at(o.out);
-      lines.push(await emit(page, o, { ...a, box: a.bounds, outPath, previews: o.previews ? at(o.previews) : at(join('test-results', basename(o.out, '.png'))) }));
+      lines.push(
+        await emit(page, o, {
+          ...a,
+          box: a.bounds,
+          outPath,
+          previews: o.previews ? at(o.previews) : at(join('test-results', basename(o.out, '.png'))),
+        }),
+      );
     } else {
       const dir = at(o.generated);
       const manifest = join(dir, 'README.md');
       if (!existsSync(manifest)) throw new Error(`no manifest at ${relative(root, manifest)}`);
       const chosen = parseManifest(readFileSync(manifest, 'utf8'), o.set);
       if (!chosen.length) throw new Error(`the manifest marks no ${o.set} file chosen`);
-      for (const c of chosen) if (!existsSync(join(dir, c.file))) throw new Error(`${c.file} is marked chosen but is not in ${relative(root, dir)}`);
+      for (const c of chosen)
+        if (!existsSync(join(dir, c.file)))
+          throw new Error(`${c.file} is marked chosen but is not in ${relative(root, dir)}`);
       const jobs = [];
       for (const c of chosen) jobs.push({ ...c, ...(await analyse(page, o, join(dir, c.file))) });
       const aligned = jobs.filter((j) => ALIGNED.includes(j.asset));
@@ -222,14 +280,25 @@ export async function run(argv) {
       const drift = [];
       for (const j of aligned) {
         const { offsets, ok } = alignment(base.bounds, j.bounds, o.tolerance);
-        if (!ok) drift.push(`  ${j.file}: left ${offsets.left}, top ${offsets.top}, right ${offsets.right}, bottom ${offsets.bottom}`);
+        if (!ok)
+          drift.push(
+            `  ${j.file}: left ${offsets.left}, top ${offsets.top}, right ${offsets.right}, bottom ${offsets.bottom}`,
+          );
       }
-      if (drift.length) throw new Error(`variants do not line up with ${base.file} (more than ${o.tolerance} px; nothing written):\n${drift.join('\n')}`);
+      if (drift.length)
+        throw new Error(
+          `variants do not line up with ${base.file} (more than ${o.tolerance} px; nothing written):\n${drift.join('\n')}`,
+        );
       const shared = aligned.length ? union(aligned.map((j) => j.bounds)) : null;
       for (const j of jobs) {
         const outPath = at(join(o.outDir, `${o.set}-${j.asset}.png`));
         const previews = `${o.previews ? at(o.previews) : at(join('test-results', o.set))}-${j.asset}`;
-        const line = await emit(page, o, { ...j, box: ALIGNED.includes(j.asset) || (shared && PLATES.includes(j.asset)) ? shared : j.bounds, outPath, previews });
+        const line = await emit(page, o, {
+          ...j,
+          box: ALIGNED.includes(j.asset) || (shared && PLATES.includes(j.asset)) ? shared : j.bounds,
+          outPath,
+          previews,
+        });
         line.asset = j.asset;
         if (ALIGNED.includes(j.asset) || (shared && PLATES.includes(j.asset))) line.sharedBox = true;
         lines.push(line);

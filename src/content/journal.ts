@@ -14,7 +14,20 @@ import type { LineId } from './voice-script';
  * is found. A game reports what it actually showed during a round (`RoundResult.discoveries`); the shell files it.
  */
 
-export type JournalGame = 'sink-float' | 'animal-snack' | 'photo-safari' | 'seesaw-balance' | 'bouncy-launch' | 'habitat-helpers' | 'letter-trails' | 'mail-carrier' | 'rhythm-neighbors' | 'melt-freeze' | 'pet-kitchen' | 'paint-mixer' | 'far-lights';
+export type JournalGame =
+  | 'sink-float'
+  | 'animal-snack'
+  | 'photo-safari'
+  | 'seesaw-balance'
+  | 'bouncy-launch'
+  | 'habitat-helpers'
+  | 'letter-trails'
+  | 'mail-carrier'
+  | 'rhythm-neighbors'
+  | 'melt-freeze'
+  | 'pet-kitchen'
+  | 'paint-mixer'
+  | 'far-lights';
 
 export interface JournalEntry {
   /** Stable forever: `game:key`. Saves keep these, so never rename one. */
@@ -38,11 +51,21 @@ export const entryId = (game: JournalGame, key: string) => `${game}:${key}`;
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
-const KITCHEN_NAMES: Record<KitchenDiscovery, string> = { half: 'Two halves make a whole', quarter: 'Two quarters make a half', third: 'Three thirds make a pizza' };
+const KITCHEN_NAMES: Record<KitchenDiscovery, string> = {
+  half: 'Two halves make a whole',
+  quarter: 'Two quarters make a half',
+  third: 'Three thirds make a pizza',
+};
 const KITCHEN_SOURCES: Record<KitchenDiscovery, JournalEntry['source']> = {
-  half: { find: 'cut food in halves and share every half fairly', found: 'the two halves of the food were shared out' },
+  half: {
+    find: 'cut food in halves and share every half fairly',
+    found: 'the two halves of the food were shared out',
+  },
   quarter: { find: 'give a friend two quarters', found: 'a friend had two quarters, the same as one half' },
-  third: { find: 'cut a pizza in thirds and share every slice', found: 'the pizza was cut in three equal slices and shared out' },
+  third: {
+    find: 'cut a pizza in thirds and share every slice',
+    found: 'the pizza was cut in three equal slices and shared out',
+  },
 };
 
 /** Observations, in the words a grown-up would say. One line per thing and per animal. */
@@ -121,7 +144,10 @@ export const JOURNAL: readonly JournalEntry[] = [
     key: t,
     name: cap(thingWord(t)),
     line: SINK_LINES[t],
-    source: { find: `put the ${thingWord(t)} into the water`, found: `the ${thingWord(t)} went into the water` },
+    source: {
+      find: `put the ${thingWord(t)} into the water`,
+      found: `the ${thingWord(t)} went into the water`,
+    },
   })),
   ...ANIMALS.map((a): JournalEntry => ({
     id: entryId('animal-snack', a),
@@ -129,7 +155,10 @@ export const JOURNAL: readonly JournalEntry[] = [
     key: a,
     name: `${cap(a)} and ${FAVORITE[a]}`,
     line: SNACK_LINES[a],
-    source: { find: `let the ${a} eat ${FOOD_WORDS[FAVORITE[a]!]}`, found: `the ${a} ate ${FOOD_WORDS[FAVORITE[a]!]}` },
+    source: {
+      find: `let the ${a} eat ${FOOD_WORDS[FAVORITE[a]!]}`,
+      found: `the ${a} ate ${FOOD_WORDS[FAVORITE[a]!]}`,
+    },
   })),
   ...ACTIONS.map((action): JournalEntry => ({
     id: entryId('photo-safari', action),
@@ -145,7 +174,10 @@ export const JOURNAL: readonly JournalEntry[] = [
     key: 'heavy-down',
     name: 'Heavier side',
     line: 'journal.seesaw.heavy',
-    source: { find: 'put more weight on one side of the seesaw', found: 'one side held more weight and went down' },
+    source: {
+      find: 'put more weight on one side of the seesaw',
+      found: 'one side held more weight and went down',
+    },
   },
   {
     id: entryId('seesaw-balance', 'equal-level'),
@@ -153,7 +185,10 @@ export const JOURNAL: readonly JournalEntry[] = [
     key: 'equal-level',
     name: 'Same weight',
     line: 'journal.seesaw.equal',
-    source: { find: 'make both sides of the seesaw weigh the same', found: 'both sides weighed the same and the seesaw became level' },
+    source: {
+      find: 'make both sides of the seesaw weigh the same',
+      found: 'both sides weighed the same and the seesaw became level',
+    },
   },
   {
     id: entryId('bouncy-launch', 'bigger-pull'),
@@ -161,7 +196,10 @@ export const JOURNAL: readonly JournalEntry[] = [
     key: 'bigger-pull',
     name: 'Bigger pull',
     line: 'journal.launch.pull',
-    source: { find: 'try two different pulls and watch where the pet lands', found: 'a bigger pull sent the pet farther than a smaller pull' },
+    source: {
+      find: 'try two different pulls and watch where the pet lands',
+      found: 'a bigger pull sent the pet farther than a smaller pull',
+    },
   },
   {
     id: entryId('habitat-helpers', 'bunny'),
@@ -169,7 +207,10 @@ export const JOURNAL: readonly JournalEntry[] = [
     key: 'bunny',
     name: 'Bunny habitat',
     line: 'journal.habitat.bunny',
-    source: { find: 'build a garden with food, water and shelter for Bunny and open the gate', found: 'a garden supplied food, water and shelter and Bunny visited' },
+    source: {
+      find: 'build a garden with food, water and shelter for Bunny and open the gate',
+      found: 'a garden supplied food, water and shelter and Bunny visited',
+    },
   },
   {
     id: entryId('habitat-helpers', 'duck'),
@@ -177,7 +218,10 @@ export const JOURNAL: readonly JournalEntry[] = [
     key: 'duck',
     name: 'Duck habitat',
     line: 'journal.habitat.duck',
-    source: { find: 'build a garden with food, water and shelter for Duck and open the gate', found: 'a garden supplied food, water and shelter and Duck visited' },
+    source: {
+      find: 'build a garden with food, water and shelter for Duck and open the gate',
+      found: 'a garden supplied food, water and shelter and Duck visited',
+    },
   },
   {
     id: entryId('rhythm-neighbors', 'frogs-answer'),
@@ -185,7 +229,10 @@ export const JOURNAL: readonly JournalEntry[] = [
     key: 'frogs-answer',
     name: 'The frogs answered the woodpecker',
     line: 'journal.neighbors.answer',
-    source: { find: 'take turns with the woodpecker and answer its knocks with the frogs', found: 'the woodpecker knocked and the frog answered' },
+    source: {
+      find: 'take turns with the woodpecker and answer its knocks with the frogs',
+      found: 'the woodpecker knocked and the frog answered',
+    },
   },
   ...Object.keys(WORDS).map((letter): JournalEntry => ({
     id: entryId('letter-trails', letter),
@@ -193,7 +240,10 @@ export const JOURNAL: readonly JournalEntry[] = [
     key: letter,
     name: `${letter} is for ${WORDS[letter]}`,
     line: TRAIL_LINES[letter],
-    source: { find: `trace the letter ${letter} to its end`, found: `the letter ${letter} was traced to its end` },
+    source: {
+      find: `trace the letter ${letter} to its end`,
+      found: `the letter ${letter} was traced to its end`,
+    },
   })),
   ...HELPERS.map((helper): JournalEntry => ({
     id: entryId('mail-carrier', helper),
@@ -213,7 +263,10 @@ export const JOURNAL: readonly JournalEntry[] = [
     key: s,
     name: cap(s),
     line: `journal.melt.${s}` as LineId,
-    source: { find: `warm and cool a tray with the ${s} on it`, found: `the ${s} melted in the warm and went hard again in the cool` },
+    source: {
+      find: `warm and cool a tray with the ${s} on it`,
+      found: `the ${s} melted in the warm and went hard again in the cool`,
+    },
   })),
   {
     id: entryId('melt-freeze', 'stays'),
@@ -221,7 +274,10 @@ export const JOURNAL: readonly JournalEntry[] = [
     key: 'stays',
     name: 'Stays the same',
     line: 'journal.melt.stays',
-    source: { find: 'warm a tray that has a stone or a spoon on it', found: 'the stone and the spoon stayed the same in the warm' },
+    source: {
+      find: 'warm a tray that has a stone or a spoon on it',
+      found: 'the stone and the spoon stayed the same in the warm',
+    },
   },
   // Pet Kitchen: what a fair or asked-for serve showed (decision 6 of its dive).
   ...KITCHEN_DISCOVERIES.map((k): JournalEntry => ({
@@ -242,7 +298,10 @@ export const JOURNAL: readonly JournalEntry[] = [
       key: r.name,
       name: cap(r.name),
       line: `journal.paint.${r.name}` as LineId,
-      source: { find: `make the bucket the sample's colour with ${said}`, found: `the bucket was ${r.name}: ${said}` },
+      source: {
+        find: `make the bucket the sample's colour with ${said}`,
+        found: `the bucket was ${r.name}: ${said}`,
+      },
     };
   }),
   // Far Lights, level 7: a strong light far away and a gentle light close by looked the same (definition levels 5–8).
@@ -265,7 +324,9 @@ export const entriesOf = (game: JournalGame) => JOURNAL.filter((e) => e.game ===
 
 /** A card names the exact revealing action, not just the game that contains it. */
 export function sourceText(entry: JournalEntry, gameName: string, found: boolean): string {
-  return found ? `Found in ${gameName} when ${entry.source.found}.` : `In ${gameName}, ${cap(entry.source.find)}.`;
+  return found
+    ? `Found in ${gameName} when ${entry.source.found}.`
+    : `In ${gameName}, ${cap(entry.source.find)}.`;
 }
 
 /** The journal in the save. `seen` is how many entries she had looked at when she last opened it (for a twinkle). */
@@ -278,15 +339,28 @@ export const emptyJournal = (): JournalSave => ({ found: [], seen: 0 });
 
 /** What a restored or hand-edited save may keep: known entries, once each, in the order they were found. */
 export function cleanJournal(raw: unknown): JournalSave {
-  const r = typeof raw === 'object' && raw !== null && !Array.isArray(raw) ? (raw as Record<string, unknown>) : {};
+  const r =
+    typeof raw === 'object' && raw !== null && !Array.isArray(raw) ? (raw as Record<string, unknown>) : {};
   const known = new Set(JOURNAL_IDS);
-  const found = [...new Set(Array.isArray(r.found) ? r.found.filter((id): id is string => typeof id === 'string' && known.has(id)) : [])];
-  const seen = typeof r.seen === 'number' && Number.isFinite(r.seen) ? Math.max(0, Math.min(found.length, Math.floor(r.seen))) : 0;
+  const found = [
+    ...new Set(
+      Array.isArray(r.found)
+        ? r.found.filter((id): id is string => typeof id === 'string' && known.has(id))
+        : [],
+    ),
+  ];
+  const seen =
+    typeof r.seen === 'number' && Number.isFinite(r.seen)
+      ? Math.max(0, Math.min(found.length, Math.floor(r.seen)))
+      : 0;
   return { found, seen };
 }
 
 /** Adds what a round showed. Unknown ids and ones already found change nothing; `added` is what is new this time. */
-export function discover(journal: JournalSave, ids: readonly string[] | undefined): { journal: JournalSave; added: string[] } {
+export function discover(
+  journal: JournalSave,
+  ids: readonly string[] | undefined,
+): { journal: JournalSave; added: string[] } {
   const known = new Set(JOURNAL_IDS);
   const have = new Set(journal.found);
   const added: string[] = [];
@@ -296,11 +370,14 @@ export function discover(journal: JournalSave, ids: readonly string[] | undefine
       added.push(id);
     }
   }
-  return added.length ? { journal: { ...journal, found: [...journal.found, ...added] }, added } : { journal, added };
+  return added.length
+    ? { journal: { ...journal, found: [...journal.found, ...added] }, added }
+    : { journal, added };
 }
 
 /** She has opened the journal: everything found so far counts as looked at. */
-export const markSeen = (journal: JournalSave): JournalSave => (journal.seen === journal.found.length ? journal : { ...journal, seen: journal.found.length });
+export const markSeen = (journal: JournalSave): JournalSave =>
+  journal.seen === journal.found.length ? journal : { ...journal, seen: journal.found.length };
 
 /** Whether there is something she has not looked at yet. */
 export const hasNew = (journal: JournalSave) => journal.found.length > journal.seen;

@@ -7,7 +7,11 @@ import type { Cell } from './logic';
 function layer(z: number, rows: string): Cell[] {
   const off = z % 2 ? 0.5 : 0;
   const out: Cell[] = [];
-  rows.split('/').forEach((row, y) => [...row].forEach((ch, x) => { if (ch === '#') out.push({ x: x + off, y: y + off, z }); }));
+  rows.split('/').forEach((row, y) =>
+    [...row].forEach((ch, x) => {
+      if (ch === '#') out.push({ x: x + off, y: y + off, z });
+    }),
+  );
   return out;
 }
 const heap = (...layers: string[]): Cell[] => layers.flatMap((rows, z) => layer(z, rows));
@@ -126,5 +130,12 @@ const PILE24 = [
 
 /** Frozen shapes for each level, by level ID: ten a level, and no two levels share a pool. */
 export const SHAPES: Record<number, Cell[][]> = {
-  1: FLAT6, 2: PILE9, 3: FLAT6B, 4: PILE9B, 5: PILE12, 6: PILE15, 7: PILE18, 8: PILE24,
+  1: FLAT6,
+  2: PILE9,
+  3: FLAT6B,
+  4: PILE9B,
+  5: PILE12,
+  6: PILE15,
+  7: PILE18,
+  8: PILE24,
 };

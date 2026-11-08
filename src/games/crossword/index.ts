@@ -18,7 +18,27 @@ import type { LineId } from '../../content/voice-script';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
-  applyHelp, bankFor, clueOf, decoysFor, firstOpen, helpFor, judge, makeRound, nearest, nextFill, planFor, riddleLine, solved, spelled, squaresOf, wordRight, wordsAt, wrongSquares, WORDS_1, type Plan, type Puzzle,
+  applyHelp,
+  bankFor,
+  clueOf,
+  decoysFor,
+  firstOpen,
+  helpFor,
+  judge,
+  makeRound,
+  nearest,
+  nextFill,
+  planFor,
+  riddleLine,
+  solved,
+  spelled,
+  squaresOf,
+  wordRight,
+  wordsAt,
+  wrongSquares,
+  WORDS_1,
+  type Plan,
+  type Puzzle,
 } from './logic';
 
 const INSTRUCT = ['cw.one', 'cw.two', 'cw.three', 'cw.four'] as const;
@@ -39,10 +59,15 @@ class Tile extends Container {
   square: string | null = null;
   constructor(readonly letter: string) {
     super();
-    this.glow.roundRect(-SQ / 2 - 12, -SQ / 2 - 12, SQ + 24, SQ + 24, 26).fill({ color: 0xfff3a0, alpha: 0.9 });
+    this.glow
+      .roundRect(-SQ / 2 - 12, -SQ / 2 - 12, SQ + 24, SQ + 24, 26)
+      .fill({ color: 0xfff3a0, alpha: 0.9 });
     this.glow.visible = false;
     this.glow.eventMode = 'none';
-    const g = new Graphics().roundRect(-SQ / 2 + 4, -SQ / 2 + 4, SQ - 8, SQ - 8, 18).fill(cream).stroke({ width: 5, color: swatch.purple.line });
+    const g = new Graphics()
+      .roundRect(-SQ / 2 + 4, -SQ / 2 + 4, SQ - 8, SQ - 8, 18)
+      .fill(cream)
+      .stroke({ width: 5, color: swatch.purple.line });
     const t = label(letter.toUpperCase(), 64, ink);
     t.eventMode = 'none';
     this.addChild(this.glow, g, t);
@@ -90,18 +115,33 @@ class Crossword implements Game {
     this.rng = ctx.rng;
     this.plan = planFor(ctx.level);
     this.puzzles = makeRound(this.plan, ctx.rng);
-    this.backdrop = new Backdrop({ sky: [0xd6efc8, 0xfff6e0], hills: [0x9fd3a8, 0x8fcf73], horizon: 0.7, clouds: 2, seed: 211 }, ctx.view);
+    this.backdrop = new Backdrop(
+      { sky: [0xd6efc8, 0xfff6e0], hills: [0x9fd3a8, 0x8fcf73], horizon: 0.7, clouds: 2, seed: 211 },
+      ctx.view,
+    );
     this.hintGlow.eventMode = 'none';
     this.outline.eventMode = 'none';
     this.board.addChild(this.hintGlow, this.grid, this.outline);
-    const hb = new Graphics().roundRect(-60, -50, 120, 100, 26).fill(swatch.yellow.fill).stroke({ width: 5, color: swatch.yellow.line });
+    const hb = new Graphics()
+      .roundRect(-60, -50, 120, 100, 26)
+      .fill(swatch.yellow.fill)
+      .stroke({ width: 5, color: swatch.yellow.line });
     const q = label('?', 60, ink);
     q.eventMode = 'none';
     this.help.addChild(hb, q);
     this.help.hitArea = new Rectangle(-60, -50, 120, 100);
     onTap(this.help, () => this.useHelp(), { cooldown: 500 });
-    const sb = new Graphics().roundRect(-60, -50, 120, 100, 26).fill(swatch.green.light).stroke({ width: 5, color: swatch.green.line })
-      .ellipse(0, 0, 40, 24).fill(0xffffff).stroke({ width: 5, color: ink }).circle(0, 0, 13).fill(swatch.blue.fill).circle(0, 0, 6).fill(ink);
+    const sb = new Graphics()
+      .roundRect(-60, -50, 120, 100, 26)
+      .fill(swatch.green.light)
+      .stroke({ width: 5, color: swatch.green.line })
+      .ellipse(0, 0, 40, 24)
+      .fill(0xffffff)
+      .stroke({ width: 5, color: ink })
+      .circle(0, 0, 13)
+      .fill(swatch.blue.fill)
+      .circle(0, 0, 6)
+      .fill(ink);
     this.show.addChild(sb);
     this.show.hitArea = new Rectangle(-60, -50, 120, 100);
     this.show.visible = !!this.plan.riddles;
@@ -126,7 +166,8 @@ class Crossword implements Game {
     // A riddle round reads the first word's riddle straight away, so she never has to find the speaker first.
     if (this.plan.riddles) {
       await told;
-      if (!this.revealed.has(this.active) && !this.finished) void this.ctx.say(riddleLine(this.puzzle!.words[this.active].word) as LineId);
+      if (!this.revealed.has(this.active) && !this.finished)
+        void this.ctx.say(riddleLine(this.puzzle!.words[this.active].word) as LineId);
     }
   }
 
@@ -152,7 +193,8 @@ class Crossword implements Game {
     this.backdrop.resize(v);
     const p = this.puzzle;
     if (!p) return;
-    const gw = p.w * PITCH - 4, gh = p.h * PITCH - 4;
+    const gw = p.w * PITCH - 4,
+      gh = p.h * PITCH - 4;
     const safe = safeArea(v);
     if (this.upright) {
       this.board.position.set((v.w - gw) / 2, Math.max(160, v.h * 0.18));
@@ -161,16 +203,21 @@ class Crossword implements Game {
       // Show me sits just above Help, under the grid's last row.
       this.show.position.set(this.help.x, y - 112);
     } else {
-      const left = safe.x + 180, right = v.w - (this.wideBank ? 220 : 160);
-      this.board.position.set(Math.max(left, left + (right - left - gw) / 2), Math.max(144, 150 + (v.h - 190 - gh) / 2));
+      const left = safe.x + 180,
+        right = v.w - (this.wideBank ? 220 : 160);
+      this.board.position.set(
+        Math.max(left, left + (right - left - gw) / 2),
+        Math.max(144, 150 + (v.h - 190 - gh) / 2),
+      );
       this.help.position.set(v.w - 90, Math.min(v.h - 80, 660));
       this.show.position.set(this.help.x, this.help.y - 116);
     }
     this.layoutBank();
-    for (const [k, t] of this.placed) if (!t.drag?.dragging) {
-      t.position.copyFrom(this.center(k));
-      if (t.drag) t.drag.home = { x: t.x, y: t.y };
-    }
+    for (const [k, t] of this.placed)
+      if (!t.drag?.dragging) {
+        t.position.copyFrom(this.center(k));
+        if (t.drag) t.drag.home = { x: t.x, y: t.y };
+      }
     this.drawGlow();
   }
 
@@ -185,7 +232,8 @@ class Crossword implements Game {
     const n = this.bank.length;
     this.bank.forEach((t, i) => {
       if (this.upright && this.wideBank) {
-        const row = Math.floor(i / 3), cols = Math.min(3, n - row * 3);
+        const row = Math.floor(i / 3),
+          cols = Math.min(3, n - row * 3);
         t.position.set(v.w / 2 - 120 - ((cols - 1) / 2) * 112 + (i % 3) * 112, this.help.y - 54 + row * 108);
       } else if (this.upright) t.position.set(v.w / 2 - 120 - ((n - 1) / 2) * 112 + i * 112, this.help.y);
       else if (this.wideBank) t.position.set(v.w - 162 + (i % 2) * 108, 210 + Math.floor(i / 2) * 108);
@@ -214,7 +262,12 @@ class Crossword implements Game {
       const [r, c] = k.split(',').map(Number);
       const sq = new Container();
       const blank = p.blanks.includes(k);
-      sq.addChild(new Graphics().roundRect(0, 0, SQ, SQ, 16).fill(blank ? 0xfffbe6 : 0xffffff).stroke({ width: blank ? 6 : 4, color: blank ? swatch.orange.line : swatch.purple.line }));
+      sq.addChild(
+        new Graphics()
+          .roundRect(0, 0, SQ, SQ, 16)
+          .fill(blank ? 0xfffbe6 : 0xffffff)
+          .stroke({ width: blank ? 6 : 4, color: blank ? swatch.orange.line : swatch.purple.line }),
+      );
       if (!blank) {
         const t = label(letter.toUpperCase(), 64, ink);
         t.position.set(SQ / 2, SQ / 2);
@@ -228,7 +281,12 @@ class Crossword implements Game {
     p.words.forEach((w, i) => {
       const at = clueOf(w);
       const sq = new Container();
-      sq.addChild(new Graphics().roundRect(0, 0, SQ, SQ, 16).fill(swatch.green.light).stroke({ width: 4, color: swatch.green.line }));
+      sq.addChild(
+        new Graphics()
+          .roundRect(0, 0, SQ, SQ, 16)
+          .fill(swatch.green.light)
+          .stroke({ width: 4, color: swatch.green.line }),
+      );
       const pic = typingPicture(w.word);
       pic.scale.set(0.36);
       pic.position.set(SQ / 2, SQ / 2 - 4);
@@ -238,9 +296,14 @@ class Crossword implements Game {
       if (this.plan.riddles) {
         pic.visible = false;
         const sp = new Graphics()
-          .poly([-30, -12, -16, -12, 2, -28, 2, 28, -16, 12, -30, 12]).fill(ink)
-          .moveTo(12, -20).quadraticCurveTo(32, 0, 12, 20).stroke({ width: 5, color: ink, cap: 'round' })
-          .moveTo(20, -32).quadraticCurveTo(48, 0, 20, 32).stroke({ width: 5, color: ink, cap: 'round' });
+          .poly([-30, -12, -16, -12, 2, -28, 2, 28, -16, 12, -30, 12])
+          .fill(ink)
+          .moveTo(12, -20)
+          .quadraticCurveTo(32, 0, 12, 20)
+          .stroke({ width: 5, color: ink, cap: 'round' })
+          .moveTo(20, -32)
+          .quadraticCurveTo(48, 0, 20, 32)
+          .stroke({ width: 5, color: ink, cap: 'round' });
         sp.position.set(SQ / 2 - 4, SQ / 2);
         sp.eventMode = 'none';
         sq.addChild(sp);
@@ -248,7 +311,8 @@ class Crossword implements Game {
       }
       // A small arrow points the way the word reads.
       const a = new Graphics();
-      if (w.dir === 'across') a.poly([SQ - 4, SQ / 2 - 12, SQ + 10, SQ / 2, SQ - 4, SQ / 2 + 12]).fill(swatch.green.line);
+      if (w.dir === 'across')
+        a.poly([SQ - 4, SQ / 2 - 12, SQ + 10, SQ / 2, SQ - 4, SQ / 2 + 12]).fill(swatch.green.line);
       else a.poly([SQ / 2 - 12, SQ - 4, SQ / 2, SQ + 10, SQ / 2 + 12, SQ - 4]).fill(swatch.green.line);
       sq.addChild(a);
       sq.position.set(at.col * PITCH, at.row * PITCH);
@@ -269,9 +333,16 @@ class Crossword implements Game {
     const g = this.outline.clear();
     this.drawShow();
     if (!p || this.finished) return;
-    for (const s of squaresOf(p.words[this.active])) g.roundRect(s.col * PITCH - 6, s.row * PITCH - 6, SQ + 12, SQ + 12, 20).stroke({ width: 6, color: swatch.blue.line });
+    for (const s of squaresOf(p.words[this.active]))
+      g.roundRect(s.col * PITCH - 6, s.row * PITCH - 6, SQ + 12, SQ + 12, 20).stroke({
+        width: 6,
+        color: swatch.blue.line,
+      });
     const c = clueOf(p.words[this.active]);
-    g.roundRect(c.col * PITCH - 6, c.row * PITCH - 6, SQ + 12, SQ + 12, 20).stroke({ width: 6, color: swatch.blue.line });
+    g.roundRect(c.col * PITCH - 6, c.row * PITCH - 6, SQ + 12, SQ + 12, 20).stroke({
+      width: 6,
+      color: swatch.blue.line,
+    });
   }
 
   /** After two misses on the active word, its next square and the tile for it glow. Free, never a hint. */
@@ -282,7 +353,10 @@ class Crossword implements Game {
     if (!p || this.wordMisses[this.active] < 2) return;
     const s = nextFill(p, this.fills, this.active);
     if (!s) return;
-    g.roundRect(s.col * PITCH - 12, s.row * PITCH - 12, SQ + 24, SQ + 24, 26).fill({ color: 0xfff3a0, alpha: 0.9 });
+    g.roundRect(s.col * PITCH - 12, s.row * PITCH - 12, SQ + 24, SQ + 24, 26).fill({
+      color: 0xfff3a0,
+      alpha: 0.9,
+    });
     const t = this.bank.find((x) => x.letter === s.letter);
     if (t) t.glow.visible = true;
   }
@@ -303,7 +377,10 @@ class Crossword implements Game {
       // The riddle is free to hear again and again.
       void this.ctx.say(riddleLine(word) as LineId);
       const sp = this.speakers.get(i);
-      if (sp) void this.ctx.tw.to(sp.scale, { x: 1.2, y: 1.2 }, { duration: 0.12 }).then(() => this.ctx.tw.to(sp.scale, { x: 1, y: 1 }, { duration: 0.2, ease: ease.outBack }));
+      if (sp)
+        void this.ctx.tw
+          .to(sp.scale, { x: 1.2, y: 1.2 }, { duration: 0.12 })
+          .then(() => this.ctx.tw.to(sp.scale, { x: 1, y: 1 }, { duration: 0.2, ease: ease.outBack }));
       return;
     }
     void this.ctx.say('cw.word', { word });
@@ -314,7 +391,8 @@ class Crossword implements Game {
   private reveal(i: number) {
     if (!this.plan.riddles || this.revealed.has(i)) return;
     this.revealed.add(i);
-    const sp = this.speakers.get(i), pic = this.pictures.get(i);
+    const sp = this.speakers.get(i),
+      pic = this.pictures.get(i);
     if (sp) sp.visible = false;
     if (pic) pic.visible = true;
     this.drawShow();
@@ -330,7 +408,8 @@ class Crossword implements Game {
     const p = this.puzzle;
     if (!p || !this.plan.riddles || this.busy || this.finished) return;
     // Already shown: it says the word again, free.
-    if (this.revealed.has(this.active)) return void this.ctx.say('cw.word', { word: p.words[this.active].word });
+    if (this.revealed.has(this.active))
+      return void this.ctx.say('cw.word', { word: p.words[this.active].word });
     this.hints++;
     sfx.pop(4);
     const i = this.active;
@@ -346,7 +425,9 @@ class Crossword implements Game {
     const ws = wordsAt(p.words, k);
     const at = ws.indexOf(this.active);
     this.activate(at >= 0 ? ws[(at + 1) % ws.length] : ws[0]);
-    const letter = this.fills.get(k) ?? (p.blanks.includes(k) ? undefined : squaresOf(p.words[ws[0]]).find((s) => s.key === k)!.letter);
+    const letter =
+      this.fills.get(k) ??
+      (p.blanks.includes(k) ? undefined : squaresOf(p.words[ws[0]]).find((s) => s.key === k)!.letter);
     if (letter) void this.ctx.say('cw.letter', { letter: letter.toUpperCase() });
     sfx.pop(5);
   }
@@ -372,12 +453,16 @@ class Crossword implements Game {
     const p = this.puzzle;
     if (!p) return;
     if (this.bank.some((t) => t.drag?.dragging)) return;
-    const letters = wordRight(p, this.fills, this.active) ? [] : bankFor(p, this.fills, this.active, this.decoys[this.active]);
+    const letters = wordRight(p, this.fills, this.active)
+      ? []
+      : bankFor(p, this.fills, this.active, this.decoys[this.active]);
     // The same letters stay put rather than popping again.
     const same = (a: string[]) => [...a].sort().join('');
     if (this.bank.length && same(letters) === same(this.bank.map((t) => t.letter))) return this.drawGlow();
     for (const t of this.bank) this.dropTile(t);
-    this.bank = new Rng(this.index * 97 + this.active * 13 + letters.length).shuffle(letters.map((l) => this.makeTile(l)));
+    this.bank = new Rng(this.index * 97 + this.active * 13 + letters.length).shuffle(
+      letters.map((l) => this.makeTile(l)),
+    );
     this.layoutBank();
     for (const t of this.bank) {
       t.scale.set(0);
@@ -466,10 +551,16 @@ class Crossword implements Game {
           if (t) {
             t.drag!.enabled = false;
             t.eventMode = 'none';
-            void this.ctx.tw.to(t, { y: t.y - 50, alpha: 0 }, { duration: 0.35 }).then(() => this.dropTile(t));
+            void this.ctx.tw
+              .to(t, { y: t.y - 50, alpha: 0 }, { duration: 0.35 })
+              .then(() => this.dropTile(t));
           }
         }
-        if (i === j.wrong[0]) void this.ctx.say(this.plan.riddles ? 'cw.spellsRiddle' : 'cw.spells', { spelled: said, word: named(p.words[i].word) });
+        if (i === j.wrong[0])
+          void this.ctx.say(this.plan.riddles ? 'cw.spellsRiddle' : 'cw.spells', {
+            spelled: said,
+            word: named(p.words[i].word),
+          });
       }
       this.active = j.wrong[0];
     }
@@ -501,7 +592,9 @@ class Crossword implements Game {
   private bounce(i: number) {
     const pic = this.pictures.get(i);
     if (!pic) return;
-    void this.ctx.tw.to(pic.scale, { x: 0.44, y: 0.44 }, { duration: 0.15, ease: ease.outQuad }).then(() => this.ctx.tw.to(pic.scale, { x: 0.36, y: 0.36 }, { duration: 0.25, ease: ease.outBack }));
+    void this.ctx.tw
+      .to(pic.scale, { x: 0.44, y: 0.44 }, { duration: 0.15, ease: ease.outQuad })
+      .then(() => this.ctx.tw.to(pic.scale, { x: 0.36, y: 0.36 }, { duration: 0.25, ease: ease.outBack }));
     for (const c of pic.children) if (c instanceof Critter) c.cheer();
   }
 
@@ -514,7 +607,14 @@ class Crossword implements Game {
       this.reveal(i);
       this.bounce(i);
       const at = this.center(squaresOf(p.words[i])[1].key);
-      this.ctx.particles.burst(at.x, at.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.orange.light], count: 14, speed: [100, 260], gravity: 0, life: [0.5, 0.9] });
+      this.ctx.particles.burst(at.x, at.y, {
+        kind: 'star',
+        colors: [0xffffff, 0xfff3a0, swatch.orange.light],
+        count: 14,
+        speed: [100, 260],
+        gravity: 0,
+        life: [0.5, 0.9],
+      });
     }
     sfx.sparkle();
     for (const i of words) {
@@ -597,7 +697,11 @@ class Crossword implements Game {
 function miniGrid(): Container {
   const c = new Container();
   const g = new Graphics();
-  const sq = (x: number, y: number, fill: number) => g.roundRect(x - 34, y - 34, 68, 68, 12).fill(fill).stroke({ width: 4, color: swatch.purple.line });
+  const sq = (x: number, y: number, fill: number) =>
+    g
+      .roundRect(x - 34, y - 34, 68, 68, 12)
+      .fill(fill)
+      .stroke({ width: 4, color: swatch.purple.line });
   for (let i = 0; i < 3; i++) sq(-36 + i * 72, 0, 0xffffff);
   for (const y of [-72, 72]) sq(36, y, 0xffffff);
   g.roundRect(-142, -34, 68, 68, 12).fill(swatch.green.light).stroke({ width: 4, color: swatch.green.line });
@@ -615,7 +719,12 @@ function miniGrid(): Container {
 function sticker(seed: number): Container {
   const rng = new Rng(seed);
   const c = new Container();
-  c.addChild(new Graphics().roundRect(-80, -80, 160, 160, 24).fill(0xffffff).stroke({ width: 7, color: swatch.purple.line }));
+  c.addChild(
+    new Graphics()
+      .roundRect(-80, -80, 160, 160, 24)
+      .fill(0xffffff)
+      .stroke({ width: 7, color: swatch.purple.line }),
+  );
   const pic = typingPicture(rng.pick([...WORDS_1]));
   pic.scale.set(0.55);
   c.addChild(pic);
@@ -640,4 +749,3 @@ export const crossword: GameModule = {
   sticker,
   create: (ctx) => (planFor(ctx.level).grown ? new GrownCrossword(ctx) : new Crossword(ctx)),
 };
-

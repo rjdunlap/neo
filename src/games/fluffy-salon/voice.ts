@@ -1,10 +1,12 @@
 // What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
 export const VOICE = {
   'game.fluffy-salon': ['Fluffy salon!'],
-  'salon.two-customers': ['Two customers! Your pet wants it {first}. {who} wants it {second}. Tap either head or card to choose. Look in the mirror to check each one!'],
-  'salon.compare': ["Make mine {direction} than Pip’s! Use the mirror to compare."],
-  'salon.fixed-friend': ["Pip’s fur stays this length. Style your pet’s fur beside Pip."],
-  'salon.compare-more': ["A little {direction}, so we can see the difference from Pip’s!"],
+  'salon.two-customers': [
+    'Two customers! Your pet wants it {first}. {who} wants it {second}. Tap either head or card to choose. Look in the mirror to check each one!',
+  ],
+  'salon.compare': ['Make mine {direction} than Pip’s! Use the mirror to compare.'],
+  'salon.fixed-friend': ['Pip’s fur stays this length. Style your pet’s fur beside Pip.'],
+  'salon.compare-more': ['A little {direction}, so we can see the difference from Pip’s!'],
   'salon.more-color-friend': ['{who} wants a little more {fix}, where it glows.'],
   'salon.play': ['Welcome to the salon! Pick a tool and brush the fluffy hair.'],
   'salon.pat': ['Pat the fluffy fur!'],

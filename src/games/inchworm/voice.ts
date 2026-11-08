@@ -15,7 +15,9 @@ export const VOICE = {
   'worm.fromzero': ['That is where it ends, but it did not start at 0. Count the spaces it covers.'],
   'worm.rulerdiff': ['Look at the {a} and the {b}. How many spaces longer is the {a}?'],
   'worm.rulersum': ['The {a} and the {b} go end to end. How long are they together? Count the spaces.'],
-  'worm.fromends': ['That is how far apart the ends are, but they do not start in the same place. Count the extra spaces.'],
+  'worm.fromends': [
+    'That is how far apart the ends are, but they do not start in the same place. Count the extra spaces.',
+  ],
   'worm.extra': ['Count the extra spaces the {a} covers.'],
   'worm.firstonly': ['That is where the first one stops. Keep counting to the end of the second one.'],
   'worm.together': ['Together they are {n} long!'],
@@ -29,7 +31,9 @@ export const VOICE = {
   'worm.smaller': ['The {what} did not change. Little worms are smaller, so it takes more of them.'],
   'worm.bigger': ['The {what} did not change. Big worms are bigger, so it takes fewer of them.'],
   'worm.done': ['What a measurer!'],
-  'worm.jump': ['Bunny and Duck jumped in the sand! Measure both jumps with inchworms. Whose jump is longer?'],
+  'worm.jump': [
+    'Bunny and Duck jumped in the sand! Measure both jumps with inchworms. Whose jump is longer?',
+  ],
   'worm.jumpmuch': ["How many inchworms longer is {a}'s jump than {b}'s?"],
   'worm.pastprints': ['That one would go past the footprints!'],
   'worm.broken': ['This ruler broke, so there is no 0. How long is the {what}? Count the spaces it covers.'],
@@ -40,7 +44,9 @@ export const VOICE = {
   'worm.hoplong': ['The {what} is {n} hops long!'],
   'worm.chalk': ['Count the chalk marks again: one for every hop.'],
   'worm.slide': ['The {what} is longer than the ruler! Drag the ruler under it, with 0 at the start.'],
-  'worm.slidemark': ['{n}! The chalk mark shows where the ruler stopped. Now move the ruler on, with 0 at the mark.'],
+  'worm.slidemark': [
+    '{n}! The chalk mark shows where the ruler stopped. Now move the ruler on, with 0 at the mark.',
+  ],
   'worm.slidehow': ['How long is the whole {what}?'],
   'worm.secondpart': ['That is the second part. Add the first {n}.'],
   'worm.firstthenrest': ['Count the spaces: {n}, then the rest.'],

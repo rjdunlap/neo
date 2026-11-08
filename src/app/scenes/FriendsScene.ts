@@ -3,7 +3,15 @@ import { cream, grass, swatch } from '../../art/palette';
 import { sfx } from '../../audio/sfx';
 import { voice } from '../../audio/voice';
 import { makeIndividual, makePortrait, type Companion } from '../../creatures/companion';
-import { ARROW_RADIUS, BACK, CARD, COME_RADIUS, DRESS_RADIUS, friendsLayout, PER_PAGE } from '../../creatures/friends-layout';
+import {
+  ARROW_RADIUS,
+  BACK,
+  CARD,
+  COME_RADIUS,
+  DRESS_RADIUS,
+  friendsLayout,
+  PER_PAGE,
+} from '../../creatures/friends-layout';
 import { HOME_BUTTON } from '../../creatures/home-layout';
 import { onTap } from '../../engine/input';
 import type { View } from '../../engine/view';
@@ -25,15 +33,39 @@ import { applySettings } from '../settings';
  */
 export class FriendsScene extends Scene {
   private readonly floor = new Graphics();
-  private readonly back = new RoundButton(this.app.creatureWorld ? arrowIcon(-1) : treehouseIcon(), swatch.white, 50, () => this.app.go.room());
+  private readonly back = new RoundButton(
+    this.app.creatureWorld ? arrowIcon(-1) : treehouseIcon(),
+    swatch.white,
+    50,
+    () => this.app.go.room(),
+  );
   /** At the root (RW06 slice 2): Home, to the right of Back. Classic's Friends keeps Back only. */
   private readonly home = new RoundButton(houseIcon(), swatch.white, 50, () => this.app.go.hub());
-  private readonly come = new RoundButton(checkIcon(), swatch.green, COME_RADIUS, () => void this.comeWithMe());
+  private readonly come = new RoundButton(
+    checkIcon(),
+    swatch.green,
+    COME_RADIUS,
+    () => void this.comeWithMe(),
+  );
   private readonly dress = new RoundButton(hangerIcon(), swatch.yellow, DRESS_RADIUS, () => this.dressUp());
   private readonly cards = new Container();
   private readonly ring = new Graphics();
-  private readonly previous = new HoldButton(arrowIcon(-1), swatch.white, ARROW_RADIUS, 0.35, () => this.turn(-1), swatch.teal.line);
-  private readonly next = new HoldButton(arrowIcon(1), swatch.white, ARROW_RADIUS, 0.35, () => this.turn(1), swatch.teal.line);
+  private readonly previous = new HoldButton(
+    arrowIcon(-1),
+    swatch.white,
+    ARROW_RADIUS,
+    0.35,
+    () => this.turn(-1),
+    swatch.teal.line,
+  );
+  private readonly next = new HoldButton(
+    arrowIcon(1),
+    swatch.white,
+    ARROW_RADIUS,
+    0.35,
+    () => this.turn(1),
+    swatch.teal.line,
+  );
   /** The friend on the stage. */
   stageFriend: Companion | null = null;
   /** Whose card was tapped last: the friend on the stage. */
@@ -77,10 +109,14 @@ export class FriendsScene extends Scene {
     const c = (this.stageFriend = this.track(makeIndividual(who)));
     c.hitArea = c.touchArea(20);
     // A large friend instead of the corner guide, so a tap on it repeats the instruction.
-    onTap(c, () => {
-      c.poke();
-      void voice.say('friends.pick');
-    }, { cooldown: 300 });
+    onTap(
+      c,
+      () => {
+        c.poke();
+        void voice.say('friends.pick');
+      },
+      { cooldown: 300 },
+    );
     this.content.addChild(c);
     this.resize(this.view);
   }
@@ -100,7 +136,12 @@ export class FriendsScene extends Scene {
       if (id === store.data.creatures.companion) {
         // The "with me" mark on whoever travels with her now.
         const mark = new Container();
-        mark.addChild(new Graphics().circle(0, 0, 22).fill(swatch.pink.fill).stroke({ width: 4, color: swatch.pink.line }));
+        mark.addChild(
+          new Graphics()
+            .circle(0, 0, 22)
+            .fill(swatch.pink.fill)
+            .stroke({ width: 4, color: swatch.pink.line }),
+        );
         const heart = heartIcon();
         heart.scale.set(0.55);
         mark.addChild(heart);
@@ -185,9 +226,14 @@ export class FriendsScene extends Scene {
       this.next.position.set(l.arrows.next.x, l.arrows.next.y);
     }
     this.ring.clear();
-    const i = this.cards.children.findIndex((c) => (c as Container & { friendId?: string }).friendId === this.previewed);
+    const i = this.cards.children.findIndex(
+      (c) => (c as Container & { friendId?: string }).friendId === this.previewed,
+    );
     const p = l.cards[i];
-    if (p) this.ring.roundRect(p.x - CARD / 2 - 8, p.y - CARD / 2 - 8, CARD + 16, CARD + 16, 26).stroke({ width: 7, color: swatch.yellow.line });
+    if (p)
+      this.ring
+        .roundRect(p.x - CARD / 2 - 8, p.y - CARD / 2 - 8, CARD + 16, CARD + 16, 26)
+        .stroke({ width: 7, color: swatch.yellow.line });
   }
 
   enter() {

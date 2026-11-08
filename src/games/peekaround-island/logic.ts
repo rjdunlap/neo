@@ -25,9 +25,21 @@ export const PLANS: PeekPlan[] = [
   { mode: 'named', rounds: 3, name: 'Find the friend named: "where is the duck?" (two others are showing)' },
   { mode: 'who', rounds: 3, name: 'Three friends are showing: who is hiding behind the tree?' },
   { mode: 'place', rounds: 3, name: 'Put three friends behind, in front of, and next to the tree' },
-  { mode: 'two', rounds: 2, name: 'Two directions at once, then before the island turns around: who will be in front?' },
-  { mode: 'see', rounds: 3, name: "A picture stands on the island: who can't see it, with the tree in the way?" },
-  { mode: 'view', rounds: 3, name: 'Three pictures of the island from three sides: which one shows what the duck sees from where it stands?' },
+  {
+    mode: 'two',
+    rounds: 2,
+    name: 'Two directions at once, then before the island turns around: who will be in front?',
+  },
+  {
+    mode: 'see',
+    rounds: 3,
+    name: "A picture stands on the island: who can't see it, with the tree in the way?",
+  },
+  {
+    mode: 'view',
+    rounds: 3,
+    name: 'Three pictures of the island from three sides: which one shows what the duck sees from where it stands?',
+  },
   { mode: 'sky', rounds: 3, name: 'From the sky: which map shows the island from above?' },
 ];
 
@@ -146,7 +158,10 @@ export function viewFrom(from: number, friends: readonly { name: CritterName; sp
   return {
     left: mod4(from - 1),
     right: mod4(from),
-    friends: friends.filter((f) => f.spot >= 0 && f.spot !== from).map((f) => ({ name: f.name, facing: mod4(f.spot - from) })).sort((a, b) => a.facing - b.facing),
+    friends: friends
+      .filter((f) => f.spot >= 0 && f.spot !== from)
+      .map((f) => ({ name: f.name, facing: mod4(f.spot - from) }))
+      .sort((a, b) => a.facing - b.facing),
   };
 }
 
@@ -184,8 +199,12 @@ export interface SkyScene {
 }
 
 /** Two friends of one body colour would read as the same dot on a small map. */
-const LOOKALIKES: [CritterName, CritterName][] = [['cow', 'bunny'], ['dog', 'bear']];
-export const lookalike = (a: CritterName, b: CritterName) => LOOKALIKES.some(([x, y]) => (x === a && y === b) || (x === b && y === a));
+const LOOKALIKES: [CritterName, CritterName][] = [
+  ['cow', 'bunny'],
+  ['dog', 'bear'],
+];
+export const lookalike = (a: CritterName, b: CritterName) =>
+  LOOKALIKES.some(([x, y]) => (x === a && y === b) || (x === b && y === a));
 
 /**
  * Scene `index` of level 8: everyone in sight on front and both sides (0), three with one behind the tree and
@@ -200,20 +219,39 @@ export function makeSkyScene(index: number, rng: Rng, lastHider?: CritterName): 
     if (friends.length === facing.length) break;
     if (!friends.some((x) => x === f || lookalike(x, f))) friends.push(f);
   }
-  return { friends, facing, hidden, k: rng.pick([1, 3]), maps: rng.shuffle<SkyKind>(['true', 'mirror', 'turned']) };
+  return {
+    friends,
+    facing,
+    hidden,
+    k: rng.pick([1, 3]),
+    maps: rng.shuffle<SkyKind>(['true', 'mirror', 'turned']),
+  };
 }
 
 /** What a map shows: each friend's place and each flower's (flower i at facing i + 0.5 + turns), as map facings. */
-export function skyArrangement(kind: SkyKind, k: number, friends: readonly { name: CritterName; facing: number }[], turns = 0) {
+export function skyArrangement(
+  kind: SkyKind,
+  k: number,
+  friends: readonly { name: CritterName; facing: number }[],
+  turns = 0,
+) {
   return {
-    friends: Object.fromEntries(friends.map((f) => [f.name, skyFacing(kind, f.facing, k)])) as Record<string, number>,
+    friends: Object.fromEntries(friends.map((f) => [f.name, skyFacing(kind, f.facing, k)])) as Record<
+      string,
+      number
+    >,
     flowers: [0, 1, 2, 3].map((i) => skyFacing(kind, i + 0.5 + turns, k)),
   };
 }
 
 /** The island's own arrangement seen from above: friends on island spots after `turns`, with no map transform. */
 export function islandArrangement(friends: readonly { name: CritterName; spot: number }[], turns: number) {
-  return skyArrangement('true', 0, friends.filter((f) => f.spot >= 0).map((f) => ({ name: f.name, facing: mod4(f.spot + turns) })), turns);
+  return skyArrangement(
+    'true',
+    0,
+    friends.filter((f) => f.spot >= 0).map((f) => ({ name: f.name, facing: mod4(f.spot + turns) })),
+    turns,
+  );
 }
 
 /** The quarter turns that bring island spot `spot` round to the front, the short way (2 from behind). */
@@ -241,7 +279,15 @@ function canFinish(free: readonly number[], turns: number, asked: readonly Where
 
 function fairWord(free: readonly number[], turns: number, asked: readonly Where[], where: Where): boolean {
   if (!hasChoice(free, turns, where)) return false;
-  return free.filter((s) => fits(where, s, turns)).every((s) => canFinish(free.filter((x) => x !== s), turns, [...asked, where]));
+  return free
+    .filter((s) => fits(where, s, turns))
+    .every((s) =>
+      canFinish(
+        free.filter((x) => x !== s),
+        turns,
+        [...asked, where],
+      ),
+    );
 }
 
 /**
@@ -250,9 +296,18 @@ function fairWord(free: readonly number[], turns: number, asked: readonly Where[
  * "next to" is never asked last (the two side spots would be all that is left). Returns a spot it was chosen
  * from (any spot with that where fits).
  */
-export function nextRequest(free: number[], turns: number, asked: Where[], rng: Rng): { where: Where; spot: number } {
+export function nextRequest(
+  free: number[],
+  turns: number,
+  asked: Where[],
+  rng: Rng,
+): { where: Where; spot: number } {
   const options = rng.shuffle(free.map((spot) => ({ spot, where: whereIs(spot, turns) })));
-  return options.find((o) => !asked.includes(o.where) && fairWord(free, turns, asked, o.where)) ?? options.find((o) => !asked.includes(o.where)) ?? options[0];
+  return (
+    options.find((o) => !asked.includes(o.where) && fairWord(free, turns, asked, o.where)) ??
+    options.find((o) => !asked.includes(o.where)) ??
+    options[0]
+  );
 }
 
 /**
@@ -262,7 +317,11 @@ export function nextRequest(free: number[], turns: number, asked: Where[], rng: 
  * the starting four spots this is always behind and next to; from the two left after the turn, behind and
  * next to again. The order the two are named is shuffled.
  */
-export function nextPair(free: number[], turns: number, rng: Rng): [{ where: Where; spot: number }, { where: Where; spot: number }] {
+export function nextPair(
+  free: number[],
+  turns: number,
+  rng: Rng,
+): [{ where: Where; spot: number }, { where: Where; spot: number }] {
   const behind = free.find((s) => whereIs(s, turns) === 'behind');
   const pairs: [{ where: Where; spot: number }, { where: Where; spot: number }][] = [];
   if (behind !== undefined) {
@@ -274,14 +333,28 @@ export function nextPair(free: number[], turns: number, rng: Rng): [{ where: Whe
   }
   if (pairs.length) return pairs[0];
   const a = nextRequest(free, turns, [], rng);
-  return [a, nextRequest(free.filter((s) => s !== a.spot), turns, [a.where], rng)];
+  return [
+    a,
+    nextRequest(
+      free.filter((s) => s !== a.spot),
+      turns,
+      [a.where],
+      rng,
+    ),
+  ];
 }
 
 /** Every way she can place the pair, in either order and at any fitting spot, and what is left after. */
-export function pairPlacements(free: readonly number[], turns: number, a: Where, b: Where): { a: number; b: number; left: number[] }[] {
+export function pairPlacements(
+  free: readonly number[],
+  turns: number,
+  a: Where,
+  b: Where,
+): { a: number; b: number; left: number[] }[] {
   const out: { a: number; b: number; left: number[] }[] = [];
   for (const sa of free.filter((s) => fits(a, s, turns))) {
-    for (const sb of free.filter((s) => s !== sa && fits(b, s, turns))) out.push({ a: sa, b: sb, left: free.filter((s) => s !== sa && s !== sb) });
+    for (const sb of free.filter((s) => s !== sa && fits(b, s, turns)))
+      out.push({ a: sa, b: sb, left: free.filter((s) => s !== sa && s !== sb) });
   }
   return out;
 }
@@ -289,21 +362,31 @@ export function pairPlacements(free: readonly number[], turns: number, a: Where,
 function pairFair(free: readonly number[], turns: number, a: Where, b: Where): boolean {
   if (!hasChoice(free, turns, a) || !hasChoice(free, turns, b)) return false;
   // Placing either one first, at any fitting spot, leaves a spot for the other.
-  for (const [x, y] of [[a, b], [b, a]] as const) {
-    for (const s of free.filter((f) => fits(x, f, turns))) if (!free.some((f) => f !== s && fits(y, f, turns))) return false;
+  for (const [x, y] of [
+    [a, b],
+    [b, a],
+  ] as const) {
+    for (const s of free.filter((f) => fits(x, f, turns)))
+      if (!free.some((f) => f !== s && fits(y, f, turns))) return false;
   }
   // After the half turn, what is left over still holds two different words.
-  return pairPlacements(free, turns, a, b).every(({ left }) => left.length < 2 || new Set(left.map((s) => whereIs(s, turns + 2))).size > 1);
+  return pairPlacements(free, turns, a, b).every(
+    ({ left }) => left.length < 2 || new Set(left.map((s) => whereIs(s, turns + 2))).size > 1,
+  );
 }
 
 /** Level 2's help: ring the arrows while the friend asked for is behind the tree, and the friend once it is in view. */
-export const namedHintTarget = (hiderSpot: number, turns: number): 'arrows' | 'hider' => (whereIs(hiderSpot, turns) === 'behind' ? 'arrows' : 'hider');
+export const namedHintTarget = (hiderSpot: number, turns: number): 'arrows' | 'hider' =>
+  whereIs(hiderSpot, turns) === 'behind' ? 'arrows' : 'hider';
 
 /**
  * Level 5's prediction: before a half turn, the friend who will be in front afterwards is the one behind the
  * tree now. Null when nobody stands behind.
  */
-export function frontAfterHalfTurn<F extends { spot: number }>(friends: readonly F[], turns: number): F | null {
+export function frontAfterHalfTurn<F extends { spot: number }>(
+  friends: readonly F[],
+  turns: number,
+): F | null {
   return friends.find((f) => f.spot >= 0 && whereIs(f.spot, turns) === 'behind') ?? null;
 }
 
@@ -325,7 +408,14 @@ export type PeekTouch =
  * who cannot see the picture; in `view`, the friend whose picture to choose). While level 5 asks
  * for a prediction (`predicting`), that is the picture of the friend behind the tree. In `sky`, the true map of `maps`.
  */
-export function peekTouch(mode: PeekMode, turns: number, hider: CritterName | null, friends: readonly PeekTouchFriend[], predicting = false, maps: readonly SkyKind[] = []): PeekTouch | null {
+export function peekTouch(
+  mode: PeekMode,
+  turns: number,
+  hider: CritterName | null,
+  friends: readonly PeekTouchFriend[],
+  predicting = false,
+  maps: readonly SkyKind[] = [],
+): PeekTouch | null {
   if (mode === 'sky') {
     const index = maps.indexOf('true');
     return index < 0 ? null : { kind: 'map', index };
@@ -337,12 +427,16 @@ export function peekTouch(mode: PeekMode, turns: number, hider: CritterName | nu
   if (mode === 'find' || mode === 'named') {
     const hidden = hider && friends.find((f) => f.name === hider && f.spot >= 0);
     if (!hidden) return null;
-    return whereIs(hidden.spot, turns) === 'behind' ? { kind: 'turn', dir: 1 } : { kind: 'friend', name: hidden.name };
+    return whereIs(hidden.spot, turns) === 'behind'
+      ? { kind: 'turn', dir: 1 }
+      : { kind: 'friend', name: hidden.name };
   }
   if (mode === 'who' || mode === 'view') return hider ? { kind: 'tile', name: hider } : null;
   if (mode === 'see') {
     const blocked = hider && friends.find((f) => f.name === hider && f.spot >= 0);
-    return blocked && whereIs(blocked.spot, turns) !== 'behind' ? { kind: 'friend', name: blocked.name } : null;
+    return blocked && whereIs(blocked.spot, turns) !== 'behind'
+      ? { kind: 'friend', name: blocked.name }
+      : null;
   }
   const waiting = friends.find((f) => f.spot < 0 && f.want);
   if (!waiting) return null;

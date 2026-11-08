@@ -26,16 +26,35 @@ export function thingArt(thing: Thing): Container {
       g.poly([-48, 6, 48, 6, 34, 34, -34, 34]).fill(swatch.red.fill).stroke(line(swatch.red.line));
       break;
     case 'ball': {
-      const colors = [swatch.red.fill, swatch.white.fill, swatch.blue.fill, swatch.white.fill, swatch.yellow.fill, swatch.white.fill];
+      const colors = [
+        swatch.red.fill,
+        swatch.white.fill,
+        swatch.blue.fill,
+        swatch.white.fill,
+        swatch.yellow.fill,
+        swatch.white.fill,
+      ];
       for (let i = 0; i < 6; i++) {
         const a0 = (i * Math.PI) / 3;
-        g.moveTo(0, 0).arc(0, 0, 40, a0, a0 + Math.PI / 3).closePath().fill(colors[i]);
+        g.moveTo(0, 0)
+          .arc(0, 0, 40, a0, a0 + Math.PI / 3)
+          .closePath()
+          .fill(colors[i]);
       }
-      g.circle(0, 0, 40).stroke(line(swatch.white.line)).circle(0, 0, 8).fill(swatch.white.fill).stroke(line(swatch.white.line, 3));
+      g.circle(0, 0, 40)
+        .stroke(line(swatch.white.line))
+        .circle(0, 0, 8)
+        .fill(swatch.white.fill)
+        .stroke(line(swatch.white.line, 3));
       break;
     }
     case 'leaf':
-      g.moveTo(-44, 10).quadraticCurveTo(-10, -44, 44, -14).quadraticCurveTo(10, 40, -44, 10).closePath().fill(swatch.green.fill).stroke(line(swatch.green.line));
+      g.moveTo(-44, 10)
+        .quadraticCurveTo(-10, -44, 44, -14)
+        .quadraticCurveTo(10, 40, -44, 10)
+        .closePath()
+        .fill(swatch.green.fill)
+        .stroke(line(swatch.green.line));
       g.moveTo(-50, 14).quadraticCurveTo(0, -4, 40, -12).stroke(line(swatch.green.line, 4));
       break;
     case 'apple':
@@ -43,7 +62,14 @@ export function thingArt(thing: Thing): Container {
       c.scale.set(0.85);
       return c;
     case 'rock':
-      g.moveTo(-42, 16).quadraticCurveTo(-46, -20, -10, -28).quadraticCurveTo(30, -36, 42, -6).quadraticCurveTo(52, 26, 10, 30).quadraticCurveTo(-30, 34, -42, 16).closePath().fill(swatch.white.line).stroke(line(ink, 4));
+      g.moveTo(-42, 16)
+        .quadraticCurveTo(-46, -20, -10, -28)
+        .quadraticCurveTo(30, -36, 42, -6)
+        .quadraticCurveTo(52, 26, 10, 30)
+        .quadraticCurveTo(-30, 34, -42, 16)
+        .closePath()
+        .fill(swatch.white.line)
+        .stroke(line(ink, 4));
       g.ellipse(-12, -12, 12, 6).fill({ color: swatch.white.fill, alpha: 0.35 });
       break;
     case 'key': {
@@ -66,16 +92,31 @@ export function thingArt(thing: Thing): Container {
     case 'feather': {
       const f = swatch.teal;
       // A curved vane on a quill, with a few notches in its edge.
-      g.moveTo(-40, 32).quadraticCurveTo(-34, -6, 38, -36).quadraticCurveTo(26, 8, -40, 32).closePath().fill(f.fill).stroke(line(f.line, 4));
+      g.moveTo(-40, 32)
+        .quadraticCurveTo(-34, -6, 38, -36)
+        .quadraticCurveTo(26, 8, -40, 32)
+        .closePath()
+        .fill(f.fill)
+        .stroke(line(f.line, 4));
       g.moveTo(-48, 40).quadraticCurveTo(-8, 4, 38, -36).stroke(line(f.line, 4));
-      for (const [x, y] of [[-14, -2], [6, -18], [10, 10]]) g.moveTo(x, y).lineTo(x + (y < 0 ? -10 : 8), y + (y < 0 ? -4 : 8)).stroke(line(f.light, 3));
+      for (const [x, y] of [
+        [-14, -2],
+        [6, -18],
+        [10, 10],
+      ])
+        g.moveTo(x, y)
+          .lineTo(x + (y < 0 ? -10 : 8), y + (y < 0 ? -4 : 8))
+          .stroke(line(f.light, 3));
       break;
     }
     case 'marble': {
       // A clear glass marble with a purple swirl, so it stands out against the water.
       const m = swatch.purple;
       g.circle(0, 0, 28).fill(swatch.white.fill).stroke(line(m.line));
-      g.moveTo(-18, 12).quadraticCurveTo(-4, -22, 20, -8).quadraticCurveTo(4, 2, 12, 20).stroke(line(m.fill, 7));
+      g.moveTo(-18, 12)
+        .quadraticCurveTo(-4, -22, 20, -8)
+        .quadraticCurveTo(4, 2, 12, 20)
+        .stroke(line(m.fill, 7));
       g.ellipse(-12, -14, 7, 4).fill(m.light);
       break;
     }
@@ -98,8 +139,16 @@ export function thingArt(thing: Thing): Container {
     case 'paperclip': {
       // One bent wire: the small inner loop, then the long outer loop around it.
       const wire = (color: number, width: number) =>
-        g.moveTo(16, 8).lineTo(-26, 8).arc(-26, 0, 8, Math.PI / 2, (3 * Math.PI) / 2).lineTo(28, -8).arc(28, 3, 11, -Math.PI / 2, Math.PI / 2)
-          .lineTo(-30, 14).arc(-30, 0, 14, Math.PI / 2, (3 * Math.PI) / 2).lineTo(20, -14).stroke(line(color, width));
+        g
+          .moveTo(16, 8)
+          .lineTo(-26, 8)
+          .arc(-26, 0, 8, Math.PI / 2, (3 * Math.PI) / 2)
+          .lineTo(28, -8)
+          .arc(28, 3, 11, -Math.PI / 2, Math.PI / 2)
+          .lineTo(-30, 14)
+          .arc(-30, 0, 14, Math.PI / 2, (3 * Math.PI) / 2)
+          .lineTo(20, -14)
+          .stroke(line(color, width));
       g.scale.set(1.25);
       wire(swatch.white.line, 6);
       wire(swatch.white.light, 2);
@@ -113,8 +162,17 @@ export function thingArt(thing: Thing): Container {
 /** The picture on the "floats" basket: something bobbing on a wave. */
 export function floatIcon(): Graphics {
   const g = new Graphics();
-  g.ellipse(0, -6, 26, 16).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 4)).circle(14, -24, 12).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 4));
-  g.moveTo(-44, 10).quadraticCurveTo(-30, 0, -16, 10).quadraticCurveTo(-2, 20, 12, 10).quadraticCurveTo(26, 0, 40, 10).stroke(line(swatch.blue.fill, 6));
+  g.ellipse(0, -6, 26, 16)
+    .fill(swatch.yellow.fill)
+    .stroke(line(swatch.yellow.line, 4))
+    .circle(14, -24, 12)
+    .fill(swatch.yellow.fill)
+    .stroke(line(swatch.yellow.line, 4));
+  g.moveTo(-44, 10)
+    .quadraticCurveTo(-30, 0, -16, 10)
+    .quadraticCurveTo(-2, 20, 12, 10)
+    .quadraticCurveTo(26, 0, 40, 10)
+    .stroke(line(swatch.blue.fill, 6));
   return g;
 }
 
@@ -127,9 +185,24 @@ export function smallArt(art: SmallArt): Container {
   const c = new Container();
   const g = new Graphics();
   if (art === 'twig') {
-    g.moveTo(-46, 10).quadraticCurveTo(0, -4, 46, -6).stroke(line(swatch.brown.line, 14)).moveTo(-46, 10).quadraticCurveTo(0, -4, 46, -6).stroke(line(swatch.brown.fill, 8));
-    g.moveTo(8, -2).lineTo(26, -26).stroke(line(swatch.brown.line, 10)).moveTo(8, -2).lineTo(26, -26).stroke(line(swatch.brown.fill, 5));
-    g.moveTo(26, -26).quadraticCurveTo(44, -40, 48, -24).quadraticCurveTo(36, -14, 26, -26).closePath().fill(swatch.green.fill).stroke(line(swatch.green.line, 3));
+    g.moveTo(-46, 10)
+      .quadraticCurveTo(0, -4, 46, -6)
+      .stroke(line(swatch.brown.line, 14))
+      .moveTo(-46, 10)
+      .quadraticCurveTo(0, -4, 46, -6)
+      .stroke(line(swatch.brown.fill, 8));
+    g.moveTo(8, -2)
+      .lineTo(26, -26)
+      .stroke(line(swatch.brown.line, 10))
+      .moveTo(8, -2)
+      .lineTo(26, -26)
+      .stroke(line(swatch.brown.fill, 5));
+    g.moveTo(26, -26)
+      .quadraticCurveTo(44, -40, 48, -24)
+      .quadraticCurveTo(36, -14, 26, -26)
+      .closePath()
+      .fill(swatch.green.fill)
+      .stroke(line(swatch.green.line, 3));
   } else {
     g.ellipse(0, 4, 44, 28).fill(swatch.white.line).stroke(line(ink, 4));
     g.ellipse(-14, -6, 14, 6).fill({ color: swatch.white.fill, alpha: 0.35 });
@@ -141,7 +214,11 @@ export function smallArt(art: SmallArt): Container {
 /** The picture on the "sinks" basket: a rock resting at the bottom, bubbles rising. */
 export function sinkIcon(): Graphics {
   const g = new Graphics();
-  g.moveTo(-44, -26).quadraticCurveTo(-30, -36, -16, -26).quadraticCurveTo(-2, -16, 12, -26).quadraticCurveTo(26, -36, 40, -26).stroke(line(swatch.blue.fill, 6));
+  g.moveTo(-44, -26)
+    .quadraticCurveTo(-30, -36, -16, -26)
+    .quadraticCurveTo(-2, -16, 12, -26)
+    .quadraticCurveTo(26, -36, 40, -26)
+    .stroke(line(swatch.blue.fill, 6));
   g.ellipse(0, 18, 24, 14).fill(swatch.white.line).stroke(line(ink, 3));
   g.circle(-14, -6, 5).circle(-6, -14, 3).stroke(line(swatch.blue.fill, 3));
   g.moveTo(-44, 32).lineTo(44, 32).stroke(line(wood.line, 5));
@@ -167,7 +244,12 @@ export function drawClay(g: Graphics, shape: ClayShape | 'ball', color: ClayColo
     case 'boat':
     case 'leaky':
       // The hull, open at the top: the dark rim shows it is hollow.
-      g.moveTo(-58, -6).quadraticCurveTo(-52, 34, 0, 36).quadraticCurveTo(52, 34, 58, -6).closePath().fill(s.fill).stroke(line(s.line));
+      g.moveTo(-58, -6)
+        .quadraticCurveTo(-52, 34, 0, 36)
+        .quadraticCurveTo(52, 34, 58, -6)
+        .closePath()
+        .fill(s.fill)
+        .stroke(line(s.line));
       g.ellipse(0, -6, 58, 12).fill(s.line).ellipse(0, -4, 50, 8).fill({ color: ink, alpha: 0.25 });
       if (water > 0) g.ellipse(0, -4, 50 * water, 8 * water).fill({ color: swatch.blue.fill, alpha: 0.8 });
       if (shape === 'leaky') {
@@ -183,9 +265,22 @@ export function drawClay(g: Graphics, shape: ClayShape | 'ball', color: ClayColo
 export function sameWeightIcon(color: ClayColor): Container {
   const c = new Container();
   const g = new Graphics();
-  g.moveTo(0, 40).lineTo(0, -30).stroke(line(wood.line, 6)).moveTo(-30, 44).lineTo(30, 44).stroke(line(wood.line, 6));
+  g.moveTo(0, 40)
+    .lineTo(0, -30)
+    .stroke(line(wood.line, 6))
+    .moveTo(-30, 44)
+    .lineTo(30, 44)
+    .stroke(line(wood.line, 6));
   g.moveTo(-70, -30).lineTo(70, -30).stroke(line(wood.line, 6)).circle(0, -30, 6).fill(wood.fill);
-  for (const x of [-56, 56]) g.moveTo(x, -30).lineTo(x - 22, 6).moveTo(x, -30).lineTo(x + 22, 6).stroke(line(wood.line, 3)).moveTo(x - 30, 6).quadraticCurveTo(x, 22, x + 30, 6).stroke(line(wood.line, 5));
+  for (const x of [-56, 56])
+    g.moveTo(x, -30)
+      .lineTo(x - 22, 6)
+      .moveTo(x, -30)
+      .lineTo(x + 22, 6)
+      .stroke(line(wood.line, 3))
+      .moveTo(x - 30, 6)
+      .quadraticCurveTo(x, 22, x + 30, 6)
+      .stroke(line(wood.line, 5));
   g.circle(-56, -8, 14).stroke({ ...line(swatch[color].line, 4), alpha: 0.8 });
   const boat = drawClay(new Graphics(), 'boat', color);
   boat.scale.set(0.38);
@@ -209,9 +304,22 @@ export function shakerArt(): Container {
   const c = new Container();
   const g = new Graphics();
   g.ellipse(0, 62, 46, 10).fill({ color: ink, alpha: 0.12 });
-  g.moveTo(-38, 58).lineTo(-30, -20).lineTo(30, -20).lineTo(38, 58).closePath().fill(swatch.white.fill).stroke(line(swatch.white.line, 5));
+  g.moveTo(-38, 58)
+    .lineTo(-30, -20)
+    .lineTo(30, -20)
+    .lineTo(38, 58)
+    .closePath()
+    .fill(swatch.white.fill)
+    .stroke(line(swatch.white.line, 5));
   g.roundRect(-32, -56, 64, 38, 14).fill(swatch.white.line).stroke(line(ink, 4));
-  for (const [x, y] of [[-14, -44], [0, -36], [14, -44], [-7, -28], [7, -28]]) g.circle(x, y, 3.5).fill(ink);
+  for (const [x, y] of [
+    [-14, -44],
+    [0, -36],
+    [14, -44],
+    [-7, -28],
+    [7, -28],
+  ])
+    g.circle(x, y, 3.5).fill(ink);
   g.moveTo(-18, 6).lineTo(-14, 44).stroke(line(swatch.white.light, 6));
   c.addChild(g);
   return c;

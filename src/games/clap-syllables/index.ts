@@ -14,7 +14,26 @@ import { FONT } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { Bead, fitTo, handsArt, wordPicture } from './art';
-import { LEVELS, answerOf, clapsToGo, clapsWord, fitsCar, makeQuestions, nextForTrain, nextToSort, PAUSE, pictureToTap, planFor, CARS, syllables, waitFill, WORDS, type ClapPlan, type Question, type Word } from './logic';
+import {
+  LEVELS,
+  answerOf,
+  clapsToGo,
+  clapsWord,
+  fitsCar,
+  makeQuestions,
+  nextForTrain,
+  nextToSort,
+  PAUSE,
+  pictureToTap,
+  planFor,
+  CARS,
+  syllables,
+  waitFill,
+  WORDS,
+  type ClapPlan,
+  type Question,
+  type Word,
+} from './logic';
 
 const BEAT_COLORS: ColorName[] = ['red', 'yellow', 'blue'];
 /** Seconds with no clap before the pet shows the word again. */
@@ -32,7 +51,13 @@ interface Bin {
   filled: number;
 }
 
-const INSTRUCTION = { along: 'clap.along', solo: 'clap.solo', sort: 'clap.sort', match: 'clap.match', train: 'clap.train' } as const;
+const INSTRUCTION = {
+  along: 'clap.along',
+  solo: 'clap.solo',
+  sort: 'clap.sort',
+  match: 'clap.match',
+  train: 'clap.train',
+} as const;
 
 /** Beat train geometry: car spacing, and where a loaded picture sits above its car. */
 const CAR_GAP = 196;
@@ -84,14 +109,32 @@ class ClapSyllables implements Game {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
     this.questions = makeQuestions(this.plan, ctx.rng);
-    this.backdrop = new Backdrop({ sky: [0xe0d4ff, 0xfff4e3], hills: [0xc8ecb0, 0xa6de8e], horizon: 0.74, clouds: 2, sun: true, seed: 31 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0xe0d4ff, 0xfff4e3],
+        hills: [0xc8ecb0, 0xa6de8e],
+        horizon: 0.74,
+        clouds: 2,
+        sun: true,
+        seed: 31,
+      },
+      ctx.view,
+    );
     this.glow.eventMode = 'none';
     this.board.eventMode = 'passive';
-    this.caption = new Text({ text: '', style: { fontFamily: FONT, fontSize: 40, fill: ink, fontWeight: '600', align: 'center' } });
+    this.caption = new Text({
+      text: '',
+      style: { fontFamily: FONT, fontSize: 40, fill: ink, fontWeight: '600', align: 'center' },
+    });
     this.caption.anchor.set(0.5);
     this.caption.eventMode = 'none';
     // The big hands: a clap is a touch anywhere on them.
-    const disc = new Graphics().circle(0, 6, 96).fill({ color: 0x000000, alpha: 0.12 }).circle(0, 0, 96).fill(swatch.yellow.fill).stroke({ width: 7, color: swatch.yellow.line });
+    const disc = new Graphics()
+      .circle(0, 6, 96)
+      .fill({ color: 0x000000, alpha: 0.12 })
+      .circle(0, 0, 96)
+      .fill(swatch.yellow.fill)
+      .stroke({ width: 7, color: swatch.yellow.line });
     this.padFace = handsArt(130);
     this.padFace.position.set(0, 12);
     this.ring.eventMode = 'none';
@@ -130,15 +173,26 @@ class ClapSyllables implements Game {
     if (this.glowing && !this.busy) {
       const b = this.glowing.getBounds();
       const p = this.board.toLocal({ x: b.x, y: b.y });
-      g.roundRect(p.x - 8, p.y - 8, b.width / this.view.scale + 16, b.height / this.view.scale + 16, 30).stroke({ width: 7 + 2 * Math.sin(this.clock * 5), color: swatch.yellow.fill });
+      g.roundRect(
+        p.x - 8,
+        p.y - 8,
+        b.width / this.view.scale + 16,
+        b.height / this.view.scale + 16,
+        30,
+      ).stroke({ width: 7 + 2 * Math.sin(this.clock * 5), color: swatch.yellow.fill });
     }
     const waiting = this.plan.mode === 'solo' && !this.guided && !this.busy && !this.finished;
     const fill = waiting ? waitFill(this.clock, this.lastClap, this.claps) : 0;
     this.ring.clear();
-    if (fill > 0) this.ring.moveTo(0, -112).arc(0, 0, 112, -Math.PI / 2, -Math.PI / 2 + fill * Math.PI * 2).stroke({ width: 12, color: swatch.green.line, cap: 'round' });
+    if (fill > 0)
+      this.ring
+        .moveTo(0, -112)
+        .arc(0, 0, 112, -Math.PI / 2, -Math.PI / 2 + fill * Math.PI * 2)
+        .stroke({ width: 12, color: swatch.green.line, cap: 'round' });
     if (this.busy || this.finished) return;
     const mode = this.plan.mode;
-    if (mode === 'solo' && !this.guided && this.claps > 0 && this.clock - this.lastClap > PAUSE) void this.judge();
+    if (mode === 'solo' && !this.guided && this.claps > 0 && this.clock - this.lastClap > PAUSE)
+      void this.judge();
     // A quiet moment: the pet shows the word again, as often as it takes.
     if ((mode === 'along' || mode === 'solo') && this.claps === 0) {
       this.idle += dt;
@@ -158,7 +212,14 @@ class ClapSyllables implements Game {
         // No rest between claps: the gap is the hand's own trip and press, well inside the pause after which a word is counted.
         return clapsToGo(this.word, this.claps) > 0 ? { tap: { on: this.pad }, pause: 0 } : null;
       case 'sort': {
-        const next = nextToSort(this.cards.map((card) => ({ card, word: card.word, sorted: !card.drag || !card.drag.enabled || card.drag.dragging })), this.bins);
+        const next = nextToSort(
+          this.cards.map((card) => ({
+            card,
+            word: card.word,
+            sorted: !card.drag || !card.drag.enabled || card.drag.dragging,
+          })),
+          this.bins,
+        );
         return next ? { drag: { on: next.card.card.node }, to: { on: next.bin.node } } : null;
       }
       case 'compare':
@@ -167,7 +228,15 @@ class ClapSyllables implements Game {
         return card ? { tap: { on: card.node } } : null;
       }
       case 'train': {
-        const next = nextForTrain(this.q.words, this.cars.map((c) => c.word), this.cards.map((card) => ({ card, word: card.word, loaded: !card.drag || !card.drag.enabled || card.drag.dragging })));
+        const next = nextForTrain(
+          this.q.words,
+          this.cars.map((c) => c.word),
+          this.cards.map((card) => ({
+            card,
+            word: card.word,
+            loaded: !card.drag || !card.drag.enabled || card.drag.dragging,
+          })),
+        );
         return next ? { drag: { on: next.card.card.node }, to: { on: this.cars[next.car].node } } : null;
       }
     }
@@ -257,7 +326,10 @@ class ClapSyllables implements Game {
   private makeCard(word: Word, size: number): Card {
     const node = new Container();
     const h = size / 2;
-    const bg = new Graphics().roundRect(-h, -h, size, size, 44).fill(0xffffff).stroke({ width: 6, color: swatch.purple.line });
+    const bg = new Graphics()
+      .roundRect(-h, -h, size, size, 44)
+      .fill(0xffffff)
+      .stroke({ width: 6, color: swatch.purple.line });
     const art = fitTo(wordPicture(word.word), size * 0.72);
     art.eventMode = 'none';
     node.addChild(bg, art);
@@ -387,8 +459,17 @@ class ClapSyllables implements Game {
     const word = this.word;
     const card = this.cards[0].node;
     sfx.sparkle();
-    this.ctx.particles.burst(card.x, card.y, { kind: 'star', colors: [swatch.yellow.fill, 0xffffff, swatch.pink.fill], count: 14, speed: [160, 320], gravity: 0, life: [0.5, 0.9] });
-    void this.ctx.tw.to(card.scale, { x: 1.1, y: 1.1 }, { duration: 0.2 }).then(() => this.ctx.tw.to(card.scale, { x: 1, y: 1 }, { duration: 0.25 }));
+    this.ctx.particles.burst(card.x, card.y, {
+      kind: 'star',
+      colors: [swatch.yellow.fill, 0xffffff, swatch.pink.fill],
+      count: 14,
+      speed: [160, 320],
+      gravity: 0,
+      life: [0.5, 0.9],
+    });
+    void this.ctx.tw
+      .to(card.scale, { x: 1.1, y: 1.1 }, { duration: 0.2 })
+      .then(() => this.ctx.tw.to(card.scale, { x: 1, y: 1 }, { duration: 0.25 }));
     this.caption.text = word.parts.join(' · ');
     await this.ctx.say('clap.count', { word: word.word, count: clapsWord(syllables(word)) });
     await this.ctx.tw.wait(0.5);
@@ -406,7 +487,12 @@ class ClapSyllables implements Game {
     const max = this.plan.max;
     for (let n = 1; n <= max; n++) {
       const node = new Container();
-      node.addChild(new Graphics().roundRect(-100, -78, 200, 156, 28).fill({ color: 0xffffff, alpha: 0.9 }).stroke({ width: 6, color: swatch.purple.line }));
+      node.addChild(
+        new Graphics()
+          .roundRect(-100, -78, 200, 156, 28)
+          .fill({ color: 0xffffff, alpha: 0.9 })
+          .stroke({ width: 6, color: swatch.purple.line }),
+      );
       for (let i = 0; i < n; i++) {
         const dot = new Bead(BEAT_COLORS[i % BEAT_COLORS.length], 17);
         dot.light(true);
@@ -436,7 +522,9 @@ class ClapSyllables implements Game {
   private drop(card: Card, x: number, y: number): boolean {
     if (this.busy || this.finished) return false;
     // The nearest bin, if the drop is anywhere near one; dropping in empty space is just a try with no penalty.
-    const near = this.bins.map((b) => ({ b, d: Math.hypot(b.node.x - x, b.node.y - y) })).sort((a, b) => a.d - b.d)[0];
+    const near = this.bins
+      .map((b) => ({ b, d: Math.hypot(b.node.x - x, b.node.y - y) }))
+      .sort((a, b) => a.d - b.d)[0];
     if (!near || near.d > 190) return false;
     const n = syllables(card.word);
     if (near.b.count !== n) {
@@ -455,7 +543,11 @@ class ClapSyllables implements Game {
     this.glowing = null;
     card.drag!.enabled = false;
     const slot = near.b.filled++;
-    void this.ctx.tw.to(card.node, { x: near.b.node.x - 52 + (slot % 3) * 52, y: near.b.node.y - 118 - Math.floor(slot / 3) * 40 }, { duration: 0.35, ease: ease.outBack });
+    void this.ctx.tw.to(
+      card.node,
+      { x: near.b.node.x - 52 + (slot % 3) * 52, y: near.b.node.y - 118 - Math.floor(slot / 3) * 40 },
+      { duration: 0.35, ease: ease.outBack },
+    );
     void this.ctx.tw.to(card.node.scale, { x: 0.38, y: 0.38 }, { duration: 0.35 });
     void this.clapOut(n);
     if (this.cards.every((c) => c.drag && !c.drag.enabled)) void this.sorted();
@@ -529,7 +621,14 @@ class ClapSyllables implements Game {
     this.busy = true;
     this.glowing = null;
     sfx.sparkle();
-    this.ctx.particles.burst(card.node.x, card.node.y, { kind: 'star', colors: [swatch.yellow.fill, 0xffffff], count: 12, speed: [160, 300], gravity: 0, life: [0.5, 0.9] });
+    this.ctx.particles.burst(card.node.x, card.node.y, {
+      kind: 'star',
+      colors: [swatch.yellow.fill, 0xffffff],
+      count: 12,
+      speed: [160, 300],
+      gravity: 0,
+      life: [0.5, 0.9],
+    });
     void this.ctx.tw.to(card.node.scale, { x: 1.12, y: 1.12 }, { duration: 0.2 });
     await this.ctx.say('clap.count', { word: card.word.word, count: clapsWord(n) });
     await this.ctx.tw.wait(0.5);
@@ -575,12 +674,21 @@ class ClapSyllables implements Game {
   private load(card: Card, x: number, y: number): boolean {
     if (this.busy || this.finished || !this.train) return false;
     const t = this.train;
-    const near = this.cars.map((c, i) => ({ i, d: Math.hypot(t.x + c.node.x - x, t.y + c.node.y + CAR_Y / 2 - y) })).sort((a, b) => a.d - b.d)[0];
+    const near = this.cars
+      .map((c, i) => ({ i, d: Math.hypot(t.x + c.node.x - x, t.y + c.node.y + CAR_Y / 2 - y) }))
+      .sort((a, b) => a.d - b.d)[0];
     // Empty space, or a car that already has a passenger: just a try, with no penalty.
     if (!near || near.d > 150 || this.cars[near.i].word) return false;
     const words = this.q.words;
     const n = syllables(card.word);
-    if (!fitsCar(words, this.cars.map((c) => c.word), card.word, near.i)) {
+    if (
+      !fitsCar(
+        words,
+        this.cars.map((c) => c.word),
+        card.word,
+        near.i,
+      )
+    ) {
       this.misses++;
       this.wrongs++;
       sfx.boing();
@@ -588,7 +696,11 @@ class ClapSyllables implements Game {
       void this.clapOut(n);
       if (this.wrongs >= 2) {
         this.hints++;
-        const next = nextForTrain(words, this.cars.map((c) => c.word), this.cards.map((c) => ({ card: c, word: c.word, loaded: !c.drag?.enabled })));
+        const next = nextForTrain(
+          words,
+          this.cars.map((c) => c.word),
+          this.cards.map((c) => ({ card: c, word: c.word, loaded: !c.drag?.enabled })),
+        );
         this.glowing = next?.card.card.node ?? null;
       }
       return false;
@@ -601,7 +713,11 @@ class ClapSyllables implements Game {
     // The picture rides in the car from now on, so it leaves with the train.
     t.addChild(card.node);
     card.node.position.set(x - t.x, y - t.y);
-    void this.ctx.tw.to(card.node, { x: car.node.x, y: car.node.y + CAR_Y }, { duration: 0.3, ease: ease.outBack });
+    void this.ctx.tw.to(
+      card.node,
+      { x: car.node.x, y: car.node.y + CAR_Y },
+      { duration: 0.3, ease: ease.outBack },
+    );
     void this.ctx.tw.to(card.node.scale, { x: 0.72, y: 0.72 }, { duration: 0.3 });
     for (let i = 0; i < n; i++) {
       const dot = new Bead(BEAT_COLORS[i % BEAT_COLORS.length], 13);
@@ -643,7 +759,9 @@ class ClapSyllables implements Game {
       const card = this.cards[0]?.node;
       if (card) card.position.set(v.w / 2, v.h * 0.34);
       this.caption.position.set(v.w / 2, v.h * 0.34 + 160);
-      this.beads.forEach((b, i) => b.position.set(v.w / 2 + (i - (this.beads.length - 1) / 2) * 76, v.h * 0.34 + 214));
+      this.beads.forEach((b, i) =>
+        b.position.set(v.w / 2 + (i - (this.beads.length - 1) / 2) * 76, v.h * 0.34 + 214),
+      );
     } else if (mode === 'sort') {
       // Longer words use two rows of four; each picture keeps a large, clear drag target.
       const perRow = this.cards.length > 5 ? 4 : this.cards.length;
@@ -659,7 +777,9 @@ class ClapSyllables implements Game {
         if (c.drag) c.drag.home = { x, y };
       });
       const binY = this.cards.length > 5 ? v.h * 0.66 : v.h * 0.72;
-      this.bins.forEach((b, i) => b.node.position.set(v.w / 2 + (i - (this.bins.length - 1) / 2) * 250, binY));
+      this.bins.forEach((b, i) =>
+        b.node.position.set(v.w / 2 + (i - (this.bins.length - 1) / 2) * 250, binY),
+      );
     } else if (mode === 'train') {
       // The jumble on top, the train below it: clear of the pet in the bottom-left corner.
       const xs = spread(this.cards.length, 160, v.w - 160, 230);
@@ -671,11 +791,14 @@ class ClapSyllables implements Game {
         if (c.drag) c.drag.home = { x: xs[i], y };
       });
       // Centred on the span from the first car's back (-84) to the engine's nose.
-      if (this.train && !this.departing) this.train.position.set(v.w / 2 - ((CARS - 1) * CAR_GAP + 164 + 94 - 84) / 2, v.h * 0.66);
+      if (this.train && !this.departing)
+        this.train.position.set(v.w / 2 - ((CARS - 1) * CAR_GAP + 164 + 94 - 84) / 2, v.h * 0.66);
     } else {
       const xs = spread(this.cards.length, 190, v.w - 90, 230);
       this.cards.forEach((c, i) => c.node.position.set(xs[i], v.h * 0.62));
-      this.beads.forEach((b, i) => b.position.set(v.w / 2 + (i - (this.beads.length - 1) / 2) * 76, v.h * 0.25));
+      this.beads.forEach((b, i) =>
+        b.position.set(v.w / 2 + (i - (this.beads.length - 1) / 2) * 76, v.h * 0.25),
+      );
     }
   }
 
@@ -700,8 +823,11 @@ function carArt(color: ColorName, coupled: boolean): Container {
   const g = new Graphics();
   // The hitch to the car behind.
   if (coupled) g.rect(-CAR_GAP + 82, 4, 34, 10).fill(wood.line);
-  g.roundRect(-84, -26, 168, 70, 16).fill(s.fill).stroke({ width: 6, color: s.line })
-    .roundRect(-70, -16, 140, 46, 10).fill({ color: 0xffffff, alpha: 0.55 });
+  g.roundRect(-84, -26, 168, 70, 16)
+    .fill(s.fill)
+    .stroke({ width: 6, color: s.line })
+    .roundRect(-70, -16, 140, 46, 10)
+    .fill({ color: 0xffffff, alpha: 0.55 });
   for (const x of [-50, 50]) g.circle(x, 52, 18).fill(ink).circle(x, 52, 7).fill(0xdddddd);
   c.addChild(g);
   return c;
@@ -711,19 +837,35 @@ function carArt(color: ColorName, coupled: boolean): Container {
 function engineArt(): Container {
   const c = new Container();
   const g = new Graphics()
-    .roundRect(-70, -90, 70, 134, 14).fill(swatch.red.fill).stroke({ width: 6, color: swatch.red.line })
-    .roundRect(-58, -76, 46, 40, 8).fill(swatch.blue.light)
-    .roundRect(-6, -30, 100, 74, 18).fill(swatch.red.fill).stroke({ width: 6, color: swatch.red.line })
-    .rect(50, -78, 26, 50).fill(ink)
-    .circle(94, 20, 10).fill(swatch.yellow.fill);
-  for (const x of [-34, 30, 70]) g.circle(x, 52, x < 0 ? 22 : 16).fill(ink).circle(x, 52, 7).fill(0xdddddd);
+    .roundRect(-70, -90, 70, 134, 14)
+    .fill(swatch.red.fill)
+    .stroke({ width: 6, color: swatch.red.line })
+    .roundRect(-58, -76, 46, 40, 8)
+    .fill(swatch.blue.light)
+    .roundRect(-6, -30, 100, 74, 18)
+    .fill(swatch.red.fill)
+    .stroke({ width: 6, color: swatch.red.line })
+    .rect(50, -78, 26, 50)
+    .fill(ink)
+    .circle(94, 20, 10)
+    .fill(swatch.yellow.fill);
+  for (const x of [-34, 30, 70])
+    g.circle(x, 52, x < 0 ? 22 : 16)
+      .fill(ink)
+      .circle(x, 52, 7)
+      .fill(0xdddddd);
   c.addChild(g);
   return c;
 }
 
 function clapIcon(): Container {
   const c = new Container();
-  c.addChild(new Graphics().roundRect(-90, -150, 180, 150, 20).fill(0xffffff).stroke({ width: 7, color: swatch.purple.line }));
+  c.addChild(
+    new Graphics()
+      .roundRect(-90, -150, 180, 150, 20)
+      .fill(0xffffff)
+      .stroke({ width: 7, color: swatch.purple.line }),
+  );
   const hands = handsArt(120);
   hands.position.set(0, -92);
   c.addChild(hands);
@@ -765,7 +907,8 @@ export const clapSyllables: GameModule = {
   describeLevel: (level) => planFor(level).name,
   touchDemo: true,
   music: silenced(STYLES.paint),
-  coplayHint: 'Clap along with {name} and say the word slowly: "but-ter-fly", one clap for each beat. Try the names of people in the family.',
+  coplayHint:
+    'Clap along with {name} and say the word slowly: "but-ter-fly", one clap for each beat. Try the names of people in the family.',
   offScreen: 'Clap the beats in names, foods and animals at home: "ba-na-na" is three claps, "dog" is one.',
   hubIcon: () => new WigglyIcon(clapIcon()),
   sticker,

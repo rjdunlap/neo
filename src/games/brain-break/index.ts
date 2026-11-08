@@ -12,12 +12,15 @@ import { hintIndex, judge, layoutFor, LEVELS, makeBoard, makeLabels, planFor, sh
 
 /** Sets a stone's label, shrinking a sum to stay inside the stone. */
 function setLabel(t: Text, text: string) {
-  t.text = text; t.style.fontSize = text.length > 2 ? 34 : 42; t.scale.set(1);
+  t.text = text;
+  t.style.fontSize = text.length > 2 ? 34 : 42;
+  t.scale.set(1);
   if (t.width > 88) t.scale.set(88 / t.width);
 }
 
 function stoneArt(text: string): Container {
-  const c = new Container(), t = label('', 42, ink);
+  const c = new Container(),
+    t = label('', 42, ink);
   setLabel(t, text);
   c.addChild(tile(100, 100, 'teal'), t);
   return c;
@@ -59,13 +62,17 @@ class BrainBreak implements Game {
     ctx.stage.addChild(this.background, this.status, ...this.stones, this.marks, this.glow, this.hintButton);
     this.resize(ctx.view);
   }
-  start() { void this.ctx.instruct(this.sums ? 'brain.sums.start' : 'brain.start', { n: this.board.length }); }
+  start() {
+    void this.ctx.instruct(this.sums ? 'brain.sums.start' : 'brain.start', { n: this.board.length });
+  }
   private choose(i: number) {
     if (this.finished) return;
     const verdict = judge(this.board[i], this.next);
     if (verdict === 'done') return;
     if (verdict === 'wrong') {
-      this.misses++; this.consecutive++; sfx.boing();
+      this.misses++;
+      this.consecutive++;
+      sfx.boing();
       if (this.consecutive === 2) this.askForHint();
       else if (this.sums) void this.ctx.say('brain.sums.try', { m: this.board[i], n: this.next });
       else void this.ctx.say('brain.try', { n: this.next });
@@ -73,7 +80,9 @@ class BrainBreak implements Game {
     }
     sfx.bell((this.next - 1) % 5, 0.3);
     if (this.sums) setLabel(this.texts[i], String(this.board[i]));
-    this.next++; this.consecutive = 0; this.hinted = -1;
+    this.next++;
+    this.consecutive = 0;
+    this.hinted = -1;
     this.draw();
     if (this.next > this.board.length) {
       this.finished = true;
@@ -86,26 +95,41 @@ class BrainBreak implements Game {
   }
   askForHint() {
     if (this.finished) return;
-    this.hints++; this.hinted = hintIndex(this.board, this.next);
-    this.draw(); void this.ctx.say(this.sums ? 'brain.sums.hint' : 'brain.hint', { n: this.next });
+    this.hints++;
+    this.hinted = hintIndex(this.board, this.next);
+    this.draw();
+    void this.ctx.say(this.sums ? 'brain.sums.hint' : 'brain.hint', { n: this.next });
   }
   private draw() {
-    this.status.text = this.next > this.board.length ? 'All stones lit!'
-      : `${this.sums ? 'Make' : 'Find'} ${this.next}   ·   ${this.next - 1} / ${this.board.length}`;
-    this.marks.clear(); this.glow.clear();
+    this.status.text =
+      this.next > this.board.length
+        ? 'All stones lit!'
+        : `${this.sums ? 'Make' : 'Find'} ${this.next}   ·   ${this.next - 1} / ${this.board.length}`;
+    this.marks.clear();
+    this.glow.clear();
     this.stones.forEach((stone, i) => {
       const done = this.board[i] < this.next;
       stone.alpha = done ? 0.5 : 1;
-      if (done) this.marks.moveTo(stone.x + 24, stone.y + 27).lineTo(stone.x + 31, stone.y + 34)
-        .lineTo(stone.x + 43, stone.y + 18).stroke({ width: 5, color: swatch.green.line, cap: 'round' });
-      if (i === this.hinted) this.glow.roundRect(stone.x - 52, stone.y - 52, 104, 104, 20)
-        .stroke({ width: 6, color: swatch.yellow.line });
+      if (done)
+        this.marks
+          .moveTo(stone.x + 24, stone.y + 27)
+          .lineTo(stone.x + 31, stone.y + 34)
+          .lineTo(stone.x + 43, stone.y + 18)
+          .stroke({ width: 5, color: swatch.green.line, cap: 'round' });
+      if (i === this.hinted)
+        this.glow
+          .roundRect(stone.x - 52, stone.y - 52, 104, 104, 20)
+          .stroke({ width: 6, color: swatch.yellow.line });
     });
   }
   resize(view: View) {
     const layout = layoutFor(view.w, view.h, planFor(this.ctx.level).side);
-    this.background.clear().rect(0, 0, view.w, view.h).fill(swatch.blue.light)
-      .ellipse(view.w / 2, layout.top + 270, view.w * 0.45, 300).fill(swatch.teal.light);
+    this.background
+      .clear()
+      .rect(0, 0, view.w, view.h)
+      .fill(swatch.blue.light)
+      .ellipse(view.w / 2, layout.top + 270, view.w * 0.45, 300)
+      .fill(swatch.teal.light);
     this.status.position.set(view.w / 2, 120);
     this.stones.forEach((stone, i) => stone.position.set(layout.stones[i].x, layout.stones[i].y));
     this.hintButton.position.set(layout.hint.x, layout.hint.y);
@@ -116,21 +140,35 @@ class BrainBreak implements Game {
     return { tap: { on: this.stones[hintIndex(this.board, this.next)] }, pause: 0.65 };
   }
   update(_dt: number) {}
-  destroy() { this.finished = true; }
+  destroy() {
+    this.finished = true;
+  }
 }
 
 export const brainBreak: GameModule = {
-  id: 'brain-break', name: 'Brain Break', titleLine: 'game.brain-break', region: 'puzzle-peaks', challenge: 'noticing',
-  skills: ['Visual search', 'Number order', 'Adding and taking away'], bands: ['grownup'],
-  levels: band => rangeFor(LEVELS, band), describeLevel: level => planFor(level).name,
-  music: STYLES.lullaby, touchDemo: true, upright: true,
-  coplayHint: 'Take turns finding the next stone, or let one person call the number and the other find it. With sums, one person reads a sum aloud and the other says what it makes.',
-  offScreen: 'Shuffle numbered paper squares on a table and point to them in order, at your own pace; later, write sums on the squares and lay them out in order.',
+  id: 'brain-break',
+  name: 'Brain Break',
+  titleLine: 'game.brain-break',
+  region: 'puzzle-peaks',
+  challenge: 'noticing',
+  skills: ['Visual search', 'Number order', 'Adding and taking away'],
+  bands: ['grownup'],
+  levels: (band) => rangeFor(LEVELS, band),
+  describeLevel: (level) => planFor(level).name,
+  music: STYLES.lullaby,
+  touchDemo: true,
+  upright: true,
+  coplayHint:
+    'Take turns finding the next stone, or let one person call the number and the other find it. With sums, one person reads a sum aloud and the other says what it makes.',
+  offScreen:
+    'Shuffle numbered paper squares on a table and point to them in order, at your own pace; later, write sums on the squares and lay them out in order.',
   hubIcon: () => new WigglyIcon(stoneArt('1')),
-  sticker: seed => {
-    const c = stoneArt(String(1 + (seed >>> 0) % 25));
-    c.addChild(new Graphics().circle(34, -34, 12).fill(cream).stroke({ width: 3, color: swatch.yellow.line }));
+  sticker: (seed) => {
+    const c = stoneArt(String(1 + ((seed >>> 0) % 25)));
+    c.addChild(
+      new Graphics().circle(34, -34, 12).fill(cream).stroke({ width: 3, color: swatch.yellow.line }),
+    );
     return c;
   },
-  create: ctx => new BrainBreak(ctx),
+  create: (ctx) => new BrainBreak(ctx),
 };

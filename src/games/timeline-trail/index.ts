@@ -18,7 +18,24 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
 import { card as cardArt, frameArt, gap as gapArt, iconArt, post as postArt, rope, stickerArt } from './art';
-import { LEVELS, CARD, centre, lineLayout, nextCard, PLACE_IDS, PLACES, place, planFor, POST_PICTURE_Y, roundFor, Tally, validGaps, type LineLayout, type Pt, type Round } from './logic';
+import {
+  LEVELS,
+  CARD,
+  centre,
+  lineLayout,
+  nextCard,
+  PLACE_IDS,
+  PLACES,
+  place,
+  planFor,
+  POST_PICTURE_Y,
+  roundFor,
+  Tally,
+  validGaps,
+  type LineLayout,
+  type Pt,
+  type Round,
+} from './logic';
 
 /** A finger that travels less than this before lifting tapped the card rather than dragging it. */
 const TAP_TRAVEL = 14;
@@ -67,7 +84,17 @@ class TimelineTrail implements Game {
     const rig = ctx.companion();
     this.petColor = rig.color;
     rig.destroy({ children: true });
-    this.backdrop = new Backdrop({ sky: [0xbfe3ff, 0xfff3dc], hills: [0xb9e3a6, 0xa2d98f], horizon: 0.62, clouds: 3, sun: true, seed: 211 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0xbfe3ff, 0xfff3dc],
+        hills: [0xb9e3a6, 0xa2d98f],
+        horizon: 0.62,
+        clouds: 3,
+        sun: true,
+        seed: 211,
+      },
+      ctx.view,
+    );
     this.ropeG.eventMode = 'none';
     this.glow.eventMode = 'none';
     ctx.stage.addChild(this.backdrop, this.board);
@@ -99,10 +126,16 @@ class TimelineTrail implements Game {
     if (this.frame) {
       // Mid-flipbook: the frame follows the new view; the rest is already out of play.
       const l = lineLayout(this.round, this.line, this.loose.length, v);
-      if (l) { this.layoutNow = l; this.frame.position.copyFrom(centre(l.frame)); }
+      if (l) {
+        this.layoutNow = l;
+        this.frame.position.copyFrom(centre(l.frame));
+      }
       return;
     }
-    if (this.dragging || this.busy || this.finished) { this.relayout = true; return; }
+    if (this.dragging || this.busy || this.finished) {
+      this.relayout = true;
+      return;
+    }
     this.build();
   }
 
@@ -128,7 +161,10 @@ class TimelineTrail implements Game {
     const stages = PLACES[this.round.place].stages;
 
     // Posts, each wearing its small picture: long ago faded on the left, now bright on the right.
-    const postPics: [number, boolean][] = [[0, true], [stages.length - 1, false]];
+    const postPics: [number, boolean][] = [
+      [0, true],
+      [stages.length - 1, false],
+    ];
     [l.posts.left, l.posts.right].forEach((r, i) => {
       const p = postArt(r.w, r.h);
       p.position.set(r.x + r.w / 2, r.y + r.h);
@@ -140,7 +176,12 @@ class TimelineTrail implements Game {
     // The rope: one line between the post tops, and one along each row (post to post where the posts reach it, else
     // just past the row's ends).
     const cx = (r: { x: number; w: number }) => r.x + r.w / 2;
-    rope(this.ropeG, { x: cx(l.posts.left), y: l.posts.left.y + 12 }, { x: cx(l.posts.right), y: l.posts.right.y + 12 }, 18);
+    rope(
+      this.ropeG,
+      { x: cx(l.posts.left), y: l.posts.left.y + 12 },
+      { x: cx(l.posts.right), y: l.posts.right.y + 12 },
+      18,
+    );
     if (this.level !== 1) {
       for (const y of l.rows) {
         const items = [...l.cards, ...l.gaps].filter((r) => Math.abs(r.y + r.h / 2 - y) < 1);
@@ -184,7 +225,10 @@ class TimelineTrail implements Game {
         onDrop: (x, y) => this.dropped(c, x, y),
       });
       // The finger's own travel decides tap or drag; the card's position lifts away from it while it is held.
-      node.on('pointerdown', (e: FederatedPointerEvent) => { this.downAt = this.board.toLocal(e.global); this.travel = 0; });
+      node.on('pointerdown', (e: FederatedPointerEvent) => {
+        this.downAt = this.board.toLocal(e.global);
+        this.travel = 0;
+      });
       node.on('globalpointermove', (e: FederatedPointerEvent) => {
         if (!c.handle.dragging || !this.downAt) return;
         const q = this.board.toLocal(e.global);
@@ -223,17 +267,26 @@ class TimelineTrail implements Game {
   // ——— Dragging and dropping ———
 
   private picked(c: CardNode) {
-    if (this.finished || this.busy) { c.handle.enabled = false; return; }
+    if (this.finished || this.busy) {
+      c.handle.enabled = false;
+      return;
+    }
     this.dragging = c;
     sfx.pop(6);
     // Washing on the line sways a little when lifted.
     this.ctx.tw.kill(c.node);
-    void this.ctx.tw.to(c.node, { rotation: 0.06 }, { duration: 0.18, ease: ease.outQuad }).then(() => { if (this.alive && c.handle.dragging) void this.ctx.tw.to(c.node, { rotation: -0.04 }, { duration: 0.3 }); });
+    void this.ctx.tw.to(c.node, { rotation: 0.06 }, { duration: 0.18, ease: ease.outQuad }).then(() => {
+      if (this.alive && c.handle.dragging)
+        void this.ctx.tw.to(c.node, { rotation: -0.04 }, { duration: 0.3 });
+    });
   }
 
   private moved(x: number, y: number) {
     const i = this.nearestGap(x, y);
-    if (i !== this.nearGap) { this.nearGap = i; this.redrawGaps(); }
+    if (i !== this.nearGap) {
+      this.nearGap = i;
+      this.redrawGaps();
+    }
   }
 
   private nearestGap(x: number, y: number): number | null {
@@ -244,7 +297,10 @@ class TimelineTrail implements Game {
     l.gaps.forEach((r, i) => {
       const p = centre(r);
       const d = Math.hypot(p.x - x, p.y - y);
-      if (d < bd) { bd = d; best = i; }
+      if (d < bd) {
+        bd = d;
+        best = i;
+      }
     });
     return best;
   }
@@ -260,7 +316,10 @@ class TimelineTrail implements Game {
     this.downAt = null;
     if (tapped) {
       // A tap: at level 1 it answers "long ago"; otherwise it says what the picture shows (free).
-      if (this.level === 1) { this.answer(c, 0); return this.line.includes(c.stage); }
+      if (this.level === 1) {
+        this.answer(c, 0);
+        return this.line.includes(c.stage);
+      }
       void this.ctx.say(`trail.card.${PLACES[this.round.place].stages[c.stage].id}` as LineId);
       this.redrawGaps();
       return false;
@@ -269,7 +328,11 @@ class TimelineTrail implements Game {
     if (gap === null) {
       // Let go away from every gap: it settles back, nothing said.
       this.redrawGaps();
-      if (this.relayout) { this.ctx.tw.kill(c.node.scale); this.build(); return true; }
+      if (this.relayout) {
+        this.ctx.tw.kill(c.node.scale);
+        this.build();
+        return true;
+      }
       return false;
     }
     this.answer(c, gap);
@@ -283,7 +346,12 @@ class TimelineTrail implements Game {
     if (!result.ok) {
       const { lit } = this.tally.missed(c.stage, gap);
       sfx.boing();
-      const line: LineId = this.level !== 1 ? 'trail.other' : c.stage === Math.max(...this.round.cards) ? 'trail.not-first' : 'trail.not-now';
+      const line: LineId =
+        this.level !== 1
+          ? 'trail.other'
+          : c.stage === Math.max(...this.round.cards)
+            ? 'trail.not-first'
+            : 'trail.not-now';
       void this.ctx.say(line, { reason: result.reason, place: this.placeName });
       if (lit) void this.ctx.say('trail.hint-glow');
       this.redrawGaps();
@@ -302,7 +370,8 @@ class TimelineTrail implements Game {
       // The other picture takes the other post by itself.
       const other = this.loose[0];
       this.tally.hung(other);
-      this.line = place(this.round, this.line, other, validGaps(this.round, this.line, other)[0]).line as number[];
+      this.line = place(this.round, this.line, other, validGaps(this.round, this.line, other)[0])
+        .line as number[];
       this.loose = [];
     }
     this.build();
@@ -333,7 +402,10 @@ class TimelineTrail implements Game {
     const steps = [4, 5, 7, 8, 9];
     let page: Container | null = null;
     for (const [i, stage] of this.round.cards.entries()) {
-      if (page) { page.destroy({ children: true }); page = null; }
+      if (page) {
+        page.destroy({ children: true });
+        page = null;
+      }
       page = this.makeCard(stage, inner, false);
       page.scale.x = 0.05;
       frame.addChild(page);
@@ -345,7 +417,10 @@ class TimelineTrail implements Game {
     }
     sfx.tada();
     this.ctx.pet.cheer();
-    this.ctx.particles.burst(frame.x, frame.y - l.frame.h / 2, { colors: [swatch.yellow.fill, swatch.teal.fill, 0xffffff], count: 14 });
+    this.ctx.particles.burst(frame.x, frame.y - l.frame.h / 2, {
+      colors: [swatch.yellow.fill, swatch.teal.fill, 0xffffff],
+      count: 14,
+    });
     await this.ctx.say('trail.done');
     if (!this.alive) return;
     this.finished = true;
@@ -384,7 +459,9 @@ class TimelineTrail implements Game {
     const r = l.gaps[lit];
     const k = 1 + 0.05 * Math.sin(this.clock * 5);
     const p = centre(r);
-    this.glow.roundRect(p.x - (r.w / 2 + 10) * k, p.y - (r.h / 2 + 10) * k, (r.w + 20) * k, (r.h + 20) * k, 24).stroke({ width: 7, color: swatch.yellow.fill, alpha: 0.9 });
+    this.glow
+      .roundRect(p.x - (r.w / 2 + 10) * k, p.y - (r.h / 2 + 10) * k, (r.w + 20) * k, (r.h + 20) * k, 24)
+      .stroke({ width: 7, color: swatch.yellow.fill, alpha: 0.9 });
   }
 
   /** The ghost finger: level 1 taps the long-ago card; otherwise it carries the oldest loose card to its gap. */
@@ -410,7 +487,11 @@ class TrailIcon extends WigglyIcon {
 /** A seeded place card pegged on a short line. */
 function sticker(seed: number): Container {
   const rng = new Rng(seed);
-  return stickerArt(rng.pick(PLACE_IDS), rng.int(0, 2), rng.pick(['teal', 'pink', 'blue', 'green', 'orange', 'purple'] as const));
+  return stickerArt(
+    rng.pick(PLACE_IDS),
+    rng.int(0, 2),
+    rng.pick(['teal', 'pink', 'blue', 'green', 'orange', 'purple'] as const),
+  );
 }
 
 export const timelineTrail: GameModule = {
@@ -425,7 +506,8 @@ export const timelineTrail: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
   coplayHint: 'While {name} hangs a picture, ask what changed between this picture and that one.',
-  offScreen: 'Look at a baby photo and a recent photo of the same person, or plant a seed, and talk about what looks different, then and now.',
+  offScreen:
+    'Look at a baby photo and a recent photo of the same person, or plant a seed, and talk about what looks different, then and now.',
   hubIcon: () => new TrailIcon(),
   touchDemo: true,
   sticker,

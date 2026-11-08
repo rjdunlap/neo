@@ -2,7 +2,29 @@ import { describe, expect, it } from 'vitest';
 import { SCRIPT } from '../../content/voice-script';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
-import { ALL_SUBSTANCES, CHANGERS, MakeRound, melts, meltPlan, overlaps, petCorner, PLANS, requestsFor, sayAfter, STAYERS, step, SUBSTANCES, SUPPORTED_AT, tableLayout, thingsFor, toolFor, traysFor, type Box, type Substance, type Tool } from './logic';
+import {
+  ALL_SUBSTANCES,
+  CHANGERS,
+  MakeRound,
+  melts,
+  meltPlan,
+  overlaps,
+  petCorner,
+  PLANS,
+  requestsFor,
+  sayAfter,
+  STAYERS,
+  step,
+  SUBSTANCES,
+  SUPPORTED_AT,
+  tableLayout,
+  thingsFor,
+  toolFor,
+  traysFor,
+  type Box,
+  type Substance,
+  type Tool,
+} from './logic';
 
 const rngs = Array.from({ length: 40 }, (_, i) => new Rng(i + 1));
 
@@ -23,7 +45,8 @@ describe('the substance table', () => {
       expect(step(s, 'melted', 'sun')).toBe('melted');
       expect(step(s, 'solid', 'snow')).toBe('solid');
     }
-    for (const s of STAYERS) for (const tool of ['sun', 'snow'] as Tool[]) expect(step(s, 'solid', tool)).toBe('solid');
+    for (const s of STAYERS)
+      for (const tool of ['sun', 'snow'] as Tool[]) expect(step(s, 'solid', tool)).toBe('solid');
   });
 
   it('says what happened, naming the stone that stays and never saying butter freezes', () => {
@@ -59,7 +82,11 @@ describe('rounds', () => {
 
   it('level 3 requests are each solvable with exactly one tool, alternate direction and never ask a stone or spoon to change', () => {
     const authored = requestsFor(new Rng(1), true);
-    expect(authored.map((r) => [r.thing, r.to])).toEqual([['ice', 'melted'], ['butter', 'solid'], ['chocolate', 'melted']]);
+    expect(authored.map((r) => [r.thing, r.to])).toEqual([
+      ['ice', 'melted'],
+      ['butter', 'solid'],
+      ['chocolate', 'melted'],
+    ]);
     for (const rng of rngs) {
       const reqs = requestsFor(rng, false);
       expect(reqs).toHaveLength(3);
@@ -76,7 +103,10 @@ describe('rounds', () => {
   });
 
   it('level 4 trays hold four distinct things, two that melt and two that stay; the authored trays are fixed', () => {
-    expect(traysFor(new Rng(1), true)).toEqual([['ice', 'butter', 'stone', 'spoon'], ['chocolate', 'ice', 'stone', 'spoon']]);
+    expect(traysFor(new Rng(1), true)).toEqual([
+      ['ice', 'butter', 'stone', 'spoon'],
+      ['chocolate', 'ice', 'stone', 'spoon'],
+    ]);
     for (const rng of rngs) {
       const trays = traysFor(rng, false);
       expect(trays).toHaveLength(2);
@@ -98,7 +128,13 @@ describe('level 3 accounting', () => {
     expect(round.tap('sun')).toMatchObject({ changed: true, done: true, miss: false, supported: false });
     expect([round.misses, round.hints, round.index]).toEqual([0, 0, 1]);
     // Request 2: make the butter puddle hard again. The sun does nothing to a puddle: one miss and a spoken clue.
-    expect(round.tap('sun')).toMatchObject({ changed: false, done: false, miss: true, hint: 'meltfreeze.hint.freeze', glow: false });
+    expect(round.tap('sun')).toMatchObject({
+      changed: false,
+      done: false,
+      miss: true,
+      hint: 'meltfreeze.hint.freeze',
+      glow: false,
+    });
     expect([round.misses, round.hints]).toEqual([1, 0]);
     // The same wrong tool again: one more miss and the glow, one counted hint.
     expect(round.tap('sun')).toMatchObject({ miss: true, glow: true, hint: 'meltfreeze.hint.freeze' });
@@ -131,7 +167,9 @@ describe('level 3 accounting', () => {
     for (const rng of rngs) {
       const r = new MakeRound(requestsFor(rng, false));
       while (!r.finished) {
-        expect(r.hintLine()).toBe(toolFor(r.request) === 'sun' ? 'meltfreeze.hint.melt' : 'meltfreeze.hint.freeze');
+        expect(r.hintLine()).toBe(
+          toolFor(r.request) === 'sun' ? 'meltfreeze.hint.melt' : 'meltfreeze.hint.freeze',
+        );
         r.tap(toolFor(r.request));
       }
       expect([r.misses, r.hints]).toEqual([0, 0]);
@@ -141,7 +179,12 @@ describe('level 3 accounting', () => {
 
 describe('layout', () => {
   // The lands test's views: an iPad sideways and upright, a phone sideways, and a phone with a notch and home indicator.
-  const views = [computeView(1024, 768), computeView(768, 1024), computeView(844, 390), computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 })];
+  const views = [
+    computeView(1024, 768),
+    computeView(768, 1024),
+    computeView(844, 390),
+    computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
+  ];
   const inside = (b: Box, w: number, h: number) => b.x >= 0 && b.y >= 0 && b.x + b.w <= w && b.y + b.h <= h;
 
   it('fits one to four things at 100 units and two tools at 120 on the table, clear of the pet and each other, in both orientations', () => {
@@ -150,7 +193,11 @@ describe('layout', () => {
         const L = tableLayout(view, n);
         expect(L.thing, `${view.w}x${view.h} n=${n}`).toBeGreaterThanOrEqual(100);
         expect(L.spots).toHaveLength(n);
-        const boxes: Box[] = [L.sun, L.snow, ...L.spots.map((p) => ({ x: p.x - L.thing / 2, y: p.y - L.thing / 2, w: L.thing, h: L.thing }))];
+        const boxes: Box[] = [
+          L.sun,
+          L.snow,
+          ...L.spots.map((p) => ({ x: p.x - L.thing / 2, y: p.y - L.thing / 2, w: L.thing, h: L.thing })),
+        ];
         for (const b of [L.sun, L.snow]) expect(Math.min(b.w, b.h)).toBeGreaterThanOrEqual(120);
         for (const b of boxes) {
           expect(inside(b, view.w, view.h), `${view.w}x${view.h} n=${n} ${JSON.stringify(b)}`).toBe(true);
@@ -158,7 +205,9 @@ describe('layout', () => {
           expect(overlaps(b, { x: 0, y: 0, w: 120, h: 120 }), 'top-left button').toBe(false);
           expect(overlaps(b, { x: view.w - 120, y: 0, w: 120, h: 120 }), 'top-right button').toBe(false);
         }
-        for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++) expect(overlaps(boxes[i], boxes[j]), `${view.w}x${view.h} n=${n} boxes ${i},${j}`).toBe(false);
+        for (let i = 0; i < boxes.length; i++)
+          for (let j = i + 1; j < boxes.length; j++)
+            expect(overlaps(boxes[i], boxes[j]), `${view.w}x${view.h} n=${n} boxes ${i},${j}`).toBe(false);
         for (const p of L.spots) expect(p.x > L.table.x && p.x < L.table.x + L.table.w).toBe(true);
         if (n === 1) expect(overlaps(L.card, boxes[2])).toBe(false);
       }
@@ -168,12 +217,31 @@ describe('layout', () => {
 
 describe('speech', () => {
   it('never names a temperature, a state of matter, steam or a way of heating food', () => {
-    const forbidden = ['liquid', 'solid', 'steam', 'gas', 'degree', 'temperature', 'celsius', 'fahrenheit', 'stove', 'oven', 'microwave', 'kettle', 'hot', 'freezer', 'fridge'];
-    const ids = (Object.keys(SCRIPT) as (keyof typeof SCRIPT)[]).filter((id) => id.startsWith('meltfreeze.') || id.startsWith('journal.melt.') || id === 'game.melt-freeze');
+    const forbidden = [
+      'liquid',
+      'solid',
+      'steam',
+      'gas',
+      'degree',
+      'temperature',
+      'celsius',
+      'fahrenheit',
+      'stove',
+      'oven',
+      'microwave',
+      'kettle',
+      'hot',
+      'freezer',
+      'fridge',
+    ];
+    const ids = (Object.keys(SCRIPT) as (keyof typeof SCRIPT)[]).filter(
+      (id) => id.startsWith('meltfreeze.') || id.startsWith('journal.melt.') || id === 'game.melt-freeze',
+    );
     expect(ids.length).toBeGreaterThan(15);
     for (const id of ids) {
       const said = SCRIPT[id].join(' ').toLowerCase();
-      for (const word of forbidden) expect(said, `${id} says "${word}"`).not.toMatch(new RegExp(`\\b${word}`));
+      for (const word of forbidden)
+        expect(said, `${id} says "${word}"`).not.toMatch(new RegExp(`\\b${word}`));
     }
   });
 

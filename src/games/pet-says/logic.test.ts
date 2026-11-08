@@ -4,7 +4,21 @@ import stickerSeeds from './sticker-seeds.json';
 import { SCRIPT } from '../../content/voice-script';
 import { bodyBox, restPoints } from '../../creatures/companion';
 import { SPECIES_IDS } from '../../creatures/species';
-import { saysFrame, MOVE_CUES, shouldNudge, stickerRecipe, BODY, danceSeconds, ENTRY_PLANS, makeTurns, MOVE_WORDS, MOVES, PAT_MOVES, planFor, PLANS } from './logic';
+import {
+  saysFrame,
+  MOVE_CUES,
+  shouldNudge,
+  stickerRecipe,
+  BODY,
+  danceSeconds,
+  ENTRY_PLANS,
+  makeTurns,
+  MOVE_WORDS,
+  MOVES,
+  PAT_MOVES,
+  planFor,
+  PLANS,
+} from './logic';
 
 describe('Pet Says', () => {
   it('pins the original sticker color and pose draw for seeds 0–99', () => {
@@ -21,26 +35,33 @@ describe('Pet Says', () => {
       expect(SCRIPT[MOVE_CUES[move].line].length).toBeGreaterThan(0);
       expect(MOVE_CUES[move].word).toBe(MOVE_WORDS[move]);
     }
-    expect(new Set(Object.values(MOVE_CUES).map(c => c.line)).size).toBe(13);
+    expect(new Set(Object.values(MOVE_CUES).map((c) => c.line)).size).toBe(13);
   });
 
   it('puts the mittens on each species’ own parts, and on the floor where it has no feet', () => {
     for (const s of SPECIES_IDS) {
       const box = bodyBox(s);
       const f = saysFrame((p) => restPoints(s, p), box);
-      const near = (a: { x: number; y: number }, b: { x: number; y: number }, r: number) => Math.hypot(a.x - b.x, a.y - b.y) <= r;
+      const near = (a: { x: number; y: number }, b: { x: number; y: number }, r: number) =>
+        Math.hypot(a.x - b.x, a.y - b.y) <= r;
       expect(f.targets.nose.right, s).toEqual(restPoints(s, 'nose')[0]);
-      for (const ear of restPoints(s, 'ears')) expect(near(f.targets.ears.left, ear, 15) || near(f.targets.ears.right, ear, 15), s).toBe(true);
-      for (const side of ['left', 'right'] as const) expect(near(f.targets.tummy[side], restPoints(s, 'tummy')[0], 40), s).toBe(true);
+      for (const ear of restPoints(s, 'ears'))
+        expect(near(f.targets.ears.left, ear, 15) || near(f.targets.ears.right, ear, 15), s).toBe(true);
+      for (const side of ['left', 'right'] as const)
+        expect(near(f.targets.tummy[side], restPoints(s, 'tummy')[0], 40), s).toBe(true);
       const feet = restPoints(s, 'feet');
-      if (feet.length) for (const foot of feet) expect(near(f.targets.toes.left, foot, 1) || near(f.targets.toes.right, foot, 1), s).toBe(true);
+      if (feet.length)
+        for (const foot of feet)
+          expect(near(f.targets.toes.left, foot, 1) || near(f.targets.toes.right, foot, 1), s).toBe(true);
       else expect(f.targets.toes.left.y, s).toBe(Math.min(0, box.y + box.height));
       // The head pat lands just above the head; at rest and reaching up the mittens are clear of the body's sides or top.
       expect(f.targets.head.right.y, s).toBeLessThan(restPoints(s, 'head')[0].y);
       expect(f.rest.left.x, s).toBeLessThan(box.x);
       expect(f.rest.right.x, s).toBeGreaterThan(box.x + box.width);
       expect(f.up.left.y, s).toBeLessThan(box.y);
-      for (const pair of [f.rest, f.clap, f.up, f.down, f.freeze, ...Object.values(f.targets)]) for (const p of [pair.left, pair.right]) expect(Number.isFinite(p.x) && Number.isFinite(p.y), s).toBe(true);
+      for (const pair of [f.rest, f.clap, f.up, f.down, f.freeze, ...Object.values(f.targets)])
+        for (const p of [pair.left, pair.right])
+          expect(Number.isFinite(p.x) && Number.isFinite(p.y), s).toBe(true);
     }
   });
 
@@ -52,14 +73,15 @@ describe('Pet Says', () => {
   });
   it('names every move, and never asks for the same move twice in a row', () => {
     for (const m of [...MOVES, ...BODY]) expect(MOVE_WORDS[m].length).toBeGreaterThan(2);
-    for (const plan of PLANS) for (let seed = 1; seed <= 300; seed++) {
-      const turns = makeTurns(plan, new Rng(seed));
-      expect(turns).toHaveLength(plan.turns);
-      const flat = turns.flatMap((t) => t.moves);
-      if (plan.mode !== 'freeze') flat.slice(1).forEach((m, i) => expect(m).not.toBe(flat[i]));
-      if (plan.mode === 'body') for (const t of turns) expect(BODY).toContain(t.moves[0]);
-      if (plan.mode === 'pairs') for (const t of turns) expect(t.moves).toHaveLength(2);
-    }
+    for (const plan of PLANS)
+      for (let seed = 1; seed <= 300; seed++) {
+        const turns = makeTurns(plan, new Rng(seed));
+        expect(turns).toHaveLength(plan.turns);
+        const flat = turns.flatMap((t) => t.moves);
+        if (plan.mode !== 'freeze') flat.slice(1).forEach((m, i) => expect(m).not.toBe(flat[i]));
+        if (plan.mode === 'body') for (const t of turns) expect(BODY).toContain(t.moves[0]);
+        if (plan.mode === 'pairs') for (const t of turns) expect(t.moves).toHaveLength(2);
+      }
   });
 
   it('starts "Pet says" with a real one, and spaces out the two tricks', () => {
@@ -85,7 +107,7 @@ describe('Pet Says', () => {
   });
 });
 
-describe('Pat the pet (level 13, lap\'s first level)', () => {
+describe("Pat the pet (level 13, lap's first level)", () => {
   const plan = planFor(13);
 
   it('is its own level beside the numbered ladder, which does not change', () => {

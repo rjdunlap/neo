@@ -3,9 +3,37 @@ import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import { stepLevel } from '../../progress/difficulty';
 import {
-  CAPTION_ROWS, captionPaper, CAPTIONS, captionStatus, CASE_CHECK_R, CASE_SLOT, checkExhibit, chooseNewPaper, exhibitGlow, exhibitLayout, exhibitState,
-  exhibitTargets, helpExhibit, isCase, isExhibit, makeExhibitRound, NEW_H, NEW_PAPER_IDS, NEW_W, QUESTION_H, QUESTION_IDS, QUESTION_W, ROW_CAPTIONS,
-  setCaption, STRIP, THUMB, useful, usefulPaper, type CaptionId, type ExhibitRound, type NewPaperId,
+  CAPTION_ROWS,
+  captionPaper,
+  CAPTIONS,
+  captionStatus,
+  CASE_CHECK_R,
+  CASE_SLOT,
+  checkExhibit,
+  chooseNewPaper,
+  exhibitGlow,
+  exhibitLayout,
+  exhibitState,
+  exhibitTargets,
+  helpExhibit,
+  isCase,
+  isExhibit,
+  makeExhibitRound,
+  NEW_H,
+  NEW_PAPER_IDS,
+  NEW_W,
+  QUESTION_H,
+  QUESTION_IDS,
+  QUESTION_W,
+  ROW_CAPTIONS,
+  setCaption,
+  STRIP,
+  THUMB,
+  useful,
+  usefulPaper,
+  type CaptionId,
+  type ExhibitRound,
+  type NewPaperId,
 } from './cases';
 import { atticFinds } from './index';
 import { petCorner, planFor, shellButtons, type Rect } from './logic';
@@ -16,8 +44,10 @@ const VIEWS = {
   phone: computeView(844, 390),
   notch: computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
 };
-const overlap = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
-const inside = (a: Rect, v: { w: number; h: number }) => a.x >= 0 && a.y >= 0 && a.x + a.w <= v.w && a.y + a.h <= v.h;
+const overlap = (a: Rect, b: Rect) =>
+  a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+const inside = (a: Rect, v: { w: number; h: number }) =>
+  a.x >= 0 && a.y >= 0 && a.x + a.w <= v.w && a.y + a.h <= v.h;
 const COPIES: NewPaperId[] = ['poster-copy', 'fair-copy'];
 const rounds = (n = 500) => Array.from({ length: n }, (_, i) => makeExhibitRound(new Rng(i + 1)));
 
@@ -47,31 +77,45 @@ describe('Attic Finds level 9 model', () => {
 
 describe('Attic Finds level 9 Check', () => {
   const round = makeExhibitRound(new Rng(7), true);
-  const choices = (row: number) => [ROW_CAPTIONS[round.rows[row]].start, ROW_CAPTIONS[round.rows[row]].supported, ROW_CAPTIONS[round.rows[row]].unsupported];
+  const choices = (row: number) => [
+    ROW_CAPTIONS[round.rows[row]].start,
+    ROW_CAPTIONS[round.rows[row]].supported,
+    ROW_CAPTIONS[round.rows[row]].unsupported,
+  ];
 
   it('is done exactly when every caption is shown and the paper is useful; empty with no paper; one miss otherwise', () => {
-    for (const a of choices(0)) for (const b of choices(1)) for (const c of choices(2)) {
-      for (const paper of [null, ...round.offered]) {
-        const s = exhibitState(round);
-        [a, b, c].forEach((cap, i) => expect(setCaption(s, i, cap)).toBe(true));
-        chooseNewPaper(s, paper);
-        const res = checkExhibit(s);
-        const allShown = [a, b, c].every((x) => captionStatus(x) === 'shown');
-        if (!paper) expect(res.result).toBe('empty');
-        else if (allShown && useful(paper, round.question)) expect(res.result).toBe('done');
-        else {
-          expect(res.result).toBe('miss');
-          expect(s.misses).toBe(1);
-          // Captions stay where she put them; a paper that could not answer hops back.
-          expect(s.captions).toEqual([a, b, c]);
-          expect(s.chosen).toBe(useful(paper, round.question) ? paper : null);
-          if (res.result === 'miss') {
-            expect(res.rows.map((r) => r.row)).toEqual([a, b, c].flatMap((x, i) => (captionStatus(x) === 'shown' ? [] : [i])));
-            expect(res.paper).toBe(useful(paper, round.question) ? null : COPIES.includes(paper) ? 'attic-finds.why-copy' : 'attic-finds.why-wrong-place');
+    for (const a of choices(0))
+      for (const b of choices(1))
+        for (const c of choices(2)) {
+          for (const paper of [null, ...round.offered]) {
+            const s = exhibitState(round);
+            [a, b, c].forEach((cap, i) => expect(setCaption(s, i, cap)).toBe(true));
+            chooseNewPaper(s, paper);
+            const res = checkExhibit(s);
+            const allShown = [a, b, c].every((x) => captionStatus(x) === 'shown');
+            if (!paper) expect(res.result).toBe('empty');
+            else if (allShown && useful(paper, round.question)) expect(res.result).toBe('done');
+            else {
+              expect(res.result).toBe('miss');
+              expect(s.misses).toBe(1);
+              // Captions stay where she put them; a paper that could not answer hops back.
+              expect(s.captions).toEqual([a, b, c]);
+              expect(s.chosen).toBe(useful(paper, round.question) ? paper : null);
+              if (res.result === 'miss') {
+                expect(res.rows.map((r) => r.row)).toEqual(
+                  [a, b, c].flatMap((x, i) => (captionStatus(x) === 'shown' ? [] : [i])),
+                );
+                expect(res.paper).toBe(
+                  useful(paper, round.question)
+                    ? null
+                    : COPIES.includes(paper)
+                      ? 'attic-finds.why-copy'
+                      : 'attic-finds.why-wrong-place',
+                );
+              }
+            }
           }
         }
-      }
-    }
   });
 
   it('gives each unsupported caption its row reason', () => {
@@ -80,7 +124,11 @@ describe('Attic Finds level 9 Check', () => {
     const res = checkExhibit(s);
     expect(res.result).toBe('miss');
     if (res.result !== 'miss') return;
-    const why = { love: 'attic-finds.why-all-loved', cranking: 'attic-finds.why-hilltop-crank', homes: 'attic-finds.why-seaside' };
+    const why = {
+      love: 'attic-finds.why-all-loved',
+      cranking: 'attic-finds.why-hilltop-crank',
+      homes: 'attic-finds.why-seaside',
+    };
     for (const { row, reason } of res.rows) expect(reason).toBe(why[round.rows[row]]);
   });
 
@@ -98,7 +146,8 @@ describe('Attic Finds level 9 rounds, help and registration', () => {
     for (const [i, r] of rounds().entries()) {
       expect(r).toEqual(makeExhibitRound(new Rng(i + 1)));
       expect([...r.rows].sort()).toEqual([...CAPTION_ROWS].sort());
-      for (const row of CAPTION_ROWS) expect([...r.strips[row]].sort()).toEqual(Object.values(ROW_CAPTIONS[row]).sort());
+      for (const row of CAPTION_ROWS)
+        expect([...r.strips[row]].sort()).toEqual(Object.values(ROW_CAPTIONS[row]).sort());
       expect(r.offered).toHaveLength(3);
       expect(r.offered.filter((p) => useful(p, r.question))).toHaveLength(1);
       expect(r.offered.filter((p) => COPIES.includes(p))).toHaveLength(1);
@@ -118,10 +167,16 @@ describe('Attic Finds level 9 rounds, help and registration', () => {
   it('following the glow from any state reaches done, and help counts once', () => {
     for (const r of rounds(60)) {
       const s = exhibitState(r);
-      chooseNewPaper(s, r.offered.find((p) => !useful(p, r.question))!);
+      chooseNewPaper(
+        s,
+        r.offered.find((p) => !useful(p, r.question))!,
+      );
       checkExhibit(s);
       expect(s.glow).toBe(false);
-      chooseNewPaper(s, r.offered.find((p) => !useful(p, r.question))!);
+      chooseNewPaper(
+        s,
+        r.offered.find((p) => !useful(p, r.question))!,
+      );
       checkExhibit(s);
       expect([s.misses, s.hints, s.glow]).toEqual([2, 1, true]);
       expect(helpExhibit(s)).toBe(false);
@@ -157,7 +212,9 @@ describe('Attic Finds level 9 rounds, help and registration', () => {
   });
 
   it('lays out thumbnails, captions, the open strip, the question row and Check as large, separate targets', () => {
-    expect(Math.min(THUMB, STRIP, QUESTION_W, QUESTION_H, CASE_SLOT, NEW_W, NEW_H, 2 * CASE_CHECK_R)).toBeGreaterThanOrEqual(100);
+    expect(
+      Math.min(THUMB, STRIP, QUESTION_W, QUESTION_H, CASE_SLOT, NEW_W, NEW_H, 2 * CASE_CHECK_R),
+    ).toBeGreaterThanOrEqual(100);
     for (const [name, v] of Object.entries(VIEWS)) {
       const L = exhibitLayout(v);
       expect(L, name).not.toBeNull();
@@ -166,7 +223,8 @@ describe('Attic Finds level 9 rounds, help and registration', () => {
         expect(inside(a.r, v), `${name} ${a.label} inside`).toBe(true);
         expect(overlap(a.r, petCorner(v)), `${name} ${a.label}/pet`).toBe(false);
         for (const b of shellButtons(v)) expect(overlap(a.r, b), `${name} ${a.label}/shell`).toBe(false);
-        for (const b of ts.slice(i + 1)) expect(overlap(a.r, b.r), `${name} ${a.label}/${b.label}`).toBe(false);
+        for (const b of ts.slice(i + 1))
+          expect(overlap(a.r, b.r), `${name} ${a.label}/${b.label}`).toBe(false);
       }
     }
   });

@@ -14,11 +14,38 @@ import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { LEVELS, answerOf, choices, hintSpans, hopTicks, isRuler, isWide, longerShorter, makeMeasures, measureTouch, planFor, RULER, slideSlots, temptingReading, UNIT_SIZE, type Measure, type MeasurePlan, type Thing } from './logic';
+import {
+  LEVELS,
+  answerOf,
+  choices,
+  hintSpans,
+  hopTicks,
+  isRuler,
+  isWide,
+  longerShorter,
+  makeMeasures,
+  measureTouch,
+  planFor,
+  RULER,
+  slideSlots,
+  temptingReading,
+  UNIT_SIZE,
+  type Measure,
+  type MeasurePlan,
+  type Thing,
+} from './logic';
 
 const U = 88;
 export const THING_WORDS: Record<Thing, string> = {
-  leaf: 'leaf', pencil: 'pencil', snake: 'snake', stick: 'stick', crayon: 'crayon', carrot: 'carrot', rope: 'rope', paintbrush: 'paintbrush', feather: 'feather',
+  leaf: 'leaf',
+  pencil: 'pencil',
+  snake: 'snake',
+  stick: 'stick',
+  crayon: 'crayon',
+  carrot: 'carrot',
+  rope: 'rope',
+  paintbrush: 'paintbrush',
+  feather: 'feather',
 };
 /** The long jump's two jumpers, top track first. */
 const JUMPERS = ['Bunny', 'Duck'] as const;
@@ -26,7 +53,10 @@ const JUMPERS = ['Bunny', 'Duck'] as const;
 function wormArt(): Container {
   const c = new Container();
   const g = new Graphics();
-  for (let k = 0; k < 5; k++) g.circle(-U / 2 + 12 + k * 16, 0, 11).fill(k === 4 ? swatch.green.fill : swatch.green.light).stroke({ width: 3, color: swatch.green.line });
+  for (let k = 0; k < 5; k++)
+    g.circle(-U / 2 + 12 + k * 16, 0, 11)
+      .fill(k === 4 ? swatch.green.fill : swatch.green.light)
+      .stroke({ width: 3, color: swatch.green.line });
   g.circle(U / 2 - 12, -3, 2.5).fill(ink);
   c.addChild(g);
   return c;
@@ -36,7 +66,10 @@ function wormArt(): Container {
 function bigWormArt(): Container {
   const c = new Container();
   const g = new Graphics();
-  for (let k = 0; k < 10; k++) g.circle(-U + 15 + k * 16, 0, 15.4).fill(k === 9 ? swatch.orange.fill : swatch.orange.light).stroke({ width: 3, color: swatch.orange.line });
+  for (let k = 0; k < 10; k++)
+    g.circle(-U + 15 + k * 16, 0, 15.4)
+      .fill(k === 9 ? swatch.orange.fill : swatch.orange.light)
+      .stroke({ width: 3, color: swatch.orange.line });
   g.circle(U - 15, -4, 3.2).fill(ink);
   c.addChild(g);
   return c;
@@ -46,37 +79,91 @@ function thingArt(thing: Thing, length: number, unit = U): Graphics {
   const w = length * unit;
   const g = new Graphics();
   if (thing === 'leaf') {
-    g.moveTo(0, 0).quadraticCurveTo(w / 2, -34, w, 0).quadraticCurveTo(w / 2, 34, 0, 0).fill(swatch.green.fill).stroke({ width: 4, color: swatch.green.line });
-    g.moveTo(4, 0).lineTo(w - 4, 0).stroke({ width: 3, color: swatch.green.line });
+    g.moveTo(0, 0)
+      .quadraticCurveTo(w / 2, -34, w, 0)
+      .quadraticCurveTo(w / 2, 34, 0, 0)
+      .fill(swatch.green.fill)
+      .stroke({ width: 4, color: swatch.green.line });
+    g.moveTo(4, 0)
+      .lineTo(w - 4, 0)
+      .stroke({ width: 3, color: swatch.green.line });
   } else if (thing === 'pencil') {
-    g.rect(0, -14, w - 30, 28).fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line });
-    g.poly([w - 30, -14, w, 0, w - 30, 14]).fill(wood.light).stroke({ width: 3, color: wood.line }).poly([w - 9, -4, w, 0, w - 9, 4]).fill(ink);
+    g.rect(0, -14, w - 30, 28)
+      .fill(swatch.yellow.fill)
+      .stroke({ width: 3, color: swatch.yellow.line });
+    g.poly([w - 30, -14, w, 0, w - 30, 14])
+      .fill(wood.light)
+      .stroke({ width: 3, color: wood.line })
+      .poly([w - 9, -4, w, 0, w - 9, 4])
+      .fill(ink);
     g.rect(0, -14, 14, 28).fill(swatch.pink.fill);
   } else if (thing === 'snake') {
     g.roundRect(0, -14, w, 28, 14).fill(swatch.purple.fill).stroke({ width: 3, color: swatch.purple.line });
     for (let x = 20; x < w - 20; x += 30) g.circle(x, 0, 5).fill(swatch.purple.light);
     g.circle(w - 14, -4, 3).fill(ink);
   } else if (thing === 'crayon') {
-    g.poly([w - 26, -14, w - 3, -4, w - 3, 4, w - 26, 14]).fill(swatch.blue.fill).stroke({ width: 3, color: swatch.blue.line });
-    g.roundRect(0, -14, w - 24, 28, 6).fill(swatch.blue.fill).stroke({ width: 3, color: swatch.blue.line });
-    g.rect(12, -14, Math.max(10, w - 54), 28).fill(swatch.blue.light).stroke({ width: 2, color: swatch.blue.line });
+    g.poly([w - 26, -14, w - 3, -4, w - 3, 4, w - 26, 14])
+      .fill(swatch.blue.fill)
+      .stroke({ width: 3, color: swatch.blue.line });
+    g.roundRect(0, -14, w - 24, 28, 6)
+      .fill(swatch.blue.fill)
+      .stroke({ width: 3, color: swatch.blue.line });
+    g.rect(12, -14, Math.max(10, w - 54), 28)
+      .fill(swatch.blue.light)
+      .stroke({ width: 2, color: swatch.blue.line });
   } else if (thing === 'carrot') {
     // Leaves sprout from the wide end at the start; the root tapers to its tip at the end.
-    for (const a of [-0.5, 0, 0.5]) g.ellipse(-12, a * 26, 14, 6).fill(swatch.green.fill).stroke({ width: 2, color: swatch.green.line });
-    g.moveTo(0, -18).quadraticCurveTo(w * 0.6, -14, w, 0).quadraticCurveTo(w * 0.6, 14, 0, 18).closePath().fill(swatch.orange.fill).stroke({ width: 3, color: swatch.orange.line });
-    for (let x = 24; x < w * 0.8; x += 34) g.moveTo(x, -8).lineTo(x + 10, -6).stroke({ width: 2, color: swatch.orange.line });
+    for (const a of [-0.5, 0, 0.5])
+      g.ellipse(-12, a * 26, 14, 6)
+        .fill(swatch.green.fill)
+        .stroke({ width: 2, color: swatch.green.line });
+    g.moveTo(0, -18)
+      .quadraticCurveTo(w * 0.6, -14, w, 0)
+      .quadraticCurveTo(w * 0.6, 14, 0, 18)
+      .closePath()
+      .fill(swatch.orange.fill)
+      .stroke({ width: 3, color: swatch.orange.line });
+    for (let x = 24; x < w * 0.8; x += 34)
+      g.moveTo(x, -8)
+        .lineTo(x + 10, -6)
+        .stroke({ width: 2, color: swatch.orange.line });
   } else if (thing === 'rope') {
     g.roundRect(0, -11, w, 22, 11).fill(wood.light).stroke({ width: 3, color: wood.line });
-    for (let x = 10; x < w - 10; x += 14) g.moveTo(x, -10).lineTo(x + 9, 10).stroke({ width: 2, color: wood.line });
+    for (let x = 10; x < w - 10; x += 14)
+      g.moveTo(x, -10)
+        .lineTo(x + 9, 10)
+        .stroke({ width: 2, color: wood.line });
   } else if (thing === 'paintbrush') {
-    g.roundRect(0, -8, w - 58, 16, 8).fill(swatch.red.fill).stroke({ width: 3, color: swatch.red.line });
-    g.rect(w - 60, -12, 22, 24).fill(swatch.white.light).stroke({ width: 3, color: swatch.white.line });
-    g.moveTo(w - 38, -12).quadraticCurveTo(w - 8, -12, w, 0).quadraticCurveTo(w - 8, 12, w - 38, 12).closePath().fill(wood.light).stroke({ width: 3, color: wood.line });
-    g.moveTo(w - 14, -7).quadraticCurveTo(w - 4, -5, w, 0).quadraticCurveTo(w - 4, 5, w - 14, 7).closePath().fill(swatch.purple.fill);
+    g.roundRect(0, -8, w - 58, 16, 8)
+      .fill(swatch.red.fill)
+      .stroke({ width: 3, color: swatch.red.line });
+    g.rect(w - 60, -12, 22, 24)
+      .fill(swatch.white.light)
+      .stroke({ width: 3, color: swatch.white.line });
+    g.moveTo(w - 38, -12)
+      .quadraticCurveTo(w - 8, -12, w, 0)
+      .quadraticCurveTo(w - 8, 12, w - 38, 12)
+      .closePath()
+      .fill(wood.light)
+      .stroke({ width: 3, color: wood.line });
+    g.moveTo(w - 14, -7)
+      .quadraticCurveTo(w - 4, -5, w, 0)
+      .quadraticCurveTo(w - 4, 5, w - 14, 7)
+      .closePath()
+      .fill(swatch.purple.fill);
   } else if (thing === 'feather') {
     // The vane hugs the quill, which runs the whole length.
-    g.moveTo(w * 0.18, 0).quadraticCurveTo(w * 0.5, -30, w, 0).quadraticCurveTo(w * 0.5, 30, w * 0.18, 0).fill(swatch.teal.light).stroke({ width: 3, color: swatch.teal.line });
-    for (let x = w * 0.28; x < w * 0.92; x += 18) g.moveTo(x, 0).lineTo(x + 10, -14).moveTo(x, 0).lineTo(x + 10, 14).stroke({ width: 2, color: swatch.teal.line });
+    g.moveTo(w * 0.18, 0)
+      .quadraticCurveTo(w * 0.5, -30, w, 0)
+      .quadraticCurveTo(w * 0.5, 30, w * 0.18, 0)
+      .fill(swatch.teal.light)
+      .stroke({ width: 3, color: swatch.teal.line });
+    for (let x = w * 0.28; x < w * 0.92; x += 18)
+      g.moveTo(x, 0)
+        .lineTo(x + 10, -14)
+        .moveTo(x, 0)
+        .lineTo(x + 10, 14)
+        .stroke({ width: 2, color: swatch.teal.line });
     g.moveTo(0, 0).lineTo(w, 0).stroke({ width: 4, color: swatch.teal.line });
   } else {
     g.roundRect(0, -10, w, 20, 10).fill(wood.fill).stroke({ width: 3, color: wood.line });
@@ -92,10 +179,15 @@ function jumpArt(who: number, length: number, unit = U): Graphics {
   const w = length * unit;
   const g = new Graphics();
   g.rect(-22, -16, 18, 32).fill(wood.fill).stroke({ width: 3, color: wood.line });
-  for (let x = 0; x < w - 30; x += 22) g.moveTo(x, 0).lineTo(Math.min(x + 12, w - 30), 0).stroke({ width: 4, color: wood.line, alpha: 0.6 });
+  for (let x = 0; x < w - 30; x += 22)
+    g.moveTo(x, 0)
+      .lineTo(Math.min(x + 12, w - 30), 0)
+      .stroke({ width: 4, color: wood.line, alpha: 0.6 });
   const c = who === 0 ? swatch.pink : swatch.yellow;
   for (const dy of [-9, 9]) {
-    g.ellipse(w - 12, dy, 12, 7).fill(c.fill).stroke({ width: 2, color: c.line });
+    g.ellipse(w - 12, dy, 12, 7)
+      .fill(c.fill)
+      .stroke({ width: 2, color: c.line });
     for (const t of [-5, 0, 5]) g.circle(w - 1, dy + t * 0.8, 2.6).fill(c.line);
   }
   g.moveTo(w, -30).lineTo(w, 30).stroke({ width: 3, color: ink, alpha: 0.5 });
@@ -152,8 +244,21 @@ class Inchworm implements Game {
     this.plan = planFor(ctx.level);
     // Big and little worms lay up to nine worms a stick, and one worm hops up to eight times: the how-to card's demonstration measures one thing, inside its time.
     const measures = makeMeasures(this.plan, ctx.rng);
-    this.measures = ctx.demo && (this.plan.mode === 'units' || this.plan.mode === 'hop' || this.plan.mode === 'slide') ? measures.slice(0, 1) : measures;
-    this.backdrop = new Backdrop({ sky: [0xd6f5c8, 0xf6fbf0], hills: [0xc8ecb0, 0xa6de8e], horizon: 0.8, clouds: 1, sun: false, seed: 23 }, ctx.view);
+    this.measures =
+      ctx.demo && (this.plan.mode === 'units' || this.plan.mode === 'hop' || this.plan.mode === 'slide')
+        ? measures.slice(0, 1)
+        : measures;
+    this.backdrop = new Backdrop(
+      {
+        sky: [0xd6f5c8, 0xf6fbf0],
+        hills: [0xc8ecb0, 0xa6de8e],
+        horizon: 0.8,
+        clouds: 1,
+        sun: false,
+        seed: 23,
+      },
+      ctx.view,
+    );
     this.glow.eventMode = 'none';
     this.placed.eventMode = 'none';
     this.pit.eventMode = 'none';
@@ -179,9 +284,11 @@ class Inchworm implements Game {
     const brk = this.plan.mode === 'broken' ? this.m?.brk : undefined;
     if (brk !== undefined) return Math.max(40, (this.view.w - (RULER - brk) * this.u) / 2) - brk * this.u;
     // One worm, hop by hop: the thing and the worm waiting one length before it are centred together.
-    if (this.plan.mode === 'hop' && this.m) return Math.max(40, (this.view.w - (this.m.length + 1) * this.u) / 2) + this.u;
+    if (this.plan.mode === 'hop' && this.m)
+      return Math.max(40, (this.view.w - (this.m.length + 1) * this.u) / 2) + this.u;
     // Longer than the ruler: the thing and the ruler's second lay (which reaches past its end) are centred together.
-    if (this.plan.mode === 'slide' && this.m) return Math.max(40, (this.view.w - 2 * this.m.ruler! * this.u) / 2);
+    if (this.plan.mode === 'slide' && this.m)
+      return Math.max(40, (this.view.w - 2 * this.m.ruler! * this.u) / 2);
     return isRuler(this.plan.mode) ? 140 : 200;
   }
 
@@ -194,7 +301,11 @@ class Inchworm implements Game {
       if (!b.drag.dragging) b.node.position.set(b.drag.home.x, b.drag.home.y);
     });
     // Pads to the right of the measuring, or along the bottom under the long ruler.
-    this.pads.forEach((p, i) => (isWide(this.plan.mode) ? p.node.position.set(v.w / 2 - 150 + i * 150, v.h - 110) : p.node.position.set(v.w - 110, v.h * 0.3 + i * 125)));
+    this.pads.forEach((p, i) =>
+      isWide(this.plan.mode)
+        ? p.node.position.set(v.w / 2 - 150 + i * 150, v.h - 110)
+        : p.node.position.set(v.w - 110, v.h * 0.3 + i * 125),
+    );
     this.drawRuler();
     this.drawPit();
     this.placeHopper();
@@ -209,31 +320,56 @@ class Inchworm implements Game {
     if (this.plan.mode === 'slide') {
       // Both parts of the thing, and the chalk mark between them.
       const r = this.rows[0];
-      for (const s of hintSpans(this.m, 'slide')) g.roundRect(this.x0() + s.from * this.u + 3, r.y - 34, s.count * this.u - 6, 68, 12).stroke({ width: pulse, color: swatch.yellow.fill });
-      g.circle(this.x0() + this.m.ruler! * this.u, r.y - 72, 26).stroke({ width: pulse, color: swatch.yellow.fill });
+      for (const s of hintSpans(this.m, 'slide'))
+        g.roundRect(this.x0() + s.from * this.u + 3, r.y - 34, s.count * this.u - 6, 68, 12).stroke({
+          width: pulse,
+          color: swatch.yellow.fill,
+        });
+      g.circle(this.x0() + this.m.ruler! * this.u, r.y - 72, 26).stroke({
+        width: pulse,
+        color: swatch.yellow.fill,
+      });
       return;
     }
     if (isRuler(this.plan.mode)) {
       for (const s of hintSpans(this.m, this.plan.mode)) {
         const r = this.rows[s.row];
         // How much longer: ring the extra part of the longer thing. Otherwise light the ruler spaces under it, from where it starts.
-        if (this.plan.mode === 'rulerdiff') g.roundRect(this.x0() + s.from * this.u + 3, r.y - 34, s.count * this.u - 6, 68, 12).stroke({ width: pulse, color: swatch.yellow.fill });
-        else for (let k = 0; k < s.count; k++) g.roundRect(this.x0() + (s.from + k) * this.u + 4, r.y + 30, this.u - 8, 44, 10).stroke({ width: 4, color: swatch.yellow.fill });
+        if (this.plan.mode === 'rulerdiff')
+          g.roundRect(this.x0() + s.from * this.u + 3, r.y - 34, s.count * this.u - 6, 68, 12).stroke({
+            width: pulse,
+            color: swatch.yellow.fill,
+          });
+        else
+          for (let k = 0; k < s.count; k++)
+            g.roundRect(this.x0() + (s.from + k) * this.u + 4, r.y + 30, this.u - 8, 44, 10).stroke({
+              width: 4,
+              color: swatch.yellow.fill,
+            });
       }
       return;
     }
     const p = this.pads.find((x) => x.n === answerOf(this.m, this.plan.mode));
-    if (p) return void g.roundRect(p.node.x - 66, p.node.y - 60, 132, 120, 22).stroke({ width: pulse, color: swatch.yellow.fill });
+    if (p)
+      return void g
+        .roundRect(p.node.x - 66, p.node.y - 60, 132, 120, 22)
+        .stroke({ width: pulse, color: swatch.yellow.fill });
     for (const r of this.plan.mode === 'units' ? [this.active()].filter((x) => !!x) : this.rows) {
       const end = this.x0() + (r.start + r.length * r.size) * this.u;
-      g.moveTo(end, r.y - 50).lineTo(end, r.y + 50).stroke({ width: pulse, color: swatch.yellow.fill });
+      g.moveTo(end, r.y - 50)
+        .lineTo(end, r.y + 50)
+        .stroke({ width: pulse, color: swatch.yellow.fill });
     }
   }
 
   /** Lay the next worm end to end, or tap the reading once the measuring is complete. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.m) return null;
-    const move = measureTouch(this.m, this.plan.mode, this.rows.map((r) => r.worms));
+    const move = measureTouch(
+      this.m,
+      this.plan.mode,
+      this.rows.map((r) => r.worms),
+    );
     if (!move) return null;
     if (move.kind === 'hop') return this.hopper ? { tap: { on: this.hopper } } : null;
     if (move.kind === 'slide') {
@@ -246,10 +382,12 @@ class Inchworm implements Game {
     }
     const worm = this.bucket.find((b) => !b.drag.dragging);
     const row = this.rows[move.row];
-    return worm && row ? {
-      drag: { on: worm.node },
-      to: { on: this.ctx.stage, x: this.slotX(row), y: row.y - 30 },
-    } : null;
+    return worm && row
+      ? {
+          drag: { on: worm.node },
+          to: { on: this.ctx.stage, x: this.slotX(row), y: row.y - 30 },
+        }
+      : null;
   }
 
   destroy() {
@@ -289,7 +427,9 @@ class Inchworm implements Game {
     const add = (thing: Thing, length: number, y: number, start = 0, size = 1) => {
       const node = new Container();
       const jumper = m.jump ? this.rows.length : undefined;
-      node.addChild(jumper === undefined ? thingArt(thing, length * size, this.u) : jumpArt(jumper, length, this.u));
+      node.addChild(
+        jumper === undefined ? thingArt(thing, length * size, this.u) : jumpArt(jumper, length, this.u),
+      );
       this.ctx.stage.addChildAt(node, this.ctx.stage.getChildIndex(this.placed));
       this.rows.push({ thing, length, start, y, worms: 0, size, node, jumper });
     };
@@ -325,9 +465,12 @@ class Inchworm implements Game {
       const [longer, shorter] = longerShorter(m);
       return this.ctx.instruct('worm.rulerdiff', { a: THING_WORDS[longer], b: THING_WORDS[shorter] });
     }
-    if (this.plan.mode === 'rulersum') return this.ctx.instruct('worm.rulersum', { a: what, b: THING_WORDS[m.other!.thing] });
-    if (this.plan.mode === 'ruler') return this.ctx.instruct(m.start ? 'worm.rulerstart' : 'worm.ruler', { what });
-    if (this.plan.mode === 'compare') return this.ctx.instruct('worm.compare', { a: what, b: THING_WORDS[m.other!.thing] });
+    if (this.plan.mode === 'rulersum')
+      return this.ctx.instruct('worm.rulersum', { a: what, b: THING_WORDS[m.other!.thing] });
+    if (this.plan.mode === 'ruler')
+      return this.ctx.instruct(m.start ? 'worm.rulerstart' : 'worm.ruler', { what });
+    if (this.plan.mode === 'compare')
+      return this.ctx.instruct('worm.compare', { a: what, b: THING_WORDS[m.other!.thing] });
     if (this.plan.mode === 'units') return this.ctx.instruct('worm.big', { what });
     return this.ctx.instruct(this.index === 0 ? 'worm.lay' : 'worm.again', { what });
   }
@@ -338,8 +481,13 @@ class Inchworm implements Game {
     const half = (n * this.u) / 2;
     const node = new Container();
     const g = new Graphics();
-    g.roundRect(-half - 16, -30, n * this.u + 32, 60, 10).fill(swatch.yellow.light).stroke({ width: 4, color: wood.line });
-    for (let k = 0; k <= n; k++) g.moveTo(-half + k * this.u, -30).lineTo(-half + k * this.u, -6).stroke({ width: 3, color: ink });
+    g.roundRect(-half - 16, -30, n * this.u + 32, 60, 10)
+      .fill(swatch.yellow.light)
+      .stroke({ width: 4, color: wood.line });
+    for (let k = 0; k <= n; k++)
+      g.moveTo(-half + k * this.u, -30)
+        .lineTo(-half + k * this.u, -6)
+        .stroke({ width: 3, color: ink });
     node.addChild(g);
     for (let k = 0; k <= n; k++) {
       const t = label(String(k), 22, ink);
@@ -351,7 +499,10 @@ class Inchworm implements Game {
     // Above the chalk, so the mark it starts from stays in view above the ruler.
     this.ctx.stage.addChildAt(node, this.ctx.stage.getChildIndex(this.glow));
     const item = { node, drag: null as unknown as DragHandle };
-    item.drag = draggable(node, this.ctx.tw, { onPick: () => sfx.tick(), onDrop: (x, y) => this.layRuler(x, y) });
+    item.drag = draggable(node, this.ctx.tw, {
+      onPick: () => sfx.tick(),
+      onDrop: (x, y) => this.layRuler(x, y),
+    });
     this.slider = item;
   }
 
@@ -376,7 +527,8 @@ class Inchworm implements Game {
     const laid = r.worms > 0 ? this.slotSpot(slideSlots(this.m)[r.worms - 1]) : null;
     const home = laid ?? { x: this.view.w / 2, y: r.y + 200 };
     this.slider.drag.home = home;
-    if (!this.slider.drag.dragging && !this.ctx.tw.busy(this.slider.node)) this.slider.node.position.set(home.x, home.y);
+    if (!this.slider.drag.dragging && !this.ctx.tw.busy(this.slider.node))
+      this.slider.node.position.set(home.x, home.y);
     this.drawChalk();
   }
 
@@ -425,7 +577,8 @@ class Inchworm implements Game {
     const r = this.rows[0];
     if (!this.hopper || !r) return;
     // Mid-hop a relayout leaves the worm to land; the hop places it again from the new layout.
-    if (!this.ctx.tw.busy(this.hopper)) this.hopper.position.set(this.x0() + (r.worms - 0.5) * this.u, r.y - 30);
+    if (!this.ctx.tw.busy(this.hopper))
+      this.hopper.position.set(this.x0() + (r.worms - 0.5) * this.u, r.y - 30);
     this.drawChalk();
   }
 
@@ -438,8 +591,14 @@ class Inchworm implements Game {
     r.worms++;
     sfx.pop(3 + r.worms);
     // An inch: squash, stretch forward, settle.
-    void this.ctx.tw.to(worm.scale, { x: (0.8 * this.u) / U }, { duration: 0.1 }).then(() => this.ctx.tw.to(worm.scale, { x: this.u / U }, { duration: 0.2, ease: ease.outQuad }));
-    await this.ctx.tw.to(worm, { x: this.x0() + (r.worms - 0.5) * this.u }, { duration: 0.3, ease: ease.outQuad });
+    void this.ctx.tw
+      .to(worm.scale, { x: (0.8 * this.u) / U }, { duration: 0.1 })
+      .then(() => this.ctx.tw.to(worm.scale, { x: this.u / U }, { duration: 0.2, ease: ease.outQuad }));
+    await this.ctx.tw.to(
+      worm,
+      { x: this.x0() + (r.worms - 0.5) * this.u },
+      { duration: 0.3, ease: ease.outQuad },
+    );
     this.placeHopper();
     if (r.worms < r.length) return void (this.busy = false);
     sfx.sparkle();
@@ -457,8 +616,14 @@ class Inchworm implements Game {
       // Where the first ruler ended: a chalk tick across the thing, and how far it reached.
       const x = this.x0() + this.m.ruler! * this.u;
       const tick = new Graphics();
-      tick.moveTo(x, r.y - 46).lineTo(x, r.y + 26).stroke({ width: 9, color: ink, alpha: 0.35, cap: 'round' });
-      tick.moveTo(x, r.y - 46).lineTo(x, r.y + 26).stroke({ width: 5, color: 0xffffff, cap: 'round' });
+      tick
+        .moveTo(x, r.y - 46)
+        .lineTo(x, r.y + 26)
+        .stroke({ width: 9, color: ink, alpha: 0.35, cap: 'round' });
+      tick
+        .moveTo(x, r.y - 46)
+        .lineTo(x, r.y + 26)
+        .stroke({ width: 5, color: 0xffffff, cap: 'round' });
       const n = label(String(this.m.ruler), 30, ink);
       n.position.set(x, r.y - 72);
       this.chalk.addChild(tick, n);
@@ -469,8 +634,12 @@ class Inchworm implements Game {
     this.chalk.addChild(g);
     for (const k of hopTicks(r.worms)) {
       const x = this.x0() + k * this.u;
-      g.moveTo(x, r.y + 18).lineTo(x, r.y + 56).stroke({ width: 9, color: ink, alpha: 0.35, cap: 'round' });
-      g.moveTo(x, r.y + 18).lineTo(x, r.y + 56).stroke({ width: 5, color: 0xffffff, cap: 'round' });
+      g.moveTo(x, r.y + 18)
+        .lineTo(x, r.y + 56)
+        .stroke({ width: 9, color: ink, alpha: 0.35, cap: 'round' });
+      g.moveTo(x, r.y + 18)
+        .lineTo(x, r.y + 56)
+        .stroke({ width: 5, color: 0xffffff, cap: 'round' });
       if (!this.hinting) continue;
       const n = label(String(k), 26, ink);
       n.position.set(x, r.y + 82);
@@ -484,7 +653,9 @@ class Inchworm implements Game {
     if (!this.m?.jump || this.rows.length < 2) return;
     const far = Math.max(...this.rows.map((r) => r.length)) * this.u;
     const top = this.rows[0].y - 70;
-    g.roundRect(this.x0() - 40, top, far + 90, this.rows[1].y - top + 50, 26).fill(0xf3dfa8).stroke({ width: 4, color: 0xd9b96a });
+    g.roundRect(this.x0() - 40, top, far + 90, this.rows[1].y - top + 50, 26)
+      .fill(0xf3dfa8)
+      .stroke({ width: 4, color: 0xd9b96a });
   }
 
   private drawRuler() {
@@ -496,13 +667,38 @@ class Inchworm implements Game {
     const from = this.m?.brk ?? 0;
     const left = this.x0() + from * this.u;
     if (from > 0) {
-      const jag = [left - 16, y, left - 30, y + 12, left - 18, y + 24, left - 32, y + 36, left - 20, y + 48, left - 28, y + 60];
-      g.poly([...jag, this.x0() + 10 * this.u + 16, y + 60, this.x0() + 10 * this.u + 16, y]).fill(swatch.yellow.light).stroke({ width: 4, color: wood.line });
-    } else g.roundRect(this.x0() - 16, y, 10 * this.u + 32, 60, 10).fill(swatch.yellow.light).stroke({ width: 4, color: wood.line });
-    for (let k = from; k <= 10; k++) g.moveTo(this.x0() + k * this.u, y).lineTo(this.x0() + k * this.u, y + 24).stroke({ width: 3, color: ink });
+      const jag = [
+        left - 16,
+        y,
+        left - 30,
+        y + 12,
+        left - 18,
+        y + 24,
+        left - 32,
+        y + 36,
+        left - 20,
+        y + 48,
+        left - 28,
+        y + 60,
+      ];
+      g.poly([...jag, this.x0() + 10 * this.u + 16, y + 60, this.x0() + 10 * this.u + 16, y])
+        .fill(swatch.yellow.light)
+        .stroke({ width: 4, color: wood.line });
+    } else
+      g.roundRect(this.x0() - 16, y, 10 * this.u + 32, 60, 10)
+        .fill(swatch.yellow.light)
+        .stroke({ width: 4, color: wood.line });
+    for (let k = from; k <= 10; k++)
+      g.moveTo(this.x0() + k * this.u, y)
+        .lineTo(this.x0() + k * this.u, y + 24)
+        .stroke({ width: 3, color: ink });
     // With two rows stacked above one ruler, faint lines drop from each thing's two ends so the marks can be read.
     if (this.plan.mode === 'rulerdiff') {
-      for (const r of this.rows) for (const mark of [r.start, r.start + r.length]) g.moveTo(this.x0() + mark * this.u, r.y + 18).lineTo(this.x0() + mark * this.u, y).stroke({ width: 2, color: ink, alpha: 0.28 });
+      for (const r of this.rows)
+        for (const mark of [r.start, r.start + r.length])
+          g.moveTo(this.x0() + mark * this.u, r.y + 18)
+            .lineTo(this.x0() + mark * this.u, y)
+            .stroke({ width: 2, color: ink, alpha: 0.28 });
     }
     this.ruler.removeChildren().forEach((c) => c.destroy());
     for (let k = from; k <= 10; k++) {
@@ -521,9 +717,13 @@ class Inchworm implements Game {
     this.bucketSize = size;
     while (this.bucket.length < 3) {
       const node = size > 1 ? bigWormArt() : wormArt();
-      node.hitArea = size > 1 ? new Rectangle(-U - 10, -46, 2 * U + 20, 92) : new Rectangle(-U / 2 - 10, -40, U + 20, 80);
+      node.hitArea =
+        size > 1 ? new Rectangle(-U - 10, -46, 2 * U + 20, 92) : new Rectangle(-U / 2 - 10, -40, U + 20, 80);
       const item = { node, drag: null as unknown as DragHandle };
-      item.drag = draggable(node, this.ctx.tw, { onPick: () => sfx.tick(), onDrop: (x, y) => this.drop(item, x, y) });
+      item.drag = draggable(node, this.ctx.tw, {
+        onPick: () => sfx.tick(),
+        onDrop: (x, y) => this.drop(item, x, y),
+      });
       this.bucket.push(item);
       this.ctx.stage.addChild(node);
     }
@@ -549,7 +749,9 @@ class Inchworm implements Game {
       this.misses++;
       this.wrongs++;
       sfx.boing();
-      void (r.jumper === undefined ? this.ctx.say('worm.toomany', { what: THING_WORDS[r.thing] }) : this.ctx.say('worm.pastprints'));
+      void (r.jumper === undefined
+        ? this.ctx.say('worm.toomany', { what: THING_WORDS[r.thing] })
+        : this.ctx.say('worm.pastprints'));
       if (this.wrongs >= 2 && !this.hinting) {
         this.hinting = true;
         this.hints++;
@@ -610,7 +812,10 @@ class Inchworm implements Game {
       const [a, b] = this.m.length > this.m.other!.length ? JUMPERS : [JUMPERS[1], JUMPERS[0]];
       return this.ctx.say('worm.jumpmuch', { a, b });
     }
-    const [a, b] = this.m.length > this.m.other!.length ? [this.m.thing, this.m.other!.thing] : [this.m.other!.thing, this.m.thing];
+    const [a, b] =
+      this.m.length > this.m.other!.length
+        ? [this.m.thing, this.m.other!.thing]
+        : [this.m.other!.thing, this.m.thing];
     return this.ctx.say('worm.howmuch', { a: THING_WORDS[a], b: THING_WORDS[b] });
   }
 
@@ -640,9 +845,11 @@ class Inchworm implements Game {
       sfx.sparkle();
       this.ctx.pet.cheer();
       if (this.plan.mode === 'compare' || this.plan.mode === 'rulerdiff') await this.ctx.say('worm.yay');
-      else if (this.plan.mode === 'units') await this.ctx.say('worm.samestick', { what: THING_WORDS[m.thing] });
+      else if (this.plan.mode === 'units')
+        await this.ctx.say('worm.samestick', { what: THING_WORDS[m.thing] });
       else if (this.plan.mode === 'rulersum') await this.ctx.say('worm.together', { n });
-      else if (this.plan.mode === 'hop') await this.ctx.say('worm.hoplong', { what: THING_WORDS[m.thing], n });
+      else if (this.plan.mode === 'hop')
+        await this.ctx.say('worm.hoplong', { what: THING_WORDS[m.thing], n });
       else await this.ctx.say('worm.long', { what: THING_WORDS[m.thing], n: m.length });
       return void this.next();
     }
@@ -677,10 +884,17 @@ class Inchworm implements Game {
     const mode = this.plan.mode;
     const likely = temptingReading(m, mode) === n;
     if (mode === 'ruler') return [likely ? 'worm.fromzero' : 'worm.spaces'];
-    if (mode === 'broken') return likely ? ['worm.brokenend', { n: m.brk! }] : n === m.length + 1 ? ['worm.marks'] : ['worm.spaces'];
-    if (mode === 'rulerdiff') return likely ? ['worm.fromends'] : ['worm.extra', { a: THING_WORDS[longerShorter(m)[0]] }];
+    if (mode === 'broken')
+      return likely
+        ? ['worm.brokenend', { n: m.brk! }]
+        : n === m.length + 1
+          ? ['worm.marks']
+          : ['worm.spaces'];
+    if (mode === 'rulerdiff')
+      return likely ? ['worm.fromends'] : ['worm.extra', { a: THING_WORDS[longerShorter(m)[0]] }];
     if (mode === 'rulersum') return [likely ? (m.start ? 'worm.fromzero' : 'worm.firstonly') : 'worm.spaces'];
-    if (mode === 'units') return [m.ask === 'big' ? 'worm.bigger' : 'worm.smaller', { what: THING_WORDS[m.thing] }];
+    if (mode === 'units')
+      return [m.ask === 'big' ? 'worm.bigger' : 'worm.smaller', { what: THING_WORDS[m.thing] }];
     if (mode === 'hop') return ['worm.chalk'];
     if (mode === 'slide') return [likely ? 'worm.secondpart' : 'worm.firstthenrest', { n: m.ruler! }];
     return ['worm.countagain'];

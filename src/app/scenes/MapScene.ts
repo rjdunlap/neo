@@ -40,16 +40,28 @@ export class MapScene extends Scene {
   private readonly map = new Container();
   readonly pip = makeCompanion();
   private readonly title = label('Puddle Island', 42, ink);
-  private readonly book = new RoundButton(bookIcon(), swatch.white, 52, () => this.leave(() => this.app.go.stickers()));
-  private readonly treehouse = new RoundButton(treehouseIcon(), swatch.white, 52, () => this.leave(() => { void voice.say('map.room'); this.app.go.room(); }));
+  private readonly book = new RoundButton(bookIcon(), swatch.white, 52, () =>
+    this.leave(() => this.app.go.stickers()),
+  );
+  private readonly treehouse = new RoundButton(treehouseIcon(), swatch.white, 52, () =>
+    this.leave(() => {
+      void voice.say('map.room');
+      this.app.go.room();
+    }),
+  );
   /** Back to "Who's playing?", for someone else's turn. It changes nothing and removes nothing, so it needs no hold. */
-  readonly players = new RoundButton(peopleIcon(), swatch.white, 52, () => this.leave(() => this.app.go.start()));
+  readonly players = new RoundButton(peopleIcon(), swatch.white, 52, () =>
+    this.leave(() => this.app.go.start()),
+  );
   /** Grown-ups' way in: hold the gear (the iPad has no Esc key, so this is the way in once a child is playing). */
   private readonly gear = gearButton({
     onOpen: () => {
       if (this.leaving) return;
       voice.stop();
-      openParentPanel(() => (store.data.creatures.owned.length > 0 ? this.app.go.hub() : this.app.go.hatch()), () => this.app.go.start());
+      openParentPanel(
+        () => (store.data.creatures.owned.length > 0 ? this.app.go.hub() : this.app.go.hatch()),
+        () => this.app.go.start(),
+      );
     },
     onShort: () => void voice.say('parent.ask'),
   });
@@ -70,7 +82,10 @@ export class MapScene extends Scene {
   petAt: MapSpotId;
   private clock = 0;
   /** Keys and a pad: a ring over the lands, home, the picnic and the three buttons. No Back here: the map is the middle of the island. */
-  private readonly keys = new ScreenKeys(this.app, { spots: () => this.focusSpots(), active: () => !this.leaving && !this.walking });
+  private readonly keys = new ScreenKeys(this.app, {
+    spots: () => this.focusSpots(),
+    active: () => !this.leaving && !this.walking,
+  });
 
   constructor(app: App) {
     super(app);
@@ -92,7 +107,12 @@ export class MapScene extends Scene {
       name.y = 70;
       node.addChild(new Graphics().ellipse(0, 34, 84, 28).fill(cream), art, name);
       let sparkle: Sparkle | null = null;
-      if (anyNew(store.data.games, visibleIn(def, profile.band, GAMES).map((g) => g.id))) {
+      if (
+        anyNew(
+          store.data.games,
+          visibleIn(def, profile.band, GAMES).map((g) => g.id),
+        )
+      ) {
         sparkle = this.track(new Sparkle(24));
         sparkle.position.set(70, -70);
         node.addChild(sparkle);
@@ -113,7 +133,13 @@ export class MapScene extends Scene {
     this.picnicDone.visible = store.picnic.keepsake;
     const picnicArt = picnicLandmark();
     picnicArt.scale.set(LANDMARK_SCALE);
-    this.picnic.addChild(new Graphics().ellipse(0, 34, 84, 28).fill(cream), picnicArt, name, note, this.picnicDone);
+    this.picnic.addChild(
+      new Graphics().ellipse(0, 34, 84, 28).fill(cream),
+      picnicArt,
+      name,
+      note,
+      this.picnicDone,
+    );
     onTap(this.picnic, () => void this.visitPicnic(), { radius: MAP_RADIUS });
     this.map.addChild(this.picnic);
 
@@ -149,7 +175,13 @@ export class MapScene extends Scene {
       const n = this.spot(id);
       return { id, x: n.x, y: n.y + 20, r: MAP_RADIUS, press };
     };
-    const button = (id: string, b: RoundButton): FocusSpot => ({ id, x: b.x, y: b.y, r: b.radius, press: () => b.press() });
+    const button = (id: string, b: RoundButton): FocusSpot => ({
+      id,
+      x: b.x,
+      y: b.y,
+      r: b.radius,
+      press: () => b.press(),
+    });
     return [
       ...this.lands.map(({ def }) => at(def.id, () => void this.visit(def))),
       at('home', () => void this.visitHome()),
@@ -174,8 +206,16 @@ export class MapScene extends Scene {
 
   resize(v: View) {
     this.sea.clear().rect(0, 0, v.w, v.h).fill(swatch.blue.light);
-    for (let i = 0; i < 12; i++) this.sea.ellipse((i * 193) % v.w, 140 + ((i * 127) % (v.h - 180)), 40, 6).fill({ color: swatch.white.fill, alpha: 0.5 });
-    this.island.clear().ellipse(v.w / 2, v.h / 2 + 22, v.w * 0.48, v.h * 0.43).fill(cream).ellipse(v.w / 2, v.h / 2 + 10, v.w * 0.455, v.h * 0.405).fill(grass);
+    for (let i = 0; i < 12; i++)
+      this.sea
+        .ellipse((i * 193) % v.w, 140 + ((i * 127) % (v.h - 180)), 40, 6)
+        .fill({ color: swatch.white.fill, alpha: 0.5 });
+    this.island
+      .clear()
+      .ellipse(v.w / 2, v.h / 2 + 22, v.w * 0.48, v.h * 0.43)
+      .fill(cream)
+      .ellipse(v.w / 2, v.h / 2 + 10, v.w * 0.455, v.h * 0.405)
+      .fill(grass);
     const at = mapLayout(v);
     for (const { def, node } of this.lands) node.position.set(at[def.id].x, at[def.id].y);
     this.home.position.set(at.home.x, at.home.y);
@@ -199,12 +239,25 @@ export class MapScene extends Scene {
     void voice.say('map.birthday');
     sfx.tada();
     this.pip.cheer();
-    this.particles.burst(this.view.w / 2, this.view.h * 0.55, { kind: 'confetti', colors: RAINBOW.map((c) => swatch[c].fill), count: 70, speed: [200, 500], gravity: 160 });
+    this.particles.burst(this.view.w / 2, this.view.h * 0.55, {
+      kind: 'confetti',
+      colors: RAINBOW.map((c) => swatch[c].fill),
+      count: 70,
+      speed: [200, 500],
+      gravity: 160,
+    });
     await this.tw.wait(1.2);
     await this.tw.to(this.home.scale, { x: 0, y: 0 }, { duration: 0.25 });
     this.drawHome(store.data.profile.band);
     sfx.sparkle();
-    this.particles.burst(this.home.x, this.home.y, { kind: 'star', colors: [swatch.yellow.fill, 0xffffff], count: 18, speed: [160, 320], gravity: 0, life: [0.5, 0.9] });
+    this.particles.burst(this.home.x, this.home.y, {
+      kind: 'star',
+      colors: [swatch.yellow.fill, 0xffffff],
+      count: 18,
+      speed: [160, 320],
+      gravity: 0,
+      life: [0.5, 0.9],
+    });
     await this.tw.to(this.home.scale, { x: 1, y: 1 }, { duration: 0.35 });
   }
 
@@ -260,7 +313,10 @@ export class MapScene extends Scene {
     this.keys.update(dt);
     this.clock += dt;
     // A soft glow around her home spot.
-    this.glow.clear().circle(this.home.x, this.home.y + 10, 96 + 6 * Math.sin(this.clock * 2.5)).fill({ color: swatch.yellow.light, alpha: 0.75 });
+    this.glow
+      .clear()
+      .circle(this.home.x, this.home.y + 10, 96 + 6 * Math.sin(this.clock * 2.5))
+      .fill({ color: swatch.yellow.light, alpha: 0.75 });
   }
 
   exit() {

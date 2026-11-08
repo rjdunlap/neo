@@ -4,7 +4,12 @@ import { FRUIT_FOR, prop, type PropKind } from '../../art/props';
 import { BASKET_HIT, type FillSet } from './logic';
 
 /** Fill and Dump's wicker basket and fruit, shared by the basket levels and level 6's pair. */
-export const line = (color: number, width = 6) => ({ width, color, join: 'round' as const, cap: 'round' as const });
+export const line = (color: number, width = 6) => ({
+  width,
+  color,
+  join: 'round' as const,
+  cap: 'round' as const,
+});
 
 /** Fruit that sit well together in a basket, each with the color it always has. */
 export const FRUITS: { kind: PropKind; color: ColorName }[] = RAINBOW.flatMap((color) => {
@@ -28,7 +33,10 @@ export class Basket {
   private _lean = 0;
 
   /** `size` scales the whole basket (level 6 stands two side by side). */
-  constructor(readonly size = 1, kind: FillSet['id'] = 'fruit') {
+  constructor(
+    readonly size = 1,
+    kind: FillSet['id'] = 'fruit',
+  ) {
     const rimW = 130;
     const inside = new Graphics().ellipse(0, -BODY_H, rimW, 26).fill(0x7a5330);
     const handle = new Graphics()
@@ -53,10 +61,20 @@ export class Basket {
     for (const y of [-112, -74, -36]) {
       const k = 1 - (y + BODY_H) / BODY_H; // narrower toward the bottom
       const half = rimW - (rimW - 100) * (1 - k);
-      body.moveTo(-half + 6, y).lineTo(half - 6, y).stroke(line(wood.line, 3));
+      body
+        .moveTo(-half + 6, y)
+        .lineTo(half - 6, y)
+        .stroke(line(wood.line, 3));
     }
-    for (let x = -80; x <= 80; x += 40) body.moveTo(x, -BODY_H + 10).lineTo(x * 0.8, -6).stroke({ width: 3, color: wood.line, alpha: 0.35 });
-    const rim = new Graphics().roundRect(-rimW - 8, -BODY_H - 14, rimW * 2 + 16, 30, 15).fill(wood.light).stroke(line(wood.line));
+    for (let x = -80; x <= 80; x += 40)
+      body
+        .moveTo(x, -BODY_H + 10)
+        .lineTo(x * 0.8, -6)
+        .stroke({ width: 3, color: wood.line, alpha: 0.35 });
+    const rim = new Graphics()
+      .roundRect(-rimW - 8, -BODY_H - 14, rimW * 2 + 16, 30, 15)
+      .fill(wood.light)
+      .stroke(line(wood.line));
     if (kind !== 'fruit') {
       // Same opening, feet and touch bounds as the basket: only the material changes.
       handle.clear();
@@ -64,25 +82,57 @@ export class Basket {
       body.clear();
       if (kind === 'blocks') {
         body.roundRect(-130, -BODY_H, 260, BODY_H, 10).fill(color.fill).stroke(line(color.line));
-        handle.moveTo(-130, -BODY_H).lineTo(-108, -BODY_H - 55).lineTo(112, -BODY_H - 55).lineTo(130, -BODY_H)
-          .closePath().fill(wood.light).stroke(line(wood.line));
+        handle
+          .moveTo(-130, -BODY_H)
+          .lineTo(-108, -BODY_H - 55)
+          .lineTo(112, -BODY_H - 55)
+          .lineTo(130, -BODY_H)
+          .closePath()
+          .fill(wood.light)
+          .stroke(line(wood.line));
       } else if (kind === 'ducks') {
-        body.moveTo(-138, -BODY_H).lineTo(-116, -28).quadraticCurveTo(-110, -8, -86, -8)
-          .lineTo(86, -8).quadraticCurveTo(110, -8, 116, -28).lineTo(138, -BODY_H)
-          .closePath().fill(color.fill).stroke(line(color.line));
+        body
+          .moveTo(-138, -BODY_H)
+          .lineTo(-116, -28)
+          .quadraticCurveTo(-110, -8, -86, -8)
+          .lineTo(86, -8)
+          .quadraticCurveTo(110, -8, 116, -28)
+          .lineTo(138, -BODY_H)
+          .closePath()
+          .fill(color.fill)
+          .stroke(line(color.line));
         body.roundRect(-100, -8, 30, 16, 6).roundRect(70, -8, 30, 16, 6).fill(color.line);
       } else {
-        body.moveTo(-130, -BODY_H).lineTo(-90, -10).quadraticCurveTo(0, 12, 90, -10)
-          .lineTo(130, -BODY_H).closePath().fill(color.fill).stroke(line(color.line));
-        handle.moveTo(-120, -BODY_H + 12).bezierCurveTo(-190, 35, 190, 35, 120, -BODY_H + 12).stroke(line(color.line, 10));
+        body
+          .moveTo(-130, -BODY_H)
+          .lineTo(-90, -10)
+          .quadraticCurveTo(0, 12, 90, -10)
+          .lineTo(130, -BODY_H)
+          .closePath()
+          .fill(color.fill)
+          .stroke(line(color.line));
+        handle
+          .moveTo(-120, -BODY_H + 12)
+          .bezierCurveTo(-190, 35, 190, 35, 120, -BODY_H + 12)
+          .stroke(line(color.line, 10));
       }
       inside.clear().ellipse(0, -BODY_H, 130, 26).fill(color.line);
-      rim.clear().roundRect(-138, -BODY_H - 14, 276, 30, 15).fill(color.light).stroke(line(color.line));
+      rim
+        .clear()
+        .roundRect(-138, -BODY_H - 14, 276, 30, 15)
+        .fill(color.light)
+        .stroke(line(color.line));
     }
     this.front.addChild(body, rim, this.face);
     this.drawFace(false);
 
-    for (const part of [this.back, this.front]) part.hitArea = new Rectangle(-BASKET_HIT.halfW, -BASKET_HIT.top, BASKET_HIT.halfW * 2, BASKET_HIT.top + BASKET_HIT.bottom);
+    for (const part of [this.back, this.front])
+      part.hitArea = new Rectangle(
+        -BASKET_HIT.halfW,
+        -BASKET_HIT.top,
+        BASKET_HIT.halfW * 2,
+        BASKET_HIT.top + BASKET_HIT.bottom,
+      );
   }
 
   get lean() {
@@ -124,7 +174,12 @@ export class Basket {
 
   private drawFace(happy: boolean) {
     const f = this.face.clear();
-    f.circle(-40, -80, 13).circle(40, -80, 13).fill(0xffffff).circle(-37, -77, 7).circle(43, -77, 7).fill(ink);
+    f.circle(-40, -80, 13)
+      .circle(40, -80, 13)
+      .fill(0xffffff)
+      .circle(-37, -77, 7)
+      .circle(43, -77, 7)
+      .fill(ink);
     f.ellipse(-72, -58, 14, 8).ellipse(72, -58, 14, 8).fill({ color: cheek, alpha: 0.55 });
     if (happy) f.ellipse(3, -50, 20, 15).fill(0x7a2e3e);
     else f.moveTo(-20, -56).quadraticCurveTo(3, -36, 26, -56).stroke(line(ink, 5));
@@ -150,15 +205,26 @@ export function fillPiece(set: FillSet, variant: number): Container {
     if (variant === 0) g.roundRect(-36, -36, 72, 72, 5);
     if (variant === 1) g.roundRect(-43, -24, 86, 48, 5);
     if (variant === 2) g.moveTo(0, -42).lineTo(43, 34).lineTo(-43, 34).closePath();
-    if (variant === 3) g.moveTo(-38, 34).lineTo(-38, -6).arc(0, -6, 38, Math.PI, 0).lineTo(38, 34).closePath();
+    if (variant === 3)
+      g.moveTo(-38, 34).lineTo(-38, -6).arc(0, -6, 38, Math.PI, 0).lineTo(38, 34).closePath();
     g.fill(color.fill).stroke(line(color.line, 5));
     g.moveTo(-17, -10).lineTo(6, -10).stroke(line(color.light, 6));
   } else {
-    g.moveTo(-39, 8).lineTo(-47, -12).quadraticCurveTo(-15, 4, 2, -10)
-      .quadraticCurveTo(40, -5, 36, 17).quadraticCurveTo(15, 44, -24, 29).closePath()
-      .fill(color.fill).stroke(line(color.line, 5));
+    g.moveTo(-39, 8)
+      .lineTo(-47, -12)
+      .quadraticCurveTo(-15, 4, 2, -10)
+      .quadraticCurveTo(40, -5, 36, 17)
+      .quadraticCurveTo(15, 44, -24, 29)
+      .closePath()
+      .fill(color.fill)
+      .stroke(line(color.line, 5));
     g.circle(19, -22, 23).fill(color.fill).stroke(line(color.line, 5));
-    g.moveTo(37, -22).lineTo(53, -14).lineTo(37, -8).closePath().fill(swatch.orange.fill).stroke(line(swatch.orange.line, 3));
+    g.moveTo(37, -22)
+      .lineTo(53, -14)
+      .lineTo(37, -8)
+      .closePath()
+      .fill(swatch.orange.fill)
+      .stroke(line(swatch.orange.line, 3));
     g.circle(25, -27, 4).fill(ink);
     g.ellipse(-5, 14, 19, 11).fill(color.light).stroke(line(color.line, 3));
     if (variant === 1) g.circle(-7, 13, 4).fill(color.line);

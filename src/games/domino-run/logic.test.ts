@@ -3,8 +3,40 @@ import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import { VOICE } from './voice';
 import {
-  arrangements, describe as name, dominoLayout, emptyPlacement, END_SIZE, FIRST, fits, hintPlacement, lane, LOOK_END, LOOK_LINE, looksFor, makeLine,
-  makeRound, MOODS, passes, PITCH, PLANS, planFor, puddleGiantSlot, puddles, remaining, rings, run, runLane, slotBox, solutions, SLOT_H, stallReason, standing, stopsAt, TRAY_W, type Line, type Placement,
+  arrangements,
+  describe as name,
+  dominoLayout,
+  emptyPlacement,
+  END_SIZE,
+  FIRST,
+  fits,
+  hintPlacement,
+  lane,
+  LOOK_END,
+  LOOK_LINE,
+  looksFor,
+  makeLine,
+  makeRound,
+  MOODS,
+  passes,
+  PITCH,
+  PLANS,
+  planFor,
+  puddleGiantSlot,
+  puddles,
+  remaining,
+  rings,
+  run,
+  runLane,
+  slotBox,
+  solutions,
+  SLOT_H,
+  stallReason,
+  standing,
+  stopsAt,
+  TRAY_W,
+  type Line,
+  type Placement,
 } from './logic';
 
 const VIEWS = {
@@ -37,7 +69,8 @@ describe('Domino Run tipping rule', () => {
   });
 
   it('the bell is pushed like a small, the gong only by a giant', () => {
-    const bell = lane('SB'), gong = lane('SO');
+    const bell = lane('SB'),
+      gong = lane('SO');
     expect(runLane(bell, [0, 0, 0]).rung).toBe(true);
     expect(runLane(gong, [0, 0, 0]).stall?.reason).toBe('too-heavy');
     expect(runLane(lane('GO'), [0, 0, 0]).stall?.reason).toBe('too-heavy'); // the small starter cannot push a giant
@@ -94,7 +127,10 @@ describe('Domino Run first lines', () => {
     expect(run(FIRST[10], at(FIRST[10], { 2: 3 }))[0].stall).toMatchObject({ reason: 'too-heavy', at: 2 });
     expect(run(FIRST[10], at(FIRST[10], { 3: 3 }))[0].stall).toMatchObject({ reason: 'too-far', at: 2 });
     // Level 11: the small under the pier pushing the giant straight away.
-    expect(run(FIRST[11], at(FIRST[11], { 3: 1, 4: 3 }))[0].stall).toMatchObject({ reason: 'too-heavy', at: 4 });
+    expect(run(FIRST[11], at(FIRST[11], { 3: 1, 4: 3 }))[0].stall).toMatchObject({
+      reason: 'too-heavy',
+      at: 4,
+    });
   });
 
   it('pass their own plan filters', () => {
@@ -125,7 +161,7 @@ describe('Domino Run generation', () => {
     }
   });
 
-  it('a round starts with the authored line and has the plan\'s number of lines', () => {
+  it("a round starts with the authored line and has the plan's number of lines", () => {
     for (const plan of PLANS) {
       const round = makeRound(plan, new Rng(7));
       expect(round[0]).toBe(FIRST[plan.id]);
@@ -184,7 +220,8 @@ describe('Domino Run level 10, Over the puddle', () => {
 
   it('every line has one two-wide puddle and ends in a bell', () => {
     for (const line of lines) {
-      const l = line.lanes[0], wet = puddles(l);
+      const l = line.lanes[0],
+        wet = puddles(l);
       expect(l.end, name(line)).toBe('bell');
       expect(wet, name(line)).toHaveLength(1);
       expect(wet[0].to - wet[0].from, name(line)).toBe(1);
@@ -205,7 +242,10 @@ describe('Domino Run level 10, Over the puddle', () => {
     for (const line of lines) {
       const tray = [...line.tray];
       tray.splice(tray.indexOf(3), 1);
-      expect(line.tray.filter((t) => t === 3), name(line)).toHaveLength(1);
+      expect(
+        line.tray.filter((t) => t === 3),
+        name(line),
+      ).toHaveLength(1);
       expect(solutions({ ...line, tray }), name(line)).toHaveLength(0);
     }
   });
@@ -218,7 +258,7 @@ describe('Domino Run level 10, Over the puddle', () => {
     }
   });
 
-  it('a tall just before the puddle stalls too far, at the puddle\'s near edge', () => {
+  it("a tall just before the puddle stalls too far, at the puddle's near edge", () => {
     for (const line of lines) {
       const g = puddleGiantSlot(line.lanes[0])!;
       const p = solutions(line)[0].map((l) => [...l]);
@@ -239,14 +279,19 @@ describe('Domino Run level 11, Under the pier', () => {
 
   it('levels 1–10 never have a pier, so their lines are unchanged', () => {
     for (const p of PLANS.filter((q) => q.id < 11)) {
-      expect(FIRST[p.id].lanes.every((l) => !l.low), `level ${p.id}`).toBe(true);
-      for (let seed = 1; seed <= 100; seed++) expect(makeLine(p, new Rng(seed)).line.lanes.every((l) => !l.low)).toBe(true);
+      expect(
+        FIRST[p.id].lanes.every((l) => !l.low),
+        `level ${p.id}`,
+      ).toBe(true);
+      for (let seed = 1; seed <= 100; seed++)
+        expect(makeLine(p, new Rng(seed)).line.lanes.every((l) => !l.low)).toBe(true);
     }
   });
 
   it('only a small fits under the pier, in every solution and every arrangement she can make', () => {
     for (const line of lines) {
-      const l = line.lanes[0], P = pierOf(line);
+      const l = line.lanes[0],
+        P = pierOf(line);
       expect([1, 2, 3].map((s) => fits(l, P, s))).toEqual([true, false, false]);
       for (const p of arrangements(line)) expect(p[0][P], name(line)).toBeLessThanOrEqual(1);
     }
@@ -254,7 +299,8 @@ describe('Domino Run level 11, Under the pier', () => {
 
   it('one pier socket with a small just before it, ending in a gong', () => {
     for (const line of lines) {
-      const l = line.lanes[0], P = pierOf(line);
+      const l = line.lanes[0],
+        P = pierOf(line);
       expect(l.low, name(line)).toHaveLength(1);
       expect(l.sockets, name(line)).toContain(P);
       expect(l.fixed[P - 1], name(line)).toBe(1);
@@ -264,22 +310,31 @@ describe('Domino Run level 11, Under the pier', () => {
 
   it('every solution stands a small under the pier, then climbs to a giant after it', () => {
     for (const line of lines) {
-      const l = line.lanes[0], P = pierOf(line), sols = solutions(line);
+      const l = line.lanes[0],
+        P = pierOf(line),
+        sols = solutions(line);
       expect(sols.length, name(line)).toBeGreaterThan(0);
       for (const p of sols) {
         expect(p[0][P], name(line)).toBe(1);
-        const after = runLane(l, p[0]).fallen.filter((s) => s >= P).map((s) => p[0][s] || l.fixed[s]);
+        const after = runLane(l, p[0])
+          .fallen.filter((s) => s >= P)
+          .map((s) => p[0][s] || l.fixed[s]);
         expect(after[0]).toBe(1);
         expect(after[after.length - 1], name(line)).toBe(3);
-        for (let i = 1; i < after.length; i++) expect(after[i], name(line)).toBeGreaterThanOrEqual(after[i - 1]);
+        for (let i = 1; i < after.length; i++)
+          expect(after[i], name(line)).toBeGreaterThanOrEqual(after[i - 1]);
       }
     }
   });
 
   it('the pier matters: without it, a bigger domino could stand there', () => {
     for (const line of lines) {
-      const P = pierOf(line), free = solutions({ ...line, lanes: [{ ...line.lanes[0], low: undefined }] });
-      expect(free.some((p) => p[0][P] > 1), name(line)).toBe(true);
+      const P = pierOf(line),
+        free = solutions({ ...line, lanes: [{ ...line.lanes[0], low: undefined }] });
+      expect(
+        free.some((p) => p[0][P] > 1),
+        name(line),
+      ).toBe(true);
     }
   });
 
@@ -298,7 +353,8 @@ describe('Domino Run level 11, Under the pier', () => {
 
   it('following the hint from any state never asks for a big domino under the pier', () => {
     for (const line of lines.slice(0, 60)) {
-      const P = pierOf(line), sols = solutions(line);
+      const P = pierOf(line),
+        sols = solutions(line);
       for (const start of arrangements(line)) {
         const h = hintPlacement(line, start, sols);
         if (h.kind === 'place' && h.slot === P) expect(h.size, name(line)).toBe(1);
@@ -349,8 +405,11 @@ describe('Domino Run hints', () => {
         if (h.kind !== 'remove') continue;
         const left = remaining(line, p);
         // A free placement "would do" when a solution keeps everything she placed and needs a piece she still has.
-        const keepsAll = sols.some((s) => s.every((l, k) => l.every((v, slot) => !p[k][slot] || p[k][slot] === v))
-          && s.some((l, k) => l.some((v, slot) => v && !p[k][slot] && left.includes(v as 1))));
+        const keepsAll = sols.some(
+          (s) =>
+            s.every((l, k) => l.every((v, slot) => !p[k][slot] || p[k][slot] === v)) &&
+            s.some((l, k) => l.some((v, slot) => v && !p[k][slot] && left.includes(v as 1))),
+        );
         expect(keepsAll, `level ${plan.id} ${p.join('|')}`).toBe(false);
       }
     }
@@ -393,32 +452,40 @@ describe('Domino Run layout', () => {
 
 describe('Domino Run looks', () => {
   /** Every slot covered by a puddle, from its runs. */
-  const covered = (l: Line['lanes'][number]) => puddles(l).flatMap((r) => Array.from({ length: r.to - r.from + 1 }, (_, i) => r.from + i));
+  const covered = (l: Line['lanes'][number]) =>
+    puddles(l).flatMap((r) => Array.from({ length: r.to - r.from + 1 }, (_, i) => r.from + i));
 
   it('a puddle on every empty slot that is not a socket, and never on a socket, a pinned domino, the starter or the end', () => {
     let seen = 0;
     for (const plan of PLANS) {
-      const lines = [FIRST[plan.id], ...Array.from({ length: 500 }, (_, i) => makeLine(plan, new Rng(i + 1)).line)];
-      for (const line of lines) for (const l of line.lanes) {
-        const wet = covered(l);
-        const want = Array.from({ length: l.n - 1 }, (_, i) => i + 1).filter((s) => !l.fixed[s] && !l.sockets.includes(s));
-        expect(wet, `level ${plan.id}`).toEqual(want);
-        for (const s of wet) {
-          expect(l.sockets).not.toContain(s);
-          expect(l.fixed[s]).toBe(0);
+      const lines = [
+        FIRST[plan.id],
+        ...Array.from({ length: 500 }, (_, i) => makeLine(plan, new Rng(i + 1)).line),
+      ];
+      for (const line of lines)
+        for (const l of line.lanes) {
+          const wet = covered(l);
+          const want = Array.from({ length: l.n - 1 }, (_, i) => i + 1).filter(
+            (s) => !l.fixed[s] && !l.sockets.includes(s),
+          );
+          expect(wet, `level ${plan.id}`).toEqual(want);
+          for (const s of wet) {
+            expect(l.sockets).not.toContain(s);
+            expect(l.fixed[s]).toBe(0);
+          }
+          for (const r of puddles(l)) expect(r.to >= r.from && r.from >= 1 && r.to < l.n).toBe(true);
+          // Runs are separate: two puddles never touch, or they would be one wide puddle.
+          puddles(l).forEach((r, i, a) => i > 0 && expect(r.from - a[i - 1].to).toBeGreaterThan(1));
+          seen += wet.length;
         }
-        for (const r of puddles(l)) expect(r.to >= r.from && r.from >= 1 && r.to < l.n).toBe(true);
-        // Runs are separate: two puddles never touch, or they would be one wide puddle.
-        puddles(l).forEach((r, i, a) => i > 0 && expect(r.from - a[i - 1].to).toBeGreaterThan(1));
-        seen += wet.length;
-      }
     }
     expect(seen, 'the generator leaves some puddles').toBeGreaterThan(0);
   });
 
   it('the authored first lines have no puddles, so the opening line looks as it always has', () => {
     // Level 10 is about the puddle, so its first line has one.
-    for (const plan of PLANS.filter((p) => p.id < 10)) for (const l of FIRST[plan.id].lanes) expect(puddles(l)).toEqual([]);
+    for (const plan of PLANS.filter((p) => p.id < 10))
+      for (const l of FIRST[plan.id].lanes) expect(puddles(l)).toEqual([]);
   });
 
   it('every end look is pushed like its end: bell looks by a small, drum and gong only by a giant', () => {

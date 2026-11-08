@@ -45,12 +45,13 @@ import { singAlongBarn } from './index';
 
 describe('the tune', () => {
   it('has one note for every sung syllable, so taps line up with a grown-up singing', () => {
-    for (const p of [HAD_A_FARM, E_I_E_I_O, HAD_A]) expect(p.steps.length, p.syllables.join(' ')).toBe(p.syllables.length);
+    for (const p of [HAD_A_FARM, E_I_E_I_O, HAD_A])
+      expect(p.steps.length, p.syllables.join(' ')).toBe(p.syllables.length);
     expect(HAD_A_FARM.syllables.join(' ')).toBe('Old Mac Don ald had a farm');
     expect(E_I_E_I_O.syllables.join('')).toBe('EIEIO');
   });
 
-  it('stays inside the island\'s pentatonic set, with no exception to the rule', () => {
+  it("stays inside the island's pentatonic set, with no exception to the rule", () => {
     for (const p of [HAD_A_FARM, E_I_E_I_O, HAD_A]) {
       for (const step of p.steps) expect(PENTATONIC, `step ${step}`).toContain(stepToMidi(step) % 12);
     }
@@ -67,11 +68,15 @@ describe('the song', () => {
   it('is the short song: the opening, then one "And on that farm he had a ..." verse for each animal, one note each', () => {
     for (const verses of [1, 2, 3]) {
       const song = makeSong(ANIMALS.slice(0, verses));
-      expect(song.length).toBe(HAD_A_FARM.steps.length + E_I_E_I_O.steps.length + verses * (HAD_A.steps.length + E_I_E_I_O.steps.length));
+      expect(song.length).toBe(
+        HAD_A_FARM.steps.length +
+          E_I_E_I_O.steps.length +
+          verses * (HAD_A.steps.length + E_I_E_I_O.steps.length),
+      );
     }
   });
 
-  it('answers once per verse, on the animal\'s name, in the order the animals came', () => {
+  it("answers once per verse, on the animal's name, in the order the animals came", () => {
     const order = ['duck', 'cow', 'dog'] as const;
     const song = makeSong(order);
     const answers = song.filter((n) => n.answers);
@@ -112,7 +117,9 @@ describe('the plans', () => {
   it('keeps the longest song short enough for a small child and for the how-to demonstration', () => {
     // Three Old MacDonald verses are 51 notes, three Twinkle verses 56; the demonstration sings two verses, and its 75
     // seconds are checked by `fingerdemo` at level 4.
-    for (const plan of PLANS) for (const tune of TUNES) expect(makeSong(ANIMALS.slice(0, plan.verses), tune).length).toBeLessThanOrEqual(56);
+    for (const plan of PLANS)
+      for (const tune of TUNES)
+        expect(makeSong(ANIMALS.slice(0, plan.verses), tune).length).toBeLessThanOrEqual(56);
     expect(makeSong(ANIMALS.slice(0, 2), OLD_MACDONALD).length).toBeLessThanOrEqual(40);
   });
 
@@ -163,22 +170,33 @@ describe('the plans', () => {
 describe('Old MacDonald, after the song became a tune', () => {
   it('sings exactly the notes it sang before: the opening, then "And on that farm he had a cow, E-I-E-I-O"', () => {
     const song = makeSong(['cow']);
-    expect(song.map((n) => n.step)).toEqual([...HAD_A_FARM.steps, ...E_I_E_I_O.steps, ...HAD_A.steps, ...E_I_E_I_O.steps]);
-    expect(song.map((n) => n.syllable).join(' ')).toBe('Old Mac Don ald had a farm E I E I O And on that farm he had a cow E I E I O');
+    expect(song.map((n) => n.step)).toEqual([
+      ...HAD_A_FARM.steps,
+      ...E_I_E_I_O.steps,
+      ...HAD_A.steps,
+      ...E_I_E_I_O.steps,
+    ]);
+    expect(song.map((n) => n.syllable).join(' ')).toBe(
+      'Old Mac Don ald had a farm E I E I O And on that farm he had a cow E I E I O',
+    );
     expect(makeSong(['cow'], OLD_MACDONALD)).toEqual(song);
   });
 });
 
 describe('Hot Cross Buns', () => {
   it('has one note for every sung syllable, with the words in order', () => {
-    for (const p of [HOT_CROSS_BUNS, ONE_A_PENNY]) expect(p.steps.length, p.syllables.join(' ')).toBe(p.syllables.length);
+    for (const p of [HOT_CROSS_BUNS, ONE_A_PENNY])
+      expect(p.steps.length, p.syllables.join(' ')).toBe(p.syllables.length);
     const song = makeSong(['pig'], BUNS);
-    expect(song.map((n) => n.syllable).join(' ')).toBe('Hot cross buns Hot cross buns One a pen ny two a pen ny Hot cross buns');
+    expect(song.map((n) => n.syllable).join(' ')).toBe(
+      'Hot cross buns Hot cross buns One a pen ny two a pen ny Hot cross buns',
+    );
   });
 
   it('is E D C, then C C C C, D D D D, inside the pentatonic set with no exception', () => {
     expect(HOT_CROSS_BUNS.steps.map((s) => stepToMidi(s) % 12)).toEqual([4, 2, 0]);
-    for (const p of [HOT_CROSS_BUNS, ONE_A_PENNY]) for (const step of p.steps) expect(PENTATONIC, `step ${step}`).toContain(stepToMidi(step) % 12);
+    for (const p of [HOT_CROSS_BUNS, ONE_A_PENNY])
+      for (const step of p.steps) expect(PENTATONIC, `step ${step}`).toContain(stepToMidi(step) % 12);
   });
 
   it('answers once per verse, on the last "buns", keeping the lyric; the friends come in order', () => {
@@ -194,16 +212,20 @@ describe('Hot Cross Buns', () => {
     expect(song.at(-1)!.verseEnd).toBe(true);
   });
 
-  it('is a short song with each friend\'s verse of eleven notes, and beads that fit the row', () => {
-    for (const verses of [1, 2]) expect(makeSong(ANIMALS.slice(0, verses), BUNS).length).toBe(6 + verses * 11);
-    for (const t of TUNES) for (const n of makeSong(ANIMALS.slice(0, 2), t)) expect(n.of).toBeLessThanOrEqual(8);
+  it("is a short song with each friend's verse of eleven notes, and beads that fit the row", () => {
+    for (const verses of [1, 2])
+      expect(makeSong(ANIMALS.slice(0, verses), BUNS).length).toBe(6 + verses * 11);
+    for (const t of TUNES)
+      for (const n of makeSong(ANIMALS.slice(0, 2), t)) expect(n.of).toBeLessThanOrEqual(8);
   });
 });
 
 describe('Mary Had a Little Lamb', () => {
   it('sings the lyric one syllable per note, answering on each friend\'s "lamb"', () => {
     const song = makeSong(ANIMALS.slice(0, 1), MARY);
-    expect(song.map((n) => n.syllable).join(' ')).toBe('Ma ry had a lit tle lamb its fleece was white as snow lit tle lamb lit tle lamb its fleece was white as snow');
+    expect(song.map((n) => n.syllable).join(' ')).toBe(
+      'Ma ry had a lit tle lamb its fleece was white as snow lit tle lamb lit tle lamb its fleece was white as snow',
+    );
     expect(song.filter((n) => n.answers).length).toBe(1);
     expect(song.filter((n) => n.answers)[0].syllable).toBe('lamb');
     expect(song.length).toBe(13 + 12);
@@ -218,7 +240,9 @@ describe('Mary Had a Little Lamb', () => {
 describe('Au Clair de la Lune', () => {
   it('sings the lyric one syllable per note, answering on each friend\'s "mot"', () => {
     const song = makeSong(ANIMALS.slice(0, 1), CLAIR);
-    expect(song.map((n) => n.syllable).join(' ')).toBe('Au clair de la lu ne mon a mi Pier rot Prê te moi ta plu me pour é cri re un mot');
+    expect(song.map((n) => n.syllable).join(' ')).toBe(
+      'Au clair de la lu ne mon a mi Pier rot Prê te moi ta plu me pour é cri re un mot',
+    );
     expect(song.filter((n) => n.answers).map((n) => n.syllable)).toEqual(['mot']);
     expect(song.length).toBe(11 + 12);
   });
@@ -234,7 +258,9 @@ describe('Au Clair de la Lune', () => {
 describe('Rain, Rain, Go Away', () => {
   it('sings the lyric one syllable per note, answering on each friend\'s "play"', () => {
     const song = makeSong(ANIMALS.slice(0, 1), RAIN);
-    expect(song.map((n) => n.syllable).join(' ')).toBe('Rain rain go a way come a gain an oth er day Rain rain go a way we want to play');
+    expect(song.map((n) => n.syllable).join(' ')).toBe(
+      'Rain rain go a way come a gain an oth er day Rain rain go a way we want to play',
+    );
     expect(song.filter((n) => n.answers).map((n) => n.syllable)).toEqual(['play']);
     expect(song.length).toBe(12 + 9);
   });
@@ -249,7 +275,9 @@ describe('Rain, Rain, Go Away', () => {
 describe('The Itsy Bitsy Spider', () => {
   it('sings the lyric one syllable per note, answering on each friend\'s "spout"', () => {
     const song = makeSong(ANIMALS.slice(0, 1), ITSY);
-    expect(song.map((n) => n.syllable).join(' ')).toBe('The it sy bit sy spi der climbed up the wa ter spout climbed up the wa ter spout');
+    expect(song.map((n) => n.syllable).join(' ')).toBe(
+      'The it sy bit sy spi der climbed up the wa ter spout climbed up the wa ter spout',
+    );
     expect(song.filter((n) => n.answers).map((n) => n.syllable)).toEqual(['spout']);
     expect(song.length).toBe(13 + 6);
   });
@@ -290,7 +318,10 @@ describe('Ring Around the Rosie', () => {
       'Ring a round the ro sie a pock et full of po sies Ash es ash es we all fall down Ash es ash es we all fall down',
     );
     const answers = song.filter((n) => n.answers);
-    expect(answers.map((n) => [n.syllable, n.animal])).toEqual([['down', 'pig'], ['down', 'cat']]);
+    expect(answers.map((n) => [n.syllable, n.animal])).toEqual([
+      ['down', 'pig'],
+      ['down', 'cat'],
+    ]);
     expect(answers.every((n) => n.verseEnd)).toBe(true);
     expect(song.filter((n) => n.verseEnd)).toHaveLength(3);
     expect(song.length).toBe(13 + 8 + 8);
@@ -315,7 +346,18 @@ describe('which tune a round sings', () => {
     expect(pickTune(new Rng(7)).id).toBe(pickTune(new Rng(7)).id);
     const seen = new Set<string>();
     for (let seed = 1; seed <= 40; seed++) seen.add(pickTune(new Rng(seed)).id);
-    expect([...seen].sort()).toEqual(['bounce', 'buns', 'clair', 'itsy', 'macdonald', 'mary', 'rain', 'ring', 'twinkle', 'wheels']);
+    expect([...seen].sort()).toEqual([
+      'bounce',
+      'buns',
+      'clair',
+      'itsy',
+      'macdonald',
+      'mary',
+      'rain',
+      'ring',
+      'twinkle',
+      'wheels',
+    ]);
   });
 });
 
@@ -333,10 +375,14 @@ describe('the whole Old MacDonald verse', () => {
     expect(makeSong(['cow', 'pig'], OLD_MACDONALD_FULL).length).toBe(12 + 94);
     // the notes before the moo-moo lines are exactly the short song's
     const short = makeSong(['cow'], OLD_MACDONALD);
-    expect(makeSong(['cow'], OLD_MACDONALD_FULL).slice(0, short.length).map((n) => n.step)).toEqual(short.map((n) => n.step));
+    expect(
+      makeSong(['cow'], OLD_MACDONALD_FULL)
+        .slice(0, short.length)
+        .map((n) => n.step),
+    ).toEqual(short.map((n) => n.step));
   });
 
-  it('sings the friend\'s own sound on every moo, sounds on each, and still ends a verse exactly once', () => {
+  it("sings the friend's own sound on every moo, sounds on each, and still ends a verse exactly once", () => {
     const song = makeSong(['pig'], OLD_MACDONALD_FULL);
     const oinks = song.filter((n) => n.syllable === VOICES.pig.sound);
     expect(oinks).toHaveLength(2 + 2 + 1 + 1 + 2);
@@ -348,7 +394,18 @@ describe('the whole Old MacDonald verse', () => {
 
   it('is offered only at the level that has it, beside Hot Cross Buns', () => {
     expect(tunesFor(PLANS[4])).toBe(TUNES);
-    expect(tunesFor(PLANS[5])).toEqual([OLD_MACDONALD_FULL, BUNS, MARY, CLAIR, RAIN, ITSY, BOUNCE, RING, TWINKLE, WHEELS]);
+    expect(tunesFor(PLANS[5])).toEqual([
+      OLD_MACDONALD_FULL,
+      BUNS,
+      MARY,
+      CLAIR,
+      RAIN,
+      ITSY,
+      BOUNCE,
+      RING,
+      TWINKLE,
+      WHEELS,
+    ]);
   });
 });
 
@@ -363,7 +420,8 @@ describe('tunes with their own notes', () => {
         if (p.semitones) expect(OWN_NOTES, `${t.id}: ${p.syllables.join(' ')}`).toContain(t.id);
         else p.steps.forEach((_, at) => expect(PENTATONIC).toContain(phraseMidi(p, at) % 12));
       }
-      if (!OWN_NOTES.includes(t.id)) for (const n of makeSong(ANIMALS.slice(0, 3), t)) expect(PENTATONIC).toContain(n.midi % 12);
+      if (!OWN_NOTES.includes(t.id))
+        for (const n of makeSong(ANIMALS.slice(0, 3), t)) expect(PENTATONIC).toContain(n.midi % 12);
     }
   });
 
@@ -375,7 +433,11 @@ describe('tunes with their own notes', () => {
   });
 
   it('sounds the marimba by MIDI only in Sing-Along Barn', () => {
-    const files = import.meta.glob(['/src/**/*.ts', '!/src/**/*.test.ts'], { query: '?raw', import: 'default', eager: true }) as Record<string, string>;
+    const files = import.meta.glob(['/src/**/*.ts', '!/src/**/*.test.ts'], {
+      query: '?raw',
+      import: 'default',
+      eager: true,
+    }) as Record<string, string>;
     const callers = Object.entries(files)
       .filter(([, src]) => src.includes('marimbaMidi('))
       .map(([path]) => path)
@@ -394,7 +456,9 @@ describe('tunes with their own notes', () => {
 describe('Twinkle, Twinkle, Little Star', () => {
   it('is C C G G A A G, F F E E D D C, then G G F F E E D twice for each friend', () => {
     const song = makeSong(['cow'], TWINKLE);
-    expect(song.map((n) => n.midi - 60)).toEqual([0, 0, 7, 7, 9, 9, 7, 5, 5, 4, 4, 2, 2, 0, 7, 7, 5, 5, 4, 4, 2, 7, 7, 5, 5, 4, 4, 2]);
+    expect(song.map((n) => n.midi - 60)).toEqual([
+      0, 0, 7, 7, 9, 9, 7, 5, 5, 4, 4, 2, 2, 0, 7, 7, 5, 5, 4, 4, 2, 7, 7, 5, 5, 4, 4, 2,
+    ]);
     expect(song.map((n) => n.syllable).slice(-7)).toEqual(['like', 'a', 'dia', 'mond', 'in', 'the', 'sky']);
   });
 
@@ -413,12 +477,16 @@ describe('The Wheels on the Bus', () => {
   it('opens sol, do do do do mi sol mi do, re sol, sol, do, in C from the score, all on the pentatonic', () => {
     const song = makeSong([], WHEELS);
     expect(song.map((n) => n.midi - 60)).toEqual([-5, 0, 0, 0, 0, 4, 7, 4, 0, 2, -5, -5, 0]);
-    expect(song.map((n) => n.syllable).join(' ')).toBe('The wheels on the bus go round and round all through the town');
+    expect(song.map((n) => n.syllable).join(' ')).toBe(
+      'The wheels on the bus go round and round all through the town',
+    );
   });
 
   it('names the friend mid-line and has it sound on each of its three sounds', () => {
     const song = makeSong(['duck'], WHEELS).slice(13);
-    expect(song.map((n) => n.syllable).join(' ')).toBe('The duck on the bus says quack quack quack all through the town');
+    expect(song.map((n) => n.syllable).join(' ')).toBe(
+      'The duck on the bus says quack quack quack all through the town',
+    );
     expect(song.filter((n) => n.answers).map((n) => n.syllable)).toEqual(['quack', 'quack', 'quack']);
     expect(song.every((n) => n.animal === 'duck')).toBe(true);
     expect(song.at(-1)!.verseEnd).toBe(true);
@@ -426,7 +494,8 @@ describe('The Wheels on the Bus', () => {
 
   it('keeps the name placeholder out of every other tune and out of the opening', () => {
     for (const t of TUNES) for (const n of makeSong(ANIMALS.slice(0, 3), t)) expect(n.syllable).not.toBe('@');
-    for (const t of TUNES.filter((x) => x !== WHEELS)) for (const p of [...t.opening, ...t.verse]) expect(p.syllables).not.toContain('@');
+    for (const t of TUNES.filter((x) => x !== WHEELS))
+      for (const p of [...t.opening, ...t.verse]) expect(p.syllables).not.toContain('@');
     for (const p of WHEELS.opening) expect(p.syllables).not.toContain('@');
   });
 });
@@ -447,7 +516,7 @@ describe('Finish the line (level 7)', () => {
     expect(new Set(GAP_TUNES.map((t) => GAPS[t.id]!.picture)).size).toBe(GAP_TUNES.length);
   });
 
-  it('gaps on every friend\'s last sung syllable, which is the word in the table, and never in the opening', () => {
+  it("gaps on every friend's last sung syllable, which is the word in the table, and never in the opening", () => {
     for (const tune of GAP_TUNES) {
       const song = makeSong(ANIMALS.slice(0, 2), tune, true);
       const gaps = song.filter((n) => n.gap);
@@ -462,7 +531,9 @@ describe('Finish the line (level 7)', () => {
       expect(song[0].gap).toBe(false);
       expect(song.at(-1)!.gap).toBe(true);
       // The gaps change nothing else: the same notes, words and answers as the song without them.
-      expect(song.map(({ gap: _, ...n }) => n)).toEqual(makeSong(ANIMALS.slice(0, 2), tune).map(({ gap: _, ...n }) => n));
+      expect(song.map(({ gap: _, ...n }) => n)).toEqual(
+        makeSong(ANIMALS.slice(0, 2), tune).map(({ gap: _, ...n }) => n),
+      );
     }
   });
 
@@ -524,7 +595,7 @@ describe('Which one finishes it? (level 8)', () => {
     }
   });
 
-  it('gaps once per friend in Rain and Twinkle and once in Ring\'s opening, on the first syllable of the word, changing nothing else', () => {
+  it("gaps once per friend in Rain and Twinkle and once in Ring's opening, on the first syllable of the word, changing nothing else", () => {
     const friends = ANIMALS.slice(0, 2);
     for (const t of RHYME_TUNES) {
       const r = RHYMES[t.id]!;
@@ -546,8 +617,13 @@ describe('Which one finishes it? (level 8)', () => {
   });
 
   it('never gaps a tune without a rhyme, and Finish the line keeps its own gaps', () => {
-    for (const t of TUNES.filter((x) => !RHYMES[x.id])) expect(makeSong(ANIMALS.slice(0, 2), t, 'rhyme').some((n) => n.gap)).toBe(false);
-    expect(makeSong(ANIMALS.slice(0, 2), TWINKLE, true).filter((n) => n.gap).map((n) => n.syllable)).toEqual(['sky', 'sky']);
+    for (const t of TUNES.filter((x) => !RHYMES[x.id]))
+      expect(makeSong(ANIMALS.slice(0, 2), t, 'rhyme').some((n) => n.gap)).toBe(false);
+    expect(
+      makeSong(ANIMALS.slice(0, 2), TWINKLE, true)
+        .filter((n) => n.gap)
+        .map((n) => n.syllable),
+    ).toEqual(['sky', 'sky']);
   });
 
   it('draws the tune and the sides from the seed: the same for the same seed, every tune and both sides turn up', () => {

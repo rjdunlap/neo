@@ -10,8 +10,12 @@ describe('the Busy Harbors course', () => {
     expect(Object.keys(COURSES)).toEqual(['harbors']);
   });
 
-  it('has harbors that are well formed, drawn from the game\'s own list, and can be finished in the fewest slides the solver finds', () => {
-    const all = new Set(Object.values(HARBORS).flat().map((rows) => rows.join('/')));
+  it("has harbors that are well formed, drawn from the game's own list, and can be finished in the fewest slides the solver finds", () => {
+    const all = new Set(
+      Object.values(HARBORS)
+        .flat()
+        .map((rows) => rows.join('/')),
+    );
     courseHarbors('harbors').forEach(({ harbor, best }, i) => {
       const label = `harbor ${i + 1}`;
       expect(wellFormed(harbor), label).toBe(true);
@@ -26,7 +30,7 @@ describe('the Busy Harbors course', () => {
     });
   });
 
-  it('climbs, and the par is the solver\'s, summed for the course', () => {
+  it("climbs, and the par is the solver's, summed for the course", () => {
     expect(courseBest('harbors')).toEqual([8, 10, 12, 16, 18]);
     expect(courseBest('harbors')).toEqual([...courseBest('harbors')].sort((a, b) => a - b));
     expect(courseMinimum('harbors')).toBe(64);
@@ -43,7 +47,8 @@ describe('moving the highlight between boats', () => {
   it('goes to the nearest boat in the direction pushed, or nowhere', () => {
     const h = parse(['aa..', 'ffb.', '..b.', 'cc..']);
     const layout = start(h);
-    const ferry = 0, boats = h.boats;
+    const ferry = 0,
+      boats = h.boats;
     expect(boats[ferry].row).toBe(1);
     // From the ferry: right is the upright boat b, up is the sideways boat a, down is c; nothing lies to the left.
     const right = boatToward(h, layout, ferry, 0)!;
@@ -54,17 +59,19 @@ describe('moving the highlight between boats', () => {
   });
 
   it('can reach every boat from the ferry in every harbor of the game, so the highlight is never stuck', () => {
-    for (const [level, list] of Object.entries(HARBORS)) list.forEach((rows, i) => {
-      const h = parse(rows), layout = start(h);
-      h.boats.forEach((_, to) => {
-        const path = focusPath(h, layout, 0, to);
-        expect(path, `level ${level} harbor ${i} boat ${to}`).not.toBeNull();
-        // Following the pushes really does end on that boat.
-        let at = 0;
-        for (const dir of path!) at = boatToward(h, layout, at, dir)!;
-        expect(at).toBe(to);
+    for (const [level, list] of Object.entries(HARBORS))
+      list.forEach((rows, i) => {
+        const h = parse(rows),
+          layout = start(h);
+        h.boats.forEach((_, to) => {
+          const path = focusPath(h, layout, 0, to);
+          expect(path, `level ${level} harbor ${i} boat ${to}`).not.toBeNull();
+          // Following the pushes really does end on that boat.
+          let at = 0;
+          for (const dir of path!) at = boatToward(h, layout, at, dir)!;
+          expect(at).toBe(to);
+        });
       });
-    });
   });
 
   it('keeps reaching every boat as the boats move, along the best way out', () => {

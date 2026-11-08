@@ -6,7 +6,9 @@ import { SETTINGS, chosenTexts, clipKey, hasSlot } from './clips.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const manifest = JSON.parse(readFileSync(`${root}src/content/voice-clips.json`, 'utf8'));
-const files = readdirSync(`${root}src/audio/clips`).filter((f) => f.endsWith('.m4a')).map((f) => f.slice(0, -4));
+const files = readdirSync(`${root}src/audio/clips`)
+  .filter((f) => f.endsWith('.m4a'))
+  .map((f) => f.slice(0, -4));
 const allTexts = new Set(Object.values(SCRIPT).flat());
 
 describe('rendered voice clips', () => {

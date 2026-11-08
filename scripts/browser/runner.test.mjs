@@ -5,15 +5,31 @@ import { runBrowserSuites } from './runner.mjs';
 
 function browser() {
   const contexts = [];
-  const host = { newContext: vi.fn(async () => {
-    const page = { on: vi.fn(), goto: vi.fn(async () => {}), waitForFunction: vi.fn(async () => {}), evaluate: vi.fn(async () => ({})), screenshot: vi.fn(async () => {}) };
-    const context = { addInitScript: vi.fn(async () => {}), newPage: async () => page, close: vi.fn(async () => {}), page };
-    contexts.push(context);
-    return context;
-  }) };
+  const host = {
+    newContext: vi.fn(async () => {
+      const page = {
+        on: vi.fn(),
+        goto: vi.fn(async () => {}),
+        waitForFunction: vi.fn(async () => {}),
+        evaluate: vi.fn(async () => ({})),
+        screenshot: vi.fn(async () => {}),
+      };
+      const context = {
+        addInitScript: vi.fn(async () => {}),
+        newPage: async () => page,
+        close: vi.fn(async () => {}),
+        page,
+      };
+      contexts.push(context);
+      return context;
+    }),
+  };
   return { host, contexts };
 }
-afterEach(() => { vi.restoreAllMocks(); vi.mocked(runSuite).mockReset(); });
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.mocked(runSuite).mockReset();
+});
 
 describe('browser suite ownership', () => {
   it('uses a fresh page and error list per suite and closes the previous context before the next suite', async () => {
@@ -26,15 +42,24 @@ describe('browser suite ownership', () => {
       return [suite];
     });
     await runBrowserSuites(host, ['home', 'fingerdemo']);
-    expect(seen.map(s => s.suite)).toEqual(['home', 'fingerdemo']);
+    expect(seen.map((s) => s.suite)).toEqual(['home', 'fingerdemo']);
     expect(seen[0].page).not.toBe(seen[1].page);
     expect(seen[0].errors).not.toBe(seen[1].errors);
-    expect(seen.map(s => s.output)).toEqual(['test-results/browser/home', 'test-results/browser/fingerdemo']);
-    expect(contexts.every(c => c.close.mock.calls.length === 1)).toBe(true);
+    expect(seen.map((s) => s.output)).toEqual([
+      'test-results/browser/home',
+      'test-results/browser/fingerdemo',
+    ]);
+    expect(contexts.every((c) => c.close.mock.calls.length === 1)).toBe(true);
   });
   it('closes a context if opening its initial page fails', async () => {
     const failure = new Error('page startup failed');
-    const context = { addInitScript: vi.fn(async () => {}), newPage: vi.fn(async () => { throw failure; }), close: vi.fn(async () => {}) };
+    const context = {
+      addInitScript: vi.fn(async () => {}),
+      newPage: vi.fn(async () => {
+        throw failure;
+      }),
+      close: vi.fn(async () => {}),
+    };
     const host = { newContext: vi.fn(async () => context) };
     await expect(runBrowserSuites(host, ['home'])).rejects.toBe(failure);
     expect(context.close).toHaveBeenCalledOnce();

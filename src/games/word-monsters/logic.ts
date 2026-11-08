@@ -23,9 +23,24 @@ export const PLANS: MonsterPlan[] = [
   { mode: 'who', rounds: 4, choices: 3, name: 'Find a letter by its sound: "who says mmm?"' },
   { mode: 'first', rounds: 4, choices: 3, name: 'First sounds: "apple starts with aah"' },
   { mode: 'build', rounds: 3, choices: 3, name: 'Build a three-letter word with letters shown in the slots' },
-  { mode: 'spell', rounds: 3, choices: 4, name: 'Build a three-letter word from its sounds, with a spare letter' },
-  { mode: 'family', rounds: 6, choices: 4, name: 'Word families: change the first sound to make hat, cat, bat (two families)' },
-  { mode: 'end', rounds: 3, choices: 3, name: 'Change the end: keep the first two sounds and make cat, cap, can' },
+  {
+    mode: 'spell',
+    rounds: 3,
+    choices: 4,
+    name: 'Build a three-letter word from its sounds, with a spare letter',
+  },
+  {
+    mode: 'family',
+    rounds: 6,
+    choices: 4,
+    name: 'Word families: change the first sound to make hat, cat, bat (two families)',
+  },
+  {
+    mode: 'end',
+    rounds: 3,
+    choices: 3,
+    name: 'Change the end: keep the first two sounds and make cat, cap, can',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -52,15 +67,40 @@ export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(
  * These are stand-ins: recorded parent voices will replace them by line id (`sound.a`...).
  */
 export const SOUNDS: Record<string, string> = {
-  a: 'aah', b: 'buh', c: 'kuh', d: 'duh', e: 'eh', f: 'fff', g: 'guh', h: 'huh', i: 'ih', j: 'juh', k: 'kuh', l: 'lll', m: 'mmm',
-  n: 'nnn', o: 'aw', p: 'puh', q: 'kwuh', r: 'rrr', s: 'sss', t: 'tuh', u: 'uh', v: 'vvv', w: 'wuh', x: 'ks', y: 'yuh', z: 'zzz',
+  a: 'aah',
+  b: 'buh',
+  c: 'kuh',
+  d: 'duh',
+  e: 'eh',
+  f: 'fff',
+  g: 'guh',
+  h: 'huh',
+  i: 'ih',
+  j: 'juh',
+  k: 'kuh',
+  l: 'lll',
+  m: 'mmm',
+  n: 'nnn',
+  o: 'aw',
+  p: 'puh',
+  q: 'kwuh',
+  r: 'rrr',
+  s: 'sss',
+  t: 'tuh',
+  u: 'uh',
+  v: 'vvv',
+  w: 'wuh',
+  x: 'ks',
+  y: 'yuh',
+  z: 'zzz',
 };
 
 export const ALPHABET = Object.keys(SOUNDS);
 
 /** Lowercase letters that are easy to mix up; never offered side by side. */
 const LOOKALIKES = ['bdpq', 'mnu', 'il'];
-export const lookalike = (a: string, b: string) => a !== b && LOOKALIKES.some((set) => set.includes(a) && set.includes(b));
+export const lookalike = (a: string, b: string) =>
+  a !== b && LOOKALIKES.some((set) => set.includes(a) && set.includes(b));
 
 /** Two different letters that make the same sound (c and k), never offered together: one would be right and be told off. */
 export const soundTwin = (a: string, b: string) => a !== b && SOUNDS[a] === SOUNDS[b];
@@ -70,8 +110,27 @@ export const WHO_POOL = ALPHABET.filter((l) => l !== 'q' && l !== 'x');
 
 /** Picture words whose first sound is the letter's plain sound (no ice cream, no xylophone). */
 export const FIRST_WORDS: Record<string, string> = {
-  a: 'apple', b: 'ball', c: 'cat', d: 'duck', e: 'egg', f: 'fish', g: 'grapes', h: 'house', j: 'jelly', k: 'kite', l: 'leaf', m: 'moon',
-  n: 'nest', p: 'pig', r: 'rainbow', s: 'sun', t: 'tree', u: 'umbrella', w: 'whale', y: 'yo-yo', z: 'zebra',
+  a: 'apple',
+  b: 'ball',
+  c: 'cat',
+  d: 'duck',
+  e: 'egg',
+  f: 'fish',
+  g: 'grapes',
+  h: 'house',
+  j: 'jelly',
+  k: 'kite',
+  l: 'leaf',
+  m: 'moon',
+  n: 'nest',
+  p: 'pig',
+  r: 'rainbow',
+  s: 'sun',
+  t: 'tree',
+  u: 'umbrella',
+  w: 'whale',
+  y: 'yo-yo',
+  z: 'zebra',
 };
 
 /** Three-letter words we can draw, each sounded out letter by letter. */
@@ -102,14 +161,30 @@ export function pickLetters(rng: Rng, n: number, must: string[], pool = ALPHABET
 
 export function makeQuestions(plan: MonsterPlan, rng: Rng): Question[] {
   const out: Question[] = [];
-  const pool = plan.mode === 'first' ? Object.keys(FIRST_WORDS) : plan.mode === 'find' ? 'abcdefghkmrstw'.split('') : plan.mode === 'who' ? WHO_POOL : ALPHABET;
+  const pool =
+    plan.mode === 'first'
+      ? Object.keys(FIRST_WORDS)
+      : plan.mode === 'find'
+        ? 'abcdefghkmrstw'.split('')
+        : plan.mode === 'who'
+          ? WHO_POOL
+          : ALPHABET;
   const used = new Set<string>();
   if (plan.mode === 'family') {
     // Two families, three words each; the other first sounds come from the family when they can, so hearing matters.
     for (const rime of rng.shuffle(Object.keys(FAMILIES)).slice(0, plan.rounds / 3)) {
       const onsets = FAMILIES[rime].map((w) => w[0]);
       for (const word of rng.shuffle([...FAMILIES[rime]]).slice(0, 3)) {
-        out.push({ answer: word, fixed: rime, monsters: pickLetters(rng, plan.choices, [word[0]], [...rng.shuffle(onsets), ...'cfhjlmnrstw'.split('')]) });
+        out.push({
+          answer: word,
+          fixed: rime,
+          monsters: pickLetters(
+            rng,
+            plan.choices,
+            [word[0]],
+            [...rng.shuffle(onsets), ...'cfhjlmnrstw'.split('')],
+          ),
+        });
       }
     }
     return out;
@@ -118,7 +193,11 @@ export function makeQuestions(plan: MonsterPlan, rng: Rng): Question[] {
     for (const word of END_WORDS) {
       // The first two letters are already in the slots. Only the answer makes a real word;
       // the spare sounds cannot create another pictured word in this slot.
-      out.push({ answer: word, fixed: word.slice(0, 2), monsters: pickLetters(rng, plan.choices, [word[2]], ['x', 'z']) });
+      out.push({
+        answer: word,
+        fixed: word.slice(0, 2),
+        monsters: pickLetters(rng, plan.choices, [word[2]], ['x', 'z']),
+      });
     }
     return rng.shuffle(out);
   }
@@ -141,15 +220,26 @@ export function makeQuestions(plan: MonsterPlan, rng: Rng): Question[] {
 export const fits = (word: string, filled: number, letter: string) => word[filled] === letter;
 
 /** "kuh, aah, tuh" for the voice. */
-export const sounded = (word: string) => word.split('').map((l) => SOUNDS[l]).join(', ');
+export const sounded = (word: string) =>
+  word
+    .split('')
+    .map((l) => SOUNDS[l])
+    .join(', ');
 
 /**
  * What a capable child does next, for the ghost finger. Free play: each monster in turn, round and round, to hear them.
  * Finding: the monster that is the answer. Building: the monster whose letter is the next empty slot's, never one that
  * is already in a slot (a word family's ending stands there from the start).
  */
-export function nextMonster<M extends { letter: string; placed: boolean }>(plan: MonsterPlan, q: Question, monsters: readonly M[], filled: number, taps: number): M | undefined {
+export function nextMonster<M extends { letter: string; placed: boolean }>(
+  plan: MonsterPlan,
+  q: Question,
+  monsters: readonly M[],
+  filled: number,
+  taps: number,
+): M | undefined {
   if (plan.mode === 'play') return monsters.length ? monsters[taps % monsters.length] : undefined;
-  if (plan.mode === 'build' || plan.mode === 'spell' || plan.mode === 'family' || plan.mode === 'end') return monsters.find((m) => !m.placed && fits(q.answer, filled, m.letter));
+  if (plan.mode === 'build' || plan.mode === 'spell' || plan.mode === 'family' || plan.mode === 'end')
+    return monsters.find((m) => !m.placed && fits(q.answer, filled, m.letter));
   return monsters.find((m) => m.letter === q.answer);
 }

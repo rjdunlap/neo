@@ -49,7 +49,8 @@ export function draggable(obj: Container, tw: Tweener, opts: DragOptions): DragH
     get dragging() {
       return pointer !== null;
     },
-    floatHome: () => tw.to(obj, { x: handle.home.x, y: handle.home.y }, { duration: 0.45, ease: ease.outBack }),
+    floatHome: () =>
+      tw.to(obj, { x: handle.home.x, y: handle.home.y }, { duration: 0.45, ease: ease.outBack }),
     destroy() {
       if (pointer !== null && active === pointer) active = null;
       pointer = null;

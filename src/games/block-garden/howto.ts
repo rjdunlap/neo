@@ -17,8 +17,19 @@ export const HOW_TO: GameHowTo = {
     { from: 8, to: 8, text: 'The bed is empty.' },
   ],
   note: [
-    { to: 2, text: 'Shapes never turn. The round arrow takes back a planting, as often as you like, and planting is never counted against her.' },
-    { from: 9, to: 9, text: 'Shapes never turn. The round arrow takes back a planting, as often as you like, and planting is never counted against her.' },
-    { from: 3, to: 8, text: 'Shapes never turn. The round arrow takes back a planting, as often as you like, and planting is never counted against her. A shape dropped where it cannot fit counts as a mistake.' },
+    {
+      to: 2,
+      text: 'Shapes never turn. The round arrow takes back a planting, as often as you like, and planting is never counted against her.',
+    },
+    {
+      from: 9,
+      to: 9,
+      text: 'Shapes never turn. The round arrow takes back a planting, as often as you like, and planting is never counted against her.',
+    },
+    {
+      from: 3,
+      to: 8,
+      text: 'Shapes never turn. The round arrow takes back a planting, as often as you like, and planting is never counted against her. A shape dropped where it cannot fit counts as a mistake.',
+    },
   ],
 };

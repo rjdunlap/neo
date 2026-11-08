@@ -5,8 +5,15 @@ import { couchDefaults, repairCouch } from './party';
 import { canWatchRoute, shelf, shelfEntry, standing } from './shelf';
 
 /** Finish a run of a real course: every part takes the given number of tries. */
-function finish(save: ReturnType<typeof couchDefaults>, id: 'practice' | 'ponds' | 'clouds' | 'codedoors', player: 0 | 1, tries: number[], assisted = false) {
-  const spec = courseSpec(id), course = courseOf(save, spec);
+function finish(
+  save: ReturnType<typeof couchDefaults>,
+  id: 'practice' | 'ponds' | 'clouds' | 'codedoors',
+  player: 0 | 1,
+  tries: number[],
+  assisted = false,
+) {
+  const spec = courseSpec(id),
+    course = courseOf(save, spec);
   startRun(course, player, 11);
   noteProgress(course, spec, 11, { slides: tries, attempts: 0, assisted });
   return finishRun(course, spec, 11, 1000);
@@ -15,8 +22,27 @@ function finish(save: ReturnType<typeof couchDefaults>, id: 'practice' | 'ponds'
 describe('the puzzle shelf', () => {
   it('lists every puzzle at once, gentlest first, with nothing locked and nothing played', () => {
     const rows = shelf(couchDefaults());
-    expect(rows.map(r => r.id)).toEqual([...COURSE_IDS]);
-    expect(rows.map(r => r.id)).toEqual(['practice', 'ponds', 'frozen', 'clouds', 'beds', 'bigbeds', 'lanterns', 'pictures', 'bigpictures', 'harbors', 'words', 'bigwords', 'bridges', 'joined', 'conga', 'typing', 'sunbeams', 'codedoors']);
+    expect(rows.map((r) => r.id)).toEqual([...COURSE_IDS]);
+    expect(rows.map((r) => r.id)).toEqual([
+      'practice',
+      'ponds',
+      'frozen',
+      'clouds',
+      'beds',
+      'bigbeds',
+      'lanterns',
+      'pictures',
+      'bigpictures',
+      'harbors',
+      'words',
+      'bigwords',
+      'bridges',
+      'joined',
+      'conga',
+      'typing',
+      'sunbeams',
+      'codedoors',
+    ]);
     for (const row of rows) {
       expect(row).toMatchObject({ best: null, helped: false, over: null, runs: 0, inProgress: false });
       expect(row.minimum).toBe(courseInfo(row.id).minimum);
@@ -28,7 +54,13 @@ describe('the puzzle shelf', () => {
     const save = couchDefaults();
     // Pond Practice: par 18, five ponds of 2, 3, 4, 4 and 5.
     finish(save, 'practice', 0, [3, 3, 5, 4, 6]);
-    expect(shelfEntry(save, 'practice')).toMatchObject({ best: 21, helped: false, minimum: 18, over: 3, runs: 1 });
+    expect(shelfEntry(save, 'practice')).toMatchObject({
+      best: 21,
+      helped: false,
+      minimum: 18,
+      over: 3,
+      runs: 1,
+    });
     expect(standing(shelfEntry(save, 'practice'))).toBe('21 slides · 3 above par (18)');
     finish(save, 'practice', 0, [2, 3, 4, 4, 5]);
     expect(shelfEntry(save, 'practice')).toMatchObject({ best: 18, over: 0, runs: 2 });

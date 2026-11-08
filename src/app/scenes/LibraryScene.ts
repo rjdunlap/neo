@@ -18,8 +18,16 @@ import { fitArt } from '../../ui/origin-art';
 import { label } from '../../ui/text';
 import { Scene } from '../Scene';
 
-const ART: Record<LibraryBook, () => Container> = { journal: journalIcon, windy: picnicLandmark, woodland: woodlandLandmark };
-const LINES: Record<LibraryBook, LineId> = { journal: 'library.journal', windy: 'map.picnic', woodland: 'woodland.spot' };
+const ART: Record<LibraryBook, () => Container> = {
+  journal: journalIcon,
+  windy: picnicLandmark,
+  woodland: woodlandLandmark,
+};
+const LINES: Record<LibraryBook, LineId> = {
+  journal: 'library.journal',
+  windy: 'map.picnic',
+  woodland: 'woodland.spot',
+};
 
 /**
  * The library at the root (RW08 slice 2, docs/rework/RW08-CUTOVER.md#slice-2-the-library-the-stories-and-the-rest-of-home),
@@ -30,8 +38,12 @@ const LINES: Record<LibraryBook, LineId> = { journal: 'library.journal', windy: 
 export class LibraryScene extends Scene {
   private readonly backdrop = homeBackdrop();
   readonly books = libraryBooks(store.data.profile.band);
-  readonly back = new RoundButton(arrowIcon(-1), swatch.white, CORNER_RADIUS, () => this.leave(() => this.app.go.room(), 'nav.back')).means('back');
-  readonly home = new RoundButton(houseIcon(), swatch.white, CORNER_RADIUS, () => this.leave(() => this.app.go.hub(), 'nav.home')).means('home');
+  readonly back = new RoundButton(arrowIcon(-1), swatch.white, CORNER_RADIUS, () =>
+    this.leave(() => this.app.go.room(), 'nav.back'),
+  ).means('back');
+  readonly home = new RoundButton(houseIcon(), swatch.white, CORNER_RADIUS, () =>
+    this.leave(() => this.app.go.hub(), 'nav.home'),
+  ).means('home');
   /** The cards on screen, in order, so a script can find and press one. */
   readonly cards: { book: LibraryBook; node: Container }[] = [];
   private leaving = false;
@@ -49,15 +61,37 @@ export class LibraryScene extends Scene {
     const art = fitArt(ART[book](), EXPLORE_CARD - 30);
     const text = label(BOOK_NAMES[book], 22, ink);
     text.y = half + 26;
-    const pill = new Graphics().roundRect(-text.width / 2 - 12, text.y - 17, text.width + 24, 34, 17).fill(cream);
-    node.addChild(new Graphics().roundRect(-half, -half, EXPLORE_CARD, EXPLORE_CARD, 28).fill(cream).stroke({ color: swatch.orange.line, width: 5 }), art, pill, text);
+    const pill = new Graphics()
+      .roundRect(-text.width / 2 - 12, text.y - 17, text.width + 24, 34, 17)
+      .fill(cream);
+    node.addChild(
+      new Graphics()
+        .roundRect(-half, -half, EXPLORE_CARD, EXPLORE_CARD, 28)
+        .fill(cream)
+        .stroke({ color: swatch.orange.line, width: 5 }),
+      art,
+      pill,
+      text,
+    );
     node.hitArea = new Rectangle(-half, -half, EXPLORE_CARD, EXPLORE_CARD);
-    onTap(node, () => {
-      if (this.leaving) return;
-      sfx.tick();
-      node.scale.set(0.9);
-      this.leave(() => (book === 'journal' ? this.app.go.journal() : book === 'windy' ? this.app.go.picnic() : this.app.go.woodland()), LINES[book]);
-    }, { cooldown: 400 });
+    onTap(
+      node,
+      () => {
+        if (this.leaving) return;
+        sfx.tick();
+        node.scale.set(0.9);
+        this.leave(
+          () =>
+            book === 'journal'
+              ? this.app.go.journal()
+              : book === 'windy'
+                ? this.app.go.picnic()
+                : this.app.go.woodland(),
+          LINES[book],
+        );
+      },
+      { cooldown: 400 },
+    );
     return node;
   }
 

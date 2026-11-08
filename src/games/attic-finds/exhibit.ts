@@ -5,12 +5,54 @@ import { onTap } from '../../engine/input';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import type { Game, GameContext, TouchIntent } from '../types';
-import { BEAM, birdBox, claimPicture, heart, hilltopHouse, PAPER, paperArt, paw, seasideHouse, shop, WALL } from './case';
 import {
-  captionPaper, CAPTIONS, captionStatus, CASE_CARD_H, CASE_CARD_W, CASE_CHECK_R, CASE_SLOT, checkExhibit, chooseNewPaper, exhibitGlow, exhibitState,
-  helpExhibit, makeExhibitRound, NEW_H, NEW_PAPERS, NEW_W, PAPERS, placeExhibit, QUESTION_H, QUESTION_W, QUESTIONS, ROW_CAPTIONS,
-  setCaption, STRIP, THUMB, useful, usefulPaper,
-  type CaptionId, type CaseClaimId, type ExhibitLayout, type ExhibitRound, type ExhibitState, type NewPaperId, type PaperId,
+  BEAM,
+  birdBox,
+  claimPicture,
+  heart,
+  hilltopHouse,
+  PAPER,
+  paperArt,
+  paw,
+  seasideHouse,
+  shop,
+  WALL,
+} from './case';
+import {
+  captionPaper,
+  CAPTIONS,
+  captionStatus,
+  CASE_CARD_H,
+  CASE_CARD_W,
+  CASE_CHECK_R,
+  CASE_SLOT,
+  checkExhibit,
+  chooseNewPaper,
+  exhibitGlow,
+  exhibitState,
+  helpExhibit,
+  makeExhibitRound,
+  NEW_H,
+  NEW_PAPERS,
+  NEW_W,
+  PAPERS,
+  placeExhibit,
+  QUESTION_H,
+  QUESTION_W,
+  QUESTIONS,
+  ROW_CAPTIONS,
+  setCaption,
+  STRIP,
+  THUMB,
+  useful,
+  usefulPaper,
+  type CaptionId,
+  type CaseClaimId,
+  type ExhibitLayout,
+  type ExhibitRound,
+  type ExhibitState,
+  type NewPaperId,
+  type PaperId,
 } from './cases';
 import { planFor, type Plan } from './logic';
 
@@ -32,7 +74,11 @@ let authoredShown = false;
 /* Art -------------------------------------------------------------------------------------------- */
 
 const CLAIM_PICTURES: Partial<Record<CaptionId, CaseClaimId>> = {
-  'all-loved': 'all-loved', 'fair-cranked': 'fair-cranked', 'hilltop-cranked': 'hilltop-cranked', 'hilltop-had': 'hilltop-had', 'seaside-had': 'seaside-had',
+  'all-loved': 'all-loved',
+  'fair-cranked': 'fair-cranked',
+  'hilltop-cranked': 'hilltop-cranked',
+  'hilltop-had': 'hilltop-had',
+  'seaside-had': 'seaside-had',
 };
 
 /** A caption's picture, about 230 × 110 around its centre (the claims' own pictures where the caption is a claim). */
@@ -75,8 +121,12 @@ function captionPicture(id: CaptionId): Container {
 
 function questionMark(g: Graphics, x: number, y: number, k = 1) {
   const s = (n: number) => n * k;
-  g.moveTo(x - s(12), y - s(10)).arc(x, y - s(10), s(12), Math.PI, Math.PI * 2.4).stroke({ width: Math.max(3, s(6)), color: swatch.purple.line, cap: 'round' });
-  g.moveTo(x + s(2), y + s(2)).lineTo(x, y + s(10)).stroke({ width: Math.max(3, s(6)), color: swatch.purple.line, cap: 'round' });
+  g.moveTo(x - s(12), y - s(10))
+    .arc(x, y - s(10), s(12), Math.PI, Math.PI * 2.4)
+    .stroke({ width: Math.max(3, s(6)), color: swatch.purple.line, cap: 'round' });
+  g.moveTo(x + s(2), y + s(2))
+    .lineTo(x, y + s(10))
+    .stroke({ width: Math.max(3, s(6)), color: swatch.purple.line, cap: 'round' });
   g.circle(x, y + s(22), Math.max(2, s(4))).fill(swatch.purple.line);
 }
 
@@ -84,7 +134,10 @@ function questionMark(g: Graphics, x: number, y: number, k = 1) {
 function newPaperArt(id: NewPaperId): Container {
   if (id === 'poster-copy' || id === 'fair-copy') {
     const c = new Container();
-    const behind = new Graphics().roundRect(-44, -38, 96, 72, 8).fill(PAPER).stroke({ width: 3, color: wood.line });
+    const behind = new Graphics()
+      .roundRect(-44, -38, 96, 72, 8)
+      .fill(PAPER)
+      .stroke({ width: 3, color: wood.line });
     const art = paperArt(id === 'poster-copy' ? 'poster' : 'drawing');
     art.scale.set(0.48);
     art.position.set(-4, 4);
@@ -94,10 +147,13 @@ function newPaperArt(id: NewPaperId): Container {
   const c = new Container();
   const g = new Graphics();
   c.addChild(g);
-  g.roundRect(-48, -54, 96, 108, 8).fill(id === 'seaside-list' ? PAPER : 0xfff3dc).stroke({ width: 3, color: wood.line });
+  g.roundRect(-48, -54, 96, 108, 8)
+    .fill(id === 'seaside-list' ? PAPER : 0xfff3dc)
+    .stroke({ width: 3, color: wood.line });
   if (id === 'seaside-list') {
     seasideHouse(g, 0, -28, 0.55);
-    for (const y of [4, 22, 40]) g.moveTo(-36, y).lineTo(36, y).stroke({ width: 2, color: swatch.blue.light });
+    for (const y of [4, 22, 40])
+      g.moveTo(-36, y).lineTo(36, y).stroke({ width: 2, color: swatch.blue.light });
   } else {
     hilltopHouse(g, 0, -26, 0.6);
     for (const x of [-30, -10, 10, 30]) g.circle(x, 30, 3).fill(swatch.yellow.fill);
@@ -124,13 +180,33 @@ function questionPicture(q: ExhibitRound['question']): Container {
 }
 
 function speaker(w: number, h: number): Graphics {
-  return new Graphics().poly([w / 2 - 44, -h / 2 + 18, w / 2 - 36, -h / 2 + 18, w / 2 - 26, -h / 2 + 10, w / 2 - 26, -h / 2 + 38, w / 2 - 36, -h / 2 + 30, w / 2 - 44, -h / 2 + 30]).fill(ink)
-    .moveTo(w / 2 - 22 + 8 * Math.cos(-0.8), -h / 2 + 24 + 8 * Math.sin(-0.8)).arc(w / 2 - 22, -h / 2 + 24, 8, -0.8, 0.8).stroke({ width: 3, color: ink });
+  return new Graphics()
+    .poly([
+      w / 2 - 44,
+      -h / 2 + 18,
+      w / 2 - 36,
+      -h / 2 + 18,
+      w / 2 - 26,
+      -h / 2 + 10,
+      w / 2 - 26,
+      -h / 2 + 38,
+      w / 2 - 36,
+      -h / 2 + 30,
+      w / 2 - 44,
+      -h / 2 + 30,
+    ])
+    .fill(ink)
+    .moveTo(w / 2 - 22 + 8 * Math.cos(-0.8), -h / 2 + 24 + 8 * Math.sin(-0.8))
+    .arc(w / 2 - 22, -h / 2 + 24, 8, -0.8, 0.8)
+    .stroke({ width: 3, color: ink });
 }
 
 /* The game --------------------------------------------------------------------------------------- */
 
-interface RowNode { card: Container; pic: Container }
+interface RowNode {
+  card: Container;
+  pic: Container;
+}
 
 export class AtticExhibit implements Game {
   readonly plan: Plan;
@@ -179,25 +255,48 @@ export class AtticExhibit implements Game {
     this.L = placeExhibit(ctx.view);
 
     this.checkBtn.addChild(
-      new Graphics().circle(0, 0, CASE_CHECK_R).fill(swatch.green.fill).stroke({ width: 5, color: swatch.green.line })
-        .moveTo(-20, 0).lineTo(-6, 16).lineTo(22, -16).stroke({ width: 9, color: 0xffffff, cap: 'round', join: 'round' }),
+      new Graphics()
+        .circle(0, 0, CASE_CHECK_R)
+        .fill(swatch.green.fill)
+        .stroke({ width: 5, color: swatch.green.line })
+        .moveTo(-20, 0)
+        .lineTo(-6, 16)
+        .lineTo(22, -16)
+        .stroke({ width: 9, color: 0xffffff, cap: 'round', join: 'round' }),
     );
     onTap(this.checkBtn, () => void this.pressCheck(), { radius: CASE_CHECK_R + 4, cooldown: 400 });
 
     // The glass dome on its stand, with the bird box inside.
     this.dome.addChild(
       this.domeGlow,
-      new Graphics().roundRect(-62, 60, 124, 26, 8).fill(wood.fill).stroke({ width: 4, color: wood.line })
-        .roundRect(-46, 86, 92, 60, 8).fill(wood.light).stroke({ width: 4, color: wood.line }),
+      new Graphics()
+        .roundRect(-62, 60, 124, 26, 8)
+        .fill(wood.fill)
+        .stroke({ width: 4, color: wood.line })
+        .roundRect(-46, 86, 92, 60, 8)
+        .fill(wood.light)
+        .stroke({ width: 4, color: wood.line }),
       this.domeBird,
-      new Graphics().moveTo(-54, 60).lineTo(-54, -20).arc(0, -20, 54, Math.PI, 0).lineTo(54, 60)
-        .fill({ color: 0xdff4ff, alpha: 0.3 }).stroke({ width: 4, color: 0x9cc6e0 })
-        .moveTo(-34, -30).quadraticCurveTo(-30, -56, -10, -64).stroke({ width: 5, color: 0xffffff, alpha: 0.8, cap: 'round' }),
+      new Graphics()
+        .moveTo(-54, 60)
+        .lineTo(-54, -20)
+        .arc(0, -20, 54, Math.PI, 0)
+        .lineTo(54, 60)
+        .fill({ color: 0xdff4ff, alpha: 0.3 })
+        .stroke({ width: 4, color: 0x9cc6e0 })
+        .moveTo(-34, -30)
+        .quadraticCurveTo(-30, -56, -10, -64)
+        .stroke({ width: 5, color: 0xffffff, alpha: 0.8, cap: 'round' }),
     );
     birdBox(this.domeBird, 0, 26, 0.7);
 
     const q = this.questionCard;
-    q.addChild(new Graphics().roundRect(-QUESTION_W / 2, -QUESTION_H / 2, QUESTION_W, QUESTION_H, 16).fill(0xffffff).stroke({ width: 5, color: swatch.purple.line }));
+    q.addChild(
+      new Graphics()
+        .roundRect(-QUESTION_W / 2, -QUESTION_H / 2, QUESTION_W, QUESTION_H, 16)
+        .fill(0xffffff)
+        .stroke({ width: 5, color: swatch.purple.line }),
+    );
     const qp = questionPicture(this.round.question);
     qp.position.set(-30, 0);
     q.addChild(qp, speaker(QUESTION_W, QUESTION_H));
@@ -206,7 +305,18 @@ export class AtticExhibit implements Game {
     this.slotPaper.eventMode = 'none';
 
     for (const n of [this.bg, this.dome, this.glow, this.stripLink, this.slotArt]) n.eventMode = 'none';
-    this.ctx.stage.addChild(this.bg, this.dome, this.glow, this.stripLink, this.rowLayer, this.questionCard, this.slotArt, this.slotPaper, this.checkBtn, this.stripLayer);
+    this.ctx.stage.addChild(
+      this.bg,
+      this.dome,
+      this.glow,
+      this.stripLink,
+      this.rowLayer,
+      this.questionCard,
+      this.slotArt,
+      this.slotPaper,
+      this.checkBtn,
+      this.stripLayer,
+    );
     this.build();
     this.layout();
   }
@@ -246,7 +356,12 @@ export class AtticExhibit implements Game {
     });
     this.rows = r.rows.map((_, i) => {
       const card = new Container();
-      card.addChild(new Graphics().roundRect(-CASE_CARD_W / 2, -CASE_CARD_H / 2, CASE_CARD_W, CASE_CARD_H, 16).fill(0xffffff).stroke({ width: 5, color: wood.line }));
+      card.addChild(
+        new Graphics()
+          .roundRect(-CASE_CARD_W / 2, -CASE_CARD_H / 2, CASE_CARD_W, CASE_CARD_H, 16)
+          .fill(0xffffff)
+          .stroke({ width: 5, color: wood.line }),
+      );
       const pic = new Container();
       pic.position.set(-40, 0);
       card.addChild(pic, speaker(CASE_CARD_W, CASE_CARD_H));
@@ -277,20 +392,44 @@ export class AtticExhibit implements Game {
   }
 
   private layout() {
-    const v = this.view, L = this.L;
+    const v = this.view,
+      L = this.L;
     this.bg.clear().rect(0, 0, v.w, v.h).fill(WALL);
     this.bg.rect(0, v.h - 120, v.w, 120).fill(wood.light);
     this.bg.poly([0, 0, v.w * 0.32, 0, 0, v.h * 0.42]).fill({ color: BEAM, alpha: 0.35 });
     this.bg.poly([v.w, 0, v.w * 0.68, 0, v.w, v.h * 0.42]).fill({ color: BEAM, alpha: 0.35 });
-    this.bg.moveTo(v.w * 0.32, 0).lineTo(0, v.h * 0.42).moveTo(v.w * 0.68, 0).lineTo(v.w, v.h * 0.42).stroke({ width: 14, color: BEAM });
+    this.bg
+      .moveTo(v.w * 0.32, 0)
+      .lineTo(0, v.h * 0.42)
+      .moveTo(v.w * 0.68, 0)
+      .lineTo(v.w, v.h * 0.42)
+      .stroke({ width: 14, color: BEAM });
     // The museum card the captions hang on.
-    const r0 = L.rows[0], r2 = L.rows[2];
-    this.bg.roundRect(r0.x - CASE_CARD_W / 2 - 14, r0.y - CASE_CARD_H / 2 - 14, CASE_CARD_W + 28, r2.y - r0.y + CASE_CARD_H + 28, 18)
-      .fill({ color: swatch.blue.light, alpha: 0.6 }).stroke({ width: 5, color: swatch.blue.line });
+    const r0 = L.rows[0],
+      r2 = L.rows[2];
+    this.bg
+      .roundRect(
+        r0.x - CASE_CARD_W / 2 - 14,
+        r0.y - CASE_CARD_H / 2 - 14,
+        CASE_CARD_W + 28,
+        r2.y - r0.y + CASE_CARD_H + 28,
+        18,
+      )
+      .fill({ color: swatch.blue.light, alpha: 0.6 })
+      .stroke({ width: 5, color: swatch.blue.line });
     // The table the thumbnails lie on.
-    const xs = L.papers.map((p) => p.x), ys = L.papers.map((p) => p.y);
-    this.bg.roundRect(Math.min(...xs) - THUMB / 2 - 12, Math.min(...ys) - THUMB / 2 - 12, Math.max(...xs) - Math.min(...xs) + THUMB + 24, Math.max(...ys) - Math.min(...ys) + THUMB + 24, 14)
-      .fill({ color: wood.fill, alpha: 0.85 }).stroke({ width: 5, color: wood.line });
+    const xs = L.papers.map((p) => p.x),
+      ys = L.papers.map((p) => p.y);
+    this.bg
+      .roundRect(
+        Math.min(...xs) - THUMB / 2 - 12,
+        Math.min(...ys) - THUMB / 2 - 12,
+        Math.max(...xs) - Math.min(...xs) + THUMB + 24,
+        Math.max(...ys) - Math.min(...ys) + THUMB + 24,
+        14,
+      )
+      .fill({ color: wood.fill, alpha: 0.85 })
+      .stroke({ width: 5, color: wood.line });
     this.dome.position.set(L.dome.x, L.dome.y - 30);
     this.dome.scale.set(v.h > v.w ? 1 : 0.9);
     this.papers.forEach((p, i) => p.node.position.set(L.papers[i].x, L.papers[i].y));
@@ -320,15 +459,35 @@ export class AtticExhibit implements Game {
     const L = this.L;
     // A tab joins the open row to its strip.
     const rp = L.rows[open];
-    this.stripLink.roundRect(rp.x + CASE_CARD_W / 2 - 6, rp.y - 16, L.strip[0].x - STRIP / 2 - (rp.x + CASE_CARD_W / 2) + 12, 32, 8).fill(swatch.yellow.fill);
+    this.stripLink
+      .roundRect(
+        rp.x + CASE_CARD_W / 2 - 6,
+        rp.y - 16,
+        L.strip[0].x - STRIP / 2 - (rp.x + CASE_CARD_W / 2) + 12,
+        32,
+        8,
+      )
+      .fill(swatch.yellow.fill);
     const ys = L.strip.map((p) => p.y);
-    this.stripLink.roundRect(L.strip[0].x - STRIP / 2 - 10, Math.min(...ys) - STRIP / 2 - 10, STRIP + 20, Math.max(...ys) - Math.min(...ys) + STRIP + 20, 16)
-      .fill({ color: swatch.yellow.light, alpha: 0.9 }).stroke({ width: 5, color: swatch.yellow.fill });
+    this.stripLink
+      .roundRect(
+        L.strip[0].x - STRIP / 2 - 10,
+        Math.min(...ys) - STRIP / 2 - 10,
+        STRIP + 20,
+        Math.max(...ys) - Math.min(...ys) + STRIP + 20,
+        16,
+      )
+      .fill({ color: swatch.yellow.light, alpha: 0.9 })
+      .stroke({ width: 5, color: swatch.yellow.fill });
     this.round.strips[row].forEach((caption, k) => {
       const s = this.strip[k];
       const [face, holder] = s.node.children as [Graphics, Container];
       const on = this.state.captions[open] === caption;
-      face.clear().roundRect(-STRIP / 2, -STRIP / 2, STRIP, STRIP, 14).fill(0xffffff).stroke({ width: on ? 7 : 4, color: on ? ink : wood.line });
+      face
+        .clear()
+        .roundRect(-STRIP / 2, -STRIP / 2, STRIP, STRIP, 14)
+        .fill(0xffffff)
+        .stroke({ width: on ? 7 : 4, color: on ? ink : wood.line });
       if (s.caption !== caption) {
         holder.removeChildren().forEach((c) => c.destroy({ children: true }));
         const pic = captionPicture(caption);
@@ -341,7 +500,11 @@ export class AtticExhibit implements Game {
 
   private drawSlot() {
     const p = this.L.slot;
-    this.slotArt.clear().roundRect(p.x - CASE_SLOT / 2, p.y - CASE_SLOT / 2, CASE_SLOT, CASE_SLOT, 16).fill({ color: cream, alpha: 0.8 }).stroke({ width: 4, color: swatch.purple.line, alpha: 0.7 });
+    this.slotArt
+      .clear()
+      .roundRect(p.x - CASE_SLOT / 2, p.y - CASE_SLOT / 2, CASE_SLOT, CASE_SLOT, 16)
+      .fill({ color: cream, alpha: 0.8 })
+      .stroke({ width: 4, color: swatch.purple.line, alpha: 0.7 });
     this.slotPaper.removeChildren().forEach((c) => c.destroy({ children: true }));
     const chosen = this.state.chosen;
     if (chosen) {
@@ -359,7 +522,9 @@ export class AtticExhibit implements Game {
   private bounce(n: Container, k = 1.06) {
     this.ctx.tw.kill(n.scale);
     n.scale.set(1);
-    void this.ctx.tw.to(n.scale, { x: k, y: k }, { duration: 0.1 }).then(() => this.ctx.tw.to(n.scale, { x: 1, y: 1 }, { duration: 0.22, ease: ease.outBack }));
+    void this.ctx.tw
+      .to(n.scale, { x: k, y: k }, { duration: 0.1 })
+      .then(() => this.ctx.tw.to(n.scale, { x: 1, y: 1 }, { duration: 0.22, ease: ease.outBack }));
   }
 
   private readPaper(id: PaperId, node: Container) {
@@ -416,7 +581,8 @@ export class AtticExhibit implements Game {
   }
 
   private wiggle(n: Container) {
-    void this.ctx.tw.to(n, { rotation: 0.05 }, { duration: 0.08 })
+    void this.ctx.tw
+      .to(n, { rotation: 0.05 }, { duration: 0.08 })
       .then(() => this.ctx.tw.to(n, { rotation: -0.05 }, { duration: 0.1 }))
       .then(() => this.ctx.tw.to(n, { rotation: 0 }, { duration: 0.08 }));
   }
@@ -569,19 +735,27 @@ export class AtticExhibit implements Game {
       if (left - dt <= 0) this.lit.delete(id);
       else this.lit.set(id, left - dt);
       const n = this.papers.find((p) => p.id === id)?.node;
-      if (n) this.glow.roundRect(n.x - THUMB / 2 - 8, n.y - THUMB / 2 - 8, THUMB + 16, THUMB + 16, 16).fill({ color: swatch.yellow.light, alpha: 0.5 * Math.min(1, left * 2) });
+      if (n)
+        this.glow
+          .roundRect(n.x - THUMB / 2 - 8, n.y - THUMB / 2 - 8, THUMB + 16, THUMB + 16, 16)
+          .fill({ color: swatch.yellow.light, alpha: 0.5 * Math.min(1, left * 2) });
     }
     // The bird in the dome bobs once the card is true.
     this.domeGlow.clear();
     if (this.lightDome > 0) {
-      this.domeGlow.circle(0, 0, 92).fill({ color: swatch.yellow.light, alpha: 0.55 + 0.2 * Math.sin(this.t * 4) });
+      this.domeGlow
+        .circle(0, 0, 92)
+        .fill({ color: swatch.yellow.light, alpha: 0.55 + 0.2 * Math.sin(this.t * 4) });
       this.domeBird.y = -6 * Math.abs(Math.sin(this.t * 5));
     }
     const hint = this.finished ? null : exhibitGlow(this.state);
     if (!hint) return;
     const pulse = 0.5 + 0.5 * Math.sin(this.t * 5);
-    const ring = (x: number, y: number, w: number, h: number, r: number) => this.glow.roundRect(x - w / 2 - 8, y - h / 2 - 8, w + 16, h + 16, r)
-      .fill({ color: swatch.yellow.light, alpha: 0.3 + 0.25 * pulse }).stroke({ width: 6, color: swatch.yellow.fill, alpha: 0.6 + 0.4 * pulse });
+    const ring = (x: number, y: number, w: number, h: number, r: number) =>
+      this.glow
+        .roundRect(x - w / 2 - 8, y - h / 2 - 8, w + 16, h + 16, r)
+        .fill({ color: swatch.yellow.light, alpha: 0.3 + 0.25 * pulse })
+        .stroke({ width: 6, color: swatch.yellow.fill, alpha: 0.6 + 0.4 * pulse });
     if (hint.kind === 'caption') {
       const L = this.L;
       ring(L.rows[hint.row].x, L.rows[hint.row].y, CASE_CARD_W, CASE_CARD_H, 18);
@@ -603,7 +777,10 @@ export class AtticExhibit implements Game {
   private glowStrip(k: number, pulse: number) {
     const face = this.strip[k]?.node.children[0] as Graphics | undefined;
     if (!face) return;
-    face.clear().roundRect(-STRIP / 2, -STRIP / 2, STRIP, STRIP, 14).fill(swatch.yellow.light)
+    face
+      .clear()
+      .roundRect(-STRIP / 2, -STRIP / 2, STRIP, STRIP, 14)
+      .fill(swatch.yellow.light)
       .stroke({ width: 7, color: swatch.yellow.fill, alpha: 0.6 + 0.4 * pulse });
   }
 

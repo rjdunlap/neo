@@ -2,10 +2,21 @@ import { describe, expect, it } from 'vitest';
 import { GAMES, playsByTouch } from '../games/registry';
 import { BANDS } from '../progress/bands';
 import { levelsInOrder } from '../progress/difficulty';
-import { DAILY_COUNT, GROWNUP_FIRST, dailyPool, dailySix, dayKey, hardLevels, levelDots, presetLevels, playedOn } from './daily';
+import {
+  DAILY_COUNT,
+  GROWNUP_FIRST,
+  dailyPool,
+  dailySix,
+  dayKey,
+  hardLevels,
+  levelDots,
+  presetLevels,
+  playedOn,
+} from './daily';
 
 /** How many times each value appears. */
-const countBy = (xs: readonly string[]) => xs.reduce((m, x) => m.set(x, (m.get(x) ?? 0) + 1), new Map<string, number>());
+const countBy = (xs: readonly string[]) =>
+  xs.reduce((m, x) => m.set(x, (m.get(x) ?? 0) + 1), new Map<string, number>());
 
 const days = Array.from({ length: 30 }, (_, i) => dayKey(new Date(2026, 9, 1 + i)));
 
@@ -33,8 +44,12 @@ describe("today's six", () => {
   it('changes from one day to the next', () => {
     for (const { id: band } of BANDS) {
       for (let i = 1; i < days.length; i++) {
-        const a = dailySix(days[i - 1], band, GAMES).map((p) => p.mod.id).sort();
-        const b = dailySix(days[i], band, GAMES).map((p) => p.mod.id).sort();
+        const a = dailySix(days[i - 1], band, GAMES)
+          .map((p) => p.mod.id)
+          .sort();
+        const b = dailySix(days[i], band, GAMES)
+          .map((p) => p.mod.id)
+          .sort();
         expect(b).not.toEqual(a);
       }
     }
@@ -59,7 +74,9 @@ describe("today's six", () => {
         if (kinds >= DAILY_COUNT) expect(perKind.size, `${band} ${day}`).toBe(DAILY_COUNT);
         else expect(Math.max(...perKind.values())).toBeLessThanOrEqual(2);
         // Lands come second: kept apart while the kinds allow, never one land three times.
-        expect(new Set(six.map((p) => p.mod.region)).size, `${band} ${day}`).toBeGreaterThanOrEqual(Math.min(5, lands));
+        expect(new Set(six.map((p) => p.mod.region)).size, `${band} ${day}`).toBeGreaterThanOrEqual(
+          Math.min(5, lands),
+        );
         expect(Math.max(...countBy(six.map((p) => p.mod.region)).values())).toBeLessThanOrEqual(2);
       }
     }
@@ -67,7 +84,9 @@ describe("today's six", () => {
 
   it('starts the kinds again only once each kind has had a turn, so a band with fewer kinds has at most two of one', () => {
     // A pool of three kinds: two rounds of kinds fill the six, two of each.
-    const three = dailyPool('prek', GAMES).filter((m) => m.challenge === 'numbers' || m.challenge === 'words' || m.challenge === 'music');
+    const three = dailyPool('prek', GAMES).filter(
+      (m) => m.challenge === 'numbers' || m.challenge === 'words' || m.challenge === 'music',
+    );
     for (const day of days) {
       const six = dailySix(day, 'prek', three);
       expect([...countBy(six.map((p) => p.mod.challenge ?? '')).values()]).toEqual([2, 2, 2]);
@@ -101,7 +120,8 @@ describe("today's six", () => {
           expect(levelsInOrder(p.mod.levels(p.band)), `${p.mod.id} at ${band}`).toContain(p.level);
           expect(presetLevels(p.mod, p.band)).toContain(p.level);
           // An entry level only where the band's whole ladder is entry levels.
-          if (presetLevels(p.mod, p.band).some((l) => !(p.mod.entryLevels ?? []).includes(l))) expect(p.mod.entryLevels ?? []).not.toContain(p.level);
+          if (presetLevels(p.mod, p.band).some((l) => !(p.mod.entryLevels ?? []).includes(l)))
+            expect(p.mod.entryLevels ?? []).not.toContain(p.level);
           const dots = levelDots(p);
           expect(dots.at).toBeGreaterThanOrEqual(1);
           expect(dots.at).toBeLessThanOrEqual(dots.of);
@@ -112,7 +132,8 @@ describe("today's six", () => {
 
   it('varies the preset level across days', () => {
     const levels = new Set<string>();
-    for (const day of days) for (const p of dailySix(day, 'prek', GAMES)) levels.add(`${p.mod.id}:${p.level}`);
+    for (const day of days)
+      for (const p of dailySix(day, 'prek', GAMES)) levels.add(`${p.mod.id}:${p.level}`);
     const ids = new Set([...levels].map((k) => k.split(':')[0]));
     expect(levels.size).toBeGreaterThan(ids.size);
   });
@@ -138,7 +159,12 @@ describe("today's six", () => {
       for (const m of dailyPool(band, GAMES)) {
         expect(m.daily, m.id).not.toBe(false);
         expect(playsByTouch(m)).toBe(true);
-        expect(band === 'grownup' ? m.bands.includes('grownup') || m.bands.includes('school') : m.bands.includes(band), `${m.id} at ${band}`).toBe(true);
+        expect(
+          band === 'grownup'
+            ? m.bands.includes('grownup') || m.bands.includes('school')
+            : m.bands.includes(band),
+          `${m.id} at ${band}`,
+        ).toBe(true);
       }
     }
     expect(dailyPool('prek', GAMES).map((m) => m.id)).not.toContain('goodnight-room');
@@ -154,15 +180,27 @@ describe("today's six", () => {
 
 describe("today's six on a phone held upright (chunk 31)", () => {
   /** The catalog with exactly `ids` marked upright-ready, so the test does not depend on how many games are converted yet. */
-  const withReady = (ids: readonly string[]) => GAMES.map((m) => ({ ...m, upright: ids.includes(m.id) ? (true as const) : undefined }));
+  const withReady = (ids: readonly string[]) =>
+    GAMES.map((m) => ({ ...m, upright: ids.includes(m.id) ? (true as const) : undefined }));
   const ids = (picks: ReturnType<typeof dailySix>) => picks.map((p) => p.mod.id);
 
   it('is exactly the usual six when the phone is not upright', () => {
-    for (const { id: band } of BANDS) for (const day of days.slice(0, 5)) expect(ids(dailySix(day, band, GAMES, undefined, false)), `${band} ${day}`).toEqual(ids(dailySix(day, band, GAMES)));
+    for (const { id: band } of BANDS)
+      for (const day of days.slice(0, 5))
+        expect(ids(dailySix(day, band, GAMES, undefined, false)), `${band} ${day}`).toEqual(
+          ids(dailySix(day, band, GAMES)),
+        );
   });
 
   it('draws upright-ready games first, then fills from the rest of the band', () => {
-    const ready = ['word-search', 'sudoku-garden', 'island-bridges', 'pond-conga', 'brain-break', 'number-nook'];
+    const ready = [
+      'word-search',
+      'sudoku-garden',
+      'island-bridges',
+      'pond-conga',
+      'brain-break',
+      'number-nook',
+    ];
     const games = withReady(ready);
     for (const day of days) {
       const six = ids(dailySix(day, 'grownup', games, undefined, true));
@@ -180,7 +218,10 @@ describe("today's six on a phone held upright (chunk 31)", () => {
   it("still leads a grown-up's six with games made for grown-ups when none is ready", () => {
     for (const day of days) {
       const six = dailySix(day, 'grownup', GAMES, undefined, true);
-      expect(six.slice(0, GROWNUP_FIRST).every((p) => p.mod.bands.includes('grownup')), day).toBe(true);
+      expect(
+        six.slice(0, GROWNUP_FIRST).every((p) => p.mod.bands.includes('grownup')),
+        day,
+      ).toBe(true);
       expect(six, day).toHaveLength(DAILY_COUNT);
     }
   });

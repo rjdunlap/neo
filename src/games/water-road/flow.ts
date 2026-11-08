@@ -16,12 +16,63 @@ import type { View } from '../../engine/view';
 import type { Game, GameContext, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
 import {
-  abutmentArt, archPieceArt, arrowArt, arrowButtonArt, cardArt, channelArt, groundArt, hillArt, openButtonArt, pierArt, pierPlaceArt, placeArt, SKY, townArt, valleyArt, WATER,
+  abutmentArt,
+  archPieceArt,
+  arrowArt,
+  arrowButtonArt,
+  cardArt,
+  channelArt,
+  groundArt,
+  hillArt,
+  openButtonArt,
+  pierArt,
+  pierPlaceArt,
+  placeArt,
+  SKY,
+  townArt,
+  valleyArt,
+  WATER,
 } from './art';
 import {
-  abutmentsFor, ARROW, CARD, centre, chooseChannel, downhillPlan, downhillStart, END_SLOT, ENDS, firstUnsupported, heights, heightY, heldSides, moveAbutment, moveArch,
-  nextRoad, openSpring, openValley, pierHint, planFor, pressArrow, roadNow, SPAN, Tally, TRAY_ABUT, valleyHint, valleyPlan, waterBotMove, waterLayout,
-  type DownhillPlan, type DownhillState, type End, type Problem, type Pt, type Rect, type Valley, type ValleyPlan, type ValleyState, type WaterLayout,
+  abutmentsFor,
+  ARROW,
+  CARD,
+  centre,
+  chooseChannel,
+  downhillPlan,
+  downhillStart,
+  END_SLOT,
+  ENDS,
+  firstUnsupported,
+  heights,
+  heightY,
+  heldSides,
+  moveAbutment,
+  moveArch,
+  nextRoad,
+  openSpring,
+  openValley,
+  pierHint,
+  planFor,
+  pressArrow,
+  roadNow,
+  SPAN,
+  Tally,
+  TRAY_ABUT,
+  valleyHint,
+  valleyPlan,
+  waterBotMove,
+  waterLayout,
+  type DownhillPlan,
+  type DownhillState,
+  type End,
+  type Problem,
+  type Pt,
+  type Rect,
+  type Valley,
+  type ValleyPlan,
+  type ValleyState,
+  type WaterLayout,
 } from './logic';
 
 interface Piece {
@@ -81,11 +132,28 @@ export class WaterFlow implements Game {
     } else {
       const plan = valleyPlan(ctx.rng);
       this.plan = plan;
-      this.vs = { valley: 0, arcade: { arches: Array.from({ length: plan.valleys[0].spans }, () => false), abut: { near: false, far: false } }, done: false };
+      this.vs = {
+        valley: 0,
+        arcade: {
+          arches: Array.from({ length: plan.valleys[0].spans }, () => false),
+          abut: { near: false, far: false },
+        },
+        done: false,
+      };
     }
     this.reduce = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.stepSeconds = ctx.demo || this.reduce ? 0.2 : 0.55;
-    this.backdrop = new Backdrop({ sky: [SKY.top, SKY.bottom], hills: [0xe9d3b0, 0xdcc097, 0xcfae84], horizon: 0.5, clouds: 2, sun: false, seed: 313 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [SKY.top, SKY.bottom],
+        hills: [0xe9d3b0, 0xdcc097, 0xcfae84],
+        horizon: 0.5,
+        clouds: 2,
+        sun: false,
+        seed: 313,
+      },
+      ctx.view,
+    );
     for (const g of [this.water, this.glow, this.push]) g.eventMode = 'none';
     ctx.stage.addChild(this.backdrop, this.board);
   }
@@ -106,9 +174,13 @@ export class WaterFlow implements Game {
 
   start() {
     this.build();
-    void this.ctx.instruct(this.instructLine)
+    void this.ctx
+      .instruct(this.instructLine)
       .then(() => this.ctx.say('wr.history.water'))
-      .then(() => { if (this.alive && !this.finished) void this.ctx.say(this.level === 4 ? 'wr.rule.fall' : 'wr.rule.arcade'); });
+      .then(() => {
+        if (this.alive && !this.finished)
+          void this.ctx.say(this.level === 4 ? 'wr.rule.fall' : 'wr.rule.arcade');
+      });
   }
 
   destroy() {
@@ -121,7 +193,10 @@ export class WaterFlow implements Game {
     this.view = v;
     this.backdrop.resize(v);
     if (!this.layoutNow) return;
-    if (this.busy || this.finished || this.pieces.some((p) => p.handle.dragging)) { this.relayout = true; return; }
+    if (this.busy || this.finished || this.pieces.some((p) => p.handle.dragging)) {
+      this.relayout = true;
+      return;
+    }
     this.build();
   }
 
@@ -161,7 +236,15 @@ export class WaterFlow implements Game {
     node.position.copyFrom(centre(r));
     node.addChild(art);
     node.hitArea = new Rectangle(-r.w / 2, -r.h / 2, r.w, r.h);
-    onTap(node, () => { if (this.busy) return; this.dip(node); fn(); }, { cooldown: 200 });
+    onTap(
+      node,
+      () => {
+        if (this.busy) return;
+        this.dip(node);
+        fn();
+      },
+      { cooldown: 200 },
+    );
     this.board.addChild(node);
     return node;
   }
@@ -169,7 +252,9 @@ export class WaterFlow implements Game {
   /** Touch-down feedback: the button presses in for a moment. */
   private dip(node: Container) {
     if (this.ctx.tw.busy(node.scale)) return;
-    void this.ctx.tw.to(node.scale, { x: 0.92, y: 0.92 }, { duration: 0.06 }).then(() => this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.16, ease: ease.outBack }));
+    void this.ctx.tw
+      .to(node.scale, { x: 0.92, y: 0.92 }, { duration: 0.06 })
+      .then(() => this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.16, ease: ease.outBack }));
   }
 
   private buildRoad(l: WaterLayout, plan: DownhillPlan) {
@@ -183,7 +268,11 @@ export class WaterFlow implements Game {
     this.redrawRoad();
     if (plan.kind === 'cards') {
       l.cards.forEach((rect, i) => {
-        const node = this.button(rect, cardArt(CARD.w, CARD.h, [r.spring, ...r.cards![i], r.fountain], s.chosen === i ? 'chosen' : 'idle'), () => this.tapCard(i as 0 | 1));
+        const node = this.button(
+          rect,
+          cardArt(CARD.w, CARD.h, [r.spring, ...r.cards![i], r.fountain], s.chosen === i ? 'chosen' : 'idle'),
+          () => this.tapCard(i as 0 | 1),
+        );
         this.cardNodes.push(node);
       });
     } else {
@@ -204,13 +293,31 @@ export class WaterFlow implements Game {
     const road = roadNow(this.plan, this.ds);
     const r = this.plan.roads[this.ds.road];
     if (!road) {
-      for (const x of l.xs.slice(1, 3)) { const p = pierPlaceArt(l.ground); p.x = x; this.roadLayer.addChild(p); }
+      for (const x of l.xs.slice(1, 3)) {
+        const p = pierPlaceArt(l.ground);
+        p.x = x;
+        this.roadLayer.addChild(p);
+      }
       // Stubs at the spring and the fountain, waiting for a channel.
-      this.roadLayer.addChild(channelArt([{ x: l.xs[0], y: heightY(l, r.spring) }, { x: l.xs[0] + 40, y: heightY(l, r.spring) + 4 }]));
-      this.roadLayer.addChild(channelArt([{ x: l.xs[3] - 40, y: heightY(l, r.fountain) - 4 }, { x: l.xs[3], y: heightY(l, r.fountain) }]));
+      this.roadLayer.addChild(
+        channelArt([
+          { x: l.xs[0], y: heightY(l, r.spring) },
+          { x: l.xs[0] + 40, y: heightY(l, r.spring) + 4 },
+        ]),
+      );
+      this.roadLayer.addChild(
+        channelArt([
+          { x: l.xs[3] - 40, y: heightY(l, r.fountain) - 4 },
+          { x: l.xs[3], y: heightY(l, r.fountain) },
+        ]),
+      );
       return;
     }
-    road.piers.forEach((h, i) => { const p = pierArt(l.ground, heightY(l, h) + 10); p.x = l.xs[i + 1]; this.roadLayer.addChild(p); });
+    road.piers.forEach((h, i) => {
+      const p = pierArt(l.ground, heightY(l, h) + 10);
+      p.x = l.xs[i + 1];
+      this.roadLayer.addChild(p);
+    });
     this.roadLayer.addChild(channelArt(this.points()));
   }
 
@@ -236,18 +343,35 @@ export class WaterFlow implements Game {
     const springAt = { x: ends.near.x + 30, y: l.deck - 46 };
     this.board.addChild(channelArt([springAt, { x: ends.near.x + END_SLOT.w, y: l.deck - 14 }]));
     const fountainAt = { x: ends.far.x + END_SLOT.w / 2 + 10, y: l.deck - 40 };
-    this.board.addChild(channelArt([{ x: ends.far.x, y: l.deck - 12 }, { x: fountainAt.x - 24, y: l.deck - 10 }]));
+    this.board.addChild(
+      channelArt([
+        { x: ends.far.x, y: l.deck - 12 },
+        { x: fountainAt.x - 24, y: l.deck - 10 },
+      ]),
+    );
     this.board.addChild(townArt(fountainAt.x, fountainAt.y, l.deck - 14));
     const spring = new Graphics();
-    spring.roundRect(springAt.x - 30, springAt.y - 18, 52, 30, 10).fill(0xdfd3bd).stroke({ width: 4, color: 0xa89a82 });
+    spring
+      .roundRect(springAt.x - 30, springAt.y - 18, 52, 30, 10)
+      .fill(0xdfd3bd)
+      .stroke({ width: 4, color: 0xa89a82 });
     spring.ellipse(springAt.x - 4, springAt.y - 10, 18, 6).fill(WATER.fill);
     spring.eventMode = 'none';
     this.board.addChild(spring);
     this.board.addChild(this.water);
     // The places pieces go, and the tray's spots.
-    const place = (r: Rect) => { const n = new Container(); n.position.copyFrom(centre(r)); n.eventMode = 'none'; this.board.addChild(n); return n; };
+    const place = (r: Rect) => {
+      const n = new Container();
+      n.position.copyFrom(centre(r));
+      n.eventMode = 'none';
+      this.board.addChild(n);
+      return n;
+    };
     this.placeNodes = { spans: l.spans.map(place), ends: { near: place(ends.near), far: place(ends.far) } };
-    for (const r of [...l.trayArches.slice(0, valley.spans), ...l.trayAbutments.slice(0, abutmentsFor(valley))]) {
+    for (const r of [
+      ...l.trayArches.slice(0, valley.spans),
+      ...l.trayAbutments.slice(0, abutmentsFor(valley)),
+    ]) {
       const n = place(r);
       n.addChild(placeArt(r.w, r.h, 'idle'));
       n.alpha = 0.6;
@@ -255,9 +379,11 @@ export class WaterFlow implements Game {
     this.redrawPlaces();
     // The pieces, where the state has them.
     const placedSpans = s.arcade.arches.map((on, i) => (on ? i : -1)).filter((i) => i >= 0);
-    for (let k = 0; k < valley.spans; k++) this.addPiece('arch', k < placedSpans.length ? placedSpans[k] : 'tray', k);
+    for (let k = 0; k < valley.spans; k++)
+      this.addPiece('arch', k < placedSpans.length ? placedSpans[k] : 'tray', k);
     const placedEnds = ENDS.filter((e) => s.arcade.abut[e]);
-    for (let k = 0; k < abutmentsFor(valley); k++) this.addPiece('abutment', k < placedEnds.length ? placedEnds[k] : 'tray', k);
+    for (let k = 0; k < abutmentsFor(valley); k++)
+      this.addPiece('abutment', k < placedEnds.length ? placedEnds[k] : 'tray', k);
     this.openNode = this.button(l.open, openButtonArt(l.open.w, l.open.h), () => this.open());
   }
 
@@ -270,7 +396,10 @@ export class WaterFlow implements Game {
     node.position.copyFrom(this.homeOf(piece));
     this.board.addChild(node);
     piece.handle = draggable(node, this.ctx.tw, {
-      onPick: () => { sfx.pop(4); this.showPush(piece); },
+      onPick: () => {
+        sfx.pop(4);
+        this.showPush(piece);
+      },
       onMove: (x, y) => this.redrawPlaces(this.targetFor(piece, x, y)),
       onDrop: (x, y) => this.drop(piece, x, y),
     });
@@ -290,11 +419,17 @@ export class WaterFlow implements Game {
     if (!l?.ends) return null;
     let best: number | End | null = null;
     let d = p.kind === 'arch' ? SPAN.w * 0.75 : END_SLOT.w * 0.9;
-    const places: [number | End, Rect][] = p.kind === 'arch' ? l.spans.map((r, i) => [i, r] as [number, Rect]) : ENDS.map((e) => [e, l.ends![e]] as [End, Rect]);
+    const places: [number | End, Rect][] =
+      p.kind === 'arch'
+        ? l.spans.map((r, i) => [i, r] as [number, Rect])
+        : ENDS.map((e) => [e, l.ends![e]] as [End, Rect]);
     for (const [key, r] of places) {
       const c = centre(r);
       const dd = Math.hypot(c.x - x, c.y - y);
-      if (dd < d) { d = dd; best = key; }
+      if (dd < d) {
+        d = dd;
+        best = key;
+      }
     }
     if (best !== null) return best;
     const tray = [...l.trayArches, ...l.trayAbutments];
@@ -310,9 +445,10 @@ export class WaterFlow implements Game {
     if (!valley || !s || this.busy || this.finished) return false;
     const to = this.targetFor(p, x, y);
     if (to === null) return false;
-    const next = p.kind === 'arch'
-      ? moveArch(valley, s.arcade, p.where as number | 'tray', to as number | 'tray')
-      : moveAbutment(valley, s.arcade, p.where as End | 'tray', to as End | 'tray');
+    const next =
+      p.kind === 'arch'
+        ? moveArch(valley, s.arcade, p.where as number | 'tray', to as number | 'tray')
+        : moveAbutment(valley, s.arcade, p.where as End | 'tray', to as End | 'tray');
     if (!next) return false;
     this.vs = { ...s, arcade: next };
     p.where = to;
@@ -344,7 +480,10 @@ export class WaterFlow implements Game {
     if (!valley || !l || !this.vs || p.kind !== 'arch' || typeof p.where !== 'number') return;
     const held = heldSides(valley, this.vs.arcade, p.where);
     const r = l.spans[p.where];
-    for (const [side, ok] of [['left', held.near], ['right', held.far]] as const) {
+    for (const [side, ok] of [
+      ['left', held.near],
+      ['right', held.far],
+    ] as const) {
       if (ok) continue;
       const a = arrowArt(side);
       a.alpha = 0.55;
@@ -376,7 +515,9 @@ export class WaterFlow implements Game {
     const r = this.plan.roads[s.road];
     this.cardNodes.forEach((node, i) => {
       for (const c of node.removeChildren()) c.destroy({ children: true });
-      node.addChild(cardArt(CARD.w, CARD.h, [r.spring, ...r.cards![i], r.fountain], s.chosen === i ? 'chosen' : 'idle'));
+      node.addChild(
+        cardArt(CARD.w, CARD.h, [r.spring, ...r.cards![i], r.fountain], s.chosen === i ? 'chosen' : 'idle'),
+      );
     });
   }
 
@@ -384,7 +525,10 @@ export class WaterFlow implements Game {
     const s = this.ds;
     if (!s || this.finished || this.plan.level !== 4 || this.busy) return;
     const { state, bumped } = pressArrow(this.plan, s, pier, dir);
-    if (bumped) { sfx.knock(); return; }
+    if (bumped) {
+      sfx.knock();
+      return;
+    }
     this.ds = state;
     this.stuckAt = null;
     sfx.pluck(dir === 1 ? 6 : 3, 0.25);
@@ -402,7 +546,10 @@ export class WaterFlow implements Game {
     const plan = this.plan as DownhillPlan;
     const s = this.ds!;
     const o = openSpring(plan, s);
-    if (o.event === 'none') { void this.ctx.say('wr.pick'); return; }
+    if (o.event === 'none') {
+      void this.ctx.say('wr.pick');
+      return;
+    }
     const epoch = this.epoch;
     this.busy = true;
     this.stuckAt = null;
@@ -414,13 +561,18 @@ export class WaterFlow implements Game {
     for (let k = 0; k < to; k++) {
       sfx.marimba(8 - k * 2, 0.35);
       if (this.reduce) this.flow.reach = k + 1;
-      else await this.ctx.tw.to(this.flow, { reach: k + 1 }, { duration: this.stepSeconds, ease: ease.inQuad });
+      else
+        await this.ctx.tw.to(this.flow, { reach: k + 1 }, { duration: this.stepSeconds, ease: ease.inQuad });
       if (!this.live(epoch)) return;
     }
     if (o.event === 'falls') {
       const f = this.points()[3];
       sfx.splash();
-      this.ctx.particles.burst(f.x, f.y - 40, { colors: [WATER.fill, WATER.light, 0xffffff], count: 16, speed: [40, 120] });
+      this.ctx.particles.burst(f.x, f.y - 40, {
+        colors: [WATER.fill, WATER.light, 0xffffff],
+        count: 16,
+        speed: [40, 120],
+      });
       void this.ctx.say('wr.downhill');
       await this.ctx.tw.wait(this.stepSeconds * 2);
       if (!this.live(epoch)) return;
@@ -440,13 +592,21 @@ export class WaterFlow implements Game {
     this.stuckAt = o.at;
     sfx.boing();
     if (this.reduce) this.flow.pool = 1;
-    else await this.ctx.tw.to(this.flow, { pool: 1 }, { duration: this.stepSeconds * 0.8, ease: ease.outQuad });
+    else
+      await this.ctx.tw.to(this.flow, { pool: 1 }, { duration: this.stepSeconds * 0.8, ease: ease.outQuad });
     if (!this.live(epoch)) return;
     this.tallies.miss();
     await this.ctx.say(o.why === 'flat' ? 'wr.stood-still' : 'wr.went-up');
     if (!this.live(epoch)) return;
-    if (this.reduce) { this.flow.reach = 0; this.flow.pool = 0; }
-    else await this.ctx.tw.to(this.flow, { reach: 0, pool: 0 }, { duration: this.stepSeconds, ease: ease.inQuad });
+    if (this.reduce) {
+      this.flow.reach = 0;
+      this.flow.pool = 0;
+    } else
+      await this.ctx.tw.to(
+        this.flow,
+        { reach: 0, pool: 0 },
+        { duration: this.stepSeconds, ease: ease.inQuad },
+      );
     if (!this.live(epoch)) return;
     this.busy = false;
     if (this.tallies.glowing) void this.ctx.say(plan.kind === 'cards' ? 'wr.glow-channel' : 'wr.glow-pier');
@@ -479,13 +639,21 @@ export class WaterFlow implements Game {
     else {
       for (let k = 1; k <= span; k++) {
         sfx.marimba(8 - k, 0.3);
-        await this.ctx.tw.to(this.front, { x: startX + ((endX - startX) * k) / span }, { duration: this.stepSeconds * 0.6 });
+        await this.ctx.tw.to(
+          this.front,
+          { x: startX + ((endX - startX) * k) / span },
+          { duration: this.stepSeconds * 0.6 },
+        );
         if (!this.live(epoch)) return;
       }
     }
     if (r.stands) {
       sfx.splash();
-      this.ctx.particles.burst(endX + 10, l.deck - 70, { colors: [WATER.fill, WATER.light, 0xffffff], count: 16, speed: [40, 120] });
+      this.ctx.particles.burst(endX + 10, l.deck - 70, {
+        colors: [WATER.fill, WATER.light, 0xffffff],
+        count: 16,
+        speed: [40, 120],
+      });
       void this.ctx.say('wr.across');
       this.vs = { ...s, done: true };
       await this.ctx.tw.wait(this.stepSeconds * 2.2);
@@ -493,7 +661,14 @@ export class WaterFlow implements Game {
       if (s.valley + 1 < plan.valleys.length) {
         this.tallies.next();
         const next = plan.valleys[s.valley + 1];
-        this.vs = { valley: s.valley + 1, arcade: { arches: Array.from({ length: next.spans }, () => false), abut: { near: false, far: false } }, done: false };
+        this.vs = {
+          valley: s.valley + 1,
+          arcade: {
+            arches: Array.from({ length: next.spans }, () => false),
+            abut: { near: false, far: false },
+          },
+          done: false,
+        };
         this.front.x = -1;
         this.busy = false;
         this.build();
@@ -509,17 +684,31 @@ export class WaterFlow implements Game {
     if (!this.reduce) await this.ctx.tw.to(this.front, { spill: 1 }, { duration: this.stepSeconds });
     else this.front.spill = 1;
     if (!this.live(epoch)) return;
-    const slid = this.pieces.filter((p) => p.kind === 'arch' && typeof p.where === 'number' && r.slid.includes(p.where));
+    const slid = this.pieces.filter(
+      (p) => p.kind === 'arch' && typeof p.where === 'number' && r.slid.includes(p.where),
+    );
     if (slid.length) sfx.rumble();
     this.vs = { ...s, arcade: r.arcade };
     this.tallies.miss();
     void this.ctx.say(r.problem!.kind === 'end' ? 'wr.slid.end' : 'wr.slid.gap');
-    await Promise.all(slid.map(async (p) => {
-      p.where = 'tray';
-      if (this.reduce) { p.node.position.copyFrom(this.homeOf(p)); return; }
-      await this.ctx.tw.to(p.node.position, { y: p.node.y + 80 }, { duration: this.stepSeconds * 0.8, ease: ease.inQuad });
-      await this.ctx.tw.to(p.node.position, this.homeOf(p), { duration: this.stepSeconds, ease: ease.outQuad });
-    }));
+    await Promise.all(
+      slid.map(async (p) => {
+        p.where = 'tray';
+        if (this.reduce) {
+          p.node.position.copyFrom(this.homeOf(p));
+          return;
+        }
+        await this.ctx.tw.to(
+          p.node.position,
+          { y: p.node.y + 80 },
+          { duration: this.stepSeconds * 0.8, ease: ease.inQuad },
+        );
+        await this.ctx.tw.to(p.node.position, this.homeOf(p), {
+          duration: this.stepSeconds,
+          ease: ease.outQuad,
+        });
+      }),
+    );
     if (!this.live(epoch)) return;
     for (const p of this.pieces) p.handle.home = this.homeOf(p);
     await this.ctx.tw.wait(this.stepSeconds);
@@ -533,9 +722,15 @@ export class WaterFlow implements Game {
   }
 
   private sayGlow() {
-    if (this.plan.level === 4) { void this.ctx.say(this.plan.kind === 'cards' ? 'wr.glow-channel' : 'wr.glow-pier'); return; }
+    if (this.plan.level === 4) {
+      void this.ctx.say(this.plan.kind === 'cards' ? 'wr.glow-channel' : 'wr.glow-pier');
+      return;
+    }
     const h = this.valley && this.vs ? valleyHint(this.valley, this.vs.arcade) : null;
-    if (!h) { void this.ctx.say('wr.open'); return; }
+    if (!h) {
+      void this.ctx.say('wr.open');
+      return;
+    }
     void this.ctx.say(h.kind === 'span' ? 'wr.glow-arch' : h.kind === 'end' ? 'wr.glow-end' : 'wr.glow-move');
   }
 
@@ -560,38 +755,60 @@ export class WaterFlow implements Game {
   /** The pet's Help: the glow, counted once per road or valley; free when there is nothing left to fix. */
   askForHint() {
     if (this.finished || this.busy) return;
-    const nothing = this.plan.level === 4
-      ? !!this.ds && this.plan.kind === 'piers' && !pierHint(roadNow(this.plan, this.ds)!)
-      : !!this.valley && !!this.vs && !firstUnsupported(this.valley, this.vs.arcade);
-    if (nothing || (this.plan.level === 4 && !!this.ds && this.ds.chosen === this.plan.roads[this.ds.road].good)) { void this.ctx.say('wr.open'); return; }
+    const nothing =
+      this.plan.level === 4
+        ? !!this.ds && this.plan.kind === 'piers' && !pierHint(roadNow(this.plan, this.ds)!)
+        : !!this.valley && !!this.vs && !firstUnsupported(this.valley, this.vs.arcade);
+    if (
+      nothing ||
+      (this.plan.level === 4 && !!this.ds && this.ds.chosen === this.plan.roads[this.ds.road].good)
+    ) {
+      void this.ctx.say('wr.open');
+      return;
+    }
     this.tallies.help();
     this.sayGlow();
   }
 
   update(dt: number) {
     this.clock += dt;
-    if (this.relayout && !this.busy && !this.finished && !this.pieces.some((p) => p.handle.dragging)) this.build();
+    if (this.relayout && !this.busy && !this.finished && !this.pieces.some((p) => p.handle.dragging))
+      this.build();
     this.drawWater();
     this.glow.clear();
     const l = this.layoutNow;
     if (this.finished || !l) return;
     const r = 1 + 0.05 * Math.sin(this.clock * 5);
     const ring = (rect: Rect, color: number = swatch.yellow.fill) => {
-      this.glow.roundRect(rect.x - 10 * r, rect.y - 10 * r, rect.w + 20 * r, rect.h + 20 * r, 26).stroke({ width: 8, color });
+      this.glow
+        .roundRect(rect.x - 10 * r, rect.y - 10 * r, rect.w + 20 * r, rect.h + 20 * r, 26)
+        .stroke({ width: 8, color });
     };
-    if (this.problem && this.problem.until > this.clock && Math.floor(this.clock * 5) % 2 === 0) ring(this.problem.rect, swatch.red.fill);
+    if (this.problem && this.problem.until > this.clock && Math.floor(this.clock * 5) % 2 === 0)
+      ring(this.problem.rect, swatch.red.fill);
     if (this.busy || !this.tallies.glowing) return;
     if (this.plan.level === 4 && this.ds && !this.ds.done) {
-      if (this.plan.kind === 'cards') { const c = l.cards[this.plan.roads[this.ds.road].good]; if (c && this.ds.chosen !== this.plan.roads[this.ds.road].good) ring(c); else ring(l.open); return; }
+      if (this.plan.kind === 'cards') {
+        const c = l.cards[this.plan.roads[this.ds.road].good];
+        if (c && this.ds.chosen !== this.plan.roads[this.ds.road].good) ring(c);
+        else ring(l.open);
+        return;
+      }
       const h = pierHint(roadNow(this.plan, this.ds)!);
-      if (!h) { ring(l.open); return; }
+      if (!h) {
+        ring(l.open);
+        return;
+      }
       const a = l.arrows[h.pier];
       if (a) ring(h.dir === 1 ? a.up : a.down);
       return;
     }
     if (this.plan.level === 5 && this.valley && this.vs && l.ends) {
       const h = valleyHint(this.valley, this.vs.arcade);
-      if (!h) { ring(l.open); return; }
+      if (!h) {
+        ring(l.open);
+        return;
+      }
       ring(h.kind === 'span' ? l.spans[h.span] : h.kind === 'end' ? l.ends[h.end] : l.ends[h.from]);
     }
   }
@@ -602,11 +819,15 @@ export class WaterFlow implements Game {
     g.clear();
     const l = this.layoutNow;
     if (!l) return;
-    const stroke = (width: number, color: number, alpha = 1) => g.stroke({ width, color, alpha, cap: 'round', join: 'round' });
+    const stroke = (width: number, color: number, alpha = 1) =>
+      g.stroke({ width, color, alpha, cap: 'round', join: 'round' });
     if (this.plan.level === 4) {
       const pts = this.points();
       if (this.stuckAt !== null && pts[this.stuckAt + 1]) {
-        g.moveTo(pts[this.stuckAt].x, pts[this.stuckAt].y).lineTo(pts[this.stuckAt + 1].x, pts[this.stuckAt + 1].y);
+        g.moveTo(pts[this.stuckAt].x, pts[this.stuckAt].y).lineTo(
+          pts[this.stuckAt + 1].x,
+          pts[this.stuckAt + 1].y,
+        );
         stroke(44, WATER.fill, 0.35 + 0.15 * Math.sin(this.clock * 5));
       }
       if (this.flow.reach <= 0 || pts.length < 2) return;
@@ -614,7 +835,11 @@ export class WaterFlow implements Game {
       g.moveTo(pts[0].x, pts[0].y);
       for (let k = 1; k <= Math.min(full, pts.length - 1); k++) g.lineTo(pts[k].x, pts[k].y);
       const frac = this.flow.reach - full;
-      if (frac > 0 && pts[full + 1]) g.lineTo(pts[full].x + (pts[full + 1].x - pts[full].x) * frac, pts[full].y + (pts[full + 1].y - pts[full].y) * frac);
+      if (frac > 0 && pts[full + 1])
+        g.lineTo(
+          pts[full].x + (pts[full + 1].x - pts[full].x) * frac,
+          pts[full].y + (pts[full + 1].y - pts[full].y) * frac,
+        );
       stroke(10, WATER.deep);
       if (this.flow.pool > 0 && this.stuckAt !== null && pts[this.stuckAt + 1]) {
         const a = pts[this.stuckAt];
@@ -629,12 +854,17 @@ export class WaterFlow implements Game {
     }
     if (this.front.x < 0 || !l.ends) return;
     const y = l.deck - 14;
-    g.moveTo(l.ends.near.x + 30, l.deck - 46).lineTo(l.ends.near.x + END_SLOT.w, y).lineTo(Math.max(l.ends.near.x + END_SLOT.w, this.front.x), y);
+    g.moveTo(l.ends.near.x + 30, l.deck - 46)
+      .lineTo(l.ends.near.x + END_SLOT.w, y)
+      .lineTo(Math.max(l.ends.near.x + END_SLOT.w, this.front.x), y);
     stroke(10, WATER.deep);
     if (this.front.spill > 0) {
       g.moveTo(this.front.x, y).lineTo(this.front.x, y + (l.ground - y) * this.front.spill);
       stroke(14, WATER.fill, 0.85);
-      g.ellipse(this.front.x, l.ground, 50 * this.front.spill, 12 * this.front.spill).fill({ color: WATER.fill, alpha: 0.8 });
+      g.ellipse(this.front.x, l.ground, 50 * this.front.spill, 12 * this.front.spill).fill({
+        color: WATER.fill,
+        alpha: 0.8,
+      });
     }
   }
 
@@ -645,14 +875,20 @@ export class WaterFlow implements Game {
     if (!move) return null;
     if ('drag' in move) {
       const l = this.layoutNow;
-      const piece = this.pieces.find((p) => (move.drag === 'arch' ? p.kind === 'arch' : p.kind === 'abutment') && p.where === move.from);
+      const piece = this.pieces.find(
+        (p) => (move.drag === 'arch' ? p.kind === 'arch' : p.kind === 'abutment') && p.where === move.from,
+      );
       const to = typeof move.to === 'number' ? centre(l.spans[move.to]) : centre(l.ends![move.to]);
-      return piece ? { drag: { on: piece.node }, to: { on: this.ctx.stage, x: to.x, y: to.y }, pause: 0.4 } : null;
+      return piece
+        ? { drag: { on: piece.node }, to: { on: this.ctx.stage, x: to.x, y: to.y }, pause: 0.4 }
+        : null;
     }
     if (move.tap === 'open') return this.openNode ? { tap: { on: this.openNode }, pause: 1 } : null;
-    if (move.tap === 'card') { const n = this.cardNodes[move.card]; return n ? { tap: { on: n }, pause: 0.6 } : null; }
+    if (move.tap === 'card') {
+      const n = this.cardNodes[move.card];
+      return n ? { tap: { on: n }, pause: 0.6 } : null;
+    }
     const a = this.arrowNodes[move.pier];
     return a ? { tap: { on: move.dir === 1 ? a.up : a.down }, pause: 0.45 } : null;
   }
 }
-

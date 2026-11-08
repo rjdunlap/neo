@@ -79,8 +79,23 @@ export function homeLayout(v: { w: number; h: number }, young: boolean, project 
   const daily = { x: right - row, y: explore.y };
   const ball = young ? { x: Math.min(stage.x + 280, right - 2 * ACTION_RADIUS - 60), y: v.h - 90 } : null;
   // The youngest's Today's six stands well above the grass; an older Explore can sit low, so the floor (unused without the ball) keeps left of it.
-  const floor = { x0: GUIDE_CORNER.w + BALL_RADIUS, x1: (young ? right : daily.x) - ACTION_RADIUS - BALL_RADIUS - 30, y0: Math.max(backdrop.floorTop + 40, v.h - 220), y1: v.h - BALL_RADIUS - 20 };
-  return { backdrop, who: { x: BACK.x, y: BACK.y }, stage, continue: cont, play, explore, daily, ball, floor };
+  const floor = {
+    x0: GUIDE_CORNER.w + BALL_RADIUS,
+    x1: (young ? right : daily.x) - ACTION_RADIUS - BALL_RADIUS - 30,
+    y0: Math.max(backdrop.floorTop + 40, v.h - 220),
+    y1: v.h - BALL_RADIUS - 20,
+  };
+  return {
+    backdrop,
+    who: { x: BACK.x, y: BACK.y },
+    stage,
+    continue: cont,
+    play,
+    explore,
+    daily,
+    ball,
+    floor,
+  };
 }
 
 export interface PlayLayout {
@@ -113,11 +128,28 @@ export function playLayout(v: { w: number; h: number }): PlayLayout {
   const top = BACK.y + BACK.r + 130;
   const plaque = { x: v.w - 50 - 80, y: top };
   const board = { x: plaque.x - 80 - 40 - 130, y: top };
-  const floor = { x0: GUIDE_CORNER.w + BALL_RADIUS, x1: basket.x - BASKET.w / 2 - BALL_RADIUS - 30, y0: Math.max(backdrop.floorTop + 40, v.h - 220), y1: v.h - BALL_RADIUS - 20 };
+  const floor = {
+    x0: GUIDE_CORNER.w + BALL_RADIUS,
+    x1: basket.x - BASKET.w / 2 - BALL_RADIUS - 30,
+    y0: Math.max(backdrop.floorTop + 40, v.h - 220),
+    y1: v.h - BALL_RADIUS - 20,
+  };
   const books = { x: Math.round((BACK.x + HOME_BUTTON.x) / 2), y: top };
   // Midway between the plaque's foot and the basket's top, over the basket.
   const bed = { x: basket.x, y: Math.round((plaque.y + PLAQUE_H / 2 + basket.y - BASKET.h / 2) / 2) };
-  return { backdrop, back: { x: BACK.x, y: BACK.y }, home: HOME_BUTTON, stage, ball: { x: Math.round(v.w * 0.62), y: v.h - 100 }, board, plaque, basket, books, bed, floor };
+  return {
+    backdrop,
+    back: { x: BACK.x, y: BACK.y },
+    home: HOME_BUTTON,
+    stage,
+    ball: { x: Math.round(v.w * 0.62), y: v.h - 100 },
+    board,
+    plaque,
+    basket,
+    books,
+    bed,
+    floor,
+  };
 }
 
 /**
@@ -148,7 +180,10 @@ export function exploreLayout(v: { w: number; h: number }, n: number): ExploreLa
   const gap = 80;
   const step = EXPLORE_CARD + gap;
   const rows = Math.ceil(n / EXPLORE_ROW);
-  const y0 = rows === 1 ? Math.round(v.h * 0.45) : Math.max(200, Math.round(v.h * 0.42 - ((rows - 1) * EXPLORE_PITCH) / 2));
+  const y0 =
+    rows === 1
+      ? Math.round(v.h * 0.45)
+      : Math.max(200, Math.round(v.h * 0.42 - ((rows - 1) * EXPLORE_PITCH) / 2));
   const cards: Spot[] = [];
   for (let r = 0, left = n; r < rows; r++) {
     const inRow = Math.ceil(left / (rows - r));
@@ -184,8 +219,13 @@ export const EXPLORE_POSTCARD = { w: 320, h: 200 };
  * when the view is wider than tall and two by two when it is taller; Back and Home top left as in creature play, and
  * the page arrows centred under the cards, clear of the guide corner.
  */
-export function exploreGridLayout(v: { w: number; h: number }, n: number, postcard = false): ExploreGridLayout {
-  if (n < 1 || n > EXPLORE_ENTRY_MAX) throw new Error(`An Explore page holds one to ${EXPLORE_ENTRY_MAX} cards, not ${n}`);
+export function exploreGridLayout(
+  v: { w: number; h: number },
+  n: number,
+  postcard = false,
+): ExploreGridLayout {
+  if (n < 1 || n > EXPLORE_ENTRY_MAX)
+    throw new Error(`An Explore page holds one to ${EXPLORE_ENTRY_MAX} cards, not ${n}`);
   const step = EXPLORE_CARD + 80;
   // Explore's five entries take two rows (three over two) even when the view is wide: five in a row would not fit 1024.
   const perRow = v.h > v.w && n > 2 ? 2 : n > EXPLORE_ROW ? Math.ceil(n / 2) : n;
@@ -197,7 +237,8 @@ export function exploreGridLayout(v: { w: number; h: number }, n: number, postca
   if (postcard) {
     const { w, h } = EXPLORE_POSTCARD;
     const above = h + 50 + 20 + EXPLORE_CARD / 2;
-    const highest = v.w / 2 - w / 2 < HOME_BUTTON.x + CORNER_RADIUS + 20 ? HOME_BUTTON.y + CORNER_RADIUS + 10 : 40;
+    const highest =
+      v.w / 2 - w / 2 < HOME_BUTTON.x + CORNER_RADIUS + 20 ? HOME_BUTTON.y + CORNER_RADIUS + 10 : 40;
     const top = Math.max(highest, y0 - above);
     card = { x: Math.round(v.w / 2), y: top + h / 2 };
     y0 = top + above;
@@ -245,11 +286,14 @@ export interface ProjectLayout {
 export function projectLayout(v: { w: number; h: number }, n: number): ProjectLayout {
   const backdrop = backdropFit(v);
   // As low as the guide corner allows, towards the grass.
-  const basket = { x: Math.round(Math.max(GUIDE_CORNER.w + 20, v.w * 0.24)), y: Math.round(Math.min(v.h - GUIDE_CORNER.h - NEWCOMER_REACH - 20, backdrop.floorTop - 70)) };
+  const basket = {
+    x: Math.round(Math.max(GUIDE_CORNER.w + 20, v.w * 0.24)),
+    y: Math.round(Math.min(v.h - GUIDE_CORNER.h - NEWCOMER_REACH - 20, backdrop.floorTop - 70)),
+  };
   const step = PROJECT_CARD + 70;
   const left = basket.x + NEWCOMER_REACH + 40 + PROJECT_CARD / 2;
   const span = (n - 1) * step;
-  const cx = Math.max(left + span / 2, Math.min((v.w * 0.62), v.w - 40 - PROJECT_CARD / 2 - span / 2));
+  const cx = Math.max(left + span / 2, Math.min(v.w * 0.62, v.w - 40 - PROJECT_CARD / 2 - span / 2));
   const y = Math.round(Math.max(BACK.y + BACK.r + 40 + PROJECT_CARD / 2, v.h * 0.36));
   const cards = Array.from({ length: n }, (_, i) => ({ x: Math.round(cx - span / 2 + i * step), y }));
   const plays = cards.map((c) => ({ x: c.x, y: c.y + PROJECT_CARD / 2 + 30 + PROJECT_PLAY_RADIUS }));
@@ -282,7 +326,14 @@ export function endingLayout(v: { w: number; h: number }): EndingLayout {
   const names = l.cards.map((c, i) => ({ x: l.cards[1].x + (i - 1) * pitch, y: c.y }));
   const arrow = { ...l.plays[1] };
   const picture = { x: l.basket.x, y: l.basket.y - 70 - (200 * ENDING_PICTURE) / 2 - 10 };
-  const plates = { x: l.basket.x + NEWCOMER_REACH + ENDING_PLATES.w / 2 + 10, y: Math.round(l.basket.y + 60) };
-  const companion = { x: Math.round(Math.max(plates.x + ENDING_PLATES.w / 2 + 120, names[0].x)), y: Math.round(v.h - 40), scale: 0.8 };
+  const plates = {
+    x: l.basket.x + NEWCOMER_REACH + ENDING_PLATES.w / 2 + 10,
+    y: Math.round(l.basket.y + 60),
+  };
+  const companion = {
+    x: Math.round(Math.max(plates.x + ENDING_PLATES.w / 2 + 120, names[0].x)),
+    y: Math.round(v.h - 40),
+    scale: 0.8,
+  };
   return { ...l, names, arrow, picture, plates, companion };
 }

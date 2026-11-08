@@ -3,14 +3,38 @@ import { Rng } from '../../engine/random';
 import { FAMILIES } from '../rhyme-time/logic';
 import { OWN_PICTURES } from './art';
 import { MIN_TAP_GAP } from '../../engine/ghost';
-import { answerOf, byCount, CARS, COMPARE_PLAN, clapsToGo, clapsWord, fitsCar, makeQuestions, nextForTrain, nextToSort, PAUSE, PLANS, SHORT_PLAN, pictureToTap, planFor, syllables, trainCounts, waitFill, WORDS, type Word } from './logic';
+import {
+  answerOf,
+  byCount,
+  CARS,
+  COMPARE_PLAN,
+  clapsToGo,
+  clapsWord,
+  fitsCar,
+  makeQuestions,
+  nextForTrain,
+  nextToSort,
+  PAUSE,
+  PLANS,
+  SHORT_PLAN,
+  pictureToTap,
+  planFor,
+  syllables,
+  trainCounts,
+  waitFill,
+  WORDS,
+  type Word,
+} from './logic';
 
 const rhymeWords = new Set(Object.values(FAMILIES).flat());
 
 describe('the words', () => {
   it('spell themselves from their beats, with no empty beat and no word twice', () => {
     for (const x of WORDS) {
-      expect(x.parts.every((p) => p.length > 0), x.word).toBe(true);
+      expect(
+        x.parts.every((p) => p.length > 0),
+        x.word,
+      ).toBe(true);
       expect(x.parts.join('')).toBe(x.word);
       expect(syllables(x)).toBe(x.parts.length);
     }
@@ -27,10 +51,14 @@ describe('the words', () => {
   });
 
   it('keeps dialect-dependent counts out (words whose beats people say differently)', () => {
-    for (const x of ['fire', 'hour', 'every', 'chocolate', 'family', 'camera', 'vegetable', 'different']) expect(WORDS.some((y) => y.word === x), x).toBe(false);
+    for (const x of ['fire', 'hour', 'every', 'chocolate', 'family', 'camera', 'vegetable', 'different'])
+      expect(
+        WORDS.some((y) => y.word === x),
+        x,
+      ).toBe(false);
   });
 
-  it('every word has a picture: one of Rhyme Time\'s or one drawn here', () => {
+  it("every word has a picture: one of Rhyme Time's or one drawn here", () => {
     for (const x of WORDS) expect(rhymeWords.has(x.word) || OWN_PICTURES.includes(x.word), x.word).toBe(true);
   });
 });
@@ -66,7 +94,8 @@ describe('the levels', () => {
         const [q] = makeQuestions(plan, new Rng(seed));
         expect(q.words).toHaveLength(plan.count);
         const counts = q.words.map(syllables);
-        for (let n = 1; n <= plan.max; n++) expect(counts.filter((c) => c === n).length).toBeGreaterThanOrEqual(1);
+        for (let n = 1; n <= plan.max; n++)
+          expect(counts.filter((c) => c === n).length).toBeGreaterThanOrEqual(1);
         expect(new Set(q.words.map((x) => x.word)).size).toBe(plan.count);
       }
     }
@@ -112,7 +141,8 @@ describe('the levels', () => {
   });
 
   it('is the same for the same seed', () => {
-    for (const plan of PLANS) expect(makeQuestions(plan, new Rng(7))).toEqual(makeQuestions(plan, new Rng(7)));
+    for (const plan of PLANS)
+      expect(makeQuestions(plan, new Rng(7))).toEqual(makeQuestions(plan, new Rng(7)));
   });
 });
 
@@ -188,8 +218,20 @@ describe('the beat train', () => {
   it('accepts the fewest-to-most order, in any loading order, and nothing out of order', () => {
     const words = [word('banana'), word('cat'), word('apple')];
     expect(trainCounts(words)).toEqual([1, 2, 3]);
-    expect(loads(words, [{ word: word('cat'), car: 0 }, { word: word('apple'), car: 1 }, { word: word('banana'), car: 2 }])).toBe(true);
-    expect(loads(words, [{ word: word('banana'), car: 2 }, { word: word('cat'), car: 0 }, { word: word('apple'), car: 1 }])).toBe(true);
+    expect(
+      loads(words, [
+        { word: word('cat'), car: 0 },
+        { word: word('apple'), car: 1 },
+        { word: word('banana'), car: 2 },
+      ]),
+    ).toBe(true);
+    expect(
+      loads(words, [
+        { word: word('banana'), car: 2 },
+        { word: word('cat'), car: 0 },
+        { word: word('apple'), car: 1 },
+      ]),
+    ).toBe(true);
     expect(fitsCar(words, [undefined, undefined, undefined], word('banana'), 0)).toBe(false);
     expect(fitsCar(words, [undefined, undefined, undefined], word('cat'), 2)).toBe(false);
     // A full car takes nothing more, even a picture that would fit its place.
@@ -198,8 +240,20 @@ describe('the beat train', () => {
 
   it('takes two pictures with the same claps either way round', () => {
     const words = [word('dog'), word('apple'), word('cat')];
-    expect(loads(words, [{ word: word('cat'), car: 0 }, { word: word('dog'), car: 1 }, { word: word('apple'), car: 2 }])).toBe(true);
-    expect(loads(words, [{ word: word('dog'), car: 0 }, { word: word('cat'), car: 1 }, { word: word('apple'), car: 2 }])).toBe(true);
+    expect(
+      loads(words, [
+        { word: word('cat'), car: 0 },
+        { word: word('dog'), car: 1 },
+        { word: word('apple'), car: 2 },
+      ]),
+    ).toBe(true);
+    expect(
+      loads(words, [
+        { word: word('dog'), car: 0 },
+        { word: word('cat'), car: 1 },
+        { word: word('apple'), car: 2 },
+      ]),
+    ).toBe(true);
   });
 
   it('the hint and the ghost finger always name a picture that fits the next car, and fill the train', () => {
@@ -226,7 +280,6 @@ describe('the beat train', () => {
     expect(nextForTrain(words, cars, cards)).toEqual({ card: cards[1], car: 0 });
   });
 });
-
 
 describe('longer or shorter, level 8', () => {
   it('keeps existing level IDs and skips unbuilt level 7 in school progression', async () => {
@@ -273,7 +326,6 @@ describe('longer or shorter, level 8', () => {
     expect([...counts].sort()).toEqual([1, 2, 3, 4]);
   });
 });
-
 
 describe('short preschool entry, stable level 9', () => {
   it('has exactly two distinct words, one of each count, seeded and playable by the finger', () => {

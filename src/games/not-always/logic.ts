@@ -13,9 +13,17 @@ export const PARTS: readonly Part[] = ['hat', 'wings', 'spots'];
 export type Attr = Color | Part;
 export const ATTRS: readonly Attr[] = [...COLORS, ...PARTS];
 
-export interface Card { color: Color; hat: boolean; wings: boolean; spots: boolean }
+export interface Card {
+  color: Color;
+  hat: boolean;
+  wings: boolean;
+  spots: boolean;
+}
 /** No other quantifier exists: *not all* is only the sign's change after a break. */
-export interface Claim { q: 'every' | 'none'; attr: Attr }
+export interface Claim {
+  q: 'every' | 'none';
+  attr: Attr;
+}
 
 /** The four things a card can differ on; a colour claim is about the `color` dimension. */
 type Dim = 'color' | Part;
@@ -30,12 +38,15 @@ export function holds(card: Card, attr: Attr): boolean {
 /** The cards (by index) that show the claim is not so. */
 export function breakers(row: readonly Card[], claim: Claim): number[] {
   const out: number[] = [];
-  row.forEach((c, i) => { if (holds(c, claim.attr) !== (claim.q === 'every')) out.push(i); });
+  row.forEach((c, i) => {
+    if (holds(c, claim.attr) !== (claim.q === 'every')) out.push(i);
+  });
   return out;
 }
 
 export const isTrue = (row: readonly Card[], claim: Claim) => breakers(row, claim).length === 0;
-export const sameCard = (a: Card, b: Card) => a.color === b.color && a.hat === b.hat && a.wings === b.wings && a.spots === b.spots;
+export const sameCard = (a: Card, b: Card) =>
+  a.color === b.color && a.hat === b.hat && a.wings === b.wings && a.spots === b.spots;
 export const sameClaim = (a: Claim, b: Claim) => a.q === b.q && a.attr === b.attr;
 
 /** The card is the only one in the row that differs on `d`, with every other card the same there. */
@@ -53,11 +64,21 @@ export function hasDecoy(row: readonly Card[], claim: Claim): boolean {
 }
 
 export type Mode = 'break' | 'stamp' | 'mend';
-export interface Plan { level: number; name: string; mode: Mode; cards: number }
+export interface Plan {
+  level: number;
+  name: string;
+  mode: Mode;
+  cards: number;
+}
 export const PLANS: readonly Plan[] = [
   { level: 1, name: 'Not all of them: tap the card that breaks each claim', mode: 'break', cards: 4 },
   { level: 2, name: 'Every one? Tap a card that breaks it, or stamp it true', mode: 'stamp', cards: 5 },
-  { level: 3, name: 'Say it better: break the claim, then choose one true of every card', mode: 'mend', cards: 4 },
+  {
+    level: 3,
+    name: 'Say it better: break the claim, then choose one true of every card',
+    mode: 'mend',
+    cards: 4,
+  },
 ];
 export const LEVELS: BandLevels = { prek: { min: 1, max: 2 }, school: { min: 1, max: 3 } };
 export const planFor = (level: number): Plan => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
@@ -70,33 +91,58 @@ export interface Round {
   mends: Claim[][];
 }
 
-const card = (color: Color, hat: boolean, wings: boolean, spots: boolean): Card => ({ color, hat, wings, spots });
+const card = (color: Color, hat: boolean, wings: boolean, spots: boolean): Card => ({
+  color,
+  hat,
+  wings,
+  spots,
+});
 const every = (attr: Attr): Claim => ({ q: 'every', attr });
 const none = (attr: Attr): Claim => ({ q: 'none', attr });
 
 /** Level 1's authored round, the definition's table: A, B, C, D and their claims in order. */
 export const AUTHORED_1: Round = {
   level: 1,
-  cards: [card('red', true, false, false), card('red', true, true, false), card('red', false, true, false), card('blue', true, true, false)],
+  cards: [
+    card('red', true, false, false),
+    card('red', true, true, false),
+    card('red', false, true, false),
+    card('blue', true, true, false),
+  ],
   claims: [every('hat'), every('red'), every('wings')],
   mends: [],
 };
 /** Level 2's authored round: all wear hats (true, second); not all red (blue and yellow break it); not all have wings (one). */
 export const AUTHORED_2: Round = {
   level: 2,
-  cards: [card('red', true, true, false), card('red', true, false, false), card('red', true, true, true), card('blue', true, true, false), card('yellow', true, true, false)],
+  cards: [
+    card('red', true, true, false),
+    card('red', true, false, false),
+    card('red', true, true, true),
+    card('blue', true, true, false),
+    card('yellow', true, true, false),
+  ],
   claims: [every('red'), every('hat'), every('wings')],
   mends: [],
 };
 /** Level 3's authored round: hats broken by the bare one (true mend: none have spots), red broken by the blue one (true mend: none are yellow). */
 export const AUTHORED_3: Round = {
   level: 3,
-  cards: [card('red', true, true, false), card('blue', true, true, false), card('red', false, true, false), card('red', true, false, false)],
+  cards: [
+    card('red', true, true, false),
+    card('blue', true, true, false),
+    card('red', false, true, false),
+    card('red', true, false, false),
+  ],
   claims: [every('hat'), every('red')],
-  mends: [[none('hat'), none('spots'), every('blue')], [every('hat'), none('red'), none('yellow')]],
+  mends: [
+    [none('hat'), none('spots'), every('blue')],
+    [every('hat'), none('red'), none('yellow')],
+  ],
 };
 
-const randomCard = (rng: Rng): Card => card(rng.pick(COLORS), rng.chance(0.5), rng.chance(0.5), rng.chance(0.5));
+const randomCard = (rng: Rng): Card =>
+  card(rng.pick(COLORS), rng.chance(0.5), rng.chance(0.5), rng.chance(0.5));
 
 function distinctRow(_rng: Rng, n: number, make: () => Card): Card[] | null {
   const row: Card[] = [];
@@ -114,11 +160,16 @@ function level1(rng: Rng): Round {
     const cards = distinctRow(rng, 4, () => randomCard(rng));
     if (!cards) continue;
     // Claims with exactly one breaker, at most one per dimension, each passing the decoy rule.
-    const ok = rng.shuffle(everyClaims()).filter((c) => breakers(cards, c).length === 1 && hasDecoy(cards, c));
+    const ok = rng
+      .shuffle(everyClaims())
+      .filter((c) => breakers(cards, c).length === 1 && hasDecoy(cards, c));
     const chosen: Claim[] = [];
     for (const c of ok) {
       if (chosen.length === 3) break;
-      if (chosen.some((k) => dimOf(k.attr) === dimOf(c.attr) || breakers(cards, k)[0] === breakers(cards, c)[0])) continue;
+      if (
+        chosen.some((k) => dimOf(k.attr) === dimOf(c.attr) || breakers(cards, k)[0] === breakers(cards, c)[0])
+      )
+        continue;
       chosen.push(c);
     }
     if (chosen.length === 3) return { level: 1, cards, claims: chosen, mends: [] };
@@ -136,7 +187,9 @@ function level2(rng: Rng): Round {
     }
     const fixed = (c: Card): Card => {
       const out = { ...c };
-      for (const a of trueAttrs) if (COLORS.includes(a as Color)) out.color = a as Color; else out[a as Part] = true;
+      for (const a of trueAttrs)
+        if (COLORS.includes(a as Color)) out.color = a as Color;
+        else out[a as Part] = true;
       return out;
     };
     const cards = distinctRow(rng, 5, () => fixed(randomCard(rng)));
@@ -161,10 +214,16 @@ function level2(rng: Rng): Round {
 
 /** The three mended claims for a broken one: the true one, `none` on the broken attribute, and an `every` with a breaker on a third. */
 export function mendsFor(cards: readonly Card[], broken: Claim, rng: Rng): Claim[] | null {
-  const universals = ATTRS.flatMap((a) => [every(a), none(a)]).filter((c) => isTrue(cards, c) && dimOf(c.attr) !== dimOf(broken.attr));
+  const universals = ATTRS.flatMap((a) => [every(a), none(a)]).filter(
+    (c) => isTrue(cards, c) && dimOf(c.attr) !== dimOf(broken.attr),
+  );
   if (universals.length === 0) return null;
   const truth = rng.pick(universals);
-  const third = rng.shuffle(everyClaims()).find((c) => !isTrue(cards, c) && dimOf(c.attr) !== dimOf(broken.attr) && dimOf(c.attr) !== dimOf(truth.attr));
+  const third = rng
+    .shuffle(everyClaims())
+    .find(
+      (c) => !isTrue(cards, c) && dimOf(c.attr) !== dimOf(broken.attr) && dimOf(c.attr) !== dimOf(truth.attr),
+    );
   if (!third) return null;
   return rng.shuffle([truth, none(broken.attr), third]);
 }
@@ -193,7 +252,12 @@ export function makeRound(level: number, rng: Rng, authored = false): Round {
   const lv = planFor(level).level;
   if (authored) {
     const a = lv === 1 ? AUTHORED_1 : lv === 2 ? AUTHORED_2 : AUTHORED_3;
-    return { level: a.level, cards: a.cards.map((c) => ({ ...c })), claims: a.claims.map((c) => ({ ...c })), mends: a.mends.map((m) => m.map((c) => ({ ...c }))) };
+    return {
+      level: a.level,
+      cards: a.cards.map((c) => ({ ...c })),
+      claims: a.claims.map((c) => ({ ...c })),
+      mends: a.mends.map((m) => m.map((c) => ({ ...c }))),
+    };
   }
   return lv === 1 ? level1(rng) : lv === 2 ? level2(rng) : level3(rng);
 }
@@ -207,7 +271,8 @@ export function glowFor(row: readonly Card[], claim: Claim): Target {
   return br.length ? { kind: 'card', i: br[0] } : { kind: 'stamp' };
 }
 /** The hint target for a mend: the true option. */
-export const trueMend = (row: readonly Card[], options: readonly Claim[]): number => options.findIndex((c) => isTrue(row, c));
+export const trueMend = (row: readonly Card[], options: readonly Claim[]): number =>
+  options.findIndex((c) => isTrue(row, c));
 
 export type Outcome =
   /** Nothing counted: a tap while nothing is asked, or a card tap during the mend. */
@@ -236,9 +301,15 @@ export class Play {
 
   constructor(readonly round: Round) {}
 
-  get current(): Claim { return this.round.claims[this.claim]; }
-  get options(): Claim[] { return this.round.mends[this.claim] ?? []; }
-  get mode(): Mode { return planFor(this.round.level).mode; }
+  get current(): Claim {
+    return this.round.claims[this.claim];
+  }
+  get options(): Claim[] {
+    return this.round.mends[this.claim] ?? [];
+  }
+  get mode(): Mode {
+    return planFor(this.round.level).mode;
+  }
 
   /** What the glow and the ghost finger point at now. */
   target(): Target | null {
@@ -251,7 +322,11 @@ export class Play {
     this.misses++;
     this.stepMisses++;
     let glow = false;
-    if (this.stepMisses >= 2 && !this.glowing) { this.glowing = true; this.hints++; glow = true; }
+    if (this.stepMisses >= 2 && !this.glowing) {
+      this.glowing = true;
+      this.hints++;
+      glow = true;
+    }
     return { kind: 'miss', why, card, glow };
   }
 
@@ -296,15 +371,25 @@ export class Play {
 
 // Layout ------------------------------------------------------------------------------------------------------------
 
-export interface Rect { x: number; y: number; w: number; h: number }
-export const CARD_W = 150, CARD_H = 180, GAP = 16;
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+export const CARD_W = 150,
+  CARD_H = 180,
+  GAP = 16;
 export const STAMP = 130;
-export const MEND_W = 220, MEND_H = 120;
-export const SIGN_W = 240, SIGN_H = 110;
+export const MEND_W = 220,
+  MEND_H = 120;
+export const SIGN_W = 240,
+  SIGN_H = 110;
 /** The pet's bottom-left corner, kept clear. */
 export const PET_CORNER = 150;
 /** The friend on its crate: feet on `friend` (its centre bottom), `FRIEND_H` tall with the crate under the feet. */
-export const FRIEND_H = 150, CRATE_H = 46;
+export const FRIEND_H = 150,
+  CRATE_H = 46;
 
 export interface NotAlwaysLayout {
   sign: Rect;
@@ -328,14 +413,21 @@ export function notAlwaysLayout(view: { w: number; h: number }, level: number): 
   const cards: Rect[] = [];
   perRow.forEach((n, r) => {
     const rowW = n * CARD_W + (n - 1) * GAP;
-    for (let k = 0; k < n; k++) cards.push({ x: cx - rowW / 2 + k * (CARD_W + GAP), y: top + r * (CARD_H + GAP), w: CARD_W, h: CARD_H });
+    for (let k = 0; k < n; k++)
+      cards.push({
+        x: cx - rowW / 2 + k * (CARD_W + GAP),
+        y: top + r * (CARD_H + GAP),
+        w: CARD_W,
+        h: CARD_H,
+      });
   });
   const below = top + perRow.length * (CARD_H + GAP) + 4;
   const stamp = plan.mode === 'stamp' ? { x: cx - STAMP / 2, y: below, w: STAMP, h: STAMP } : null;
   const mends: Rect[] = [];
   if (plan.mode === 'mend') {
     const rowW = 3 * MEND_W + 2 * GAP;
-    for (let j = 0; j < 3; j++) mends.push({ x: cx - rowW / 2 + j * (MEND_W + GAP), y: below, w: MEND_W, h: MEND_H });
+    for (let j = 0; j < 3; j++)
+      mends.push({ x: cx - rowW / 2 + j * (MEND_W + GAP), y: below, w: MEND_W, h: MEND_H });
   }
   return { sign, friend, foot, cards, stamp, mends };
 }

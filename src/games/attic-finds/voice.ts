@@ -1,7 +1,9 @@
 // What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
 export const VOICE = {
   'game.attic-finds': ['Attic finds!'],
-  'attic-finds.instruct-try': ['Something is in the attic! Look all over, turn it, then try it. What does it do?'],
+  'attic-finds.instruct-try': [
+    'Something is in the attic! Look all over, turn it, then try it. What does it do?',
+  ],
   'attic-finds.instruct-prove': ['The crank makes it bob. Show me the part that proves it!'],
   'attic-finds.which-happened': ['Which one happened? Tap the picture.'],
   'attic-finds.bobbed-bird': ['It bobbed! The bird went up and down.'],
@@ -25,8 +27,12 @@ export const VOICE = {
   'attic-finds.peek': ['Look inside! The handle pushes the rod, and the rod lifts the {mover}.'],
   'attic-finds.finish-ready': ["All done? Tap the shelf when you're ready. Or keep turning!"],
   'attic-finds.lever-done': ['Onto the shelf! Up and down, up and down.'],
-  'attic-finds.instruct-same': ['Try the things on the rug. Put every one that can do the job in the cart, then tap Check.'],
-  'attic-finds.instruct-context': ['The job changes each time! Try the things, then put every one that can do this job in the cart.'],
+  'attic-finds.instruct-same': [
+    'Try the things on the rug. Put every one that can do the job in the cart, then tap Check.',
+  ],
+  'attic-finds.instruct-context': [
+    'The job changes each time! Try the things, then put every one that can do this job in the cart.',
+  ],
   'attic-finds.job-leaves': ['Our friend needs the leaves carried to the window box.'],
   'attic-finds.job-acorns': ['Now a heap of acorns to carry.'],
   'attic-finds.job-water': ['Now water for the thirsty plant!'],
@@ -46,16 +52,28 @@ export const VOICE = {
   'attic-finds.empty-cart': ['Put the things that can do it in the cart first.'],
   'attic-finds.one-more': ['Those can do it! One more on the rug can too. Can you find it?'],
   'attic-finds.hint-tools': ['These ones can do it. Look at what they have.'],
-  'attic-finds.same-leaves': ['A basket and a tray. They look different, but they do the same job: each has a floor to hold the leaves.'],
-  'attic-finds.same-acorns': ['A basket and a pail. Different shapes, same job: tall sides keep the acorns in.'],
+  'attic-finds.same-leaves': [
+    'A basket and a tray. They look different, but they do the same job: each has a floor to hold the leaves.',
+  ],
+  'attic-finds.same-acorns': [
+    'A basket and a pail. Different shapes, same job: tall sides keep the acorns in.',
+  ],
   'attic-finds.context-leaves': ['All three have a floor, so all three can carry leaves.'],
-  'attic-finds.context-acorns': ["Acorns roll off the tray's low edge, so only the basket and the pail can carry them."],
+  'attic-finds.context-acorns': [
+    "Acorns roll off the tray's low edge, so only the basket and the pail can carry them.",
+  ],
   'attic-finds.context-water': ['Only the pail keeps water in. A different job needs different things.'],
   'attic-finds.jobs-done': ['Every job done!'],
-  'attic-finds.instruct-sources': ["The museum wants to borrow our bird box! Let's see what the papers show. Drag the paper that shows each card into its slot, then tap Check."],
-  'attic-finds.instruct-tell': ["Can the papers tell us? Stamp each card: the papers show it, or can't tell."],
+  'attic-finds.instruct-sources': [
+    "The museum wants to borrow our bird box! Let's see what the papers show. Drag the paper that shows each card into its slot, then tap Check.",
+  ],
+  'attic-finds.instruct-tell': [
+    "Can the papers tell us? Stamp each card: the papers show it, or can't tell.",
+  ],
   'attic-finds.paper-list': ["Hilltop House's storeroom list: a bird box, a lantern and a pail."],
-  'attic-finds.paper-drawing': ['A drawing from the island fair. Someone is cranking a bird box, and the bird pops up!'],
+  'attic-finds.paper-drawing': [
+    'A drawing from the island fair. Someone is cranking a bird box, and the bird pops up!',
+  ],
   'attic-finds.paper-poster': ["The toy shop's poster: bird boxes for sale! Every child will love one!"],
   'attic-finds.claim-hilltop-had': ['A bird box was in Hilltop House.'],
   'attic-finds.claim-fair-cranked': ['Someone cranked a bird box at the fair.'],
@@ -64,13 +82,17 @@ export const VOICE = {
   'attic-finds.claim-seaside-had': ['Seaside House had a bird box.'],
   'attic-finds.claim-seaside-none': ['Seaside House had no bird box.'],
   'attic-finds.claim-all-loved': ['Every child on the island loved bird boxes.'],
-  'attic-finds.why-list-crank': ["The list shows a bird box was in Hilltop House. It doesn't show anyone cranking it."],
+  'attic-finds.why-list-crank': [
+    "The list shows a bird box was in Hilltop House. It doesn't show anyone cranking it.",
+  ],
   'attic-finds.why-list-shop': ["That's Hilltop House's list, not the shop's."],
   'attic-finds.why-drawing-hilltop': ['The drawing is from the fair, not Hilltop House.'],
   'attic-finds.why-drawing-shop': ['The drawing shows the fair, not the shop.'],
   'attic-finds.why-poster-house': ["The poster is selling bird boxes. It doesn't say which house had one."],
   'attic-finds.why-poster-crank': ["The poster is selling bird boxes. It doesn't show anyone cranking one."],
-  'attic-finds.why-hilltop-crank': ['The list shows the box was there, and the drawing is from the fair. Nothing shows Hilltop House cranking it.'],
+  'attic-finds.why-hilltop-crank': [
+    'The list shows the box was there, and the drawing is from the fair. Nothing shows Hilltop House cranking it.',
+  ],
   'attic-finds.why-seaside': ["None of the papers is from Seaside House. No paper doesn't mean no bird box."],
   'attic-finds.why-all-loved': ["Only the shop's poster says so, and the shop wanted to sell them."],
   'attic-finds.look-list': ["Look at Hilltop House's list: the bird box is on it."],
@@ -83,7 +105,9 @@ export const VOICE = {
   'attic-finds.hint-case': ['Look what glows.'],
   'attic-finds.board-done': ['On the shelf it goes!'],
   'attic-finds.case-done': ['Both boards are on the shelf. The papers told us what they could!'],
-  'attic-finds.instruct-mend': ['The museum wrote a card for the bird box, but it says too much. Tap each line and choose one the papers really show. Then pick a paper that could answer the question.'],
+  'attic-finds.instruct-mend': [
+    'The museum wrote a card for the bird box, but it says too much. Tap each line and choose one the papers really show. Then pick a paper that could answer the question.',
+  ],
   'attic-finds.caption-shop-said': ['The toy shop said every child would love one.'],
   'attic-finds.caption-hilltop-loved': ['The children at Hilltop House loved theirs.'],
   'attic-finds.caption-crank-every-home': ['Children cranked bird boxes in every home.'],

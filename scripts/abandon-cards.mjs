@@ -13,7 +13,9 @@ const islandUrl = (url) => (new URL(url).pathname === '/' ? new URL('classic/', 
 const only = process.env.GAME_ONLY?.split(',');
 const rounds = Number(process.env.ROUNDS || 3);
 const browser = await launchTestBrowser();
-const page = await (await createTestContext(browser, { viewport: { width: 1024, height: 768 }, reducedMotion: 'reduce' })).newPage();
+const page = await (
+  await createTestContext(browser, { viewport: { width: 1024, height: 768 }, reducedMotion: 'reduce' })
+).newPage();
 const errors = [];
 page.on('pageerror', (e) => {
   errors.push(e.stack || e.message);
@@ -21,16 +23,31 @@ page.on('pageerror', (e) => {
 });
 await page.goto(islandUrl(process.env.GAME_URL || 'http://localhost:5173'));
 await page.waitForFunction(() => window.neo?.scene && !neo.switching && window.kit);
-const games = await page.evaluate(async () => (await import('/src/games/registry.ts')).GAMES.map((g) => ({ id: g.id, band: g.bands.at(-1), levels: g.levels(g.bands.at(-1)), demo: !!g.touchDemo })));
+const games = await page.evaluate(async () =>
+  (await import('/src/games/registry.ts')).GAMES.map((g) => ({
+    id: g.id,
+    band: g.bands.at(-1),
+    levels: g.levels(g.bands.at(-1)),
+    demo: !!g.touchDemo,
+  })),
+);
 const picked = games.filter((g) => (only ? only.includes(g.id) : g.demo));
 await page.evaluate(() => {
-  kit.store.data.profile.name = 'Mia'; kit.store.data.settings.howToCards = true;
+  kit.store.data.profile.name = 'Mia';
+  kit.store.data.settings.howToCards = true;
 });
 let opened = 0;
 for (let r = 0; r < rounds; r++) {
   for (const g of picked) {
     const level = g.levels.min + Math.floor(Math.random() * (g.levels.max - g.levels.min + 1));
-    await page.evaluate(({ id, band, level }) => { kit.store.data.profile.band = band; kit.store.stats(id).pinned = level; neo.go.game(id, band); }, { id: g.id, band: g.band, level });
+    await page.evaluate(
+      ({ id, band, level }) => {
+        kit.store.data.profile.band = band;
+        kit.store.stats(id).pinned = level;
+        neo.go.game(id, band);
+      },
+      { id: g.id, band: g.band, level },
+    );
     await page.waitForFunction((id) => !neo.switching && neo.scene.mod?.id === id, g.id).catch(() => {});
     await page.waitForTimeout(100 + Math.random() * 2500);
     opened++;

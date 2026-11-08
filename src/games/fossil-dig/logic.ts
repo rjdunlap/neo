@@ -15,8 +15,16 @@ export type LeafId = 'star' | 'ribbon' | 'saw-star';
 export type FlagId = 'red' | 'blue' | 'yellow';
 export type CaseId = 'L1-star' | 'L1-ribbon' | 'L2-saw' | 'L2-star';
 
-export interface Pt { x: number; y: number }
-export interface Leaf { id: LeafId; name: string; outline: Outline; margin: Margin }
+export interface Pt {
+  x: number;
+  y: number;
+}
+export interface Leaf {
+  id: LeafId;
+  name: string;
+  outline: Outline;
+  margin: Margin;
+}
 
 export const LEAVES: readonly Leaf[] = [
   { id: 'star', name: 'star leaf', outline: 'lobed', margin: 'smooth' },
@@ -25,7 +33,13 @@ export const LEAVES: readonly Leaf[] = [
 ];
 export const leafOf = (id: LeafId): Leaf => LEAVES.find((l) => l.id === id)!;
 
-export interface Case { id: CaseId; level: 1 | 2; find: LeafId; references: [LeafId, LeafId]; feature: Feature }
+export interface Case {
+  id: CaseId;
+  level: 1 | 2;
+  find: LeafId;
+  references: [LeafId, LeafId];
+  feature: Feature;
+}
 
 export const CASES: readonly Case[] = [
   { id: 'L1-star', level: 1, find: 'star', references: ['star', 'ribbon'], feature: 'outline' },
@@ -36,7 +50,8 @@ export const CASES: readonly Case[] = [
 export const caseOf = (id: CaseId): Case => CASES.find((c) => c.id === id)!;
 
 /** The comparison: the find and a reference agree on the one feature asked about. A plain lookup, never a score. */
-export const matches = (find: Leaf, reference: Leaf, feature: Feature): boolean => find[feature] === reference[feature];
+export const matches = (find: Leaf, reference: Leaf, feature: Feature): boolean =>
+  find[feature] === reference[feature];
 
 /** The reference that matches the find on the case's feature. */
 export function answer(c: Case): LeafId {
@@ -45,7 +60,11 @@ export function answer(c: Case): LeafId {
 }
 
 /** The three dig squares, left to right, each with a flag that differs from the others in colour and shape. */
-export interface Flag { id: FlagId; shape: 'circle' | 'triangle' | 'square'; name: string }
+export interface Flag {
+  id: FlagId;
+  shape: 'circle' | 'triangle' | 'square';
+  name: string;
+}
 export const FLAGS: readonly Flag[] = [
   { id: 'red', shape: 'circle', name: 'red circle' },
   { id: 'blue', shape: 'triangle', name: 'blue triangle' },
@@ -66,14 +85,18 @@ export const SHOWN_AT = 0.7;
 /** How near a cell's centre must come to the print's outline to belong to the print. */
 const NEAR = 25;
 
-export const cellCenter = (i: number): Pt => ({ x: -STONE_W / 2 + CELL / 2 + (i % COLS) * CELL, y: -STONE_H / 2 + CELL / 2 + Math.floor(i / COLS) * CELL });
+export const cellCenter = (i: number): Pt => ({
+  x: -STONE_W / 2 + CELL / 2 + (i % COLS) * CELL,
+  y: -STONE_H / 2 + CELL / 2 + Math.floor(i / COLS) * CELL,
+});
 
 /** A leaf's outline in stone units, centred on the stone: five rounded lobes, or a narrow tilted lens; teeth if toothed. */
 export function leafOutline(id: LeafId): Pt[] {
   const leaf = leafOf(id);
   const pts: Pt[] = [];
   if (leaf.outline === 'lobed') {
-    const R = 128, n = 180;
+    const R = 128,
+      n = 180;
     for (let k = 0; k < n; k++) {
       const a = (k / n) * Math.PI * 2;
       let r = R * (0.68 + 0.32 * Math.cos(5 * (a + Math.PI / 2)));
@@ -82,9 +105,13 @@ export function leafOutline(id: LeafId): Pt[] {
     }
     return pts;
   }
-  const L = 175, W = 62, tilt = -0.32, n = 90;
+  const L = 175,
+    W = 62,
+    tilt = -0.32,
+    n = 90;
   const side = (t: number, s: number): Pt => {
-    const x = L * t, y = s * W * (1 - t * t);
+    const x = L * t,
+      y = s * W * (1 - t * t);
     return { x: x * Math.cos(tilt) - y * Math.sin(tilt), y: x * Math.sin(tilt) + y * Math.cos(tilt) };
   };
   for (let k = 0; k <= n; k++) pts.push(side(-1 + (2 * k) / n, -1));
@@ -102,8 +129,9 @@ export function edgePoint(id: LeafId): Pt {
 function insidePoly(p: Pt, poly: Pt[]): boolean {
   let inside = false;
   for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
-    const a = poly[i], b = poly[j];
-    if ((a.y > p.y) !== (b.y > p.y) && p.x < ((b.x - a.x) * (p.y - a.y)) / (b.y - a.y) + a.x) inside = !inside;
+    const a = poly[i],
+      b = poly[j];
+    if (a.y > p.y !== b.y > p.y && p.x < ((b.x - a.x) * (p.y - a.y)) / (b.y - a.y) + a.x) inside = !inside;
   }
   return inside;
 }
@@ -128,9 +156,16 @@ export function leafCells(id: LeafId): number[] {
 export function edgeCells(id: LeafId): number[] {
   const set = new Set(leafCells(id));
   return [...set].filter((i) => {
-    const x = i % COLS, y = Math.floor(i / COLS);
-    return [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => {
-      const nx = x + dx, ny = y + dy;
+    const x = i % COLS,
+      y = Math.floor(i / COLS);
+    return [
+      [1, 0],
+      [-1, 0],
+      [0, 1],
+      [0, -1],
+    ].some(([dx, dy]) => {
+      const nx = x + dx,
+        ny = y + dy;
       return nx < 0 || ny < 0 || nx >= COLS || ny >= ROWS || !set.has(ny * COLS + nx);
     });
   });
@@ -157,23 +192,36 @@ export function patCells(cleared: boolean[], at: Pt, reach = BRUSH): number[] {
 }
 
 /** The twelve cell corners on a 100-unit spacing: a pat on each clears one 2×2 block, and the twelve tile the stone. */
-export const BRUSH_SPOTS: readonly Pt[] = Array.from({ length: 12 }, (_, k) => ({ x: -150 + 100 * (k % 4), y: -100 + 100 * Math.floor(k / 4) }));
+export const BRUSH_SPOTS: readonly Pt[] = Array.from({ length: 12 }, (_, k) => ({
+  x: -150 + 100 * (k % 4),
+  y: -100 + 100 * Math.floor(k / 4),
+}));
 
 /** The bot's next pat: the spot that clears the most of the print still covered, or null once the find is shown. */
 export function nextBrush(cleared: readonly boolean[], find: LeafId): Pt | null {
   if (revealed(cleared, find) >= SHOWN_AT) return null;
   const cells = leafCells(find);
-  let best: Pt | null = null, bestN = 0;
+  let best: Pt | null = null,
+    bestN = 0;
   for (const s of BRUSH_SPOTS) {
-    const n = cells.filter((i) => !cleared[i] && Math.hypot(cellCenter(i).x - s.x, cellCenter(i).y - s.y) <= BRUSH).length;
-    if (n > bestN) { bestN = n; best = s; }
+    const n = cells.filter(
+      (i) => !cleared[i] && Math.hypot(cellCenter(i).x - s.x, cellCenter(i).y - s.y) <= BRUSH,
+    ).length;
+    if (n > bestN) {
+      bestN = n;
+      best = s;
+    }
   }
   return best;
 }
 
 /* Levels and rounds ----------------------------------------------------------------------------- */
 
-export interface Plan { id: 1 | 2; name: string; feature: Feature }
+export interface Plan {
+  id: 1 | 2;
+  name: string;
+  feature: Feature;
+}
 export const PLANS: readonly Plan[] = [
   { id: 1, name: 'A leaf left a clue: brush, mark where, match the shape', feature: 'outline' },
   { id: 2, name: 'Look more closely: brush, mark where, match the edge up close', feature: 'margin' },
@@ -195,15 +243,28 @@ export interface Round {
 
 /** The definition's first rounds, played once per level per session (not by the demonstration). */
 export function authored(level: 1 | 2): Round {
-  if (level === 1) return { level, caseId: 'L1-star', site: 1, order: ['ribbon', 'star'], preCleared: edgeCells('star')[0] };
-  return { level, caseId: 'L2-saw', site: 2, order: ['star', 'saw-star'], preCleared: edgeCells('saw-star')[0] };
+  if (level === 1)
+    return { level, caseId: 'L1-star', site: 1, order: ['ribbon', 'star'], preCleared: edgeCells('star')[0] };
+  return {
+    level,
+    caseId: 'L2-saw',
+    site: 2,
+    order: ['star', 'saw-star'],
+    preCleared: edgeCells('saw-star')[0],
+  };
 }
 
 export function makeRound(level: number, rng: Rng, first = false): Round {
   const plan = planFor(level);
   if (first) return authored(plan.id);
   const c = rng.pick(CASES.filter((k) => k.level === plan.id));
-  return { level: plan.id, caseId: c.id, site: rng.int(0, 2), order: rng.shuffle([...c.references]) as [LeafId, LeafId], preCleared: rng.pick(edgeCells(c.find)) };
+  return {
+    level: plan.id,
+    caseId: c.id,
+    site: rng.int(0, 2),
+    order: rng.shuffle([...c.references]) as [LeafId, LeafId],
+    preCleared: rng.pick(edgeCells(c.find)),
+  };
 }
 
 /** The flag that marks where the find was: the flag of the stone's square. */
@@ -234,7 +295,18 @@ export interface DigState {
 export function digState(round: Round): DigState {
   const cleared = new Array<boolean>(COLS * ROWS).fill(false);
   cleared[round.preCleared] = true;
-  return { round, cleared, shown: false, where: null, like: null, wrong: { where: 0, like: 0 }, helped: { where: false, like: false }, misses: 0, hints: 0, done: false };
+  return {
+    round,
+    cleared,
+    shown: false,
+    where: null,
+    like: null,
+    wrong: { where: 0, like: 0 },
+    helped: { where: false, like: false },
+    misses: 0,
+    hints: 0,
+    done: false,
+  };
 }
 
 export const findOf = (s: DigState): LeafId => caseOf(s.round.caseId).find;
@@ -341,7 +413,12 @@ export const RECORD_H = 200;
 export const BOOK_W = 110;
 export const BOOK_H = 80;
 
-export interface Rect { x: number; y: number; w: number; h: number }
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
 
 export interface DigLayout {
   portrait: boolean;
@@ -364,13 +441,21 @@ export interface DigLayout {
 }
 
 export const petCorner = (v: View): Rect => ({ x: 0, y: v.h - 205, w: 200, h: 205 });
-export const shellButtons = (v: View): Rect[] => [{ x: 0, y: 0, w: 130, h: 130 }, { x: v.w - 130, y: 0, w: 130, h: 130 }];
-export const stoneAt = (L: DigLayout, site: number): Pt => ({ x: L.squares[site].x + L.squares[site].w / 2, y: L.squares[site].y + L.squares[site].h / 2 });
+export const shellButtons = (v: View): Rect[] => [
+  { x: 0, y: 0, w: 130, h: 130 },
+  { x: v.w - 130, y: 0, w: 130, h: 130 },
+];
+export const stoneAt = (L: DigLayout, site: number): Pt => ({
+  x: L.squares[site].x + L.squares[site].w / 2,
+  y: L.squares[site].y + L.squares[site].h / 2,
+});
 
 /** Every rectangle of the screen. The level is accepted so a later level can rearrange; levels 1 and 2 share one plan. */
 export function digLayout(v: View, _level: number): DigLayout {
   const portrait = v.h > v.w;
-  const sqW = portrait ? 236 : 290, sqH = portrait ? 200 : 230, gap = portrait ? 10 : 16;
+  const sqW = portrait ? 236 : 290,
+    sqH = portrait ? 200 : 230,
+    gap = portrait ? 10 : 16;
   const left = (v.w - (3 * sqW + 2 * gap)) / 2;
   const flagY = portrait ? 200 : 150;
   const top = flagY + FLAG / 2 + 10;
@@ -393,8 +478,21 @@ export function digLayout(v: View, _level: number): DigLayout {
   const magnifier = portrait
     ? [0, 1, 2].map(() => ({ x: v.w - 30 - MAG_R, y: top + sqH + 20 + MAG_R }))
     : [0, 1, 2].map((site) => {
-      const s = squares[site === 2 ? 0 : 2];
-      return { x: s.x + s.w / 2, y: s.y + s.h / 2 + 5 };
-    });
-  return { portrait, squares, flags, scale, cards, badges, record, whereSlot, likeSlot, check, book, magnifier };
+        const s = squares[site === 2 ? 0 : 2];
+        return { x: s.x + s.w / 2, y: s.y + s.h / 2 + 5 };
+      });
+  return {
+    portrait,
+    squares,
+    flags,
+    scale,
+    cards,
+    badges,
+    record,
+    whereSlot,
+    likeSlot,
+    check,
+    book,
+    magnifier,
+  };
 }

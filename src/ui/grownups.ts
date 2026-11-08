@@ -27,7 +27,12 @@ function gearPath(teeth = 8, outer = 11, inner = 8.4, hole = 3.4): string {
   const pts: string[] = [];
   for (let i = 0; i < teeth; i++) {
     const mid = i * pitch;
-    for (const [a, r] of [[-0.3, inner], [-0.17, outer], [0.17, outer], [0.3, inner]] as const) {
+    for (const [a, r] of [
+      [-0.3, inner],
+      [-0.17, outer],
+      [0.17, outer],
+      [0.3, inner],
+    ] as const) {
       const t = mid + a * pitch;
       pts.push(`${(Math.cos(t) * r).toFixed(2)} ${(Math.sin(t) * r).toFixed(2)}`);
     }
@@ -44,7 +49,10 @@ export function gearButton({ onOpen, onShort, inline = false }: GearOptions): Ge
   const el = document.createElement('button');
   el.type = 'button';
   el.className = inline ? 'gear gear--inline' : 'gear';
-  el.setAttribute('aria-label', `Grown-ups: press and hold for ${GEAR_HOLD_SECONDS} seconds to open settings`);
+  el.setAttribute(
+    'aria-label',
+    `Grown-ups: press and hold for ${GEAR_HOLD_SECONDS} seconds to open settings`,
+  );
   el.innerHTML = `<span class="gear__ring"></span><svg viewBox="-12 -12 24 24" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="${gearPath()}"/></svg><span class="gear__hint" aria-hidden="true">Grown-ups: hold the gear</span>`;
 
   let timer = 0;

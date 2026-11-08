@@ -35,25 +35,101 @@ export interface ChainPlan {
 }
 
 export const PLANS: ChainPlan[] = [
-  { name: 'Put one ramp in place so the marble rings the bell', cols: 4, rows: 2, fixed: 0, loose: 1, decoys: 2, chime: false, solutions: { min: 1, max: 1 }, machines: 2 },
-  { name: 'Add one ramp to a machine that already has a ramp', cols: 4, rows: 3, fixed: 1, loose: 1, decoys: 3, chime: false, solutions: { min: 1, max: 1 }, machines: 2 },
-  { name: 'Place two ramps so the marble reaches the bell', cols: 5, rows: 4, fixed: 1, loose: 2, decoys: 3, chime: false, solutions: { min: 1, max: 2 }, machines: 2 },
-  { name: 'Use two ramps to touch the little chime, then ring the bell', cols: 5, rows: 4, fixed: 2, loose: 2, decoys: 4, chime: true, solutions: { min: 1, max: 2 }, machines: 2 },
-  { name: 'Complete a five-part machine: chime first, bell last', cols: 5, rows: 5, fixed: 3, loose: 2, decoys: 5, chime: true, solutions: { min: 1, max: 2 }, machines: 2 },
-  { name: 'Find one of several working designs for the chime and bell', cols: 5, rows: 5, fixed: 3, loose: 2, decoys: 6, chime: true, solutions: { min: 2, max: 6 }, machines: 2 },
+  {
+    name: 'Put one ramp in place so the marble rings the bell',
+    cols: 4,
+    rows: 2,
+    fixed: 0,
+    loose: 1,
+    decoys: 2,
+    chime: false,
+    solutions: { min: 1, max: 1 },
+    machines: 2,
+  },
+  {
+    name: 'Add one ramp to a machine that already has a ramp',
+    cols: 4,
+    rows: 3,
+    fixed: 1,
+    loose: 1,
+    decoys: 3,
+    chime: false,
+    solutions: { min: 1, max: 1 },
+    machines: 2,
+  },
+  {
+    name: 'Place two ramps so the marble reaches the bell',
+    cols: 5,
+    rows: 4,
+    fixed: 1,
+    loose: 2,
+    decoys: 3,
+    chime: false,
+    solutions: { min: 1, max: 2 },
+    machines: 2,
+  },
+  {
+    name: 'Use two ramps to touch the little chime, then ring the bell',
+    cols: 5,
+    rows: 4,
+    fixed: 2,
+    loose: 2,
+    decoys: 4,
+    chime: true,
+    solutions: { min: 1, max: 2 },
+    machines: 2,
+  },
+  {
+    name: 'Complete a five-part machine: chime first, bell last',
+    cols: 5,
+    rows: 5,
+    fixed: 3,
+    loose: 2,
+    decoys: 5,
+    chime: true,
+    solutions: { min: 1, max: 2 },
+    machines: 2,
+  },
+  {
+    name: 'Find one of several working designs for the chime and bell',
+    cols: 5,
+    rows: 5,
+    fixed: 3,
+    loose: 2,
+    decoys: 6,
+    chime: true,
+    solutions: { min: 2, max: 6 },
+    machines: 2,
+  },
 ];
 
 /** Level 8, an easy entry placed before level 1 by the band's `order`: read a finished machine and predict the bell. */
 export const WHICH_BELL = 8;
 export const PREDICT_PLAN: ChainPlan = {
-  name: 'Which bell? Tap the bell the marble will ring, then run it', cols: 4, rows: 3, fixed: 2, loose: 0, decoys: 0, chime: false,
-  solutions: { min: 1, max: 1 }, machines: 3, predict: { bells: 3, offPath: 0.5 },
+  name: 'Which bell? Tap the bell the marble will ring, then run it',
+  cols: 4,
+  rows: 3,
+  fixed: 2,
+  loose: 0,
+  decoys: 0,
+  chime: false,
+  solutions: { min: 1, max: 1 },
+  machines: 3,
+  predict: { bells: 3, offPath: 0.5 },
 };
 
 export const TAP_TO_TURN = 7;
 export const TURN_PLAN: ChainPlan = {
-  name: 'Tap the coloured ramps to turn them so the marble rings the bell', cols: 4, rows: 3, fixed: 1, loose: 2, decoys: 0, chime: false,
-  solutions: { min: 1, max: 4 }, machines: 2, turn: true,
+  name: 'Tap the coloured ramps to turn them so the marble rings the bell',
+  cols: 4,
+  rows: 3,
+  fixed: 1,
+  loose: 2,
+  decoys: 0,
+  chime: false,
+  solutions: { min: 1, max: 4 },
+  machines: 2,
+  turn: true,
 };
 
 /** Level 9, school: a red and a blue marble run the same machine, so each ramp is placed for both of them. */
@@ -66,12 +142,25 @@ export const LEVELS: BandLevels = {
   school: { min: 3, max: TWO_MARBLES, order: [3, 4, 5, 6, TWO_MARBLES] },
 };
 export const TWO_PLAN: ChainPlan = {
-  name: 'Two marbles: each one rings the bell of its own colour', cols: 5, rows: 4, fixed: 1, loose: 2, decoys: 3, chime: false,
-  solutions: { min: 1, max: 3 }, machines: 2, two: true,
+  name: 'Two marbles: each one rings the bell of its own colour',
+  cols: 5,
+  rows: 4,
+  fixed: 1,
+  loose: 2,
+  decoys: 3,
+  chime: false,
+  solutions: { min: 1, max: 3 },
+  machines: 2,
+  two: true,
 };
 
-const SPECIAL: Record<number, ChainPlan> = { [TAP_TO_TURN]: TURN_PLAN, [WHICH_BELL]: PREDICT_PLAN, [TWO_MARBLES]: TWO_PLAN };
-export const planFor = (level: number): ChainPlan => SPECIAL[level] ?? PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+const SPECIAL: Record<number, ChainPlan> = {
+  [TAP_TO_TURN]: TURN_PLAN,
+  [WHICH_BELL]: PREDICT_PLAN,
+  [TWO_MARBLES]: TWO_PLAN,
+};
+export const planFor = (level: number): ChainPlan =>
+  SPECIAL[level] ?? PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 /** One socket index per loose ramp; null means that ramp is still in the tray. */
 export type Layout = (number | null)[];
@@ -148,12 +237,20 @@ export function trace(board: ChainBoard, layout: Layout, flipped: boolean[] = []
       break;
     }
   }
-  return { steps, end: col, chime: chimed, success: !escaped && col === target && (!board.chime || chimed), escaped };
+  return {
+    steps,
+    end: col,
+    chime: chimed,
+    success: !escaped && col === target && (!board.chime || chimed),
+    escaped,
+  };
 }
 
 /** One trace per marble on the board: the red marble, then the blue one at level 9. */
 export const traces = (board: ChainBoard, layout: Layout, flipped: boolean[] = []): Trace[] =>
-  board.blue ? [trace(board, layout, flipped, 0), trace(board, layout, flipped, 1)] : [trace(board, layout, flipped)];
+  board.blue
+    ? [trace(board, layout, flipped, 0), trace(board, layout, flipped, 1)]
+    : [trace(board, layout, flipped)];
 
 /** The machine works only when every marble on it rings its own bell. Run, hints, the bot and tests all use this. */
 export const works = (board: ChainBoard, layout: Layout, flipped: boolean[] = []): boolean =>
@@ -186,7 +283,10 @@ function workingLayouts(board: ChainBoard): number[][] {
 export function solutions(board: ChainBoard): number[][] {
   const distinct = new Map<string, number[]>();
   for (const layout of workingLayouts(board)) {
-    const key = layout.map((socket, piece) => `${socket}:${board.loose[piece]}`).sort().join('|');
+    const key = layout
+      .map((socket, piece) => `${socket}:${board.loose[piece]}`)
+      .sort()
+      .join('|');
     if (!distinct.has(key)) distinct.set(key, layout);
   }
   return [...distinct.values()];
@@ -198,7 +298,8 @@ function closestWorkingLayout(board: ChainBoard, layout: Layout): number[] | nul
   const ways = workingLayouts(board);
   if (!ways.length) return null;
   ways.sort((a, b) => {
-    const score = (way: number[]) => way.reduce((n, socket, piece) => n + (layout[piece] === socket ? 1 : 0), 0);
+    const score = (way: number[]) =>
+      way.reduce((n, socket, piece) => n + (layout[piece] === socket ? 1 : 0), 0);
     return score(b) - score(a);
   });
   return ways[0];
@@ -217,7 +318,10 @@ export function hintFor(board: ChainBoard, layout: Layout): { piece: number; soc
   const after = traces(board, way);
   const missed = now.findIndex((t) => !t.success);
   const meets = (t: Trace, piece: number) => t.steps.some((step) => step.loose === piece);
-  const onMissedPath = missed >= 0 ? differs.find((piece) => meets(now[missed], piece) || meets(after[missed], piece)) : undefined;
+  const onMissedPath =
+    missed >= 0
+      ? differs.find((piece) => meets(now[missed], piece) || meets(after[missed], piece))
+      : undefined;
   const piece = onMissedPath ?? differs[0];
   return { piece, socket: way[piece] };
 }
@@ -225,8 +329,8 @@ export function hintFor(board: ChainBoard, layout: Layout): { piece: number; soc
 /** All accepted flip states. Only the two preplaced ramps can change. */
 export function turnSolutions(board: ChainBoard): boolean[][] {
   return Array.from({ length: 2 ** (board.turn?.length ?? 0) }, (_, mask) =>
-    (board.turn ?? []).map((_, i) => !!(mask & (1 << i))))
-    .filter((flipped) => works(board, [], flipped));
+    (board.turn ?? []).map((_, i) => !!(mask & (1 << i))),
+  ).filter((flipped) => works(board, [], flipped));
 }
 
 /** Keep the nearest working state and name one ramp that needs turning. */
@@ -237,7 +341,8 @@ export function turnHint(board: ChainBoard, flipped: boolean[]): number | null {
   return piece < 0 ? null : piece;
 }
 
-export type ChainTouch = { kind: 'flip'; piece: number } | { kind: 'place'; piece: number; socket: number } | { kind: 'run' };
+export type ChainTouch =
+  { kind: 'flip'; piece: number } | { kind: 'place'; piece: number; socket: number } | { kind: 'run' };
 
 /** Follow one accepted design a part at a time, then press the machine's real run button. */
 export function chainTouch(board: ChainBoard, layout: Layout, flipped: boolean[] = []): ChainTouch | null {
@@ -269,10 +374,13 @@ export function makeBoard(plan: ChainPlan, rng: Rng): ChainBoard {
     const turn = base.solution.map((socket, i) => ({ ...base.sockets[socket], ramp: base.loose[i] }));
     const board: ChainBoard = { ...base, loose: [], sockets: [], solution: [], turn };
     // Choose an unsolved starting state without changing the authored, reachable bell.
-    const wrong = Array.from({ length: 2 ** turn.length }, (_, mask) => turn.map((_, i) => !!(mask & (1 << i))))
-      .filter((flipped) => !works(board, [], flipped));
+    const wrong = Array.from({ length: 2 ** turn.length }, (_, mask) =>
+      turn.map((_, i) => !!(mask & (1 << i))),
+    ).filter((flipped) => !works(board, [], flipped));
     const initial = rng.pick(wrong);
-    turn.forEach((part, i) => { if (initial[i]) part.ramp = part.ramp === 'left' ? 'right' : 'left'; });
+    turn.forEach((part, i) => {
+      if (initial[i]) part.ramp = part.ramp === 'left' ? 'right' : 'left';
+    });
     return board;
   }
   if (plan.predict) return makePredictBoard(plan, plan.predict, rng);
@@ -304,8 +412,12 @@ export function makeBoard(plan: ChainPlan, rng: Rng): ChainBoard {
 
     const occupied = new Set([...fixed, ...correct].map(key));
     const sockets = correct.slice();
-    const candidates = rng.shuffle(Array.from({ length: plan.rows * plan.cols }, (_, i) => ({ row: Math.floor(i / plan.cols), col: i % plan.cols }))
-      .filter((cell) => !occupied.has(key(cell))));
+    const candidates = rng.shuffle(
+      Array.from({ length: plan.rows * plan.cols }, (_, i) => ({
+        row: Math.floor(i / plan.cols),
+        col: i % plan.cols,
+      })).filter((cell) => !occupied.has(key(cell))),
+    );
     for (const cell of candidates) {
       if (sockets.length >= plan.loose + plan.decoys) break;
       sockets.push(cell);
@@ -314,7 +426,17 @@ export function makeBoard(plan: ChainPlan, rng: Rng): ChainBoard {
     rng.shuffle(sockets);
     const solution = correct.map((cell) => sockets.findIndex((s) => sameCell(s, cell)));
     const chime = plan.chime ? rng.pick(path.slice(1, -1).length ? path.slice(1, -1) : path) : undefined;
-    const board: ChainBoard = { cols: plan.cols, rows: plan.rows, start, target: col, fixed, loose, sockets, solution, chime };
+    const board: ChainBoard = {
+      cols: plan.cols,
+      rows: plan.rows,
+      start,
+      target: col,
+      fixed,
+      loose,
+      sockets,
+      solution,
+      chime,
+    };
     const ways = solutions(board);
     if (ways.length < plan.solutions.min || ways.length > plan.solutions.max) continue;
     // The stored layout must be one of the accepted ways, and taking every loose ramp away must not solve it.
@@ -326,7 +448,8 @@ export function makeBoard(plan: ChainPlan, rng: Rng): ChainBoard {
 }
 
 /** The loose ramps (by piece) that a marble meets on its way down. */
-export const rampsMet = (t: Trace): Set<number> => new Set(t.steps.flatMap((step) => (step.loose === undefined ? [] : [step.loose])));
+export const rampsMet = (t: Trace): Set<number> =>
+  new Set(t.steps.flatMap((step) => (step.loose === undefined ? [] : [step.loose])));
 
 /**
  * Level 9: two marbles on one board. Each marble's own way down needs one loose ramp, and one fixed ramp sits on one of
@@ -359,7 +482,10 @@ function makeTwoBoard(plan: ChainPlan, rng: Rng): ChainBoard {
         if (col > 0) options.push('left');
         if (col < plan.cols - 1) options.push('right');
         const ramp = rng.pick(options);
-        if (row === own) { loose[m] = ramp; correct[m] = { row, col }; } else fixed.push({ row, col, ramp });
+        if (row === own) {
+          loose[m] = ramp;
+          correct[m] = { row, col };
+        } else fixed.push({ row, col, ramp });
         cols[m] += delta(ramp);
       }
       if (cols[0] === cols[1]) ok = false;
@@ -369,19 +495,38 @@ function makeTwoBoard(plan: ChainPlan, rng: Rng): ChainBoard {
 
     const occupied = new Set([...fixed, ...correct].map(key));
     const onWay = new Set([...paths[0], ...paths[1]].map(key));
-    const free = rng.shuffle(Array.from({ length: plan.rows * plan.cols }, (_, i) => ({ row: Math.floor(i / plan.cols), col: i % plan.cols }))
-      .filter((cell) => !occupied.has(key(cell))));
+    const free = rng.shuffle(
+      Array.from({ length: plan.rows * plan.cols }, (_, i) => ({
+        row: Math.floor(i / plan.cols),
+        col: i % plan.cols,
+      })).filter((cell) => !occupied.has(key(cell))),
+    );
     const crossing = free.find((cell) => onWay.has(key(cell)));
     if (!crossing) continue;
-    const sockets = [...correct, crossing, ...free.filter((cell) => cell !== crossing).slice(0, plan.decoys - 1)];
+    const sockets = [
+      ...correct,
+      crossing,
+      ...free.filter((cell) => cell !== crossing).slice(0, plan.decoys - 1),
+    ];
     if (sockets.length < plan.loose + plan.decoys) continue;
     rng.shuffle(sockets);
     const solution = correct.map((cell) => sockets.findIndex((s) => sameCell(s, cell)));
-    const board: ChainBoard = { cols: plan.cols, rows: plan.rows, start: begin[0], target: cols[0], fixed, loose, sockets, solution, blue: { start: begin[1], target: cols[1] } };
+    const board: ChainBoard = {
+      cols: plan.cols,
+      rows: plan.rows,
+      start: begin[0],
+      target: cols[0],
+      fixed,
+      loose,
+      sockets,
+      solution,
+      blue: { start: begin[1], target: cols[1] },
+    };
     const ways = solutions(board);
     if (ways.length < plan.solutions.min || ways.length > plan.solutions.max) continue;
     if (!works(board, solution) || works(board, Array(loose.length).fill(null))) continue;
-    if (!oneBellOnly(board, 0) || !oneBellOnly(board, 1) || !ways.every((way) => plansForBoth(board, way))) continue;
+    if (!oneBellOnly(board, 0) || !oneBellOnly(board, 1) || !ways.every((way) => plansForBoth(board, way)))
+      continue;
     board.solution = ways[0];
     return board;
   }
@@ -394,7 +539,9 @@ function plansForBoth(board: ChainBoard, way: number[]): boolean {
   const [redMet, blueMet] = [rampsMet(red), rampsMet(blue)];
   if (!redMet.size || !blueMet.size || [...redMet].some((piece) => blueMet.has(piece))) return false;
   if (red.steps.some((a) => blue.steps.some((b) => sameCell(a, b)))) return false;
-  return board.sockets.some((cell, i) => !way.includes(i) && [...red.steps, ...blue.steps].some((step) => sameCell(step, cell)));
+  return board.sockets.some(
+    (cell, i) => !way.includes(i) && [...red.steps, ...blue.steps].some((step) => sameCell(step, cell)),
+  );
 }
 
 /** Some full placement rings this marble's bell while the other marble misses. */
@@ -413,9 +560,15 @@ function oneBellOnly(board: ChainBoard, marble: Marble): boolean {
  * the far bell. Some machines add one ramp the marble never reaches, so counting ramps is not enough: she follows the
  * real way down. The bell it rings is one of the bells shown; the others stand in other columns along the bottom.
  */
-function makePredictBoard(plan: ChainPlan, { bells, offPath }: { bells: number; offPath: number }, rng: Rng): ChainBoard {
+function makePredictBoard(
+  plan: ChainPlan,
+  { bells, offPath }: { bells: number; offPath: number },
+  rng: Rng,
+): ChainBoard {
   for (let attempt = 0; attempt < 400; attempt++) {
-    const rows = new Set(rng.shuffle(Array.from({ length: plan.rows }, (_, row) => row)).slice(0, plan.fixed));
+    const rows = new Set(
+      rng.shuffle(Array.from({ length: plan.rows }, (_, row) => row)).slice(0, plan.fixed),
+    );
     let col = rng.int(1, plan.cols - 2);
     const start = col;
     const fixed: FixedRamp[] = [];
@@ -432,13 +585,31 @@ function makePredictBoard(plan: ChainPlan, { bells, offPath }: { bells: number; 
     }
     if (rng.chance(offPath)) {
       const visited = new Set(path.map(key));
-      const free = Array.from({ length: plan.rows * plan.cols }, (_, i) => ({ row: Math.floor(i / plan.cols), col: i % plan.cols }))
-        .filter((cell) => !visited.has(key(cell)));
+      const free = Array.from({ length: plan.rows * plan.cols }, (_, i) => ({
+        row: Math.floor(i / plan.cols),
+        col: i % plan.cols,
+      })).filter((cell) => !visited.has(key(cell)));
       const cell = rng.pick(free);
-      fixed.push({ ...cell, ramp: cell.col === 0 ? 'right' : cell.col === plan.cols - 1 ? 'left' : rng.pick<Ramp>(['left', 'right']) });
+      fixed.push({
+        ...cell,
+        ramp:
+          cell.col === 0 ? 'right' : cell.col === plan.cols - 1 ? 'left' : rng.pick<Ramp>(['left', 'right']),
+      });
     }
-    const others = rng.shuffle(Array.from({ length: plan.cols }, (_, c) => c).filter((c) => c !== col)).slice(0, bells - 1);
-    const board: ChainBoard = { cols: plan.cols, rows: plan.rows, start, target: col, fixed, loose: [], sockets: [], solution: [], bells: [col, ...others].sort((a, b) => a - b) };
+    const others = rng
+      .shuffle(Array.from({ length: plan.cols }, (_, c) => c).filter((c) => c !== col))
+      .slice(0, bells - 1);
+    const board: ChainBoard = {
+      cols: plan.cols,
+      rows: plan.rows,
+      start,
+      target: col,
+      fixed,
+      loose: [],
+      sockets: [],
+      solution: [],
+      bells: [col, ...others].sort((a, b) => a - b),
+    };
     if (!trace(board, []).success) continue;
     return board;
   }
@@ -448,4 +619,5 @@ function makePredictBoard(plan: ChainPlan, { bells, offPath }: { bells: number; 
 /** The bell the ghost finger predicts: the one the marble's trace really ends at. */
 export const predictedBell = (board: ChainBoard): number => trace(board, []).end;
 
-export const makeBoards = (plan: ChainPlan, rng: Rng) => Array.from({ length: plan.machines }, () => makeBoard(plan, rng));
+export const makeBoards = (plan: ChainPlan, rng: Rng) =>
+  Array.from({ length: plan.machines }, () => makeBoard(plan, rng));

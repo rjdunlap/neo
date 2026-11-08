@@ -12,7 +12,19 @@ import type { LineId } from './voice-script';
  * to the land's games for bigger kids. Nothing here gates anything. A land has its own id apart from a game's
  * subject (`region`), so a later land can hold games from several subjects.
  */
-export const LAND_IDS = ['bubble-beach', 'music-mountain', 'treehouse', 'barnyard', 'counting-cove', 'cozy-village', 'rainbow-meadow', 'puzzle-peaks', 'story-grove', 'tinker-lab', 'lantern-lake'] as const;
+export const LAND_IDS = [
+  'bubble-beach',
+  'music-mountain',
+  'treehouse',
+  'barnyard',
+  'counting-cove',
+  'cozy-village',
+  'rainbow-meadow',
+  'puzzle-peaks',
+  'story-grove',
+  'tinker-lab',
+  'lantern-lake',
+] as const;
 export type LandId = (typeof LAND_IDS)[number];
 
 /** Who greets her in a land: a critter in a color, or one of the island's named friends. */
@@ -30,7 +42,12 @@ export interface Land {
   games: readonly string[];
 }
 
-const tune = (seed: number, lead: MusicStyle['lead'], bpm: number): MusicStyle => ({ ...STYLES.hub, seed, lead, bpm });
+const tune = (seed: number, lead: MusicStyle['lead'], bpm: number): MusicStyle => ({
+  ...STYLES.hub,
+  seed,
+  lead,
+  bpm,
+});
 
 export const LANDS: readonly Land[] = [
   {
@@ -38,90 +55,332 @@ export const LANDS: readonly Land[] = [
     name: 'Bubble Beach',
     line: 'subject.senses',
     host: { kind: 'duck' },
-    backdrop: { sky: [0x9fd8f5, 0xfff6e0], hills: [0x9fd8f5, 0x7cc7ec, 0xffe7a3], horizon: 0.4, clouds: 3, sun: true, seed: 101 },
+    backdrop: {
+      sky: [0x9fd8f5, 0xfff6e0],
+      hills: [0x9fd8f5, 0x7cc7ec, 0xffe7a3],
+      horizon: 0.4,
+      clouds: 3,
+      sun: true,
+      seed: 101,
+    },
     music: tune(23, 'pluck', 104),
-    games: ['bubble-pop', 'peg-garden', 'bounce-back', 'bumper-garden', 'sink-float', 'domino-run', 'fruit-slice', 'puddle-gobble', 'lost-layers', 'sea-lift', 'puddle-lens', 'melt-freeze', 'tide-line', 'drift-cards'],
+    games: [
+      'bubble-pop',
+      'peg-garden',
+      'bounce-back',
+      'bumper-garden',
+      'sink-float',
+      'domino-run',
+      'fruit-slice',
+      'puddle-gobble',
+      'lost-layers',
+      'sea-lift',
+      'puddle-lens',
+      'melt-freeze',
+      'tide-line',
+      'drift-cards',
+    ],
   },
   {
     id: 'music-mountain',
     name: 'Music Mountain',
     line: 'subject.music',
     host: { kind: 'bear' },
-    backdrop: { sky: [0xd9c8f2, 0xfff6e0], hills: [0xc9b5ec, 0xb7e3d4, 0xa8dc8f], horizon: 0.4, clouds: 2, sun: true, seed: 103 },
+    backdrop: {
+      sky: [0xd9c8f2, 0xfff6e0],
+      hills: [0xc9b5ec, 0xb7e3d4, 0xa8dc8f],
+      horizon: 0.4,
+      clouds: 2,
+      sun: true,
+      seed: 103,
+    },
     music: tune(31, 'marimba', 100),
-    games: ['jelly-drums', 'song-maker', 'sound-garden', 'rhythm-neighbors', 'beat-builder', 'little-conductor', 'puppet-stage', 'hat-band'],
+    games: [
+      'jelly-drums',
+      'song-maker',
+      'sound-garden',
+      'rhythm-neighbors',
+      'beat-builder',
+      'little-conductor',
+      'puppet-stage',
+      'hat-band',
+    ],
   },
   {
     id: 'treehouse',
     name: 'Painted Canyon',
     line: 'subject.art',
     host: { kind: 'cat' },
-    backdrop: { sky: [0xffd6e3, 0xfff6e0], hills: [0xb8e1f7, 0x8fd0ef, 0xf3dcb0], horizon: 0.4, clouds: 3, sun: true, seed: 107 },
+    backdrop: {
+      sky: [0xffd6e3, 0xfff6e0],
+      hills: [0xb8e1f7, 0x8fd0ef, 0xf3dcb0],
+      horizon: 0.4,
+      clouds: 3,
+      sun: true,
+      seed: 107,
+    },
     music: tune(41, 'bell', 84),
-    games: ['little-loom', 'movie-night', 'rainbow-fingers', 'fluffy-salon', 'stamp-studio', 'pixel-pictures', 'cut-along', 'draw-the-pattern', 'recipe-workshop', 'gear-garden', 'gadget-bench'],
+    games: [
+      'little-loom',
+      'movie-night',
+      'rainbow-fingers',
+      'fluffy-salon',
+      'stamp-studio',
+      'pixel-pictures',
+      'cut-along',
+      'draw-the-pattern',
+      'recipe-workshop',
+      'gear-garden',
+      'gadget-bench',
+    ],
   },
   {
     id: 'barnyard',
     name: 'Barnyard',
     line: 'subject.animals',
     host: { kind: 'cow' },
-    backdrop: { sky: [0xbfe6fb, 0xfff6e0], hills: [0xcde8a4, 0xa8dc8f, 0x8fcf73], horizon: 0.4, clouds: 3, sun: true, seed: 109 },
+    backdrop: {
+      sky: [0xbfe6fb, 0xfff6e0],
+      hills: [0xcde8a4, 0xa8dc8f, 0x8fcf73],
+      horizon: 0.4,
+      clouds: 3,
+      sun: true,
+      seed: 109,
+    },
     music: tune(53, 'marimba', 96),
-    games: ['peekaboo-barn', 'duckling-parade', 'roundup', 'egg-catch', 'animal-snack', 'critter-sort', 'sing-along-barn', 'orchard-rows', 'bolt-boards', 'look-it-up', 'adventure-walk', 'ready-for-adventure', 'who-am-i', 'timeline-trail'],
+    games: [
+      'peekaboo-barn',
+      'duckling-parade',
+      'roundup',
+      'egg-catch',
+      'animal-snack',
+      'critter-sort',
+      'sing-along-barn',
+      'orchard-rows',
+      'bolt-boards',
+      'look-it-up',
+      'adventure-walk',
+      'ready-for-adventure',
+      'who-am-i',
+      'timeline-trail',
+    ],
   },
   {
     id: 'counting-cove',
     name: 'Counting Cove',
     line: 'subject.numbers',
     host: { kind: 'pig' },
-    backdrop: { sky: [0xb7ecf0, 0xfff6e0], hills: [0x8fd9df, 0x9fe0c9, 0xf6e3ad], horizon: 0.4, clouds: 2, sun: true, seed: 113 },
+    backdrop: {
+      sky: [0xb7ecf0, 0xfff6e0],
+      hills: [0x8fd9df, 0x9fe0c9, 0xf6e3ad],
+      horizon: 0.4,
+      clouds: 2,
+      sun: true,
+      seed: 113,
+    },
     music: tune(61, 'pluck', 98),
-    games: ['duck-pond', 'monster-munch', 'little-helpers', 'pet-kitchen', 'frog-hop', 'picture-graph', 'lasso-loops', 'fill-dump', 'number-trails', 'fruit-sums', 'pile-match', 'ribbon-workshop', 'paint-mixer', 'spinner-fair'],
+    games: [
+      'duck-pond',
+      'monster-munch',
+      'little-helpers',
+      'pet-kitchen',
+      'frog-hop',
+      'picture-graph',
+      'lasso-loops',
+      'fill-dump',
+      'number-trails',
+      'fruit-sums',
+      'pile-match',
+      'ribbon-workshop',
+      'paint-mixer',
+      'spinner-fair',
+    ],
   },
   {
     id: 'cozy-village',
     name: 'Cozy Village',
     line: 'subject.everyday',
     host: { kind: 'hazel' },
-    backdrop: { sky: [0xffe2c4, 0xfff6e0], hills: [0xd8ecb0, 0xbfe39a, 0xa8dc8f], horizon: 0.4, clouds: 2, sun: true, seed: 127 },
+    backdrop: {
+      sky: [0xffe2c4, 0xfff6e0],
+      hills: [0xd8ecb0, 0xbfe39a, 0xa8dc8f],
+      horizon: 0.4,
+      clouds: 2,
+      sun: true,
+      seed: 127,
+    },
     music: tune(71, 'bell', 92),
-    games: ['splish-splash', 'feelings-faces', 'weather-wardrobe', 'scoop-shop', 'mail-carrier', 'teddy-doctor', 'market-stall', 'clock-tower', 'day-by-day', 'stop-and-go', 'pet-says', 'lemonade-stand', 'second-chance-shed', 'swap-meet', 'village-vote', 'relay-woods', 'helper-house', 'caravan-days', 'keep-house', 'notice-board', 'maker-lane'],
+    games: [
+      'splish-splash',
+      'feelings-faces',
+      'weather-wardrobe',
+      'scoop-shop',
+      'mail-carrier',
+      'teddy-doctor',
+      'market-stall',
+      'clock-tower',
+      'day-by-day',
+      'stop-and-go',
+      'pet-says',
+      'lemonade-stand',
+      'second-chance-shed',
+      'swap-meet',
+      'village-vote',
+      'relay-woods',
+      'helper-house',
+      'caravan-days',
+      'keep-house',
+      'notice-board',
+      'maker-lane',
+    ],
   },
   {
     id: 'rainbow-meadow',
     name: 'Rainbow Meadow',
     line: 'subject.shapes',
     host: { kind: 'juniper' },
-    backdrop: { sky: [0xc4ecff, 0xfff6e0], hills: [0xf5d0e6, 0xbfe39a, 0x9ad77e], horizon: 0.4, clouds: 3, sun: true, seed: 131 },
+    backdrop: {
+      sky: [0xc4ecff, 0xfff6e0],
+      hills: [0xf5d0e6, 0xbfe39a, 0x9ad77e],
+      horizon: 0.4,
+      clouds: 3,
+      sun: true,
+      seed: 131,
+    },
     music: tune(83, 'bell', 96),
-    games: ['shape-sorter', 'color-garden', 'dot-link', 'tangram-town', 'garden-grow', 'treasure-map', 'habitat-helpers', 'jar-sort', 'block-garden', 'swing-pals', 'lift-it', 'sand-table', 'food-web-workshop', 'meadow-pens', 'sprout-shuffle', 'seed-travelers'],
+    games: [
+      'shape-sorter',
+      'color-garden',
+      'dot-link',
+      'tangram-town',
+      'garden-grow',
+      'treasure-map',
+      'habitat-helpers',
+      'jar-sort',
+      'block-garden',
+      'swing-pals',
+      'lift-it',
+      'sand-table',
+      'food-web-workshop',
+      'meadow-pens',
+      'sprout-shuffle',
+      'seed-travelers',
+    ],
   },
   {
     id: 'puzzle-peaks',
     name: 'Puzzle Peaks',
     line: 'subject.puzzles',
     host: { kind: 'dog' },
-    backdrop: { sky: [0xcfe0ff, 0xfff6e0], hills: [0xb3c7f2, 0x9ed6c6, 0xa8dc8f], horizon: 0.4, clouds: 2, sun: true, seed: 137 },
+    backdrop: {
+      sky: [0xcfe0ff, 0xfff6e0],
+      hills: [0xb3c7f2, 0x9ed6c6, 0xa8dc8f],
+      horizon: 0.4,
+      clouds: 2,
+      sun: true,
+      seed: 137,
+    },
     music: tune(97, 'marimba', 92),
-    games: ['marble-jump', 'pattern-train', 'memory-match', 'size-parade', 'puzzle-pals', 'quick-tricks', 'peekaround-island', 'penguin-slide', 'secret-code', 'logic-grid', 'rule-machine', 'garden-rows', 'ferry-jam', 'critter-crossing', 'mossy-path', 'shell-rows'],
+    games: [
+      'marble-jump',
+      'pattern-train',
+      'memory-match',
+      'size-parade',
+      'puzzle-pals',
+      'quick-tricks',
+      'peekaround-island',
+      'penguin-slide',
+      'secret-code',
+      'logic-grid',
+      'rule-machine',
+      'garden-rows',
+      'ferry-jam',
+      'critter-crossing',
+      'mossy-path',
+      'shell-rows',
+    ],
   },
   {
     id: 'story-grove',
     name: 'Story Grove',
     line: 'subject.stories',
     host: { kind: 'bunny', color: 'purple' },
-    backdrop: { sky: [0xd6efc8, 0xfff6e0], hills: [0x9fd3a8, 0x86c98f, 0x8fcf73], horizon: 0.4, clouds: 2, sun: true, seed: 139 },
+    backdrop: {
+      sky: [0xd6efc8, 0xfff6e0],
+      hills: [0x9fd3a8, 0x86c98f, 0x8fcf73],
+      horizon: 0.4,
+      clouds: 2,
+      sun: true,
+      seed: 139,
+    },
     music: tune(103, 'bell', 80),
-    games: ['letter-trails', 'story-steps', 'word-monsters', 'photo-safari', 'goodnight-room', 'rhyme-time', 'opposites', 'clap-syllables', 'read-do', 'owl-walk', 'attic-finds', 'trackway-tales', 'pond-typing', 'crossword', 'word-glue', 'story-weaver', 'river-tablets', 'not-always', 'thought-bubbles', 'playdate-workshop'],
+    games: [
+      'letter-trails',
+      'story-steps',
+      'word-monsters',
+      'photo-safari',
+      'goodnight-room',
+      'rhyme-time',
+      'opposites',
+      'clap-syllables',
+      'read-do',
+      'owl-walk',
+      'attic-finds',
+      'trackway-tales',
+      'pond-typing',
+      'crossword',
+      'word-glue',
+      'story-weaver',
+      'river-tablets',
+      'not-always',
+      'thought-bubbles',
+      'playdate-workshop',
+    ],
   },
   {
     id: 'tinker-lab',
     name: 'Tinker Lab',
     line: 'subject.science',
     host: { kind: 'cat', color: 'blue' },
-    backdrop: { sky: [0xc8f0ec, 0xfff6e0], hills: [0xa9e0d6, 0xc5e7a8, 0xa8dc8f], horizon: 0.4, clouds: 2, sun: true, seed: 149 },
+    backdrop: {
+      sky: [0xc8f0ec, 0xfff6e0],
+      hills: [0xa9e0d6, 0xc5e7a8, 0xa8dc8f],
+      horizon: 0.4,
+      clouds: 2,
+      sun: true,
+      seed: 149,
+    },
     music: tune(113, 'pluck', 100),
-    games: ['log-roll', 'robot-path', 'bug-builder', 'bouncy-launch', 'seesaw-balance', 'light-lab', 'ramp-race', 'inchworm', 'block-tower', 'block-topple', 'chain-reaction', 'shape-buddies', 'fossil-dig', 'sense-detective', 'cue-studio', 'bond-beads', 'welcome-ways', 'example-express', 'moon-window', 'sorting-machine', 'water-road', 'drops-journey', 'rain-garden', 'forecast-detective', 'vine-snip', 'far-lights', 'circuit-garden', 'measuring-post'],
+    games: [
+      'log-roll',
+      'robot-path',
+      'bug-builder',
+      'bouncy-launch',
+      'seesaw-balance',
+      'light-lab',
+      'ramp-race',
+      'inchworm',
+      'block-tower',
+      'block-topple',
+      'chain-reaction',
+      'shape-buddies',
+      'fossil-dig',
+      'sense-detective',
+      'cue-studio',
+      'bond-beads',
+      'welcome-ways',
+      'example-express',
+      'moon-window',
+      'sorting-machine',
+      'water-road',
+      'drops-journey',
+      'rain-garden',
+      'forecast-detective',
+      'vine-snip',
+      'far-lights',
+      'circuit-garden',
+      'measuring-post',
+    ],
   },
   {
     // The grown-up puzzles, so everyone younger sees them behind the signpost. A grown-up puzzle that opens its smallest
@@ -130,9 +389,30 @@ export const LANDS: readonly Land[] = [
     name: 'Lantern Lake',
     line: 'land.lantern-lake',
     host: { kind: 'cat', color: 'purple' },
-    backdrop: { sky: [0xd9c8f2, 0xffe9c4], hills: [0xb9c8f2, 0x9ed6d8, 0xa8dc8f], horizon: 0.4, clouds: 2, sun: false, seed: 151 },
+    backdrop: {
+      sky: [0xd9c8f2, 0xffe9c4],
+      hills: [0xb9c8f2, 0x9ed6d8, 0xa8dc8f],
+      horizon: 0.4,
+      clouds: 2,
+      sun: false,
+      seed: 151,
+    },
     music: tune(127, 'bell', 72),
-    games: ['snowball-merge', 'brain-break', 'pyramid-solitaire', 'number-nook', 'gem-swap', 'tile-pairs', 'lantern-lights', 'sudoku-garden', 'picture-logic', 'word-search', 'island-bridges', 'pond-conga', 'species-comeback'],
+    games: [
+      'snowball-merge',
+      'brain-break',
+      'pyramid-solitaire',
+      'number-nook',
+      'gem-swap',
+      'tile-pairs',
+      'lantern-lights',
+      'sudoku-garden',
+      'picture-logic',
+      'word-search',
+      'island-bridges',
+      'pond-conga',
+      'species-comeback',
+    ],
   },
 ];
 
@@ -142,16 +422,21 @@ export const isLandId = (id: unknown): id is LandId => LAND_IDS.includes(id as L
 export const landOf = (gameId: string): Land | undefined => LANDS.find((l) => l.games.includes(gameId));
 
 /** Whether a game is for this age or a younger one: younger favorites never disappear as she grows. */
-export const forAgeOrYounger = (mod: Pick<GameModule, 'bands'>, band: Band) => bandRank(lowestBand(mod.bands)) <= bandRank(band);
+export const forAgeOrYounger = (mod: Pick<GameModule, 'bands'>, band: Band) =>
+  bandRank(lowestBand(mod.bands)) <= bandRank(band);
 
 /** A land's games for her age and younger, in the land's order. */
 export function visibleIn(land: Land, band: Band, games: readonly GameModule[]): GameModule[] {
-  return land.games.map((id) => games.find((g) => g.id === id)).filter((g): g is GameModule => !!g && forAgeOrYounger(g, band));
+  return land.games
+    .map((id) => games.find((g) => g.id === id))
+    .filter((g): g is GameModule => !!g && forAgeOrYounger(g, band));
 }
 
 /** A land's games for bigger kids: what its signpost shows. */
 export function olderIn(land: Land, band: Band, games: readonly GameModule[]): GameModule[] {
-  return land.games.map((id) => games.find((g) => g.id === id)).filter((g): g is GameModule => !!g && !forAgeOrYounger(g, band));
+  return land.games
+    .map((id) => games.find((g) => g.id === id))
+    .filter((g): g is GameModule => !!g && !forAgeOrYounger(g, band));
 }
 
 /**
@@ -181,10 +466,12 @@ export function landPages<T>(games: readonly T[], sign: boolean): T[][] {
 }
 
 /** A remembered or carried page held inside a side's page count, as Explore's `clampPage` does. */
-export const clampLandPage = (page: number | undefined, pages: number) => Math.min(Math.max(0, Math.floor(page ?? 0) || 0), Math.max(1, pages) - 1);
+export const clampLandPage = (page: number | undefined, pages: number) =>
+  Math.min(Math.max(0, Math.floor(page ?? 0) || 0), Math.max(1, pages) - 1);
 
 /** Every game for her age and younger, in catalog order: what the home spot lists. */
-export const visibleGames = (band: Band, games: readonly GameModule[]): GameModule[] => games.filter((g) => forAgeOrYounger(g, band));
+export const visibleGames = (band: Band, games: readonly GameModule[]): GameModule[] =>
+  games.filter((g) => forAgeOrYounger(g, band));
 
 /**
  * What a land's host suggests: a game she has not finished a round of yet, else the one she played longest ago
@@ -223,9 +510,15 @@ export interface Box {
 }
 
 /** A spot's touch area: the drawing's box standing on the spot (feet at y), with room around it. Always over 100 units. */
-export const spotRect = (s: Spot, box: Box): Rect => ({ x: s.x - box.w / 2 - 15, y: s.y - box.h - 20, w: box.w + 30, h: box.h + 45 });
+export const spotRect = (s: Spot, box: Box): Rect => ({
+  x: s.x - box.w / 2 - 15,
+  y: s.y - box.h - 20,
+  w: box.w + 30,
+  h: box.h + 45,
+});
 
-export const overlaps = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+export const overlaps = (a: Rect, b: Rect) =>
+  a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 
 /** The bottom-left corner where the guide pet stands in a land and on the home spot's path. */
 export const petCorner = (h: number): Rect => ({ x: 0, y: h - 205, w: 200, h: 205 });
@@ -255,7 +548,13 @@ export interface LandArrows {
 }
 
 /** Every spot of a layout, in path order: host, back arrow, games, on arrow, signpost. */
-export const layoutSpots = (l: LandLayout): Spot[] => [l.host, ...(l.prev ? [l.prev] : []), ...l.games, ...(l.next ? [l.next] : []), ...(l.sign ? [l.sign] : [])];
+export const layoutSpots = (l: LandLayout): Spot[] => [
+  l.host,
+  ...(l.prev ? [l.prev] : []),
+  ...l.games,
+  ...(l.next ? [l.next] : []),
+  ...(l.sign ? [l.sign] : []),
+];
 
 /** Drawing sizes to try, largest first. The touch areas stay over 100 units at every one. */
 const BOXES: Box[] = [
@@ -272,7 +571,13 @@ const BOXES: Box[] = [
  * Null if they cannot fit at any size; a test sweeps every count up to `LAND_SPOTS`, so a full land pages
  * (`landPages`) instead of shrinking the targets.
  */
-export function landLayout(games: number, sign: boolean, view: { w: number; h: number }, ground: number, arrows: LandArrows = { prev: false, next: false }): LandLayout | null {
+export function landLayout(
+  games: number,
+  sign: boolean,
+  view: { w: number; h: number },
+  ground: number,
+  arrows: LandArrows = { prev: false, next: false },
+): LandLayout | null {
   const pre = arrows.prev ? 1 : 0;
   const need = games + 1 + pre + (arrows.next ? 1 : 0) + (sign ? 1 : 0);
   for (const box of BOXES) {
@@ -313,7 +618,8 @@ export function landLayout(games: number, sign: boolean, view: { w: number; h: n
         // Spread a row across the land, but not so far that a short row looks scattered.
         const width = Math.min(right - from, (n - 1) * colGap * 1.7);
         const start = from + (right - from - width) / 2;
-        for (let i = 0; i < n; i++) spots.push({ x: n === 1 ? (from + right) / 2 : start + (i * width) / (n - 1), y });
+        for (let i = 0; i < n; i++)
+          spots.push({ x: n === 1 ? (from + right) / 2 : start + (i * width) / (n - 1), y });
       });
       return {
         box,
@@ -336,15 +642,34 @@ export const MAP_RADIUS = 80;
 
 /** Where each spot stands, as fractions of the map's usable rectangle, for a wide screen and an upright one. */
 const MAP_WIDE: Record<MapSpotId, [number, number]> = {
-  'music-mountain': [0.07, 0], 'puzzle-peaks': [0.29, 0], 'story-grove': [0.51, 0], 'tinker-lab': [0.73, 0], 'lantern-lake': [0.95, 0],
-  treehouse: [0, 0.5], 'cozy-village': [0.31, 0.5], home: [0.63, 0.5], barnyard: [1, 0.5],
-  'bubble-beach': [0.17, 1], 'counting-cove': [0.4, 1], 'rainbow-meadow': [0.63, 1], picnic: [0.86, 1],
+  'music-mountain': [0.07, 0],
+  'puzzle-peaks': [0.29, 0],
+  'story-grove': [0.51, 0],
+  'tinker-lab': [0.73, 0],
+  'lantern-lake': [0.95, 0],
+  treehouse: [0, 0.5],
+  'cozy-village': [0.31, 0.5],
+  home: [0.63, 0.5],
+  barnyard: [1, 0.5],
+  'bubble-beach': [0.17, 1],
+  'counting-cove': [0.4, 1],
+  'rainbow-meadow': [0.63, 1],
+  picnic: [0.86, 1],
 };
 const MAP_TALL: Record<MapSpotId, [number, number]> = {
-  'music-mountain': [0.08, 0], 'puzzle-peaks': [0.5, 0], 'story-grove': [0.92, 0],
-  treehouse: [0.02, 1 / 3], home: [0.5, 1 / 3], 'tinker-lab': [0.98, 1 / 3],
-  'cozy-village': [0, 2 / 3], barnyard: [1 / 3, 2 / 3], 'lantern-lake': [2 / 3, 2 / 3], 'rainbow-meadow': [1, 2 / 3],
-  'bubble-beach': [0.18, 1], 'counting-cove': [0.5, 1], picnic: [0.82, 1],
+  'music-mountain': [0.08, 0],
+  'puzzle-peaks': [0.5, 0],
+  'story-grove': [0.92, 0],
+  treehouse: [0.02, 1 / 3],
+  home: [0.5, 1 / 3],
+  'tinker-lab': [0.98, 1 / 3],
+  'cozy-village': [0, 2 / 3],
+  barnyard: [1 / 3, 2 / 3],
+  'lantern-lake': [2 / 3, 2 / 3],
+  'rainbow-meadow': [1, 2 / 3],
+  'bubble-beach': [0.18, 1],
+  'counting-cove': [0.5, 1],
+  picnic: [0.82, 1],
 };
 
 /**
@@ -368,6 +693,7 @@ export function mapLayout(view: { w: number; h: number }): Record<MapSpotId, Spo
   const y0 = 195;
   const y1 = view.h - (wide ? 110 : 120);
   const out = {} as Record<MapSpotId, Spot>;
-  for (const [id, [fx, fy]] of Object.entries(table) as [MapSpotId, [number, number]][]) out[id] = { x: x0 + fx * (x1 - x0), y: y0 + fy * (y1 - y0) };
+  for (const [id, [fx, fy]] of Object.entries(table) as [MapSpotId, [number, number]][])
+    out[id] = { x: x0 + fx * (x1 - x0), y: y0 + fy * (y1 - y0) };
   return out;
 }

@@ -16,9 +16,45 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseMinimum, coursePictures, isPictureCourse } from './course';
 import {
   LEVELS,
-  allLines, axisOf, brushFor, cellsOf, clueDepths, clueText, CLUE_STEP_X, CLUE_STEP_Y, CROSSED, EMPTY, FILLED, FILLED_2, fillFor, headStart, hintFor, isFill, isSolved, lineName,
-  makePuzzles, PAD, paint, potFor, ENTRY_LEVELS, planFor, statusOf, strokeCells, toolForHint, touchFrame, type Axis, type Brush, type Fill, type Hint, type Line, type LineStatus,
-  type Mark, type PicturePlan, type PicturePuzzle, type Tool, type TouchFrame,
+  allLines,
+  axisOf,
+  brushFor,
+  cellsOf,
+  clueDepths,
+  clueText,
+  CLUE_STEP_X,
+  CLUE_STEP_Y,
+  CROSSED,
+  EMPTY,
+  FILLED,
+  FILLED_2,
+  fillFor,
+  headStart,
+  hintFor,
+  isFill,
+  isSolved,
+  lineName,
+  makePuzzles,
+  PAD,
+  paint,
+  potFor,
+  ENTRY_LEVELS,
+  planFor,
+  statusOf,
+  strokeCells,
+  toolForHint,
+  touchFrame,
+  type Axis,
+  type Brush,
+  type Fill,
+  type Hint,
+  type Line,
+  type LineStatus,
+  type Mark,
+  type PicturePlan,
+  type PicturePuzzle,
+  type Tool,
+  type TouchFrame,
 } from './logic';
 
 const PAPER = 0xfffdf6;
@@ -147,16 +183,59 @@ class PictureLogic implements Game {
       this.puzzles = makePuzzles(ctx.level, ctx.rng);
       this.course = null;
     }
-    this.banner = new Text({ text: '', style: { fontFamily: FONT, fontSize: 22, fill: ink, fontWeight: '500', align: 'left', wordWrap: true, wordWrapWidth: 260, lineHeight: 28 } });
+    this.banner = new Text({
+      text: '',
+      style: {
+        fontFamily: FONT,
+        fontSize: 22,
+        fill: ink,
+        fontWeight: '500',
+        align: 'left',
+        wordWrap: true,
+        wordWrapWidth: 260,
+        lineHeight: 28,
+      },
+    });
     this.banner.position.set(12, 8);
     this.bannerBox.addChild(this.bannerBg, this.banner);
     this.bannerBox.visible = false;
-    for (const part of [this.board, this.cells, this.clueLayer, this.rowLayer, this.colLayer, this.glow, this.info, this.sub, this.banner, this.bannerBox, this.bannerBg]) part.eventMode = 'none';
-    for (const part of [this.paper, this.edges, this.gridClip, this.gridMask, this.rowMask, this.colMask, this.buttonsG, this.buttonText]) part.eventMode = 'none';
+    for (const part of [
+      this.board,
+      this.cells,
+      this.clueLayer,
+      this.rowLayer,
+      this.colLayer,
+      this.glow,
+      this.info,
+      this.sub,
+      this.banner,
+      this.bannerBox,
+      this.bannerBg,
+    ])
+      part.eventMode = 'none';
+    for (const part of [
+      this.paper,
+      this.edges,
+      this.gridClip,
+      this.gridMask,
+      this.rowMask,
+      this.colMask,
+      this.buttonsG,
+      this.buttonText,
+    ])
+      part.eventMode = 'none';
     this.board.addChild(this.cells, this.glow);
     this.gridClip.addChild(this.board, this.gridMask);
     this.clueLayer.addChild(this.rowLayer, this.colLayer, this.rowMask, this.colMask);
-    ctx.stage.addChild(this.paper, this.gridClip, this.clueLayer, this.edges, this.info, this.sub, this.bannerBox);
+    ctx.stage.addChild(
+      this.paper,
+      this.gridClip,
+      this.clueLayer,
+      this.edges,
+      this.info,
+      this.sub,
+      this.bannerBox,
+    );
     this.touch = !ctx.couch;
     if (this.touch) {
       // One layer over the paper decides what a finger meant: on a square it paints, anywhere else (or with Slide on) it slides.
@@ -172,9 +251,13 @@ class PictureLogic implements Game {
     }
   }
 
-  get n() { return this.puzzle.size; }
+  get n() {
+    return this.puzzle.size;
+  }
 
-  start() { void this.next(); }
+  start() {
+    void this.next();
+  }
 
   /* -------------------------------------------------------------------------------------------- */
   /* Layout and drawing                                                                            */
@@ -189,7 +272,8 @@ class PictureLogic implements Game {
     const room = v.h - 100 - 200;
     this.gap = Math.min(24, Math.max(15, Math.floor(room / (n * 2.2))));
     this.cell = Math.max(22, Math.min(46, Math.floor((room - this.colDepth * this.gap) / n)));
-    const gutter = this.rowDepth * this.gap * 1.1 + 30, width = gutter + n * this.cell;
+    const gutter = this.rowDepth * this.gap * 1.1 + 30,
+      width = gutter + n * this.cell;
     const left = Math.max(152, (v.w - width - 300) / 2);
     this.board.position.set(left + gutter, 100 + this.colDepth * this.gap + 30);
     this.clueLayer.position.set(this.board.x, this.board.y);
@@ -217,11 +301,22 @@ class PictureLogic implements Game {
     this.scrollX = Math.min(f.maxX, Math.max(0, this.scrollX));
     this.scrollY = Math.min(f.maxY, Math.max(0, this.scrollY));
     const { paper, grid } = f;
-    this.paper.clear().roundRect(paper.x, paper.y, paper.w, paper.h, 16).fill(PAPER).stroke({ width: 4, color: GUIDE_LINE });
+    this.paper
+      .clear()
+      .roundRect(paper.x, paper.y, paper.w, paper.h, 16)
+      .fill(PAPER)
+      .stroke({ width: 4, color: GUIDE_LINE });
     // The strips the clue numbers sit in.
-    this.paper.rect(paper.x + 2, grid.y, f.gutterX - 2, grid.h - 2).fill({ color: swatch.blue.light, alpha: 0.35 });
-    this.paper.rect(grid.x, paper.y + 2, grid.w - 2, f.gutterY - 2).fill({ color: swatch.blue.light, alpha: 0.35 });
-    this.gridMask.clear().rect(grid.x, grid.y, grid.w - 2, grid.h - 2).fill(0xffffff);
+    this.paper
+      .rect(paper.x + 2, grid.y, f.gutterX - 2, grid.h - 2)
+      .fill({ color: swatch.blue.light, alpha: 0.35 });
+    this.paper
+      .rect(grid.x, paper.y + 2, grid.w - 2, f.gutterY - 2)
+      .fill({ color: swatch.blue.light, alpha: 0.35 });
+    this.gridMask
+      .clear()
+      .rect(grid.x, grid.y, grid.w - 2, grid.h - 2)
+      .fill(0xffffff);
     this.rowMask.clear().rect(paper.x, grid.y, f.gutterX, grid.h).fill(0xffffff);
     this.colMask.clear().rect(grid.x, paper.y, grid.w, f.gutterY).fill(0xffffff);
     this.gridClip.mask = this.gridMask;
@@ -270,8 +365,10 @@ class PictureLogic implements Game {
   private layoutBoard() {
     const f = this.frame;
     if (!f) return;
-    const size = this.n * this.cell, { grid } = f;
-    const offX = f.maxX > 0 ? PAD / 2 : (grid.w - size) / 2, offY = f.maxY > 0 ? PAD / 2 : (grid.h - size) / 2;
+    const size = this.n * this.cell,
+      { grid } = f;
+    const offX = f.maxX > 0 ? PAD / 2 : (grid.w - size) / 2,
+      offY = f.maxY > 0 ? PAD / 2 : (grid.h - size) / 2;
     this.board.position.set(grid.x + offX - this.scrollX, grid.y + offY - this.scrollY);
     // The clue numbers: along the squares they describe, and held at the paper's edge across them.
     this.rowLayer.position.set(f.paper.x, this.board.y);
@@ -301,30 +398,85 @@ class PictureLogic implements Game {
   private inView(i: number, margin = 4) {
     const f = this.frame;
     if (!f) return true;
-    const c = this.centerOf(i), r = this.cell / 2, x = this.board.x + c.x, y = this.board.y + c.y, g = f.grid;
-    return x - r >= g.x + margin && x + r <= g.x + g.w - margin && y - r >= g.y + margin && y + r <= g.y + g.h - margin;
+    const c = this.centerOf(i),
+      r = this.cell / 2,
+      x = this.board.x + c.x,
+      y = this.board.y + c.y,
+      g = f.grid;
+    return (
+      x - r >= g.x + margin &&
+      x + r <= g.x + g.w - margin &&
+      y - r >= g.y + margin &&
+      y + r <= g.y + g.h - margin
+    );
   }
 
   private centerOf(i: number) {
-    return { x: (i % this.n) * this.cell + this.cell / 2, y: Math.floor(i / this.n) * this.cell + this.cell / 2 };
+    return {
+      x: (i % this.n) * this.cell + this.cell / 2,
+      y: Math.floor(i / this.n) * this.cell + this.cell / 2,
+    };
   }
 
   /** The tool and help buttons, each a tile that sinks while it is pressed; the tool in use is lit. */
   private paintButtons() {
-    const f = this.frame, g = this.buttonsG.clear();
+    const f = this.frame,
+      g = this.buttonsG.clear();
     this.buttonText.removeChildren().forEach((c) => c.destroy());
     if (!f) return;
     f.slots.forEach((s, k) => {
       const down = this.pressed?.slot === k && this.clock < this.pressed.until ? 3 : 0;
       // On a two-colour picture, Fill is two colour pots, each in its colour and named for it.
-      const pot = s.kind === 'fill' || s.kind === 'fill2' ? this.colorName(s.kind === 'fill2' ? FILLED_2 : FILLED) : null;
-      const sw = pot ? swatch[pot] : s.kind === 'fill' ? swatch.blue : s.kind === 'cross' ? swatch.red : s.kind === 'slide' ? swatch.orange : s.kind === 'hint' ? swatch.yellow : swatch.teal;
+      const pot =
+        s.kind === 'fill' || s.kind === 'fill2'
+          ? this.colorName(s.kind === 'fill2' ? FILLED_2 : FILLED)
+          : null;
+      const sw = pot
+        ? swatch[pot]
+        : s.kind === 'fill'
+          ? swatch.blue
+          : s.kind === 'cross'
+            ? swatch.red
+            : s.kind === 'slide'
+              ? swatch.orange
+              : s.kind === 'hint'
+                ? swatch.yellow
+                : swatch.teal;
       const on = s.kind === this.tool;
-      const text = pot ? pot[0].toUpperCase() + pot.slice(1) : s.kind === 'fill' ? 'Fill' : s.kind === 'cross' ? 'Cross' : s.kind === 'slide' ? 'Slide' : s.kind === 'hint' ? 'Hint' : 'Start over';
-      const mark = s.kind === 'fill' || s.kind === 'fill2' ? '■' : s.kind === 'cross' ? '✕' : s.kind === 'slide' ? '✥' : s.kind === 'hint' ? '◇' : '↺';
+      const text = pot
+        ? pot[0].toUpperCase() + pot.slice(1)
+        : s.kind === 'fill'
+          ? 'Fill'
+          : s.kind === 'cross'
+            ? 'Cross'
+            : s.kind === 'slide'
+              ? 'Slide'
+              : s.kind === 'hint'
+                ? 'Hint'
+                : 'Start over';
+      const mark =
+        s.kind === 'fill' || s.kind === 'fill2'
+          ? '■'
+          : s.kind === 'cross'
+            ? '✕'
+            : s.kind === 'slide'
+              ? '✥'
+              : s.kind === 'hint'
+                ? '◇'
+                : '↺';
       g.roundRect(s.x, s.y + 4, s.w, s.h, 14).fill(sw.line);
-      g.roundRect(s.x, s.y + down, s.w, s.h, 14).fill(on ? sw.fill : sw.light).stroke({ width: on ? 6 : 3, color: on ? ink : sw.line });
-      const t = label(`${mark} ${text}`, 24, on && !pot && s.kind !== 'cross' && s.kind !== 'fill' ? ink : on && (!pot || pot === 'blue') ? 0xffffff : ink);
+      g.roundRect(s.x, s.y + down, s.w, s.h, 14)
+        .fill(on ? sw.fill : sw.light)
+        .stroke({ width: on ? 6 : 3, color: on ? ink : sw.line });
+      const t = label(
+        `${mark} ${text}`,
+        24,
+        on && !pot && s.kind !== 'cross' && s.kind !== 'fill'
+          ? ink
+          : on && (!pot || pot === 'blue')
+            ? 0xffffff
+            : ink,
+      );
       if (t.width > s.w - 12) t.scale.set((s.w - 12) / t.width);
       t.position.set(s.x + s.w / 2, s.y + s.h / 2 + down);
       this.buttonText.addChild(t);
@@ -334,27 +486,55 @@ class PictureLogic implements Game {
   /** A soft strip along each edge of the window that has more of the picture beyond it. */
   private paintEdges() {
     this.edgesDirty = false;
-    const f = this.frame, g = this.edges.clear();
+    const f = this.frame,
+      g = this.edges.clear();
     if (!f || (f.maxX <= 0 && f.maxY <= 0)) return;
-    const { x, y, w, h } = f.grid, t = 12, col = swatch.orange.fill;
-    const tri = (cx: number, cy: number, dx: number, dy: number) => g.poly([cx + dx * 7, cy + dy * 7, cx - dy * 8 - dx * 5, cy + dx * 8 - dy * 5, cx + dy * 8 - dx * 5, cy - dx * 8 - dy * 5]).fill(col);
-    if (this.scrollX > 1) { g.rect(x, y, t, h - 2).fill({ color: col, alpha: 0.3 }); tri(x + t / 2, y + h / 2, -1, 0); }
-    if (this.scrollX < f.maxX - 1) { g.rect(x + w - t - 2, y, t, h - 2).fill({ color: col, alpha: 0.3 }); tri(x + w - t / 2 - 2, y + h / 2, 1, 0); }
-    if (this.scrollY > 1) { g.rect(x, y, w - 2, t).fill({ color: col, alpha: 0.3 }); tri(x + w / 2, y + t / 2, 0, -1); }
-    if (this.scrollY < f.maxY - 1) { g.rect(x, y + h - t - 2, w - 2, t).fill({ color: col, alpha: 0.3 }); tri(x + w / 2, y + h - t / 2 - 2, 0, 1); }
+    const { x, y, w, h } = f.grid,
+      t = 12,
+      col = swatch.orange.fill;
+    const tri = (cx: number, cy: number, dx: number, dy: number) =>
+      g
+        .poly([
+          cx + dx * 7,
+          cy + dy * 7,
+          cx - dy * 8 - dx * 5,
+          cy + dx * 8 - dy * 5,
+          cx + dy * 8 - dx * 5,
+          cy - dx * 8 - dy * 5,
+        ])
+        .fill(col);
+    if (this.scrollX > 1) {
+      g.rect(x, y, t, h - 2).fill({ color: col, alpha: 0.3 });
+      tri(x + t / 2, y + h / 2, -1, 0);
+    }
+    if (this.scrollX < f.maxX - 1) {
+      g.rect(x + w - t - 2, y, t, h - 2).fill({ color: col, alpha: 0.3 });
+      tri(x + w - t / 2 - 2, y + h / 2, 1, 0);
+    }
+    if (this.scrollY > 1) {
+      g.rect(x, y, w - 2, t).fill({ color: col, alpha: 0.3 });
+      tri(x + w / 2, y + t / 2, 0, -1);
+    }
+    if (this.scrollY < f.maxY - 1) {
+      g.rect(x, y + h - t - 2, w - 2, t).fill({ color: col, alpha: 0.3 });
+      tri(x + w / 2, y + h - t / 2 - 2, 0, 1);
+    }
   }
 
   private showBanner(text: string) {
     this.banner.text = text;
     this.bannerBox.visible = text !== '';
     const g = this.bannerBg.clear();
-    if (text) g.roundRect(0, 0, this.banner.width + 24, this.banner.height + 16, 14).fill({ color: swatch.yellow.light, alpha: 0.95 }).stroke({ width: 3, color: swatch.yellow.line });
+    if (text)
+      g.roundRect(0, 0, this.banner.width + 24, this.banner.height + 16, 14)
+        .fill({ color: swatch.yellow.light, alpha: 0.95 })
+        .stroke({ width: 3, color: swatch.yellow.line });
   }
 
   /** The palette colour of a fill on a two-colour picture, or null on a one-colour one. */
   private colorName(m: Fill) {
     const c = this.puzzle?.colors;
-    return c ? LETTERS[c[m === FILLED_2 ? 1 : 0]] ?? 'blue' : null;
+    return c ? (LETTERS[c[m === FILLED_2 ? 1 : 0]] ?? 'blue') : null;
   }
 
   /** What a fill looks like on the squares: its own colour on a two-colour picture, else the one dark fill. */
@@ -376,7 +556,10 @@ class PictureLogic implements Game {
     const p = this.puzzle;
     this.rowDepth = Math.max(...p.rowClues.map((c) => c.length));
     this.colDepth = Math.max(...p.colClues.map((c) => c.length));
-    for (const [texts, clues, inks, layer] of [[this.rowTexts, p.rowClues, p.rowInks, this.rowLayer], [this.colTexts, p.colClues, p.colInks, this.colLayer]] as const) {
+    for (const [texts, clues, inks, layer] of [
+      [this.rowTexts, p.rowClues, p.rowInks, this.rowLayer],
+      [this.colTexts, p.colClues, p.colInks, this.colLayer],
+    ] as const) {
       clues.forEach((clue, k) => {
         const line = clue.map((n, j) => {
           // On a two-colour picture each number is written in its run's colour.
@@ -395,25 +578,41 @@ class PictureLogic implements Game {
     const f = this.touch ? this.frame : null;
     if (f) {
       // Touch: each strip is as deep as the picture's longest clue; the last number of a clue sits next to the squares.
-      this.rowTexts.forEach((texts, r) => texts.forEach((t, k) => {
-        t.style.fontSize = 22;
-        t.position.set(f.gutterX - 8 - CLUE_STEP_X / 2 - (texts.length - 1 - k) * CLUE_STEP_X, r * this.cell + this.cell / 2);
-      }));
-      this.colTexts.forEach((texts, c) => texts.forEach((t, k) => {
-        t.style.fontSize = 22;
-        t.position.set(c * this.cell + this.cell / 2, f.gutterY - 8 - CLUE_STEP_Y / 2 - (texts.length - 1 - k) * CLUE_STEP_Y);
-      }));
+      this.rowTexts.forEach((texts, r) =>
+        texts.forEach((t, k) => {
+          t.style.fontSize = 22;
+          t.position.set(
+            f.gutterX - 8 - CLUE_STEP_X / 2 - (texts.length - 1 - k) * CLUE_STEP_X,
+            r * this.cell + this.cell / 2,
+          );
+        }),
+      );
+      this.colTexts.forEach((texts, c) =>
+        texts.forEach((t, k) => {
+          t.style.fontSize = 22;
+          t.position.set(
+            c * this.cell + this.cell / 2,
+            f.gutterY - 8 - CLUE_STEP_Y / 2 - (texts.length - 1 - k) * CLUE_STEP_Y,
+          );
+        }),
+      );
       return this.paintClues();
     }
-    const cell = this.cell, gap = this.gap, size = Math.round(Math.min(26, Math.max(15, cell * 0.5)));
-    this.rowTexts.forEach((texts, r) => texts.forEach((t, k) => {
-      t.style.fontSize = size;
-      t.position.set(-28 - (texts.length - 1 - k) * gap * 1.1, r * cell + cell / 2);
-    }));
-    this.colTexts.forEach((texts, c) => texts.forEach((t, k) => {
-      t.style.fontSize = size;
-      t.position.set(c * cell + cell / 2, -26 - (texts.length - 1 - k) * gap);
-    }));
+    const cell = this.cell,
+      gap = this.gap,
+      size = Math.round(Math.min(26, Math.max(15, cell * 0.5)));
+    this.rowTexts.forEach((texts, r) =>
+      texts.forEach((t, k) => {
+        t.style.fontSize = size;
+        t.position.set(-28 - (texts.length - 1 - k) * gap * 1.1, r * cell + cell / 2);
+      }),
+    );
+    this.colTexts.forEach((texts, c) =>
+      texts.forEach((t, k) => {
+        t.style.fontSize = size;
+        t.position.set(c * cell + cell / 2, -26 - (texts.length - 1 - k) * gap);
+      }),
+    );
     this.paintClues();
   }
 
@@ -421,7 +620,8 @@ class PictureLogic implements Game {
     const colorOf = (s: LineStatus) => (s === 'done' ? DONE : s === 'over' ? OVER : ink);
     const twoColours = !!this.puzzle?.colors;
     allLines(this.n).forEach((line, k) => {
-      const texts = line.kind === 'row' ? this.rowTexts[line.index] : this.colTexts[line.index], s = this.status[k] ?? 'open';
+      const texts = line.kind === 'row' ? this.rowTexts[line.index] : this.colTexts[line.index],
+        s = this.status[k] ?? 'open';
       for (const t of texts) {
         t.style.fontWeight = s === 'done' ? '500' : '600';
         // Coloured numbers keep their colour: a done line fades, and a line nothing fits is outlined in red rather than turned red.
@@ -436,9 +636,15 @@ class PictureLogic implements Game {
   /** The grid: paper, the guide lines every five, the cursor's row and column, and the marks. */
   private paint() {
     this.dirty = false;
-    const g = this.cells.clear(), n = this.n, cell = this.cell, w = n * cell;
-    g.roundRect(-14, -14, w + 28, w + 28, 14).fill(PAPER).stroke({ width: 4, color: GUIDE_LINE });
-    const cr = Math.floor(this.cursor / n), cc = this.cursor % n;
+    const g = this.cells.clear(),
+      n = this.n,
+      cell = this.cell,
+      w = n * cell;
+    g.roundRect(-14, -14, w + 28, w + 28, 14)
+      .fill(PAPER)
+      .stroke({ width: 4, color: GUIDE_LINE });
+    const cr = Math.floor(this.cursor / n),
+      cc = this.cursor % n;
     // The cursor's row and column, so a number far away is easy to follow (by touch, those of the square last touched).
     if (!this.touch || this.touched) {
       g.rect(0, cr * cell, w, cell).fill({ color: swatch.blue.fill, alpha: 0.12 });
@@ -446,18 +652,29 @@ class PictureLogic implements Game {
     }
     for (let k = 1; k < n; k++) {
       const guide = k % 5 === 0;
-      g.moveTo(k * cell, 0).lineTo(k * cell, w).stroke({ width: guide ? 3 : 1, color: guide ? GUIDE_LINE : GRID_LINE });
-      g.moveTo(0, k * cell).lineTo(w, k * cell).stroke({ width: guide ? 3 : 1, color: guide ? GUIDE_LINE : GRID_LINE });
+      g.moveTo(k * cell, 0)
+        .lineTo(k * cell, w)
+        .stroke({ width: guide ? 3 : 1, color: guide ? GUIDE_LINE : GRID_LINE });
+      g.moveTo(0, k * cell)
+        .lineTo(w, k * cell)
+        .stroke({ width: guide ? 3 : 1, color: guide ? GUIDE_LINE : GRID_LINE });
     }
     for (let i = 0; i < this.marks.length; i++) {
-      const { x, y } = this.at(i), m = this.marks[i];
-      if (isFill(m)) g.roundRect(x + 2, y + 2, cell - 4, cell - 4, Math.max(3, cell * 0.14)).fill(this.fillColor(m));
+      const { x, y } = this.at(i),
+        m = this.marks[i];
+      if (isFill(m))
+        g.roundRect(x + 2, y + 2, cell - 4, cell - 4, Math.max(3, cell * 0.14)).fill(this.fillColor(m));
       else if (m === CROSSED) {
         const a = cell * 0.3;
-        g.moveTo(x + a, y + a).lineTo(x + cell - a, y + cell - a).moveTo(x + cell - a, y + a).lineTo(x + a, y + cell - a).stroke({ width: Math.max(2, cell * 0.08), color: 0x8a8478, cap: 'round' });
+        g.moveTo(x + a, y + a)
+          .lineTo(x + cell - a, y + cell - a)
+          .moveTo(x + cell - a, y + a)
+          .lineTo(x + a, y + cell - a)
+          .stroke({ width: Math.max(2, cell * 0.08), color: 0x8a8478, cap: 'round' });
       }
     }
-    const fills = `${this.fills} ${this.fills === 1 ? 'fill' : 'fills'}`, size = `${this.puzzle.par} squares in the picture`;
+    const fills = `${this.fills} ${this.fills === 1 ? 'fill' : 'fills'}`,
+      size = `${this.puzzle.par} squares in the picture`;
     // Upright, the tally and the size share one line above the buttons.
     const line = this.touch && this.frame && !this.frame.side;
     this.info.text = line ? `${fills} · ${size}` : fills;
@@ -469,26 +686,43 @@ class PictureLogic implements Game {
     if (!this.puzzle) return;
     if (this.dirty) this.paint();
     if (this.touch) {
-      if (this.pressed && this.clock >= this.pressed.until) { this.pressed = null; this.paintButtons(); }
+      if (this.pressed && this.clock >= this.pressed.until) {
+        this.pressed = null;
+        this.paintButtons();
+      }
       if (this.edgesDirty) this.paintEdges();
       this.edgeSlide(dt);
     }
     const g = this.glow.clear();
     if (this.finished || this.busy) return;
-    const cell = this.cell, at = this.at(this.cursor);
+    const cell = this.cell,
+      at = this.at(this.cursor);
     if (this.hinted) {
-      const h = this.hinted, pulse = 5 + 2 * Math.sin(this.clock * 6);
+      const h = this.hinted,
+        pulse = 5 + 2 * Math.sin(this.clock * 6);
       if (h.kind !== 'fix') {
         const line = h.line;
         const first = this.at(cellsOf(this.n, line)[0]);
-        if (line.kind === 'row') g.roundRect(-6, first.y + 1, this.n * cell + 12, cell - 2, 8).stroke({ width: 4, color: swatch.yellow.fill });
-        else g.roundRect(first.x + 1, -6, cell - 2, this.n * cell + 12, 8).stroke({ width: 4, color: swatch.yellow.fill });
+        if (line.kind === 'row')
+          g.roundRect(-6, first.y + 1, this.n * cell + 12, cell - 2, 8).stroke({
+            width: 4,
+            color: swatch.yellow.fill,
+          });
+        else
+          g.roundRect(first.x + 1, -6, cell - 2, this.n * cell + 12, 8).stroke({
+            width: 4,
+            color: swatch.yellow.fill,
+          });
       }
       const m = this.at(h.cell);
-      g.roundRect(m.x - 3, m.y - 3, cell + 6, cell + 6, 10).stroke({ width: pulse, color: h.kind === 'fix' ? swatch.red.fill : swatch.yellow.fill });
+      g.roundRect(m.x - 3, m.y - 3, cell + 6, cell + 6, 10).stroke({
+        width: pulse,
+        color: h.kind === 'fix' ? swatch.red.fill : swatch.yellow.fill,
+      });
     }
     // By touch the square under a painting finger is ringed; a couch player's cursor always is.
-    if (!this.touch || this.drag?.mode === 'paint') g.roundRect(at.x, at.y, cell, cell, 8).stroke({ width: 4, color: ink });
+    if (!this.touch || this.drag?.mode === 'paint')
+      g.roundRect(at.x, at.y, cell, cell, 8).stroke({ width: 4, color: ink });
   }
 
   destroy() {
@@ -524,14 +758,20 @@ class PictureLogic implements Game {
     this.board.scale.set(1);
     this.board.alpha = 0;
     this.clueLayer.alpha = 0;
-    await Promise.all([this.ctx.tw.to(this.board, { alpha: 1 }, { duration: 0.3 }), this.ctx.tw.to(this.clueLayer, { alpha: 1 }, { duration: 0.3 })]);
+    await Promise.all([
+      this.ctx.tw.to(this.board, { alpha: 1 }, { duration: 0.3 }),
+      this.ctx.tw.to(this.clueLayer, { alpha: 1 }, { duration: 0.3 }),
+    ]);
     this.busy = false;
     this.report();
     if (this.told) return;
     this.told = true;
     const f = this.frame;
-    if (this.puzzle.colors) return this.ctx.instruct(this.touch ? 'picture.go-colours' : 'picture.go-colours-keys');
-    return this.ctx.instruct(!this.touch ? 'picture.go' : f && (f.maxX > 0 || f.maxY > 0) ? 'picture.go-slide' : 'picture.go-touch');
+    if (this.puzzle.colors)
+      return this.ctx.instruct(this.touch ? 'picture.go-colours' : 'picture.go-colours-keys');
+    return this.ctx.instruct(
+      !this.touch ? 'picture.go' : f && (f.maxX > 0 || f.maxY > 0) ? 'picture.go-slide' : 'picture.go-touch',
+    );
   }
 
   /** Hand a course's numbers to the shell. `finished` means the picture just ended, so none of its fills are "in progress". */
@@ -551,8 +791,12 @@ class PictureLogic implements Game {
 
   /** The score for the picture just finished, over the board for a moment. */
   private async pictureScore() {
-    const best = this.puzzle.par, total = this.puzzles.length;
-    const text = this.fills === best ? `Picture ${this.index + 1} of ${total}: ${this.fills} fills, the fewest possible!` : `Picture ${this.index + 1} of ${total}: ${this.fills} fills (fewest ${best})`;
+    const best = this.puzzle.par,
+      total = this.puzzles.length;
+    const text =
+      this.fills === best
+        ? `Picture ${this.index + 1} of ${total}: ${this.fills} fills, the fewest possible!`
+        : `Picture ${this.index + 1} of ${total}: ${this.fills} fills (fewest ${best})`;
     const note = label(text, 32, ink);
     note.position.set(this.view.w / 2, Math.max(44, this.board.y - this.colDepth * this.gap - 40));
     note.alpha = 0;
@@ -567,9 +811,11 @@ class PictureLogic implements Game {
   private async zoomOut() {
     const f = this.frame;
     if (!this.touch || !f || (f.maxX <= 0 && f.maxY <= 0)) return;
-    const size = this.n * this.cell, k = Math.min((f.paper.w - 40) / size, (f.paper.h - 40) / size, 1);
+    const size = this.n * this.cell,
+      k = Math.min((f.paper.w - 40) / size, (f.paper.h - 40) / size, 1);
     this.gridClip.mask = null;
-    const x = f.paper.x + (f.paper.w - size * k) / 2, y = f.paper.y + (f.paper.h - size * k) / 2;
+    const x = f.paper.x + (f.paper.w - size * k) / 2,
+      y = f.paper.y + (f.paper.h - size * k) / 2;
     await Promise.all([
       this.ctx.tw.to(this.clueLayer, { alpha: 0 }, { duration: 0.3 }),
       this.ctx.tw.to(this.board, { x, y }, { duration: 0.45 }),
@@ -589,7 +835,9 @@ class PictureLogic implements Game {
       this.done.push(this.fills);
       this.report(true);
     }
-    const n = this.n, cell = this.cell, paintLayer = new Graphics();
+    const n = this.n,
+      cell = this.cell,
+      paintLayer = new Graphics();
     paintLayer.eventMode = 'none';
     this.board.addChild(paintLayer);
     await this.zoomOut();
@@ -597,20 +845,32 @@ class PictureLogic implements Game {
       for (let c = 0; c < n; c++) {
         const ch = this.puzzle.rows[r][c];
         if (ch === '.') continue;
-        paintLayer.roundRect(c * cell + 2, r * cell + 2, cell - 4, cell - 4, Math.max(3, cell * 0.14)).fill(swatch[LETTERS[ch] ?? 'blue'].fill);
+        paintLayer
+          .roundRect(c * cell + 2, r * cell + 2, cell - 4, cell - 4, Math.max(3, cell * 0.14))
+          .fill(swatch[LETTERS[ch] ?? 'blue'].fill);
       }
       paintLayer.alpha = 1;
       sfx.bell(3 + (r % 7), 0.2);
       await this.ctx.tw.wait(0.08);
     }
     const mid = this.ctx.stage.toLocal(this.board.toGlobal({ x: (n * cell) / 2, y: (n * cell) / 2 }));
-    this.ctx.particles.burst(mid.x, mid.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.pink.light], count: 30, speed: [160, 420], gravity: 0, life: [0.6, 1.1] });
+    this.ctx.particles.burst(mid.x, mid.y, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0, swatch.pink.light],
+      count: 30,
+      speed: [160, 420],
+      gravity: 0,
+      life: [0.6, 1.1],
+    });
     this.ctx.pet.cheer();
     sfx.sparkle();
     await this.ctx.say('picture.reveal', { name: this.puzzle.name });
     if (this.course) await this.pictureScore();
     else await this.ctx.tw.wait(1.2);
-    await Promise.all([this.ctx.tw.to(this.board, { alpha: 0 }, { duration: 0.3 }), this.ctx.tw.to(this.clueLayer, { alpha: 0 }, { duration: 0.3 })]);
+    await Promise.all([
+      this.ctx.tw.to(this.board, { alpha: 0 }, { duration: 0.3 }),
+      this.ctx.tw.to(this.clueLayer, { alpha: 0 }, { duration: 0.3 }),
+    ]);
     paintLayer.destroy();
     await this.next();
   }
@@ -643,7 +903,9 @@ class PictureLogic implements Game {
 
   /** The square under a point in stage units, or -1 when the point is off the squares. */
   private cellAt(x: number, y: number, clamp = false) {
-    const c = Math.floor((x - this.board.x) / this.cell), r = Math.floor((y - this.board.y) / this.cell), n = this.n;
+    const c = Math.floor((x - this.board.x) / this.cell),
+      r = Math.floor((y - this.board.y) / this.cell),
+      n = this.n;
     if (!Number.isFinite(c) || !Number.isFinite(r)) return -1;
     if (clamp) return Math.min(n - 1, Math.max(0, r)) * n + Math.min(n - 1, Math.max(0, c));
     return c < 0 || r < 0 || c >= n || r >= n ? -1 : r * n + c;
@@ -665,7 +927,16 @@ class PictureLogic implements Game {
     }
     const p = this.touchLayer.toLocal(e.global);
     if (!Number.isFinite(p.x) || !Number.isFinite(p.y)) return;
-    const base = { id: e.pointerId, x: p.x, y: p.y, sx: p.x, sy: p.y, ox: this.scrollX, oy: this.scrollY, axis: null };
+    const base = {
+      id: e.pointerId,
+      x: p.x,
+      y: p.y,
+      sx: p.x,
+      sy: p.y,
+      ox: this.scrollX,
+      oy: this.scrollY,
+      axis: null,
+    };
     const at = this.tool === 'slide' || !this.inGrid(p.x, p.y) ? -1 : this.cellAt(p.x, p.y);
     if (at < 0) {
       this.drag = { ...base, mode: 'slide', start: -1 };
@@ -674,7 +945,8 @@ class PictureLogic implements Game {
     this.touched = true;
     this.cursor = at;
     this.dirty = true;
-    const button = this.tool === 'cross' ? 'cross' : 'fill', color = fillFor(this.tool) ?? FILLED;
+    const button = this.tool === 'cross' ? 'cross' : 'fill',
+      color = fillFor(this.tool) ?? FILLED;
     this.stroke = { button, color, brush: brushFor(button, this.marks[at], color) };
     this.drag = { ...base, mode: 'paint', start: at };
     this.apply(at);
@@ -705,12 +977,16 @@ class PictureLogic implements Game {
 
   /** A painting finger near the window's edge carries the picture along under it, so one stroke can cross a picture bigger than its window. */
   private edgeSlide(dt: number) {
-    const d = this.drag, f = this.frame;
+    const d = this.drag,
+      f = this.frame;
     if (!d || d.mode !== 'paint' || !f || this.busy || this.finished) return;
-    const g = f.grid, step = EDGE_SPEED * dt;
-    const vx = d.x < g.x + EDGE_ZONE ? -1 : d.x > g.x + g.w - EDGE_ZONE ? 1 : 0, vy = d.y < g.y + EDGE_ZONE ? -1 : d.y > g.y + g.h - EDGE_ZONE ? 1 : 0;
+    const g = f.grid,
+      step = EDGE_SPEED * dt;
+    const vx = d.x < g.x + EDGE_ZONE ? -1 : d.x > g.x + g.w - EDGE_ZONE ? 1 : 0,
+      vy = d.y < g.y + EDGE_ZONE ? -1 : d.y > g.y + g.h - EDGE_ZONE ? 1 : 0;
     // Only along the stroke's own line, so a sideways stroke does not wander up the picture.
-    const ax = d.axis === 'column' ? 0 : vx, ay = d.axis === 'row' ? 0 : vy;
+    const ax = d.axis === 'column' ? 0 : vx,
+      ay = d.axis === 'row' ? 0 : vy;
     if (!ax && !ay) return;
     const before = this.scrollX + this.scrollY * 1e4;
     this.setScroll(this.scrollX + ax * step, this.scrollY + ay * step);
@@ -732,7 +1008,10 @@ class PictureLogic implements Game {
     this.pressed = { slot: k, until: this.clock + 0.15 };
     if (s.kind === 'hint') this.askForHint();
     else if (s.kind === 'again') this.restart();
-    else { this.tool = s.kind; sfx.pop(s.kind === 'fill' ? 3 : s.kind === 'fill2' ? 5 : s.kind === 'cross' ? 2 : 4); }
+    else {
+      this.tool = s.kind;
+      sfx.pop(s.kind === 'fill' ? 3 : s.kind === 'fill2' ? 5 : s.kind === 'cross' ? 2 : 4);
+    }
     this.paintButtons();
   }
 
@@ -741,7 +1020,15 @@ class PictureLogic implements Game {
     this.touch = false;
     this.drag = null;
     this.stroke = null;
-    for (const part of [this.touchLayer, this.buttonLayer, this.buttonsG, this.buttonText, this.edges, this.paper]) part.visible = false;
+    for (const part of [
+      this.touchLayer,
+      this.buttonLayer,
+      this.buttonsG,
+      this.buttonText,
+      this.edges,
+      this.paper,
+    ])
+      part.visible = false;
     this.gridClip.mask = null;
     this.rowLayer.mask = null;
     this.colLayer.mask = null;
@@ -764,20 +1051,35 @@ class PictureLogic implements Game {
     this.touch = true;
     this.drag = null;
     this.stroke = null;
-    for (const part of [this.touchLayer, this.buttonLayer, this.buttonsG, this.buttonText, this.edges, this.paper]) part.visible = true;
+    for (const part of [
+      this.touchLayer,
+      this.buttonLayer,
+      this.buttonsG,
+      this.buttonText,
+      this.edges,
+      this.paper,
+    ])
+      part.visible = true;
     this.resize(this.view);
   }
 
   control(input: CouchControls, dt: number) {
     if (this.touch) this.useController();
     if (this.busy || this.finished || !this.puzzle) return;
-    const fillHeld = input.players.some((p) => p.hold), crossHeld = input.players.some((p) => p.holdUndo);
+    const fillHeld = input.players.some((p) => p.hold),
+      crossHeld = input.players.some((p) => p.holdUndo);
     if (!fillHeld && !crossHeld) this.stroke = null;
     // A press starts a stroke on the square under the cursor; moving while it is held carries it along.
     if (input.players.some((p) => p.action)) {
       // With no pots on screen, the fill button steps a two-colour square through its colours: empty, the first, the second, empty.
-      const m = this.marks[this.cursor], twoColours = !!this.puzzle.colors, color: Fill = twoColours && m === FILLED ? FILLED_2 : FILLED;
-      this.stroke = { button: 'fill', color, brush: twoColours && m === FILLED_2 ? 'empty' : brushFor('fill', m, color) };
+      const m = this.marks[this.cursor],
+        twoColours = !!this.puzzle.colors,
+        color: Fill = twoColours && m === FILLED ? FILLED_2 : FILLED;
+      this.stroke = {
+        button: 'fill',
+        color,
+        brush: twoColours && m === FILLED_2 ? 'empty' : brushFor('fill', m, color),
+      };
       this.apply(this.cursor);
     } else if (input.players.some((p) => p.undo)) {
       this.stroke = { button: 'cross', color: FILLED, brush: brushFor('cross', this.marks[this.cursor]) };
@@ -790,8 +1092,11 @@ class PictureLogic implements Game {
   }
 
   private move(dir: number) {
-    const n = this.n, r = Math.floor(this.cursor / n), c = this.cursor % n;
-    const nr = Math.min(n - 1, Math.max(0, r + [0, 1, 0, -1][dir])), nc = Math.min(n - 1, Math.max(0, c + [1, 0, -1, 0][dir]));
+    const n = this.n,
+      r = Math.floor(this.cursor / n),
+      c = this.cursor % n;
+    const nr = Math.min(n - 1, Math.max(0, r + [0, 1, 0, -1][dir])),
+      nc = Math.min(n - 1, Math.max(0, c + [1, 0, -1, 0][dir]));
     const to = nr * n + nc;
     if (to === this.cursor) return;
     this.cursor = to;
@@ -818,7 +1123,9 @@ class PictureLogic implements Game {
 
   /** Re-read the two lines through a square: their clues turn grey when done, red when no way of filling them fits. */
   private refreshLines(i: number) {
-    const n = this.n, row: Line = { kind: 'row', index: Math.floor(i / n) }, col: Line = { kind: 'column', index: i % n };
+    const n = this.n,
+      row: Line = { kind: 'row', index: Math.floor(i / n) },
+      col: Line = { kind: 'column', index: i % n };
     this.status[row.index] = statusOf(this.marks, this.puzzle, row);
     this.status[n + col.index] = statusOf(this.marks, this.puzzle, col);
     this.paintClues();
@@ -853,24 +1160,46 @@ class PictureLogic implements Game {
 
   private hintLine(h: Hint): [LineId, Record<string, string | number>] {
     if (h.kind === 'fix') {
-      if (isFill(h.mark) && isFill(h.want)) return [this.touch ? 'picture.hint-fix-colour-touch' : 'picture.hint-fix-colour', { colour: this.colorName(h.want) ?? '' }];
-      return [isFill(h.mark) ? (this.touch ? 'picture.hint-fix-touch' : 'picture.hint-fix') : this.touch ? 'picture.hint-fix-cross-touch' : 'picture.hint-fix-cross', {}];
+      if (isFill(h.mark) && isFill(h.want))
+        return [
+          this.touch ? 'picture.hint-fix-colour-touch' : 'picture.hint-fix-colour',
+          { colour: this.colorName(h.want) ?? '' },
+        ];
+      return [
+        isFill(h.mark)
+          ? this.touch
+            ? 'picture.hint-fix-touch'
+            : 'picture.hint-fix'
+          : this.touch
+            ? 'picture.hint-fix-cross-touch'
+            : 'picture.hint-fix-cross',
+        {},
+      ];
     }
-    const names = this.puzzle.colors ? { [FILLED]: this.colorName(FILLED)!, [FILLED_2]: this.colorName(FILLED_2)! } as Record<Fill, string> : undefined;
+    const names = this.puzzle.colors
+      ? ({ [FILLED]: this.colorName(FILLED)!, [FILLED_2]: this.colorName(FILLED_2)! } as Record<Fill, string>)
+      : undefined;
     const vars = { line: lineName(h.line), clue: clueText(h.clue, h.inks, names) };
     // A two-colour square's hint names the colour it takes; a full line's gaps fall only between runs of one colour.
     if (h.color) {
       const colour = this.colorName(h.color) ?? '';
-      return [h.why.kind === 'full' ? 'picture.hint-full-fill-colour' : 'picture.hint-fill-colour', { ...vars, colour }];
+      return [
+        h.why.kind === 'full' ? 'picture.hint-full-fill-colour' : 'picture.hint-fill-colour',
+        { ...vars, colour },
+      ];
     }
     if (names && h.why.kind === 'full') return ['picture.hint-full-cross-colour', vars];
     // The hint says why the clue decides the square, so the step can be used again: a finished line, a line the clue
     // fills, a long run's overlap on an empty line, or else the clue fitting only one way around what is marked.
     switch (h.why.kind) {
-      case 'done': return [h.clue.length === 1 && h.clue[0] === 0 ? 'picture.hint-zero' : 'picture.hint-done', vars];
-      case 'full': return [h.kind === 'fill' ? 'picture.hint-full-fill' : 'picture.hint-full-cross', vars];
-      case 'overlap': return ['picture.hint-overlap', { ...vars, run: h.why.run, room: h.why.room }];
-      case 'fits': return [h.kind === 'fill' ? 'picture.hint-fill' : 'picture.hint-cross', vars];
+      case 'done':
+        return [h.clue.length === 1 && h.clue[0] === 0 ? 'picture.hint-zero' : 'picture.hint-done', vars];
+      case 'full':
+        return [h.kind === 'fill' ? 'picture.hint-full-fill' : 'picture.hint-full-cross', vars];
+      case 'overlap':
+        return ['picture.hint-overlap', { ...vars, run: h.why.run, room: h.why.room }];
+      case 'fits':
+        return [h.kind === 'fill' ? 'picture.hint-fill' : 'picture.hint-cross', vars];
     }
   }
 
@@ -907,36 +1236,63 @@ class PictureLogic implements Game {
   autotouch(): TouchIntent | null {
     const f = this.frame;
     if (this.busy || this.finished || !this.puzzle || !this.touch || !f) return null;
-    const n = this.n, sol = this.puzzle.solution;
+    const n = this.n,
+      sol = this.puzzle.solution;
     const slot = (kind: Tool) => f.slots.findIndex((s) => s.kind === kind);
     const press = (kind: Tool) => {
-      const k = slot(kind), s = f.slots[k];
-      return { tap: { on: this.buttonLayer, x: s.x + s.w / 2, y: s.y + s.h / 2 }, receiver: this.slotNodes[k], pause: 0.3 } satisfies TouchIntent;
+      const k = slot(kind),
+        s = f.slots[k];
+      return {
+        tap: { on: this.buttonLayer, x: s.x + s.w / 2, y: s.y + s.h / 2 },
+        receiver: this.slotNodes[k],
+        pause: 0.3,
+      } satisfies TouchIntent;
     };
     const target = this.puzzle.target;
     const wrong = this.marks.findIndex((m, i) => (isFill(m) && m !== target[i]) || (m === CROSSED && sol[i]));
     const run = wrong >= 0 ? [wrong] : this.nextRun();
     if (!run) return null;
     // A cross is lifted with Cross; a wrong fill is taken out with its own pot, or painted over with the right colour's.
-    const bad = wrong >= 0 ? this.marks[wrong] : EMPTY, aim = target[run[0]];
+    const bad = wrong >= 0 ? this.marks[wrong] : EMPTY,
+      aim = target[run[0]];
     const want: Tool = bad === CROSSED ? 'cross' : potFor(isFill(aim) ? aim : bad);
     // The part of the run that is in view from its first square; a run longer than the window is painted a piece at a time.
     const seen: number[] = [];
-    for (const i of run) { if (!this.inView(i)) break; seen.push(i); }
+    for (const i of run) {
+      if (!this.inView(i)) break;
+      seen.push(i);
+    }
     if (seen.length === 0) {
       // Slide first: the finger drags the picture the other way, so it ends where the picture has moved by the same distance. A run that
       // fits the window is centred in it; a longer one starts near the left edge, so most of it can be painted at once.
-      const a = this.centerOf(run[0]), z = this.centerOf(run[run.length - 1]), g = f.grid;
+      const a = this.centerOf(run[0]),
+        z = this.centerOf(run[run.length - 1]),
+        g = f.grid;
       const fits = z.x - a.x + this.cell <= g.w - PAD * 2;
-      const nx = Math.min(f.maxX, Math.max(0, (fits ? (a.x + z.x) / 2 + PAD / 2 - g.w / 2 : a.x + PAD / 2 - g.w * 0.12)));
+      const nx = Math.min(
+        f.maxX,
+        Math.max(0, fits ? (a.x + z.x) / 2 + PAD / 2 - g.w / 2 : a.x + PAD / 2 - g.w * 0.12),
+      );
       const ny = Math.min(f.maxY, Math.max(0, a.y + PAD / 2 - g.h / 2));
-      const dx = nx - this.scrollX, dy = ny - this.scrollY, cx = g.x + g.w / 2, cy = g.y + g.h / 2;
+      const dx = nx - this.scrollX,
+        dy = ny - this.scrollY,
+        cx = g.x + g.w / 2,
+        cy = g.y + g.h / 2;
       if (this.tool !== 'slide') return press('slide');
-      return { trace: { on: this.touchLayer, x: cx + dx / 2, y: cy + dy / 2 }, via: [{ on: this.touchLayer, x: cx - dx / 2, y: cy - dy / 2 }], receiver: this.touchLayer, pause: 0.4 };
+      return {
+        trace: { on: this.touchLayer, x: cx + dx / 2, y: cy + dy / 2 },
+        via: [{ on: this.touchLayer, x: cx - dx / 2, y: cy - dy / 2 }],
+        receiver: this.touchLayer,
+        pause: 0.4,
+      };
     }
     // A square that is wrong is taken out by a tap with the tool that put it there.
     if (this.tool !== want) return press(want);
-    const at = (i: number) => ({ on: this.board, x: (i % n) * this.cell + this.cell / 2, y: Math.floor(i / n) * this.cell + this.cell / 2 });
+    const at = (i: number) => ({
+      on: this.board,
+      x: (i % n) * this.cell + this.cell / 2,
+      y: Math.floor(i / n) * this.cell + this.cell / 2,
+    });
     return seen.length === 1
       ? { tap: at(seen[0]), receiver: this.touchLayer, pause: 0.45 }
       : { trace: at(seen[0]), via: [at(seen[seen.length - 1])], receiver: this.touchLayer, pause: 0.5 };
@@ -962,10 +1318,14 @@ class PictureLogic implements Game {
       this.botRun = { cells, at: -1 };
       return this.autoplay(0);
     }
-    const start = run.cells[0], n = this.n;
+    const start = run.cells[0],
+      n = this.n;
     if (run.at < 0) {
       if (this.cursor !== start) {
-        const fr = Math.floor(this.cursor / n), fc = this.cursor % n, tr = Math.floor(start / n), tc = start % n;
+        const fr = Math.floor(this.cursor / n),
+          fc = this.cursor % n,
+          tr = Math.floor(start / n),
+          tc = start % n;
         p.direction = fc !== tc ? (tc > fc ? 0 : 2) : tr > fr ? 1 : 3;
         this.botWait = 0.07;
         return out;
@@ -993,13 +1353,21 @@ class PictureLogic implements Game {
 
   /** The next horizontal run of the picture's squares, all of one colour, that is not filled yet, scanning the rows from the top. */
   private nextRun(): number[] | null {
-    const n = this.n, target = this.puzzle.target;
+    const n = this.n,
+      target = this.puzzle.target;
     for (let r = 0; r < n; r++) {
       let c = 0;
       while (c < n) {
-        if (!this.puzzle.solution[r * n + c] || this.marks[r * n + c] === target[r * n + c]) { c++; continue; }
-        const cells: number[] = [], color = target[r * n + c];
-        while (c < n && target[r * n + c] === color) { cells.push(r * n + c); c++; }
+        if (!this.puzzle.solution[r * n + c] || this.marks[r * n + c] === target[r * n + c]) {
+          c++;
+          continue;
+        }
+        const cells: number[] = [],
+          color = target[r * n + c];
+        while (c < n && target[r * n + c] === color) {
+          cells.push(r * n + c);
+          c++;
+        }
         return cells;
       }
     }
@@ -1015,15 +1383,33 @@ class PictureLogic implements Game {
 function miniPuzzle(cell: number): Container {
   const c = new Container();
   const heart = ['.#.#.', '#####', '#####', '.###.', '..#..'];
-  const w = 5 * cell, clues = [[1, 1], [5], [5], [3], [1]], cols = [[2], [4], [4], [4], [2]];
-  const g = new Graphics().roundRect(-w / 2 - 6, -w / 2 - 6, w + 12, w + 12, 12).fill(PAPER).stroke({ width: 4, color: GUIDE_LINE });
-  heart.forEach((row, r) => [...row].forEach((ch, k) => {
-    const x = -w / 2 + k * cell, y = -w / 2 + r * cell;
-    g.roundRect(x + 1, y + 1, cell - 2, cell - 2, 5).fill(ch === '#' && r < 3 ? FILL : swatch.white.light).stroke({ width: 1, color: GRID_LINE });
-  }));
+  const w = 5 * cell,
+    clues = [[1, 1], [5], [5], [3], [1]],
+    cols = [[2], [4], [4], [4], [2]];
+  const g = new Graphics()
+    .roundRect(-w / 2 - 6, -w / 2 - 6, w + 12, w + 12, 12)
+    .fill(PAPER)
+    .stroke({ width: 4, color: GUIDE_LINE });
+  heart.forEach((row, r) =>
+    [...row].forEach((ch, k) => {
+      const x = -w / 2 + k * cell,
+        y = -w / 2 + r * cell;
+      g.roundRect(x + 1, y + 1, cell - 2, cell - 2, 5)
+        .fill(ch === '#' && r < 3 ? FILL : swatch.white.light)
+        .stroke({ width: 1, color: GRID_LINE });
+    }),
+  );
   c.addChild(g);
-  clues.forEach((cl, r) => { const t = label(cl.join(' '), Math.round(cell * 0.38), ink); t.position.set(-w / 2 - 22 - cl.length * 4, -w / 2 + r * cell + cell / 2); c.addChild(t); });
-  cols.forEach((cl, k) => { const t = label(cl.join(' '), Math.round(cell * 0.38), ink); t.position.set(-w / 2 + k * cell + cell / 2, -w / 2 - 20); c.addChild(t); });
+  clues.forEach((cl, r) => {
+    const t = label(cl.join(' '), Math.round(cell * 0.38), ink);
+    t.position.set(-w / 2 - 22 - cl.length * 4, -w / 2 + r * cell + cell / 2);
+    c.addChild(t);
+  });
+  cols.forEach((cl, k) => {
+    const t = label(cl.join(' '), Math.round(cell * 0.38), ink);
+    t.position.set(-w / 2 + k * cell + cell / 2, -w / 2 - 20);
+    c.addChild(t);
+  });
   return c;
 }
 
@@ -1041,13 +1427,19 @@ function sticker(seed: number): Container {
   const rng = new Rng(seed);
   const c = new Container();
   const pool = makePuzzles(2, new Rng(seed)).concat(makePuzzles(3, new Rng(seed)));
-  const pic = rng.pick(pool), cell = 11, w = pic.size * cell;
-  c.addChild(new Graphics().circle(0, 0, 78).fill(swatch.blue.light).stroke({ width: 6, color: swatch.blue.line }));
+  const pic = rng.pick(pool),
+    cell = 11,
+    w = pic.size * cell;
+  c.addChild(
+    new Graphics().circle(0, 0, 78).fill(swatch.blue.light).stroke({ width: 6, color: swatch.blue.line }),
+  );
   const g = new Graphics();
-  for (let r = 0; r < pic.size; r++) for (let k = 0; k < pic.size; k++) {
-    const ch = pic.rows[r][k];
-    if (ch !== '.') g.rect(-w / 2 + k * cell, -w / 2 + r * cell, cell, cell).fill(swatch[LETTERS[ch] ?? 'blue'].fill);
-  }
+  for (let r = 0; r < pic.size; r++)
+    for (let k = 0; k < pic.size; k++) {
+      const ch = pic.rows[r][k];
+      if (ch !== '.')
+        g.rect(-w / 2 + k * cell, -w / 2 + r * cell, cell, cell).fill(swatch[LETTERS[ch] ?? 'blue'].fill);
+    }
   g.scale.set(0.9);
   c.addChild(g);
   return c;
@@ -1064,8 +1456,10 @@ export const pictureLogic: GameModule = {
   bands: ['grownup'],
   inputs: ['touch', 'controller'],
   touchDemo: true,
-  coplayHint: 'Fill the squares a number allows, and cross out the ones it rules out. Ask which row or column has a clue that leaves only one way to fit.',
-  offScreen: 'Draw a grid on squared paper, write numbers beside the rows and columns, and shade the runs they ask for.',
+  coplayHint:
+    'Fill the squares a number allows, and cross out the ones it rules out. Ask which row or column has a clue that leaves only one way to fit.',
+  offScreen:
+    'Draw a grid on squared paper, write numbers beside the rows and columns, and shade the runs they ask for.',
   levels: (band) => rangeFor(LEVELS, band),
   entryLevels: ENTRY_LEVELS,
   describeLevel: (level) => planFor(level).name,

@@ -1,16 +1,34 @@
 // What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
 export const VOICE = {
   'game.shape-buddies': ['Shape Buddies!'],
-  'buddies.start': ['Make a bridge and a cup for the seed. Choose a friend, change its shape, and drag it to a dock.'],
-  'buddies.start2': ['The far bank is lower. Make a slope and a cup for the seed. Choose a friend, change its shape, and drag it to a dock.'],
-  'buddies.start3': ['The gap is too wide for one friend. Make them hold hands: a flat path, then a cup at the end. Choose a friend, change its shape, and drag it to a dock.'],
-  'buddies.start4': ['The far bank is lower, and the gap is too wide for one friend. Make them hold hands: a slope down, then a cup at the end. Choose a friend, change its shape, and drag it to a dock.'],
-  'buddies.start5': ['The gap is a rocky crack with a ledge inside. Make a bridge and a cup, or make one cup that sits on the ledge. Choose a friend, change its shape, and drag it to a dock.'],
-  'buddies.start6': ['The stream runs the other way, and the low bank is on this side now. Make a slope that goes down to it, and a cup. Tap Turn to turn a friend around.'],
-  'buddies.start7': ['A plank already crosses the stream. Make your friend a cup to catch the seed. Tap Cup, then drag your friend to the catching dock.'],
+  'buddies.start': [
+    'Make a bridge and a cup for the seed. Choose a friend, change its shape, and drag it to a dock.',
+  ],
+  'buddies.start2': [
+    'The far bank is lower. Make a slope and a cup for the seed. Choose a friend, change its shape, and drag it to a dock.',
+  ],
+  'buddies.start3': [
+    'The gap is too wide for one friend. Make them hold hands: a flat path, then a cup at the end. Choose a friend, change its shape, and drag it to a dock.',
+  ],
+  'buddies.start4': [
+    'The far bank is lower, and the gap is too wide for one friend. Make them hold hands: a slope down, then a cup at the end. Choose a friend, change its shape, and drag it to a dock.',
+  ],
+  'buddies.start5': [
+    'The gap is a rocky crack with a ledge inside. Make a bridge and a cup, or make one cup that sits on the ledge. Choose a friend, change its shape, and drag it to a dock.',
+  ],
+  'buddies.start6': [
+    'The stream runs the other way, and the low bank is on this side now. Make a slope that goes down to it, and a cup. Tap Turn to turn a friend around.',
+  ],
+  'buddies.start7': [
+    'A plank already crosses the stream. Make your friend a cup to catch the seed. Tap Cup, then drag your friend to the catching dock.',
+  ],
   'buddies.oneRoll': ['The seed rolled off the end. Make your friend a cup.'],
-  'buddies.seats': ['Who is building with you? Tap the two friends to build with someone, or tap one friend to build alone.'],
-  'buddies.start8': ['{name}, your friend goes first. Your partner has the other one. Take turns: only the glowing friend can move.'],
+  'buddies.seats': [
+    'Who is building with you? Tap the two friends to build with someone, or tap one friend to build alone.',
+  ],
+  'buddies.start8': [
+    '{name}, your friend goes first. Your partner has the other one. Take turns: only the glowing friend can move.',
+  ],
   'buddies.turnTeal': ["The teal friend's turn."],
   'buddies.turnPurple': ["The purple friend's turn."],
   'buddies.turnPink': ["The pink friend's turn."],
@@ -18,22 +36,38 @@ export const VOICE = {
   'buddies.shared': ['You each did a job, and together it worked!'],
   'buddies.turnSlope': ['The slope goes up the wrong way. Choose the slope friend and tap Turn.'],
   'buddies.turn': ['Turned around!'],
-  'buddies.ledgeNeed': ['The seed falls into the crack. Make a bridge over it, or a cup that sits on the ledge.'],
+  'buddies.ledgeNeed': [
+    'The seed falls into the crack. Make a bridge over it, or a cup that sits on the ledge.',
+  ],
   'buddies.otherWay': ['There was another way too!'],
-  'buddies.downPath': ['The seed needs a path that slopes down to the low bank. Make the first friend a slope and drag it to the near half.'],
+  'buddies.downPath': [
+    'The seed needs a path that slopes down to the low bank. Make the first friend a slope and drag it to the near half.',
+  ],
   'buddies.downFlat': ['The flat path stays up high and stops short. A slope goes down to the low bank.'],
-  'buddies.joinPath': ['The seed needs a path from our bank. Make the first friend flat and drag it to the near half.'],
+  'buddies.joinPath': [
+    'The seed needs a path from our bank. Make the first friend flat and drag it to the near half.',
+  ],
   'buddies.joinSlope': ['The slope dips into the water in the middle. Here the path needs to stay flat.'],
-  'buddies.joinShort': ["One friend can't reach across. Put the other friend at the far half, holding hands."],
+  'buddies.joinShort': [
+    "One friend can't reach across. Put the other friend at the far half, holding hands.",
+  ],
   'buddies.joinCup': ['The seed rolled right across and away. Make the friend at the end a cup to hold it.'],
   'buddies.together': ['Together you made a spoon!'],
-  'buddies.stepFlat': ["The flat bridge stays up high. It doesn't reach the low bank. A slope goes down to it."],
-  'buddies.stepBridge': ['The seed needs a slope down. Choose the friend at the gap, or a parked friend. Make it a slope and drag it to the bridge dock.'],
+  'buddies.stepFlat': [
+    "The flat bridge stays up high. It doesn't reach the low bank. A slope goes down to it.",
+  ],
+  'buddies.stepBridge': [
+    'The seed needs a slope down. Choose the friend at the gap, or a parked friend. Make it a slope and drag it to the bridge dock.',
+  ],
   'buddies.flatten': ['Flat can make a bridge.'],
   'buddies.slope': ['A slope rolls it across.'],
   'buddies.scoop': ['A scoop holds it.'],
-  'buddies.bridge': ['The seed needs a bridge. Choose the friend at the gap, or a parked friend. Make it flat or sloped and drag it to the bridge dock.'],
-  'buddies.cup': ['The seed needs a cup. Choose the friend at the catching dock, or a parked friend. Make it a scoop and drag it to the catching dock.'],
+  'buddies.bridge': [
+    'The seed needs a bridge. Choose the friend at the gap, or a parked friend. Make it flat or sloped and drag it to the bridge dock.',
+  ],
+  'buddies.cup': [
+    'The seed needs a cup. Choose the friend at the catching dock, or a parked friend. Make it a scoop and drag it to the catching dock.',
+  ],
   'buddies.try': ['Try your shapes. Tap the arrow to release the seed.'],
   'buddies.plant': ['The cup caught it! Tap the pot to carry the seed home.'],
   'buddies.occupied': ['A friend is already there. Drag that friend back to its parking spot first.'],

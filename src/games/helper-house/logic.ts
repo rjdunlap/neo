@@ -120,7 +120,15 @@ export interface Trace {
   warmth: number;
 }
 
-export type Failure = 'friend-waiting' | 'sensor-blind' | 'lamp-flickers' | 'lamp-on-at-morning' | 'lamp-off-at-night' | 'never-warms' | 'too-warm' | 'heater-busy';
+export type Failure =
+  | 'friend-waiting'
+  | 'sensor-blind'
+  | 'lamp-flickers'
+  | 'lamp-on-at-morning'
+  | 'lamp-off-at-night'
+  | 'never-warms'
+  | 'too-warm'
+  | 'heater-busy';
 
 export interface Outcome {
   trace: Trace[];
@@ -142,7 +150,14 @@ export function placesSensor(level: number): boolean {
  * What a sensor at a socket reads at a step; a sensor that sees nothing reads `far`. `lit` is the lamp's state as the
  * step begins: under the lamp (level 5) the sensor reads the lamp's own light as `bright`.
  */
-export function read(board: Board, day: Day, step: number, waiting: number, warmth = day.warmth, lit = false): Reading {
+export function read(
+  board: Board,
+  day: Day,
+  step: number,
+  waiting: number,
+  warmth = day.warmth,
+  lit = false,
+): Reading {
   const s = board.sensor;
   if (s.kind === 'eye') {
     if (s.socket === 'door') return waiting > 0 ? 'near' : 'far';
@@ -169,9 +184,10 @@ export function runDay(board: Board, day: Day): Outcome {
     const reading = read(board, day, step, waiting, warmth, helperOn);
     let matched: number | null = null;
     if (board.lines) matched = lineMatch(board.lines, warmth);
-    else board.rows.forEach((r, i) => {
-      if (r.reading !== null && r.reading === reading) matched = i;
-    });
+    else
+      board.rows.forEach((r, i) => {
+        if (r.reading !== null && r.reading === reading) matched = i;
+      });
     if (matched !== null) {
       const a = board.rows[matched].action;
       helperOn = a === 'open' || a === 'on';
@@ -184,8 +200,20 @@ export function runDay(board: Board, day: Day): Outcome {
       // The door shuts behind the friend: nothing is near any more, so the next step reads afresh.
       helperOn = false;
     }
-    if (helperFor(board.level) === 'heater') warmth = Math.max(0, Math.min(WARMTH_MAX, warmth + (helperOn ? 1 : -1)));
-    trace.push({ step, sun: day.sun[step], arrived, reading, matched, helperOn, opened, waiting, inside, warmth });
+    if (helperFor(board.level) === 'heater')
+      warmth = Math.max(0, Math.min(WARMTH_MAX, warmth + (helperOn ? 1 : -1)));
+    trace.push({
+      step,
+      sun: day.sun[step],
+      arrived,
+      reading,
+      matched,
+      helperOn,
+      opened,
+      waiting,
+      inside,
+      warmth,
+    });
   }
   const failure = judge(board.level, trace, day);
   return { trace, met: failure === null, failure };
@@ -225,7 +253,11 @@ export const SUN_SCRIPTS: readonly SunLevel[][] = [
   ['dim', 'bright', 'bright', 'bright', 'bright', 'dim', 'dark', 'dark', 'dark', 'dim', 'bright', 'bright'],
 ];
 /** Level 1: three arrivals at distinct steps among 1–10, at least two steps apart. */
-export const ARRIVALS: readonly number[][] = [[2, 5, 8], [1, 4, 9], [3, 6, 10]];
+export const ARRIVALS: readonly number[][] = [
+  [2, 5, 8],
+  [1, 4, 9],
+  [3, 6, 10],
+];
 
 /** Level 4 starts the nook a little chilly. */
 export const START_WARMTH = 1;
@@ -233,7 +265,8 @@ export const START_WARMTH = 1;
 /** The day a seed picks for a level; the seed never changes a rule. Level 4 has one day: only the friend and colours vary; level 5 reuses level 3's scripts. */
 export function dayFor(level: number, rng: Rng): Day {
   if (level === 1) return { sun: SUN_SCRIPTS[0].slice(), arrivals: rng.pick(ARRIVALS).slice(), warmth: 0 };
-  if (level === 4 || onGauge(level)) return { sun: SUN_SCRIPTS[0].slice(), arrivals: [], warmth: START_WARMTH };
+  if (level === 4 || onGauge(level))
+    return { sun: SUN_SCRIPTS[0].slice(), arrivals: [], warmth: START_WARMTH };
   return { sun: rng.pick(SUN_SCRIPTS).slice(), arrivals: [], warmth: 0 };
 }
 
@@ -286,17 +319,58 @@ export interface Brief {
 }
 
 export function startBoard(level: number): Board {
-  if (level === 1) return { level: 1, sensor: { kind: 'eye', socket: null }, rows: [{ reading: 'near', action: 'open', given: true }] };
-  if (level === 2) return { level: 2, sensor: { kind: null, socket: 'post' }, rows: [{ reading: 'dark', action: 'on', given: true }] };
-  if (level === 4) return { level: 4, sensor: { kind: 'thermo', socket: 'nook' }, rows: [{ reading: null, action: 'on', given: false }, { reading: null, action: 'off', given: false }] };
+  if (level === 1)
+    return {
+      level: 1,
+      sensor: { kind: 'eye', socket: null },
+      rows: [{ reading: 'near', action: 'open', given: true }],
+    };
+  if (level === 2)
+    return {
+      level: 2,
+      sensor: { kind: null, socket: 'post' },
+      rows: [{ reading: 'dark', action: 'on', given: true }],
+    };
+  if (level === 4)
+    return {
+      level: 4,
+      sensor: { kind: 'thermo', socket: 'nook' },
+      rows: [
+        { reading: null, action: 'on', given: false },
+        { reading: null, action: 'off', given: false },
+      ],
+    };
   // Level 3's answer, fixed; only the sensor's place is open, and it starts under the lamp.
-  if (level === 5) return { level: 5, sensor: { kind: 'sun', socket: 'lamp' }, rows: [{ reading: 'dark', action: 'on', given: true }, { reading: 'bright', action: 'off', given: true }] };
+  if (level === 5)
+    return {
+      level: 5,
+      sensor: { kind: 'sun', socket: 'lamp' },
+      rows: [
+        { reading: 'dark', action: 'on', given: true },
+        { reading: 'bright', action: 'off', given: true },
+      ],
+    };
   // The gauge's given rows: below the line → on, above it → off. Level 6's line starts at the top; level 7's two lines start together at level 6's lower answer.
   if (onGauge(level)) {
     const gap = level === 6 ? GAPS : 3;
-    return { level, sensor: { kind: 'thermo', socket: 'nook' }, rows: [{ reading: null, action: 'on', given: true }, { reading: null, action: 'off', given: true }], lines: { on: gap, off: gap } };
+    return {
+      level,
+      sensor: { kind: 'thermo', socket: 'nook' },
+      rows: [
+        { reading: null, action: 'on', given: true },
+        { reading: null, action: 'off', given: true },
+      ],
+      lines: { on: gap, off: gap },
+    };
   }
-  return { level: 3, sensor: { kind: 'sun', socket: 'post' }, rows: [{ reading: 'dark', action: 'on', given: true }, { reading: null, action: 'off', given: false }] };
+  return {
+    level: 3,
+    sensor: { kind: 'sun', socket: 'post' },
+    rows: [
+      { reading: 'dark', action: 'on', given: true },
+      { reading: null, action: 'off', given: false },
+    ],
+  };
 }
 
 /** The chips a level's open rows take, in the order a tap on a row cycles them. */
@@ -317,9 +391,25 @@ export function briefFor(level: number, rng: Rng): Brief {
     level: plan.level,
     day,
     board: startBoard(plan.level),
-    sensors: plan.level === 1 ? ['eye'] : plan.level === 2 ? rng.shuffle<SensorKind>(['eye', 'sun']) : plan.level === 5 ? ['sun'] : [],
+    sensors:
+      plan.level === 1
+        ? ['eye']
+        : plan.level === 2
+          ? rng.shuffle<SensorKind>(['eye', 'sun'])
+          : plan.level === 5
+            ? ['sun']
+            : [],
     chips: plan.level === 3 ? rng.shuffle<Chip>([...SUN_LEVELS]) : plan.level === 4 ? [...ZONES] : [],
-    sockets: plan.level === 1 ? ['door', 'window'] : plan.level === 4 ? ['nook'] : plan.level === 5 ? ['lamp', 'roof', 'shed'] : onGauge(plan.level) ? [] : ['post'],
+    sockets:
+      plan.level === 1
+        ? ['door', 'window']
+        : plan.level === 4
+          ? ['nook']
+          : plan.level === 5
+            ? ['lamp', 'roof', 'shed']
+            : onGauge(plan.level)
+              ? []
+              : ['post'],
     friend,
     house,
   };
@@ -360,9 +450,15 @@ export function openRows(board: Board): number[] {
 }
 
 export function sameBoard(a: Board, b: Board): boolean {
-  return a.level === b.level && a.sensor.kind === b.sensor.kind && a.sensor.socket === b.sensor.socket
-    && a.rows.length === b.rows.length && a.rows.every((r, i) => r.reading === b.rows[i].reading && r.action === b.rows[i].action)
-    && a.lines?.on === b.lines?.on && a.lines?.off === b.lines?.off;
+  return (
+    a.level === b.level &&
+    a.sensor.kind === b.sensor.kind &&
+    a.sensor.socket === b.sensor.socket &&
+    a.rows.length === b.rows.length &&
+    a.rows.every((r, i) => r.reading === b.rows[i].reading && r.action === b.rows[i].action) &&
+    a.lines?.on === b.lines?.on &&
+    a.lines?.off === b.lines?.off
+  );
 }
 
 // ——— The board space ———
@@ -373,10 +469,12 @@ export function candidateBoards(brief: Brief): Board[] {
   if (brief.level === 1) return [null, ...brief.sockets].map((s) => placeSensor(start, 'eye', s));
   if (brief.level === 2) return [null, ...brief.sensors].map((k) => placeSensor(start, k, 'post'));
   if (brief.level === 5) return [null, ...brief.sockets].map((s) => placeSensor(start, 'sun', s));
-  if (brief.level === 6) return Array.from({ length: GAPS }, (_, i) => ({ ...start, lines: { on: i + 1, off: i + 1 } }));
+  if (brief.level === 6)
+    return Array.from({ length: GAPS }, (_, i) => ({ ...start, lines: { on: i + 1, off: i + 1 } }));
   if (brief.level === 7) {
     const out: Board[] = [];
-    for (let on = 1; on <= GAPS; on++) for (let off = on; off <= GAPS; off++) out.push({ ...start, lines: { on, off } });
+    for (let on = 1; on <= GAPS; on++)
+      for (let off = on; off <= GAPS; off++) out.push({ ...start, lines: { on, off } });
     return out;
   }
   let out: Board[] = [start];
@@ -431,7 +529,8 @@ export function glowFor(board: Board, failure: Failure): Piece {
     return prefer === 'on-line' ? 'off-line' : 'on-line';
   }
   // Level 5 has no open rows: every failure points at where the sensor is.
-  if (placesSensor(board.level) || failure === 'sensor-blind' || failure === 'friend-waiting') return 'sensor';
+  if (placesSensor(board.level) || failure === 'sensor-blind' || failure === 'friend-waiting')
+    return 'sensor';
   const open = openRows(board);
   if (board.level === 4) {
     const prefer = failure === 'too-warm' ? 1 : 0;
@@ -456,7 +555,8 @@ export function helpFor(board: Board, brief: Brief, _presses: number): Help {
   const right = solutions(brief)[0];
   if (!right) return { board, placed: null };
   if (placesSensor(board.level)) {
-    if (board.sensor.kind === right.sensor.kind && board.sensor.socket === right.sensor.socket) return { board, placed: null };
+    if (board.sensor.kind === right.sensor.kind && board.sensor.socket === right.sensor.socket)
+      return { board, placed: null };
     return { board: placeSensor(board, right.sensor.kind, right.sensor.socket), placed: 'sensor' };
   }
   if (meetsGoal(board, brief.day) && complete(board)) return { board, placed: null };
@@ -536,7 +636,11 @@ export function offersSetup(t: Tally): boolean {
 
 // ——— The ghost finger ———
 
-export type Move = { place: { kind: SensorKind; socket: Socket } } | { chip: Chip; row: number } | { line: LinePiece; gap: number } | { watch: true };
+export type Move =
+  | { place: { kind: SensorKind; socket: Socket } }
+  | { chip: Chip; row: number }
+  | { line: LinePiece; gap: number }
+  | { watch: true };
 
 /**
  * What a capable child does next: place the piece the goal needs, then Watch. At level 3 the first Watch runs the day
@@ -572,17 +676,29 @@ export function nextMove(brief: Brief, board: Board, daysPlayed: number): Move {
 
 // ——— Layout ———
 
-export interface Rect { x: number; y: number; w: number; h: number }
-export interface Pt { x: number; y: number }
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+export interface Pt {
+  x: number;
+  y: number;
+}
 export const centre = (r: Rect): Pt => ({ x: r.x + r.w / 2, y: r.y + r.h / 2 });
-export const overlaps = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+export const overlaps = (a: Rect, b: Rect) =>
+  a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 const inside = (a: Rect, v: View) => a.x >= 0 && a.y >= 0 && a.x + a.w <= v.w && a.y + a.h <= v.h;
 
 /** The home and ? buttons (top left) and the guide (bottom left). */
 export const HOME_CORNER = { w: 130, h: 215 };
 export const PET_CORNER = { w: 160, h: 170 };
 export function corners(v: View): Rect[] {
-  return [{ x: 0, y: 0, ...HOME_CORNER }, { x: 0, y: v.h - PET_CORNER.h, ...PET_CORNER }];
+  return [
+    { x: 0, y: 0, ...HOME_CORNER },
+    { x: 0, y: v.h - PET_CORNER.h, ...PET_CORNER },
+  ];
 }
 
 export const TILE = 110;
@@ -695,22 +811,58 @@ export function houseLayout(brief: Brief, v: View): HouseLayout | null {
   }
   const rows = Array.from({ length: nRows }, (_, i) => {
     const y = rowY + i * (CARD.h + GAP);
-    return { reading: { x: rowX, y, w: CARD.w, h: CARD.h }, action: { x: rowX + CARD.w + ARROW, y, w: CARD.w, h: CARD.h } };
+    return {
+      reading: { x: rowX, y, w: CARD.w, h: CARD.h },
+      action: { x: rowX + CARD.w + ARROW, y, w: CARD.w, h: CARD.h },
+    };
   });
-  const bench = Array.from({ length: nBench }, (_, i) => ({ x: benchX + i * (TILE + GAP), y: benchY, w: TILE, h: TILE }));
+  const bench = Array.from({ length: nBench }, (_, i) => ({
+    x: benchX + i * (TILE + GAP),
+    y: benchY,
+    w: TILE,
+    h: TILE,
+  }));
   const undo = button(rightX - BUTTON_R, by);
   const step = button(undo.x - GAP - BUTTON_R, by);
   const watch = { x: step.x - GAP - WATCH.w, y: by - WATCH.h / 2, w: WATCH.w, h: WATCH.h };
   // Sockets on the house: the door's eye socket above the door (left), the window's beside the window (right), the post's slot on the lamp post (right).
   const sockets = brief.sockets.map((s): Rect => {
-    if (s === 'door') return { x: house.x + house.w * 0.3 - TILE / 2, y: house.y + house.h * 0.42 - TILE / 2, w: TILE, h: TILE };
-    if (s === 'nook') return { x: house.x + house.w * 0.8 - TILE / 2, y: house.y + house.h * 0.6 - TILE / 2, w: TILE, h: TILE };
+    if (s === 'door')
+      return {
+        x: house.x + house.w * 0.3 - TILE / 2,
+        y: house.y + house.h * 0.42 - TILE / 2,
+        w: TILE,
+        h: TILE,
+      };
+    if (s === 'nook')
+      return {
+        x: house.x + house.w * 0.8 - TILE / 2,
+        y: house.y + house.h * 0.6 - TILE / 2,
+        w: TILE,
+        h: TILE,
+      };
     if (s === 'lamp' || s === 'roof' || s === 'shed') {
       const at = SPOTS[s];
-      return { x: house.x + house.w * at.x - TILE / 2, y: house.y + house.h * at.y - TILE / 2, w: TILE, h: TILE };
+      return {
+        x: house.x + house.w * at.x - TILE / 2,
+        y: house.y + house.h * at.y - TILE / 2,
+        w: TILE,
+        h: TILE,
+      };
     }
-    if (s === 'window') return { x: house.x + house.w * 0.72 - TILE / 2, y: house.y + house.h * 0.42 - TILE / 2, w: TILE, h: TILE };
-    return { x: house.x + house.w * 0.8 - TILE / 2, y: house.y + house.h * 0.36 - TILE / 2, w: TILE, h: TILE };
+    if (s === 'window')
+      return {
+        x: house.x + house.w * 0.72 - TILE / 2,
+        y: house.y + house.h * 0.42 - TILE / 2,
+        w: TILE,
+        h: TILE,
+      };
+    return {
+      x: house.x + house.w * 0.8 - TILE / 2,
+      y: house.y + house.h * 0.36 - TILE / 2,
+      w: TILE,
+      h: TILE,
+    };
   });
   const parts = [house, ...rows.flatMap((r) => [r.reading, r.action]), ...bench, watch, step, undo];
   if (house.h < 320 || house.w < 360) return null;
@@ -748,7 +900,10 @@ function gaugeHouseLayout(brief: Brief, v: View): HouseLayout | null {
     gx = Math.max(house.x + house.w + M, rightX - blockW - (v.w > 1100 ? JAR_BOX.w + M : 0));
     gy = M;
     // The jar under the gauge, or beside it when the view is wide enough.
-    jar = v.w > 1100 ? { x: gx + blockW + M, y: gy + colH / 2 - JAR_BOX.h / 2, ...JAR_BOX } : { x: gx, y: gy + colH + M, ...JAR_BOX };
+    jar =
+      v.w > 1100
+        ? { x: gx + blockW + M, y: gy + colH / 2 - JAR_BOX.h / 2, ...JAR_BOX }
+        : { x: gx, y: gy + colH + M, ...JAR_BOX };
   } else {
     gx = M;
     gy = v.h - PET_CORNER.h - M - colH;
@@ -767,7 +922,10 @@ function gaugeHouseLayout(brief: Brief, v: View): HouseLayout | null {
   };
   const rows = [0, 1].map((i) => {
     const y = rowY + i * (CARD.h + GAP);
-    return { reading: { x: rowX, y, w: CARD.w, h: CARD.h }, action: { x: rowX + CARD.w + ARROW, y, w: CARD.w, h: CARD.h } };
+    return {
+      reading: { x: rowX, y, w: CARD.w, h: CARD.h },
+      action: { x: rowX + CARD.w + ARROW, y, w: CARD.w, h: CARD.h },
+    };
   });
   const undo = button(rightX - BUTTON_R, by);
   const step = button(undo.x - GAP - BUTTON_R, by);

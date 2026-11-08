@@ -14,11 +14,29 @@ import { cartArt, itemArt, madeArt, placeArt } from './art';
 import { PlanShed } from './plan';
 import {
   LEVELS,
-  centre, ITEMS, judge, nextDrop, PLACE_H, PLACE_W, placeAt, planFor, roundFor, shedLayout, ShedTally, SORT_MAX,
-  type ItemId, type Place, type Plan, type Round, type ShedLayout,
+  centre,
+  ITEMS,
+  judge,
+  nextDrop,
+  PLACE_H,
+  PLACE_W,
+  placeAt,
+  planFor,
+  roundFor,
+  shedLayout,
+  ShedTally,
+  SORT_MAX,
+  type ItemId,
+  type Place,
+  type Plan,
+  type Round,
+  type ShedLayout,
 } from './logic';
 
-interface PlaceNode { place: Place; node: Container }
+interface PlaceNode {
+  place: Place;
+  node: Container;
+}
 
 class SecondChanceShed implements Game {
   readonly plan: Plan;
@@ -46,7 +64,17 @@ class SecondChanceShed implements Game {
     this.round = roundFor(this.plan.level, ctx.rng);
     this.tally = new ShedTally(this.plan.counts);
     this.layoutNow = shedLayout(this.view, this.round.open);
-    this.backdrop = new Backdrop({ sky: [0xffe2c4, cream], hills: [swatch.green.light, 0xbfe39a], horizon: 0.5, clouds: 2, sun: true, seed: 137 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0xffe2c4, cream],
+        hills: [swatch.green.light, 0xbfe39a],
+        horizon: 0.5,
+        clouds: 2,
+        sun: true,
+        seed: 137,
+      },
+      ctx.view,
+    );
     for (const n of [this.cart, this.pot, this.glow]) n.eventMode = 'none';
     ctx.stage.addChild(this.backdrop, this.cart);
     for (const place of this.round.open) {
@@ -101,7 +129,9 @@ class SecondChanceShed implements Game {
     this.glow.clear();
     if (!this.tally.glowing || !this.item || this.finished) return;
     const r = this.layoutNow.places[ITEMS[this.item.id].place]!;
-    this.glow.roundRect(r.x - 12, r.y - 12, r.w + 24, r.h + 24, 26).stroke({ width: 7 + 2 * Math.sin(this.clock * 5), color: swatch.yellow.fill });
+    this.glow
+      .roundRect(r.x - 12, r.y - 12, r.w + 24, r.h + 24, 26)
+      .stroke({ width: 7 + 2 * Math.sin(this.clock * 5), color: swatch.yellow.fill });
   }
 
   private async begin() {
@@ -143,13 +173,16 @@ class SecondChanceShed implements Game {
   /** Touch-down: the thing wobbles and every open place breathes once. */
   private picked(node: Container) {
     sfx.tick();
-    void this.ctx.tw.to(node, { rotation: 0.08 }, { duration: 0.08 }).then(() => { if (!node.destroyed) void this.ctx.tw.to(node, { rotation: 0 }, { duration: 0.12 }); });
+    void this.ctx.tw.to(node, { rotation: 0.08 }, { duration: 0.08 }).then(() => {
+      if (!node.destroyed) void this.ctx.tw.to(node, { rotation: 0 }, { duration: 0.12 });
+    });
     for (const p of this.places) void this.breathe(p.node);
   }
 
   private async breathe(n: Container, size = 1.06) {
     await this.ctx.tw.to(n.scale, { x: size, y: size }, { duration: 0.15 });
-    if (this.alive && !n.destroyed) await this.ctx.tw.to(n.scale, { x: 1, y: 1 }, { duration: 0.2, ease: ease.outBack });
+    if (this.alive && !n.destroyed)
+      await this.ctx.tw.to(n.scale, { x: 1, y: 1 }, { duration: 0.2, ease: ease.outBack });
   }
 
   private drop(x: number, y: number): boolean {
@@ -220,12 +253,12 @@ class SecondChanceShed implements Game {
       sfx.clunk();
       await this.ctx.tw.wait(0.2);
       if (this.alive) sfx.pop(8);
-    }
-    else {
+    } else {
       const steps = place === 'mend' ? [5, 5, 5] : [3, 5, 7];
       for (const s of steps) {
         if (!this.alive) return;
-        if (place === 'mend') sfx.marimba(s); else sfx.bell(s);
+        if (place === 'mend') sfx.marimba(s);
+        else sfx.bell(s);
         await this.ctx.tw.wait(0.2);
       }
     }
@@ -251,8 +284,10 @@ class SecondChanceShed implements Game {
       m.scale.set(0.1);
       this.ctx.stage.addChild(m);
       await this.ctx.tw.to(m.scale, { x: 1, y: 1 }, { duration: 0.4, ease: ease.outBack });
-      if (made === 'roll' && this.alive) await this.ctx.tw.to(m, { x: at.x + 60 }, { duration: 0.5, ease: ease.inOutSine });
-      if (made === 'flutter' && this.alive) await this.ctx.tw.to(m, { y: m.y - 50 }, { duration: 0.5, ease: ease.inOutSine });
+      if (made === 'roll' && this.alive)
+        await this.ctx.tw.to(m, { x: at.x + 60 }, { duration: 0.5, ease: ease.inOutSine });
+      if (made === 'flutter' && this.alive)
+        await this.ctx.tw.to(m, { y: m.y - 50 }, { duration: 0.5, ease: ease.inOutSine });
       void this.fadeOut(m, line ? 1.6 : 0.6);
     }
     if (line && this.alive) await this.ctx.say(`shed.made.${made}` as 'shed.made.sprout');
@@ -294,7 +329,10 @@ class SecondChanceShed implements Game {
   /** The pause sheet's Show a hint: glow the item's place, then (asked again) carry the item there. */
   askForHint() {
     if (this.busy || this.finished || !this.item || this.item.drag.dragging) return;
-    if (this.tally.ask() === 'glow') { void this.ctx.say('shed.hint-glow'); return; }
+    if (this.tally.ask() === 'glow') {
+      void this.ctx.say('shed.hint-glow');
+      return;
+    }
     const place = ITEMS[this.item.id].place;
     void this.accept(place);
   }
@@ -302,7 +340,10 @@ class SecondChanceShed implements Game {
   /** Start again: the same round from its first thing, with misses and hints still counted. */
   restart() {
     if (this.finished) return;
-    if (this.busy) { this.restartAsked = true; return; }
+    if (this.busy) {
+      this.restartAsked = true;
+      return;
+    }
     this.restartAsked = false;
     if (this.item) {
       this.item.drag.destroy();
@@ -328,9 +369,15 @@ class ShedIcon extends WigglyIcon {
   constructor() {
     const c = new Container();
     const g = new Graphics();
-    g.poly([-90, -20, 0, -90, 90, -20]).fill(swatch.red.fill).stroke({ width: 6, color: swatch.red.line, join: 'round' });
+    g.poly([-90, -20, 0, -90, 90, -20])
+      .fill(swatch.red.fill)
+      .stroke({ width: 6, color: swatch.red.line, join: 'round' });
     g.rect(-74, -20, 148, 110).fill(wood.light).stroke({ width: 6, color: wood.line });
-    g.roundRect(-30, 10, 60, 80, 8).fill(wood.fill).stroke({ width: 5, color: wood.line }).circle(18, 52, 5).fill(wood.line);
+    g.roundRect(-30, 10, 60, 80, 8)
+      .fill(wood.fill)
+      .stroke({ width: 5, color: wood.line })
+      .circle(18, 52, 5)
+      .fill(wood.line);
     c.addChild(g);
     const sprout = madeArt('planter', 'tub');
     sprout.scale.set(0.5);
@@ -346,7 +393,12 @@ class ShedIcon extends WigglyIcon {
 
 /** A seeded consequence: a sprout pot, Bunny in the box, the mended cart or the can-lid medal. */
 function sticker(seed: number): Container {
-  const [made, from] = new Rng(seed).pick([['planter', 'tub'], ['nap', 'box'], ['roll', 'cart'], ['medal', 'can']] as const);
+  const [made, from] = new Rng(seed).pick([
+    ['planter', 'tub'],
+    ['nap', 'box'],
+    ['roll', 'cart'],
+    ['medal', 'can'],
+  ] as const);
   const c = madeArt(made, from);
   c.scale.set(1.4);
   return c;
@@ -363,7 +415,8 @@ export const secondChanceShed: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
-  coplayHint: 'Be the shed keeper: say where you think a thing goes ("I think the worms want this one"), let her check the pictures and carry it, then swap.',
+  coplayHint:
+    'Be the shed keeper: say where you think a thing goes ("I think the worms want this one"), let her check the pictures and carry it, then swap.',
   offScreen: 'Find something at home that could be used again, and use it together.',
   hubIcon: () => new ShedIcon(),
   touchDemo: true,

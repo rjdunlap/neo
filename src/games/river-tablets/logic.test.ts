@@ -2,10 +2,45 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  CELLS, CELL, CRACK, JAR, ROW, arrive, askEnvelope, askTablet, briefFor, corners, crack, crackEnvelope, deliveryFor, envelopeTally,
-  hintFor, isMixed, kindChanges, markCount, overlaps, penInvariant, press, pressRow, readBack, readyToTip, startEnvelope, startPen,
-  startTablet, tabletDone, tabletLayout, tabletTally, tapJar, waiting,
-  type EnvelopeBrief, type EnvelopeState, type Kind, type PenState, type RowsBrief, type TabletState, type TokensBrief,
+  CELLS,
+  CELL,
+  CRACK,
+  JAR,
+  ROW,
+  arrive,
+  askEnvelope,
+  askTablet,
+  briefFor,
+  corners,
+  crack,
+  crackEnvelope,
+  deliveryFor,
+  envelopeTally,
+  hintFor,
+  isMixed,
+  kindChanges,
+  markCount,
+  overlaps,
+  penInvariant,
+  press,
+  pressRow,
+  readBack,
+  readyToTip,
+  startEnvelope,
+  startPen,
+  startTablet,
+  tabletDone,
+  tabletLayout,
+  tabletTally,
+  tapJar,
+  waiting,
+  type EnvelopeBrief,
+  type EnvelopeState,
+  type Kind,
+  type PenState,
+  type RowsBrief,
+  type TabletState,
+  type TokensBrief,
 } from './logic';
 
 const SEEDS = Array.from({ length: 300 }, (_, i) => i);
@@ -50,17 +85,20 @@ describe('briefs', () => {
     }
   });
   it('the same seed gives the same brief', () => {
-    for (const level of [1, 2, 3]) for (const s of SEEDS.slice(0, 50)) expect(briefFor(level, new Rng(s))).toEqual(briefFor(level, new Rng(s)));
+    for (const level of [1, 2, 3])
+      for (const s of SEEDS.slice(0, 50))
+        expect(briefFor(level, new Rng(s))).toEqual(briefFor(level, new Rng(s)));
   });
   it('deliveryFor is mixed with the right counts for every allowed pair', () => {
-    for (let sheep = 1; sheep <= 4; sheep++) for (let jars = 1; jars <= 4; jars++) {
-      if (sheep + jars < 4 || sheep + jars > 6) continue;
-      for (let s = 0; s < 50; s++) {
-        const d = deliveryFor(sheep, jars, new Rng(s));
-        expect(isMixed(d)).toBe(true);
-        expect(readBack(d)).toEqual({ sheep, jar: jars });
+    for (let sheep = 1; sheep <= 4; sheep++)
+      for (let jars = 1; jars <= 4; jars++) {
+        if (sheep + jars < 4 || sheep + jars > 6) continue;
+        for (let s = 0; s < 50; s++) {
+          const d = deliveryFor(sheep, jars, new Rng(s));
+          expect(isMixed(d)).toBe(true);
+          expect(readBack(d)).toEqual({ sheep, jar: jars });
+        }
       }
-    }
   });
 });
 
@@ -119,13 +157,14 @@ describe('level 1: one token each', () => {
 
 describe('level 2: marks on the envelope', () => {
   it('crack reports match, fewer, more with diff and paired', () => {
-    for (let m = 0; m <= 8; m++) for (let t = 3; t <= 6; t++) {
-      const c = crack(m, t);
-      expect(c.verdict === 'match').toBe(m === t);
-      expect(c.verdict).toBe(m === t ? 'match' : m < t ? 'fewer' : 'more');
-      expect(c.diff).toBe(Math.abs(m - t));
-      expect(c.paired).toBe(Math.min(m, t));
-    }
+    for (let m = 0; m <= 8; m++)
+      for (let t = 3; t <= 6; t++) {
+        const c = crack(m, t);
+        expect(c.verdict === 'match').toBe(m === t);
+        expect(c.verdict).toBe(m === t ? 'match' : m < t ? 'fewer' : 'more');
+        expect(c.diff).toBe(Math.abs(m - t));
+        expect(c.paired).toBe(Math.min(m, t));
+      }
   });
   it('pressing toggles a cell and twice restores the marks; eight cells hold a count of 6', () => {
     expect(CELLS).toBeGreaterThanOrEqual(6);
@@ -218,9 +257,10 @@ describe('level 2: marks on the envelope', () => {
 });
 
 describe('level 3: which row', () => {
-  const deliveries = (n: number) => Array.from({ length: n }, (_, s) => (briefFor(3, new Rng(s)) as RowsBrief).deliveries[s % 2]);
+  const deliveries = (n: number) =>
+    Array.from({ length: n }, (_, s) => (briefFor(3, new Rng(s)) as RowsBrief).deliveries[s % 2]);
 
-  it('accepts exactly the waiting good\'s row', () => {
+  it("accepts exactly the waiting good's row", () => {
     for (const d of deliveries(100)) {
       const s = startTablet(d);
       const good = waiting(s)!;
@@ -321,15 +361,16 @@ describe('level 3: which row', () => {
 describe('layout', () => {
   const views = [computeView(1024, 768), computeView(768, 1024)];
   it('is non-null with full-size targets clear of the corners', () => {
-    for (const v of views) for (const level of [1, 2, 3]) {
-      const l = tabletLayout(level, v);
-      expect(l, `level ${level} ${v.w}x${v.h}`).not.toBeNull();
-      for (const r of l!.inputs) {
-        expect(Math.min(r.w, r.h)).toBeGreaterThanOrEqual(100);
-        for (const c of corners(v)) expect(overlaps(r, c)).toBe(false);
+    for (const v of views)
+      for (const level of [1, 2, 3]) {
+        const l = tabletLayout(level, v);
+        expect(l, `level ${level} ${v.w}x${v.h}`).not.toBeNull();
+        for (const r of l!.inputs) {
+          expect(Math.min(r.w, r.h)).toBeGreaterThanOrEqual(100);
+          for (const c of corners(v)) expect(overlaps(r, c)).toBe(false);
+        }
+        for (const r of l!.cells ?? []) expect(Math.min(r.w, r.h)).toBeGreaterThanOrEqual(100);
       }
-      for (const r of l!.cells ?? []) expect(Math.min(r.w, r.h)).toBeGreaterThanOrEqual(100);
-    }
   });
   it('keeps the base sizes at or above 100', () => {
     expect(CELL).toBeGreaterThanOrEqual(100);
@@ -347,7 +388,11 @@ describe('layout', () => {
         expect(c.x + c.w).toBeLessThanOrEqual(l.ball!.x + l.ball!.w);
         expect(c.y + c.h).toBeLessThanOrEqual(l.ball!.y + l.ball!.h);
       }
-      l.cells!.forEach((a, i) => l.cells!.forEach((b, j) => { if (i < j) expect(overlaps(a, b)).toBe(false); }));
+      l.cells!.forEach((a, i) =>
+        l.cells!.forEach((b, j) => {
+          if (i < j) expect(overlaps(a, b)).toBe(false);
+        }),
+      );
       expect(overlaps(l.crack!, l.ball!)).toBe(false);
     }
   });
@@ -384,9 +429,35 @@ describe('layout', () => {
 
 // ——— Levels 4–5 ———
 import {
-  ONE_CAP, SCATTER_COLS, SCATTER_ROWS, STRIP, TEN_CAP, askCheck, askTens, cartCount, cartOf, checkTally, chooseNumber, chooseVerdict,
-  handIn, lift, lineUp, shortest, stamp, startCheck, startTens, tensHint, tensTally, value, verdictFor,
-  type CheckBrief, type Cart, type CheckState, type Mark, type TensBrief, type TensState,
+  ONE_CAP,
+  SCATTER_COLS,
+  SCATTER_ROWS,
+  STRIP,
+  TEN_CAP,
+  askCheck,
+  askTens,
+  cartCount,
+  cartOf,
+  checkTally,
+  chooseNumber,
+  chooseVerdict,
+  handIn,
+  lift,
+  lineUp,
+  shortest,
+  stamp,
+  startCheck,
+  startTens,
+  tensHint,
+  tensTally,
+  value,
+  verdictFor,
+  type CheckBrief,
+  type Cart,
+  type CheckState,
+  type Mark,
+  type TensBrief,
+  type TensState,
 } from './logic';
 
 const READINGS: { tens: number; ones: number }[] = [];
@@ -469,7 +540,10 @@ describe('tablet reading', () => {
   it('value ignores the order marks were pressed in', () => {
     const run = (seq: Mark[]) => seq.reduce((st, m) => stamp(st, m).state, startTens(20));
     const base: Mark[] = ['ten', 'ten', 'one', 'one', 'one', 'ten'];
-    const perms = (a: Mark[]): Mark[][] => (a.length <= 1 ? [a] : a.flatMap((x, i) => perms([...a.slice(0, i), ...a.slice(i + 1)]).map((p) => [x, ...p])));
+    const perms = (a: Mark[]): Mark[][] =>
+      a.length <= 1
+        ? [a]
+        : a.flatMap((x, i) => perms([...a.slice(0, i), ...a.slice(i + 1)]).map((p) => [x, ...p]));
     for (const p of perms(base)) {
       const r = run(p);
       expect(value(r)).toBe(33);
@@ -701,7 +775,11 @@ describe('levels 4-5 layout', () => {
           for (const q of corners(v)) if (p !== l.lane && p !== l.lineup) expect(overlaps(p, q)).toBe(false);
         }
         const solo = l.inputs.filter((p) => p !== l.tablet);
-        solo.forEach((p, i) => solo.forEach((q, j) => { if (i < j) expect(overlaps(p, q)).toBe(false); }));
+        solo.forEach((p, i) =>
+          solo.forEach((q, j) => {
+            if (i < j) expect(overlaps(p, q)).toBe(false);
+          }),
+        );
         expect(STRIP.w).toBeGreaterThanOrEqual(10 * 40);
         if (level === 5) for (const p of l.inputs) expect(overlaps(p, l.lineup)).toBe(false);
       }
@@ -711,20 +789,33 @@ describe('levels 4-5 layout', () => {
 
 // ——— Level 6: two tablets disagree ———
 import {
-  ANSWERS, MAX_LEVEL, accepts, answerFor, askDisagree, disagreeTally, missReason, pickAnswer, readings, startDisagree,
-  type Answer, type DisagreeBrief, type DisagreeCase, type DisagreeState,
+  ANSWERS,
+  MAX_LEVEL,
+  accepts,
+  answerFor,
+  askDisagree,
+  disagreeTally,
+  missReason,
+  pickAnswer,
+  readings,
+  startDisagree,
+  type Answer,
+  type DisagreeBrief,
+  type DisagreeCase,
+  type DisagreeState,
 } from './logic';
 
 const disagreeCases = (): DisagreeCase[] => {
   const out: DisagreeCase[] = [];
-  for (let farm = 12; farm <= 29; farm++) for (let d = -3; d <= 3; d++) {
-    const store = farm + d;
-    if (d === 0 || store < 12 || store > 29) continue;
-    for (let cart = farm - 4; cart <= farm + 4; cart++) {
-      out.push({ kind: cart === farm || cart === store ? 'one' : 'neither', farm, store, cart });
+  for (let farm = 12; farm <= 29; farm++)
+    for (let d = -3; d <= 3; d++) {
+      const store = farm + d;
+      if (d === 0 || store < 12 || store > 29) continue;
+      for (let cart = farm - 4; cart <= farm + 4; cart++) {
+        out.push({ kind: cart === farm || cart === store ? 'one' : 'neither', farm, store, cart });
+      }
+      out.push({ kind: 'gone', farm, store, cart: null });
     }
-    out.push({ kind: 'gone', farm, store, cart: null });
-  }
   return out;
 };
 
@@ -775,28 +866,30 @@ describe('level 6 briefs', () => {
   });
   it('a neither cart is 12-29, equals neither tablet and is within 3 of each', () => {
     let seen = 0;
-    for (const b of briefs) for (const c of b.cases) {
-      if (c.kind !== 'neither') continue;
-      seen++;
-      expect(c.cart).not.toBeNull();
-      expect(c.cart!).toBeGreaterThanOrEqual(12);
-      expect(c.cart!).toBeLessThanOrEqual(29);
-      expect(c.cart).not.toBe(c.farm);
-      expect(c.cart).not.toBe(c.store);
-      expect(Math.abs(c.cart! - c.farm)).toBeLessThanOrEqual(3);
-      expect(Math.abs(c.cart! - c.store)).toBeLessThanOrEqual(3);
-    }
+    for (const b of briefs)
+      for (const c of b.cases) {
+        if (c.kind !== 'neither') continue;
+        seen++;
+        expect(c.cart).not.toBeNull();
+        expect(c.cart!).toBeGreaterThanOrEqual(12);
+        expect(c.cart!).toBeLessThanOrEqual(29);
+        expect(c.cart).not.toBe(c.farm);
+        expect(c.cart).not.toBe(c.store);
+        expect(Math.abs(c.cart! - c.farm)).toBeLessThanOrEqual(3);
+        expect(Math.abs(c.cart! - c.store)).toBeLessThanOrEqual(3);
+      }
     expect(seen).toBeGreaterThan(0);
   });
   it('a present cart holds at most 3 crates; gone has no cart', () => {
-    for (const b of briefs) for (const c of b.cases) {
-      if (c.kind === 'gone') expect(c.cart).toBeNull();
-      else {
-        expect(c.cart).not.toBeNull();
-        expect(c.cart!).toBeLessThanOrEqual(39);
-        expect(Math.floor(c.cart! / 10)).toBeLessThanOrEqual(3);
+    for (const b of briefs)
+      for (const c of b.cases) {
+        if (c.kind === 'gone') expect(c.cart).toBeNull();
+        else {
+          expect(c.cart).not.toBeNull();
+          expect(c.cart!).toBeLessThanOrEqual(39);
+          expect(Math.floor(c.cart! / 10)).toBeLessThanOrEqual(3);
+        }
       }
-    }
   });
   it('is deterministic per seed', () => {
     for (const s of SEEDS) expect(briefFor(6, new Rng(s))).toEqual(briefFor(6, new Rng(s)));
@@ -823,14 +916,18 @@ describe('level 6 answers', () => {
     }
   });
   it('every wrong answer has the right reason; the right one has none', () => {
-    for (const c of all) for (const a of ANSWERS) {
-      const r = missReason(c, a);
-      if (accepts(c, a)) { expect(r).toBeNull(); continue; }
-      if (c.cart === null) expect(r).toBe('wrong-gone');
-      else if (a === 'cantTell') expect(r).toBe('wrong-cant');
-      else if (a === 'neither') expect(r).toBe('wrong-neither');
-      else expect(r).toBe('wrong-tablet');
-    }
+    for (const c of all)
+      for (const a of ANSWERS) {
+        const r = missReason(c, a);
+        if (accepts(c, a)) {
+          expect(r).toBeNull();
+          continue;
+        }
+        if (c.cart === null) expect(r).toBe('wrong-gone');
+        else if (a === 'cantTell') expect(r).toBe('wrong-cant');
+        else if (a === 'neither') expect(r).toBe('wrong-neither');
+        else expect(r).toBe('wrong-tablet');
+      }
   });
 });
 
@@ -838,46 +935,48 @@ describe('level 6 picking', () => {
   const gen = (s: number) => (briefFor(6, new Rng(s)) as DisagreeBrief).cases;
   const wrongOf = (c: DisagreeCase) => ANSWERS.filter((a) => !accepts(c, a));
   it('a wrong pick is one miss; the right pick finishes with none; picks after done change nothing', () => {
-    for (const s of SEEDS) for (const c of gen(s)) {
-      for (const a of wrongOf(c)) {
-        const r = pickAnswer(startDisagree(c), a);
-        expect(r.result).toBe('wrong');
-        expect(r.state.misses).toBe(1);
-        expect(r.state.done).toBe(false);
-        expect(r.state.lined).toBe(false);
+    for (const s of SEEDS)
+      for (const c of gen(s)) {
+        for (const a of wrongOf(c)) {
+          const r = pickAnswer(startDisagree(c), a);
+          expect(r.result).toBe('wrong');
+          expect(r.state.misses).toBe(1);
+          expect(r.state.done).toBe(false);
+          expect(r.state.lined).toBe(false);
+          expect(r.state.hinted).toBe(false);
+          expect(r.reason).toBe(missReason(c, a));
+        }
+        const r = pickAnswer(startDisagree(c), answerFor(c));
+        expect(r.result).toBe('right');
+        expect(r.state.done).toBe(true);
+        expect(r.state.misses).toBe(0);
         expect(r.state.hinted).toBe(false);
-        expect(r.reason).toBe(missReason(c, a));
+        for (const a of ANSWERS) {
+          const after = pickAnswer(r.state, a);
+          expect(after.result).toBe('none');
+          expect(after.state).toEqual(r.state);
+        }
       }
-      const r = pickAnswer(startDisagree(c), answerFor(c));
-      expect(r.result).toBe('right');
-      expect(r.state.done).toBe(true);
-      expect(r.state.misses).toBe(0);
-      expect(r.state.hinted).toBe(false);
-      for (const a of ANSWERS) {
-        const after = pickAnswer(r.state, a);
-        expect(after.result).toBe('none');
-        expect(after.state).toEqual(r.state);
-      }
-    }
   });
   it('the help comes on the second miss and keeps counting misses afterwards', () => {
-    for (const s of SEEDS.slice(0, 60)) for (const c of gen(s)) {
-      let st = startDisagree(c);
-      const wrong = wrongOf(c);
-      st = pickAnswer(st, wrong[0]).state;
-      expect(st.lined).toBe(false);
-      st = pickAnswer(st, wrong[1]).state;
-      expect(st.misses).toBe(2);
-      expect(st.lined).toBe(true);
-      expect(st.hinted).toBe(true);
-      st = pickAnswer(st, wrong[0]).state;
-      expect(st.misses).toBe(3);
-      expect(st.lined).toBe(true);
-      const fin = pickAnswer(st, answerFor(c)).state;
-      expect(fin.done).toBe(true);
-      expect(fin.misses).toBe(3);
-      expect(disagreeTally([fin]).hints).toBe(1);
-    }
+    for (const s of SEEDS.slice(0, 60))
+      for (const c of gen(s)) {
+        let st = startDisagree(c);
+        const wrong = wrongOf(c);
+        st = pickAnswer(st, wrong[0]).state;
+        expect(st.lined).toBe(false);
+        st = pickAnswer(st, wrong[1]).state;
+        expect(st.misses).toBe(2);
+        expect(st.lined).toBe(true);
+        expect(st.hinted).toBe(true);
+        st = pickAnswer(st, wrong[0]).state;
+        expect(st.misses).toBe(3);
+        expect(st.lined).toBe(true);
+        const fin = pickAnswer(st, answerFor(c)).state;
+        expect(fin.done).toBe(true);
+        expect(fin.misses).toBe(3);
+        expect(disagreeTally([fin]).hints).toBe(1);
+      }
   });
   it('asking hints once per case and does nothing when done', () => {
     for (const s of SEEDS.slice(0, 60)) {
@@ -907,7 +1006,7 @@ describe('level 6 picking', () => {
       expect(disagreeTally(done)).toEqual({ misses: 0, hints: 0 });
     }
   });
-  it('can\'t tell is never right for a cart in the yard, and neither never right for gone', () => {
+  it("can't tell is never right for a cart in the yard, and neither never right for gone", () => {
     for (const c of disagreeCases()) {
       const wrong: Answer[] = c.cart === null ? ['farm', 'storehouse', 'neither'] : ['cantTell'];
       for (const a of wrong) expect(pickAnswer(startDisagree(c), a).result).toBe('wrong');
@@ -922,8 +1021,10 @@ describe('level 6 layout', () => {
     computeView(844, 390),
     computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
   ];
-  const inRect = (p: { x: number; y: number; w: number; h: number }, q: { x: number; y: number; w: number; h: number }) =>
-    p.x >= q.x && p.y >= q.y && p.x + p.w <= q.x + q.w && p.y + p.h <= q.y + q.h;
+  const inRect = (
+    p: { x: number; y: number; w: number; h: number },
+    q: { x: number; y: number; w: number; h: number },
+  ) => p.x >= q.x && p.y >= q.y && p.x + p.w <= q.x + q.w && p.y + p.h <= q.y + q.h;
   it('fits every view with full-size, non-overlapping targets', () => {
     for (const v of views) {
       const l = tabletLayout(6, v);
@@ -939,12 +1040,17 @@ describe('level 6 layout', () => {
         expect(inRect(c, l.lane)).toBe(true);
         expect(overlaps(c, l.baskets!)).toBe(false);
       }
-      for (const p of [...l.inputs, ...l.crates!]) for (const q of corners(v)) expect(overlaps(p, q)).toBe(false);
+      for (const p of [...l.inputs, ...l.crates!])
+        for (const q of corners(v)) expect(overlaps(p, q)).toBe(false);
       for (const p of l.inputs) {
         expect(overlaps(p, l.lane)).toBe(false);
         expect(overlaps(p, l.lineup)).toBe(false);
       }
-      l.inputs.forEach((p, i) => l.inputs.forEach((q, j) => { if (i < j) expect(overlaps(p, q)).toBe(false); }));
+      l.inputs.forEach((p, i) =>
+        l.inputs.forEach((q, j) => {
+          if (i < j) expect(overlaps(p, q)).toBe(false);
+        }),
+      );
     }
   });
   it('lays out the tablets, picks and lineups in order', () => {

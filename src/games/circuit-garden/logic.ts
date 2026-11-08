@@ -31,9 +31,30 @@ export interface LevelPlan {
 }
 
 export const PLANS: readonly LevelPlan[] = [
-  { level: 1, name: 'A way back: join the return gap', fixed: [SLOT_EDGES.supply], slots: ['return'], switch: false, check: false },
-  { level: 2, name: 'A switch changes it: see the lantern on and off', fixed: [['P', 'U'], ['V', 'L'], SLOT_EDGES.return], slots: [], switch: true, check: false },
-  { level: 3, name: 'Mend the lantern: fill both gaps, then check it lights', fixed: [], slots: ['supply', 'return'], switch: false, check: true },
+  {
+    level: 1,
+    name: 'A way back: join the return gap',
+    fixed: [SLOT_EDGES.supply],
+    slots: ['return'],
+    switch: false,
+    check: false,
+  },
+  {
+    level: 2,
+    name: 'A switch changes it: see the lantern on and off',
+    fixed: [['P', 'U'], ['V', 'L'], SLOT_EDGES.return],
+    slots: [],
+    switch: true,
+    check: false,
+  },
+  {
+    level: 3,
+    name: 'Mend the lantern: fill both gaps, then check it lights',
+    fixed: [],
+    slots: ['supply', 'return'],
+    switch: false,
+    check: true,
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -67,7 +88,10 @@ export function reach(edges: readonly Edge[], from: Terminal): Set<Terminal> {
     const t = queue.shift()!;
     for (const [a, b] of edges) {
       const next = a === t ? b : b === t ? a : null;
-      if (next && !seen.has(next)) { seen.add(next); queue.push(next); }
+      if (next && !seen.has(next)) {
+        seen.add(next);
+        queue.push(next);
+      }
     }
   }
   return seen;
@@ -79,14 +103,16 @@ export const bypass = (edges: readonly Edge[]) => reach(edges, 'P').has('N');
 /** The lamp lights when one of its terminals joins P and the other joins N, and nothing bypasses it. */
 export function litWith(edges: readonly Edge[]): boolean {
   if (bypass(edges)) return false;
-  const p = reach(edges, 'P'), n = reach(edges, 'N');
+  const p = reach(edges, 'P'),
+    n = reach(edges, 'N');
   return (p.has(LAMP[0]) && n.has(LAMP[1])) || (p.has(LAMP[1]) && n.has(LAMP[0]));
 }
 
 export const lit = (plan: LevelPlan, s: BoardState) => litWith(conductors(plan, s));
 
 /** The empty bridges, supply first: the gap a hint or the ghost finger fills next. */
-export const gaps = (plan: LevelPlan, s: BoardState): SlotId[] => plan.slots.filter((slot) => !s.filled[slot]);
+export const gaps = (plan: LevelPlan, s: BoardState): SlotId[] =>
+  plan.slots.filter((slot) => !s.filled[slot]);
 
 /** Seeded dressing only: which side the battery sits on and the lantern's petal colour. Never the topology. */
 export interface Dressing {
@@ -94,7 +120,10 @@ export interface Dressing {
   petals: 'pink' | 'purple' | 'orange';
 }
 
-export const dressingFor = (rng: Rng): Dressing => ({ mirror: rng.chance(0.5), petals: rng.pick(['pink', 'purple', 'orange'] as const) });
+export const dressingFor = (rng: Rng): Dressing => ({
+  mirror: rng.chance(0.5),
+  petals: rng.pick(['pink', 'purple', 'orange'] as const),
+});
 
 /**
  * What the round has shown her (round-local, only ever set): the lantern lit, and off. Done waits on these: level 1 needs
@@ -139,9 +168,15 @@ export function nextHelp(plan: LevelPlan, s: BoardState, seen: Seen): HelpId | n
  */
 export class HelpTally {
   private readonly given = new Set<HelpId>();
-  get count() { return this.given.size; }
-  give(id: HelpId) { this.given.add(id); }
-  has(id: HelpId) { return this.given.has(id); }
+  get count() {
+    return this.given.size;
+  }
+  give(id: HelpId) {
+    this.given.add(id);
+  }
+  has(id: HelpId) {
+    return this.given.has(id);
+  }
 }
 
 /**

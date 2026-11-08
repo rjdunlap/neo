@@ -25,14 +25,38 @@ export interface BumperPlan {
 
 /** ID 7 remains reserved for the pattern slice. */
 export const PLANS: Record<number, BumperPlan> = {
-  1: { mode: 'spring', bumpers: 6, goal: 6, name: 'Tap to launch the ladybug; flowers bloom when it bumps them' },
+  1: {
+    mode: 'spring',
+    bumpers: 6,
+    goal: 6,
+    name: 'Tap to launch the ladybug; flowers bloom when it bumps them',
+  },
   2: { mode: 'bloom', bumpers: 5, goal: 5, name: 'Flip the ladybug back up until every flower blooms' },
   3: { mode: 'color', bumpers: 7, goal: 3, name: 'Bloom the three flowers of one color' },
   4: { mode: 'order', bumpers: 6, goal: 3, name: 'Bump flowers 1, 2, 3 in order' },
   5: { mode: 'order', bumpers: 8, goal: 5, name: 'Bump flowers 1 to 5 in order, with others in the way' },
-  8: { mode: 'color', not: true, bumpers: 8, goal: 2, name: 'Bloom every flower that is not the color asked for; those ones are asleep' },
-  6: { mode: 'order', bumpers: 6, goal: 3, start: 3, name: 'Count on from a number between 2 and 6: three or four flowers in order' },
-  9: { mode: 'order', bumpers: 8, goal: 5, start: 5, descend: true, name: 'Count back to 1 from a starting number between 5 and 8' },
+  8: {
+    mode: 'color',
+    not: true,
+    bumpers: 8,
+    goal: 2,
+    name: 'Bloom every flower that is not the color asked for; those ones are asleep',
+  },
+  6: {
+    mode: 'order',
+    bumpers: 6,
+    goal: 3,
+    start: 3,
+    name: 'Count on from a number between 2 and 6: three or four flowers in order',
+  },
+  9: {
+    mode: 'order',
+    bumpers: 8,
+    goal: 5,
+    start: 5,
+    descend: true,
+    name: 'Count back to 1 from a starting number between 5 and 8',
+  },
 };
 
 export const LEVELS: BandLevels = {
@@ -53,9 +77,10 @@ export function planFor(level: number, rng?: Rng): BumperPlan {
 }
 
 /** The exact order used by flower art, spoken targets, the bot and completion. */
-export const orderNumbers = (plan: BumperPlan): number[] => plan.mode === 'order'
-  ? Array.from({ length: plan.goal }, (_, i) => (plan.start ?? 1) + i * (plan.descend ? -1 : 1))
-  : [];
+export const orderNumbers = (plan: BumperPlan): number[] =>
+  plan.mode === 'order'
+    ? Array.from({ length: plan.goal }, (_, i) => (plan.start ?? 1) + i * (plan.descend ? -1 : 1))
+    : [];
 
 /** The table in its own units; the ball falls out between the flippers into the pot. */
 export const TABLE = { w: 600, h: 720, ball: 18, bumper: 36, gravity: 430, bounce: 0.72, kick: 380 };
@@ -74,20 +99,28 @@ export const SPOTS: { x: number; y: number }[] = [
 
 /** Each theme has eight well-spaced spots; the mission and collision sizes stay the same. */
 export const TABLE_IDS = ['meadow', 'pond', 'hive'] as const;
-export type TableId = typeof TABLE_IDS[number];
+export type TableId = (typeof TABLE_IDS)[number];
 export const TABLE_SPOTS: Record<TableId, readonly { x: number; y: number }[]> = {
   meadow: SPOTS,
   pond: [
-    { x: 165, y: 110 }, { x: 435, y: 110 },
-    { x: 165, y: 220 }, { x: 435, y: 220 },
-    { x: 165, y: 330 }, { x: 435, y: 330 },
-    { x: 165, y: 440 }, { x: 435, y: 440 },
+    { x: 165, y: 110 },
+    { x: 435, y: 110 },
+    { x: 165, y: 220 },
+    { x: 435, y: 220 },
+    { x: 165, y: 330 },
+    { x: 435, y: 330 },
+    { x: 165, y: 440 },
+    { x: 435, y: 440 },
   ],
   hive: [
-    { x: 300, y: 90 }, { x: 445, y: 145 },
-    { x: 505, y: 270 }, { x: 445, y: 395 },
-    { x: 300, y: 450 }, { x: 155, y: 395 },
-    { x: 95, y: 270 }, { x: 155, y: 145 },
+    { x: 300, y: 90 },
+    { x: 445, y: 145 },
+    { x: 505, y: 270 },
+    { x: 445, y: 395 },
+    { x: 300, y: 450 },
+    { x: 155, y: 395 },
+    { x: 95, y: 270 },
+    { x: 155, y: 145 },
   ],
 };
 export const pickTable = (rng: Rng): TableId => rng.pick(TABLE_IDS);
@@ -117,7 +150,8 @@ export function funnel(): Peg[] {
     const x0 = side === 'left' ? 0 : TABLE.w;
     const x1 = side === 'left' ? FLIPPER.x - 6 : TABLE.w - FLIPPER.x + 6;
     const y0 = FLIPPER.y - 150;
-    for (let t = 0; t <= 1.0001; t += 1 / 12) out.push({ x: x0 + (x1 - x0) * t, y: y0 + (FLIPPER.y - y0) * t, r: 10 });
+    for (let t = 0; t <= 1.0001; t += 1 / 12)
+      out.push({ x: x0 + (x1 - x0) * t, y: y0 + (FLIPPER.y - y0) * t, r: 10 });
   }
   return out;
 }
@@ -131,7 +165,8 @@ export interface Bumper {
 }
 
 /** Whether a flower of this color (0 is the asked one) is wanted on a color level: the asked color, or on a "not" level every other. */
-export const wantsColor = (plan: BumperPlan, color: number): boolean => (plan.not ? color !== 0 : color === 0);
+export const wantsColor = (plan: BumperPlan, color: number): boolean =>
+  plan.not ? color !== 0 : color === 0;
 
 /** Flowers for a round. Color levels have exactly `goal` flowers of the asked color (color 0); on a "not" level those are the sleepy ones, fewer than each other color. */
 export function makeBumpers(plan: BumperPlan, rng: Rng, table: TableId = 'meadow'): Bumper[] {
@@ -145,10 +180,19 @@ export function makeBumpers(plan: BumperPlan, rng: Rng, table: TableId = 'meadow
 }
 
 /** The world for physics: flowers first (so hit indexes match bumpers), then hedges, then flippers at rest. */
-export function makeWorld(bumpers: readonly Bumper[], flippers: Record<FlipperSide, number> = { left: FLIPPER.rest, right: FLIPPER.rest }): BallWorld {
-  const flipperPegs = (['left', 'right'] as FlipperSide[]).flatMap((side) => flipperPoints(side, flippers[side]).map((p) => ({ ...p, r: 12 })));
+export function makeWorld(
+  bumpers: readonly Bumper[],
+  flippers: Record<FlipperSide, number> = { left: FLIPPER.rest, right: FLIPPER.rest },
+): BallWorld {
+  const flipperPegs = (['left', 'right'] as FlipperSide[]).flatMap((side) =>
+    flipperPoints(side, flippers[side]).map((p) => ({ ...p, r: 12 })),
+  );
   return {
-    pegs: [...bumpers.map((b) => ({ x: b.x, y: b.y, r: TABLE.bumper, kick: TABLE.kick })), ...funnel(), ...flipperPegs],
+    pegs: [
+      ...bumpers.map((b) => ({ x: b.x, y: b.y, r: TABLE.bumper, kick: TABLE.kick })),
+      ...funnel(),
+      ...flipperPegs,
+    ],
     left: 0,
     right: TABLE.w,
     top: 0,
@@ -165,7 +209,13 @@ export function launchVelocity(angle: number) {
 
 /** Follow a launch (flippers resting) until the pot catches it. */
 export function flight(world: BallWorld, angle: number, seconds = 20) {
-  return simulate({ x: LAUNCH.x, y: LAUNCH.y, ...launchVelocity(angle), r: TABLE.ball }, world, CATCH_Y, seconds, 1 / 60);
+  return simulate(
+    { x: LAUNCH.x, y: LAUNCH.y, ...launchVelocity(angle), r: TABLE.ball },
+    world,
+    CATCH_Y,
+    seconds,
+    1 / 60,
+  );
 }
 
 /** A launch angle whose flight bumps a flower that `wanted` accepts (by bumper index), or null. */
@@ -185,7 +235,10 @@ export interface FlipperState {
   upFor: number;
 }
 export type Flippers = Record<FlipperSide, FlipperState>;
-export const restingFlippers = (): Flippers => ({ left: { angle: FLIPPER.rest, upFor: 0 }, right: { angle: FLIPPER.rest, upFor: 0 } });
+export const restingFlippers = (): Flippers => ({
+  left: { angle: FLIPPER.rest, upFor: 0 },
+  right: { angle: FLIPPER.rest, upFor: 0 },
+});
 /** The pegs that stand for the two flippers are the last twelve of a world. */
 const FLIPPER_PEGS = 12;
 
@@ -196,7 +249,8 @@ export function swingFlippers(flippers: Flippers, world: BallWorld, dt: number) 
     const f = flippers[side];
     f.upFor = Math.max(0, f.upFor - dt);
     const target = f.upFor > 0 ? FLIPPER.up : FLIPPER.rest;
-    f.angle += Math.sign(target - f.angle) * Math.min(Math.abs(target - f.angle), dt * (f.upFor > 0 ? 22 : 9));
+    f.angle +=
+      Math.sign(target - f.angle) * Math.min(Math.abs(target - f.angle), dt * (f.upFor > 0 ? 22 : 9));
     for (const p of flipperPoints(side, f.angle)) Object.assign(world.pegs[k++], p);
   }
 }
@@ -209,7 +263,12 @@ export const kickReach = (ballRadius: number, wide: boolean) => ballRadius + 12 
  * the pivot, 1 at the tip), with a little chance in it (`noise` is asked for only when the flip connects). Null if the
  * ball is out of reach, or already rising fast.
  */
-export function kickBall(ball: Ball, side: FlipperSide, wide: boolean, noise: () => number): { vx: number; vy: number } | null {
+export function kickBall(
+  ball: Ball,
+  side: FlipperSide,
+  wide: boolean,
+  noise: () => number,
+): { vx: number; vy: number } | null {
   const pts = flipperPoints(side, FLIPPER.rest, 12);
   let best = Infinity;
   let at = 0;
@@ -243,7 +302,16 @@ interface Moment {
  * the flippers at rest, pressing `press` on the first frame if asked. Returns the flowers it touches (after those already
  * in `before`), where it was before each frame, and how many frames it stayed up.
  */
-function playOut(world: BallWorld, flowers: number, start: Ball, before: readonly number[], wide: boolean, noise: number, press: FlipperSide | null, limit: number) {
+function playOut(
+  world: BallWorld,
+  flowers: number,
+  start: Ball,
+  before: readonly number[],
+  wide: boolean,
+  noise: number,
+  press: FlipperSide | null,
+  limit: number,
+) {
   const w: BallWorld = { ...world, pegs: world.pegs.map((p) => ({ ...p })) };
   const flippers = restingFlippers();
   const b = { ...start };
@@ -278,7 +346,14 @@ export interface FlipPlan {
  * anyway there is nothing to do (null). Otherwise the earliest press whose flight touches one; failing that the press that
  * keeps the ball up longest, for another pass.
  */
-export function planFlip(world: BallWorld, flowers: number, ball: Ball, wide: boolean, noise: number, wanted: (flower: number) => boolean): FlipPlan | null {
+export function planFlip(
+  world: BallWorld,
+  flowers: number,
+  ball: Ball,
+  wide: boolean,
+  noise: number,
+  wanted: (flower: number) => boolean,
+): FlipPlan | null {
   const free = playOut(world, flowers, ball, [], wide, noise, null, FREE_FRAMES);
   if (free.hits.some(wanted)) return null;
   const sides = ['left', 'right'] as FlipperSide[];
@@ -290,7 +365,16 @@ export function planFlip(world: BallWorld, flowers: number, ball: Ball, wide: bo
       const at = free.moments[frame];
       if (!at || !kickBall(at.ball, side, wide, () => noise)) cache.set(key, null);
       else {
-        const out = playOut(world, flowers, at.ball, free.hits.slice(0, at.touched), wide, noise, side, AFTER_FRAMES);
+        const out = playOut(
+          world,
+          flowers,
+          at.ball,
+          free.hits.slice(0, at.touched),
+          wide,
+          noise,
+          side,
+          AFTER_FRAMES,
+        );
         cache.set(key, { value: out.hits.filter(wanted).length, frames: out.frames });
       }
     }
@@ -306,9 +390,18 @@ export function planFlip(world: BallWorld, flowers: number, ball: Ball, wide: bo
       const at = free.moments[frame].ball;
       const plan = { side, frame, x: at.x, y: at.y };
       // The hand may press a step late: a flip that works here and the next steps on is a flip that works.
-      if (w.value > 0 && Array.from({ length: LATE }, (_, k) => worth(side, frame + 1 + k)).every((o) => o && o.value > 0)) return plan;
+      if (
+        w.value > 0 &&
+        Array.from({ length: LATE }, (_, k) => worth(side, frame + 1 + k)).every((o) => o && o.value > 0)
+      )
+        return plan;
       // Only a flip that keeps the ladybug up clearly longer than it would stay on its own is worth pressing.
-      if (w.value === 0 && frame + w.frames > free.moments.length + KEEP_GAIN && (!keep || frame + w.frames > keep.frames)) keep = { plan, frames: frame + w.frames };
+      if (
+        w.value === 0 &&
+        frame + w.frames > free.moments.length + KEEP_GAIN &&
+        (!keep || frame + w.frames > keep.frames)
+      )
+        keep = { plan, frames: frame + w.frames };
     }
   }
   // A ladybug still bouncing about at the end of the look ahead will be looked at again soon enough: no need to save it yet.

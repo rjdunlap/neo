@@ -12,7 +12,28 @@ import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { drawKind } from './kinds';
-import { LEVELS, BEDS, bigFinished, bigTouch, BIG_STAGES, CHOOSE_MODES, gardenTouch, GRID_MODES, judgeGrid, KINDS, makeRequests, matches, packetsFor, planFor, ROW_LEN, total, type BigState, type FlowerKind, type GardenPlan, type Request } from './logic';
+import {
+  LEVELS,
+  BEDS,
+  bigFinished,
+  bigTouch,
+  BIG_STAGES,
+  CHOOSE_MODES,
+  gardenTouch,
+  GRID_MODES,
+  judgeGrid,
+  KINDS,
+  makeRequests,
+  matches,
+  packetsFor,
+  planFor,
+  ROW_LEN,
+  total,
+  type BigState,
+  type FlowerKind,
+  type GardenPlan,
+  type Request,
+} from './logic';
 
 /** A smiling flower on a stem: the stem rises, two leaves unfold, a bud swells, then the head opens. */
 class Bloom extends Container {
@@ -36,7 +57,11 @@ class Bloom extends Container {
     left.ellipse(-18, 0, 18, 8).fill(swatch.green.fill).position.set(2, -80);
     const sw = swatch[color];
     this.bud.ellipse(0, -4, 12, 17).fill(sw.fill).stroke({ width: 3, color: sw.line });
-    this.bud.moveTo(-13, 6).quadraticCurveTo(0, -6, 13, 6).quadraticCurveTo(0, 18, -13, 6).fill(swatch.green.fill);
+    this.bud
+      .moveTo(-13, 6)
+      .quadraticCurveTo(0, -6, 13, 6)
+      .quadraticCurveTo(0, 18, -13, 6)
+      .fill(swatch.green.fill);
     this.bud.visible = false;
     this.face = drawKind(new Graphics(), kind, 42, sw.fill, sw.line);
     // A sunflower's middle is dark brown, so its face is cream there.
@@ -53,14 +78,20 @@ class Bloom extends Container {
    */
   setStage(n: number) {
     Object.assign(this.now, this.target);
-    this.target = { stem: n < 2 ? 0 : n === 2 ? 0.35 : 1, leaf: n >= 3 ? 1 : 0, bud: n === 4 ? 1 : 0, face: n >= 5 ? 1 : 0 };
+    this.target = {
+      stem: n < 2 ? 0 : n === 2 ? 0.35 : 1,
+      leaf: n >= 3 ? 1 : 0,
+      bud: n === 4 ? 1 : 0,
+      face: n >= 5 ? 1 : 0,
+    };
     if (n < 2) Object.assign(this.now, this.target);
     this.paint();
   }
 
   step(dt: number) {
     const k = Math.min(1, dt * 9);
-    for (const key of ['stem', 'leaf', 'bud', 'face'] as const) this.now[key] += (this.target[key] - this.now[key]) * k;
+    for (const key of ['stem', 'leaf', 'bud', 'face'] as const)
+      this.now[key] += (this.target[key] - this.now[key]) * k;
     this.paint();
   }
 
@@ -82,7 +113,9 @@ class Bloom extends Container {
     this.bud.scale.set(0);
     this.bud.visible = true;
     await tw.to(this.stem.scale, { y: 1 }, { duration: 0.5, ease: ease.outQuad });
-    this.leaves.forEach((l, i) => void tw.to(l.scale, { x: 1 }, { duration: 0.3, delay: i * 0.08, ease: ease.outBack }));
+    this.leaves.forEach(
+      (l, i) => void tw.to(l.scale, { x: 1 }, { duration: 0.3, delay: i * 0.08, ease: ease.outBack }),
+    );
     await tw.to(this.bud.scale, { x: 1, y: 1 }, { duration: 0.3, ease: ease.outBack });
     await tw.to(this.bud.scale, { x: 1.25, y: 1.15 }, { duration: 0.15 });
     this.bud.visible = false;
@@ -150,8 +183,30 @@ class GardenGrow implements Game {
     this.grid = GRID_MODES.includes(this.plan.mode);
     this.choosing = CHOOSE_MODES.includes(this.plan.mode);
     this.requests = makeRequests(this.plan, ctx.rng);
-    this.backdrop = new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0x9edb86], horizon: 0.5, clouds: 1, sun: true, seed: 37 }, ctx.view);
-    const c = puffs(new Graphics(), [[-60, 10, 40], [0, -10, 55], [60, 10, 40], [-30, 30, 35], [30, 30, 35]], 0xffffff, 0xc9d6e6, 6);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0x8fd3f7, 0xe9f7ff],
+        hills: [0xc8ecb0, 0x9edb86],
+        horizon: 0.5,
+        clouds: 1,
+        sun: true,
+        seed: 37,
+      },
+      ctx.view,
+    );
+    const c = puffs(
+      new Graphics(),
+      [
+        [-60, 10, 40],
+        [0, -10, 55],
+        [60, 10, 40],
+        [-30, 30, 35],
+        [30, 30, 35],
+      ],
+      0xffffff,
+      0xc9d6e6,
+      6,
+    );
     c.circle(-18, 6, 5).circle(18, 6, 5).fill(ink);
     c.moveTo(-10, 20).quadraticCurveTo(0, 28, 10, 20).stroke({ width: 4, color: ink, cap: 'round' });
     this.cloud.addChild(c);
@@ -162,9 +217,16 @@ class GardenGrow implements Game {
     if (this.big) this.buildBig();
     for (let i = 0; i < (this.big ? 0 : BEDS); i++) {
       const node = new Container();
-      const wet = new Graphics().ellipse(0, 0, 50, 18).fill(0x5e3b22).ellipse(-14, -6, 18, 5).fill({ color: 0xffffff, alpha: 0.25 });
+      const wet = new Graphics()
+        .ellipse(0, 0, 50, 18)
+        .fill(0x5e3b22)
+        .ellipse(-14, -6, 18, 5)
+        .fill({ color: 0xffffff, alpha: 0.25 });
       wet.alpha = 0;
-      node.addChild(new Graphics().ellipse(0, 6, 56, 22).fill(wood.line).ellipse(0, 0, 50, 18).fill(0x8a5a36), wet);
+      node.addChild(
+        new Graphics().ellipse(0, 6, 56, 22).fill(wood.line).ellipse(0, 0, 50, 18).fill(0x8a5a36),
+        wet,
+      );
       node.hitArea = this.grid ? new Rectangle(-62, -80, 124, 150) : new Rectangle(-62, -200, 124, 240);
       const bed: Bed = { node, seed: null, kind: 'blossom', bloom: null, seedArt: null, wet, wetFor: 0 };
       onTap(node, () => void this.tapBed(bed), { cooldown: 250 });
@@ -224,35 +286,61 @@ class GardenGrow implements Game {
     const pulse = 6 + 2 * Math.sin(this.clock * 6);
     if (this.glowBeds && this.sign.children.length) {
       const b = this.sign.getLocalBounds();
-      g.roundRect(this.sign.x + b.x - 8, this.sign.y + b.y - 8, b.width + 16, b.height + 16, 22).stroke({ width: pulse, color: swatch.yellow.fill });
+      g.roundRect(this.sign.x + b.x - 8, this.sign.y + b.y - 8, b.width + 16, b.height + 16, 22).stroke({
+        width: pulse,
+        color: swatch.yellow.fill,
+      });
     }
     if (this.glowColor) {
       const p = this.packets.find((x) => x.color === this.glowColor);
-      if (p) g.roundRect(p.node.x - 66, p.node.y - 72, 132, 144, 24).stroke({ width: pulse, color: swatch.yellow.fill });
+      if (p)
+        g.roundRect(p.node.x - 66, p.node.y - 72, 132, 144, 24).stroke({
+          width: pulse,
+          color: swatch.yellow.fill,
+        });
     }
     if (this.chosen) {
       const p = this.packets.find((x) => x.color === this.chosen);
-      if (p) g.roundRect(p.node.x - 68, p.node.y - 74, 136, 148, 26).stroke({ width: 6, color: swatch[this.chosen].line });
+      if (p)
+        g.roundRect(p.node.x - 68, p.node.y - 74, 136, 148, 26).stroke({
+          width: 6,
+          color: swatch[this.chosen].line,
+        });
     }
     if (this.hintOn && this.choosing) {
-      const j = judgeGrid(this.request, this.beds.map((b) => b.seed));
+      const j = judgeGrid(
+        this.request,
+        this.beds.map((b) => b.seed),
+      );
       for (const i of j.wrong) {
         const c = this.request.grid?.[i] ?? this.chosen ?? (Object.keys(this.request.want)[0] as ColorName);
-        g.ellipse(this.beds[i].node.x, this.beds[i].node.y, 66, 28).stroke({ width: pulse, color: swatch[c].line });
+        g.ellipse(this.beds[i].node.x, this.beds[i].node.y, 66, 28).stroke({
+          width: pulse,
+          color: swatch[c].line,
+        });
       }
       return;
     }
     // Rings on the beds still to plant.
     const empty = this.beds.filter((b) => !b.seed);
     const planted = this.beds.length - empty.length;
-    empty.slice(0, Math.max(0, this.glowBeds - planted)).forEach((b) => g.ellipse(b.node.x, b.node.y, 66, 28).stroke({ width: pulse, color: swatch.yellow.fill }));
+    empty
+      .slice(0, Math.max(0, this.glowBeds - planted))
+      .forEach((b) =>
+        g.ellipse(b.node.x, b.node.y, 66, 28).stroke({ width: pulse, color: swatch.yellow.fill }),
+      );
   }
 
   /** The ghost finger: plant the beds, take the packet asked for, and make it rain when the seeds are right. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished) return null;
     if (this.big) return { tap: { on: this.bigBed }, receiver: this.tapLayer };
-    const touch = gardenTouch(this.plan, this.requests[this.index], this.beds.map((b) => ({ seed: b.seed, bloom: !!b.bloom })), this.chosen);
+    const touch = gardenTouch(
+      this.plan,
+      this.requests[this.index],
+      this.beds.map((b) => ({ seed: b.seed, bloom: !!b.bloom })),
+      this.chosen,
+    );
     if (!touch) return null;
     if (touch === 'rain') return { tap: { on: this.cloud } };
     if ('bed' in touch) return { tap: { on: this.beds[touch.bed].node } };
@@ -273,7 +361,9 @@ class GardenGrow implements Game {
     const free = this.plan.mode === 'plant' || this.plan.mode === 'water' || this.big;
     if (free) {
       this.busy = false;
-      return this.ctx.instruct(this.big ? 'grow.big' : this.plan.mode === 'plant' ? 'grow.plant' : 'grow.water');
+      return this.ctx.instruct(
+        this.big ? 'grow.big' : this.plan.mode === 'plant' ? 'grow.plant' : 'grow.water',
+      );
     }
     if (this.index >= this.requests.length) return void this.finale();
     // Pick the last request's flowers for a bunch, so every bed is free again.
@@ -287,9 +377,11 @@ class GardenGrow implements Game {
     const [a, b] = Object.entries(r.want) as [ColorName, number][];
     if (this.plan.mode === 'color') return this.ctx.instruct('grow.color', { color: a[0] });
     if (this.plan.mode === 'count') return this.ctx.instruct('grow.count', { n: a[1], color: a[0] });
-    if (this.plan.mode === 'more') return this.ctx.instruct('grow.more-than', { n: r.shown?.[a[0]] ?? 0, color: a[0] });
+    if (this.plan.mode === 'more')
+      return this.ctx.instruct('grow.more-than', { n: r.shown?.[a[0]] ?? 0, color: a[0] });
     if (this.plan.mode === 'array') return this.ctx.instruct('grow.array');
-    if (this.plan.mode === 'rows') return this.ctx.instruct('grow.rows', { top: r.grid![0], bottom: r.grid![ROW_LEN] });
+    if (this.plan.mode === 'rows')
+      return this.ctx.instruct('grow.rows', { top: r.grid![0], bottom: r.grid![ROW_LEN] });
     if (this.plan.mode === 'columns') return this.ctx.instruct('grow.columns');
     if (this.plan.mode === 'equal') return this.ctx.instruct('grow.equal', { n: r.perRow ?? 1, color: a[0] });
     return this.ctx.instruct('grow.mix', { n: a[1], a: a[0], m: b[1], b: b[0] });
@@ -302,9 +394,18 @@ class GardenGrow implements Game {
     if (mode === 'equal') return this.buildEqualSign(r);
     // Rows and columns show the garden itself: the color wanted in each bed, by position.
     const shown = r.shown ?? r.want;
-    const want = r.grid ?? (Object.entries(shown) as [ColorName, number][]).flatMap(([c, n]) => Array(n).fill(c) as ColorName[]);
+    const want =
+      r.grid ??
+      (Object.entries(shown) as [ColorName, number][]).flatMap(([c, n]) => Array(n).fill(c) as ColorName[]);
     const w = this.grid ? 190 : want.length * 46 + 30;
-    this.sign.addChild(new Graphics().roundRect(-w / 2, -40, w, 80, 18).fill(0xfff8ec).stroke({ width: 5, color: wood.line }).rect(-6, 40, 12, 60).fill(wood.fill));
+    this.sign.addChild(
+      new Graphics()
+        .roundRect(-w / 2, -40, w, 80, 18)
+        .fill(0xfff8ec)
+        .stroke({ width: 5, color: wood.line })
+        .rect(-6, 40, 12, 60)
+        .fill(wood.fill),
+    );
     want.forEach((c, i) => {
       const f = drawKind(new Graphics(), r.kind, 18, swatch[c].fill, swatch[c].line);
       if (this.grid) {
@@ -318,7 +419,14 @@ class GardenGrow implements Game {
   /** The equal-rows sign: each row shows how many it takes, in flowers and a numeral, and empty pots for the rest. */
   private buildEqualSign(r: Request) {
     const color = Object.keys(r.want)[0] as ColorName;
-    this.sign.addChild(new Graphics().roundRect(-110, -40, 220, 80, 18).fill(0xfff8ec).stroke({ width: 5, color: wood.line }).rect(-6, 40, 12, 60).fill(wood.fill));
+    this.sign.addChild(
+      new Graphics()
+        .roundRect(-110, -40, 220, 80, 18)
+        .fill(0xfff8ec)
+        .stroke({ width: 5, color: wood.line })
+        .rect(-6, 40, 12, 60)
+        .fill(wood.fill),
+    );
     for (let row = 0; row < 2; row++) {
       const y = -18 + row * 32;
       for (let i = 0; i < ROW_LEN; i++) {
@@ -327,7 +435,10 @@ class GardenGrow implements Game {
           const f = drawKind(new Graphics(), r.kind, 15, swatch[color].fill, swatch[color].line);
           f.position.set(x, y);
           this.sign.addChild(f);
-        } else this.sign.addChild(new Graphics().circle(x, y, 13).stroke({ width: 3, color: wood.line, alpha: 0.4 }));
+        } else
+          this.sign.addChild(
+            new Graphics().circle(x, y, 13).stroke({ width: 3, color: wood.line, alpha: 0.4 }),
+          );
       }
       const t = new Text({ text: String(r.perRow), style: { fontSize: 30, fontWeight: '800', fill: ink } });
       t.anchor.set(0.5);
@@ -342,7 +453,12 @@ class GardenGrow implements Game {
     for (const color of packetsFor(this.plan, this.request, this.ctx.rng)) {
       const node = new Container();
       const sw = swatch[color];
-      node.addChild(new Graphics().roundRect(-54, -62, 108, 124, 16).fill(0xfff8ec).stroke({ width: 5, color: wood.line }));
+      node.addChild(
+        new Graphics()
+          .roundRect(-54, -62, 108, 124, 16)
+          .fill(0xfff8ec)
+          .stroke({ width: 5, color: wood.line }),
+      );
       const f = drawKind(new Graphics(), this.request.kind, 30, sw.fill, sw.line);
       f.y = -8;
       node.addChild(f, new Graphics().ellipse(0, 40, 30, 10).fill(0x8a5a36));
@@ -360,7 +476,15 @@ class GardenGrow implements Game {
     bed.kind = this.requests[this.index]?.kind ?? this.ctx.rng.pick(KINDS);
     // A seed with a little marker stick in its color, so you can see what was planted.
     const s = new Container();
-    s.addChild(new Graphics().ellipse(0, -8, 9, 12).fill(wood.fill).stroke({ width: 3, color: wood.line }).moveTo(30, 4).lineTo(30, -40).stroke({ width: 4, color: wood.line, cap: 'round' }));
+    s.addChild(
+      new Graphics()
+        .ellipse(0, -8, 9, 12)
+        .fill(wood.fill)
+        .stroke({ width: 3, color: wood.line })
+        .moveTo(30, 4)
+        .lineTo(30, -40)
+        .stroke({ width: 4, color: wood.line, cap: 'round' }),
+    );
     const tag = drawKind(new Graphics(), bed.kind, 15, swatch[color].fill, swatch[color].line);
     tag.position.set(30, -50);
     s.addChild(tag);
@@ -384,14 +508,19 @@ class GardenGrow implements Game {
     // A grown flower sings, at any time.
     if (bed.bloom) {
       sfx.marimba(3 + this.beds.indexOf(bed));
-      void this.ctx.tw.to(bed.bloom.head.scale, { x: 1.2, y: 1.2 }, { duration: 0.12 }).then(() => this.ctx.tw.to(bed.bloom!.head.scale, { x: 1, y: 1 }, { duration: 0.2 }));
+      void this.ctx.tw
+        .to(bed.bloom.head.scale, { x: 1.2, y: 1.2 }, { duration: 0.12 })
+        .then(() => this.ctx.tw.to(bed.bloom!.head.scale, { x: 1, y: 1 }, { duration: 0.2 }));
       return;
     }
     if (this.busy) return;
     const mode = this.plan.mode;
     if (mode === 'plant' || mode === 'water') {
       if (bed.seed) return;
-      this.plantIn(bed, this.ctx.rng.pick(['red', 'yellow', 'pink', 'purple', 'orange', 'blue'] as ColorName[]));
+      this.plantIn(
+        bed,
+        this.ctx.rng.pick(['red', 'yellow', 'pink', 'purple', 'orange', 'blue'] as ColorName[]),
+      );
       if (mode === 'plant') {
         // No lock: another empty bed can be planted while this one comes up.
         this.rainOn(bed);
@@ -457,7 +586,9 @@ class GardenGrow implements Game {
         this.misses++;
         this.wrongs++;
         sfx.boing();
-        void this.ctx.tw.to(node, { rotation: 0.12 }, { duration: 0.08 }).then(() => this.ctx.tw.to(node, { rotation: 0 }, { duration: 0.2, ease: ease.outBack }));
+        void this.ctx.tw
+          .to(node, { rotation: 0.12 }, { duration: 0.08 })
+          .then(() => this.ctx.tw.to(node, { rotation: 0 }, { duration: 0.2, ease: ease.outBack }));
         await this.ctx.say('grow.notthat', { color, want });
         if (this.wrongs >= 2 && !this.glowColor) {
           this.hints++;
@@ -481,15 +612,28 @@ class GardenGrow implements Game {
   private buildBig() {
     this.cloud.visible = false;
     this.cloud.eventMode = 'none';
-    this.bigBed.addChild(new Graphics().ellipse(0, 6, 62, 24).fill(wood.line).ellipse(0, 0, 56, 20).fill(0x8a5a36));
+    this.bigBed.addChild(
+      new Graphics().ellipse(0, 6, 62, 24).fill(wood.line).ellipse(0, 0, 56, 20).fill(0x8a5a36),
+    );
     const seed = new Graphics().ellipse(0, -8, 9, 12).fill(wood.fill).stroke({ width: 3, color: wood.line });
     this.bigSeed.addChild(seed);
     this.bigSeed.visible = false;
     this.bigBed.addChild(this.bigSeed);
     this.bigBed.eventMode = 'none';
     // The vase sits to the right, clear of the pet in the corner; its flowers are drawn behind its body.
-    this.vase.addChild(new Graphics().roundRect(-48, -14, 96, 14, 6).fill(0xb98a5e).stroke({ width: 4, color: wood.line }));
-    this.vase.addChild(new Graphics().moveTo(-42, -2).lineTo(-52, -118).quadraticCurveTo(0, -140, 52, -118).lineTo(42, -2).closePath().fill(0x7fc4e8).stroke({ width: 5, color: 0x3f86ad }));
+    this.vase.addChild(
+      new Graphics().roundRect(-48, -14, 96, 14, 6).fill(0xb98a5e).stroke({ width: 4, color: wood.line }),
+    );
+    this.vase.addChild(
+      new Graphics()
+        .moveTo(-42, -2)
+        .lineTo(-52, -118)
+        .quadraticCurveTo(0, -140, 52, -118)
+        .lineTo(42, -2)
+        .closePath()
+        .fill(0x7fc4e8)
+        .stroke({ width: 5, color: 0x3f86ad }),
+    );
     this.vase.eventMode = 'none';
     this.ctx.stage.addChild(this.bigBed, this.vase);
     this.tapLayer.hitArea = new Rectangle(0, 0, this.view.w, this.view.h);
@@ -529,7 +673,11 @@ class GardenGrow implements Game {
     // Touch-down answer: a pop, a squash of the bed, and each stage has its own sound.
     this.ctx.tw.kill(this.bigBed.scale);
     this.bigBed.scale.set(this.bigScale * 1.06, this.bigScale * 0.94);
-    void this.ctx.tw.to(this.bigBed.scale, { x: this.bigScale, y: this.bigScale }, { duration: 0.25, ease: ease.outBack });
+    void this.ctx.tw.to(
+      this.bigBed.scale,
+      { x: this.bigScale, y: this.bigScale },
+      { duration: 0.25, ease: ease.outBack },
+    );
     if (next.stage <= 3) sfx.pop(3 + next.stage);
     if (next.stage === 2) this.drops(this.bigBed.x);
     if (next.stage >= 4) sfx.bell(next.stage, 0.25);
@@ -564,7 +712,16 @@ class GardenGrow implements Game {
   }
 
   private drops(x: number) {
-    this.ctx.particles.burst(x, this.cloud.y + 40, { kind: 'dot', colors: [swatch.blue.fill, swatch.blue.light], count: 14, speed: [250, 420], angle: Math.PI / 2, spread: 0.25, gravity: 500, life: [0.5, 0.8] });
+    this.ctx.particles.burst(x, this.cloud.y + 40, {
+      kind: 'dot',
+      colors: [swatch.blue.fill, swatch.blue.light],
+      count: 14,
+      speed: [250, 420],
+      angle: Math.PI / 2,
+      spread: 0.25,
+      gravity: 500,
+      life: [0.5, 0.8],
+    });
     sfx.splash();
   }
 
@@ -575,7 +732,9 @@ class GardenGrow implements Game {
     if (mode === 'plant' || mode === 'color') {
       // Rain on nothing still rains, and wets the soil under the cloud.
       this.drops(this.cloud.x);
-      const under = this.beds.reduce((a, b) => (Math.abs(b.node.x - this.cloud.x) < Math.abs(a.node.x - this.cloud.x) ? b : a));
+      const under = this.beds.reduce((a, b) =>
+        Math.abs(b.node.x - this.cloud.x) < Math.abs(a.node.x - this.cloud.x) ? b : a,
+      );
       if (Math.abs(under.node.x - this.cloud.x) < 90) under.wetFor = 1.8;
       return;
     }
@@ -600,7 +759,10 @@ class GardenGrow implements Game {
     this.wrongs++;
     sfx.boing();
     const need = total(this.request);
-    await this.ctx.say(planted.length < need ? 'grow.fewer' : planted.length > need ? 'grow.more' : 'grow.colors', { n: planted.length, m: need });
+    await this.ctx.say(
+      planted.length < need ? 'grow.fewer' : planted.length > need ? 'grow.more' : 'grow.colors',
+      { n: planted.length, m: need },
+    );
     if (this.wrongs >= 2 && !this.glowBeds) {
       this.hints++;
       this.glowBeds = need;
@@ -610,7 +772,10 @@ class GardenGrow implements Game {
 
   /** Rain on a rows, columns or equal garden: right grows it; wrong names the row or column that needs something. */
   private async rainGrid(seeded: Bed[]) {
-    const j = judgeGrid(this.request, this.beds.map((b) => b.seed));
+    const j = judgeGrid(
+      this.request,
+      this.beds.map((b) => b.seed),
+    );
     if (j.ok) {
       this.busy = true;
       await Promise.all(seeded.map((b) => this.growBed(b)));
@@ -625,9 +790,19 @@ class GardenGrow implements Game {
     this.wrongs++;
     sfx.boing();
     const f = j.first!;
-    if (this.plan.mode === 'equal') await this.ctx.say('grow.equal-row', { row: f.row === 0 ? 'top' : 'bottom', n: f.have ?? 0, m: this.request.perRow ?? 1 });
-    else if (f.row !== undefined) await this.ctx.say('grow.row-needs', { row: f.row === 0 ? 'top' : 'bottom', color: f.color ?? '' });
-    else await this.ctx.say('grow.column-needs', { col: ['left', 'middle', 'right'][f.col!], color: f.color ?? '' });
+    if (this.plan.mode === 'equal')
+      await this.ctx.say('grow.equal-row', {
+        row: f.row === 0 ? 'top' : 'bottom',
+        n: f.have ?? 0,
+        m: this.request.perRow ?? 1,
+      });
+    else if (f.row !== undefined)
+      await this.ctx.say('grow.row-needs', { row: f.row === 0 ? 'top' : 'bottom', color: f.color ?? '' });
+    else
+      await this.ctx.say('grow.column-needs', {
+        col: ['left', 'middle', 'right'][f.col!],
+        color: f.color ?? '',
+      });
     if (this.wrongs >= 2 && !this.hintOn) {
       this.hints++;
       this.hintOn = true;
@@ -656,7 +831,9 @@ class GardenGrow implements Game {
 
   /** The flowers go into a bunch; seeds left over are cleared. */
   private async pick() {
-    const fade = this.beds.map((b) => (b.bloom ? this.ctx.tw.to(b.bloom, { alpha: 0, y: -40 }, { duration: 0.35 }) : Promise.resolve()));
+    const fade = this.beds.map((b) =>
+      b.bloom ? this.ctx.tw.to(b.bloom, { alpha: 0, y: -40 }, { duration: 0.35 }) : Promise.resolve(),
+    );
     await Promise.all(fade);
     for (const b of this.beds) {
       b.bloom?.destroy({ children: true });
@@ -671,7 +848,9 @@ class GardenGrow implements Game {
     if (this.finished) return;
     this.finished = true;
     sfx.tada();
-    for (const b of this.beds) if (b.bloom) void this.ctx.tw.to(b.bloom.head.scale, { x: 1.25, y: 1.25 }, { duration: 0.3, ease: ease.outBack });
+    for (const b of this.beds)
+      if (b.bloom)
+        void this.ctx.tw.to(b.bloom.head.scale, { x: 1.25, y: 1.25 }, { duration: 0.3, ease: ease.outBack });
     await this.ctx.say('grow.done');
     await this.ctx.tw.wait(0.5);
     this.ctx.finish({ misses: this.misses, hints: this.hints });
@@ -695,7 +874,10 @@ class GardenIcon extends WigglyIcon {
 function sticker(seed: number): Container {
   const rng = new Rng(seed);
   const c = new Container();
-  const b = new Bloom(rng.pick(['red', 'yellow', 'pink', 'purple', 'orange', 'blue'] as ColorName[]), rng.pick(KINDS));
+  const b = new Bloom(
+    rng.pick(['red', 'yellow', 'pink', 'purple', 'orange', 'blue'] as ColorName[]),
+    rng.pick(KINDS),
+  );
   b.position.set(0, 90);
   c.addChild(b);
   return c;

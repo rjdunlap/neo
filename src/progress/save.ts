@@ -1,5 +1,15 @@
 import type { Band } from './bands';
-import { PET_COLORS, ROOM_ITEMS, STICKER_PAGES, STORY_STEPS, type PetColor, type RoomItemId, type StickerPage, type StoryId, type StoryStep } from '../content/world';
+import {
+  PET_COLORS,
+  ROOM_ITEMS,
+  STICKER_PAGES,
+  STORY_STEPS,
+  type PetColor,
+  type RoomItemId,
+  type StickerPage,
+  type StoryId,
+  type StoryStep,
+} from '../content/world';
 import { clampSpot, starterItem, starterRoom } from '../content/room';
 import { cleanCreations, emptyCreations, type CreationsSave } from '../content/creations';
 import { cleanJournal, emptyJournal, type JournalSave } from '../content/journal';
@@ -97,7 +107,15 @@ export interface SaveData {
    * (Screen Time, Guided Access). The field stays so an older cached build that reads a newer backup finds 0, not its
    * old default of a few minutes, and never starts a goodnight scene.
    */
-  settings: { placeLayout: 'path' | 'subjects'; volume: number; music: boolean; sessionMinutes: 0; coplayHints: boolean; howToCards: boolean; speech: boolean };
+  settings: {
+    placeLayout: 'path' | 'subjects';
+    volume: number;
+    music: boolean;
+    sessionMinutes: 0;
+    coplayHints: boolean;
+    howToCards: boolean;
+    speech: boolean;
+  };
   games: Record<string, GameStats>;
   stickers: StickerRecord[];
   stories: { picnic: StoryProgress<'picnic'>; woodland: StoryProgress<'woodland'> };
@@ -126,10 +144,21 @@ export function defaults(): SaveData {
     profile: { name: '', band: 'lap' },
     creatures: { owned: [], companion: null },
     world: { band: null },
-    settings: { placeLayout: 'path', volume: 0.8, music: true, sessionMinutes: 0, coplayHints: true, howToCards: true, speech: true },
+    settings: {
+      placeLayout: 'path',
+      volume: 0.8,
+      music: true,
+      sessionMinutes: 0,
+      coplayHints: true,
+      howToCards: true,
+      speech: true,
+    },
     games: {},
     stickers: [],
-    stories: { picnic: { steps: [], ended: false, keepsake: false }, woodland: { steps: [], ended: false, keepsake: false } },
+    stories: {
+      picnic: { steps: [], ended: false, keepsake: false },
+      woodland: { steps: [], ended: false, keepsake: false },
+    },
     projects: { welcome: emptyWelcome() },
     room: starterRoom(),
     favorites: [],
@@ -139,7 +168,8 @@ export function defaults(): SaveData {
   };
 }
 
-const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
+const isObj = (v: unknown): v is Record<string, unknown> =>
+  typeof v === 'object' && v !== null && !Array.isArray(v);
 const num = (v: unknown, fallback: number) => (typeof v === 'number' && Number.isFinite(v) ? v : fallback);
 const bool = (v: unknown, fallback: boolean) => (typeof v === 'boolean' ? v : fallback);
 const str = (v: unknown, fallback: string) => (typeof v === 'string' ? v : fallback);
@@ -147,7 +177,14 @@ const str = (v: unknown, fallback: string) => (typeof v === 'string' ? v : fallb
 function placement(raw: unknown): StickerPlacement | undefined {
   if (!isObj(raw)) return;
   const page = STICKER_PAGES.find((p) => p === raw.page);
-  if (!page || typeof raw.x !== 'number' || !Number.isFinite(raw.x) || typeof raw.y !== 'number' || !Number.isFinite(raw.y)) return;
+  if (
+    !page ||
+    typeof raw.x !== 'number' ||
+    !Number.isFinite(raw.x) ||
+    typeof raw.y !== 'number' ||
+    !Number.isFinite(raw.y)
+  )
+    return;
   return { page, x: Math.max(0, Math.min(1, raw.x)), y: Math.max(0, Math.min(1, raw.y)) };
 }
 
@@ -172,7 +209,15 @@ function room(raw: unknown): RoomSave {
     return { id, ...clampSpot(num(it.x, start.x), num(it.y, start.y)), flip: bool(it.flip, false) };
   });
   const f = isObj(r.frame) ? r.frame : null;
-  const frame = f && typeof f.game === 'string' && f.game.length > 0 && f.game.length <= 60 && typeof f.seed === 'number' && Number.isFinite(f.seed) ? { game: f.game, seed: f.seed } : null;
+  const frame =
+    f &&
+    typeof f.game === 'string' &&
+    f.game.length > 0 &&
+    f.game.length <= 60 &&
+    typeof f.seed === 'number' &&
+    Number.isFinite(f.seed)
+      ? { game: f.game, seed: f.seed }
+      : null;
   return { items, frame };
 }
 
@@ -186,7 +231,13 @@ export function cleanCreatures(raw: unknown): CreaturesSave {
   const owned: Individual[] = [];
   for (const c of Array.isArray(r.owned) ? r.owned.filter(isObj) : []) {
     if (owned.length >= MAX_CREATURES) break;
-    if (!isSpecies(c.species) || typeof c.id !== 'string' || !CREATURE_ID.test(c.id) || owned.some((o) => o.id === c.id)) continue;
+    if (
+      !isSpecies(c.species) ||
+      typeof c.id !== 'string' ||
+      !CREATURE_ID.test(c.id) ||
+      owned.some((o) => o.id === c.id)
+    )
+      continue;
     const sp = SPECIES[c.species];
     const look = isObj(c.look) ? c.look : {};
     owned.push({
@@ -205,7 +256,14 @@ export function cleanCreatures(raw: unknown): CreaturesSave {
  * The one way a creature comes to exist. Idempotent on `metAt`: a token already met returns that creature and changes
  * nothing. Null (and nothing changes) once the collection is full. The first friend met becomes the companion.
  */
-export function meetIn(c: CreaturesSave, species: SpeciesId, name: string, color: PetColor, metAt: string, newId: () => string): Individual | null {
+export function meetIn(
+  c: CreaturesSave,
+  species: SpeciesId,
+  name: string,
+  color: PetColor,
+  metAt: string,
+  newId: () => string,
+): Individual | null {
   const token = metAt.slice(0, 60);
   const known = c.owned.find((o) => o.metAt === token);
   if (known) return known;
@@ -213,14 +271,21 @@ export function meetIn(c: CreaturesSave, species: SpeciesId, name: string, color
   let id = newId();
   while (c.owned.some((o) => o.id === id)) id = newId();
   const sp = SPECIES[species];
-  const met: Individual = { id, species, name: name.trim().slice(0, 40) || sp.names[0], look: { color: PET_COLORS.includes(color) ? color : sp.color, worn: [] }, metAt: token };
+  const met: Individual = {
+    id,
+    species,
+    name: name.trim().slice(0, 40) || sp.names[0],
+    look: { color: PET_COLORS.includes(color) ? color : sp.color, worn: [] },
+    metAt: token,
+  };
   c.owned.push(met);
   if (c.companion === null) c.companion = id;
   return met;
 }
 
 /** The friend who travels with her, or null before the first is met. */
-export const companionOf = (c: CreaturesSave): Individual | null => c.owned.find((o) => o.id === c.companion) ?? null;
+export const companionOf = (c: CreaturesSave): Individual | null =>
+  c.owned.find((o) => o.id === c.companion) ?? null;
 
 /** Accepts anything (old saves, hand-edited backups, garbage) and returns a valid save. */
 export function migrate(raw: unknown): SaveData {
@@ -241,7 +306,10 @@ export function migrate(raw: unknown): SaveData {
       games[id] = {
         plays: Math.max(0, Math.floor(num(g.plays, 0))),
         level: Math.max(1, Math.floor(num(g.level, 1))),
-        pinned: typeof g.pinned === 'number' && Number.isFinite(g.pinned) ? Math.max(1, Math.floor(g.pinned)) : null,
+        pinned:
+          typeof g.pinned === 'number' && Number.isFinite(g.pinned)
+            ? Math.max(1, Math.floor(g.pinned))
+            : null,
         history: history.slice(-HISTORY_LENGTH).map((r) => ({
           level: num(r.level, 1),
           misses: num(r.misses, 0),
@@ -259,7 +327,12 @@ export function migrate(raw: unknown): SaveData {
         .filter((s) => typeof s.game === 'string')
         .map((s) => {
           const p = placement(s.placement);
-          return { game: s.game as string, seed: num(s.seed, 1), at: num(s.at, 0), ...(p ? { placement: p } : {}) };
+          return {
+            game: s.game as string,
+            seed: num(s.seed, 1),
+            at: num(s.at, 0),
+            ...(p ? { placement: p } : {}),
+          };
         })
     : [];
 
@@ -313,6 +386,10 @@ export function repairPrevious(raw: unknown): PreviousSave | null {
 }
 
 /** Undo swaps rather than discards, so undoing twice is a redo. */
-export function swapWithPrevious(current: SaveData, previous: PreviousSave, at: number): { data: SaveData; previous: PreviousSave } {
+export function swapWithPrevious(
+  current: SaveData,
+  previous: PreviousSave,
+  at: number,
+): { data: SaveData; previous: PreviousSave } {
   return { data: previous.data, previous: remember(current, at) };
 }

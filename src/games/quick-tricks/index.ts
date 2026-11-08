@@ -88,8 +88,17 @@ function sockArt(sock: Sock, s = 2.2): Graphics {
     .closePath()
     .fill(sw.fill)
     .stroke(line(sw.line, 5));
-  if (sock.pattern === 'stripes') for (const y of [-22, -12, -2]) g.rect(-11 * s, y * s, 22 * s, 4 * s).fill(0xffffff);
-  if (sock.pattern === 'dots') for (const [x, y] of [[-5, -20], [5, -10], [-4, 0], [18, 18], [6, 20]]) g.circle(x * s, y * s, 3 * s).fill(0xffffff);
+  if (sock.pattern === 'stripes')
+    for (const y of [-22, -12, -2]) g.rect(-11 * s, y * s, 22 * s, 4 * s).fill(0xffffff);
+  if (sock.pattern === 'dots')
+    for (const [x, y] of [
+      [-5, -20],
+      [5, -10],
+      [-4, 0],
+      [18, 18],
+      [6, 20],
+    ])
+      g.circle(x * s, y * s, 3 * s).fill(0xffffff);
   return g;
 }
 
@@ -103,7 +112,12 @@ function monsterArt(color: ColorName): Container {
     ring.push([Math.cos(a) * 100, -110 + Math.sin(a) * 100, 30]);
   }
   puffs(g, [...ring, [0, -110, 96]], swatch[color].fill, swatch[color].line);
-  g.circle(-36, -140, 22).circle(36, -140, 22).fill(0xffffff).circle(-32, -136, 10).circle(40, -136, 10).fill(ink);
+  g.circle(-36, -140, 22)
+    .circle(36, -140, 22)
+    .fill(0xffffff)
+    .circle(-32, -136, 10)
+    .circle(40, -136, 10)
+    .fill(ink);
   g.moveTo(-44, -88).quadraticCurveTo(0, -40, 44, -88).closePath().fill(0x7a2e3e);
   g.rect(-30, -86, 16, 12).rect(14, -86, 16, 12).fill(0xffffff);
   c.addChild(g);
@@ -113,11 +127,20 @@ function monsterArt(color: ColorName): Container {
 function beetleArt(): Container {
   const c = new Container();
   const g = new Graphics();
-  for (const x of [-18, 0, 18]) g.moveTo(x, -10).lineTo(x - 8, 2).stroke(line(ink, 4));
+  for (const x of [-18, 0, 18])
+    g.moveTo(x, -10)
+      .lineTo(x - 8, 2)
+      .stroke(line(ink, 4));
   g.circle(30, -22, 14).fill(ink);
   g.ellipse(0, -26, 34, 24).fill(swatch.red.fill).stroke(line(swatch.red.line, 4));
   g.moveTo(0, -50).lineTo(0, -2).stroke(line(ink, 3));
-  for (const [x, y] of [[-14, -32], [14, -32], [-12, -16], [12, -16]]) g.circle(x, y, 4).fill(ink);
+  for (const [x, y] of [
+    [-14, -32],
+    [14, -32],
+    [-12, -16],
+    [12, -16],
+  ])
+    g.circle(x, y, 4).fill(ink);
   g.circle(34, -26, 3).fill(0xffffff);
   c.addChild(g);
   return c;
@@ -126,12 +149,18 @@ function beetleArt(): Container {
 function snailArt(): Container {
   const c = new Container();
   const g = new Graphics();
-  g.moveTo(-40, -4).lineTo(34, -4).quadraticCurveTo(50, -4, 48, -22).lineTo(44, -40).stroke(line(swatch.yellow.line, 4));
+  g.moveTo(-40, -4)
+    .lineTo(34, -4)
+    .quadraticCurveTo(50, -4, 48, -22)
+    .lineTo(44, -40)
+    .stroke(line(swatch.yellow.line, 4));
   g.roundRect(-44, -16, 92, 16, 8).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 4));
   g.moveTo(40, -16).lineTo(46, -44).moveTo(48, -16).lineTo(58, -40).stroke(line(ink, 3));
   g.circle(46, -46, 4).circle(58, -42, 4).fill(ink);
   g.circle(-6, -36, 28).fill(swatch.orange.fill).stroke(line(swatch.orange.line, 4));
-  g.moveTo(-6, -36).arc(-6, -36, 16, 0, Math.PI * 1.6).stroke(line(swatch.orange.line, 4));
+  g.moveTo(-6, -36)
+    .arc(-6, -36, 16, 0, Math.PI * 1.6)
+    .stroke(line(swatch.orange.line, 4));
   c.addChild(g);
   return c;
 }
@@ -139,17 +168,32 @@ function snailArt(): Container {
 function ladybugArt(): Container {
   const c = new Container();
   const g = new Graphics();
-  for (const x of [-16, 0, 16]) g.moveTo(x, -10).lineTo(x - 8, 2).stroke(line(ink, 4));
+  for (const x of [-16, 0, 16])
+    g.moveTo(x, -10)
+      .lineTo(x - 8, 2)
+      .stroke(line(ink, 4));
   g.circle(30, -20, 13).fill(ink);
   g.circle(0, -24, 30).fill(swatch.red.fill).stroke(line(swatch.red.line, 4));
   g.moveTo(0, -54).lineTo(0, 6).stroke(line(ink, 3));
-  for (const [x, y] of [[-14, -34], [14, -34], [-16, -16], [16, -16], [-6, -44], [6, -44]]) g.circle(x, y, 5).fill(ink);
+  for (const [x, y] of [
+    [-14, -34],
+    [14, -34],
+    [-16, -16],
+    [16, -16],
+    [-6, -44],
+    [6, -44],
+  ])
+    g.circle(x, y, 5).fill(ink);
   g.circle(34, -24, 3).fill(0xffffff);
   c.addChild(g);
   return c;
 }
 
-const CROSSER_ART: Record<Crosser, () => Container> = { beetle: beetleArt, snail: snailArt, ladybug: ladybugArt };
+const CROSSER_ART: Record<Crosser, () => Container> = {
+  beetle: beetleArt,
+  snail: snailArt,
+  ladybug: ladybugArt,
+};
 
 function plankArt(length: number): Graphics {
   return new Graphics().roundRect(0, -12, length, 24, 10).fill(wood.fill).stroke(line(wood.line, 5));
@@ -160,7 +204,10 @@ function umbrellaFlower(): Container {
   const c = new Container();
   const g = new Graphics();
   g.moveTo(0, 0).lineTo(0, -60).stroke(line(swatch.green.line, 5));
-  for (let i = 0; i < 5; i++) g.circle(Math.cos((i * Math.PI * 2) / 5) * 12, -60 + Math.sin((i * Math.PI * 2) / 5) * 12, 9).fill(swatch.pink.fill);
+  for (let i = 0; i < 5; i++)
+    g.circle(Math.cos((i * Math.PI * 2) / 5) * 12, -60 + Math.sin((i * Math.PI * 2) / 5) * 12, 9).fill(
+      swatch.pink.fill,
+    );
   g.circle(0, -60, 7).fill(swatch.yellow.fill);
   const umbrella = new Graphics()
     .moveTo(-40, 0)
@@ -283,22 +330,52 @@ class QuickTricks implements Game {
     const g = this.back.clear();
     const t = this.trick;
     if (t === 'umbrella') {
-      g.rect(0, 0, v.w, v.h).fill(0xc9d9e8).rect(0, this.groundY, v.w, v.h - this.groundY).fill(swatch.green.light);
+      g.rect(0, 0, v.w, v.h)
+        .fill(0xc9d9e8)
+        .rect(0, this.groundY, v.w, v.h - this.groundY)
+        .fill(swatch.green.light);
       const c = this.cx;
       // Three friends stand wider: the cloud stretches over all of them.
-      const more: [number, number, number][] = this.plan.friends === 3 ? [[c + 230, 130, 62], [c + 170, 160, 56], [c - 200, 150, 50]] : [];
-      puffs(g, [[c - 120, 130, 60], [c, 110, 80], [c + 120, 130, 60], [c - 50, 160, 56], [c + 60, 160, 56], ...more], 0xeef2f6, 0x9fb1c2);
+      const more: [number, number, number][] =
+        this.plan.friends === 3
+          ? [
+              [c + 230, 130, 62],
+              [c + 170, 160, 56],
+              [c - 200, 150, 50],
+            ]
+          : [];
+      puffs(
+        g,
+        [[c - 120, 130, 60], [c, 110, 80], [c + 120, 130, 60], [c - 50, 160, 56], [c + 60, 160, 56], ...more],
+        0xeef2f6,
+        0x9fb1c2,
+      );
     } else if (t === 'socks') {
-      g.rect(0, 0, v.w, v.h).fill(0xfff1d6).rect(0, this.groundY, v.w, v.h - this.groundY).fill(wood.light);
-      g.moveTo(v.w * 0.52, 150).quadraticCurveTo(v.w * 0.76, 190, v.w - 40, 150).stroke(line(0x9c8a7a, 4));
+      g.rect(0, 0, v.w, v.h)
+        .fill(0xfff1d6)
+        .rect(0, this.groundY, v.w, v.h - this.groundY)
+        .fill(wood.light);
+      g.moveTo(v.w * 0.52, 150)
+        .quadraticCurveTo(v.w * 0.76, 190, v.w - 40, 150)
+        .stroke(line(0x9c8a7a, 4));
     } else if (t === 'bridge') {
       const bankY = this.bankY;
       const [l, r] = this.banks;
-      g.rect(0, 0, v.w, v.h).fill(0xbfe6ff).rect(0, bankY + 40, v.w, v.h).fill(swatch.blue.fill);
-      g.roundRect(-20, bankY, l + 20, v.h - bankY + 20, 20).fill(swatch.green.fill).stroke(line(swatch.green.line));
-      g.roundRect(r, bankY, v.w - r + 20, v.h - bankY + 20, 20).fill(swatch.green.fill).stroke(line(swatch.green.line));
+      g.rect(0, 0, v.w, v.h)
+        .fill(0xbfe6ff)
+        .rect(0, bankY + 40, v.w, v.h)
+        .fill(swatch.blue.fill);
+      g.roundRect(-20, bankY, l + 20, v.h - bankY + 20, 20)
+        .fill(swatch.green.fill)
+        .stroke(line(swatch.green.line));
+      g.roundRect(r, bankY, v.w - r + 20, v.h - bankY + 20, 20)
+        .fill(swatch.green.fill)
+        .stroke(line(swatch.green.line));
       // Two at once: a little island splits the river into a narrow and a wide gap.
-      if (this.plan.bridge === 'two') g.roundRect(this.gap(0)[1], bankY, ISLAND, v.h * 0.2, 20).fill(swatch.green.fill).stroke(line(swatch.green.line));
+      if (this.plan.bridge === 'two')
+        g.roundRect(this.gap(0)[1], bankY, ISLAND, v.h * 0.2, 20)
+          .fill(swatch.green.fill)
+          .stroke(line(swatch.green.line));
     }
   }
 
@@ -391,7 +468,14 @@ class QuickTricks implements Game {
     this.hints++;
   }
 
-  private addDrag(node: Container, x: number, y: number, onDrop: (x: number, y: number) => boolean, hit: Rectangle, onPick?: () => void): DragItem {
+  private addDrag(
+    node: Container,
+    x: number,
+    y: number,
+    onDrop: (x: number, y: number) => boolean,
+    hit: Rectangle,
+    onPick?: () => void,
+  ): DragItem {
     node.position.set(x, y);
     node.hitArea = hit;
     const item = { node, home: { x, y } } as DragItem;
@@ -433,11 +517,24 @@ class QuickTricks implements Game {
       node.addChild(leafArt(leaf.width));
       // Two at once: a leaf already up can be lifted down again (revision is free).
       const lift = this.plan.two ? () => this.liftLeaf(i) : undefined;
-      const item = this.addDrag(node, x, y, (lx, ly) => this.dropLeaf(item as DragItem & { leaf: Leaf }, lx, ly), new Rectangle(-Math.max(60, leaf.width / 2), -60, Math.max(120, leaf.width), 110), lift);
+      const item = this.addDrag(
+        node,
+        x,
+        y,
+        (lx, ly) => this.dropLeaf(item as DragItem & { leaf: Leaf }, lx, ly),
+        new Rectangle(-Math.max(60, leaf.width / 2), -60, Math.max(120, leaf.width), 110),
+        lift,
+      );
       Object.assign(item, { leaf });
       this.leaves.push(item as DragItem & { leaf: Leaf });
     });
-    await this.ctx.instruct(this.plan.friends === 1 ? `tricks.umbrella-${this.cast.friends[0]}` : this.plan.two ? 'tricks.umbrella-three' : 'tricks.umbrella-two');
+    await this.ctx.instruct(
+      this.plan.friends === 1
+        ? `tricks.umbrella-${this.cast.friends[0]}`
+        : this.plan.two
+          ? 'tricks.umbrella-three'
+          : 'tricks.umbrella-two',
+    );
   }
 
   /** Friends' head height and the cloud's bottom. */
@@ -449,13 +546,18 @@ class QuickTricks implements Game {
     if (this.busy || this.waiting) return false;
     if (this.plan.two) return this.dropLeafTwo(item, x, y);
     const { top, sky } = this.rainSpan;
-    const result = leafLands(this.plan, judgeLeaf(item.leaf, x - this.cx, y, friendsFor(this.plan), top, sky));
+    const result = leafLands(
+      this.plan,
+      judgeLeaf(item.leaf, x - this.cx, y, friendsFor(this.plan), top, sky),
+    );
     if (result === 'away') return false;
     if (result === 'below') {
       // In front of the friends, not over them. At the first level that is a free try: the rain shows it.
       if (leafMiss(this.plan, result)) this.miss();
       else sfx.boing();
-      void this.ctx.say(this.plan.friends === 1 ? `tricks.above-${this.cast.friends[0]}` : 'tricks.above-two');
+      void this.ctx.say(
+        this.plan.friends === 1 ? `tricks.above-${this.cast.friends[0]}` : 'tricks.above-two',
+      );
       return false;
     }
     if (result === 'partly') {
@@ -539,7 +641,9 @@ class QuickTricks implements Game {
     const wet = stillWet(this.plan, this.up);
     const { top } = this.rainSpan;
     const leaves = leavesFor(this.plan);
-    this.leafAt = this.up.flatMap((u, l) => (u === null ? [] : [{ x: this.cx + u, y: top - 40, width: leaves[l].width }]));
+    this.leafAt = this.up.flatMap((u, l) =>
+      u === null ? [] : [{ x: this.cx + u, y: top - 40, width: leaves[l].width }],
+    );
     this.friends.forEach((f, i) => f.setMood(wet.includes(i) ? 'sad' : 'happy'));
     return wet;
   }
@@ -552,7 +656,8 @@ class QuickTricks implements Game {
     const mid = this.cx + (Math.min(...offsets) + Math.max(...offsets)) / 2;
     const spread = this.plan.two ? Math.max(...offsets) - Math.min(...offsets) + 420 : 420;
     const more = this.plan.two ? 1.5 : 1;
-    if (this.drops.length < 40 * more && Math.random() < dt * 30 * more) this.drops.push({ x: mid + (Math.random() - 0.5) * spread, y: sky, v: 420 + Math.random() * 120 });
+    if (this.drops.length < 40 * more && Math.random() < dt * 30 * more)
+      this.drops.push({ x: mid + (Math.random() - 0.5) * spread, y: sky, v: 420 + Math.random() * 120 });
     for (const d of this.drops) {
       d.y += d.v * dt;
       const leaf = this.leafAt.find((l) => Math.abs(d.x - l.x) < l.width / 2);
@@ -561,7 +666,9 @@ class QuickTricks implements Game {
         d.x += (d.x > leaf.x ? 1 : -1) * 600 * dt;
         d.y = leaf.y - 14;
       }
-      g.moveTo(d.x, d.y).lineTo(d.x - 2, d.y + 12).stroke(line(swatch.blue.fill, 4));
+      g.moveTo(d.x, d.y)
+        .lineTo(d.x - 2, d.y + 12)
+        .stroke(line(swatch.blue.fill, 4));
     }
     this.drops = this.drops.filter((d) => d.y < this.groundY + 10);
   }
@@ -590,15 +697,28 @@ class QuickTricks implements Game {
     // Up to four socks in a row; five go in two rows (three over two) so each stays easy to grab.
     const rows = choices.length > 4 ? [choices.slice(0, 3), choices.slice(3)] : [choices];
     const across = rows[0].length;
-    const spots = rows.flatMap((row, r) => row.map((_, i) => ({ x: v.w * 0.56 + ((i + 0.5 + (r === 1 ? 0.5 : 0)) * (v.w * 0.42)) / across, y: 260 + r * 190 })));
+    const spots = rows.flatMap((row, r) =>
+      row.map((_, i) => ({
+        x: v.w * 0.56 + ((i + 0.5 + (r === 1 ? 0.5 : 0)) * (v.w * 0.42)) / across,
+        y: 260 + r * 190,
+      })),
+    );
     choices.forEach((sock, i) => {
       const node = new Container();
       node.addChild(sockArt(sock));
-      const item = this.addDrag(node, spots[i].x, spots[i].y, (x, y) => this.dropSock(item as DragItem & { sock: Sock }, x, y), new Rectangle(-60, -80, 140, 160));
+      const item = this.addDrag(
+        node,
+        spots[i].x,
+        spots[i].y,
+        (x, y) => this.dropSock(item as DragItem & { sock: Sock }, x, y),
+        new Rectangle(-60, -80, 140, 160),
+      );
       Object.assign(item, { sock });
       this.socks.push(item as DragItem & { sock: Sock });
     });
-    await this.ctx.instruct(two ? 'tricks.socks-two' : this.plan.patterns ? 'tricks.socks-both' : 'tricks.socks');
+    await this.ctx.instruct(
+      two ? 'tricks.socks-two' : this.plan.patterns ? 'tricks.socks-both' : 'tricks.socks',
+    );
   }
 
   private dropSock(item: DragItem & { sock: Sock }, x: number, y: number): boolean {
@@ -609,7 +729,10 @@ class QuickTricks implements Game {
     if (!sameSock(item.sock, this.held!)) {
       this.miss();
       m.rotation = 0;
-      void this.ctx.tw.to(m, { rotation: 0.12 }, { duration: 0.08 }).then(() => this.ctx.tw.to(m, { rotation: -0.12 }, { duration: 0.12 })).then(() => this.ctx.tw.to(m, { rotation: 0 }, { duration: 0.08 }));
+      void this.ctx.tw
+        .to(m, { rotation: 0.12 }, { duration: 0.08 })
+        .then(() => this.ctx.tw.to(m, { rotation: -0.12 }, { duration: 0.12 }))
+        .then(() => this.ctx.tw.to(m, { rotation: 0 }, { duration: 0.08 }));
       void this.ctx.say(item.sock.color !== this.held!.color ? 'tricks.not-color' : 'tricks.not-pattern');
       return false;
     }
@@ -642,9 +765,14 @@ class QuickTricks implements Game {
     if (k < 0) {
       this.miss();
       m.rotation = 0;
-      void this.ctx.tw.to(m, { rotation: 0.12 }, { duration: 0.08 }).then(() => this.ctx.tw.to(m, { rotation: -0.12 }, { duration: 0.12 })).then(() => this.ctx.tw.to(m, { rotation: 0 }, { duration: 0.08 }));
+      void this.ctx.tw
+        .to(m, { rotation: 0.12 }, { duration: 0.08 })
+        .then(() => this.ctx.tw.to(m, { rotation: -0.12 }, { duration: 0.12 }))
+        .then(() => this.ctx.tw.to(m, { rotation: 0 }, { duration: 0.08 }));
       const lost = this.heldTwo.filter((_, i) => !this.paired[i]);
-      void this.ctx.say(lost.some((h) => h.color === item.sock.color) ? 'tricks.not-pattern' : 'tricks.not-color');
+      void this.ctx.say(
+        lost.some((h) => h.color === item.sock.color) ? 'tricks.not-pattern' : 'tricks.not-color',
+      );
       return false;
     }
     this.paired[k] = true;
@@ -676,10 +804,17 @@ class QuickTricks implements Game {
         node.addChild(art);
         const home = { x: Math.min(v.w - length / 2 - 30, r + 30 + length / 2), y: y + 70 + i * 112 };
         // A plank lying across a gap can be lifted off again for free; picking it up frees its gap.
-        const item = this.addDrag(node, home.x, home.y, (x, py) => this.placePlankTwo(item as DragItem & { length: number }, x, py), new Rectangle(-Math.max(60, length / 2), -55, Math.max(120, length), 110), () => {
-          const was = this.onGaps.indexOf(i);
-          if (was >= 0 && !this.busy) this.onGaps[was] = null;
-        });
+        const item = this.addDrag(
+          node,
+          home.x,
+          home.y,
+          (x, py) => this.placePlankTwo(item as DragItem & { length: number }, x, py),
+          new Rectangle(-Math.max(60, length / 2), -55, Math.max(120, length), 110),
+          () => {
+            const was = this.onGaps.indexOf(i);
+            if (was >= 0 && !this.busy) this.onGaps[was] = null;
+          },
+        );
         Object.assign(item, { length });
         this.planks.push(item as DragItem & { length: number });
       });
@@ -687,8 +822,16 @@ class QuickTricks implements Game {
     } else if (this.plan.bridge === 'stretch') {
       this.bridgeLength = 80;
       const node = new Container();
-      node.addChild(new Graphics().circle(0, 0, 30).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line)));
-      const item = this.addDrag(node, l + this.bridgeLength, y, (x) => this.letGo(x), new Rectangle(-55, -55, 110, 110));
+      node.addChild(
+        new Graphics().circle(0, 0, 30).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line)),
+      );
+      const item = this.addDrag(
+        node,
+        l + this.bridgeLength,
+        y,
+        (x) => this.letGo(x),
+        new Rectangle(-55, -55, 110, 110),
+      );
       item.drag.home = { x: l + 80, y };
       this.handle = item;
       // The handle rides 40 above the finger; the plank follows it along the bank's level.
@@ -702,7 +845,13 @@ class QuickTricks implements Game {
         const art = plankArt(length);
         art.x = -length / 2;
         node.addChild(art);
-        const item = this.addDrag(node, r + 60 + Math.max(length, 200) / 2, y + 130 + i * 0, (x, py) => this.placePlank(item as DragItem & { length: number }, x, py), new Rectangle(-Math.max(60, length / 2), -55, Math.max(120, length), 110));
+        const item = this.addDrag(
+          node,
+          r + 60 + Math.max(length, 200) / 2,
+          y + 130 + i * 0,
+          (x, py) => this.placePlank(item as DragItem & { length: number }, x, py),
+          new Rectangle(-Math.max(60, length / 2), -55, Math.max(120, length), 110),
+        );
         Object.assign(item, { length });
         this.planks.push(item as DragItem & { length: number });
       });
@@ -757,7 +906,9 @@ class QuickTricks implements Game {
    */
   private placePlankTwo(item: DragItem & { length: number }, x: number, y: number): boolean {
     if (this.busy || this.waiting || Math.abs(y - this.bankY) > 160) return false;
-    const near = GAPS.map((_, g) => this.gap(g)).map(([lo, hi], g) => ({ g, d: Math.abs(x - (lo + hi) / 2), ok: x > lo - 60 && x < hi + 60 })).filter((c) => c.ok);
+    const near = GAPS.map((_, g) => this.gap(g))
+      .map(([lo, hi], g) => ({ g, d: Math.abs(x - (lo + hi) / 2), ok: x > lo - 60 && x < hi + 60 }))
+      .filter((c) => c.ok);
     if (!near.length) return false;
     const g = near.sort((a, b) => a.d - b.d)[0].g;
     if (this.onGaps[g] !== null) return false;
@@ -765,7 +916,9 @@ class QuickTricks implements Game {
     const lengths = this.planks.map((p) => p.length);
     if (!reachesGap(item.length, GAPS[g])) {
       this.miss();
-      void this.ctx.say(bumpLine(lengths, i, g, this.onGaps) === 'move' ? 'tricks.plank-move' : 'tricks.too-short-choose');
+      void this.ctx.say(
+        bumpLine(lengths, i, g, this.onGaps) === 'move' ? 'tricks.plank-move' : 'tricks.too-short-choose',
+      );
       return false;
     }
     this.onGaps[g] = i;
@@ -808,11 +961,17 @@ class QuickTricks implements Game {
       }
       const len = this.bridgeLength;
       const sag = this.wiggle > 0 ? 18 * Math.sin(this.clock * 10) * Math.min(1, this.wiggle) : 6;
-      b.moveTo(l - 10, this.bankY).quadraticCurveTo(l + len / 2, this.bankY + sag, l + len, this.bankY).stroke(line(wood.line, 30)).moveTo(l - 10, this.bankY).quadraticCurveTo(l + len / 2, this.bankY + sag, l + len, this.bankY).stroke(line(wood.fill, 20));
+      b.moveTo(l - 10, this.bankY)
+        .quadraticCurveTo(l + len / 2, this.bankY + sag, l + len, this.bankY)
+        .stroke(line(wood.line, 30))
+        .moveTo(l - 10, this.bankY)
+        .quadraticCurveTo(l + len / 2, this.bankY + sag, l + len, this.bankY)
+        .stroke(line(wood.fill, 20));
       if (this.handle && !this.handle.drag.dragging && this.handle.drag.enabled) this.handle.node.x = l + len;
       if (this.handle?.drag.dragging) this.handle.node.y = this.bankY - 40;
     }
-    if (this.monster && this.wiggle > 0) this.monster.rotation = 0.1 * Math.sin(this.clock * 14) * Math.min(1, this.wiggle);
+    if (this.monster && this.wiggle > 0)
+      this.monster.rotation = 0.1 * Math.sin(this.clock * 14) * Math.min(1, this.wiggle);
     this.wiggle = Math.max(0, this.wiggle - dt);
     if (this.waiting) {
       this.waitClock += dt;
@@ -828,14 +987,23 @@ class QuickTricks implements Game {
   /** A tiny show has no misses and so no hint: after ten quiet seconds on a trick the pet says what to do again instead. */
   private sayAgainWhenQuiet(dt: number) {
     const t = this.trick;
-    if (this.busy || this.waiting || this.finished || this.springing || this.items.some((i) => i.drag.dragging) || (t !== 'umbrella' && t !== 'bridge')) {
+    if (
+      this.busy ||
+      this.waiting ||
+      this.finished ||
+      this.springing ||
+      this.items.some((i) => i.drag.dragging) ||
+      (t !== 'umbrella' && t !== 'bridge')
+    ) {
       this.quietClock = 0;
       return;
     }
     this.quietClock += dt;
     if (this.quietClock < 10) return;
     this.quietClock = 0;
-    void this.ctx.say(t === 'umbrella' ? `tricks.umbrella-${this.cast.friends[0]}` : `tricks.bridge-${this.cast.crosser}`);
+    void this.ctx.say(
+      t === 'umbrella' ? `tricks.umbrella-${this.cast.friends[0]}` : `tricks.bridge-${this.cast.crosser}`,
+    );
   }
 
   private drawGlow() {
@@ -851,15 +1019,25 @@ class QuickTricks implements Game {
       const mid = this.cx + offsets.reduce((s, o) => s + o, 0) / offsets.length;
       g.ellipse(mid, top - 40, this.plan.friends === 2 ? 230 : 130, 40).fill({ color: 0xfff3a0, alpha: a });
       const big = this.leaves.at(-1);
-      if (big && this.plan.friends === 2) g.ellipse(big.home.x, big.home.y, big.leaf.width / 2 + 20, 60).fill({ color: 0xfff3a0, alpha: a });
+      if (big && this.plan.friends === 2)
+        g.ellipse(big.home.x, big.home.y, big.leaf.width / 2 + 20, 60).fill({ color: 0xfff3a0, alpha: a });
     } else if (t === 'socks') {
       const partner = this.socks.find((s) => sameSock(s.sock, this.held!));
-      if (partner) g.roundRect(partner.home.x - 70, partner.home.y - 85, 150, 170, 24).fill({ color: 0xfff3a0, alpha: a });
+      if (partner)
+        g.roundRect(partner.home.x - 70, partner.home.y - 85, 150, 170, 24).fill({
+          color: 0xfff3a0,
+          alpha: a,
+        });
     } else if (t === 'bridge') {
       const [, r] = this.banks;
-      if (this.plan.bridge === 'stretch') g.circle(r + 50, this.bankY, 60).fill({ color: 0xfff3a0, alpha: a });
+      if (this.plan.bridge === 'stretch')
+        g.circle(r + 50, this.bankY, 60).fill({ color: 0xfff3a0, alpha: a });
       const right = this.planks.find((p) => reaches(p.length));
-      if (right) g.roundRect(right.home.x - right.length / 2 - 14, right.home.y - 34, right.length + 28, 68, 20).fill({ color: 0xfff3a0, alpha: a });
+      if (right)
+        g.roundRect(right.home.x - right.length / 2 - 14, right.home.y - 34, right.length + 28, 68, 20).fill({
+          color: 0xfff3a0,
+          alpha: a,
+        });
     }
   }
 
@@ -874,10 +1052,15 @@ class QuickTricks implements Game {
       g.ellipse(this.cx + move.x, this.rainSpan.top - 40, leaf.leaf.width / 2 + 30, 40).fill(fill);
       g.ellipse(leaf.node.x, leaf.node.y, leaf.leaf.width / 2 + 20, 60).fill(fill);
     } else if (t === 'socks') {
-      const partner = this.socks.find((s) => s.node.visible && partnerOf(this.heldTwo, this.paired, s.sock) >= 0);
+      const partner = this.socks.find(
+        (s) => s.node.visible && partnerOf(this.heldTwo, this.paired, s.sock) >= 0,
+      );
       if (partner) g.roundRect(partner.home.x - 70, partner.home.y - 85, 150, 170, 24).fill(fill);
     } else if (t === 'bridge') {
-      const move = nextPlank(this.planks.map((p) => p.length), this.onGaps);
+      const move = nextPlank(
+        this.planks.map((p) => p.length),
+        this.onGaps,
+      );
       if (!move) return;
       const [lo, hi] = this.gap(move.gap);
       g.roundRect(lo - 10, this.bankY - 30, hi - lo + 20, 60, 20).fill(fill);
@@ -891,7 +1074,12 @@ class QuickTricks implements Game {
   private async finale() {
     this.finished = true;
     const v = this.view;
-    this.back.clear().rect(0, 0, v.w, v.h).fill(0xffe3f1).rect(0, this.groundY, v.w, v.h - this.groundY).fill(swatch.green.light);
+    this.back
+      .clear()
+      .rect(0, 0, v.w, v.h)
+      .fill(0xffe3f1)
+      .rect(0, this.groundY, v.w, v.h - this.groundY)
+      .fill(swatch.green.light);
     // Everyone from the show takes a bow together.
     const cast: Container[] = [];
     const friends = this.cast.friends.map((kind) => {
@@ -909,11 +1097,21 @@ class QuickTricks implements Game {
     cast.forEach((c, i) => {
       c.position.set(v.w * (0.5 + (i - (cast.length - 1) / 2) * (0.66 / cast.length)), this.groundY + 20);
       this.layer.addChild(c);
-      void this.ctx.tw.wait(0.3 + i * 0.25).then(() => this.ctx.tw.to(c, { y: c.y - 30 }, { duration: 0.2, ease: ease.outQuad })).then(() => this.ctx.tw.to(c, { y: c.y + 30 }, { duration: 0.25, ease: ease.inQuad }));
+      void this.ctx.tw
+        .wait(0.3 + i * 0.25)
+        .then(() => this.ctx.tw.to(c, { y: c.y - 30 }, { duration: 0.2, ease: ease.outQuad }))
+        .then(() => this.ctx.tw.to(c, { y: c.y + 30 }, { duration: 0.25, ease: ease.inQuad }));
     });
     this.friends = friends;
     const colors = RAINBOW.map((c) => swatch[c].fill);
-    this.ctx.particles.burst(v.w / 2, v.h * 0.3, { kind: 'confetti', colors, count: 70, speed: [200, 600], gravity: 600, life: [1.2, 2] });
+    this.ctx.particles.burst(v.w / 2, v.h * 0.3, {
+      kind: 'confetti',
+      colors,
+      count: 70,
+      speed: [200, 600],
+      gravity: 600,
+      life: [1.2, 2],
+    });
     sfx.tada();
     await this.ctx.say('tricks.done');
     await this.ctx.tw.wait(0.8);
@@ -932,14 +1130,29 @@ class QuickTricks implements Game {
     switch (this.trick) {
       case 'umbrella': {
         const drop = leafDrop(this.plan, this.rainSpan.top);
-        return { drag: { on: this.leaves[drop.leaf].node }, to: { on: this.layer, x: this.cx + drop.x, y: drop.y } };
+        return {
+          drag: { on: this.leaves[drop.leaf].node },
+          to: { on: this.layer, x: this.cx + drop.x, y: drop.y },
+        };
       }
       case 'socks': {
-        const sock = this.socks[partnerSock(this.held!, this.socks.map((s) => s.sock))];
-        return sock && this.monster ? { drag: { on: sock.node }, to: { on: this.monster, x: 0, y: -110 } } : null;
+        const sock =
+          this.socks[
+            partnerSock(
+              this.held!,
+              this.socks.map((s) => s.sock),
+            )
+          ];
+        return sock && this.monster
+          ? { drag: { on: sock.node }, to: { on: this.monster, x: 0, y: -110 } }
+          : null;
       }
       case 'bridge': {
-        if (this.handle) return { drag: { on: this.handle.node }, to: { on: this.layer, x: this.banks[0] + STRETCH_TO, y: this.bankY - 40 } };
+        if (this.handle)
+          return {
+            drag: { on: this.handle.node },
+            to: { on: this.layer, x: this.banks[0] + STRETCH_TO, y: this.bankY - 40 },
+          };
         const plank = this.planks[plankToPlace(this.planks.map((p) => p.length))];
         return plank ? { drag: { on: plank.node }, to: { on: this.layer, x: this.cx, y: this.bankY } } : null;
       }
@@ -953,17 +1166,32 @@ class QuickTricks implements Game {
     switch (this.trick) {
       case 'umbrella': {
         const move = nextLeaf(this.plan, this.up);
-        return move ? { drag: { on: this.leaves[move.leaf].node }, to: { on: this.layer, x: this.cx + move.x, y: this.rainSpan.top - 40 } } : null;
+        return move
+          ? {
+              drag: { on: this.leaves[move.leaf].node },
+              to: { on: this.layer, x: this.cx + move.x, y: this.rainSpan.top - 40 },
+            }
+          : null;
       }
       case 'socks': {
-        const sock = this.socks.find((s) => s.node.visible && partnerOf(this.heldTwo, this.paired, s.sock) >= 0);
-        return sock && this.monster ? { drag: { on: sock.node }, to: { on: this.monster, x: 0, y: -110 } } : null;
+        const sock = this.socks.find(
+          (s) => s.node.visible && partnerOf(this.heldTwo, this.paired, s.sock) >= 0,
+        );
+        return sock && this.monster
+          ? { drag: { on: sock.node }, to: { on: this.monster, x: 0, y: -110 } }
+          : null;
       }
       case 'bridge': {
-        const move = nextPlank(this.planks.map((p) => p.length), this.onGaps);
+        const move = nextPlank(
+          this.planks.map((p) => p.length),
+          this.onGaps,
+        );
         if (!move) return null;
         const [lo, hi] = this.gap(move.gap);
-        return { drag: { on: this.planks[move.plank].node }, to: { on: this.layer, x: (lo + hi) / 2, y: this.bankY } };
+        return {
+          drag: { on: this.planks[move.plank].node },
+          to: { on: this.layer, x: (lo + hi) / 2, y: this.bankY },
+        };
       }
       default:
         return null;
@@ -979,12 +1207,21 @@ class QuickTricks implements Game {
 function showArt(seed = 1): Container {
   const rng = new Rng(seed);
   const c = new Container();
-  const g = new Graphics().roundRect(-110, -200, 220, 200, 20).fill(swatch.red.fill).stroke(line(swatch.red.line));
+  const g = new Graphics()
+    .roundRect(-110, -200, 220, 200, 20)
+    .fill(swatch.red.fill)
+    .stroke(line(swatch.red.line));
   g.roundRect(-96, -186, 192, 176, 14).fill(0xfff1d6);
   c.addChild(g);
   const leaf = leafArt(110);
   leaf.position.set(-40, -140);
-  const sock = sockArt({ color: rng.pick(['blue', 'yellow', 'purple'] as const), pattern: rng.pick(['stripes', 'dots'] as const) }, 1);
+  const sock = sockArt(
+    {
+      color: rng.pick(['blue', 'yellow', 'purple'] as const),
+      pattern: rng.pick(['stripes', 'dots'] as const),
+    },
+    1,
+  );
   sock.position.set(44, -110);
   const plank = plankArt(130);
   plank.position.set(-65, -40);
@@ -1003,12 +1240,23 @@ export const quickTricks: GameModule = {
   bands: ['toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
   entryLevels: [8],
-  describeLevel: (level) => (showFor(level) === 'second' ? encoreFor(level).name : showFor(level) === 'third' ? THIRD_NAME : planFor(level).name),
+  describeLevel: (level) =>
+    showFor(level) === 'second'
+      ? encoreFor(level).name
+      : showFor(level) === 'third'
+        ? THIRD_NAME
+        : planFor(level).name,
   music: STYLES.stickers,
   touchDemo: true,
   coplayHint: 'Be the audience! Clap after each trick and ask {name} what happened.',
-  offScreen: 'Put on a tiny show: keep a toy dry under a leaf, match a pair of socks, make a bridge from a book.',
+  offScreen:
+    'Put on a tiny show: keep a toy dry under a leaf, match a pair of socks, make a bridge from a book.',
   hubIcon: () => new WigglyIcon(showArt(1)),
   sticker: (seed) => showArt(seed),
-  create: (ctx) => (showFor(ctx.level) === 'second' ? new SecondShow(ctx) : showFor(ctx.level) === 'third' ? new ThirdShow(ctx) : new QuickTricks(ctx)),
+  create: (ctx) =>
+    showFor(ctx.level) === 'second'
+      ? new SecondShow(ctx)
+      : showFor(ctx.level) === 'third'
+        ? new ThirdShow(ctx)
+        : new QuickTricks(ctx),
 };

@@ -28,8 +28,12 @@ export class PlayScene extends Scene {
   private readonly backdrop = homeBackdrop();
   readonly pet: Companion = this.track(makeCompanion());
   readonly toy = this.track(new BallPlay(this.pet, new Rng(), () => void voice.say('play.fetch')));
-  readonly back = new RoundButton(arrowIcon(-1), swatch.white, CORNER_RADIUS, () => this.app.go.hub()).means('back');
-  readonly home = new RoundButton(houseIcon(), swatch.white, CORNER_RADIUS, () => this.app.go.hub()).means('home');
+  readonly back = new RoundButton(arrowIcon(-1), swatch.white, CORNER_RADIUS, () => this.app.go.hub()).means(
+    'back',
+  );
+  readonly home = new RoundButton(houseIcon(), swatch.white, CORNER_RADIUS, () => this.app.go.hub()).means(
+    'home',
+  );
   readonly board = new Container();
   readonly plaque = new TunePlaque();
   readonly basket = new Container();
@@ -68,8 +72,14 @@ export class PlayScene extends Scene {
     board.eventMode = 'none';
     const back = new Graphics().ellipse(0, rim, 84, 26).fill(wood.line);
     const front = new Graphics()
-      .poly([-88, rim, 88, rim, 70, BED.h / 2 - 6, -70, BED.h / 2 - 6]).fill(wood.fill).stroke({ width: 5, color: wood.line })
-      .moveTo(-80, rim + 28).lineTo(80, rim + 28).moveTo(-75, rim + 52).lineTo(75, rim + 52).stroke({ width: 3, color: wood.line });
+      .poly([-88, rim, 88, rim, 70, BED.h / 2 - 6, -70, BED.h / 2 - 6])
+      .fill(wood.fill)
+      .stroke({ width: 5, color: wood.line })
+      .moveTo(-80, rim + 28)
+      .lineTo(80, rim + 28)
+      .moveTo(-75, rim + 52)
+      .lineTo(75, rim + 52)
+      .stroke({ width: 3, color: wood.line });
     bed.addChild(board, back);
     if (this.sleeper) {
       this.sleeper.scale.set(0.5);
@@ -103,9 +113,13 @@ export class PlayScene extends Scene {
     await this.tw.wait(0.5);
     const tune = store.welcome.results.song;
     if (tune) {
-      await singTune(tune, (t) => this.tw.wait(t), (_col, steps) => {
-        if (steps.length) who.hop(0.4);
-      });
+      await singTune(
+        tune,
+        (t) => this.tw.wait(t),
+        (_col, steps) => {
+          if (steps.length) who.hop(0.4);
+        },
+      );
     } else {
       await Promise.race([voice.say('welcome.done.song-hum'), this.tw.wait(4)]);
     }
@@ -120,10 +134,14 @@ export class PlayScene extends Scene {
     this.content.addChild(this.backdrop, this.toy.shadow, this.pet, this.toy.ball);
     this.pet.hitArea = this.pet.touchArea(20);
     // A large friend instead of the corner guide, so a poke repeats the instruction.
-    onTap(this.pet, () => {
-      this.pet.poke();
-      void voice.say('play.ball');
-    }, { cooldown: 300 });
+    onTap(
+      this.pet,
+      () => {
+        this.pet.poke();
+        void voice.say('play.ball');
+      },
+      { cooldown: 300 },
+    );
     const { picture, tune } = store.creations;
     this.board.addChild(pictureBoard(picture.current));
     this.plaque.set(tune.current);
@@ -160,7 +178,14 @@ export class PlayScene extends Scene {
     this.pet.cheer();
     sfx.sparkle();
     void voice.say('room.picture');
-    this.particles.burst(this.board.x, this.board.y, { kind: 'star', colors: [swatch.yellow.fill, swatch.pink.fill, 0xffffff], count: 12, speed: [90, 210], gravity: 0, life: [0.5, 0.9] });
+    this.particles.burst(this.board.x, this.board.y, {
+      kind: 'star',
+      colors: [swatch.yellow.fill, swatch.pink.fill, 0xffffff],
+      count: 12,
+      speed: [90, 210],
+      gravity: 0,
+      life: [0.5, 0.9],
+    });
     await this.tw.to(this.board.scale, { x: 1.12, y: 1.12 }, { duration: 0.25 });
     await this.tw.to(this.board.scale, { x: 1, y: 1 }, { duration: 0.25 });
   }
@@ -177,12 +202,23 @@ export class PlayScene extends Scene {
     this.singing = true;
     void voice.say('room.tune');
     await this.tw.wait(0.7);
-    await singTune(tune, (t) => this.tw.wait(t), (col, steps) => {
-      this.plaque.lightColumn(col);
-      if (!steps.length) return;
-      this.pet.hop(0.6);
-      this.particles.burst(this.plaque.x, this.plaque.y, { kind: 'note', colors: [swatch.yellow.fill, swatch.pink.fill, swatch.blue.fill], count: 2, speed: [40, 120], gravity: -60, life: [0.8, 1.2] });
-    });
+    await singTune(
+      tune,
+      (t) => this.tw.wait(t),
+      (col, steps) => {
+        this.plaque.lightColumn(col);
+        if (!steps.length) return;
+        this.pet.hop(0.6);
+        this.particles.burst(this.plaque.x, this.plaque.y, {
+          kind: 'note',
+          colors: [swatch.yellow.fill, swatch.pink.fill, swatch.blue.fill],
+          count: 2,
+          speed: [40, 120],
+          gravity: -60,
+          life: [0.8, 1.2],
+        });
+      },
+    );
     this.plaque.lightColumn(-1);
     this.pet.cheer();
     this.singing = false;
@@ -212,7 +248,10 @@ export class PlayScene extends Scene {
     const to = { x: this.basket.x - 120, y: this.basket.y + 40 };
     this.pet.scale.x = Math.abs(this.pet.scale.x) * (to.x >= this.pet.x ? 1 : -1);
     this.pet.hop(0.8);
-    await this.tw.to(this.pet, to, { duration: Math.min(0.9, 0.25 + Math.hypot(this.pet.x - to.x, this.pet.y - to.y) / 900), ease: ease.inOutSine });
+    await this.tw.to(this.pet, to, {
+      duration: Math.min(0.9, 0.25 + Math.hypot(this.pet.x - to.x, this.pet.y - to.y) / 900),
+      ease: ease.inOutSine,
+    });
     this.pet.cheer();
     await this.tw.wait(0.5);
     this.app.go.friends();

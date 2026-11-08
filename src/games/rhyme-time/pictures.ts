@@ -25,10 +25,14 @@ export function picture(word: string): Container {
   const c = new Container();
   const g = new Graphics();
   switch (word) {
-    case 'cat': return critter('cat');
-    case 'dog': return critter('dog');
-    case 'bear': return critter('bear');
-    case 'duck': return critter('duck');
+    case 'cat':
+      return critter('cat');
+    case 'dog':
+      return critter('dog');
+    case 'bear':
+      return critter('bear');
+    case 'duck':
+      return critter('duck');
     case 'pear': {
       const p = prop('pear', 'green');
       p.scale.set(1.3);
@@ -37,43 +41,87 @@ export function picture(word: string): Container {
     case 'king': {
       const k = critter('bear', 0.34);
       c.addChild(k);
-      g.poly([-34, -42, -34, -70, -18, -54, 0, -76, 18, -54, 34, -70, 34, -42]).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 4));
+      g.poly([-34, -42, -34, -70, -18, -54, 0, -76, 18, -54, 34, -70, 34, -42])
+        .fill(swatch.yellow.fill)
+        .stroke(line(swatch.yellow.line, 4));
       g.circle(0, -58, 5).fill(swatch.red.fill);
       c.addChild(g);
       return c;
     }
     case 'hat':
       g.ellipse(0, 36, 62, 14).fill(swatch.purple.fill).stroke(line(swatch.purple.line));
-      g.roundRect(-36, -40, 72, 76, 10).fill(swatch.purple.fill).stroke(line(swatch.purple.line)).rect(-36, 14, 72, 14).fill(swatch.yellow.fill);
+      g.roundRect(-36, -40, 72, 76, 10)
+        .fill(swatch.purple.fill)
+        .stroke(line(swatch.purple.line))
+        .rect(-36, 14, 72, 14)
+        .fill(swatch.yellow.fill);
       break;
     case 'bat':
-      g.poly([-12, -6, -60, -30, -48, 0, -60, 16, -14, 10]).poly([12, -6, 60, -30, 48, 0, 60, 16, 14, 10]).fill(swatch.purple.line);
-      g.ellipse(0, 2, 20, 26).fill(swatch.purple.fill).poly([-14, -20, -8, -38, -2, -22]).poly([14, -20, 8, -38, 2, -22]).fill(swatch.purple.fill);
+      g.poly([-12, -6, -60, -30, -48, 0, -60, 16, -14, 10])
+        .poly([12, -6, 60, -30, 48, 0, 60, 16, 14, 10])
+        .fill(swatch.purple.line);
+      g.ellipse(0, 2, 20, 26)
+        .fill(swatch.purple.fill)
+        .poly([-14, -20, -8, -38, -2, -22])
+        .poly([14, -20, 8, -38, 2, -22])
+        .fill(swatch.purple.fill);
       g.circle(-7, -4, 4).circle(7, -4, 4).fill(0xffffff);
       break;
     case 'log':
       g.roundRect(-58, -24, 116, 48, 22).fill(wood.fill).stroke(line(wood.line));
-      g.ellipse(46, 0, 14, 24).fill(wood.light).stroke(line(wood.line, 4)).ellipse(46, 0, 6, 11).stroke(line(wood.line, 3));
+      g.ellipse(46, 0, 14, 24)
+        .fill(wood.light)
+        .stroke(line(wood.line, 4))
+        .ellipse(46, 0, 6, 11)
+        .stroke(line(wood.line, 3));
       break;
     case 'frog':
       g.ellipse(0, 10, 50, 34).fill(swatch.green.fill).stroke(line(swatch.green.line));
       g.circle(-24, -22, 16).circle(24, -22, 16).fill(swatch.green.fill).stroke(line(swatch.green.line, 4));
-      g.circle(-24, -22, 8).circle(24, -22, 8).fill(0xffffff).circle(-23, -21, 4).circle(25, -21, 4).fill(ink);
+      g.circle(-24, -22, 8)
+        .circle(24, -22, 8)
+        .fill(0xffffff)
+        .circle(-23, -21, 4)
+        .circle(25, -21, 4)
+        .fill(ink);
       g.moveTo(-18, 16).quadraticCurveTo(0, 28, 18, 16).stroke(line(swatch.green.line, 4));
       break;
     case 'bee':
-      g.ellipse(-12, -26, 16, 22).ellipse(12, -26, 16, 22).fill({ color: 0xffffff, alpha: 0.85 }).stroke(line(swatch.blue.light, 3));
+      g.ellipse(-12, -26, 16, 22)
+        .ellipse(12, -26, 16, 22)
+        .fill({ color: 0xffffff, alpha: 0.85 })
+        .stroke(line(swatch.blue.light, 3));
       g.ellipse(0, 6, 46, 30).fill(swatch.yellow.fill).stroke(line(ink, 4));
       for (const x of [-12, 8]) g.rect(x, -22, 10, 56).fill(ink);
       g.poly([44, 6, 58, 2, 46, 14]).fill(ink).circle(-30, 0, 4).fill(ink);
       break;
     case 'tree':
       g.rect(-10, 10, 20, 50).fill(wood.fill).stroke(line(wood.line, 4));
-      puffs(g, [[-30, -10, 30], [30, -10, 30], [0, -34, 34], [0, 6, 30]], swatch.green.fill, swatch.green.line, 5);
+      puffs(
+        g,
+        [
+          [-30, -10, 30],
+          [30, -10, 30],
+          [0, -34, 34],
+          [0, 6, 30],
+        ],
+        swatch.green.fill,
+        swatch.green.line,
+        5,
+      );
       break;
     case 'key':
-      g.circle(-30, 0, 24).stroke(line(swatch.yellow.line, 12)).circle(-30, 0, 24).stroke(line(swatch.yellow.fill, 7));
-      g.moveTo(-6, 0).lineTo(56, 0).moveTo(40, 0).lineTo(40, 18).moveTo(54, 0).lineTo(54, 14).stroke(line(swatch.yellow.fill, 10));
+      g.circle(-30, 0, 24)
+        .stroke(line(swatch.yellow.line, 12))
+        .circle(-30, 0, 24)
+        .stroke(line(swatch.yellow.fill, 7));
+      g.moveTo(-6, 0)
+        .lineTo(56, 0)
+        .moveTo(40, 0)
+        .lineTo(40, 18)
+        .moveTo(54, 0)
+        .lineTo(54, 14)
+        .stroke(line(swatch.yellow.fill, 10));
       break;
     case 'star':
       g.poly(starPoints(56, 24)).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line));
@@ -85,13 +133,20 @@ export function picture(word: string): Container {
       g.circle(-34, 32, 14).circle(34, 32, 14).fill(ink).circle(-34, 32, 5).circle(34, 32, 5).fill(0xffffff);
       break;
     case 'jar':
-      g.roundRect(-36, -30, 72, 84, 18).fill({ color: swatch.blue.light, alpha: 0.7 }).stroke(line(swatch.blue.line));
+      g.roundRect(-36, -30, 72, 84, 18)
+        .fill({ color: swatch.blue.light, alpha: 0.7 })
+        .stroke(line(swatch.blue.line));
       g.roundRect(-30, 0, 60, 48, 12).fill(swatch.red.fill);
       g.roundRect(-40, -46, 80, 20, 6).fill(swatch.red.line);
       break;
     case 'moon':
       // A crescent: the outer edge round the left, the inner edge curving back.
-      g.moveTo(10, -56).arc(10, 0, 56, -Math.PI / 2, Math.PI / 2, true).quadraticCurveTo(-34, 0, 10, -56).closePath().fill(swatch.yellow.light).stroke(line(swatch.yellow.line));
+      g.moveTo(10, -56)
+        .arc(10, 0, 56, -Math.PI / 2, Math.PI / 2, true)
+        .quadraticCurveTo(-34, 0, 10, -56)
+        .closePath()
+        .fill(swatch.yellow.light)
+        .stroke(line(swatch.yellow.line));
       break;
     case 'spoon':
       g.ellipse(0, -30, 26, 34).fill(0xdfe3ea).stroke(line(swatch.white.line));
@@ -99,10 +154,18 @@ export function picture(word: string): Container {
       break;
     case 'fish':
       g.poly([34, 0, 60, -22, 60, 22]).fill(swatch.orange.fill).stroke(line(swatch.orange.line));
-      g.ellipse(0, 0, 44, 28).fill(swatch.orange.fill).stroke(line(swatch.orange.line)).circle(-22, -6, 6).fill(ink);
+      g.ellipse(0, 0, 44, 28)
+        .fill(swatch.orange.fill)
+        .stroke(line(swatch.orange.line))
+        .circle(-22, -6, 6)
+        .fill(ink);
       break;
     case 'dish':
-      g.ellipse(0, 10, 62, 26).fill(0xffffff).stroke(line(swatch.blue.line)).ellipse(0, 6, 40, 14).stroke(line(swatch.blue.light, 4));
+      g.ellipse(0, 10, 62, 26)
+        .fill(0xffffff)
+        .stroke(line(swatch.blue.line))
+        .ellipse(0, 6, 40, 14)
+        .stroke(line(swatch.blue.light, 4));
       break;
     case 'cake':
       g.roundRect(-52, -4, 104, 54, 10).fill(swatch.pink.fill).stroke(line(swatch.pink.line));
@@ -110,8 +173,17 @@ export function picture(word: string): Container {
       g.rect(-4, -40, 8, 36).fill(swatch.blue.fill).ellipse(0, -48, 6, 10).fill(swatch.orange.fill);
       break;
     case 'snake':
-      g.moveTo(-58, 30).bezierCurveTo(-30, -20, 0, 60, 30, 0).stroke(line(swatch.green.line, 22)).moveTo(-58, 30).bezierCurveTo(-30, -20, 0, 60, 30, 0).stroke(line(swatch.green.fill, 14));
-      g.ellipse(40, -6, 22, 16).fill(swatch.green.fill).stroke(line(swatch.green.line, 4)).circle(46, -10, 4).fill(ink);
+      g.moveTo(-58, 30)
+        .bezierCurveTo(-30, -20, 0, 60, 30, 0)
+        .stroke(line(swatch.green.line, 22))
+        .moveTo(-58, 30)
+        .bezierCurveTo(-30, -20, 0, 60, 30, 0)
+        .stroke(line(swatch.green.fill, 14));
+      g.ellipse(40, -6, 22, 16)
+        .fill(swatch.green.fill)
+        .stroke(line(swatch.green.line, 4))
+        .circle(46, -10, 4)
+        .fill(ink);
       g.moveTo(60, -4).lineTo(72, -4).stroke(line(swatch.red.fill, 3));
       break;
     case 'chair':
@@ -122,52 +194,110 @@ export function picture(word: string): Container {
       break;
     case 'truck':
       g.roundRect(-62, -36, 76, 56, 8).fill(swatch.blue.fill).stroke(line(swatch.blue.line));
-      g.roundRect(14, -18, 46, 38, 8).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line)).rect(24, -10, 24, 14).fill(swatch.blue.light);
+      g.roundRect(14, -18, 46, 38, 8)
+        .fill(swatch.yellow.fill)
+        .stroke(line(swatch.yellow.line))
+        .rect(24, -10, 24, 14)
+        .fill(swatch.blue.light);
       g.circle(-38, 28, 14).circle(36, 28, 14).fill(ink).circle(-38, 28, 5).circle(36, 28, 5).fill(0xffffff);
       break;
     case 'boat':
       g.poly([-60, 10, 60, 10, 40, 40, -40, 40]).fill(wood.fill).stroke(line(wood.line));
-      g.moveTo(0, 10).lineTo(0, -56).stroke(line(wood.line, 5)).poly([4, -52, 46, 0, 4, 0]).fill(0xffffff).stroke(line(swatch.white.line, 4));
+      g.moveTo(0, 10)
+        .lineTo(0, -56)
+        .stroke(line(wood.line, 5))
+        .poly([4, -52, 46, 0, 4, 0])
+        .fill(0xffffff)
+        .stroke(line(swatch.white.line, 4));
       break;
     case 'coat':
-      g.poly([-24, -46, -50, -30, -56, 20, -36, 20, -36, 50, 36, 50, 36, 20, 56, 20, 50, -30, 24, -46, 0, -20]).fill(swatch.red.fill).stroke(line(swatch.red.line));
+      g.poly([
+        -24, -46, -50, -30, -56, 20, -36, 20, -36, 50, 36, 50, 36, 20, 56, 20, 50, -30, 24, -46, 0, -20,
+      ])
+        .fill(swatch.red.fill)
+        .stroke(line(swatch.red.line));
       for (const y of [-4, 14, 32]) g.circle(0, y, 5).fill(swatch.yellow.fill);
       break;
     case 'bell':
-      g.poly([-46, 30, -36, -20, 0, -46, 36, -20, 46, 30]).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line));
+      g.poly([-46, 30, -36, -20, 0, -46, 36, -20, 46, 30])
+        .fill(swatch.yellow.fill)
+        .stroke(line(swatch.yellow.line));
       g.roundRect(-54, 26, 108, 12, 6).fill(swatch.yellow.line).circle(0, 46, 9).fill(swatch.yellow.line);
       break;
     case 'shell':
-      g.moveTo(0, 40).lineTo(-56, -10).quadraticCurveTo(0, -70, 56, -10).closePath().fill(swatch.pink.light).stroke(line(swatch.pink.line));
-      for (const a of [-0.8, -0.4, 0, 0.4, 0.8]) g.moveTo(0, 40).lineTo(Math.sin(a) * 60, 40 - Math.cos(a) * 80).stroke(line(swatch.pink.line, 3));
+      g.moveTo(0, 40)
+        .lineTo(-56, -10)
+        .quadraticCurveTo(0, -70, 56, -10)
+        .closePath()
+        .fill(swatch.pink.light)
+        .stroke(line(swatch.pink.line));
+      for (const a of [-0.8, -0.4, 0, 0.4, 0.8])
+        g.moveTo(0, 40)
+          .lineTo(Math.sin(a) * 60, 40 - Math.cos(a) * 80)
+          .stroke(line(swatch.pink.line, 3));
       break;
     case 'ring':
-      g.circle(0, 14, 36).stroke(line(swatch.yellow.line, 14)).circle(0, 14, 36).stroke(line(swatch.yellow.fill, 8));
+      g.circle(0, 14, 36)
+        .stroke(line(swatch.yellow.line, 14))
+        .circle(0, 14, 36)
+        .stroke(line(swatch.yellow.fill, 8));
       g.poly([-16, -24, 0, -48, 16, -24, 0, -14]).fill(swatch.blue.light).stroke(line(swatch.blue.line, 4));
       break;
     case 'bug':
       // A ladybird with its wings open, ready to fly.
-      g.ellipse(-30, -8, 30, 16).ellipse(30, -8, 30, 16).fill({ color: 0xffffff, alpha: 0.85 }).stroke(line(swatch.blue.light, 3));
+      g.ellipse(-30, -8, 30, 16)
+        .ellipse(30, -8, 30, 16)
+        .fill({ color: 0xffffff, alpha: 0.85 })
+        .stroke(line(swatch.blue.light, 3));
       g.circle(0, 8, 38).fill(swatch.red.fill).stroke(line(swatch.red.line));
       g.moveTo(0, -28).lineTo(0, 46).stroke(line(ink, 4));
-      for (const [x, y] of [[-18, -4], [18, -4], [-20, 22], [20, 22]]) g.circle(x, y, 7).fill(ink);
+      for (const [x, y] of [
+        [-18, -4],
+        [18, -4],
+        [-20, 22],
+        [20, 22],
+      ])
+        g.circle(x, y, 7).fill(ink);
       g.circle(0, -34, 16).fill(ink).circle(-6, -38, 4).circle(6, -38, 4).fill(0xffffff);
       g.moveTo(-8, -48).lineTo(-16, -62).moveTo(8, -48).lineTo(16, -62).stroke(line(ink, 3));
       break;
     case 'mug':
-      g.circle(40, 4, 22).stroke(line(swatch.blue.line, 12)).circle(40, 4, 22).stroke(line(swatch.blue.fill, 6));
+      g.circle(40, 4, 22)
+        .stroke(line(swatch.blue.line, 12))
+        .circle(40, 4, 22)
+        .stroke(line(swatch.blue.fill, 6));
       g.roundRect(-44, -36, 80, 84, 12).fill(swatch.blue.fill).stroke(line(swatch.blue.line));
       g.ellipse(-4, -36, 40, 9).fill(wood.line).stroke(line(swatch.blue.line, 4));
-      g.moveTo(-14, -52).quadraticCurveTo(-24, -62, -14, -72).moveTo(6, -52).quadraticCurveTo(-4, -62, 6, -72).stroke(line(swatch.white.line, 3));
+      g.moveTo(-14, -52)
+        .quadraticCurveTo(-24, -62, -14, -72)
+        .moveTo(6, -52)
+        .quadraticCurveTo(-4, -62, 6, -72)
+        .stroke(line(swatch.white.line, 3));
       break;
     case 'rug':
       g.roundRect(-58, -34, 116, 68, 8).fill(swatch.orange.fill).stroke(line(swatch.orange.line));
-      for (const [y, col] of [[-20, swatch.yellow.fill], [-4, swatch.green.fill], [12, swatch.yellow.fill]] as const) g.rect(-58, y, 116, 8).fill(col);
+      for (const [y, col] of [
+        [-20, swatch.yellow.fill],
+        [-4, swatch.green.fill],
+        [12, swatch.yellow.fill],
+      ] as const)
+        g.rect(-58, y, 116, 8).fill(col);
       for (let x = -54; x <= 54; x += 12) g.moveTo(x, 34).lineTo(x, 46).moveTo(x, -34).lineTo(x, -46);
       g.stroke(line(swatch.orange.line, 3));
       break;
     case 'sock':
-      g.moveTo(-18, -56).lineTo(18, -56).lineTo(18, 14).quadraticCurveTo(18, 22, 30, 24).lineTo(46, 26).quadraticCurveTo(62, 30, 58, 46).quadraticCurveTo(54, 58, 36, 56).lineTo(-6, 52).quadraticCurveTo(-18, 50, -18, 36).closePath().fill(swatch.green.fill).stroke(line(swatch.green.line));
+      g.moveTo(-18, -56)
+        .lineTo(18, -56)
+        .lineTo(18, 14)
+        .quadraticCurveTo(18, 22, 30, 24)
+        .lineTo(46, 26)
+        .quadraticCurveTo(62, 30, 58, 46)
+        .quadraticCurveTo(54, 58, 36, 56)
+        .lineTo(-6, 52)
+        .quadraticCurveTo(-18, 50, -18, 36)
+        .closePath()
+        .fill(swatch.green.fill)
+        .stroke(line(swatch.green.line));
       g.rect(-18, -56, 36, 12).rect(-18, -32, 36, 8).fill(0xffffff);
       g.circle(48, 42, 8).fill(swatch.green.light);
       break;
@@ -175,23 +305,69 @@ export function picture(word: string): Container {
       g.circle(0, 0, 54).fill(0xffffff).stroke(line(swatch.red.line, 8));
       for (let i = 0; i < 12; i++) {
         const a = (i * Math.PI) / 6;
-        g.moveTo(Math.sin(a) * 40, -Math.cos(a) * 40).lineTo(Math.sin(a) * (i % 3 ? 46 : 48), -Math.cos(a) * (i % 3 ? 46 : 48));
+        g.moveTo(Math.sin(a) * 40, -Math.cos(a) * 40).lineTo(
+          Math.sin(a) * (i % 3 ? 46 : 48),
+          -Math.cos(a) * (i % 3 ? 46 : 48),
+        );
       }
       g.stroke(line(ink, 3));
-      g.moveTo(0, 0).lineTo(0, -32).moveTo(0, 0).lineTo(22, 10).stroke(line(ink, 6)).circle(0, 0, 5).fill(ink);
+      g.moveTo(0, 0)
+        .lineTo(0, -32)
+        .moveTo(0, 0)
+        .lineTo(22, 10)
+        .stroke(line(ink, 6))
+        .circle(0, 0, 5)
+        .fill(ink);
       break;
     case 'snail':
-      g.moveTo(-60, 40).lineTo(40, 40).quadraticCurveTo(58, 40, 58, 22).lineTo(58, -2).quadraticCurveTo(46, -6, 40, 14).lineTo(-50, 30).closePath().fill(swatch.yellow.light).stroke(line(swatch.yellow.line, 4));
-      g.moveTo(50, -2).lineTo(44, -26).moveTo(58, 0).lineTo(64, -24).stroke(line(swatch.yellow.line, 4)).circle(44, -28, 5).circle(64, -26, 5).fill(ink);
+      g.moveTo(-60, 40)
+        .lineTo(40, 40)
+        .quadraticCurveTo(58, 40, 58, 22)
+        .lineTo(58, -2)
+        .quadraticCurveTo(46, -6, 40, 14)
+        .lineTo(-50, 30)
+        .closePath()
+        .fill(swatch.yellow.light)
+        .stroke(line(swatch.yellow.line, 4));
+      g.moveTo(50, -2)
+        .lineTo(44, -26)
+        .moveTo(58, 0)
+        .lineTo(64, -24)
+        .stroke(line(swatch.yellow.line, 4))
+        .circle(44, -28, 5)
+        .circle(64, -26, 5)
+        .fill(ink);
       g.circle(-6, 0, 38).fill(swatch.orange.fill).stroke(line(swatch.orange.line));
-      g.moveTo(-6, 0).arc(-6, 0, 10, 0, Math.PI * 1.5).arc(-6, 4, 20, Math.PI * 1.5, Math.PI * 3.2).stroke(line(swatch.orange.line, 4));
+      g.moveTo(-6, 0)
+        .arc(-6, 0, 10, 0, Math.PI * 1.5)
+        .arc(-6, 4, 20, Math.PI * 1.5, Math.PI * 3.2)
+        .stroke(line(swatch.orange.line, 4));
       break;
     case 'whale':
-      g.moveTo(-40, 6).quadraticCurveTo(-58, -24, -66, -20).lineTo(-60, 4).lineTo(-66, 28).quadraticCurveTo(-58, 30, -40, 10).fill(swatch.blue.fill).stroke(line(swatch.blue.line));
+      g.moveTo(-40, 6)
+        .quadraticCurveTo(-58, -24, -66, -20)
+        .lineTo(-60, 4)
+        .lineTo(-66, 28)
+        .quadraticCurveTo(-58, 30, -40, 10)
+        .fill(swatch.blue.fill)
+        .stroke(line(swatch.blue.line));
       g.ellipse(10, 6, 52, 34).fill(swatch.blue.fill).stroke(line(swatch.blue.line));
-      g.moveTo(-30, 18).quadraticCurveTo(10, 44, 58, 14).quadraticCurveTo(30, 40, -30, 18).fill(swatch.blue.light);
-      g.circle(34, -4, 5).fill(ink).moveTo(40, 14).quadraticCurveTo(50, 18, 58, 12).stroke(line(swatch.blue.line, 3));
-      g.moveTo(16, -28).lineTo(16, -46).moveTo(16, -42).quadraticCurveTo(6, -56, -2, -50).moveTo(16, -42).quadraticCurveTo(26, -56, 34, -50).stroke(line(swatch.blue.light, 5));
+      g.moveTo(-30, 18)
+        .quadraticCurveTo(10, 44, 58, 14)
+        .quadraticCurveTo(30, 40, -30, 18)
+        .fill(swatch.blue.light);
+      g.circle(34, -4, 5)
+        .fill(ink)
+        .moveTo(40, 14)
+        .quadraticCurveTo(50, 18, 58, 12)
+        .stroke(line(swatch.blue.line, 3));
+      g.moveTo(16, -28)
+        .lineTo(16, -46)
+        .moveTo(16, -42)
+        .quadraticCurveTo(6, -56, -2, -50)
+        .moveTo(16, -42)
+        .quadraticCurveTo(26, -56, 34, -50)
+        .stroke(line(swatch.blue.light, 5));
       break;
     case 'rock':
       // The shore's rock is drawn small for a scene; scaled up to fill a card.
@@ -220,7 +396,11 @@ export function tagGlyph(tag: Tag): Container {
   const fill = swatch.green.light;
   switch (tag) {
     case 'wear':
-      g.poly([-22, -36, -46, -24, -38, -2, -26, -8, -26, 36, 26, 36, 26, -8, 38, -2, 46, -24, 22, -36, 0, -24]).fill(fill).stroke(line(col));
+      g.poly([
+        -22, -36, -46, -24, -38, -2, -26, -8, -26, 36, 26, 36, 26, -8, 38, -2, 46, -24, 22, -36, 0, -24,
+      ])
+        .fill(fill)
+        .stroke(line(col));
       break;
     case 'eat':
       // A round thing with a bite out of its side.
@@ -235,32 +415,68 @@ export function tagGlyph(tag: Tag): Container {
       break;
     case 'ride':
       g.circle(0, 0, 36).stroke(line(col, 9)).circle(0, 0, 8).fill(col);
-      for (let i = 0; i < 4; i++) g.moveTo(0, 0).lineTo(Math.cos((i * Math.PI) / 2) * 32, Math.sin((i * Math.PI) / 2) * 32);
+      for (let i = 0; i < 4; i++)
+        g.moveTo(0, 0).lineTo(Math.cos((i * Math.PI) / 2) * 32, Math.sin((i * Math.PI) / 2) * 32);
       g.stroke(line(col, 5));
       break;
     case 'fly':
-      g.moveTo(-40, 20).quadraticCurveTo(-30, -36, 40, -30).quadraticCurveTo(10, -16, 20, 0).quadraticCurveTo(-4, -2, 0, 14).quadraticCurveTo(-20, 8, -40, 20).closePath().fill(fill).stroke(line(col));
+      g.moveTo(-40, 20)
+        .quadraticCurveTo(-30, -36, 40, -30)
+        .quadraticCurveTo(10, -16, 20, 0)
+        .quadraticCurveTo(-4, -2, 0, 14)
+        .quadraticCurveTo(-20, 8, -40, 20)
+        .closePath()
+        .fill(fill)
+        .stroke(line(col));
       break;
     case 'swim':
-      for (const y of [-18, 6, 30]) g.moveTo(-44, y).quadraticCurveTo(-22, y - 16, 0, y).quadraticCurveTo(22, y + 16, 44, y);
+      for (const y of [-18, 6, 30])
+        g.moveTo(-44, y)
+          .quadraticCurveTo(-22, y - 16, 0, y)
+          .quadraticCurveTo(22, y + 16, 44, y);
       g.stroke(line(col, 7));
       break;
     case 'pet':
-      g.moveTo(0, 36).bezierCurveTo(-60, -6, -30, -50, 0, -18).bezierCurveTo(30, -50, 60, -6, 0, 36).closePath().fill(fill).stroke(line(col));
+      g.moveTo(0, 36)
+        .bezierCurveTo(-60, -6, -30, -50, 0, -18)
+        .bezierCurveTo(30, -50, 60, -6, 0, 36)
+        .closePath()
+        .fill(fill)
+        .stroke(line(col));
       break;
     case 'fur':
-      puffs(g, [[-22, 8, 20], [0, -12, 22], [22, 8, 20], [0, 18, 18]], fill, col, 6);
+      puffs(
+        g,
+        [
+          [-22, 8, 20],
+          [0, -12, 22],
+          [22, 8, 20],
+          [0, 18, 18],
+        ],
+        fill,
+        col,
+        6,
+      );
       break;
     case 'sky':
       g.circle(-8, 0, 32).fill(fill).stroke(line(col)).circle(8, -10, 26).fill(0xffffff);
       g.poly(starPoints(14, 6).map((p, i) => p + (i % 2 ? -24 : 30))).fill(col);
       break;
     case 'grows':
-      g.moveTo(-30, 34).quadraticCurveTo(-40, -30, 34, -38).quadraticCurveTo(30, 30, -30, 34).closePath().fill(fill).stroke(line(col));
+      g.moveTo(-30, 34)
+        .quadraticCurveTo(-40, -30, 34, -38)
+        .quadraticCurveTo(30, 30, -30, 34)
+        .closePath()
+        .fill(fill)
+        .stroke(line(col));
       g.moveTo(-30, 34).lineTo(16, -16).stroke(line(col, 4));
       break;
     case 'holds':
-      g.rect(-36, -14, 72, 50).fill(fill).stroke(line(col)).poly([-36, -14, -48, -34, 0, -24, 48, -34, 36, -14]).stroke(line(col));
+      g.rect(-36, -14, 72, 50)
+        .fill(fill)
+        .stroke(line(col))
+        .poly([-36, -14, -48, -34, 0, -24, 48, -34, 36, -14])
+        .stroke(line(col));
       break;
     case 'opens':
       g.roundRect(-36, -44, 72, 88, 12).fill(fill).stroke(line(col));

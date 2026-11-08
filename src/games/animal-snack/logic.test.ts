@@ -1,6 +1,34 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { BARN_ASPECT, BITE, BITE_SIZES, ANIMALS, busyTouch, countedFood, eaterOf, farBarnAt, FAVORITE, FRIEND_HIT, FRIEND_SCALE, friendFeet, friendXs, FOOD_WORDS, nearestFriend, shouldNudge, makeRounds, PLANS, SCENE_SPECS, SCENES, sceneFor, SOUND_WORDS, SOUNDERS, VOICE, snackTouch, type Food, type SnackTable } from './logic';
+import {
+  BARN_ASPECT,
+  BITE,
+  BITE_SIZES,
+  ANIMALS,
+  busyTouch,
+  countedFood,
+  eaterOf,
+  farBarnAt,
+  FAVORITE,
+  FRIEND_HIT,
+  FRIEND_SCALE,
+  friendFeet,
+  friendXs,
+  FOOD_WORDS,
+  nearestFriend,
+  shouldNudge,
+  makeRounds,
+  PLANS,
+  SCENE_SPECS,
+  SCENES,
+  sceneFor,
+  SOUND_WORDS,
+  SOUNDERS,
+  VOICE,
+  snackTouch,
+  type Food,
+  type SnackTable,
+} from './logic';
 
 describe('Animal Snack', () => {
   it('gives every scene a backdrop and its own feeding spot, and only the dusk yard loses the sun', () => {
@@ -35,14 +63,20 @@ describe('Animal Snack', () => {
     expect(new Set(Object.values(BITE)).size).toBe(6);
     expect(BITE_SIZES).toHaveLength(3);
     expect(BITE_SIZES[BITE_SIZES.length - 1]).toBe(0);
-    BITE_SIZES.forEach((s, i) => { if (i) expect(s).toBeLessThan(BITE_SIZES[i - 1]); });
+    BITE_SIZES.forEach((s, i) => {
+      if (i) expect(s).toBeLessThan(BITE_SIZES[i - 1]);
+    });
   });
 
   it('names every drawn snack with a grammatical countable unit from one to six', () => {
     const expected: Record<Food, string[]> = {
-      hay: ['bale of hay', 'bales of hay'], grass: ['tuft of grass', 'tufts of grass'], bone: ['bone', 'bones'],
-      fish: ['fish', 'fish'], seeds: ['handful of seeds', 'handfuls of seeds'],
-      apple: ['apple', 'apples'], honey: ['pot of honey', 'pots of honey'],
+      hay: ['bale of hay', 'bales of hay'],
+      grass: ['tuft of grass', 'tufts of grass'],
+      bone: ['bone', 'bones'],
+      fish: ['fish', 'fish'],
+      seeds: ['handful of seeds', 'handfuls of seeds'],
+      apple: ['apple', 'apples'],
+      honey: ['pot of honey', 'pots of honey'],
     };
     for (const a of ANIMALS) {
       const food = FAVORITE[a]!;
@@ -52,7 +86,11 @@ describe('Animal Snack', () => {
   });
 
   it('selects the closest body in overlapping hit areas and ignores distant touches', () => {
-    const friends = [{ x: 400, y: 400 }, { x: 520, y: 400 }, { x: 800, y: 400 }];
+    const friends = [
+      { x: 400, y: 400 },
+      { x: 520, y: 400 },
+      { x: 800, y: 400 },
+    ];
     expect(nearestFriend(friends, 440, 400)).toBe(0);
     expect(nearestFriend(friends, 490, 400)).toBe(1);
     expect(nearestFriend(friends, 400, 500)).toBe(0);
@@ -86,12 +124,13 @@ describe('Animal Snack', () => {
             expect(r.animals).toContain(r.ask);
             if (i > 0) expect(r.ask).not.toBe(rounds[i - 1].ask);
           }
-          if (plan.mode === 'count') expect(r.n).toBeGreaterThanOrEqual(2), expect(r.n).toBeLessThanOrEqual(4);
+          if (plan.mode === 'count')
+            (expect(r.n).toBeGreaterThanOrEqual(2), expect(r.n).toBeLessThanOrEqual(4));
         });
       }
     }
   });
-  it("the ghost finger plays every level through with no wrong animal, a count that is exactly right, and the bell only then", () => {
+  it('the ghost finger plays every level through with no wrong animal, a count that is exactly right, and the bell only then', () => {
     for (const plan of PLANS) {
       for (let seed = 1; seed <= 60; seed++) {
         const rounds = makeRounds(plan, new Rng(seed));
@@ -103,7 +142,12 @@ describe('Animal Snack', () => {
         const deal = (): SnackTable => {
           const r = rounds[Math.min(index, rounds.length - 1)];
           const friends = r.animals;
-          const snacks: SnackTable['snacks'] = plan.mode === 'count' ? Array.from({ length: 5 }, () => ({ food: FAVORITE[r.ask!]!, eaten: false })) : plan.mode === 'float' || plan.mode === 'match' ? friends.map((a) => ({ food: FAVORITE[a]! as Food, eaten: false })) : [];
+          const snacks: SnackTable['snacks'] =
+            plan.mode === 'count'
+              ? Array.from({ length: 5 }, () => ({ food: FAVORITE[r.ask!]!, eaten: false }))
+              : plan.mode === 'float' || plan.mode === 'match'
+                ? friends.map((a) => ({ food: FAVORITE[a]! as Food, eaten: false }))
+                : [];
           return { friends, snacks, ask: r.ask, n: r.n, eatenCount };
         };
         let table = deal();
@@ -115,15 +159,20 @@ describe('Animal Snack', () => {
           expect(move, `${plan.mode} seed ${seed}: a touch to make`).not.toBeNull();
           if (move === 'bell') {
             expect(plan.mode).toBe('count');
-            expect(table.snacks.filter((s) => s.eaten).length, 'the bell rings on exactly the number asked for').toBe(table.n);
+            expect(
+              table.snacks.filter((s) => s.eaten).length,
+              'the bell rings on exactly the number asked for',
+            ).toBe(table.n);
             index++;
-            if (index >= rounds.length) done = true; else table = deal();
+            if (index >= rounds.length) done = true;
+            else table = deal();
           } else if ('friend' in move!) {
             const name = table.friends[move.friend];
             if (plan.mode === 'who') {
               expect(name, 'the animal asked about').toBe(table.ask);
               index++;
-              if (index >= rounds.length) done = true; else table = deal();
+              if (index >= rounds.length) done = true;
+              else table = deal();
             } else {
               expect(plan.mode).toBe('munch');
               eatenCount++;
@@ -141,7 +190,9 @@ describe('Animal Snack', () => {
           } else {
             const snack = table.snacks[move!.give];
             expect(plan.mode).toBe('match');
-            expect(table.friends[move!.to], 'the snack goes to the animal that eats it').toBe(eaterOf(snack.food));
+            expect(table.friends[move!.to], 'the snack goes to the animal that eats it').toBe(
+              eaterOf(snack.food),
+            );
             snack.eaten = true;
             if (table.snacks.every((s) => s.eaten)) done = true;
           }
@@ -171,7 +222,8 @@ describe('Animal Snack', () => {
   });
 
   it('keeps other modes free of sound questions and gives the bot the sound-asked animal', () => {
-    for (const plan of PLANS.filter((p) => p.mode !== 'who')) expect(makeRounds(plan, new Rng(3)).every((r) => !r.by)).toBe(true);
+    for (const plan of PLANS.filter((p) => p.mode !== 'who'))
+      expect(makeRounds(plan, new Rng(3)).every((r) => !r.by)).toBe(true);
     const r = makeRounds(PLANS[2], new Rng(9))[1];
     const table: SnackTable = { friends: r.animals, snacks: [], ask: r.ask, eatenCount: 0 };
     expect(snackTouch(PLANS[2], table)).toEqual({ friend: r.animals.indexOf(r.ask!) });
@@ -192,8 +244,22 @@ describe('Animal Snack', () => {
   });
 
   // Logical views: iPad landscape, an iPad Air, a wide phone, iPad portrait and the tallest view before the turn prompt.
-  const VIEWS = [[1024, 768], [1105, 768], [1365, 768], [1024, 1365], [1024, 1638]] as const;
-  const circleHitsRect = (cx: number, cy: number, r: number, x0: number, y0: number, x1: number, y1: number) => {
+  const VIEWS = [
+    [1024, 768],
+    [1105, 768],
+    [1365, 768],
+    [1024, 1365],
+    [1024, 1638],
+  ] as const;
+  const circleHitsRect = (
+    cx: number,
+    cy: number,
+    r: number,
+    x0: number,
+    y0: number,
+    x1: number,
+    y1: number,
+  ) => {
     const dx = cx - Math.max(x0, Math.min(cx, x1));
     const dy = cy - Math.max(y0, Math.min(cy, y1));
     return dx * dx + dy * dy < r * r;
@@ -223,7 +289,15 @@ describe('Animal Snack', () => {
           expect(x0).toBeGreaterThanOrEqual(0);
           expect(x1).toBeLessThanOrEqual(w);
           for (const fx of friendXs(n, w)) {
-            const hit = circleHitsRect(fx, friendFeet(h) + FRIEND_HIT.y * FRIEND_SCALE, FRIEND_HIT.r * FRIEND_SCALE, x0, y0, x1, y1);
+            const hit = circleHitsRect(
+              fx,
+              friendFeet(h) + FRIEND_HIT.y * FRIEND_SCALE,
+              FRIEND_HIT.r * FRIEND_SCALE,
+              x0,
+              y0,
+              x1,
+              y1,
+            );
             expect(hit, `${scene} ${w}x${h} n=${n}`).toBe(false);
           }
           if (scene === 'orchard') expect(x0 > 220 || x1 < 10).toBe(true);
@@ -240,4 +314,3 @@ describe('Animal Snack', () => {
     expect(wide!.x).toBeGreaterThan(1365 / 2);
   });
 });
-

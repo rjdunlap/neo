@@ -132,26 +132,58 @@ class Box extends Container {
       const glow = shapePath(new Graphics(), outline, r + 16).fill({ color: 0xfff3a0, alpha: 0.85 });
       glow.position.set(x, y);
       glow.visible = false;
-      const hole = (attribute === 'corners'
-        ? new Graphics().poly([-r, -r * 0.6, -r * 0.6, -r, 0, -r * 0.6, r * 0.6, -r, r, -r * 0.6, r, r * 0.6, r * 0.6, r, 0, r * 0.6, -r * 0.6, r, -r, r * 0.6]).closePath()
-        : shapePath(new Graphics(), outline, r)).fill(0x4a3424).stroke(line(rim, plan.coded ? 9 : 6));
+      const hole = (
+        attribute === 'corners'
+          ? new Graphics()
+              .poly([
+                -r,
+                -r * 0.6,
+                -r * 0.6,
+                -r,
+                0,
+                -r * 0.6,
+                r * 0.6,
+                -r,
+                r,
+                -r * 0.6,
+                r,
+                r * 0.6,
+                r * 0.6,
+                r,
+                0,
+                r * 0.6,
+                -r * 0.6,
+                r,
+                -r,
+                r * 0.6,
+              ])
+              .closePath()
+          : shapePath(new Graphics(), outline, r)
+      )
+        .fill(0x4a3424)
+        .stroke(line(rim, plan.coded ? 9 : 6));
       hole.position.set(x, y);
       this.addChild(glow, hole);
       const dots: Graphics[] = [];
       if (attribute !== undefined) {
-        const sign = typeof attribute === 'number'
-          ? new Text({ text: String(attribute), style: { fontFamily: 'sans-serif', fontSize: 38, fontWeight: 'bold', fill: 0xffffff } })
-          : shapePath(new Graphics(), kind, 24).fill(wood.light);
+        const sign =
+          typeof attribute === 'number'
+            ? new Text({
+                text: String(attribute),
+                style: { fontFamily: 'sans-serif', fontSize: 38, fontWeight: 'bold', fill: 0xffffff },
+              })
+            : shapePath(new Graphics(), kind, 24).fill(wood.light);
         if (sign instanceof Text) sign.anchor.set(0.5);
         sign.position.set(x, y);
         this.addChild(sign);
-        if (typeof attribute === 'number') for (let i = 0; i < attribute; i++) {
-          const a = -Math.PI / 2 + i * Math.PI * 2 / attribute;
-          const dot = new Graphics().circle(0, 0, 6).fill(0xfff3a0);
-          dot.position.set(x + Math.cos(a) * 40, y + Math.sin(a) * 40);
-          this.addChild(dot);
-          dots.push(dot);
-        }
+        if (typeof attribute === 'number')
+          for (let i = 0; i < attribute; i++) {
+            const a = -Math.PI / 2 + (i * Math.PI * 2) / attribute;
+            const dot = new Graphics().circle(0, 0, 6).fill(0xfff3a0);
+            dot.position.set(x + Math.cos(a) * 40, y + Math.sin(a) * 40);
+            this.addChild(dot);
+            dots.push(dot);
+          }
       }
       this.holes.push({ kind, size, attribute, x, y, glow, dots });
     });
@@ -203,7 +235,8 @@ class Box extends Container {
     this.yum = Math.max(0, this.yum - dt * 1.5);
     if (was && this.yum === 0) this.drawMouth();
     this.shake = Math.max(0, this.shake - dt * 2.5);
-    this.face.x = 10 * Math.sin(this.shake * 22) * this.shake + 16 * this.leanDir * Math.sin(this.leanLeft * Math.PI);
+    this.face.x =
+      10 * Math.sin(this.shake * 22) * this.shake + 16 * this.leanDir * Math.sin(this.leanLeft * Math.PI);
     this.leanLeft = Math.max(0, this.leanLeft - dt * 1.6);
     this.rotation = 0.05 * this.leanDir * Math.sin(this.leanLeft * Math.PI);
     this.scale.set(1 + 0.04 * Math.sin(this.yum * Math.PI), 1 - 0.04 * Math.sin(this.yum * Math.PI));
@@ -214,7 +247,10 @@ class Box extends Container {
     for (const h of this.holes) {
       if (h.glow.visible) h.glow.alpha = 0.6 + 0.4 * Math.sin(this.clock * 8);
       // Count the sign's dots one at a time, repeating while help is lit. Zero has no dots.
-      h.dots.forEach((dot, i) => { dot.alpha = !h.glow.visible || i <= Math.floor((4 - this.glowFor) / 0.45) % (h.dots.length + 1) ? 1 : 0.18; });
+      h.dots.forEach((dot, i) => {
+        dot.alpha =
+          !h.glow.visible || i <= Math.floor((4 - this.glowFor) / 0.45) % (h.dots.length + 1) ? 1 : 0.18;
+      });
     }
   }
 
@@ -258,7 +294,8 @@ class ShapeSorter implements Game {
     // Level 1 answers every touch: the box giggles, and the floor or the wall wiggles the nearest piece and names it.
     if (this.plan.everyTouch) {
       onTap(this.box, () => this.tickle(), { cooldown: 250 });
-      for (const ground of [this.bg, this.floor]) onTap(ground, (e) => this.nudge(this.ctx.stage.toLocal(e.global)), { cooldown: 200 });
+      for (const ground of [this.bg, this.floor])
+        onTap(ground, (e) => this.nudge(this.ctx.stage.toLocal(e.global)), { cooldown: 200 });
     }
 
     if (this.plan.turning) this.ctx.listen(window, 'pointercancel', this.cancelTurn, true);
@@ -272,7 +309,18 @@ class ShapeSorter implements Game {
       view.hitArea = new Circle(0, 0, Math.max(56, PIECE_R * scale + 8));
       if (this.plan.tilt) view.rotation = ctx.rng.range(-0.7, 0.7);
       if (this.plan.turning) view.rotation = turnStart(ctx.rng, kind as TurnKind);
-      const piece: Piece = { view, kind, size, scale, wiggle: 0, pickedAt: 0, turnMisses: 0, tapStart: null, tapMoved: false, drag: null! };
+      const piece: Piece = {
+        view,
+        kind,
+        size,
+        scale,
+        wiggle: 0,
+        pickedAt: 0,
+        turnMisses: 0,
+        tapStart: null,
+        tapMoved: false,
+        drag: null!,
+      };
       piece.drag = draggable(view, ctx.tw, {
         onPick: () => {
           piece.pickedAt = this.clock;
@@ -283,13 +331,27 @@ class ShapeSorter implements Game {
       });
       if (this.plan.turning) {
         // onTap starts a candidate after draggable has accepted this pointer; the release distinguishes a turn from a carry.
-        onTap(view, (e) => {
-          if (!piece.drag.dragging || piece.tapStart) return;
-          piece.tapStart = { x: e.global.x, y: e.global.y, pointerId: e.pointerId, localX: view.x, localY: view.y };
-          piece.tapMoved = false;
-        }, { cooldown: 0 });
+        onTap(
+          view,
+          (e) => {
+            if (!piece.drag.dragging || piece.tapStart) return;
+            piece.tapStart = {
+              x: e.global.x,
+              y: e.global.y,
+              pointerId: e.pointerId,
+              localX: view.x,
+              localY: view.y,
+            };
+            piece.tapMoved = false;
+          },
+          { cooldown: 0 },
+        );
         view.on('globalpointermove', (e) => {
-          if (piece.tapStart?.pointerId === e.pointerId && Math.hypot(e.global.x - piece.tapStart.x, e.global.y - piece.tapStart.y) > 24) piece.tapMoved = true;
+          if (
+            piece.tapStart?.pointerId === e.pointerId &&
+            Math.hypot(e.global.x - piece.tapStart.x, e.global.y - piece.tapStart.y) > 24
+          )
+            piece.tapMoved = true;
         });
       }
       this.layer.addChild(view);
@@ -298,7 +360,20 @@ class ShapeSorter implements Game {
   }
 
   start() {
-    const first = this.plan.attribute === 'curves' ? 'shape.attr.start' : this.plan.attribute === 'count' ? 'shape.count.start' : this.plan.clue ? 'shape.find.start' : this.plan.tapIn ? 'shape.tap.start' : this.plan.sized ? 'shape.size.start' : this.plan.turning ? 'shape.turn.start' : 'shape.start';
+    const first =
+      this.plan.attribute === 'curves'
+        ? 'shape.attr.start'
+        : this.plan.attribute === 'count'
+          ? 'shape.count.start'
+          : this.plan.clue
+            ? 'shape.find.start'
+            : this.plan.tapIn
+              ? 'shape.tap.start'
+              : this.plan.sized
+                ? 'shape.size.start'
+                : this.plan.turning
+                  ? 'shape.turn.start'
+                  : 'shape.start';
     void this.ctx.instruct(first).then(() => {
       if (this.plan.clue) void this.askNextClue();
     });
@@ -312,7 +387,8 @@ class ShapeSorter implements Game {
       .clear()
       .rect(0, floorY, v.w, v.h - floorY)
       .fill(0xe3b583);
-    for (let y = floorY + 40; y < v.h; y += 46) this.floor.moveTo(0, y).lineTo(v.w, y).stroke({ width: 3, color: 0xcf9f6c });
+    for (let y = floorY + 40; y < v.h; y += 46)
+      this.floor.moveTo(0, y).lineTo(v.w, y).stroke({ width: 3, color: 0xcf9f6c });
     const boxTop = boxTopFor(v.h, this.box.lidH);
     this.box.position.set(v.w / 2, boxTop);
 
@@ -353,10 +429,13 @@ class ShapeSorter implements Game {
       return next ? { tap: { on: next.view } } : null;
     }
     if (this.plan.clue && (!this.asked || !this.clueReady)) return null;
-    const kind = this.plan.clue ? this.asked ?? undefined : undefined;
-    const piece = this.pieces.find((p) => !p.drag.dragging && !p.view.destroyed && (!kind || p.kind === kind));
+    const kind = this.plan.clue ? (this.asked ?? undefined) : undefined;
+    const piece = this.pieces.find(
+      (p) => !p.drag.dragging && !p.view.destroyed && (!kind || p.kind === kind),
+    );
     const hole = piece && holeFor(this.box.holes, piece);
-    if (piece && this.plan.turning && !turnFits(piece.kind as TurnKind, piece.view.rotation)) return { tap: { on: piece.view } };
+    if (piece && this.plan.turning && !turnFits(piece.kind as TurnKind, piece.view.rotation))
+      return { tap: { on: piece.view } };
     return piece && hole ? { drag: { on: piece.view }, to: { on: this.box, x: hole.x, y: hole.y } } : null;
   }
 
@@ -379,8 +458,15 @@ class ShapeSorter implements Game {
         return true; // stay where she tapped it, including when it waits on a hole
       }
     }
-    const near = holeAt(this.box.holes.map((h) => ({ h, x: this.box.x + h.x, y: this.box.y + h.y })), x, y);
-    if (!near && tapsIn(this.plan, this.clock - piece.pickedAt, Math.hypot(x - piece.drag.home.x, y - piece.drag.home.y))) {
+    const near = holeAt(
+      this.box.holes.map((h) => ({ h, x: this.box.x + h.x, y: this.box.y + h.y })),
+      x,
+      y,
+    );
+    if (
+      !near &&
+      tapsIn(this.plan, this.clock - piece.pickedAt, Math.hypot(x - piece.drag.home.x, y - piece.drag.home.y))
+    ) {
       // A tap: the piece hops into its own hole by itself.
       const hole = holeFor(this.box.holes, piece);
       if (hole) {
@@ -407,7 +493,11 @@ class ShapeSorter implements Game {
         if (support.glow) this.box.hint(piece, 4);
         if (support.align) {
           // Keep the equivalent orientation rather than turning every shape all the way back to zero.
-          void this.ctx.tw.to(piece.view, { rotation: piece.view.rotation - turnOffset(piece.kind as TurnKind, piece.view.rotation) }, { duration: 0.3 });
+          void this.ctx.tw.to(
+            piece.view,
+            { rotation: piece.view.rotation - turnOffset(piece.kind as TurnKind, piece.view.rotation) },
+            { duration: 0.3 },
+          );
         }
         void this.jiggle(piece, near.x);
         return true;
@@ -426,9 +516,18 @@ class ShapeSorter implements Game {
     if (fitted || this.clock - this.lastNag > 3) {
       this.lastNag = this.clock;
       if (asked && fitted) void this.ctx.say(`shape.find.notyet.${asked}`, { shape: piece.kind });
-      else if (this.plan.attribute) void this.ctx.say(this.plan.attribute === 'curves' ? `shape.attr.${cornerClass(piece.kind)}` : `shape.count.${CORNERS[piece.kind]}` as LineId, { shape: piece.kind });
+      else if (this.plan.attribute)
+        void this.ctx.say(
+          this.plan.attribute === 'curves'
+            ? `shape.attr.${cornerClass(piece.kind)}`
+            : (`shape.count.${CORNERS[piece.kind]}` as LineId),
+          { shape: piece.kind },
+        );
       else if (size) void this.ctx.say(`shape.size.${size}`);
-      else void this.ctx.say(this.plan.clue && this.asked ? `shape.find.hint.${this.asked}` : 'shape.wrong', { hole: near.h.kind });
+      else
+        void this.ctx.say(this.plan.clue && this.asked ? `shape.find.hint.${this.asked}` : 'shape.wrong', {
+          hole: near.h.kind,
+        });
     }
     if (glow) this.box.hint(this.plan.clue && this.asked ? { kind: this.asked } : piece, 4);
     return false;
@@ -451,7 +550,11 @@ class ShapeSorter implements Game {
   /** A tap on the floor or the wall at level 1: the nearest waiting piece wiggles and says its name. */
   private nudge(at: { x: number; y: number }) {
     if (this.finished) return;
-    const near = nearest(this.pieces.filter((p) => !p.drag.dragging).map((p) => ({ p, x: p.view.x, y: p.view.y })), at.x, at.y);
+    const near = nearest(
+      this.pieces.filter((p) => !p.drag.dragging).map((p) => ({ p, x: p.view.x, y: p.view.y })),
+      at.x,
+      at.y,
+    );
     if (!near) return;
     near.p.wiggle = 0.6;
     sfx.tick();
@@ -463,7 +566,12 @@ class ShapeSorter implements Game {
     piece.drag.destroy();
     this.pieces = this.pieces.filter((p) => p !== piece);
     const v = piece.view;
-    if (hop) await this.ctx.tw.to(v, { x: (v.x + x) / 2, y: Math.min(v.y, y) - 90 }, { duration: 0.28, ease: ease.outQuad });
+    if (hop)
+      await this.ctx.tw.to(
+        v,
+        { x: (v.x + x) / 2, y: Math.min(v.y, y) - 90 },
+        { duration: 0.28, ease: ease.outQuad },
+      );
     await this.ctx.tw.to(v, { x, y, rotation: this.plan.turning ? v.rotation : 0 }, { duration: 0.12 });
     void this.ctx.tw.to(v, { alpha: 0 }, { duration: 0.25 });
     await this.ctx.tw.to(v.scale, { x: 0.2, y: 0.2 }, { duration: 0.25, ease: ease.inBack });
@@ -472,10 +580,18 @@ class ShapeSorter implements Game {
     // Sized pieces ring by size: the little one high, the big one low.
     sfx.bell(piece.size !== undefined ? 9 - 2 * piece.size : 5 + (this.placed % 6), 0.22);
     this.box.gulp();
-    this.ctx.particles.burst(x, y, { kind: 'star', colors: [0xffd54a, 0xffffff], count: 8, speed: [100, 220], gravity: 0, life: [0.4, 0.7] });
+    this.ctx.particles.burst(x, y, {
+      kind: 'star',
+      colors: [0xffd54a, 0xffffff],
+      count: 8,
+      speed: [100, 220],
+      gravity: 0,
+      life: [0.4, 0.7],
+    });
     this.placed++;
     if (this.placed % 3 === 0) this.ctx.pet.cheer();
-    if (!this.sizeSaid(piece) && factDue(this.plan, this.placed)) void this.ctx.say(`shape.fact.${piece.kind}`);
+    if (!this.sizeSaid(piece) && factDue(this.plan, this.placed))
+      void this.ctx.say(`shape.fact.${piece.kind}`);
     if (this.pieces.length === 0) void this.finale();
     else if (this.plan.clue) void this.askNextClue();
   }
@@ -509,7 +625,16 @@ class ShapeSorter implements Game {
     await this.ctx.tw.to(b, { y: b.y + 40 }, { duration: 0.25, ease: ease.inQuad });
     b.gulp();
     const colors = RAINBOW.map((c) => swatch[c].fill);
-    this.ctx.particles.burst(b.x, b.y + 40, { kind: 'confetti', colors, count: 60, speed: [300, 700], angle: -Math.PI / 2, spread: 1.6, gravity: 700, life: [1.2, 2] });
+    this.ctx.particles.burst(b.x, b.y + 40, {
+      kind: 'confetti',
+      colors,
+      count: 60,
+      speed: [300, 700],
+      angle: -Math.PI / 2,
+      spread: 1.6,
+      gravity: 700,
+      life: [1.2, 2],
+    });
     sfx.tada();
     this.ctx.pet.cheer();
     await this.ctx.tw.wait(1.6);

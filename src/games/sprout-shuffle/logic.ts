@@ -29,7 +29,8 @@ export function looks(g: Genotype): Look {
 /** The four routes, in fan order: left copy 1 or 2, paired with right copy 1 or 2. Duplicates are never merged. */
 export function routes(left: Genotype, right: Genotype): Route[] {
   const out: Route[] = [];
-  for (const i of [0, 1] as const) for (const j of [0, 1] as const) out.push({ from: [i, j], sprout: [left[i], right[j]] });
+  for (const i of [0, 1] as const)
+    for (const j of [0, 1] as const) out.push({ from: [i, j], sprout: [left[i], right[j]] });
   return out;
 }
 
@@ -55,7 +56,8 @@ export function checkLooks(chosen: Iterable<Look>, rs: readonly Route[]): Verdic
   const picked = new Set(chosen);
   const can = support(rs);
   for (const look of can) {
-    if (!picked.has(look)) return { ok: false, missing: look, route: rs.find((r) => looks(r.sprout) === look)! };
+    if (!picked.has(look))
+      return { ok: false, missing: look, route: rs.find((r) => looks(r.sprout) === look)! };
   }
   for (const look of picked) if (!can.has(look)) return { ok: false, extra: look };
   return { ok: true };
@@ -91,9 +93,33 @@ export interface Plan {
 }
 
 export const PLANS: readonly Plan[] = [
-  { level: 1, name: 'One route, then every route', parents: [['A', 'A'], ['a', 'a']], task: 'open-all' },
-  { level: 2, name: 'Which sprouts could grow?', parents: [['A', 'a'], ['a', 'a']], task: 'choose-could' },
-  { level: 3, name: 'Could be, or always?', parents: [['A', 'a'], ['A', 'a']], task: 'choose-always' },
+  {
+    level: 1,
+    name: 'One route, then every route',
+    parents: [
+      ['A', 'A'],
+      ['a', 'a'],
+    ],
+    task: 'open-all',
+  },
+  {
+    level: 2,
+    name: 'Which sprouts could grow?',
+    parents: [
+      ['A', 'a'],
+      ['a', 'a'],
+    ],
+    task: 'choose-could',
+  },
+  {
+    level: 3,
+    name: 'Could be, or always?',
+    parents: [
+      ['A', 'a'],
+      ['A', 'a'],
+    ],
+    task: 'choose-always',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -130,7 +156,8 @@ export function setupFor(level: number, rng: Rng): Setup {
   const right = shuffle(plan.parents[firstLeft ? 1 : 0]);
   const [c0, c1] = rng.shuffle([...PETAL_COLORS]);
   const rs = routes(left, right);
-  const build = plan.task === 'choose-could' ? [rng.int(0, 3)] : plan.task === 'choose-always' ? [0, 1, 2, 3] : [];
+  const build =
+    plan.task === 'choose-could' ? [rng.int(0, 3)] : plan.task === 'choose-always' ? [0, 1, 2, 3] : [];
   return { plan, left, right, colors: [c0, c1], routes: rs, build };
 }
 
@@ -202,7 +229,8 @@ export function nextStep(r: Round): Step | null {
         const want = acceptedClaim(s.routes);
         return r.claim === want ? { check: true } : { claim: want };
       }
-      for (const look of ['spotted', 'plain'] as const) if (support(s.routes).has(look) && !r.chosen.has(look)) return { choose: look };
+      for (const look of ['spotted', 'plain'] as const)
+        if (support(s.routes).has(look) && !r.chosen.has(look)) return { choose: look };
       if (r.chosen.size > 0 && checkLooks(r.chosen, s.routes).ok) return { check: true };
       return null;
     }
@@ -234,7 +262,15 @@ export const PAIRS_NAME = 'Which pairs always make spotted?';
 /** The grown-up name of any level, 1 to 8. */
 export function levelName(level: number): string {
   const l = Math.round(level);
-  return l >= CONSERVATORY_LEVEL ? CONSERVATORY_NAMES[Math.min(l, CONSERVATORY_TOP) - CONSERVATORY_LEVEL] : l >= TESTER_LEVEL ? TESTER_NAME : l >= HIDDEN_LEVEL ? HIDDEN_NAME : l >= PAIRS_LEVEL ? PAIRS_NAME : planFor(level).name;
+  return l >= CONSERVATORY_LEVEL
+    ? CONSERVATORY_NAMES[Math.min(l, CONSERVATORY_TOP) - CONSERVATORY_LEVEL]
+    : l >= TESTER_LEVEL
+      ? TESTER_NAME
+      : l >= HIDDEN_LEVEL
+        ? HIDDEN_NAME
+        : l >= PAIRS_LEVEL
+          ? PAIRS_NAME
+          : planFor(level).name;
 }
 
 /** Two plants on one pair card: the left plant's copies and the right plant's, as their trays show them. */
@@ -246,9 +282,21 @@ const aa: Genotype = ['a', 'a'];
 
 /** The definition's authored pools, one per round: each has an accepted and a rejected pair, and pool C two accepted. */
 export const PAIR_POOLS: readonly (readonly Pair[])[] = [
-  [[AA, aa], [Aa, aa], [aa, aa]],
-  [[AA, Aa], [Aa, Aa], [aa, aa]],
-  [[AA, AA], [Aa, aa], [AA, aa]],
+  [
+    [AA, aa],
+    [Aa, aa],
+    [aa, aa],
+  ],
+  [
+    [AA, Aa],
+    [Aa, Aa],
+    [aa, aa],
+  ],
+  [
+    [AA, AA],
+    [Aa, aa],
+    [AA, aa],
+  ],
 ];
 
 /** The pairs (by index) whose every route makes this look. */
@@ -296,8 +344,10 @@ export type PairsVerdict =
 /** The only accepted choice is exactly the always-spotted cards (equivalent cards are all accepted together). */
 export function checkPairs(chosen: Iterable<number>, s: PairsSetup): PairsVerdict {
   const picked = [...new Set(chosen)].sort((a, b) => a - b);
-  for (const i of picked) if (!s.accepted.has(i)) return { ok: false, extra: i, route: counterexample(s.pairs[i])! };
-  for (const i of [...s.accepted].sort((a, b) => a - b)) if (!picked.includes(i)) return { ok: false, missing: i };
+  for (const i of picked)
+    if (!s.accepted.has(i)) return { ok: false, extra: i, route: counterexample(s.pairs[i])! };
+  for (const i of [...s.accepted].sort((a, b) => a - b))
+    if (!picked.includes(i)) return { ok: false, missing: i };
   return { ok: true };
 }
 
@@ -387,7 +437,10 @@ export function hiddenSetupFor(rng: Rng, level = HIDDEN_LEVEL): HiddenSetup {
   const bench: BenchPlant[] = [];
   if (Math.round(level) >= TESTER_LEVEL) {
     const keys: Tester[] = rng.chance(0.5) ? ['AA', 'aa'] : ['aa', 'AA'];
-    bench.push({ key: keys[0], color: keys[0] === 'aa' ? c1 : c2 }, { key: keys[1], color: keys[1] === 'aa' ? c1 : c2 });
+    bench.push(
+      { key: keys[0], color: keys[0] === 'aa' ? c1 : c2 },
+      { key: keys[1], color: keys[1] === 'aa' ? c1 : c2 },
+    );
   }
   return { truth, hidden, tester: aa, first, second, colors: [c0, c1], order, bench };
 }
@@ -403,7 +456,11 @@ export type HiddenVerdict =
   | { ok: false; missing: Candidate };
 
 /** The accepted choice is every candidate that fits the record as shown; a ruled-out choice is reported before a missing one. */
-export function checkCandidates(chosen: Iterable<Candidate>, tester: Genotype, record: readonly Look[]): HiddenVerdict {
+export function checkCandidates(
+  chosen: Iterable<Candidate>,
+  tester: Genotype,
+  record: readonly Look[],
+): HiddenVerdict {
   const picked = new Set(chosen);
   const fit = candidates(tester, record);
   for (const c of CANDIDATES) if (picked.has(c) && !fit.includes(c)) return { ok: false, extra: c };
@@ -426,7 +483,12 @@ export function tryRoom(phase: HiddenPhase, recordLength: number): number {
 /** The next thing a capable child would do: water, let go of a ruled-out card, choose a fitting one, then Check. */
 export type HiddenStep = { water: true } | { choose: Candidate } | { unchoose: Candidate } | { check: true };
 
-export function hiddenNextStep(phase: HiddenPhase, chosen: ReadonlySet<Candidate>, tester: Genotype, record: readonly Look[]): HiddenStep | null {
+export function hiddenNextStep(
+  phase: HiddenPhase,
+  chosen: ReadonlySet<Candidate>,
+  tester: Genotype,
+  record: readonly Look[],
+): HiddenStep | null {
   if (phase === 'water1' || phase === 'water2') return { water: true };
   if (phase === 'pick' || phase === 'done') return null;
   const fit = candidates(tester, record);
@@ -468,7 +530,10 @@ export function pickStep(potted: Tester | null): PickStep {
 
 export const CONSERVATORY_LEVEL = 7;
 export const CONSERVATORY_TOP = 8;
-export const CONSERVATORY_NAMES = ['Patchwork Conservatory: one pair never misses', 'Patchwork Conservatory: two good plans'] as const;
+export const CONSERVATORY_NAMES = [
+  'Patchwork Conservatory: one pair never misses',
+  'Patchwork Conservatory: two good plans',
+] as const;
 
 /**
  * The two markings. Each is G1's rule on its own: a plant holds two copies, gives one, and one showing copy is enough.
@@ -507,7 +572,11 @@ export function guaranteed(left: Plant2, right: Plant2, brief: Brief = BRIEF): b
 }
 
 /** The first marking (in brief order) with a route that misses the brief, and that route; null when the pair is guaranteed. */
-export function failingRoute(left: Plant2, right: Plant2, brief: Brief = BRIEF): { marking: Marking; route: Route } | null {
+export function failingRoute(
+  left: Plant2,
+  right: Plant2,
+  brief: Brief = BRIEF,
+): { marking: Marking; route: Route } | null {
   for (const m of brief) {
     const route = locusRoutes(left, right, m).find((r) => looks(r.sprout) !== 'spotted');
     if (route) return { marking: m, route };
@@ -518,7 +587,8 @@ export function failingRoute(left: Plant2, right: Plant2, brief: Brief = BRIEF):
 /** Every unordered pair of distinct bench plants (by index, smaller first, in index order) that is guaranteed. */
 export function acceptedPairs(bench: readonly Plant2[], brief: Brief = BRIEF): [number, number][] {
   const out: [number, number][] = [];
-  for (let i = 0; i < bench.length; i++) for (let j = i + 1; j < bench.length; j++) if (guaranteed(bench[i], bench[j], brief)) out.push([i, j]);
+  for (let i = 0; i < bench.length; i++)
+    for (let j = i + 1; j < bench.length; j++) if (guaranteed(bench[i], bench[j], brief)) out.push([i, j]);
   return out;
 }
 
@@ -538,7 +608,11 @@ export function combinedRoutes(left: Plant2, right: Plant2): CombinedRoute[] {
   const out: CombinedRoute[] = [];
   for (const spots of locusRoutes(left, right, 'spots')) {
     for (const rim of locusRoutes(left, right, 'rim')) {
-      out.push({ spots, rim, look: { spots: looks(spots.sprout) === 'spotted', rim: looks(rim.sprout) === 'spotted' } });
+      out.push({
+        spots,
+        rim,
+        look: { spots: looks(spots.sprout) === 'spotted', rim: looks(rim.sprout) === 'spotted' },
+      });
     }
   }
   return out;
@@ -588,7 +662,8 @@ export function conservatorySetupFor(level: number, rng: Rng): ConservatorySetup
   return { level: l, bench, colors, places, rimColor, accepted: acceptedPairs(bench) };
 }
 
-const samePair = (a: readonly number[], b: readonly number[]) => (a[0] === b[0] && a[1] === b[1]) || (a[0] === b[1] && a[1] === b[0]);
+const samePair = (a: readonly number[], b: readonly number[]) =>
+  (a[0] === b[0] && a[1] === b[1]) || (a[0] === b[1] && a[1] === b[0]);
 
 /** Whether this unordered pair is one of these. */
 export function hasPair(pairs: readonly (readonly number[])[], pair: readonly number[]): boolean {
@@ -599,7 +674,11 @@ export function hasPair(pairs: readonly (readonly number[])[], pair: readonly nu
  * The pair Show me plants and the level-8 glow lights: the accepted pair that keeps a potted plant, or the first
  * accepted pair (`AA bb` × `aa BB`) when both or neither do. With `except`, a pair already found is never offered.
  */
-export function helpPair(s: ConservatorySetup, potted: readonly (number | null)[], except: readonly number[] | null = null): readonly [number, number] {
+export function helpPair(
+  s: ConservatorySetup,
+  potted: readonly (number | null)[],
+  except: readonly number[] | null = null,
+): readonly [number, number] {
   const open = s.accepted.filter((p) => !except || !samePair(p, except));
   const keeps = open.filter((p) => potted.some((k) => k !== null && p.includes(k)));
   return keeps.length === 1 ? keeps[0] : open[0];
@@ -624,9 +703,15 @@ export function counterFor(s: ConservatorySetup, pair: readonly [number, number]
 }
 
 /** The ghost finger's next move. `pots` holds plant indices; `seen` the lenses opened since the pots last changed. */
-export type ConservatoryStep = { unpot: number } | { pot: number } | { lens: Marking } | { check: true } | { finish: true };
+export type ConservatoryStep =
+  { unpot: number } | { pot: number } | { lens: Marking } | { check: true } | { finish: true };
 
-export function conservatoryStep(level: 7 | 8, pots: readonly (number | null)[], seen: ReadonlySet<Marking>, found: boolean): ConservatoryStep {
+export function conservatoryStep(
+  level: 7 | 8,
+  pots: readonly (number | null)[],
+  seen: ReadonlySet<Marking>,
+  found: boolean,
+): ConservatoryStep {
   if (found) return { finish: true };
   const target = BOT_PAIRS[level];
   for (const k of pots) if (k !== null && !target.includes(k)) return { unpot: k };

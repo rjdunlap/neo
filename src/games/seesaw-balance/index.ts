@@ -82,8 +82,13 @@ const TAP_REACH = 60;
 
 /** The plank, its stand, and a tray at each end that stays level as the plank tips. */
 function drawPlank(g: Graphics) {
-  g.roundRect(-ARM - 44, -15, 2 * ARM + 88, 30, 15).fill(wood.fill).stroke(line(wood.line));
-  for (let x = -ARM + 40; x < ARM - 20; x += 80) g.moveTo(x, -6).lineTo(x + 24, -6).stroke(line(wood.light, 4));
+  g.roundRect(-ARM - 44, -15, 2 * ARM + 88, 30, 15)
+    .fill(wood.fill)
+    .stroke(line(wood.line));
+  for (let x = -ARM + 40; x < ARM - 20; x += 80)
+    g.moveTo(x, -6)
+      .lineTo(x + 24, -6)
+      .stroke(line(wood.light, 4));
   return g;
 }
 
@@ -97,7 +102,10 @@ function drawTray(g: Graphics, color: ColorName) {
     .stroke(line(sw.line, 5));
 }
 
-function thingNode(thing: Thing, index: number): { node: Container; width: number; height: number; critter?: Critter; sign?: ReturnType<typeof label> } {
+function thingNode(
+  thing: Thing,
+  index: number,
+): { node: Container; width: number; height: number; critter?: Critter; sign?: ReturnType<typeof label> } {
   const node = new Container();
   switch (thing.kind) {
     case 'friend': {
@@ -110,7 +118,14 @@ function thingNode(thing: Thing, index: number): { node: Container; width: numbe
       return { node, width: 70 + 120 * s, height: 240 * s, critter };
     }
     case 'block': {
-      node.addChild(new Graphics().roundRect(-30, -60, 60, 60, 9).fill(wood.fill).stroke(line(wood.line, 5)).circle(0, -30, 9).fill(wood.line));
+      node.addChild(
+        new Graphics()
+          .roundRect(-30, -60, 60, 60, 9)
+          .fill(wood.fill)
+          .stroke(line(wood.line, 5))
+          .circle(0, -30, 9)
+          .fill(wood.line),
+      );
       node.hitArea = new Rectangle(-50, -80, 100, 100);
       return { node, width: 66, height: 60 };
     }
@@ -134,7 +149,12 @@ function thingNode(thing: Thing, index: number): { node: Container; width: numbe
       n.style.stroke = { color: sw.line, width: 7, join: 'round' };
       n.y = -bh / 2;
       node.addChild(g, n);
-      node.hitArea = new Rectangle(-Math.max(50, bw / 2 + 8), -Math.max(100, bh + 30), Math.max(100, bw + 16), Math.max(100, bh + 30) + 10);
+      node.hitArea = new Rectangle(
+        -Math.max(50, bw / 2 + 8),
+        -Math.max(100, bh + 30),
+        Math.max(100, bw + 16),
+        Math.max(100, bh + 30) + 10,
+      );
       return { node, width: bw + 8, height: bh };
     }
     case 'present': {
@@ -150,8 +170,19 @@ function thingNode(thing: Thing, index: number): { node: Container; width: numbe
         .fill(swatch.yellow.fill)
         .stroke(line(swatch.yellow.line, 4));
       const wrap = new Graphics();
-      if (thing.wrap === 'dots') for (const [x, y] of [[-28, -58], [-22, -32], [-30, -12], [24, -58], [30, -34], [22, -12]]) wrap.circle(x, y, 6).fill({ color: 0xffffff, alpha: 0.85 });
-      if (thing.wrap === 'stripes') for (const x of [-34, -20, 20, 34]) wrap.moveTo(x, -72).lineTo(x, -4).stroke({ width: 7, color: 0xffffff, alpha: 0.8, cap: 'round' });
+      if (thing.wrap === 'dots')
+        for (const [x, y] of [
+          [-28, -58],
+          [-22, -32],
+          [-30, -12],
+          [24, -58],
+          [30, -34],
+          [22, -12],
+        ])
+          wrap.circle(x, y, 6).fill({ color: 0xffffff, alpha: 0.85 });
+      if (thing.wrap === 'stripes')
+        for (const x of [-34, -20, 20, 34])
+          wrap.moveTo(x, -72).lineTo(x, -4).stroke({ width: 7, color: 0xffffff, alpha: 0.8, cap: 'round' });
       node.addChild(g, wrap);
       node.hitArea = new Rectangle(-55, -100, 110, 110);
       return { node, width: 96, height: 76 };
@@ -159,10 +190,13 @@ function thingNode(thing: Thing, index: number): { node: Container; width: numbe
     case 'box': {
       if (thing.look === 'pumpkin') {
         const g = new Graphics();
-        for (const x of [-26, 26, 0]) g.ellipse(x, -44, 30, 42).fill(swatch.orange.fill).stroke(line(swatch.orange.line, 4));
+        for (const x of [-26, 26, 0])
+          g.ellipse(x, -44, 30, 42).fill(swatch.orange.fill).stroke(line(swatch.orange.line, 4));
         g.moveTo(0, -84).quadraticCurveTo(-6, -106, 12, -104).stroke(line(swatch.green.line, 9));
-        const sign = label('?', 40, swatch.orange.line); sign.y = -42;
-        node.addChild(g, sign); node.hitArea = new Rectangle(-60, -110, 120, 120);
+        const sign = label('?', 40, swatch.orange.line);
+        sign.y = -42;
+        node.addChild(g, sign);
+        node.hitArea = new Rectangle(-60, -110, 120, 120);
         return { node, width: 116, height: 110, sign };
       }
       if (thing.shape === 'round') {
@@ -227,14 +261,19 @@ class Pad extends Container {
     super();
     const n = label(String(value), 56, 0xffffff);
     n.style.stroke = { color: swatch.blue.line, width: 8, join: 'round' };
-    this.addChild(this.glowRing, new Graphics().circle(0, 0, 58).fill(swatch.blue.fill).stroke(line(swatch.blue.line)), n);
+    this.addChild(
+      this.glowRing,
+      new Graphics().circle(0, 0, 58).fill(swatch.blue.fill).stroke(line(swatch.blue.line)),
+      n,
+    );
     this.hitArea = new Circle(0, 0, 70);
   }
 
   update(dt: number) {
     this.clock += dt;
     this.glowRing.clear();
-    if (this.glowing) this.glowRing.circle(0, 0, 74 + 4 * Math.sin(this.clock * 8)).fill({ color: 0xfff3a0, alpha: 0.8 });
+    if (this.glowing)
+      this.glowRing.circle(0, 0, 74 + 4 * Math.sin(this.clock * 8)).fill({ color: 0xfff3a0, alpha: 0.8 });
   }
 }
 
@@ -270,9 +309,17 @@ class SeesawBalance implements Game {
 
   released = false;
   readonly predictionTargets = { left: new Container(), level: new Container(), right: new Container() };
-  readonly continueButton = new RoundButton(new Graphics().moveTo(-15, -24).lineTo(22, 0).lineTo(-15, 24).closePath().fill(0xffffff), swatch.green, 60, () => {
-    if (!this.busy && this.released && !this.finished) { this.continueButton.visible = false; void this.won(); }
-  });
+  readonly continueButton = new RoundButton(
+    new Graphics().moveTo(-15, -24).lineTo(22, 0).lineTo(-15, 24).closePath().fill(0xffffff),
+    swatch.green,
+    60,
+    () => {
+      if (!this.busy && this.released && !this.finished) {
+        this.continueButton.visible = false;
+        void this.won();
+      }
+    },
+  );
   readonly prop = new Graphics();
   readonly readings: PairReading[] = [];
   readonly shelves = [new Container(), new Container(), new Container()];
@@ -293,7 +340,19 @@ class SeesawBalance implements Game {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
     this.rounds = makeRounds(this.plan, ctx.rng);
-    this.backdrop = ctx.track(new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0x9edb86], horizon: 0.5, clouds: 3, sun: false, seed: 57 }, ctx.view));
+    this.backdrop = ctx.track(
+      new Backdrop(
+        {
+          sky: [0x8fd3f7, 0xe9f7ff],
+          hills: [0xc8ecb0, 0x9edb86],
+          horizon: 0.5,
+          clouds: 3,
+          sun: false,
+          seed: 57,
+        },
+        ctx.view,
+      ),
+    );
     this.plank.addChild(drawPlank(new Graphics()));
     this.trays.left.addChild(drawTray(new Graphics(), 'pink'));
     this.trays.right.addChild(drawTray(new Graphics(), 'teal'));
@@ -314,9 +373,16 @@ class SeesawBalance implements Game {
     this.wagon.visible = this.plan.mode === 'heaviest';
     this.shelves.forEach((spot, rank) => {
       spot.visible = this.plan.mode === 'sort';
-      spot.addChild(new Graphics().roundRect(-70, -145, 140, 145, 18).fill(wood.light).stroke(line(wood.line, 4)));
+      spot.addChild(
+        new Graphics().roundRect(-70, -145, 140, 145, 18).fill(wood.light).stroke(line(wood.line, 4)),
+      );
       const size = 14 + rank * 9;
-      spot.addChild(new Graphics().roundRect(-size / 2, -size - 6, size, size, 4).fill(wood.fill).stroke(line(wood.line, 3)));
+      spot.addChild(
+        new Graphics()
+          .roundRect(-size / 2, -size - 6, size, size, 4)
+          .fill(wood.fill)
+          .stroke(line(wood.line, 3)),
+      );
       spot.eventMode = 'none';
     });
     this.prop.eventMode = 'none';
@@ -329,11 +395,14 @@ class SeesawBalance implements Game {
         g.circle(0, 0, 60).fill(swatch.yellow.light).stroke(line(swatch.yellow.line, 5));
         for (const y of [-10, 10]) g.moveTo(-24, y).lineTo(24, y).stroke(line(ink, 7));
       } else {
-        g.roundRect(-70, -50, 140, 100, 24).fill(swatch[side === 'left' ? 'pink' : 'teal'].light).stroke(line(ink, 4));
+        g.roundRect(-70, -50, 140, 100, 24)
+          .fill(swatch[side === 'left' ? 'pink' : 'teal'].light)
+          .stroke(line(ink, 4));
         g.moveTo(0, -26).lineTo(0, 24).moveTo(-20, 5).lineTo(0, 26).lineTo(20, 5).stroke(line(ink, 7));
       }
       target.addChild(g);
-      target.hitArea = side === 'level' ? new Circle(0, 0, 65) : new Rectangle(-TRAY_W / 2, -220, TRAY_W, 280);
+      target.hitArea =
+        side === 'level' ? new Circle(0, 0, 65) : new Rectangle(-TRAY_W / 2, -220, TRAY_W, 280);
       onTap(target, () => void this.predict(side), { cooldown: 400 });
     }
     this.guessSign.eventMode = 'none';
@@ -343,7 +412,23 @@ class SeesawBalance implements Game {
       target.visible = this.plan.mode === 'bounce';
       onTap(target, () => void this.bounce(side));
     }
-    ctx.stage.addChild(this.backdrop, this.stand, this.plank, this.trays.left, this.trays.right, this.wagon, ...this.shelves, this.glow, this.layer, this.bounceTargets.left, this.bounceTargets.right, this.guessSign, this.prop, ...Object.values(this.predictionTargets), this.continueButton);
+    ctx.stage.addChild(
+      this.backdrop,
+      this.stand,
+      this.plank,
+      this.trays.left,
+      this.trays.right,
+      this.wagon,
+      ...this.shelves,
+      this.glow,
+      this.layer,
+      this.bounceTargets.left,
+      this.bounceTargets.right,
+      this.guessSign,
+      this.prop,
+      ...Object.values(this.predictionTargets),
+      this.continueButton,
+    );
   }
 
   /** The rider's face, for the voice line's `{animal}`. */
@@ -392,7 +477,11 @@ class SeesawBalance implements Game {
     this.guessSign.position.set(v.w / 2, 150);
     this.continueButton.position.set(v.w / 2, v.h - 90);
     this.prop.clear();
-    for (const dx of [-200, 200]) this.prop.roundRect(x + dx - 12, y + 15, 24, 110, 6).fill(wood.light).stroke(line(wood.line, 4));
+    for (const dx of [-200, 200])
+      this.prop
+        .roundRect(x + dx - 12, y + 15, 24, 110, 6)
+        .fill(wood.light)
+        .stroke(line(wood.line, 4));
     this.prop.visible = this.plan.mode === 'predict' && !this.released;
     this.layoutGround();
     this.layoutPads();
@@ -471,7 +560,10 @@ class SeesawBalance implements Game {
     const { left, right } = this.weights;
     // A springy seesaw: it swings toward its lean and wobbles a little before settling.
     const step = Math.min(dt, 1 / 30);
-    this.spin += (60 * ((this.plan.mode === 'predict' && !this.released ? 0 : tilt(left, right)) - this.angle) - 7 * this.spin) * step;
+    this.spin +=
+      (60 * ((this.plan.mode === 'predict' && !this.released ? 0 : tilt(left, right)) - this.angle) -
+        7 * this.spin) *
+      step;
     this.angle += this.spin * step;
     this.plank.rotation = this.angle;
     for (const side of ['left', 'right'] as Side[]) {
@@ -485,22 +577,33 @@ class SeesawBalance implements Game {
       if (item.drag) item.drag.home = p;
     }
     if (this.plan.mode === 'sort') {
-      for (const item of this.items) if (item.shelf !== undefined && !item.drag?.dragging) {
-        const spot = this.shelves[item.shelf]; item.node.position.set(spot.x, spot.y - 55);
-        if (item.drag) item.drag.home = { x: item.node.x, y: item.node.y };
-      }
-      const a = this.items.findIndex(i => i.side === 'left' && !i.settling && !i.drag?.dragging);
-      const b = this.items.findIndex(i => i.side === 'right' && !i.settling && !i.drag?.dragging);
-      if (a >= 0 && b >= 0 && !this.readings.some(r => [r.lighter, r.heavier].includes(a) && [r.lighter, r.heavier].includes(b))) {
-        this.readings.push(this.items[a].thing.weight < this.items[b].thing.weight ? { lighter: a, heavier: b } : { lighter: b, heavier: a });
+      for (const item of this.items)
+        if (item.shelf !== undefined && !item.drag?.dragging) {
+          const spot = this.shelves[item.shelf];
+          item.node.position.set(spot.x, spot.y - 55);
+          if (item.drag) item.drag.home = { x: item.node.x, y: item.node.y };
+        }
+      const a = this.items.findIndex((i) => i.side === 'left' && !i.settling && !i.drag?.dragging);
+      const b = this.items.findIndex((i) => i.side === 'right' && !i.settling && !i.drag?.dragging);
+      if (
+        a >= 0 &&
+        b >= 0 &&
+        !this.readings.some((r) => [r.lighter, r.heavier].includes(a) && [r.lighter, r.heavier].includes(b))
+      ) {
+        this.readings.push(
+          this.items[a].thing.weight < this.items[b].thing.weight
+            ? { lighter: a, heavier: b }
+            : { lighter: b, heavier: a },
+        );
       }
     }
-    if (this.plan.mode === 'predict') for (const side of ['left', 'level', 'right'] as const) {
-      const target = this.predictionTargets[side];
-      const top = side === 'level' ? { x: this.pivot.x, y: this.pivot.y - POST - 10 } : this.trayTop(side);
-      target.position.set(top.x, top.y + 70);
-      target.visible = !this.released && !this.finished;
-    }
+    if (this.plan.mode === 'predict')
+      for (const side of ['left', 'level', 'right'] as const) {
+        const target = this.predictionTargets[side];
+        const top = side === 'level' ? { x: this.pivot.x, y: this.pivot.y - POST - 10 } : this.trayTop(side);
+        target.position.set(top.x, top.y + 70);
+        target.visible = !this.released && !this.finished;
+      }
     this.drawGlow();
   }
 
@@ -514,25 +617,35 @@ class SeesawBalance implements Game {
       fixed: item.fixed,
       side: item.side,
       inWagon: item.inWagon,
-      tested: this.demoTested.has(item), shelf: item.shelf,
+      tested: this.demoTested.has(item),
+      shelf: item.shelf,
     }));
-    const move = this.plan.mode === 'sort' ? sortTouch(demoItems, this.readings) : seesawTouch(this.plan, this.round, demoItems, this.pads.length > 0);
+    const move =
+      this.plan.mode === 'sort'
+        ? sortTouch(demoItems, this.readings)
+        : seesawTouch(this.plan, this.round, demoItems, this.pads.length > 0);
     if (!move) return null;
     if (move.kind === 'predict') return { tap: { on: this.predictionTargets[move.side] } };
-    if (move.kind === 'tray') return { tap: { on: this.bounceTargets[move.side], x: this.view.w / 4, y: 200 } };
+    if (move.kind === 'tray')
+      return { tap: { on: this.bounceTargets[move.side], x: this.view.w / 4, y: 200 } };
     if (move.kind === 'friend') {
       const item = this.items[move.item];
       return { tap: { on: item.node, x: 0, y: -item.height / 2 } };
     }
     if (move.kind === 'answer') {
-      const pad = this.plan.mode === 'guess' && this.round.prediction === undefined ? this.pads[0] : this.pads.find((p) => p.value === move.value);
+      const pad =
+        this.plan.mode === 'guess' && this.round.prediction === undefined
+          ? this.pads[0]
+          : this.pads.find((p) => p.value === move.value);
       return pad ? { tap: { on: pad } } : null;
     }
     const item = this.items[move.item];
     if (!item?.drag || item.drag.dragging || !item.drag.enabled) return null;
-    if (typeof move.to === 'number') return { drag: { on: item.node }, to: { on: this.shelves[move.to], x: 0, y: -70 } };
+    if (typeof move.to === 'number')
+      return { drag: { on: item.node }, to: { on: this.shelves[move.to], x: 0, y: -70 } };
     if (move.to === 'wagon') return { drag: { on: item.node }, to: { on: this.wagon, x: 0, y: -66 } };
-    if (move.to === 'ground') return { drag: { on: item.node }, to: { on: this.ctx.stage, x: item.ground.x, y: item.ground.y } };
+    if (move.to === 'ground')
+      return { drag: { on: item.node }, to: { on: this.ctx.stage, x: item.ground.x, y: item.ground.y } };
     const at = this.trayTop(move.to);
     return { drag: { on: item.node }, to: { on: this.ctx.stage, x: at.x, y: at.y } };
   }
@@ -541,35 +654,59 @@ class SeesawBalance implements Game {
     const g = this.glow.clear();
     const a = 0.55 + 0.3 * Math.sin(this.clock * 6);
     const hint = this.hintItem;
-    if (hint && !this.finished) g.roundRect(hint.node.x - hint.width / 2 - 20, hint.node.y - hint.height - 22, hint.width + 40, hint.height + 40, 24).fill({ color: 0xfff3a0, alpha: a });
+    if (hint && !this.finished)
+      g.roundRect(
+        hint.node.x - hint.width / 2 - 20,
+        hint.node.y - hint.height - 22,
+        hint.width + 40,
+        hint.height + 40,
+        24,
+      ).fill({ color: 0xfff3a0, alpha: a });
     if (this.finished || this.wrongs < 2) return;
     const mode = this.plan.mode;
-    const ring = (x: number, y: number, w: number, h: number) => g.roundRect(x - w / 2, y - h, w, h, 24).fill({ color: 0xfff3a0, alpha: a });
+    const ring = (x: number, y: number, w: number, h: number) =>
+      g.roundRect(x - w / 2, y - h, w, h, 24).fill({ color: 0xfff3a0, alpha: a });
     if (mode === 'up' || mode === 'heavy') {
       const top = this.trayTop(other(this.round.fixedSide));
       ring(top.x, top.y + 24, TRAY_W + 30, 50);
       if (mode === 'heavy') {
         const heavier = this.items.find((i) => !i.fixed && i.thing.weight > this.round.answer);
-        if (heavier && !heavier.side) ring(heavier.node.x, heavier.node.y + 10, heavier.width + 40, heavier.height + 40);
+        if (heavier && !heavier.side)
+          ring(heavier.node.x, heavier.node.y + 10, heavier.width + 40, heavier.height + 40);
       }
     }
     if (mode === 'sort') {
       const item = this.hintItem;
-      if (item && item.shelf === undefined) { const rank = this.rank(item); const spot = this.shelves[rank]; ring(spot.x, spot.y, 140, 145); }
+      if (item && item.shelf === undefined) {
+        const rank = this.rank(item);
+        const spot = this.shelves[rank];
+        ring(spot.x, spot.y, 140, 145);
+      }
     }
     if (mode === 'heaviest') {
       const heaviest = this.items.find((i) => i.thing.weight === this.round.answer && !i.inWagon);
       if (heaviest) ring(heaviest.node.x, heaviest.node.y + 10, 130, 120);
     }
-    if (mode === 'level' || mode === 'mystery' || mode === 'parts' || mode === 'guess' || mode === 'difference') {
+    if (
+      mode === 'level' ||
+      mode === 'mystery' ||
+      mode === 'parts' ||
+      mode === 'guess' ||
+      mode === 'difference'
+    ) {
       // Glow what to take off: the things beyond a level seesaw.
       const over = this.excess();
       for (const item of over) ring(item.node.x, item.node.y + 8, item.width + 16, item.height + 20);
       // Under, not over: ring the next block on the grass.
       if (!over.length) {
-        const next = seesawTouch(this.plan, this.round, this.items.map((i) => ({ thing: i.thing, fixed: i.fixed, side: i.side, inWagon: i.inWagon })));
+        const next = seesawTouch(
+          this.plan,
+          this.round,
+          this.items.map((i) => ({ thing: i.thing, fixed: i.fixed, side: i.side, inWagon: i.inWagon })),
+        );
         const pick = next?.kind === 'move' ? this.items[next.item] : undefined;
-        if (pick && !pick.side && !pick.drag?.dragging) ring(pick.node.x, pick.node.y + 8, pick.width + 16, pick.height + 20);
+        if (pick && !pick.side && !pick.drag?.dragging)
+          ring(pick.node.x, pick.node.y + 8, pick.width + 16, pick.height + 20);
       }
     }
   }
@@ -618,7 +755,17 @@ class SeesawBalance implements Game {
     const reading = r.phase === 'read';
     const held = (thing: Thing) => (this.plan.mode === 'pair' ? reading || stays(thing) : !same);
     r.fixed.forEach((thing, i) => this.addItem(thing, i, held(thing), r.fixedSide));
-    r.across?.forEach((thing, i) => this.addItem(thing, i, reading || this.plan.mode === 'predict' || this.plan.mode === 'compare' || this.plan.mode === 'difference', other(r.fixedSide)));
+    r.across?.forEach((thing, i) =>
+      this.addItem(
+        thing,
+        i,
+        reading ||
+          this.plan.mode === 'predict' ||
+          this.plan.mode === 'compare' ||
+          this.plan.mode === 'difference',
+        other(r.fixedSide),
+      ),
+    );
     r.offered.forEach((thing, i) => this.addItem(thing, i, false, null));
     this.layoutGround();
     for (const item of this.items) {
@@ -630,19 +777,22 @@ class SeesawBalance implements Game {
     const mode = this.plan.mode;
     if (mode === 'predict') await this.ctx.instruct('seesaw.predict');
     else if (mode === 'bounce') await this.ctx.instruct('seesaw.bounce');
-    else if (mode === 'compare') await this.ctx.instruct(r.asked === 'heavier' ? 'seesaw.ask-heavy' : 'seesaw.ask-light');
+    else if (mode === 'compare')
+      await this.ctx.instruct(r.asked === 'heavier' ? 'seesaw.ask-heavy' : 'seesaw.ask-light');
     else if (mode === 'up') await this.ctx.instruct('seesaw.up', { animal });
     else if (mode === 'heavy') await this.ctx.instruct('seesaw.heavy', { animal });
     else if (mode === 'level') await this.ctx.instruct('seesaw.level');
     else if (mode === 'guess') {
       await this.ctx.instruct('seesaw.guess');
-      this.showPads(); return;
-    }
-    else if (mode === 'sort') await this.ctx.instruct('seesaw.sort');
-    else if (mode === 'difference') await this.ctx.instruct('seesaw.difference', { heavy: total(r.fixed), light: total(r.across ?? []) });
+      this.showPads();
+      return;
+    } else if (mode === 'sort') await this.ctx.instruct('seesaw.sort');
+    else if (mode === 'difference')
+      await this.ctx.instruct('seesaw.difference', { heavy: total(r.fixed), light: total(r.across ?? []) });
     else if (mode === 'heaviest') await this.ctx.instruct('seesaw.heaviest');
     else if (mode === 'parts') await this.ctx.instruct('seesaw.parts', { n: r.answer });
-    else if (mode === 'same') await this.ctx.instruct(this.plan.boxes === 2 ? 'seesaw.same-boxes' : 'seesaw.same');
+    else if (mode === 'same')
+      await this.ctx.instruct(this.plan.boxes === 2 ? 'seesaw.same-boxes' : 'seesaw.same');
     else if (mode === 'share') await this.ctx.instruct('seesaw.share');
     else if (mode === 'pair') {
       const square = r.fixed.find((t) => t.shape === 'square')!;
@@ -657,7 +807,15 @@ class SeesawBalance implements Game {
 
   private addItem(thing: Thing, i: number, fixed: boolean, side: Side | null) {
     const made = thingNode(thing, i);
-    const item: Item = { thing, ...made, fixed, side, ground: { x: 0, y: 0 }, settling: false, inWagon: false };
+    const item: Item = {
+      thing,
+      ...made,
+      fixed,
+      side,
+      ground: { x: 0, y: 0 },
+      settling: false,
+      inWagon: false,
+    };
     if (made.critter) this.ctx.track(made.critter);
     // The square box keeps the number it was given on the reading for the rest of its pair.
     if (thing.shape === 'square' && this.round.phase === 'pair') made.sign!.text = String(thing.weight);
@@ -697,11 +855,14 @@ class SeesawBalance implements Game {
     sfx.clunk();
     await this.ctx.tw.wait(1);
     const { left, right } = this.weights;
-    const [a, b] = this.round.fixed.map(t => t.weight);
-    const [c, d] = this.round.across!.map(t => t.weight);
+    const [a, b] = this.round.fixed.map((t) => t.weight);
+    const [c, d] = this.round.across!.map((t) => t.weight);
     this.guessSign.text = `${a} + ${b} = ${left}     ${c} + ${d} = ${right}`;
     await this.ctx.say('seesaw.predict-sums', { a, b, c, d, left, right });
-    await this.ctx.say(left === right ? 'seesaw.predict-equal' : 'seesaw.predict-down', { heavy: Math.max(left, right), light: Math.min(left, right) });
+    await this.ctx.say(left === right ? 'seesaw.predict-equal' : 'seesaw.predict-down', {
+      heavy: Math.max(left, right),
+      light: Math.min(left, right),
+    });
     await this.ctx.instruct('seesaw.predict-continue');
     this.continueButton.visible = true;
     this.busy = false;
@@ -757,7 +918,10 @@ class SeesawBalance implements Game {
   private roundStays(node: Container) {
     if (this.finished) return;
     sfx.tick();
-    void this.ctx.tw.to(node, { rotation: 0.12 }, { duration: 0.08 }).then(() => this.ctx.tw.to(node, { rotation: -0.12 }, { duration: 0.12 })).then(() => this.ctx.tw.to(node, { rotation: 0 }, { duration: 0.08 }));
+    void this.ctx.tw
+      .to(node, { rotation: 0.12 }, { duration: 0.08 })
+      .then(() => this.ctx.tw.to(node, { rotation: -0.12 }, { duration: 0.12 }))
+      .then(() => this.ctx.tw.to(node, { rotation: 0 }, { duration: 0.08 }));
     if (!this.pads.length) void this.ctx.say('seesaw.round-stays');
   }
 
@@ -770,20 +934,32 @@ class SeesawBalance implements Game {
   }
 
   private overWagon(x: number, y: number) {
-    return this.wagon.visible && Math.abs(x - this.wagon.x) < 130 && y > this.wagon.y - 220 && y < this.wagon.y + 40;
+    return (
+      this.wagon.visible &&
+      Math.abs(x - this.wagon.x) < 130 &&
+      y > this.wagon.y - 220 &&
+      y < this.wagon.y + 40
+    );
   }
 
   private drop(item: Item, x: number, y: number): boolean {
     if (this.busy || this.finished) return false;
     const mode = this.plan.mode;
     if (mode === 'sort') {
-      const slot = this.shelves.findIndex(spot => Math.abs(x - spot.x) <= 75 && y >= spot.y - 145 && y <= spot.y + 20);
+      const slot = this.shelves.findIndex(
+        (spot) => Math.abs(x - spot.x) <= 75 && y >= spot.y - 145 && y <= spot.y + 20,
+      );
       if (slot >= 0) return this.toShelf(item, slot);
     }
     if (mode === 'guess' && this.round.prediction === undefined) return false;
     if (mode === 'heaviest' && this.overWagon(x, y)) return this.toWagon(item);
     // Levels 1 and 2: a tap on a friend on the grass hops it to the empty tray.
-    const tapped = (mode === 'up' || mode === 'heavy') && item.thing.kind === 'friend' && !item.side && !!item.pickedAt && Math.hypot(x - item.pickedAt.x, y - item.pickedAt.y) < TAP_REACH;
+    const tapped =
+      (mode === 'up' || mode === 'heavy') &&
+      item.thing.kind === 'friend' &&
+      !item.side &&
+      !!item.pickedAt &&
+      Math.hypot(x - item.pickedAt.x, y - item.pickedAt.y) < TAP_REACH;
     const side = tapped ? other(this.round.fixedSide) : this.trayAt(x, y);
     if (!side) {
       if (item.side) this.takeOff(item);
@@ -794,12 +970,20 @@ class SeesawBalance implements Game {
       return true;
     }
     // Blocks and weights go opposite what is already there; a friend on the rider's own side is a mistake.
-    if ((mode === 'level' || mode === 'parts' || mode === 'mystery' || mode === 'guess' || mode === 'difference') && side === this.round.fixedSide) {
+    if (
+      (mode === 'level' ||
+        mode === 'parts' ||
+        mode === 'mystery' ||
+        mode === 'guess' ||
+        mode === 'difference') &&
+      side === this.round.fixedSide
+    ) {
       void this.ctx.say(mode === 'difference' ? 'seesaw.already-down' : 'seesaw.this-side');
       if (item.side) this.takeOff(item);
       return false;
     }
-    if (mode === 'heaviest' || mode === 'sort') for (const there of this.items.filter((i) => i.side === side)) this.takeOff(there, true);
+    if (mode === 'heaviest' || mode === 'sort')
+      for (const there of this.items.filter((i) => i.side === side)) this.takeOff(there, true);
     if (item.side) this.lastOff = { item, from: item.side };
     if (item.side) item.side = null;
     item.shelf = undefined;
@@ -815,7 +999,9 @@ class SeesawBalance implements Game {
   private settle(item: Item) {
     item.settling = true;
     const p = this.slotFor(item);
-    void this.ctx.tw.to(item.node, { x: p.x, y: p.y }, { duration: 0.16, ease: ease.outQuad }).then(() => (item.settling = false));
+    void this.ctx.tw
+      .to(item.node, { x: p.x, y: p.y }, { duration: 0.16, ease: ease.outQuad })
+      .then(() => (item.settling = false));
   }
 
   /** Off the seesaw and back to the grass. `walk` sends it home (otherwise the drag floats it there). */
@@ -825,7 +1011,12 @@ class SeesawBalance implements Game {
     item.settling = false;
     this.observeBalance();
     if (item.drag) item.drag.home = item.ground;
-    if (walk) void this.ctx.tw.to(item.node, { x: item.ground.x, y: item.ground.y }, { duration: 0.4, ease: ease.outBack });
+    if (walk)
+      void this.ctx.tw.to(
+        item.node,
+        { x: item.ground.x, y: item.ground.y },
+        { duration: 0.4, ease: ease.outBack },
+      );
     void this.removed();
   }
 
@@ -858,7 +1049,9 @@ class SeesawBalance implements Game {
         return this.won();
       }
       this.miss();
-      await this.ctx.say(side === r.fixedSide ? 'seesaw.other' : 'seesaw.light', { animal: this.animalOf(r) });
+      await this.ctx.say(side === r.fixedSide ? 'seesaw.other' : 'seesaw.light', {
+        animal: this.animalOf(r),
+      });
       this.takeOff(item, true);
       await this.ctx.tw.wait(0.4);
       this.busy = false;
@@ -874,7 +1067,9 @@ class SeesawBalance implements Game {
       void this.ctx.say('seesaw.too-many');
       return;
     }
-    void this.ctx.say('count', { n: mode === 'parts' ? added : on.filter(i => i.thing.kind === 'block').length });
+    void this.ctx.say('count', {
+      n: mode === 'parts' ? added : on.filter((i) => i.thing.kind === 'block').length,
+    });
     if (result === 'level') await this.balanced();
   }
 
@@ -882,7 +1077,14 @@ class SeesawBalance implements Game {
     if (this.busy || this.finished) return;
     const mode = this.plan.mode;
     if (mode === 'same' || mode === 'share' || mode === 'pair') return this.checkSame();
-    if (mode !== 'level' && mode !== 'parts' && mode !== 'mystery' && mode !== 'guess' && mode !== 'difference') return;
+    if (
+      mode !== 'level' &&
+      mode !== 'parts' &&
+      mode !== 'mystery' &&
+      mode !== 'guess' &&
+      mode !== 'difference'
+    )
+      return;
     const side = other(this.round.fixedSide);
     const added = total(this.items.filter((i) => i.side === side).map((i) => i.thing));
     if (weigh(total(this.round.fixed), added) === 'level') await this.balanced();
@@ -914,7 +1116,10 @@ class SeesawBalance implements Game {
     }
     this.tips = 0;
     this.hintItem = null;
-    const sides = { left: this.items.filter((i) => i.side === 'left').map((i) => i.thing), right: this.items.filter((i) => i.side === 'right').map((i) => i.thing) };
+    const sides = {
+      left: this.items.filter((i) => i.side === 'left').map((i) => i.thing),
+      right: this.items.filter((i) => i.side === 'right').map((i) => i.thing),
+    };
     if (aloneSide(sides) || (this.plan.mode === 'share' && shareSide(sides))) return this.balanced();
     void this.ctx.say('seesaw.still-level');
   }
@@ -926,7 +1131,10 @@ class SeesawBalance implements Game {
   private async checkPair(after: number) {
     const step = progress(this.gap, after);
     this.gap = after;
-    const sides = { left: this.items.filter((i) => i.side === 'left').map((i) => i.thing), right: this.items.filter((i) => i.side === 'right').map((i) => i.thing) };
+    const sides = {
+      left: this.items.filter((i) => i.side === 'left').map((i) => i.thing),
+      right: this.items.filter((i) => i.side === 'right').map((i) => i.thing),
+    };
     if (step === 'level') {
       this.tips = 0;
       this.hintItem = null;
@@ -959,7 +1167,10 @@ class SeesawBalance implements Game {
   /** Level 11's glow: the thing that narrows the gap now. */
   private hintAt(): Item | null {
     const off = this.lastOff ? this.items.indexOf(this.lastOff.item) : -1;
-    const pick = pairHint(this.items.map((item) => ({ thing: item.thing, fixed: item.fixed, side: item.side })), off < 0 ? null : off);
+    const pick = pairHint(
+      this.items.map((item) => ({ thing: item.thing, fixed: item.fixed, side: item.side })),
+      off < 0 ? null : off,
+    );
     return pick === null ? null : this.items[pick];
   }
 
@@ -979,7 +1190,14 @@ class SeesawBalance implements Game {
   private async balanced() {
     this.busy = true;
     await this.ctx.tw.wait(0.6);
-    if (this.plan.mode !== 'mystery' && this.plan.mode !== 'same' && this.plan.mode !== 'share' && this.plan.mode !== 'pair' && this.plan.mode !== 'guess' && this.plan.mode !== 'difference') {
+    if (
+      this.plan.mode !== 'mystery' &&
+      this.plan.mode !== 'same' &&
+      this.plan.mode !== 'share' &&
+      this.plan.mode !== 'pair' &&
+      this.plan.mode !== 'guess' &&
+      this.plan.mode !== 'difference'
+    ) {
       await this.ctx.say('seesaw.balanced');
       return this.won();
     }
@@ -990,7 +1208,10 @@ class SeesawBalance implements Game {
     else if (this.plan.mode === 'same') await this.ctx.instruct('seesaw.alone');
     else if (this.plan.mode === 'pair') await this.ctx.instruct('seesaw.round-alone');
     else if (this.plan.mode === 'share') await this.ctx.instruct('seesaw.share-answer');
-    else await this.ctx.instruct(this.plan.boxes === 2 ? 'seesaw.each' : 'seesaw.how-many', { n: total(this.round.fixed) });
+    else
+      await this.ctx.instruct(this.plan.boxes === 2 ? 'seesaw.each' : 'seesaw.how-many', {
+        n: total(this.round.fixed),
+      });
     this.showPads();
   }
 
@@ -1006,7 +1227,10 @@ class SeesawBalance implements Game {
     });
     // The blocks have done their job: they stay put, and the spares on the grass fade away.
     for (const item of this.items) if (item.drag) item.drag.enabled = false;
-    for (const item of this.items.filter((i) => !i.side && !(this.plan.mode === 'guess' && this.round.prediction === undefined))) void this.ctx.tw.to(item.node, { alpha: 0 }, { duration: 0.3 });
+    for (const item of this.items.filter(
+      (i) => !i.side && !(this.plan.mode === 'guess' && this.round.prediction === undefined),
+    ))
+      void this.ctx.tw.to(item.node, { alpha: 0 }, { duration: 0.3 });
     this.layoutPads();
     this.busy = false;
   }
@@ -1027,32 +1251,55 @@ class SeesawBalance implements Game {
     // Level 11 names only the box being weighed: the square box on the reading, the round box after.
     const pair = this.plan.mode === 'pair';
     const reading = this.round.phase === 'read';
-    const boxes = this.items.filter((i) => i.thing.kind === 'box' && (!pair || i.thing.shape === (reading ? 'square' : 'round')));
+    const boxes = this.items.filter(
+      (i) => i.thing.kind === 'box' && (!pair || i.thing.shape === (reading ? 'square' : 'round')),
+    );
     if (pad.value === this.round.answer) {
       pad.glowing = true;
       sfx.bell(8, 0.3);
-      boxes.forEach(box => { box.sign!.text = String(this.round.answer); });
+      boxes.forEach((box) => {
+        box.sign!.text = String(this.round.answer);
+      });
       if (this.plan.mode === 'guess') {
         this.guessSign.text = `Guess: ${this.round.prediction}    Measured: ${this.round.answer}`;
         const comparison = predictionComparison(this.round.prediction!, this.round.answer);
-        await this.ctx.say(`seesaw.guess-${comparison}`, { guess: this.round.prediction!, n: this.round.answer });
-      } else await this.ctx.say(this.plan.mode === 'difference' ? 'seesaw.difference-yes' : reading ? 'seesaw.pair-tag' : 'seesaw.box', { n: this.round.answer });
+        await this.ctx.say(`seesaw.guess-${comparison}`, {
+          guess: this.round.prediction!,
+          n: this.round.answer,
+        });
+      } else
+        await this.ctx.say(
+          this.plan.mode === 'difference'
+            ? 'seesaw.difference-yes'
+            : reading
+              ? 'seesaw.pair-tag'
+              : 'seesaw.box',
+          { n: this.round.answer },
+        );
       return this.won();
     }
     this.miss();
     const twins = this.plan.mode === 'mystery' && this.plan.boxes === 2;
-    await this.ctx.say(twins ? 'seesaw.twins-hint' : 'seesaw.count-again', { n: total(this.round.fixed), each: this.round.answer });
+    await this.ctx.say(twins ? 'seesaw.twins-hint' : 'seesaw.count-again', {
+      n: total(this.round.fixed),
+      each: this.round.answer,
+    });
     const blocks = this.items.filter((i) => i.side && i.thing.kind === 'block');
     for (let k = 0; k < blocks.length; k++) {
-      void this.ctx.tw.to(blocks[k].node.scale, { x: 1.2, y: 1.2 }, { duration: 0.15 }).then(() => this.ctx.tw.to(blocks[k].node.scale, { x: 1, y: 1 }, { duration: 0.15 }));
+      void this.ctx.tw
+        .to(blocks[k].node.scale, { x: 1.2, y: 1.2 }, { duration: 0.15 })
+        .then(() => this.ctx.tw.to(blocks[k].node.scale, { x: 1, y: 1 }, { duration: 0.15 }));
       sfx.bell(5 + k, 0.2);
-      await this.ctx.say('count', { n: twins ? k % this.round.answer + 1 : k + 1 });
+      await this.ctx.say('count', { n: twins ? (k % this.round.answer) + 1 : k + 1 });
     }
-    if (this.plan.mode !== 'guess' && this.plan.mode !== 'difference' || this.wrongs >= 2) this.pads.find((p) => p.value === this.round.answer)!.glowing = true;
+    if ((this.plan.mode !== 'guess' && this.plan.mode !== 'difference') || this.wrongs >= 2)
+      this.pads.find((p) => p.value === this.round.answer)!.glowing = true;
     this.busy = false;
   }
 
-  private rank(item: Item) { return this.items.filter(i => i.thing.weight < item.thing.weight).length; }
+  private rank(item: Item) {
+    return this.items.filter((i) => i.thing.weight < item.thing.weight).length;
+  }
 
   private toShelf(item: Item, slot: number): boolean {
     if (slot !== this.rank(item)) {
@@ -1062,17 +1309,21 @@ class SeesawBalance implements Game {
       if (item.side) this.takeOff(item);
       return false;
     }
-    item.side = null; item.shelf = slot;
+    item.side = null;
+    item.shelf = slot;
     item.drag!.enabled = false;
     this.hintItem = null;
     item.node.position.set(this.shelves[slot].x, this.shelves[slot].y - 55);
     sfx.clunk();
-    if (this.items.every(i => i.shelf !== undefined)) void this.won();
+    if (this.items.every((i) => i.shelf !== undefined)) void this.won();
     return true;
   }
 
   private clearPads() {
-    for (const pad of this.pads) { this.ctx.untrack(pad); pad.destroy({ children: true }); }
+    for (const pad of this.pads) {
+      this.ctx.untrack(pad);
+      pad.destroy({ children: true });
+    }
     this.pads = [];
   }
 
@@ -1087,7 +1338,11 @@ class SeesawBalance implements Game {
     if (item.side) item.side = null;
     item.inWagon = true;
     item.drag!.enabled = false;
-    void this.ctx.tw.to(item.node, { x: this.wagon.x, y: this.wagon.y - 66 }, { duration: 0.2, ease: ease.outQuad });
+    void this.ctx.tw.to(
+      item.node,
+      { x: this.wagon.x, y: this.wagon.y - 66 },
+      { duration: 0.2, ease: ease.outQuad },
+    );
     sfx.clunk();
     void this.ctx.say('seesaw.heaviest-yes').then(() => this.won());
     return true;
@@ -1099,7 +1354,14 @@ class SeesawBalance implements Game {
     for (const item of this.items) item.critter?.cheer();
     sfx.sparkle();
     const top = this.pivot;
-    this.ctx.particles.burst(top.x, top.y - 120, { kind: 'star', colors: [0xffd54a, 0xffffff], count: 14, speed: [120, 300], gravity: 0, life: [0.5, 0.9] });
+    this.ctx.particles.burst(top.x, top.y - 120, {
+      kind: 'star',
+      colors: [0xffd54a, 0xffffff],
+      count: 14,
+      speed: [120, 300],
+      gravity: 0,
+      life: [0.5, 0.9],
+    });
     await this.ctx.tw.wait(1.4);
     await this.clear();
     if (this.index + 1 >= this.rounds.length) return this.finale();
@@ -1129,22 +1391,42 @@ class SeesawBalance implements Game {
   private async finale() {
     this.finished = true;
     const colors = RAINBOW.map((c) => swatch[c].fill);
-    this.ctx.particles.burst(this.view.w / 2, this.view.h * 0.3, { kind: 'confetti', colors, count: 60, speed: [200, 600], gravity: 600, life: [1.2, 2] });
+    this.ctx.particles.burst(this.view.w / 2, this.view.h * 0.3, {
+      kind: 'confetti',
+      colors,
+      count: 60,
+      speed: [200, 600],
+      gravity: 600,
+      life: [1.2, 2],
+    });
     sfx.tada();
     await this.ctx.say('seesaw.done');
     await this.ctx.tw.wait(0.6);
-    this.ctx.finish({ misses: this.misses, hints: this.hints, discoveries: [...this.observations].map((seen) => entryId('seesaw-balance', seen)) });
+    this.ctx.finish({
+      misses: this.misses,
+      hints: this.hints,
+      discoveries: [...this.observations].map((seen) => entryId('seesaw-balance', seen)),
+    });
   }
 }
 
 /** A little seesaw for the hub, rocking a duck and a bear. */
 function seesawArt(left: FriendWeight, right: FriendWeight, lean = 0): { art: Container; plank: Container } {
   const art = new Container();
-  const stand = new Graphics().moveTo(0, -70).lineTo(40, 0).lineTo(-40, 0).closePath().fill(wood.line).stroke(line(0x7a5230, 5));
+  const stand = new Graphics()
+    .moveTo(0, -70)
+    .lineTo(40, 0)
+    .lineTo(-40, 0)
+    .closePath()
+    .fill(wood.line)
+    .stroke(line(0x7a5230, 5));
   const plank = new Container();
   plank.position.set(0, -70);
   plank.addChild(new Graphics().roundRect(-140, -9, 280, 18, 9).fill(wood.fill).stroke(line(wood.line, 5)));
-  for (const [x, w] of [[-112, left], [112, right]] as const) {
+  for (const [x, w] of [
+    [-112, left],
+    [112, right],
+  ] as const) {
     const c = new Critter(CRITTERS[FRIEND_FOR[w]]);
     c.alive = false;
     c.scale.set(friendScale(w) * 0.55);

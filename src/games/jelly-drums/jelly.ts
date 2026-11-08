@@ -25,7 +25,9 @@ export class Jelly extends Container {
     super();
     this.color = color;
     const sw = swatch[color];
-    const shape = domePath(new Graphics(), hw, h).fill({ color: sw.fill, alpha: 0.95 }).stroke({ width: 6, color: sw.line, join: 'round' });
+    const shape = domePath(new Graphics(), hw, h)
+      .fill({ color: sw.fill, alpha: 0.95 })
+      .stroke({ width: 6, color: sw.line, join: 'round' });
     const shine = new Graphics()
       .ellipse(-hw * 0.42, -h * 0.66, hw * 0.16, h * 0.12)
       .fill({ color: 0xffffff, alpha: 0.65 })
@@ -67,7 +69,9 @@ export class Jelly extends Container {
     this.halo.clear();
     if (this.glowLeft > 0) {
       const pulse = 1 + 0.06 * Math.sin(this.clock * 10);
-      this.halo.ellipse(0, -this.h * 0.45, this.hw * 1.35 * pulse, this.h * 0.75 * pulse).fill({ color: 0xfff3a0, alpha: 0.6 });
+      this.halo
+        .ellipse(0, -this.h * 0.45, this.hw * 1.35 * pulse, this.h * 0.75 * pulse)
+        .fill({ color: 0xfff3a0, alpha: 0.6 });
     }
   }
 
@@ -95,6 +99,7 @@ export class Jelly extends Container {
         .quadraticCurveTo(0, -h * 0.2, hw * 0.14, -h * 0.3)
         .stroke({ width: 5, color: ink, cap: 'round' });
     }
-    for (const s of [-1, 1]) f.ellipse(s * hw * 0.55, -h * 0.34, hw * 0.12, h * 0.05).fill({ color: cheek, alpha: 0.55 });
+    for (const s of [-1, 1])
+      f.ellipse(s * hw * 0.55, -h * 0.34, hw * 0.12, h * 0.05).fill({ color: cheek, alpha: 0.55 });
   }
 }

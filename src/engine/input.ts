@@ -7,7 +7,8 @@ const down = new Set<number>();
 
 /** What the person plays with: a finger (or pen) on glass, or a mouse. */
 export type PointerKind = 'touch' | 'mouse';
-let kind: PointerKind = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches ? 'touch' : 'mouse';
+let kind: PointerKind =
+  typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches ? 'touch' : 'mouse';
 
 /** The last real pointer decides (a touch laptop follows whichever she used last); before any, whether the screen is a touch one. */
 export const pointerKind = (): PointerKind => kind;

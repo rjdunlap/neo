@@ -14,8 +14,20 @@ export const HOW_TO: GameHowTo = {
     { from: 2, to: 3, text: 'Every card answered.' },
   ],
   note: [
-    { from: 1, to: 1, text: 'Each view is a few days after the one before; the game never reads today\'s date and never asks you to come back on another night. There is nothing here to get wrong: finishing shows she looked, not that she knows why the Moon changes.' },
-    { from: 2, to: 2, text: 'Each view is a few days after the one before. A wrong card is one miss, and then the right card glows; Show a hint before trying counts as a hint.' },
-    { from: 3, to: 3, text: 'More light means more of the Moon is lit, not a brighter Moon. A wrong card is one miss, and then the right card glows; Show a hint before trying counts as a hint.' },
+    {
+      from: 1,
+      to: 1,
+      text: "Each view is a few days after the one before; the game never reads today's date and never asks you to come back on another night. There is nothing here to get wrong: finishing shows she looked, not that she knows why the Moon changes.",
+    },
+    {
+      from: 2,
+      to: 2,
+      text: 'Each view is a few days after the one before. A wrong card is one miss, and then the right card glows; Show a hint before trying counts as a hint.',
+    },
+    {
+      from: 3,
+      to: 3,
+      text: 'More light means more of the Moon is lit, not a brighter Moon. A wrong card is one miss, and then the right card glows; Show a hint before trying counts as a hint.',
+    },
   ],
 };

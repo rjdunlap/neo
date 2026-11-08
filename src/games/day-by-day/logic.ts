@@ -12,47 +12,64 @@ export const PLANS = [
   { name: 'Weather Window: compare two supplied weeks', relatives: false, tally: false },
 ] as const;
 
-export const LEVELS: BandLevels = { prek: { min: 1, max: 4, order: [1, 2, 4] }, school: { min: 2, max: 10, order: [2, 4, 10, 3, 5, 6] } };
+export const LEVELS: BandLevels = {
+  prek: { min: 1, max: 4, order: [1, 2, 4] },
+  school: { min: 2, max: 10, order: [2, 4, 10, 3, 5, 6] },
+};
 /** The level whose tomorrow and yesterday questions start from seeded days, not only the week's turn. */
 export const ANCHOR_LEVEL = 4;
 export const COUNT_LEVEL = 10;
 export const WEATHER_COUNT_LEVEL = 5;
 /** Only the other-weather level draws a category; old levels keep their RNG stream and sunny tally. */
-export const tallyWeather = (level: number, rng: Rng) => level === WEATHER_COUNT_LEVEL ? rng.pick([2, 0, 1]) : 0;
-export const weatherCount = (week: readonly number[], weather: number) => week.filter(w => w === weather).length;
+export const tallyWeather = (level: number, rng: Rng) =>
+  level === WEATHER_COUNT_LEVEL ? rng.pick([2, 0, 1]) : 0;
+export const weatherCount = (week: readonly number[], weather: number) =>
+  week.filter((w) => w === weather).length;
 /** Author the requested total first, so absent categories and every total 0–7 are reachable. */
 export function makeWeatherWeek(rng: Rng, weather: number): number[] {
   const count = rng.int(0, 7);
-  const others = [0, 1, 2].filter(w => w !== weather);
-  return rng.shuffle(Array.from({ length: 7 }, (_, i) => i < count ? weather : rng.pick(others)));
+  const others = [0, 1, 2].filter((w) => w !== weather);
+  return rng.shuffle(Array.from({ length: 7 }, (_, i) => (i < count ? weather : rng.pick(others))));
 }
 const COUNT_PLAN = { name: 'Count beside the record', relatives: false, tally: true } as const;
-export const planFor = (level: number) => level === COUNT_LEVEL ? COUNT_PLAN : PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
+export const planFor = (level: number) =>
+  level === COUNT_LEVEL ? COUNT_PLAN : PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 /** Supplied bridge evidence: three suns among both other skies, varied by the round seed. */
 export function makeCountWeek(rng: Rng): readonly number[] {
   return Object.freeze(rng.shuffle([0, 0, 0, 1, 1, 2, 2]));
 }
 export const neighbor = (day: number, direction: -1 | 1) => (day + direction + 7) % 7;
-export interface Relative { today: number; direction: -1 | 1 }
+export interface Relative {
+  today: number;
+  direction: -1 | 1;
+}
 /** Two questions, one forward and one back. Before the anchor level they are the week's turn; there, two different seeded days. */
 export function relativeQuestions(level: number, rng: Rng): Relative[] {
-  if (level < ANCHOR_LEVEL) return [{ today: 6, direction: 1 }, { today: 0, direction: -1 }];
+  if (level < ANCHOR_LEVEL)
+    return [
+      { today: 6, direction: 1 },
+      { today: 0, direction: -1 },
+    ];
   const first = rng.int(0, 6);
   const second = (first + rng.int(1, 6)) % 7;
-  return rng.shuffle<Relative>([{ today: first, direction: 1 }, { today: second, direction: -1 }]);
+  return rng.shuffle<Relative>([
+    { today: first, direction: 1 },
+    { today: second, direction: -1 },
+  ]);
 }
-export const sunnyCount = (week: readonly number[]) => week.filter(w => w === 0).length;
+export const sunnyCount = (week: readonly number[]) => week.filter((w) => w === 0).length;
 /** At least one of each weather, and 1–5 sunny records: no missing category or seven identical days. */
 export function makeWeek(rng: Rng): number[] {
   return rng.shuffle([0, 1, 2, ...Array.from({ length: 4 }, () => rng.int(0, 2))]);
 }
 export function choicesFor(answer: number, rng: Rng, kind: 'day' | 'number'): number[] {
-  const pool = kind === 'day' ? Array.from({ length: 7 }, (_, i) => i) : Array.from({ length: 8 }, (_, i) => i);
-  return rng.shuffle([answer, ...rng.shuffle(pool.filter(n => n !== answer)).slice(0, 2)]);
+  const pool =
+    kind === 'day' ? Array.from({ length: 7 }, (_, i) => i) : Array.from({ length: 8 }, (_, i) => i);
+  return rng.shuffle([answer, ...rng.shuffle(pool.filter((n) => n !== answer)).slice(0, 2)]);
 }
 export function toggleMark(marks: readonly number[], day: number, recorded: number): number[] {
   if (!Number.isInteger(day) || day < 0 || day >= recorded) return [...marks];
-  return marks.includes(day) ? marks.filter(n => n !== day) : [...marks, day];
+  return marks.includes(day) ? marks.filter((n) => n !== day) : [...marks, day];
 }
 /** Logical coordinates. Seven 108×112 records and three 170×110 choices never shrink. */
 export function weekLayout(w: number, h: number) {
@@ -65,19 +82,41 @@ export function weekLayout(w: number, h: number) {
 }
 
 export type Summary = 'a-more' | 'b-more' | 'equal' | 'different';
-export interface WindowQuestion { weather: number; choices: readonly Summary[] }
-export interface WindowRound { weeks: readonly (readonly number[])[]; questions: readonly WindowQuestion[] }
+export interface WindowQuestion {
+  weather: number;
+  choices: readonly Summary[];
+}
+export interface WindowRound {
+  weeks: readonly (readonly number[])[];
+  questions: readonly WindowQuestion[];
+}
 export const summaryTrue = (weeks: WindowRound['weeks'], weather: number, summary: Summary): boolean => {
-  const [a, b] = weeks.map(week => weatherCount(week, weather));
-  return summary === 'a-more' ? a > b : summary === 'b-more' ? b > a : summary === 'equal' ? a === b : a !== b;
+  const [a, b] = weeks.map((week) => weatherCount(week, weather));
+  return summary === 'a-more'
+    ? a > b
+    : summary === 'b-more'
+      ? b > a
+      : summary === 'equal'
+        ? a === b
+        : a !== b;
 };
 /** All comparisons are about these two finite pretend records. No weather/climate prediction. */
 export function makeWindow(rng: Rng): WindowRound {
   // [rain A, rain B, sun A, sun B]. Include the introductory 2-v-4 rain / equal sunshine record.
-  const counts = rng.pick([[2, 4, 2, 2], [2, 4, 3, 1], [1, 3, 0, 0], [3, 5, 2, 1]]);
-  const week = (rain: number, sun: number) => Object.freeze(rng.shuffle([
-    ...Array<number>(rain).fill(2), ...Array<number>(sun).fill(0), ...Array<number>(7 - rain - sun).fill(1),
-  ]));
+  const counts = rng.pick([
+    [2, 4, 2, 2],
+    [2, 4, 3, 1],
+    [1, 3, 0, 0],
+    [3, 5, 2, 1],
+  ]);
+  const week = (rain: number, sun: number) =>
+    Object.freeze(
+      rng.shuffle([
+        ...Array<number>(rain).fill(2),
+        ...Array<number>(sun).fill(0),
+        ...Array<number>(7 - rain - sun).fill(1),
+      ]),
+    );
   const weeks = [week(counts[0], counts[2]), week(counts[1], counts[3])];
   if (rng.chance(0.5)) weeks.reverse();
   return Object.freeze({
@@ -91,9 +130,15 @@ export function makeWindow(rng: Rng): WindowRound {
 /** One full-size week page; tabs and summary/confirm targets stay separate from records and pet. */
 export function windowLayout(w: number) {
   return {
-    tabs: [{ x: w / 2 - 100, y: 234 }, { x: w / 2 + 100, y: 234 }],
+    tabs: [
+      { x: w / 2 - 100, y: 234 },
+      { x: w / 2 + 100, y: 234 },
+    ],
     records: Array.from({ length: 7 }, (_, i) => ({ x: w / 2 + (i - 3) * 118, y: 355 })),
-    choices: [{ x: w / 2 - 170, y: 520 }, { x: w / 2 + 170, y: 520 }],
+    choices: [
+      { x: w / 2 - 170, y: 520 },
+      { x: w / 2 + 170, y: 520 },
+    ],
     confirm: { x: w / 2, y: 658 },
   };
 }

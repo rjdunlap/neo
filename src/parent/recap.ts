@@ -1,5 +1,13 @@
 import { NO_NAME, offScreenFor } from '../content/offscreen';
-import { WELCOME_PLAN, WELCOME_STEPS, welcomeBand, welcomeFriend, type WelcomeBand, type WelcomeProject, type WelcomeStep } from '../content/welcome';
+import {
+  WELCOME_PLAN,
+  WELCOME_STEPS,
+  welcomeBand,
+  welcomeFriend,
+  type WelcomeBand,
+  type WelcomeProject,
+  type WelcomeStep,
+} from '../content/welcome';
 import { gameById } from '../games/registry';
 import { classify, type EvidenceClass } from '../learning/evidence';
 import { WELCOME_INTENTIONS, type LearningSubject } from '../learning/intentions';
@@ -35,7 +43,12 @@ export function stepLine(p: WelcomeProject, step: WelcomeStep, band: WelcomeBand
       return `${cap(who)} ${row.did} without help the last time: no wrong tries, no hints.${times}`;
     case 'supported': {
       const tries = rec!.misses === 0 ? 'no wrong tries' : plural(rec!.misses, 'wrong try', 'wrong tries');
-      const hints = rec!.hints === 0 ? 'no hints' : rec!.hints === 1 ? 'the glowing hint' : `the glowing hint ${rec!.hints} times`;
+      const hints =
+        rec!.hints === 0
+          ? 'no hints'
+          : rec!.hints === 1
+            ? 'the glowing hint'
+            : `the glowing hint ${rec!.hints} times`;
       return `${cap(who)} ${row.did} with help the last time: ${tries} and ${hints}.${times} Finishing with help is how this is practised; it does not yet show ${who} can do it alone.`;
     }
     case 'creative':
@@ -66,7 +79,9 @@ function statusLine(save: Pick<SaveData, 'projects' | 'creatures'>, who: string)
   const p = save.projects.welcome;
   if (!p.ended) return `Project: ${p.steps.length} of ${WELCOME_STEPS.length} steps done.`;
   const friend = welcomeFriend(save.creatures.owned);
-  return friend ? `Project finished: ${esc(friend.name)} joined.` : `Project finished: every friend's place was full, so no new friend joined; ${who} keeps the friends already there.`;
+  return friend
+    ? `Project finished: ${esc(friend.name)} joined.`
+    : `Project finished: every friend's place was full, so no new friend joined; ${who} keeps the friends already there.`;
 }
 
 /** The off-screen idea for the most recently played step's game at the project's band, if that game has a line there. */
@@ -81,12 +96,16 @@ function idea(p: WelcomeProject, band: WelcomeBand, name: string): string | null
 }
 
 /** The recap's HTML: a table for a preschool or pre-K profile or one that began the project, one line for anyone else. */
-export function projectRecap(save: Pick<SaveData, 'projects' | 'profile' | 'creatures'>, name: string): string {
+export function projectRecap(
+  save: Pick<SaveData, 'projects' | 'profile' | 'creatures'>,
+  name: string,
+): string {
   const p = save.projects.welcome;
   const who = esc(name.trim() || NO_NAME);
   const band = welcomeBand(p, save.profile.band);
   const title = '<strong>Welcome a New Friend</strong> (a project at Home):';
-  if (!band) return `<p>${title} Welcome a New Friend is the first project for preschool and pre-K players. Nothing has been recorded for ${who}.</p>`;
+  if (!band)
+    return `<p>${title} Welcome a New Friend is the first project for preschool and pre-K players. Nothing has been recorded for ${who}.</p>`;
   const rows = WELCOME_STEPS.map((step) => {
     const row = WELCOME_INTENTIONS[step][band];
     return `<tr data-recap="${step}"><td>${esc(row.intention)}</td><td>${stepLine(p, step, band, who)}</td><td>${SUBJECT[row.subject]}</td></tr>`;

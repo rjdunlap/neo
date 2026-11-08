@@ -7,7 +7,8 @@ import type { BandLevels } from '../../progress/difficulty';
  * send exactly enough: too few can't lift it, extras walk back. The last level is a bunch of
  * fruits that each need the same team: equal groups, counted by twos or threes.
  */
-export type HelperMode = 'tap' | 'two' | 'count' | 'numeral' | 'more' | 'groups' | 'whistle' | 'split' | 'strong';
+export type HelperMode =
+  'tap' | 'two' | 'count' | 'numeral' | 'more' | 'groups' | 'whistle' | 'split' | 'strong';
 
 export interface HelperPlan {
   /** The saved level ID; plans are keyed by it, not by their place in `PLANS`. */
@@ -22,14 +23,63 @@ export interface HelperPlan {
 
 export const PLANS: HelperPlan[] = [
   { level: 1, mode: 'tap', fruits: 5, min: 1, max: 1, name: 'Tap a fruit and a helper carries it home' },
-  { level: 2, mode: 'two', fruits: 4, min: 1, max: 2, name: 'Send one or two helpers (rings fill as they arrive); it lifts when there are enough' },
-  { level: 3, mode: 'count', fruits: 4, min: 2, max: 4, name: 'Send exactly 2 to 4 helpers, then blow the whistle (rings)' },
-  { level: 4, mode: 'numeral', fruits: 4, min: 2, max: 5, name: 'Send exactly the number shown, then blow the whistle' },
+  {
+    level: 2,
+    mode: 'two',
+    fruits: 4,
+    min: 1,
+    max: 2,
+    name: 'Send one or two helpers (rings fill as they arrive); it lifts when there are enough',
+  },
+  {
+    level: 3,
+    mode: 'count',
+    fruits: 4,
+    min: 2,
+    max: 4,
+    name: 'Send exactly 2 to 4 helpers, then blow the whistle (rings)',
+  },
+  {
+    level: 4,
+    mode: 'numeral',
+    fruits: 4,
+    min: 2,
+    max: 5,
+    name: 'Send exactly the number shown, then blow the whistle',
+  },
   { level: 5, mode: 'more', fruits: 4, min: 3, max: 6, name: 'Some are already helping: how many more?' },
-  { level: 6, mode: 'groups', fruits: 4, min: 4, max: 6, name: 'Equal groups: a bunch where every fruit needs the same team (2 twos, 3 twos, 2 threes)' },
-  { level: 7, mode: 'split', fruits: 4, min: 4, max: 7, name: 'Everyone helps: split the crowd between two fruits, then blow the whistle' },
-  { level: 8, mode: 'strong', fruits: 4, min: 4, max: 8, name: 'Strong helpers: a big helper counts two; send any mix that makes the need' },
-  { level: 9, mode: 'whistle', fruits: 4, min: 1, max: 3, name: "Whistle when it's full: fill every ring, then blow the whistle" },
+  {
+    level: 6,
+    mode: 'groups',
+    fruits: 4,
+    min: 4,
+    max: 6,
+    name: 'Equal groups: a bunch where every fruit needs the same team (2 twos, 3 twos, 2 threes)',
+  },
+  {
+    level: 7,
+    mode: 'split',
+    fruits: 4,
+    min: 4,
+    max: 7,
+    name: 'Everyone helps: split the crowd between two fruits, then blow the whistle',
+  },
+  {
+    level: 8,
+    mode: 'strong',
+    fruits: 4,
+    min: 4,
+    max: 8,
+    name: 'Strong helpers: a big helper counts two; send any mix that makes the need',
+  },
+  {
+    level: 9,
+    mode: 'whistle',
+    fruits: 4,
+    min: 1,
+    max: 3,
+    name: "Whistle when it's full: fill every ring, then blow the whistle",
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -41,7 +91,8 @@ export const LEVELS: BandLevels = {
 };
 
 /** The plan for a saved level; an unknown level falls to the nearest of 1–6, as before plans were keyed. */
-export const planFor = (level: number) => PLANS.find((p) => p.level === level) ?? PLANS[Math.min(6, Math.max(1, level)) - 1];
+export const planFor = (level: number) =>
+  PLANS.find((p) => p.level === level) ?? PLANS[Math.min(6, Math.max(1, level)) - 1];
 
 /** Enough helpers for the biggest fruit, with one to spare. */
 export const CROWD = 7;
@@ -57,17 +108,31 @@ export interface Fruit {
 }
 
 /** What each fruit of a bunch needs. */
-export const partsOf = (f: Fruit): number[] => f.parts ?? Array.from({ length: f.groups }, () => f.need / f.groups);
+export const partsOf = (f: Fruit): number[] =>
+  f.parts ?? Array.from({ length: f.groups }, () => f.need / f.groups);
 
 /** Whether the fruit is a set of teams she builds (level 6's bunch, level 7's pair) rather than one team. */
 export const teamedPlan = (plan: HelperPlan) => plan.mode === 'groups' || plan.mode === 'split';
 
 /** Level 7: each crowd size 4–7 and the ways to split it between two fruits (a fruit needs 1–5), so one total can come back split another way. */
 export const SPLITS: Record<number, [number, number][]> = {
-  4: [[1, 3], [2, 2]],
-  5: [[1, 4], [2, 3]],
-  6: [[1, 5], [2, 4], [3, 3]],
-  7: [[2, 5], [3, 4]],
+  4: [
+    [1, 3],
+    [2, 2],
+  ],
+  5: [
+    [1, 4],
+    [2, 3],
+  ],
+  6: [
+    [1, 5],
+    [2, 4],
+    [3, 3],
+  ],
+  7: [
+    [2, 5],
+    [3, 4],
+  ],
 };
 
 /** Two crowd sizes alternate through the round, the second time each split another way; which fruit is which side is shuffled. */
@@ -102,11 +167,16 @@ export function makeFruits(plan: HelperPlan, rng: Rng): Fruit[] {
       return { need: groups * each, already: 0, groups };
     });
   }
-  return needsFor(plan, rng).map((need) => ({ need, already: plan.mode === 'more' ? rng.int(1, need - 1) : 0, groups: 1 }));
+  return needsFor(plan, rng).map((need) => ({
+    need,
+    already: plan.mode === 'more' ? rng.int(1, need - 1) : 0,
+    groups: 1,
+  }));
 }
 
 /** Whether a round's needs just swap back and forth (1, 2, 1, 2), which a child learns instead of looking. */
-export const alternates = (needs: number[]) => needs.length >= 3 && needs[0] !== needs[1] && needs.every((n, i) => i < 2 || n === needs[i - 2]);
+export const alternates = (needs: number[]) =>
+  needs.length >= 3 && needs[0] !== needs[1] && needs.every((n, i) => i < 2 || n === needs[i - 2]);
 
 /**
  * The needs for a round. With three or more values, each comes once before any repeats and never twice in a row
@@ -138,7 +208,8 @@ export const usesWhistle = (plan: HelperPlan) => plan.mode !== 'tap' && plan.mod
 export const ringsSayWhen = (plan: HelperPlan) => plan.mode === 'whistle';
 
 /** Counting the bunch by its groups: 2, 4, 6. */
-export const skipCount = (f: Fruit) => Array.from({ length: f.groups }, (_, i) => (i + 1) * (f.need / f.groups)).join(', ');
+export const skipCount = (f: Fruit) =>
+  Array.from({ length: f.groups }, (_, i) => (i + 1) * (f.need / f.groups)).join(', ');
 
 /** How wide a team of `n` helpers stands, with a gap before the next. */
 export const TEAM_STEP = 50;
@@ -250,7 +321,8 @@ export function whistleFor(need: number, helpers: number): Whistle {
 }
 
 /** Only a whistle with the wrong team counts as a miss, and never at level 9, where the rings say when. */
-export const whistleMisses = (w: Whistle, plan?: HelperPlan) => (w === 'short' || w === 'extra') && !(plan && ringsSayWhen(plan));
+export const whistleMisses = (w: Whistle, plan?: HelperPlan) =>
+  (w === 'short' || w === 'extra') && !(plan && ringsSayWhen(plan));
 
 /**
  * The badge's rings for a fruit needing `need` with `carrying` holding on: `filled` of the `need` rings inside the
@@ -267,7 +339,18 @@ export function badgeRings(need: number, carrying: number) {
 export type Place = 'orchard' | 'beach' | 'woods';
 export const PLACES: Place[] = ['orchard', 'beach', 'woods'];
 
-export type CarryKind = 'apple' | 'orange' | 'lemon' | 'pear' | 'grapes' | 'blueberries' | 'pumpkin' | 'watermelon' | 'acorn' | 'pinecone' | 'boat';
+export type CarryKind =
+  | 'apple'
+  | 'orange'
+  | 'lemon'
+  | 'pear'
+  | 'grapes'
+  | 'blueberries'
+  | 'pumpkin'
+  | 'watermelon'
+  | 'acorn'
+  | 'pinecone'
+  | 'boat';
 
 /** The helpers each thing can need, inclusive: little things are light, the pumpkin and the watermelon heavy. */
 export const CARRY_NEEDS: Record<CarryKind, [number, number]> = {
@@ -292,10 +375,15 @@ export const PLACE_THINGS: Record<Place, CarryKind[]> = {
 };
 
 /** Where the things go: the orchard's basket, the beach's rowing boat, the woods' bucket. */
-export const DESTINATION: Record<Place, 'basket' | 'boat' | 'bucket'> = { orchard: 'basket', beach: 'boat', woods: 'bucket' };
+export const DESTINATION: Record<Place, 'basket' | 'boat' | 'bucket'> = {
+  orchard: 'basket',
+  beach: 'boat',
+  woods: 'bucket',
+};
 
 /** The things this place has that can need `need` helpers (for a bunch, the need of each one). */
-export const thingsFor = (place: Place, need: number) => PLACE_THINGS[place].filter((k) => need >= CARRY_NEEDS[k][0] && need <= CARRY_NEEDS[k][1]);
+export const thingsFor = (place: Place, need: number) =>
+  PLACE_THINGS[place].filter((k) => need >= CARRY_NEEDS[k][0] && need <= CARRY_NEEDS[k][1]);
 
 /** A thing for a part of a pair that is lighter than the first: one that fits its need and differs from `avoid` where the place has another. */
 export function partThing(place: Place, need: number, avoid: CarryKind): CarryKind {

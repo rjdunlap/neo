@@ -3,7 +3,8 @@ import { BrowserEventTarget } from './events';
 
 it('removes capture listeners with the boolean syntax accepted by browsers', () => {
   const target = new BrowserEventTarget();
-  const capture = vi.fn(), bubble = vi.fn();
+  const capture = vi.fn(),
+    bubble = vi.fn();
   target.addEventListener('pointercancel', capture, true);
   target.addEventListener('pointercancel', bubble);
   target.removeEventListener('pointercancel', capture, true);

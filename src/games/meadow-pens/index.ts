@@ -15,14 +15,49 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { FixedMeadow } from './fixed';
 import {
-  bellArt, bubbleFrame, Card, drawGate, edgeLine, fencePiece, fieldPicture, flowerCell, loosePiece, meadowCell, penArt, pondCell,
-  requestPicture, turfCell,
+  bellArt,
+  bubbleFrame,
+  Card,
+  drawGate,
+  edgeLine,
+  fencePiece,
+  fieldPicture,
+  flowerCell,
+  loosePiece,
+  meadowCell,
+  penArt,
+  pondCell,
+  requestPicture,
+  turfCell,
 } from './art';
 import {
   LEVELS,
-  CELLS, cellAt, cellRect, centre, check, drawnSide, drawnRows, FenceHeap, fenceEdges, fieldCells, flowersOf, GAP, holes, makeTasks,
-  meadowLayout, nextCell, PenTally, penOf, planFor, targetFor, type Cell, type FieldTask, type MeadowLayout, type PenTask,
-  type Plan, type Task,
+  CELLS,
+  cellAt,
+  cellRect,
+  centre,
+  check,
+  drawnSide,
+  drawnRows,
+  FenceHeap,
+  fenceEdges,
+  fieldCells,
+  flowersOf,
+  GAP,
+  holes,
+  makeTasks,
+  meadowLayout,
+  nextCell,
+  PenTally,
+  penOf,
+  planFor,
+  targetFor,
+  type Cell,
+  type FieldTask,
+  type MeadowLayout,
+  type PenTask,
+  type Plan,
+  type Task,
 } from './logic';
 
 const FRIENDS = ['bunny', 'duck', 'pig', 'cat', 'dog', 'cow', 'bear'] as const;
@@ -77,14 +112,33 @@ class MeadowPens implements Game {
     this.plan = planFor(ctx.level);
     this.tasks = makeTasks(this.plan, ctx.rng, ctx.demo ? 1 : this.plan.count);
     this.lay = meadowLayout(ctx.view, this.plan.level)!;
-    this.backdrop = ctx.track(new Backdrop({ sky: [0xc4ecff, 0xfff6e0], hills: [0xf5d0e6, 0xbfe39a, 0x9ad77e], horizon: 0.22, clouds: 3, sun: true, seed: 131 }, ctx.view));
-    for (const n of [this.cellsArt, this.fenceArt, this.glow, this.flash, this.stackArt, this.gate]) n.eventMode = 'none';
+    this.backdrop = ctx.track(
+      new Backdrop(
+        {
+          sky: [0xc4ecff, 0xfff6e0],
+          hills: [0xf5d0e6, 0xbfe39a, 0x9ad77e],
+          horizon: 0.22,
+          clouds: 3,
+          sun: true,
+          seed: 131,
+        },
+        ctx.view,
+      ),
+    );
+    for (const n of [this.cellsArt, this.fenceArt, this.glow, this.flash, this.stackArt, this.gate])
+      n.eventMode = 'none';
     this.board.addChild(this.cellsArt, this.glow, this.fenceArt, this.flash);
     this.board.eventMode = 'static';
     this.board.on('pointerdown', (e: FederatedPointerEvent) => this.down(e));
-    this.board.on('globalpointermove', (e: FederatedPointerEvent) => { if (e.pointerId === this.pointer) this.move(e); });
-    this.board.on('pointerup', (e: FederatedPointerEvent) => { if (e.pointerId === this.pointer) this.endStroke(); });
-    this.board.on('pointerupoutside', (e: FederatedPointerEvent) => { if (e.pointerId === this.pointer) this.endStroke(); });
+    this.board.on('globalpointermove', (e: FederatedPointerEvent) => {
+      if (e.pointerId === this.pointer) this.move(e);
+    });
+    this.board.on('pointerup', (e: FederatedPointerEvent) => {
+      if (e.pointerId === this.pointer) this.endStroke();
+    });
+    this.board.on('pointerupoutside', (e: FederatedPointerEvent) => {
+      if (e.pointerId === this.pointer) this.endStroke();
+    });
     this.ctx.listen(window, 'pointercancel', this.onCancel, { capture: true });
     onTap(this.bell, () => void this.ring(), { cooldown: 500 });
     onTap(this.bubble, () => this.replay(), { cooldown: 800 });
@@ -92,7 +146,15 @@ class MeadowPens implements Game {
     this.companion = ctx.track(ctx.companion());
     this.companion.scale.set(0.42);
     this.companion.eventMode = 'none';
-    ctx.stage.addChild(this.backdrop, this.board, this.stackArt, this.gate, this.bell, this.bubble, this.companion);
+    ctx.stage.addChild(
+      this.backdrop,
+      this.board,
+      this.stackArt,
+      this.gate,
+      this.bell,
+      this.bubble,
+      this.companion,
+    );
   }
 
   start() {
@@ -159,7 +221,9 @@ class MeadowPens implements Game {
       const a = 0.7 + 0.25 * Math.sin(this.clock * 6);
       for (const c of this.hintPen) {
         const r = cellRect(this.lay, c);
-        g.roundRect(r.x + 4, r.y + 4, r.w - 8, r.h - 8, 14).fill({ color: 0xfff3a0, alpha: a * 0.6 }).stroke({ width: 8, color: 0xffd23a, alpha: a });
+        g.roundRect(r.x + 4, r.y + 4, r.w - 8, r.h - 8, 14)
+          .fill({ color: 0xfff3a0, alpha: a * 0.6 })
+          .stroke({ width: 8, color: 0xffd23a, alpha: a });
       }
     }
   }
@@ -200,7 +264,9 @@ class MeadowPens implements Game {
   private askAloud() {
     if (this.task.kind === 'field') return this.ctx.say('meadow.field-ask');
     const r = this.request;
-    return r.fence === undefined ? this.ctx.say('meadow.ask', { n: r.squares }) : this.ctx.say('meadow.ask3', { n: r.fence });
+    return r.fence === undefined
+      ? this.ctx.say('meadow.ask', { n: r.squares })
+      : this.ctx.say('meadow.ask3', { n: r.fence });
   }
 
   /** A tap on the friend or the bubble: the request again, free. */
@@ -215,7 +281,9 @@ class MeadowPens implements Game {
     const l = this.lay.bubble;
     const c = new Container();
     c.addChild(bubbleFrame(l.w, l.h));
-    c.addChild(this.task.kind === 'field' ? fieldPicture() : requestPicture(this.request.squares, this.request.fence));
+    c.addChild(
+      this.task.kind === 'field' ? fieldPicture() : requestPicture(this.request.squares, this.request.fence),
+    );
     c.eventMode = 'none';
     this.bubbleArt = c;
     this.bubble.addChild(c);
@@ -240,7 +308,12 @@ class MeadowPens implements Game {
   private async bringFriend() {
     const old = this.friend;
     if (old) {
-      void this.ctx.tw.to(old, { alpha: 0 }, { duration: 0.3 }).then(() => { if (!old.destroyed) { this.ctx.untrack(old); old.destroy({ children: true }); } });
+      void this.ctx.tw.to(old, { alpha: 0 }, { duration: 0.3 }).then(() => {
+        if (!old.destroyed) {
+          this.ctx.untrack(old);
+          old.destroy({ children: true });
+        }
+      });
     }
     const rng = new Rng(this.index * 7919 + this.plan.level * 31 + (this.tasks.length > 1 ? 3 : 0));
     const kind = this.index === 0 ? 'bunny' : rng.pick([...FRIENDS]);
@@ -257,7 +330,8 @@ class MeadowPens implements Game {
     sfx.whoosh();
     await this.ctx.tw.to(f, { x: r.x + r.w / 2 }, { duration: 0.6, ease: ease.outBack });
     // A rotation during the entrance moved the friend's spot: stand where the layout says now.
-    if (this.alive && this.friend === f) f.position.set(this.lay.friend.x + this.lay.friend.w / 2, this.lay.friend.y + this.lay.friend.h - 6);
+    if (this.alive && this.friend === f)
+      f.position.set(this.lay.friend.x + this.lay.friend.w / 2, this.lay.friend.y + this.lay.friend.h - 6);
   }
 
   // ----- the paint gesture -----
@@ -301,7 +375,14 @@ class MeadowPens implements Game {
       if (pen.has(cell)) {
         sfx.bell(Math.min(12, 2 + pen.size));
         const r = centre(cellRect(this.lay, cell));
-        this.ctx.particles.burst(r.x, r.y, { kind: 'dot', colors: [0x7fcf5f, 0xbfe39a], count: 8, speed: [60, 160], gravity: 200, life: [0.3, 0.5] });
+        this.ctx.particles.burst(r.x, r.y, {
+          kind: 'dot',
+          colors: [0x7fcf5f, 0xbfe39a],
+          count: 8,
+          speed: [60, 160],
+          gravity: 200,
+          life: [0.3, 0.5],
+        });
       } else if (this.clock - this.lastFlowerLine > 3) {
         this.lastFlowerLine = this.clock;
         sfx.pop(9);
@@ -345,7 +426,13 @@ class MeadowPens implements Game {
     // The fence: around the pen; at level 2, around the whole field from the start.
     const edges = fenceEdges(field ? new Set(fieldCells(this.field)) : pen);
     const want = !field ? this.request.fence : undefined;
-    edges.forEach((e, i) => fencePiece(f, edgeLine(cellRect(l, e.cell), drawnSide(e.side, l.tall), GAP), want !== undefined && i >= want));
+    edges.forEach((e, i) =>
+      fencePiece(
+        f,
+        edgeLine(cellRect(l, e.cell), drawnSide(e.side, l.tall), GAP),
+        want !== undefined && i >= want,
+      ),
+    );
     this.drawStack(edges.length);
     drawGate(this.gate, l.gate, this.gateOpen);
   }
@@ -355,13 +442,21 @@ class MeadowPens implements Game {
     const g = this.stackArt.clear();
     const r = this.lay.stack;
     if (!r || this.task.kind !== 'pen') return;
-    g.roundRect(r.x, r.y, r.w, r.h, 22).fill({ color: 0xffffff, alpha: 0.55 }).stroke({ width: 4, color: 0xbfe0a8 });
+    g.roundRect(r.x, r.y, r.w, r.h, 22)
+      .fill({ color: 0xffffff, alpha: 0.55 })
+      .stroke({ width: 4, color: 0xbfe0a8 });
     const want = this.request.fence;
     if (want === undefined) {
       const left = Math.min(40, this.heap.left(used));
       for (let i = 0; i < left; i++) {
         const row = Math.floor(i / 10);
-        loosePiece(g, r.x + 40 + (i % 10) * ((r.w - 80) / 9) + (row % 2) * 8, r.y + r.h - 26 - row * 22, 40, (((i * 37) % 9) - 4) * 0.05);
+        loosePiece(
+          g,
+          r.x + 40 + (i % 10) * ((r.w - 80) / 9) + (row % 2) * 8,
+          r.y + r.h - 26 - row * 22,
+          40,
+          (((i * 37) % 9) - 4) * 0.05,
+        );
       }
       return;
     }
@@ -389,12 +484,17 @@ class MeadowPens implements Game {
     if (this.busy || this.finished || this.task?.kind !== 'pen') return;
     this.endStroke();
     sfx.bell(10, 0.35);
-    void this.ctx.tw.to(this.bell, { rotation: 0.25 }, { duration: 0.08 }).then(() => { if (this.alive) void this.ctx.tw.to(this.bell, { rotation: 0 }, { duration: 0.2, ease: ease.outBack }); });
+    void this.ctx.tw.to(this.bell, { rotation: 0.25 }, { duration: 0.08 }).then(() => {
+      if (this.alive) void this.ctx.tw.to(this.bell, { rotation: 0 }, { duration: 0.2, ease: ease.outBack });
+    });
     const pen = penOf(this.painted);
     const verdict = check(pen, this.request);
     if (verdict.kind !== 'ok' && this.tally.glowing && this.hintPen) return this.supported();
     const result = this.tally.ring(verdict);
-    if (result === 'invite') { void this.ctx.say('meadow.empty'); return; }
+    if (result === 'invite') {
+      void this.ctx.say('meadow.empty');
+      return;
+    }
     if (result === 'ok') return this.complete();
     this.busy = true;
     sfx.boing();
@@ -411,7 +511,10 @@ class MeadowPens implements Game {
       await this.countFence(verdict.have);
       if (!this.alive) return;
       const k = Math.abs(verdict.want - verdict.have);
-      await this.ctx.say(verdict.have < verdict.want ? 'meadow.fence-left' : 'meadow.fence-more', { have: verdict.have, k });
+      await this.ctx.say(verdict.have < verdict.want ? 'meadow.fence-left' : 'meadow.fence-more', {
+        have: verdict.have,
+        k,
+      });
     }
     if (!this.alive) return;
     if (result === 'glow') {
@@ -425,8 +528,16 @@ class MeadowPens implements Game {
   private async countFence(n: number) {
     const edges = fenceEdges(penOf(this.painted));
     for (let i = 0; i < Math.min(n, edges.length); i++) {
-      const [x1, y1, x2, y2] = edgeLine(cellRect(this.lay, edges[i].cell), drawnSide(edges[i].side, this.lay.tall), GAP);
-      this.flash.clear().moveTo(x1, y1).lineTo(x2, y2).stroke({ width: 16, color: 0xffffff, alpha: 0.8, cap: 'round' });
+      const [x1, y1, x2, y2] = edgeLine(
+        cellRect(this.lay, edges[i].cell),
+        drawnSide(edges[i].side, this.lay.tall),
+        GAP,
+      );
+      this.flash
+        .clear()
+        .moveTo(x1, y1)
+        .lineTo(x2, y2)
+        .stroke({ width: 16, color: 0xffffff, alpha: 0.8, cap: 'round' });
       sfx.tick();
       await this.ctx.tw.wait(0.16);
       if (!this.alive) return;
@@ -439,8 +550,13 @@ class MeadowPens implements Game {
     this.busy = true;
     const target = this.hintPen!;
     for (let next = nextCell(this.painted, target); next !== null; next = nextCell(this.painted, target)) {
-      if (this.painted.includes(next)) { this.painted = this.painted.filter((c) => c !== next); sfx.pluck(3); }
-      else { this.painted.push(next); sfx.bell(Math.min(12, 2 + this.painted.length)); }
+      if (this.painted.includes(next)) {
+        this.painted = this.painted.filter((c) => c !== next);
+        sfx.pluck(3);
+      } else {
+        this.painted.push(next);
+        sfx.bell(Math.min(12, 2 + this.painted.length));
+      }
       this.changed();
       await this.ctx.tw.wait(0.22);
       if (!this.alive) return;
@@ -456,9 +572,15 @@ class MeadowPens implements Game {
     await this.ctx.tw.to(this as { gateOpen: number }, { gateOpen: 1 }, { duration: 0.3 });
     if (!this.alive) return;
     const cells = this.task.kind === 'field' ? fieldCells(this.field) : [...penOf(this.painted)];
-    const spot = cells.map((c) => centre(cellRect(this.lay, c))).reduce((a, b) => ({ x: a.x + b.x / cells.length, y: a.y + b.y / cells.length }), { x: 0, y: 0 });
+    const spot = cells
+      .map((c) => centre(cellRect(this.lay, c)))
+      .reduce((a, b) => ({ x: a.x + b.x / cells.length, y: a.y + b.y / cells.length }), { x: 0, y: 0 });
     const startY = f.y;
-    await this.ctx.tw.to(f, { x: (f.x + spot.x) / 2, y: Math.min(startY, spot.y) - 120 }, { duration: 0.3, ease: ease.outQuad });
+    await this.ctx.tw.to(
+      f,
+      { x: (f.x + spot.x) / 2, y: Math.min(startY, spot.y) - 120 },
+      { duration: 0.3, ease: ease.outQuad },
+    );
     if (!this.alive) return;
     await this.ctx.tw.to(f, { x: spot.x, y: spot.y + 40 }, { duration: 0.3, ease: ease.inQuad });
     if (!this.alive) return;
@@ -466,7 +588,14 @@ class MeadowPens implements Game {
     this.companion.cheer();
     this.ctx.pet.cheer();
     sfx.sparkle();
-    this.ctx.particles.burst(spot.x, spot.y, { kind: 'star', colors: [0xffd54a, 0xffffff], count: 14, speed: [120, 300], gravity: 0, life: [0.5, 0.9] });
+    this.ctx.particles.burst(spot.x, spot.y, {
+      kind: 'star',
+      colors: [0xffd54a, 0xffffff],
+      count: 14,
+      speed: [120, 300],
+      gravity: 0,
+      life: [0.5, 0.9],
+    });
     await this.ctx.say(this.task.kind === 'field' ? 'meadow.field-in' : 'meadow.in');
     if (!this.alive) return;
     await this.ctx.tw.wait(0.6);
@@ -515,7 +644,9 @@ class MeadowPens implements Game {
     }
     sfx.boing();
     this.companion.wiggle();
-    void this.ctx.tw.to(card, { rotation: 0.1 }, { duration: 0.08 }).then(() => { if (this.alive) void this.ctx.tw.to(card, { rotation: 0 }, { duration: 0.2 }); });
+    void this.ctx.tw.to(card, { rotation: 0.1 }, { duration: 0.08 }).then(() => {
+      if (this.alive) void this.ctx.tw.to(card, { rotation: 0 }, { duration: 0.2 });
+    });
     await this.fill(true);
     if (!this.alive) return;
     if (result === 'glow') await this.ctx.say('meadow.hint-card');
@@ -548,7 +679,14 @@ class MeadowPens implements Game {
     this.painted = [];
     this.redraw();
     const colors = RAINBOW.map((c) => swatch[c].fill);
-    this.ctx.particles.burst(this.view.w / 2, this.view.h * 0.3, { kind: 'confetti', colors, count: 60, speed: [200, 600], gravity: 600, life: [1.2, 2] });
+    this.ctx.particles.burst(this.view.w / 2, this.view.h * 0.3, {
+      kind: 'confetti',
+      colors,
+      count: 60,
+      speed: [200, 600],
+      gravity: 600,
+      life: [1.2, 2],
+    });
     // Every friend of the round comes out to play on the meadow, with a little bell tune.
     const g = this.lay.grid;
     const live = this.friends.filter((f) => !f.destroyed);
@@ -584,7 +722,10 @@ class MeadowPens implements Game {
   askForHint() {
     if (this.busy || this.finished || !this.task) return;
     this.tally.glow();
-    if (this.task.kind === 'field') { void this.ctx.say('meadow.hint-card'); return; }
+    if (this.task.kind === 'field') {
+      void this.ctx.say('meadow.hint-card');
+      return;
+    }
     this.hintPen = targetFor(penOf(this.painted), this.request);
     void this.ctx.say('meadow.hint');
   }
@@ -618,16 +759,51 @@ class MeadowPens implements Game {
 
 class MeadowIcon extends WigglyIcon {
   constructor() {
-    const art = penArt([[0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [2, 1]], 50);
+    const art = penArt(
+      [
+        [0, 0],
+        [1, 0],
+        [2, 0],
+        [0, 1],
+        [1, 1],
+        [2, 1],
+      ],
+      50,
+    );
     super(art);
   }
 }
 
 const SHAPES: [number, number][][] = [
-  [[0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [2, 1]],
-  [[0, 0], [1, 0], [1, 1], [2, 1], [2, 2]],
-  [[0, 0], [0, 1], [1, 1], [2, 1], [3, 1]],
-  [[1, 0], [0, 1], [1, 1], [2, 1], [1, 2]],
+  [
+    [0, 0],
+    [1, 0],
+    [2, 0],
+    [0, 1],
+    [1, 1],
+    [2, 1],
+  ],
+  [
+    [0, 0],
+    [1, 0],
+    [1, 1],
+    [2, 1],
+    [2, 2],
+  ],
+  [
+    [0, 0],
+    [0, 1],
+    [1, 1],
+    [2, 1],
+    [3, 1],
+  ],
+  [
+    [1, 0],
+    [0, 1],
+    [1, 1],
+    [2, 1],
+    [1, 2],
+  ],
 ];
 
 /** A seeded pen with its fence and a flower. */
@@ -649,9 +825,14 @@ export const meadowPens: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.stickers,
   touchDemo: true,
-  coplayHint: 'Take turns counting squares of grass or fence pieces with {name}; compare the pens, or count both parts of a bent field together.',
-  offScreen: 'Cover a placemat with sticky notes and count them, then count the edges. Make an L with two blocks of notes and count both parts.',
+  coplayHint:
+    'Take turns counting squares of grass or fence pieces with {name}; compare the pens, or count both parts of a bent field together.',
+  offScreen:
+    'Cover a placemat with sticky notes and count them, then count the edges. Make an L with two blocks of notes and count both parts.',
   hubIcon: () => new MeadowIcon(),
   sticker,
-  create: (ctx) => ctx.level >= 4 ? new FixedMeadow(ctx, !store.stats('meadow-pens').history.some((r) => r.level === ctx.level)) : new MeadowPens(ctx),
+  create: (ctx) =>
+    ctx.level >= 4
+      ? new FixedMeadow(ctx, !store.stats('meadow-pens').history.some((r) => r.level === ctx.level))
+      : new MeadowPens(ctx),
 };

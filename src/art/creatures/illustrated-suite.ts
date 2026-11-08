@@ -3,7 +3,15 @@ import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { ACCESSORIES, ACCESSORY_SLOT, dress, makeCreature } from '.';
 import type { CastId } from './cast';
 import type { SpeciesId } from './creature';
-import { type ArtBase, EXPRESSIONS, type Expression, type IllustratedCreature, type Point, sameArt, SURPRISE } from './illustrated';
+import {
+  type ArtBase,
+  EXPRESSIONS,
+  type Expression,
+  type IllustratedCreature,
+  type Point,
+  sameArt,
+  SURPRISE,
+} from './illustrated';
 
 /**
  * The checks every illustrated rig passes (RW02b step 2), run by each species' test file with its
@@ -16,14 +24,20 @@ export async function alphaOf(dataUrl: string) {
   const view = new DataView(png.buffer);
   const w = view.getUint32(16);
   const h = view.getUint32(20);
-  if (png[24] !== 8 || png[25] !== 6 || png[28] !== 0) throw new Error('not an 8-bit, RGBA, non-interlaced PNG');
+  if (png[24] !== 8 || png[25] !== 6 || png[28] !== 0)
+    throw new Error('not an 8-bit, RGBA, non-interlaced PNG');
   const chunks: Uint8Array<ArrayBuffer>[] = [];
-  for (let o = 8; o < png.length; ) {
+  for (let o = 8; o < png.length;) {
     const len = view.getUint32(o);
-    if (String.fromCharCode(...png.subarray(o + 4, o + 8)) === 'IDAT') chunks.push(png.slice(o + 8, o + 8 + len));
+    if (String.fromCharCode(...png.subarray(o + 4, o + 8)) === 'IDAT')
+      chunks.push(png.slice(o + 8, o + 8 + len));
     o += len + 12;
   }
-  const raw = new Uint8Array(await new Response(new Blob(chunks).stream().pipeThrough(new DecompressionStream('deflate'))).arrayBuffer());
+  const raw = new Uint8Array(
+    await new Response(
+      new Blob(chunks).stream().pipeThrough(new DecompressionStream('deflate')),
+    ).arrayBuffer(),
+  );
   const row = w * 4;
   const out = new Uint8Array(row * h);
   for (let y = 0; y < h; y++) {
@@ -34,11 +48,32 @@ export async function alphaOf(dataUrl: string) {
       const b = y > 0 ? out[(y - 1) * row + x] : 0;
       const c = x >= 4 && y > 0 ? out[(y - 1) * row + x - 4] : 0;
       const p = a + b - c;
-      const pred = f === 1 ? a : f === 2 ? b : f === 3 ? (a + b) >> 1 : f === 4 ? (Math.abs(p - a) <= Math.abs(p - b) && Math.abs(p - a) <= Math.abs(p - c) ? a : Math.abs(p - b) <= Math.abs(p - c) ? b : c) : 0;
+      const pred =
+        f === 1
+          ? a
+          : f === 2
+            ? b
+            : f === 3
+              ? (a + b) >> 1
+              : f === 4
+                ? Math.abs(p - a) <= Math.abs(p - b) && Math.abs(p - a) <= Math.abs(p - c)
+                  ? a
+                  : Math.abs(p - b) <= Math.abs(p - c)
+                    ? b
+                    : c
+                : 0;
       out[y * row + x] = (v + pred) & 255;
     }
   }
-  return { w, h, at: (x: number, y: number) => out[(Math.min(h - 1, Math.max(0, Math.round(y))) * w + Math.min(w - 1, Math.max(0, Math.round(x)))) * 4 + 3] };
+  return {
+    w,
+    h,
+    at: (x: number, y: number) =>
+      out[
+        (Math.min(h - 1, Math.max(0, Math.round(y))) * w + Math.min(w - 1, Math.max(0, Math.round(x)))) * 4 +
+          3
+      ],
+  };
 }
 type Alpha = Awaited<ReturnType<typeof alphaOf>>;
 
@@ -61,18 +96,35 @@ export interface SuiteSpec<C extends IllustratedCreature> {
   maxStep: number;
 }
 
-export function illustratedSuite<C extends IllustratedCreature>({ species, twin = true, A, pngs, make, stageScale, tip, minTravel, pinned, maxStep }: SuiteSpec<C>) {
+export function illustratedSuite<C extends IllustratedCreature>({
+  species,
+  twin = true,
+  A,
+  pngs,
+  make,
+  stageScale,
+  tip,
+  minTravel,
+  pinned,
+  maxStep,
+}: SuiteSpec<C>) {
   let art: Record<Expression, Alpha>;
   beforeAll(async () => {
     const entries = await Promise.all(EXPRESSIONS.map(async (e) => [e, await alphaOf(pngs[e])] as const));
     art = Object.fromEntries(entries) as Record<Expression, Alpha>;
   });
   /** Whether any of the base picture is painted between two rest points (sampled along the segment). */
-  const painted = (x0: number, y0: number, x1: number, y1: number) => [0, 0.25, 0.5, 0.75, 1].some((t) => art.base.at(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t) > 20);
+  const painted = (x0: number, y0: number, x1: number, y1: number) =>
+    [0, 0.25, 0.5, 0.75, 1].some((t) => art.base.at(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t) > 20);
   const build = () => make(sameArt(Texture.WHITE));
   const near = (c: C, p: Point) => {
     let best = 0;
-    for (let i = 0; i < c.rest.length; i += 2) if (Math.hypot(c.rest[i] - p.x, c.rest[i + 1] - p.y) < Math.hypot(c.rest[best] - p.x, c.rest[best + 1] - p.y)) best = i;
+    for (let i = 0; i < c.rest.length; i += 2)
+      if (
+        Math.hypot(c.rest[i] - p.x, c.rest[i + 1] - p.y) <
+        Math.hypot(c.rest[best] - p.x, c.rest[best + 1] - p.y)
+      )
+        best = i;
     return best;
   };
   const offset = (c: C, i: number) => {
@@ -93,54 +145,72 @@ export function illustratedSuite<C extends IllustratedCreature>({ species, twin 
       for (const e of A.eyes) expect(art.base.at(e.x, e.y)).toBe(255);
     });
 
-    it(twin ? 'keeps the Graphics species’ slots and misfits, and a touch circle of at least 100 units on the stage' : 'has a slot for every accessory it does not decline, and a touch circle of at least 100 units on the stage', () => {
-      const c = build();
-      // The second wave has no Graphics twin: its own misfits are the reference, and each must have a reason.
-      const old = twin ? makeCreature(species as SpeciesId) : { slots: Object.fromEntries(ACCESSORIES.filter((k) => !c.misfit[k]).map((k) => [ACCESSORY_SLOT[k], true])), misfit: c.misfit };
-      for (const reason of Object.values(c.misfit)) expect(reason.length).toBeGreaterThan(10);
-      expect(c.species).toBe(species);
-      for (const kind of ACCESSORIES) {
-        expect(!!c.slots[ACCESSORY_SLOT[kind]], kind).toBe(!!old.slots[ACCESSORY_SLOT[kind]]);
-        expect(!!c.misfit[kind], kind).toBe(!!old.misfit[kind]);
-        expect(dress(c, kind, true)).toBe(!old.misfit[kind]);
-        expect(c.wearing(kind)).toBe(!old.misfit[kind]);
-      }
-      for (const kind of ACCESSORIES) dress(c, kind, false);
-      for (const kind of ACCESSORIES) expect(c.wearing(kind)).toBe(false);
-      expect(c.touch.r * stageScale).toBeGreaterThanOrEqual(100);
-    });
-
-    it.each(Array.from({ length: 21 }, (_, i) => i / 21))('pins the face and body, moves the part’s tip, and never tears the picture through idle and repeated taps (phase %s)', (phase) => {
-      // Cover the randomized initial clock deliberately, including both ends of its range.
-      const random = vi.spyOn(Math, 'random').mockReturnValue(phase);
-      let c: C;
-      try {
-        c = build();
-      } finally {
-        random.mockRestore();
-      }
-      const fixed = still.map((p) => near(c, p));
-      const moving = near(c, tip);
-      const cols = c.mesh.geometry.verticesX;
-      let travel = 0;
-      let worstStretch = 0;
-      for (let f = 0; f < 600; f++) {
-        if (f === 120 || f === 140 || f === 300) c.poke(); // a tap, a second tap mid-reaction, and a later one
-        c.update(1 / 60);
-        for (const i of fixed) expect(offset(c, i)).toBeLessThan(0.5);
-        travel = Math.max(travel, offset(c, moving));
-        // Where the picture is painted, neighbouring vertices stay close: no pixel stretches past double.
-        const p = c.mesh.geometry.positions;
-        for (let i = 0; i + 2 < p.length; i += 2) {
-          if ((i / 2) % cols === cols - 1) continue;
-          if (!painted(c.rest[i], c.rest[i + 1], c.rest[i + 2], c.rest[i + 3])) continue;
-          worstStretch = Math.max(worstStretch, Math.hypot(p[i + 2] - p[i], p[i + 3] - p[i + 1]) / (c.rest[i + 2] - c.rest[i]));
+    it(
+      twin
+        ? 'keeps the Graphics species’ slots and misfits, and a touch circle of at least 100 units on the stage'
+        : 'has a slot for every accessory it does not decline, and a touch circle of at least 100 units on the stage',
+      () => {
+        const c = build();
+        // The second wave has no Graphics twin: its own misfits are the reference, and each must have a reason.
+        const old = twin
+          ? makeCreature(species as SpeciesId)
+          : {
+              slots: Object.fromEntries(
+                ACCESSORIES.filter((k) => !c.misfit[k]).map((k) => [ACCESSORY_SLOT[k], true]),
+              ),
+              misfit: c.misfit,
+            };
+        for (const reason of Object.values(c.misfit)) expect(reason.length).toBeGreaterThan(10);
+        expect(c.species).toBe(species);
+        for (const kind of ACCESSORIES) {
+          expect(!!c.slots[ACCESSORY_SLOT[kind]], kind).toBe(!!old.slots[ACCESSORY_SLOT[kind]]);
+          expect(!!c.misfit[kind], kind).toBe(!!old.misfit[kind]);
+          expect(dress(c, kind, true)).toBe(!old.misfit[kind]);
+          expect(c.wearing(kind)).toBe(!old.misfit[kind]);
         }
-      }
-      expect(travel).toBeGreaterThan(minTravel);
-      expect(worstStretch).toBeLessThan(2);
-      c.destroy({ children: true });
-    });
+        for (const kind of ACCESSORIES) dress(c, kind, false);
+        for (const kind of ACCESSORIES) expect(c.wearing(kind)).toBe(false);
+        expect(c.touch.r * stageScale).toBeGreaterThanOrEqual(100);
+      },
+    );
+
+    it.each(Array.from({ length: 21 }, (_, i) => i / 21))(
+      'pins the face and body, moves the part’s tip, and never tears the picture through idle and repeated taps (phase %s)',
+      (phase) => {
+        // Cover the randomized initial clock deliberately, including both ends of its range.
+        const random = vi.spyOn(Math, 'random').mockReturnValue(phase);
+        let c: C;
+        try {
+          c = build();
+        } finally {
+          random.mockRestore();
+        }
+        const fixed = still.map((p) => near(c, p));
+        const moving = near(c, tip);
+        const cols = c.mesh.geometry.verticesX;
+        let travel = 0;
+        let worstStretch = 0;
+        for (let f = 0; f < 600; f++) {
+          if (f === 120 || f === 140 || f === 300) c.poke(); // a tap, a second tap mid-reaction, and a later one
+          c.update(1 / 60);
+          for (const i of fixed) expect(offset(c, i)).toBeLessThan(0.5);
+          travel = Math.max(travel, offset(c, moving));
+          // Where the picture is painted, neighbouring vertices stay close: no pixel stretches past double.
+          const p = c.mesh.geometry.positions;
+          for (let i = 0; i + 2 < p.length; i += 2) {
+            if ((i / 2) % cols === cols - 1) continue;
+            if (!painted(c.rest[i], c.rest[i + 1], c.rest[i + 2], c.rest[i + 3])) continue;
+            worstStretch = Math.max(
+              worstStretch,
+              Math.hypot(p[i + 2] - p[i], p[i + 3] - p[i + 1]) / (c.rest[i + 2] - c.rest[i]),
+            );
+          }
+        }
+        expect(travel).toBeGreaterThan(minTravel);
+        expect(worstStretch).toBeLessThan(2);
+        c.destroy({ children: true });
+      },
+    );
 
     it('never jumps between frames, at the start or end of a reaction or on a re-tap', () => {
       const c = build();
@@ -151,14 +221,18 @@ export function illustratedSuite<C extends IllustratedCreature>({ species, twin 
         if (f === 20 || f === 120 || f === 130) c.poke(); // into a reaction, past its end, then two quick taps
         c.update(1 / 60);
         const p = c.mesh.geometry.positions;
-        for (let i = 0; i < p.length; i += 2) worst = Math.max(worst, Math.hypot(p[i] - prev[i], p[i + 1] - prev[i + 1]));
+        for (let i = 0; i < p.length; i += 2)
+          worst = Math.max(worst, Math.hypot(p[i] - prev[i], p[i + 1] - prev[i + 1]));
         prev = p.slice();
       }
       expect(worst).toBeLessThan(maxStep);
     });
 
     it('swaps whole textures: surprised then happy on a touch, a blink while calm, and the set mood', () => {
-      const textures = Object.fromEntries(EXPRESSIONS.map((e) => [e, new Texture()])) as Record<Expression, Texture>;
+      const textures = Object.fromEntries(EXPRESSIONS.map((e) => [e, new Texture()])) as Record<
+        Expression,
+        Texture
+      >;
       const c = make(textures);
       c.update(1 / 60);
       expect(c.faceMesh.texture).toBe(textures.base);
@@ -212,7 +286,10 @@ export function illustratedSuite<C extends IllustratedCreature>({ species, twin 
     });
 
     it('releases its own geometry and leaves the shared textures alone', () => {
-      const textures = Object.fromEntries(EXPRESSIONS.map((e) => [e, new Texture()])) as Record<Expression, Texture>;
+      const textures = Object.fromEntries(EXPRESSIONS.map((e) => [e, new Texture()])) as Record<
+        Expression,
+        Texture
+      >;
       const c = make(textures);
       const freed = vi.spyOn(c.mesh.geometry, 'destroy');
       c.destroy({ children: true });

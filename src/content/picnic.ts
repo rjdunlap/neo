@@ -24,9 +24,17 @@ export interface GameStep {
 
 export const GAME_STEPS: GameStep[] = [
   // Pet Kitchen 1: halves for two friends; 3: two halves each; 4: two sandwiches for four, halves or quarters.
-  { id: 'sandwiches', game: 'pet-kitchen', level: { lap: 10, toddler: 1, preschool: 1, prek: 3, school: 4, grownup: 4 } },
+  {
+    id: 'sandwiches',
+    game: 'pet-kitchen',
+    level: { lap: 10, toddler: 1, preschool: 1, prek: 3, school: 4, grownup: 4 },
+  },
   // Jelly Drums 1: free play; 4: copy two-note tunes; 5: three notes; 7: four notes.
-  { id: 'invitation', game: 'jelly-drums', level: { lap: 1, toddler: 1, preschool: 4, prek: 5, school: 7, grownup: 7 } },
+  {
+    id: 'invitation',
+    game: 'jelly-drums',
+    level: { lap: 1, toddler: 1, preschool: 4, prek: 5, school: 7, grownup: 7 },
+  },
 ];
 
 export const stepLine: Record<PicnicStep, { ask: LineId; done: LineId; recap: LineId }> = {
@@ -46,7 +54,11 @@ export type Pattern = (typeof PATTERNS)[number];
 export const HANGS = ['tree', 'line', 'bush'] as const;
 export type Hang = (typeof HANGS)[number];
 /** Spoken: "in the tree", "on the clothesline", "on the bush". */
-export const HANG_WORDS: Record<Hang, string> = { tree: 'in the tree', line: 'on the clothesline', bush: 'on the bush' };
+export const HANG_WORDS: Record<Hang, string> = {
+  tree: 'in the tree',
+  line: 'on the clothesline',
+  bush: 'on the bush',
+};
 
 export interface Blanket {
   pattern: Pattern;
@@ -75,12 +87,21 @@ export function blanketPuzzle(band: Band, rng: Rng): BlanketPuzzle {
       { pattern: rng.pick(['spots', 'checks'] as const), hang: home, slot: (1 - slot) as 0 | 1 },
       { pattern: 'stripes', hang: away, slot: rng.int(0, 1) as 0 | 1 },
     ]);
-    return { blankets, target: blankets.findIndex((b) => b.pattern === 'stripes' && b.hang === home), withPlace: true };
+    return {
+      blankets,
+      target: blankets.findIndex((b) => b.pattern === 'stripes' && b.hang === home),
+      withPlace: true,
+    };
   }
   const count = band === 'lap' || band === 'toddler' ? 2 : 3;
-  const patterns: Pattern[] = ['stripes', ...rng.shuffle(['spots', 'checks'] as Pattern[]).slice(0, count - 1)];
+  const patterns: Pattern[] = [
+    'stripes',
+    ...rng.shuffle(['spots', 'checks'] as Pattern[]).slice(0, count - 1),
+  ];
   const hangs = rng.shuffle([...HANGS]);
-  const blankets = rng.shuffle(patterns.map((pattern, i): Blanket => ({ pattern, hang: hangs[i], slot: rng.int(0, 1) as 0 | 1 })));
+  const blankets = rng.shuffle(
+    patterns.map((pattern, i): Blanket => ({ pattern, hang: hangs[i], slot: rng.int(0, 1) as 0 | 1 })),
+  );
   return { blankets, target: blankets.findIndex((b) => b.pattern === 'stripes'), withPlace: false };
 }
 

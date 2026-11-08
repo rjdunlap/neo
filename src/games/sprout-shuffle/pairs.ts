@@ -15,8 +15,30 @@ import { spread, type View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
 import type { Game, GameContext, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
-import { bedArt, BUD_H, BUD_W, BudCard, CHECK_R, leafArt, LENS_R, lensArt, PAIR_H, PAIR_W, PairCard } from './art';
-import { checkPairs, copiesKey, looks, pairsNextStep, pairsSetupFor, routes, type Look, type PairsSetup, type Route } from './logic';
+import {
+  bedArt,
+  BUD_H,
+  BUD_W,
+  BudCard,
+  CHECK_R,
+  leafArt,
+  LENS_R,
+  lensArt,
+  PAIR_H,
+  PAIR_W,
+  PairCard,
+} from './art';
+import {
+  checkPairs,
+  copiesKey,
+  looks,
+  pairsNextStep,
+  pairsSetupFor,
+  routes,
+  type Look,
+  type PairsSetup,
+  type Route,
+} from './logic';
 
 /** Friends who might ask for the bed; one is seeded per round. */
 const FRIENDS: readonly CritterName[] = ['bunny', 'pig', 'cat', 'bear', 'duck'];
@@ -71,7 +93,17 @@ export class SproutPairs implements Game {
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.setup = pairsSetupFor(ctx.rng);
-    this.backdrop = new Backdrop({ sky: [0xc4ecff, 0xfff6e0], hills: [0xf5d0e6, 0xbfe39a, 0x9ad77e], horizon: 0.42, clouds: 3, sun: false, seed: 131 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0xc4ecff, 0xfff6e0],
+        hills: [0xf5d0e6, 0xbfe39a, 0x9ad77e],
+        horizon: 0.42,
+        clouds: 3,
+        sun: false,
+        seed: 131,
+      },
+      ctx.view,
+    );
     this.friend = new Critter(CRITTERS[ctx.rng.pick([...FRIENDS])]);
     this.friend.eventMode = 'none';
     this.bed = bedArt(this.setup.colors[0][0]);
@@ -173,7 +205,10 @@ export class SproutPairs implements Game {
     }
     this.friend.visible = this.bed.visible = false;
     this.layout();
-    if (!quiet && !this.fanSpoken) { this.fanSpoken = true; void this.ctx.say('sprout.pairs-fan'); }
+    if (!quiet && !this.fanSpoken) {
+      this.fanSpoken = true;
+      void this.ctx.say('sprout.pairs-fan');
+    }
     this.regrowAll();
   }
 
@@ -250,7 +285,10 @@ export class SproutPairs implements Game {
     this.misses++;
     this.wrong++;
     sfx.boing();
-    if (this.wrong === 2 && !this.glowHinted) { this.glowHinted = true; this.hints++; }
+    if (this.wrong === 2 && !this.glowHinted) {
+      this.glowHinted = true;
+      this.hints++;
+    }
     if (this.wrong >= 2) this.glowCards = true;
     void this.counter(verdict);
   }
@@ -267,7 +305,9 @@ export class SproutPairs implements Game {
       if (!this.alive) return;
     }
     if ('extra' in verdict) {
-      const k = this.routesOf(i).findIndex((r) => r.from[0] === verdict.route.from[0] && r.from[1] === verdict.route.from[1]);
+      const k = this.routesOf(i).findIndex(
+        (r) => r.from[0] === verdict.route.from[0] && r.from[1] === verdict.route.from[1],
+      );
       this.glowBud = k;
       void this.ctx.say('sprout.pair-counter-plain');
       await this.grow(k);
@@ -294,7 +334,10 @@ export class SproutPairs implements Game {
     this.friend.cheer();
     for (const i of this.chosen) {
       const p = this.ctx.stage.toLocal(this.cards[i].getGlobalPosition());
-      this.ctx.particles.burst(p.x, p.y - 40, { colors: [swatch.green.fill, swatch[this.setup.colors[i][0]].fill, 0xffffff], count: 8 });
+      this.ctx.particles.burst(p.x, p.y - 40, {
+        colors: [swatch.green.fill, swatch[this.setup.colors[i][0]].fill, 0xffffff],
+        count: 8,
+      });
     }
     await this.ctx.say('sprout.pairs-done');
     if (!this.alive) return;
@@ -309,7 +352,10 @@ export class SproutPairs implements Game {
   /** Show me: the always-spotted cards are chosen and the leaf pulses; she presses it herself. Counted once per round. */
   askForHint() {
     if (this.finished || this.busy) return;
-    if (!this.showMeUsed) { this.showMeUsed = true; this.hints++; }
+    if (!this.showMeUsed) {
+      this.showMeUsed = true;
+      this.hints++;
+    }
     const shown = this.checkButton.visible;
     for (const i of [0, 1, 2]) this.setChosen(i, this.setup.accepted.has(i));
     // A leaf that just appeared already springs in; only a leaf already there pulses.
@@ -323,10 +369,14 @@ export class SproutPairs implements Game {
   update(dt: number) {
     this.clock += dt;
     this.friend.update(dt);
-    for (const g of this.grows) if (!g.card.destroyed) g.card.open(g.look, g.color, Math.min(1, Math.max(0.01, g.p.v)));
+    for (const g of this.grows)
+      if (!g.card.destroyed) g.card.open(g.look, g.color, Math.min(1, Math.max(0.01, g.p.v)));
     const r = 1 + 0.06 * Math.sin(this.clock * 5);
     for (const [k, b] of this.buds.entries()) b.glow(this.glowBud === k && !this.finished ? r : null);
-    for (const [i, c] of this.cards.entries()) c.glow(this.glowCards && !this.finished && this.setup.accepted.has(i) && !this.chosen.has(i) ? r : null);
+    for (const [i, c] of this.cards.entries())
+      c.glow(
+        this.glowCards && !this.finished && this.setup.accepted.has(i) && !this.chosen.has(i) ? r : null,
+      );
   }
 
   /** The ghost finger: the always-spotted cards, then the leaf. It never opens a fan. */

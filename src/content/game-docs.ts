@@ -10,7 +10,14 @@ import { levelsInOrder } from '../progress/difficulty';
 export const BEGIN = (what: string) => `<!-- generated: ${what} (npm run game-docs) -->`;
 export const END = '<!-- end generated -->';
 
-const BAND_WORD: Record<Band, string> = { lap: 'lap', toddler: 'toddler', preschool: 'preschool', prek: 'pre-K', school: 'school', grownup: 'grown-up' };
+const BAND_WORD: Record<Band, string> = {
+  lap: 'lap',
+  toddler: 'toddler',
+  preschool: 'preschool',
+  prek: 'pre-K',
+  school: 'school',
+  grownup: 'grown-up',
+};
 
 /** "lap–school", or runs joined by commas when a band is skipped. */
 export function ages(bands: readonly Band[]): string {
@@ -22,7 +29,9 @@ export function ages(bands: readonly Band[]): string {
     else runs.push([r]);
   }
   const word = (r: number) => BAND_WORD[BANDS[r].id];
-  return runs.map((run) => (run.length === 1 ? word(run[0]) : `${word(run[0])}–${word(run[run.length - 1])}`)).join(', ');
+  return runs
+    .map((run) => (run.length === 1 ? word(run[0]) : `${word(run[0])}–${word(run[run.length - 1])}`))
+    .join(', ');
 }
 
 /** Every level ID any band plays, plus entry levels, in ID order. */
@@ -42,7 +51,8 @@ function bandLevels(g: GameModule, band: Band): string {
 const cell = (s: string) => s.replace(/\|/g, '\\|').replace(/\s*\n\s*/g, ' ');
 
 /** Grown-up puzzles: the games in Lantern Lake and the ones only the grown-up band plays. */
-export const isGrownUpPuzzle = (g: GameModule, landId: string | undefined) => landId === 'lantern-lake' || (g.bands.length === 1 && g.bands[0] === 'grownup');
+export const isGrownUpPuzzle = (g: GameModule, landId: string | undefined) =>
+  landId === 'lantern-lake' || (g.bands.length === 1 && g.bands[0] === 'grownup');
 
 export function pageBlock(g: GameModule, land: Land | undefined): string {
   const inputs = g.inputs ?? ['touch'];
@@ -74,7 +84,8 @@ export function pageBlock(g: GameModule, land: Land | undefined): string {
   return out.join('\n');
 }
 
-export const emptyPage = (g: GameModule) => `# ${g.name}\n\n${END}\n\n**Starts as:** \n\n**Grows into:** \n\n## Design notes\n`;
+export const emptyPage = (g: GameModule) =>
+  `# ${g.name}\n\n${END}\n\n**Starts as:** \n\n**Grows into:** \n\n## Design notes\n`;
 
 /** A page with its generated block replaced (the title line is generated too). */
 export function renderPage(existing: string, g: GameModule, land: Land | undefined): string {
@@ -84,9 +95,11 @@ export function renderPage(existing: string, g: GameModule, land: Land | undefin
 }
 
 /** The hand-written "**Starts as:** …" line of a page. */
-export const handLine = (page: string, label: 'Starts as' | 'Grows into') => new RegExp(`^\\*\\*${label}:\\*\\* ?(.*)$`, 'm').exec(page)?.[1].trim() ?? '';
+export const handLine = (page: string, label: 'Starts as' | 'Grows into') =>
+  new RegExp(`^\\*\\*${label}:\\*\\* ?(.*)$`, 'm').exec(page)?.[1].trim() ?? '';
 
-const link = (g: GameModule, from: 'readme' | 'games') => `[${g.name}](${from === 'readme' ? 'docs/' : ''}games/${g.id}.md)`;
+const link = (g: GameModule, from: 'readme' | 'games') =>
+  `[${g.name}](${from === 'readme' ? 'docs/' : ''}games/${g.id}.md)`;
 
 export interface Entry {
   game: GameModule;
@@ -109,13 +122,23 @@ export function readmeBlocks(entries: readonly Entry[], lands: readonly Land[]):
   const landList = lands.filter((l) => entries.some((e) => e.land === l));
   const count = (l: Land) => entries.filter((e) => e.land === l).length;
   const lantern = lands.find((l) => l.id === 'lantern-lake');
-  const named = landList.map((l) => (l === lantern ? `**${l.name}** (${count(l)}, grown-up puzzles, shown to a child behind its signpost)` : `**${l.name}** (${count(l)})`));
+  const named = landList.map((l) =>
+    l === lantern
+      ? `**${l.name}** (${count(l)}, grown-up puzzles, shown to a child behind its signpost)`
+      : `**${l.name}** (${count(l)})`,
+  );
   const school = entries.filter((e) => e.game.bands.includes('school')).length;
   const grownBand = entries.filter((e) => e.game.bands.includes('grownup'));
   const where = (es: readonly Entry[]) => {
-    const by = landList.map((l) => [l, es.filter((e) => e.land === l)] as const).filter(([, es]) => es.length);
-    const parts = by.map(([l, es]) => (es.length === 1 ? `${es[0].game.name} in ${l.name}` : `${es.length} in ${l.name}`));
-    return parts.length > 1 ? `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}` : parts.join('');
+    const by = landList
+      .map((l) => [l, es.filter((e) => e.land === l)] as const)
+      .filter(([, es]) => es.length);
+    const parts = by.map(([l, es]) =>
+      es.length === 1 ? `${es[0].game.name} in ${l.name}` : `${es.length} in ${l.name}`,
+    );
+    return parts.length > 1
+      ? `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`
+      : parts.join('');
   };
   const controller = grown.filter((e) => e.game.inputs?.includes('controller')).length;
   const table = (es: readonly Entry[], withAges: boolean) =>
@@ -123,7 +146,13 @@ export function readmeBlocks(entries: readonly Entry[], lands: readonly Land[]):
       withAges ? '| Game | Ages | Land | Levels | Starts as |' : '| Game | Land | Levels | Starts as |',
       withAges ? '| --- | --- | --- | --- | --- |' : '| --- | --- | --- | --- |',
       ...es.map((e) => {
-        const cells = [link(e.game, 'readme'), ...(withAges ? [ages(e.game.bands)] : []), e.land?.name ?? '', `${allLevels(e.game).length}`, cell(handLine(e.page, 'Starts as'))];
+        const cells = [
+          link(e.game, 'readme'),
+          ...(withAges ? [ages(e.game.bands)] : []),
+          e.land?.name ?? '',
+          `${allLevels(e.game).length}`,
+          cell(handLine(e.page, 'Starts as')),
+        ];
         return `| ${cells.join(' | ')} |`;
       }),
     ].join('\n');
@@ -144,7 +173,8 @@ export function gamesIndex(entries: readonly Entry[], lands: readonly Land[]): s
   for (const [name, es] of groups) {
     if (!es.length) continue;
     out.push(`## ${name}`, '');
-    for (const e of es) out.push(`### ${e.game.name}`, '', `*${ages(e.game.bands)}* · ${link(e.game, 'games')}`, '');
+    for (const e of es)
+      out.push(`### ${e.game.name}`, '', `*${ages(e.game.bands)}* · ${link(e.game, 'games')}`, '');
   }
   return out.join('\n');
 }

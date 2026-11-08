@@ -31,16 +31,28 @@ export function wingsArt(): Graphics {
       .quadraticCurveTo(side * 128, -120, side * 136, -98)
       .quadraticCurveTo(side * 110, -100, side * 92, -108)
       .closePath()
-      .fill(0xffffff).stroke(line(swatch.blue.line, 7));
-    g.moveTo(side * 102, -150).quadraticCurveTo(side * 124, -164, side * 140, -190).moveTo(side * 102, -128).quadraticCurveTo(side * 124, -134, side * 138, -150).stroke(line(swatch.blue.line, 4));
+      .fill(0xffffff)
+      .stroke(line(swatch.blue.line, 7));
+    g.moveTo(side * 102, -150)
+      .quadraticCurveTo(side * 124, -164, side * 140, -190)
+      .moveTo(side * 102, -128)
+      .quadraticCurveTo(side * 124, -134, side * 138, -150)
+      .stroke(line(swatch.blue.line, 4));
   }
   return g;
 }
 
 /** The wooden crate the friend stands on, its top centre at (0, 0). */
 export function crateArt(w = 150, h = 46): Graphics {
-  const g = new Graphics().roundRect(-w / 2, 0, w, h, 6).fill(wood.fill).stroke(line(wood.line, 4));
-  g.moveTo(-w / 2 + 8, 8).lineTo(w / 2 - 8, h - 8).moveTo(w / 2 - 8, 8).lineTo(-w / 2 + 8, h - 8).stroke(line(wood.line, 3));
+  const g = new Graphics()
+    .roundRect(-w / 2, 0, w, h, 6)
+    .fill(wood.fill)
+    .stroke(line(wood.line, 4));
+  g.moveTo(-w / 2 + 8, 8)
+    .lineTo(w / 2 - 8, h - 8)
+    .moveTo(w / 2 - 8, 8)
+    .lineTo(-w / 2 + 8, h - 8)
+    .stroke(line(wood.line, 3));
   return g;
 }
 
@@ -56,12 +68,27 @@ export function attrIcon(a: Attr): Container {
     h.y = 116;
     c.addChild(h);
   } else if (a === 'wings') {
-    c.addChild(new Graphics()
-      .moveTo(-30, 14).quadraticCurveTo(-14, -34, 32, -26).lineTo(22, -12).lineTo(32, -2).lineTo(16, 6).lineTo(22, 16).quadraticCurveTo(-8, 28, -30, 14)
-      .fill(0xffffff).stroke(line(swatch.blue.line, 4)));
+    c.addChild(
+      new Graphics()
+        .moveTo(-30, 14)
+        .quadraticCurveTo(-14, -34, 32, -26)
+        .lineTo(22, -12)
+        .lineTo(32, -2)
+        .lineTo(16, 6)
+        .lineTo(22, 16)
+        .quadraticCurveTo(-8, 28, -30, 14)
+        .fill(0xffffff)
+        .stroke(line(swatch.blue.line, 4)),
+    );
   } else {
     const g = new Graphics().ellipse(0, 0, 32, 26).fill(swatch.white.light).stroke(line(ink, 4));
-    for (const [x, y, r] of [[-12, -8, 7], [10, -10, 6], [4, 10, 8], [-16, 10, 5]]) g.circle(x, y, r).fill(ink);
+    for (const [x, y, r] of [
+      [-12, -8, 7],
+      [10, -10, 6],
+      [4, 10, 8],
+      [-16, 10, 5],
+    ])
+      g.circle(x, y, r).fill(ink);
     c.addChild(g);
   }
   return c;
@@ -72,20 +99,46 @@ export type SignMark = 'every' | 'none' | 'not-all';
 /** The quantifier picture: a hand sweeping over three dots (every), the dots crossed (none), or one dot popped out and circled (not all). */
 export function quantIcon(m: SignMark): Graphics {
   const g = new Graphics();
-  const dots = m === 'not-all' ? [[-24, 14], [0, 18], [30, -12]] : [[-24, 14], [0, 18], [24, 14]];
+  const dots =
+    m === 'not-all'
+      ? [
+          [-24, 14],
+          [0, 18],
+          [30, -12],
+        ]
+      : [
+          [-24, 14],
+          [0, 18],
+          [24, 14],
+        ];
   for (const [x, y] of dots) g.circle(x, y, 8).fill(ink);
-  if (m === 'none') for (const [x, y] of dots) g.moveTo(x - 11, y - 11).lineTo(x + 11, y + 11).moveTo(x + 11, y - 11).lineTo(x - 11, y + 11).stroke(line(swatch.red.fill, 4));
+  if (m === 'none')
+    for (const [x, y] of dots)
+      g.moveTo(x - 11, y - 11)
+        .lineTo(x + 11, y + 11)
+        .moveTo(x + 11, y - 11)
+        .lineTo(x - 11, y + 11)
+        .stroke(line(swatch.red.fill, 4));
   if (m === 'not-all') g.circle(30, -12, 15).stroke(line(swatch.red.fill, 4));
   // The sweeping hand: an arc over the dots with a little palm at its end.
-  g.moveTo(-34, -6).quadraticCurveTo(0, -30, m === 'not-all' ? 12 : 34, -6).stroke(line(swatch.blue.fill, 5));
-  g.circle(m === 'not-all' ? 12 : 34, -6, 7).fill(swatch.orange.light).stroke(line(swatch.orange.line, 3));
+  g.moveTo(-34, -6)
+    .quadraticCurveTo(0, -30, m === 'not-all' ? 12 : 34, -6)
+    .stroke(line(swatch.blue.fill, 5));
+  g.circle(m === 'not-all' ? 12 : 34, -6, 7)
+    .fill(swatch.orange.light)
+    .stroke(line(swatch.orange.line, 3));
   return g;
 }
 
 /** A sign card for a claim (or the not-all sign after a break), `w` by `h`, centred on (0, 0). */
 export function claimSign(claim: Claim, w: number, h: number, mark: SignMark = claim.q): Container {
   const c = new Container();
-  c.addChild(new Graphics().roundRect(-w / 2, -h / 2, w, h, 16).fill(0xffffff).stroke(line(wood.line, 6)));
+  c.addChild(
+    new Graphics()
+      .roundRect(-w / 2, -h / 2, w, h, 16)
+      .fill(0xffffff)
+      .stroke(line(wood.line, 6)),
+  );
   const q = quantIcon(mark);
   q.x = -w / 4;
   q.scale.set(Math.min(1.2, h / 100));
@@ -103,16 +156,28 @@ export function postArt(h: number): Graphics {
 
 /** The big tick printed across the sign by the stamp. */
 export function everyMark(): Graphics {
-  return new Graphics().circle(0, 0, 46).fill({ color: swatch.green.light, alpha: 0.9 }).stroke(line(swatch.green.line, 6))
-    .moveTo(-22, 2).lineTo(-6, 20).lineTo(26, -18).stroke(line(swatch.green.line, 10));
+  return new Graphics()
+    .circle(0, 0, 46)
+    .fill({ color: swatch.green.light, alpha: 0.9 })
+    .stroke(line(swatch.green.line, 6))
+    .moveTo(-22, 2)
+    .lineTo(-6, 20)
+    .lineTo(26, -18)
+    .stroke(line(swatch.green.line, 10));
 }
 
 /** The wooden rubber stamp, `s` square, centred on (0, 0): a handle above an inked face with the every sign and a tick. */
 export function stampArt(s: number): Container {
   const c = new Container();
-  c.addChild(new Graphics()
-    .roundRect(-s * 0.18, -s / 2, s * 0.36, s * 0.42, 12).fill(wood.fill).stroke(line(wood.line, 4))
-    .roundRect(-s / 2, -s * 0.1, s, s * 0.6, 14).fill(cream).stroke(line(wood.line, 5)));
+  c.addChild(
+    new Graphics()
+      .roundRect(-s * 0.18, -s / 2, s * 0.36, s * 0.42, 12)
+      .fill(wood.fill)
+      .stroke(line(wood.line, 4))
+      .roundRect(-s / 2, -s * 0.1, s, s * 0.6, 14)
+      .fill(cream)
+      .stroke(line(wood.line, 5)),
+  );
   const q = quantIcon('every');
   q.scale.set(0.8);
   q.position.set(-s * 0.18, s * 0.2);

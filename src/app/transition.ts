@@ -32,7 +32,11 @@ export function usableBox(b: Box | null | undefined, v: View): b is Box {
  * Chooses the change: a forward tap's box grows (it wins), else the new scene's box for where the old one came from
  * shrinks, else a crossfade. With no old scene (the first screen) the new one simply appears under a fade.
  */
-export function chooseTransition(from: Box | null | undefined, into: Box | null | undefined, v: View): Transition {
+export function chooseTransition(
+  from: Box | null | undefined,
+  into: Box | null | undefined,
+  v: View,
+): Transition {
   if (usableBox(from, v)) return { kind: 'grow', from };
   if (usableBox(into, v)) return { kind: 'shrink', into };
   return { kind: 'fade' };

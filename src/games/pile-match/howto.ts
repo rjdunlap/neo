@@ -14,8 +14,16 @@ export const HOW_TO: GameHowTo = {
   finish: 'The grass is clear.',
   note: [
     { from: 1, to: 1, text: 'Tapping a different kind counts as a mistake.' },
-    { from: 2, to: 2, text: 'Touching something underneath is never counted; tapping a different kind counts as a mistake.' },
+    {
+      from: 2,
+      to: 2,
+      text: 'Touching something underneath is never counted; tapping a different kind counts as a mistake.',
+    },
     { from: 3, to: 3, text: 'Putting things back is never counted.' },
-    { from: 4, to: 8, text: 'Touching something underneath and putting things back are never counted. A tap the full tray turns away counts as a mistake, once until something leaves the tray.' },
+    {
+      from: 4,
+      to: 8,
+      text: 'Touching something underneath and putting things back are never counted. A tap the full tray turns away counts as a mistake, once until something leaves the tray.',
+    },
   ],
 };

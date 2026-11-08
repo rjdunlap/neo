@@ -1,9 +1,32 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
-  answerObject, answerRow, ATTRIBUTES, attributeOf, commonExact, compareAnswer, count, gramsFor, helpId, HelpTally,
-  KILOGRAM, PER_GROUP, planFor, PLANS, remeasure, SAME, SMALL_WEIGHT, tableAnswer, tasksFor, toolAnswers, TOOL_FOR,
-  TOOLS, UNIT_VALUE, type Attribute, type ObjectId, type Task,
+  answerObject,
+  answerRow,
+  ATTRIBUTES,
+  attributeOf,
+  commonExact,
+  compareAnswer,
+  count,
+  gramsFor,
+  helpId,
+  HelpTally,
+  KILOGRAM,
+  PER_GROUP,
+  planFor,
+  PLANS,
+  remeasure,
+  SAME,
+  SMALL_WEIGHT,
+  tableAnswer,
+  tasksFor,
+  toolAnswers,
+  TOOL_FOR,
+  TOOLS,
+  UNIT_VALUE,
+  type Attribute,
+  type ObjectId,
+  type Task,
 } from './logic';
 
 const SEEDS = Array.from({ length: 200 }, (_, i) => i * 7919 + 1);
@@ -100,7 +123,11 @@ describe('level 2', () => {
   });
 });
 
-const swapSides = (t: Task): Task => ({ ...t, objects: [...t.objects!].reverse(), records: [...t.records].reverse() });
+const swapSides = (t: Task): Task => ({
+  ...t,
+  objects: [...t.objects!].reverse(),
+  records: [...t.records].reverse(),
+});
 
 describe('level 3', () => {
   const byAttr = (ts: Task[], a: Attribute) => ts.find((t) => t.attribute === a)!;
@@ -220,12 +247,18 @@ describe('level 4', () => {
       expect(ts).toHaveLength(2);
       expect(ts.map((t) => t.attribute)).toEqual(['mass', 'mass']);
       expect(ts.map((t) => t.table!.kg)).toEqual([3, 4]);
-      expect(ts.map((t) => t.table!.known)).toEqual([[1, 2], [1, 2, 3]]);
+      expect(ts.map((t) => t.table!.known)).toEqual([
+        [1, 2],
+        [1, 2, 3],
+      ]);
     }
   });
 
   it('options are a permutation of the authored choices with exactly one right answer', () => {
-    const sets = [[1000, 3000, 4000], [2000, 4000, 5000]];
+    const sets = [
+      [1000, 3000, 4000],
+      [2000, 4000, 5000],
+    ];
     for (const seed of SEEDS) {
       tasks(4, seed).forEach((t, i) => {
         const opts = t.table!.options;
@@ -254,7 +287,8 @@ describe('level 4', () => {
 
 describe('determinism and plans', () => {
   it('the same seed gives the same tasks', () => {
-    for (const level of [1, 2, 3, 4]) for (const seed of SEEDS.slice(0, 30)) expect(tasks(level, seed)).toEqual(tasks(level, seed));
+    for (const level of [1, 2, 3, 4])
+      for (const seed of SEEDS.slice(0, 30)) expect(tasks(level, seed)).toEqual(tasks(level, seed));
   });
 
   it('planFor clamps to the built levels', () => {

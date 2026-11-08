@@ -22,14 +22,19 @@ describe('Story Grove as a location', () => {
       const plan = grovePlan(layout, view, ground);
       // A night garden, not a dark lawn: evening primrose, and one of the night animals.
       expect(plan.filter((p) => p.kind === 'primrose').length, where0).toBeGreaterThanOrEqual(1);
-      expect(plan.filter((p) => p.kind === 'owl' || p.kind === 'hedgehog').length, where0).toBeGreaterThanOrEqual(1);
+      expect(
+        plan.filter((p) => p.kind === 'owl' || p.kind === 'hedgehog').length,
+        where0,
+      ).toBeGreaterThanOrEqual(1);
       for (const { kind, rect: r } of plan) {
         const where = `${kind} ${where0}`;
         expect(r.x >= 0 && r.y >= 0 && r.x + r.w <= view.w && r.y + r.h <= view.h, where).toBe(true);
         for (const k of keepOut) expect(overlaps(r, k), where).toBe(false);
         expect(r.y, where).toBeGreaterThan(ground);
       }
-      for (const p of plan) for (const b of plan) if (p !== b) expect(overlaps(p.rect, b.rect), `${p.kind} on ${b.kind} ${where0}`).toBe(false);
+      for (const p of plan)
+        for (const b of plan)
+          if (p !== b) expect(overlaps(p.rect, b.rect), `${p.kind} on ${b.kind} ${where0}`).toBe(false);
       expect(grovePlan(layout, view, ground)).toEqual(plan);
     }
   });
@@ -45,7 +50,10 @@ describe('Story Grove as a location', () => {
       expect(moonBox.y + moonBox.h, name).toBeLessThanOrEqual(ground - 168);
       for (const k of off) expect(overlaps(moonBox, k), name).toBe(false);
       expect(stars.length, name).toBeGreaterThanOrEqual(8);
-      const boxes = [...stars.map((s) => ({ x: s.x - s.r, y: s.y - s.r, w: 2 * s.r, h: 2 * s.r })), ...bats.map((b) => b.rect)];
+      const boxes = [
+        ...stars.map((s) => ({ x: s.x - s.r, y: s.y - s.r, w: 2 * s.r, h: 2 * s.r })),
+        ...bats.map((b) => b.rect),
+      ];
       for (const b of boxes) {
         expect(b.x >= 0 && b.y >= 0 && b.x + b.w <= view.w && b.y + b.h <= ground - 168, name).toBe(true);
         for (const k of [...off, moonBox]) expect(overlaps(b, k), name).toBe(false);

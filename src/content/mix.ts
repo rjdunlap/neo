@@ -16,27 +16,53 @@ type Candidate = Pick<GameModule, 'id' | 'bands' | 'inputs'>;
 
 /** A stop she can play at her own band by touch. */
 export function mixPlayable(mod: Candidate | undefined, band: Band): boolean {
-  return !!mod && (mod.inputs ?? ['touch']).includes('touch') && mod.bands.includes(band) && playBand(mod.bands, band) === band;
+  return (
+    !!mod &&
+    (mod.inputs ?? ['touch']).includes('touch') &&
+    mod.bands.includes(band) &&
+    playBand(mod.bands, band) === band
+  );
 }
 
 /** The whole mix, in order, or null: her own home spot at lap or toddler, and every stop playable. Never a partial mix. */
-export function mixGames<T extends Candidate>(profileBand: Band, placeBand: Band, catalog: readonly T[], ids: readonly string[] = MIX_IDS): T[] | null {
+export function mixGames<T extends Candidate>(
+  profileBand: Band,
+  placeBand: Band,
+  catalog: readonly T[],
+  ids: readonly string[] = MIX_IDS,
+): T[] | null {
   if (!MIX_BANDS.includes(profileBand) || placeBand !== profileBand) return null;
-  const mods = ids.map(id => catalog.find(m => m.id === id));
-  return mods.every(m => mixPlayable(m, profileBand)) ? mods as T[] : null;
+  const mods = ids.map((id) => catalog.find((m) => m.id === id));
+  return mods.every((m) => mixPlayable(m, profileBand)) ? (mods as T[]) : null;
 }
 
 /** One stop of a live mix, checked at its launch: her own lap or toddler home spot, and that game playable there by touch. */
-export function mixStop<T extends Candidate>(profileBand: Band, placeBand: Band, catalog: readonly T[], id: string | undefined): T | null {
+export function mixStop<T extends Candidate>(
+  profileBand: Band,
+  placeBand: Band,
+  catalog: readonly T[],
+  id: string | undefined,
+): T | null {
   if (!MIX_BANDS.includes(profileBand) || placeBand !== profileBand) return null;
-  const mod = catalog.find(m => m.id === id);
+  const mod = catalog.find((m) => m.id === id);
   return mod && mixPlayable(mod, profileBand) ? mod : null;
 }
 
 /** The games a lineup may hold: her home spot's own games, in its order, that she can play at her band by touch. */
-export function mixPool(profileBand: Band, placeIds: readonly string[], catalog: readonly Candidate[]): string[] {
+export function mixPool(
+  profileBand: Band,
+  placeIds: readonly string[],
+  catalog: readonly Candidate[],
+): string[] {
   if (!MIX_BANDS.includes(profileBand)) return [];
-  return placeIds.filter((id, i) => placeIds.indexOf(id) === i && mixPlayable(catalog.find(m => m.id === id), profileBand));
+  return placeIds.filter(
+    (id, i) =>
+      placeIds.indexOf(id) === i &&
+      mixPlayable(
+        catalog.find((m) => m.id === id),
+        profileBand,
+      ),
+  );
 }
 
 /** Lineup edits (D5a): pure, never empty, never more than `MIX_MAX`; a repeated game is two entries. */
@@ -60,12 +86,15 @@ export const lineup = {
 
 /** A held lineup after the pool changed (a birthday, a game gone): what is still in the pool, in order, or the default. */
 export function repairLineup(ids: readonly string[], pool: readonly string[]): readonly string[] {
-  const kept = ids.filter(id => pool.includes(id)).slice(0, MIX_MAX);
+  const kept = ids.filter((id) => pool.includes(id)).slice(0, MIX_MAX);
   return kept.length ? kept : lineup.reset();
 }
 
 export type ItemState = 'upcoming' | 'played' | 'skipped' | 'unavailable';
-export interface MixItem { state: ItemState; /** The sticker seed of the position's first completed round. */ seed?: number }
+export interface MixItem {
+  state: ItemState;
+  /** The sticker seed of the position's first completed round. */ seed?: number;
+}
 export interface MixState {
   readonly items: readonly MixItem[];
   /** The position the current round plays, or null before the first launch. */
@@ -86,7 +115,7 @@ export function startMix(ids: readonly string[] = MIX_IDS): MixState {
 }
 
 const settle = (s: MixState, p: number, item: MixItem): MixState =>
-  s.items[p]?.state === 'upcoming' ? { ...s, items: s.items.map((it, i) => i === p ? item : it) } : s;
+  s.items[p]?.state === 'upcoming' ? { ...s, items: s.items.map((it, i) => (i === p ? item : it)) } : s;
 
 /** Pure transitions. An item leaves `upcoming` exactly once; a played item is never skipped or played again. */
 export function step(s: MixState, e: MixEvent): MixState {
@@ -104,13 +133,13 @@ export function step(s: MixState, e: MixEvent): MixState {
 
 /** The next upcoming position, or null when only the ending is left. */
 export function nextUp(s: MixState): number | null {
-  const i = s.items.findIndex(it => it.state === 'upcoming');
+  const i = s.items.findIndex((it) => it.state === 'upcoming');
   return i < 0 ? null : i;
 }
 
 /** "That was Little surprises!" after any play; the quiet ending when every stop was hopped over. */
 export function endingLine(s: MixState): 'mix.end' | 'mix.end.quiet' {
-  return s.items.some(it => it.state === 'played') ? 'mix.end' : 'mix.end.quiet';
+  return s.items.some((it) => it.state === 'played') ? 'mix.end' : 'mix.end.quiet';
 }
 
 export type MixReturn = { kind: 'stop'; p: number } | { kind: 'ending' } | { kind: 'sheet' };

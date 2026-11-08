@@ -3,7 +3,9 @@ export const VOICE = {
   'game.notice-board': ['Notice board'],
   'noticeboard.instruct.1': ['Who made this poster? Find the friend with the same badge as the stamp.'],
   'noticeboard.instruct.2': ['Who saw it? Tap the friend who was there.'],
-  'noticeboard.instruct.3': ['Is it telling what happened, or asking you to come and get some? Tap a basket.'],
+  'noticeboard.instruct.3': [
+    'Is it telling what happened, or asking you to come and get some? Tap a basket.',
+  ],
   'noticeboard.poster.l1-garden': ['Come see my garden!'],
   'noticeboard.poster.l1-kite': ['I made a kite!'],
   'noticeboard.poster.l1-sandcastle': ['Look at my sandcastle!'],

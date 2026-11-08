@@ -10,12 +10,41 @@ import type { View } from '../../engine/view';
 import type { Game, GameContext, TouchIntent } from '../types';
 import { bellArt, bubbleArt, filledArt, friendArt, itemArt, madeArt, placeArt } from './art';
 import {
-  centre, checkPlan, friendOf, friendSpot, ITEMS, madeAt, moveTo, nextMove, PLACE_H, planLayout, PlanTally, roundFor, spotAt, THING,
-  type ItemId, type Place, type PlanLayout, type PlanMap, type Plan, type Rect, type Round, type Spot,
+  centre,
+  checkPlan,
+  friendOf,
+  friendSpot,
+  ITEMS,
+  madeAt,
+  moveTo,
+  nextMove,
+  PLACE_H,
+  planLayout,
+  PlanTally,
+  roundFor,
+  spotAt,
+  THING,
+  type ItemId,
+  type Place,
+  type PlanLayout,
+  type PlanMap,
+  type Plan,
+  type Rect,
+  type Round,
+  type Spot,
 } from './logic';
 
-interface Thing { id: ItemId; node: Container; drag: DragHandle; stamp: number }
-interface Friend { node: Container; critter: Critter; bubble: Container }
+interface Thing {
+  id: ItemId;
+  node: Container;
+  drag: DragHandle;
+  stamp: number;
+}
+interface Friend {
+  node: Container;
+  critter: Critter;
+  bubble: Container;
+}
 
 /**
  * Levels 5–6: the whole cart laid out, friends with picture bubbles and a bell. She plans where every thing goes, moves
@@ -43,12 +72,25 @@ export class PlanShed implements Game {
   private layoutNow: PlanLayout;
   private moveCache: { sig: string; move: ReturnType<typeof nextMove> } | null = null;
 
-  constructor(private readonly ctx: GameContext, readonly plan: Plan) {
+  constructor(
+    private readonly ctx: GameContext,
+    readonly plan: Plan,
+  ) {
     this.view = ctx.view;
     this.round = roundFor(plan.level, ctx.rng);
     this.spots = this.round.items.map((): Spot => 'cart');
     this.layoutNow = planLayout(this.view, this.round);
-    this.backdrop = new Backdrop({ sky: [0xffe2c4, cream], hills: [swatch.green.light, 0xbfe39a], horizon: 0.5, clouds: 2, sun: true, seed: 137 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0xffe2c4, cream],
+        hills: [swatch.green.light, 0xbfe39a],
+        horizon: 0.5,
+        clouds: 2,
+        sun: true,
+        seed: 137,
+      },
+      ctx.view,
+    );
     this.plank.eventMode = this.glow.eventMode = 'none';
     ctx.stage.addChild(this.backdrop, this.plank);
     for (const place of this.round.open) {
@@ -77,7 +119,10 @@ export class PlanShed implements Game {
       const node = new Container();
       node.addChild(itemArt(id, THING));
       node.hitArea = new Rectangle(-THING / 2, -THING / 2, THING, THING);
-      const drag = draggable(node, ctx.tw, { onPick: () => this.picked(i), onDrop: (x, y) => this.drop(i, x, y) });
+      const drag = draggable(node, ctx.tw, {
+        onPick: () => this.picked(i),
+        onDrop: (x, y) => this.drop(i, x, y),
+      });
       drag.enabled = false;
       ctx.stage.addChild(node);
       this.things.push({ id, node, drag, stamp: 0 });
@@ -87,7 +132,17 @@ export class PlanShed implements Game {
 
   /** What a scripted play reads. */
   get state() {
-    return { level: this.plan.level, items: this.round.items.slice(), requests: this.round.requests.slice(), spots: this.spots.slice(), misses: this.tally.misses, hints: this.tally.hints, glowing: this.tally.glowing, busy: this.busy, finished: this.finished };
+    return {
+      level: this.plan.level,
+      items: this.round.items.slice(),
+      requests: this.round.requests.slice(),
+      spots: this.spots.slice(),
+      misses: this.tally.misses,
+      hints: this.tally.hints,
+      glowing: this.tally.glowing,
+      busy: this.busy,
+      finished: this.finished,
+    };
   }
 
   start() {
@@ -107,15 +162,20 @@ export class PlanShed implements Game {
   }
 
   private layout() {
-    const l = this.layoutNow = planLayout(this.view, this.round);
+    const l = (this.layoutNow = planLayout(this.view, this.round));
     this.moveCache = null;
     const row = l.row;
     // Drawn about the row's centre so the cart rattles in place.
-    const cx = row.x + row.w / 2, cy = row.y + row.h;
+    const cx = row.x + row.w / 2,
+      cy = row.y + row.h;
     this.plank.position.set(cx, cy);
-    this.plank.clear()
-      .roundRect(-row.w / 2 - 16, -4, row.w + 32, 24, 10).fill(wood.fill).stroke({ width: 5, color: wood.line });
-    for (const x of [-row.w / 2 + 40, row.w / 2 - 40]) this.plank.circle(x, 28, 16).fill(0x2b2b3a).circle(x, 28, 6).fill(swatch.white.light);
+    this.plank
+      .clear()
+      .roundRect(-row.w / 2 - 16, -4, row.w + 32, 24, 10)
+      .fill(wood.fill)
+      .stroke({ width: 5, color: wood.line });
+    for (const x of [-row.w / 2 + 40, row.w / 2 - 40])
+      this.plank.circle(x, 28, 16).fill(0x2b2b3a).circle(x, 28, 6).fill(swatch.white.light);
     for (const [place, node] of this.places) {
       const c = centre(l.places[place]!);
       node.position.set(c.x, c.y);
@@ -143,8 +203,11 @@ export class PlanShed implements Game {
       return { x: r.x + r.w / 2 + 20, y: r.y + r.h - 50 };
     }
     // Every thing in a place stays grabbable (not only the top one), so Show me one and the ghost finger can always reach it.
-    const here = this.spots.flatMap((t, k) => (t === s ? [k] : [])).sort((a, b) => this.things[a].stamp - this.things[b].stamp);
-    const k = here.indexOf(i), n = here.length;
+    const here = this.spots
+      .flatMap((t, k) => (t === s ? [k] : []))
+      .sort((a, b) => this.things[a].stamp - this.things[b].stamp);
+    const k = here.indexOf(i),
+      n = here.length;
     const c = centre(l.places[s as Place]!);
     return { x: c.x + (k - (n - 1) / 2) * 22, y: c.y + 24 - k * 12 };
   }
@@ -207,14 +270,20 @@ export class PlanShed implements Game {
     this.spots = moveTo(this.spots, i, at);
     this.things[i].stamp = ++this.stamps;
     sfx.tick();
-    const p = at === 'cart' ? null : friendOf(at) !== null ? this.friends[friendOf(at)!].node : this.places.get(at as Place)!;
+    const p =
+      at === 'cart'
+        ? null
+        : friendOf(at) !== null
+          ? this.friends[friendOf(at)!].node
+          : this.places.get(at as Place)!;
     if (p) void this.breathe(p);
     this.placeThings(true);
   }
 
   private async breathe(n: Container, size = 1.06) {
     await this.ctx.tw.to(n.scale, { x: size, y: size }, { duration: 0.15 });
-    if (this.alive && !n.destroyed) await this.ctx.tw.to(n.scale, { x: 1, y: 1 }, { duration: 0.2, ease: ease.outBack });
+    if (this.alive && !n.destroyed)
+      await this.ctx.tw.to(n.scale, { x: 1, y: 1 }, { duration: 0.2, ease: ease.outBack });
   }
 
   private async wiggle(n: Container) {
@@ -238,7 +307,10 @@ export class PlanShed implements Game {
     void this.swing();
     if (this.busy || this.things.some((t) => t.drag.dragging)) return;
     const r = this.tally.ring(this.round, this.spots);
-    if (r.kind === 'ok') { void this.finale(); return; }
+    if (r.kind === 'ok') {
+      void this.finale();
+      return;
+    }
     if (r.kind === 'cart') {
       void this.wiggle(this.plank);
       for (const i of r.indices) void this.wiggle(this.things[i].node);
@@ -249,7 +321,10 @@ export class PlanShed implements Game {
     void this.explain(r.check, r.glowed);
   }
 
-  private async explain(c: Exclude<ReturnType<typeof checkPlan>, { kind: 'ok' } | { kind: 'onCart' }>, glowed: boolean) {
+  private async explain(
+    c: Exclude<ReturnType<typeof checkPlan>, { kind: 'ok' } | { kind: 'onCart' }>,
+    glowed: boolean,
+  ) {
     if (c.kind === 'misplaced') {
       void this.wiggle(this.things[c.index].node);
       const f = friendOf(c.at);
@@ -279,13 +354,19 @@ export class PlanShed implements Game {
     const w = 7 + 2 * Math.sin(this.clock * 5);
     if (!m) {
       const b = this.layoutNow.bell;
-      this.glow.roundRect(b.x - 10, b.y - 10, b.w + 20, b.h + 20, 24).stroke({ width: w, color: swatch.yellow.fill });
+      this.glow
+        .roundRect(b.x - 10, b.y - 10, b.w + 20, b.h + 20, 24)
+        .stroke({ width: w, color: swatch.yellow.fill });
       return;
     }
     const t = this.things[m.index].node;
-    this.glow.roundRect(t.x - THING / 2 - 10, t.y - THING / 2 - 10, THING + 20, THING + 20, 24).stroke({ width: w, color: swatch.yellow.fill });
+    this.glow
+      .roundRect(t.x - THING / 2 - 10, t.y - THING / 2 - 10, THING + 20, THING + 20, 24)
+      .stroke({ width: w, color: swatch.yellow.fill });
     const r = this.spotRect(m.to);
-    this.glow.roundRect(r.x - 12, r.y - 12, r.w + 24, r.h + 24, 26).stroke({ width: w, color: swatch.yellow.fill });
+    this.glow
+      .roundRect(r.x - 12, r.y - 12, r.w + 24, r.h + 24, 26)
+      .stroke({ width: w, color: swatch.yellow.fill });
   }
 
   private spotRect(s: Spot): Rect {
@@ -299,13 +380,21 @@ export class PlanShed implements Game {
   askForHint() {
     if (this.busy || this.finished || this.things.some((t) => t.drag.dragging)) return;
     const m = nextMove(this.round, this.spots);
-    if (!m) { void this.ctx.say('shed.ring-now'); return; }
-    if (this.tally.ask() === 'glow') { void this.ctx.say('shed.hint-glow'); return; }
+    if (!m) {
+      void this.ctx.say('shed.ring-now');
+      return;
+    }
+    if (this.tally.ask() === 'glow') {
+      void this.ctx.say('shed.hint-glow');
+      return;
+    }
     const from = this.spots[m.index];
     const toFriend = friendOf(m.to);
     this.moveThing(m.index, m.to);
-    const both = ITEMS[this.round.items[m.index]].fits.filter((r) => this.round.requests.includes(r)).length > 1;
-    if (both && friendOf(from) !== null && toFriend !== null) void this.ctx.say(`shed.only.${this.round.requests[toFriend]}` as 'shed.only.bed');
+    const both =
+      ITEMS[this.round.items[m.index]].fits.filter((r) => this.round.requests.includes(r)).length > 1;
+    if (both && friendOf(from) !== null && toFriend !== null)
+      void this.ctx.say(`shed.only.${this.round.requests[toFriend]}` as 'shed.only.bed');
   }
 
   /** Start again: every thing back on the cart in its first order, friends empty; misses and hints stay. */
@@ -330,7 +419,7 @@ export class PlanShed implements Game {
     }
     for (const place of this.round.open) {
       // Every thing in a place stays grabbable (not only the top one), so Show me one and the ghost finger can always reach it.
-    const here = this.spots.flatMap((s, i) => (s === place ? [i] : []));
+      const here = this.spots.flatMap((s, i) => (s === place ? [i] : []));
       for (const i of here) {
         if (!this.alive) return;
         await this.make(place, i);
@@ -372,7 +461,9 @@ export class PlanShed implements Game {
     if (!this.alive) return;
     t.node.visible = false;
     const made = madeAt(t.id, place);
-    if (place === 'worm') sfx.munch(); else if (place === 'mend') sfx.marimba(5); else sfx.bell(place === 'shelf' ? 8 : 5);
+    if (place === 'worm') sfx.munch();
+    else if (place === 'mend') sfx.marimba(5);
+    else sfx.bell(place === 'shelf' ? 8 : 5);
     void this.breathe(this.places.get(place)!, 1.1);
     const m = madeArt(made, t.id);
     m.eventMode = 'none';

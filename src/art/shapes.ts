@@ -37,13 +37,22 @@ export function starPoints(outer: number, inner: number, points = 5): number[] {
 }
 
 /** A five-petal flower centered on (0, 0). */
-export function flower(g: Graphics, r: number, petal: number, petalLine: number, middle = 0xffd54a): Graphics {
+export function flower(
+  g: Graphics,
+  r: number,
+  petal: number,
+  petalLine: number,
+  middle = 0xffd54a,
+): Graphics {
   for (let i = 0; i < 5; i++) {
     const a = -Math.PI / 2 + (i * 2 * Math.PI) / 5;
     g.circle(Math.cos(a) * r * 0.62, Math.sin(a) * r * 0.62, r * 0.48);
   }
   g.fill(petal).stroke({ width: r * 0.12, color: petalLine, join: 'round' });
-  return g.circle(0, 0, r * 0.36).fill(middle).stroke({ width: r * 0.1, color: 0xd9a520 });
+  return g
+    .circle(0, 0, r * 0.36)
+    .fill(middle)
+    .stroke({ width: r * 0.1, color: 0xd9a520 });
 }
 
 /** A beamed-eighth-note glyph, centered roughly on (0, 0). */
@@ -114,7 +123,13 @@ export function shapePath(g: Graphics, kind: ShapeKind, r: number): Graphics {
  * Overlapping circles drawn as one lumpy shape (bushes, tree tops) with a single outer outline:
  * every circle in the outline color first, then every circle in the fill color a little smaller.
  */
-export function puffs(g: Graphics, circles: [number, number, number][], fill: number, line: number, width = 6): Graphics {
+export function puffs(
+  g: Graphics,
+  circles: [number, number, number][],
+  fill: number,
+  line: number,
+  width = 6,
+): Graphics {
   for (const [x, y, r] of circles) g.circle(x, y, r + width / 2);
   g.fill(line);
   for (const [x, y, r] of circles) g.circle(x, y, r - width / 2);

@@ -14,7 +14,32 @@ import type { PixelPictureCreation } from '../../content/creations';
 import type { LineId } from '../../content/voice-script';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { LEVELS, canFinish, clues, colorClues, colorLogicCell, colorsOf, deduce, FREE_COLORS, freeTap, freeTouch, given, helpCells, LETTERS, makePictures, PICTURES, pixelsOf, pixelTouch, planFor, scaleDown, toGrid, type Grid, type Knowledge, type Picture, type PixelPlan } from './logic';
+import {
+  LEVELS,
+  canFinish,
+  clues,
+  colorClues,
+  colorLogicCell,
+  colorsOf,
+  deduce,
+  FREE_COLORS,
+  freeTap,
+  freeTouch,
+  given,
+  helpCells,
+  LETTERS,
+  makePictures,
+  PICTURES,
+  pixelsOf,
+  pixelTouch,
+  planFor,
+  scaleDown,
+  toGrid,
+  type Grid,
+  type Knowledge,
+  type Picture,
+  type PixelPlan,
+} from './logic';
 
 const CELL = 100;
 /** Logic levels draw every filled square in one color, since only filled-or-empty matters. */
@@ -123,7 +148,12 @@ class PixelPictures implements Game {
   update(dt: number) {
     this.clock += dt;
     const g = this.glow.clear();
-    if (!this.busy) for (const h of this.hinted) g.roundRect(h.x * CELL + 4, h.y * CELL + 4, CELL - 8, CELL - 8, 14).stroke({ width: 7 + 2 * Math.sin(this.clock * 6), color: swatch.yellow.fill });
+    if (!this.busy)
+      for (const h of this.hinted)
+        g.roundRect(h.x * CELL + 4, h.y * CELL + 4, CELL - 8, CELL - 8, 14).stroke({
+          width: 7 + 2 * Math.sin(this.clock * 6),
+          color: swatch.yellow.fill,
+        });
   }
 
   /** The ghost finger: choose a color where there is a palette, then tap the squares the picture (or, on logic levels, its numbers) settles. */
@@ -138,7 +168,10 @@ class PixelPictures implements Game {
         const swatchNode = this.palette.find((p) => p.letter === move.color)?.node;
         return swatchNode ? { tap: { on: swatchNode } } : null;
       }
-      return { tap: { on: this.board, x: move.cell.x * CELL + CELL / 2, y: move.cell.y * CELL + CELL / 2 }, pause: 0.1 };
+      return {
+        tap: { on: this.board, x: move.cell.x * CELL + CELL / 2, y: move.cell.y * CELL + CELL / 2 },
+        pause: 0.1,
+      };
     }
     const move = pixelTouch(this.plan, this.picture, this.filled, this.color, this.ghostAt);
     if (!move) return null;
@@ -147,7 +180,10 @@ class PixelPictures implements Game {
       return swatchNode ? { tap: { on: swatchNode } } : null;
     }
     this.ghostAt = move.cell;
-    return { tap: { on: this.board, x: move.cell.x * CELL + CELL / 2, y: move.cell.y * CELL + CELL / 2 }, pause: 0.1 };
+    return {
+      tap: { on: this.board, x: move.cell.x * CELL + CELL / 2, y: move.cell.y * CELL + CELL / 2 },
+      pause: 0.1,
+    };
   }
 
   destroy() {}
@@ -163,7 +199,9 @@ class PixelPictures implements Game {
     this.target = toGrid(this.picture);
     this.filled = this.target.map((row) => row.map(() => null));
     // Mirror levels start with the left half (level 7: the top-left quarter) drawn.
-    this.target.forEach((row, y) => row.forEach((c, x) => (this.filled[y][x] = given(this.plan, x, y) ? c : null)));
+    this.target.forEach((row, y) =>
+      row.forEach((c, x) => (this.filled[y][x] = given(this.plan, x, y) ? c : null)),
+    );
     this.buildModel();
     this.buildClues();
     this.buildPalette();
@@ -187,10 +225,15 @@ class PixelPictures implements Game {
     if (this.plan.mode !== 'copy' && this.plan.mode !== 'big') return;
     const small = this.plan.mode === 'big' ? toGrid(scaleDown(this.picture, 2)) : this.target;
     const s = this.plan.mode === 'big' ? 40 : 30;
-    const g = new Graphics().roundRect(-12, -12, small.length * s + 24, small.length * s + 24, 14).fill(0xffffff).stroke({ width: 5, color: wood.line });
-    small.forEach((row, y) => row.forEach((c, x) => {
-      g.rect(x * s, y * s, s - 2, s - 2).fill(c ? swatch[colorOf(c)].fill : 0xf2f2f6);
-    }));
+    const g = new Graphics()
+      .roundRect(-12, -12, small.length * s + 24, small.length * s + 24, 14)
+      .fill(0xffffff)
+      .stroke({ width: 5, color: wood.line });
+    small.forEach((row, y) =>
+      row.forEach((c, x) => {
+        g.rect(x * s, y * s, s - 2, s - 2).fill(c ? swatch[colorOf(c)].fill : 0xf2f2f6);
+      }),
+    );
     this.model.addChild(g);
   }
 
@@ -199,18 +242,22 @@ class PixelPictures implements Game {
     this.clueLayer.removeChildren().forEach((c) => c.destroy({ children: true }));
     if (this.plan.mode === 'colorClues') {
       const { rows, cols } = colorClues(this.picture);
-      rows.forEach((runs, y) => runs.forEach((run, i) => {
-        const t = label(String(run.count), 26, run.count === 0 ? ink : swatch[colorOf(run.color)].line);
-        t.anchor.set(1, 0.5);
-        t.position.set(-16 - i * 42, y * CELL + CELL / 2);
-        this.clueLayer.addChild(t);
-      }));
-      cols.forEach((runs, x) => runs.forEach((run, i) => {
-        const t = label(String(run.count), 26, run.count === 0 ? ink : swatch[colorOf(run.color)].line);
-        t.anchor.set(0.5, 1);
-        t.position.set(x * CELL + CELL / 2, -12 - i * 32);
-        this.clueLayer.addChild(t);
-      }));
+      rows.forEach((runs, y) =>
+        runs.forEach((run, i) => {
+          const t = label(String(run.count), 26, run.count === 0 ? ink : swatch[colorOf(run.color)].line);
+          t.anchor.set(1, 0.5);
+          t.position.set(-16 - i * 42, y * CELL + CELL / 2);
+          this.clueLayer.addChild(t);
+        }),
+      );
+      cols.forEach((runs, x) =>
+        runs.forEach((run, i) => {
+          const t = label(String(run.count), 26, run.count === 0 ? ink : swatch[colorOf(run.color)].line);
+          t.anchor.set(0.5, 1);
+          t.position.set(x * CELL + CELL / 2, -12 - i * 32);
+          this.clueLayer.addChild(t);
+        }),
+      );
       return;
     }
     if (this.plan.mode !== 'clues') return;
@@ -280,28 +327,51 @@ class PixelPictures implements Game {
     const g = this.cells.clear();
     const m = this.marks.clear();
     const n = this.n;
-    g.roundRect(-10, -10, n * CELL + 20, n * CELL + 20, 20).fill(cream).stroke({ width: 6, color: wood.line });
+    g.roundRect(-10, -10, n * CELL + 20, n * CELL + 20, 20)
+      .fill(cream)
+      .stroke({ width: 6, color: wood.line });
     for (let y = 0; y < n; y++)
       for (let x = 0; x < n; x++) {
         const f = this.filled[y]?.[x];
         const shade = f && f !== 'x' ? swatch[colorOf(f)].fill : (x + y) % 2 ? 0xffffff : 0xf4f4f8;
-        g.roundRect(x * CELL + 4, y * CELL + 4, CELL - 8, CELL - 8, 12).fill(shade).stroke({ width: 2, color: 0xd8d8e2 });
-        if (f === 'x') m.moveTo(x * CELL + 32, y * CELL + 32).lineTo(x * CELL + 68, y * CELL + 68).moveTo(x * CELL + 68, y * CELL + 32).lineTo(x * CELL + 32, y * CELL + 68).stroke({ width: 6, color: 0xb9bcc8, cap: 'round' });
+        g.roundRect(x * CELL + 4, y * CELL + 4, CELL - 8, CELL - 8, 12)
+          .fill(shade)
+          .stroke({ width: 2, color: 0xd8d8e2 });
+        if (f === 'x')
+          m.moveTo(x * CELL + 32, y * CELL + 32)
+            .lineTo(x * CELL + 68, y * CELL + 68)
+            .moveTo(x * CELL + 68, y * CELL + 32)
+            .lineTo(x * CELL + 32, y * CELL + 68)
+            .stroke({ width: 6, color: 0xb9bcc8, cap: 'round' });
       }
     // Mirror levels: a dashed line down the middle.
-    if (this.plan.mode === 'mirror' || this.plan.mode === 'mirror2') for (let y = 0; y < n * CELL; y += 24) m.moveTo((n * CELL) / 2, y).lineTo((n * CELL) / 2, y + 12).stroke({ width: 5, color: swatch.purple.line });
+    if (this.plan.mode === 'mirror' || this.plan.mode === 'mirror2')
+      for (let y = 0; y < n * CELL; y += 24)
+        m.moveTo((n * CELL) / 2, y)
+          .lineTo((n * CELL) / 2, y + 12)
+          .stroke({ width: 5, color: swatch.purple.line });
     // Level 7: a second dashed line across the middle.
-    if (this.plan.mode === 'mirror2') for (let x = 0; x < n * CELL; x += 24) m.moveTo(x, (n * CELL) / 2).lineTo(x + 12, (n * CELL) / 2).stroke({ width: 5, color: swatch.purple.line });
+    if (this.plan.mode === 'mirror2')
+      for (let x = 0; x < n * CELL; x += 24)
+        m.moveTo(x, (n * CELL) / 2)
+          .lineTo(x + 12, (n * CELL) / 2)
+          .stroke({ width: 5, color: swatch.purple.line });
     // Level 8: faint lines around each 2×2 block, one block for each square of the little picture.
-    if (this.plan.mode === 'big') for (let k = 2; k < n; k += 2) {
-      m.moveTo(k * CELL, 0).lineTo(k * CELL, n * CELL).stroke({ width: 4, color: 0xc9c2dc });
-      m.moveTo(0, k * CELL).lineTo(n * CELL, k * CELL).stroke({ width: 4, color: 0xc9c2dc });
-    }
+    if (this.plan.mode === 'big')
+      for (let k = 2; k < n; k += 2) {
+        m.moveTo(k * CELL, 0)
+          .lineTo(k * CELL, n * CELL)
+          .stroke({ width: 4, color: 0xc9c2dc });
+        m.moveTo(0, k * CELL)
+          .lineTo(n * CELL, k * CELL)
+          .stroke({ width: 4, color: 0xc9c2dc });
+      }
     // The chosen color has a ring.
     for (const p of this.palette) {
       const ring = p.node.children[1] as Graphics | undefined;
       if (ring) ring.destroy();
-      if (p.letter === this.color) p.node.addChild(new Graphics().circle(0, 0, 58).stroke({ width: 6, color: ink }));
+      if (p.letter === this.color)
+        p.node.addChild(new Graphics().circle(0, 0, 58).stroke({ width: 6, color: ink }));
     }
   }
 
@@ -317,7 +387,8 @@ class PixelPictures implements Game {
     if (given(this.plan, x, y)) return;
     this.lastTap = { x, y };
     const want = this.target[y][x];
-    const colorNeedsMatch = (this.plan.mode === 'copy' && this.plan.colors === 2) || this.plan.mode === 'colorClues';
+    const colorNeedsMatch =
+      (this.plan.mode === 'copy' && this.plan.colors === 2) || this.plan.mode === 'colorClues';
     const fill = this.plan.mode === 'clues' ? (want ? LOGIC_COLOR : null) : want;
     if (want && (!colorNeedsMatch || want === this.color)) {
       this.filled[y][x] = fill;
@@ -364,7 +435,14 @@ class PixelPictures implements Game {
     if (this.done) this.done.visible = false;
     this.lastCreation = { kind: 'picture', size: this.plan.size, pixels: pixelsOf(this.filled) };
     const c = this.ctx.stage.toLocal(this.board.toGlobal({ x: (this.n * CELL) / 2, y: (this.n * CELL) / 2 }));
-    this.ctx.particles.burst(c.x, c.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.pink.light], count: 22, speed: [150, 360], gravity: 0, life: [0.6, 1] });
+    this.ctx.particles.burst(c.x, c.y, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0, swatch.pink.light],
+      count: 22,
+      speed: [150, 360],
+      gravity: 0,
+      life: [0.6, 1],
+    });
     this.ctx.pet.cheer();
     sfx.tada();
     await this.ctx.tw.to(this.board.scale, { x: 1.04, y: 1.04 }, { duration: 0.15, ease: ease.outQuad });
@@ -380,12 +458,16 @@ class PixelPictures implements Game {
     let cell: { x: number; y: number } | undefined;
     let cells: { x: number; y: number }[] = [];
     if (this.plan.mode === 'clues') {
-      const known: Knowledge = this.filled.map((row) => row.map((c) => (c === 'x' ? false : c ? true : null)));
+      const known: Knowledge = this.filled.map((row) =>
+        row.map((c) => (c === 'x' ? false : c ? true : null)),
+      );
       cell = deduce(this.picture, known).find((f) => f.fill);
     }
-    if (this.plan.mode === 'colorClues') cell = colorLogicCell(this.picture, this.filled, this.color) ?? undefined;
+    if (this.plan.mode === 'colorClues')
+      cell = colorLogicCell(this.picture, this.filled, this.color) ?? undefined;
     if (cell) cells = [cell];
-    else if (this.plan.mode !== 'clues' && this.plan.mode !== 'colorClues') cells = helpCells(this.plan, this.picture, this.filled, this.lastTap);
+    else if (this.plan.mode !== 'clues' && this.plan.mode !== 'colorClues')
+      cells = helpCells(this.plan, this.picture, this.filled, this.lastTap);
     if (!cells.length) return;
     cell = cells[0];
     // Two-color levels: the glow comes with its color in hand.
@@ -400,7 +482,9 @@ class PixelPictures implements Game {
   }
 
   private complete() {
-    return this.target.every((row, y) => row.every((c, x) => !c || (this.filled[y][x] && this.filled[y][x] !== 'x')));
+    return this.target.every((row, y) =>
+      row.every((c, x) => !c || (this.filled[y][x] && this.filled[y][x] !== 'x')),
+    );
   }
 
   /** Done: the real picture shows in its colors, square by square, and gets its name. */
@@ -408,14 +492,22 @@ class PixelPictures implements Game {
     this.busy = true;
     this.hinted = [];
     for (let y = 0; y < this.n; y++) {
-      for (let x = 0; x < this.n; x++) if (this.target[y][x]) this.filled[y][x] = this.target[y][x];
+      for (let x = 0; x < this.n; x++)
+        if (this.target[y][x]) this.filled[y][x] = this.target[y][x];
         else if (this.filled[y][x] === 'x') this.filled[y][x] = null;
       this.draw();
       sfx.bell(3 + y, 0.2);
       await this.ctx.tw.wait(0.08);
     }
     const c = this.ctx.stage.toLocal(this.board.toGlobal({ x: (this.n * CELL) / 2, y: (this.n * CELL) / 2 }));
-    this.ctx.particles.burst(c.x, c.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.pink.light], count: 22, speed: [150, 360], gravity: 0, life: [0.6, 1] });
+    this.ctx.particles.burst(c.x, c.y, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0, swatch.pink.light],
+      count: 22,
+      speed: [150, 360],
+      gravity: 0,
+      life: [0.6, 1],
+    });
     this.ctx.pet.cheer();
     await this.ctx.tw.to(this.board.scale, { x: 1.04, y: 1.04 }, { duration: 0.15, ease: ease.outQuad });
     await this.ctx.tw.to(this.board.scale, { x: 1, y: 1 }, { duration: 0.15 });
@@ -444,16 +536,20 @@ class PixelPictures implements Game {
 function mini(p: Picture, s: number): Graphics {
   const g = new Graphics();
   const n = p.rows.length;
-  toGrid(p).forEach((row, y) => row.forEach((c, x) => {
-    if (c) g.rect((x - n / 2) * s, (y - n / 2) * s, s - 2, s - 2).fill(swatch[colorOf(c)].fill);
-  }));
+  toGrid(p).forEach((row, y) =>
+    row.forEach((c, x) => {
+      if (c) g.rect((x - n / 2) * s, (y - n / 2) * s, s - 2, s - 2).fill(swatch[colorOf(c)].fill);
+    }),
+  );
   return g;
 }
 
 class PixelIcon extends WigglyIcon {
   constructor() {
     const c = new Container();
-    c.addChild(new Graphics().roundRect(-100, -210, 200, 200, 20).fill(cream).stroke({ width: 6, color: wood.line }));
+    c.addChild(
+      new Graphics().roundRect(-100, -210, 200, 200, 20).fill(cream).stroke({ width: 6, color: wood.line }),
+    );
     const heart = mini(PICTURES[6][1], 28);
     heart.position.set(0, -104);
     c.addChild(heart);
@@ -480,7 +576,8 @@ export const pixelPictures: GameModule = {
   entryLevels: [9],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
-  coplayHint: 'Guess together what the picture will be before it is finished. On My own picture, take turns: one of you names something to draw and the other colors it.',
+  coplayHint:
+    'Guess together what the picture will be before it is finished. On My own picture, take turns: one of you names something to draw and the other colors it.',
   offScreen: 'Color squares on graph paper to copy a simple picture, or make one for her to copy.',
   hubIcon: () => new PixelIcon(),
   touchDemo: true,

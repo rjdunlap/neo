@@ -25,14 +25,62 @@ export interface PixelPlan {
 
 export const PLANS: PixelPlan[] = [
   { mode: 'copy', size: 4, colors: 1, pictures: 3, name: 'Copy a small picture on a 4 by 4 grid' },
-  { mode: 'copy', size: 5, colors: 2, pictures: 3, name: 'Copy a two-color picture: pick a color, then tap squares' },
-  { mode: 'mirror', size: 6, colors: 1, pictures: 2, name: 'Finish the other half: make both sides match like a mirror' },
-  { mode: 'clues', size: 5, colors: 1, pictures: 2, name: 'Picture logic: the numbers say how many squares in a row are filled' },
-  { mode: 'clues', size: 6, colors: 1, pictures: 2, name: 'Bigger picture logic: 6 by 6, with numbers for runs like "2 1"' },
-  { mode: 'colorClues', size: 6, colors: 2, pictures: 2, name: 'Two-color picture logic: each run has its own color' },
-  { mode: 'mirror2', size: 6, colors: 1, pictures: 2, name: 'Both ways: copy a quarter across two mirror lines' },
-  { mode: 'big', size: 6, colors: 1, pictures: 2, name: 'Twice as big: copy a little picture at double size' },
-  { mode: 'copy', size: 4, colors: 2, pictures: 3, name: 'Two colors, small: pick a color, then copy a 4 by 4 picture' },
+  {
+    mode: 'copy',
+    size: 5,
+    colors: 2,
+    pictures: 3,
+    name: 'Copy a two-color picture: pick a color, then tap squares',
+  },
+  {
+    mode: 'mirror',
+    size: 6,
+    colors: 1,
+    pictures: 2,
+    name: 'Finish the other half: make both sides match like a mirror',
+  },
+  {
+    mode: 'clues',
+    size: 5,
+    colors: 1,
+    pictures: 2,
+    name: 'Picture logic: the numbers say how many squares in a row are filled',
+  },
+  {
+    mode: 'clues',
+    size: 6,
+    colors: 1,
+    pictures: 2,
+    name: 'Bigger picture logic: 6 by 6, with numbers for runs like "2 1"',
+  },
+  {
+    mode: 'colorClues',
+    size: 6,
+    colors: 2,
+    pictures: 2,
+    name: 'Two-color picture logic: each run has its own color',
+  },
+  {
+    mode: 'mirror2',
+    size: 6,
+    colors: 1,
+    pictures: 2,
+    name: 'Both ways: copy a quarter across two mirror lines',
+  },
+  {
+    mode: 'big',
+    size: 6,
+    colors: 1,
+    pictures: 2,
+    name: 'Twice as big: copy a little picture at double size',
+  },
+  {
+    mode: 'copy',
+    size: 4,
+    colors: 2,
+    pictures: 3,
+    name: 'Two colors, small: pick a color, then copy a 4 by 4 picture',
+  },
   { mode: 'free', size: 5, colors: 1, pictures: 1, name: 'My own picture: color any squares, then tap Done' },
 ];
 
@@ -45,7 +93,16 @@ export const LEVELS: BandLevels = {
 
 export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
-export const LETTERS: Record<string, ColorName> = { r: 'red', o: 'orange', y: 'yellow', g: 'green', b: 'blue', p: 'pink', u: 'purple', n: 'brown' };
+export const LETTERS: Record<string, ColorName> = {
+  r: 'red',
+  o: 'orange',
+  y: 'yellow',
+  g: 'green',
+  b: 'blue',
+  p: 'pink',
+  u: 'purple',
+  n: 'brown',
+};
 
 export interface Picture {
   name: string;
@@ -117,13 +174,27 @@ export const MODELS: Picture[] = [
 /** Every square of the picture becomes a k×k block. */
 export const scaleUp = (p: Picture, k: number): Picture => ({
   name: p.name,
-  rows: p.rows.flatMap((r) => Array<string>(k).fill(r.split('').map((c) => c.repeat(k)).join(''))),
+  rows: p.rows.flatMap((r) =>
+    Array<string>(k).fill(
+      r
+        .split('')
+        .map((c) => c.repeat(k))
+        .join(''),
+    ),
+  ),
 });
 
 /** The little model a double-size picture was made from: every other square. */
 export const scaleDown = (p: Picture, k: number): Picture => ({
   name: p.name,
-  rows: p.rows.filter((_, y) => y % k === 0).map((r) => r.split('').filter((_, x) => x % k === 0).join('')),
+  rows: p.rows
+    .filter((_, y) => y % k === 0)
+    .map((r) =>
+      r
+        .split('')
+        .filter((_, x) => x % k === 0)
+        .join(''),
+    ),
 });
 
 /** Grid cells as color letters or null. */
@@ -167,13 +238,21 @@ export function given(plan: PixelPlan, x: number, y: number): boolean {
 }
 
 /** The given square a level-7 square mirrors: across the middle column, the middle row, or both. */
-export const quarterOf = (size: number, x: number, y: number) => ({ x: x < size / 2 ? x : size - 1 - x, y: y < size / 2 ? y : size - 1 - y });
+export const quarterOf = (size: number, x: number, y: number) => ({
+  x: x < size / 2 ? x : size - 1 - x,
+  y: y < size / 2 ? y : size - 1 - y,
+});
 
 /** Level 8: the 2×2 block a square belongs to, as its four squares. */
 export const blockOf = (x: number, y: number) => {
   const bx = x - (x % 2);
   const by = y - (y % 2);
-  return [{ x: bx, y: by }, { x: bx + 1, y: by }, { x: bx, y: by + 1 }, { x: bx + 1, y: by + 1 }];
+  return [
+    { x: bx, y: by },
+    { x: bx + 1, y: by },
+    { x: bx, y: by + 1 },
+    { x: bx + 1, y: by + 1 },
+  ];
 };
 
 /**
@@ -181,9 +260,16 @@ export const blockOf = (x: number, y: number) => {
  * filled). Level 8: every open square of the block nearest her last tap. Other copy and mirror levels: the first open
  * square in reading order. Logic levels choose their glow from the clues instead.
  */
-export function helpCells(plan: PixelPlan, picture: Picture, filled: Filled, from?: { x: number; y: number }): { x: number; y: number }[] {
+export function helpCells(
+  plan: PixelPlan,
+  picture: Picture,
+  filled: Filled,
+  from?: { x: number; y: number },
+): { x: number; y: number }[] {
   const target = toGrid(picture);
-  const open = target.flatMap((row, y) => row.flatMap((c, x) => (c && !isFilled(filled[y][x]) && !given(plan, x, y) ? [{ x, y }] : [])));
+  const open = target.flatMap((row, y) =>
+    row.flatMap((c, x) => (c && !isFilled(filled[y][x]) && !given(plan, x, y) ? [{ x, y }] : [])),
+  );
   if (!open.length) return [];
   if (plan.mode !== 'mirror2' && plan.mode !== 'big') return [open[0]];
   const far = (c: { x: number; y: number }) => (from ? Math.abs(c.x - from.x) + Math.abs(c.y - from.y) : 0);
@@ -198,7 +284,7 @@ export function runs(line: boolean[]): number[] {
   let n = 0;
   for (const f of line) {
     if (f) n++;
-    else if (n) out.push(n), (n = 0);
+    else if (n) (out.push(n), (n = 0));
   }
   if (n) out.push(n);
   return out.length ? out : [0];
@@ -226,7 +312,10 @@ export function colorRuns(line: string[]): { count: number; color: string }[] {
   return out.length ? out : [{ count: 0, color: 'b' }];
 }
 
-export function colorClues(p: Picture): { rows: { count: number; color: string }[][]; cols: { count: number; color: string }[][] } {
+export function colorClues(p: Picture): {
+  rows: { count: number; color: string }[][];
+  cols: { count: number; color: string }[][];
+} {
   return {
     rows: p.rows.map((row) => colorRuns(row.split(''))),
     cols: Array.from({ length: p.rows.length }, (_, x) => colorRuns(p.rows.map((row) => row[x]))),
@@ -291,7 +380,12 @@ export function deduce(p: Picture, known: Knowledge): { x: number; y: number; fi
     }
   };
   for (let y = 0; y < n; y++) settle(known[y], rows[y], (i) => ({ x: i, y }));
-  for (let x = 0; x < n; x++) settle(known.map((r) => r[x]), cols[x], (i) => ({ x, y: i }));
+  for (let x = 0; x < n; x++)
+    settle(
+      known.map((r) => r[x]),
+      cols[x],
+      (i) => ({ x, y: i }),
+    );
   return found;
 }
 
@@ -316,8 +410,14 @@ export function colorDeduce(p: Picture, known: ColorKnowledge): { x: number; y: 
   const { rows, cols } = colorClues(p);
   const n = known.length;
   const found: { x: number; y: number; cell: string }[] = [];
-  const settle = (cells: (string | null)[], clue: { count: number; color: string }[], at: (i: number) => { x: number; y: number }) => {
-    const fits = colorPlacements(n, clue).filter((pl) => pl.every((c, i) => cells[i] === null || cells[i] === c));
+  const settle = (
+    cells: (string | null)[],
+    clue: { count: number; color: string }[],
+    at: (i: number) => { x: number; y: number },
+  ) => {
+    const fits = colorPlacements(n, clue).filter((pl) =>
+      pl.every((c, i) => cells[i] === null || cells[i] === c),
+    );
     if (!fits.length) return;
     for (let i = 0; i < n; i++) {
       if (cells[i] !== null) continue;
@@ -328,7 +428,12 @@ export function colorDeduce(p: Picture, known: ColorKnowledge): { x: number; y: 
     }
   };
   for (let y = 0; y < n; y++) settle(known[y], rows[y], (i) => ({ x: i, y }));
-  for (let x = 0; x < n; x++) settle(known.map((r) => r[x]), cols[x], (i) => ({ x, y: i }));
+  for (let x = 0; x < n; x++)
+    settle(
+      known.map((r) => r[x]),
+      cols[x],
+      (i) => ({ x, y: i }),
+    );
   return found;
 }
 
@@ -357,13 +462,20 @@ const isFilled = (c: string | null | undefined) => !!c && c !== 'x';
  * logic has already shown to be empty (kept here, since the game only crosses out a square after a wrong tap), settle it.
  * It prefers the square nearest `from`, so the hand sweeps along rather than jumping about.
  */
-export function logicCell(p: Picture, filled: Filled, from?: { x: number; y: number }): { x: number; y: number } | null {
-  const known: Knowledge = filled.map((row) => row.map((c) => (isFilled(c) ? true : c === 'x' ? false : null)));
+export function logicCell(
+  p: Picture,
+  filled: Filled,
+  from?: { x: number; y: number },
+): { x: number; y: number } | null {
+  const known: Knowledge = filled.map((row) =>
+    row.map((c) => (isFilled(c) ? true : c === 'x' ? false : null)),
+  );
   for (let pass = 0; pass < 50; pass++) {
     const found = deduce(p, known);
     const fills = found.filter((f) => f.fill);
     if (fills.length) {
-      const far = (c: { x: number; y: number }) => (from ? Math.abs(c.x - from.x) + Math.abs(c.y - from.y) : 0);
+      const far = (c: { x: number; y: number }) =>
+        from ? Math.abs(c.x - from.x) + Math.abs(c.y - from.y) : 0;
       return fills.reduce((best, c) => (far(c) < far(best) ? c : best));
     }
     if (!found.length) return null;
@@ -377,7 +489,12 @@ export function logicCell(p: Picture, filled: Filled, from?: { x: number; y: num
  * logic shows empty are kept between passes (the board crosses one out only after a wrong tap). It prefers a square of
  * the color in hand, so the hand changes color only when that color has nothing settled, then the square nearest `from`.
  */
-export function colorLogicCell(p: Picture, filled: Filled, color?: string, from?: { x: number; y: number }): { x: number; y: number; c: string } | null {
+export function colorLogicCell(
+  p: Picture,
+  filled: Filled,
+  color?: string,
+  from?: { x: number; y: number },
+): { x: number; y: number; c: string } | null {
   const known: ColorKnowledge = filled.map((row) => row.map((c) => (c === 'x' ? '.' : c)));
   for (let pass = 0; pass < 50; pass++) {
     const found = colorDeduce(p, known);
@@ -385,7 +502,8 @@ export function colorLogicCell(p: Picture, filled: Filled, color?: string, from?
     if (fills.length) {
       const mine = fills.filter((f) => f.cell === color);
       const pool = mine.length ? mine : fills;
-      const far = (c: { x: number; y: number }) => (from ? Math.abs(c.x - from.x) + Math.abs(c.y - from.y) : 0);
+      const far = (c: { x: number; y: number }) =>
+        from ? Math.abs(c.x - from.x) + Math.abs(c.y - from.y) : 0;
       const best = pool.reduce((b, c) => (far(c) < far(b) ? c : b));
       return { x: best.x, y: best.y, c: best.cell };
     }
@@ -402,9 +520,17 @@ export function colorLogicCell(p: Picture, filled: Filled, color?: string, from?
  * logic levels: the squares the numbers settle, nearest first (on two-color logic, those of the color in hand first). Every touch is a square the picture really has and
  * that is still empty, so a demonstration makes no wrong move.
  */
-export function pixelTouch(plan: PixelPlan, picture: Picture, filled: Filled, color: string, from?: { x: number; y: number }): PixelTouch | null {
+export function pixelTouch(
+  plan: PixelPlan,
+  picture: Picture,
+  filled: Filled,
+  color: string,
+  from?: { x: number; y: number },
+): PixelTouch | null {
   const target = toGrid(picture);
-  const open = target.flatMap((row, y) => row.flatMap((c, x) => (c && !isFilled(filled[y][x]) && !given(plan, x, y) ? [{ x, y, c }] : [])));
+  const open = target.flatMap((row, y) =>
+    row.flatMap((c, x) => (c && !isFilled(filled[y][x]) && !given(plan, x, y) ? [{ x, y, c }] : [])),
+  );
   if (!open.length) return null;
   if (plan.mode === 'clues') {
     const cell = logicCell(picture, filled, from);
@@ -416,7 +542,8 @@ export function pixelTouch(plan: PixelPlan, picture: Picture, filled: Filled, co
     return cell.c === color ? { cell: { x: cell.x, y: cell.y } } : { color: cell.c };
   }
   // Double size fills one whole block before the next.
-  if (plan.mode === 'big') open.sort((a, b) => (a.y >> 1) - (b.y >> 1) || (a.x >> 1) - (b.x >> 1) || a.y - b.y || a.x - b.x);
+  if (plan.mode === 'big')
+    open.sort((a, b) => (a.y >> 1) - (b.y >> 1) || (a.x >> 1) - (b.x >> 1) || a.y - b.y || a.x - b.x);
   const mine = open.find((o) => plan.mode !== 'copy' || plan.colors === 1 || o.c === color);
   if (mine) return { cell: { x: mine.x, y: mine.y } };
   return { color: open[0].c };
@@ -425,7 +552,10 @@ export function pixelTouch(plan: PixelPlan, picture: Picture, filled: Filled, co
 /** Level 10, my own picture: an empty board, four paints, and Done once she has colored this many squares. */
 export const FREE_COLORS = ['r', 'y', 'b', 'g'] as const;
 export const FREE_MIN = 4;
-export const blank = (size: number): Picture => ({ name: 'my own picture', rows: Array.from({ length: size }, () => '.'.repeat(size)) });
+export const blank = (size: number): Picture => ({
+  name: 'my own picture',
+  rows: Array.from({ length: size }, () => '.'.repeat(size)),
+});
 /** What the ghost finger draws on level 10. */
 export const FREE_HEART = ['.r.r.', 'rrrrr', 'rrrrr', '.rrr.', '..r..'];
 
@@ -440,14 +570,20 @@ export function freeTap(filled: Filled, x: number, y: number, color: string): Fi
 
 /** The squares of a board (or of a finished picture), as the treehouse keeps them. */
 export function pixelsOf(grid: Filled): { x: number; y: number; color: ColorName }[] {
-  return grid.flatMap((row, y) => row.flatMap((c, x) => (isFilled(c) ? [{ x, y, color: LETTERS[c!] ?? 'blue' }] : [])));
+  return grid.flatMap((row, y) =>
+    row.flatMap((c, x) => (isFilled(c) ? [{ x, y, color: LETTERS[c!] ?? 'blue' }] : [])),
+  );
 }
 
 /**
  * The ghost finger on level 10: it chooses the design's paint, draws the heart square by square, emptying any square
  * the heart does not use, then presses Done.
  */
-export function freeTouch(filled: Filled, color: string, design: string[] = FREE_HEART): { color: string } | { cell: { x: number; y: number } } | 'done' | null {
+export function freeTouch(
+  filled: Filled,
+  color: string,
+  design: string[] = FREE_HEART,
+): { color: string } | { cell: { x: number; y: number } } | 'done' | null {
   for (let y = 0; y < filled.length; y++)
     for (let x = 0; x < filled[y].length; x++) {
       const want = design[y]?.[x] ?? '.';

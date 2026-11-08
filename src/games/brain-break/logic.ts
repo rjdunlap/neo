@@ -16,16 +16,20 @@ export const showsSums = (level: number) => Math.floor(level) >= 4;
 export const makeBoard = (level: number, rng: Rng): number[] =>
   rng.shuffle(Array.from({ length: planFor(level).side ** 2 }, (_, i) => i + 1));
 export type Verdict = 'right' | 'wrong' | 'done';
-export const judge = (value: number, next: number): Verdict => value < next ? 'done' : value === next ? 'right' : 'wrong';
+export const judge = (value: number, next: number): Verdict =>
+  value < next ? 'done' : value === next ? 'right' : 'wrong';
 export const hintIndex = (board: readonly number[], next: number) => board.indexOf(next);
 
 export const MINUS = '−';
 /** Most a take-away may start from, and the most either side may add or take away. */
-export const TAKE_FROM_MAX = 30, STEP_MAX = 9, KIND_MIN = 10;
+export const TAKE_FROM_MAX = 30,
+  STEP_MAX = 9,
+  KIND_MIN = 10;
 
 function sumLabel(total: number, rng: Rng): string {
   if (total === 1) return '1+0';
-  const b = rng.int(1, Math.min(STEP_MAX, total - 1)), a = total - b;
+  const b = rng.int(1, Math.min(STEP_MAX, total - 1)),
+    a = total - b;
   return rng.chance(0.5) ? `${a}+${b}` : `${b}+${a}`;
 }
 const takeLabel = (total: number, rng: Rng) => {
@@ -36,10 +40,11 @@ const takeLabel = (total: number, rng: Rng) => {
 /** Each stone's label, in board order: its number at levels 1–3, a sum or take-away that makes it from level 4. */
 export function makeLabels(board: readonly number[], level: number, rng: Rng): string[] {
   if (!showsSums(level)) return board.map(String);
-  const takes = Math.floor(level) >= 6
-    ? rng.shuffle(board.map((_, i) => i < KIND_MIN ? true : i < 2 * KIND_MIN ? false : rng.chance(0.5)))
-    : board.map(() => false);
-  return board.map((total, i) => takes[i] ? takeLabel(total, rng) : sumLabel(total, rng));
+  const takes =
+    Math.floor(level) >= 6
+      ? rng.shuffle(board.map((_, i) => (i < KIND_MIN ? true : i < 2 * KIND_MIN ? false : rng.chance(0.5))))
+      : board.map(() => false);
+  return board.map((total, i) => (takes[i] ? takeLabel(total, rng) : sumLabel(total, rng)));
 }
 
 /** What a stone's label makes: its number, or its sum or take-away worked out. */
@@ -51,12 +56,15 @@ export function evaluate(text: string): number {
 
 /** A fixed-size board keeps every stone at least 100 units across, including in portrait. */
 export function layoutFor(w: number, h: number, side: number) {
-  const size = 100, gap = 12, width = side * (size + gap) - gap;
+  const size = 100,
+    gap = 12,
+    width = side * (size + gap) - gap;
   const top = 182 + Math.max(0, h - 768) * 0.3;
   return {
-    size, top,
+    size,
+    top,
     stones: Array.from({ length: side ** 2 }, (_, i) => ({
-      x: w / 2 - width / 2 + size / 2 + i % side * (size + gap),
+      x: w / 2 - width / 2 + size / 2 + (i % side) * (size + gap),
       y: top + size / 2 + Math.floor(i / side) * (size + gap),
     })),
     hint: { x: w - 108, y: h - 100 },

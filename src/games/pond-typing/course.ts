@@ -20,7 +20,8 @@ export const COURSES: Record<TypingCourseId, Course> = {
     id: 'typing',
     version: 2,
     name: 'Bubble Pond',
-    blurb: 'Six ponds: letters, words, spaces, capitals, a line with a stop, then a line to mend. Every bubble waits.',
+    blurb:
+      'Six ponds: letters, words, spaces, capitals, a line with a stop, then a line to mend. Every bubble waits.',
     levels: [1, 3, 3, 4, 5, 6],
     ponds: [
       ['a', 'd', 'b', 'c', 'a', 'd', 'c', 'b'],
@@ -35,5 +36,6 @@ export const COURSES: Record<TypingCourseId, Course> = {
 
 export const isTypingCourse = (v: unknown): v is TypingCourseId => v === 'typing';
 /** The fewest keys for each pond: one for each character. */
-export const courseBest = (id: TypingCourseId): number[] => COURSES[id].ponds.map((p, i) => COURSES[id].levels[i] === 6 ? p.length : p.join('').length);
+export const courseBest = (id: TypingCourseId): number[] =>
+  COURSES[id].ponds.map((p, i) => (COURSES[id].levels[i] === 6 ? p.length : p.join('').length));
 export const courseMinimum = (id: TypingCourseId) => courseBest(id).reduce((n, b) => n + b, 0);

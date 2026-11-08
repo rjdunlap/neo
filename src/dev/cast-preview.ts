@@ -39,7 +39,10 @@ export async function loadCastPreview(species: CastId): Promise<CastSet> {
     return t;
   };
   const entries = await Promise.all(EXPRESSIONS.map(async (e) => [e, await load(e)] as const));
-  return { textures: Object.fromEntries(entries) as Record<Expression, Texture>, alt: CAST_ART[species].alt ? await load('alt') : null };
+  return {
+    textures: Object.fromEntries(entries) as Record<Expression, Texture>,
+    alt: CAST_ART[species].alt ? await load('alt') : null,
+  };
 }
 
 interface Cell {
@@ -51,7 +54,9 @@ interface Cell {
 }
 
 export async function showCast(app: App) {
-  const art = Object.fromEntries(await Promise.all(CAST.map(async (s) => [s, await loadCastPreview(s)] as const))) as Record<CastId, CastSet>;
+  const art = Object.fromEntries(
+    await Promise.all(CAST.map(async (s) => [s, await loadCastPreview(s)] as const)),
+  ) as Record<CastId, CastSet>;
   await app.show(new CastPreview(app, art));
 }
 
@@ -73,13 +78,22 @@ export class CastPreview extends Scene {
       const creature = this.track(new IllustratedCast(species, art[species].textures));
       creature.hitArea = new Circle(creature.touch.x, creature.touch.y, creature.touch.r);
       onTap(creature, () => creature.poke());
-      const name = new Text({ text: species, style: { fontFamily: 'Fredoka', fontSize: 20, fontWeight: '600', fill: ink } });
+      const name = new Text({
+        text: species,
+        style: { fontFamily: 'Fredoka', fontSize: 20, fontWeight: '600', fill: ink },
+      });
       name.anchor.set(0.5, 0);
       name.eventMode = 'none';
       const t = art[species].alt;
       const alt = t ? new Sprite(t) : null;
       if (alt) alt.eventMode = 'none';
-      const nope = new Graphics().circle(0, 0, 16).fill(0xffffff).stroke({ width: 4, color: swatch.red.line }).moveTo(-10, 10).lineTo(10, -10).stroke({ width: 4, color: swatch.red.line });
+      const nope = new Graphics()
+        .circle(0, 0, 16)
+        .fill(0xffffff)
+        .stroke({ width: 4, color: swatch.red.line })
+        .moveTo(-10, 10)
+        .lineTo(10, -10)
+        .stroke({ width: 4, color: swatch.red.line });
       nope.eventMode = 'none';
       this.content.addChild(...(alt ? [alt] : []), creature, name, nope);
       this.cells.push({ species, creature, name, alt, nope });
@@ -111,12 +125,23 @@ export class CastPreview extends Scene {
       c.nope.visible = this.dressed && ACCESSORIES.some((k) => c.creature.misfit[k]);
     }
     const tint = [swatch.white, swatch.blue, swatch.purple][this.mood];
-    this.moodFrame.clear().circle(0, 0, 55).fill(this.mood ? tint.light : 0xffffff).stroke({ width: this.mood ? 8 : 5, color: tint.line });
+    this.moodFrame
+      .clear()
+      .circle(0, 0, 55)
+      .fill(this.mood ? tint.light : 0xffffff)
+      .stroke({ width: this.mood ? 8 : 5, color: tint.line });
     // A face on the mood button: open eyes, then the sleepy and sad lids.
     this.moodFrame.circle(-16, -6, 7).fill(ink).circle(16, -6, 7).fill(ink);
     if (this.mood === 1) this.moodFrame.rect(-26, -16, 52, 10).fill(this.mood ? tint.light : 0xffffff);
-    this.moodFrame.moveTo(-14, 20).quadraticCurveTo(0, this.mood === 2 ? 10 : 30, 14, 20).stroke({ width: 5, color: ink, cap: 'round' });
-    this.dressFrame.clear().circle(0, 0, 55).fill(this.dressed ? swatch.green.light : 0xffffff).stroke({ width: this.dressed ? 8 : 5, color: this.dressed ? swatch.green.line : swatch.white.line });
+    this.moodFrame
+      .moveTo(-14, 20)
+      .quadraticCurveTo(0, this.mood === 2 ? 10 : 30, 14, 20)
+      .stroke({ width: 5, color: ink, cap: 'round' });
+    this.dressFrame
+      .clear()
+      .circle(0, 0, 55)
+      .fill(this.dressed ? swatch.green.light : 0xffffff)
+      .stroke({ width: this.dressed ? 8 : 5, color: this.dressed ? swatch.green.line : swatch.white.line });
   }
 
   resize(view: View) {
@@ -127,7 +152,12 @@ export class CastPreview extends Scene {
     const top = 130;
     const cw = w / cols;
     const ch = (h - top) / rows;
-    this.bg.clear().rect(0, 0, w, h).fill(swatch.blue.light).rect(0, 0, w, top - 10).fill(cream);
+    this.bg
+      .clear()
+      .rect(0, 0, w, h)
+      .fill(swatch.blue.light)
+      .rect(0, 0, w, top - 10)
+      .fill(cream);
     // One scale for all six, so their CAST.md sizes compare; the widest and tallest set it.
     const s = Math.min(
       0.9,
@@ -136,11 +166,14 @@ export class CastPreview extends Scene {
     );
     this.cells.forEach((c, i) => {
       const A = CAST_ART[c.species];
-      const cx = cw * (i % cols + 0.5);
+      const cx = cw * ((i % cols) + 0.5);
       const cy = top + ch * (Math.floor(i / cols) + 0.45);
       c.creature.scale.set(s);
       // The art's middle on the cell's middle, whatever point the species is placed by.
-      c.creature.position.set(cx - (A.width / 2 - A.centre.x) * A.scale * s, cy - (A.height / 2 - A.centre.y) * A.scale * s);
+      c.creature.position.set(
+        cx - (A.width / 2 - A.centre.x) * A.scale * s,
+        cy - (A.height / 2 - A.centre.y) * A.scale * s,
+      );
       c.name.position.set(cx, cy + (A.height / 2) * A.scale * s + 8);
       c.nope.position.set(cx + (A.width / 2) * A.scale * s - 10, cy - (A.height / 2) * A.scale * s);
       if (c.alt) {

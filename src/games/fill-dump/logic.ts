@@ -1,5 +1,12 @@
 import type { Rng } from '../../engine/random';
-import { hinted, missEvery, missOnRequest, nextRequest, type RequestTally, type Tally } from '../../progress/coach';
+import {
+  hinted,
+  missEvery,
+  missOnRequest,
+  nextRequest,
+  type RequestTally,
+  type Tally,
+} from '../../progress/coach';
 import type { BandLevels } from '../../progress/difficulty';
 
 /** One material per round; speech and art share these nouns. Pitch offsets are pentatonic steps. */
@@ -17,7 +24,10 @@ export function contentFor(plan: FillPlan, rng: Rng) {
   const count = set.id === 'fruit' ? 6 : 4;
   const designs = rng.shuffle(Array.from({ length: count }, (_, i) => i));
   const one = rng.int(0, count - 1);
-  return { set, variants: Array.from({ length: plan.pieces }, (_, i) => plan.count ? one : designs[i % designs.length]) };
+  return {
+    set,
+    variants: Array.from({ length: plan.pieces }, (_, i) => (plan.count ? one : designs[i % designs.length])),
+  };
 }
 
 /**
@@ -42,7 +52,8 @@ export const FILL_PLANS: readonly FillPlan[] = [
   { pieces: 7, dumps: 0, count: [3, 5] },
 ];
 
-export const planFor = (level: number): FillPlan => FILL_PLANS[Math.min(FILL_PLANS.length, Math.max(1, level)) - 1];
+export const planFor = (level: number): FillPlan =>
+  FILL_PLANS[Math.min(FILL_PLANS.length, Math.max(1, level)) - 1];
 
 export const LEVELS: BandLevels = {
   lap: { min: 1, max: 2 },
@@ -51,20 +62,32 @@ export const LEVELS: BandLevels = {
 };
 
 /** The number she is asked to put in, drawn from the plan's range. Null in the tip-out levels. */
-export const targetFor = (plan: FillPlan, rng: Rng): number | null => (plan.count ? rng.int(plan.count[0], plan.count[1]) : null);
+export const targetFor = (plan: FillPlan, rng: Rng): number | null =>
+  plan.count ? rng.int(plan.count[0], plan.count[1]) : null;
 
 /** What each level ID plays: the one basket (tip-out and counting), the jug, or a full and an empty basket to tell apart. */
 export type FillKind = 'basket' | 'pour' | 'pair' | 'capacity';
-export const FILL_LEVELS: Readonly<Record<number, FillKind>> = { 1: 'basket', 2: 'basket', 3: 'basket', 4: 'basket', 5: 'pour', 6: 'pair', 7: 'capacity' };
+export const FILL_LEVELS: Readonly<Record<number, FillKind>> = {
+  1: 'basket',
+  2: 'basket',
+  3: 'basket',
+  4: 'basket',
+  5: 'pour',
+  6: 'pair',
+  7: 'capacity',
+};
 export const kindFor = (level: number): FillKind => FILL_LEVELS[level] ?? 'basket';
 
 export const describeFill = (level: number): string => {
   const kind = kindFor(level);
-  if (kind === 'capacity') return 'Guess which holds more, pour to test, then answer from the evidence: three pairs';
+  if (kind === 'capacity')
+    return 'Guess which holds more, pour to test, then answer from the evidence: three pairs';
   if (kind === 'pour') return 'Tip the jug to fill three cups to their lines; catch and reuse spills';
-  if (kind === 'pair') return `Full and empty: ${PAIR_REQUESTS} times, tip out the full basket or fill the empty one`;
+  if (kind === 'pair')
+    return `Full and empty: ${PAIR_REQUESTS} times, tip out the full basket or fill the empty one`;
   const p = planFor(level);
-  if (p.count) return `Put ${p.count[0]} to ${p.count[1]} in the container, then check (${p.pieces} to pick from)`;
+  if (p.count)
+    return `Put ${p.count[0]} to ${p.count[1]} in the container, then check (${p.pieces} to pick from)`;
   return `Tip out ${p.pieces} and scoop them back${p.dumps > 1 ? `, ${p.dumps} times` : ''}`;
 };
 
@@ -163,7 +186,8 @@ export type FillEvent =
 /** What help leads somewhere: put more in, take one out, or tap the check. */
 export type Hint = 'add' | 'remove' | 'check';
 
-export const hintFor = (have: number, target: number): Hint => (have < target ? 'add' : have > target ? 'remove' : 'check');
+export const hintFor = (have: number, target: number): Hint =>
+  have < target ? 'add' : have > target ? 'remove' : 'check';
 
 export const insideCount = (s: FillState) => s.order.length;
 export const outsideIndexes = (s: FillState) => s.inside.flatMap((v, i) => (v ? [] : [i]));
@@ -239,11 +263,22 @@ export function tap(s: FillState, t: FillTap): FillEvent {
 }
 
 /** Ground is a free next-action target only in the tip-out levels. Pick the outside fruit nearest the touch. */
-export function groundTap(s: FillState, spots: readonly { x: number; y: number }[], at: { x: number; y: number }): FillTap | null {
+export function groundTap(
+  s: FillState,
+  spots: readonly { x: number; y: number }[],
+  at: { x: number; y: number },
+): FillTap | null {
   if (s.target !== null || s.done) return null;
   const out = outsideIndexes(s);
-  const pick = out.reduce<number | undefined>((best, i) =>
-    best === undefined || Math.hypot(spots[i].x - at.x, spots[i].y - at.y) < Math.hypot(spots[best].x - at.x, spots[best].y - at.y) ? i : best, undefined);
+  const pick = out.reduce<number | undefined>(
+    (best, i) =>
+      best === undefined ||
+      Math.hypot(spots[i].x - at.x, spots[i].y - at.y) <
+        Math.hypot(spots[best].x - at.x, spots[best].y - at.y)
+        ? i
+        : best,
+    undefined,
+  );
   return { on: 'basket', pick };
 }
 
@@ -275,8 +310,18 @@ export interface PourState extends RequestTally {
   done: boolean;
 }
 export function startPour(rng: Rng): PourState {
-  return { jug: 3, cup: 0, tray: 0, targets: [0.5, ...rng.shuffle([0.25, 0.75])], round: 0,
-    misses: 0, hints: 0, roundMisses: 0, helped: false, done: false };
+  return {
+    jug: 3,
+    cup: 0,
+    tray: 0,
+    targets: [0.5, ...rng.shuffle([0.25, 0.75])],
+    round: 0,
+    misses: 0,
+    hints: 0,
+    roundMisses: 0,
+    helped: false,
+    done: false,
+  };
 }
 /** Amount follows the furthest rightward movement in a gesture, not time held or pointer-event frequency. */
 export const pourAmount = (dx: number) => Math.max(0, Math.min(3, dx / POUR_DISTANCE));
@@ -299,8 +344,11 @@ export function recoverTray(s: Pick<PourState, 'jug' | 'cup' | 'tray' | 'done'>)
   s.tray = 0;
 }
 export const pourHint = (s: PourState): 'more' | 'empty' | 'check' =>
-  Math.abs(s.cup - s.targets[s.round]) <= POUR_TOLERANCE + 1e-9 ? 'check' :
-    s.cup > s.targets[s.round] ? 'empty' : 'more';
+  Math.abs(s.cup - s.targets[s.round]) <= POUR_TOLERANCE + 1e-9
+    ? 'check'
+    : s.cup > s.targets[s.round]
+      ? 'empty'
+      : 'more';
 export function checkPour(s: PourState): 'again' | 'wrong' | 'next' | 'done' | 'ignored' {
   if (s.done) return 'ignored';
   if (pourHint(s) !== 'check') {
@@ -309,7 +357,10 @@ export function checkPour(s: PourState): 'again' | 'wrong' | 'next' | 'done' | '
     return 'wrong';
   }
   s.round++;
-  if (s.round === s.targets.length) { s.done = true; return 'done'; }
+  if (s.round === s.targets.length) {
+    s.done = true;
+    return 'done';
+  }
   // The filled cup is served, then its water is available again for the next experiment.
   s.jug += s.cup + s.tray;
   s.cup = s.tray = 0;
@@ -342,7 +393,10 @@ export interface PairState extends RequestTally {
 export function startPair(rng: Rng): PairState {
   const first: PairAsk = rng.chance(0.5) ? 'tip' : 'fill';
   const sides = rng.shuffle<0 | 1>([0, 0, 1, 1]);
-  const requests = sides.map((full, i): PairRequest => ({ ask: i % 2 === 0 ? first : first === 'tip' ? 'fill' : 'tip', full }));
+  const requests = sides.map((full, i): PairRequest => ({
+    ask: i % 2 === 0 ? first : first === 'tip' ? 'fill' : 'tip',
+    full,
+  }));
   return { requests, round: 0, misses: 0, hints: 0, roundMisses: 0, helped: false, done: false };
 }
 
@@ -414,27 +468,49 @@ export const CAPACITY_VESSELS = {
   mug: { capacity: 1, width: 100 },
 } as const;
 export type Vessel = keyof typeof CAPACITY_VESSELS;
-export interface CapacityPair { left: Vessel; right: Vessel }
+export interface CapacityPair {
+  left: Vessel;
+  right: Vessel;
+}
 /** The first pair is always the obvious full bowl and empty cup; the other two vary in order. */
 export function capacityPairs(rng: Rng): CapacityPair[] {
-  return [{ left: 'bowl', right: 'cup' }, ...rng.shuffle<CapacityPair>([
-    { left: 'cup', right: 'bucket' }, { left: 'bucket', right: 'mug' },
-  ])];
+  return [
+    { left: 'bowl', right: 'cup' },
+    ...rng.shuffle<CapacityPair>([
+      { left: 'cup', right: 'bucket' },
+      { left: 'bucket', right: 'mug' },
+    ]),
+  ];
 }
 export interface CapacityState extends RequestTally {
   pairs: CapacityPair[];
   round: number;
   phase: 'guess' | 'pour' | 'answer';
   guess: 0 | 1 | null;
-  jug: number; cup: number; tray: number;
+  jug: number;
+  cup: number;
+  tray: number;
   done: boolean;
 }
 export const capacityPair = (s: CapacityState) => s.pairs[Math.min(s.round, s.pairs.length - 1)];
-export const capacityMore = (p: CapacityPair): 0 | 1 => CAPACITY_VESSELS[p.left].capacity > CAPACITY_VESSELS[p.right].capacity ? 0 : 1;
+export const capacityMore = (p: CapacityPair): 0 | 1 =>
+  CAPACITY_VESSELS[p.left].capacity > CAPACITY_VESSELS[p.right].capacity ? 0 : 1;
 export function startCapacity(rng: Rng): CapacityState {
   const pairs = capacityPairs(rng);
-  return { pairs, round: 0, phase: 'guess', guess: null, jug: CAPACITY_VESSELS[pairs[0].left].capacity, cup: 0, tray: 0,
-    misses: 0, hints: 0, roundMisses: 0, helped: false, done: false };
+  return {
+    pairs,
+    round: 0,
+    phase: 'guess',
+    guess: null,
+    jug: CAPACITY_VESSELS[pairs[0].left].capacity,
+    cup: 0,
+    tray: 0,
+    misses: 0,
+    hints: 0,
+    roundMisses: 0,
+    helped: false,
+    done: false,
+  };
 }
 export function capacityPour(s: CapacityState, amount: number) {
   if (s.phase === 'pour') pour(s, amount, CAPACITY_VESSELS[capacityPair(s).right].capacity);
@@ -442,30 +518,48 @@ export function capacityPour(s: CapacityState, amount: number) {
 /** No scoring for a partial pour or checking before the source is empty. */
 export function capacityEvidence(s: CapacityState): boolean {
   if (s.done || s.phase !== 'pour' || s.jug > 1e-9) return false;
-  s.phase = 'answer'; return true;
+  s.phase = 'answer';
+  return true;
 }
 /** Recover all the water for another experiment with this same pair, at any point after guessing. */
 export function capacityRepour(s: CapacityState) {
   if (s.done || s.phase === 'guess') return;
-  emptyCup(s); recoverTray(s); s.phase = 'pour';
+  emptyCup(s);
+  recoverTray(s);
+  s.phase = 'pour';
 }
 export function capacityTap(s: CapacityState, side: 0 | 1): 'ignored' | 'guess' | 'wrong' | 'next' | 'done' {
   if (s.done || s.phase === 'pour') return 'ignored';
-  if (s.phase === 'guess') { s.guess = side; s.phase = 'pour'; return 'guess'; }
+  if (s.phase === 'guess') {
+    s.guess = side;
+    s.phase = 'pour';
+    return 'guess';
+  }
   if (side !== capacityMore(capacityPair(s))) {
     if (missOnRequest(s)) hinted(s);
     return 'wrong';
   }
   s.round++;
-  if (s.round === s.pairs.length) { s.done = true; return 'done'; }
-  s.phase = 'guess'; s.guess = null; nextRequest(s);
+  if (s.round === s.pairs.length) {
+    s.done = true;
+    return 'done';
+  }
+  s.phase = 'guess';
+  s.guess = null;
+  nextRequest(s);
   // Return this pair's water, then set out the next full source. No water disappears within an experiment.
-  s.jug = CAPACITY_VESSELS[capacityPair(s).left].capacity; s.cup = s.tray = 0;
+  s.jug = CAPACITY_VESSELS[capacityPair(s).left].capacity;
+  s.cup = s.tray = 0;
   return 'next';
 }
 /** Straight-sided model: a unit occupies 12,000 square logical units; height = volume / width. */
-export const capacityHeight = (v: Vessel, volume: number = CAPACITY_VESSELS[v].capacity) => volume * 12000 / CAPACITY_VESSELS[v].width;
+export const capacityHeight = (v: Vessel, volume: number = CAPACITY_VESSELS[v].capacity) =>
+  (volume * 12000) / CAPACITY_VESSELS[v].width;
 export function capacityLayout(w: number, h: number) {
-  return { left: { x: w * 0.30, y: h * 0.53 }, right: { x: w * 0.70, y: h * 0.53 },
-    tray: { x: w * 0.70, y: h * 0.53 + 100 }, tick: { x: w * 0.30, y: h * 0.53 + 150 } };
+  return {
+    left: { x: w * 0.3, y: h * 0.53 },
+    right: { x: w * 0.7, y: h * 0.53 },
+    tray: { x: w * 0.7, y: h * 0.53 + 100 },
+    tick: { x: w * 0.3, y: h * 0.53 + 150 },
+  };
 }

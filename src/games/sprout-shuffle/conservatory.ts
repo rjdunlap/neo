@@ -17,7 +17,24 @@ import { spread, type View } from '../../engine/view';
 import { finish as finishArt, RoundButton } from '../../ui/buttons';
 import type { Game, GameContext, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
-import { BRIEF_H, BRIEF_W, briefPic, BUD_H, BUD_W, BudCard, CHECK_R, conservatoryBedArt, leafArt, LENS_BIG_R, markingLensArt, PLANT_H, PLANT_W, PlantCard, potArt, type Face } from './art';
+import {
+  BRIEF_H,
+  BRIEF_W,
+  briefPic,
+  BUD_H,
+  BUD_W,
+  BudCard,
+  CHECK_R,
+  conservatoryBedArt,
+  leafArt,
+  LENS_BIG_R,
+  markingLensArt,
+  PLANT_H,
+  PLANT_W,
+  PlantCard,
+  potArt,
+  type Face,
+} from './art';
 import {
   conservatoryStep,
   conservatorySetupFor,
@@ -91,7 +108,17 @@ export class SproutConservatory implements Game {
     this.view = ctx.view;
     this.setup = conservatorySetupFor(ctx.level, ctx.rng);
     const s = this.setup;
-    this.backdrop = new Backdrop({ sky: [0xd8f0ff, 0xfff6e0], hills: [0xcfe8c0, 0xbfe39a, 0x9ad77e], horizon: 0.36, clouds: 2, sun: true, seed: 177 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0xd8f0ff, 0xfff6e0],
+        hills: [0xcfe8c0, 0xbfe39a, 0x9ad77e],
+        horizon: 0.36,
+        clouds: 2,
+        sun: true,
+        seed: 177,
+      },
+      ctx.view,
+    );
     ctx.stage.addChild(this.backdrop, this.board);
     onTap(this.backdrop, () => this.repeat(), { cooldown: 1200 });
 
@@ -104,10 +131,14 @@ export class SproutConservatory implements Game {
     const pic = briefPic(s.colors[0], s.rimColor);
     pic.position.set(40, 0);
     this.brief.addChild(face, this.friend, pic);
-    onTap(this.brief, () => {
-      if (this.finished) return;
-      void this.ctx.say('sprout.pc-brief');
-    }, { cooldown: 800 });
+    onTap(
+      this.brief,
+      () => {
+        if (this.finished) return;
+        void this.ctx.say('sprout.pc-brief');
+      },
+      { cooldown: 800 },
+    );
 
     for (const i of s.places) {
       const p = s.bench[i];
@@ -125,21 +156,43 @@ export class SproutConservatory implements Game {
     }
 
     this.lenses = {
-      spots: new RoundButton(markingLensArt('spots', s.rimColor), swatch.blue, LENS_BIG_R, () => this.toggleLens('spots')),
-      rim: new RoundButton(markingLensArt('rim', s.rimColor), swatch.blue, LENS_BIG_R, () => this.toggleLens('rim')),
+      spots: new RoundButton(markingLensArt('spots', s.rimColor), swatch.blue, LENS_BIG_R, () =>
+        this.toggleLens('spots'),
+      ),
+      rim: new RoundButton(markingLensArt('rim', s.rimColor), swatch.blue, LENS_BIG_R, () =>
+        this.toggleLens('rim'),
+      ),
     };
     this.checkButton = new RoundButton(leafArt(), swatch.green, CHECK_R, () => void this.check());
     this.finishButton = new RoundButton(starArt(), swatch.yellow, CHECK_R, () => this.end());
     this.finishButton.visible = false;
-    const x = new Graphics().moveTo(-16, -16).lineTo(16, 16).moveTo(16, -16).lineTo(-16, 16).stroke({ width: 8, color: swatch.brown.line, cap: 'round' });
-    this.closeButton = new RoundButton(x, swatch.orange, CLOSE_R, () => { if (!this.busy) this.closeFan(); });
+    const x = new Graphics()
+      .moveTo(-16, -16)
+      .lineTo(16, 16)
+      .moveTo(16, -16)
+      .lineTo(-16, 16)
+      .stroke({ width: 8, color: swatch.brown.line, cap: 'round' });
+    this.closeButton = new RoundButton(x, swatch.orange, CLOSE_R, () => {
+      if (!this.busy) this.closeFan();
+    });
 
     this.fanPanel.eventMode = 'static';
-    onTap(this.fanPanel, () => { if (!this.busy) this.closeFan(); });
+    onTap(this.fanPanel, () => {
+      if (!this.busy) this.closeFan();
+    });
     this.fan.addChild(this.fanPanel, this.closeButton);
     this.fan.visible = false;
 
-    this.board.addChild(this.brief, ...this.potArts, ...this.cards.map((c) => c.node), this.lenses.spots, this.lenses.rim, this.checkButton, this.finishButton, this.fan);
+    this.board.addChild(
+      this.brief,
+      ...this.potArts,
+      ...this.cards.map((c) => c.node),
+      this.lenses.spots,
+      this.lenses.rim,
+      this.checkButton,
+      this.finishButton,
+      this.fan,
+    );
   }
 
   start() {
@@ -228,7 +281,12 @@ export class SproutConservatory implements Game {
       ? (() => {
           const y = potRim + 130;
           const xs = spread(4, 150, v.w - 40, 190);
-          return { spots: { x: xs[0], y }, rim: { x: xs[1], y }, check: { x: xs[2], y }, finish: { x: xs[3], y } };
+          return {
+            spots: { x: xs[0], y },
+            rim: { x: xs[1], y },
+            check: { x: xs[2], y },
+            finish: { x: xs[3], y },
+          };
         })()
       : {
           spots: { x: potX[0] - PLANT_W / 2 - 30 - LENS_BIG_R, y: top + 270 },
@@ -237,7 +295,10 @@ export class SproutConservatory implements Game {
           finish: { x: potX[1] + PLANT_W / 2 + 30 + CHECK_R, y: top + 430 },
         };
     const bedY = briefY + 30;
-    const beds = [{ x: v.w / 2 - 290, y: bedY }, { x: v.w / 2 + 290, y: bedY }];
+    const beds = [
+      { x: v.w / 2 - 290, y: bedY },
+      { x: v.w / 2 + 290, y: bedY },
+    ];
     return { briefY, potScale, potCardY, potRim, potX, benchPos, bs, benchTop, benchBottom, ctrl, beds };
   }
 
@@ -278,13 +339,21 @@ export class SproutConservatory implements Game {
     // Portrait's fan is two rows of buds even over a one-row bench, so a bud never shrinks below its full size.
     const top = g.benchTop;
     const bottom = this.portrait ? Math.max(g.benchBottom, top + 2 * BUD_H + FAN_GAP + 24) : g.benchBottom;
-    this.fanPanel.clear().roundRect(20, top, v.w - 40, bottom - top, 28).fill({ color: 0xfffaf0, alpha: 0.95 }).stroke({ width: 5, color: swatch.green.line });
+    this.fanPanel
+      .clear()
+      .roundRect(20, top, v.w - 40, bottom - top, 28)
+      .fill({ color: 0xfffaf0, alpha: 0.95 })
+      .stroke({ width: 5, color: swatch.green.line });
     this.closeButton.position.set(v.w - 20 - CLOSE_R - 8, top + CLOSE_R + 8);
     const rows = this.portrait ? 2 : 1;
     const perRow = 4 / rows;
     const left = 150;
     const right = v.w - 40 - 2 * CLOSE_R - 20;
-    const scale = Math.min(1, (bottom - top - 24 - (rows - 1) * FAN_GAP) / (rows * BUD_H), (right - left) / (perRow * BUD_W + (perRow - 1) * FAN_GAP));
+    const scale = Math.min(
+      1,
+      (bottom - top - 24 - (rows - 1) * FAN_GAP) / (rows * BUD_H),
+      (right - left) / (perRow * BUD_W + (perRow - 1) * FAN_GAP),
+    );
     const bx = spread(perRow, left, right, BUD_W * scale + FAN_GAP);
     const rowH = BUD_H * scale + FAN_GAP;
     for (const [i, b] of this.buds.entries()) {
@@ -373,8 +442,13 @@ export class SproutConservatory implements Game {
     for (const [k, route] of locusRoutes(s.bench[l], s.bench[r], m).entries()) {
       const bud = new BudCard(route.sprout, [s.colors[l], s.colors[r]], route.from, m, s.rimColor);
       const shows = looks(route.sprout) === 'spotted';
-      const face: Face = m === 'spots' ? { spots: shows, rim: null, rimColor: s.rimColor } : { spots: null, rim: shows, rimColor: s.rimColor };
-      onTap(bud, () => { if (!this.busy) void this.growBud(k); });
+      const face: Face =
+        m === 'spots'
+          ? { spots: shows, rim: null, rimColor: s.rimColor }
+          : { spots: null, rim: shows, rimColor: s.rimColor };
+      onTap(bud, () => {
+        if (!this.busy) void this.growBud(k);
+      });
       this.buds.push(bud);
       this.budFaces.push(face);
       this.fan.addChild(bud);
@@ -432,7 +506,10 @@ export class SproutConservatory implements Game {
       this.misses++;
       this.wrong++;
       sfx.boing();
-      if (this.wrong === 2 && !this.glowHinted) { this.glowHinted = true; this.hints++; }
+      if (this.wrong === 2 && !this.glowHinted) {
+        this.glowHinted = true;
+        this.hints++;
+      }
       if (this.wrong >= 2) this.glowOn = true;
     }
     await this.counter(pair);
@@ -453,7 +530,13 @@ export class SproutConservatory implements Game {
     if (c.hider !== null) {
       this.pulseCard = c.hider;
       const both = c.hidden.length === 2;
-      await this.ctx.say(both ? 'sprout.pc-hidden-plain-rim' : c.hidden[0] === 'spots' ? 'sprout.pc-hidden-plain' : 'sprout.pc-hidden-rim');
+      await this.ctx.say(
+        both
+          ? 'sprout.pc-hidden-plain-rim'
+          : c.hidden[0] === 'spots'
+            ? 'sprout.pc-hidden-plain'
+            : 'sprout.pc-hidden-rim',
+      );
       if (!this.alive) return;
       this.pulseCard = null;
     }
@@ -497,7 +580,12 @@ export class SproutConservatory implements Game {
     await this.ctx.say('sprout.pc-always-works');
     if (!this.alive) return;
     // A plant that shows both traits in a working pair: its rim copies are both rim.
-    if (pair.some((k) => { const l = looks2(s.bench[k]); return l.spots && l.rim; })) {
+    if (
+      pair.some((k) => {
+        const l = looks2(s.bench[k]);
+        return l.spots && l.rim;
+      })
+    ) {
       await this.ctx.say('sprout.pc-two-rim-copies');
       if (!this.alive) return;
     }
@@ -529,9 +617,13 @@ export class SproutConservatory implements Game {
   /** Show me plants a working pair and pulses the leaf; she presses it herself. Its first use before a plan counts one hint. */
   askForHint() {
     if (this.finished || this.busy) return;
-    if (!this.found && !this.showMeUsed) { this.showMeUsed = true; this.hints++; }
+    if (!this.found && !this.showMeUsed) {
+      this.showMeUsed = true;
+      this.hints++;
+    }
     const pair = helpPair(this.setup, this.pots, this.found);
-    for (const k of [0, 1] as const) if (this.pots[k] !== null && !pair.includes(this.pots[k]!)) this.pots[k] = null;
+    for (const k of [0, 1] as const)
+      if (this.pots[k] !== null && !pair.includes(this.pots[k]!)) this.pots[k] = null;
     for (const i of pair) if (!this.pots.includes(i)) this.pots[this.pots[0] === null ? 0 : 1] = i;
     this.potsChanged();
     this.checkButton.scale.set(1.2);
@@ -543,12 +635,15 @@ export class SproutConservatory implements Game {
     this.clock += dt;
     this.friend.update(dt);
     const color = this.setup.colors[this.pots[0] ?? 0];
-    for (const g of this.budGrows) if (!g.card.destroyed) g.card.open(g.face, color, Math.min(1, Math.max(0.01, g.p.v)));
+    for (const g of this.budGrows)
+      if (!g.card.destroyed) g.card.open(g.face, color, Math.min(1, Math.max(0.01, g.p.v)));
     const r = 1 + 0.06 * Math.sin(this.clock * 5);
     for (const [k, b] of this.buds.entries()) b.glow(this.glowBud === k ? r : null);
     const help = this.glowOn && !this.found && !this.finished ? helpPair(this.setup, this.pots) : null;
     for (const c of this.cards) {
-      const lit = (help !== null && help.includes(c.index) && !this.pots.includes(c.index)) || this.pulseCard === c.index;
+      const lit =
+        (help !== null && help.includes(c.index) && !this.pots.includes(c.index)) ||
+        this.pulseCard === c.index;
       c.node.glow(lit ? r : null);
     }
   }
@@ -568,5 +663,8 @@ export class SproutConservatory implements Game {
 
 /** The Finish button's star. */
 function starArt(): Graphics {
-  return new Graphics().star(0, 0, 5, 36, 16).fill(swatch.yellow.light).stroke({ width: 5, color: swatch.yellow.line, join: 'round' });
+  return new Graphics()
+    .star(0, 0, 5, 36, 16)
+    .fill(swatch.yellow.light)
+    .stroke({ width: 5, color: swatch.yellow.line, join: 'round' });
 }

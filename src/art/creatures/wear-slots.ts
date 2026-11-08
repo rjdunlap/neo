@@ -3,7 +3,17 @@
  * instead of stacking. Pixi-free, so the save can repair a creature's `look.worn` against it; the sprites and fits are in
  * `wearables.ts`, which re-exports these.
  */
-export const WEARABLES = ['crown', 'scarf', 'sunhat', 'sunglasses', 'raincoat', 'umbrella', 'beanie', 'boots', 'mittens'] as const;
+export const WEARABLES = [
+  'crown',
+  'scarf',
+  'sunhat',
+  'sunglasses',
+  'raincoat',
+  'umbrella',
+  'beanie',
+  'boots',
+  'mittens',
+] as const;
 export type WearableId = (typeof WEARABLES)[number];
 export type WearSlot = 'head' | 'face' | 'neck' | 'body' | 'held' | 'hands' | 'feet';
 
@@ -22,7 +32,8 @@ export const SLOT: Readonly<Record<WearableId, WearSlot>> = {
 /** At most one item per slot: seven. */
 export const MAX_WORN = 7;
 
-export const isWearable = (v: unknown): v is WearableId => typeof v === 'string' && (WEARABLES as readonly string[]).includes(v);
+export const isWearable = (v: unknown): v is WearableId =>
+  typeof v === 'string' && (WEARABLES as readonly string[]).includes(v);
 
 /**
  * Repairs a saved `worn` list: unknown ids dropped, a repeated id keeps its first place, of two items in one slot the later

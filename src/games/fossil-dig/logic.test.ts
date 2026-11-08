@@ -2,10 +2,56 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  answer, authored, BADGE_R, BRUSH, BRUSH_SPOTS, CARD, CASES, caseOf, cellCenter, check, CHECK_R, COLS, digLayout, digState, edgeCells,
-  edgePoint, FLAG, FLAGS, glowing, glowTarget, help, leafCells, leafOf, LEAVES, MAG_R, makeRound, matches, nextBrush, pat, patCells,
-  petCorner, pickLeaf, PLANS, planFor, returnLeaf, revealed, ROWS, shellButtons, SHOWN_AT, SLOT, stepOf, stoneAt, STONE_H, STONE_W, tapFlag,
-  whereAnswer, type DigState, type Pt, type Rect, type Round,
+  answer,
+  authored,
+  BADGE_R,
+  BRUSH,
+  BRUSH_SPOTS,
+  CARD,
+  CASES,
+  caseOf,
+  cellCenter,
+  check,
+  CHECK_R,
+  COLS,
+  digLayout,
+  digState,
+  edgeCells,
+  edgePoint,
+  FLAG,
+  FLAGS,
+  glowing,
+  glowTarget,
+  help,
+  leafCells,
+  leafOf,
+  LEAVES,
+  MAG_R,
+  makeRound,
+  matches,
+  nextBrush,
+  pat,
+  patCells,
+  petCorner,
+  pickLeaf,
+  PLANS,
+  planFor,
+  returnLeaf,
+  revealed,
+  ROWS,
+  shellButtons,
+  SHOWN_AT,
+  SLOT,
+  stepOf,
+  stoneAt,
+  STONE_H,
+  STONE_W,
+  tapFlag,
+  whereAnswer,
+  type DigState,
+  type Pt,
+  type Rect,
+  type Round,
 } from './logic';
 
 const VIEWS = {
@@ -17,13 +63,19 @@ const VIEWS = {
 
 const circle = (p: Pt, r: number): Rect => ({ x: p.x - r, y: p.y - r, w: 2 * r, h: 2 * r });
 const box = (p: Pt, w: number, h = w): Rect => ({ x: p.x - w / 2, y: p.y - h / 2, w, h });
-const overlap = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
-const inside = (a: Rect, v: { w: number; h: number }) => a.x >= 0 && a.y >= 0 && a.x + a.w <= v.w && a.y + a.h <= v.h;
+const overlap = (a: Rect, b: Rect) =>
+  a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+const inside = (a: Rect, v: { w: number; h: number }) =>
+  a.x >= 0 && a.y >= 0 && a.x + a.w <= v.w && a.y + a.h <= v.h;
 
 /** Brush with the bot's path until the find shows; returns the pats used. */
 function brushOut(s: DigState): number {
   let n = 0;
-  for (let p = nextBrush(s.cleared, caseOf(s.round.caseId).find); p; p = nextBrush(s.cleared, caseOf(s.round.caseId).find)) {
+  for (
+    let p = nextBrush(s.cleared, caseOf(s.round.caseId).find);
+    p;
+    p = nextBrush(s.cleared, caseOf(s.round.caseId).find)
+  ) {
     pat(s, p);
     n++;
     if (n > 20) break;
@@ -61,7 +113,9 @@ describe('cases', () => {
 describe('rounds', () => {
   for (const level of [1, 2] as const) {
     it(`level ${level}: seeded rounds are valid, repeatable and varied`, () => {
-      const cases = new Set<string>(), sites = new Set<number>(), orders = new Set<string>();
+      const cases = new Set<string>(),
+        sites = new Set<number>(),
+        orders = new Set<string>();
       for (let seed = 1; seed <= 500; seed++) {
         const r = makeRound(level, new Rng(seed));
         expect(caseOf(r.caseId).level).toBe(level);
@@ -69,7 +123,9 @@ describe('rounds', () => {
         expect([...r.order].sort()).toEqual([...caseOf(r.caseId).references].sort());
         expect(edgeCells(caseOf(r.caseId).find)).toContain(r.preCleared);
         expect(makeRound(level, new Rng(seed))).toEqual(r);
-        cases.add(r.caseId); sites.add(r.site); orders.add(r.order.join());
+        cases.add(r.caseId);
+        sites.add(r.site);
+        orders.add(r.order.join());
       }
       expect(cases.size).toBe(2);
       expect(sites.size).toBe(3);
@@ -114,7 +170,8 @@ describe('the dust', () => {
     let last = 0;
     for (let k = 0; k < 60; k++) {
       const at = { x: rng.range(-STONE_W / 2, STONE_W / 2), y: rng.range(-STONE_H / 2, STONE_H / 2) };
-      for (const i of patCells(cleared, at)) expect(Math.hypot(cellCenter(i).x - at.x, cellCenter(i).y - at.y)).toBeLessThanOrEqual(BRUSH);
+      for (const i of patCells(cleared, at))
+        expect(Math.hypot(cellCenter(i).x - at.x, cellCenter(i).y - at.y)).toBeLessThanOrEqual(BRUSH);
       const r = revealed(cleared, 'star');
       expect(r).toBeGreaterThanOrEqual(last);
       last = r;
@@ -196,8 +253,10 @@ describe('accounting', () => {
   it('two wrong Checks glow the matching leaf once', () => {
     const s = shownState(authored(2));
     tapFlag(s, 'yellow');
-    pickLeaf(s, 'star'); check(s);
-    pickLeaf(s, 'star'); check(s);
+    pickLeaf(s, 'star');
+    check(s);
+    pickLeaf(s, 'star');
+    check(s);
     expect([s.misses, s.hints, glowing(s)]).toEqual([2, 1, 'saw-star']);
   });
 });
@@ -212,7 +271,9 @@ describe('layout', () => {
           ...L.flags.map((f, i): [string, Rect] => [`flag${i}`, box(f, FLAG)]),
           ...L.cards.map((c, i): [string, Rect] => [`card${i}`, box(c, CARD)]),
           ...L.badges.map((b, i): [string, Rect] => [`badge${i}`, circle(b, BADGE_R)]),
-          ['where', box(L.whereSlot, SLOT)], ['like', box(L.likeSlot, SLOT)], ['check', circle(L.check, CHECK_R)],
+          ['where', box(L.whereSlot, SLOT)],
+          ['like', box(L.likeSlot, SLOT)],
+          ['check', circle(L.check, CHECK_R)],
         ];
         for (const [n, r] of targets) {
           expect(Math.min(r.w, r.h), n).toBeGreaterThanOrEqual(100);
@@ -221,7 +282,8 @@ describe('layout', () => {
         }
         for (let i = 0; i < targets.length; i++) {
           for (let j = i + 1; j < targets.length; j++) {
-            const a = targets[i][0], b = targets[j][0];
+            const a = targets[i][0],
+              b = targets[j][0];
             if (['where', 'like', 'check'].includes(a) && ['where', 'like', 'check'].includes(b)) continue;
             expect(overlap(targets[i][1], targets[j][1]), `${a} vs ${b}`).toBe(false);
           }
@@ -236,7 +298,13 @@ describe('layout', () => {
           expect(Math.min(stone.w, stone.h)).toBeGreaterThanOrEqual(100);
           expect(inside(stone, v)).toBe(true);
           const sq = L.squares[site];
-          expect(stone.x >= sq.x && stone.x + stone.w <= sq.x + sq.w && stone.y >= sq.y && stone.y + stone.h <= sq.y + sq.h, 'stone in its square').toBe(true);
+          expect(
+            stone.x >= sq.x &&
+              stone.x + stone.w <= sq.x + sq.w &&
+              stone.y >= sq.y &&
+              stone.y + stone.h <= sq.y + sq.h,
+            'stone in its square',
+          ).toBe(true);
           for (const [n, r] of targets) expect(overlap(stone, r), `stone ${site} vs ${n}`).toBe(false);
           for (const f of fixed) expect(overlap(stone, f)).toBe(false);
           const mag = circle(L.magnifier[site], MAG_R);

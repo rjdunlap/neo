@@ -2,8 +2,19 @@ import { describe, it, expect } from 'vitest';
 import { Rng } from '../../engine/random';
 import { JAR_H, JAR_W, PAIRS, planFor, LEVELS, type Box } from './logic';
 import {
-  JARS, JAR_BASES, LID, inLid, makeJarRound, multipleOfBase, reveal, checkJars, firstWrong, namedJar, finishTaps,
-  matchingSet, layoutJars,
+  JARS,
+  JAR_BASES,
+  LID,
+  inLid,
+  makeJarRound,
+  multipleOfBase,
+  reveal,
+  checkJars,
+  firstWrong,
+  namedJar,
+  finishTaps,
+  matchingSet,
+  layoutJars,
 } from './jars';
 
 const SEEDS = Array.from({ length: 300 }, (_, i) => i * 7919 + 1);
@@ -16,7 +27,8 @@ describe('level 6: plan', () => {
     expect(LEVELS.school!.max).toBe(6);
   });
   it('same seed, same round', () => {
-    for (const seed of SEEDS.slice(0, 40)) expect(makeJarRound(new Rng(seed))).toEqual(makeJarRound(new Rng(seed)));
+    for (const seed of SEEDS.slice(0, 40))
+      expect(makeJarRound(new Rng(seed))).toEqual(makeJarRound(new Rng(seed)));
   });
 });
 
@@ -26,10 +38,17 @@ describe('level 6: jar cases', () => {
       expect(c.jars).toHaveLength(JARS);
       const labels = new Set(c.jars.map((j) => j.label.join(':')));
       expect(labels.size).toBe(4);
-      for (const j of c.jars) for (const n of j.label) { expect(n).toBeGreaterThanOrEqual(1); expect(n).toBeLessThanOrEqual(12); expect(Number.isInteger(n)).toBe(true); }
+      for (const j of c.jars)
+        for (const n of j.label) {
+          expect(n).toBeGreaterThanOrEqual(1);
+          expect(n).toBeLessThanOrEqual(12);
+          expect(Number.isInteger(n)).toBe(true);
+        }
       const m = c.jars.filter((j) => j.k !== null).length;
-      expect(m).toBeGreaterThanOrEqual(1); expect(m).toBeLessThanOrEqual(3);
-      expect(JARS - m).toBeGreaterThanOrEqual(1); expect(JARS - m).toBeLessThanOrEqual(3);
+      expect(m).toBeGreaterThanOrEqual(1);
+      expect(m).toBeLessThanOrEqual(3);
+      expect(JARS - m).toBeGreaterThanOrEqual(1);
+      expect(JARS - m).toBeLessThanOrEqual(3);
       expect(JAR_BASES.some((b) => b[0] === c.base[0] && b[1] === c.base[1])).toBe(true);
       expect(c.base[0] + c.base[1]).toBeLessThanOrEqual(5);
     }
@@ -40,7 +59,8 @@ describe('level 6: jar cases', () => {
       expect(new Set(ks).size).toBe(ks.length);
       for (const j of c.jars) {
         if (j.k !== null) {
-          expect(j.k).toBeGreaterThanOrEqual(1); expect(j.k).toBeLessThanOrEqual(4);
+          expect(j.k).toBeGreaterThanOrEqual(1);
+          expect(j.k).toBeLessThanOrEqual(4);
           expect(j.label).toEqual([j.k * c.base[0], j.k * c.base[1]]);
           expect(j.kind).toBeNull();
           expect(multipleOfBase(c.base, j.label)).toBe(j.k);
@@ -61,7 +81,8 @@ describe('level 6: jar cases', () => {
       const r = makeJarRound(new Rng(seed));
       expect(r).toHaveLength(2);
       expect(r[0].pair).not.toEqual(r[1].pair);
-      for (const c of r) expect(PAIRS.some((p) => p.pair[0] === c.pair[0] && p.pair[1] === c.pair[1])).toBe(true);
+      for (const c of r)
+        expect(PAIRS.some((p) => p.pair[0] === c.pair[0] && p.pair[1] === c.pair[1])).toBe(true);
     }
   });
   it('multipleOfBase needs equal cross-products and a whole factor', () => {
@@ -86,8 +107,15 @@ describe('level 6: check', () => {
         const v = checkJars(c, s);
         if (!s.some(Boolean)) continue;
         const want = c.jars.findIndex((j, i) => (j.k !== null) !== s[i]);
-        if (want < 0) { expect(v.kind).toBe('match'); continue; }
-        expect(v).toEqual({ kind: 'wrong', jar: want, way: c.jars[want].k === null ? 'not-same' : 'one-more' });
+        if (want < 0) {
+          expect(v.kind).toBe('match');
+          continue;
+        }
+        expect(v).toEqual({
+          kind: 'wrong',
+          jar: want,
+          way: c.jars[want].k === null ? 'not-same' : 'one-more',
+        });
         expect(firstWrong(c, s)).toBe(want);
       }
     }
@@ -96,14 +124,22 @@ describe('level 6: check', () => {
 
 describe('level 6: reveal', () => {
   it('fills for every match, and circles a break for every non-match', () => {
-    for (const c of cases) for (const j of c.jars) {
-      const r = reveal(c.base, j.label);
-      if (j.k !== null) { expect(r).toEqual({ kind: 'fills', k: j.k }); continue; }
-      const k1 = j.label[0] / c.base[0];
-      const whole = Number.isInteger(k1) && k1 >= 1 && k1 <= 4;
-      expect(r.kind).toBe(whole ? 'second' : 'first');
-      if (r.kind === 'second') { expect(r.k).toBe(k1); expect(r.expected).toBe(k1 * c.base[1]); expect(r.expected).not.toBe(j.label[1]); }
-    }
+    for (const c of cases)
+      for (const j of c.jars) {
+        const r = reveal(c.base, j.label);
+        if (j.k !== null) {
+          expect(r).toEqual({ kind: 'fills', k: j.k });
+          continue;
+        }
+        const k1 = j.label[0] / c.base[0];
+        const whole = Number.isInteger(k1) && k1 >= 1 && k1 <= 4;
+        expect(r.kind).toBe(whole ? 'second' : 'first');
+        if (r.kind === 'second') {
+          expect(r.k).toBe(k1);
+          expect(r.expected).toBe(k1 * c.base[1]);
+          expect(r.expected).not.toBe(j.label[1]);
+        }
+      }
   });
   it('both circle kinds occur', () => {
     const kinds = new Set(cases.flatMap((c) => c.jars.map((j) => reveal(c.base, j.label).kind)));
@@ -113,30 +149,38 @@ describe('level 6: reveal', () => {
 
 describe('level 6: help', () => {
   it('names the leftmost wrong jar, else the first matching jar', () => {
-    for (const c of cases) for (const s of subsets) {
-      const i = namedJar(c, s);
-      const w = firstWrong(c, s);
-      if (w >= 0) expect(i).toBe(w);
-      else expect(i).toBe(c.jars.findIndex((j) => j.k !== null));
-      expect(i).toBeGreaterThanOrEqual(0);
-    }
+    for (const c of cases)
+      for (const s of subsets) {
+        const i = namedJar(c, s);
+        const w = firstWrong(c, s);
+        if (w >= 0) expect(i).toBe(w);
+        else expect(i).toBe(c.jars.findIndex((j) => j.k !== null));
+        expect(i).toBeGreaterThanOrEqual(0);
+      }
   });
   it('from every subset, the finish taps reach the match (and only wrong jars are toggled)', () => {
-    for (const c of cases) for (const s of subsets) {
-      const taps = finishTaps(c, s);
-      const after = s.slice();
-      for (const i of taps) after[i] = !after[i];
-      expect(checkJars(c, after).kind).toBe('match');
-      expect(new Set(taps).size).toBe(taps.length);
-      expect(taps).toEqual([...taps].sort((a, b) => a - b));
-      if (checkJars(c, s).kind === 'match') expect(taps).toEqual([]);
-    }
+    for (const c of cases)
+      for (const s of subsets) {
+        const taps = finishTaps(c, s);
+        const after = s.slice();
+        for (const i of taps) after[i] = !after[i];
+        expect(checkJars(c, after).kind).toBe('match');
+        expect(new Set(taps).size).toBe(taps.length);
+        expect(taps).toEqual([...taps].sort((a, b) => a - b));
+        if (checkJars(c, s).kind === 'match') expect(taps).toEqual([]);
+      }
   });
 });
 
 describe('level 6: layout', () => {
-  const views = [{ w: 1024, h: 768 }, { w: 768, h: 1024 }, { w: 1024, h: 700 }, { w: 700, h: 1024 }];
-  const hit = (a: Box, x0: number, y0: number, x1: number, y1: number) => a.x - a.w / 2 < x1 && a.x + a.w / 2 > x0 && a.y - a.h / 2 < y1 && a.y + a.h / 2 > y0;
+  const views = [
+    { w: 1024, h: 768 },
+    { w: 768, h: 1024 },
+    { w: 1024, h: 700 },
+    { w: 700, h: 1024 },
+  ];
+  const hit = (a: Box, x0: number, y0: number, x1: number, y1: number) =>
+    a.x - a.w / 2 < x1 && a.x + a.w / 2 > x0 && a.y - a.h / 2 < y1 && a.y + a.h / 2 > y0;
   const overlap = (a: Box, b: Box) => hit(a, b.x - b.w / 2, b.y - b.h / 2, b.x + b.w / 2, b.y + b.h / 2);
   it('the lid knob is at least 100 x 60 and inside its jar', () => {
     expect(LID.w).toBeGreaterThanOrEqual(100);
@@ -164,8 +208,14 @@ describe('level 6: layout', () => {
         expect(hit(b, 0, 0, 120, 120)).toBe(false);
         expect(hit(b, v.w - 120, 0, v.w, 120)).toBe(false);
       }
-      for (const b of inputs) { expect(b.w).toBeGreaterThanOrEqual(100); expect(b.h).toBeGreaterThanOrEqual(100); }
-      for (const j of l.jars) { expect(j.w).toBe(150); expect(j.h).toBe(190); }
+      for (const b of inputs) {
+        expect(b.w).toBeGreaterThanOrEqual(100);
+        expect(b.h).toBeGreaterThanOrEqual(100);
+      }
+      for (const j of l.jars) {
+        expect(j.w).toBe(150);
+        expect(j.h).toBe(190);
+      }
       const t = l.table;
       expect(t.x - t.w / 2).toBeGreaterThanOrEqual(0);
       expect(t.y - t.h / 2).toBeGreaterThanOrEqual(0);
@@ -173,7 +223,8 @@ describe('level 6: layout', () => {
       expect(t.y + t.h / 2).toBeLessThanOrEqual(v.h);
       expect(hit(t, 0, v.h - 170, 170, v.h)).toBe(false);
       const all: Box[] = [...l.jars, l.check, t, l.sample];
-      for (let i = 0; i < all.length; i++) for (let j = i + 1; j < all.length; j++) expect(overlap(all[i], all[j]), `${i}/${j}`).toBe(false);
+      for (let i = 0; i < all.length; i++)
+        for (let j = i + 1; j < all.length; j++) expect(overlap(all[i], all[j]), `${i}/${j}`).toBe(false);
       if (l.portrait) {
         const xs = [...new Set(l.jars.map((j) => j.x))];
         const ys = [...new Set(l.jars.map((j) => j.y))];

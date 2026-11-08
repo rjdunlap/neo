@@ -1,10 +1,14 @@
 // What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
 export const VOICE = {
-  'tricks.parcel': ['Make the parcel fit! Tap the round arrow to turn it, then move it onto the mailbox shadow.'],
+  'tricks.parcel': [
+    'Make the parcel fit! Tap the round arrow to turn it, then move it onto the mailbox shadow.',
+  ],
   'tricks.parcel-hint': ['Look at the long edges and corners. Turn the parcel, then try it in the shadow.'],
   'tricks.places': ['A bowl for everyone! Move a bowl to each friend who needs one.'],
   'tricks.berries': ['Make {n} berries! Some are here already. Add berries, then tap the yellow arrow.'],
-  'tricks.berries-hint': ['Count every berry, including the ones already here. We need {n}. The back arrow takes one away.'],
+  'tricks.berries-hint': [
+    'Count every berry, including the ones already here. We need {n}. The back arrow takes one away.',
+  ],
   'tricks.encore-yes': ['Ta-da! Tap the green arrow when you are ready.'],
   'tricks.third-start': ['Welcome to the show! Three new tricks.'],
   'tricks.crank': ['Turn the handle round and round! Who is inside?'],
@@ -56,7 +60,9 @@ export const VOICE = {
   'tricks.not-color': ['Not that one! Look at the color.'],
   'tricks.not-pattern': ['Same color, but look at the pattern!'],
   'tricks.partner': ['A pair! What silly ears!'],
-  'tricks.socks-two': ['The sock monster lost two socks! Find a partner for each one: the same color and the same pattern.'],
+  'tricks.socks-two': [
+    'The sock monster lost two socks! Find a partner for each one: the same color and the same pattern.',
+  ],
   'tricks.one-pair': ['One pair! Now a partner for the other sock.'],
   'tricks.bridge-beetle': ['Beetle wants to cross. Stretch the bridge all the way over!'],
   'tricks.bridge-snail': ['Snail wants to cross. Stretch the bridge all the way over!'],

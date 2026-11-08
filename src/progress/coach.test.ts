@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import type { RoundResult } from '../games/types';
-import { HINT_AFTER, hinted, missEvery, missOnRequest, newRequestTally, newTally, nextRequest, tally } from './coach';
+import {
+  HINT_AFTER,
+  hinted,
+  missEvery,
+  missOnRequest,
+  newRequestTally,
+  newTally,
+  nextRequest,
+  tally,
+} from './coach';
 
 describe('coach', () => {
   it('brings the hint after two misses, the AGENTS.md rule', () => {
@@ -23,7 +32,12 @@ describe('coach', () => {
 
   it('per-request cadence: due once, at the second miss on a request', () => {
     const t = newRequestTally();
-    expect([missOnRequest(t), missOnRequest(t), missOnRequest(t), missOnRequest(t)]).toEqual([false, true, false, false]);
+    expect([missOnRequest(t), missOnRequest(t), missOnRequest(t), missOnRequest(t)]).toEqual([
+      false,
+      true,
+      false,
+      false,
+    ]);
     expect(t).toMatchObject({ misses: 4, roundMisses: 4, helped: true, hints: 0 });
   });
 

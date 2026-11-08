@@ -87,34 +87,65 @@ function paintCar(c: Container, color: number) {
 
 /** A record's pennant flag: a pole standing on `y` with a triangle at its top. */
 function flag(g: Graphics, x: number, y: number, tall: number, color: number) {
-  g.moveTo(x, y).lineTo(x, y - tall).stroke({ width: 4, color: ink, alpha: 0.7 });
-  g.poly([x, y - tall, x + tall * 0.5, y - tall * 0.8, x, y - tall * 0.6]).fill(color).stroke({ width: 3, color: ink, alpha: 0.5, join: 'round' });
+  g.moveTo(x, y)
+    .lineTo(x, y - tall)
+    .stroke({ width: 4, color: ink, alpha: 0.7 });
+  g.poly([x, y - tall, x + tall * 0.5, y - tall * 0.8, x, y - tall * 0.6])
+    .fill(color)
+    .stroke({ width: 3, color: ink, alpha: 0.5, join: 'round' });
 }
 
-const floorColor = (f: Setup['floor']) => (f === 'carpet' ? swatch.red.fill : f === 'wood' ? wood.fill : 0xbfe6fb);
+const floorColor = (f: Setup['floor']) =>
+  f === 'carpet' ? swatch.red.fill : f === 'wood' ? wood.fill : 0xbfe6fb;
 
 /** A small ramp at its height on its floor swatch, with the swatch's texture (the cards' visual language, for the claim tiles). */
 function miniSetup(g: Graphics, x: number, floorY: number, s: Setup) {
   const h = s.height * 11;
-  g.poly([x, floorY, x + 48, floorY, x, floorY - h]).fill(wood.light).stroke({ width: 3, color: wood.line, join: 'round' });
+  g.poly([x, floorY, x + 48, floorY, x, floorY - h])
+    .fill(wood.light)
+    .stroke({ width: 3, color: wood.line, join: 'round' });
   const w = TILE_W - 32 - 48;
   g.roundRect(x + 48, floorY, w, 12, 4).fill(floorColor(s.floor));
-  if (s.floor === 'carpet') for (let k = x + 56; k < x + 48 + w - 4; k += 14) g.circle(k, floorY + 6, 2).fill(swatch.red.light);
-  else if (s.floor === 'wood') for (let k = x + 78; k < x + 48 + w; k += 34) g.moveTo(k, floorY).lineTo(k, floorY + 12).stroke({ width: 2, color: wood.line });
-  else for (let k = x + 58; k < x + 48 + w - 10; k += 36) g.moveTo(k, floorY + 10).lineTo(k + 12, floorY + 2).stroke({ width: 3, color: 0xffffff });
+  if (s.floor === 'carpet')
+    for (let k = x + 56; k < x + 48 + w - 4; k += 14) g.circle(k, floorY + 6, 2).fill(swatch.red.light);
+  else if (s.floor === 'wood')
+    for (let k = x + 78; k < x + 48 + w; k += 34)
+      g.moveTo(k, floorY)
+        .lineTo(k, floorY + 12)
+        .stroke({ width: 2, color: wood.line });
+  else
+    for (let k = x + 58; k < x + 48 + w - 10; k += 36)
+      g.moveTo(k, floorY + 10)
+        .lineTo(k + 12, floorY + 2)
+        .stroke({ width: 3, color: 0xffffff });
 }
 
 /** The three claim tiles' pictures: same ramps on different floors, different ramps on the same floor, and both different. */
 const TILE_SETUPS: Record<Claim, [Setup, Setup]> = {
-  floor: [{ height: 3, floor: 'carpet' }, { height: 3, floor: 'ice' }],
-  height: [{ height: 2, floor: 'wood' }, { height: 4, floor: 'wood' }],
-  both: [{ height: 2, floor: 'carpet' }, { height: 4, floor: 'ice' }],
+  floor: [
+    { height: 3, floor: 'carpet' },
+    { height: 3, floor: 'ice' },
+  ],
+  height: [
+    { height: 2, floor: 'wood' },
+    { height: 4, floor: 'wood' },
+  ],
+  both: [
+    { height: 2, floor: 'carpet' },
+    { height: 4, floor: 'ice' },
+  ],
 };
 
 /** A guess's paw print: a pad and four toes, a different shape from any flag. */
 function paw(g: Graphics, x: number, y: number, r: number) {
   g.ellipse(x, y + r * 0.35, r, r * 0.8).fill(swatch.purple.fill);
-  for (const [dx, dy] of [[-1.05, -0.55], [-0.38, -1.05], [0.38, -1.05], [1.05, -0.55]]) g.circle(x + dx * r, y + dy * r, r * 0.36).fill(swatch.purple.fill);
+  for (const [dx, dy] of [
+    [-1.05, -0.55],
+    [-0.38, -1.05],
+    [0.38, -1.05],
+    [1.05, -0.55],
+  ])
+    g.circle(x + dx * r, y + dy * r, r * 0.36).fill(swatch.purple.fill);
 }
 
 /** One ramp, its floor and its car. */
@@ -149,25 +180,54 @@ class Lane extends Container {
     const h = this.setup.height * HEIGHT_PX;
     const x0 = this.rampEnd - RAMP_W;
     const a = this.art.clear();
-    a.poly([x0, this.floorY, this.rampEnd, this.floorY, x0, this.floorY - h]).fill(wood.light).stroke({ width: 5, color: wood.line, join: 'round' });
-    for (let k = 1; k < this.setup.height; k++) a.moveTo(x0, this.floorY - k * HEIGHT_PX).lineTo(x0 + 18, this.floorY - k * HEIGHT_PX).stroke({ width: 4, color: wood.line });
-    this.ramp.hitArea = new Rectangle(x0 - 20, this.floorY - 4 * HEIGHT_PX - 30, RAMP_W + 30, 4 * HEIGHT_PX + 40);
+    a.poly([x0, this.floorY, this.rampEnd, this.floorY, x0, this.floorY - h])
+      .fill(wood.light)
+      .stroke({ width: 5, color: wood.line, join: 'round' });
+    for (let k = 1; k < this.setup.height; k++)
+      a.moveTo(x0, this.floorY - k * HEIGHT_PX)
+        .lineTo(x0 + 18, this.floorY - k * HEIGHT_PX)
+        .stroke({ width: 4, color: wood.line });
+    this.ramp.hitArea = new Rectangle(
+      x0 - 20,
+      this.floorY - 4 * HEIGHT_PX - 30,
+      RAMP_W + 30,
+      4 * HEIGHT_PX + 40,
+    );
     const f = this.floorArt.clear();
     const w = (MAX_DISTANCE + 0.6) * this.unit;
-    const color = this.setup.floor === 'carpet' ? swatch.red.fill : this.setup.floor === 'wood' ? wood.fill : 0xbfe6fb;
-    f.roundRect(this.rampEnd - 4, this.floorY, w + 8, 34, 8).fill(color).stroke({ width: 4, color: ink, alpha: 0.25 });
-    if (this.setup.floor === 'carpet') for (let x = this.rampEnd + 10; x < this.rampEnd + w; x += 22) f.circle(x, this.floorY + 17, 3).fill(swatch.red.light);
-    else if (this.setup.floor === 'wood') for (let x = this.rampEnd + 60; x < this.rampEnd + w; x += 80) f.moveTo(x, this.floorY).lineTo(x, this.floorY + 34).stroke({ width: 3, color: wood.line });
-    else for (let x = this.rampEnd + 30; x < this.rampEnd + w; x += 90) f.moveTo(x, this.floorY + 26).lineTo(x + 26, this.floorY + 8).stroke({ width: 4, color: 0xffffff });
+    const color =
+      this.setup.floor === 'carpet' ? swatch.red.fill : this.setup.floor === 'wood' ? wood.fill : 0xbfe6fb;
+    f.roundRect(this.rampEnd - 4, this.floorY, w + 8, 34, 8)
+      .fill(color)
+      .stroke({ width: 4, color: ink, alpha: 0.25 });
+    if (this.setup.floor === 'carpet')
+      for (let x = this.rampEnd + 10; x < this.rampEnd + w; x += 22)
+        f.circle(x, this.floorY + 17, 3).fill(swatch.red.light);
+    else if (this.setup.floor === 'wood')
+      for (let x = this.rampEnd + 60; x < this.rampEnd + w; x += 80)
+        f.moveTo(x, this.floorY)
+          .lineTo(x, this.floorY + 34)
+          .stroke({ width: 3, color: wood.line });
+    else
+      for (let x = this.rampEnd + 30; x < this.rampEnd + w; x += 90)
+        f.moveTo(x, this.floorY + 26)
+          .lineTo(x + 26, this.floorY + 8)
+          .stroke({ width: 4, color: 0xffffff });
     // Floor marks, one per unit.
-    for (let k = 0; k <= MAX_DISTANCE; k++) f.moveTo(this.rampEnd + k * this.unit, this.floorY + 34).lineTo(this.rampEnd + k * this.unit, this.floorY + 44).stroke({ width: 3, color: ink, alpha: 0.4 });
+    for (let k = 0; k <= MAX_DISTANCE; k++)
+      f.moveTo(this.rampEnd + k * this.unit, this.floorY + 34)
+        .lineTo(this.rampEnd + k * this.unit, this.floorY + 44)
+        .stroke({ width: 3, color: ink, alpha: 0.4 });
     this.floorHit.hitArea = new Rectangle(this.rampEnd, this.floorY - 10, w, 70);
   }
 
   /** The car waits at the top of the ramp. */
   reset() {
     const x0 = this.rampEnd - RAMP_W;
-    this.car.position.set(x0 + 30, this.floorY - this.setup.height * HEIGHT_PX + 30 * (this.setup.height * HEIGHT_PX / RAMP_W));
+    this.car.position.set(
+      x0 + 30,
+      this.floorY - this.setup.height * HEIGHT_PX + 30 * ((this.setup.height * HEIGHT_PX) / RAMP_W),
+    );
     this.car.rotation = Math.atan2(this.setup.height * HEIGHT_PX, RAMP_W);
   }
 
@@ -175,9 +235,17 @@ class Lane extends Container {
   async roll(tw: GameContext['tw']) {
     const d = distance(this.setup.height, this.setup.floor);
     sfx.whoosh();
-    await tw.to(this.car, { x: this.rampEnd, y: this.floorY }, { duration: 0.35 + this.setup.height * 0.05, ease: ease.inQuad });
+    await tw.to(
+      this.car,
+      { x: this.rampEnd, y: this.floorY },
+      { duration: 0.35 + this.setup.height * 0.05, ease: ease.inQuad },
+    );
     this.car.rotation = 0;
-    await tw.to(this.car, { x: this.rampEnd + d * this.unit }, { duration: 0.4 + d * 0.12, ease: ease.outQuad });
+    await tw.to(
+      this.car,
+      { x: this.rampEnd + d * this.unit },
+      { duration: 0.4 + d * 0.12, ease: ease.outQuad },
+    );
     return d;
   }
 }
@@ -231,7 +299,17 @@ class RampRace implements Game {
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
-    this.backdrop = new Backdrop({ sky: [0xcde6ff, 0xf6fbff], hills: [0xd6f5c8, 0xc8ecb0], horizon: 0.4, clouds: 2, sun: true, seed: 95 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0xcde6ff, 0xf6fbff],
+        hills: [0xd6f5c8, 0xc8ecb0],
+        horizon: 0.4,
+        clouds: 2,
+        sun: true,
+        seed: 95,
+      },
+      ctx.view,
+    );
     this.glow.eventMode = 'none';
     this.star.eventMode = 'none';
     this.sign.eventMode = 'none';
@@ -303,15 +381,28 @@ class RampRace implements Game {
       const l = this.lanes[0];
       const x0 = l.rampEnd - RAMP_W;
       const pulse = 0.35 + 0.25 * Math.sin(this.clock * 5);
-      g.poly([x0, l.floorY, l.rampEnd, l.floorY, x0, l.floorY - this.hint.height * HEIGHT_PX]).stroke({ width: 7, color: swatch.yellow.fill, alpha: 0.5 + pulse });
-      if (this.hint.floor !== l.setup.floor) g.roundRect(l.rampEnd, l.floorY - 6, MAX_DISTANCE * l.unit, 46, 10).stroke({ width: 6, color: swatch.yellow.fill, alpha: 0.4 + pulse });
+      g.poly([x0, l.floorY, l.rampEnd, l.floorY, x0, l.floorY - this.hint.height * HEIGHT_PX]).stroke({
+        width: 7,
+        color: swatch.yellow.fill,
+        alpha: 0.5 + pulse,
+      });
+      if (this.hint.floor !== l.setup.floor)
+        g.roundRect(l.rampEnd, l.floorY - 6, MAX_DISTANCE * l.unit, 46, 10).stroke({
+          width: 6,
+          color: swatch.yellow.fill,
+          alpha: 0.4 + pulse,
+        });
     }
     if (this.fairGlow && !this.busy) this.drawFairGlow(g);
     if (this.plan.mode === 'tell') this.drawTellGlow(g);
     if (this.ring && this.phase === 'ask' && !this.busy && this.records.length === 2) {
       const box = this.cardBoxes()[farther(this.records[0], this.records[1])];
       const pulse = 0.35 + 0.25 * Math.sin(this.clock * 5);
-      g.roundRect(box.x - 9, box.y - 9, box.w + 18, box.h + 18, 26).stroke({ width: 8, color: swatch.yellow.fill, alpha: 0.5 + pulse });
+      g.roundRect(box.x - 9, box.y - 9, box.w + 18, box.h + 18, 26).stroke({
+        width: 8,
+        color: swatch.yellow.fill,
+        alpha: 0.5 + pulse,
+      });
     }
   }
 
@@ -328,10 +419,21 @@ class RampRace implements Game {
     const fix = this.plan.mode === 'tell' ? tellRepair(a.setup, b.setup) : fairRepair(q, a.setup, b.setup);
     if (fix === 'ramp') {
       const x0 = b.rampEnd - RAMP_W;
-      const height = b.setup.height !== a.setup.height ? a.setup.height : HEIGHTS[(HEIGHTS.indexOf(b.setup.height as 2 | 3 | 4) + 1) % HEIGHTS.length];
-      g.poly([x0, b.floorY, b.rampEnd, b.floorY, x0, b.floorY - height * HEIGHT_PX]).stroke({ width: 7, color: swatch.yellow.fill, alpha: 0.5 + pulse });
+      const height =
+        b.setup.height !== a.setup.height
+          ? a.setup.height
+          : HEIGHTS[(HEIGHTS.indexOf(b.setup.height as 2 | 3 | 4) + 1) % HEIGHTS.length];
+      g.poly([x0, b.floorY, b.rampEnd, b.floorY, x0, b.floorY - height * HEIGHT_PX]).stroke({
+        width: 7,
+        color: swatch.yellow.fill,
+        alpha: 0.5 + pulse,
+      });
     } else if (fix === 'floor') {
-      g.roundRect(b.rampEnd, b.floorY - 6, MAX_DISTANCE * b.unit, 46, 10).stroke({ width: 6, color: swatch.yellow.fill, alpha: 0.4 + pulse });
+      g.roundRect(b.rampEnd, b.floorY - 6, MAX_DISTANCE * b.unit, 46, 10).stroke({
+        width: 6,
+        color: swatch.yellow.fill,
+        alpha: 0.4 + pulse,
+      });
     } else {
       g.circle(this.go.x, this.go.y, 74).stroke({ width: 7, color: swatch.yellow.fill, alpha: 0.5 + pulse });
     }
@@ -340,18 +442,26 @@ class RampRace implements Game {
   /** The ghost finger: change the ramp (and the floor where it can change) to what the question needs, then press go. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished) return null;
-    const move = rampTouch(this.plan, this.lanes.map((l) => l.setup), {
-      star: this.stars[this.index],
-      question: this.questions[this.index],
-      rolls: this.rolls,
-      records: this.records,
-      guess: this.guess?.side,
-      step: this.step,
-      claim: this.claim,
-    });
+    const move = rampTouch(
+      this.plan,
+      this.lanes.map((l) => l.setup),
+      {
+        star: this.stars[this.index],
+        question: this.questions[this.index],
+        rolls: this.rolls,
+        records: this.records,
+        guess: this.guess?.side,
+        step: this.step,
+        claim: this.claim,
+      },
+    );
     if (!move) return null;
     if (move === 'go') return { tap: { on: this.go } };
-    if ('claim' in move) return { tap: { on: this.tiles[CLAIMS.indexOf(move.claim)], x: TILE_W / 2, y: TILE_H / 2 }, pause: 0.4 };
+    if ('claim' in move)
+      return {
+        tap: { on: this.tiles[CLAIMS.indexOf(move.claim)], x: TILE_W / 2, y: TILE_H / 2 },
+        pause: 0.4,
+      };
     if ('card' in move) return { tap: { on: this.cards[move.card], x: CARD_W / 2, y: CARD_H / 2 } };
     if ('guess' in move) {
       // The middle of the chosen side of the blue flag, a little above the floor.
@@ -373,19 +483,40 @@ class RampRace implements Game {
     if (s === undefined || this.plan.mode === 'fair' || this.plan.mode === 'explore') return;
     const l = this.lanes[0];
     const x = l.rampEnd + s * l.unit;
-    g.poly(starPoints(26, 11).map((n, i) => n + (i % 2 ? l.floorY - 60 : x))).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line });
-    g.moveTo(x, l.floorY - 30).lineTo(x, l.floorY).stroke({ width: 4, color: swatch.yellow.line });
+    g.poly(starPoints(26, 11).map((n, i) => n + (i % 2 ? l.floorY - 60 : x)))
+      .fill(swatch.yellow.fill)
+      .stroke({ width: 4, color: swatch.yellow.line });
+    g.moveTo(x, l.floorY - 30)
+      .lineTo(x, l.floorY)
+      .stroke({ width: 4, color: swatch.yellow.line });
   }
 
   private drawSign() {
     this.sign.removeChildren().forEach((c) => c.destroy({ children: true }));
     const q = this.questions[this.index];
     if (!q) return;
-    const g = new Graphics().roundRect(-170, -50, 340, 100, 26).fill(0xffffff).stroke({ width: 5, color: wood.line });
+    const g = new Graphics()
+      .roundRect(-170, -50, 340, 100, 26)
+      .fill(0xffffff)
+      .stroke({ width: 5, color: wood.line });
     if (q.compare === 'floor') {
-      for (const [x, color] of [[-90, swatch.red.fill], [0, wood.fill], [90, 0xbfe6fb]] as const) g.roundRect(x - 34, -22, 68, 44, 10).fill(color).stroke({ width: 3, color: ink, alpha: 0.3 });
+      for (const [x, color] of [
+        [-90, swatch.red.fill],
+        [0, wood.fill],
+        [90, 0xbfe6fb],
+      ] as const)
+        g.roundRect(x - 34, -22, 68, 44, 10)
+          .fill(color)
+          .stroke({ width: 3, color: ink, alpha: 0.3 });
     } else {
-      for (const [x, h] of [[-80, 20], [10, 34], [100, 48]]) g.poly([x - 30, 26, x + 30, 26, x - 30, 26 - h]).fill(wood.light).stroke({ width: 3, color: wood.line, join: 'round' });
+      for (const [x, h] of [
+        [-80, 20],
+        [10, 34],
+        [100, 48],
+      ])
+        g.poly([x - 30, 26, x + 30, 26, x - 30, 26 - h])
+          .fill(wood.light)
+          .stroke({ width: 3, color: wood.line, join: 'round' });
     }
     this.sign.addChild(g);
   }
@@ -398,7 +529,14 @@ class RampRace implements Game {
     this.fairGlow = false;
     for (const l of this.lanes) l.reset();
     const mode = this.plan.mode;
-    const total = mode === 'tell' ? this.tellCases.length : mode === 'fair' || mode === 'change' ? this.questions.length : mode === 'shelf' ? this.shelfStarts.length : this.stars.length;
+    const total =
+      mode === 'tell'
+        ? this.tellCases.length
+        : mode === 'fair' || mode === 'change'
+          ? this.questions.length
+          : mode === 'shelf'
+            ? this.shelfStarts.length
+            : this.stars.length;
     if (mode !== 'explore' && this.index >= total) return void this.finale();
     if (mode === 'shelf') {
       // A fresh pair: the ramp at its start height, no cards, a blue car.
@@ -425,8 +563,14 @@ class RampRace implements Game {
     this.busy = false;
     if (mode === 'explore') return this.index === 0 ? this.ctx.instruct('ramp.explore') : undefined;
     if (mode === 'shelf') return this.ctx.instruct('ramp.shelf');
-    if (mode === 'change') return this.ctx.instruct(this.questions[this.index].compare === 'floor' ? 'ramp.change.floor' : 'ramp.change.height');
-    if (mode === 'fair') return this.ctx.instruct(this.questions[this.index].compare === 'floor' ? 'ramp.fair.floor' : 'ramp.fair.height');
+    if (mode === 'change')
+      return this.ctx.instruct(
+        this.questions[this.index].compare === 'floor' ? 'ramp.change.floor' : 'ramp.change.height',
+      );
+    if (mode === 'fair')
+      return this.ctx.instruct(
+        this.questions[this.index].compare === 'floor' ? 'ramp.fair.floor' : 'ramp.fair.height',
+      );
     if (this.index === 0) return this.ctx.instruct(mode === 'height' ? 'ramp.height' : 'ramp.both');
   }
 
@@ -457,9 +601,15 @@ class RampRace implements Game {
   }
 
   private cycleFloor(l: Lane) {
-    if (this.busy || this.finished || ((this.plan.mode === 'shelf' || this.plan.mode === 'change') && this.phase === 'ask')) return;
+    if (
+      this.busy ||
+      this.finished ||
+      ((this.plan.mode === 'shelf' || this.plan.mode === 'change') && this.phase === 'ask')
+    )
+      return;
     if (this.changeLocked(l)) return;
-    if (this.plan.mode === 'height' || this.plan.mode === 'explore' || this.plan.mode === 'shelf') return void this.ctx.say('ramp.woodonly');
+    if (this.plan.mode === 'height' || this.plan.mode === 'explore' || this.plan.mode === 'shelf')
+      return void this.ctx.say('ramp.woodonly');
     const i = FLOORS.indexOf(l.setup.floor);
     l.setup = { ...l.setup, floor: FLOORS[(i + 1) % FLOORS.length] };
     sfx.tick();
@@ -467,7 +617,12 @@ class RampRace implements Game {
   }
 
   private async roll() {
-    if (this.busy || this.finished || ((this.plan.mode === 'shelf' || this.plan.mode === 'change') && this.phase === 'ask')) return;
+    if (
+      this.busy ||
+      this.finished ||
+      ((this.plan.mode === 'shelf' || this.plan.mode === 'change') && this.phase === 'ask')
+    )
+      return;
     this.busy = true;
     const mode = this.plan.mode;
     if (mode === 'tell') return void this.tellGo();
@@ -487,7 +642,14 @@ class RampRace implements Game {
     if (onStar(d, star)) {
       sfx.sparkle();
       this.ctx.pet.cheer();
-      this.ctx.particles.burst(this.lanes[0].car.x, this.lanes[0].car.y - 40, { kind: 'star', colors: [0xffffff, 0xfff3a0], count: 16, speed: [100, 260], gravity: 0, life: [0.5, 0.9] });
+      this.ctx.particles.burst(this.lanes[0].car.x, this.lanes[0].car.y - 40, {
+        kind: 'star',
+        colors: [0xffffff, 0xfff3a0],
+        count: 16,
+        speed: [100, 260],
+        gravity: 0,
+        life: [0.5, 0.9],
+      });
       await this.ctx.say('ramp.yay');
       return void this.next();
     }
@@ -495,7 +657,9 @@ class RampRace implements Game {
     this.wrongs++;
     sfx.boing();
     const short = d < star;
-    await this.ctx.say(mode === 'height' ? (short ? 'ramp.short' : 'ramp.long') : short ? 'ramp.short2' : 'ramp.long2');
+    await this.ctx.say(
+      mode === 'height' ? (short ? 'ramp.short' : 'ramp.long') : short ? 'ramp.short2' : 'ramp.long2',
+    );
     if (this.wrongs >= 2 && !this.hint) {
       this.hints++;
       this.hint = waysTo(star, mode === 'height' ? ['wood'] : FLOORS)[0];
@@ -547,8 +711,20 @@ class RampRace implements Game {
     }
     const winner = da > db ? a : b;
     sfx.sparkle();
-    this.ctx.particles.burst(winner.car.x, winner.car.y - 40, { kind: 'star', colors: [0xffffff, 0xfff3a0], count: 16, speed: [100, 260], gravity: 0, life: [0.5, 0.9] });
-    const what = q.compare === 'floor' ? winner.setup.floor : winner.setup.height === Math.max(a.setup.height, b.setup.height) ? 'taller ramp' : 'shorter ramp';
+    this.ctx.particles.burst(winner.car.x, winner.car.y - 40, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0],
+      count: 16,
+      speed: [100, 260],
+      gravity: 0,
+      life: [0.5, 0.9],
+    });
+    const what =
+      q.compare === 'floor'
+        ? winner.setup.floor
+        : winner.setup.height === Math.max(a.setup.height, b.setup.height)
+          ? 'taller ramp'
+          : 'shorter ramp';
     await this.ctx.say('ramp.fairyay', { what });
     await this.ctx.tw.wait(0.4);
     // Back to the same start for the next question.
@@ -628,23 +804,40 @@ class RampRace implements Game {
       this.count('free');
       sfx.sparkle();
       this.ctx.pet.cheer();
-      this.ctx.particles.burst(card.x + CARD_W / 2, card.y + CARD_H / 2, { kind: 'star', colors: [0xffffff, 0xfff3a0], count: 16, speed: [100, 260], gravity: 0, life: [0.5, 0.9] });
+      this.ctx.particles.burst(card.x + CARD_W / 2, card.y + CARD_H / 2, {
+        kind: 'star',
+        colors: [0xffffff, 0xfff3a0],
+        count: 16,
+        speed: [100, 260],
+        gravity: 0,
+        life: [0.5, 0.9],
+      });
       if (this.plan.mode === 'change') {
         const winner = this.records[right].setup;
-        const what = this.questions[this.index].compare === 'floor' ? winner.floor : winner.height === Math.max(a.setup.height, b.setup.height) ? 'taller ramp' : 'shorter ramp';
+        const what =
+          this.questions[this.index].compare === 'floor'
+            ? winner.floor
+            : winner.height === Math.max(a.setup.height, b.setup.height)
+              ? 'taller ramp'
+              : 'shorter ramp';
         await this.ctx.say('ramp.fairyay', { what });
       } else await this.ctx.say('ramp.shelf.yay', { what: 'taller' });
       this.badge.visible = false;
-      await Promise.all(this.cards.splice(0).map(async (c) => {
-        await this.ctx.tw.to(c, { x: this.view.w + 40 }, { duration: 0.35, ease: ease.inQuad });
-        c.destroy({ children: true });
-      }));
+      await Promise.all(
+        this.cards.splice(0).map(async (c) => {
+          await this.ctx.tw.to(c, { x: this.view.w + 40 }, { duration: 0.35, ease: ease.inQuad });
+          c.destroy({ children: true });
+        }),
+      );
       return void this.next();
     }
     this.count('wrong-card');
     sfx.boing();
     // Both cards replay at once: each mini car slides from its ramp to its flag.
-    await Promise.all([this.ctx.say('ramp.shelf.wrong'), ...this.cards.map((c, k) => this.replayCard(c, this.records[k]))]);
+    await Promise.all([
+      this.ctx.say('ramp.shelf.wrong'),
+      ...this.cards.map((c, k) => this.replayCard(c, this.records[k])),
+    ]);
     if (!this.ring && this.events[this.index].filter((e) => e === 'wrong-card').length >= 2) {
       this.ring = true;
       await this.ctx.say('ramp.shelf.hint');
@@ -665,7 +858,24 @@ class RampRace implements Game {
     const g = this.badge.clear();
     const { x, y, w, h } = L.badge;
     g.roundRect(x, y, w, h, 24).fill({ color: 0xffffff, alpha: 0.85 }).stroke({ width: 4, color: wood.line });
-    g.poly([x + 16, y + 40, x + 56, y + 40, x + 56, y + 22, x + 86, y + 50, x + 56, y + 78, x + 56, y + 60, x + 16, y + 60]).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line, join: 'round' });
+    g.poly([
+      x + 16,
+      y + 40,
+      x + 56,
+      y + 40,
+      x + 56,
+      y + 22,
+      x + 86,
+      y + 50,
+      x + 56,
+      y + 78,
+      x + 56,
+      y + 60,
+      x + 16,
+      y + 60,
+    ])
+      .fill(swatch.yellow.fill)
+      .stroke({ width: 4, color: swatch.yellow.line, join: 'round' });
     this.drawMarks();
   }
 
@@ -674,7 +884,9 @@ class RampRace implements Game {
     const g = this.marks.clear();
     if (this.plan.mode !== 'shelf' || this.phase === 'ask') return;
     const l = this.lanes[0];
-    this.records.forEach((r, k) => flag(g, l.rampEnd + r.stop * l.unit, l.floorY, 70, k ? swatch.orange.fill : swatch.blue.fill));
+    this.records.forEach((r, k) =>
+      flag(g, l.rampEnd + r.stop * l.unit, l.floorY, 70, k ? swatch.orange.fill : swatch.blue.fill),
+    );
     if (this.guess) paw(g, l.rampEnd + this.guess.at * l.unit, l.floorY - 44, 18);
   }
 
@@ -686,19 +898,38 @@ class RampRace implements Game {
     g.roundRect(0, 0, CARD_W, CARD_H, 18).fill(0xffffff).stroke({ width: 5, color: wood.line });
     g.roundRect(0, 0, 46, CARD_H, 18).fill(color);
     const h = r.setup.height * CARD_STEP;
-    g.poly([56, CARD_FLOOR, 126, CARD_FLOOR, 56, CARD_FLOOR - h]).fill(wood.light).stroke({ width: 3, color: wood.line, join: 'round' });
-    for (let s = 1; s < r.setup.height; s++) g.moveTo(56, CARD_FLOOR - s * CARD_STEP).lineTo(66, CARD_FLOOR - s * CARD_STEP).stroke({ width: 3, color: wood.line });
+    g.poly([56, CARD_FLOOR, 126, CARD_FLOOR, 56, CARD_FLOOR - h])
+      .fill(wood.light)
+      .stroke({ width: 3, color: wood.line, join: 'round' });
+    for (let s = 1; s < r.setup.height; s++)
+      g.moveTo(56, CARD_FLOOR - s * CARD_STEP)
+        .lineTo(66, CARD_FLOOR - s * CARD_STEP)
+        .stroke({ width: 3, color: wood.line });
     // The floor swatch carries its texture, so surfaces never depend on color alone.
-    const floorColor = r.setup.floor === 'carpet' ? swatch.red.fill : r.setup.floor === 'wood' ? wood.fill : 0xbfe6fb;
+    const floorColor =
+      r.setup.floor === 'carpet' ? swatch.red.fill : r.setup.floor === 'wood' ? wood.fill : 0xbfe6fb;
     g.roundRect(126, CARD_FLOOR, CARD_W - 140, 12, 4).fill(floorColor);
-    if (r.setup.floor === 'carpet') for (let x = 134; x < CARD_W - 16; x += 14) g.circle(x, CARD_FLOOR + 6, 2).fill(swatch.red.light);
-    else if (r.setup.floor === 'wood') for (let x = 160; x < CARD_W - 16; x += 40) g.moveTo(x, CARD_FLOOR).lineTo(x, CARD_FLOOR + 12).stroke({ width: 2, color: wood.line });
-    else for (let x = 140; x < CARD_W - 16; x += 46) g.moveTo(x, CARD_FLOOR + 10).lineTo(x + 12, CARD_FLOOR + 2).stroke({ width: 3, color: 0xffffff });
-    for (let m = 0; m <= 10; m++) g.moveTo(CARD_RULER + m * CARD_MARK, CARD_FLOOR).lineTo(CARD_RULER + m * CARD_MARK, CARD_FLOOR - (m % 5 ? 6 : 12)).stroke({ width: 2, color: ink, alpha: 0.45 });
+    if (r.setup.floor === 'carpet')
+      for (let x = 134; x < CARD_W - 16; x += 14) g.circle(x, CARD_FLOOR + 6, 2).fill(swatch.red.light);
+    else if (r.setup.floor === 'wood')
+      for (let x = 160; x < CARD_W - 16; x += 40)
+        g.moveTo(x, CARD_FLOOR)
+          .lineTo(x, CARD_FLOOR + 12)
+          .stroke({ width: 2, color: wood.line });
+    else
+      for (let x = 140; x < CARD_W - 16; x += 46)
+        g.moveTo(x, CARD_FLOOR + 10)
+          .lineTo(x + 12, CARD_FLOOR + 2)
+          .stroke({ width: 3, color: 0xffffff });
+    for (let m = 0; m <= 10; m++)
+      g.moveTo(CARD_RULER + m * CARD_MARK, CARD_FLOOR)
+        .lineTo(CARD_RULER + m * CARD_MARK, CARD_FLOOR - (m % 5 ? 6 : 12))
+        .stroke({ width: 2, color: ink, alpha: 0.45 });
     flag(g, CARD_RULER + r.stop * CARD_MARK, CARD_FLOOR, 52, color);
     if (r.guess && this.records[0]) {
       const at = this.records[0].stop;
-      const x = r.guess === 'before' ? CARD_RULER + (at * CARD_MARK) / 2 : CARD_RULER + ((at + 10) * CARD_MARK) / 2;
+      const x =
+        r.guess === 'before' ? CARD_RULER + (at * CARD_MARK) / 2 : CARD_RULER + ((at + 10) * CARD_MARK) / 2;
       // Above the flags' pennants (they reach up to y 32), so a guess never touches or looks like a record.
       paw(g, x, 16, 9);
     }
@@ -794,9 +1025,15 @@ class RampRace implements Game {
     if (why) {
       this.count('wrong-claim');
       sfx.boing();
-      this.pulse = { part: why === 'floorsame' || why === 'floorsdiffer' ? 'floor' : 'ramp', until: this.clock + 2.6 };
+      this.pulse = {
+        part: why === 'floorsame' || why === 'floorsdiffer' ? 'floor' : 'ramp',
+        until: this.clock + 2.6,
+      };
       await this.ctx.say(`ramp.why.${why}`);
-      if (!this.claimGlow && this.events[this.events.length - 1].filter((e) => e === 'wrong-claim').length >= 2) {
+      if (
+        !this.claimGlow &&
+        this.events[this.events.length - 1].filter((e) => e === 'wrong-claim').length >= 2
+      ) {
         this.claimGlow = true;
         await this.ctx.say('ramp.tell.hint');
       }
@@ -806,7 +1043,14 @@ class RampRace implements Game {
     sfx.sparkle();
     this.ctx.pet.cheer();
     const right = this.tiles[CLAIMS.indexOf(actual)];
-    this.ctx.particles.burst(right.x + TILE_W / 2, right.y + TILE_H / 2, { kind: 'star', colors: [0xffffff, 0xfff3a0], count: 16, speed: [100, 260], gravity: 0, life: [0.5, 0.9] });
+    this.ctx.particles.burst(right.x + TILE_W / 2, right.y + TILE_H / 2, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0],
+      count: 16,
+      speed: [100, 260],
+      gravity: 0,
+      life: [0.5, 0.9],
+    });
     this.claimGlow = false;
     this.pulse = null;
     if (actual === 'both') {
@@ -814,11 +1058,15 @@ class RampRace implements Game {
       return void this.openRepair();
     }
     const end = tellConclusion(ra.setup, rb.setup)!;
-    await (end.line === 'floor' ? this.ctx.say('ramp.tell.floor', { floor: end.floor }) : this.ctx.say('ramp.tell.height', { what: end.what }));
-    await Promise.all(this.cards.splice(0).map(async (c) => {
-      await this.ctx.tw.to(c, { x: this.view.w + 40 }, { duration: 0.35, ease: ease.inQuad });
-      c.destroy({ children: true });
-    }));
+    await (end.line === 'floor'
+      ? this.ctx.say('ramp.tell.floor', { floor: end.floor })
+      : this.ctx.say('ramp.tell.height', { what: end.what }));
+    await Promise.all(
+      this.cards.splice(0).map(async (c) => {
+        await this.ctx.tw.to(c, { x: this.view.w + 40 }, { duration: 0.35, ease: ease.inQuad });
+        c.destroy({ children: true });
+      }),
+    );
     return void this.next();
   }
 
@@ -853,7 +1101,10 @@ class RampRace implements Game {
       this.count('tell-unfair');
       sfx.boing();
       await this.ctx.say('ramp.unfair.tell');
-      if (!this.fairGlow && this.events[this.events.length - 1].filter((e) => e === 'tell-unfair').length >= 2) {
+      if (
+        !this.fairGlow &&
+        this.events[this.events.length - 1].filter((e) => e === 'tell-unfair').length >= 2
+      ) {
         this.fairGlow = true;
         await this.ctx.say('ramp.fairhint');
       }
@@ -892,14 +1143,19 @@ class RampRace implements Game {
       t.position.set(L.tiles[k].x, L.tiles[k].y - (on ? 8 : 0));
       t.removeChildren().forEach((ch) => ch.destroy());
       const g = new Graphics();
-      g.roundRect(0, 0, TILE_W, TILE_H, 22).fill(on ? 0xfffbe6 : 0xffffff).stroke({ width: on ? 8 : 5, color: on ? swatch.green.line : wood.line });
+      g.roundRect(0, 0, TILE_W, TILE_H, 22)
+        .fill(on ? 0xfffbe6 : 0xffffff)
+        .stroke({ width: on ? 8 : 5, color: on ? swatch.green.line : wood.line });
       const [top, bottom] = TILE_SETUPS[claim];
       miniSetup(g, 16, 64, top);
       miniSetup(g, 16, 128, bottom);
       if (claim === 'both') {
         const [x, y] = [TILE_W - 30, 28];
         g.circle(x, y, 19).fill(0xffffff).stroke({ width: 4, color: ink, alpha: 0.6 });
-        g.moveTo(x + 6 * Math.cos(Math.PI * 1.05), y - 5 + 6 * Math.sin(Math.PI * 1.05)).arc(x, y - 5, 6, Math.PI * 1.05, Math.PI * 2.45).lineTo(x, y + 5).stroke({ width: 4, color: ink, cap: 'round' });
+        g.moveTo(x + 6 * Math.cos(Math.PI * 1.05), y - 5 + 6 * Math.sin(Math.PI * 1.05))
+          .arc(x, y - 5, 6, Math.PI * 1.05, Math.PI * 2.45)
+          .lineTo(x, y + 5)
+          .stroke({ width: 4, color: ink, cap: 'round' });
         g.circle(x, y + 11, 2.6).fill(ink);
       }
       t.addChild(g);
@@ -911,14 +1167,28 @@ class RampRace implements Game {
     const pulse = 0.35 + 0.25 * Math.sin(this.clock * 5);
     if (this.claimGlow && this.step === 'claim' && !this.busy && this.records.length === 2) {
       const t = this.tiles[CLAIMS.indexOf(changed(this.records[0].setup, this.records[1].setup) as Claim)];
-      g.roundRect(t.x - 10, t.y - 10, TILE_W + 20, TILE_H + 20, 28).stroke({ width: 8, color: swatch.yellow.fill, alpha: 0.5 + pulse });
+      g.roundRect(t.x - 10, t.y - 10, TILE_W + 20, TILE_H + 20, 28).stroke({
+        width: 8,
+        color: swatch.yellow.fill,
+        alpha: 0.5 + pulse,
+      });
     }
     const o = this.over.clear();
     if (!this.pulse || this.clock > this.pulse.until || this.step !== 'claim') return;
     for (const c of this.cards) {
       if (!c || c.destroyed) continue;
-      if (this.pulse.part === 'ramp') o.roundRect(c.x + 48, c.y + CARD_FLOOR - 4 * CARD_STEP - 8, 88, 4 * CARD_STEP + 16, 10).stroke({ width: 6, color: swatch.yellow.fill, alpha: 0.5 + pulse });
-      else o.roundRect(c.x + 120, c.y + CARD_FLOOR - 5, CARD_W - 130, 22, 8).stroke({ width: 6, color: swatch.yellow.fill, alpha: 0.5 + pulse });
+      if (this.pulse.part === 'ramp')
+        o.roundRect(c.x + 48, c.y + CARD_FLOOR - 4 * CARD_STEP - 8, 88, 4 * CARD_STEP + 16, 10).stroke({
+          width: 6,
+          color: swatch.yellow.fill,
+          alpha: 0.5 + pulse,
+        });
+      else
+        o.roundRect(c.x + 120, c.y + CARD_FLOOR - 5, CARD_W - 130, 22, 8).stroke({
+          width: 6,
+          color: swatch.yellow.fill,
+          alpha: 0.5 + pulse,
+        });
     }
   }
 
@@ -928,7 +1198,17 @@ class RampRace implements Game {
     this.busy = true;
     sfx.tada();
     const mode = this.plan.mode;
-    await this.ctx.say(mode === 'explore' ? 'ramp.done.explore' : mode === 'fair' || mode === 'change' ? 'ramp.done' : mode === 'shelf' ? 'ramp.done.shelf' : mode === 'tell' ? 'ramp.done.tell' : 'ramp.done.stars');
+    await this.ctx.say(
+      mode === 'explore'
+        ? 'ramp.done.explore'
+        : mode === 'fair' || mode === 'change'
+          ? 'ramp.done'
+          : mode === 'shelf'
+            ? 'ramp.done.shelf'
+            : mode === 'tell'
+              ? 'ramp.done.tell'
+              : 'ramp.done.stars',
+    );
     await this.ctx.tw.wait(0.4);
     this.ctx.finish({ misses: this.misses, hints: this.hints });
   }
@@ -937,7 +1217,14 @@ class RampRace implements Game {
 class RampIcon extends WigglyIcon {
   constructor() {
     const c = new Container();
-    c.addChild(new Graphics().poly([-110, -20, 30, -20, -110, -140]).fill(wood.light).stroke({ width: 5, color: wood.line, join: 'round' }).roundRect(30, -20, 90, 16, 6).fill(0xbfe6fb));
+    c.addChild(
+      new Graphics()
+        .poly([-110, -20, 30, -20, -110, -140])
+        .fill(wood.light)
+        .stroke({ width: 5, color: wood.line, join: 'round' })
+        .roundRect(30, -20, 90, 16, 6)
+        .fill(0xbfe6fb),
+    );
     const car = carArt(swatch.blue.fill);
     car.position.set(70, -20);
     c.addChild(car);
@@ -948,7 +1235,12 @@ class RampIcon extends WigglyIcon {
 function sticker(seed: number): Container {
   const rng = new Rng(seed);
   const c = new Container();
-  c.addChild(new Graphics().poly([-90, 60, 40, 60, -90, -60]).fill(wood.light).stroke({ width: 6, color: wood.line, join: 'round' }));
+  c.addChild(
+    new Graphics()
+      .poly([-90, 60, 40, 60, -90, -60])
+      .fill(wood.light)
+      .stroke({ width: 6, color: wood.line, join: 'round' }),
+  );
   const car = carArt(rng.pick([swatch.blue.fill, swatch.orange.fill, swatch.pink.fill]));
   car.scale.set(1.4);
   car.position.set(80, 60);
@@ -968,7 +1260,8 @@ export const rampRace: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
   coplayHint: 'Guess together before each roll: how far will the car go, and why?',
-  offScreen: 'Roll a toy car down a book propped up at different heights. Does a carpet or the kitchen floor let it roll farther?',
+  offScreen:
+    'Roll a toy car down a book propped up at different heights. Does a carpet or the kitchen floor let it roll farther?',
   hubIcon: () => new RampIcon(),
   touchDemo: true,
   sticker,

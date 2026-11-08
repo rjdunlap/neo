@@ -1,4 +1,13 @@
-import { Circle, Container, Graphics, Rectangle, RenderTexture, Sprite, type FederatedPointerEvent, type Renderer } from 'pixi.js';
+import {
+  Circle,
+  Container,
+  Graphics,
+  Rectangle,
+  RenderTexture,
+  Sprite,
+  type FederatedPointerEvent,
+  type Renderer,
+} from 'pixi.js';
 import { Critter, CRITTERS } from '../../art/critter';
 import type { CompanionRig } from '../../creatures/companion';
 import { RAINBOW, swatch } from '../../art/palette';
@@ -12,7 +21,32 @@ import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import type { View } from '../../engine/view';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { LEVELS, allowedParts, askedParts, askedPhrase, cleanPhrase, IdleNudge, MUD_H, MUD_W, Namer, nearestIndex, nearMud, nextToScrub, PATS_PER_PATCH, PHRASES, planFor, planOn, reach, scrubPath, brushOn, spotsOn, STAR, wrongTouches, type Part, type Plan } from './logic';
+import {
+  LEVELS,
+  allowedParts,
+  askedParts,
+  askedPhrase,
+  cleanPhrase,
+  IdleNudge,
+  MUD_H,
+  MUD_W,
+  Namer,
+  nearestIndex,
+  nearMud,
+  nextToScrub,
+  PATS_PER_PATCH,
+  PHRASES,
+  planFor,
+  planOn,
+  reach,
+  scrubPath,
+  brushOn,
+  spotsOn,
+  STAR,
+  wrongTouches,
+  type Part,
+  type Plan,
+} from './logic';
 import { rangeFor } from '../../progress/difficulty';
 
 const MUD = { fill: 0x8b5a2b, dark: 0x6b4423, light: 0xa8743f };
@@ -44,12 +78,22 @@ class Mud {
     private readonly renderer: Renderer,
   ) {
     this.rt = RenderTexture.create({ width: MUD_W, height: MUD_H, resolution: 2 });
-    const blobs = Array.from({ length: 6 }, () => ({ x: MUD_W / 2 + rng.range(-28, 28), y: MUD_H / 2 + rng.range(-20, 20), r: rng.range(16, 26) }));
+    const blobs = Array.from({ length: 6 }, () => ({
+      x: MUD_W / 2 + rng.range(-28, 28),
+      y: MUD_H / 2 + rng.range(-20, 20),
+      r: rng.range(16, 26),
+    }));
     const g = new Graphics();
     for (const b of blobs) g.circle(b.x, b.y, b.r);
     g.fill(MUD.fill);
-    for (let i = 0; i < 7; i++) g.circle(MUD_W / 2 + rng.range(-36, 36), MUD_H / 2 + rng.range(-26, 26), rng.range(3, 7)).fill(MUD.dark);
-    for (let i = 0; i < 3; i++) g.circle(MUD_W / 2 + rng.range(-24, 24), MUD_H / 2 + rng.range(-18, 18), rng.range(3, 5)).fill(MUD.light);
+    for (let i = 0; i < 7; i++)
+      g.circle(MUD_W / 2 + rng.range(-36, 36), MUD_H / 2 + rng.range(-26, 26), rng.range(3, 7)).fill(
+        MUD.dark,
+      );
+    for (let i = 0; i < 3; i++)
+      g.circle(MUD_W / 2 + rng.range(-24, 24), MUD_H / 2 + rng.range(-18, 18), rng.range(3, 5)).fill(
+        MUD.light,
+      );
     renderer.render({ container: g, target: this.rt, clear: true, clearColor: [0, 0, 0, 0] });
     g.destroy();
 
@@ -180,18 +224,32 @@ class SplishSplash implements Game {
       if (this.plan.mode === 'pat') this.patAt(e);
       else this.scrubAt(e);
     });
-    this.scrubZone.on('globalpointermove', (e) => this.plan.mode !== 'pat' && this.last.has(e.pointerId) && this.scrubAt(e));
+    this.scrubZone.on(
+      'globalpointermove',
+      (e) => this.plan.mode !== 'pat' && this.last.has(e.pointerId) && this.scrubAt(e),
+    );
     this.scrubZone.on('pointerup', this.lift);
     this.scrubZone.on('pointerupoutside', this.lift);
     this.ctx.listen(window, 'pointerup', this.lift);
     this.ctx.listen(window, 'pointercancel', this.lift);
 
-    ctx.stage.addChild(this.wall, this.room, this.pip, this.tubFront, this.foam, this.scrubZone, this.rubberDuck);
+    ctx.stage.addChild(
+      this.wall,
+      this.room,
+      this.pip,
+      this.tubFront,
+      this.foam,
+      this.scrubZone,
+      this.rubberDuck,
+    );
   }
 
   start() {
     if (this.plan.mode === 'parts') void this.askForPart();
-    else void this.instruct(this.plan.mode === 'pat' ? 'bath.pat' : 'bath.free').then(() => (this.opening = false));
+    else
+      void this.instruct(this.plan.mode === 'pat' ? 'bath.pat' : 'bath.free').then(
+        () => (this.opening = false),
+      );
   }
 
   resize(v: View) {
@@ -206,14 +264,24 @@ class SplishSplash implements Game {
     for (let y = 0; y < tubTop; y += 64) r.moveTo(0, y).lineTo(v.w, y).stroke({ width: 2, color: 0xeaf6fd });
     r.rect(0, tubTop + 40, v.w, v.h).fill(0xf3e3c8);
     // Shower head, up top.
-    r.roundRect(cx + 150, 40, 14, 120, 6).fill(0xb9c6d1).roundRect(cx + 110, 150, 90, 26, 12).fill(0xb9c6d1);
+    r.roundRect(cx + 150, 40, 14, 120, 6)
+      .fill(0xb9c6d1)
+      .roundRect(cx + 110, 150, 90, 26, 12)
+      .fill(0xb9c6d1);
 
     // Sitting in the tub: feet and bottom hidden behind the rim, tummy just above the foam.
     this.pip.position.set(cx, tubTop - 4 - this.rise);
     const t = this.tubFront.clear();
-    t.circle(cx - 220, tubTop + 172, 20).circle(cx + 220, tubTop + 172, 20).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line });
-    t.roundRect(cx - 280, tubTop - 14, 560, 180, 70).fill(0xffffff).stroke({ width: 6, color: 0xb9c6d1 });
-    t.roundRect(cx - 296, tubTop - 22, 592, 32, 16).fill(0xffffff).stroke({ width: 6, color: 0xb9c6d1 });
+    t.circle(cx - 220, tubTop + 172, 20)
+      .circle(cx + 220, tubTop + 172, 20)
+      .fill(swatch.yellow.fill)
+      .stroke({ width: 4, color: swatch.yellow.line });
+    t.roundRect(cx - 280, tubTop - 14, 560, 180, 70)
+      .fill(0xffffff)
+      .stroke({ width: 6, color: 0xb9c6d1 });
+    t.roundRect(cx - 296, tubTop - 22, 592, 32, 16)
+      .fill(0xffffff)
+      .stroke({ width: 6, color: 0xb9c6d1 });
     t.roundRect(cx - 250, tubTop + 40, 500, 10, 5).fill({ color: swatch.blue.light, alpha: 0.7 });
     this.drawFoam(cx, tubTop);
     this.rubberDuck.position.set(cx + 236, tubTop - 18);
@@ -299,7 +367,11 @@ class SplishSplash implements Game {
     this.hinted = false;
     const [a, b] = this.asked();
     if (!b) await this.instruct('bath.part', { part: askedPhrase([a]) });
-    else await this.instruct(this.plan.ordered ? 'bath.order' : 'bath.two', { a: askedPhrase([a]), b: askedPhrase([b]) });
+    else
+      await this.instruct(this.plan.ordered ? 'bath.order' : 'bath.two', {
+        a: askedPhrase([a]),
+        b: askedPhrase([b]),
+      });
   }
 
   private scrubAt(e: FederatedPointerEvent) {
@@ -322,7 +394,14 @@ class SplishSplash implements Game {
     this.bubbleIn -= dist / this.view.scale;
     if (this.bubbleIn <= 0) {
       this.bubbleIn = 26;
-      this.ctx.particles.burst(p.x, p.y, { colors: [0xffffff, 0xd6eefa], count: 3, speed: [20, 70], gravity: -160, size: [0.3, 0.6], life: [0.6, 1.1] });
+      this.ctx.particles.burst(p.x, p.y, {
+        colors: [0xffffff, 0xd6eefa],
+        count: 3,
+        speed: [20, 70],
+        gravity: -160,
+        size: [0.3, 0.6],
+        life: [0.6, 1.1],
+      });
     }
     if (this.clock - this.lastSqueak > 0.13) {
       this.lastSqueak = this.clock;
@@ -339,7 +418,11 @@ class SplishSplash implements Game {
   private patAt(e: FederatedPointerEvent) {
     if (this.finished) return;
     const open = this.muds.filter((m) => !m.clean);
-    const i = nearestIndex(open.map((m) => m.sprite.getGlobalPosition()), e.global.x, e.global.y);
+    const i = nearestIndex(
+      open.map((m) => m.sprite.getGlobalPosition()),
+      e.global.x,
+      e.global.y,
+    );
     if (i === null) return;
     const m = open[i];
     m.pats++;
@@ -348,7 +431,14 @@ class SplishSplash implements Game {
     this.sinceProgress = 0;
     m.sprite.alpha = 1 - m.pats / PATS_PER_PATCH;
     const p = this.ctx.stage.toLocal(e.global);
-    this.ctx.particles.burst(p.x, p.y, { colors: [0xffffff, 0xd6eefa], count: 8, speed: [40, 140], gravity: -160, size: [0.3, 0.7], life: [0.6, 1.1] });
+    this.ctx.particles.burst(p.x, p.y, {
+      colors: [0xffffff, 0xd6eefa],
+      count: 8,
+      speed: [40, 140],
+      gravity: -160,
+      size: [0.3, 0.7],
+      life: [0.6, 1.1],
+    });
     sfx.squeak(7 + Math.floor(Math.random() * 4));
     this.pip.poke(true);
     if (m.pats >= PATS_PER_PATCH) void this.cleaned(m);
@@ -370,7 +460,13 @@ class SplishSplash implements Game {
       const l = m.sprite.toLocal(global);
       return m.near(l.x, l.y);
     });
-    const wrong = parts ? wrongTouches(this.allowed(), touched.map((m) => m.part), forgiven) : [];
+    const wrong = parts
+      ? wrongTouches(
+          this.allowed(),
+          touched.map((m) => m.part),
+          forgiven,
+        )
+      : [];
     for (const m of touched) {
       const l = m.sprite.toLocal(global);
       if (parts && !this.allowed().includes(m.part)) {
@@ -395,13 +491,19 @@ class SplishSplash implements Game {
     this.lastNag = this.clock;
     this.misses++;
     const [a, b] = this.asked();
-    if (this.plan.ordered && touched === b) void this.ctx.say('bath.first', { a: askedPhrase([a]), b: askedPhrase([b]) });
-    else void this.ctx.say(PHRASES[touched].plural ? 'bath.notthose' : 'bath.notthat', { touched: PHRASES[touched].word, part: askedPhrase(this.asked()) });
+    if (this.plan.ordered && touched === b)
+      void this.ctx.say('bath.first', { a: askedPhrase([a]), b: askedPhrase([b]) });
+    else
+      void this.ctx.say(PHRASES[touched].plural ? 'bath.notthose' : 'bath.notthat', {
+        touched: PHRASES[touched].word,
+        part: askedPhrase(this.asked()),
+      });
   }
 
   /** Free play and patting: say a part's name at its first touch, once a round, never over the opening or too soon after the last. */
   private nameAt(part: Part) {
-    if (this.namer.touch(part, this.clock, this.opening)) void this.ctx.say('bath.named', { part: PHRASES[part].word });
+    if (this.namer.touch(part, this.clock, this.opening))
+      void this.ctx.say('bath.named', { part: PHRASES[part].word });
   }
 
   private async cleaned(m: Mud) {
@@ -409,7 +511,14 @@ class SplishSplash implements Game {
     m.glow.visible = false;
     void this.ctx.tw.to(m.sprite, { alpha: 0 }, { duration: 0.35 });
     const p = this.ctx.stage.toLocal(m.sprite.getGlobalPosition());
-    this.ctx.particles.burst(p.x, p.y, { kind: 'star', colors: [0xffffff, 0xfff3a0], count: 10, speed: [100, 240], gravity: 0, life: [0.4, 0.8] });
+    this.ctx.particles.burst(p.x, p.y, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0],
+      count: 10,
+      speed: [100, 240],
+      gravity: 0,
+      life: [0.4, 0.8],
+    });
     sfx.squeak(12);
     this.pip.cheer();
 
@@ -436,7 +545,16 @@ class SplishSplash implements Game {
     this.finished = true;
     const v = this.view;
     for (let i = 0; i < 6; i++) {
-      this.ctx.particles.burst(v.w / 2 + 155, 175, { colors: [swatch.blue.fill, swatch.blue.light, 0xffffff], count: 14, angle: Math.PI / 2 + 0.35, spread: 0.6, speed: [200, 380], gravity: 600, size: [0.2, 0.4], life: [0.7, 1] });
+      this.ctx.particles.burst(v.w / 2 + 155, 175, {
+        colors: [swatch.blue.fill, swatch.blue.light, 0xffffff],
+        count: 14,
+        angle: Math.PI / 2 + 0.35,
+        spread: 0.6,
+        speed: [200, 380],
+        gravity: 600,
+        size: [0.2, 0.4],
+        life: [0.7, 1],
+      });
       if (i === 0) sfx.splash();
       await this.ctx.tw.wait(0.12);
     }
@@ -445,7 +563,14 @@ class SplishSplash implements Game {
     const colors = RAINBOW.map((c) => swatch[c].fill);
     const t = this.pip.touch;
     const p = this.ctx.stage.toLocal(this.pip.toGlobal({ x: t.x, y: t.y - t.r * 0.5 }));
-    this.ctx.particles.burst(p.x, p.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, ...colors], count: 30, speed: [150, 400], gravity: 0, life: [0.8, 1.3] });
+    this.ctx.particles.burst(p.x, p.y, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0, ...colors],
+      count: 30,
+      speed: [150, 400],
+      gravity: 0,
+      life: [0.8, 1.3],
+    });
     sfx.tada();
     await this.ctx.tw.wait(2);
     this.ctx.finish({ misses: this.misses, hints: this.hints });
@@ -517,7 +642,10 @@ function sticker(seed: number): Container {
   const foam = new Graphics();
   for (let i = 0; i < 6; i++) foam.circle(rng.range(-90, 90), rng.range(-20, 10), rng.range(18, 30));
   foam.fill(0xffffff).stroke({ width: 3, color: 0xbfe0f4 });
-  for (let i = 0; i < 3; i++) foam.circle(rng.range(-80, 80), rng.range(-170, -110), rng.range(10, 16)).stroke({ width: 4, color: 0x8fd0ff });
+  for (let i = 0; i < 3; i++)
+    foam
+      .circle(rng.range(-80, 80), rng.range(-170, -110), rng.range(10, 16))
+      .stroke({ width: 4, color: 0x8fd0ff });
   c.addChild(duck, foam);
   return c;
 }
@@ -537,7 +665,11 @@ export const splishSplash: GameModule = {
     if (p.mode === 'pat') return 'Pat anywhere: each touch washes a bit of mud off, nothing to aim';
     if (p.ordered) return 'Two-step directions in order: "first your nose, then your ears"';
     if (p.pairs) return 'Two body parts at once: "wash my ears and my nose"';
-    return p.shuffle ? `Wash ${p.parts.length} body parts in a different order each round` : p.mode === 'free' ? 'Scrub all the mud off' : `Wash one body part at a time: ${p.parts.join(', ')}`;
+    return p.shuffle
+      ? `Wash ${p.parts.length} body parts in a different order each round`
+      : p.mode === 'free'
+        ? 'Scrub all the mud off'
+        : `Wash one body part at a time: ${p.parts.join(', ')}`;
   },
   music: STYLES.paint,
   touchDemo: true,

@@ -29,7 +29,9 @@ describe('the Lantern Lights course', () => {
     const ponds = coursePonds('lanterns');
     expect(ponds.map((p) => p.size)).toEqual([4, 5, 5, 5, 5]);
     expect(courseBest('lanterns')).toEqual([4, 5, 7, 9, 11]);
-    expect(courseBest('lanterns').slice(1)).toEqual([...courseBest('lanterns').slice(1)].sort((a, b) => a - b));
+    expect(courseBest('lanterns').slice(1)).toEqual(
+      [...courseBest('lanterns').slice(1)].sort((a, b) => a - b),
+    );
   });
 
   it('has a par that is worked out by the solver and summed for the course', () => {

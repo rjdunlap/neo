@@ -15,21 +15,73 @@ import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { animalArt, bookArt, pictureArt, rowIcon, tabFace } from './art';
 import {
   LEVELS,
-  ANIMALS, choicesFor, check, countsAsMiss, GLOW_AFTER, guideLayout, HELP_AFTER, hintFor, lookTouch, makeRound, nearestPoint,
-  PICTURE_WORDS, pictureOf, planFor, askOf, type AnimalId, type Hint, type Picture, type Rect, type Round, type Row,
+  ANIMALS,
+  choicesFor,
+  check,
+  countsAsMiss,
+  GLOW_AFTER,
+  guideLayout,
+  HELP_AFTER,
+  hintFor,
+  lookTouch,
+  makeRound,
+  nearestPoint,
+  PICTURE_WORDS,
+  pictureOf,
+  planFor,
+  askOf,
+  type AnimalId,
+  type Hint,
+  type Picture,
+  type Rect,
+  type Round,
+  type Row,
 } from './logic';
 
 /** What the pet says a wrong choice is. */
 const WHAT: Record<Picture, string> = {
-  grass: "That's grass.", rootPlant: 'Those are plants and roots.', seeds: 'Those are seeds.', berries: 'Those are berries.', snail: 'Those are snails.', fish: "That's fish.",
-  field: "That's a field.", mudPen: "That's a muddy pen.", pond: "That's a pond.", burrow: "That's a burrow.", den: "That's a den.", rockyBeach: "That's a rocky beach.",
-  calf: "That's a calf.", piglet: "That's a piglet.", duckling: "That's a duckling.", kit: "That's a kit.", cub: "That's a cub.", tadpole: "That's a tadpole.", chick: "That's a chick.",
+  grass: "That's grass.",
+  rootPlant: 'Those are plants and roots.',
+  seeds: 'Those are seeds.',
+  berries: 'Those are berries.',
+  snail: 'Those are snails.',
+  fish: "That's fish.",
+  field: "That's a field.",
+  mudPen: "That's a muddy pen.",
+  pond: "That's a pond.",
+  burrow: "That's a burrow.",
+  den: "That's a den.",
+  rockyBeach: "That's a rocky beach.",
+  calf: "That's a calf.",
+  piglet: "That's a piglet.",
+  duckling: "That's a duckling.",
+  kit: "That's a kit.",
+  cub: "That's a cub.",
+  tadpole: "That's a tadpole.",
+  chick: "That's a chick.",
 };
 
 type RowKind = 'name' | Row;
-interface PageRow { kind: RowKind; rect: Rect; node: Container; bg: Graphics; picture: Picture | null; word: string; line: string }
-interface TabNode { id: AnimalId; node: Container; bg: Graphics }
-interface Choice { picture: Picture; node: Container; drag: DragHandle; used: boolean }
+interface PageRow {
+  kind: RowKind;
+  rect: Rect;
+  node: Container;
+  bg: Graphics;
+  picture: Picture | null;
+  word: string;
+  line: string;
+}
+interface TabNode {
+  id: AnimalId;
+  node: Container;
+  bg: Graphics;
+}
+interface Choice {
+  picture: Picture;
+  node: Container;
+  drag: DragHandle;
+  used: boolean;
+}
 
 class LookItUp implements Game {
   readonly plan;
@@ -69,7 +121,17 @@ class LookItUp implements Game {
     this.rng = new Rng(ctx.rng.int(1, 2 ** 30));
     this.round = makeRound(ctx.level, ctx.rng);
     this.open = this.round.open;
-    this.backdrop = new Backdrop({ sky: [swatch.green.light, cream], hills: [swatch.green.fill, swatch.teal.light], horizon: 0.74, clouds: 2, sun: false, seed: 61 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [swatch.green.light, cream],
+        hills: [swatch.green.fill, swatch.teal.light],
+        horizon: 0.74,
+        clouds: 2,
+        sun: false,
+        seed: 61,
+      },
+      ctx.view,
+    );
     this.glow.eventMode = 'none';
     this.scene.sortableChildren = false;
     for (const id of this.round.tabs) {
@@ -80,11 +142,22 @@ class LookItUp implements Game {
       onTap(node, () => void this.turnTo(id), { cooldown: 200 });
       this.tabs.push({ id, node, bg });
     }
-    ctx.stage.addChild(this.backdrop, this.book, this.page, ...this.tabs.map((t) => t.node), this.scene, this.glow);
+    ctx.stage.addChild(
+      this.backdrop,
+      this.book,
+      this.page,
+      ...this.tabs.map((t) => t.node),
+      this.scene,
+      this.glow,
+    );
   }
 
-  private get visit() { return this.round.visits[this.index]; }
-  private get mode() { return this.plan.mode; }
+  private get visit() {
+    return this.round.visits[this.index];
+  }
+  private get mode() {
+    return this.plan.mode;
+  }
 
   start() {
     this.drawPage();
@@ -108,17 +181,28 @@ class LookItUp implements Game {
     this.glow.clear();
     if (!this.glowOn || this.busy || this.finished || this.mode === 'labels') return;
     const r = this.hintRect(hintFor(this.round, this.visit, this.open, this.rowSeen));
-    if (r) this.glow.roundRect(r.x - 6, r.y - 6, r.w + 12, r.h + 12, 22).stroke({ width: 6 + Math.sin(this.clock * 5), color: swatch.yellow.fill });
+    if (r)
+      this.glow
+        .roundRect(r.x - 6, r.y - 6, r.w + 12, r.h + 12, 22)
+        .stroke({ width: 6 + Math.sin(this.clock * 5), color: swatch.yellow.fill });
   }
 
   private hintRect(h: Hint): Rect | null {
-    if (h.kind === 'tab') { const t = this.tabs.find((x) => x.id === h.animal); return t ? this.rectOf(t.node, 110, 110) : null; }
-    if (h.kind === 'row') { const r = this.rows.find((x) => x.kind === h.row); return r ? r.rect : null; }
+    if (h.kind === 'tab') {
+      const t = this.tabs.find((x) => x.id === h.animal);
+      return t ? this.rectOf(t.node, 110, 110) : null;
+    }
+    if (h.kind === 'row') {
+      const r = this.rows.find((x) => x.kind === h.row);
+      return r ? r.rect : null;
+    }
     const c = this.choices.find((x) => x.picture === h.picture && !x.used);
     return c ? this.rectOf(c.node, 130, 130) : null;
   }
 
-  private rectOf(n: Container, w: number, h: number): Rect { return { x: n.x - w / 2, y: n.y - h / 2, w, h }; }
+  private rectOf(n: Container, w: number, h: number): Rect {
+    return { x: n.x - w / 2, y: n.y - h / 2, w, h };
+  }
 
   private layout() {
     return guideLayout(this.view, this.mode === 'page' ? 1 : 3, 3);
@@ -140,18 +224,33 @@ class LookItUp implements Game {
     const face = animalArt(this.open, 56);
     face.position.set(l.book.x + l.book.w - 70, l.book.y + 62);
     this.page.addChild(title, face);
-    const kinds: RowKind[] = this.mode === 'labels' ? ['name', 'eats', 'baby'] : this.mode === 'page' ? ['eats'] : ['eats', 'where', 'baby'];
+    const kinds: RowKind[] =
+      this.mode === 'labels'
+        ? ['name', 'eats', 'baby']
+        : this.mode === 'page'
+          ? ['eats']
+          : ['eats', 'where', 'baby'];
     kinds.forEach((kind, i) => {
       const rect = l.rows[i];
       const picture = kind === 'name' ? null : animal.rows[kind].picture;
-      const word = kind === 'name' ? animal.title.toLowerCase().replace('african ', '').replace('brown ', '') : PICTURE_WORDS[picture!];
+      const word =
+        kind === 'name'
+          ? animal.title.toLowerCase().replace('african ', '').replace('brown ', '')
+          : PICTURE_WORDS[picture!];
       const line = kind === 'name' ? `${animal.title}.` : animal.rows[kind].line;
       const node = new Container();
       node.position.set(rect.x + rect.w / 2, rect.y + rect.h / 2);
-      const bg = new Graphics().roundRect(-rect.w / 2, -rect.h / 2 + 3, rect.w, rect.h - 6, 18).fill(swatch.white.fill).stroke({ width: 3, color: wood.light });
+      const bg = new Graphics()
+        .roundRect(-rect.w / 2, -rect.h / 2 + 3, rect.w, rect.h - 6, 18)
+        .fill(swatch.white.fill)
+        .stroke({ width: 3, color: wood.light });
       node.addChild(bg);
       const lit = this.mode === 'labels' && this.touched.has(kind);
-      if (lit) bg.clear().roundRect(-rect.w / 2, -rect.h / 2 + 3, rect.w, rect.h - 6, 18).fill(swatch.yellow.light).stroke({ width: 4, color: swatch.yellow.fill });
+      if (lit)
+        bg.clear()
+          .roundRect(-rect.w / 2, -rect.h / 2 + 3, rect.w, rect.h - 6, 18)
+          .fill(swatch.yellow.light)
+          .stroke({ width: 4, color: swatch.yellow.fill });
       const pic = kind === 'name' ? animalArt(this.open, 80) : pictureArt(picture!);
       if (kind === 'name') pic.y = 34;
       if (this.mode !== 'labels' && kind !== 'name') {
@@ -163,7 +262,10 @@ class LookItUp implements Game {
       pic.position.x = this.mode === 'labels' ? -rect.w / 2 + 70 : -rect.w / 2 + 150;
       node.addChild(pic);
       if (this.mode === 'labels') {
-        const tag = new Graphics().roundRect(-80, -42, 160, 84, 18).fill(cream).stroke({ width: 3, color: wood.line });
+        const tag = new Graphics()
+          .roundRect(-80, -42, 160, 84, 18)
+          .fill(cream)
+          .stroke({ width: 3, color: wood.line });
         tag.position.set(rect.w / 2 - 110, 0);
         const text = label(word, 38, ink);
         text.position.set(rect.w / 2 - 110, 0);
@@ -179,13 +281,18 @@ class LookItUp implements Game {
       const r = l.tabs[i];
       const isOpen = t.id === this.open;
       t.node.position.set(r.x + r.w / 2 + (isOpen ? -8 : 0), r.y + r.h / 2);
-      t.bg.clear().roundRect(-55, -55, 110, 110, 20).fill(isOpen ? cream : wood.light).stroke({ width: 4, color: wood.line });
+      t.bg
+        .clear()
+        .roundRect(-55, -55, 110, 110, 20)
+        .fill(isOpen ? cream : wood.light)
+        .stroke({ width: 4, color: wood.line });
     });
   }
 
   private placeScene() {
     const l = this.layout();
-    if (this.visitorNode && !this.visitorNode.destroyed) this.visitorNode.position.set(l.visitor.x, l.visitor.y);
+    if (this.visitorNode && !this.visitorNode.destroyed)
+      this.visitorNode.position.set(l.visitor.x, l.visitor.y);
     this.choices.forEach((c, i) => {
       const r = l.choices[i];
       c.drag.home = { x: r.x + r.w / 2, y: r.y + r.h / 2 };
@@ -225,7 +332,11 @@ class LookItUp implements Game {
 
   private glowRow(row: PageRow, on: boolean) {
     const { w, h } = row.rect;
-    row.bg.clear().roundRect(-w / 2, -h / 2 + 3, w, h - 6, 18).fill(on ? swatch.yellow.light : swatch.white.fill).stroke({ width: on ? 4 : 3, color: on ? swatch.yellow.fill : wood.light });
+    row.bg
+      .clear()
+      .roundRect(-w / 2, -h / 2 + 3, w, h - 6, 18)
+      .fill(on ? swatch.yellow.light : swatch.white.fill)
+      .stroke({ width: on ? 4 : 3, color: on ? swatch.yellow.fill : wood.light });
   }
 
   private async wiggle(n: Container) {
@@ -238,7 +349,8 @@ class LookItUp implements Game {
     this.busy = true;
     this.done.add(this.open);
     const animal = ANIMALS[this.open];
-    for (const r of ['eats', 'where', 'baby'] as const) await this.ctx.say('lookitup.say', { text: animal.rows[r].line });
+    for (const r of ['eats', 'where', 'baby'] as const)
+      await this.ctx.say('lookitup.say', { text: animal.rows[r].line });
     sfx.tada();
     const nextPage = this.round.tabs.find((t) => !this.done.has(t));
     if (!nextPage) return void this.finale();
@@ -269,14 +381,25 @@ class LookItUp implements Game {
     const holder = new Container();
     holder.addChild(animalArt(visit.animal, 190));
     holder.hitArea = new Circle(0, -95, 100);
-    onTap(holder, () => { if (!this.busy && !this.finished) void this.ctx.instruct('lookitup.ask', { text: askOf(this.visit) }); }, { cooldown: 500 });
+    onTap(
+      holder,
+      () => {
+        if (!this.busy && !this.finished) void this.ctx.instruct('lookitup.ask', { text: askOf(this.visit) });
+      },
+      { cooldown: 500 },
+    );
     holder.position.set(l.visitor.x, l.visitor.y);
     holder.alpha = 0;
     this.visitorNode = holder;
     this.scene.addChild(holder);
     this.choices = choicesFor(this.round, visit, this.rng).map((picture) => {
       const node = new Container();
-      node.addChild(new Graphics().roundRect(-65, -65, 130, 130, 24).fill(swatch.white.fill).stroke({ width: 5, color: wood.line }));
+      node.addChild(
+        new Graphics()
+          .roundRect(-65, -65, 130, 130, 24)
+          .fill(swatch.white.fill)
+          .stroke({ width: 5, color: wood.line }),
+      );
       const art = pictureArt(picture);
       art.scale.set(1.15);
       node.addChild(art);
@@ -301,7 +424,10 @@ class LookItUp implements Game {
   }
 
   private clearScene() {
-    for (const c of this.choices.splice(0)) { c.drag.destroy(); c.node.destroy({ children: true }); }
+    for (const c of this.choices.splice(0)) {
+      c.drag.destroy();
+      c.node.destroy({ children: true });
+    }
     if (this.visitorNode && !this.visitorNode.destroyed) this.visitorNode.destroy({ children: true });
     this.visitorNode = null;
   }
@@ -321,11 +447,17 @@ class LookItUp implements Game {
     this.busy = true;
     const visit = this.visit;
     const verdict = check(this.round, visit, c.picture);
-    if (verdict.kind === 'ignore') { this.busy = false; return; }
+    if (verdict.kind === 'ignore') {
+      this.busy = false;
+      return;
+    }
     const v = this.visitorNode!;
     if (verdict.kind === 'right') return void this.resolve(c, true);
     this.attempts++;
-    if (countsAsMiss(this.wrongSeen, c.picture)) { this.wrongSeen.add(c.picture); this.misses++; }
+    if (countsAsMiss(this.wrongSeen, c.picture)) {
+      this.wrongSeen.add(c.picture);
+      this.misses++;
+    }
     sfx.boing();
     if (visit.row === 'where') {
       const home = { x: v.x, y: v.y };
@@ -335,7 +467,11 @@ class LookItUp implements Game {
     } else await this.shake(v);
     if (!this.alive) return;
     const owner = ANIMALS[verdict.owner];
-    await this.ctx.say('lookitup.miss', { what: WHAT[c.picture], fact: owner.rows[visit.row].line, kind: ANIMALS[visit.animal].kind });
+    await this.ctx.say('lookitup.miss', {
+      what: WHAT[c.picture],
+      fact: owner.rows[visit.row].line,
+      kind: ANIMALS[visit.animal].kind,
+    });
     if (!this.alive) return;
     if (this.attempts >= GLOW_AFTER) this.addHint();
     if (this.attempts >= HELP_AFTER) return void this.supported();
@@ -343,7 +479,10 @@ class LookItUp implements Game {
   }
 
   private addHint() {
-    if (!this.hinted) { this.hinted = true; this.hints++; }
+    if (!this.hinted) {
+      this.hinted = true;
+      this.hints++;
+    }
     this.glowOn = true;
   }
 
@@ -381,7 +520,13 @@ class LookItUp implements Game {
       if (!this.alive) return;
       await this.ctx.tw.to(v, { alpha: 0.4 }, { duration: 0.15 });
     }
-    this.ctx.particles.burst(v.x, v.y - 90, { colors: [swatch.yellow.fill, swatch.white.fill], count: 8, speed: [60, 140], gravity: 200, size: [0.2, 0.35] });
+    this.ctx.particles.burst(v.x, v.y - 90, {
+      colors: [swatch.yellow.fill, swatch.white.fill],
+      count: 8,
+      speed: [60, 140],
+      gravity: 200,
+      size: [0.2, 0.35],
+    });
     await this.ctx.say('lookitup.say', { text: ANIMALS[visit.animal].rows[visit.row].line });
     if (!this.alive) return;
     this.done.add(visit.animal);
@@ -391,7 +536,12 @@ class LookItUp implements Game {
   /** The ghost finger: turn to the visitor's page, touch the asked row at level 3, then carry the right picture to the visitor. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || this.index < 0) return null;
-    const move = lookTouch(this.round, { visitor: this.index, open: this.open, rowSeen: this.rowSeen, touched: this.touched.size });
+    const move = lookTouch(this.round, {
+      visitor: this.index,
+      open: this.open,
+      rowSeen: this.rowSeen,
+      touched: this.touched.size,
+    });
     if (!move) return null;
     if ('label' in move) {
       const row = this.rows.find((r) => !this.touched.has(r.kind));
@@ -427,13 +577,17 @@ class LookIcon extends WigglyIcon {
     const c = new Container();
     const book = bookArt(190, 140);
     book.position.set(-95, -70);
-    const tab = new Graphics().roundRect(0, 0, 54, 54, 12).fill(wood.light).stroke({ width: 4, color: wood.line });
+    const tab = new Graphics()
+      .roundRect(0, 0, 54, 54, 12)
+      .fill(wood.light)
+      .stroke({ width: 4, color: wood.line });
     tab.position.set(92, -52);
     const cow = animalArt('cow', 66);
     cow.position.set(120, 4);
     cow.scale.set(0.9);
     const lines = new Graphics();
-    for (const y of [-28, -4, 20]) lines.moveTo(-70, y).lineTo(50, y).stroke({ width: 7, color: wood.light, cap: 'round' });
+    for (const y of [-28, -4, 20])
+      lines.moveTo(-70, y).lineTo(50, y).stroke({ width: 7, color: wood.light, cap: 'round' });
     c.addChild(book, lines, tab, cow);
     super(c);
   }
@@ -463,7 +617,8 @@ export const lookItUp: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
-  coplayHint: 'Ask me, I\'ll look it up: you ask about an animal, she finds its page with her finger on the tabs, then swap.',
+  coplayHint:
+    "Ask me, I'll look it up: you ask about an animal, she finds its page with her finger on the tabs, then swap.",
   offScreen: 'Find an animal book at home and look for what one animal eats.',
   hubIcon: () => new LookIcon(),
   touchDemo: true,

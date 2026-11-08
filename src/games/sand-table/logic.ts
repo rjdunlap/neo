@@ -34,13 +34,35 @@ const bayPours = (bays: number) => Array.from({ length: bays }, (_, b) => [4 * b
 
 export const PLANS: readonly Plan[] = [
   { level: 1, name: 'Make a mound', bays: [[0, 11]], pours: [[5, 6, 5]], starts: [flat], show: false },
-  { level: 2, name: 'Two little hills', bays: [[0, 5], [6, 11]], pours: [[2, 3, 2], [8, 9, 8]], starts: [flat], show: false },
+  {
+    level: 2,
+    name: 'Two little hills',
+    bays: [
+      [0, 5],
+      [6, 11],
+    ],
+    pours: [
+      [2, 3, 2],
+      [8, 9, 8],
+    ],
+    starts: [flat],
+    show: false,
+  },
   {
     level: 3,
     name: 'A landscape to show',
-    bays: [[0, 3], [4, 7], [8, 11]],
+    bays: [
+      [0, 3],
+      [4, 7],
+      [8, 11],
+    ],
     pours: bayPours(3),
-    starts: [flat, [3, 3, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3], [2, 2, 2, 1, 1, 0, 0, 1, 1, 2, 2, 2]],
+    starts: [
+      flat,
+      [3, 3, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3, 3],
+      [2, 2, 2, 1, 1, 0, 0, 1, 1, 2, 2, 2],
+    ],
     show: true,
   },
 ];
@@ -87,7 +109,16 @@ export function startState(level: number, rng: Rng): SandState {
     const options = (['tall', 'hills', 'flat'] as const).filter((k) => k !== describeLandscape([...start]));
     invite = rng.pick([...options]);
   }
-  return { plan, h: [...start], bucket: GRAINS - sum(start), pail: 0, start, flag: false, invite, spilled: false };
+  return {
+    plan,
+    h: [...start],
+    bucket: GRAINS - sum(start),
+    pail: 0,
+    start,
+    flag: false,
+    invite,
+    spilled: false,
+  };
 }
 
 export const sum = (h: readonly number[]) => h.reduce((a, b) => a + b, 0);
@@ -208,9 +239,10 @@ export function describeLandscape(h: readonly number[]): LandscapeKind {
   const hi = Math.max(...h);
   const lo = Math.min(...h);
   if (hi - lo <= 1) return 'flat';
-  for (let i = 0; i < h.length; i++) for (let k = i + 2; k < h.length; k++) {
-    for (let j = i + 1; j < k; j++) if (h[j] < h[i] && h[j] < h[k]) return 'hills';
-  }
+  for (let i = 0; i < h.length; i++)
+    for (let k = i + 2; k < h.length; k++) {
+      for (let j = i + 1; j < k; j++) if (h[j] < h[i] && h[j] < h[k]) return 'hills';
+    }
   if (hi >= 5) return 'tall';
   return 'bumpy';
 }
@@ -248,7 +280,8 @@ export type BotStep = SandAction | { flag: true };
 export function botStep(s: SandState, taken: number): BotStep {
   const lvl = s.plan.level;
   if (lvl === 1) return taken < 4 ? { pour: 0 } : taken < 5 ? { scoop: 0 } : { flag: true };
-  if (lvl === 2) return taken < 3 ? { pour: 0 } : taken < 4 ? { pour: 1 } : taken < 5 ? { scoop: 0 } : { flag: true };
+  if (lvl === 2)
+    return taken < 3 ? { pour: 0 } : taken < 4 ? { pour: 1 } : taken < 5 ? { scoop: 0 } : { flag: true };
   const kind = describeLandscape(s.h);
   if (kind === s.invite || taken >= 12) return { flag: true };
   if (s.invite === 'tall') return { pour: 1 };
@@ -289,7 +322,12 @@ export function sandLayout(view: View, bays: number): SandLayout {
   const tray: Rect = { x: (view.w - trayW) / 2, y: landscape ? 170 : 190, w: trayW, h: rowH * RIM };
   const colW = trayW / COLS;
   const bayW = trayW / bays;
-  const bayRects = Array.from({ length: bays }, (_, b) => ({ x: tray.x + b * bayW, y: tray.y, w: bayW, h: tray.h }));
+  const bayRects = Array.from({ length: bays }, (_, b) => ({
+    x: tray.x + b * bayW,
+    y: tray.y,
+    w: bayW,
+    h: tray.h,
+  }));
   const pw = Math.min(180, bayW - 24);
   const py = tray.y + tray.h + 26;
   const paddles = bayRects.map((r) => ({ x: r.x + r.w / 2 - pw / 2, y: py, w: pw, h: PADDLE_H }));
@@ -303,7 +341,16 @@ export function sandLayout(view: View, bays: number): SandLayout {
     flagRect = { x: view.w - 20 - SIDE, y, w: SIDE, h: SIDE };
     pailRect = { x: flagRect.x - 24 - SIDE, y, w: SIDE, h: SIDE };
   }
-  return { tray, rowH, colW, bays: bayRects, paddles, pail: pailRect, flag: flagRect, bucket: { x: view.w / 2, y: 95 } };
+  return {
+    tray,
+    rowH,
+    colW,
+    bays: bayRects,
+    paddles,
+    pail: pailRect,
+    flag: flagRect,
+    bucket: { x: view.w / 2, y: 95 },
+  };
 }
 
 /** The bay a column belongs to. */
@@ -314,5 +361,9 @@ export function bayOf(plan: Plan, col: number): number {
 // ---- Words for grown-ups ----------------------------------------------------------------------------------------------
 
 export function describeSand(level: number): string {
-  return level <= 1 ? 'Pour and scoop one sand heap' : level === 2 ? 'Build or lower two hills' : 'Shape a landscape and show it';
+  return level <= 1
+    ? 'Pour and scoop one sand heap'
+    : level === 2
+      ? 'Build or lower two hills'
+      : 'Shape a landscape and show it';
 }

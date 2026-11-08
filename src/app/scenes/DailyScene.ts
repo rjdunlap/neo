@@ -46,10 +46,20 @@ export class DailyScene extends Scene {
   upright = true;
   uprightArea = true;
   private readonly backdrop = homeBackdrop();
-  readonly back = new RoundButton(arrowIcon(-1), swatch.white, CORNER_RADIUS, () => this.leave(() => this.app.go.hub(), voice.say('nav.back'))).means('back');
-  readonly all = new RoundButton(fitArt(tilesIcon(), 56), swatch.white, CORNER_RADIUS, () => this.leave(() => this.app.go.explore('all', 0, false), voice.say('explore.all')));
-  private readonly title = new Text({ text: "Today's six", style: { fontFamily: FONT, fontSize: 40, fill: ink, fontWeight: '600' } });
-  private readonly date = new Text({ text: '', style: { fontFamily: FONT, fontSize: 20, fill: MUTED, fontWeight: '500' } });
+  readonly back = new RoundButton(arrowIcon(-1), swatch.white, CORNER_RADIUS, () =>
+    this.leave(() => this.app.go.hub(), voice.say('nav.back')),
+  ).means('back');
+  readonly all = new RoundButton(fitArt(tilesIcon(), 56), swatch.white, CORNER_RADIUS, () =>
+    this.leave(() => this.app.go.explore('all', 0, false), voice.say('explore.all')),
+  );
+  private readonly title = new Text({
+    text: "Today's six",
+    style: { fontFamily: FONT, fontSize: 40, fill: ink, fontWeight: '600' },
+  });
+  private readonly date = new Text({
+    text: '',
+    style: { fontFamily: FONT, fontSize: 20, fill: MUTED, fontWeight: '500' },
+  });
   private readonly plate = new Graphics();
   /** The pet in the bottom-left corner the cards keep clear of: a poke repeats the page's line, and it cheers when all six are done. */
   readonly pip = makeCompanion();
@@ -64,8 +74,18 @@ export class DailyScene extends Scene {
     super(app);
     // A phone held upright draws its six from the upright-ready games first (chunk 31); the rest wear a turn badge.
     this.uprightPhone = app.uprightPhone();
-    this.picks = dailySix(this.day, store.data.profile.band, GAMES, (id) => store.data.games[id]?.pinned ?? null, this.uprightPhone);
-    this.date.text = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+    this.picks = dailySix(
+      this.day,
+      store.data.profile.band,
+      GAMES,
+      (id) => store.data.games[id]?.pinned ?? null,
+      this.uprightPhone,
+    );
+    this.date.text = new Date().toLocaleDateString(undefined, {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+    });
   }
 
   /** Every card has a tick. */
@@ -97,21 +117,45 @@ export class DailyScene extends Scene {
     const played = playedOn(store.data.games[pick.mod.id]?.history, this.day);
     const frame = new Graphics();
     frame.label = 'frame';
-    const name = new Text({ text: pick.mod.name, style: { fontFamily: FONT, fontSize: 22, fill: ink, fontWeight: '600', align: 'center', wordWrap: true, wordWrapWidth: 200, lineHeight: 24 } });
+    const name = new Text({
+      text: pick.mod.name,
+      style: {
+        fontFamily: FONT,
+        fontSize: 22,
+        fill: ink,
+        fontWeight: '600',
+        align: 'center',
+        wordWrap: true,
+        wordWrapWidth: 200,
+        lineHeight: 24,
+      },
+    });
     name.anchor.set(0.5, 0);
     name.label = 'name';
     const pill = new Graphics();
     pill.label = 'pill';
     const level = new Text({
       text: this.grownUp ? pick.mod.describeLevel(pick.level) : '',
-      style: { fontFamily: FONT, fontSize: 15, fill: MUTED, fontWeight: '500', align: 'center', wordWrap: true, wordWrapWidth: 200, lineHeight: 18 },
+      style: {
+        fontFamily: FONT,
+        fontSize: 15,
+        fill: MUTED,
+        fontWeight: '500',
+        align: 'center',
+        wordWrap: true,
+        wordWrapWidth: 200,
+        lineHeight: 18,
+      },
     });
     level.anchor.set(0.5, 0);
     level.label = 'level';
     const dots = new Graphics();
     dots.label = 'dots';
     const tick = new Container();
-    tick.addChild(new Graphics().circle(0, 0, 26).fill(swatch.green.fill).stroke({ color: 0xffffff, width: 5 }), checkIcon());
+    tick.addChild(
+      new Graphics().circle(0, 0, 26).fill(swatch.green.fill).stroke({ color: 0xffffff, width: 5 }),
+      checkIcon(),
+    );
     tick.children[1].scale.set(0.8);
     tick.label = 'tick';
     tick.visible = played;
@@ -121,17 +165,21 @@ export class DailyScene extends Scene {
     turn.label = 'turn';
     turn.visible = this.uprightPhone && !pick.mod.upright;
     node.addChild(frame, art, pill, name, dots, level, tick, turn);
-    onTap(node, () => {
-      if (this.leaving) return;
-      sfx.tick();
-      node.scale.set(0.92);
-      window.setTimeout(() => !node.destroyed && node.scale.set(1), 110);
-      voice.stop();
-      void this.leave(
-        () => this.app.go.game(pick.mod.id, pick.band, undefined, false, { daily: true }, pick.level),
-        voice.say(pick.mod.titleLine),
-      );
-    }, { cooldown: 400 });
+    onTap(
+      node,
+      () => {
+        if (this.leaving) return;
+        sfx.tick();
+        node.scale.set(0.92);
+        window.setTimeout(() => !node.destroyed && node.scale.set(1), 110);
+        voice.stop();
+        void this.leave(
+          () => this.app.go.game(pick.mod.id, pick.band, undefined, false, { daily: true }, pick.level),
+          voice.say(pick.mod.titleLine),
+        );
+      },
+      { cooldown: 400 },
+    );
     return node;
   }
 
@@ -166,7 +214,10 @@ export class DailyScene extends Scene {
     this.title.position.set(v.w / 2, titleY);
     this.date.position.set(v.w / 2, titleY + 36);
     const pw = Math.max(this.title.width, this.date.width) + 40;
-    this.plate.clear().roundRect(v.w / 2 - pw / 2, titleY - 30, pw, 92, 22).fill({ color: cream, alpha: 0.92 });
+    this.plate
+      .clear()
+      .roundRect(v.w / 2 - pw / 2, titleY - 30, pw, 92, 22)
+      .fill({ color: cream, alpha: 0.92 });
     const top = v.w >= 760 ? TOP : titleY + 80;
     const cols = wide ? 3 : 2;
     const rows = Math.ceil(this.cards.length / cols);
@@ -182,7 +233,11 @@ export class DailyScene extends Scene {
       const node = c.node;
       node.position.set(x0 + pitchX * (col + 0.5), top + pitchY * row + 12 + size / 2);
       const half = size / 2;
-      (node.getChildByLabel('frame') as Graphics).clear().roundRect(-half, -half, size, size, 28).fill(cream).stroke({ color: swatch.green.line, width: 6 });
+      (node.getChildByLabel('frame') as Graphics)
+        .clear()
+        .roundRect(-half, -half, size, size, 28)
+        .fill(cream)
+        .stroke({ color: swatch.green.line, width: 6 });
       fitArt(node.getChildByLabel('art') as Container, size - 40);
       const name = node.getChildByLabel('name') as Text;
       name.style.wordWrapWidth = textW;
@@ -207,7 +262,10 @@ export class DailyScene extends Scene {
       // One cream pill under the name and the level line, so both read over the backdrop.
       const pillW = Math.max(name.width, level.width, dotsW, 60) + 24;
       const pillH = level.y - name.y + (level.text ? level.height : -6) + 10;
-      (node.getChildByLabel('pill') as Graphics).clear().roundRect(-pillW / 2, name.y - 5, pillW, pillH, 16).fill({ color: cream, alpha: 0.95 });
+      (node.getChildByLabel('pill') as Graphics)
+        .clear()
+        .roundRect(-pillW / 2, name.y - 5, pillW, pillH, 16)
+        .fill({ color: cream, alpha: 0.95 });
       (node.getChildByLabel('tick') as Container).position.set(half - 8, -half + 8);
       (node.getChildByLabel('turn') as Container).position.set(-half + 8, -half + 8);
       node.hitArea = new Rectangle(-half, -half, size, size + (name.y + name.height - half));
@@ -234,7 +292,14 @@ export class DailyScene extends Scene {
     this.pip.cheer();
     for (const c of this.cards) {
       const tick = c.node.getChildByLabel('tick') as Container;
-      this.particles.burst(c.node.x + tick.x, c.node.y + tick.y, { kind: 'star', colors: [swatch.yellow.fill, 0xffffff], count: 6, speed: [90, 200], gravity: 0, life: [0.4, 0.7] });
+      this.particles.burst(c.node.x + tick.x, c.node.y + tick.y, {
+        kind: 'star',
+        colors: [swatch.yellow.fill, 0xffffff],
+        count: 6,
+        speed: [90, 200],
+        gravity: 0,
+        life: [0.4, 0.7],
+      });
     }
   }
 }
@@ -244,8 +309,16 @@ function turnBadge(): Container {
   const c = new Container();
   c.addChild(
     new Graphics().circle(0, 0, 26).fill(0xffffff).stroke({ color: swatch.orange.line, width: 4 }),
-    new Graphics().roundRect(-15, -8, 30, 18, 4).fill(ink).roundRect(-12, -5, 24, 12, 2).fill(swatch.blue.fill),
-    new Graphics().arc(0, 2, 19, -Math.PI * 0.85, -Math.PI * 0.2).stroke({ color: swatch.orange.fill, width: 3.5 }).poly([16, -14, 22, -6, 13, -5]).fill(swatch.orange.fill),
+    new Graphics()
+      .roundRect(-15, -8, 30, 18, 4)
+      .fill(ink)
+      .roundRect(-12, -5, 24, 12, 2)
+      .fill(swatch.blue.fill),
+    new Graphics()
+      .arc(0, 2, 19, -Math.PI * 0.85, -Math.PI * 0.2)
+      .stroke({ color: swatch.orange.fill, width: 3.5 })
+      .poly([16, -14, 22, -6, 13, -5])
+      .fill(swatch.orange.fill),
   );
   c.eventMode = 'none';
   return c;

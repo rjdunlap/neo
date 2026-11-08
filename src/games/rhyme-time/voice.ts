@@ -29,7 +29,9 @@ export const VOICE = {
   'rhyme.scene': ['Who goes {prep} the {place}? Find the one that rhymes with {place}: {list}.'],
   'rhyme.scene2': ['The {place}… {place}. Who rhymes with {place}? {list}?'],
   'rhyme.sceneYes': ['A {rider} {prep} a {place}! {rider}, {place}. They rhyme!'],
-  'rhyme.sceneNo': ['Hee hee! A {word} {prep} a {place}? {word} and {place} do not rhyme. Listen to the ends of the words.'],
+  'rhyme.sceneNo': [
+    'Hee hee! A {word} {prep} a {place}? {word} and {place} do not rhyme. Listen to the ends of the words.',
+  ],
   'rhyme.baskets': ['Here are the {keys} baskets. Put each picture in the basket it rhymes with.'],
   'rhyme.basketNo': ['{word} does not rhyme with {key}. Listen to the ends of the words.'],
   'rhyme.basketHint': ['{word} goes in the glowing basket. Listen: {word}, {key}.'],

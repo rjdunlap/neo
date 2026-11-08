@@ -17,7 +17,47 @@ import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseBoards, courseMinimum, isLightCourse } from './course';
-import { beamEnd, boardWith, cloudCells, DROP_TILT, findLines, flowerCount, freeCells, hintMirror, hintThing, LEVELS, makePuzzle, materialPuzzle, materialsRound, meetsGoal, minTurns, mirrorAt, nearestPlacement, outcome, owlCell, placeHint, planFor, predictionChoices, shadowCells, solved, THING_WORDS, trace, traceAll, whyNot, whyNotMaterial, type BeamEnd, type LightPlan, type LightPuzzle, type MaterialRound, type Outcome, type Placed, type Stuff, type ThingName, type Tilt, type Tint } from './logic';
+import {
+  beamEnd,
+  boardWith,
+  cloudCells,
+  DROP_TILT,
+  findLines,
+  flowerCount,
+  freeCells,
+  hintMirror,
+  hintThing,
+  LEVELS,
+  makePuzzle,
+  materialPuzzle,
+  materialsRound,
+  meetsGoal,
+  minTurns,
+  mirrorAt,
+  nearestPlacement,
+  outcome,
+  owlCell,
+  placeHint,
+  planFor,
+  predictionChoices,
+  shadowCells,
+  solved,
+  THING_WORDS,
+  trace,
+  traceAll,
+  whyNot,
+  whyNotMaterial,
+  type BeamEnd,
+  type LightPlan,
+  type LightPuzzle,
+  type MaterialRound,
+  type Outcome,
+  type Placed,
+  type Stuff,
+  type ThingName,
+  type Tilt,
+  type Tint,
+} from './logic';
 
 const CELL = 100;
 /** The tray under the board on levels 8–9: its gap below the board, height and slot spacing. */
@@ -52,8 +92,16 @@ function sunArt(): Graphics {
 /** A mirror on a little stand; it is drawn as "/" and rotated a quarter for "\". */
 function mirrorArt(): Container {
   const c = new Container();
-  c.addChild(new Graphics().circle(0, 0, 40).fill({ color: 0xffffff, alpha: 0.5 }).stroke({ width: 3, color: swatch.white.line, alpha: 0.6 }));
-  const glass = new Graphics().roundRect(-8, -42, 16, 84, 6).fill(0xdff3ff).stroke({ width: 5, color: swatch.blue.line });
+  c.addChild(
+    new Graphics()
+      .circle(0, 0, 40)
+      .fill({ color: 0xffffff, alpha: 0.5 })
+      .stroke({ width: 3, color: swatch.white.line, alpha: 0.6 }),
+  );
+  const glass = new Graphics()
+    .roundRect(-8, -42, 16, 84, 6)
+    .fill(0xdff3ff)
+    .stroke({ width: 5, color: swatch.blue.line });
   glass.moveTo(-2, -32).lineTo(-2, 30).stroke({ width: 3, color: 0xffffff, alpha: 0.9 });
   glass.rotation = Math.PI / 4;
   c.addChild(glass);
@@ -63,8 +111,16 @@ function mirrorArt(): Container {
 /** Level 12's half-mirror: the mirror's bar as pale glass with a silver stripe and two glints, so it reads as glass and mirror at once. */
 function halfMirrorArt(): Container {
   const c = new Container();
-  c.addChild(new Graphics().circle(0, 0, 40).fill({ color: 0xffffff, alpha: 0.5 }).stroke({ width: 3, color: swatch.white.line, alpha: 0.6 }));
-  const glass = new Graphics().roundRect(-10, -42, 20, 84, 7).fill({ color: swatch.blue.light, alpha: 0.35 }).stroke({ width: 4, color: swatch.blue.line, alpha: 0.8 });
+  c.addChild(
+    new Graphics()
+      .circle(0, 0, 40)
+      .fill({ color: 0xffffff, alpha: 0.5 })
+      .stroke({ width: 3, color: swatch.white.line, alpha: 0.6 }),
+  );
+  const glass = new Graphics()
+    .roundRect(-10, -42, 20, 84, 7)
+    .fill({ color: swatch.blue.light, alpha: 0.35 })
+    .stroke({ width: 4, color: swatch.blue.line, alpha: 0.8 });
   glass.moveTo(0, -36).lineTo(0, 36).stroke({ width: 5, color: 0x9aa8b6 });
   glass.circle(-4, -24, 3).circle(4, 22, 2.5).fill(0xffffff);
   glass.rotation = Math.PI / 4;
@@ -75,7 +131,15 @@ function halfMirrorArt(): Container {
 /** Level 10's cloud over one cell: overlapping white puffs with a pale blue edge, wide enough to hide a mirror. */
 function cloudArt(): Container {
   const c = new Container();
-  const puffs: [number, number, number][] = [[0, 0, 38], [-26, -20, 27], [24, -22, 26], [-26, 20, 27], [26, 20, 26], [0, -30, 22], [0, 30, 22]];
+  const puffs: [number, number, number][] = [
+    [0, 0, 38],
+    [-26, -20, 27],
+    [24, -22, 26],
+    [-26, 20, 27],
+    [26, 20, 26],
+    [0, -30, 22],
+    [0, 30, 22],
+  ];
   const g = new Graphics();
   for (const [x, y, r] of puffs) g.circle(x, y, r);
   g.stroke({ width: 6, color: 0xb9d8f2 });
@@ -100,7 +164,9 @@ function objectArt(name: ThingName, tilt: Tilt): Container {
       g.moveTo(-14, -20).lineTo(-14, 20).stroke({ width: 4, color: 0xffffff, alpha: 0.9, cap: 'round' });
       break;
     case 'cup':
-      g.poly([-28, -34, 28, -34, 20, 34, -20, 34]).fill(clear).stroke({ ...edge, join: 'round' });
+      g.poly([-28, -34, 28, -34, 20, 34, -20, 34])
+        .fill(clear)
+        .stroke({ ...edge, join: 'round' });
       g.moveTo(-16, -24).lineTo(-12, 22).stroke({ width: 4, color: 0xffffff, alpha: 0.9, cap: 'round' });
       break;
     case 'pane':
@@ -110,12 +176,21 @@ function objectArt(name: ThingName, tilt: Tilt): Container {
     case 'wax':
     case 'tissue': {
       const top = [-30, -34, -15, -40, 0, -34, 15, -40, 30, -34];
-      g.poly([...top, 30, 38, -30, 38]).fill(name === 'wax' ? frosted : { color: 0xffe4ef, alpha: 0.65 }).stroke({ width: 3, color: swatch.white.line, join: 'round' });
-      g.moveTo(-18, -20).lineTo(-6, 26).moveTo(10, -24).lineTo(18, 20).stroke({ width: 2, color: swatch.white.line, alpha: 0.6 });
+      g.poly([...top, 30, 38, -30, 38])
+        .fill(name === 'wax' ? frosted : { color: 0xffe4ef, alpha: 0.65 })
+        .stroke({ width: 3, color: swatch.white.line, join: 'round' });
+      g.moveTo(-18, -20)
+        .lineTo(-6, 26)
+        .moveTo(10, -24)
+        .lineTo(18, 20)
+        .stroke({ width: 2, color: swatch.white.line, alpha: 0.6 });
       break;
     }
     case 'bottle':
-      g.roundRect(-22, -14, 44, 52, 12).roundRect(-9, -38, 18, 26, 4).fill(frosted).stroke({ width: 3, color: swatch.white.line });
+      g.roundRect(-22, -14, 44, 52, 12)
+        .roundRect(-9, -38, 18, 26, 4)
+        .fill(frosted)
+        .stroke({ width: 3, color: swatch.white.line });
       break;
     case 'card':
       g.rect(-32, -36, 64, 72).fill(0xc99a62).stroke({ width: 4, color: wood.line });
@@ -133,7 +208,11 @@ function objectArt(name: ThingName, tilt: Tilt): Container {
     case 'foil': {
       const metal = new Graphics();
       if (name === 'lid') metal.ellipse(0, 0, 14, 42).fill(0xd6dde6).stroke({ width: 5, color: 0x8a97a8 });
-      else metal.poly([-10, -42, 8, -36, 12, -10, 6, 14, 12, 40, -8, 42, -12, 16, -6, -8]).fill(0xdfe5ec).stroke({ width: 4, color: 0x8a97a8, join: 'round' });
+      else
+        metal
+          .poly([-10, -42, 8, -36, 12, -10, 6, 14, 12, 40, -8, 42, -12, 16, -6, -8])
+          .fill(0xdfe5ec)
+          .stroke({ width: 4, color: 0x8a97a8, join: 'round' });
       metal.circle(-2, -20, 4).circle(3, 14, 3).fill(0xffffff);
       // Drawn upright, then slanted like a mirror's glass: "/" for tilt 0, "\" for tilt 1.
       metal.rotation = tilt === 0 ? Math.PI / 4 : -Math.PI / 4;
@@ -147,16 +226,24 @@ function objectArt(name: ThingName, tilt: Tilt): Container {
 
 /** The little wooden stand a thing sits on. */
 function standArt(): Graphics {
-  return new Graphics().roundRect(-34, 34, 68, 12, 4).fill(wood.fill).stroke({ width: 4, color: wood.line }).rect(-6, 26, 12, 10).fill(wood.line);
+  return new Graphics()
+    .roundRect(-34, 34, 68, 12, 4)
+    .fill(wood.fill)
+    .stroke({ width: 4, color: wood.line })
+    .rect(-6, 26, 12, 10)
+    .fill(wood.line);
 }
 
 /** The three guess pictures: an arrow passing a pane, turning off a slanted bar, or meeting a wall with a shadow behind. */
 function outcomeArt(o: Outcome): Graphics {
   const g = new Graphics();
   const arrow = { width: 8, color: 0xf2b705, cap: 'round' as const, join: 'round' as const };
-  const head = (x: number, y: number, dx: number, dy: number) => g.poly([x + dx * 14, y + dy * 14, x - dy * 11, y + dx * 11, x + dy * 11, y - dx * 11]).fill(0xf2b705);
+  const head = (x: number, y: number, dx: number, dy: number) =>
+    g.poly([x + dx * 14, y + dy * 14, x - dy * 11, y + dx * 11, x + dy * 11, y - dx * 11]).fill(0xf2b705);
   if (o === 'through') {
-    g.roundRect(-8, -36, 16, 72, 4).fill({ color: 0xbfe3ff, alpha: 0.5 }).stroke({ width: 3, color: swatch.blue.line });
+    g.roundRect(-8, -36, 16, 72, 4)
+      .fill({ color: 0xbfe3ff, alpha: 0.5 })
+      .stroke({ width: 3, color: swatch.blue.line });
     g.moveTo(-54, 0).lineTo(40, 0).stroke(arrow);
     head(40, 0, 1, 0);
   } else if (o === 'bounce') {
@@ -174,15 +261,24 @@ function outcomeArt(o: Outcome): Graphics {
 
 /** A picture card under the board: a guess button or a tray thing. */
 function cardArt(): Graphics {
-  return new Graphics().roundRect(-CARD_W / 2, -CARD_H / 2, CARD_W, CARD_H, 22).fill(0xffffff).stroke({ width: 5, color: swatch.teal.line });
+  return new Graphics()
+    .roundRect(-CARD_W / 2, -CARD_H / 2, CARD_W, CARD_H, 22)
+    .fill(0xffffff)
+    .stroke({ width: 5, color: swatch.teal.line });
 }
 
 function rockArt(): Graphics {
-  return new Graphics().poly([-38, 26, -30, -16, -8, -34, 22, -28, 38, 4, 30, 30]).fill(swatch.white.line).stroke({ width: 5, color: ink, alpha: 0.4, join: 'round' });
+  return new Graphics()
+    .poly([-38, 26, -30, -16, -8, -34, 22, -28, 38, 4, 30, 30])
+    .fill(swatch.white.line)
+    .stroke({ width: 5, color: ink, alpha: 0.4, join: 'round' });
 }
 
 function glassArt(tint: Tint): Graphics {
-  return new Graphics().roundRect(-34, -34, 68, 68, 12).fill({ color: TINT_COLOR[tint], alpha: 0.45 }).stroke({ width: 5, color: TINT_COLOR[tint] });
+  return new Graphics()
+    .roundRect(-34, -34, 68, 68, 12)
+    .fill({ color: TINT_COLOR[tint], alpha: 0.45 })
+    .stroke({ width: 5, color: TINT_COLOR[tint] });
 }
 
 class Bloom extends Container {
@@ -196,7 +292,12 @@ class Bloom extends Container {
     this.open = flower(new Graphics(), 34, petal.fill, petal.line);
     this.open.y = -8;
     this.open.scale.set(0);
-    const stem = new Graphics().moveTo(0, 40).lineTo(0, 12).stroke({ width: 6, color: swatch.green.line, cap: 'round' }).ellipse(10, 28, 10, 5).fill(swatch.green.fill);
+    const stem = new Graphics()
+      .moveTo(0, 40)
+      .lineTo(0, 12)
+      .stroke({ width: 6, color: swatch.green.line, cap: 'round' })
+      .ellipse(10, 28, 10, 5)
+      .fill(swatch.green.fill);
     this.addChild(stem, this.bud, this.open);
   }
   /** A `soft` wake (dim light, level 11) opens it partway and paler. */
@@ -293,11 +394,19 @@ class LightLab implements Game {
   private told = false;
   private courseLine = '';
 
-  private get predicting() { return this.plan.mode === 'predict' && this.index < 3; }
+  private get predicting() {
+    return this.plan.mode === 'predict' && this.index < 3;
+  }
   /** Level 11: the first three boards are free guesses; the last two are judged choices. */
-  private get guessing() { return this.plan.mode === 'materials' && this.index < 3; }
-  private get choosing() { return this.plan.mode === 'materials' && this.index >= 3; }
-  private get planning() { return this.plan.mode === 'plan' || (this.plan.mode === 'predict' && this.index >= 3); }
+  private get guessing() {
+    return this.plan.mode === 'materials' && this.index < 3;
+  }
+  private get choosing() {
+    return this.plan.mode === 'materials' && this.index >= 3;
+  }
+  private get planning() {
+    return this.plan.mode === 'plan' || (this.plan.mode === 'predict' && this.index >= 3);
+  }
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -321,7 +430,21 @@ class LightLab implements Game {
     this.ghost.eventMode = 'none';
     this.shadow.eventMode = 'none';
     if (this.plan.mode === 'materials') this.round = materialsRound(ctx.rng);
-    this.board.addChild(this.floor, this.hover, this.shadow, this.beam, this.pieces, this.cloudLayer, this.peek, this.ghost, this.sun, this.trayLayer, this.row, this.glow, this.ring);
+    this.board.addChild(
+      this.floor,
+      this.hover,
+      this.shadow,
+      this.beam,
+      this.pieces,
+      this.cloudLayer,
+      this.peek,
+      this.ghost,
+      this.sun,
+      this.trayLayer,
+      this.row,
+      this.glow,
+      this.ring,
+    );
     ctx.stage.addChild(this.board);
   }
 
@@ -333,7 +456,8 @@ class LightLab implements Game {
     this.view = v;
     if (!this.puzzle) return;
     const { cols, rows } = this.puzzle;
-    const tall = rows * CELL + (this.puzzle.tray.length ? TRAY_GAP + TRAY_H : this.round ? ROW_GAP + CARD_H : 0);
+    const tall =
+      rows * CELL + (this.puzzle.tray.length ? TRAY_GAP + TRAY_H : this.round ? ROW_GAP + CARD_H : 0);
     this.board.position.set((v.w - cols * CELL) / 2, Math.max(110, (v.h - tall) / 2 + 20));
   }
 
@@ -342,11 +466,22 @@ class LightLab implements Game {
     const g = this.glow.clear();
     if (this.hinted >= 0 && !this.busy) {
       const t = this.puzzle.things[this.hinted];
-      g.circle((t.x + 0.5) * CELL, (t.y + 0.5) * CELL, 46 + 4 * Math.sin(this.clock * 6)).stroke({ width: 7, color: swatch.yellow.fill });
+      g.circle((t.x + 0.5) * CELL, (t.y + 0.5) * CELL, 46 + 4 * Math.sin(this.clock * 6)).stroke({
+        width: 7,
+        color: swatch.yellow.fill,
+      });
     }
     if (this.hintCell && !this.busy) {
       const grow = 3 * Math.sin(this.clock * 6);
-      g.roundRect(this.hintCell.x * CELL + 2 - grow, this.hintCell.y * CELL + 2 - grow, CELL - 4 + 2 * grow, CELL - 4 + 2 * grow, 16).fill({ color: 0xfff3a0, alpha: 0.35 }).stroke({ width: 7, color: swatch.yellow.fill });
+      g.roundRect(
+        this.hintCell.x * CELL + 2 - grow,
+        this.hintCell.y * CELL + 2 - grow,
+        CELL - 4 + 2 * grow,
+        CELL - 4 + 2 * grow,
+        16,
+      )
+        .fill({ color: 0xfff3a0, alpha: 0.35 })
+        .stroke({ width: 7, color: swatch.yellow.fill });
     }
     if (this.findLine && !this.busy) {
       const { cols, rows } = this.puzzle;
@@ -358,7 +493,13 @@ class LightLab implements Game {
     if (this.hintCard >= 0 && !this.busy) {
       const c = this.cards[this.hintCard];
       const grow = 4 * Math.sin(this.clock * 6);
-      g.roundRect(c.x - CARD_W / 2 - 8 - grow, c.y - CARD_H / 2 - 8 - grow, CARD_W + 16 + 2 * grow, CARD_H + 16 + 2 * grow, 28).stroke({ width: 7, color: swatch.yellow.fill });
+      g.roundRect(
+        c.x - CARD_W / 2 - 8 - grow,
+        c.y - CARD_H / 2 - 8 - grow,
+        CARD_W + 16 + 2 * grow,
+        CARD_H + 16 + 2 * grow,
+        28,
+      ).stroke({ width: 7, color: swatch.yellow.fill });
     }
     this.owl?.update(dt);
     if (this.hintTray?.cell && !this.busy && !this.hintTray.handle.dragging) {
@@ -390,7 +531,8 @@ class LightLab implements Game {
         const t = this.spots[this.focus].thing;
         if (t === CLOUD) void this.pick(this.spots[this.focus]);
         else if (t <= -2) void this.predict(predictionChoices(this.puzzle)[-t - 2]);
-        else if (t < 0) void this.shine(); else this.turn(t);
+        else if (t < 0) void this.shine();
+        else this.turn(t);
       }
     }
   }
@@ -403,7 +545,14 @@ class LightLab implements Game {
     if (this.busy || this.finished || this.botWait > 0 || !this.spots.length) return out;
     const hidden = this.puzzle.things.find((t) => t.kind === 'mirror')!;
     const want = hintMirror(this.puzzle, this.tilts);
-    const target = this.plan.mode === 'find' ? this.spots.findIndex((sp) => sp.x === hidden.x && sp.y === hidden.y) : this.predicting ? 0 : want >= 0 ? this.spots.findIndex((sp) => sp.thing === want) : this.spots.findIndex((sp) => sp.thing < 0);
+    const target =
+      this.plan.mode === 'find'
+        ? this.spots.findIndex((sp) => sp.x === hidden.x && sp.y === hidden.y)
+        : this.predicting
+          ? 0
+          : want >= 0
+            ? this.spots.findIndex((sp) => sp.thing === want)
+            : this.spots.findIndex((sp) => sp.thing < 0);
     if (target < 0) return out;
     if (target === this.focus) {
       out.players[0].action = true;
@@ -423,7 +572,11 @@ class LightLab implements Game {
     if (this.busy || this.finished || !this.puzzle) return null;
     // Level 11: a guess may be any picture, so the demo taps the true one; a choice taps the thing that works.
     if (this.round) {
-      const at = this.guessing ? (['through', 'bounce', 'stop'] as Outcome[]).indexOf(outcome(this.round.guesses[this.index].material)) : hintThing(this.round.choices[this.index - 3]);
+      const at = this.guessing
+        ? (['through', 'bounce', 'stop'] as Outcome[]).indexOf(
+            outcome(this.round.guesses[this.index].material),
+          )
+        : hintThing(this.round.choices[this.index - 3]);
       return this.cards[at] ? { tap: { on: this.cards[at] } } : null;
     }
     if (this.predicting) {
@@ -451,7 +604,9 @@ class LightLab implements Game {
     if ('mirror' in h) return { tap: { on: this.mirrors.get(h.mirror)! } };
     if ('placed' in h) return { tap: { on: this.onBoard()[h.placed].node } };
     const near = nearestPlacement(this.puzzle, this.tilts, placed);
-    const m = this.trayMirrors.find((t) => !t.cell) ?? this.onBoard().find((t) => !near?.placed.some((w) => w.x === t.cell!.x && w.y === t.cell!.y));
+    const m =
+      this.trayMirrors.find((t) => !t.cell) ??
+      this.onBoard().find((t) => !near?.placed.some((w) => w.x === t.cell!.x && w.y === t.cell!.y));
     if (!m) return null;
     const to = this.at(h.cell.x, h.cell.y);
     return { drag: { on: m.node }, to: { on: this.board, x: to.x, y: to.y }, pause: 0.7 };
@@ -485,7 +640,11 @@ class LightLab implements Game {
     this.findLine = null;
     this.hintCard = -1;
     if (this.index >= (this.course?.boards.length ?? this.plan.puzzles)) return void this.finale();
-    this.puzzle = this.course ? this.course.boards[this.index] : this.round ? this.materialBoard() : makePuzzle(this.plan, this.ctx.rng);
+    this.puzzle = this.course
+      ? this.course.boards[this.index]
+      : this.round
+        ? this.materialBoard()
+        : makePuzzle(this.plan, this.ctx.rng);
     this.tilts = [...this.puzzle.start];
     this.build();
     this.carried = this.carry;
@@ -529,16 +688,27 @@ class LightLab implements Game {
       this.spots = choices.map((end, i) => ({ x: end.targetX, y: end.targetY, thing: -2 - i }));
       this.focus = 0;
     } else {
-      this.spots = p.things.flatMap((t, i) => (t.kind === 'mirror' || t.kind === 'half' ? [{ x: t.x, y: t.y, thing: i }] : []));
+      this.spots = p.things.flatMap((t, i) =>
+        t.kind === 'mirror' || t.kind === 'half' ? [{ x: t.x, y: t.y, thing: i }] : [],
+      );
       if (this.planning) this.spots.push({ x: p.sunCol, y: p.sunRow, thing: -1 });
-      this.focus = Math.max(0, this.spots.findIndex((sp) => sp.thing === p.pathMirrors[0]));
+      this.focus = Math.max(
+        0,
+        this.spots.findIndex((sp) => sp.thing === p.pathMirrors[0]),
+      );
     }
     this.mirrors.clear();
     this.blooms.clear();
     this.beam.clear();
     const f = this.floor.clear();
-    f.roundRect(-14, -14, p.cols * CELL + 28, p.rows * CELL + 28, 26).fill(wood.light).stroke({ width: 6, color: wood.line });
-    for (let x = 0; x < p.cols; x++) for (let y = 0; y < p.rows; y++) f.roundRect(x * CELL + 4, y * CELL + 4, CELL - 8, CELL - 8, 14).fill((x + y) % 2 ? 0xf3f7ff : 0xe8f0fb);
+    f.roundRect(-14, -14, p.cols * CELL + 28, p.rows * CELL + 28, 26)
+      .fill(wood.light)
+      .stroke({ width: 6, color: wood.line });
+    for (let x = 0; x < p.cols; x++)
+      for (let y = 0; y < p.rows; y++)
+        f.roundRect(x * CELL + 4, y * CELL + 4, CELL - 8, CELL - 8, 14).fill(
+          (x + y) % 2 ? 0xf3f7ff : 0xe8f0fb,
+        );
     if (p.tray.length) this.buildTray(f);
     const s = this.at(p.sunCol, p.sunRow);
     this.sun.position.set(s.x, s.y);
@@ -594,7 +764,10 @@ class LightLab implements Game {
       const b = this.at(cells[i + 1].x, cells[i + 1].y);
       const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
       // Into a cloud the beam shows for a little way, over its edge, then hides.
-      const into = (from: { x: number; y: number }, to: { x: number; y: number }) => ({ x: from.x + (to.x - from.x) * 0.45, y: from.y + (to.y - from.y) * 0.45 });
+      const into = (from: { x: number; y: number }, to: { x: number; y: number }) => ({
+        x: from.x + (to.x - from.x) * 0.45,
+        y: from.y + (to.y - from.y) * 0.45,
+      });
       const halves = [
         open(cells[i]) ? [a, mid] : open(cells[i + 1]) ? [into(mid, a), mid] : null,
         open(cells[i + 1]) ? [mid, b] : open(cells[i]) ? [mid, into(mid, b)] : null,
@@ -602,7 +775,9 @@ class LightLab implements Game {
       for (const half of halves) {
         if (!half) continue;
         const [from, to] = half;
-        g.moveTo(from.x, from.y).lineTo(to.x, to.y).stroke({ width: 22, color: TINT_COLOR.sun, alpha: 0.35, cap: 'round' });
+        g.moveTo(from.x, from.y)
+          .lineTo(to.x, to.y)
+          .stroke({ width: 22, color: TINT_COLOR.sun, alpha: 0.35, cap: 'round' });
         g.moveTo(from.x, from.y).lineTo(to.x, to.y).stroke({ width: 8, color: TINT_COLOR.sun, cap: 'round' });
       }
     }
@@ -620,9 +795,18 @@ class LightLab implements Game {
     const stay = this.spots.indexOf(was);
     this.focus = stay >= 0 ? stay : Math.min(this.focus, Math.max(0, this.spots.length - 1));
     const at = this.ctx.stage.toLocal(c.getGlobalPosition());
-    this.ctx.particles.burst(at.x, at.y, { kind: 'dot', colors: [0xffffff, 0xe8f4ff], count: 10, speed: [60, 160], gravity: 0, life: [0.3, 0.6] });
+    this.ctx.particles.burst(at.x, at.y, {
+      kind: 'dot',
+      colors: [0xffffff, 0xe8f4ff],
+      count: 10,
+      speed: [60, 160],
+      gravity: 0,
+      life: [0.3, 0.6],
+    });
     void this.ctx.tw.to(c.scale, { x: 1.35, y: 1.35 }, { duration: 0.3 });
-    void this.ctx.tw.to(c, { alpha: 0 }, { duration: 0.3 }).then(() => !c.destroyed && c.destroy({ children: true }));
+    void this.ctx.tw
+      .to(c, { alpha: 0 }, { duration: 0.3 })
+      .then(() => !c.destroyed && c.destroy({ children: true }));
   }
 
   /**
@@ -669,9 +853,13 @@ class LightLab implements Game {
     const at = this.at(cell.x, cell.y);
     mirror.position.set(at.x, at.y);
     mirror.alpha = 0.6;
-    mirror.children[1].rotation = tilts[board.things.findIndex((t) => t.kind === 'mirror')] === 0 ? Math.PI / 4 : -Math.PI / 4;
+    mirror.children[1].rotation =
+      tilts[board.things.findIndex((t) => t.kind === 'mirror')] === 0 ? Math.PI / 4 : -Math.PI / 4;
     this.ghost.addChild(line, mirror);
-    const points = [this.at(this.puzzle.sunCol, this.puzzle.sunRow), ...route.cells.map((c) => this.at(c.x, c.y))];
+    const points = [
+      this.at(this.puzzle.sunCol, this.puzzle.sunRow),
+      ...route.cells.map((c) => this.at(c.x, c.y)),
+    ];
     for (let n = 2; n <= points.length; n++) {
       line.clear().moveTo(points[0].x, points[0].y);
       for (const pt of points.slice(1, n)) line.lineTo(pt.x, pt.y);
@@ -692,9 +880,11 @@ class LightLab implements Game {
     const n = p.tray.length;
     const w = n * TRAY_STEP + 20;
     const top = p.rows * CELL + TRAY_GAP;
-    f.roundRect((p.cols * CELL - w) / 2, top, w, TRAY_H, 28).fill(wood.fill).stroke({ width: 6, color: wood.line });
+    f.roundRect((p.cols * CELL - w) / 2, top, w, TRAY_H, 28)
+      .fill(wood.fill)
+      .stroke({ width: 6, color: wood.line });
     for (let k = 0; k < n; k++) {
-      const slot = { x: p.cols * CELL / 2 + (k - (n - 1) / 2) * TRAY_STEP, y: top + TRAY_H / 2 };
+      const slot = { x: (p.cols * CELL) / 2 + (k - (n - 1) / 2) * TRAY_STEP, y: top + TRAY_H / 2 };
       f.circle(slot.x, slot.y, 48).fill({ color: wood.light, alpha: 0.8 });
       const node = mirrorArt();
       node.position.set(slot.x, slot.y);
@@ -730,18 +920,29 @@ class LightLab implements Game {
   /** The free cell nearest a carried mirror, or null when it is off the board (where it goes back to the tray). */
   private landing(m: TrayMirror, x: number, y: number) {
     const p = this.puzzle;
-    if (x < -CELL / 4 || y < -CELL / 4 || x > p.cols * CELL + CELL / 4 || y > p.rows * CELL + CELL / 4) return null;
-    const others = this.onBoard().filter((o) => o !== m).map((o) => ({ ...o.cell, tilt: o.tilt }));
+    if (x < -CELL / 4 || y < -CELL / 4 || x > p.cols * CELL + CELL / 4 || y > p.rows * CELL + CELL / 4)
+      return null;
+    const others = this.onBoard()
+      .filter((o) => o !== m)
+      .map((o) => ({ ...o.cell, tilt: o.tilt }));
     const cells = freeCells(p, others);
     let best = cells[0];
-    for (const c of cells) if (Math.hypot((c.x + 0.5) * CELL - x, (c.y + 0.5) * CELL - y) < Math.hypot((best.x + 0.5) * CELL - x, (best.y + 0.5) * CELL - y)) best = c;
+    for (const c of cells)
+      if (
+        Math.hypot((c.x + 0.5) * CELL - x, (c.y + 0.5) * CELL - y) <
+        Math.hypot((best.x + 0.5) * CELL - x, (best.y + 0.5) * CELL - y)
+      )
+        best = c;
     return best ?? null;
   }
 
   private drawHover(m: TrayMirror, x: number, y: number) {
     const g = this.hover.clear();
     const c = m.moved ? this.landing(m, x, y) : null;
-    if (c) g.roundRect(c.x * CELL + 4, c.y * CELL + 4, CELL - 8, CELL - 8, 14).fill({ color: 0xfff3a0, alpha: 0.8 }).stroke({ width: 4, color: swatch.yellow.line, alpha: 0.6 });
+    if (c)
+      g.roundRect(c.x * CELL + 4, c.y * CELL + 4, CELL - 8, CELL - 8, 14)
+        .fill({ color: 0xfff3a0, alpha: 0.8 })
+        .stroke({ width: 4, color: swatch.yellow.line, alpha: 0.6 });
   }
 
   /** Dropping is never wrong: a free cell takes the mirror, off the board it goes home to the tray, and a tap on a placed mirror turns it. */
@@ -778,7 +979,9 @@ class LightLab implements Game {
     // A mirror on the glowing cell: if it lands the wrong way, the glow moves to it (still the same hint).
     if (this.hintCell && this.hintCell.x === cell.x && this.hintCell.y === cell.y) {
       this.hintCell = null;
-      const want = nearestPlacement(this.puzzle, this.tilts, this.placed())?.placed.find((w) => w.x === cell.x && w.y === cell.y);
+      const want = nearestPlacement(this.puzzle, this.tilts, this.placed())?.placed.find(
+        (w) => w.x === cell.x && w.y === cell.y,
+      );
       if (want && want.tilt !== m.tilt) this.hintTray = m;
     }
     return true;
@@ -802,14 +1005,28 @@ class LightLab implements Game {
 
   private addPredictionMark(end: BeamEnd) {
     const c = new Container();
-    const g = new Graphics().circle(0, 0, 43).fill({ color: 0xffffff, alpha: 0.78 }).stroke({ width: 7, color: swatch.teal.line });
+    const g = new Graphics()
+      .circle(0, 0, 43)
+      .fill({ color: 0xffffff, alpha: 0.78 })
+      .stroke({ width: 7, color: swatch.teal.line });
     if (end.kind === 'rock') {
-      g.poly([-20, 10, -15, -12, 0, -21, 18, -15, 21, 7, 12, 19, -10, 18]).fill(swatch.white.line).stroke({ width: 3, color: ink, alpha: 0.55 });
+      g.poly([-20, 10, -15, -12, 0, -21, 18, -15, 21, 7, 12, 19, -10, 18])
+        .fill(swatch.white.line)
+        .stroke({ width: 3, color: ink, alpha: 0.55 });
     } else if (end.kind === 'edge') {
       const dirs: Record<number, [number, number]> = { 0: [24, 0], 1: [0, 24], 2: [-24, 0], 3: [0, -24] };
       const [dx, dy] = dirs[end.exit ?? 0];
-      g.moveTo(-dx * 0.55, -dy * 0.55).lineTo(dx * 0.55, dy * 0.55).stroke({ width: 7, color: swatch.teal.line, cap: 'round' });
-      g.poly([dx * 0.75, dy * 0.75, dx * 0.25 - dy * 0.28, dy * 0.25 + dx * 0.28, dx * 0.25 + dy * 0.28, dy * 0.25 - dx * 0.28]).fill(swatch.teal.line);
+      g.moveTo(-dx * 0.55, -dy * 0.55)
+        .lineTo(dx * 0.55, dy * 0.55)
+        .stroke({ width: 7, color: swatch.teal.line, cap: 'round' });
+      g.poly([
+        dx * 0.75,
+        dy * 0.75,
+        dx * 0.25 - dy * 0.28,
+        dy * 0.25 + dx * 0.28,
+        dx * 0.25 + dy * 0.28,
+        dy * 0.25 - dx * 0.28,
+      ]).fill(swatch.teal.line);
     }
     c.addChild(g);
     const at = this.at(end.targetX, end.targetY);
@@ -827,7 +1044,11 @@ class LightLab implements Game {
     this.report();
     this.tilts[i] = (1 - this.tilts[i]) as Tilt;
     const glass = this.mirrors.get(i)!.children[1];
-    void this.ctx.tw.to(glass, { rotation: this.tilts[i] === 0 ? Math.PI / 4 : -Math.PI / 4 }, { duration: 0.18, ease: ease.outBack });
+    void this.ctx.tw.to(
+      glass,
+      { rotation: this.tilts[i] === 0 ? Math.PI / 4 : -Math.PI / 4 },
+      { duration: 0.18, ease: ease.outBack },
+    );
     sfx.tick();
     if (this.hinted === i) this.hinted = -1;
     if (this.plan.mode === 'live') {
@@ -846,12 +1067,21 @@ class LightLab implements Game {
       const shown = arm.cells.filter((c) => c.step <= upTo);
       const start = arm.from < 0 ? { x: this.puzzle.sunCol, y: this.puzzle.sunRow } : board.things[arm.from];
       let from = this.at(start.x, start.y);
-      for (let i = 0; i < shown.length; ) {
+      for (let i = 0; i < shown.length;) {
         const { tint, dim } = shown[i];
         const run = [from];
-        while (i < shown.length && shown[i].tint === tint && !!shown[i].dim === !!dim) run.push(this.at(shown[i].x, shown[i].y)), i++;
+        while (i < shown.length && shown[i].tint === tint && !!shown[i].dim === !!dim)
+          (run.push(this.at(shown[i].x, shown[i].y)), i++);
         // Level 11's cloudy things, and level 12's half-mirror, let a paler, thinner beam through.
-        for (const [width, alpha] of dim ? [[14, 0.2], [5, 0.5]] : [[22, 0.35], [8, 1]]) {
+        for (const [width, alpha] of dim
+          ? [
+              [14, 0.2],
+              [5, 0.5],
+            ]
+          : [
+              [22, 0.35],
+              [8, 1],
+            ]) {
           g.moveTo(run[0].x, run[0].y);
           for (const p of run.slice(1)) g.lineTo(p.x, p.y);
           g.stroke({ width, color: TINT_COLOR[tint], alpha, cap: 'round', join: 'round' });
@@ -885,14 +1115,23 @@ class LightLab implements Game {
         const i = board.things.findIndex((x) => x.x === c.x && x.y === c.y);
         if (i >= 0 && t.woken.includes(i)) {
           this.blooms.get(i)?.wake(this.ctx.tw);
-          sfx.bell(7 + n % 5, 0.25);
+          sfx.bell(7 + (n % 5), 0.25);
         }
       }
       // The split: a little burst of sparkle where both arms leave the half-mirror.
       for (const arm of t.arms) {
         if (arm.from < 0 || arm.cells[0]?.step !== n + 1) continue;
-        const h = this.ctx.stage.toLocal(this.pieces.toGlobal(this.at(board.things[arm.from].x, board.things[arm.from].y)));
-        this.ctx.particles.burst(h.x, h.y, { kind: 'star', colors: [0xffffff, 0xfff3a0], count: 10, speed: [80, 200], gravity: 0, life: [0.3, 0.6] });
+        const h = this.ctx.stage.toLocal(
+          this.pieces.toGlobal(this.at(board.things[arm.from].x, board.things[arm.from].y)),
+        );
+        this.ctx.particles.burst(h.x, h.y, {
+          kind: 'star',
+          colors: [0xffffff, 0xfff3a0],
+          count: 10,
+          speed: [80, 200],
+          gravity: 0,
+          life: [0.3, 0.6],
+        });
       }
       await this.ctx.tw.wait(0.09);
     }
@@ -903,16 +1142,25 @@ class LightLab implements Game {
     this.report();
     sfx.boing();
     const why = whyNot(board, tilts);
-    const lines = { color: 'light.miss.color', sleeping: 'light.miss.sleeping', rock: 'light.miss.rock', unsplit: 'light.miss.unsplit', split: 'light.miss.split' } as const;
+    const lines = {
+      color: 'light.miss.color',
+      sleeping: 'light.miss.sleeping',
+      rock: 'light.miss.rock',
+      unsplit: 'light.miss.unsplit',
+      split: 'light.miss.split',
+    } as const;
     await this.ctx.say(why in lines ? lines[why as keyof typeof lines] : 'light.miss.edge');
-    if (this.wrongs >= 2 && this.puzzle.tray.length && !this.hintCell && !this.hintTray && this.hinted < 0) this.hintPlace();
+    if (this.wrongs >= 2 && this.puzzle.tray.length && !this.hintCell && !this.hintTray && this.hinted < 0)
+      this.hintPlace();
     else if (this.wrongs >= 2 && !this.puzzle.tray.length && this.hinted < 0) {
       this.hinted = hintMirror(this.puzzle, this.tilts);
       if (this.hinted >= 0) {
         this.hints++;
         this.assisted = true;
         this.report();
-        void this.ctx.say(this.puzzle.things[this.hinted].kind === 'half' ? 'light.hint.split' : 'light.hint');
+        void this.ctx.say(
+          this.puzzle.things[this.hinted].kind === 'half' ? 'light.hint.split' : 'light.hint',
+        );
       }
     }
     await this.ctx.tw.wait(0.6);
@@ -950,7 +1198,12 @@ class LightLab implements Game {
       if (i >= 0 && route.woken.includes(i)) this.blooms.get(i)?.wake(this.ctx.tw);
       await this.ctx.tw.wait(0.09);
     }
-    const line = choice.key === answer.key ? 'light.predict.right' : answer.kind === 'rock' ? 'light.predict.rock' : 'light.predict.edge';
+    const line =
+      choice.key === answer.key
+        ? 'light.predict.right'
+        : answer.kind === 'rock'
+          ? 'light.predict.rock'
+          : 'light.predict.edge';
     await this.ctx.say(line);
     await this.ctx.tw.wait(0.8);
     for (const b of this.blooms.values()) b.sleep();
@@ -962,7 +1215,9 @@ class LightLab implements Game {
   /** Level 11's board for this step: a guess's thing on the stand with both flowers, or an empty stand and the goal's target. */
   private materialBoard(): LightPuzzle {
     const r = this.round!;
-    return this.index < 3 ? materialPuzzle(r.board, r.guesses[this.index]) : materialPuzzle(r.board, null, r.choices[this.index - 3].goal);
+    return this.index < 3
+      ? materialPuzzle(r.board, r.guesses[this.index])
+      : materialPuzzle(r.board, null, r.choices[this.index - 3].goal);
   }
 
   /** Level 11: the stand, the owl on a shade board, and the three guess pictures or the tray of things. */
@@ -994,9 +1249,11 @@ class LightLab implements Game {
       card.addChild(cardArt());
       if (typeof item === 'string') card.addChild(outcomeArt(item));
       else card.addChild(objectArt(item.name, r.board.tilt));
-      card.position.set(this.puzzle.cols * CELL / 2 + (k - 1) * CARD_STEP, y);
+      card.position.set((this.puzzle.cols * CELL) / 2 + (k - 1) * CARD_STEP, y);
       card.hitArea = new Rectangle(-CARD_W / 2, -CARD_H / 2, CARD_W, CARD_H);
-      onTap(card, () => void (typeof item === 'string' ? this.guess(item, card) : this.choose(k)), { cooldown: 300 });
+      onTap(card, () => void (typeof item === 'string' ? this.guess(item, card) : this.choose(k)), {
+        cooldown: 300,
+      });
       this.row.addChild(card);
       this.cards.push(card);
     });
@@ -1018,7 +1275,7 @@ class LightLab implements Game {
       const i = this.puzzle.things.findIndex((x) => x.x === c.x && x.y === c.y);
       if (i >= 0 && t.woken.includes(i)) {
         this.blooms.get(i)?.wake(this.ctx.tw, !!c.dim);
-        sfx.bell(7 + n % 5, 0.25);
+        sfx.bell(7 + (n % 5), 0.25);
       }
       const owl = owlCell(this.round!.board);
       if (this.owl && c.x === owl.x && c.y === owl.y) this.owl.setMood('surprised');
@@ -1026,7 +1283,8 @@ class LightLab implements Game {
     }
     if (t.end === 'rock') {
       const g = this.shadow.clear();
-      for (const c of shadowCells(this.round!.board)) g.roundRect(c.x * CELL + 4, c.y * CELL + 4, CELL - 8, CELL - 8, 14).fill({ color: ink, alpha: 0.25 });
+      for (const c of shadowCells(this.round!.board))
+        g.roundRect(c.x * CELL + 4, c.y * CELL + 4, CELL - 8, CELL - 8, 14).fill({ color: ink, alpha: 0.25 });
       this.shadow.alpha = 0;
       await this.ctx.tw.to(this.shadow, { alpha: 1 }, { duration: 0.35 });
     }
@@ -1072,7 +1330,14 @@ class LightLab implements Game {
       for (const b of this.blooms.values()) {
         if (!b.awake) continue;
         const p = this.ctx.stage.toLocal(b.getGlobalPosition());
-        this.ctx.particles.burst(p.x, p.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.pink.light], count: 16, speed: [100, 280], gravity: 0, life: [0.5, 0.9] });
+        this.ctx.particles.burst(p.x, p.y, {
+          kind: 'star',
+          colors: [0xffffff, 0xfff3a0, swatch.pink.light],
+          count: 16,
+          speed: [100, 280],
+          gravity: 0,
+          life: [0.5, 0.9],
+        });
       }
       sfx.sparkle();
       this.ctx.pet.cheer();
@@ -1123,7 +1388,14 @@ class LightLab implements Game {
     for (const b of this.blooms.values()) {
       b.wake(this.ctx.tw);
       const p = this.ctx.stage.toLocal(b.getGlobalPosition());
-      this.ctx.particles.burst(p.x, p.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.pink.light], count: 16, speed: [100, 280], gravity: 0, life: [0.5, 0.9] });
+      this.ctx.particles.burst(p.x, p.y, {
+        kind: 'star',
+        colors: [0xffffff, 0xfff3a0, swatch.pink.light],
+        count: 16,
+        speed: [100, 280],
+        gravity: 0,
+        life: [0.5, 0.9],
+      });
     }
     sfx.sparkle();
     this.ctx.pet.cheer();
@@ -1140,7 +1412,11 @@ class LightLab implements Game {
   /** A course's boards differ: say what this one asks whenever it asks something new (one flower, two, or coloured glass). */
   private courseInstruction() {
     const p = this.puzzle;
-    const line = p.things.some((t) => t.kind === 'glass') ? 'light.color' : flowerCount(p) === 2 ? 'light.two' : 'light.plan';
+    const line = p.things.some((t) => t.kind === 'glass')
+      ? 'light.color'
+      : flowerCount(p) === 2
+        ? 'light.two'
+        : 'light.plan';
     if (line === this.courseLine) return;
     this.courseLine = line;
     return this.ctx.instruct(line);
@@ -1168,10 +1444,15 @@ class LightLab implements Game {
 
   /** The score for the board just solved, over it for a moment. */
   private async boardScore() {
-    const best = this.needed, total = this.course!.boards.length, n = this.tries;
-    const text = n === best ? `Board ${this.index + 1} of ${total}: ${n} turns, the fewest possible!` : `Board ${this.index + 1} of ${total}: ${n} ${n === 1 ? 'turn' : 'turns'} (fewest ${best})`;
+    const best = this.needed,
+      total = this.course!.boards.length,
+      n = this.tries;
+    const text =
+      n === best
+        ? `Board ${this.index + 1} of ${total}: ${n} turns, the fewest possible!`
+        : `Board ${this.index + 1} of ${total}: ${n} ${n === 1 ? 'turn' : 'turns'} (fewest ${best})`;
     const note = label(text, 34, ink);
-    note.position.set(this.puzzle.cols * CELL / 2, -56);
+    note.position.set((this.puzzle.cols * CELL) / 2, -56);
     note.alpha = 0;
     this.board.addChild(note);
     await this.ctx.tw.to(note, { alpha: 1 }, { duration: 0.2 });
@@ -1196,7 +1477,15 @@ class LightIcon extends WigglyIcon {
     const sun = sunArt();
     sun.position.set(-70, -150);
     sun.scale.set(0.8);
-    const beam = new Graphics().moveTo(-70, -150).lineTo(30, -150).lineTo(30, -60).stroke({ width: 16, color: 0xffe066, alpha: 0.5, cap: 'round' }).moveTo(-70, -150).lineTo(30, -150).lineTo(30, -60).stroke({ width: 6, color: 0xffe066, cap: 'round' });
+    const beam = new Graphics()
+      .moveTo(-70, -150)
+      .lineTo(30, -150)
+      .lineTo(30, -60)
+      .stroke({ width: 16, color: 0xffe066, alpha: 0.5, cap: 'round' })
+      .moveTo(-70, -150)
+      .lineTo(30, -150)
+      .lineTo(30, -60)
+      .stroke({ width: 6, color: 0xffe066, cap: 'round' });
     const m = mirrorArt();
     m.position.set(30, -150);
     m.scale.set(0.7);
@@ -1240,8 +1529,10 @@ export const lightLab: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
-  coplayHint: 'Before shining, trace the path with your finger together: "The light goes here, bumps the mirror, and turns..."',
-  offScreen: 'Use a hand mirror to bounce a sunbeam onto the wall, then onto a toy. Or shine a torch through a glass, baking paper, cardboard and a foil lid.',
+  coplayHint:
+    'Before shining, trace the path with your finger together: "The light goes here, bumps the mirror, and turns..."',
+  offScreen:
+    'Use a hand mirror to bounce a sunbeam onto the wall, then onto a toy. Or shine a torch through a glass, baking paper, cardboard and a foil lid.',
   hubIcon: () => new LightIcon(),
   touchDemo: true,
   sticker,

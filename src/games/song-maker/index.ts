@@ -11,11 +11,24 @@ import type { View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
 import { replayArt, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { LEVELS, beadToTap, key, makeSong, MOTIF_WINDOW, ROW_STEPS, songLayout, songPlan, type Note, type Song, type SongPlan } from './logic';
+import {
+  LEVELS,
+  beadToTap,
+  key,
+  makeSong,
+  MOTIF_WINDOW,
+  ROW_STEPS,
+  songLayout,
+  songPlan,
+  type Note,
+  type Song,
+  type SongPlan,
+} from './logic';
 
 /** Row colors, top (high) to bottom (low), matching the jelly drums' rainbow. */
 const ROW_COLORS: ColorName[] = ['red', 'orange', 'yellow', 'green', 'blue'];
-const rowColor = (row: number, rows: number) => ROW_COLORS[Math.round((row * (ROW_COLORS.length - 1)) / Math.max(1, rows - 1))];
+const rowColor = (row: number, rows: number) =>
+  ROW_COLORS[Math.round((row * (ROW_COLORS.length - 1)) / Math.max(1, rows - 1))];
 const FALLBACK_BPM = 92;
 // Session-only, keyed by the loaded profile's save. Replaced/reset saves start fresh; demos never consume it.
 const recentMotifs = new WeakMap<object, string[]>();
@@ -43,10 +56,18 @@ class Bead extends Container {
     const sw = swatch[this.color];
     const g = this.g.clear();
     if (this.lit) {
-      g.circle(0, 4, r).fill({ color: ink, alpha: 0.12 }).circle(0, 0, r).fill(sw.fill).stroke({ width: 5, color: this.given ? swatch.white.fill : sw.line });
+      g.circle(0, 4, r)
+        .fill({ color: ink, alpha: 0.12 })
+        .circle(0, 0, r)
+        .fill(sw.fill)
+        .stroke({ width: 5, color: this.given ? swatch.white.fill : sw.line });
       g.ellipse(-r * 0.35, -r * 0.4, r * 0.2, r * 0.14).fill({ color: 0xffffff, alpha: 0.6 });
-      g.circle(-r * 0.28, -r * 0.02, r * 0.1).circle(r * 0.28, -r * 0.02, r * 0.1).fill(ink);
-      g.moveTo(-r * 0.2, r * 0.22).quadraticCurveTo(0, r * 0.4, r * 0.2, r * 0.22).stroke({ width: 3, color: ink, cap: 'round' });
+      g.circle(-r * 0.28, -r * 0.02, r * 0.1)
+        .circle(r * 0.28, -r * 0.02, r * 0.1)
+        .fill(ink);
+      g.moveTo(-r * 0.2, r * 0.22)
+        .quadraticCurveTo(0, r * 0.4, r * 0.2, r * 0.22)
+        .stroke({ width: 3, color: ink, cap: 'round' });
     } else if (this.ghost) {
       g.circle(0, 0, r).fill({ color: sw.fill, alpha: 0.18 });
       for (let i = 0; i < 10; i++) {
@@ -102,7 +123,7 @@ class SongMaker implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.plan = songPlan(ctx.level);
-    const recent = ctx.demo ? [] : recentMotifs.get(store.data) ?? [];
+    const recent = ctx.demo ? [] : (recentMotifs.get(store.data) ?? []);
     this.song = makeSong(this.plan, ctx.rng, recent);
     if (!ctx.demo && this.song.motif) {
       recentMotifs.set(store.data, [...recent, this.song.motif].slice(-MOTIF_WINDOW));
@@ -131,10 +152,18 @@ class SongMaker implements Game {
 
   start() {
     switch (this.plan.mode) {
-      case 'free': void this.ctx.instruct('song.free'); break;
-      case 'ghost': void this.ctx.instruct('song.copy'); break;
-      case 'card': void this.ctx.instruct('song.card'); break;
-      case 'pattern': void this.ctx.instruct(`song.pattern.${this.song.pattern ?? 'stairs-up'}`); break;
+      case 'free':
+        void this.ctx.instruct('song.free');
+        break;
+      case 'ghost':
+        void this.ctx.instruct('song.copy');
+        break;
+      case 'card':
+        void this.ctx.instruct('song.card');
+        break;
+      case 'pattern':
+        void this.ctx.instruct(`song.pattern.${this.song.pattern ?? 'stairs-up'}`);
+        break;
       case 'listen':
         // No guessing before she has heard the tune once.
         this.listening = true;
@@ -174,7 +203,14 @@ class SongMaker implements Game {
       if (bead.lit) this.placed.add(key(bead.note));
       else this.placed.delete(key(bead.note));
       bead.draw(this.cell);
-      this.ctx.particles.burst(bead.x, bead.y, { kind: 'note', colors: [swatch[rowColor(bead.note.row, this.plan.rows)].fill], count: 3, speed: [60, 140], gravity: -40, size: [0.5, 0.8] });
+      this.ctx.particles.burst(bead.x, bead.y, {
+        kind: 'note',
+        colors: [swatch[rowColor(bead.note.row, this.plan.rows)].fill],
+        count: 3,
+        speed: [60, 140],
+        gravity: -40,
+        size: [0.5, 0.8],
+      });
       if (++this.taps >= this.plan.notes) this.finishing = true;
       return;
     }
@@ -186,7 +222,12 @@ class SongMaker implements Game {
       bead.ghost = false;
       bead.draw(this.cell);
       this.wrong = 0;
-      this.ctx.particles.burst(bead.x, bead.y, { kind: 'star', colors: [swatch.yellow.fill], count: 8, speed: [80, 200] });
+      this.ctx.particles.burst(bead.x, bead.y, {
+        kind: 'star',
+        colors: [swatch.yellow.fill],
+        count: 8,
+        speed: [80, 200],
+      });
       if (!this.remaining.length) void this.complete();
       this.drawGlow();
       return;
@@ -236,10 +277,27 @@ class SongMaker implements Game {
     this.done = true;
     sfx.sparkle();
     this.ctx.pet.cheer();
-    for (const b of this.beads.filter((b) => b.lit)) this.ctx.particles.burst(b.x, b.y, { kind: 'note', colors: [swatch[rowColor(b.note.row, this.plan.rows)].fill], count: 2, speed: [80, 180], gravity: -60 });
+    for (const b of this.beads.filter((b) => b.lit))
+      this.ctx.particles.burst(b.x, b.y, {
+        kind: 'note',
+        colors: [swatch[rowColor(b.note.row, this.plan.rows)].fill],
+        count: 2,
+        speed: [80, 180],
+        gravity: -60,
+      });
     // A song she made on the free loop is hers to keep; a copied one is not.
-    const creation = this.plan.mode === 'free' ? { kind: 'tune' as const, cols: this.plan.cols, rows: this.plan.rows, notes: this.beads.filter((b) => b.lit).map((b) => ({ ...b.note })) } : undefined;
-    void this.ctx.say('song.done').then(() => this.ctx.finish({ misses: this.misses, hints: this.hints, creation }));
+    const creation =
+      this.plan.mode === 'free'
+        ? {
+            kind: 'tune' as const,
+            cols: this.plan.cols,
+            rows: this.plan.rows,
+            notes: this.beads.filter((b) => b.lit).map((b) => ({ ...b.note })),
+          }
+        : undefined;
+    void this.ctx
+      .say('song.done')
+      .then(() => this.ctx.finish({ misses: this.misses, hints: this.hints, creation }));
   }
 
   // The loop -------------------------------------------------------------------
@@ -260,7 +318,9 @@ class SongMaker implements Game {
     if (wrapped && this.finishing && !this.done) {
       // One more trip round the loop, then the sticker.
       this.done = true;
-      void this.ctx.tw.wait((60 / (music.bpm() ?? FALLBACK_BPM)) * this.plan.cols - 0.2).then(() => this.celebrate());
+      void this.ctx.tw
+        .wait((60 / (music.bpm() ?? FALLBACK_BPM)) * this.plan.cols - 0.2)
+        .then(() => this.celebrate());
     }
   }
 
@@ -269,14 +329,25 @@ class SongMaker implements Game {
   resize(v: View) {
     const g = this.background.clear().rect(0, 0, v.w, v.h).fill(swatch.purple.light);
     g.poly([0, v.h, v.w * 0.25, v.h * 0.45, v.w * 0.5, v.h]).fill({ color: swatch.purple.fill, alpha: 0.25 });
-    g.poly([v.w * 0.4, v.h, v.w * 0.75, v.h * 0.35, v.w, v.h]).fill({ color: swatch.purple.fill, alpha: 0.2 });
+    g.poly([v.w * 0.4, v.h, v.w * 0.75, v.h * 0.35, v.w, v.h]).fill({
+      color: swatch.purple.fill,
+      alpha: 0.2,
+    });
     const p = this.plan;
     const { cell, x0, y0 } = songLayout(p, v);
     this.cell = cell;
     const w = cell * p.cols;
     const h = cell * p.rows;
-    const b = this.board.clear().roundRect(x0 - 14, y0 - 14, w + 28, h + 28, 28).fill(cream).stroke({ width: 6, color: swatch.purple.line });
-    for (let row = 0; row < p.rows; row++) b.rect(x0, y0 + this.cell * row + this.cell * 0.12, w, this.cell * 0.76).fill({ color: swatch[rowColor(row, p.rows)].light, alpha: 0.45 });
+    const b = this.board
+      .clear()
+      .roundRect(x0 - 14, y0 - 14, w + 28, h + 28, 28)
+      .fill(cream)
+      .stroke({ width: 6, color: swatch.purple.line });
+    for (let row = 0; row < p.rows; row++)
+      b.rect(x0, y0 + this.cell * row + this.cell * 0.12, w, this.cell * 0.76).fill({
+        color: swatch[rowColor(row, p.rows)].light,
+        alpha: 0.45,
+      });
     for (const bead of this.beads) {
       bead.position.set(x0 + this.cell * (bead.note.col + 0.5), y0 + this.cell * (bead.note.row + 0.5));
       bead.draw(this.cell);
@@ -290,7 +361,10 @@ class SongMaker implements Game {
 
   private drawPlayhead(col: number) {
     const { x0, y0 } = this.grid;
-    this.playhead.clear().roundRect(x0 + this.cell * col + 4, y0 - 8, this.cell - 8, this.cell * this.plan.rows + 16, 18).fill({ color: swatch.yellow.fill, alpha: 0.35 });
+    this.playhead
+      .clear()
+      .roundRect(x0 + this.cell * col + 4, y0 - 8, this.cell - 8, this.cell * this.plan.rows + 16, 18)
+      .fill({ color: swatch.yellow.fill, alpha: 0.35 });
   }
 
   /** Card level: the song to copy, small, on a wooden card. */
@@ -301,13 +375,22 @@ class SongMaker implements Game {
     const p = this.plan;
     const x0 = (-s * p.cols) / 2;
     const y0 = (-s * p.rows) / 2;
-    const g = new Graphics().roundRect(x0 - 16, y0 - 16, s * p.cols + 32, s * p.rows + 32, 16).fill(wood.light).stroke({ width: 6, color: wood.line });
+    const g = new Graphics()
+      .roundRect(x0 - 16, y0 - 16, s * p.cols + 32, s * p.rows + 32, 16)
+      .fill(wood.light)
+      .stroke({ width: 6, color: wood.line });
     // The same colored rows as the big board, and a line between beats, so places are easy to match.
-    for (let row = 0; row < p.rows; row++) g.rect(x0, y0 + s * row + 3, s * p.cols, s - 6).fill({ color: swatch[rowColor(row, p.rows)].light });
-    for (let col = 1; col < p.cols; col++) g.moveTo(x0 + s * col, y0).lineTo(x0 + s * col, y0 + s * p.rows).stroke({ width: 2, color: wood.fill });
+    for (let row = 0; row < p.rows; row++)
+      g.rect(x0, y0 + s * row + 3, s * p.cols, s - 6).fill({ color: swatch[rowColor(row, p.rows)].light });
+    for (let col = 1; col < p.cols; col++)
+      g.moveTo(x0 + s * col, y0)
+        .lineTo(x0 + s * col, y0 + s * p.rows)
+        .stroke({ width: 2, color: wood.fill });
     for (const n of this.song.notes) {
       const sw = swatch[rowColor(n.row, p.rows)];
-      g.circle(x0 + s * (n.col + 0.5), y0 + s * (n.row + 0.5), s * 0.38).fill(sw.fill).stroke({ width: 2, color: sw.line });
+      g.circle(x0 + s * (n.col + 0.5), y0 + s * (n.row + 0.5), s * 0.38)
+        .fill(sw.fill)
+        .stroke({ width: 2, color: sw.line });
     }
     this.card.addChild(g);
     this.card.position.set(v.w * 0.18, v.h * 0.4);
@@ -328,11 +411,16 @@ class SongMaker implements Game {
 function boardArt(seed = 3): Container {
   const rng = new Rng(seed);
   const c = new Container();
-  const g = new Graphics().roundRect(-90, -150, 180, 140, 20).fill(cream).stroke({ width: 6, color: swatch.purple.line });
+  const g = new Graphics()
+    .roundRect(-90, -150, 180, 140, 20)
+    .fill(cream)
+    .stroke({ width: 6, color: swatch.purple.line });
   for (let col = 0; col < 4; col++) {
     const row = rng.int(0, 2);
     const sw = swatch[ROW_COLORS[row * 2]];
-    g.circle(-60 + col * 40, -118 + row * 38, 15).fill(sw.fill).stroke({ width: 3, color: sw.line });
+    g.circle(-60 + col * 40, -118 + row * 38, 15)
+      .fill(sw.fill)
+      .stroke({ width: 3, color: sw.line });
   }
   g.roundRect(-8, -12, 16, 12, 4).fill(swatch.purple.line);
   const note = musicNote(new Graphics(), 46, swatch.purple.fill);
@@ -352,7 +440,8 @@ export const songMaker: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (l) => songPlan(l).name,
   music: silenced(STYLES.jelly),
-  coplayHint: 'Sing along with {name} when the jellies play: up high for the top row, down low for the bottom.',
+  coplayHint:
+    'Sing along with {name} when the jellies play: up high for the top row, down low for the bottom.',
   offScreen: 'Make a song with pots and spoons, then play it again the same way together.',
   hubIcon: () => new WigglyIcon(boardArt()),
   touchDemo: true,

@@ -10,7 +10,27 @@ import { Rng } from '../../engine/random';
 import { ease, type Tweener } from '../../engine/tween';
 import type { View } from '../../engine/view';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { LEVELS, STICKER_ANIMALS, COVER_NAMES, FEELING_WORDS, roundScene, type SceneId, nearestSpot, shouldNudge, shouldSelfOpen, deal, newcomer, pickFeeling, pickTarget, planFor, spotToTap, type Animal, type Feeling, type PeekPlan, type CoverKind } from './logic';
+import {
+  LEVELS,
+  STICKER_ANIMALS,
+  COVER_NAMES,
+  FEELING_WORDS,
+  roundScene,
+  type SceneId,
+  nearestSpot,
+  shouldNudge,
+  shouldSelfOpen,
+  deal,
+  newcomer,
+  pickFeeling,
+  pickTarget,
+  planFor,
+  spotToTap,
+  type Animal,
+  type Feeling,
+  type PeekPlan,
+  type CoverKind,
+} from './logic';
 import { rangeFor } from '../../progress/difficulty';
 
 const VOICES: Record<Animal, { sound: AnimalSound; word: string }> = {
@@ -42,15 +62,45 @@ function drawCover(kind: CoverKind, grass = true): Graphics {
   const g = new Graphics();
   switch (kind) {
     case 'hay':
-      g.moveTo(-118, 0).bezierCurveTo(-118, -120, -60, -152, 0, -152).bezierCurveTo(60, -152, 118, -120, 118, 0).closePath();
+      g.moveTo(-118, 0)
+        .bezierCurveTo(-118, -120, -60, -152, 0, -152)
+        .bezierCurveTo(60, -152, 118, -120, 118, 0)
+        .closePath();
       g.fill(0xf2c94c).stroke(line(0xc99a2e));
-      for (const [x, y] of [[-70, -40], [-30, -90], [20, -60], [60, -100], [80, -36], [-10, -124]]) {
-        g.moveTo(x, y).lineTo(x + 18, y - 10).stroke(line(0xc99a2e, 4));
+      for (const [x, y] of [
+        [-70, -40],
+        [-30, -90],
+        [20, -60],
+        [60, -100],
+        [80, -36],
+        [-10, -124],
+      ]) {
+        g.moveTo(x, y)
+          .lineTo(x + 18, y - 10)
+          .stroke(line(0xc99a2e, 4));
       }
       break;
     case 'bush':
-      puffs(g, [[-70, -58, 58], [0, -86, 66], [70, -58, 58], [-92, -26, 36], [92, -26, 36], [0, -40, 60]], 0x7cc463, 0x4e9e3a);
-      for (const [x, y] of [[-60, -80], [30, -110], [74, -50], [-20, -40]]) g.circle(x, y, 8).fill(swatch.red.fill);
+      puffs(
+        g,
+        [
+          [-70, -58, 58],
+          [0, -86, 66],
+          [70, -58, 58],
+          [-92, -26, 36],
+          [92, -26, 36],
+          [0, -40, 60],
+        ],
+        0x7cc463,
+        0x4e9e3a,
+      );
+      for (const [x, y] of [
+        [-60, -80],
+        [30, -110],
+        [74, -50],
+        [-20, -40],
+      ])
+        g.circle(x, y, 8).fill(swatch.red.fill);
       break;
     case 'crate':
       g.roundRect(-110, -150, 220, 150, 10).fill(wood.fill).stroke(line(wood.line));
@@ -58,7 +108,9 @@ function drawCover(kind: CoverKind, grass = true): Graphics {
       g.moveTo(-96, -140).lineTo(96, -10).stroke(line(wood.line, 5));
       break;
     case 'flowerpot':
-      g.poly([-100, -140, 100, -140, 72, 0, -72, 0]).fill(swatch.orange.fill).stroke(line(swatch.orange.line));
+      g.poly([-100, -140, 100, -140, 72, 0, -72, 0])
+        .fill(swatch.orange.fill)
+        .stroke(line(swatch.orange.line));
       g.roundRect(-116, -150, 232, 30, 8).fill(swatch.orange.light).stroke(line(swatch.orange.line));
       g.circle(0, -65, 23).fill(swatch.yellow.fill);
       break;
@@ -67,7 +119,7 @@ function drawCover(kind: CoverKind, grass = true): Graphics {
       for (const x of [-65, 0, 65]) {
         g.moveTo(x, -10).lineTo(x, -98).stroke(line(swatch.green.line, 8));
         for (let i = 0; i < 8; i++) {
-          const a = i * Math.PI / 4;
+          const a = (i * Math.PI) / 4;
           g.circle(x + Math.cos(a) * 22, -110 + Math.sin(a) * 22, 14).fill(swatch.yellow.fill);
         }
         g.circle(x, -110, 18).fill(swatch.brown.fill).stroke(line(swatch.brown.line, 3));
@@ -77,16 +129,28 @@ function drawCover(kind: CoverKind, grass = true): Graphics {
       g.circle(-62, -10, 30).fill(swatch.brown.line).stroke(line(wood.line));
       g.circle(-62, -10, 12).fill(swatch.white.light);
       g.moveTo(56, -70).lineTo(92, 0).moveTo(65, -115).lineTo(125, -125).stroke(line(wood.line, 12));
-      g.poly([-115, -150, 100, -150, 68, -42, -74, -42]).fill(swatch.teal.fill).stroke(line(swatch.teal.line));
+      g.poly([-115, -150, 100, -150, 68, -42, -74, -42])
+        .fill(swatch.teal.fill)
+        .stroke(line(swatch.teal.line));
       break;
     case 'rock':
-      g.poly([-116, 0, -110, -95, -62, -145, 48, -150, 106, -105, 120, 0]).fill(swatch.white.line).stroke(line(swatch.brown.line));
+      g.poly([-116, 0, -110, -95, -62, -145, 48, -150, 106, -105, 120, 0])
+        .fill(swatch.white.line)
+        .stroke(line(swatch.brown.line));
       g.poly([-110, -95, -62, -145, 48, -150, 10, -94]).fill(swatch.white.light);
       g.moveTo(10, -94).lineTo(48, -34).lineTo(106, -105).stroke(line(swatch.brown.line, 4));
       break;
     case 'blanket':
       g.roundRect(-112, -150, 224, 150, 20).fill(swatch.purple.fill).stroke(line(swatch.purple.line));
-      for (const [x, y] of [[-70, -105], [0, -60], [70, -105], [-60, -35], [60, -35], [0, -125]]) g.circle(x, y, 11).fill(swatch.purple.light);
+      for (const [x, y] of [
+        [-70, -105],
+        [0, -60],
+        [70, -105],
+        [-60, -35],
+        [60, -35],
+        [0, -125],
+      ])
+        g.circle(x, y, 11).fill(swatch.purple.light);
       g.roundRect(-112, -150, 224, 28, 14).fill(swatch.white.light).stroke(line(swatch.purple.line, 4));
       break;
     case 'toybox':
@@ -98,8 +162,18 @@ function drawCover(kind: CoverKind, grass = true): Graphics {
       break;
     case 'curtain':
       g.roundRect(-118, -150, 236, 150, 6).fill(swatch.teal.light).stroke(line(swatch.teal.line));
-      g.moveTo(-118, -142).bezierCurveTo(-60, -110, -40, -50, -34, 0).lineTo(-118, 0).closePath().fill(swatch.teal.fill).stroke(line(swatch.teal.line, 4));
-      g.moveTo(118, -142).bezierCurveTo(60, -110, 40, -50, 34, 0).lineTo(118, 0).closePath().fill(swatch.teal.fill).stroke(line(swatch.teal.line, 4));
+      g.moveTo(-118, -142)
+        .bezierCurveTo(-60, -110, -40, -50, -34, 0)
+        .lineTo(-118, 0)
+        .closePath()
+        .fill(swatch.teal.fill)
+        .stroke(line(swatch.teal.line, 4));
+      g.moveTo(118, -142)
+        .bezierCurveTo(60, -110, 40, -50, 34, 0)
+        .lineTo(118, 0)
+        .closePath()
+        .fill(swatch.teal.fill)
+        .stroke(line(swatch.teal.line, 4));
       g.moveTo(-120, -150).lineTo(120, -150).stroke(line(wood.line, 8));
       break;
     case 'bed':
@@ -110,17 +184,34 @@ function drawCover(kind: CoverKind, grass = true): Graphics {
       break;
     case 'umbrella':
       g.moveTo(0, 0).lineTo(0, -140).stroke(line(wood.line, 10));
-      g.moveTo(-118, -70).bezierCurveTo(-118, -170, 118, -170, 118, -70).closePath().fill(swatch.red.fill).stroke(line(swatch.red.line));
-      g.moveTo(-40, -148).bezierCurveTo(-60, -120, -62, -92, -50, -72).lineTo(-8, -72).bezierCurveTo(-8, -100, -8, -126, -8, -158)
-        .closePath().fill(swatch.white.light);
-      g.moveTo(40, -148).bezierCurveTo(60, -120, 62, -92, 50, -72).lineTo(8, -72).bezierCurveTo(8, -100, 8, -126, 8, -158)
-        .closePath().fill(swatch.white.light);
+      g.moveTo(-118, -70)
+        .bezierCurveTo(-118, -170, 118, -170, 118, -70)
+        .closePath()
+        .fill(swatch.red.fill)
+        .stroke(line(swatch.red.line));
+      g.moveTo(-40, -148)
+        .bezierCurveTo(-60, -120, -62, -92, -50, -72)
+        .lineTo(-8, -72)
+        .bezierCurveTo(-8, -100, -8, -126, -8, -158)
+        .closePath()
+        .fill(swatch.white.light);
+      g.moveTo(40, -148)
+        .bezierCurveTo(60, -120, 62, -92, 50, -72)
+        .lineTo(8, -72)
+        .bezierCurveTo(8, -100, 8, -126, 8, -158)
+        .closePath()
+        .fill(swatch.white.light);
       break;
     case 'sandcastle':
       g.roundRect(-110, -70, 220, 70, 8).fill(swatch.yellow.light).stroke(line(swatch.yellow.line));
       for (const x of [-80, 80]) {
-        g.roundRect(x - 30, -130, 60, 130, 6).fill(swatch.yellow.light).stroke(line(swatch.yellow.line));
-        for (const d of [-20, 0, 20]) g.rect(x + d - 6, -146, 12, 16).fill(swatch.yellow.light).stroke(line(swatch.yellow.line, 3));
+        g.roundRect(x - 30, -130, 60, 130, 6)
+          .fill(swatch.yellow.light)
+          .stroke(line(swatch.yellow.line));
+        for (const d of [-20, 0, 20])
+          g.rect(x + d - 6, -146, 12, 16)
+            .fill(swatch.yellow.light)
+            .stroke(line(swatch.yellow.line, 3));
       }
       g.roundRect(-30, -150, 60, 150, 6).fill(swatch.yellow.light).stroke(line(swatch.yellow.line));
       g.poly([-38, -148, 0, -190, 38, -148]).fill(swatch.red.fill).stroke(line(swatch.red.line, 4));
@@ -171,12 +262,31 @@ class Spot extends Container {
       for (const side of [-1, 1]) {
         const panel = new Graphics();
         if (kind === 'door') {
-          panel.roundRect(side < 0 ? 0 : -110, -150, 110, 150, 5).fill(0xd9534f).stroke(line(0x9e2f2c));
-          panel.moveTo(side < 0 ? 8 : -102, -140).lineTo(side < 0 ? 102 : -8, -10).stroke(line(0xffffff, 5));
-          panel.moveTo(side < 0 ? 102 : -8, -140).lineTo(side < 0 ? 8 : -102, -10).stroke(line(0xffffff, 5));
+          panel
+            .roundRect(side < 0 ? 0 : -110, -150, 110, 150, 5)
+            .fill(0xd9534f)
+            .stroke(line(0x9e2f2c));
+          panel
+            .moveTo(side < 0 ? 8 : -102, -140)
+            .lineTo(side < 0 ? 102 : -8, -10)
+            .stroke(line(0xffffff, 5));
+          panel
+            .moveTo(side < 0 ? 102 : -8, -140)
+            .lineTo(side < 0 ? 8 : -102, -10)
+            .stroke(line(0xffffff, 5));
         } else {
-          panel.moveTo(0, 0).lineTo(0, -150).bezierCurveTo(side * 80, -150, side * 118, -100, side * 118, 0).closePath().fill(0xf2c94c).stroke(line(0xc99a2e));
-          for (const y of [-35, -75, -115]) panel.moveTo(side * 20, y).lineTo(side * 65, y - 10).stroke(line(0xc99a2e, 4));
+          panel
+            .moveTo(0, 0)
+            .lineTo(0, -150)
+            .bezierCurveTo(side * 80, -150, side * 118, -100, side * 118, 0)
+            .closePath()
+            .fill(0xf2c94c)
+            .stroke(line(0xc99a2e));
+          for (const y of [-35, -75, -115])
+            panel
+              .moveTo(side * 20, y)
+              .lineTo(side * 65, y - 10)
+              .stroke(line(0xc99a2e, 4));
         }
         if (kind === 'door') panel.x = side * 110;
         this.panels.push(panel);
@@ -191,7 +301,12 @@ class Spot extends Container {
       }
     }
     this.leaf.visible = false;
-    this.addChild(this.holder, this.cover, this.leaf, new Graphics().roundRect(-130, -6, 260, 120, 20).fill(ground(kind)));
+    this.addChild(
+      this.holder,
+      this.cover,
+      this.leaf,
+      new Graphics().roundRect(-130, -6, 260, 120, 20).fill(ground(kind)),
+    );
     this.eventMode = 'none';
     this.hitArea = new Rectangle(-130, -340, 260, 350);
   }
@@ -217,7 +332,11 @@ class Spot extends Container {
     const opens = pose === 'out' && this.pose !== 'out';
     this.pose = pose;
     this.tw.kill(this.opening);
-    void this.tw.to(this.opening, { amount: pose === 'out' ? 1 : 0 }, { duration: 0.35, ease: ease.outCubic });
+    void this.tw.to(
+      this.opening,
+      { amount: pose === 'out' ? 1 : 0 },
+      { duration: 0.35, ease: ease.outCubic },
+    );
     if (opens) {
       if (this.kind === 'door') sfx.marimba(0, 0.08);
       else if (this.kind === 'crate') sfx.marimba(2, 0.08);
@@ -234,7 +353,11 @@ class Spot extends Container {
         c.setMood(feeling);
       }
     } else {
-      await this.tw.to(c, { y: POSE[pose] }, { duration: pose === 'hidden' ? 0.3 : 0.45, ease: pose === 'hidden' ? ease.inQuad : ease.outCubic });
+      await this.tw.to(
+        c,
+        { y: POSE[pose] },
+        { duration: pose === 'hidden' ? 0.3 : 0.45, ease: pose === 'hidden' ? ease.inQuad : ease.outCubic },
+      );
     }
   }
 
@@ -249,9 +372,16 @@ class Spot extends Container {
     this.shake = Math.max(0, this.shake - dt * 2);
     const open = this.opening.amount;
     this.cover.rotation = 0.06 * Math.sin(this.shake * 25) * this.shake;
-    if (this.kind === 'door') this.panels.forEach((p) => p.scale.x = 1 - open * 0.88);
-    if (this.kind === 'hay') this.panels.forEach((p, i) => { p.x = (i ? 1 : -1) * open * 34; p.rotation = (i ? 1 : -1) * open * 0.16; });
-    if (this.kind === 'crate') { this.panels[0].y = -open * 38; this.panels[0].rotation = open * -0.12; }
+    if (this.kind === 'door') this.panels.forEach((p) => (p.scale.x = 1 - open * 0.88));
+    if (this.kind === 'hay')
+      this.panels.forEach((p, i) => {
+        p.x = (i ? 1 : -1) * open * 34;
+        p.rotation = (i ? 1 : -1) * open * 0.16;
+      });
+    if (this.kind === 'crate') {
+      this.panels[0].y = -open * 38;
+      this.panels[0].rotation = open * -0.12;
+    }
     if (this.kind === 'bush') {
       this.cover.rotation += Math.sin(open * Math.PI * 5) * open * 0.08;
       this.leaf.visible = open > 0;
@@ -289,13 +419,44 @@ class PeekabooBarn implements Game {
     const scene = roundScene(ctx.rng, this.plan.spots);
     this.setting = scene.id;
     this.backdrop = ctx.track(
-      new Backdrop(this.setting === 'bedroom'
-        ? { sky: [swatch.purple.light, swatch.pink.light], hills: [swatch.pink.light, RUG], horizon: 0.5, clouds: 0, sun: false, seed: 84 }
-        : this.setting === 'beach'
-        ? { sky: [swatch.blue.light, swatch.white.light], hills: [swatch.blue.fill, SAND], horizon: 0.5, clouds: 2, sun: true, seed: 63 }
-        : this.setting === 'garden'
-        ? { sky: [swatch.blue.light, swatch.white.light], hills: [swatch.green.light, GRASS], horizon: 0.56, clouds: 2, sun: true, seed: 42 }
-        : { sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, GRASS], horizon: 0.56, clouds: 3, sun: true, seed: 21 }, ctx.view),
+      new Backdrop(
+        this.setting === 'bedroom'
+          ? {
+              sky: [swatch.purple.light, swatch.pink.light],
+              hills: [swatch.pink.light, RUG],
+              horizon: 0.5,
+              clouds: 0,
+              sun: false,
+              seed: 84,
+            }
+          : this.setting === 'beach'
+            ? {
+                sky: [swatch.blue.light, swatch.white.light],
+                hills: [swatch.blue.fill, SAND],
+                horizon: 0.5,
+                clouds: 2,
+                sun: true,
+                seed: 63,
+              }
+            : this.setting === 'garden'
+              ? {
+                  sky: [swatch.blue.light, swatch.white.light],
+                  hills: [swatch.green.light, GRASS],
+                  horizon: 0.56,
+                  clouds: 2,
+                  sun: true,
+                  seed: 42,
+                }
+              : {
+                  sky: [0x8fd3f7, 0xe9f7ff],
+                  hills: [0xc8ecb0, GRASS],
+                  horizon: 0.56,
+                  clouds: 3,
+                  sun: true,
+                  seed: 21,
+                },
+        ctx.view,
+      ),
     );
     const covers = scene.covers;
     this.spots = covers.map((kind) => {
@@ -303,12 +464,20 @@ class PeekabooBarn implements Game {
       return s;
     });
     this.backdrop.eventMode = this.barn.eventMode = 'none';
-    onTap(this.input, (e) => {
-      if (this.plan.door) return void this.tapped(this.spots[0]);
-      const p = ctx.stage.toLocal(e.global);
-      const i = nearestSpot(p.x, p.y, this.spots.map((s) => ({ x: s.x, y: s.y, scale: s.scale.x })));
-      if (i !== null) void this.tapped(this.spots[i]);
-    }, { cooldown: 250 });
+    onTap(
+      this.input,
+      (e) => {
+        if (this.plan.door) return void this.tapped(this.spots[0]);
+        const p = ctx.stage.toLocal(e.global);
+        const i = nearestSpot(
+          p.x,
+          p.y,
+          this.spots.map((s) => ({ x: s.x, y: s.y, scale: s.scale.x })),
+        );
+        if (i !== null) void this.tapped(this.spots[i]);
+      },
+      { cooldown: 250 },
+    );
     ctx.stage.addChild(this.backdrop, this.barn, ...this.spots, this.input);
   }
 
@@ -331,19 +500,38 @@ class PeekabooBarn implements Game {
     const right = v.w - 30 - 130 * scale;
     this.spots.forEach((s, i) => {
       s.scale.set(scale);
-      s.position.set(this.spots.length === 1 ? cx : left + i * (right - left) / (this.spots.length - 1), v.h - 40);
+      s.position.set(
+        this.spots.length === 1 ? cx : left + (i * (right - left)) / (this.spots.length - 1),
+        v.h - 40,
+      );
     });
-    this.input.hitArea = this.plan.door ? new Rectangle(0, 0, v.w, v.h) : new Rectangle(150, v.h - 40 - 340 * scale, v.w - 180, 350 * scale);
+    this.input.hitArea = this.plan.door
+      ? new Rectangle(0, 0, v.w, v.h)
+      : new Rectangle(150, v.h - 40 - 340 * scale, v.w - 180, 350 * scale);
     this.drawBarn(cx, this.backdrop.groundY + 30);
   }
 
   update(dt: number) {
     if (this.finished) return;
     this.idle += dt;
-    if (shouldSelfOpen(this.plan, this.idle, this.spots.map((s) => s.pose), this.busy)) {
+    if (
+      shouldSelfOpen(
+        this.plan,
+        this.idle,
+        this.spots.map((s) => s.pose),
+        this.busy,
+      )
+    ) {
       this.idle = 0;
       void this.freeTap(this.spots[0], false);
-    } else if (shouldNudge(this.plan, this.idle, this.spots.map((s) => s.pose), this.busy)) {
+    } else if (
+      shouldNudge(
+        this.plan,
+        this.idle,
+        this.spots.map((s) => s.pose),
+        this.busy,
+      )
+    ) {
       this.spots[this.nudgeCount++ % this.spots.length].wiggle();
       sfx.marimba(0, 0.08);
       this.idle = 0;
@@ -353,7 +541,13 @@ class PeekabooBarn implements Game {
   /** The ghost finger on the how-to card: tap the place that hides who was asked for, or in free play each place in turn. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished) return null;
-    const i = spotToTap(this.plan, this.spots.map((s) => s.pose), this.spots.map((s) => s.animal), this.target, this.lastTouched);
+    const i = spotToTap(
+      this.plan,
+      this.spots.map((s) => s.pose),
+      this.spots.map((s) => s.animal),
+      this.target,
+      this.lastTouched,
+    );
     if (i === null) return null;
     this.lastTouched = i;
     // The cover is what a child touches; the animal's head peeks over it.
@@ -431,7 +625,10 @@ class PeekabooBarn implements Game {
     void spot.go('out', feeling);
     this.say(animal);
     if (feeling === 'sleepy') sfx.yawn();
-    else if (feeling === 'sing') { sfx.marimba(4, 0.3); sfx.marimba(7, 0.3); }
+    else if (feeling === 'sing') {
+      sfx.marimba(4, 0.3);
+      sfx.marimba(7, 0.3);
+    }
     const words = { word: VOICES[animal].word, animal, cover: COVER_NAMES[spot.kind] };
     if (feeling) void this.ctx.say('peek.feel', { ...words, feeling: FEELING_WORDS[feeling] });
     else void this.ctx.say('peek.found', words);
@@ -491,7 +688,14 @@ class PeekabooBarn implements Game {
     }
     this.ctx.pet.cheer();
     const colors = RAINBOW.map((c) => swatch[c].fill);
-    this.ctx.particles.burst(this.view.w / 2, this.view.h * 0.3, { kind: 'confetti', colors, count: 60, speed: [200, 600], gravity: 600, life: [1.2, 2] });
+    this.ctx.particles.burst(this.view.w / 2, this.view.h * 0.3, {
+      kind: 'confetti',
+      colors,
+      count: 60,
+      speed: [200, 600],
+      gravity: 600,
+      life: [1.2, 2],
+    });
     sfx.tada();
     await this.ctx.tw.wait(1.8);
     this.ctx.finish({ misses: this.misses, hints: this.hints });
@@ -500,29 +704,47 @@ class PeekabooBarn implements Game {
   private drawBarn(cx: number, y: number) {
     if (this.setting === 'bedroom') {
       const g = this.barn.clear();
-      g.roundRect(cx - 120, y - 270, 240, 170, 12).fill(swatch.blue.light).stroke(line(wood.line, 8));
-      g.moveTo(cx, y - 270).lineTo(cx, y - 100).moveTo(cx - 120, y - 185).lineTo(cx + 120, y - 185).stroke(line(wood.line, 5));
+      g.roundRect(cx - 120, y - 270, 240, 170, 12)
+        .fill(swatch.blue.light)
+        .stroke(line(wood.line, 8));
+      g.moveTo(cx, y - 270)
+        .lineTo(cx, y - 100)
+        .moveTo(cx - 120, y - 185)
+        .lineTo(cx + 120, y - 185)
+        .stroke(line(wood.line, 5));
       g.star(cx + 60, y - 225, 5, 16, 7).fill(swatch.yellow.fill);
       g.circle(cx - 60, y - 225, 18).fill(swatch.white.light);
       return;
     }
     if (this.setting === 'beach') {
       const g = this.barn.clear();
-      g.poly([cx + 40, y - 140, cx + 40, y - 270, cx + 150, y - 140]).fill(swatch.white.light).stroke(line(swatch.white.line, 4));
-      g.poly([cx + 30, y - 140, cx + 30, y - 240, cx - 60, y - 140]).fill(swatch.red.fill).stroke(line(swatch.red.line, 4));
-      g.roundRect(cx - 80, y - 140, 250, 22, 10).fill(wood.fill).stroke(line(wood.line, 4));
+      g.poly([cx + 40, y - 140, cx + 40, y - 270, cx + 150, y - 140])
+        .fill(swatch.white.light)
+        .stroke(line(swatch.white.line, 4));
+      g.poly([cx + 30, y - 140, cx + 30, y - 240, cx - 60, y - 140])
+        .fill(swatch.red.fill)
+        .stroke(line(swatch.red.line, 4));
+      g.roundRect(cx - 80, y - 140, 250, 22, 10)
+        .fill(wood.fill)
+        .stroke(line(wood.line, 4));
       return;
     }
     if (this.setting === 'garden') {
       const g = this.barn.clear();
       for (let x = cx - 240; x <= cx + 240; x += 48) {
-        g.poly([x - 14, y, x - 14, y - 115, x, y - 135, x + 14, y - 115, x + 14, y]).fill(wood.light).stroke(line(wood.line, 3));
+        g.poly([x - 14, y, x - 14, y - 115, x, y - 135, x + 14, y - 115, x + 14, y])
+          .fill(wood.light)
+          .stroke(line(wood.line, 3));
       }
-      g.rect(cx - 260, y - 88, 520, 16).rect(cx - 260, y - 38, 520, 16).fill(wood.fill);
+      g.rect(cx - 260, y - 88, 520, 16)
+        .rect(cx - 260, y - 38, 520, 16)
+        .fill(wood.fill);
       for (const x of [cx - 190, cx + 190]) {
-        g.moveTo(x, y).lineTo(x, y - 150).stroke(line(swatch.green.line, 8));
+        g.moveTo(x, y)
+          .lineTo(x, y - 150)
+          .stroke(line(swatch.green.line, 8));
         for (let i = 0; i < 6; i++) {
-          const a = i * Math.PI / 3;
+          const a = (i * Math.PI) / 3;
           g.circle(x + Math.cos(a) * 22, y - 155 + Math.sin(a) * 22, 15).fill(swatch.pink.fill);
         }
         g.circle(x, y - 155, 15).fill(swatch.yellow.fill);
@@ -634,7 +856,8 @@ export const peekabooBarn: GameModule = {
     return `Remember who hid where, ${p.spots} hiding places`;
   },
   music: STYLES.hub,
-  coplayHint: 'Make the animal sounds together: "Moo!" Then say its name. When a friend is sleepy or singing, make that face together.',
+  coplayHint:
+    'Make the animal sounds together: "Moo!" Then say its name. When a friend is sleepy or singing, make that face together.',
   offScreen: 'Play peekaboo with stuffed animals under a blanket. Ask "Where did the cow go?"',
   entryLevels: [16],
   touchDemo: true,

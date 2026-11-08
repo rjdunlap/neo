@@ -20,11 +20,44 @@ import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
-import { cardArt, Door, doorMark, failBadge, fixtureCritter, iconArt, propPicture, sendArt, signArt, slotFrame, stickerArt, turtleArt, valueToken } from './art';
+import {
+  cardArt,
+  Door,
+  doorMark,
+  failBadge,
+  fixtureCritter,
+  iconArt,
+  propPicture,
+  sendArt,
+  signArt,
+  slotFrame,
+  stickerArt,
+  turtleArt,
+  valueToken,
+} from './art';
 import {
   LEVELS,
-  briefFor, centre, check, evaluate, helpFor, machineLayout, nextMove, planFor, PROPS, setSlot, slots, SPECIES, COLORS, Tally, wanted,
-  type Brief, type MachineLayout, type Node, type Prop, type Pt, type Value,
+  briefFor,
+  centre,
+  check,
+  evaluate,
+  helpFor,
+  machineLayout,
+  nextMove,
+  planFor,
+  PROPS,
+  setSlot,
+  slots,
+  SPECIES,
+  COLORS,
+  Tally,
+  wanted,
+  type Brief,
+  type MachineLayout,
+  type Node,
+  type Prop,
+  type Pt,
+  type Value,
 } from './logic';
 
 /** The critters stand about 250 tall at scale 1; on a card they are a little over 100. */
@@ -92,7 +125,17 @@ class SortingMachine implements Game {
     this.graph = this.brief.graph;
     this.sent = this.brief.fixtures.map(() => false);
     this.results = this.brief.fixtures.map(() => null);
-    this.backdrop = new Backdrop({ sky: [0xc8f0ec, 0xfff6e0], hills: [0xa9e0d6, 0xc5e7a8], horizon: 0.5, clouds: 2, sun: true, seed: 191 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0xc8f0ec, 0xfff6e0],
+        hills: [0xa9e0d6, 0xc5e7a8],
+        horizon: 0.5,
+        clouds: 2,
+        sun: true,
+        seed: 191,
+      },
+      ctx.view,
+    );
     this.glow.eventMode = 'none';
     ctx.stage.addChild(this.backdrop, this.board);
   }
@@ -125,7 +168,10 @@ class SortingMachine implements Game {
     this.view = v;
     this.backdrop.resize(v);
     if (!this.layoutNow && !this.cardNodes.length) return;
-    if (this.busy || this.finished) { this.relayout = true; return; }
+    if (this.busy || this.finished) {
+      this.relayout = true;
+      return;
+    }
     this.build();
   }
 
@@ -162,7 +208,7 @@ class SortingMachine implements Game {
     this.sensorAt = sc;
     const slot = new Container();
     const s = slots(this.graph)[0];
-    const value = this.level === 1 ? this.brief.props[0] : (s?.value as Prop | null) ?? null;
+    const value = this.level === 1 ? this.brief.props[0] : ((s?.value as Prop | null) ?? null);
     slot.addChild(slotFrame(slotRect.w, value === null));
     if (value !== null) {
       const pic = propPicture(value, slotRect.w * 0.62);
@@ -171,7 +217,12 @@ class SortingMachine implements Game {
     }
     slot.position.set(sc.x, sc.y);
     if (this.level >= 2) {
-      slot.hitArea = new Rectangle(-slotRect.w / 2 - 8, -slotRect.h / 2 - 8, slotRect.w + 16, slotRect.h + 16);
+      slot.hitArea = new Rectangle(
+        -slotRect.w / 2 - 8,
+        -slotRect.h / 2 - 8,
+        slotRect.w + 16,
+        slotRect.h + 16,
+      );
       onTap(slot, () => this.togglePicker(), { cooldown: 250 });
     } else {
       slot.eventMode = 'none';
@@ -275,9 +326,17 @@ class SortingMachine implements Game {
   private cabinet(w: number, h: number): Container {
     const g = new Graphics();
     g.roundRect(-w / 2 + 6, -h / 2 + 10, w, h, 28).fill({ color: 0x2b2440, alpha: 0.12 });
-    g.roundRect(-w / 2, -h / 2, w, h, 28).fill(0xd6dbe6).stroke({ width: 6, color: 0x8a93a6 });
+    g.roundRect(-w / 2, -h / 2, w, h, 28)
+      .fill(0xd6dbe6)
+      .stroke({ width: 6, color: 0x8a93a6 });
     g.roundRect(-w / 2 + 14, -h / 2 + 14, w - 28, h - 28, 20).stroke({ width: 3, color: 0xb3bac9 });
-    for (const [x, y] of [[-w / 2 + 24, -h / 2 + 24], [w / 2 - 24, -h / 2 + 24], [-w / 2 + 24, h / 2 - 24], [w / 2 - 24, h / 2 - 24]]) g.circle(x, y, 6).fill(0x8a93a6);
+    for (const [x, y] of [
+      [-w / 2 + 24, -h / 2 + 24],
+      [w / 2 - 24, -h / 2 + 24],
+      [-w / 2 + 24, h / 2 - 24],
+      [w / 2 - 24, h / 2 - 24],
+    ])
+      g.circle(x, y, 6).fill(0x8a93a6);
     return g;
   }
 
@@ -319,7 +378,14 @@ class SortingMachine implements Game {
     if (!b) return;
     for (const c of b.removeChildren()) c.destroy();
     const l = this.layoutNow!;
-    b.addChild(finish({ w: l.slow.w, h: l.slow.h, corner: 26 }, this.slow ? swatch.green : swatch.white, this.slow ? swatch.green.light : cream), turtleArt(this.slow));
+    b.addChild(
+      finish(
+        { w: l.slow.w, h: l.slow.h, corner: 26 },
+        this.slow ? swatch.green : swatch.white,
+        this.slow ? swatch.green.light : cream,
+      ),
+      turtleArt(this.slow),
+    );
   }
 
   private toggleSlow() {
@@ -342,7 +408,11 @@ class SortingMachine implements Game {
   send() {
     if (this.finished) return;
     if (this.run) {
-      if (this.run.waiting) { this.run.waiting = false; sfx.tick(); return; }
+      if (this.run.waiting) {
+        this.run.waiting = false;
+        sfx.tick();
+        return;
+      }
       this.settle();
       return;
     }
@@ -359,7 +429,14 @@ class SortingMachine implements Game {
     this.closePicker();
     const f = this.brief.fixtures[i];
     const value = evaluate(this.graph, f, this.brief);
-    this.run = { fixture: i, value, phase: 0, t: 0, waiting: false, from: { x: this.critters[i].x, y: this.critters[i].y } };
+    this.run = {
+      fixture: i,
+      value,
+      phase: 0,
+      t: 0,
+      waiting: false,
+      from: { x: this.critters[i].x, y: this.critters[i].y },
+    };
     this.busy = true;
     if (this.token) this.token.visible = false;
     this.door?.setOpen(0);
@@ -411,12 +488,18 @@ class SortingMachine implements Game {
     if (r.phase === 0) {
       // To the sensor: up to the cabinet, under the reading.
       const to = { x: this.sensorAt.x, y: this.sensorAt.y + 120 };
-      critter.position.set(r.from.x + (to.x - r.from.x) * e, r.from.y + (to.y - r.from.y) * e - Math.sin(k * Math.PI) * 40);
+      critter.position.set(
+        r.from.x + (to.x - r.from.x) * e,
+        r.from.y + (to.y - r.from.y) * e - Math.sin(k * Math.PI) * 40,
+      );
     } else if (r.phase === 1) {
       if (r.t === dt || !this.token?.visible) {
         this.showToken(r.value);
         sfx.pluck(r.value === true ? 6 : r.value === false ? 3 : 1);
-        if (this.slow) void this.ctx.say(r.value === true ? 'sm.value-true' : r.value === false ? 'sm.value-false' : 'sm.value-incomplete');
+        if (this.slow)
+          void this.ctx.say(
+            r.value === true ? 'sm.value-true' : r.value === false ? 'sm.value-false' : 'sm.value-incomplete',
+          );
       }
       this.token?.scale.set(1 + 0.25 * Math.sin(k * Math.PI));
     } else if (r.phase === 2) {
@@ -435,7 +518,10 @@ class SortingMachine implements Game {
       const home = this.home(r.fixture);
       const from = r.value === true ? this.doorAt : { x: this.sensorAt.x, y: this.sensorAt.y + 120 };
       critter.alpha = 1;
-      critter.position.set(from.x + (home.x - from.x) * e, from.y + (home.y - from.y) * e - Math.sin(k * Math.PI) * 40);
+      critter.position.set(
+        from.x + (home.x - from.x) * e,
+        from.y + (home.y - from.y) * e - Math.sin(k * Math.PI) * 40,
+      );
     }
     if (k < 1) return;
     r.t = 0;
@@ -527,7 +613,10 @@ class SortingMachine implements Game {
       void this.pulseSlot();
       return;
     }
-    if (v.status === 'pass') { void this.passed(); return; }
+    if (v.status === 'pass') {
+      void this.passed();
+      return;
+    }
     sfx.boing();
     this.tally.miss();
     this.failing = new Set(v.rows);
@@ -550,7 +639,10 @@ class SortingMachine implements Game {
     this.critters.forEach((c, i) => {
       c.hop(1);
       const at = this.home(i);
-      this.ctx.particles.burst(at.x, at.y - 50, { colors: [swatch.yellow.fill, swatch.green.fill, 0xffffff], count: 8 });
+      this.ctx.particles.burst(at.x, at.y - 50, {
+        colors: [swatch.yellow.fill, swatch.green.fill, 0xffffff],
+        count: 8,
+      });
     });
     await this.ctx.say('sm.check-pass');
     if (!this.alive || epoch !== this.epoch) return;
@@ -677,8 +769,10 @@ export const sortingMachine: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.stickers,
-  coplayHint: 'One of you reads the sign and chooses the part; the other sends the friends and says what the door did.',
-  offScreen: 'Make a shoebox machine with a "hat" card slot and two paper doors, and send stuffed toys through: did the hat open it?',
+  coplayHint:
+    'One of you reads the sign and chooses the part; the other sends the friends and says what the door did.',
+  offScreen:
+    'Make a shoebox machine with a "hat" card slot and two paper doors, and send stuffed toys through: did the hat open it?',
   hubIcon: () => new MachineIcon(),
   touchDemo: true,
   sticker,

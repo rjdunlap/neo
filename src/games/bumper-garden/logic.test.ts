@@ -1,7 +1,30 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { simulate, stepBall, type Ball } from '../../engine/ball';
-import { aimFor, CATCH_Y, FLIPPER, flight, kickBall, kickReach, LAUNCH, launchVelocity, makeBumpers, makeWorld, orderNumbers, wantsColor, planFlip, planFor, PLANS, restingFlippers, pickTable, TABLE_IDS, TABLE_SPOTS, STEP, swingFlippers, TABLE } from './logic';
+import {
+  aimFor,
+  CATCH_Y,
+  FLIPPER,
+  flight,
+  kickBall,
+  kickReach,
+  LAUNCH,
+  launchVelocity,
+  makeBumpers,
+  makeWorld,
+  orderNumbers,
+  wantsColor,
+  planFlip,
+  planFor,
+  PLANS,
+  restingFlippers,
+  pickTable,
+  TABLE_IDS,
+  TABLE_SPOTS,
+  STEP,
+  swingFlippers,
+  TABLE,
+} from './logic';
 import { bumperGarden } from './index';
 import { levelsInOrder, nextLevelOffer, stepLevel } from '../../progress/difficulty';
 
@@ -21,16 +44,26 @@ describe('Bumper Garden', () => {
   it.each(TABLE_IDS)('can bump every %s flower spot with some launch', (table) => {
     const bumpers = TABLE_SPOTS[table].map((s) => ({ ...s, color: 0, number: null }));
     const world = makeWorld(bumpers);
-    for (let i = 0; i < bumpers.length; i++) expect(aimFor(world, bumpers.length, (k) => k === i), `spot ${i}`).not.toBeNull();
+    for (let i = 0; i < bumpers.length; i++)
+      expect(
+        aimFor(world, bumpers.length, (k) => k === i),
+        `spot ${i}`,
+      ).not.toBeNull();
   });
 
-  it.each(TABLE_IDS)('reaches every %s spot and returns at the game physics step', table => {
-    const bumpers = TABLE_SPOTS[table].map(s => ({ ...s, color: 0, number: null }));
+  it.each(TABLE_IDS)('reaches every %s spot and returns at the game physics step', (table) => {
+    const bumpers = TABLE_SPOTS[table].map((s) => ({ ...s, color: 0, number: null }));
     const world = makeWorld(bumpers);
     const reached = new Set<number>();
     for (let k = -42; k <= 42; k++) {
-      const result = simulate({ x: LAUNCH.x, y: LAUNCH.y, ...launchVelocity(k * 0.01), r: TABLE.ball }, world, CATCH_Y, 40, STEP);
-      result.hits.filter(i => i < bumpers.length).forEach(i => reached.add(i));
+      const result = simulate(
+        { x: LAUNCH.x, y: LAUNCH.y, ...launchVelocity(k * 0.01), r: TABLE.ball },
+        world,
+        CATCH_Y,
+        40,
+        STEP,
+      );
+      result.hits.filter((i) => i < bumpers.length).forEach((i) => reached.add(i));
       expect(result.landed.y + TABLE.ball, `${table} angle ${k / 100}`).toBeGreaterThanOrEqual(CATCH_Y);
     }
     expect(reached.size).toBe(bumpers.length);
@@ -51,19 +84,26 @@ describe('Bumper Garden', () => {
   });
 
   it('sets out the right flowers: one color to bloom, or numbers to bump in order', () => {
-    for (const table of TABLE_IDS) for (const plan of Object.values(PLANS)) {
-      for (let seed = 1; seed <= 100; seed++) {
-        const bumpers = makeBumpers(plan, new Rng(seed), table);
-        expect(bumpers).toHaveLength(plan.bumpers);
-        // Flowers never overlap.
-        for (const a of bumpers) for (const b of bumpers) if (a !== b) expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThan(TABLE.bumper * 2 + TABLE.ball * 2);
-        if (plan.mode === 'color') expect(bumpers.filter((b) => b.color === 0)).toHaveLength(plan.goal);
-        if (plan.mode === 'order') {
-          const numbers = bumpers.map((b) => b.number).filter((n) => n !== null).sort((a, b) => a - b);
-          expect(numbers).toEqual(orderNumbers(plan).sort((a, b) => a - b));
+    for (const table of TABLE_IDS)
+      for (const plan of Object.values(PLANS)) {
+        for (let seed = 1; seed <= 100; seed++) {
+          const bumpers = makeBumpers(plan, new Rng(seed), table);
+          expect(bumpers).toHaveLength(plan.bumpers);
+          // Flowers never overlap.
+          for (const a of bumpers)
+            for (const b of bumpers)
+              if (a !== b)
+                expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThan(TABLE.bumper * 2 + TABLE.ball * 2);
+          if (plan.mode === 'color') expect(bumpers.filter((b) => b.color === 0)).toHaveLength(plan.goal);
+          if (plan.mode === 'order') {
+            const numbers = bumpers
+              .map((b) => b.number)
+              .filter((n) => n !== null)
+              .sort((a, b) => a - b);
+            expect(numbers).toEqual(orderNumbers(plan).sort((a, b) => a - b));
+          }
         }
       }
-    }
   });
 
   it('keeps the original number rounds and saved IDs, inserting only the built new levels in the pre-K ladder', () => {
@@ -81,65 +121,83 @@ describe('Bumper Garden', () => {
     expect(levelsInOrder(bumperGarden.levels('preschool'))).toEqual([2, 3, 4]);
   });
 
-  it.each(TABLE_IDS)('sets out a fair "not this color" round on %s: few sleepy flowers, the rest wanted and reachable', table => {
-    const plan = planFor(8);
-    expect(plan).toMatchObject({ mode: 'color', not: true });
-    for (let seed = 1; seed <= 60; seed++) {
-      const bumpers = makeBumpers(plan, new Rng(seed), table);
-      const counts = new Map<number, number>();
-      for (const b of bumpers) counts.set(b.color, (counts.get(b.color) ?? 0) + 1);
-      const sleepy = counts.get(0) ?? 0;
-      expect(sleepy).toBeGreaterThan(0);
-      // The asked color is strictly the fewest, and at least two flowers are wanted.
-      for (const [color, n] of counts) if (color !== 0) expect(n).toBeGreaterThan(sleepy);
-      const wanted = bumpers.map((b, i) => (wantsColor(plan, b.color) ? i : -1)).filter((i) => i >= 0);
-      expect(wanted.length).toBeGreaterThanOrEqual(2);
-      // A sleepy flower is never wanted.
-      bumpers.forEach((b) => { if (b.color === 0) expect(wantsColor(plan, b.color)).toBe(false); });
-      const world = makeWorld(bumpers);
-      for (const i of wanted) expect(aimFor(world, bumpers.length, (k) => k === i), `seed ${seed} flower ${i}`).not.toBeNull();
-    }
-    // The plain color level is unchanged: the asked color is the wanted one.
-    expect(wantsColor(planFor(3), 0)).toBe(true);
-    expect(wantsColor(planFor(3), 1)).toBe(false);
-  }, 15000);
+  it.each(TABLE_IDS)(
+    'sets out a fair "not this color" round on %s: few sleepy flowers, the rest wanted and reachable',
+    (table) => {
+      const plan = planFor(8);
+      expect(plan).toMatchObject({ mode: 'color', not: true });
+      for (let seed = 1; seed <= 60; seed++) {
+        const bumpers = makeBumpers(plan, new Rng(seed), table);
+        const counts = new Map<number, number>();
+        for (const b of bumpers) counts.set(b.color, (counts.get(b.color) ?? 0) + 1);
+        const sleepy = counts.get(0) ?? 0;
+        expect(sleepy).toBeGreaterThan(0);
+        // The asked color is strictly the fewest, and at least two flowers are wanted.
+        for (const [color, n] of counts) if (color !== 0) expect(n).toBeGreaterThan(sleepy);
+        const wanted = bumpers.map((b, i) => (wantsColor(plan, b.color) ? i : -1)).filter((i) => i >= 0);
+        expect(wanted.length).toBeGreaterThanOrEqual(2);
+        // A sleepy flower is never wanted.
+        bumpers.forEach((b) => {
+          if (b.color === 0) expect(wantsColor(plan, b.color)).toBe(false);
+        });
+        const world = makeWorld(bumpers);
+        for (const i of wanted)
+          expect(
+            aimFor(world, bumpers.length, (k) => k === i),
+            `seed ${seed} flower ${i}`,
+          ).not.toBeNull();
+      }
+      // The plain color level is unchanged: the asked color is the wanted one.
+      expect(wantsColor(planFor(3), 0)).toBe(true);
+      expect(wantsColor(planFor(3), 1)).toBe(false);
+    },
+    15000,
+  );
 
-  it.each(TABLE_IDS)('makes reproducible count-on and count-back sequences with reachable %s targets', table => {
-    const starts = new Set<number>();
-    const backs = new Set<number>();
-    for (const level of [6, 9]) for (let seed = 1; seed <= 40; seed++) {
-      const plan = planFor(level, new Rng(seed));
-      expect(plan).toEqual(planFor(level, new Rng(seed)));
-      const numbers = orderNumbers(plan);
-      expect(numbers).toHaveLength(plan.goal);
-      expect(new Set(numbers).size).toBe(plan.goal);
-      expect(plan.goal).toBeLessThanOrEqual(plan.bumpers);
-      expect(numbers.every(n => n >= 1 && n <= 9)).toBe(true);
-      if (level === 6) {
-        starts.add(numbers[0]);
-        expect(numbers[0]).toBeGreaterThanOrEqual(2);
-        expect(numbers[0]).toBeLessThanOrEqual(6);
-        expect([3, 4]).toContain(numbers.length);
-        numbers.slice(1).forEach((n, i) => expect(n).toBe(numbers[i] + 1));
-      } else {
-        backs.add(numbers[0]);
-        expect(numbers[0]).toBeGreaterThanOrEqual(5);
-        expect(numbers.at(-1)).toBe(1);
-        numbers.slice(1).forEach((n, i) => expect(n).toBe(numbers[i] - 1));
-      }
-      const bumpers = makeBumpers(plan, new Rng(seed), table);
-      const world = makeWorld(bumpers);
-      for (const n of numbers) {
-        const target = bumpers.findIndex(b => b.number === n);
-        expect(bumpers.filter(b => b.number === n)).toHaveLength(1);
-        expect(aimFor(world, bumpers.length, i => i === target), `level ${level} seed ${seed} number ${n}`).not.toBeNull();
-      }
-    }
-    expect(starts.size).toBe(5);
-    expect(backs.size).toBe(4);
-    expect(orderNumbers(planFor(6))).toEqual([3, 4, 5]);
-    expect(orderNumbers(planFor(9))).toEqual([5, 4, 3, 2, 1]);
-  }, 15000);
+  it.each(TABLE_IDS)(
+    'makes reproducible count-on and count-back sequences with reachable %s targets',
+    (table) => {
+      const starts = new Set<number>();
+      const backs = new Set<number>();
+      for (const level of [6, 9])
+        for (let seed = 1; seed <= 40; seed++) {
+          const plan = planFor(level, new Rng(seed));
+          expect(plan).toEqual(planFor(level, new Rng(seed)));
+          const numbers = orderNumbers(plan);
+          expect(numbers).toHaveLength(plan.goal);
+          expect(new Set(numbers).size).toBe(plan.goal);
+          expect(plan.goal).toBeLessThanOrEqual(plan.bumpers);
+          expect(numbers.every((n) => n >= 1 && n <= 9)).toBe(true);
+          if (level === 6) {
+            starts.add(numbers[0]);
+            expect(numbers[0]).toBeGreaterThanOrEqual(2);
+            expect(numbers[0]).toBeLessThanOrEqual(6);
+            expect([3, 4]).toContain(numbers.length);
+            numbers.slice(1).forEach((n, i) => expect(n).toBe(numbers[i] + 1));
+          } else {
+            backs.add(numbers[0]);
+            expect(numbers[0]).toBeGreaterThanOrEqual(5);
+            expect(numbers.at(-1)).toBe(1);
+            numbers.slice(1).forEach((n, i) => expect(n).toBe(numbers[i] - 1));
+          }
+          const bumpers = makeBumpers(plan, new Rng(seed), table);
+          const world = makeWorld(bumpers);
+          for (const n of numbers) {
+            const target = bumpers.findIndex((b) => b.number === n);
+            expect(bumpers.filter((b) => b.number === n)).toHaveLength(1);
+            expect(
+              aimFor(world, bumpers.length, (i) => i === target),
+              `level ${level} seed ${seed} number ${n}`,
+            ).not.toBeNull();
+          }
+        }
+      expect(starts.size).toBe(5);
+      expect(backs.size).toBe(4);
+      expect(orderNumbers(planFor(6))).toEqual([3, 4, 5]);
+      expect(orderNumbers(planFor(9))).toEqual([5, 4, 3, 2, 1]);
+    },
+    15000,
+  );
 
   it('bats the ladybug the way a flipper should: near the pivot it goes across, near the tip back the other way, nothing out of reach, and the chance is asked for only when it connects', () => {
     const ball = (x: number, y: number, vy = 200): Ball => ({ x, y, vx: 0, vy, r: TABLE.ball });
@@ -180,56 +238,66 @@ describe('Bumper Garden', () => {
     expect(tip()).toEqual(rest);
   });
 
-  it.each(TABLE_IDS)("plans the ghost finger on %s to reach a waiting flower or stay up longer, and needs no flip when it reaches one anyway", table => {
-    let planned = 0;
-    let touchedOne = 0;
-    let free = 0;
-    for (const level of [3, 4, 5, 6, 8, 9]) {
-      const plan = planFor(level);
-      for (let seed = 1; seed <= 6; seed++) {
-        const bumpers = makeBumpers(plan, new Rng(seed), table);
-        const world = makeWorld(bumpers);
-        const wanted = (i: number) => (plan.mode === 'color' ? wantsColor(plan, bumpers[i].color) : bumpers[i].number === orderNumbers(plan)[0]);
-        for (const angle of [-0.3, -0.1, 0.15, 0.35]) {
-          const start: Ball = { x: LAUNCH.x, y: LAUNCH.y, ...launchVelocity(angle), r: TABLE.ball };
-          const noise = (seed * 7 + angle * 10) % 40;
-          const flip = planFlip(world, bumpers.length, start, false, noise, wanted);
-          // Play it out as the game does: step by step, pressing on the planned step.
-          const replay = (press: typeof flip) => {
-            const w = { ...world, pegs: world.pegs.map((p) => ({ ...p })) };
-            const flippers = restingFlippers();
-            const b = { ...start };
-            let touched = false;
-            let pressed = false;
-            let steps = 0;
-            for (; steps < 120 * 12 && b.y + b.r < CATCH_Y; steps++) {
-              if (press && !pressed && steps === press.frame) {
-                pressed = true;
-                flippers[press.side].upFor = 0.2;
-                const v = kickBall(b, press.side, false, () => noise);
-                if (v) Object.assign(b, v);
+  it.each(TABLE_IDS)(
+    'plans the ghost finger on %s to reach a waiting flower or stay up longer, and needs no flip when it reaches one anyway',
+    (table) => {
+      let planned = 0;
+      let touchedOne = 0;
+      let free = 0;
+      for (const level of [3, 4, 5, 6, 8, 9]) {
+        const plan = planFor(level);
+        for (let seed = 1; seed <= 6; seed++) {
+          const bumpers = makeBumpers(plan, new Rng(seed), table);
+          const world = makeWorld(bumpers);
+          const wanted = (i: number) =>
+            plan.mode === 'color'
+              ? wantsColor(plan, bumpers[i].color)
+              : bumpers[i].number === orderNumbers(plan)[0];
+          for (const angle of [-0.3, -0.1, 0.15, 0.35]) {
+            const start: Ball = { x: LAUNCH.x, y: LAUNCH.y, ...launchVelocity(angle), r: TABLE.ball };
+            const noise = (seed * 7 + angle * 10) % 40;
+            const flip = planFlip(world, bumpers.length, start, false, noise, wanted);
+            // Play it out as the game does: step by step, pressing on the planned step.
+            const replay = (press: typeof flip) => {
+              const w = { ...world, pegs: world.pegs.map((p) => ({ ...p })) };
+              const flippers = restingFlippers();
+              const b = { ...start };
+              let touched = false;
+              let pressed = false;
+              let steps = 0;
+              for (; steps < 120 * 12 && b.y + b.r < CATCH_Y; steps++) {
+                if (press && !pressed && steps === press.frame) {
+                  pressed = true;
+                  flippers[press.side].upFor = 0.2;
+                  const v = kickBall(b, press.side, false, () => noise);
+                  if (v) Object.assign(b, v);
+                }
+                swingFlippers(flippers, w, STEP);
+                if (stepBall(b, w, STEP).some((i) => i < bumpers.length && wanted(i))) touched = true;
               }
-              swingFlippers(flippers, w, STEP);
-              if (stepBall(b, w, STEP).some((i) => i < bumpers.length && wanted(i))) touched = true;
+              return { touched, steps };
+            };
+            const alone = replay(null);
+            if (!flip) {
+              // Nothing planned: the ladybug touches one on its own, or no flip can help.
+              if (alone.touched) free++;
+              continue;
             }
-            return { touched, steps };
-          };
-          const alone = replay(null);
-          if (!flip) {
-            // Nothing planned: the ladybug touches one on its own, or no flip can help.
-            if (alone.touched) free++;
-            continue;
+            planned++;
+            const played = replay(flip);
+            if (played.touched) touchedOne++;
+            // A flip that cannot reach a flower still keeps the ladybug up for a good while longer, for another go.
+            expect(
+              played.touched || played.steps > alone.steps + 60,
+              `level ${level} seed ${seed} angle ${angle}: free ${alone.steps} steps, with the flip ${played.steps}, plan ${JSON.stringify(flip)}`,
+            ).toBe(true);
           }
-          planned++;
-          const played = replay(flip);
-          if (played.touched) touchedOne++;
-          // A flip that cannot reach a flower still keeps the ladybug up for a good while longer, for another go.
-          expect(played.touched || played.steps > alone.steps + 60, `level ${level} seed ${seed} angle ${angle}: free ${alone.steps} steps, with the flip ${played.steps}, plan ${JSON.stringify(flip)}`).toBe(true);
         }
       }
-    }
-    expect(planned).toBeGreaterThan(5);
-    expect(free).toBeGreaterThan(0);
-    expect(touchedOne / planned).toBeGreaterThan(0.4);
-  }, 15000);
+      expect(planned).toBeGreaterThan(5);
+      expect(free).toBeGreaterThan(0);
+      expect(touchedOne / planned).toBeGreaterThan(0.4);
+    },
+    15000,
+  );
 });

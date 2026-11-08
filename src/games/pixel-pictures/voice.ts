@@ -4,8 +4,12 @@ export const VOICE = {
   'pixel.copy': ['Make your picture look like the little one. Tap the squares!'],
   'pixel.copy2': ['Pick a color, then tap squares to copy the little picture.'],
   'pixel.mirror': ['Finish the picture! Make the right side match the left side, like a mirror.'],
-  'pixel.clues': ['The numbers say how many squares to fill in a row, or down a column. Tap a square to fill it. What picture is hiding?'],
-  'pixel.colorClues': ['Each number tells how many squares of that color go together. Choose its color, then fill the runs to reveal the picture.'],
+  'pixel.clues': [
+    'The numbers say how many squares to fill in a row, or down a column. Tap a square to fill it. What picture is hiding?',
+  ],
+  'pixel.colorClues': [
+    'Each number tells how many squares of that color go together. Choose its color, then fill the runs to reveal the picture.',
+  ],
   'pixel.notthere': ['Not that square. Look at the little picture again.'],
   'pixel.notcolor': ['That square is {color}. Pick {color} first.'],
   'pixel.notmirror': ['Look across the middle line. Is that square filled on the other side?'],
@@ -18,6 +22,8 @@ export const VOICE = {
   'pixel.hint': ['Try the glowing square.'],
   'pixel.reveal': ['It is {name}!', 'Look, {name}!'],
   'pixel.done': ['What a gallery of pictures!'],
-  'pixel.free': ['Make your own picture! Pick a color and tap squares. Tap a square again to clear it. When you like it, tap the green check.'],
+  'pixel.free': [
+    'Make your own picture! Pick a color and tap squares. Tap a square again to clear it. When you like it, tap the green check.',
+  ],
   'pixel.mine': ['What a picture! You made that.', 'Look what you made!'],
 } satisfies Record<string, string[]>;

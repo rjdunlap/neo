@@ -4,7 +4,18 @@ import type { BandLevels } from '../../progress/difficulty';
  * A grown-up plays one side and the child the other (the pet steps in when nobody is there).
  * There's no score: bounces are counted together toward a goal.
  */
-export type BounceMode = 'solo' | 'rally' | 'together' | 'stars' | 'count' | 'color' | 'goal' | 'versus' | 'sequence' | 'skip' | 'duel';
+export type BounceMode =
+  | 'solo'
+  | 'rally'
+  | 'together'
+  | 'stars'
+  | 'count'
+  | 'color'
+  | 'goal'
+  | 'versus'
+  | 'sequence'
+  | 'skip'
+  | 'duel';
 
 export interface BouncePlan {
   mode: BounceMode;
@@ -22,15 +33,53 @@ export interface BouncePlan {
 }
 
 export const PLANS: BouncePlan[] = [
-  { mode: 'solo', goal: 3, speed: 230, paddle: 300, name: 'Bounce a slow ball back to the pet with a huge paddle' },
+  {
+    mode: 'solo',
+    goal: 3,
+    speed: 230,
+    paddle: 300,
+    name: 'Bounce a slow ball back to the pet with a huge paddle',
+  },
   { mode: 'rally', goal: 5, speed: 280, paddle: 240, name: 'Keep a rally going with the pet: 5 bounces' },
-  { mode: 'together', goal: 8, speed: 300, paddle: 220, name: 'Play together: a grown-up takes the other paddle (8 bounces)' },
+  {
+    mode: 'together',
+    goal: 8,
+    speed: 300,
+    paddle: 220,
+    name: 'Play together: a grown-up takes the other paddle (8 bounces)',
+  },
   { mode: 'stars', goal: 5, speed: 320, paddle: 210, name: 'Aim: bounce the ball through 5 stars' },
   { mode: 'count', goal: 10, speed: 340, paddle: 200, name: 'Count a rally of 10 out loud together' },
-  { mode: 'color', goal: 4, speed: 300, paddle: 200, name: 'Bounce the ball to the color the pet calls (4 times)' },
-  { mode: 'goal', goal: 5, speed: 400, paddle: 210, keeper: 0.35, name: 'Score 5 goals past a sleepy keeper' },
-  { mode: 'versus', goal: 7, speed: 480, paddle: 190, keeper: 0.5, name: 'First to 7 goals: the ball gets faster with every bounce' },
-  { mode: 'sequence', goal: 2, speed: 300, paddle: 190, name: 'Bounce the ball to three colors in the order the pet calls (2 times)' },
+  {
+    mode: 'color',
+    goal: 4,
+    speed: 300,
+    paddle: 200,
+    name: 'Bounce the ball to the color the pet calls (4 times)',
+  },
+  {
+    mode: 'goal',
+    goal: 5,
+    speed: 400,
+    paddle: 210,
+    keeper: 0.35,
+    name: 'Score 5 goals past a sleepy keeper',
+  },
+  {
+    mode: 'versus',
+    goal: 7,
+    speed: 480,
+    paddle: 190,
+    keeper: 0.5,
+    name: 'First to 7 goals: the ball gets faster with every bounce',
+  },
+  {
+    mode: 'sequence',
+    goal: 2,
+    speed: 300,
+    paddle: 190,
+    name: 'Bounce the ball to three colors in the order the pet calls (2 times)',
+  },
   { mode: 'skip', goal: 10, step: 2, speed: 340, paddle: 200, name: 'Count a rally by twos to 20' },
   { mode: 'skip', goal: 10, step: 5, speed: 340, paddle: 200, name: 'Count a rally by fives to 50' },
 ];
@@ -50,7 +99,13 @@ export const countFor = (plan: BouncePlan, bounce: number) => bounce * (plan.ste
  * The couch face-off stop: two players, one paddle each, goals at both ends, first to `goal`. It is not on the island's ladder (it
  * has no level), so it lives outside `PLANS`. Each player's goals are the stop's score, and the first to `goal` ends it.
  */
-export const DUEL_PLAN: BouncePlan = { mode: 'duel', goal: 5, speed: 380, paddle: 210, name: 'Face-off: first to 5 goals, one paddle each' };
+export const DUEL_PLAN: BouncePlan = {
+  mode: 'duel',
+  goal: 5,
+  speed: 380,
+  paddle: 210,
+  name: 'Face-off: first to 5 goals, one paddle each',
+};
 
 /** Both color levels aim at the zones behind the pet's wall. */
 export const isZoneMode = (m: BounceMode) => m === 'color' || m === 'sequence';
@@ -71,7 +126,8 @@ export const ZONES = ['red', 'yellow', 'blue'] as const;
 export type ZoneName = (typeof ZONES)[number];
 
 /** Which zone a ball reaching the wall at `y` is in (the wall from `top` to `bottom`, in equal thirds). */
-export const zoneOf = (y: number, top: number, bottom: number): number => Math.max(0, Math.min(ZONES.length - 1, Math.floor(((y - top) / (bottom - top)) * ZONES.length)));
+export const zoneOf = (y: number, top: number, bottom: number): number =>
+  Math.max(0, Math.min(ZONES.length - 1, Math.floor(((y - top) / (bottom - top)) * ZONES.length)));
 
 export const isGoalMode = (m: BounceMode) => m === 'goal' || m === 'versus';
 
@@ -82,7 +138,8 @@ export const volleySpeed = (base: number, volley: number) => base * Math.min(1.4
 export const duelServeDir = (scorer: 0 | 1): 1 | -1 => (scorer === 0 ? -1 : 1);
 
 /** The face-off's end: the first player to reach the goal, or null while it goes on. */
-export const duelWinner = (scores: readonly [number, number], goal = DUEL_PLAN.goal): 0 | 1 | null => (scores[0] >= goal ? 0 : scores[1] >= goal ? 1 : null);
+export const duelWinner = (scores: readonly [number, number], goal = DUEL_PLAN.goal): 0 | 1 | null =>
+  scores[0] >= goal ? 0 : scores[1] >= goal ? 1 : null;
 
 /**
  * What a goal round tells the difficulty: a win counts one miss for every two goals against, a loss counts them all. A hard-fought win
@@ -96,7 +153,15 @@ export const planFor = (level: number) => PLANS[Math.min(PLANS.length, Math.max(
  * Where a ball at (x, y) moving (vx, vy) crosses `targetX`, folding in bounces off the top and
  * bottom walls. Used by the pet's paddle and the hint marker.
  */
-export function predictY(x: number, y: number, vx: number, vy: number, targetX: number, top: number, bottom: number): number {
+export function predictY(
+  x: number,
+  y: number,
+  vx: number,
+  vy: number,
+  targetX: number,
+  top: number,
+  bottom: number,
+): number {
   if (vx === 0 || Math.sign(targetX - x) !== Math.sign(vx)) return y;
   const t = (targetX - x) / vx;
   const span = bottom - top;
@@ -111,7 +176,13 @@ export function predictY(x: number, y: number, vx: number, vy: number, targetX: 
  * A paddle hit: the ball goes back the other way, angled by where it struck the paddle
  * (the middle sends it straight, the ends send it steeply), at the same speed.
  */
-export function paddleBounce(ballY: number, paddleY: number, paddleLength: number, speed: number, towardRight: boolean) {
+export function paddleBounce(
+  ballY: number,
+  paddleY: number,
+  paddleLength: number,
+  speed: number,
+  towardRight: boolean,
+) {
   const offset = Math.max(-1, Math.min(1, (ballY - paddleY) / (paddleLength / 2)));
   const angle = offset * 0.85;
   return { vx: Math.cos(angle) * speed * (towardRight ? 1 : -1), vy: Math.sin(angle) * speed };
@@ -142,7 +213,12 @@ function fold(y: number, top: number, bottom: number) {
 }
 
 /** How near a ball sent leftward from (faceX, y) with the paddle's bounce comes to a star, along its way to the star's side of the table. */
-function closestToStar(y: number, offsetAngle: number, star: { x: number; y: number }, g: PaddleGeometry): number {
+function closestToStar(
+  y: number,
+  offsetAngle: number,
+  star: { x: number; y: number },
+  g: PaddleGeometry,
+): number {
   const vx = -Math.cos(offsetAngle) * g.speed;
   const vy = Math.sin(offsetAngle) * g.speed;
   let best = Infinity;
@@ -158,7 +234,11 @@ function closestToStar(y: number, offsetAngle: number, star: { x: number; y: num
  * level, slid along the paddle so the bounce sends the ball through the star (the paddle's end sends it steeply, its middle
  * straight). The paddle always meets the ball; with no star, or none the paddle can send the ball through, it is centred on the ball.
  */
-export function paddleTarget(arrive: number, star: { x: number; y: number } | null, g: PaddleGeometry): number {
+export function paddleTarget(
+  arrive: number,
+  star: { x: number; y: number } | null,
+  g: PaddleGeometry,
+): number {
   const half = g.paddle / 2;
   const onTable = (y: number) => Math.max(g.low, Math.min(g.high, y));
   if (!star) return onTable(arrive);
@@ -177,7 +257,10 @@ export function paddleTarget(arrive: number, star: { x: number; y: number } | nu
  * What a ball past her paddle does to the help: two misses in a row start a hint (the ball slows and a ring shows where it will
  * arrive). A bounce of hers ends it (`afterHit`), so a later run of misses can earn another. The rally is never reset by a miss.
  */
-export function afterMiss(wrongs: number, hinting: boolean): { wrongs: number; hinting: boolean; newHint: boolean } {
+export function afterMiss(
+  wrongs: number,
+  hinting: boolean,
+): { wrongs: number; hinting: boolean; newHint: boolean } {
   const n = wrongs + 1;
   if (n >= 2 && !hinting) return { wrongs: 0, hinting: true, newHint: true };
   return { wrongs: n, hinting, newHint: false };
@@ -205,7 +288,8 @@ export const COURTS: readonly Court[] = [
 ];
 
 /** The court for a round; `pick` is a number in [0, 1) from the round's seeded generator. */
-export const courtFor = (pick: number): Court => COURTS[Math.min(COURTS.length - 1, Math.floor(pick * COURTS.length))];
+export const courtFor = (pick: number): Court =>
+  COURTS[Math.min(COURTS.length - 1, Math.floor(pick * COURTS.length))];
 
 /** The table as the aiming rules read it: the right face, the left face the ball is sent to, and the walls. */
 export interface AimGeometry extends PaddleGeometry {
@@ -224,7 +308,12 @@ export function landingY(arrive: number, offset: number, g: AimGeometry, speed =
  * Where to hold the paddle for a ball arriving at `arrive` so the bounce lands as near `want` as the paddle allows. The paddle always
  * meets the ball and stays on the table; a spot nearer the middle of the paddle wins a tie.
  */
-export function paddleForLanding(arrive: number, want: number, g: AimGeometry, speed = g.speed): { y: number; landing: number } {
+export function paddleForLanding(
+  arrive: number,
+  want: number,
+  g: AimGeometry,
+  speed = g.speed,
+): { y: number; landing: number } {
   const half = g.paddle / 2;
   const onTable = (y: number) => Math.max(g.low, Math.min(g.high, y));
   let best = { y: onTable(arrive), landing: landingY(arrive, 0, g, speed), off: 0 };
@@ -246,14 +335,16 @@ export function paddleForLanding(arrive: number, want: number, g: AimGeometry, s
 /** The pet keeper's top speed: it can cover `plan.keeper` of half the table while a straight ball crosses. */
 export function keeperSpeed(frac: number, g: AimGeometry): number {
   const crossing = (g.faceX - g.leftX) / g.speed;
-  return (frac * (g.bottom - g.top) / 2) / crossing;
+  return (frac * (g.bottom - g.top)) / 2 / crossing;
 }
 
 /** How far from where it stands the keeper can reach in one crossing, counting its paddle's half length and the ball's give. */
-export const keeperReach = (frac: number, g: AimGeometry, ballR: number) => frac * (g.bottom - g.top) / 2 + g.paddle / 2 + ballR * 0.6;
+export const keeperReach = (frac: number, g: AimGeometry, ballR: number) =>
+  (frac * (g.bottom - g.top)) / 2 + g.paddle / 2 + ballR * 0.6;
 
 /** The wall's end farthest from the keeper: where a shot is hardest for it to meet. */
-export const farWall = (keeperY: number, g: AimGeometry) => (keeperY < (g.top + g.bottom) / 2 ? g.bottom : g.top);
+export const farWall = (keeperY: number, g: AimGeometry) =>
+  keeperY < (g.top + g.bottom) / 2 ? g.bottom : g.top;
 
 /**
  * The color zones a ball arriving at `arrive` can be sent to by some spot on the paddle. The pet only calls one of these, so a call is
@@ -283,7 +374,13 @@ export function petLob(pick: number, mode: BounceMode): number {
  * A serve angle (from `angles`) whose ball arrives where the paddle can send it to `zone`, or null. The sequence level serves the ball
  * so the next color in the call is always one she can make, whatever order the pet called.
  */
-export function serveAngleFor(zone: number, angles: readonly number[], startX: number, startY: number, g: AimGeometry): number | null {
+export function serveAngleFor(
+  zone: number,
+  angles: readonly number[],
+  startX: number,
+  startY: number,
+  g: AimGeometry,
+): number | null {
   for (const a of angles) {
     const arrive = fold(startY + Math.tan(a) * (g.faceX - startX), g.top, g.bottom);
     if (reachableZones(arrive, g).includes(zone)) return a;

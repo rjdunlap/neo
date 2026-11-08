@@ -10,7 +10,10 @@ describe('Rainbow Meadow as a location', () => {
       const keepOut = meadowKeepOut(layout, view);
       const plan = meadowPlan(layout, view, ground);
       // A meadow, not a bare field: there is room for flowers at every size.
-      expect(plan.filter((p) => ['clover', 'daisy', 'poppy'].includes(p.kind)).length, where0).toBeGreaterThanOrEqual(6);
+      expect(
+        plan.filter((p) => ['clover', 'daisy', 'poppy'].includes(p.kind)).length,
+        where0,
+      ).toBeGreaterThanOrEqual(6);
       for (const { kind, rect: r } of plan) {
         const where = `${kind} ${where0}`;
         expect(r.x >= 0 && r.y >= 0 && r.x + r.w <= view.w && r.y + r.h <= view.h, where).toBe(true);
@@ -21,6 +24,7 @@ describe('Rainbow Meadow as a location', () => {
   });
 
   it('is the home of its resident, an island species', () => {
-    for (const [id, place] of Object.entries(LOCATIONS)) if (place!.resident) expect(homeOf(place!.resident)).toBe(id);
+    for (const [id, place] of Object.entries(LOCATIONS))
+      if (place!.resident) expect(homeOf(place!.resident)).toBe(id);
   });
 });

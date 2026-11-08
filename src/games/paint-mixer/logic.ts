@@ -14,7 +14,12 @@ export type Pot = 'red' | 'yellow' | 'blue' | 'white';
 export const POTS: readonly Pot[] = ['red', 'yellow', 'blue', 'white'];
 
 /** The pot paints, the palette's fills (a test compares them to `swatch`). */
-export const POT_COLOR: Record<Pot, number> = { red: 0xf2545b, yellow: 0xffd54a, blue: 0x4fa3f7, white: 0xffffff };
+export const POT_COLOR: Record<Pot, number> = {
+  red: 0xf2545b,
+  yellow: 0xffd54a,
+  blue: 0x4fa3f7,
+  white: 0xffffff,
+};
 
 export type Pair = readonly [Pot, Pot];
 export type MixName = 'orange' | 'pink' | 'sky' | 'purple';
@@ -28,8 +33,15 @@ export const PAIRS: readonly { pair: Pair; name: MixName }[] = [
 
 /** Level 5's recipes: the only two triples that avoid blue + yellow, each in three orders. Names and ids are permanent. */
 export type ShelfColour = 'peach' | 'coral' | 'blush' | 'lavender' | 'rose' | 'lilac';
-export const TRIPLES: readonly (readonly Pot[])[] = [['red', 'yellow', 'white'], ['red', 'blue', 'white']];
-const TRIPLE_POOL: readonly (readonly number[])[] = [[1, 2, 1], [2, 1, 1], [1, 1, 2]];
+export const TRIPLES: readonly (readonly Pot[])[] = [
+  ['red', 'yellow', 'white'],
+  ['red', 'blue', 'white'],
+];
+const TRIPLE_POOL: readonly (readonly number[])[] = [
+  [1, 2, 1],
+  [2, 1, 1],
+  [1, 1, 2],
+];
 export const RECIPES: readonly { name: ShelfColour; pots: readonly Pot[]; counts: readonly number[] }[] = [
   { name: 'peach', pots: TRIPLES[0], counts: [1, 2, 1] },
   { name: 'coral', pots: TRIPLES[0], counts: [2, 1, 1] },
@@ -69,18 +81,82 @@ export interface Plan {
 
 export const CAP = 12;
 export const BUCKETS_PER_ROUND = 2;
-const WIDE_POOL: Plan['pool'] = [[1, 2], [2, 1], [1, 3], [3, 1], [2, 3], [3, 2]];
+const WIDE_POOL: Plan['pool'] = [
+  [1, 2],
+  [2, 1],
+  [1, 3],
+  [3, 1],
+  [2, 3],
+  [3, 2],
+];
 
 const PLANS: readonly Plan[] = [
-  { level: 1, kind: 'copy', name: 'Copy the row', pool: [[1, 1], [1, 2], [2, 1]], batches: 1, buckets: BUCKETS_PER_ROUND, moreSameWay: false },
-  { level: 2, kind: 'double', name: 'Twice as much', pool: [[1, 1], [1, 2], [2, 1], [1, 3]], batches: 2, buckets: BUCKETS_PER_ROUND, moreSameWay: true },
-  { level: 3, kind: 'line', name: 'Fill to the line', pool: WIDE_POOL, batches: 0, buckets: BUCKETS_PER_ROUND, moreSameWay: true },
+  {
+    level: 1,
+    kind: 'copy',
+    name: 'Copy the row',
+    pool: [
+      [1, 1],
+      [1, 2],
+      [2, 1],
+    ],
+    batches: 1,
+    buckets: BUCKETS_PER_ROUND,
+    moreSameWay: false,
+  },
+  {
+    level: 2,
+    kind: 'double',
+    name: 'Twice as much',
+    pool: [
+      [1, 1],
+      [1, 2],
+      [2, 1],
+      [1, 3],
+    ],
+    batches: 2,
+    buckets: BUCKETS_PER_ROUND,
+    moreSameWay: true,
+  },
+  {
+    level: 3,
+    kind: 'line',
+    name: 'Fill to the line',
+    pool: WIDE_POOL,
+    batches: 0,
+    buckets: BUCKETS_PER_ROUND,
+    moreSameWay: true,
+  },
   // One sample, two ways: any amount, then the same colour at a different amount.
-  { level: 4, kind: 'any', name: 'Any amount, two ways', pool: WIDE_POOL, batches: 0, buckets: 1, moreSameWay: false },
+  {
+    level: 4,
+    kind: 'any',
+    name: 'Any amount, two ways',
+    pool: WIDE_POOL,
+    batches: 0,
+    buckets: 1,
+    moreSameWay: false,
+  },
   // Three pots to a line two or three batches deep (8 or 12 drops), level 3's rules with no stray.
-  { level: 5, kind: 'line', name: 'Three pots: keep three counts in step to the line', pool: TRIPLE_POOL, batches: 0, buckets: BUCKETS_PER_ROUND, moreSameWay: true },
+  {
+    level: 5,
+    kind: 'line',
+    name: 'Three pots: keep three counts in step to the line',
+    pool: TRIPLE_POOL,
+    batches: 0,
+    buckets: BUCKETS_PER_ROUND,
+    moreSameWay: true,
+  },
   // Two cases of four lidded jars (jars.ts); no bucket.
-  { level: 6, kind: 'jars', name: 'Which jars match: compare ratios from their labels', pool: WIDE_POOL, batches: 0, buckets: 2, moreSameWay: false },
+  {
+    level: 6,
+    kind: 'jars',
+    name: 'Which jars match: compare ratios from their labels',
+    pool: WIDE_POOL,
+    batches: 0,
+    buckets: 2,
+    moreSameWay: false,
+  },
 ];
 
 export const LEVELS: BandLevels = { school: { min: 1, max: 6 } };
@@ -111,13 +187,18 @@ export function potsFor(s: Sample): Pot[] {
   if (s.stray) out.splice(Math.min(2, Math.max(0, s.strayAt ?? 2)), 0, s.stray);
   return out;
 }
-const samePots = (a: readonly Pot[], b: readonly Pot[]) => a.length === b.length && a.every((p, i) => p === b[i]);
+const samePots = (a: readonly Pot[], b: readonly Pot[]) =>
+  a.length === b.length && a.every((p, i) => p === b[i]);
 /** Level 5's recipe for a sample, by its pots and counts (null for a pair). */
-export const recipeOf = (s: Sample) => RECIPES.find((r) => samePots(r.pots, s.pots) && r.counts.every((c, i) => c === s.counts[i])) ?? null;
+export const recipeOf = (s: Sample) =>
+  RECIPES.find((r) => samePots(r.pots, s.pots) && r.counts.every((c, i) => c === s.counts[i])) ?? null;
 /** The colour's name: the authored pair's, or level 5's recipe's. */
-export const mixName = (s: Sample): MixName | ShelfColour => recipeOf(s)?.name ?? PAIRS.find((p) => samePots(p.pair, s.pots))!.name;
+export const mixName = (s: Sample): MixName | ShelfColour =>
+  recipeOf(s)?.name ?? PAIRS.find((p) => samePots(p.pair, s.pots))!.name;
 
-export function emptyCounts(): Counts { return { red: 0, yellow: 0, blue: 0, white: 0 }; }
+export function emptyCounts(): Counts {
+  return { red: 0, yellow: 0, blue: 0, white: 0 };
+}
 
 export function countsOf(drops: readonly Pot[]): Counts {
   const c = emptyCounts();
@@ -128,7 +209,9 @@ export function countsOf(drops: readonly Pot[]): Counts {
 /** The sample's counts as a full count vector. */
 export function sampleCounts(s: Sample): Counts {
   const c = emptyCounts();
-  s.pots.forEach((pot, i) => { c[pot] = s.counts[i]; });
+  s.pots.forEach((pot, i) => {
+    c[pot] = s.counts[i];
+  });
   return c;
 }
 
@@ -150,7 +233,12 @@ export function makeSample(level: number, rng: Rng, avoid?: Sample): Sample {
   if (plan.level < 3) return { pots: pair, counts: [counts[0], counts[1]] };
   // Levels 3–4: one of the two pots the pair doesn't use stands beside it (cosmetic draws after the counts, so 1–2 are unchanged).
   const unused = POTS.filter((p) => p !== pair[0] && p !== pair[1]);
-  return { pots: pair, counts: [counts[0], counts[1]], stray: unused[rng.int(0, unused.length - 1)], strayAt: rng.int(0, 2) };
+  return {
+    pots: pair,
+    counts: [counts[0], counts[1]],
+    stray: unused[rng.int(0, unused.length - 1)],
+    strayAt: rng.int(0, 2),
+  };
 }
 
 export function makeRound(level: number, rng: Rng): Sample[] {
@@ -196,13 +284,17 @@ function oklab(hex: number): [number, number, number] {
 
 /** Oklab distance ×100: about 1–2 is a just-noticeable step side by side. */
 export function distance(c1: number, c2: number): number {
-  const a = oklab(c1), b = oklab(c2);
+  const a = oklab(c1),
+    b = oklab(c2);
   return 100 * Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
 }
 
 // ---- the drop rows ----
 
-export interface Place { pot: Pot; filled: boolean }
+export interface Place {
+  pot: Pot;
+  filled: boolean;
+}
 export interface Rows {
   /** Rows of places in the sample's order: every complete batch, then a partial row when any of its places is filled. */
   rows: Place[][];
@@ -230,14 +322,17 @@ export function rows(s: Sample, counts: Counts, limit = Infinity): Rows {
   let any = false;
   if (k < limit) {
     for (let i = 0; i < s.pots.length; i++) {
-      const pot = s.pots[i], share = s.counts[i];
+      const pot = s.pots[i],
+        share = s.counts[i];
       const have = Math.min(share, counts[pot] - k * share);
       for (let j = 0; j < share; j++) partial.push({ pot, filled: j < have });
       if (have > 0) any = true;
       for (let j = (k + 1) * share; j < counts[pot]; j++) loose.push(pot);
     }
   } else {
-    s.pots.forEach((pot, i) => { for (let j = k * s.counts[i]; j < counts[pot]; j++) loose.push(pot); });
+    s.pots.forEach((pot, i) => {
+      for (let j = k * s.counts[i]; j < counts[pot]; j++) loose.push(pot);
+    });
   }
   if (any) out.push(partial);
   for (const pot of POTS) if (!uses(s, pot)) for (let j = 0; j < counts[pot]; j++) loose.push(pot);
@@ -258,7 +353,13 @@ export function lastIsLoose(s: Sample, drops: readonly Pot[], limit = Infinity):
 
 // ---- the bucket's picture and the ratio table ----
 
-export interface Drawn { pot: Pot; filled: boolean; loose: boolean; x: number; y: number }
+export interface Drawn {
+  pot: Pot;
+  filled: boolean;
+  loose: boolean;
+  x: number;
+  y: number;
+}
 export interface Picture {
   drops: Drawn[];
   /** Level 3's fill line, in the bucket's coordinates (the top of the line's rows); null without a line. */
@@ -285,20 +386,25 @@ export function picture(plan: Plan, s: Sample, counts: Counts): Picture {
     const at = dropAt(row, j, n, rowCount);
     out.push({ pot, filled, loose: false, x: at.x, y: at.y });
   };
-  const loose = (first: number, rowCount: number) => r.loose.forEach((pot, j) => {
-    const row = Math.floor(j / LOOSE_ROW), inRow = Math.min(LOOSE_ROW, r.loose.length - row * LOOSE_ROW);
-    const at = dropAt(first + row, j - row * LOOSE_ROW, inRow, rowCount);
-    out.push({ pot, filled: true, loose: true, x: at.x, y: at.y });
-  });
+  const loose = (first: number, rowCount: number) =>
+    r.loose.forEach((pot, j) => {
+      const row = Math.floor(j / LOOSE_ROW),
+        inRow = Math.min(LOOSE_ROW, r.loose.length - row * LOOSE_ROW);
+      const at = dropAt(first + row, j - row * LOOSE_ROW, inRow, rowCount);
+      out.push({ pot, filled: true, loose: true, x: at.x, y: at.y });
+    });
   if (plan.kind === 'copy' || plan.kind === 'double') {
     const rowCount = limit + looseRows;
-    for (let i = 0; i < limit; i++) template.forEach((pot, j) => place(i, rowCount)(pot, j, r.rows[i]?.[j].filled ?? false));
+    for (let i = 0; i < limit; i++)
+      template.forEach((pot, j) => place(i, rowCount)(pot, j, r.rows[i]?.[j].filled ?? false));
     loose(limit, rowCount);
     return { drops: out, line: null };
   }
   if (plan.kind === 'line') {
     const rowCount = looseRows + limit;
-    r.rows.forEach((row, i) => row.forEach((p, j) => place(looseRows + limit - 1 - i, rowCount)(p.pot, j, p.filled)));
+    r.rows.forEach((row, i) =>
+      row.forEach((p, j) => place(looseRows + limit - 1 - i, rowCount)(p.pot, j, p.filled)),
+    );
     loose(0, rowCount);
     return { drops: out, line: dropAt(looseRows, 0, n, rowCount).y - (DROP + DROP_GAP) / 2 };
   }
@@ -346,11 +452,15 @@ export function multipleOf(s: Sample, counts: Counts): number | null {
  * nearest the bucket's by the summed difference over the sample's pots (ties to the smaller multiple).
  */
 export function nearestMultiple(s: Sample, counts: Counts, done: number | null = null): number {
-  let best = 0, gap = Infinity;
+  let best = 0,
+    gap = Infinity;
   for (let k = 1; k <= maxMultiple(s); k++) {
     if (k === done) continue;
     const d = s.pots.reduce((sum, pot, i) => sum + Math.abs(counts[pot] - k * s.counts[i]), 0);
-    if (d < gap) { best = k; gap = d; }
+    if (d < gap) {
+      best = k;
+      gap = d;
+    }
   }
   return best;
 }
@@ -365,17 +475,26 @@ export function check(plan: Plan, s: Sample, counts: Counts, done: number | null
     if (k !== null && k === n) return { kind: 'match' };
     if (k !== null && k < n && plan.moreSameWay) return { kind: 'moreSameWay' };
   }
-  for (const pot of POTS) if (!uses(s, pot) && counts[pot] > 0) return { kind: 'wrong', pot, direction: 'stray' };
+  for (const pot of POTS)
+    if (!uses(s, pot) && counts[pot] > 0) return { kind: 'wrong', pot, direction: 'stray' };
   if (s.pots.every((pot) => counts[pot] === 0)) return { kind: 'wrong', pot: s.pots[0], direction: 'short' };
   const target = sampleCounts(s);
   const times = plan.kind === 'any' ? nearestMultiple(s, counts, done) : batchesFor(plan, s);
   // The farthest pot, ties to the earliest in the recipe.
-  let worst: Pot = s.pots[0], gap = 0;
+  let worst: Pot = s.pots[0],
+    gap = 0;
   for (const pot of s.pots) {
     const d = Math.abs(counts[pot] - times * target[pot]);
-    if (d > gap) { worst = pot; gap = d; }
+    if (d > gap) {
+      worst = pot;
+      gap = d;
+    }
   }
-  return { kind: 'wrong', pot: worst, direction: counts[worst] > times * target[worst] ? 'too-many' : 'short' };
+  return {
+    kind: 'wrong',
+    pot: worst,
+    direction: counts[worst] > times * target[worst] ? 'too-many' : 'short',
+  };
 }
 
 // ---- help ----
@@ -440,11 +559,28 @@ export function solveFrom(plan: Plan, s: Sample, drops: readonly Pot[], done: nu
 
 // ---- layout (logical units; the pet keeps the bottom-left corner, the shell the top corners) ----
 
-export interface Pt { x: number; y: number }
-export interface Box extends Pt { w: number; h: number }
-export const POT_W = 120, POT_H = 130, BUCKET = 320, BUTTON_W = 130, BUTTON_H = 110, JAR_W = 150, JAR_H = 190, DROP = 30, DROP_GAP = 12;
+export interface Pt {
+  x: number;
+  y: number;
+}
+export interface Box extends Pt {
+  w: number;
+  h: number;
+}
+export const POT_W = 120,
+  POT_H = 130,
+  BUCKET = 320,
+  BUTTON_W = 130,
+  BUTTON_H = 110,
+  JAR_W = 150,
+  JAR_H = 190,
+  DROP = 30,
+  DROP_GAP = 12;
 /** The ratio table: a label column of pot marks, then up to four 40-unit columns; a header row and a row per pot. */
-export const TABLE_LABEL = 36, TABLE_CELL = 40, TABLE_ROW = 36, TABLE_W = TABLE_LABEL + 4 * TABLE_CELL;
+export const TABLE_LABEL = 36,
+  TABLE_CELL = 40,
+  TABLE_ROW = 36,
+  TABLE_W = TABLE_LABEL + 4 * TABLE_CELL;
 /** The table's height for a sample of `pots` pots (two, or three at level 5). */
 export const tableH = (pots = 2) => (1 + pots) * TABLE_ROW;
 
@@ -476,7 +612,8 @@ export function layout(view: { w: number; h: number }, potCount: number, tablePo
   const cx = w / 2;
   const potY = h - 20 - POT_H / 2;
   const pots: Box[] = [];
-  for (let i = 0; i < potCount; i++) pots.push(box(w - 90 - POT_W / 2 - i * (POT_W + 24), potY, POT_W, POT_H));
+  for (let i = 0; i < potCount; i++)
+    pots.push(box(w - 90 - POT_W / 2 - i * (POT_W + 24), potY, POT_W, POT_H));
   if (!portrait) {
     const by = Math.min(h / 2 - 60, 340);
     const bx = cx - 40;

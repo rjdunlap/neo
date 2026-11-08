@@ -11,8 +11,27 @@ import { WigglyIcon, tile } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { block, face, glowSection, spinner as spinnerArt, sw, type SpinnerArt } from './art';
 import {
-  BAR_H, BIG, COL_W, FACE, LEVELS, NAME_OF, SMALL, kindsOf, layout, makeRound, planFor, spin, stickerSet, stopRotation,
-  tallest, tally, wedgeAt, type Kind, type Layout, type Plan, type SetSpec,
+  BAR_H,
+  BIG,
+  COL_W,
+  FACE,
+  LEVELS,
+  NAME_OF,
+  SMALL,
+  kindsOf,
+  layout,
+  makeRound,
+  planFor,
+  spin,
+  stickerSet,
+  stopRotation,
+  tallest,
+  tally,
+  wedgeAt,
+  type Kind,
+  type Layout,
+  type Plan,
+  type SetSpec,
 } from './logic';
 import { RaceGame } from './race';
 import { SureGame } from './sure';
@@ -55,40 +74,88 @@ class SpinnerFair implements Game {
     this.plan = planFor(ctx.level);
     this.sets = makeRound(ctx.level, ctx.rng);
     this.phase = this.plan.ask === 'pick' ? 'pick' : 'spin';
-    this.backdrop = new Backdrop({ sky: [cream, swatch.blue.light], hills: [grass, swatch.green.light], horizon: 0.36, clouds: 2, sun: true, seed: 83 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [cream, swatch.blue.light],
+        hills: [grass, swatch.green.light],
+        horizon: 0.36,
+        clouds: 2,
+        sun: true,
+        seed: 83,
+      },
+      ctx.view,
+    );
     this.barsPanel.eventMode = this.glowRing.eventMode = 'none';
     this.favourite.hitArea = new Rectangle(-60, -60, 120, 120);
     onTap(this.favourite, () => this.tapFavourite());
     this.layoutNow = layout(ctx.view, 3);
-    ctx.stage.addChild(this.backdrop, this.barsPanel, this.barsNode, this.spinLayer, this.favourite, this.glowRing);
+    ctx.stage.addChild(
+      this.backdrop,
+      this.barsPanel,
+      this.barsNode,
+      this.spinLayer,
+      this.favourite,
+      this.glowRing,
+    );
     this.dressSet();
   }
 
-  get set(): SetSpec { return this.sets[this.setIndex]; }
+  get set(): SetSpec {
+    return this.sets[this.setIndex];
+  }
   /** The spinner that spins now (the one of levels 1–2, or the picked one). */
-  get wheel() { return this.set.wheels[this.picked ?? 0]; }
-  get kinds(): Kind[] { return this.phase === 'pick' ? [] : kindsOf(this.wheel); }
-  get counts(): number[] { return tally(this.kinds, this.results); }
-  get main(): SpinnerArt { return this.spinners[this.picked ?? 0]; }
+  get wheel() {
+    return this.set.wheels[this.picked ?? 0];
+  }
+  get kinds(): Kind[] {
+    return this.phase === 'pick' ? [] : kindsOf(this.wheel);
+  }
+  get counts(): number[] {
+    return tally(this.kinds, this.results);
+  }
+  get main(): SpinnerArt {
+    return this.spinners[this.picked ?? 0];
+  }
   /** What a scripted play reads. */
   get state() {
     return {
-      level: this.plan.level, set: this.setIndex, phase: this.phase, results: this.results.slice(), kinds: this.kinds, counts: this.counts,
-      spins: this.plan.spins, misses: this.misses, hints: this.hints, glowing: this.glowing, picked: this.picked,
-      favourite: this.set.favourite ?? null, better: this.set.better ?? null, wheels: this.set.wheels, spinning: this.spinning, busy: this.busy, finished: this.finished,
+      level: this.plan.level,
+      set: this.setIndex,
+      phase: this.phase,
+      results: this.results.slice(),
+      kinds: this.kinds,
+      counts: this.counts,
+      spins: this.plan.spins,
+      misses: this.misses,
+      hints: this.hints,
+      glowing: this.glowing,
+      picked: this.picked,
+      favourite: this.set.favourite ?? null,
+      better: this.set.better ?? null,
+      wheels: this.set.wheels,
+      spinning: this.spinning,
+      busy: this.busy,
+      finished: this.finished,
     };
   }
 
-  start() { void this.instruct(); }
+  start() {
+    void this.instruct();
+  }
 
   destroy() {
     this.finished = true;
-    for (const s of this.spinners) { this.ctx.tw.kill(s.wheel); this.ctx.tw.kill(s.node); this.ctx.tw.kill(s.node.scale); }
+    for (const s of this.spinners) {
+      this.ctx.tw.kill(s.wheel);
+      this.ctx.tw.kill(s.node);
+      this.ctx.tw.kill(s.node.scale);
+    }
   }
 
   private instruct() {
     if (this.plan.ask === 'see') return this.ctx.instruct('sf.instruct.1');
-    if (this.plan.ask === 'most') return this.ctx.instruct(this.phase === 'ask' ? 'sf.most' : 'sf.instruct.2');
+    if (this.plan.ask === 'most')
+      return this.ctx.instruct(this.phase === 'ask' ? 'sf.most' : 'sf.instruct.2');
     const kind = NAME_OF[this.set.favourite!];
     return this.ctx.instruct(this.phase === 'pick' ? 'sf.instruct.3' : 'sf.spin-ten', { kind });
   }
@@ -96,7 +163,12 @@ class SpinnerFair implements Game {
   // ---- building a set ----
 
   private dressSet() {
-    for (const s of this.spinners) { this.ctx.tw.kill(s.wheel); this.ctx.tw.kill(s.node); this.ctx.tw.kill(s.node.scale); s.node.destroy({ children: true }); }
+    for (const s of this.spinners) {
+      this.ctx.tw.kill(s.wheel);
+      this.ctx.tw.kill(s.node);
+      this.ctx.tw.kill(s.node.scale);
+      s.node.destroy({ children: true });
+    }
     this.spinners = this.set.wheels.map((w, i) => {
       const art = spinnerArt(w, this.plan.ask === 'pick' ? SMALL : BIG);
       const r = this.plan.ask === 'pick' ? SMALL : BIG;
@@ -108,8 +180,15 @@ class SpinnerFair implements Game {
     this.favourite.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.favourite.visible = this.phase === 'pick';
     if (this.set.favourite) {
-      const bubble = new Graphics().circle(0, 0, 60).fill(0xffffff).stroke({ width: 5, color: swatch.yellow.line });
-      const heart = new Graphics().circle(-8, 0, 9).circle(8, 0, 9).poly([-16, 4, 16, 4, 0, 20]).fill(swatch.red.fill);
+      const bubble = new Graphics()
+        .circle(0, 0, 60)
+        .fill(0xffffff)
+        .stroke({ width: 5, color: swatch.yellow.line });
+      const heart = new Graphics()
+        .circle(-8, 0, 9)
+        .circle(8, 0, 9)
+        .poly([-16, 4, 16, 4, 0, 20])
+        .fill(swatch.red.fill);
       heart.position.set(38, -40);
       this.favourite.addChild(bubble, face(this.set.favourite, 90), heart);
     }
@@ -136,7 +215,9 @@ class SpinnerFair implements Game {
     this.drawBlocks();
   }
 
-  private get blockH() { return BAR_H / Math.max(8, this.plan.spins); }
+  private get blockH() {
+    return BAR_H / Math.max(8, this.plan.spins);
+  }
 
   private drawBlocks() {
     const counts = this.counts;
@@ -160,13 +241,24 @@ class SpinnerFair implements Game {
     node.rotation = 0.04;
     void this.ctx.tw.to(node, { rotation: 0 }, { duration: 0.3, ease: ease.outElastic });
     if (this.busy || this.spinning) return;
-    if (this.phase === 'pick') { void this.pick(i); return; }
-    if (this.phase === 'ask') { sfx.pop(2); void this.ctx.say('sf.no-more-spins'); return; }
+    if (this.phase === 'pick') {
+      void this.pick(i);
+      return;
+    }
+    if (this.phase === 'ask') {
+      sfx.pop(2);
+      void this.ctx.say('sf.no-more-spins');
+      return;
+    }
     void this.doSpin();
   }
 
   private async doSpin() {
-    if (this.results.length >= this.plan.spins) { sfx.pop(2); void this.ctx.say('sf.no-more-spins'); return; }
+    if (this.results.length >= this.plan.spins) {
+      sfx.pop(2);
+      void this.ctx.say('sf.no-more-spins');
+      return;
+    }
     this.idle = 0;
     this.spinning = true;
     const set = this.setIndex;
@@ -176,7 +268,11 @@ class SpinnerFair implements Game {
     const from = art.wheel.rotation;
     const to = stopRotation(from, s.angle, this.results.length === 0 ? 3 : 2);
     this.lastWedge = wedgeAt(from);
-    await this.ctx.tw.to(art.wheel, { rotation: to }, { duration: this.results.length === 0 ? 2 : 1.2, ease: ease.outCubic });
+    await this.ctx.tw.to(
+      art.wheel,
+      { rotation: to },
+      { duration: this.results.length === 0 ? 2 : 1.2, ease: ease.outCubic },
+    );
     if (this.finished || set !== this.setIndex) return;
     art.wheel.rotation = to % (Math.PI * 2);
     const kind = this.wheel[s.wedge];
@@ -189,7 +285,14 @@ class SpinnerFair implements Game {
     const col = this.columns[bar];
     const top = col.toGlobal({ x: 0, y: -this.counts[bar] * this.blockH });
     const at = this.ctx.stage.toLocal(top);
-    this.ctx.particles.burst(at.x, at.y, { kind: 'dot', colors: [sw(kind).fill, 0xffffff], count: 8, speed: [60, 150], gravity: 300, life: [0.25, 0.5] });
+    this.ctx.particles.burst(at.x, at.y, {
+      kind: 'dot',
+      colors: [sw(kind).fill, 0xffffff],
+      count: 8,
+      speed: [60, 150],
+      gravity: 300,
+      life: [0.25, 0.5],
+    });
     this.ctx.tw.kill(col.scale);
     col.scale.set(1.08);
     void this.ctx.tw.to(col.scale, { x: 1, y: 1 }, { duration: 0.3, ease: ease.outBack });
@@ -203,7 +306,10 @@ class SpinnerFair implements Game {
     const set = this.setIndex;
     await this.ctx.tw.wait(0.6);
     if (this.finished || set !== this.setIndex) return;
-    if (this.plan.ask === 'see') { await this.endSet(); return; }
+    if (this.plan.ask === 'see') {
+      await this.endSet();
+      return;
+    }
     if (this.plan.ask === 'most') {
       this.phase = 'ask';
       this.busy = false;
@@ -226,10 +332,17 @@ class SpinnerFair implements Game {
     this.ctx.tw.kill(col.scale);
     col.scale.set(1.05);
     void this.ctx.tw.to(col.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack });
-    if (this.phase !== 'ask') { sfx.pop(4); return; }
+    if (this.phase !== 'ask') {
+      sfx.pop(4);
+      return;
+    }
     const top = tallest(this.counts);
-    if (top.includes(i)) { void this.rightMost(i, top); return; }
-    this.misses++; this.setMisses++;
+    if (top.includes(i)) {
+      void this.rightMost(i, top);
+      return;
+    }
+    this.misses++;
+    this.setMisses++;
     sfx.boing();
     void this.hearWrong('sf.count-blocks');
   }
@@ -239,7 +352,8 @@ class SpinnerFair implements Game {
     this.glowing = false;
     sfx.sparkle();
     const kind = this.kinds[i];
-    if (top.length > 1) await this.ctx.say('sf.tie', { kind: NAME_OF[this.kinds[top[0]]], other: NAME_OF[this.kinds[top[1]]] });
+    if (top.length > 1)
+      await this.ctx.say('sf.tie', { kind: NAME_OF[this.kinds[top[0]]], other: NAME_OF[this.kinds[top[1]]] });
     else await this.ctx.say('sf.right-most', { kind: NAME_OF[kind], n: this.counts[i] });
     if (this.finished) return;
     await this.endSet();
@@ -247,7 +361,8 @@ class SpinnerFair implements Game {
 
   private async pick(i: number) {
     if (i !== this.set.better) {
-      this.misses++; this.setMisses++;
+      this.misses++;
+      this.setMisses++;
       sfx.boing();
       void this.hearWrong('sf.more-of', { kind: NAME_OF[this.set.favourite!] });
       return;
@@ -258,15 +373,23 @@ class SpinnerFair implements Game {
     sfx.bell(7, 0.3);
     const other = this.spinners[1 - i].node;
     other.eventMode = 'none';
-    void this.ctx.tw.to(other, { alpha: 0 }, { duration: 0.35, ease: ease.outQuad }).then(() => { if (!other.destroyed) other.visible = false; });
+    void this.ctx.tw.to(other, { alpha: 0 }, { duration: 0.35, ease: ease.outQuad }).then(() => {
+      if (!other.destroyed) other.visible = false;
+    });
     this.phase = 'spin';
     this.favourite.visible = false;
     this.buildBars();
     this.layoutNow = layout(this.ctx.view, this.kinds.length);
     this.placeBars();
-    const node = this.main.node, l = this.layoutNow;
-    this.ctx.tw.kill(node); this.ctx.tw.kill(node.scale);
-    void this.ctx.tw.to(node.scale, { x: BIG / SMALL, y: BIG / SMALL }, { duration: 0.45, ease: ease.outBack });
+    const node = this.main.node,
+      l = this.layoutNow;
+    this.ctx.tw.kill(node);
+    this.ctx.tw.kill(node.scale);
+    void this.ctx.tw.to(
+      node.scale,
+      { x: BIG / SMALL, y: BIG / SMALL },
+      { duration: 0.45, ease: ease.outBack },
+    );
     await this.ctx.tw.to(node, { x: l.spinner.x, y: l.spinner.y }, { duration: 0.45, ease: ease.outQuad });
     if (this.finished) return;
     await this.ctx.say('sf.picked', { kind: NAME_OF[this.set.favourite!] });
@@ -279,12 +402,18 @@ class SpinnerFair implements Game {
     const set = this.setIndex;
     await this.ctx.say(line, vars);
     if (this.finished || this.busy || set !== this.setIndex) return;
-    if (this.setMisses >= 2 && !this.glowing) { this.lightHint(); await this.ctx.say('sf.help'); }
+    if (this.setMisses >= 2 && !this.glowing) {
+      this.lightHint();
+      await this.ctx.say('sf.help');
+    }
   }
 
   private lightHint() {
     this.glowing = true;
-    if (!this.hinted) { this.hinted = true; this.hints++; }
+    if (!this.hinted) {
+      this.hinted = true;
+      this.hints++;
+    }
   }
 
   readonly hintLabel = 'Show me';
@@ -292,8 +421,15 @@ class SpinnerFair implements Game {
   /** Asked-for help: the glow on the question's answer (one hint per set or pick); asked again, the ghost answers. During spins it repeats the ask. */
   askForHint() {
     if (this.busy || this.finished || this.spinning) return;
-    if (this.phase === 'spin') { void this.instruct(); return; }
-    if (!this.glowing) { this.lightHint(); void this.ctx.say('sf.help'); return; }
+    if (this.phase === 'spin') {
+      void this.instruct();
+      return;
+    }
+    if (!this.glowing) {
+      this.lightHint();
+      void this.ctx.say('sf.help');
+      return;
+    }
     if (this.phase === 'ask') this.tapColumn(tallest(this.counts)[0]);
     else this.tapSpinner(this.set.better!);
   }
@@ -308,7 +444,8 @@ class SpinnerFair implements Game {
     this.busy = true;
     if (this.setIndex + 1 >= this.sets.length) {
       this.finished = true;
-      sfx.bell(7, 0.35); sfx.bell(11, 0.3);
+      sfx.bell(7, 0.35);
+      sfx.bell(11, 0.3);
       await this.ctx.say('sf.done');
       await this.ctx.tw.wait(0.5);
       this.ctx.finish({ misses: this.misses, hints: this.hints });
@@ -338,18 +475,27 @@ class SpinnerFair implements Game {
     this.columns.forEach((col, i) => col.position.set(l.columns[i].x, l.base));
     this.barsPanel.clear();
     if (!this.columns.length) return;
-    const left = l.columns[0].x - COL_W / 2 - 14, right = l.columns[l.columns.length - 1].x + COL_W / 2 + 14;
-    this.barsPanel.roundRect(left, l.base - BAR_H - 16, right - left, BAR_H + FACE + 24, 20).fill({ color: 0xffffff, alpha: 0.75 });
-    this.barsPanel.moveTo(left + 10, l.base).lineTo(right - 10, l.base).stroke({ width: 4, color: ink, alpha: 0.5 });
+    const left = l.columns[0].x - COL_W / 2 - 14,
+      right = l.columns[l.columns.length - 1].x + COL_W / 2 + 14;
+    this.barsPanel
+      .roundRect(left, l.base - BAR_H - 16, right - left, BAR_H + FACE + 24, 20)
+      .fill({ color: 0xffffff, alpha: 0.75 });
+    this.barsPanel
+      .moveTo(left + 10, l.base)
+      .lineTo(right - 10, l.base)
+      .stroke({ width: 4, color: ink, alpha: 0.5 });
   }
 
   resize(view: View) {
-    const l = this.layoutNow = layout(view, Math.max(1, this.phase === 'pick' ? 3 : this.kinds.length));
+    const l = (this.layoutNow = layout(view, Math.max(1, this.phase === 'pick' ? 3 : this.kinds.length)));
     this.backdrop.resize(view);
     if (this.phase === 'pick') this.spinners.forEach((s, i) => s.node.position.set(l.pair[i].x, l.pair[i].y));
     else {
       this.main.node.position.set(l.spinner.x, l.spinner.y);
-      if (this.picked !== null) { this.ctx.tw.kill(this.main.node.scale); this.main.node.scale.set(BIG / SMALL); }
+      if (this.picked !== null) {
+        this.ctx.tw.kill(this.main.node.scale);
+        this.main.node.scale.set(BIG / SMALL);
+      }
     }
     this.favourite.position.set(l.favourite.x, l.favourite.y);
     this.placeBars();
@@ -359,10 +505,19 @@ class SpinnerFair implements Game {
     this.clock += dt;
     if (this.spinning) {
       const w = wedgeAt(this.main.wheel.rotation);
-      if (w !== this.lastWedge) { this.lastWedge = w; sfx.tick(); }
+      if (w !== this.lastWedge) {
+        this.lastWedge = w;
+        sfx.tick();
+      }
     }
     // Level 1: after ten quiet seconds the pet spins once to show how; that spin counts toward the six.
-    if (this.plan.ask === 'see' && !this.spinning && !this.busy && !this.finished && this.results.length < this.plan.spins) {
+    if (
+      this.plan.ask === 'see' &&
+      !this.spinning &&
+      !this.busy &&
+      !this.finished &&
+      this.results.length < this.plan.spins
+    ) {
       this.idle += dt;
       if (this.idle > 10) void this.doSpin();
     }
@@ -373,11 +528,26 @@ class SpinnerFair implements Game {
     if (this.phase === 'ask') {
       for (const i of tallest(this.counts)) {
         const c = this.columns[i];
-        this.glowRing.roundRect(c.x - COL_W / 2 - pulse, c.y - BAR_H - pulse, COL_W + 2 * pulse, BAR_H + FACE + 2 * pulse, 22).stroke({ width: 7, color: swatch.yellow.fill });
+        this.glowRing
+          .roundRect(
+            c.x - COL_W / 2 - pulse,
+            c.y - BAR_H - pulse,
+            COL_W + 2 * pulse,
+            BAR_H + FACE + 2 * pulse,
+            22,
+          )
+          .stroke({ width: 7, color: swatch.yellow.fill });
       }
     } else if (this.phase === 'pick') {
       const s = this.spinners[this.set.better!];
-      glowSection(s.glow, this.set.wheels[this.set.better!], this.set.favourite!, SMALL + pulse, s.wheel.rotation, 9);
+      glowSection(
+        s.glow,
+        this.set.wheels[this.set.better!],
+        this.set.favourite!,
+        SMALL + pulse,
+        s.wheel.rotation,
+        9,
+      );
     }
   }
 
@@ -416,13 +586,24 @@ function sticker(seed: number): Container {
 }
 
 export const spinnerFair: GameModule = {
-  id: 'spinner-fair', name: 'Spinner Fair', titleLine: 'game.spinner-fair', region: 'counting-cove', challenge: 'numbers',
-  skills: ['counting', 'data', 'graphs', 'comparing'], bands: ['preschool', 'prek', 'school'], levels: (b) => rangeFor(LEVELS, b),
+  id: 'spinner-fair',
+  name: 'Spinner Fair',
+  titleLine: 'game.spinner-fair',
+  region: 'counting-cove',
+  challenge: 'numbers',
+  skills: ['counting', 'data', 'graphs', 'comparing'],
+  bands: ['preschool', 'prek', 'school'],
+  levels: (b) => rangeFor(LEVELS, b),
   describeLevel: (l) => planFor(l).name,
   music: STYLES.hub,
-  coplayHint: 'Spinner and counter: one of you taps the spins, the other says each critter and points at its bar before the block lands. Before a pick, ask: which would you choose for your favourite? Before a race, ask: is this fair, and how could we make it fair?',
+  coplayHint:
+    'Spinner and counter: one of you taps the spins, the other says each critter and points at its bar before the block lands. Before a pick, ask: which would you choose for your favourite? Before a race, ask: is this fair, and how could we make it fair?',
   offScreen: 'Flip a coin twenty times and make a mark for each side. Was it fair? How could you tell?',
-  hubIcon: () => new WigglyIcon(icon()), sticker,
-  create: (ctx) => { const ask = planFor(ctx.level).ask; return ask === 'sure' ? new SureGame(ctx) : ask === 'fair' ? new RaceGame(ctx) : new SpinnerFair(ctx); },
+  hubIcon: () => new WigglyIcon(icon()),
+  sticker,
+  create: (ctx) => {
+    const ask = planFor(ctx.level).ask;
+    return ask === 'sure' ? new SureGame(ctx) : ask === 'fair' ? new RaceGame(ctx) : new SpinnerFair(ctx);
+  },
   touchDemo: true,
 };

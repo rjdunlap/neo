@@ -10,9 +10,13 @@ export const VOICE = {
   'barn.sing.ring': ['Tap, tap, tap to sing Ring Around the Rosie!'],
   'barn.sing.rain': ['Tap, tap, tap to sing Rain, Rain, Go Away!'],
   'barn.tune': ['Which song shall we sing? Tap one!'],
-  'barn.finish.how': ['Tap, tap, tap to sing {song}! When the song stops, what comes next? Tap to finish the line!'],
+  'barn.finish.how': [
+    'Tap, tap, tap to sing {song}! When the song stops, what comes next? Tap to finish the line!',
+  ],
   'barn.finish': ['{word}!'],
-  'barn.rhyme.how': ['Tap, tap, tap to sing {song}! When the song stops, which picture finishes it? Tap the one that rhymes!'],
+  'barn.rhyme.how': [
+    'Tap, tap, tap to sing {song}! When the song stops, which picture finishes it? Tap the one that rhymes!',
+  ],
   'barn.rhyme.line.rain': ['Rain, rain, go away, we want to …'],
   'barn.rhyme.line.twinkle': ['Up above the world so high, like a diamond in the …'],
   'barn.rhyme.line.ring': ['Ring around the rosie, a pocket full of …'],

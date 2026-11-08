@@ -14,7 +14,12 @@ export type PropState = 'bare' | 'ready' | 'packed';
 /** The part each preparable prop needs. */
 export const PART_OF: Readonly<Partial<Record<PropId, PartId>>> = { flag: 'ribbon', drum: 'beater' };
 export const PROP_OF: Readonly<Record<PartId, PropId>> = { ribbon: 'flag', beater: 'drum' };
-export const PROP_NAMES: Readonly<Record<PropId, string>> = { flag: 'flag', drum: 'drum', bell: 'bell', ball: 'ball' };
+export const PROP_NAMES: Readonly<Record<PropId, string>> = {
+  flag: 'flag',
+  drum: 'drum',
+  bell: 'bell',
+  ball: 'ball',
+};
 
 export interface Round {
   /** The props the card shows, in card order. */
@@ -69,7 +74,15 @@ export function makeRound(level: number, rng: Rng): Round {
     const want = rng.pick(['flag', 'drum', 'bell'] as PropId[]);
     const other = rng.pick(all.filter((p) => p !== want));
     const order = rng.chance(0.5) ? [key.prop(want), key.prop(other)] : [key.prop(other), key.prop(want)];
-    return { request: [want], props: [want, other], bare: false, order, flagShape, ribbonPattern, drumPattern };
+    return {
+      request: [want],
+      props: [want, other],
+      bare: false,
+      order,
+      flagShape,
+      ribbonPattern,
+      drumPattern,
+    };
   }
   if (level === 2) {
     const want: PropId = rng.pick(['flag', 'drum'] as PropId[]);
@@ -77,10 +90,21 @@ export function makeRound(level: number, rng: Rng): Round {
     const order = rng.chance(0.5) ? [key.prop(want), key.part(part)] : [key.part(part), key.prop(want)];
     return { request: [want], props: [want], bare: true, order, flagShape, ribbonPattern, drumPattern };
   }
-  const pairs = [[key.prop('flag'), key.part('ribbon')], [key.prop('drum'), key.part('beater')]];
+  const pairs = [
+    [key.prop('flag'), key.part('ribbon')],
+    [key.prop('drum'), key.part('beater')],
+  ];
   if (rng.chance(0.5)) pairs.reverse();
   const order = pairs.flatMap((p) => (rng.chance(0.5) ? p : [p[1], p[0]]));
-  return { request: ['flag', 'drum'], props: ['flag', 'drum'], bare: true, order, flagShape, ribbonPattern, drumPattern };
+  return {
+    request: ['flag', 'drum'],
+    props: ['flag', 'drum'],
+    bare: true,
+    order,
+    flagShape,
+    ribbonPattern,
+    drumPattern,
+  };
 }
 
 // ---- State ------------------------------------------------------------------------------------------------------------
@@ -155,9 +179,11 @@ const isPart = (d: Dragged | Target): d is { part: PartId } => 'part' in d;
 export function judge(s: ReadyState, drag: Dragged, target: Target): Verdict {
   const firstJob = s.round.request[0];
   if ('bag' in target) {
-    if (isPart(drag)) return { kind: 'refuse', reason: 'looseToBag', job: PROP_OF[drag.part], part: drag.part };
+    if (isPart(drag))
+      return { kind: 'refuse', reason: 'looseToBag', job: PROP_OF[drag.part], part: drag.part };
     const st = s.props[drag.prop];
-    if (!s.round.request.includes(drag.prop)) return { kind: 'refuse', reason: 'notRequested', job: firstJob, prop: drag.prop };
+    if (!s.round.request.includes(drag.prop))
+      return { kind: 'refuse', reason: 'notRequested', job: firstJob, prop: drag.prop };
     if (st === 'bare') return { kind: 'refuse', reason: 'notReady', job: drag.prop, prop: drag.prop };
     if (st === 'packed') return { kind: 'free' };
     return { kind: 'pack', prop: drag.prop };
@@ -165,8 +191,13 @@ export function judge(s: ReadyState, drag: Dragged, target: Target): Verdict {
   // A part and a prop meet (either one dragged onto the other).
   let part: PartId | null = null;
   let prop: PropId | null = null;
-  if (isPart(drag) && isProp(target)) { part = drag.part; prop = target.prop; }
-  else if (isProp(drag) && isPart(target)) { part = target.part; prop = drag.prop; }
+  if (isPart(drag) && isProp(target)) {
+    part = drag.part;
+    prop = target.prop;
+  } else if (isProp(drag) && isPart(target)) {
+    part = target.part;
+    prop = drag.prop;
+  }
   if (!part || !prop) return { kind: 'free' };
   if (PROP_OF[part] !== prop) return { kind: 'refuse', reason: 'wrongPart', job: PROP_OF[part], part };
   if (s.props[prop] !== 'bare' || !s.loose.has(part)) return { kind: 'free' };
@@ -235,12 +266,21 @@ export function botAction(s: ReadyState): Action | null {
 }
 
 export function describeReady(level: number): string {
-  return level <= 1 ? 'Pack the prop the card shows' : level === 2 ? 'Get one prop ready, then pack it' : 'Get two props ready and packed, in any order';
+  return level <= 1
+    ? 'Pack the prop the card shows'
+    : level === 2
+      ? 'Get one prop ready, then pack it'
+      : 'Get two props ready and packed, in any order';
 }
 
 // ---- Layout -----------------------------------------------------------------------------------------------------------
 
-export interface Rect { x: number; y: number; w: number; h: number }
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
 
 export interface ReadyLayout {
   card: Rect;
@@ -271,30 +311,50 @@ export function readyLayout(view: View, level: number, order: readonly string[])
   const rowH = PROP_SIZE + 30;
   const benchH = rows * rowH + (oneRow ? 60 : BAG_H + 20);
   const benchY = Math.max(rail.y + rail.h + 70, view.h * 0.38);
-  const bench: Rect = { x: margin - 10, y: benchY, w: view.w - margin * 2 + 20, h: Math.min(benchH, view.h - benchY - 10) };
+  const bench: Rect = {
+    x: margin - 10,
+    y: benchY,
+    w: view.w - margin * 2 + 20,
+    h: Math.min(benchH, view.h - benchY - 10),
+  };
   const slots: Rect[] = [];
   if (oneRow) {
     const startX = (view.w - (sum + GAP + BAG_W)) / 2;
     let x = startX;
     const cy = benchY + 30 + rowH / 2;
-    sizes.forEach((sz) => { slots.push({ x, y: cy - sz / 2, w: sz, h: sz }); x += sz + GAP; });
+    sizes.forEach((sz) => {
+      slots.push({ x, y: cy - sz / 2, w: sz, h: sz });
+      x += sz + GAP;
+    });
     const bag: Rect = { x: view.w - margin - BAG_W, y: cy - BAG_H / 2, w: BAG_W, h: BAG_H };
     const lane: Rect = { x: 0, y: benchY, w: view.w, h: 260 };
-    return fits({ card, rail, bench, slots, bag, companion: { x: view.w * 0.2, y: benchY - 10 }, lane }, view, level);
+    return fits(
+      { card, rail, bench, slots, bag, companion: { x: view.w * 0.2, y: benchY - 10 }, lane },
+      view,
+      level,
+    );
   }
   for (let r = 0; r < rows; r++) {
     const pair = sizes.slice(r * 2, r * 2 + 2);
     const total = pair.reduce((a, b) => a + b, 0) + GAP * (pair.length - 1);
     let x = Math.max(margin, (view.w - total) / 2 - 90);
     const cy = benchY + 30 + r * rowH + rowH / 2;
-    pair.forEach((sz) => { slots.push({ x, y: cy - sz / 2, w: sz, h: sz }); x += sz + GAP; });
+    pair.forEach((sz) => {
+      slots.push({ x, y: cy - sz / 2, w: sz, h: sz });
+      x += sz + GAP;
+    });
   }
   const bag: Rect = { x: view.w - margin - BAG_W, y: benchY + 30 + rows * rowH + 10, w: BAG_W, h: BAG_H };
   const lane: Rect = { x: 0, y: benchY, w: view.w, h: 260 };
-  return fits({ card, rail, bench, slots, bag, companion: { x: view.w * 0.2, y: benchY - 10 }, lane }, view, level);
+  return fits(
+    { card, rail, bench, slots, bag, companion: { x: view.w * 0.2, y: benchY - 10 }, lane },
+    view,
+    level,
+  );
 }
 
-const overlap = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+const overlap = (a: Rect, b: Rect) =>
+  a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 
 function fits(l: ReadyLayout, view: View, _level: number): ReadyLayout | null {
   const targets = [...l.slots, l.bag];

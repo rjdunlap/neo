@@ -30,14 +30,46 @@ export interface Landmark {
   ways: readonly [Way, Way];
 }
 
-const way = (landmark: LandmarkId, word: PathWord, phrase: string, sound: StepSound): Way => ({ word, key: `${landmark}.${word}`, phrase, sound });
+const way = (landmark: LandmarkId, word: PathWord, phrase: string, sound: StepSound): Way => ({
+  word,
+  key: `${landmark}.${word}`,
+  phrase,
+  sound,
+});
 
 export const LANDMARKS: readonly Landmark[] = [
-  { id: 'brook', ways: [way('brook', 'over', 'over the bridge', 'knock'), way('brook', 'across', 'across the stones', 'splash')] },
-  { id: 'reeds', ways: [way('reeds', 'through', 'through the reeds', 'brush'), way('reeds', 'around', 'around the reeds', 'whoosh')] },
-  { id: 'log', ways: [way('log', 'under', 'under the log', 'squish'), way('log', 'over', 'over the log', 'knock')] },
-  { id: 'boulder', ways: [way('boulder', 'around', 'around the boulder', 'whoosh'), way('boulder', 'over', 'over the boulder', 'pop')] },
-  { id: 'puddle', ways: [way('puddle', 'across', 'across the puddle', 'splash'), way('puddle', 'around', 'around the puddle', 'whoosh')] },
+  {
+    id: 'brook',
+    ways: [
+      way('brook', 'over', 'over the bridge', 'knock'),
+      way('brook', 'across', 'across the stones', 'splash'),
+    ],
+  },
+  {
+    id: 'reeds',
+    ways: [
+      way('reeds', 'through', 'through the reeds', 'brush'),
+      way('reeds', 'around', 'around the reeds', 'whoosh'),
+    ],
+  },
+  {
+    id: 'log',
+    ways: [way('log', 'under', 'under the log', 'squish'), way('log', 'over', 'over the log', 'knock')],
+  },
+  {
+    id: 'boulder',
+    ways: [
+      way('boulder', 'around', 'around the boulder', 'whoosh'),
+      way('boulder', 'over', 'over the boulder', 'pop'),
+    ],
+  },
+  {
+    id: 'puddle',
+    ways: [
+      way('puddle', 'across', 'across the puddle', 'splash'),
+      way('puddle', 'around', 'around the puddle', 'whoosh'),
+    ],
+  },
 ];
 
 export const landmarkOf = (id: LandmarkId): Landmark => LANDMARKS.find((l) => l.id === id)!;
@@ -110,15 +142,21 @@ export function makeRoute(level: number, rng: Rng): Route {
     return { level, friend, stops };
   }
   // Practically unreachable; a fixed fair route keeps the round playable.
-  return { level, friend, stops: lands.map((l, i) => ({ landmark: l.id, first: (i % 2) as 0 | 1, asked: plan.calls ? 0 : null })) };
+  return {
+    level,
+    friend,
+    stops: lands.map((l, i) => ({ landmark: l.id, first: (i % 2) as 0 | 1, asked: plan.calls ? 0 : null })),
+  };
 }
 
 export const waysAt = (stop: Stop): readonly [Way, Way] => landmarkOf(stop.landmark).ways;
 /** The way in drawn position `slot` (0 = left or top). */
-export const wayInSlot = (stop: Stop, slot: 0 | 1): 0 | 1 => (slot === 0 ? stop.first : ((1 - stop.first) as 0 | 1));
+export const wayInSlot = (stop: Stop, slot: 0 | 1): 0 | 1 =>
+  slot === 0 ? stop.first : ((1 - stop.first) as 0 | 1);
 export const askedWay = (stop: Stop): Way | null => (stop.asked === null ? null : waysAt(stop)[stop.asked]);
 /** The drawn slot of the asked way. */
-export const askedSlot = (stop: Stop): 0 | 1 | null => (stop.asked === null ? null : stop.asked === stop.first ? 0 : 1);
+export const askedSlot = (stop: Stop): 0 | 1 | null =>
+  stop.asked === null ? null : stop.asked === stop.first ? 0 : 1;
 
 /** The group of stops the friend is calling at `stop`, if a call starts there. */
 export function callAt(route: Route, stop: number): readonly number[] | null {
@@ -154,9 +192,20 @@ export interface WalkState {
   glow: boolean;
 }
 
-export const startWalk = (level: number, rng: Rng): WalkState => ({ route: makeRoute(level, rng), stop: 0, misses: 0, hints: 0, stopMisses: 0, hinted: false, glow: false });
+export const startWalk = (level: number, rng: Rng): WalkState => ({
+  route: makeRoute(level, rng),
+  stop: 0,
+  misses: 0,
+  hints: 0,
+  stopMisses: 0,
+  hinted: false,
+  glow: false,
+});
 
-export type Step = { kind: 'go'; way: Way; arrived: boolean } | { kind: 'other'; took: Way; asked: Way; glow: boolean } | { kind: 'ignored' };
+export type Step =
+  | { kind: 'go'; way: Way; arrived: boolean }
+  | { kind: 'other'; took: Way; asked: Way; glow: boolean }
+  | { kind: 'ignored' };
 
 /** She taps the way in drawn `slot`. A wrong way is a miss; two misses at one stop light the asked way, once (a hint). */
 export function step(s: WalkState, slot: 0 | 1): Step {
@@ -168,7 +217,12 @@ export function step(s: WalkState, slot: 0 | 1): Step {
     s.misses++;
     s.stopMisses++;
     let glow = false;
-    if (s.stopMisses >= 2 && !s.hinted) { s.hinted = true; s.hints++; s.glow = true; glow = true; }
+    if (s.stopMisses >= 2 && !s.hinted) {
+      s.hinted = true;
+      s.hints++;
+      s.glow = true;
+      glow = true;
+    }
     return { kind: 'other', took: r.took, asked: r.asked, glow };
   }
   s.stop++;
@@ -235,14 +289,20 @@ export function stopLayout(view: View, level: number): StopLayout {
     const gap = 60;
     const x0 = (view.w - 2 * w - gap) / 2;
     const y = 130;
-    zones = [{ x: x0, y, w, h }, { x: x0 + w + gap, y, w, h }];
+    zones = [
+      { x: x0, y, w, h },
+      { x: x0 + w + gap, y, w, h },
+    ];
     stand = { x: view.w / 2, y: view.h - 50 };
   } else {
     const w = 340;
     const h = 250;
     const gap = 50;
     const x = (view.w - w) / 2;
-    zones = [{ x, y: 150, w, h }, { x, y: 150 + h + gap, w, h }];
+    zones = [
+      { x, y: 150, w, h },
+      { x, y: 150 + h + gap, w, h },
+    ];
     stand = { x: view.w / 2, y: view.h - 80 };
   }
   return { zones, badge, stand, trail };
@@ -251,5 +311,9 @@ export function stopLayout(view: View, level: number): StopLayout {
 // ---- Words for grown-ups ----------------------------------------------------------------------------------------------
 
 export function describeWalk(level: number): string {
-  return level <= 1 ? 'Pick either way past each landmark' : level === 2 ? 'Take the way the friend calls at each landmark' : 'Follow two of the friend’s calls in order, then a third';
+  return level <= 1
+    ? 'Pick either way past each landmark'
+    : level === 2
+      ? 'Take the way the friend calls at each landmark'
+      : 'Follow two of the friend’s calls in order, then a third';
 }

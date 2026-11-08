@@ -22,14 +22,73 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
 import {
-  actionArt, bubbleArt, cardArt, gaugeArt, gaugeLine, guessArt, House, iconArt, jarArt, lineRuleArt, lineTabArt, pauseArt, readingArt, sensorArt, SkyMark, socketArt, stepArt, stickerArt, tileArt,
-  warmthFill, watchArt,
+  actionArt,
+  bubbleArt,
+  cardArt,
+  gaugeArt,
+  gaugeLine,
+  guessArt,
+  House,
+  iconArt,
+  jarArt,
+  lineRuleArt,
+  lineTabArt,
+  pauseArt,
+  readingArt,
+  sensorArt,
+  SkyMark,
+  socketArt,
+  stepArt,
+  stickerArt,
+  tileArt,
+  warmthFill,
+  watchArt,
 } from './art';
 import {
   LEVELS,
-  briefFor, centre, chipsFor, GAPS, gapAt, gapY, handleRect, helperFor, helpFor, HOUSE_COLORS, houseLayout, JAR, nextMove, offersSetup, onGauge, openRows, placeSensor, planFor, runDay, sameBoard, setLine,
-  setRow, solutions, SPECIES, STEPS, Tally, TILE, warmthY, zoneOf,
-  type Board, type Brief, type Chip, type GaugeLayout, type HouseLayout, type LinePiece, type Outcome, type Piece, type Pt, type Reading, type SensorKind, type Socket, type SunLevel, type Trace,
+  briefFor,
+  centre,
+  chipsFor,
+  GAPS,
+  gapAt,
+  gapY,
+  handleRect,
+  helperFor,
+  helpFor,
+  HOUSE_COLORS,
+  houseLayout,
+  JAR,
+  nextMove,
+  offersSetup,
+  onGauge,
+  openRows,
+  placeSensor,
+  planFor,
+  runDay,
+  sameBoard,
+  setLine,
+  setRow,
+  solutions,
+  SPECIES,
+  STEPS,
+  Tally,
+  TILE,
+  warmthY,
+  zoneOf,
+  type Board,
+  type Brief,
+  type Chip,
+  type GaugeLayout,
+  type HouseLayout,
+  type LinePiece,
+  type Outcome,
+  type Piece,
+  type Pt,
+  type Reading,
+  type SensorKind,
+  type Socket,
+  type SunLevel,
+  type Trace,
 } from './logic';
 
 /** The friend stands about 250 tall at scale 1. */
@@ -115,7 +174,17 @@ class HelperHouse implements Game {
     this.warmthNow = this.brief.day.warmth;
     this.guessOpen = this.brief.level === 6;
     this.stepSeconds = ctx.demo ? 0.6 : 0.9;
-    this.backdrop = new Backdrop({ sky: [0xbfe6ff, 0xfff6e0], hills: [0xa9e0d6, 0xc5e7a8], horizon: 0.55, clouds: 2, sun: false, seed: 173 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0xbfe6ff, 0xfff6e0],
+        hills: [0xa9e0d6, 0xc5e7a8],
+        horizon: 0.55,
+        clouds: 2,
+        sun: false,
+        seed: 173,
+      },
+      ctx.view,
+    );
     this.veil.eventMode = 'none';
     this.glow.eventMode = 'none';
     ctx.stage.addChild(this.backdrop, this.veil, this.board_);
@@ -154,7 +223,10 @@ class HelperHouse implements Game {
     this.view = v;
     this.backdrop.resize(v);
     if (!this.layoutNow && !this.house) return;
-    if (this.run || this.busy || this.finished) { this.relayout = true; return; }
+    if (this.run || this.busy || this.finished) {
+      this.relayout = true;
+      return;
+    }
     this.build();
   }
 
@@ -187,7 +259,16 @@ class HelperHouse implements Game {
     if (!l) return;
 
     // The house, its sky mark and the friend.
-    const house = new House({ w: l.house.w, h: l.house.h, lamp: this.level >= 2 && !this.nook, heater: this.nook, shed: this.level === 5 }, this.brief.house);
+    const house = new House(
+      {
+        w: l.house.w,
+        h: l.house.h,
+        lamp: this.level >= 2 && !this.nook,
+        heater: this.nook,
+        shed: this.level === 5,
+      },
+      this.brief.house,
+    );
     house.position.set(l.house.x, l.house.y);
     this.board_.addChild(house);
     this.house = house;
@@ -231,10 +312,22 @@ class HelperHouse implements Game {
       arrow.eventMode = 'none';
       const ax = r.reading.x + r.reading.w;
       const ay = r.reading.y + r.reading.h / 2;
-      arrow.moveTo(ax + 6, ay).lineTo(r.action.x - 6, ay).stroke({ width: 6, color: ink, cap: 'round' });
-      arrow.moveTo(r.action.x - 18, ay - 12).lineTo(r.action.x - 6, ay).lineTo(r.action.x - 18, ay + 12).stroke({ width: 6, color: ink, cap: 'round', join: 'round' });
+      arrow
+        .moveTo(ax + 6, ay)
+        .lineTo(r.action.x - 6, ay)
+        .stroke({ width: 6, color: ink, cap: 'round' });
+      arrow
+        .moveTo(r.action.x - 18, ay - 12)
+        .lineTo(r.action.x - 6, ay)
+        .lineTo(r.action.x - 18, ay + 12)
+        .stroke({ width: 6, color: ink, cap: 'round', join: 'round' });
       if (!row.given) {
-        reading.hitArea = new Rectangle(-r.reading.w / 2 - 6, -r.reading.h / 2 - 6, r.reading.w + 12, r.reading.h + 12);
+        reading.hitArea = new Rectangle(
+          -r.reading.w / 2 - 6,
+          -r.reading.h / 2 - 6,
+          r.reading.w + 12,
+          r.reading.h + 12,
+        );
         onTap(reading, () => this.cycleRow(i), { cooldown: 250 });
       } else {
         reading.eventMode = 'none';
@@ -254,10 +347,18 @@ class HelperHouse implements Game {
       node.hitArea = new Rectangle(-r.w / 2 - 6, -r.h / 2 - 6, r.w + 12, r.h + 12);
       const at = centre(r);
       // A placed sensor sits in its socket instead of on the bench.
-      const placedAt = !isChip && this.board.sensor.kind === k && this.board.sensor.socket !== null ? this.socketAt(this.board.sensor.socket) : null;
+      const placedAt =
+        !isChip && this.board.sensor.kind === k && this.board.sensor.socket !== null
+          ? this.socketAt(this.board.sensor.socket)
+          : null;
       node.position.copyFrom(placedAt ?? at);
       this.board_.addChild(node);
-      const tile: Tile = { node, kind: isChip ? null : (k as SensorKind), chip: isChip ? (k as Chip) : null, handle: null as unknown as DragHandle };
+      const tile: Tile = {
+        node,
+        kind: isChip ? null : (k as SensorKind),
+        chip: isChip ? (k as Chip) : null,
+        handle: null as unknown as DragHandle,
+      };
       tile.handle = draggable(node, this.ctx.tw, {
         onPick: () => this.picked(tile),
         onMove: (x, y) => this.moved(tile, x, y),
@@ -286,7 +387,10 @@ class HelperHouse implements Game {
       this.offerButton = offer;
     }
     if (l.gauge) this.buildGauge(l.gauge, l);
-    const pulse = new Graphics().circle(0, 0, 14).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line });
+    const pulse = new Graphics()
+      .circle(0, 0, 14)
+      .fill(swatch.yellow.fill)
+      .stroke({ width: 4, color: swatch.yellow.line });
     pulse.eventMode = 'none';
     pulse.visible = false;
     this.board_.addChild(pulse);
@@ -355,7 +459,10 @@ class HelperHouse implements Game {
   }
 
   private pickedLine(handle: DragHandle) {
-    if (this.finished || this.busy) { handle.enabled = false; return; }
+    if (this.finished || this.busy) {
+      handle.enabled = false;
+      return;
+    }
     if (this.run) this.stopRun();
     sfx.pop(6);
   }
@@ -380,7 +487,10 @@ class HelperHouse implements Game {
     this.dragGap = null;
     if (!g || this.finished || this.busy) return false;
     const next = setLine(this.board, piece, gapAt(g, y));
-    if (sameBoard(next, this.board)) { this.drawGauge(); return false; }
+    if (sameBoard(next, this.board)) {
+      this.drawGauge();
+      return false;
+    }
     sfx.tick();
     this.change(next, piece);
     return true;
@@ -396,7 +506,16 @@ class HelperHouse implements Game {
     // The nearer line; when they sit together, a tap above pulls the off line up and a tap below the on line down.
     const dOn = Math.abs(gap - on);
     const dOff = Math.abs(gap - off);
-    const piece: LinePiece = this.level === 6 ? 'line' : dOn < dOff ? 'on-line' : dOff < dOn ? 'off-line' : gap >= off ? 'off-line' : 'on-line';
+    const piece: LinePiece =
+      this.level === 6
+        ? 'line'
+        : dOn < dOff
+          ? 'on-line'
+          : dOff < dOn
+            ? 'off-line'
+            : gap >= off
+              ? 'off-line'
+              : 'on-line';
     const next = setLine(this.board, piece, gap);
     if (sameBoard(next, this.board)) return;
     sfx.tick();
@@ -420,11 +539,16 @@ class HelperHouse implements Game {
     d.position.set(g.column.x, g.column.y);
     warmthFill(d, g.column.w, g.pitch, GAPS + 1, this.warmthNow);
     const dot = (step: number) => 16 + (step * (g.column.w - 32)) / (STEPS - 1);
-    if (this.climb) for (let i = 0; i < this.climb.length; i++) d.circle(dot(i), warmthY(g, this.climb[i]) - g.column.y, 6).fill({ color: 0x8a93a6, alpha: 0.45 });
+    if (this.climb)
+      for (let i = 0; i < this.climb.length; i++)
+        d.circle(dot(i), warmthY(g, this.climb[i]) - g.column.y, 6).fill({ color: 0x8a93a6, alpha: 0.45 });
     const r = this.run;
     if (r) {
       const upto = r.shown.has('act') ? r.step : r.step - 1;
-      for (let i = 0; i <= upto && i < STEPS; i++) d.circle(dot(i), warmthY(g, r.outcome.trace[i].warmth) - g.column.y, 7).fill(swatch.purple.fill).stroke({ width: 2, color: 0xffffff });
+      for (let i = 0; i <= upto && i < STEPS; i++)
+        d.circle(dot(i), warmthY(g, r.outcome.trace[i].warmth) - g.column.y, 7)
+          .fill(swatch.purple.fill)
+          .stroke({ width: 2, color: 0xffffff });
     }
     const glowing = this.tally.glowing;
     for (const n of this.lineNodes) {
@@ -457,23 +581,33 @@ class HelperHouse implements Game {
       node.addChild(socketArt(l.sockets[i].w, !filled, this.nearSocket === i));
       // A fixed sensor (levels 3–4) has no bench tile, so the socket draws it; the nook's thermometer shows the warmth now.
       if (filled && this.nook) node.addChild(readingArt(zoneOf(this.warmthNow), l.sockets[i].w * 0.8));
-      else if (filled && !this.tiles.some((t) => t.kind === this.board.sensor.kind)) node.addChild(sensorArt(this.board.sensor.kind!, l.sockets[i].w * 0.7));
+      else if (filled && !this.tiles.some((t) => t.kind === this.board.sensor.kind))
+        node.addChild(sensorArt(this.board.sensor.kind!, l.sockets[i].w * 0.7));
     });
     this.board.rows.forEach((row, i) => {
       const n = this.rowNodes[i];
-      const lit = !!this.run && this.run.outcome.trace[this.run.step]?.matched === i && this.run.shown.has('card');
+      const lit =
+        !!this.run && this.run.outcome.trace[this.run.step]?.matched === i && this.run.shown.has('card');
       for (const c of n.reading.removeChildren()) c.destroy();
-      n.reading.addChild(cardArt(l.rows[i].reading.w, l.rows[i].reading.h, lit, row.reading === null && !this.gauge));
+      n.reading.addChild(
+        cardArt(l.rows[i].reading.w, l.rows[i].reading.h, lit, row.reading === null && !this.gauge),
+      );
       if (row.reading !== null) n.reading.addChild(readingArt(row.reading, 76));
       else if (this.gauge) n.reading.addChild(lineRuleArt(i === 0 ? 'below' : 'above', 84));
       for (const c of n.action.removeChildren()) c.destroy();
-      n.action.addChild(cardArt(l.rows[i].action.w, l.rows[i].action.h, lit), actionArt(row.action, 76, helperFor(this.level)));
+      n.action.addChild(
+        cardArt(l.rows[i].action.w, l.rows[i].action.h, lit),
+        actionArt(row.action, 76, helperFor(this.level)),
+      );
     });
     const w = this.watchButton;
     if (w) {
       for (const c of w.removeChildren()) c.destroy();
       const running = !!this.run && !this.run.paused;
-      w.addChild(finish({ w: l.watch.w, h: l.watch.h, corner: 30 }, running ? swatch.orange : swatch.green), running ? pauseArt() : watchArt());
+      w.addChild(
+        finish({ w: l.watch.w, h: l.watch.h, corner: 30 }, running ? swatch.orange : swatch.green),
+        running ? pauseArt() : watchArt(),
+      );
     }
     this.drawGauge();
     if (this.undoButton) this.undoButton.alpha = this.history.length ? 1 : 0.45;
@@ -506,19 +640,23 @@ class HelperHouse implements Game {
   /** The friend in the nook shivers (sad) when cool, is comfy (happy) when warm, and is startled when hot. */
   private nookMood(warmth: number) {
     const z = zoneOf(warmth);
-    return z === 'cool' ? 'sad' as const : z === 'warm' ? 'happy' as const : 'surprised' as const;
+    return z === 'cool' ? ('sad' as const) : z === 'warm' ? ('happy' as const) : ('surprised' as const);
   }
 
   private setVeil(sun: SunLevel) {
     this.veil.clear();
     const a = sun === 'dark' ? 0.5 : sun === 'dim' ? 0.18 : 0;
-    if (a > 0) this.veil.rect(-200, -200, this.view.w + 400, this.view.h + 400).fill({ color: 0x1d2552, alpha: a });
+    if (a > 0)
+      this.veil.rect(-200, -200, this.view.w + 400, this.view.h + 400).fill({ color: 0x1d2552, alpha: a });
   }
 
   // ——— Placing sensors and chips ———
 
   private picked(tile: Tile) {
-    if (this.finished || this.busy) { tile.handle.enabled = false; return; }
+    if (this.finished || this.busy) {
+      tile.handle.enabled = false;
+      return;
+    }
     if (this.run) this.stopRun();
     sfx.pop(6);
     tile.node.scale.set(1.06);
@@ -528,7 +666,10 @@ class HelperHouse implements Game {
   private moved(tile: Tile, x: number, y: number) {
     if (tile.kind === null) return;
     const i = this.nearestSocket(x, y);
-    if (i !== this.nearSocket) { this.nearSocket = i; this.redraw(); }
+    if (i !== this.nearSocket) {
+      this.nearSocket = i;
+      this.redraw();
+    }
   }
 
   private nearestSocket(x: number, y: number): number | null {
@@ -539,7 +680,10 @@ class HelperHouse implements Game {
     l.sockets.forEach((r, i) => {
       const c = centre(r);
       const d = Math.hypot(c.x - x, c.y - y);
-      if (d < bd) { bd = d; best = i; }
+      if (d < bd) {
+        bd = d;
+        best = i;
+      }
     });
     return best;
   }
@@ -552,7 +696,11 @@ class HelperHouse implements Game {
       const i = this.nearestSocket(x, y);
       if (i === null) {
         // Back to the bench: a placed sensor leaves its socket.
-        if (this.board.sensor.kind === tile.kind && this.board.sensor.socket !== null && (this.level === 1 || this.level === 5)) {
+        if (
+          this.board.sensor.kind === tile.kind &&
+          this.board.sensor.socket !== null &&
+          (this.level === 1 || this.level === 5)
+        ) {
           this.change(placeSensor(this.board, tile.kind, null), 'sensor');
           return true;
         }
@@ -585,7 +733,10 @@ class HelperHouse implements Game {
     for (const i of openRows(this.board)) {
       const c = centre(l.rows[i].reading);
       const d = Math.hypot(c.x - x, c.y - y);
-      if (d < bd) { bd = d; best = i; }
+      if (d < bd) {
+        bd = d;
+        best = i;
+      }
     }
     return best;
   }
@@ -672,7 +823,13 @@ class HelperHouse implements Game {
   /** Step: start the day paused at its first step, or show the next step and pause again. */
   stepOnce() {
     if (this.finished || this.busy) return;
-    if (!this.run) { this.startRun(); this.run!.paused = false; this.run!.single = true; this.redraw(); return; }
+    if (!this.run) {
+      this.startRun();
+      this.run!.paused = false;
+      this.run!.single = true;
+      this.redraw();
+      return;
+    }
     this.run.paused = false;
     this.run.single = true;
     this.redraw();
@@ -710,7 +867,8 @@ class HelperHouse implements Game {
     if (fire('world', 0) && !this.nook) {
       this.sky?.set(t.sun);
       this.setVeil(t.sun);
-      if (this.level >= 2 && this.friend) this.friend.setMood(t.sun === 'dark' && !t.helperOn ? 'sad' : 'calm');
+      if (this.level >= 2 && this.friend)
+        this.friend.setMood(t.sun === 'dark' && !t.helperOn ? 'sad' : 'calm');
       if (t.arrived && this.friend) {
         this.friend.visible = true;
         this.friend.alpha = 1;
@@ -731,7 +889,10 @@ class HelperHouse implements Game {
       const a = k < 0.5 ? k * 2 : 1;
       const b = k < 0.5 ? 0 : (k - 0.5) * 2;
       const mid = { x: card.x, y: card.y };
-      this.pulse.position.set(from.x + (mid.x - from.x) * a + (to.x - mid.x) * b, from.y + (mid.y - from.y) * a + (to.y - mid.y) * b);
+      this.pulse.position.set(
+        from.x + (mid.x - from.x) * a + (to.x - mid.x) * b,
+        from.y + (mid.y - from.y) * a + (to.y - mid.y) * b,
+      );
     }
     if (fire('card', PHASES.card)) {
       if (t.matched !== null) sfx.marimba(t.matched === 0 ? 6 : 8, 0.3);
@@ -740,7 +901,12 @@ class HelperHouse implements Game {
     if (fire('act', PHASES.act)) {
       if (this.pulse) this.pulse.visible = false;
       // Level 5: the lamp's own light switched it off in the dark; a low tick and the friend blinks at the flick.
-      const flicked = this.level === 5 && t.sun === 'dark' && !t.helperOn && r.step > 0 && r.outcome.trace[r.step - 1].helperOn;
+      const flicked =
+        this.level === 5 &&
+        t.sun === 'dark' &&
+        !t.helperOn &&
+        r.step > 0 &&
+        r.outcome.trace[r.step - 1].helperOn;
       // Level 7: each switch drops a pebble in the jar with a soft click, and the friend blinks awake; a ninth rolls out.
       const before = r.step > 0 ? r.outcome.trace[r.step - 1].helperOn : false;
       const clicked = this.level === 7 && t.helperOn !== before;
@@ -753,23 +919,37 @@ class HelperHouse implements Game {
       this.showHelper(t);
       if (clicked && this.friend) this.friend.setMood('surprised', 0.3);
       else if (this.nook && this.friend) this.friend.setMood(this.nookMood(t.warmth));
-      else if (flicked && this.friend) { sfx.marimba(1, 0.3); this.friend.setMood('surprised', 0.4); }
-      else if (this.level >= 2 && this.friend) this.friend.setMood(t.sun === 'dark' && !t.helperOn ? 'sad' : t.helperOn && t.sun === 'dark' ? 'happy' : 'calm');
+      else if (flicked && this.friend) {
+        sfx.marimba(1, 0.3);
+        this.friend.setMood('surprised', 0.4);
+      } else if (this.level >= 2 && this.friend)
+        this.friend.setMood(
+          t.sun === 'dark' && !t.helperOn ? 'sad' : t.helperOn && t.sun === 'dark' ? 'happy' : 'calm',
+        );
     }
     if (r.t < this.stepSeconds) return;
     r.step++;
     r.t = 0;
     r.shown = new Set();
     this.redraw();
-    if (r.step >= STEPS) { void this.dayEnded(r.outcome); return; }
-    if (r.single) { r.paused = true; r.single = false; this.redraw(); }
+    if (r.step >= STEPS) {
+      void this.dayEnded(r.outcome);
+      return;
+    }
+    if (r.single) {
+      r.paused = true;
+      r.single = false;
+      this.redraw();
+    }
   }
 
   private sensorPoint(): Pt {
     const g = this.layoutNow?.gauge;
     if (g) return { x: g.column.x + g.column.w / 2, y: warmthY(g, this.warmthNow) };
     const s = this.board.sensor.socket;
-    return s !== null && this.brief.sockets.includes(s) ? this.socketAt(s) : centre(this.layoutNow!.bench[0] ?? this.layoutNow!.house);
+    return s !== null && this.brief.sockets.includes(s)
+      ? this.socketAt(s)
+      : centre(this.layoutNow!.bench[0] ?? this.layoutNow!.house);
   }
 
   private helperPoint(): Pt {
@@ -833,7 +1013,10 @@ class HelperHouse implements Game {
       this.busy = false;
     }
     this.redraw();
-    if (o.met) { await this.celebrate(); return; }
+    if (o.met) {
+      await this.celebrate();
+      return;
+    }
     const lit = this.tally.failed(this.board, o.failure!);
     void this.ctx.say(`hh.${o.failure}` as LineId);
     if (lit) {
@@ -859,9 +1042,16 @@ class HelperHouse implements Game {
     const h = this.house;
     if (h) {
       const at = this.helperPoint();
-      this.ctx.particles.burst(at.x, at.y, { colors: [swatch.yellow.fill, swatch.green.fill, 0xffffff], count: 12 });
+      this.ctx.particles.burst(at.x, at.y, {
+        colors: [swatch.yellow.fill, swatch.green.fill, 0xffffff],
+        count: 12,
+      });
     }
-    if (this.friend) { this.friend.visible = true; this.friend.alpha = 1; this.friend.cheer(); }
+    if (this.friend) {
+      this.friend.visible = true;
+      this.friend.alpha = 1;
+      this.friend.cheer();
+    }
     if (this.level === 1 && this.friend && h) {
       // The friends come out to dance in front of the door.
       this.friend.position.set(h.x + h.friendAt.x, h.y + h.friendAt.y);
@@ -892,9 +1082,18 @@ class HelperHouse implements Game {
     this.tally.changed(h.placed);
     this.build();
     const p = h.placed;
-    const line: LineId = p === 'sensor' ? `hh.help.sensor.${this.level}` as LineId
-      : p === 'line' ? 'hh.help.6' : p === 'on-line' ? 'hh.help.7.on' : p === 'off-line' ? 'hh.help.7.off'
-        : this.nook ? `hh.help.row.4.${p === 0 ? 'on' : 'off'}` as LineId : 'hh.help.row';
+    const line: LineId =
+      p === 'sensor'
+        ? (`hh.help.sensor.${this.level}` as LineId)
+        : p === 'line'
+          ? 'hh.help.6'
+          : p === 'on-line'
+            ? 'hh.help.7.on'
+            : p === 'off-line'
+              ? 'hh.help.7.off'
+              : this.nook
+                ? (`hh.help.row.4.${p === 0 ? 'on' : 'off'}` as LineId)
+                : 'hh.help.row';
     void this.ctx.say(line);
   }
 
@@ -925,23 +1124,32 @@ class HelperHouse implements Game {
     if (g === 'line' || g === 'on-line' || g === 'off-line') {
       // The line to move: its handle glows (the line itself is drawn yellow).
       const n = this.lineNodes.find((x) => x.piece === g);
-      if (n) this.glow.roundRect(n.node.x - 70 * r, n.node.y - 70 * r, 140 * r, 140 * r, 26).stroke({ width: 8, color: swatch.yellow.fill });
+      if (n)
+        this.glow
+          .roundRect(n.node.x - 70 * r, n.node.y - 70 * r, 140 * r, 140 * r, 26)
+          .stroke({ width: 8, color: swatch.yellow.fill });
     } else if (g === 'sensor' && this.level === 5) {
       // The sensor itself, wherever it sits: its place is the one thing to change.
       const tile = this.tiles.find((t) => t.kind === 'sun');
-      if (tile) this.glow.circle(tile.node.x, tile.node.y, 76 * r).stroke({ width: 8, color: swatch.yellow.fill });
+      if (tile)
+        this.glow.circle(tile.node.x, tile.node.y, 76 * r).stroke({ width: 8, color: swatch.yellow.fill });
     } else if (g === 'sensor') {
       const l = this.layoutNow;
       const socketIndex = this.level === 1 ? this.brief.sockets.indexOf('door') : 0;
       const s = centre(l.sockets[socketIndex]);
       this.glow.circle(s.x, s.y, 76 * r).stroke({ width: 8, color: swatch.yellow.fill });
       const tile = this.tiles.find((t) => t.kind === (this.level === 1 ? 'eye' : 'sun'));
-      if (tile && this.board.sensor.socket === null || (this.level === 2 && tile && this.board.sensor.kind !== 'sun')) {
+      if (
+        (tile && this.board.sensor.socket === null) ||
+        (this.level === 2 && tile && this.board.sensor.kind !== 'sun')
+      ) {
         this.glow.circle(tile!.node.x, tile!.node.y, 76 * r).stroke({ width: 8, color: swatch.yellow.fill });
       }
     } else {
       const c = centre(this.layoutNow.rows[g].reading);
-      this.glow.roundRect(c.x - 80 * r, c.y - 70 * r, 160 * r, 140 * r, 22).stroke({ width: 8, color: swatch.yellow.fill });
+      this.glow
+        .roundRect(c.x - 80 * r, c.y - 70 * r, 160 * r, 140 * r, 22)
+        .stroke({ width: 8, color: swatch.yellow.fill });
     }
   }
 
@@ -965,11 +1173,15 @@ class HelperHouse implements Game {
     if ('place' in m) {
       const tile = this.tiles.find((t) => t.kind === m.place.kind);
       const to = this.socketAt(m.place.socket);
-      return tile ? { drag: { on: tile.node }, to: { on: this.ctx.stage, x: to.x, y: to.y }, pause: 0.3 } : null;
+      return tile
+        ? { drag: { on: tile.node }, to: { on: this.ctx.stage, x: to.x, y: to.y }, pause: 0.3 }
+        : null;
     }
     const tile = this.tiles.find((t) => t.chip === m.chip);
     const to = centre(this.layoutNow.rows[m.row].reading);
-    return tile ? { drag: { on: tile.node }, to: { on: this.ctx.stage, x: to.x, y: to.y }, pause: 0.3 } : null;
+    return tile
+      ? { drag: { on: tile.node }, to: { on: this.ctx.stage, x: to.x, y: to.y }, pause: 0.3 }
+      : null;
   }
 }
 
@@ -982,7 +1194,11 @@ class HouseIcon extends WigglyIcon {
 /** A seeded house with its lamp lit and a friend under it. */
 function sticker(seed: number): Container {
   const rng = new Rng(seed);
-  return stickerArt(rng.pick(HOUSE_COLORS), rng.pick(SPECIES), rng.pick(['teal', 'brown', 'orange', 'pink', 'blue', 'purple'] as const));
+  return stickerArt(
+    rng.pick(HOUSE_COLORS),
+    rng.pick(SPECIES),
+    rng.pick(['teal', 'brown', 'orange', 'pink', 'blue', 'purple'] as const),
+  );
 }
 
 export const helperHouse: GameModule = {
@@ -996,8 +1212,10 @@ export const helperHouse: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
-  coplayHint: 'One of you picks the sensor and the rule; the other says what the helper did at each step of the day.',
-  offScreen: 'Be the Helper: one of you is the "sensor" who calls "someone\'s here!" or "it\'s dark!", and the other is the door or the lamp who answers only when the rule says so.',
+  coplayHint:
+    'One of you picks the sensor and the rule; the other says what the helper did at each step of the day.',
+  offScreen:
+    'Be the Helper: one of you is the "sensor" who calls "someone\'s here!" or "it\'s dark!", and the other is the door or the lamp who answers only when the rule says so.',
   hubIcon: () => new HouseIcon(),
   touchDemo: true,
   sticker,

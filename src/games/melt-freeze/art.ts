@@ -49,25 +49,47 @@ export function solidArt(s: Substance, size = 100): Graphics {
   const k = size / 100;
   switch (s) {
     case 'ice':
-      g.roundRect(-40 * k, -80 * k, 80 * k, 80 * k, 12 * k).fill({ color: c.fill, alpha: 0.9 }).stroke({ width: 5 * k, color: c.line });
+      g.roundRect(-40 * k, -80 * k, 80 * k, 80 * k, 12 * k)
+        .fill({ color: c.fill, alpha: 0.9 })
+        .stroke({ width: 5 * k, color: c.line });
       g.roundRect(-28 * k, -70 * k, 14 * k, 30 * k, 6 * k).fill({ color: c.light, alpha: 0.9 });
       break;
     case 'butter':
-      g.roundRect(-46 * k, -60 * k, 92 * k, 60 * k, 8 * k).fill(c.fill).stroke({ width: 5 * k, color: c.line });
+      g.roundRect(-46 * k, -60 * k, 92 * k, 60 * k, 8 * k)
+        .fill(c.fill)
+        .stroke({ width: 5 * k, color: c.line });
       g.roundRect(-46 * k, -60 * k, 92 * k, 14 * k, 6 * k).fill(c.light);
       break;
     case 'chocolate':
-      g.roundRect(-44 * k, -56 * k, 88 * k, 56 * k, 8 * k).fill(c.fill).stroke({ width: 5 * k, color: c.line });
-      g.moveTo(0, -56 * k).lineTo(0, 0).moveTo(-44 * k, -28 * k).lineTo(44 * k, -28 * k).stroke({ width: 4 * k, color: c.line });
-      for (const [x, y] of [[-22, -42], [22, -42], [-22, -14], [22, -14]]) g.roundRect((x - 14) * k, (y - 8) * k, 28 * k, 16 * k, 4 * k).fill(c.light);
+      g.roundRect(-44 * k, -56 * k, 88 * k, 56 * k, 8 * k)
+        .fill(c.fill)
+        .stroke({ width: 5 * k, color: c.line });
+      g.moveTo(0, -56 * k)
+        .lineTo(0, 0)
+        .moveTo(-44 * k, -28 * k)
+        .lineTo(44 * k, -28 * k)
+        .stroke({ width: 4 * k, color: c.line });
+      for (const [x, y] of [
+        [-22, -42],
+        [22, -42],
+        [-22, -14],
+        [22, -14],
+      ])
+        g.roundRect((x - 14) * k, (y - 8) * k, 28 * k, 16 * k, 4 * k).fill(c.light);
       break;
     case 'stone':
-      g.ellipse(0, -34 * k, 46 * k, 34 * k).fill(c.fill).stroke({ width: 5 * k, color: c.line });
+      g.ellipse(0, -34 * k, 46 * k, 34 * k)
+        .fill(c.fill)
+        .stroke({ width: 5 * k, color: c.line });
       g.ellipse(-14 * k, -46 * k, 14 * k, 8 * k).fill({ color: c.light, alpha: 0.8 });
       break;
     case 'spoon':
-      g.ellipse(0, -72 * k, 26 * k, 20 * k).fill(c.fill).stroke({ width: 5 * k, color: c.line });
-      g.roundRect(-8 * k, -56 * k, 16 * k, 56 * k, 8 * k).fill(c.fill).stroke({ width: 5 * k, color: c.line });
+      g.ellipse(0, -72 * k, 26 * k, 20 * k)
+        .fill(c.fill)
+        .stroke({ width: 5 * k, color: c.line });
+      g.roundRect(-8 * k, -56 * k, 16 * k, 56 * k, 8 * k)
+        .fill(c.fill)
+        .stroke({ width: 5 * k, color: c.line });
       g.ellipse(0, -72 * k, 14 * k, 9 * k).fill({ color: c.light, alpha: 0.8 });
       break;
   }
@@ -79,7 +101,9 @@ export function puddleArt(s: Substance, size = 100): Graphics {
   const g = new Graphics();
   const c = COLORS[s];
   const k = size / 100;
-  g.ellipse(0, 0, 56 * k, 20 * k).fill({ color: c.fill, alpha: s === 'ice' ? 0.75 : 1 }).stroke({ width: 4 * k, color: c.line, alpha: 0.8 });
+  g.ellipse(0, 0, 56 * k, 20 * k)
+    .fill({ color: c.fill, alpha: s === 'ice' ? 0.75 : 1 })
+    .stroke({ width: 4 * k, color: c.line, alpha: 0.8 });
   g.ellipse(-18 * k, -5 * k, 16 * k, 5 * k).fill({ color: c.light, alpha: 0.7 });
   return g;
 }

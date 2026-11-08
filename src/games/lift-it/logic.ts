@@ -10,7 +10,10 @@ import type { BandLevels } from '../../progress/difficulty';
 export type Rig = 'direct' | 'fixed' | 'movable' | 'both';
 export const RIGS: readonly Rig[] = ['direct', 'fixed', 'movable', 'both'];
 export type HookId = 'branch' | 'crate';
-export interface Hooks { branch: boolean; crate: boolean }
+export interface Hooks {
+  branch: boolean;
+  crate: boolean;
+}
 
 export type Friend = 'bunny' | 'duck' | 'mouse' | 'bear' | 'frog' | 'cat' | 'dog' | 'pig';
 export const FRIENDS: readonly Friend[] = ['bunny', 'duck', 'mouse', 'bear', 'frog', 'cat', 'dog', 'pig'];
@@ -117,7 +120,11 @@ export function endsRight(rig: Rig, line: Line): boolean {
 export function bestRig(line: Line, among: readonly Rig[] = RIGS): Rig | null {
   const ok = among.filter((r) => works(r, line) && endsRight(r, line));
   const order: Rig[] = ['fixed', 'movable', 'both', 'direct'];
-  ok.sort((a, b) => (a === 'direct' ? 9 : wheels(a)) - (b === 'direct' ? 9 : wheels(b)) || order.indexOf(a) - order.indexOf(b));
+  ok.sort(
+    (a, b) =>
+      (a === 'direct' ? 9 : wheels(a)) - (b === 'direct' ? 9 : wheels(b)) ||
+      order.indexOf(a) - order.indexOf(b),
+  );
   return ok[0] ?? null;
 }
 
@@ -160,12 +167,67 @@ export interface Plan {
 }
 
 export const PLANS: readonly Plan[] = [
-  { id: 1, name: 'Pull!', hooks: [], tray: 0, prebuilt: 'fixed', counter: false, ask: 'none', request: false, lines: 3 },
-  { id: 2, name: 'Push or pull', hooks: ['branch'], tray: 1, counter: false, ask: 'none', request: false, lines: 3 },
-  { id: 3, name: 'Too heavy', hooks: ['branch', 'crate'], tray: 2, counter: false, ask: 'none', request: false, lines: 3 },
-  { id: 4, name: 'Twice the rope', hooks: ['branch', 'crate'], tray: 2, counter: true, ask: 'knots', request: false, lines: 3 },
-  { id: 5, name: 'Who pulls?', hooks: ['branch', 'crate'], tray: 2, counter: false, ask: 'none', request: true, lines: 3 },
-  { id: 6, name: 'By the numbers', hooks: ['branch', 'crate'], tray: 2, counter: true, ask: 'numbers', request: true, lines: 3 },
+  {
+    id: 1,
+    name: 'Pull!',
+    hooks: [],
+    tray: 0,
+    prebuilt: 'fixed',
+    counter: false,
+    ask: 'none',
+    request: false,
+    lines: 3,
+  },
+  {
+    id: 2,
+    name: 'Push or pull',
+    hooks: ['branch'],
+    tray: 1,
+    counter: false,
+    ask: 'none',
+    request: false,
+    lines: 3,
+  },
+  {
+    id: 3,
+    name: 'Too heavy',
+    hooks: ['branch', 'crate'],
+    tray: 2,
+    counter: false,
+    ask: 'none',
+    request: false,
+    lines: 3,
+  },
+  {
+    id: 4,
+    name: 'Twice the rope',
+    hooks: ['branch', 'crate'],
+    tray: 2,
+    counter: true,
+    ask: 'knots',
+    request: false,
+    lines: 3,
+  },
+  {
+    id: 5,
+    name: 'Who pulls?',
+    hooks: ['branch', 'crate'],
+    tray: 2,
+    counter: false,
+    ask: 'none',
+    request: true,
+    lines: 3,
+  },
+  {
+    id: 6,
+    name: 'By the numbers',
+    hooks: ['branch', 'crate'],
+    tray: 2,
+    counter: true,
+    ask: 'numbers',
+    request: true,
+    lines: 3,
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -204,9 +266,27 @@ export function lineFits(plan: Plan, line: Line): boolean {
     case 1:
       return w === 1 && g === 1 && h >= 2 && l === 0 && works('fixed', line);
     case 2:
-      return w <= 2 && g === w && h === 2 && l === 0 && works('direct', line) && works('fixed', line) && paws('direct', line) === paws('fixed', line);
+      return (
+        w <= 2 &&
+        g === w &&
+        h === 2 &&
+        l === 0 &&
+        works('direct', line) &&
+        works('fixed', line) &&
+        paws('direct', line) === paws('fixed', line)
+      );
     case 3:
-      return w >= 3 && w <= 4 && g === 2 && l === 2 && !works('direct', line) && !works('fixed', line) && works('movable', line) && works('both', line) && l >= paws('movable', line);
+      return (
+        w >= 3 &&
+        w <= 4 &&
+        g === 2 &&
+        l === 2 &&
+        !works('direct', line) &&
+        !works('fixed', line) &&
+        works('movable', line) &&
+        works('both', line) &&
+        l >= paws('movable', line)
+      );
     case 4:
       return w >= 2 && w <= 4 && h <= 2 && g >= 1;
     case 5:
@@ -215,7 +295,8 @@ export function lineFits(plan: Plan, line: Line): boolean {
       if (line.ask === 'ground' && (works('fixed', line) || !works('both', line))) return false;
       if (line.ask === 'ledge' && (!works('movable', line) || works('both', line))) return false;
       // Level 6's paws card is exact: every rig that answers the request divides the weight evenly.
-      if (plan.id === 6 && among.some((r) => works(r, line) && endsRight(r, line) && w % ratio(r) !== 0)) return false;
+      if (plan.id === 6 && among.some((r) => works(r, line) && endsRight(r, line) && w % ratio(r) !== 0))
+        return false;
       return true;
     }
   }
@@ -231,7 +312,7 @@ export function roundFits(plan: Plan, lines: readonly Line[]): boolean {
     if (!lines.some((l) => workingRigs(l, among).some((r) => ratio(r) === 1))) return false;
     if (!lines.some((l) => !workingRigs(l, among).some((r) => ratio(r) === 1))) return false;
   }
-  if (plan.request && !lines.some((l) => l.ask === 'ground') ) return false;
+  if (plan.request && !lines.some((l) => l.ask === 'ground')) return false;
   if (plan.id === 6 && !lines.some((l) => l.w === 6 && l.g === 3)) return false;
   return true;
 }
@@ -284,12 +365,27 @@ function seededLine(plan: Plan, rng: Rng, want?: Ask): Line {
 export function fallbackRound(plan: Plan): Line[] {
   const first = authored(plan);
   const more: Record<number, Line[]> = {
-    1: [{ w: 1, h: 2, g: 1, l: 0, waiting: 'frog', puller: 'bear' }, { w: 1, h: 2, g: 1, l: 0, waiting: 'mouse', puller: 'bunny' }],
-    2: [{ w: 2, h: 2, g: 2, l: 0, waiting: 'bear', puller: 'duck' }, { w: 2, h: 2, g: 2, l: 0, waiting: 'bunny', puller: 'frog' }],
-    3: [{ w: 4, h: 2, g: 2, l: 2, waiting: 'mouse', puller: 'frog' }, { w: 4, h: 2, g: 2, l: 2, waiting: 'duck', puller: 'bunny' }],
-    4: [{ w: 2, h: 2, g: 2, l: 1, waiting: 'mouse', puller: 'frog' }, { w: 3, h: 2, g: 3, l: 2, waiting: 'bear', puller: 'bunny' }],
+    1: [
+      { w: 1, h: 2, g: 1, l: 0, waiting: 'frog', puller: 'bear' },
+      { w: 1, h: 2, g: 1, l: 0, waiting: 'mouse', puller: 'bunny' },
+    ],
+    2: [
+      { w: 2, h: 2, g: 2, l: 0, waiting: 'bear', puller: 'duck' },
+      { w: 2, h: 2, g: 2, l: 0, waiting: 'bunny', puller: 'frog' },
+    ],
+    3: [
+      { w: 4, h: 2, g: 2, l: 2, waiting: 'mouse', puller: 'frog' },
+      { w: 4, h: 2, g: 2, l: 2, waiting: 'duck', puller: 'bunny' },
+    ],
+    4: [
+      { w: 2, h: 2, g: 2, l: 1, waiting: 'mouse', puller: 'frog' },
+      { w: 3, h: 2, g: 3, l: 2, waiting: 'bear', puller: 'bunny' },
+    ],
     5: [{ w: 3, h: 3, g: 2, l: 1, waiting: 'frog', puller: 'bear', ask: 'ground' }],
-    6: [{ w: 4, h: 2, g: 0, l: 2, waiting: 'mouse', puller: 'duck', ask: 'ledge' }, { w: 4, h: 3, g: 2, l: 0, waiting: 'bunny', puller: 'frog', ask: 'ground' }],
+    6: [
+      { w: 4, h: 2, g: 0, l: 2, waiting: 'mouse', puller: 'duck', ask: 'ledge' },
+      { w: 4, h: 3, g: 2, l: 0, waiting: 'bunny', puller: 'frog', ask: 'ground' },
+    ],
   };
   return [...first, ...more[plan.id]].slice(0, plan.lines).map((l) => ({ ...l, parcel: parcelOf(l) }));
 }
@@ -302,13 +398,16 @@ export function makeRound(plan: Plan, rng: Rng, first: boolean): { lines: Line[]
   for (let attempt = 0; attempt < 50; attempt++) {
     const lines: Line[] = first ? authored(plan).slice(0, plan.lines) : [];
     // Request levels: one ground line at least, then a mix.
-    const wants: (Ask | undefined)[] = plan.request ? rng.shuffle<Ask>(['ground', 'ledge', rng.chance(0.5) ? 'ground' : 'ledge']) : [];
+    const wants: (Ask | undefined)[] = plan.request
+      ? rng.shuffle<Ask>(['ground', 'ledge', rng.chance(0.5) ? 'ground' : 'ledge'])
+      : [];
     for (let i = lines.length; i < plan.lines; i++) {
       let line: Line | null = null;
       for (let t = 0; t < 50 && !line; t++) {
         const want = wants[i];
         const c = seededLine(plan, rng, want);
-        if (plan.id === 6 && i === plan.lines - 1 && !lines.some((l) => l.w === 6 && l.g === 3)) Object.assign(c, { w: 6, g: 3, ask: 'ground' });
+        if (plan.id === 6 && i === plan.lines - 1 && !lines.some((l) => l.w === 6 && l.g === 3))
+          Object.assign(c, { w: 6, g: 3, ask: 'ground' });
         if (lineFits(plan, c)) line = { ...c, parcel: rng.pick(parcelsFor(c.w)) };
       }
       if (!line) break;
@@ -344,11 +443,22 @@ export function pawsCards(rig: Rig, line: Line): number[] {
 
 /* Layout ------------------------------------------------------------------------------------------- */
 
-export interface Rect { x: number; y: number; w: number; h: number }
-export interface Pt { x: number; y: number }
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+export interface Pt {
+  x: number;
+  y: number;
+}
 
 export const petCorner = (v: View): Rect => ({ x: 0, y: v.h - 205, w: 200, h: 205 });
-export const shellButtons = (v: View): Rect[] => [{ x: 0, y: 0, w: 130, h: 130 }, { x: v.w - 130, y: 0, w: 130, h: 130 }];
+export const shellButtons = (v: View): Rect[] => [
+  { x: 0, y: 0, w: 130, h: 130 },
+  { x: v.w - 130, y: 0, w: 130, h: 130 },
+];
 
 export const CRATE_W = 150;
 export const CRATE_H = 110;
@@ -390,7 +500,10 @@ export function liftLayout(v: View): LiftLayout {
     ring: { x: cx - WHEEL_R, y: BRANCH_Y + 14 },
     branchHook: { x: cx + 2 * WHEEL_R, y: BRANCH_Y + 60 },
     groundHandle: { x: cx + 3 * WHEEL_R, y: groundY - 190 },
-    tray: [{ x: v.w - 200, y: v.h - 64 }, { x: v.w - 70, y: v.h - 64 }],
+    tray: [
+      { x: v.w - 200, y: v.h - 64 },
+      { x: v.w - 70, y: v.h - 64 },
+    ],
     ground: [0, 1, 2].map((i) => ({ x: cx + 230 + i * 80, y: groundY })),
   };
 }
@@ -400,12 +513,27 @@ export const ledgeY = (L: LiftLayout, h: number) => L.groundY - h * L.rung;
 /** The crate's bottom when it has risen `rung` rungs. */
 export const crateBottom = (L: LiftLayout, rung: number) => L.groundY - rung * L.rung;
 /** The crate wheel's centre (and its hook) when the crate has risen `rung` rungs. */
-export const crateHook = (L: LiftLayout, rung: number): Pt => ({ x: L.cx, y: crateBottom(L, rung) - CRATE_H - WHEEL_R });
+export const crateHook = (L: LiftLayout, rung: number): Pt => ({
+  x: L.cx,
+  y: crateBottom(L, rung) - CRATE_H - WHEEL_R,
+});
 /** The ledge handle and the two ledge pullers below it; the waiting friend at the ledge's lip. */
-export function ledgeSpots(L: LiftLayout, v: View, h: number): { handle: Pt; pullers: Pt[]; waiting: Pt; from: number } {
+export function ledgeSpots(
+  L: LiftLayout,
+  v: View,
+  h: number,
+): { handle: Pt; pullers: Pt[]; waiting: Pt; from: number } {
   const y = ledgeY(L, h);
   const hx = Math.min(L.cx + 400, v.w - 110);
-  return { handle: { x: hx, y: y - 170 }, pullers: [{ x: hx - 40, y }, { x: hx + 40, y }], waiting: { x: L.cx + 240, y }, from: L.cx + 200 };
+  return {
+    handle: { x: hx, y: y - 170 },
+    pullers: [
+      { x: hx - 40, y },
+      { x: hx + 40, y },
+    ],
+    waiting: { x: L.cx + 240, y },
+    from: L.cx + 200,
+  };
 }
 
 /** Where the handle sits for a rig before a stroke (the crate's middle for a push). */
@@ -437,7 +565,9 @@ export function pawSpots(v: View, H: Pt, n: number, avoid: readonly Rect[]): Pt[
   ];
   const fits = (p: Pt) => {
     const r = circleBox(p, PAW_HALF);
-    return r.x >= 0 && r.y >= 0 && r.x + r.w <= v.w && r.y + r.h <= v.h && avoid.every((a) => !rectsOverlap(r, a));
+    return (
+      r.x >= 0 && r.y >= 0 && r.x + r.w <= v.w && r.y + r.h <= v.h && avoid.every((a) => !rectsOverlap(r, a))
+    );
   };
   for (const at of sides) {
     const pts = Array.from({ length: n }, (_, i) => at(i));
@@ -446,6 +576,12 @@ export function pawSpots(v: View, H: Pt, n: number, avoid: readonly Rect[]): Pt[
   return Array.from({ length: n }, (_, i) => sides[0](i));
 }
 
-export const rectsOverlap = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+export const rectsOverlap = (a: Rect, b: Rect) =>
+  a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 export const circleBox = (p: Pt, r: number): Rect => ({ x: p.x - r, y: p.y - r, w: 2 * r, h: 2 * r });
-export const friendBox = (p: Pt): Rect => ({ x: p.x - FRIEND_HALF, y: p.y - FRIEND_UP, w: FRIEND_HALF * 2, h: FRIEND_UP + 4 });
+export const friendBox = (p: Pt): Rect => ({
+  x: p.x - FRIEND_HALF,
+  y: p.y - FRIEND_UP,
+  w: FRIEND_HALF * 2,
+  h: FRIEND_UP + 4,
+});

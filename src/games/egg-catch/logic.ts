@@ -7,7 +7,8 @@ import type { BandLevels } from '../../progress/difficulty';
  * hens lay eggs that roll gently down to a basket. Missed eggs land in soft hay and hatch,
  * so nothing breaks. Later levels route eggs through chutes with flip gates.
  */
-export type EggMode = 'tap' | 'lane' | 'catch' | 'brown' | 'route' | 'sort' | 'predict' | 'pair' | 'repair' | 'flipflop';
+export type EggMode =
+  'tap' | 'lane' | 'catch' | 'brown' | 'route' | 'sort' | 'predict' | 'pair' | 'repair' | 'flipflop';
 
 export interface EggPlan {
   mode: EggMode;
@@ -26,12 +27,38 @@ export const PLANS: EggPlan[] = [
   { mode: 'brown', eggs: 5, fall: 3.2, name: 'Catch only the brown eggs; white ones hatch in the hay' },
   { mode: 'route', eggs: 4, fall: 0, name: 'Flip the gates so the egg rolls into the basket' },
   { mode: 'sort', eggs: 5, fall: 0, name: 'Route brown eggs to the basket and white eggs to the nest' },
-  { mode: 'predict', eggs: 5, fall: 0, name: 'The gates are set: tap where the egg will land, then watch it roll' },
-  { mode: 'pair', eggs: 3, fall: 0, name: 'Set the gates once for two eggs: brown to the basket, white to the nest' },
+  {
+    mode: 'predict',
+    eggs: 5,
+    fall: 0,
+    name: 'The gates are set: tap where the egg will land, then watch it roll',
+  },
+  {
+    mode: 'pair',
+    eggs: 3,
+    fall: 0,
+    name: 'Set the gates once for two eggs: brown to the basket, white to the nest',
+  },
   { mode: 'lane', eggs: 5, fall: 1.2, name: 'Under the hen: tap a lane to hop under the clucking hen' },
-  { mode: 'route', singleGate: true, eggs: 4, fall: 0, name: 'One gate: point it toward the basket, then tap the green arrow' },
-  { mode: 'repair', eggs: 4, fall: 0, name: 'Fix the run: follow the dotted trace, repair one gate and roll again' },
-  { mode: 'flipflop', eggs: 3, fall: 0, name: 'Flip-flop gate: set a spring gate for brown then white with one arrangement' },
+  {
+    mode: 'route',
+    singleGate: true,
+    eggs: 4,
+    fall: 0,
+    name: 'One gate: point it toward the basket, then tap the green arrow',
+  },
+  {
+    mode: 'repair',
+    eggs: 4,
+    fall: 0,
+    name: 'Fix the run: follow the dotted trace, repair one gate and roll again',
+  },
+  {
+    mode: 'flipflop',
+    eggs: 3,
+    fall: 0,
+    name: 'Flip-flop gate: set a spring gate for brown then white with one arrangement',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -80,8 +107,16 @@ export function makeEggs(plan: EggPlan, rng: Rng, count = 30): Egg[] {
   for (let i = 0; i < count; i++) {
     let lane = rng.int(0, LANES - 1);
     if (lane === out[i - 1]?.lane) lane = (lane + rng.int(1, LANES - 1)) % LANES;
-    let shell: Shell = plan.mode === 'brown' || plan.mode === 'sort' ? (rng.chance(0.55) ? 'brown' : 'white') : plan.mode === 'tap' || plan.mode === 'lane' || plan.mode === 'catch' ? HEN_SHELLS[lane] : 'brown';
-    if (shell === 'white' && out.slice(-2).length === 2 && out.slice(-2).every((e) => e.shell === 'white')) shell = 'brown';
+    let shell: Shell =
+      plan.mode === 'brown' || plan.mode === 'sort'
+        ? rng.chance(0.55)
+          ? 'brown'
+          : 'white'
+        : plan.mode === 'tap' || plan.mode === 'lane' || plan.mode === 'catch'
+          ? HEN_SHELLS[lane]
+          : 'brown';
+    if (shell === 'white' && out.slice(-2).length === 2 && out.slice(-2).every((e) => e.shell === 'white'))
+      shell = 'brown';
     out.push({ lane, shell });
   }
   return out;
@@ -114,7 +149,8 @@ export function targetsFor(plan: EggPlan, rng: Rng): { basket: number; nest: num
   for (let i = 0; i < plan.eggs * 3; i++) {
     let basket = rng.int(0, plan.singleGate ? 1 : 3);
     if (plan.singleGate) {
-      if (out.length >= 2 && out.at(-1)!.basket === basket && out.at(-2)!.basket === basket) basket = 1 - basket;
+      if (out.length >= 2 && out.at(-1)!.basket === basket && out.at(-2)!.basket === basket)
+        basket = 1 - basket;
       out.push({ basket, nest: 1 - basket });
       continue;
     }
@@ -127,19 +163,26 @@ export function targetsFor(plan: EggPlan, rng: Rng): { basket: number; nest: num
     const last = out.length - 1;
     const basket = 1 - out[0].basket;
     out[last] = { basket, nest: 1 - basket };
-    if (out[last - 1].basket === basket && out[last - 2].basket === basket) out[last - 1] = { basket: 1 - basket, nest: basket };
+    if (out[last - 1].basket === basket && out[last - 2].basket === basket)
+      out[last - 1] = { basket: 1 - basket, nest: basket };
   }
   return out;
 }
 
 /** The exit an egg should reach: the basket, or for a white egg on a sorting level, the nest. */
-export const exitWanted = (mode: EggMode, shell: Shell, target: { basket: number; nest: number }) => (mode === 'sort' && shell === 'white' ? target.nest : target.basket);
+export const exitWanted = (mode: EggMode, shell: Shell, target: { basket: number; nest: number }) =>
+  mode === 'sort' && shell === 'white' ? target.nest : target.basket;
 
 /**
  * Routing: the next gate a capable child flips so that an egg bound for `exit` gets there, or null once the gates it still
  * has to pass already send it. `passed` is how many gates (0 to 2) the egg has already gone by: those are read and done with.
  */
-export function gateToFlip(gates: readonly boolean[], exit: number, passed: number, singleGate = false): number | null {
+export function gateToFlip(
+  gates: readonly boolean[],
+  exit: number,
+  passed: number,
+  singleGate = false,
+): number | null {
   const need = gatesFor(exit, singleGate);
   for (let i = passed; i < need.length; i++) if (gates[need[i].gate] !== need[i].right) return need[i].gate;
   return null;
@@ -166,17 +209,34 @@ export interface EggInAir {
  * slide does not pass through the lane of a white egg about to land (a basket caught crossing it would take the egg in).
  * A white egg is dodged to the lane of the next catchable egg when there is one, else the nearest lane that is clear.
  */
-export function basketMove(air: readonly EggInAir[], basketX: number, lanes: readonly number[], reach = 95): number | null {
+export function basketMove(
+  air: readonly EggInAir[],
+  basketX: number,
+  lanes: readonly number[],
+  reach = 95,
+): number | null {
   const clear = reach + 30;
-  const fits = (x: number, e: EggInAir) => (e.shell !== 'white' ? Math.abs(x - e.x) <= reach * 0.4 : Math.abs(x - e.x) > clear);
+  const fits = (x: number, e: EggInAir) =>
+    e.shell !== 'white' ? Math.abs(x - e.x) <= reach * 0.4 : Math.abs(x - e.x) > clear;
   const k = air.findIndex((e) => !fits(basketX, e));
   if (k < 0) return null;
-  const crossing = (x: number, e: EggInAir) => e.shell === 'white' && Math.min(basketX, x) < e.x + clear && Math.max(basketX, x) > e.x - clear;
+  const crossing = (x: number, e: EggInAir) =>
+    e.shell === 'white' && Math.min(basketX, x) < e.x + clear && Math.max(basketX, x) > e.x - clear;
   const spots =
     air[k].shell !== 'white'
       ? [air[k].x]
-      : [...air.slice(k + 1).filter((e) => e.shell !== 'white').map((e) => e.x), ...[...lanes].sort((a, b) => Math.abs(a - basketX) - Math.abs(b - basketX))];
-  return spots.find((x) => air.slice(0, k + 1).every((e) => fits(x, e)) && !air.slice(0, k).some((e) => crossing(x, e))) ?? null;
+      : [
+          ...air
+            .slice(k + 1)
+            .filter((e) => e.shell !== 'white')
+            .map((e) => e.x),
+          ...[...lanes].sort((a, b) => Math.abs(a - basketX) - Math.abs(b - basketX)),
+        ];
+  return (
+    spots.find(
+      (x) => air.slice(0, k + 1).every((e) => fits(x, e)) && !air.slice(0, k).some((e) => crossing(x, e)),
+    ) ?? null
+  );
 }
 
 /** Brown enters above the shared fork; white enters the other branch from its own hen.
@@ -188,7 +248,7 @@ export interface PairBoard {
   gates: [boolean, boolean, boolean];
 }
 export function pairExits(gates: [boolean, boolean, boolean], branch: 1 | 2): [number, number] {
-  return [exitFor(gates), branch === 1 ? (gates[1] ? 1 : 0) : (gates[2] ? 3 : 2)];
+  return [exitFor(gates), branch === 1 ? (gates[1] ? 1 : 0) : gates[2] ? 3 : 2];
 }
 export function pairNeeds(board: PairBoard): { gate: number; right: boolean }[] {
   return [...gatesFor(board.basket), { gate: board.whiteBranch, right: board.nest % 2 === 1 }];
@@ -247,7 +307,11 @@ export class HenPace {
  * The hint after two misses at levels 2–3: the lane of the next catchable egg, glowing on the hay. That is the catchable egg in the
  * air that lands first (`air` is ordered by how far each has fallen, `t`), else the next catchable one the hens will lay.
  */
-export function glowLane(air: readonly { lane: number; shell: Shell; t: number }[], eggs: readonly Egg[], next: number): number {
+export function glowLane(
+  air: readonly { lane: number; shell: Shell; t: number }[],
+  eggs: readonly Egg[],
+  next: number,
+): number {
   const falling = [...air].sort((a, b) => b.t - a.t).find((e) => e.shell !== 'white');
   if (falling) return falling.lane;
   for (let i = 0; i < eggs.length; i++) {
@@ -260,7 +324,7 @@ export function glowLane(air: readonly { lane: number; shell: Shell; t: number }
 /** A forgiving lane tap, including beyond the outer hens: the nearest lane wins.
  * Only the calling hen lays, once the basket has hopped directly under her. */
 export function laneChoice(x: number, lanes: readonly number[], calling: number) {
-  const lane = lanes.reduce((best, at, i) => Math.abs(at - x) < Math.abs(lanes[best] - x) ? i : best, 0);
+  const lane = lanes.reduce((best, at, i) => (Math.abs(at - x) < Math.abs(lanes[best] - x) ? i : best), 0);
   return { lane, lay: lane === calling };
 }
 
@@ -282,15 +346,23 @@ export function repairBoards(rng: Rng, count: number): RepairBoard[] {
     const others = [0, 1, 2, 3].filter((exit) => exit !== target && exit !== exitFor(gates));
     const other = others[rng.int(0, others.length - 1)];
     const shell = i < 2 ? 'brown' : 'white';
-    return { gates, basket: shell === 'brown' ? target : other, nest: shell === 'white' ? target : other, shell };
+    return {
+      gates,
+      basket: shell === 'brown' ? target : other,
+      nest: shell === 'white' ? target : other,
+      shell,
+    };
   });
 }
-export const repairTarget = (board: RepairBoard) => board.shell === 'white' ? board.nest : board.basket;
+export const repairTarget = (board: RepairBoard) => (board.shell === 'white' ? board.nest : board.basket);
 /** The first divergence from the needed path, including after an experimental rerun. */
 export const repairGate = (gates: readonly boolean[], target: number) => gateToFlip(gates, target, 0);
 
 /** Both eggs enter at the top. Each reads the spring, then flips it for the next egg. */
-export function simulateFlipflop(start: readonly boolean[]): { exits: [number, number]; gates: [boolean, boolean, boolean] } {
+export function simulateFlipflop(start: readonly boolean[]): {
+  exits: [number, number];
+  gates: [boolean, boolean, boolean];
+} {
   const gates = [...start] as [boolean, boolean, boolean];
   const brown = exitFor(gates);
   gates[0] = !gates[0];
@@ -309,7 +381,8 @@ export const laneXs = (mode: EggMode, w: number): number[] =>
 
 /** The routing levels' run: the chute's centre line, and the exits' (and bins') offsets from it. */
 export const routeCx = (w: number) => w / 2 + 40;
-export const exitOffsets = (singleGate: boolean): number[] => (singleGate ? [-190, 190] : [-285, -95, 95, 285]);
+export const exitOffsets = (singleGate: boolean): number[] =>
+  singleGate ? [-190, 190] : [-285, -95, 95, 285];
 
 export const HORIZON = 0.72;
 /** A far barn is this many times as wide as it is tall (the walls), plus 4 units of trim either side. */
@@ -323,12 +396,18 @@ const LANE_TOUCH_LEFT = 150;
  * The Barnyard's far barn (visual identity V1): on the horizon at the left, in the strip no lane, egg, chute, bin or
  * tap column reaches, 60 to 80 tall. Null when the strip is too narrow for a 60-unit barn.
  */
-export function farBarnAt(plan: EggPlan, w: number, h: number): { x: number; base: number; height: number } | null {
-  const routing = plan.mode !== 'tap' && plan.mode !== 'lane' && plan.mode !== 'catch' && plan.mode !== 'brown';
+export function farBarnAt(
+  plan: EggPlan,
+  w: number,
+  h: number,
+): { x: number; base: number; height: number } | null {
+  const routing =
+    plan.mode !== 'tap' && plan.mode !== 'lane' && plan.mode !== 'catch' && plan.mode !== 'brown';
   const clear = routing
     ? routeCx(w) + exitOffsets(!!plan.singleGate)[0] - CHUTE_HALF
     : Math.min(laneXs(plan.mode, w)[0] - PILE_HALF, plan.mode === 'lane' ? LANE_TOUCH_LEFT : Infinity);
-  const left = 12, right = clear - 10;
+  const left = 12,
+    right = clear - 10;
   const height = Math.min(80, Math.floor((right - left - 8) / BARN_ASPECT));
   if (height < 60) return null;
   return { x: (left + right) / 2, base: h * HORIZON, height };

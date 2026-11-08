@@ -36,9 +36,20 @@ export const RIVER_ART = {
   ],
   /** The head, chest and front paws, pinned; the wave starts behind the neck. */
   body: [
-    { x: 500, y: 100 }, { x: 515, y: 60 }, { x: 560, y: 15 }, { x: 610, y: 8 }, { x: 690, y: 30 }, { x: 725, y: 60 },
-    { x: 700, y: 100 }, { x: 690, y: 150 }, { x: 660, y: 250 }, { x: 650, y: 300 }, { x: 600, y: 320 }, { x: 500, y: 320 },
-    { x: 480, y: 250 }, { x: 485, y: 150 },
+    { x: 500, y: 100 },
+    { x: 515, y: 60 },
+    { x: 560, y: 15 },
+    { x: 610, y: 8 },
+    { x: 690, y: 30 },
+    { x: 725, y: 60 },
+    { x: 700, y: 100 },
+    { x: 690, y: 150 },
+    { x: 660, y: 250 },
+    { x: 650, y: 300 },
+    { x: 600, y: 320 },
+    { x: 500, y: 320 },
+    { x: 480, y: 250 },
+    { x: 485, y: 150 },
   ],
   /** The wave runs from the neck (0) to the hips (1) along the back. */
   wave: { root: { x: 500, y: 110 }, tip: { x: 250, y: 160 } },
@@ -57,12 +68,21 @@ export const RIVER_ART = {
     head: { x: 595, y: 14 },
     eyes: { x: 597, y: 59 },
     neck: { x: 520, y: 140 },
-    hands: [{ x: 555, y: 300 }, { x: 610, y: 292 }],
-    feet: [{ x: 215, y: 288 }, { x: 330, y: 290 }],
+    hands: [
+      { x: 555, y: 300 },
+      { x: 610, y: 292 },
+    ],
+    feet: [
+      { x: 215, y: 288 },
+      { x: 330, y: 290 },
+    ],
     back: { x: 360, y: 105 },
     tummy: { x: 420, y: 230 },
     tail: { x: 178, y: 166 },
-    ears: [{ x: 575, y: 22 }, { x: 605, y: 10 }],
+    ears: [
+      { x: 575, y: 22 },
+      { x: 605, y: 10 },
+    ],
   },
   /** Slot widths, in creature units. */
   widths: { head: 80, neck: 80 },
@@ -74,8 +94,15 @@ export const RIVER_WEAR: WearTable = {
   crown: { fits: [{ at: { x: 592, y: 2 }, width: 65 }] },
   scarf: { fits: [{ at: { x: 535, y: 128 }, width: 85 }] },
   sunhat: { fits: [{ at: { x: 595, y: 0 }, width: 110 }] },
-  sunglasses: { fits: [{ at: { x: 632, y: 52 }, width: 95 }], note: 'the far lens sits on the brow above the hidden eye' },
-  raincoat: { misfit: 'the coat is drawn upright from the front, and its body runs level from the neck to the tail, so it hangs off the back like a flag', redraw: true },
+  sunglasses: {
+    fits: [{ at: { x: 632, y: 52 }, width: 95 }],
+    note: 'the far lens sits on the brow above the hidden eye',
+  },
+  raincoat: {
+    misfit:
+      'the coat is drawn upright from the front, and its body runs level from the neck to the tail, so it hangs off the back like a flag',
+    redraw: true,
+  },
   umbrella: { misfit: 'it walks on all four paws, so none is free to hold a handle' },
   beanie: { fits: [{ at: { x: 600, y: 30 }, width: 85 }] },
   boots: {
@@ -86,7 +113,9 @@ export const RIVER_WEAR: WearTable = {
       { at: { x: 610, y: 300 }, width: 50 },
     ],
   },
-  mittens: { misfit: 'its front paws walk; the boots go on them, and mittens would be a second pair of shoes' },
+  mittens: {
+    misfit: 'its front paws walk; the boots go on them, and mittens would be a second pair of shoes',
+  },
 };
 
 const COLS = 40;
@@ -108,7 +137,8 @@ export function headWeight(x: number, y: number) {
 }
 
 /** How far the head turns at a moment, in radians (negative lifts the nose): a slow look about, up on a touch. */
-export const headTurn = (t: number, ex: number) => -0.07 * Math.sin(t * 1.3) + 0.03 * Math.sin(t * 0.53 + 1) - 0.1 * ex;
+export const headTurn = (t: number, ex: number) =>
+  -0.07 * Math.sin(t * 1.3) + 0.03 * Math.sin(t * 0.53 + 1) - 0.1 * ex;
 
 /** How strongly each region of the picture moves, from its rest position in sprite pixels. */
 export function weights(x: number, y: number): W {
@@ -229,6 +259,14 @@ export class IllustratedRiver extends IllustratedCreature {
     // A travelling wave down the back, quicker and taller when touched.
     if (wave > 0) out.y += wave * (8 + 8 * ex) * Math.sin(t * 2.4 - (x - A.wave.root.x) * 0.012);
     // The tail swishes about its root, with a lag toward the tip so it bends.
-    if (tail > 0) bend(A.tail.root, x, y, 0.15 * Math.sin(t * 1.9 - 0.8 * tail) + ex * 0.25 * Math.sin(this.swish), tail, out);
+    if (tail > 0)
+      bend(
+        A.tail.root,
+        x,
+        y,
+        0.15 * Math.sin(t * 1.9 - 0.8 * tail) + ex * 0.25 * Math.sin(this.swish),
+        tail,
+        out,
+      );
   }
 }

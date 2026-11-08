@@ -14,7 +14,35 @@ import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { LEVELS, stallFor, stallLayout, goodPlacement, type StallId, PLANS, PIP_LEVELS, PIP_NUMERAL, pips, teachLine, coinToName, missKind, hintCharge, stickerGood, anotherWay, fewest, makeOrders, PAID, paymentFor, payTouch, planFor, sameWay, sum, target, usesFewestCoins, type Order, type ShopPlan } from './logic';
+import {
+  LEVELS,
+  stallFor,
+  stallLayout,
+  goodPlacement,
+  type StallId,
+  PLANS,
+  PIP_LEVELS,
+  PIP_NUMERAL,
+  pips,
+  teachLine,
+  coinToName,
+  missKind,
+  hintCharge,
+  stickerGood,
+  anotherWay,
+  fewest,
+  makeOrders,
+  PAID,
+  paymentFor,
+  payTouch,
+  planFor,
+  sameWay,
+  sum,
+  target,
+  usesFewestCoins,
+  type Order,
+  type ShopPlan,
+} from './logic';
 
 const GOODS: { kind: PropKind; color: ColorName; name: string }[] = [
   { kind: 'apple', color: 'red', name: 'apple' },
@@ -28,18 +56,26 @@ const GOODS: { kind: PropKind; color: ColorName; name: string }[] = [
 /** Round-only scenery and stock; GOODS above remains the six-fruit sticker recipe. */
 export const STALLS = {
   fruit: { awning: 'red', keeper: 'pig', goods: GOODS },
-  flower: { awning: 'purple', keeper: 'cat', goods: [
-    { kind: 'flower', color: 'pink', name: 'pink flower' },
-    { kind: 'flower', color: 'yellow', name: 'yellow flower' },
-    { kind: 'flower', color: 'purple', name: 'purple flower' },
-    { kind: 'flower', color: 'blue', name: 'blue flower' },
-  ] },
-  balloon: { awning: 'teal', keeper: 'bear', goods: [
-    { kind: 'balloon', color: 'red', name: 'red balloon' },
-    { kind: 'balloon', color: 'yellow', name: 'yellow balloon' },
-    { kind: 'balloon', color: 'blue', name: 'blue balloon' },
-    { kind: 'balloon', color: 'pink', name: 'pink balloon' },
-  ] },
+  flower: {
+    awning: 'purple',
+    keeper: 'cat',
+    goods: [
+      { kind: 'flower', color: 'pink', name: 'pink flower' },
+      { kind: 'flower', color: 'yellow', name: 'yellow flower' },
+      { kind: 'flower', color: 'purple', name: 'purple flower' },
+      { kind: 'flower', color: 'blue', name: 'blue flower' },
+    ],
+  },
+  balloon: {
+    awning: 'teal',
+    keeper: 'bear',
+    goods: [
+      { kind: 'balloon', color: 'red', name: 'red balloon' },
+      { kind: 'balloon', color: 'yellow', name: 'yellow balloon' },
+      { kind: 'balloon', color: 'blue', name: 'blue balloon' },
+      { kind: 'balloon', color: 'pink', name: 'pink balloon' },
+    ],
+  },
 } satisfies Record<StallId, { awning: ColorName; keeper: keyof typeof CRITTERS; goods: typeof GOODS }>;
 
 const COIN_LOOK: Record<number, { color: ColorName; r: number }> = {
@@ -55,7 +91,12 @@ export function coinArt(value: number): Container {
   const { color, r } = COIN_LOOK[value];
   const sw = swatch[color];
   const c = new Container();
-  const g = new Graphics().circle(0, 3, r).fill(sw.line).circle(0, 0, r).fill(sw.fill).stroke({ width: 4, color: sw.line });
+  const g = new Graphics()
+    .circle(0, 3, r)
+    .fill(sw.line)
+    .circle(0, 0, r)
+    .fill(sw.fill)
+    .stroke({ width: 4, color: sw.line });
   for (let i = 0; i < 8; i++) {
     const a = (i * Math.PI) / 4;
     g.circle(Math.cos(a) * r * 0.78, Math.sin(a) * r * 0.78, r * 0.08).fill({ color: 0xffffff, alpha: 0.6 });
@@ -80,13 +121,21 @@ function shopCoin(value: number, level: number): Container {
 
 function tagArt(price: number): Container {
   const c = new Container();
-  c.addChild(new Graphics().roundRect(-56, -44, 112, 88, 16).fill(0xffffff).stroke({ width: 5, color: wood.line }).circle(0, -36, 6).fill(wood.line));
+  c.addChild(
+    new Graphics()
+      .roundRect(-56, -44, 112, 88, 16)
+      .fill(0xffffff)
+      .stroke({ width: 5, color: wood.line })
+      .circle(0, -36, 6)
+      .fill(wood.line),
+  );
   const n = label(String(price), 40, ink);
   n.y = -8;
   c.addChild(n);
   // Dots for counting, five to a row.
   const dots = new Graphics();
-  for (let i = 0; i < price; i++) dots.circle(-40 + (i % 5) * 20, 22 + Math.floor(i / 5) * 14, 5).fill(swatch.green.fill);
+  for (let i = 0; i < price; i++)
+    dots.circle(-40 + (i % 5) * 20, 22 + Math.floor(i / 5) * 14, 5).fill(swatch.green.fill);
   c.addChild(dots);
   return c;
 }
@@ -128,7 +177,17 @@ class MarketStall implements Game {
     this.plan = planFor(ctx.level);
     this.orders = makeOrders(this.plan, ctx.rng);
     this.stallId = stallFor(ctx.rng);
-    this.backdrop = new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0x9edb86], horizon: 0.55, clouds: 2, sun: true, seed: 29 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0x8fd3f7, 0xe9f7ff],
+        hills: [0xc8ecb0, 0x9edb86],
+        horizon: 0.55,
+        clouds: 2,
+        sun: true,
+        seed: 29,
+      },
+      ctx.view,
+    );
     this.keeper = new Critter(CRITTERS[STALLS[this.stallId].keeper]);
     this.keeper.scale.set(0.5);
     ctx.track(this.keeper);
@@ -149,7 +208,9 @@ class MarketStall implements Game {
 
   private bellArt() {
     const g = new Graphics();
-    g.poly([-26, 14, -20, -14, 0, -26, 20, -14, 26, 14]).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line, join: 'round' });
+    g.poly([-26, 14, -20, -14, 0, -26, 20, -14, 26, 14])
+      .fill(swatch.yellow.fill)
+      .stroke({ width: 4, color: swatch.yellow.line, join: 'round' });
     g.roundRect(-32, 12, 64, 10, 5).fill(swatch.yellow.line).circle(0, -30, 6).fill(swatch.yellow.line);
     return g;
   }
@@ -174,14 +235,21 @@ class MarketStall implements Game {
     const s = this.stall.clear();
     const awning = swatch[STALLS[this.stallId].awning];
     // An awning with stripes, two posts and a counter.
-    s.rect(cx - 330, 70, 20, cy - 70).rect(cx + 310, 70, 20, cy - 70).fill(wood.fill);
+    s.rect(cx - 330, 70, 20, cy - 70)
+      .rect(cx + 310, 70, 20, cy - 70)
+      .fill(wood.fill);
     for (let i = 0; i < 8; i++) s.rect(cx - 340 + i * 85, 60, 85, 56).fill(i % 2 ? 0xffffff : awning.fill);
     s.rect(cx - 340, 60, 680, 56).stroke({ width: 5, color: awning.line });
     // Scalloped edge hanging below the stripes.
-    for (let i = 0; i < 8; i++) s.moveTo(cx - 340 + i * 85, 116).arc(cx - 297.5 + i * 85, 116, 42.5, Math.PI, 0, true);
+    for (let i = 0; i < 8; i++)
+      s.moveTo(cx - 340 + i * 85, 116).arc(cx - 297.5 + i * 85, 116, 42.5, Math.PI, 0, true);
     s.fill(awning.fill);
-    s.roundRect(cx - 360, cy, 720, 50, 14).fill(wood.fill).stroke({ width: 6, color: wood.line });
-    s.rect(cx - 340, cy + 50, 680, 200).fill(wood.light).stroke({ width: 5, color: wood.line });
+    s.roundRect(cx - 360, cy, 720, 50, 14)
+      .fill(wood.fill)
+      .stroke({ width: 6, color: wood.line });
+    s.rect(cx - 340, cy + 50, 680, 200)
+      .fill(wood.light)
+      .stroke({ width: 5, color: wood.line });
     this.keeper.position.set(cx + 200, cy + 20);
     this.goods.position.set(stockX, cy);
     // The mat where coins go, on the front of the stall.
@@ -200,7 +268,11 @@ class MarketStall implements Game {
 
   private drawMat(w: number) {
     if (!this.matArt.parent) this.mat.addChildAt(this.matArt, 0);
-    this.matArt.clear().roundRect(-w / 2, -70, w, 140, 26).fill(swatch.green.light).stroke({ width: 5, color: swatch.green.line });
+    this.matArt
+      .clear()
+      .roundRect(-w / 2, -70, w, 140, 26)
+      .fill(swatch.green.light)
+      .stroke({ width: 5, color: swatch.green.line });
   }
 
   /** Coins sit on the mat in rows of six. */
@@ -213,7 +285,10 @@ class MarketStall implements Game {
   /** The ghost finger: put the coins of the payment on the counter one at a time, then ring the bell. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.order) return null;
-    const touch = payTouch(paymentFor(this.plan, this.order, this.firstWay), this.onMat.map((c) => c.value));
+    const touch = payTouch(
+      paymentFor(this.plan, this.order, this.firstWay),
+      this.onMat.map((c) => c.value),
+    );
     if (touch === 'bell') return { tap: { on: this.bell } };
     const coin = this.purse.find((p) => p.value === touch.coin);
     return coin ? { tap: { on: coin.node } } : null;
@@ -255,7 +330,8 @@ class MarketStall implements Game {
     await this.ctx.tw.to(this.goods, { alpha: 1 }, { duration: 0.3 });
     this.busy = false;
     const n = o.prices[0];
-    if (this.plan.mode === 'pair') return this.ctx.instruct('shop.pair', { a: this.names[0], n, b: this.names[1], m: o.prices[1] });
+    if (this.plan.mode === 'pair')
+      return this.ctx.instruct('shop.pair', { a: this.names[0], n, b: this.names[1], m: o.prices[1] });
     if (this.plan.mode === 'change') return this.ctx.instruct('shop.change', { fruit: this.names[0], n });
     if (this.plan.mode === 'fewest') return this.ctx.instruct('shop.fewest', { fruit: this.names[0], n });
     return this.ctx.instruct('shop.pay', { fruit: this.names[0], n });
@@ -286,9 +362,12 @@ class MarketStall implements Game {
       this.named.add(value);
       const purse = this.purse.find((p) => p.value === value)!.node;
       const big = purse.scale.x;
-      void this.ctx.tw.to(purse.scale, { x: big * 1.25, y: big * 1.25 }, { duration: 0.18, ease: ease.outQuad }).then(() => this.ctx.tw.to(purse.scale, { x: big, y: big }, { duration: 0.2, ease: ease.outQuad }));
+      void this.ctx.tw
+        .to(purse.scale, { x: big * 1.25, y: big * 1.25 }, { duration: 0.18, ease: ease.outQuad })
+        .then(() => this.ctx.tw.to(purse.scale, { x: big, y: big }, { duration: 0.2, ease: ease.outQuad }));
       void this.ctx.say('shop.name', { word });
-    } else if (this.plan.mode === 'pair' || this.plan.mode === 'change') void this.ctx.say('count', { n: value });
+    } else if (this.plan.mode === 'pair' || this.plan.mode === 'change')
+      void this.ctx.say('count', { n: value });
     else void this.ctx.say('count', { n: total });
   }
 
@@ -298,7 +377,11 @@ class MarketStall implements Game {
     const p = this.mat.toLocal(e.global);
     let best = 0;
     this.onMat.forEach((c, i) => {
-      if (Math.hypot(c.node.x - p.x, c.node.y - p.y) < Math.hypot(this.onMat[best].node.x - p.x, this.onMat[best].node.y - p.y)) best = i;
+      if (
+        Math.hypot(c.node.x - p.x, c.node.y - p.y) <
+        Math.hypot(this.onMat[best].node.x - p.x, this.onMat[best].node.y - p.y)
+      )
+        best = i;
     });
     const [c] = this.onMat.splice(best, 1);
     c.node.destroy({ children: true });
@@ -323,7 +406,16 @@ class MarketStall implements Game {
     }
     if (got !== want) {
       const kind = missKind(this.plan, this.order, coins)!;
-      const lines = { price: 'shop.price', 'one-price': 'shop.oneprice', 'counted-coins': 'shop.values', 'one-more': 'shop.one.more', 'one-less': 'shop.one.less', 'big-coin': 'shop.big', short: this.plan.mode === 'change' ? 'shop.change.short' : 'shop.short', over: this.plan.mode === 'change' ? 'shop.change.over' : 'shop.over' } as const;
+      const lines = {
+        price: 'shop.price',
+        'one-price': 'shop.oneprice',
+        'counted-coins': 'shop.values',
+        'one-more': 'shop.one.more',
+        'one-less': 'shop.one.less',
+        'big-coin': 'shop.big',
+        short: this.plan.mode === 'change' ? 'shop.change.short' : 'shop.short',
+        over: this.plan.mode === 'change' ? 'shop.change.over' : 'shop.over',
+      } as const;
       await this.wrong(lines[kind], { n });
       return;
     }
@@ -341,7 +433,11 @@ class MarketStall implements Game {
     sfx.bell(9, 0.3);
     this.clearGhost();
     const to = this.mat.toLocal(this.keeper.getGlobalPosition());
-    await Promise.all(this.onMat.map((c) => this.ctx.tw.to(c.node, { x: to.x, y: to.y - 60, alpha: 0 }, { duration: 0.4, ease: ease.inQuad })));
+    await Promise.all(
+      this.onMat.map((c) =>
+        this.ctx.tw.to(c.node, { x: to.x, y: to.y - 60, alpha: 0 }, { duration: 0.4, ease: ease.inQuad }),
+      ),
+    );
     this.onMat.splice(0).forEach((c) => c.node.destroy({ children: true }));
     this.keeper.cheer();
     this.ctx.pet.cheer();
@@ -358,7 +454,22 @@ class MarketStall implements Game {
     await this.next();
   }
 
-  private async wrong(line: 'shop.short' | 'shop.over' | 'shop.change.short' | 'shop.change.over' | 'shop.sameway' | 'shop.fewer' | 'shop.price' | 'shop.oneprice' | 'shop.values' | 'shop.one.more' | 'shop.one.less' | 'shop.big', vars: { n?: number }) {
+  private async wrong(
+    line:
+      | 'shop.short'
+      | 'shop.over'
+      | 'shop.change.short'
+      | 'shop.change.over'
+      | 'shop.sameway'
+      | 'shop.fewer'
+      | 'shop.price'
+      | 'shop.oneprice'
+      | 'shop.values'
+      | 'shop.one.more'
+      | 'shop.one.less'
+      | 'shop.big',
+    vars: { n?: number },
+  ) {
     this.misses++;
     this.wrongs++;
     sfx.boing();
@@ -371,7 +482,9 @@ class MarketStall implements Game {
       const teach = teachLine(this.plan, this.firstWay);
       if (teach) await this.ctx.say(teach === 'swap' ? 'shop.hint.swap' : 'shop.hint.biggest');
       const want = target(this.plan, this.order);
-      const idea = this.firstWay ? anotherWay(want, this.plan.coins, this.firstWay) : fewest(want, this.plan.coins);
+      const idea = this.firstWay
+        ? anotherWay(want, this.plan.coins, this.firstWay)
+        : fewest(want, this.plan.coins);
       idea.forEach((v, i) => {
         const c = shopCoin(v, this.ctx.level);
         c.alpha = 0.45;

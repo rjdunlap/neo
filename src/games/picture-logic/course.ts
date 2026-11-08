@@ -23,14 +23,15 @@ export const COURSES: Record<PictureCourseId, Course> = {
     id: 'pictures',
     version: 1,
     name: 'Pond Pictures',
-    blurb: 'Three 10 by 10 pictures in a row, from a sailboat to a cat: fill what the numbers say and see what appears.',
+    blurb:
+      'Three 10 by 10 pictures in a row, from a sailboat to a cat: fill what the numbers say and see what appears.',
     pictures: [SAILBOAT, CAT, DUCK],
   },
   bigpictures: {
     id: 'bigpictures',
     version: 1,
     name: 'The Big Pictures',
-    blurb: 'Two 15 by 15 pictures, an evening\'s puzzle: a lighthouse, then a butterfly.',
+    blurb: "Two 15 by 15 pictures, an evening's puzzle: a lighthouse, then a butterfly.",
     pictures: [LIGHTHOUSE, BUTTERFLY],
   },
 };
@@ -41,7 +42,7 @@ const parsed = new Map<PictureCourseId, PicturePuzzle[]>();
 /** The pictures of a course, read once. */
 export function coursePictures(id: PictureCourseId): PicturePuzzle[] {
   let pictures = parsed.get(id);
-  if (!pictures) parsed.set(id, pictures = COURSES[id].pictures.map(fromDrawn));
+  if (!pictures) parsed.set(id, (pictures = COURSES[id].pictures.map(fromDrawn)));
   return pictures;
 }
 

@@ -35,7 +35,12 @@ export const NO_INSETS: Insets = { top: 0, right: 0, bottom: 0, left: 0 };
 /** A cutout is never more than a quarter of a side; a wild reading must not squeeze the island away. */
 export function clampInsets(i: Insets, pxW: number, pxH: number): Insets {
   const fit = (n: number, limit: number) => (Number.isFinite(n) ? Math.min(Math.max(0, n), limit * 0.25) : 0);
-  return { top: fit(i.top, pxH), right: fit(i.right, pxW), bottom: fit(i.bottom, pxH), left: fit(i.left, pxW) };
+  return {
+    top: fit(i.top, pxH),
+    right: fit(i.right, pxW),
+    bottom: fit(i.bottom, pxH),
+    left: fit(i.left, pxW),
+  };
 }
 
 /**
@@ -49,7 +54,9 @@ export function computeView(pxW: number, pxH: number, insets: Insets = NO_INSETS
   const h = pxH - safe.top - safe.bottom;
   const area = designArea(upright);
   const scale = Math.min(w / area.w, h / area.h);
-  return upright ? { w: w / scale, h: h / scale, scale, upright: true } : { w: w / scale, h: h / scale, scale };
+  return upright
+    ? { w: w / scale, h: h / scale, scale, upright: true }
+    : { w: w / scale, h: h / scale, scale };
 }
 
 /** The design area a view was laid out on. */

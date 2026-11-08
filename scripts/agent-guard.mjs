@@ -5,37 +5,43 @@
 
 /** Why `command` must not run, or null when it may. `platform` decides the macOS-only sed rule. */
 export function blockReason(command, platform = process.platform) {
-  if (typeof command !== 'string') return null
+  if (typeof command !== 'string') return null;
   // Only a command that starts the harness: npm or node at a command position. Reading, grepping or listing its
   // files (`wc -c scripts/browser-check.mjs`, `grep "npm run test:browser" README.md`) is not a run.
-  const runsHarness = /(^|[\s;&|(])npm\s+run\s+test:browser\b|(^|[\s;&|(])node\s+(?:-\S+\s+)*\S*browser-check\.mjs\b/.test(command)
+  const runsHarness =
+    /(^|[\s;&|(])npm\s+run\s+test:browser\b|(^|[\s;&|(])node\s+(?:-\S+\s+)*\S*browser-check\.mjs\b/.test(
+      command,
+    );
   if (runsHarness && !/\bBROWSER_SUITE=/.test(command)) {
-    return 'Never start the browser harness without a filter (AGENTS.md, "Verification budget"): set BROWSER_SUITE (and its game filter) on the same command, e.g. GAME_URL=… BROWSER_SUITE=fingerdemo FINGER_ONLY=<id> npm run test:browser.'
+    return 'Never start the browser harness without a filter (AGENTS.md, "Verification budget"): set BROWSER_SUITE (and its game filter) on the same command, e.g. GAME_URL=… BROWSER_SUITE=fingerdemo FINGER_ONLY=<id> npm run test:browser.';
   }
   // BSD sed reads the word after -i as a backup suffix, so `sed -i -e …` leaves a stray `<file>-e` copy (one was committed).
-  if (platform === 'darwin' && /(^|[\s;&|(])sed\s+(?:-[A-Za-z]+\s+)*-i(?:\s+-[A-Za-z]|[A-Za-z])/.test(command)) {
-    return "On macOS `sed -i -e` (or `-ie`) treats the next word as a backup suffix and leaves a stray <file>-e copy. Use `sed -i '' -e …`, or the Edit tool for doc changes."
+  if (
+    platform === 'darwin' &&
+    /(^|[\s;&|(])sed\s+(?:-[A-Za-z]+\s+)*-i(?:\s+-[A-Za-z]|[A-Za-z])/.test(command)
+  ) {
+    return "On macOS `sed -i -e` (or `-ie`) treats the next word as a backup suffix and leaves a stray <file>-e copy. Use `sed -i '' -e …`, or the Edit tool for doc changes.";
   }
-  return null
+  return null;
 }
 
-const isMain = import.meta.url === `file://${process.argv[1]}`
+const isMain = import.meta.url === `file://${process.argv[1]}`;
 if (isMain) {
-  let input = ''
-  process.stdin.setEncoding('utf8')
-  process.stdin.on('data', (chunk) => (input += chunk))
+  let input = '';
+  process.stdin.setEncoding('utf8');
+  process.stdin.on('data', (chunk) => (input += chunk));
   process.stdin.on('end', () => {
-    let command
+    let command;
     try {
-      command = JSON.parse(input)?.tool_input?.command
+      command = JSON.parse(input)?.tool_input?.command;
     } catch {
-      process.exit(0) // Not our input: never block on a parse problem.
+      process.exit(0); // Not our input: never block on a parse problem.
     }
-    const reason = blockReason(command)
+    const reason = blockReason(command);
     if (reason) {
-      process.stderr.write(reason + '\n')
-      process.exit(2)
+      process.stderr.write(reason + '\n');
+      process.exit(2);
     }
-    process.exit(0)
-  })
+    process.exit(0);
+  });
 }

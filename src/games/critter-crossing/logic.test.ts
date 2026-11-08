@@ -1,7 +1,22 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { fits } from '../../learning/sorting/rules';
-import { bestTest, consistent, gateKey, gateWords, makeRound, nextStep, passes, PLANS, planFor, sameGate, splits, type CrossPlan, type CrossRound, type Gate } from './logic';
+import {
+  bestTest,
+  consistent,
+  gateKey,
+  gateWords,
+  makeRound,
+  nextStep,
+  passes,
+  PLANS,
+  planFor,
+  sameGate,
+  splits,
+  type CrossPlan,
+  type CrossRound,
+  type Gate,
+} from './logic';
 
 const hatBrown: Gate = { kind: 'and', rules: ['hat', 'brown'] };
 
@@ -15,7 +30,10 @@ describe('Critter Crossing', () => {
     expect(passes(bearHat, hatBrown)).toBe(true);
     expect(passes({ kind: 'cat', hat: true }, hatBrown)).toBe(false);
     expect(passes({ kind: 'bear', hat: false }, hatBrown)).toBe(false);
-    for (const k of ['cow', 'bear', 'dog'] as const) expect(passes({ kind: k, hat: false }, { kind: 'one', rule: 'floppy' })).toBe(fits({ kind: k, hat: false }, 'floppy'));
+    for (const k of ['cow', 'bear', 'dog'] as const)
+      expect(passes({ kind: k, hat: false }, { kind: 'one', rule: 'floppy' })).toBe(
+        fits({ kind: k, hat: false }, 'floppy'),
+      );
   });
 
   it('names a rule in words, and an "and" is the same either way round', () => {
@@ -59,14 +77,21 @@ describe('Critter Crossing', () => {
       for (let seed = 1; seed <= 120; seed++) {
         const r = makeRound(plan, new Rng(seed));
         expect(r.options, plan.name).toHaveLength(plan.options);
-        expect(r.options.filter((g) => sameGate(g, r.gate)), `${plan.name} #${seed}`).toHaveLength(1);
+        expect(
+          r.options.filter((g) => sameGate(g, r.gate)),
+          `${plan.name} #${seed}`,
+        ).toHaveLength(1);
         expect(new Set(r.options.map(gateKey)).size).toBe(plan.options);
         const all = r.critters.map((c) => ({ c, passed: passes(c, r.gate) }));
         const left = consistent(r.options, all);
         expect(left, `${plan.name} #${seed}`).toHaveLength(1);
         expect(sameGate(left[0], r.gate)).toBe(true);
         // A wrong picture is wrong for a reason a critter shows.
-        for (const g of r.options.filter((o) => !sameGate(o, r.gate))) expect(r.critters.some((c) => passes(c, g) !== passes(c, r.gate)), `${plan.name} #${seed}`).toBe(true);
+        for (const g of r.options.filter((o) => !sameGate(o, r.gate)))
+          expect(
+            r.critters.some((c) => passes(c, g) !== passes(c, r.gate)),
+            `${plan.name} #${seed}`,
+          ).toBe(true);
       }
     }
   });
@@ -77,14 +102,17 @@ describe('Critter Crossing', () => {
       expect(makeRound(PLANS[3], new Rng(seed)).options.every((g) => g.kind === 'and')).toBe(true);
     }
     const kinds = new Set<string>();
-    for (let seed = 1; seed <= 80; seed++) for (const g of makeRound(PLANS[4], new Rng(seed)).options) kinds.add(g.kind);
+    for (let seed = 1; seed <= 80; seed++)
+      for (const g of makeRound(PLANS[4], new Rng(seed)).options) kinds.add(g.kind);
     expect([...kinds].sort()).toEqual(['and', 'not', 'one']);
   });
 
   it('does not repeat the last rule when asked not to', () => {
     for (let seed = 1; seed <= 40; seed++) {
       const first = makeRound(PLANS[1], new Rng(seed));
-      expect(sameGate(makeRound(PLANS[1], new Rng(seed + 500), gateKey(first.gate)).gate, first.gate)).toBe(false);
+      expect(sameGate(makeRound(PLANS[1], new Rng(seed + 500), gateKey(first.gate)).gate, first.gate)).toBe(
+        false,
+      );
     }
   });
 
@@ -116,18 +144,24 @@ describe('Critter Crossing', () => {
   it('appends a visible not entry with both outcomes, without changing the old plans', () => {
     const plan = planFor(8);
     expect(plan).toMatchObject({ mode: 'visible', gates: 'not', critters: 5, rounds: 2 });
-    expect(PLANS.slice(0, 7).map(p => [p.mode, p.gates])).toEqual([
-      ['visible', 'one'], ['hidden', 'one'], ['hidden', 'one'], ['hidden', 'and'],
-      ['hidden', 'mixed'], ['hidden', 'or'], ['hidden', 'mixed'],
+    expect(PLANS.slice(0, 7).map((p) => [p.mode, p.gates])).toEqual([
+      ['visible', 'one'],
+      ['hidden', 'one'],
+      ['hidden', 'one'],
+      ['hidden', 'and'],
+      ['hidden', 'mixed'],
+      ['hidden', 'or'],
+      ['hidden', 'mixed'],
     ]);
     for (let seed = 1; seed <= 300; seed++) {
       const round = makeRound(plan, new Rng(seed));
       expect(round.gate.kind).toBe('not');
       expect(round.options).toEqual([]);
-      const outcomes = round.critters.map(c => passes(c, round.gate));
+      const outcomes = round.critters.map((c) => passes(c, round.gate));
       expect(outcomes).toContain(true);
       expect(outcomes).toContain(false);
-      if (round.gate.kind === 'not') for (const c of round.critters) expect(passes(c, round.gate)).toBe(!fits(c, round.gate.rule));
+      if (round.gate.kind === 'not')
+        for (const c of round.critters) expect(passes(c, round.gate)).toBe(!fits(c, round.gate.rule));
     }
   });
 
@@ -207,7 +241,12 @@ describe('Critter Crossing', () => {
         const left = consistent(r.options, [...r.tried!, { c: splitter, passed: passes(splitter, r.gate) }]);
         expect(left).toHaveLength(1);
         expect(sameGate(left[0], r.gate)).toBe(true);
-        const hint = bestTest(r.critters, r.tried!.map((t) => t.c), r.options, r.tried!)!;
+        const hint = bestTest(
+          r.critters,
+          r.tried!.map((t) => t.c),
+          r.options,
+          r.tried!,
+        )!;
         expect(splits(hint, r.options)).toBe(true);
         const step = nextStep(r, plan, r.tried!);
         expect(step?.do).toBe('try');
@@ -224,7 +263,10 @@ describe('Critter Crossing', () => {
         const step = nextStep(round, plan, tried);
         if (!step) return { tried, guess: null };
         if (step.do === 'guess') return { tried, guess: step.gate };
-        expect(tried.some((t) => t.c === step.critter), 'a critter is sent only once').toBe(false);
+        expect(
+          tried.some((t) => t.c === step.critter),
+          'a critter is sent only once',
+        ).toBe(false);
         tried.push({ c: step.critter, passed: passes(step.critter, round.gate) });
       }
       throw new Error('the finger did not finish the round');
@@ -236,7 +278,10 @@ describe('Critter Crossing', () => {
           const round = makeRound(plan, new Rng(seed));
           const { tried, guess } = play(round, plan);
           expect(guess).toBeNull();
-          expect(tried.every((t) => t.passed), `seed ${seed}`).toBe(true);
+          expect(
+            tried.every((t) => t.passed),
+            `seed ${seed}`,
+          ).toBe(true);
           expect(tried.length).toBe(round.critters.filter((c) => passes(c, round.gate)).length);
         }
       }
@@ -249,7 +294,9 @@ describe('Critter Crossing', () => {
           const { tried, guess } = play(round, plan);
           expect(guess, `${plan.name} seed ${seed}`).not.toBeNull();
           expect(sameGate(guess!, round.gate), `${plan.name} seed ${seed}: guessed the true rule`).toBe(true);
-          expect(tried.length, 'enough tried for the guess button to wake').toBeGreaterThanOrEqual(plan.minTests);
+          expect(tried.length, 'enough tried for the guess button to wake').toBeGreaterThanOrEqual(
+            plan.minTests,
+          );
           expect(tried.length).toBeLessThanOrEqual(round.critters.length);
           // Its guess fits everything it saw, so it can never be a wrong answer.
           expect(consistent([guess!], tried)).toHaveLength(1);
@@ -279,7 +326,8 @@ describe('Critter Crossing', () => {
         for (;;) {
           const step = nextStep(round, plan, tried);
           if (!step || step.do === 'guess') break;
-          if (tried.length < plan.minTests && consistent(round.options, tried).length === 1) sawDecisiveEarly = true;
+          if (tried.length < plan.minTests && consistent(round.options, tried).length === 1)
+            sawDecisiveEarly = true;
           tried.push({ c: step.critter, passed: passes(step.critter, round.gate) });
         }
       }

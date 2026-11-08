@@ -13,7 +13,9 @@ export const VOICE = {
   'clap.try': ['Let us clap it together, then you try again!'],
   'clap.sort.wrong': ['{word} has {count}. Let us clap it!'],
   'clap.match.wrong': ['{word} has {count}. Listen to the claps again!'],
-  'clap.train': ['Make a beat train! The picture with the fewest claps rides at the back, the one with the most claps rides by the engine.'],
+  'clap.train': [
+    'Make a beat train! The picture with the fewest claps rides at the back, the one with the most claps rides by the engine.',
+  ],
   'clap.train.wrong': ['{word} has {count}. Let us clap it, then find its car!'],
   'clap.train.go': ['Fewest claps to most. All aboard!', 'Clap, clap, choo choo!'],
   'clap.done': ['What a great clapper!', 'Clap, clap, hooray!'],

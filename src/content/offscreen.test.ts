@@ -13,11 +13,34 @@ const byId = (id: string) => {
 };
 
 /** Small loose objects (and a cord) that no line names at lap or toddler; plural-aware, word-bounded. */
-const UNDER_3 = ['marble', 'coin', 'button', 'bean', 'bead', 'pebble', 'rubber band', 'battery', 'balloon', 'small ball', 'dry bean', 'pom-pom', 'seed', 'string'];
-const under3Pattern = (word: string) => new RegExp(`\\b${word.replace(/[-\s]/g, '[-\\s]')}(s|es|ies)?\\b`, 'i');
+const UNDER_3 = [
+  'marble',
+  'coin',
+  'button',
+  'bean',
+  'bead',
+  'pebble',
+  'rubber band',
+  'battery',
+  'balloon',
+  'small ball',
+  'dry bean',
+  'pom-pom',
+  'seed',
+  'string',
+];
+const under3Pattern = (word: string) =>
+  new RegExp(`\\b${word.replace(/[-\s]/g, '[-\\s]')}(s|es|ies)?\\b`, 'i');
 
 /** Obligation, scheduling and purchase wording, for every band. */
-const EVERY_BAND = [/[{}]/, /\b\d+\s*(minutes?|mins?)\b/i, /\bevery day\b/i, /\beach morning\b/i, /\bmust\b/i, /\bbuy\b/i];
+const EVERY_BAND = [
+  /[{}]/,
+  /\b\d+\s*(minutes?|mins?)\b/i,
+  /\bevery day\b/i,
+  /\beach morning\b/i,
+  /\bmust\b/i,
+  /\bbuy\b/i,
+];
 
 /** Every (game, band) pair a profile can play, with the band the launch resolves to. */
 const plays = GAMES.flatMap((g) => ALL_BANDS.map((band) => ({ g, band, at: playBand(g.bands, band) })));
@@ -29,7 +52,8 @@ describe('off-screen lines per band', () => {
       if (at !== 'lap' && at !== 'toddler') continue;
       const line = offScreenFor(g, band, SAMPLE_NAME);
       if (line === null) continue;
-      for (const word of UNDER_3) if (under3Pattern(word).test(line)) bad.push(`${g.id} at ${band}: "${word}" in "${line}"`);
+      for (const word of UNDER_3)
+        if (under3Pattern(word).test(line)) bad.push(`${g.id} at ${band}: "${word}" in "${line}"`);
     }
     expect(bad).toEqual([]);
   });
@@ -45,7 +69,9 @@ describe('off-screen lines per band', () => {
   });
 
   it('keys only bands the game lists, with a non-empty all and short band entries', () => {
-    const tabled = GAMES.filter((g): g is GameModule & { offScreen: OffScreenLines } => typeof g.offScreen === 'object');
+    const tabled = GAMES.filter(
+      (g): g is GameModule & { offScreen: OffScreenLines } => typeof g.offScreen === 'object',
+    );
     expect(tabled.length).toBeGreaterThanOrEqual(15);
     for (const g of tabled) {
       expect(g.offScreen.all.trim().length, `${g.id} all`).toBeGreaterThan(0);
@@ -67,7 +93,11 @@ describe('off-screen lines per band', () => {
     expect(offScreenFor(garden, 'toddler', SAMPLE_NAME)).toBeNull();
     expect(offScreenFor(garden, 'prek', SAMPLE_NAME)).toBe((garden.offScreen as OffScreenLines).all);
     expect(offScreenFor(garden, 'preschool', SAMPLE_NAME)).toBe((garden.offScreen as OffScreenLines).all);
-    const ideas = offScreenIdeas([garden, byId('peg-garden'), byId('dot-link'), byId('fill-dump')], 'lap', SAMPLE_NAME);
+    const ideas = offScreenIdeas(
+      [garden, byId('peg-garden'), byId('dot-link'), byId('fill-dump')],
+      'lap',
+      SAMPLE_NAME,
+    );
     expect(ideas.map((i) => i.game.id)).toEqual(['peg-garden', 'dot-link']);
     expect(ideas[0].line).toContain('large soft ball');
     // No line at all is skipped the same way.
@@ -100,7 +130,15 @@ describe('off-screen lines per band', () => {
   });
 
   it('gives each of the seven school lines only to school', () => {
-    for (const id of ['block-tower', 'bouncy-launch', 'bounce-back', 'mail-carrier', 'puzzle-pals', 'jelly-drums', 'teddy-doctor']) {
+    for (const id of [
+      'block-tower',
+      'bouncy-launch',
+      'bounce-back',
+      'mail-carrier',
+      'puzzle-pals',
+      'jelly-drums',
+      'teddy-doctor',
+    ]) {
       const g = byId(id);
       const lines = g.offScreen as OffScreenLines;
       expect(typeof lines.school, id).toBe('string');

@@ -8,7 +8,20 @@ import type { BandLevels } from '../../progress/difficulty';
  * The ladder: copy single moves, body words ("touch your nose"), two moves in order, the "Pet says" rule
  * (move only when you hear "Pet says", which practices waiting), and a freeze dance.
  */
-export type Move = 'clap' | 'stomp' | 'wave' | 'jump' | 'spin' | 'wiggle' | 'up' | 'down' | 'nose' | 'tummy' | 'ears' | 'head' | 'toes';
+export type Move =
+  | 'clap'
+  | 'stomp'
+  | 'wave'
+  | 'jump'
+  | 'spin'
+  | 'wiggle'
+  | 'up'
+  | 'down'
+  | 'nose'
+  | 'tummy'
+  | 'ears'
+  | 'head'
+  | 'toes';
 export type SaysMode = 'copy' | 'body' | 'pairs' | 'says' | 'freeze' | 'pat';
 
 export const MOVES: Move[] = ['clap', 'stomp', 'wave', 'jump', 'spin', 'wiggle', 'up', 'down'];
@@ -31,7 +44,9 @@ export const MOVE_CUES = {
   toes: { word: 'touch your toes', line: 'says.move.toes' },
 } satisfies Record<Move, { word: string; line: LineId }>;
 
-export const MOVE_WORDS = Object.fromEntries(Object.entries(MOVE_CUES).map(([id, cue]) => [id, cue.word])) as Record<Move, string>;
+export const MOVE_WORDS = Object.fromEntries(
+  Object.entries(MOVE_CUES).map(([id, cue]) => [id, cue.word]),
+) as Record<Move, string>;
 
 interface Pt {
   x: number;
@@ -58,7 +73,10 @@ export interface SaysFrame {
   knock: number;
 }
 
-export function saysFrame(at: (part: 'nose' | 'tummy' | 'ears' | 'head' | 'feet') => readonly Pt[], box: { x: number; y: number; width: number; height: number }): SaysFrame {
+export function saysFrame(
+  at: (part: 'nose' | 'tummy' | 'ears' | 'head' | 'feet') => readonly Pt[],
+  box: { x: number; y: number; width: number; height: number },
+): SaysFrame {
   const cx = box.x + box.width / 2;
   const right = box.x + box.width;
   const floor = Math.min(0, box.y + box.height);
@@ -94,7 +112,8 @@ export function saysFrame(at: (part: 'nose' | 'tummy' | 'ears' | 'head' | 'feet'
 }
 
 /** Waiting is co-play, never a missed answer or automatic advance. */
-export const shouldNudge = (idle: number, busy: boolean, finished: boolean) => idle >= 10 && !busy && !finished;
+export const shouldNudge = (idle: number, busy: boolean, finished: boolean) =>
+  idle >= 10 && !busy && !finished;
 
 /** Preserve the original color/pose draw order for owned stickers. */
 export function stickerRecipe(rng: Rng) {
@@ -128,13 +147,18 @@ export const LEVELS: BandLevels = {
  * 13, Pat the pet, is lap's first: her touch on the pet is the cue, so there is no arrow and nothing to copy.
  */
 export const ENTRY_PLANS: Record<number, SaysPlan> = {
-  13: { mode: 'pat', turns: 5, name: 'Pat the pet: every touch on the pet makes it do the next move (no arrow)' },
+  13: {
+    mode: 'pat',
+    turns: 5,
+    name: 'Pat the pet: every touch on the pet makes it do the next move (no arrow)',
+  },
 };
 
 /** The moves a pat brings out, easiest to watch first in the draw; pat-a-cake and peekaboo wait for the tiered moves. */
 export const PAT_MOVES: Move[] = ['wave', 'clap', 'jump', 'wiggle', 'spin'];
 
-export const planFor = (level: number) => ENTRY_PLANS[level] ?? PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+export const planFor = (level: number) =>
+  ENTRY_PLANS[level] ?? PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 export interface Turn {
   moves: Move[];
@@ -152,9 +176,14 @@ export function makeTurns(plan: SaysPlan, rng: Rng): Turn[] {
   };
   switch (plan.mode) {
     case 'copy':
-      return deck(MOVES).slice(0, plan.turns).map((m) => ({ moves: [m] }));
+      return deck(MOVES)
+        .slice(0, plan.turns)
+        .map((m) => ({ moves: [m] }));
     case 'body':
-      return rng.shuffle([...BODY]).slice(0, plan.turns).map((m) => ({ moves: [m] }));
+      return rng
+        .shuffle([...BODY])
+        .slice(0, plan.turns)
+        .map((m) => ({ moves: [m] }));
     case 'pairs': {
       const d = deck(MOVES);
       return Array.from({ length: plan.turns }, (_, i) => ({ moves: [d[2 * i], d[2 * i + 1]] }));
@@ -165,11 +194,16 @@ export function makeTurns(plan: SaysPlan, rng: Rng): Turn[] {
         const tricks = new Set([rng.int(1, plan.turns - 1), rng.int(1, plan.turns - 1)]);
         const list = [...tricks].sort((a, b) => a - b);
         if (list.length < 2 || list[1] - list[0] < 2) continue;
-        return deck([...MOVES, ...BODY]).slice(0, plan.turns).map((m, i) => ({ moves: [m], says: !tricks.has(i) }));
+        return deck([...MOVES, ...BODY])
+          .slice(0, plan.turns)
+          .map((m, i) => ({ moves: [m], says: !tricks.has(i) }));
       }
     }
     case 'pat':
-      return rng.shuffle([...PAT_MOVES]).slice(0, plan.turns).map((m) => ({ moves: [m] }));
+      return rng
+        .shuffle([...PAT_MOVES])
+        .slice(0, plan.turns)
+        .map((m) => ({ moves: [m] }));
     case 'freeze':
       return Array.from({ length: plan.turns }, () => ({ moves: ['wiggle'] }));
   }

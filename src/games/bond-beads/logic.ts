@@ -24,7 +24,10 @@ const sameLink = (l: Link, a: number, b: number) => (l[0] === a && l[1] === b) |
 
 export function degrees(n: number, links: readonly Link[]): number[] {
   const d = new Array<number>(n).fill(0);
-  for (const [a, b] of links) { d[a]++; d[b]++; }
+  for (const [a, b] of links) {
+    d[a]++;
+    d[b]++;
+  }
   return d;
 }
 
@@ -34,13 +37,20 @@ export function freeHands(kinds: readonly Kind[], links: readonly Link[], i: num
 
 export const linked = (links: readonly Link[], a: number, b: number) => links.some((l) => sameLink(l, a, b));
 /** How many links join this pair: 0, 1, or 2 for a double hold. */
-export const linkCount = (links: readonly Link[], a: number, b: number) => links.filter((l) => sameLink(l, a, b)).length;
+export const linkCount = (links: readonly Link[], a: number, b: number) =>
+  links.filter((l) => sameLink(l, a, b)).length;
 
 /**
  * One link per pair (two with `doubles`, levels 6 and up), never a bead to itself, and both beads need a free hand.
  * There is never a triple hold.
  */
-export function canLink(kinds: readonly Kind[], links: readonly Link[], a: number, b: number, doubles = false): boolean {
+export function canLink(
+  kinds: readonly Kind[],
+  links: readonly Link[],
+  a: number,
+  b: number,
+  doubles = false,
+): boolean {
   if (a === b || a < 0 || b < 0 || a >= kinds.length || b >= kinds.length) return false;
   if (linkCount(links, a, b) >= (doubles ? 2 : 1)) return false;
   const d = degrees(kinds.length, links);
@@ -49,7 +59,8 @@ export function canLink(kinds: readonly Kind[], links: readonly Link[], a: numbe
 
 /** Whether any link can still be made. */
 export function anyLink(kinds: readonly Kind[], links: readonly Link[], doubles = false): boolean {
-  for (let a = 0; a < kinds.length; a++) for (let b = a + 1; b < kinds.length; b++) if (canLink(kinds, links, a, b, doubles)) return true;
+  for (let a = 0; a < kinds.length; a++)
+    for (let b = a + 1; b < kinds.length; b++) if (canLink(kinds, links, a, b, doubles)) return true;
   return false;
 }
 
@@ -79,7 +90,10 @@ export function pieces(n: number, links: readonly Link[]): number[][] {
       group.push(i);
       for (const [a, b] of links) {
         const j = a === i ? b : b === i ? a : -1;
-        if (j >= 0 && !seen[j]) { seen[j] = true; stack.push(j); }
+        if (j >= 0 && !seen[j]) {
+          seen[j] = true;
+          stack.push(j);
+        }
       }
     }
     out.push(group.sort((x, y) => x - y));
@@ -106,7 +120,11 @@ function permutations(items: number[]): number[][] {
  * A piece's canonical key: its kinds in tally order, then the smallest adjacency (links per pair, 0 to 2) over every
  * relabelling of beads of the same kind. Where beads are drawn and which H is which never change it.
  */
-export function canon(kinds: readonly Kind[], links: readonly Link[], members: readonly number[] = kinds.map((_, i) => i)): string {
+export function canon(
+  kinds: readonly Kind[],
+  links: readonly Link[],
+  members: readonly number[] = kinds.map((_, i) => i),
+): string {
   const groups = KIND_ORDER.map((k) => members.filter((i) => kinds[i] === k));
   let orders: number[][] = [[]];
   for (const g of groups) {
@@ -117,7 +135,8 @@ export function canon(kinds: readonly Kind[], links: readonly Link[], members: r
   let best: string | null = null;
   for (const order of orders) {
     let bits = '';
-    for (let i = 0; i < order.length; i++) for (let j = i + 1; j < order.length; j++) bits += String(linkCount(links, order[i], order[j]));
+    for (let i = 0; i < order.length; i++)
+      for (let j = i + 1; j < order.length; j++) bits += String(linkCount(links, order[i], order[j]));
     if (best === null || bits < best) best = bits;
   }
   return `${kindsPart}:${best}`;
@@ -125,11 +144,18 @@ export function canon(kinds: readonly Kind[], links: readonly Link[], members: r
 
 /** A build's key: its pieces' keys, sorted. */
 export function buildKey(kinds: readonly Kind[], links: readonly Link[]): string {
-  return pieces(kinds.length, links).map((p) => canon(kinds, links, p)).sort().join('+');
+  return pieces(kinds.length, links)
+    .map((p) => canon(kinds, links, p))
+    .sort()
+    .join('+');
 }
 
 /** Every finished labelled build of these beads (all hands held; single links, or up to doubles) that `accept` takes. */
-export function labelledBuilds(kinds: readonly Kind[], accept: (links: Link[]) => boolean, doubles = false): Link[][] {
+export function labelledBuilds(
+  kinds: readonly Kind[],
+  accept: (links: Link[]) => boolean,
+  doubles = false,
+): Link[][] {
   const n = kinds.length;
   const pairs: Link[] = [];
   for (let a = 0; a < n; a++) for (let b = a + 1; b < n; b++) pairs.push([a, b]);
@@ -147,9 +173,13 @@ export function labelledBuilds(kinds: readonly Kind[], accept: (links: Link[]) =
     // This pair taken as many times as hands allow (up to `most`), then fewer, then not at all.
     const take = (n: number) => {
       if (n < most && d[a] < HANDS[kinds[a]] && d[b] < HANDS[kinds[b]]) {
-        d[a]++; d[b]++; chosen.push(pairs[k]);
+        d[a]++;
+        d[b]++;
+        chosen.push(pairs[k]);
         take(n + 1);
-        d[a]--; d[b]--; chosen.pop();
+        d[a]--;
+        d[b]--;
+        chosen.pop();
       }
       walk(k + 1);
     };
@@ -161,7 +191,11 @@ export function labelledBuilds(kinds: readonly Kind[], accept: (links: Link[]) =
 
 /** The distinct shapes these beads make as one piece with every hand held (`doubles` from level 6). */
 export function enumerate(kinds: readonly Kind[], opts: { doubles?: boolean } = {}): string[] {
-  const keys = new Set(labelledBuilds(kinds, (links) => pieces(kinds.length, links).length === 1, opts.doubles).map((l) => buildKey(kinds, l)));
+  const keys = new Set(
+    labelledBuilds(kinds, (links) => pieces(kinds.length, links).length === 1, opts.doubles).map((l) =>
+      buildKey(kinds, l),
+    ),
+  );
   return [...keys].sort();
 }
 
@@ -194,32 +228,120 @@ export const FIRST_TRAY = 'O1H2';
 
 /** Level 2: the cards, each a pictured shape made from its own tray. The first is authored. */
 export const CARDS: Shape[] = [
-  { id: 'chain4', kinds: k('HOOH'), links: L([0, 1], [1, 2], [2, 3]), pic: [{ x: -1.5, y: 0.3 }, { x: -0.5, y: -0.3 }, { x: 0.5, y: 0.3 }, { x: 1.5, y: -0.3 }] },
-  { id: 'cross', kinds: k('CHHHH'), links: L([0, 1], [0, 2], [0, 3], [0, 4]), pic: [{ x: 0, y: 0 }, { x: 0, y: -1 }, { x: 1, y: 0 }, { x: 0, y: 1 }, { x: -1, y: 0 }] },
-  { id: 'chain5', kinds: k('HOOOH'), links: L([0, 1], [1, 2], [2, 3], [3, 4]), pic: [{ x: -2, y: 0.3 }, { x: -1, y: -0.3 }, { x: 0, y: 0.3 }, { x: 1, y: -0.3 }, { x: 2, y: 0.3 }] },
-  { id: 'loop', kinds: k('COOHH'), links: L([0, 1], [0, 2], [1, 2], [0, 3], [0, 4]), pic: [{ x: 0, y: 0.2 }, { x: -0.6, y: -0.75 }, { x: 0.6, y: -0.75 }, { x: -0.95, y: 0.75 }, { x: 0.95, y: 0.75 }] },
+  {
+    id: 'chain4',
+    kinds: k('HOOH'),
+    links: L([0, 1], [1, 2], [2, 3]),
+    pic: [
+      { x: -1.5, y: 0.3 },
+      { x: -0.5, y: -0.3 },
+      { x: 0.5, y: 0.3 },
+      { x: 1.5, y: -0.3 },
+    ],
+  },
+  {
+    id: 'cross',
+    kinds: k('CHHHH'),
+    links: L([0, 1], [0, 2], [0, 3], [0, 4]),
+    pic: [
+      { x: 0, y: 0 },
+      { x: 0, y: -1 },
+      { x: 1, y: 0 },
+      { x: 0, y: 1 },
+      { x: -1, y: 0 },
+    ],
+  },
+  {
+    id: 'chain5',
+    kinds: k('HOOOH'),
+    links: L([0, 1], [1, 2], [2, 3], [3, 4]),
+    pic: [
+      { x: -2, y: 0.3 },
+      { x: -1, y: -0.3 },
+      { x: 0, y: 0.3 },
+      { x: 1, y: -0.3 },
+      { x: 2, y: 0.3 },
+    ],
+  },
+  {
+    id: 'loop',
+    kinds: k('COOHH'),
+    links: L([0, 1], [0, 2], [1, 2], [0, 3], [0, 4]),
+    pic: [
+      { x: 0, y: 0.2 },
+      { x: -0.6, y: -0.75 },
+      { x: 0.6, y: -0.75 },
+      { x: -0.95, y: 0.75 },
+      { x: 0.95, y: 0.75 },
+    ],
+  },
 ];
 
 /** The small pieces levels 3–4 take apart and build: a pair of H, and the H–O–H trio. */
-export const PAIR: Shape = { id: 'pair', kinds: k('HH'), links: L([0, 1]), pic: [{ x: -0.5, y: 0 }, { x: 0.5, y: 0 }] };
-export const TRIO: Shape = { id: 'trio', kinds: k('HOH'), links: L([0, 1], [1, 2]), pic: [{ x: -1, y: 0.3 }, { x: 0, y: -0.3 }, { x: 1, y: 0.3 }] };
+export const PAIR: Shape = {
+  id: 'pair',
+  kinds: k('HH'),
+  links: L([0, 1]),
+  pic: [
+    { x: -0.5, y: 0 },
+    { x: 0.5, y: 0 },
+  ],
+};
+export const TRIO: Shape = {
+  id: 'trio',
+  kinds: k('HOH'),
+  links: L([0, 1], [1, 2]),
+  pic: [
+    { x: -1, y: 0.3 },
+    { x: 0, y: -0.3 },
+    { x: 1, y: 0.3 },
+  ],
+};
 
 /**
  * Levels 5–6: the six named shapes, checked against PubChem's records (definition: source check). A double hold is the
  * same pair listed twice. Nothing else is ever named: H–O–O–H and the C–O shape with four H stay puzzle shapes.
  */
 export const WATER: Shape = { ...TRIO, id: 'water' };
-export const AMMONIA: Shape = { id: 'ammonia', kinds: k('NHHH'), links: L([0, 1], [0, 2], [0, 3]), pic: [{ x: 0, y: -0.15 }, { x: -1, y: 0.55 }, { x: 0, y: 1 }, { x: 1, y: 0.55 }] };
+export const AMMONIA: Shape = {
+  id: 'ammonia',
+  kinds: k('NHHH'),
+  links: L([0, 1], [0, 2], [0, 3]),
+  pic: [
+    { x: 0, y: -0.15 },
+    { x: -1, y: 0.55 },
+    { x: 0, y: 1 },
+    { x: 1, y: 0.55 },
+  ],
+};
 export const METHANE: Shape = { ...CARDS[1], id: 'methane' };
 export const HYDROGEN: Shape = { ...PAIR, id: 'hydrogen' };
-export const OXYGEN: Shape = { id: 'oxygen', kinds: k('OO'), links: L([0, 1], [0, 1]), pic: [{ x: -0.7, y: 0 }, { x: 0.7, y: 0 }] };
-export const CARBON_DIOXIDE: Shape = { id: 'carbon-dioxide', kinds: k('OCO'), links: L([0, 1], [0, 1], [1, 2], [1, 2]), pic: [{ x: -1.35, y: 0 }, { x: 0, y: 0 }, { x: 1.35, y: 0 }] };
+export const OXYGEN: Shape = {
+  id: 'oxygen',
+  kinds: k('OO'),
+  links: L([0, 1], [0, 1]),
+  pic: [
+    { x: -0.7, y: 0 },
+    { x: 0.7, y: 0 },
+  ],
+};
+export const CARBON_DIOXIDE: Shape = {
+  id: 'carbon-dioxide',
+  kinds: k('OCO'),
+  links: L([0, 1], [0, 1], [1, 2], [1, 2]),
+  pic: [
+    { x: -1.35, y: 0 },
+    { x: 0, y: 0 },
+    { x: 1.35, y: 0 },
+  ],
+};
 
 /** The named shapes by build key; the name is the shape's id, which the voice line `bondbeads.named.<id>` says. */
 export const NAMED_SHAPES: readonly Shape[] = [WATER, AMMONIA, METHANE, HYDROGEN, OXYGEN, CARBON_DIOXIDE];
 export const NAMED = new Map<string, string>(NAMED_SHAPES.map((s) => [shapeKey(s), s.id]));
 /** The names a matched card says, piece by piece: only at levels 5 and up, and only for the card's own shapes. */
-export const namesOf = (shapes: readonly Shape[]): string[] => shapes.map((s) => NAMED.get(shapeKey(s))).filter((n): n is string => !!n);
+export const namesOf = (shapes: readonly Shape[]): string[] =>
+  shapes.map((s) => NAMED.get(shapeKey(s))).filter((n): n is string => !!n);
 
 /** A request is a set of shapes that together use every bead; its key is the build key they make. */
 export const requestKey = (shapes: readonly Shape[]) => shapes.map(shapeKey).sort().join('+');
@@ -240,10 +362,20 @@ export function joinShapes(shapes: readonly Shape[]): { kinds: Kind[]; links: Li
  * Level 3: two built shapes on the table and a card with two different shapes of the same beads; the tray must empty into
  * exactly those two. Each pair is played in both directions; the first (the pair and chain to two trios) is authored.
  */
-export interface Puzzle { id: string; from: Shape[]; to: Shape[] }
+export interface Puzzle {
+  id: string;
+  from: Shape[];
+  to: Shape[];
+}
 export const PUZZLE_PAIRS: [Shape[], Shape[]][] = [
-  [[PAIR, CARDS[0]], [TRIO, TRIO]],
-  [[PAIR, CARDS[2]], [TRIO, CARDS[0]]],
+  [
+    [PAIR, CARDS[0]],
+    [TRIO, TRIO],
+  ],
+  [
+    [PAIR, CARDS[2]],
+    [TRIO, CARDS[0]],
+  ],
 ];
 export const PUZZLES: Puzzle[] = PUZZLE_PAIRS.flatMap(([a, b], i) => [
   { id: `p${i}f`, from: a, to: b },
@@ -254,16 +386,46 @@ export const PUZZLES: Puzzle[] = PUZZLE_PAIRS.flatMap(([a, b], i) => [
  * Level 4: loose beads with two cards, the two shapes the same beads make; she builds either, then rearranges into the
  * other. The seven-bead set is authored first.
  */
-export interface TwoWays { id: string; kinds: Kind[]; shapes: [Shape, Shape] }
+export interface TwoWays {
+  id: string;
+  kinds: Kind[];
+  shapes: [Shape, Shape];
+}
 export const SETS: TwoWays[] = [
   {
     id: 'C1O2H4',
     kinds: k('COOHHHH'),
     shapes: [
       // Three H on the C, then C–O–O–H.
-      { id: 'tail', kinds: k('COOHHHH'), links: L([0, 1], [1, 2], [2, 3], [0, 4], [0, 5], [0, 6]), pic: [{ x: -1.5, y: 0 }, { x: -0.5, y: 0 }, { x: 0.5, y: 0 }, { x: 1.5, y: 0 }, { x: -1.5, y: -1 }, { x: -2.5, y: 0 }, { x: -1.5, y: 1 }] },
+      {
+        id: 'tail',
+        kinds: k('COOHHHH'),
+        links: L([0, 1], [1, 2], [2, 3], [0, 4], [0, 5], [0, 6]),
+        pic: [
+          { x: -1.5, y: 0 },
+          { x: -0.5, y: 0 },
+          { x: 0.5, y: 0 },
+          { x: 1.5, y: 0 },
+          { x: -1.5, y: -1 },
+          { x: -2.5, y: 0 },
+          { x: -1.5, y: 1 },
+        ],
+      },
       // Two H on the C, and an O–H on each side.
-      { id: 'wings', kinds: k('COOHHHH'), links: L([0, 1], [0, 2], [1, 3], [2, 4], [0, 5], [0, 6]), pic: [{ x: 0, y: 0 }, { x: -1, y: 0 }, { x: 1, y: 0 }, { x: -2, y: 0 }, { x: 2, y: 0 }, { x: 0, y: -1 }, { x: 0, y: 1 }] },
+      {
+        id: 'wings',
+        kinds: k('COOHHHH'),
+        links: L([0, 1], [0, 2], [1, 3], [2, 4], [0, 5], [0, 6]),
+        pic: [
+          { x: 0, y: 0 },
+          { x: -1, y: 0 },
+          { x: 1, y: 0 },
+          { x: -2, y: 0 },
+          { x: 2, y: 0 },
+          { x: 0, y: -1 },
+          { x: 0, y: 1 },
+        ],
+      },
     ],
   },
   {
@@ -271,9 +433,33 @@ export const SETS: TwoWays[] = [
     kinds: k('COOOHH'),
     shapes: [
       // A loop of C, O, O, with C–O–H and C–H on C's other hands.
-      { id: 'loop3', kinds: k('COOOHH'), links: L([0, 1], [0, 2], [1, 2], [0, 3], [3, 4], [0, 5]), pic: [{ x: 0, y: 0 }, { x: -0.6, y: -0.95 }, { x: 0.6, y: -0.95 }, { x: 0.95, y: 0.65 }, { x: 1.75, y: 1.3 }, { x: -0.95, y: 0.65 }] },
+      {
+        id: 'loop3',
+        kinds: k('COOOHH'),
+        links: L([0, 1], [0, 2], [1, 2], [0, 3], [3, 4], [0, 5]),
+        pic: [
+          { x: 0, y: 0 },
+          { x: -0.6, y: -0.95 },
+          { x: 0.6, y: -0.95 },
+          { x: 0.95, y: 0.65 },
+          { x: 1.75, y: 1.3 },
+          { x: -0.95, y: 0.65 },
+        ],
+      },
       // A loop of C, O, O, O with two H on the C.
-      { id: 'loop4', kinds: k('COOOHH'), links: L([0, 1], [0, 2], [1, 3], [2, 3], [0, 4], [0, 5]), pic: [{ x: 0, y: 0.5 }, { x: -0.95, y: -0.3 }, { x: 0.95, y: -0.3 }, { x: 0, y: -1.1 }, { x: -0.85, y: 1.35 }, { x: 0.85, y: 1.35 }] },
+      {
+        id: 'loop4',
+        kinds: k('COOOHH'),
+        links: L([0, 1], [0, 2], [1, 3], [2, 3], [0, 4], [0, 5]),
+        pic: [
+          { x: 0, y: 0.5 },
+          { x: -0.95, y: -0.3 },
+          { x: 0.95, y: -0.3 },
+          { x: 0, y: -1.1 },
+          { x: -0.85, y: 1.35 },
+          { x: 0.85, y: 1.35 },
+        ],
+      },
     ],
   },
 ];
@@ -288,13 +474,25 @@ export const REARRANGEMENTS: Puzzle[] = [
   { id: 'water-h2o2', from: [WATER, WATER], to: [HYDROGEN, HYDROGEN, OXYGEN] },
 ];
 
-export interface Plan { level: number; name: string; rounds: number }
+export interface Plan {
+  level: number;
+  name: string;
+  rounds: number;
+}
 
 export const PLANS: Plan[] = [
   { level: 1, name: 'Hold every hand: three trays, any shape', rounds: 3 },
   { level: 2, name: 'Copy the shape: two pictured cards, then Check', rounds: 2 },
-  { level: 3, name: 'Take it apart, build two: two built shapes become the two on the card, every bead used', rounds: 2 },
-  { level: 4, name: 'The same beads, two ways: build one pictured shape, then rearrange it into the other', rounds: 2 },
+  {
+    level: 3,
+    name: 'Take it apart, build two: two built shapes become the two on the card, every bead used',
+    rounds: 2,
+  },
+  {
+    level: 4,
+    name: 'The same beads, two ways: build one pictured shape, then rearrange it into the other',
+    rounds: 2,
+  },
   { level: 5, name: 'Build named shapes: water, ammonia, methane (N joins)', rounds: 3 },
   { level: 6, name: 'Double holds: oxygen and carbon dioxide', rounds: 3 },
   { level: 7, name: 'Rearrange hydrogen and oxygen into water, and back', rounds: 2 },
@@ -313,17 +511,31 @@ export function planFor(level: number): Plan {
  * card asks for: null at level 1 (any shape), one request at levels 2–3, and at level 4 two single-shape requests of
  * which either is accepted first and the other is then built from the same beads (`twoWays`).
  */
-export interface Step { kinds: Kind[]; opening: Link[]; requests: Shape[][] | null; twoWays: boolean; doubles?: boolean }
+export interface Step {
+  kinds: Kind[];
+  opening: Link[];
+  requests: Shape[][] | null;
+  twoWays: boolean;
+  doubles?: boolean;
+}
 
 /** The card at level 2, when the step has exactly one single-shape request. */
-export const stepCard = (s: Step): Shape | null => (s.requests && s.requests.length === 1 && s.requests[0].length === 1 ? s.requests[0][0] : null);
+export const stepCard = (s: Step): Shape | null =>
+  s.requests && s.requests.length === 1 && s.requests[0].length === 1 ? s.requests[0][0] : null;
 
 /** Turn the tray by `off` places (and mirror it when `flip`), so built pieces keep their neighbours on the ring. */
-export function rotateTray(kinds: readonly Kind[], links: readonly Link[], off: number, flip: boolean): { kinds: Kind[]; links: Link[] } {
+export function rotateTray(
+  kinds: readonly Kind[],
+  links: readonly Link[],
+  off: number,
+  flip: boolean,
+): { kinds: Kind[]; links: Link[] } {
   const n = kinds.length;
-  const to = (i: number) => (((flip ? n - 1 - i : i) + off) % n + n) % n;
+  const to = (i: number) => ((((flip ? n - 1 - i : i) + off) % n) + n) % n;
   const out = new Array<Kind>(n);
-  kinds.forEach((kind, i) => { out[to(i)] = kind; });
+  kinds.forEach((kind, i) => {
+    out[to(i)] = kind;
+  });
   return { kinds: out, links: links.map(([a, b]) => norm(to(a), to(b))) };
 }
 
@@ -343,11 +555,25 @@ export function roundFor(level: number, rng: Rng): Step[] {
     });
   }
   if (lv === 5 || lv === 6) {
-    const cards: Shape[][] = lv === 5 ? [[WATER], ...rng.shuffle([[AMMONIA], [METHANE]])] : [[OXYGEN], [CARBON_DIOXIDE], [HYDROGEN, OXYGEN]];
-    return cards.map((req) => ({ kinds: rng.shuffle(joinShapes(req).kinds), opening: [], requests: [req], twoWays: false, doubles: lv === 6 }));
+    const cards: Shape[][] =
+      lv === 5
+        ? [[WATER], ...rng.shuffle([[AMMONIA], [METHANE]])]
+        : [[OXYGEN], [CARBON_DIOXIDE], [HYDROGEN, OXYGEN]];
+    return cards.map((req) => ({
+      kinds: rng.shuffle(joinShapes(req).kinds),
+      opening: [],
+      requests: [req],
+      twoWays: false,
+      doubles: lv === 6,
+    }));
   }
   if (lv === 4) {
-    return SETS.map((set) => ({ kinds: rng.shuffle(set.kinds.slice()), opening: [], requests: set.shapes.map((s) => [s]), twoWays: true }));
+    return SETS.map((set) => ({
+      kinds: rng.shuffle(set.kinds.slice()),
+      opening: [],
+      requests: set.shapes.map((s) => [s]),
+      twoWays: true,
+    }));
   }
   if (lv === 3) {
     const second = rng.pick(PUZZLES.filter((p) => p.id.startsWith('p1')));
@@ -359,10 +585,20 @@ export function roundFor(level: number, rng: Rng): Step[] {
   }
   if (lv === 2) {
     const rest = rng.shuffle(CARDS.slice(1));
-    return [CARDS[0], rest[0]].map((card) => ({ kinds: rng.shuffle(card.kinds.slice()), opening: [], requests: [[card]], twoWays: false }));
+    return [CARDS[0], rest[0]].map((card) => ({
+      kinds: rng.shuffle(card.kinds.slice()),
+      opening: [],
+      requests: [[card]],
+      twoWays: false,
+    }));
   }
   const rest = rng.shuffle(Object.keys(TRAYS).filter((t) => t !== FIRST_TRAY));
-  return [FIRST_TRAY, rest[0], rest[1]].map((t) => ({ kinds: rng.shuffle(TRAYS[t].slice()), opening: [], requests: null, twoWays: false }));
+  return [FIRST_TRAY, rest[0], rest[1]].map((t) => ({
+    kinds: rng.shuffle(TRAYS[t].slice()),
+    opening: [],
+    requests: null,
+    twoWays: false,
+  }));
 }
 
 /** The beads on the table and what she has linked, with undo and Start again. Nothing here is ever a miss. */
@@ -457,7 +693,10 @@ export class Bench {
     for (const s of this.solutions) {
       const extra = linksMissing(this.links, s).length;
       const missing = linksMissing(s, this.links).length;
-      if (extra + missing < bestCost) { bestCost = extra + missing; best = s; }
+      if (extra + missing < bestCost) {
+        bestCost = extra + missing;
+        best = s;
+      }
     }
     return best;
   }
@@ -481,7 +720,9 @@ export function helpFor(bench: Bench): Help | null {
   if (bench.done || !bench.solutions.length) return null;
   const s = bench.nearest();
   const d = degrees(bench.kinds.length, bench.links);
-  const missing = linksMissing(s, bench.links).filter((l) => canLink(bench.kinds, bench.links, l[0], l[1], bench.doubles));
+  const missing = linksMissing(s, bench.links).filter((l) =>
+    canLink(bench.kinds, bench.links, l[0], l[1], bench.doubles),
+  );
   const extra = linksMissing(bench.links, s);
   const single = missing.filter((l) => !linked(bench.links, l[0], l[1]));
   // A free hand on a bead that is already in a piece, then two beads that need another link, then a bead on its own.
@@ -546,24 +787,39 @@ export class CheckTally {
 
   private light() {
     this.glowing = true;
-    if (!this.helped) { this.helped = true; this.hints++; }
+    if (!this.helped) {
+      this.helped = true;
+      this.hints++;
+    }
   }
 }
 
 // ——— Layout ———
 
-export interface Rect { x: number; y: number; w: number; h: number }
-export interface Pt { x: number; y: number }
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+export interface Pt {
+  x: number;
+  y: number;
+}
 
 export const centre = (r: Rect): Pt => ({ x: r.x + r.w / 2, y: r.y + r.h / 2 });
-export const overlaps = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+export const overlaps = (a: Rect, b: Rect) =>
+  a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 const inside = (a: Rect, v: View) => a.x >= 0 && a.y >= 0 && a.x + a.w <= v.w && a.y + a.h <= v.h;
 
 /** The home and ? buttons (top left) and the guide (bottom left). */
 export const HOME_CORNER = { w: 130, h: 215 };
 export const PET_CORNER = { w: 160, h: 170 };
 export function corners(v: View): Rect[] {
-  return [{ x: 0, y: 0, ...HOME_CORNER }, { x: 0, y: v.h - PET_CORNER.h, ...PET_CORNER }];
+  return [
+    { x: 0, y: 0, ...HOME_CORNER },
+    { x: 0, y: v.h - PET_CORNER.h, ...PET_CORNER },
+  ];
 }
 
 /** A bead's body radius; its hand nubs reach to `BEAD_REACH`, so a bead is 128 units across. */
@@ -606,7 +862,12 @@ function ring(c: Pt, rx: number, ry: number, n: number, amount: number, nudge: n
   };
   const mean = (rx + ry) / 2;
   for (let i = 0; i < n; i++) {
-    pts.push(at((total * i) / n + JITTER[i % JITTER.length] * amount * mean, RADIAL[i % RADIAL.length] * nudge * NUDGE));
+    pts.push(
+      at(
+        (total * i) / n + JITTER[i % JITTER.length] * amount * mean,
+        RADIAL[i % RADIAL.length] * nudge * NUDGE,
+      ),
+    );
   }
   return pts;
 }
@@ -614,14 +875,18 @@ function ring(c: Pt, rx: number, ry: number, n: number, amount: number, nudge: n
 /** Whether beads are `BEAD_GAP` apart and every pair of possible links has its own midpoint. */
 export function spaced(beads: readonly Pt[]): boolean {
   const n = beads.length;
-  for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
-    if (Math.hypot(beads[i].x - beads[j].x, beads[i].y - beads[j].y) < BEAD_GAP) return false;
-  }
+  for (let i = 0; i < n; i++)
+    for (let j = i + 1; j < n; j++) {
+      if (Math.hypot(beads[i].x - beads[j].x, beads[i].y - beads[j].y) < BEAD_GAP) return false;
+    }
   const mids: Pt[] = [];
-  for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) mids.push({ x: (beads[i].x + beads[j].x) / 2, y: (beads[i].y + beads[j].y) / 2 });
-  for (let i = 0; i < mids.length; i++) for (let j = i + 1; j < mids.length; j++) {
-    if (Math.hypot(mids[i].x - mids[j].x, mids[i].y - mids[j].y) < MID_GAP) return false;
-  }
+  for (let i = 0; i < n; i++)
+    for (let j = i + 1; j < n; j++)
+      mids.push({ x: (beads[i].x + beads[j].x) / 2, y: (beads[i].y + beads[j].y) / 2 });
+  for (let i = 0; i < mids.length; i++)
+    for (let j = i + 1; j < mids.length; j++) {
+      if (Math.hypot(mids[i].x - mids[j].x, mids[i].y - mids[j].y) < MID_GAP) return false;
+    }
   return true;
 }
 
@@ -632,15 +897,33 @@ const RADIAL = [0.5, -0.5, 0.3, -0.6, 0.6, -0.3, 0.1];
 const NUDGE = 36;
 /** Jitter strengths tried in turn: the first that keeps every bead `BEAD_GAP` apart and every link midpoint distinct wins. */
 export const JITTER_AMOUNTS: [number, number][] = [
-  [1, 0], [0.7, 0], [0.45, 0], [0.3, 0], [0.2, 0], [0.12, 0], [0.06, 0], [0, 0],
-  [0.3, 0.5], [0.2, 0.7], [0.12, 1], [0.06, 1], [0, 1], [0.2, 1.3], [0, 1.6],
+  [1, 0],
+  [0.7, 0],
+  [0.45, 0],
+  [0.3, 0],
+  [0.2, 0],
+  [0.12, 0],
+  [0.06, 0],
+  [0, 0],
+  [0.3, 0.5],
+  [0.2, 0.7],
+  [0.12, 1],
+  [0.06, 1],
+  [0, 1],
+  [0.2, 1.3],
+  [0, 1.6],
 ];
 /** Link midpoints stay at least this far apart, so a tap on a link is unambiguous. */
 export const MID_GAP = 30;
 /** The card when it pictures two shapes (levels 3–4): taller in a landscape column, where the pictures stack. */
 const TWO_CARD_H = 360;
 
-const button = (cx: number, cy: number): Rect => ({ x: cx - BUTTON_R, y: cy - BUTTON_R, w: 2 * BUTTON_R, h: 2 * BUTTON_R });
+const button = (cx: number, cy: number): Rect => ({
+  x: cx - BUTTON_R,
+  y: cy - BUTTON_R,
+  w: 2 * BUTTON_R,
+  h: 2 * BUTTON_R,
+});
 
 /**
  * Where everything goes for `n` beads: the tally strip at the top, the card (levels 2–4; `cardShapes` pictures, 0 for
@@ -689,7 +972,10 @@ export function beadLayout(v: View, n: number, cardShapes: number | boolean): Be
     const rx = table.w / 2 - BEAD_REACH - 8 - margin;
     const ry = table.h / 2 - BEAD_REACH - 8 - margin;
     const r = ring(c, rx, ry, n, amount, nudge);
-    if (spaced(r)) { beads = r; break; }
+    if (spaced(r)) {
+      beads = r;
+      break;
+    }
   }
   if (!beads) return null;
   const parts = [tally, table, undo, again, ...(card ? [card] : []), ...(check ? [check] : [])];
@@ -717,7 +1003,10 @@ export function linkAt(p: Pt, beads: readonly Pt[], links: readonly Link[]): Lin
   let bestD = LINK_REACH;
   for (const l of links) {
     const d = toSegment(p, beads[l[0]], beads[l[1]]);
-    if (d <= bestD) { bestD = d; best = l; }
+    if (d <= bestD) {
+      bestD = d;
+      best = l;
+    }
   }
   return best;
 }
@@ -729,12 +1018,17 @@ export function beadAt(p: Pt, beads: readonly Pt[], from: number): number | null
   beads.forEach((b, i) => {
     if (i === from) return;
     const d = Math.hypot(p.x - b.x, p.y - b.y);
-    if (d <= bestD) { bestD = d; best = i; }
+    if (d <= bestD) {
+      bestD = d;
+      best = i;
+    }
   });
   return best;
 }
 
 /** The tally strip's counts: how many beads of each kind, in tally order. Nothing is ever added or removed. */
 export function tally(kinds: readonly Kind[]): { kind: Kind; count: number }[] {
-  return KIND_ORDER.map((kind) => ({ kind, count: kinds.filter((x) => x === kind).length })).filter((t) => t.count > 0);
+  return KIND_ORDER.map((kind) => ({ kind, count: kinds.filter((x) => x === kind).length })).filter(
+    (t) => t.count > 0,
+  );
 }

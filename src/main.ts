@@ -11,7 +11,9 @@ async function boot() {
   await store.load();
   applySettings();
   // Pixi draws text onto canvases, so the font has to be ready first.
-  await Promise.all([document.fonts.load('600 40px Fredoka'), document.fonts.load('500 20px Fredoka')]).catch(() => {});
+  await Promise.all([document.fonts.load('600 40px Fredoka'), document.fonts.load('500 20px Fredoka')]).catch(
+    () => {},
+  );
   const app = new App();
   await app.init(document.getElementById('app')!);
   // The companions' illustrated art, once, so every scene builds its friend without waiting (RW05).
@@ -26,7 +28,10 @@ async function boot() {
   }
   // The offline worker sits at the site root, one level up from `classic/` (where `registerSW` would look). An update
   // waits until every copy of the app has closed (vite.config.ts), so play is never interrupted by a reload.
-  if (import.meta.env.PROD && 'serviceWorker' in navigator) void navigator.serviceWorker.register(new URL('../sw.js', location.href), { scope: '../' }).catch(() => {});
+  if (import.meta.env.PROD && 'serviceWorker' in navigator)
+    void navigator.serviceWorker
+      .register(new URL('../sw.js', location.href), { scope: '../' })
+      .catch(() => {});
 }
 
 void boot();

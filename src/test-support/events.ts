@@ -4,7 +4,11 @@ export class BrowserEventTarget extends EventTarget {
   private key(type: string, options?: EventListenerOptions | boolean) {
     return `${type}:${typeof options === 'boolean' ? options : !!options?.capture}`;
   }
-  override addEventListener(type: string, callback: EventListenerOrEventListenerObject | null, options?: AddEventListenerOptions | boolean) {
+  override addEventListener(
+    type: string,
+    callback: EventListenerOrEventListenerObject | null,
+    options?: AddEventListenerOptions | boolean,
+  ) {
     super.addEventListener(type, callback, options);
     if (callback) {
       const key = this.key(type, options);
@@ -13,7 +17,11 @@ export class BrowserEventTarget extends EventTarget {
       this.listeners.set(key, list);
     }
   }
-  override removeEventListener(type: string, callback: EventListenerOrEventListenerObject | null, options?: EventListenerOptions | boolean) {
+  override removeEventListener(
+    type: string,
+    callback: EventListenerOrEventListenerObject | null,
+    options?: EventListenerOptions | boolean,
+  ) {
     // Some Node versions do not normalize boolean capture on removal as browsers do.
     super.removeEventListener(type, callback, typeof options === 'boolean' ? { capture: options } : options);
     if (callback) this.listeners.get(this.key(type, options))?.delete(callback);

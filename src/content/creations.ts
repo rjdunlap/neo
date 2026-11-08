@@ -81,9 +81,19 @@ export interface PixelPictureCreation {
 /** Version 1 indices are stable: purple dot, blue stripe, red ring, white cross. */
 export const CLOTH_PALETTE = ['purple', 'blue', 'red', 'white'] as const;
 /** Versioned yarn shades: the palette outlines give all three yarns >=3:1 against white warp. */
-export const CLOTH_COLORS = [swatch.purple.line, swatch.blue.line, swatch.red.line, swatch.white.fill] as const;
+export const CLOTH_COLORS = [
+  swatch.purple.line,
+  swatch.blue.line,
+  swatch.red.line,
+  swatch.white.fill,
+] as const;
 export interface ClothCreation {
-  kind: 'picture'; medium: 'cloth'; version: 1; cols: 6; rows: 8; cells: number[];
+  kind: 'picture';
+  medium: 'cloth';
+  version: 1;
+  cols: 6;
+  rows: 8;
+  cells: number[];
 }
 
 /** The one picture-board slot is shared by stamped pictures, finger paintings, pixel pictures and rectangular cloth. */
@@ -110,10 +120,15 @@ export interface CreationsSave {
   tune: Slot<TuneCreation>;
 }
 
-export const emptyCreations = (): CreationsSave => ({ picture: { current: null, previous: null }, tune: { current: null, previous: null } });
+export const emptyCreations = (): CreationsSave => ({
+  picture: { current: null, previous: null },
+  tune: { current: null, previous: null },
+});
 
-const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
-const fraction = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : null);
+const isObj = (v: unknown): v is Record<string, unknown> =>
+  typeof v === 'object' && v !== null && !Array.isArray(v);
+const fraction = (v: unknown) =>
+  typeof v === 'number' && Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : null;
 
 function cleanStamp(raw: unknown): PictureStamp | null {
   if (!isObj(raw)) return null;
@@ -122,8 +137,10 @@ function cleanStamp(raw: unknown): PictureStamp | null {
   const x = fraction(raw.x);
   const y = fraction(raw.y);
   if (!kind || !color || x === null || y === null) return null;
-  const size = typeof raw.size === 'number' && Number.isFinite(raw.size) ? Math.min(2, Math.max(0.5, raw.size)) : 1;
-  const turns = typeof raw.turns === 'number' && Number.isFinite(raw.turns) ? ((Math.round(raw.turns) % 4) + 4) % 4 : 0;
+  const size =
+    typeof raw.size === 'number' && Number.isFinite(raw.size) ? Math.min(2, Math.max(0.5, raw.size)) : 1;
+  const turns =
+    typeof raw.turns === 'number' && Number.isFinite(raw.turns) ? ((Math.round(raw.turns) % 4) + 4) % 4 : 0;
   return { kind, color, x, y, size, turns };
 }
 
@@ -131,10 +148,14 @@ function cleanMark(raw: unknown): PaintingMark | null {
   if (!isObj(raw)) return null;
   const x = fraction(raw.x);
   const y = fraction(raw.y);
-  const r = typeof raw.r === 'number' && Number.isFinite(raw.r) ? Math.min(0.12, Math.max(0.006, raw.r)) : null;
+  const r =
+    typeof raw.r === 'number' && Number.isFinite(raw.r) ? Math.min(0.12, Math.max(0.006, raw.r)) : null;
   if (x === null || y === null || r === null) return null;
   if (raw.shape === 'dab') {
-    const color = typeof raw.color === 'number' && Number.isFinite(raw.color) ? Math.min(0xffffff, Math.max(0, Math.round(raw.color))) : null;
+    const color =
+      typeof raw.color === 'number' && Number.isFinite(raw.color)
+        ? Math.min(0xffffff, Math.max(0, Math.round(raw.color)))
+        : null;
     return color === null ? null : { shape: 'dab', x, y, r, color };
   }
   if (raw.shape === 'flower') {
@@ -145,9 +166,13 @@ function cleanMark(raw: unknown): PaintingMark | null {
 }
 
 function cleanPixelPicture(raw: Record<string, unknown>): PixelPictureCreation | null {
-  const size = typeof raw.size === 'number' && Number.isInteger(raw.size) && raw.size >= PIXEL_PICTURE_MIN_SIZE && raw.size <= PIXEL_PICTURE_MAX_SIZE
-    ? raw.size as PixelPictureCreation['size']
-    : null;
+  const size =
+    typeof raw.size === 'number' &&
+    Number.isInteger(raw.size) &&
+    raw.size >= PIXEL_PICTURE_MIN_SIZE &&
+    raw.size <= PIXEL_PICTURE_MAX_SIZE
+      ? (raw.size as PixelPictureCreation['size'])
+      : null;
   if (size === null || !Array.isArray(raw.pixels)) return null;
   const seen = new Set<string>();
   const pixels: PixelPictureCell[] = [];
@@ -155,7 +180,8 @@ function cleanPixelPicture(raw: Record<string, unknown>): PixelPictureCreation |
     if (!isObj(pixel)) continue;
     const x = typeof pixel.x === 'number' && Number.isInteger(pixel.x) ? pixel.x : NaN;
     const y = typeof pixel.y === 'number' && Number.isInteger(pixel.y) ? pixel.y : NaN;
-    const color = typeof pixel.color === 'string' && pixel.color in swatch ? pixel.color as ColorName : null;
+    const color =
+      typeof pixel.color === 'string' && pixel.color in swatch ? (pixel.color as ColorName) : null;
     const key = `${x}:${y}`;
     if (!(x >= 0 && x < size && y >= 0 && y < size) || !color || seen.has(key)) continue;
     seen.add(key);
@@ -170,18 +196,37 @@ export function cleanPicture(raw: unknown): PictureCreation | null {
   if (!isObj(raw)) return null;
   // A malformed tagged cloth never falls through to a different picture representation.
   if ('medium' in raw || 'cells' in raw) {
-    if (raw.kind !== 'picture' || raw.medium !== 'cloth' || raw.version !== 1 || raw.cols !== 6 || raw.rows !== 8 || !Array.isArray(raw.cells) || raw.cells.length !== 48 || !Array.from(raw.cells).every(c => Number.isInteger(c) && c >= 0 && c < CLOTH_PALETTE.length)) return null;
+    if (
+      raw.kind !== 'picture' ||
+      raw.medium !== 'cloth' ||
+      raw.version !== 1 ||
+      raw.cols !== 6 ||
+      raw.rows !== 8 ||
+      !Array.isArray(raw.cells) ||
+      raw.cells.length !== 48 ||
+      !Array.from(raw.cells).every((c) => Number.isInteger(c) && c >= 0 && c < CLOTH_PALETTE.length)
+    )
+      return null;
     return { kind: 'picture', medium: 'cloth', version: 1, cols: 6, rows: 8, cells: [...raw.cells] };
   }
   if (Array.isArray(raw.stamps)) {
-    const stamps = raw.stamps.map(cleanStamp).filter((s): s is PictureStamp => !!s).slice(0, PICTURE_MAX);
+    const stamps = raw.stamps
+      .map(cleanStamp)
+      .filter((s): s is PictureStamp => !!s)
+      .slice(0, PICTURE_MAX);
     return stamps.length ? { kind: 'picture', stamps } : null;
   }
   if (Array.isArray(raw.pixels)) return cleanPixelPicture(raw);
   if (!Array.isArray(raw.marks)) return null;
-  const marks = raw.marks.map(cleanMark).filter((m): m is PaintingMark => !!m).slice(0, PAINTING_MAX_MARKS);
+  const marks = raw.marks
+    .map(cleanMark)
+    .filter((m): m is PaintingMark => !!m)
+    .slice(0, PAINTING_MAX_MARKS);
   if (marks.length < PAINTING_MIN_MARKS) return null;
-  const aspect = typeof raw.aspect === 'number' && Number.isFinite(raw.aspect) ? Math.min(2, Math.max(0.5, raw.aspect)) : 4 / 3;
+  const aspect =
+    typeof raw.aspect === 'number' && Number.isFinite(raw.aspect)
+      ? Math.min(2, Math.max(0.5, raw.aspect))
+      : 4 / 3;
   return { kind: 'picture', aspect, marks };
 }
 
@@ -191,7 +236,13 @@ export function cleanTune(raw: unknown): TuneCreation | null {
   const whole = (v: unknown) => (typeof v === 'number' && Number.isInteger(v) ? v : NaN);
   const cols = whole(raw.cols);
   const rows = whole(raw.rows);
-  if (!(cols >= 2 && cols <= TUNE_MAX_COLS) || !(rows in ROW_STEPS) || rows > TUNE_MAX_ROWS || !Array.isArray(raw.notes)) return null;
+  if (
+    !(cols >= 2 && cols <= TUNE_MAX_COLS) ||
+    !(rows in ROW_STEPS) ||
+    rows > TUNE_MAX_ROWS ||
+    !Array.isArray(raw.notes)
+  )
+    return null;
   const seen = new Set<string>();
   const notes: { col: number; row: number }[] = [];
   for (const n of raw.notes) {
@@ -234,14 +285,19 @@ export function keepCreation(save: CreationsSave, made: Creation): CreationsSave
   if (!clean) return save;
   if (clean.kind === 'picture') {
     const slot = save.picture;
-    return same(slot.current, clean) ? save : { ...save, picture: { current: clean, previous: slot.current ?? slot.previous } };
+    return same(slot.current, clean)
+      ? save
+      : { ...save, picture: { current: clean, previous: slot.current ?? slot.previous } };
   }
   const slot = save.tune;
-  return same(slot.current, clean) ? save : { ...save, tune: { current: clean, previous: slot.current ?? slot.previous } };
+  return same(slot.current, clean)
+    ? save
+    : { ...save, tune: { current: clean, previous: slot.current ?? slot.previous } };
 }
 
 /** Whether there is an earlier one to bring back. */
-export const canUndo = (save: CreationsSave, kind: Creation['kind']) => (kind === 'picture' ? save.picture.previous : save.tune.previous) !== null;
+export const canUndo = (save: CreationsSave, kind: Creation['kind']) =>
+  (kind === 'picture' ? save.picture.previous : save.tune.previous) !== null;
 
 /** Bring the earlier one back. The one on display becomes the earlier one, so asking again puts things as they were. */
 export function undoCreation(save: CreationsSave, kind: Creation['kind']): CreationsSave {
@@ -267,5 +323,7 @@ export function takeDownCreation(save: CreationsSave, kind: Creation['kind']): C
 /** What a tune sounds like, beat by beat: the scale steps of the jellies in each column (empty for a quiet beat). */
 export function tuneBeats(tune: TuneCreation): number[][] {
   const steps = ROW_STEPS[tune.rows];
-  return Array.from({ length: tune.cols }, (_, col) => tune.notes.filter((n) => n.col === col).map((n) => steps[n.row]));
+  return Array.from({ length: tune.cols }, (_, col) =>
+    tune.notes.filter((n) => n.col === col).map((n) => steps[n.row]),
+  );
 }

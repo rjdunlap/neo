@@ -11,16 +11,22 @@ export const VOICE = {
   'map.hint': ['Look where the glowing column and row cross.'],
   'map.stepshint': ['First go {first}. Count along the glowing squares from the pet.'],
   'map.cluehint': ['Follow the two glowing lines to where they meet.'],
-  'map.write': ['Make the card that gets me to the chest! How far across, and which way? Then how far up or down? Then press Go.'],
+  'map.write': [
+    'Make the card that gets me to the chest! How far across, and which way? Then how far up or down? Then press Go.',
+  ],
   'map.edge': ['That is the edge of the map!'],
   'map.cardfill': ['Give both lines a number and an arrow, then press Go.'],
   'map.cardacross': ['The {leg} line was right. Across {why}.'],
   'map.cardupdown': ['Across was right, but {leg} {why}.'],
   'map.cardboth': ['Across {across}, and {leg} {why}.'],
-  'map.far': ['The chest is hidden! Dig anywhere, and I will tell you how many steps away it is, across and up.'],
+  'map.far': [
+    'The chest is hidden! Dig anywhere, and I will tell you how many steps away it is, across and up.',
+  ],
   'map.farsteps': ['{steps} away.', 'That one is {steps} away.'],
   'map.faragain': ['You dug there already. It said {steps}.'],
-  'map.farout': ['That square is {got} from your dig at {sq}, and that dig said {said}. The chest cannot be there.'],
+  'map.farout': [
+    'That square is {got} from your dig at {sq}, and that dig said {said}. The chest cannot be there.',
+  ],
   'map.farhint': ['The glowing squares fit every dig so far. Try one of them!'],
   'map.slide': ['Slide the raft {dirs}. Tap where the flag ends up!'],
   'map.slidecards': ['The flag is there! Now which card shows the whole raft after the slide?'],
@@ -36,15 +42,23 @@ export const VOICE = {
   'map.linecolwrong': ['That is the {got} column. Find the {want} column!'],
   'map.linerowwrong': ['That is the {got} row. Find the {want} row!'],
   'map.linehint': ['Look at the glowing line. Dig anywhere on it!'],
-  'map.riverintro': ['A river and a road cross our map! Count the squares out from the road, and out from the river.'],
+  'map.riverintro': [
+    'A river and a road cross our map! Count the squares out from the road, and out from the river.',
+  ],
   'map.river': ['Dig {across} of the road and {updown} the river!'],
   'map.riverside': ['That square is {got}. The treasure is {want}.'],
   'map.rivercount': ['Right side of the {line}! Count again: {want}.'],
-  'map.riverhint': ['Count {across} from the road, then {updown} from the river. Dig where the glowing lines cross.'],
-  'map.mirror': ['The {thing} is {across} of the road and {updown} the river. Its twin is across the {line}, just as far on the other side. Tap where the twin goes!'],
+  'map.riverhint': [
+    'Count {across} from the road, then {updown} from the river. Dig where the glowing lines cross.',
+  ],
+  'map.mirror': [
+    'The {thing} is {across} of the road and {updown} the river. Its twin is across the {line}, just as far on the other side. Tap where the twin goes!',
+  ],
   'map.mirrored': ['Just as far on the other side!'],
   'map.mirrorside': ["That is still on the {thing}'s side of the {line}. The twin is across it!"],
   'map.mirrorslid': ['Only across the {line}: the twin stays {keep}.'],
   'map.mirrorcount': ['The {thing} is {n} from the {line}, so its twin is {n} from the {line} too.'],
-  'map.mirrorhint': ['Count the glowing squares from the {thing} to the {line}, then the same number on the other side.'],
+  'map.mirrorhint': [
+    'Count the glowing squares from the {thing} to the {line}, then the same number on the other side.',
+  ],
 } satisfies Record<string, string[]>;

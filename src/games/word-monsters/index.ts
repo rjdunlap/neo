@@ -15,7 +15,19 @@ import { label } from '../../ui/text';
 import { letterPicture } from '../../art/letter-pictures';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { LEVELS, fits, FIRST_WORDS, makeQuestions, nextMonster, planFor, sounded, SOUNDS, PICTURE_WORDS, type MonsterPlan, type Question } from './logic';
+import {
+  LEVELS,
+  fits,
+  FIRST_WORDS,
+  makeQuestions,
+  nextMonster,
+  planFor,
+  sounded,
+  SOUNDS,
+  PICTURE_WORDS,
+  type MonsterPlan,
+  type Question,
+} from './logic';
 import { rangeFor } from '../../progress/difficulty';
 
 const FURS: ColorName[] = ['purple', 'teal', 'orange', 'pink', 'blue', 'green', 'red', 'yellow'];
@@ -50,7 +62,9 @@ class Monster extends Container {
     for (const side of [-1, 1]) g.ellipse(side * 26, BODY_R + 4, 16, 9).fill(fur.line);
     g.circle(0, 12, 40).fill(cream);
     for (const side of [-1, 1]) {
-      g.circle(side * 22, -42, 15).fill(0xffffff).stroke({ width: 3, color: fur.line });
+      g.circle(side * 22, -42, 15)
+        .fill(0xffffff)
+        .stroke({ width: 3, color: fur.line });
       g.circle(side * 22 + 3, -40, 7).fill(ink);
     }
     const text = label(both ? letter.toUpperCase() + letter : letter, both ? 46 : 62, ink);
@@ -74,7 +88,8 @@ class Monster extends Container {
     const k = Math.min(1, dt * 10);
     this.body.scale.x += (1 - this.body.scale.x) * k;
     this.body.scale.y += (1 - this.body.scale.y) * k;
-    this.body.rotation = 0.05 * Math.sin(this.clock * 2) + (this.talk > 0 ? 0.12 * Math.sin(this.clock * 30) : 0);
+    this.body.rotation =
+      0.05 * Math.sin(this.clock * 2) + (this.talk > 0 ? 0.12 * Math.sin(this.clock * 30) : 0);
     if (this.glow.visible) this.glow.alpha = 0.6 + 0.4 * Math.sin(this.clock * 7);
     this.drawMouth();
   }
@@ -89,7 +104,12 @@ class Monster extends Container {
 /** Pictures for the build-a-word words. */
 function wordPicture(word: string): Container {
   const c = new Container();
-  const line = (color: number, width = 6) => ({ width, color, cap: 'round' as const, join: 'round' as const });
+  const line = (color: number, width = 6) => ({
+    width,
+    color,
+    cap: 'round' as const,
+    join: 'round' as const,
+  });
   if (word === 'cat' || word === 'dog' || word === 'pig') {
     const critter = new Critter(CRITTERS[word]);
     critter.y = 110;
@@ -99,9 +119,18 @@ function wordPicture(word: string): Container {
   if (word === 'sun') return letterPicture('S');
   const g = new Graphics();
   if (word === 'cup') {
-    g.moveTo(-70, -60).lineTo(70, -60).lineTo(55, 70).lineTo(-55, 70).closePath().fill(swatch.blue.fill).stroke(line(swatch.blue.line));
+    g.moveTo(-70, -60)
+      .lineTo(70, -60)
+      .lineTo(55, 70)
+      .lineTo(-55, 70)
+      .closePath()
+      .fill(swatch.blue.fill)
+      .stroke(line(swatch.blue.line));
     g.moveTo(70, -30).bezierCurveTo(125, -30, 125, 40, 62, 40).stroke(line(swatch.blue.line, 12));
-    for (const x of [-25, 5, 35]) g.moveTo(x, -80).quadraticCurveTo(x + 14, -100, x, -120).stroke(line(0xb9c6d1, 5));
+    for (const x of [-25, 5, 35])
+      g.moveTo(x, -80)
+        .quadraticCurveTo(x + 14, -100, x, -120)
+        .stroke(line(0xb9c6d1, 5));
   } else if (word === 'hat') {
     g.ellipse(0, 50, 130, 30).fill(swatch.purple.fill).stroke(line(swatch.purple.line));
     g.roundRect(-70, -80, 140, 130, 18).fill(swatch.purple.fill).stroke(line(swatch.purple.line));
@@ -111,7 +140,13 @@ function wordPicture(word: string): Container {
     g.poly([-100, -60, -60, -110, 140, -110, 100, -60]).fill(wood.fill).stroke(line(wood.line));
     g.moveTo(-100, 5).lineTo(100, 5).stroke(line(wood.line, 4));
   } else if (word === 'cap') {
-    g.moveTo(-120, 45).quadraticCurveTo(-90, -85, 20, -85).quadraticCurveTo(105, -85, 112, 35).quadraticCurveTo(5, 15, -120, 45).closePath().fill(swatch.red.fill).stroke(line(swatch.red.line));
+    g.moveTo(-120, 45)
+      .quadraticCurveTo(-90, -85, 20, -85)
+      .quadraticCurveTo(105, -85, 112, 35)
+      .quadraticCurveTo(5, 15, -120, 45)
+      .closePath()
+      .fill(swatch.red.fill)
+      .stroke(line(swatch.red.line));
     g.ellipse(15, 55, 115, 22).fill(swatch.red.light).stroke(line(swatch.red.line));
     g.moveTo(15, -75).lineTo(15, 0).stroke(line(swatch.red.line, 4));
   } else if (word === 'can') {
@@ -150,7 +185,10 @@ class WordMonsters implements Game {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
     this.questions = makeQuestions(this.plan, ctx.rng);
-    this.backdrop = new Backdrop({ sky: [0xc9b8f0, 0xf3ecff], hills: [0xc8ecb0, 0xa6de8e], horizon: 0.66, clouds: 3, seed: 26 }, ctx.view);
+    this.backdrop = new Backdrop(
+      { sky: [0xc9b8f0, 0xf3ecff], hills: [0xc8ecb0, 0xa6de8e], horizon: 0.66, clouds: 3, seed: 26 },
+      ctx.view,
+    );
     this.top.addChild(this.slots, this.slotLetters);
     ctx.stage.addChild(this.backdrop, this.top, this.crowd);
   }
@@ -160,7 +198,12 @@ class WordMonsters implements Game {
   }
 
   private get building() {
-    return this.plan.mode === 'build' || this.plan.mode === 'spell' || this.plan.mode === 'family' || this.plan.mode === 'end';
+    return (
+      this.plan.mode === 'build' ||
+      this.plan.mode === 'spell' ||
+      this.plan.mode === 'family' ||
+      this.plan.mode === 'end'
+    );
   }
 
   start() {
@@ -201,11 +244,19 @@ class WordMonsters implements Game {
     // Free play never starts a question, so its monsters belong to the first.
     const q = this.question ?? (this.plan.mode === 'play' ? this.questions[0] : undefined);
     if (this.busy || this.finished || !q) return null;
-    const m = nextMonster(this.plan, q, this.monsters.filter((x) => !x.destroyed), this.filled, this.taps);
+    const m = nextMonster(
+      this.plan,
+      q,
+      this.monsters.filter((x) => !x.destroyed),
+      this.filled,
+      this.taps,
+    );
     if (!m) return null;
     if (!this.building) return { tap: { on: m } };
     const slot = this.slotAt(this.filled);
-    return m.drag && !m.drag.dragging ? { drag: { on: m }, to: { on: this.crowd, x: slot.x, y: slot.y } } : null;
+    return m.drag && !m.drag.dragging
+      ? { drag: { on: m }, to: { on: this.crowd, x: slot.x, y: slot.y } }
+      : null;
   }
 
   destroy() {
@@ -225,7 +276,10 @@ class WordMonsters implements Game {
       this.ctx.track(m);
       this.crowd.addChild(m);
       if (this.building) {
-        m.drag = draggable(m, this.ctx.tw, { onPick: () => this.pick(m), onDrop: (x, y) => this.drop(m, x, y) });
+        m.drag = draggable(m, this.ctx.tw, {
+          onPick: () => this.pick(m),
+          onDrop: (x, y) => this.drop(m, x, y),
+        });
       } else {
         onTap(m, () => void this.tap(m), { cooldown: 400 });
       }
@@ -241,7 +295,9 @@ class WordMonsters implements Game {
   private showPicture(p: Container | null, scale = 0.62, y = -10) {
     if (this.picture) {
       const old = this.picture;
-      void this.ctx.tw.to(old.scale, { x: 0, y: 0 }, { duration: 0.2 }).then(() => old.destroy({ children: true }));
+      void this.ctx.tw
+        .to(old.scale, { x: 0, y: 0 }, { duration: 0.2 })
+        .then(() => old.destroy({ children: true }));
     }
     this.picture = p;
     if (!p) return;
@@ -264,7 +320,9 @@ class WordMonsters implements Game {
     this.slotLetters.removeChildren().forEach((c) => c.destroy());
     if (this.building) {
       // Word families only show real pictures: "sun" is drawn as a big S, which would give the answer away.
-      const drawn = (PICTURE_WORDS as readonly string[]).includes(q.answer) && !(this.plan.mode === 'family' && q.answer === 'sun');
+      const drawn =
+        (PICTURE_WORDS as readonly string[]).includes(q.answer) &&
+        !(this.plan.mode === 'family' && q.answer === 'sun');
       this.showPicture(drawn ? wordPicture(q.answer) : null, 0.5, -110);
       this.drawSlots(q.answer);
     } else if (this.plan.mode === 'first') {
@@ -311,8 +369,15 @@ class WordMonsters implements Game {
 
   private ask(q: Question) {
     const sound = SOUNDS[q.answer];
-    if (this.plan.mode === 'family') return this.ctx.instruct('monster.family', { word: q.answer, sound: SOUNDS[q.answer[0]] });
-    if (this.plan.mode === 'end') return this.ctx.instruct('monster.end', { word: q.answer, first: SOUNDS[q.answer[0]], second: SOUNDS[q.answer[1]], sound: SOUNDS[q.answer[2]] });
+    if (this.plan.mode === 'family')
+      return this.ctx.instruct('monster.family', { word: q.answer, sound: SOUNDS[q.answer[0]] });
+    if (this.plan.mode === 'end')
+      return this.ctx.instruct('monster.end', {
+        word: q.answer,
+        first: SOUNDS[q.answer[0]],
+        second: SOUNDS[q.answer[1]],
+        sound: SOUNDS[q.answer[2]],
+      });
     switch (this.plan.mode) {
       case 'find':
         return this.ctx.instruct('monster.find', { letter: q.answer.toUpperCase() });
@@ -341,7 +406,14 @@ class WordMonsters implements Game {
       this.busy = true;
       m.glow.visible = false;
       sfx.sparkle();
-      this.ctx.particles.burst(m.x, m.y - 40, { kind: 'star', colors: [0xffffff, 0xfff3a0], count: 14, speed: [100, 260], gravity: 0, life: [0.5, 0.9] });
+      this.ctx.particles.burst(m.x, m.y - 40, {
+        kind: 'star',
+        colors: [0xffffff, 0xfff3a0],
+        count: 14,
+        speed: [100, 260],
+        gravity: 0,
+        life: [0.5, 0.9],
+      });
       await this.ctx.say(soundLine(m.letter));
       await this.ctx.say('praise');
       await this.next();
@@ -384,7 +456,9 @@ class WordMonsters implements Game {
   private drawSlots(word: string) {
     const g = this.slots.clear();
     for (let i = 0; i < word.length; i++) {
-      g.roundRect(this.slotX(i) - 66, 40, 132, 132, 26).fill({ color: 0xffffff, alpha: 0.7 }).stroke({ width: 5, color: swatch.purple.line });
+      g.roundRect(this.slotX(i) - 66, 40, 132, 132, 26)
+        .fill({ color: 0xffffff, alpha: 0.7 })
+        .stroke({ width: 5, color: swatch.purple.line });
       if (this.plan.mode === 'build') {
         const t = label(word[i], 70, swatch.purple.light);
         t.position.set(this.slotX(i), 106);
@@ -446,7 +520,14 @@ class WordMonsters implements Game {
       for (const c of p.children) if (c instanceof Critter) c.cheer();
     }
     sfx.tada();
-    this.ctx.particles.burst(this.view.w / 2, this.view.h * 0.3, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.purple.light], count: 24, speed: [150, 360], gravity: 0, life: [0.7, 1.1] });
+    this.ctx.particles.burst(this.view.w / 2, this.view.h * 0.3, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0, swatch.purple.light],
+      count: 24,
+      speed: [150, 360],
+      gravity: 0,
+      life: [0.7, 1.1],
+    });
     await this.ctx.tw.wait(0.6);
     await this.next();
   }

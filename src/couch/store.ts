@@ -6,12 +6,19 @@ export class CouchStore {
   data: CouchSave = couchDefaults();
   warning = '';
   constructor() {
-    try { this.data = repairCouch(JSON.parse(localStorage.getItem(COUCH_KEY) ?? 'null')); }
-    catch { this.warning = 'Couch progress could not be loaded. This session still works.'; }
+    try {
+      this.data = repairCouch(JSON.parse(localStorage.getItem(COUCH_KEY) ?? 'null'));
+    } catch {
+      this.warning = 'Couch progress could not be loaded. This session still works.';
+    }
   }
   save() {
-    try { localStorage.setItem(COUCH_KEY, JSON.stringify(this.data)); this.warning = ''; }
-    catch { this.warning = 'Couch progress could not be saved. Keep this tab open or download a couch backup.'; }
+    try {
+      localStorage.setItem(COUCH_KEY, JSON.stringify(this.data));
+      this.warning = '';
+    } catch {
+      this.warning = 'Couch progress could not be saved. Keep this tab open or download a couch backup.';
+    }
   }
 }
 

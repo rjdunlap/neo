@@ -13,7 +13,9 @@ export const VOICE = {
   'cw.done': ['You filled the whole crossword!'],
   'cw.four': ['Listen to the riddle, then spell the answer.'],
   'cw.five': ['Tap a square and type the answer to its clue.'],
-  'cw.six': ['A little crossword: every letter is in two words. Tap a square and type the answer to its clue.'],
+  'cw.six': [
+    'A little crossword: every letter is in two words. Tap a square and type the answer to its clue.',
+  ],
   'cw.clue': ['{clue}'],
   'cw.circled': ['Not quite yet. The circled squares need another look.'],
   'cw.solved': ['Solved! Every word fits.'],

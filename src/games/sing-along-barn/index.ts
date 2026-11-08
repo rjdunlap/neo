@@ -11,7 +11,30 @@ import { ease } from '../../engine/tween';
 import { spread, type View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { LEVELS, ANIMALS, GAP_HOLD, GAPS, RHYMES, VOICES, farmAnimals, makeSong, nextInvite, phraseMidi, pickGapTune, pickRhymeTune, pickTune, planFor, rhymeSides, tunesFor, type Animal, type Note, type Picture, type Rhyme, type SingPlan, type Tune } from './logic';
+import {
+  LEVELS,
+  ANIMALS,
+  GAP_HOLD,
+  GAPS,
+  RHYMES,
+  VOICES,
+  farmAnimals,
+  makeSong,
+  nextInvite,
+  phraseMidi,
+  pickGapTune,
+  pickRhymeTune,
+  pickTune,
+  planFor,
+  rhymeSides,
+  tunesFor,
+  type Animal,
+  type Note,
+  type Picture,
+  type Rhyme,
+  type SingPlan,
+  type Tune,
+} from './logic';
 
 const GRASS = 0x9edb86;
 const BARN_RED = 0xd9534f;
@@ -78,12 +101,28 @@ class SingAlongBarn implements Game {
     // one friend), so the demonstration sings the short form with one friend.
     const plan = planFor(ctx.level);
     this.plan = ctx.demo && plan.each ? { ...plan, verses: plan.full ? 1 : 2, full: false } : plan;
-    this.tune = this.plan.chooseTune ? tunesFor(this.plan)[0] : this.plan.rhyme ? pickRhymeTune(ctx.rng) : this.plan.gap ? pickGapTune(ctx.rng) : pickTune(ctx.rng);
+    this.tune = this.plan.chooseTune
+      ? tunesFor(this.plan)[0]
+      : this.plan.rhyme
+        ? pickRhymeTune(ctx.rng)
+        : this.plan.gap
+          ? pickGapTune(ctx.rng)
+          : pickTune(ctx.rng);
     this.view = ctx.view;
     this.phase = this.plan.chooseTune ? 'tune' : this.plan.invite && !this.plan.each ? 'invite' : 'sing';
     this.order = this.plan.invite ? [] : farmAnimals(this.plan, ctx.rng);
     this.backdrop = ctx.track(
-      new Backdrop({ sky: [0xa9dcff, 0xfff4d6], hills: [0xcdeeb6, GRASS], horizon: 0.56, clouds: 3, sun: true, seed: 33 }, ctx.view),
+      new Backdrop(
+        {
+          sky: [0xa9dcff, 0xfff4d6],
+          hills: [0xcdeeb6, GRASS],
+          horizon: 0.56,
+          clouds: 3,
+          sun: true,
+          seed: 33,
+        },
+        ctx.view,
+      ),
     );
     this.barnWrap.addChild(this.barn);
     // Everything that could ever be asked for exists from the start, so a round never builds a critter mid-song.
@@ -109,7 +148,16 @@ class SingAlongBarn implements Game {
       card.visible = false;
       card.eventMode = 'none';
     }
-    ctx.stage.addChild(this.backdrop, this.barnWrap, this.windows, this.beads, this.picture, ...this.pair, ...this.friends.values(), this.tapLayer);
+    ctx.stage.addChild(
+      this.backdrop,
+      this.barnWrap,
+      this.windows,
+      this.beads,
+      this.picture,
+      ...this.pair,
+      ...this.friends.values(),
+      this.tapLayer,
+    );
     // Sound and movement answer in the same frame: nothing here waits on speech.
     this.tapLayer.eventMode = 'none';
     onTap(this.tapLayer, (e) => this.tapScene(e.global.x, e.global.y), { cooldown: 90 });
@@ -137,7 +185,8 @@ class SingAlongBarn implements Game {
     }
     // A round that chooses all its friends first builds the song once the barn is full; the others start singing now
     // (choosing one at a time starts with the opening, which nobody answers).
-    if (!this.plan.invite || this.plan.each) this.song = makeSong(this.order, this.tune, this.plan.rhyme ? 'rhyme' : this.plan.gap);
+    if (!this.plan.invite || this.plan.each)
+      this.song = makeSong(this.order, this.tune, this.plan.rhyme ? 'rhyme' : this.plan.gap);
     // Drawn after the tune and the friends, so the other levels' seeds sing what they always did.
     if (this.rhyme) this.sides = rhymeSides(ctx.rng, this.song.filter((n) => n.gap).length);
   }
@@ -147,7 +196,11 @@ class SingAlongBarn implements Game {
       this.tuneCards.forEach((card, k) => {
         card.visible = true;
         card.scale.set(0);
-        void this.ctx.tw.to(card.scale, { x: this.cardScale(), y: this.cardScale() }, { duration: 0.4, delay: k * 0.1, ease: ease.outBack });
+        void this.ctx.tw.to(
+          card.scale,
+          { x: this.cardScale(), y: this.cardScale() },
+          { duration: 0.4, delay: k * 0.1, ease: ease.outBack },
+        );
       });
       this.layoutCards();
       void this.ctx.instruct('barn.tune');
@@ -158,7 +211,11 @@ class SingAlongBarn implements Game {
         const p = this.choiceSpot(k);
         c.position.set(p.x, p.y);
         c.scale.set(0);
-        void this.ctx.tw.to(c.scale, { x: SCALE.choice, y: SCALE.choice }, { duration: 0.4, delay: k * 0.08, ease: ease.outBack });
+        void this.ctx.tw.to(
+          c.scale,
+          { x: SCALE.choice, y: SCALE.choice },
+          { duration: 0.4, delay: k * 0.08, ease: ease.outBack },
+        );
       });
       void this.ctx.instruct('barn.invite', { count: this.plan.verses });
     } else {
@@ -200,14 +257,26 @@ class SingAlongBarn implements Game {
     this.clock += dt;
     if (this.bounce > 0) {
       this.bounce = Math.max(0, this.bounce - dt * 4);
-      this.barnWrap.scale.set(1 + Math.sin(this.bounce * Math.PI) * 0.04, 1 - Math.sin(this.bounce * Math.PI) * 0.05);
+      this.barnWrap.scale.set(
+        1 + Math.sin(this.bounce * Math.PI) * 0.04,
+        1 - Math.sin(this.bounce * Math.PI) * 0.05,
+      );
     }
     // The next bead breathes, so the eye knows where the song is.
     if (this.phase === 'sing') this.drawBeads();
     // While the song waits for the word, its picture sways; a touch too soon shakes it harder.
     this.wobble = Math.max(0, this.wobble - dt * 2.5);
-    this.picture.rotation = this.pausedAt === null ? 0 : Math.sin(this.clock * 3) * 0.06 + Math.sin(this.clock * 16) * 0.16 * this.wobble;
-    this.pair.forEach((card, k) => (card.rotation = this.pausedAt === null ? 0 : Math.sin(this.clock * 3 + k * 1.6) * 0.06 + Math.sin(this.clock * 16) * 0.16 * this.wobble));
+    this.picture.rotation =
+      this.pausedAt === null
+        ? 0
+        : Math.sin(this.clock * 3) * 0.06 + Math.sin(this.clock * 16) * 0.16 * this.wobble;
+    this.pair.forEach(
+      (card, k) =>
+        (card.rotation =
+          this.pausedAt === null
+            ? 0
+            : Math.sin(this.clock * 3 + k * 1.6) * 0.06 + Math.sin(this.clock * 16) * 0.16 * this.wobble),
+    );
     if (this.glow.visible) this.glow.alpha = 0.75 + Math.sin(this.clock * 5) * 0.25;
   }
 
@@ -258,7 +327,12 @@ class SingAlongBarn implements Game {
   private placePair() {
     const side = this.sides[Math.max(0, this.pauses - 1)] ?? 0;
     const p = this.pictureSpot();
-    this.pair.forEach((card, k) => card.position.set(this.view.w / 2 + (k === 0 ? 1 : -1) * (side === 1 ? 1 : -1) * (p.x - this.view.w / 2), p.y));
+    this.pair.forEach((card, k) =>
+      card.position.set(
+        this.view.w / 2 + (k === 0 ? 1 : -1) * (side === 1 ? 1 : -1) * (p.x - this.view.w / 2),
+        p.y,
+      ),
+    );
   }
 
   private choiceSpot(k: number) {
@@ -269,7 +343,8 @@ class SingAlongBarn implements Game {
   // ----- Choosing the song -----
 
   /** More than five songs sit in two rows, so a card never shrinks below the five-card size. */
-  private cardCols = () => (this.tuneCards.length > 5 ? Math.ceil(this.tuneCards.length / 2) : this.tuneCards.length);
+  private cardCols = () =>
+    this.tuneCards.length > 5 ? Math.ceil(this.tuneCards.length / 2) : this.tuneCards.length;
 
   private cardScale = () => (this.cardCols() > 4 ? 0.6 : this.cardCols() > 3 ? 0.72 : 1);
 
@@ -285,7 +360,10 @@ class SingAlongBarn implements Game {
       const row = Math.floor(k / cols);
       const inRow = Math.min(cols, this.tuneCards.length - row * cols);
       card.scale.set(this.cardScale());
-      card.position.set(this.view.w / 2 + ((k % cols) - (inRow - 1) / 2) * spacing, y + (row - (rows - 1) / 2) * spacing);
+      card.position.set(
+        this.view.w / 2 + ((k % cols) - (inRow - 1) / 2) * spacing,
+        y + (row - (rows - 1) / 2) * spacing,
+      );
     });
   }
 
@@ -298,16 +376,31 @@ class SingAlongBarn implements Game {
       const card = this.tuneCards[k];
       this.ctx.tw.kill(card.scale);
       if (x === t) {
-        void this.ctx.tw.to(card.scale, { x: this.cardScale() * 1.15, y: this.cardScale() * 1.15 }, { duration: 0.2, ease: ease.outBack });
-        this.ctx.particles.burst(card.x, card.y, { kind: 'star', colors: RAINBOW.map((n) => swatch[n].fill), count: 10, speed: [120, 260], gravity: 200, life: [0.6, 1] });
+        void this.ctx.tw.to(
+          card.scale,
+          { x: this.cardScale() * 1.15, y: this.cardScale() * 1.15 },
+          { duration: 0.2, ease: ease.outBack },
+        );
+        this.ctx.particles.burst(card.x, card.y, {
+          kind: 'star',
+          colors: RAINBOW.map((n) => swatch[n].fill),
+          count: 10,
+          speed: [120, 260],
+          gravity: 200,
+          life: [0.6, 1],
+        });
       }
     });
     sfx.sparkle();
-    t.opening[0].steps.forEach((_, i) => void this.ctx.tw.wait(i * 0.28).then(() => sfx.marimbaMidi(phraseMidi(t.opening[0], i), 0.4)));
+    t.opening[0].steps.forEach(
+      (_, i) => void this.ctx.tw.wait(i * 0.28).then(() => sfx.marimbaMidi(phraseMidi(t.opening[0], i), 0.4)),
+    );
     void this.ctx.tw.wait(1.2).then(() => {
       for (const card of this.tuneCards) {
         card.eventMode = 'none';
-        void this.ctx.tw.to(card.scale, { x: 0, y: 0 }, { duration: 0.3, ease: ease.inBack }).then(() => (card.visible = false));
+        void this.ctx.tw
+          .to(card.scale, { x: 0, y: 0 }, { duration: 0.3, ease: ease.inBack })
+          .then(() => (card.visible = false));
       }
       this.song = makeSong(this.order, this.tune, this.plan.gap);
       this.beginSong();
@@ -330,7 +423,14 @@ class SingAlongBarn implements Game {
     c.cheer();
     sfx.animal(VOICES[a].sound);
     sfx.sparkle();
-    this.ctx.particles.burst(c.x, c.y - 100, { kind: 'star', colors: RAINBOW.map((n) => swatch[n].fill), count: 8, speed: [120, 260], gravity: 200, life: [0.6, 1] });
+    this.ctx.particles.burst(c.x, c.y - 100, {
+      kind: 'star',
+      colors: RAINBOW.map((n) => swatch[n].fill),
+      count: 8,
+      speed: [120, 260],
+      gravity: 200,
+      life: [0.6, 1],
+    });
     this.drawWindows();
     void this.ctx.say('barn.invited', { animal: VOICES[a].word });
     if (this.plan.each) {
@@ -354,11 +454,17 @@ class SingAlongBarn implements Game {
       const c = this.friends.get(a)!;
       const i = this.order.indexOf(a);
       if (i < 0) {
-        void this.ctx.tw.to(c.scale, { x: 0, y: 0 }, { duration: 0.35, ease: ease.inBack }).then(() => (c.visible = false));
+        void this.ctx.tw
+          .to(c.scale, { x: 0, y: 0 }, { duration: 0.35, ease: ease.inBack })
+          .then(() => (c.visible = false));
       } else {
         const p = this.restSpot(i);
         void this.ctx.tw.to(c, { x: p.x, y: p.y }, { duration: 0.5, ease: ease.outCubic });
-        void this.ctx.tw.to(c.scale, { x: SCALE.rest, y: SCALE.rest }, { duration: 0.5, ease: ease.outCubic });
+        void this.ctx.tw.to(
+          c.scale,
+          { x: SCALE.rest, y: SCALE.rest },
+          { duration: 0.5, ease: ease.outCubic },
+        );
       }
     }
     await this.ctx.tw.wait(0.6);
@@ -376,11 +482,15 @@ class SingAlongBarn implements Game {
       const c = this.friends.get(x)!;
       if (x === a || this.placed.includes(x)) continue;
       this.ctx.tw.kill(c.scale);
-      void this.ctx.tw.to(c.scale, { x: 0, y: 0 }, { duration: 0.3, ease: ease.inBack }).then(() => (c.visible = false));
+      void this.ctx.tw
+        .to(c.scale, { x: 0, y: 0 }, { duration: 0.3, ease: ease.inBack })
+        .then(() => (c.visible = false));
     }
     this.bringOut(a);
     this.drawBeads();
-    void this.ctx.instruct(this.tune.id === 'macdonald' ? 'barn.sing' : (`barn.sing.${this.tune.id}` as const));
+    void this.ctx.instruct(
+      this.tune.id === 'macdonald' ? 'barn.sing' : (`barn.sing.${this.tune.id}` as const),
+    );
   }
 
   /** A line has ended and more friends are still to come: the one who sang settles, and the others come out to be chosen. */
@@ -398,7 +508,11 @@ class SingAlongBarn implements Game {
       c.visible = true;
       c.position.set(p.x, p.y);
       c.scale.set(0);
-      void this.ctx.tw.to(c.scale, { x: SCALE.choice, y: SCALE.choice }, { duration: 0.4, delay: k * 0.06, ease: ease.outBack });
+      void this.ctx.tw.to(
+        c.scale,
+        { x: SCALE.choice, y: SCALE.choice },
+        { duration: 0.4, delay: k * 0.06, ease: ease.outBack },
+      );
     });
     this.phase = 'invite';
     this.drawBeads();
@@ -413,7 +527,10 @@ class SingAlongBarn implements Game {
     this.drawBeads();
     if (this.plan.rhyme) void this.ctx.instruct('barn.rhyme.how', { song: SONG_NAMES[this.tune.id] });
     else if (this.plan.gap) void this.ctx.instruct('barn.finish.how', { song: SONG_NAMES[this.tune.id] });
-    else void this.ctx.instruct(this.tune.id === 'macdonald' ? 'barn.sing' : (`barn.sing.${this.tune.id}` as const));
+    else
+      void this.ctx.instruct(
+        this.tune.id === 'macdonald' ? 'barn.sing' : (`barn.sing.${this.tune.id}` as const),
+      );
   }
 
   /** Any touch anywhere moves the tune on one note. Always music, never a mistake. */
@@ -444,7 +561,8 @@ class SingAlongBarn implements Game {
     sfx.marimbaMidi(note.midi, 0.5);
     this.bounce = 1;
     const p = this.ctx.stage.toLocal({ x: gx, y: gy });
-    const at = Number.isFinite(p.x) && Number.isFinite(p.y) ? p : { x: this.view.w / 2, y: this.view.h * 0.4 };
+    const at =
+      Number.isFinite(p.x) && Number.isFinite(p.y) ? p : { x: this.view.w / 2, y: this.view.h * 0.4 };
     this.ctx.particles.burst(at.x, at.y, {
       kind: 'note',
       colors: [swatch[RAINBOW[note.at % RAINBOW.length]].line],
@@ -515,7 +633,14 @@ class SingAlongBarn implements Game {
   private finishLine(note: Note) {
     this.pausedAt = null;
     const pic = this.picture;
-    this.ctx.particles.burst(pic.x, pic.y, { kind: 'star', colors: RAINBOW.map((n) => swatch[n].fill), count: 8, speed: [120, 240], gravity: 200, life: [0.5, 0.9] });
+    this.ctx.particles.burst(pic.x, pic.y, {
+      kind: 'star',
+      colors: RAINBOW.map((n) => swatch[n].fill),
+      count: 8,
+      speed: [120, 240],
+      gravity: 200,
+      life: [0.5, 0.9],
+    });
     void this.ctx.say('barn.finish', { word: GAPS[this.tune.id]?.word ?? note.syllable });
     this.ctx.tw.kill(pic.scale);
     const pause = this.pauses;
@@ -523,7 +648,11 @@ class SingAlongBarn implements Game {
     void this.ctx.tw
       .to(pic.scale, { x: 0.85, y: 0.85 }, { duration: 0.18, ease: ease.outBack })
       .then(() => this.ctx.tw.wait(0.7))
-      .then(() => (current() ? this.ctx.tw.to(pic.scale, { x: 0, y: 0 }, { duration: 0.3, ease: ease.inBack }) : undefined))
+      .then(() =>
+        current()
+          ? this.ctx.tw.to(pic.scale, { x: 0, y: 0 }, { duration: 0.3, ease: ease.inBack })
+          : undefined,
+      )
       .then(() => {
         if (current()) pic.visible = false;
       });
@@ -538,7 +667,11 @@ class SingAlongBarn implements Game {
       this.ctx.tw.kill(card.scale);
       card.visible = true;
       card.scale.set(0);
-      void this.ctx.tw.to(card.scale, { x: PAIR_SCALE, y: PAIR_SCALE }, { duration: 0.35, ease: ease.outBack });
+      void this.ctx.tw.to(
+        card.scale,
+        { x: PAIR_SCALE, y: PAIR_SCALE },
+        { duration: 0.35, ease: ease.outBack },
+      );
     }
     this.sayLine();
   }
@@ -557,12 +690,21 @@ class SingAlongBarn implements Game {
     }
     const p = this.ctx.stage.toLocal({ x: gx, y: gy });
     // Each card is 220 by 200 in its own units; at `PAIR_SCALE` that is 154 by 140 on screen, far apart on either side of the barn.
-    const hit = this.pair.findIndex((c) => Math.abs(p.x - c.x) <= 110 * PAIR_SCALE && Math.abs(p.y - c.y) <= 100 * PAIR_SCALE);
+    const hit = this.pair.findIndex(
+      (c) => Math.abs(p.x - c.x) <= 110 * PAIR_SCALE && Math.abs(p.y - c.y) <= 100 * PAIR_SCALE,
+    );
     if (hit === 0) {
       this.pausedAt = null;
       this.glow.visible = false;
       const right = this.pair[0];
-      this.ctx.particles.burst(right.x, right.y, { kind: 'star', colors: RAINBOW.map((n) => swatch[n].fill), count: 10, speed: [120, 260], gravity: 200, life: [0.5, 0.9] });
+      this.ctx.particles.burst(right.x, right.y, {
+        kind: 'star',
+        colors: RAINBOW.map((n) => swatch[n].fill),
+        count: 10,
+        speed: [120, 260],
+        gravity: 200,
+        life: [0.5, 0.9],
+      });
       sfx.sparkle();
       void this.ctx.say('barn.finish', { word: r.word });
       const pause = this.pauses;
@@ -570,9 +712,17 @@ class SingAlongBarn implements Game {
         this.ctx.tw.kill(card.scale);
         const grow = card === right ? 1.2 : 1;
         void this.ctx.tw
-          .to(card.scale, { x: PAIR_SCALE * grow, y: PAIR_SCALE * grow }, { duration: 0.18, ease: ease.outBack })
+          .to(
+            card.scale,
+            { x: PAIR_SCALE * grow, y: PAIR_SCALE * grow },
+            { duration: 0.18, ease: ease.outBack },
+          )
           .then(() => this.ctx.tw.wait(card === right ? 0.7 : 0))
-          .then(() => (pause === this.pauses ? this.ctx.tw.to(card.scale, { x: 0, y: 0 }, { duration: 0.3, ease: ease.inBack }) : undefined))
+          .then(() =>
+            pause === this.pauses
+              ? this.ctx.tw.to(card.scale, { x: 0, y: 0 }, { duration: 0.3, ease: ease.inBack })
+              : undefined,
+          )
           .then(() => {
             if (pause === this.pauses) card.visible = false;
           });
@@ -598,7 +748,13 @@ class SingAlongBarn implements Game {
       this.ctx.tw.kill(wrong.scale);
       void this.ctx.tw
         .to(wrong.scale, { x: PAIR_SCALE * 0.82, y: PAIR_SCALE * 1.1 }, { duration: 0.12 })
-        .then(() => this.ctx.tw.to(wrong.scale, { x: PAIR_SCALE, y: PAIR_SCALE }, { duration: 0.35, ease: ease.outBack }));
+        .then(() =>
+          this.ctx.tw.to(
+            wrong.scale,
+            { x: PAIR_SCALE, y: PAIR_SCALE },
+            { duration: 0.35, ease: ease.outBack },
+          ),
+        );
       if (this.wrongHere === 2) {
         this.hints++;
         this.glow.visible = true;
@@ -659,7 +815,14 @@ class SingAlongBarn implements Game {
     [0, 2, 3, 4].forEach((s) => sfx.marimba(s, 0.3));
     this.ctx.pet.cheer();
     const colors = RAINBOW.map((c) => swatch[c].fill);
-    this.ctx.particles.burst(this.view.w / 2, 140, { kind: 'confetti', colors, count: 60, speed: [200, 600], gravity: 600, life: [1.2, 2] });
+    this.ctx.particles.burst(this.view.w / 2, 140, {
+      kind: 'confetti',
+      colors,
+      count: 60,
+      speed: [200, 600],
+      gravity: 600,
+      life: [1.2, 2],
+    });
     sfx.tada();
     void this.ctx.say(this.tune.id === 'macdonald' ? 'barn.done' : (`barn.done.${this.tune.id}` as const));
     await this.ctx.tw.wait(1.8);
@@ -690,7 +853,9 @@ class SingAlongBarn implements Game {
     xs.forEach((x, k) => {
       const on = k < this.invited.length;
       if (on) g.circle(x, y, 38).fill({ color: 0xffe07a, alpha: 0.3 });
-      g.roundRect(x - 22, y - 22, 44, 44, 8).fill(on ? 0xffe07a : 0x6b2b2a).stroke(line(on ? 0xf2b22e : 0xffffff, 4));
+      g.roundRect(x - 22, y - 22, 44, 44, 8)
+        .fill(on ? 0xffe07a : 0x6b2b2a)
+        .stroke(line(on ? 0xf2b22e : 0xffffff, 4));
     });
   }
 
@@ -709,7 +874,9 @@ class SingAlongBarn implements Game {
       // At the pause the beads stop: the next one is big and still.
       const r = 24 + (next ? 5 + (this.pausedAt === null ? Math.sin(this.clock * 6) * 4 : 0) : 0);
       if (next) g.circle(xs[k], y, r + 12).fill({ color: c.fill, alpha: 0.25 });
-      g.circle(xs[k], y, r).fill(k < sung || next ? c.fill : 0xffffff).stroke({ width: 5, color: k <= sung ? c.line : 0xcfd8e6 });
+      g.circle(xs[k], y, r)
+        .fill(k < sung || next ? c.fill : 0xffffff)
+        .stroke({ width: 5, color: k <= sung ? c.line : 0xcfd8e6 });
     }
   }
 }
@@ -726,17 +893,33 @@ function drawTuneCard(t: Tune): Container {
     cow.position.set(0, 80);
     c.addChild(cow);
   } else if (t.id === 'clair') {
-    const moon = new Graphics().circle(0, 30, 52).fill(0xffe9a0).stroke(line(0xd9b85a)).circle(20, 18, 44).fill(0xfff4d6);
+    const moon = new Graphics()
+      .circle(0, 30, 52)
+      .fill(0xffe9a0)
+      .stroke(line(0xd9b85a))
+      .circle(20, 18, 44)
+      .fill(0xfff4d6);
     c.addChild(moon);
   } else if (t.id === 'rain') {
-    const cloud = new Graphics().circle(-36, 0, 32).circle(4, -16, 42).circle(46, 0, 30).rect(-36, 0, 82, 30).fill(0xc9d6e6).stroke(line(0x8a9db5, 5));
+    const cloud = new Graphics()
+      .circle(-36, 0, 32)
+      .circle(4, -16, 42)
+      .circle(46, 0, 30)
+      .rect(-36, 0, 82, 30)
+      .fill(0xc9d6e6)
+      .stroke(line(0x8a9db5, 5));
     const drops = new Graphics();
     for (const x of [-34, 4, 42]) drops.ellipse(x, 62, 7, 11).fill(0x6ab0e8);
     c.addChild(cloud, drops);
   } else if (t.id === 'itsy') {
     const web = new Graphics().moveTo(0, -90).lineTo(0, 0).stroke(line(0x8a9db5, 4));
     const spider = new Graphics().circle(0, 22, 26).fill(0x4a3a5c);
-    for (const d of [-1, 1]) for (const dy of [-8, 8, 24, 40]) spider.moveTo(d * 20, 22 + dy / 2).lineTo(d * 48, 22 + dy).stroke(line(0x4a3a5c, 5));
+    for (const d of [-1, 1])
+      for (const dy of [-8, 8, 24, 40])
+        spider
+          .moveTo(d * 20, 22 + dy / 2)
+          .lineTo(d * 48, 22 + dy)
+          .stroke(line(0x4a3a5c, 5));
     spider.circle(-9, 14, 5).circle(9, 14, 5).fill(0xffffff);
     c.addChild(web, spider);
   } else if (t.id === 'bounce') {
@@ -767,7 +950,13 @@ function drawTuneCard(t: Tune): Container {
     const star = new Graphics().poly(pts).fill(0xffd54a).stroke(line(0xd9a020, 5));
     star.circle(-12, 22, 5).circle(12, 22, 5).fill(0x4a3a30);
     const sparkles = new Graphics();
-    for (const [x, y] of [[-80, -20], [80, -10], [-70, 76], [74, 72]]) sparkles.circle(x, y, 6).fill(0xffe9a0);
+    for (const [x, y] of [
+      [-80, -20],
+      [80, -10],
+      [-70, 76],
+      [74, 72],
+    ])
+      sparkles.circle(x, y, 6).fill(0xffe9a0);
     c.addChild(sparkles, star);
   } else if (t.id === 'wheels') {
     // A yellow school bus from the side: windows, a door, two black wheels.
@@ -792,7 +981,13 @@ function drawTuneCard(t: Tune): Container {
     c.addChild(bunArt());
   }
   const notes = t.opening[0].steps.slice(0, 4);
-  notes.forEach((_, i) => c.addChild(new Graphics().circle(-(notes.length - 1) * 18 + i * 36, -66, 12).fill(swatch[RAINBOW[i % RAINBOW.length]].fill)));
+  notes.forEach((_, i) =>
+    c.addChild(
+      new Graphics()
+        .circle(-(notes.length - 1) * 18 + i * 36, -66, 12)
+        .fill(swatch[RAINBOW[i % RAINBOW.length]].fill),
+    ),
+  );
   return c;
 }
 
@@ -812,8 +1007,19 @@ const bunArt = () =>
 function ballArt(): Container {
   const c = new Container();
   const shadow = new Graphics().ellipse(0, 74, 50, 10).fill(0xd9c9a8);
-  const ball = new Graphics().circle(0, 12, 44).fill(0xe8604c).stroke(line(0xa83a2a, 5)).moveTo(-42, 12).lineTo(42, 12).stroke(line(0xfff4d6, 7));
-  const lines = new Graphics().moveTo(-78, 30).lineTo(-60, 52).moveTo(78, 30).lineTo(60, 52).stroke(line(0x8a9db5, 5));
+  const ball = new Graphics()
+    .circle(0, 12, 44)
+    .fill(0xe8604c)
+    .stroke(line(0xa83a2a, 5))
+    .moveTo(-42, 12)
+    .lineTo(42, 12)
+    .stroke(line(0xfff4d6, 7));
+  const lines = new Graphics()
+    .moveTo(-78, 30)
+    .lineTo(-60, 52)
+    .moveTo(78, 30)
+    .lineTo(60, 52)
+    .stroke(line(0x8a9db5, 5));
   c.addChild(shadow, ball, lines);
   return c;
 }
@@ -830,10 +1036,28 @@ function drawPicture(kind: Picture): Container {
     for (const x of [-36, -18, 0, 18, 36]) stems.moveTo(x, -20).lineTo(0, 62);
     stems.stroke(line(0x5aa04a, 6));
     const flowers = new Graphics();
-    for (const [x, y] of [[-40, -30], [-20, -54], [0, -30], [20, -54], [40, -30]]) flowers.circle(x, y, 20);
+    for (const [x, y] of [
+      [-40, -30],
+      [-20, -54],
+      [0, -30],
+      [20, -54],
+      [40, -30],
+    ])
+      flowers.circle(x, y, 20);
     flowers.fill(0xf4a6c8).stroke(line(0xc0577f, 5));
-    for (const [x, y] of [[-40, -30], [-20, -54], [0, -30], [20, -54], [40, -30]]) flowers.circle(x, y, 7).fill(0xffe9a0);
-    const bow = new Graphics().poly([0, 36, -28, 22, -28, 50]).poly([0, 36, 28, 22, 28, 50]).fill(0x8fc8ff).stroke(line(0x4a8ac0, 4));
+    for (const [x, y] of [
+      [-40, -30],
+      [-20, -54],
+      [0, -30],
+      [20, -54],
+      [40, -30],
+    ])
+      flowers.circle(x, y, 7).fill(0xffe9a0);
+    const bow = new Graphics()
+      .poly([0, 36, -28, 22, -28, 50])
+      .poly([0, 36, 28, 22, 28, 50])
+      .fill(0x8fc8ff)
+      .stroke(line(0x4a8ac0, 4));
     c.addChild(stems, flowers, bow);
   } else if (kind === 'apple') {
     const apple = new Graphics()
@@ -846,12 +1070,25 @@ function drawPicture(kind: Picture): Container {
     const leaf = new Graphics().ellipse(28, -48, 20, 10).fill(0x7cc46a).stroke(line(0x4a8a3a, 4));
     c.addChild(apple, leaf);
   } else if (kind === 'moon') {
-    c.addChild(new Graphics().circle(0, 0, 62).fill(0xffe9a0).stroke(line(0xd9b85a)).circle(26, -14, 54).fill(0xfff4d6));
+    c.addChild(
+      new Graphics()
+        .circle(0, 0, 62)
+        .fill(0xffe9a0)
+        .stroke(line(0xd9b85a))
+        .circle(26, -14, 54)
+        .fill(0xfff4d6),
+    );
   } else if (kind === 'sky') {
     // A round of night sky with a moon and four twinkles.
     const sky = new Graphics().circle(0, 0, 78).fill(0x3b4a8c).stroke(line(0x26305e, 5));
     sky.circle(-30, -26, 22).fill(0xffe9a0).circle(-20, -34, 20).fill(0x3b4a8c);
-    for (const [x, y, r] of [[30, -36, 9], [44, 18, 7], [-8, 40, 8], [-50, 22, 6]]) sky.star(x, y, 4, r, r * 0.45).fill(0xffd54a);
+    for (const [x, y, r] of [
+      [30, -36, 9],
+      [44, 18, 7],
+      [-8, 40, 8],
+      [-50, 22, 6],
+    ])
+      sky.star(x, y, 4, r, r * 0.45).fill(0xffd54a);
     c.addChild(sky);
   } else {
     // A grey drainpipe down a wall, its elbow at the foot, and three drops of water coming out.
@@ -863,7 +1100,12 @@ function drawPicture(kind: Picture): Container {
       .fill(0xb9c4d0)
       .stroke(line(0x6f7f91, 5));
     const drops = new Graphics();
-    for (const [x, y] of [[78, 50], [88, 72], [74, 84]]) drops.ellipse(x, y, 6, 9).fill(0x6ab0e8);
+    for (const [x, y] of [
+      [78, 50],
+      [88, 72],
+      [74, 84],
+    ])
+      drops.ellipse(x, y, 6, 9).fill(0x6ab0e8);
     c.addChild(pipe, drops);
   }
   return c;
@@ -952,16 +1194,25 @@ export const singAlongBarn: GameModule = {
   describeLevel: (level) => {
     const p = planFor(level);
     const friends = p.verses === 1 ? '1 friend' : `${p.verses} friends`;
-    if (p.rhyme) return `Rain, Rain, Go Away, Twinkle, Twinkle, Little Star or Ring Around the Rosie; before a rhyming word, tap the picture that rhymes (${friends})`;
-    if (p.gap) return `Hot Cross Buns, Rain, Rain, Go Away, The Itsy Bitsy Spider or Twinkle, Twinkle; the song stops before the last word of each verse and a tap sings it (${friends})`;
-    if (p.full) return `Choose the whole Old MacDonald verse (with the moo-moo lines), Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider, Bounce High, Bounce Low or Ring Around the Rosie, then choose who sings next after each verse (${friends})`;
-    if (p.chooseTune) return `Choose Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider, Bounce High, Bounce Low or Ring Around the Rosie, then choose who sings next after each verse (${friends})`;
-    if (p.each) return `Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider, Bounce High, Bounce Low or Ring Around the Rosie; after each verse, choose who sings next (${friends})`;
-    return p.invite ? `Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider, Bounce High, Bounce Low or Ring Around the Rosie; choose ${friends} to join the song` : `Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider, Bounce High, Bounce Low or Ring Around the Rosie; tap to sing, ${friends} visit`;
+    if (p.rhyme)
+      return `Rain, Rain, Go Away, Twinkle, Twinkle, Little Star or Ring Around the Rosie; before a rhyming word, tap the picture that rhymes (${friends})`;
+    if (p.gap)
+      return `Hot Cross Buns, Rain, Rain, Go Away, The Itsy Bitsy Spider or Twinkle, Twinkle; the song stops before the last word of each verse and a tap sings it (${friends})`;
+    if (p.full)
+      return `Choose the whole Old MacDonald verse (with the moo-moo lines), Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider, Bounce High, Bounce Low or Ring Around the Rosie, then choose who sings next after each verse (${friends})`;
+    if (p.chooseTune)
+      return `Choose Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider, Bounce High, Bounce Low or Ring Around the Rosie, then choose who sings next after each verse (${friends})`;
+    if (p.each)
+      return `Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider, Bounce High, Bounce Low or Ring Around the Rosie; after each verse, choose who sings next (${friends})`;
+    return p.invite
+      ? `Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider, Bounce High, Bounce Low or Ring Around the Rosie; choose ${friends} to join the song`
+      : `Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider, Bounce High, Bounce Low or Ring Around the Rosie; tap to sing, ${friends} visit`;
   },
   music: silenced(STYLES.quiet),
-  coplayHint: 'Sing along while {name} taps the next note: one syllable for each tap, and each animal sounds on its verse. At the top level, sing the whole Old MacDonald verse, with the moo-moo lines. When the song stops before a word, wait for {name} to say it, then sing it together. When two pictures wait, say the end of the line slowly ("go away … we want to …") and let {name} choose.',
-  offScreen: 'Sing Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider, Bounce High, Bounce Low or Ring Around the Rosie with stuffed animals: bring out one for each verse and make its sound together.',
+  coplayHint:
+    'Sing along while {name} taps the next note: one syllable for each tap, and each animal sounds on its verse. At the top level, sing the whole Old MacDonald verse, with the moo-moo lines. When the song stops before a word, wait for {name} to say it, then sing it together. When two pictures wait, say the end of the line slowly ("go away … we want to …") and let {name} choose.',
+  offScreen:
+    'Sing Old MacDonald, Hot Cross Buns, Mary Had a Little Lamb, Au Clair de la Lune, Rain, Rain, Go Away, The Itsy Bitsy Spider, Bounce High, Bounce Low or Ring Around the Rosie with stuffed animals: bring out one for each verse and make its sound together.',
   hubIcon: () => new BarnIcon(),
   touchDemo: true,
   sticker,

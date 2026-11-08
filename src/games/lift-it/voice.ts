@@ -15,7 +15,10 @@ export const VOICE = {
   'lift-it.guess-heard': ['{n} knots? Pull and count!'],
   'lift-it.now-pull': ['Now pull and see!'],
   'lift-it.same-friends': ['Same friends either way. The wheel turns the pull around.'],
-  'lift-it.too-heavy': ['{paws} paws. Only {friends}!', 'Too heavy! It needs {paws} paws, and there are {friends} friends.'],
+  'lift-it.too-heavy': [
+    '{paws} paws. Only {friends}!',
+    'Too heavy! It needs {paws} paws, and there are {friends} friends.',
+  ],
   'lift-it.nobody-up': ['Nobody up there to pull.'],
   'lift-it.two-ropes': ['Two ropes hold it up. Each friend pulls half.'],
   'lift-it.half-twice': ['Half the pull, twice the rope. {knots} knots!'],

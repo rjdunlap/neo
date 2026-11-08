@@ -41,7 +41,10 @@ export class HatchScene extends Scene {
   private leaving = false;
   private readonly next = new RoundButton(playIcon(), swatch.green, 58, () => this.advance());
 
-  constructor(app: App, private readonly quick = false) {
+  constructor(
+    app: App,
+    private readonly quick = false,
+  ) {
     super(app);
   }
 
@@ -76,25 +79,32 @@ export class HatchScene extends Scene {
       this.setPet();
       this.buildChoices();
     }
-    onTap(this.egg, () => {
-      if (this.step !== 'egg') return;
-      this.taps++;
-      sfx.pop();
-      this.showEgg(this.taps);
-      this.egg.rotation = (this.taps % 2 ? 1 : -1) * 0.1;
-      if (this.taps === 4) {
-        this.egg.visible = false;
-        this.step = 'color';
-        this.setPet();
-        this.buildChoices();
-        sfx.sparkle();
-        void voice.say('hatch.color');
-      }
-    }, { radius: 145, cooldown: 280 });
+    onTap(
+      this.egg,
+      () => {
+        if (this.step !== 'egg') return;
+        this.taps++;
+        sfx.pop();
+        this.showEgg(this.taps);
+        this.egg.rotation = (this.taps % 2 ? 1 : -1) * 0.1;
+        if (this.taps === 4) {
+          this.egg.visible = false;
+          this.step = 'color';
+          this.setPet();
+          this.buildChoices();
+          sfx.sparkle();
+          void voice.say('hatch.color');
+        }
+      },
+      { radius: 145, cooldown: 280 },
+    );
   }
 
   private setPet() {
-    if (this.pip) { this.untrack(this.pip); this.pip.destroy({ children: true }); }
+    if (this.pip) {
+      this.untrack(this.pip);
+      this.pip.destroy({ children: true });
+    }
     this.pip = this.track(new Companion({ species: 'sprout', look: { color: this.color } }));
     this.content.addChild(this.pip);
     this.resize(this.view);
@@ -102,20 +112,46 @@ export class HatchScene extends Scene {
   }
 
   private buildChoices() {
-    this.choices.removeChildren().forEach((c) => { if (c !== this.selected) c.destroy({ children: true }); });
+    this.choices.removeChildren().forEach((c) => {
+      if (c !== this.selected) c.destroy({ children: true });
+    });
     this.choices.addChild(this.selected);
     this.next.visible = true;
     if (this.step === 'color') {
       PET_COLORS.forEach((color) => {
-        const g = new Graphics().circle(0, 0, 49).fill(swatch[color].fill).stroke({ width: 5, color: swatch[color].line }).circle(-15, -15, 10).fill(swatch[color].light);
-        onTap(g, () => { this.color = color; this.setPet(); void voice.say(`color.${color}`); this.resize(this.view); }, { radius: 55 });
+        const g = new Graphics()
+          .circle(0, 0, 49)
+          .fill(swatch[color].fill)
+          .stroke({ width: 5, color: swatch[color].line })
+          .circle(-15, -15, 10)
+          .fill(swatch[color].light);
+        onTap(
+          g,
+          () => {
+            this.color = color;
+            this.setPet();
+            void voice.say(`color.${color}`);
+            this.resize(this.view);
+          },
+          { radius: 55 },
+        );
         this.choices.addChild(g);
       });
     } else {
       this.names.forEach((name) => {
         const b = new Container();
-        b.addChild(new Graphics().roundRect(-110, -50, 220, 100, 45).fill(swatch.white.fill).stroke({ width: 5, color: swatch.teal.line }), label(name, 36));
-        onTap(b, () => { this.name = name; void voice.say('hatch.try-name', { pet: name }); this.resize(this.view); });
+        b.addChild(
+          new Graphics()
+            .roundRect(-110, -50, 220, 100, 45)
+            .fill(swatch.white.fill)
+            .stroke({ width: 5, color: swatch.teal.line }),
+          label(name, 36),
+        );
+        onTap(b, () => {
+          this.name = name;
+          void voice.say('hatch.try-name', { pet: name });
+          this.resize(this.view);
+        });
         this.choices.addChild(b);
       });
       this.makeForm();
@@ -126,7 +162,8 @@ export class HatchScene extends Scene {
   private makeForm() {
     this.form = document.createElement('form');
     this.form.className = 'pet-name-form';
-    this.form.innerHTML = '<label for="pet-name">Grown-ups: choose another name</label><input id="pet-name" maxlength="40" autocomplete="off" placeholder="Pet name"><button type="submit">Use name</button>';
+    this.form.innerHTML =
+      '<label for="pet-name">Grown-ups: choose another name</label><input id="pet-name" maxlength="40" autocomplete="off" placeholder="Pet name"><button type="submit">Use name</button>';
     this.form.addEventListener('submit', (e) => {
       e.preventDefault();
       const value = this.form!.querySelector('input')!.value.trim();
@@ -168,7 +205,9 @@ export class HatchScene extends Scene {
     this.pip?.scale.set(l.stage.scale);
     this.next.position.set(v.w - 90, 220);
     this.plate.visible = this.step !== 'egg';
-    this.plate.clear().roundRect(30, 24, v.w - 60, 340, 42)
+    this.plate
+      .clear()
+      .roundRect(30, 24, v.w - 60, 340, 42)
       .fill({ color: swatch.white.fill, alpha: 0.92 })
       .stroke({ width: 3, color: swatch.teal.light });
     this.plate.eventMode = 'none';
@@ -181,16 +220,32 @@ export class HatchScene extends Scene {
     this.nameLabel.scale.set(Math.min(1, (v.w - 100) / Math.max(1, this.nameLabel.width)));
     this.nameLabel.position.set(v.w / 2, 70);
     this.selected.clear();
-    this.choices.children.filter((c) => c !== this.selected).forEach((c, i) => {
-      const x = this.step === 'color' ? (v.w - 160) / 2 + ((i % 4) - 1.5) * 138 : (v.w - 160) / 2 + (i - 1) * 245;
-      const y = this.step === 'color' ? 155 + Math.floor(i / 4) * 125 : 220;
-      c.position.set(x, y);
-      if (this.step === 'color' ? PET_COLORS[i] === this.color : this.names[i] === this.name) {
-        this.selected.roundRect(x - (this.step === 'color' ? 59 : 119), y - 59, this.step === 'color' ? 118 : 238, 118, 52).stroke({ width: 6, color: swatch.yellow.line });
-      }
-    });
+    this.choices.children
+      .filter((c) => c !== this.selected)
+      .forEach((c, i) => {
+        const x =
+          this.step === 'color' ? (v.w - 160) / 2 + ((i % 4) - 1.5) * 138 : (v.w - 160) / 2 + (i - 1) * 245;
+        const y = this.step === 'color' ? 155 + Math.floor(i / 4) * 125 : 220;
+        c.position.set(x, y);
+        if (this.step === 'color' ? PET_COLORS[i] === this.color : this.names[i] === this.name) {
+          this.selected
+            .roundRect(
+              x - (this.step === 'color' ? 59 : 119),
+              y - 59,
+              this.step === 'color' ? 118 : 238,
+              118,
+              52,
+            )
+            .stroke({ width: 6, color: swatch.yellow.line });
+        }
+      });
   }
 
-  enter() { void voice.say(this.quick ? 'hatch.color' : 'hatch.tap'); }
-  destroy() { this.form?.remove(); super.destroy(); }
+  enter() {
+    void voice.say(this.quick ? 'hatch.color' : 'hatch.tap');
+  }
+  destroy() {
+    this.form?.remove();
+    super.destroy();
+  }
 }

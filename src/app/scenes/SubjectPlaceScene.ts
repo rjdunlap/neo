@@ -28,7 +28,12 @@ import { mixSpotArt } from '../../ui/mix';
 import { Scene, type Updatable } from '../Scene';
 import { gamesFor } from './PlaceScene';
 
-interface Card { node: Container; id: string; mod?: GameModule; sparkle?: Sparkle }
+interface Card {
+  node: Container;
+  id: string;
+  mod?: GameModule;
+  sparkle?: Sparkle;
+}
 /** The first "subject": the games she has hearted, only offered once there is a heart in this place. */
 export const FAVORITES = 'favorites';
 /** A story card among the subjects: Wonder Woods' Woodland Picnic, which opens its own scene. */
@@ -36,7 +41,11 @@ export const WOODLAND = 'woodland';
 /** Little surprises' card, first on the first page at lap and toddler: it opens the mix's preview over this place. */
 export const MIX = 'mix';
 type Subject = RegionId | typeof FAVORITES;
-interface Position { subject: Subject | null; subjectsPage: number; gamesPage: number }
+interface Position {
+  subject: Subject | null;
+  subjectsPage: number;
+  gamesPage: number;
+}
 const positions = new Map<Band, Position>();
 /** Another player is at the screen: the last one's subject and page are not theirs. */
 export function forgetSubjects() {
@@ -51,7 +60,9 @@ const gridIcon = () => {
 const storyCard = (): HubIcon => Object.assign(woodlandLandmark(), { update() {} });
 
 const heartCard = (): HubIcon => {
-  const heart = shapePath(new Graphics(), 'heart', 62).fill(swatch.pink.fill).stroke({ width: 6, color: swatch.pink.line });
+  const heart = shapePath(new Graphics(), 'heart', 62)
+    .fill(swatch.pink.fill)
+    .stroke({ width: 6, color: swatch.pink.line });
   heart.circle(-24, -26, 11).fill({ color: 0xffffff, alpha: 0.55 });
   const icon = Object.assign(new Container(), { update() {} });
   icon.addChild(heart);
@@ -73,7 +84,9 @@ export class SubjectPlaceScene extends Scene {
   private readonly heading = label('', 32);
   private readonly dots = new Graphics();
   readonly home = new RoundButton(islandIcon(), swatch.white, 50, () => this.leave(() => this.app.go.hub()));
-  readonly book = new RoundButton(bookIcon(), swatch.white, 50, () => this.leave(() => this.app.go.stickers()));
+  readonly book = new RoundButton(bookIcon(), swatch.white, 50, () =>
+    this.leave(() => this.app.go.stickers()),
+  );
   readonly back = new RoundButton(gridIcon(), swatch.white, 50, () => {
     this.state.subject = null;
     this.rebuild();
@@ -86,37 +99,71 @@ export class SubjectPlaceScene extends Scene {
   private icons: Updatable[] = [];
   readonly mix: MixHost;
   private readonly lost = () => this.cancel();
-  private readonly release = (e: PointerEvent) => { if (this.touch?.id === e.pointerId) this.cancel(); };
+  private readonly release = (e: PointerEvent) => {
+    if (this.touch?.id === e.pointerId) this.cancel();
+  };
 
-  constructor(app: App, readonly band: Band) {
+  constructor(
+    app: App,
+    readonly band: Band,
+  ) {
     super(app);
     this.place = placeFor(band);
-    this.mix = new MixHost(app, band, this.ui, () => this.view, this.tw, gamesFor(band).map(g => g.id));
+    this.mix = new MixHost(
+      app,
+      band,
+      this.ui,
+      () => this.view,
+      this.tw,
+      gamesFor(band).map((g) => g.id),
+    );
     this.games = gamesFor(band);
-    this.subjects = SUBJECTS.filter(s => this.games.some(g => g.region === s.id));
+    this.subjects = SUBJECTS.filter((s) => this.games.some((g) => g.region === s.id));
     // Every hearted game, a bigger kids' one from a signpost too: the heart after a round promises it a place.
-    this.hearted = shelfFor(store.favorites, GAMES.map(g => g.id), FAVORITES_MAX).map(id => gameById(id)!);
+    this.hearted = shelfFor(
+      store.favorites,
+      GAMES.map((g) => g.id),
+      FAVORITES_MAX,
+    ).map((id) => gameById(id)!);
     this.state = { ...(positions.get(band) ?? { subject: null, subjectsPage: 0, gamesPage: 0 }) };
     // Hearts can be taken back between visits, so a remembered Favorites page may be gone or shorter.
     if (this.state.subject === FAVORITES && !this.hearted.length) this.state.subject = null;
-    this.state.subjectsPage = Math.min(this.state.subjectsPage, Math.max(0, Math.ceil(this.subjectCount / 4) - 1));
-    this.state.gamesPage = Math.min(this.state.gamesPage, Math.max(0, Math.ceil(this.inSubject(this.state.subject).length / 4) - 1));
+    this.state.subjectsPage = Math.min(
+      this.state.subjectsPage,
+      Math.max(0, Math.ceil(this.subjectCount / 4) - 1),
+    );
+    this.state.gamesPage = Math.min(
+      this.state.gamesPage,
+      Math.max(0, Math.ceil(this.inSubject(this.state.subject).length / 4) - 1),
+    );
   }
 
   /** Subject cards on offer: Favorites first (only when there is a heart here), then the real subjects. */
-  get subjectCount() { return this.subjects.length + (this.hearted.length ? 1 : 0) + (this.hasStory ? 1 : 0) + (this.mix.mods ? 1 : 0); }
+  get subjectCount() {
+    return (
+      this.subjects.length + (this.hearted.length ? 1 : 0) + (this.hasStory ? 1 : 0) + (this.mix.mods ? 1 : 0)
+    );
+  }
 
   override holdsMix(): boolean {
     return this.mix.live;
   }
   /** Only Wonder Woods offers the Woodland Picnic, so younger children see nothing new. */
-  get hasStory() { return this.band === WOODLAND_BAND; }
+  get hasStory() {
+    return this.band === WOODLAND_BAND;
+  }
   private inSubject(subject: Subject | null): GameModule[] {
-    return subject === FAVORITES ? this.hearted : this.games.filter(g => g.region === subject);
+    return subject === FAVORITES ? this.hearted : this.games.filter((g) => g.region === subject);
   }
 
-  get pageIndex() { return this.state.subject ? this.state.gamesPage : this.state.subjectsPage; }
-  get pageCount() { return Math.ceil((this.state.subject ? this.inSubject(this.state.subject).length : this.subjectCount) / 4); }
+  get pageIndex() {
+    return this.state.subject ? this.state.gamesPage : this.state.subjectsPage;
+  }
+  get pageCount() {
+    return Math.ceil(
+      (this.state.subject ? this.inSubject(this.state.subject).length : this.subjectCount) / 4,
+    );
+  }
 
   init() {
     this.backdrop = this.track(new Backdrop(this.place.backdrop, this.view));
@@ -125,9 +172,14 @@ export class SubjectPlaceScene extends Scene {
     this.choices.on('pointerdown', (e: FederatedPointerEvent) => {
       if (this.leaving || this.touch || this.mix.covering || palmOnGlass()) return;
       const p = this.choices.toLocal(e.global);
-      const card = this.cards.find(c => c.node.visible && (c.node.hitArea as Rectangle).contains(p.x - c.node.x, p.y - c.node.y));
+      const card = this.cards.find(
+        (c) => c.node.visible && (c.node.hitArea as Rectangle).contains(p.x - c.node.x, p.y - c.node.y),
+      );
       this.touch = { id: e.pointerId, x: p.x, y: p.y, moved: false, card };
-      if (card) { card.node.scale.set(0.96); sfx.tick(); }
+      if (card) {
+        card.node.scale.set(0.96);
+        sfx.tick();
+      }
       // A grown-up's hold on the mix card opens the mix table (D5a); a tap still just starts the mix.
       if (card?.id === MIX) this.mix.holdStart(card.node, 0, 0, 70);
     });
@@ -149,7 +201,8 @@ export class SubjectPlaceScene extends Scene {
       this.cancel();
       if (held) return; // the hold opened the table: this lift does not also start the mix
       if (t.moved) {
-        if (Math.abs(p.x - t.x) > 70 && Math.abs(p.x - t.x) > Math.abs(p.y - t.y)) this.page(p.x < t.x ? 1 : -1);
+        if (Math.abs(p.x - t.x) > 70 && Math.abs(p.x - t.x) > Math.abs(p.y - t.y))
+          this.page(p.x < t.x ? 1 : -1);
       } else if (t.card) this.pick(t.card);
     });
     this.choices.on('pointerupoutside', () => this.cancel());
@@ -160,18 +213,38 @@ export class SubjectPlaceScene extends Scene {
     document.addEventListener('visibilitychange', this.lost);
     this.pip.scale.set(0.55);
     this.pip.hitArea = new Circle(0, -120, 110);
-    onTap(this.pip, () => { this.pip.poke(); this.speak(); });
-    this.ui.addChild(this.track(this.pip), this.home, this.book, this.back, this.heading, this.previous, this.next, this.dots);
+    onTap(this.pip, () => {
+      this.pip.poke();
+      this.speak();
+    });
+    this.ui.addChild(
+      this.track(this.pip),
+      this.home,
+      this.book,
+      this.back,
+      this.heading,
+      this.previous,
+      this.next,
+      this.dots,
+    );
     this.rebuild();
     // Back from a stop of a live mix: its sheet is up again before the first frame.
     if (this.mix.live) this.mix.resume();
   }
 
-  private cancel() { this.touch?.card?.node.scale.set(1); this.touch = null; this.mix.holdCancel(); }
-  private remember() { positions.set(this.band, { ...this.state }); }
+  private cancel() {
+    this.touch?.card?.node.scale.set(1);
+    this.touch = null;
+    this.mix.holdCancel();
+  }
+  private remember() {
+    positions.set(this.band, { ...this.state });
+  }
   private speak() {
-    const subject = this.subjects.find(s => s.id === this.state.subject);
-    void voice.say(this.state.subject === FAVORITES ? 'place.favorites' : subject?.line ?? 'place.subjects');
+    const subject = this.subjects.find((s) => s.id === this.state.subject);
+    void voice.say(
+      this.state.subject === FAVORITES ? 'place.favorites' : (subject?.line ?? 'place.subjects'),
+    );
   }
   private rebuild() {
     this.cancel();
@@ -179,24 +252,56 @@ export class SubjectPlaceScene extends Scene {
     this.icons = [];
     for (const c of this.choices.removeChildren()) c.destroy({ children: true });
     this.cards.length = 0;
-    const subject = this.subjects.find(s => s.id === this.state.subject);
+    const subject = this.subjects.find((s) => s.id === this.state.subject);
     const favorites = this.state.subject === FAVORITES;
     this.heading.text = favorites ? 'Favorites' : subject ? subject.name : this.place.name;
     // Each card: a name, a picture, and whether it holds something she has not played yet.
     const items = this.state.subject
-      ? this.inSubject(this.state.subject).map(mod => ({ id: mod.id, name: mod.name, mod, icon: () => mod.hubIcon(), fresh: store.isNew(mod.id) }))
+      ? this.inSubject(this.state.subject).map((mod) => ({
+          id: mod.id,
+          name: mod.name,
+          mod,
+          icon: () => mod.hubIcon(),
+          fresh: store.isNew(mod.id),
+        }))
       : [
-        ...(this.mix.mods ? [{ id: MIX, name: 'Little surprises', mod: undefined, icon: () => Object.assign(mixSpotArt(this.mix.mods!), { update() {} }), fresh: false }] : []),
-        ...(this.hearted.length ? [{ id: FAVORITES, name: 'Favorites', mod: undefined, icon: heartCard, fresh: false }] : []),
-        ...(this.hasStory ? [{ id: WOODLAND, name: 'Woodland Picnic', mod: undefined, icon: storyCard, fresh: false }] : []),
-        ...this.subjects.map(s => {
-          const here = this.games.filter(g => g.region === s.id);
-          return { id: s.id, name: s.name, mod: undefined, icon: () => here[0].hubIcon(), fresh: anyNew(store.data.games, here.map(g => g.id)) };
-        }),
-      ];
-    items.forEach(item => {
+          ...(this.mix.mods
+            ? [
+                {
+                  id: MIX,
+                  name: 'Little surprises',
+                  mod: undefined,
+                  icon: () => Object.assign(mixSpotArt(this.mix.mods!), { update() {} }),
+                  fresh: false,
+                },
+              ]
+            : []),
+          ...(this.hearted.length
+            ? [{ id: FAVORITES, name: 'Favorites', mod: undefined, icon: heartCard, fresh: false }]
+            : []),
+          ...(this.hasStory
+            ? [{ id: WOODLAND, name: 'Woodland Picnic', mod: undefined, icon: storyCard, fresh: false }]
+            : []),
+          ...this.subjects.map((s) => {
+            const here = this.games.filter((g) => g.region === s.id);
+            return {
+              id: s.id,
+              name: s.name,
+              mod: undefined,
+              icon: () => here[0].hubIcon(),
+              fresh: anyNew(
+                store.data.games,
+                here.map((g) => g.id),
+              ),
+            };
+          }),
+        ];
+    items.forEach((item) => {
       const node = new Container();
-      const bg = new Graphics().roundRect(-150, -115, 300, 230, 30).fill({ color: swatch.white.fill, alpha: 0.94 }).stroke({ width: 5, color: swatch.teal.line });
+      const bg = new Graphics()
+        .roundRect(-150, -115, 300, 230, 30)
+        .fill({ color: swatch.white.fill, alpha: 0.94 })
+        .stroke({ width: 5, color: swatch.teal.line });
       bg.eventMode = 'none';
       const icon = this.track(item.icon());
       this.icons.push(icon);
@@ -209,7 +314,11 @@ export class SubjectPlaceScene extends Scene {
       name.position.set(0, 87);
       node.addChild(bg, icon, name);
       // A game that takes only a keyboard or a controller says so with a key cap; tapping it still opens its couch course.
-      if (item.mod && !playsByTouch(item.mod)) { const cap = keycap(); cap.position.set(-116, -84); node.addChild(cap); }
+      if (item.mod && !playsByTouch(item.mod)) {
+        const cap = keycap();
+        cap.position.set(-116, -84);
+        node.addChild(cap);
+      }
       let sparkle: Sparkle | undefined;
       if (item.fresh) {
         sparkle = this.track(new Sparkle(24));
@@ -240,7 +349,9 @@ export class SubjectPlaceScene extends Scene {
       this.leaving = true;
       this.remember();
       void voice.say(card.mod.titleLine);
-      this.app.go.game(card.mod.id, playBand(card.mod.bands, this.band), undefined, false, { place: this.band });
+      this.app.go.game(card.mod.id, playBand(card.mod.bands, this.band), undefined, false, {
+        place: this.band,
+      });
     } else {
       this.state.subject = card.id as Subject;
       this.state.gamesPage = 0;
@@ -257,7 +368,13 @@ export class SubjectPlaceScene extends Scene {
     this.resize(this.view);
     this.remember();
   }
-  private leave(go: () => void) { if (!this.leaving) { this.leaving = true; this.remember(); go(); } }
+  private leave(go: () => void) {
+    if (!this.leaving) {
+      this.leaving = true;
+      this.remember();
+      go();
+    }
+  }
 
   resize(v: View) {
     this.cancel();
@@ -278,11 +395,27 @@ export class SubjectPlaceScene extends Scene {
       node.position.set(v.w / 2 + (i % 2 ? 170 : -170), 290 + Math.floor((i % 4) / 2) * (v.h - 430));
     });
     this.dots.clear();
-    for (let i = 0; i < this.pageCount; i++) this.dots.circle(v.w / 2 + (i - (this.pageCount - 1) / 2) * 28, v.h - 28, i === this.pageIndex ? 8 : 5).fill(swatch.teal.line);
+    for (let i = 0; i < this.pageCount; i++)
+      this.dots
+        .circle(v.w / 2 + (i - (this.pageCount - 1) / 2) * 28, v.h - 28, i === this.pageIndex ? 8 : 5)
+        .fill(swatch.teal.line);
     this.dots.eventMode = 'none';
     this.mix.resize(v);
   }
-  override update(dt: number) { super.update(dt); this.mix.update(dt); }
-  enter() { music.play(STYLES.hub); if (!this.mix.covering) this.speak(); }
-  exit() { voice.stop(); this.cancel(); window.removeEventListener('blur', this.lost); window.removeEventListener('pointercancel', this.release); window.removeEventListener('pointerup', this.release); document.removeEventListener('visibilitychange', this.lost); }
+  override update(dt: number) {
+    super.update(dt);
+    this.mix.update(dt);
+  }
+  enter() {
+    music.play(STYLES.hub);
+    if (!this.mix.covering) this.speak();
+  }
+  exit() {
+    voice.stop();
+    this.cancel();
+    window.removeEventListener('blur', this.lost);
+    window.removeEventListener('pointercancel', this.release);
+    window.removeEventListener('pointerup', this.release);
+    document.removeEventListener('visibilitychange', this.lost);
+  }
 }

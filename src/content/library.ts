@@ -9,6 +9,11 @@ import { WOODLAND_BAND } from './woodland';
 export const LIBRARY_BOOKS = ['journal', 'windy', 'woodland'] as const;
 export type LibraryBook = (typeof LIBRARY_BOOKS)[number];
 
-export const libraryBooks = (band: Band): LibraryBook[] => LIBRARY_BOOKS.filter((b) => b !== 'woodland' || band === WOODLAND_BAND);
+export const libraryBooks = (band: Band): LibraryBook[] =>
+  LIBRARY_BOOKS.filter((b) => b !== 'woodland' || band === WOODLAND_BAND);
 
-export const BOOK_NAMES: Record<LibraryBook, string> = { journal: 'Journal', windy: 'Windy Picnic', woodland: 'Woodland Picnic' };
+export const BOOK_NAMES: Record<LibraryBook, string> = {
+  journal: 'Journal',
+  windy: 'Windy Picnic',
+  woodland: 'Woodland Picnic',
+};

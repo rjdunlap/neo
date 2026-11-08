@@ -13,7 +13,12 @@ export type Feeling = 'proud' | 'happy' | 'sleepy' | 'surprised' | 'sad' | 'reli
 
 export const WHO = { bunny: 'Bunny', duck: 'Duck', turtle: 'Turtle', frog: 'Frog' } as const;
 export type WhoId = keyof typeof WHO;
-export const WHERE = { pond: 'at the pond', meadow: 'in the meadow', barn: 'by the barn', woods: 'in the woods' } as const;
+export const WHERE = {
+  pond: 'at the pond',
+  meadow: 'in the meadow',
+  barn: 'by the barn',
+  woods: 'in the woods',
+} as const;
 export type WhereId = keyof typeof WHERE;
 
 interface ProblemSpec {
@@ -23,11 +28,31 @@ interface ProblemSpec {
 }
 
 export const PROBLEMS: Record<ProblemId, ProblemSpec> = {
-  hat: { clause: 'lost a hat', tries: ['hat.leaves', 'hat.ask'], endings: ['hat.tree', 'hat.back', 'hat.leaf'] },
-  rain: { clause: 'got caught in the rain', tries: ['rain.mushroom', 'rain.leaf'], endings: ['rain.cozy', 'rain.splash', 'rain.rainbow'] },
-  mud: { clause: 'got stuck in the mud', tries: ['mud.pull', 'mud.call'], endings: ['mud.pop', 'mud.friends', 'mud.shake'] },
-  tower: { clause: 'made a block tower that wobbled', tries: ['tower.big', 'tower.hold'], endings: ['tower.tall', 'tower.again', 'tower.crash'] },
-  hungry: { clause: 'felt hungry', tries: ['hungry.look', 'hungry.share'], endings: ['hungry.snack', 'hungry.berries', 'hungry.picnic'] },
+  hat: {
+    clause: 'lost a hat',
+    tries: ['hat.leaves', 'hat.ask'],
+    endings: ['hat.tree', 'hat.back', 'hat.leaf'],
+  },
+  rain: {
+    clause: 'got caught in the rain',
+    tries: ['rain.mushroom', 'rain.leaf'],
+    endings: ['rain.cozy', 'rain.splash', 'rain.rainbow'],
+  },
+  mud: {
+    clause: 'got stuck in the mud',
+    tries: ['mud.pull', 'mud.call'],
+    endings: ['mud.pop', 'mud.friends', 'mud.shake'],
+  },
+  tower: {
+    clause: 'made a block tower that wobbled',
+    tries: ['tower.big', 'tower.hold'],
+    endings: ['tower.tall', 'tower.again', 'tower.crash'],
+  },
+  hungry: {
+    clause: 'felt hungry',
+    tries: ['hungry.look', 'hungry.share'],
+    endings: ['hungry.snack', 'hungry.berries', 'hungry.picnic'],
+  },
 };
 export const PROBLEM_IDS = Object.keys(PROBLEMS) as ProblemId[];
 
@@ -114,11 +139,18 @@ export function pageText(s: Story, page: number): string {
   }
   if (page === 3) return s.ending ? `In the end, ${who} ${EVENTS[s.ending]}.` : '';
   if (!s.feeling) return '';
-  return s.reason ? `${who} felt ${s.feeling} because ${who} ${eventClause(s.reason)}.` : `${who} felt ${s.feeling}.`;
+  return s.reason
+    ? `${who} felt ${s.feeling} because ${who} ${eventClause(s.reason)}.`
+    : `${who} felt ${s.feeling}.`;
 }
 
 /** The whole story so far, page by page, skipping empty pages. */
-export const storyText = (s: Story, pages = 4) => [1, 2, 3, 4].slice(0, pages).map((p) => pageText(s, p)).filter(Boolean).join(' ');
+export const storyText = (s: Story, pages = 4) =>
+  [1, 2, 3, 4]
+    .slice(0, pages)
+    .map((p) => pageText(s, p))
+    .filter(Boolean)
+    .join(' ');
 
 /** The parts a reader needs, in the fixed order the owl asks about them (who is needed before reading at all). */
 export const ASKED: readonly Part[] = ['where', 'problem', 'ending'];
@@ -142,8 +174,21 @@ export function offeredFeelings(s: Story): Feeling[] {
 }
 
 /** Which page a part sits on. */
-export const PAGE_OF: Record<Part, number> = { who: 1, where: 1, problem: 2, try: 2, ending: 3, feeling: 4, reason: 4 };
-export const PAGE_PARTS: Record<number, readonly Part[]> = { 1: ['who', 'where'], 2: ['problem', 'try'], 3: ['ending'], 4: ['feeling'] };
+export const PAGE_OF: Record<Part, number> = {
+  who: 1,
+  where: 1,
+  problem: 2,
+  try: 2,
+  ending: 3,
+  feeling: 4,
+  reason: 4,
+};
+export const PAGE_PARTS: Record<number, readonly Part[]> = {
+  1: ['who', 'where'],
+  2: ['problem', 'try'],
+  3: ['ending'],
+  4: ['feeling'],
+};
 
 export interface WeaverPlan {
   level: number;
@@ -154,7 +199,8 @@ export interface WeaverPlan {
 
 export function planFor(level: number): WeaverPlan {
   if (level <= 1) return { level: 1, name: 'Page by page: build a three-page story', pages: 3 };
-  if (level === 2) return { level: 2, name: "The owl asks: answer the owl's question about a missing part", pages: 3 };
+  if (level === 2)
+    return { level: 2, name: "The owl asks: answer the owl's question about a missing part", pages: 3 };
   return { level: 3, name: 'Because: join a feeling to an event with because', pages: 4 };
 }
 
@@ -250,7 +296,8 @@ export class WeaverRound {
 
   /** The tray tiles that glow: the owl's asked part, or the supporting reasons after help. */
   glowing(): string[] {
-    if (this.phase === 'reason' && this.glowReasons && this.story.feeling) return this.tray().filter((e) => supports(this.story.feeling!, e));
+    if (this.phase === 'reason' && this.glowReasons && this.story.feeling)
+      return this.tray().filter((e) => supports(this.story.feeling!, e));
     if (this.owlAsk && this.active === this.owlAsk) return this.tray();
     return [];
   }
@@ -522,11 +569,23 @@ export function layout(v: { w: number; h: number }, pages: number): WeaverLayout
       const inRow = rows === 2 ? (row === 0 ? Math.ceil(n / 2) : n - Math.ceil(n / 2)) : n;
       const col = row === 0 ? i : i - Math.ceil(n / 2);
       const w = inRow * TILE_W + (inRow - 1) * TILE_GAP;
-      out.push({ x: cx - w / 2 + TILE_W / 2 + col * (TILE_W + TILE_GAP), y: tray.y + TILE_H / 2 + row * (TILE_H + TILE_GAP) });
+      out.push({
+        x: cx - w / 2 + TILE_W / 2 + col * (TILE_W + TILE_GAP),
+        y: tray.y + TILE_H / 2 + row * (TILE_H + TILE_GAP),
+      });
     }
     return out;
   };
-  return { pages: pageBoxes, strip, tiles, tray, owl, controls, pet: { x: 0, y: v.h - 268, w: 160, h: 268 }, corner: CORNER };
+  return {
+    pages: pageBoxes,
+    strip,
+    tiles,
+    tray,
+    owl,
+    controls,
+    pet: { x: 0, y: v.h - 268, w: 160, h: 268 },
+    corner: CORNER,
+  };
 }
 
 /** The two slots of a page card (one for page 3), in the card's own space. */
@@ -536,4 +595,5 @@ export function slotBoxes(card: Box, page: number): Box[] {
   return Array.from({ length: n }, (_, i) => ({ x: 8 + i * (w + 8), y: 30, w, h: card.h - 38 }));
 }
 
-export const overlaps = (a: Box, b: Box) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+export const overlaps = (a: Box, b: Box) =>
+  a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;

@@ -12,8 +12,33 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
-  accepted, askedKind, covers, DROP_FALL, dropDelay, free, fullMask, HEADER, HIT, hintFor, KINDS, lookFor, makeBoard, pieceAt, pileLayout, planFor, present,
-  putBack, RADIUS, slotAt, take, tray, type Board, type Hint, type Look, type PileLayout, type PilePlan,
+  accepted,
+  askedKind,
+  covers,
+  DROP_FALL,
+  dropDelay,
+  free,
+  fullMask,
+  HEADER,
+  HIT,
+  hintFor,
+  KINDS,
+  lookFor,
+  makeBoard,
+  pieceAt,
+  pileLayout,
+  planFor,
+  present,
+  putBack,
+  RADIUS,
+  slotAt,
+  take,
+  tray,
+  type Board,
+  type Hint,
+  type Look,
+  type PileLayout,
+  type PilePlan,
 } from './logic';
 
 /** Each kind's colour from the palette: every kind differs from the others in colour and in outline. */
@@ -44,8 +69,17 @@ function kindArt(kind: number): Graphics {
   const line = { width: 4, color: c.line, join: 'round' as const, cap: 'round' as const };
   switch (kind) {
     case 0: // shell: a ridged fan on a little hinge
-      g.moveTo(-32, 4).bezierCurveTo(-34, -36, 34, -36, 32, 4).lineTo(10, 22).lineTo(-10, 22).closePath().fill(c.fill).stroke(line);
-      for (const x of [-20, -8, 4, 16]) g.moveTo(0, 20).lineTo(x * 1.3 + 2, -20).stroke({ width: 3, color: c.line, alpha: 0.7 });
+      g.moveTo(-32, 4)
+        .bezierCurveTo(-34, -36, 34, -36, 32, 4)
+        .lineTo(10, 22)
+        .lineTo(-10, 22)
+        .closePath()
+        .fill(c.fill)
+        .stroke(line);
+      for (const x of [-20, -8, 4, 16])
+        g.moveTo(0, 20)
+          .lineTo(x * 1.3 + 2, -20)
+          .stroke({ width: 3, color: c.line, alpha: 0.7 });
       g.roundRect(-12, 20, 24, 10, 4).fill(c.fill).stroke(line);
       break;
     case 1: // acorn: a nut under a bumpy cap, with a stem
@@ -55,39 +89,69 @@ function kindArt(kind: number): Graphics {
       g.moveTo(0, -24).lineTo(4, -34).stroke({ width: 5, color: c.line, cap: 'round' });
       break;
     case 2: // apple: two lobes, a stem and a leaf
-      g.moveTo(0, -16).bezierCurveTo(-30, -32, -40, 12, -14, 28).bezierCurveTo(-6, 32, 6, 32, 14, 28).bezierCurveTo(40, 12, 30, -32, 0, -16)
-        .fill(c.fill).stroke(line);
+      g.moveTo(0, -16)
+        .bezierCurveTo(-30, -32, -40, 12, -14, 28)
+        .bezierCurveTo(-6, 32, 6, 32, 14, 28)
+        .bezierCurveTo(40, 12, 30, -32, 0, -16)
+        .fill(c.fill)
+        .stroke(line);
       g.moveTo(0, -16).lineTo(2, -30).stroke({ width: 5, color: swatch.brown.line, cap: 'round' });
       g.ellipse(12, -28, 10, 5).fill(swatch.green.fill).stroke({ width: 3, color: swatch.green.line });
       g.ellipse(-12, -6, 5, 8).fill({ color: 0xffffff, alpha: 0.4 });
       break;
     case 3: // star: a sea star with five arms
       g.star(0, 2, 5, 34, 15).fill(c.fill).stroke(line);
-      for (const [x, y] of [[0, -14], [-12, 0], [12, 0], [-7, 14], [7, 14], [0, 2]]) g.circle(x, y, 2.5).fill(c.line);
+      for (const [x, y] of [
+        [0, -14],
+        [-12, 0],
+        [12, 0],
+        [-7, 14],
+        [7, 14],
+        [0, 2],
+      ])
+        g.circle(x, y, 2.5).fill(c.line);
       break;
     case 4: // leaf: a pointed leaf with a midrib and a stalk
-      g.moveTo(0, -34).bezierCurveTo(30, -18, 26, 18, 0, 30).bezierCurveTo(-26, 18, -30, -18, 0, -34).fill(c.fill).stroke(line);
+      g.moveTo(0, -34)
+        .bezierCurveTo(30, -18, 26, 18, 0, 30)
+        .bezierCurveTo(-26, 18, -30, -18, 0, -34)
+        .fill(c.fill)
+        .stroke(line);
       g.moveTo(0, -28).lineTo(0, 36).stroke({ width: 3, color: c.line, cap: 'round' });
-      for (const y of [-12, 2, 16]) g.moveTo(0, y).lineTo(12, y - 8).moveTo(0, y).lineTo(-12, y - 8).stroke({ width: 2, color: c.line });
+      for (const y of [-12, 2, 16])
+        g.moveTo(0, y)
+          .lineTo(12, y - 8)
+          .moveTo(0, y)
+          .lineTo(-12, y - 8)
+          .stroke({ width: 2, color: c.line });
       break;
     case 5: // toy duck: a round body, a head and a beak
       g.ellipse(4, 12, 30, 18).fill(c.fill).stroke(line);
       g.circle(-12, -12, 15).fill(c.fill).stroke(line);
-      g.poly([-26, -12, -40, -6, -26, -4]).fill(swatch.orange.fill).stroke({ width: 3, color: swatch.orange.line, join: 'round' });
+      g.poly([-26, -12, -40, -6, -26, -4])
+        .fill(swatch.orange.fill)
+        .stroke({ width: 3, color: swatch.orange.line, join: 'round' });
       g.circle(-14, -16, 3).fill(ink);
       g.moveTo(4, 8).bezierCurveTo(14, 2, 24, 6, 28, 14).stroke({ width: 3, color: c.line });
       break;
     case 6: // flower: five petals round a yellow middle
       for (let k = 0; k < 5; k++) {
         const a = (k / 5) * Math.PI * 2 - Math.PI / 2;
-        g.circle(Math.cos(a) * 18, Math.sin(a) * 18, 14).fill(c.fill).stroke({ width: 3, color: c.line });
+        g.circle(Math.cos(a) * 18, Math.sin(a) * 18, 14)
+          .fill(c.fill)
+          .stroke({ width: 3, color: c.line });
       }
       g.circle(0, 0, 11).fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line });
       break;
     default: // mushroom: a spotted cap on a pale stem
       g.roundRect(-10, -2, 20, 32, 8).fill(0xfff6e8).stroke({ width: 4, color: swatch.brown.line });
       g.moveTo(-34, 2).bezierCurveTo(-34, -40, 34, -40, 34, 2).closePath().fill(c.fill).stroke(line);
-      for (const [x, y, r] of [[-16, -12, 5], [6, -20, 6], [18, -6, 4]]) g.circle(x, y, r).fill(0xffffff);
+      for (const [x, y, r] of [
+        [-16, -12, 5],
+        [6, -20, 6],
+        [18, -6, 4],
+      ])
+        g.circle(x, y, r).fill(0xffffff);
   }
   return g;
 }
@@ -102,7 +166,12 @@ class Piece extends Container {
     this.shadow.y = SHADOW_Y;
     this.addChild(
       this.shadow,
-      new Graphics().circle(0, 0, RADIUS - 4).fill(0xffffff).stroke({ width: 4, color: c.line }).circle(0, 0, RADIUS - 12).fill(c.light),
+      new Graphics()
+        .circle(0, 0, RADIUS - 4)
+        .fill(0xffffff)
+        .stroke({ width: 4, color: c.line })
+        .circle(0, 0, RADIUS - 12)
+        .fill(c.light),
       kindArt(kind),
       this.shade.circle(0, 0, RADIUS - 2).fill({ color: ink, alpha: 0.3 }),
     );
@@ -112,9 +181,15 @@ class Piece extends Container {
 
 function basketArt(w: number, h: number): Graphics {
   const g = new Graphics()
-    .roundRect(-w / 2, -h / 2 + 18, w, h - 18, 22).fill(wood.fill).stroke({ width: 5, color: wood.line });
-  for (let y = -h / 2 + 34; y < h / 2 - 8; y += 18) g.moveTo(-w / 2 + 8, y).lineTo(w / 2 - 8, y).stroke({ width: 3, color: wood.line, alpha: 0.6 });
-  g.moveTo(-w / 2 + 20, -h / 2 + 20).bezierCurveTo(-w / 2 + 20, -h / 2 - 22, w / 2 - 20, -h / 2 - 22, w / 2 - 20, -h / 2 + 20)
+    .roundRect(-w / 2, -h / 2 + 18, w, h - 18, 22)
+    .fill(wood.fill)
+    .stroke({ width: 5, color: wood.line });
+  for (let y = -h / 2 + 34; y < h / 2 - 8; y += 18)
+    g.moveTo(-w / 2 + 8, y)
+      .lineTo(w / 2 - 8, y)
+      .stroke({ width: 3, color: wood.line, alpha: 0.6 });
+  g.moveTo(-w / 2 + 20, -h / 2 + 20)
+    .bezierCurveTo(-w / 2 + 20, -h / 2 - 22, w / 2 - 20, -h / 2 - 22, w / 2 - 20, -h / 2 + 20)
     .stroke({ width: 7, color: wood.line, cap: 'round' });
   return g;
 }
@@ -174,7 +249,14 @@ class PileMatch implements Game {
     this.look = lookFor(this.plan.id, ctx.rng);
     const things = this.look === 'autumn' ? 9 : this.look === 'sand' ? 2 : 10;
     for (let n = 0; n < things; n++) {
-      this.decor.push({ t: (n + ctx.rng.next()) / things, u: ctx.rng.next(), v: ctx.rng.next(), s: 0.8 + 0.4 * ctx.rng.next(), a: ctx.rng.next() * Math.PI * 2, under: this.look === 'autumn' && n % 3 === 0 });
+      this.decor.push({
+        t: (n + ctx.rng.next()) / things,
+        u: ctx.rng.next(),
+        v: ctx.rng.next(),
+        s: 0.8 + 0.4 * ctx.rng.next(),
+        a: ctx.rng.next() * Math.PI * 2,
+        under: this.look === 'autumn' && n % 3 === 0,
+      });
     }
     this.pieceLayer.sortableChildren = true;
     this.gust.eventMode = 'none';
@@ -187,7 +269,15 @@ class PileMatch implements Game {
     this.hitLayer.on('pointerup', (e) => this.up(e));
     this.hitLayer.on('pointerupoutside', () => this.letGo());
     this.hitLayer.eventMode = 'static';
-    ctx.stage.addChild(this.trayLayer, this.basket, this.tag, this.pieceLayer, this.gust, this.glow, this.hitLayer);
+    ctx.stage.addChild(
+      this.trayLayer,
+      this.basket,
+      this.tag,
+      this.pieceLayer,
+      this.gust,
+      this.glow,
+      this.hitLayer,
+    );
     this.ctx.listen(window, 'pointercancel', this.onCancel);
     this.pieces = this.board.kinds.map((k) => this.pieceLayer.addChild(new Piece(k)));
   }
@@ -206,27 +296,39 @@ class PileMatch implements Game {
     this.relayout = false;
     this.placeAll();
     this.blow();
-    const cells = this.board.cells, tw = this.ctx.tw, s = this.layout.scale;
-    await Promise.all(this.pieces.map(async (p, i) => {
-      const home = this.layout.pieces[i], delay = dropDelay(cells, i);
-      p.alpha = 0;
-      p.y = home.y - DROP_HEIGHT;
-      p.shadow.y = SHADOW_Y + DROP_HEIGHT;
-      p.shadow.scale.set(0.4);
-      void tw.to(p, { alpha: 1 }, { duration: 0.08, delay });
-      void tw.to(p.shadow, { y: SHADOW_Y }, { duration: DROP_FALL, delay, ease: ease.inQuad });
-      void tw.to(p.shadow.scale, { x: 1, y: 1 }, { duration: DROP_FALL, delay, ease: ease.inQuad });
-      await tw.to(p, { y: home.y }, { duration: DROP_FALL, delay, ease: ease.inQuad });
-      await tw.to(p.scale, { x: s * 1.1, y: s * 0.9 }, { duration: 0.05 });
-      await tw.to(p.scale, { x: s, y: s }, { duration: 0.06 });
-    }));
+    const cells = this.board.cells,
+      tw = this.ctx.tw,
+      s = this.layout.scale;
+    await Promise.all(
+      this.pieces.map(async (p, i) => {
+        const home = this.layout.pieces[i],
+          delay = dropDelay(cells, i);
+        p.alpha = 0;
+        p.y = home.y - DROP_HEIGHT;
+        p.shadow.y = SHADOW_Y + DROP_HEIGHT;
+        p.shadow.scale.set(0.4);
+        void tw.to(p, { alpha: 1 }, { duration: 0.08, delay });
+        void tw.to(p.shadow, { y: SHADOW_Y }, { duration: DROP_FALL, delay, ease: ease.inQuad });
+        void tw.to(p.shadow.scale, { x: 1, y: 1 }, { duration: DROP_FALL, delay, ease: ease.inQuad });
+        await tw.to(p, { y: home.y }, { duration: DROP_FALL, delay, ease: ease.inQuad });
+        await tw.to(p.scale, { x: s * 1.1, y: s * 0.9 }, { duration: 0.05 });
+        await tw.to(p.scale, { x: s, y: s }, { duration: 0.06 });
+      }),
+    );
   }
 
   /** Three curling strokes of wind sweep across the header. */
   private blow() {
-    const g = this.gust.clear(), w = this.ctx.view.w;
-    for (const [y, r] of [[40, 22], [68, 16], [96, 20]] as const) {
-      g.moveTo(-180, y).bezierCurveTo(-120, y - 14, -60, y + 14, 0, y).arc(0, y - r, r, Math.PI / 2, -Math.PI, true)
+    const g = this.gust.clear(),
+      w = this.ctx.view.w;
+    for (const [y, r] of [
+      [40, 22],
+      [68, 16],
+      [96, 20],
+    ] as const) {
+      g.moveTo(-180, y)
+        .bezierCurveTo(-120, y - 14, -60, y + 14, 0, y)
+        .arc(0, y - r, r, Math.PI / 2, -Math.PI, true)
         .stroke({ width: 6, color: 0xffffff, cap: 'round', alpha: 0.9 });
     }
     g.position.set(-40, 0);
@@ -246,18 +348,37 @@ class PileMatch implements Game {
     const look = LOOK_ART[this.look];
     back.rect(0, 0, v.w, HEADER).fill({ color: look.sky, alpha: 0.6 });
     // The ground the heap lies on.
-    const xs = L.pieces.map((p) => p.x), ys = L.pieces.map((p) => p.y), pad = RADIUS + 26;
-    const ground = { x: Math.min(...xs) - pad, y: Math.min(...ys) - pad, w: Math.max(...xs) - Math.min(...xs) + 2 * pad, h: Math.max(...ys) - Math.min(...ys) + 2 * pad };
-    back.roundRect(ground.x, ground.y, ground.w, ground.h, 60).fill({ color: look.ground }).stroke({ width: 4, color: look.rim });
+    const xs = L.pieces.map((p) => p.x),
+      ys = L.pieces.map((p) => p.y),
+      pad = RADIUS + 26;
+    const ground = {
+      x: Math.min(...xs) - pad,
+      y: Math.min(...ys) - pad,
+      w: Math.max(...xs) - Math.min(...xs) + 2 * pad,
+      h: Math.max(...ys) - Math.min(...ys) + 2 * pad,
+    };
+    back
+      .roundRect(ground.x, ground.y, ground.w, ground.h, 60)
+      .fill({ color: look.ground })
+      .stroke({ width: 4, color: look.rim });
     this.drawEdge(back, ground);
-    for (const s of L.slots) back.roundRect(s.x, s.y, s.w, s.h, 20).fill({ color: this.plan.asked ? wood.light : 0xffffff, alpha: 0.75 }).stroke({ width: 4, color: wood.line });
+    for (const s of L.slots)
+      back
+        .roundRect(s.x, s.y, s.w, s.h, 20)
+        .fill({ color: this.plan.asked ? wood.light : 0xffffff, alpha: 0.75 })
+        .stroke({ width: 4, color: wood.line });
     this.trayLayer.addChild(back);
     this.basket.position.set(L.basket.x + L.basket.w / 2, L.basket.y + L.basket.h / 2);
     this.tag.visible = !!L.tag;
     if (L.tag) {
       this.tag.removeChildren().forEach((c) => c.destroy({ children: true }));
       this.tag.position.set(L.tag.x + L.tag.w / 2, L.tag.y + L.tag.h / 2);
-      this.tag.addChild(new Graphics().roundRect(-L.tag.w / 2, -L.tag.h / 2, L.tag.w, L.tag.h, 22).fill(swatch.yellow.light).stroke({ width: 5, color: swatch.yellow.line }));
+      this.tag.addChild(
+        new Graphics()
+          .roundRect(-L.tag.w / 2, -L.tag.h / 2, L.tag.w, L.tag.h, 22)
+          .fill(swatch.yellow.light)
+          .stroke({ width: 5, color: swatch.yellow.line }),
+      );
       this.tagArt = null;
       this.drawTag();
     }
@@ -269,7 +390,8 @@ class PileMatch implements Game {
   private drawEdge(g: Graphics, r: { x: number; y: number; w: number; h: number }) {
     const inset = 14;
     const rim = (t: number) => {
-      const w = r.w - 2 * inset, h = r.h - 2 * inset;
+      const w = r.w - 2 * inset,
+        h = r.h - 2 * inset;
       let d = t * 2 * (w + h);
       if (d < w) return { x: r.x + inset + d, y: r.y + inset };
       if ((d -= w) < h) return { x: r.x + r.w - inset, y: r.y + inset + d };
@@ -277,11 +399,24 @@ class PileMatch implements Game {
       return { x: r.x + inset, y: r.y + r.h - inset - (d - w) };
     };
     if (this.look === 'sand') {
-      g.moveTo(r.x + 50, r.y + r.h - 12).bezierCurveTo(r.x + r.w * 0.35, r.y + r.h - 24, r.x + r.w * 0.65, r.y + r.h - 2, r.x + r.w - 50, r.y + r.h - 14)
+      g.moveTo(r.x + 50, r.y + r.h - 12)
+        .bezierCurveTo(
+          r.x + r.w * 0.35,
+          r.y + r.h - 24,
+          r.x + r.w * 0.65,
+          r.y + r.h - 2,
+          r.x + r.w - 50,
+          r.y + r.h - 14,
+        )
         .stroke({ width: 8, color: swatch.teal.light, cap: 'round' });
       this.decor.forEach((d, n) => {
-        const x = r.x + r.w * (n ? 0.82 : 0.14), y = r.y + r.h - 10, k = 9 * d.s;
-        g.moveTo(x - k, y).bezierCurveTo(x - k, y - 1.6 * k, x + k, y - 1.6 * k, x + k, y).closePath().fill({ color: 0xffffff, alpha: 0.85 })
+        const x = r.x + r.w * (n ? 0.82 : 0.14),
+          y = r.y + r.h - 10,
+          k = 9 * d.s;
+        g.moveTo(x - k, y)
+          .bezierCurveTo(x - k, y - 1.6 * k, x + k, y - 1.6 * k, x + k, y)
+          .closePath()
+          .fill({ color: 0xffffff, alpha: 0.85 })
           .stroke({ width: 2, color: swatch.white.line, alpha: 0.6 });
       });
       return;
@@ -290,12 +425,21 @@ class PileMatch implements Game {
       const p = d.under ? { x: r.x + 40 + d.u * (r.w - 80), y: r.y + 40 + d.v * (r.h - 80) } : rim(d.t);
       if (this.look === 'meadow') {
         const k = 8 * d.s;
-        g.moveTo(p.x - k, p.y + k).lineTo(p.x - k / 2, p.y - k).moveTo(p.x, p.y + k).lineTo(p.x, p.y - 1.4 * k).moveTo(p.x + k, p.y + k).lineTo(p.x + k / 2, p.y - k)
+        g.moveTo(p.x - k, p.y + k)
+          .lineTo(p.x - k / 2, p.y - k)
+          .moveTo(p.x, p.y + k)
+          .lineTo(p.x, p.y - 1.4 * k)
+          .moveTo(p.x + k, p.y + k)
+          .lineTo(p.x + k / 2, p.y - k)
           .stroke({ width: 3, color: swatch.green.fill, alpha: 0.55, cap: 'round' });
       } else {
-        const k = 15 * d.s, c = Math.cos(d.a), s = Math.sin(d.a);
+        const k = 15 * d.s,
+          c = Math.cos(d.a),
+          s = Math.sin(d.a);
         const at = (u: number, w: number) => [p.x + u * c - w * s, p.y + u * s + w * c] as const;
-        g.moveTo(...at(-k, 0)).quadraticCurveTo(...at(0, k * 0.7), ...at(k, 0)).quadraticCurveTo(...at(0, -k * 0.7), ...at(-k, 0))
+        g.moveTo(...at(-k, 0))
+          .quadraticCurveTo(...at(0, k * 0.7), ...at(k, 0))
+          .quadraticCurveTo(...at(0, -k * 0.7), ...at(-k, 0))
           .fill({ color: AUTUMN_LEAVES[Math.floor(d.u * 3) % 3], alpha: 0.9 });
       }
     }
@@ -319,8 +463,14 @@ class PileMatch implements Game {
     const g = this.glow.clear();
     if (this.fullGlow > 0) {
       this.fullGlow -= dt;
-      const s = this.layout.slots, a = s[0], b = s[s.length - 1];
-      g.roundRect(a.x - 8, a.y - 8, b.x + b.w - a.x + 16, a.h + 16, 26).stroke({ width: 6, color: swatch.yellow.fill, alpha: Math.min(1, this.fullGlow * 2) });
+      const s = this.layout.slots,
+        a = s[0],
+        b = s[s.length - 1];
+      g.roundRect(a.x - 8, a.y - 8, b.x + b.w - a.x + 16, a.h + 16, 26).stroke({
+        width: 6,
+        color: swatch.yellow.fill,
+        alpha: Math.min(1, this.fullGlow * 2),
+      });
     }
     if (!this.hinted || this.finished) return;
     const pulse = 6 + 2 * Math.sin(this.clock * 6);
@@ -328,13 +478,17 @@ class PileMatch implements Game {
       const p = this.layout.pieces[this.hinted.take];
       g.circle(p.x, p.y, HIT + 6 + pulse).stroke({ width: pulse, color: swatch.yellow.fill });
     } else {
-      const k = this.trayOrder.indexOf(this.hinted.back), s = this.layout.slots[k];
-      if (s) g.roundRect(s.x - 6, s.y - 6, s.w + 12, s.h + 12, 24).stroke({ width: pulse, color: swatch.yellow.fill });
+      const k = this.trayOrder.indexOf(this.hinted.back),
+        s = this.layout.slots[k];
+      if (s)
+        g.roundRect(s.x - 6, s.y - 6, s.w + 12, s.h + 12, 24).stroke({
+          width: pulse,
+          color: swatch.yellow.fill,
+        });
     }
   }
 
-  destroy() {
-  }
+  destroy() {}
 
   /** Start again: every piece back on the heap. Misses and hints already made still count. */
   restart() {
@@ -360,7 +514,13 @@ class PileMatch implements Game {
     if (this.busy || this.finished) return null;
     const key = `${this.mask}:${this.trayOrder.join(',')}`;
     if (this.botCache?.key !== key) {
-      this.botCache = { key, hint: hintFor(this.board, this.mask, this.plan.tray, { asked: this.asked(), fallback: this.botFallback }) };
+      this.botCache = {
+        key,
+        hint: hintFor(this.board, this.mask, this.plan.tray, {
+          asked: this.asked(),
+          fallback: this.botFallback,
+        }),
+      };
       this.botFallback = !!this.botCache.hint?.fallback;
     }
     const h = this.botCache.hint;
@@ -387,10 +547,14 @@ class PileMatch implements Game {
   /** Pieces whose kind has popped: gone for good. */
   private poppedMask(): number {
     const counts = new Array<number>(KINDS.length).fill(0);
-    this.board.kinds.forEach((k, i) => { if (!present(this.mask, i)) counts[k]++; });
+    this.board.kinds.forEach((k, i) => {
+      if (!present(this.mask, i)) counts[k]++;
+    });
     const inTray = tray(this.board, this.mask);
     let m = 0;
-    this.board.kinds.forEach((k, i) => { if (!present(this.mask, i) && inTray[k] === 0 && counts[k] === 3) m |= 1 << i; });
+    this.board.kinds.forEach((k, i) => {
+      if (!present(this.mask, i) && inTray[k] === 0 && counts[k] === 3) m |= 1 << i;
+    });
     return m;
   }
 
@@ -406,7 +570,8 @@ class PileMatch implements Game {
 
   /** A slot's middle. The third of a kind can land one past a full tray for the moment before the three pop. */
   private slotPos(k: number) {
-    const s = this.layout.slots[0], step = this.layout.slots.length > 1 ? this.layout.slots[1].x - s.x : s.w;
+    const s = this.layout.slots[0],
+      step = this.layout.slots.length > 1 ? this.layout.slots[1].x - s.x : s.w;
     return { x: s.x + s.w / 2 + k * step, y: s.y + s.h / 2 };
   }
 
@@ -517,9 +682,13 @@ class PileMatch implements Game {
     const cells = this.board.cells;
     const on = cells.map((_, j) => j).filter((j) => present(this.mask, j) && covers(cells[j], cells[i]));
     for (const j of [i, ...on]) {
-      const p = this.pieces[j], x = this.layout.pieces[j].x;
+      const p = this.pieces[j],
+        x = this.layout.pieces[j].x;
       this.ctx.tw.kill(p);
-      void this.ctx.tw.to(p, { x: x + 6 }, { duration: 0.06 }).then(() => this.ctx.tw.to(p, { x: x - 6 }, { duration: 0.08 })).then(() => this.ctx.tw.to(p, { x }, { duration: 0.06 }));
+      void this.ctx.tw
+        .to(p, { x: x + 6 }, { duration: 0.06 })
+        .then(() => this.ctx.tw.to(p, { x: x - 6 }, { duration: 0.08 }))
+        .then(() => this.ctx.tw.to(p, { x }, { duration: 0.06 }));
     }
     sfx.tick();
     if (this.clock - this.lastCovered > 3) {
@@ -553,7 +722,9 @@ class PileMatch implements Game {
     this.shade();
     const p = this.pieces[i];
     p.zIndex = 200;
-    this.trayOrder.forEach((j, k) => { if (j !== i) void this.ctx.tw.to(this.pieces[j], this.slotPos(k), { duration: FLIGHT * 0.6 }); });
+    this.trayOrder.forEach((j, k) => {
+      if (j !== i) void this.ctx.tw.to(this.pieces[j], this.slotPos(k), { duration: FLIGHT * 0.6 });
+    });
     const to = this.slotPos(this.trayOrder.indexOf(i));
     const over = Math.min(p.y, to.y) - 60;
     void this.ctx.tw.to(p.scale, { x: IN_TRAY, y: IN_TRAY }, { duration: FLIGHT });
@@ -579,14 +750,33 @@ class PileMatch implements Game {
     this.trayOrder = this.trayOrder.filter((j) => this.board.kinds[j] !== kind);
     sfx.bell(NOTES[kind] + 3, 0.3);
     void this.ctx.say('pile.pop');
-    await Promise.all(three.map((j) => this.ctx.tw.to(this.pieces[j], { y: this.pieces[j].y - 24 }, { duration: 0.12, ease: ease.outQuad })));
+    await Promise.all(
+      three.map((j) =>
+        this.ctx.tw.to(this.pieces[j], { y: this.pieces[j].y - 24 }, { duration: 0.12, ease: ease.outQuad }),
+      ),
+    );
     const b = this.basket.position;
-    await Promise.all(three.map((j, n) => this.ctx.tw.to(this.pieces[j], { x: b.x - 20 + n * 20, y: b.y - 10, alpha: 0 }, { duration: 0.3, ease: ease.inQuad })));
+    await Promise.all(
+      three.map((j, n) =>
+        this.ctx.tw.to(
+          this.pieces[j],
+          { x: b.x - 20 + n * 20, y: b.y - 10, alpha: 0 },
+          { duration: 0.3, ease: ease.inQuad },
+        ),
+      ),
+    );
     for (const j of three) {
       this.pieces[j].visible = false;
       this.pieces[j].alpha = 1;
     }
-    this.ctx.particles.burst(b.x, b.y - 30, { kind: 'dot', colors: [swatch[COLORS[kind]].fill, 0xffffff], count: 10, speed: [60, 180], gravity: 0, life: [0.4, 0.8] });
+    this.ctx.particles.burst(b.x, b.y - 30, {
+      kind: 'dot',
+      colors: [swatch[COLORS[kind]].fill, 0xffffff],
+      count: 10,
+      speed: [60, 180],
+      gravity: 0,
+      life: [0.4, 0.8],
+    });
     // A little one of that kind peeks out of the basket for each three gathered.
     const mark = this.basketFill.addChild(new Piece(kind));
     mark.scale.set(0.32);
@@ -607,7 +797,8 @@ class PileMatch implements Game {
     this.fullCounted = false;
     this.trayOrder.splice(k, 1);
     this.botCache = null;
-    const p = this.pieces[i], home = this.layout.pieces[i];
+    const p = this.pieces[i],
+      home = this.layout.pieces[i];
     p.zIndex = 200;
     this.busy = true;
     void this.ctx.tw.to(p.scale, { x: this.layout.scale, y: this.layout.scale }, { duration: 0.25 });
@@ -624,12 +815,17 @@ class PileMatch implements Game {
 
   /** Levels 1–2: another kind hops back with a boing, and the pet names both. One miss. */
   private wrongKind(i: number, asked: number) {
-    const p = this.pieces[i], y = this.layout.pieces[i].y;
+    const p = this.pieces[i],
+      y = this.layout.pieces[i].y;
     this.ctx.tw.kill(p);
     p.scale.set(this.layout.scale);
-    void this.ctx.tw.to(p, { y: y - 24 }, { duration: 0.1, ease: ease.outQuad }).then(() => this.ctx.tw.to(p, { y }, { duration: 0.16, ease: ease.inQuad }));
+    void this.ctx.tw
+      .to(p, { y: y - 24 }, { duration: 0.1, ease: ease.outQuad })
+      .then(() => this.ctx.tw.to(p, { y }, { duration: 0.16, ease: ease.inQuad }));
     sfx.boing();
-    void this.ctx.say(`pile.this-is.${KINDS[this.board.kinds[i]]}` as LineId).then(() => this.ctx.say(`pile.find.${KINDS[asked]}` as LineId));
+    void this.ctx
+      .say(`pile.this-is.${KINDS[this.board.kinds[i]]}` as LineId)
+      .then(() => this.ctx.say(`pile.find.${KINDS[asked]}` as LineId));
     this.miss();
   }
 
@@ -651,7 +847,10 @@ class PileMatch implements Game {
   /** The hint target glows until she taps something; each glow counts once. */
   private showHint() {
     if (this.finished || this.hinted || !this.mask) return;
-    const h = hintFor(this.board, this.mask, this.plan.tray, { asked: this.asked(), fallback: this.fallback });
+    const h = hintFor(this.board, this.mask, this.plan.tray, {
+      asked: this.asked(),
+      fallback: this.fallback,
+    });
     if (!h) return;
     this.hinted = h;
     this.fallback = h.fallback;
@@ -678,7 +877,14 @@ class PileMatch implements Game {
 class PileIcon extends WigglyIcon {
   constructor() {
     const c = new Container();
-    const at: [number, number, number][] = [[-34, 18, 4], [34, 18, 2], [0, 22, 1], [-18, -8, 0], [18, -8, 0], [0, -30, 0]];
+    const at: [number, number, number][] = [
+      [-34, 18, 4],
+      [34, 18, 2],
+      [0, 22, 1],
+      [-18, -8, 0],
+      [18, -8, 0],
+      [0, -30, 0],
+    ];
     for (const [x, y, k] of at) {
       const p = new Piece(k);
       p.shade.visible = false;
@@ -694,7 +900,9 @@ function sticker(seed: number): Container {
   const rng = new Rng(seed);
   const kind = rng.int(0, KINDS.length - 1);
   const c = new Container();
-  c.addChild(new Graphics().circle(0, 0, 80).fill(swatch.yellow.light).stroke({ width: 6, color: swatch.yellow.line }));
+  c.addChild(
+    new Graphics().circle(0, 0, 80).fill(swatch.yellow.light).stroke({ width: 6, color: swatch.yellow.line }),
+  );
   const b = basketArt(120, 90);
   b.position.set(0, 22);
   for (let n = 0; n < 3; n++) {
@@ -720,7 +928,8 @@ export const pileMatch: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.stickers,
   coplayHint: 'One of you names a kind, and the other finds three.',
-  offScreen: 'Tip a box of mixed toys onto the floor and gather them back in threes, saying "one, two, three" for each set.',
+  offScreen:
+    'Tip a box of mixed toys onto the floor and gather them back in threes, saying "one, two, three" for each set.',
   hubIcon: () => new PileIcon(),
   touchDemo: true,
   sticker,

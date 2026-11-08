@@ -44,7 +44,9 @@ export function gateWords(gate: Gate): string {
 
 /** A stable name for a gate; an "and" or an "or" is the same either way round. */
 export function gateKey(gate: Gate): string {
-  return gate.kind === 'and' || gate.kind === 'or' ? `${gate.kind}:${[...gate.rules].sort().join('+')}` : `${gate.kind}:${gate.rule}`;
+  return gate.kind === 'and' || gate.kind === 'or'
+    ? `${gate.kind}:${[...gate.rules].sort().join('+')}`
+    : `${gate.kind}:${gate.rule}`;
 }
 
 export const sameGate = (a: Gate, b: Gate) => gateKey(a) === gateKey(b);
@@ -67,15 +69,80 @@ export interface CrossPlan {
 }
 
 export const PLANS: CrossPlan[] = [
-  { name: 'The gate shows its rule: send across the critters that fit', mode: 'visible', gates: 'one', critters: 5, options: 0, minTests: 0, rounds: 2 },
-  { name: 'A secret rule: try critters, watch who crosses, then guess the rule from three pictures', mode: 'hidden', gates: 'one', critters: 4, options: 3, minTests: 2, rounds: 2 },
-  { name: 'A secret rule with four pictures to choose from and five critters to try', mode: 'hidden', gates: 'one', critters: 5, options: 4, minTests: 2, rounds: 2 },
-  { name: 'A secret rule with two parts: a critter must fit both to cross', mode: 'hidden', gates: 'and', critters: 6, options: 4, minTests: 3, rounds: 2 },
-  { name: 'A secret rule that may be "not" something or two parts: use all the evidence', mode: 'hidden', gates: 'mixed', critters: 6, options: 4, minTests: 3, rounds: 2 },
-  { name: 'A secret rule with "or": a critter crosses if it fits either part, so most critters cross', mode: 'hidden', gates: 'or', critters: 6, options: 4, minTests: 3, rounds: 2 },
-  { name: 'Two pictures are still standing: choose the critter who can settle which one is the rule', mode: 'hidden', gates: 'mixed', critters: 6, options: 2, minTests: 3, rounds: 2, settle: true },
+  {
+    name: 'The gate shows its rule: send across the critters that fit',
+    mode: 'visible',
+    gates: 'one',
+    critters: 5,
+    options: 0,
+    minTests: 0,
+    rounds: 2,
+  },
+  {
+    name: 'A secret rule: try critters, watch who crosses, then guess the rule from three pictures',
+    mode: 'hidden',
+    gates: 'one',
+    critters: 4,
+    options: 3,
+    minTests: 2,
+    rounds: 2,
+  },
+  {
+    name: 'A secret rule with four pictures to choose from and five critters to try',
+    mode: 'hidden',
+    gates: 'one',
+    critters: 5,
+    options: 4,
+    minTests: 2,
+    rounds: 2,
+  },
+  {
+    name: 'A secret rule with two parts: a critter must fit both to cross',
+    mode: 'hidden',
+    gates: 'and',
+    critters: 6,
+    options: 4,
+    minTests: 3,
+    rounds: 2,
+  },
+  {
+    name: 'A secret rule that may be "not" something or two parts: use all the evidence',
+    mode: 'hidden',
+    gates: 'mixed',
+    critters: 6,
+    options: 4,
+    minTests: 3,
+    rounds: 2,
+  },
+  {
+    name: 'A secret rule with "or": a critter crosses if it fits either part, so most critters cross',
+    mode: 'hidden',
+    gates: 'or',
+    critters: 6,
+    options: 4,
+    minTests: 3,
+    rounds: 2,
+  },
+  {
+    name: 'Two pictures are still standing: choose the critter who can settle which one is the rule',
+    mode: 'hidden',
+    gates: 'mixed',
+    critters: 6,
+    options: 2,
+    minTests: 3,
+    rounds: 2,
+    settle: true,
+  },
   // Appended entry: saved IDs 1–7 retain their rules. Pre-K places this between 1 and 2.
-  { name: 'The sign shows a picture with a slash: send the critters that do not fit that picture', mode: 'visible', gates: 'not', critters: 5, options: 0, minTests: 0, rounds: 2 },
+  {
+    name: 'The sign shows a picture with a slash: send the critters that do not fit that picture',
+    mode: 'visible',
+    gates: 'not',
+    critters: 5,
+    options: 0,
+    minTests: 0,
+    rounds: 2,
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -113,11 +180,13 @@ function lookalikes(truth: Gate, plan: CrossPlan, rng: Rng): Gate[] {
   for (const r of rng.shuffle([...ALL_RULES])) {
     if (plan.gates === 'one') out.push({ kind: 'one', rule: r });
     else if (plan.gates === 'and') {
-      for (const keep of mine) if (r !== keep) out.push({ kind: 'and', rules: rng.chance(0.5) ? [keep, r] : [r, keep] });
+      for (const keep of mine)
+        if (r !== keep) out.push({ kind: 'and', rules: rng.chance(0.5) ? [keep, r] : [r, keep] });
     } else if (plan.gates === 'or') {
       // The "and" of the same two parts, a lone part, and an "or" that keeps one part: pictures that nearly say the same.
       out.push({ kind: 'one', rule: r });
-      for (const keep of mine) if (r !== keep) out.push({ kind: 'or', rules: rng.chance(0.5) ? [keep, r] : [r, keep] });
+      for (const keep of mine)
+        if (r !== keep) out.push({ kind: 'or', rules: rng.chance(0.5) ? [keep, r] : [r, keep] });
     } else {
       out.push({ kind: 'one', rule: r }, { kind: 'not', rule: r });
       for (const keep of mine) if (r !== keep) out.push({ kind: 'and', rules: [keep, r] });
@@ -137,7 +206,12 @@ export function consistent(options: Gate[], evidence: { c: SortCritter; passed: 
  * The untested critter whose answer would tell the most: it splits the pictures still in the running as evenly as
  * possible. Null when nobody is left to try, or when the pictures left all agree about everyone.
  */
-export function bestTest(critters: SortCritter[], tried: SortCritter[], options: Gate[], evidence: { c: SortCritter; passed: boolean }[]): SortCritter | null {
+export function bestTest(
+  critters: SortCritter[],
+  tried: SortCritter[],
+  options: Gate[],
+  evidence: { c: SortCritter; passed: boolean }[],
+): SortCritter | null {
   const left = consistent(options, evidence);
   let best: { c: SortCritter; score: number } | null = null;
   for (const c of critters) {
@@ -171,11 +245,19 @@ export function makeRound(plan: CrossPlan, rng: Rng, avoid?: string): CrossRound
       if (round) return round;
       continue;
     }
-    const wrong = lookalikes(gate, plan, rng).filter((g) => critters.some((c) => passes(c, g) !== passes(c, gate)));
+    const wrong = lookalikes(gate, plan, rng).filter((g) =>
+      critters.some((c) => passes(c, g) !== passes(c, gate)),
+    );
     if (wrong.length < plan.options - 1) continue;
     const options = rng.shuffle([gate, ...wrong.slice(0, plan.options - 1)]);
     // The rule must also be findable by trying critters one by one, not only by trying them all.
-    if (consistent(options, critters.map((c) => ({ c, passed: passes(c, gate) }))).length !== 1) continue;
+    if (
+      consistent(
+        options,
+        critters.map((c) => ({ c, passed: passes(c, gate) })),
+      ).length !== 1
+    )
+      continue;
     return { gate, critters, options };
   }
   throw new Error(`could not make a ${plan.name} round`);
@@ -190,7 +272,11 @@ export const splits = (c: SortCritter, options: Gate[]) => new Set(options.map((
  * gives the same answer either way, so choosing the one that settles it is a real choice.
  */
 function settleRound(gate: Gate, critters: SortCritter[], plan: CrossPlan, rng: Rng): CrossRound | null {
-  const rivals = lookalikes(gate, { ...plan, gates: gate.kind === 'one' || gate.kind === 'not' ? 'mixed' : gate.kind }, rng);
+  const rivals = lookalikes(
+    gate,
+    { ...plan, gates: gate.kind === 'one' || gate.kind === 'not' ? 'mixed' : gate.kind },
+    rng,
+  );
   for (const rival of rivals) {
     const options = [gate, rival];
     const same = critters.filter((c) => !splits(c, options));
@@ -200,7 +286,12 @@ function settleRound(gate: Gate, critters: SortCritter[], plan: CrossPlan, rng: 
     const waiting = critters.filter((c) => c !== yes && c !== no);
     const splitters = waiting.filter((c) => splits(c, options));
     if (splitters.length < 1 || splitters.length === waiting.length) continue;
-    return { gate, critters: [...rng.shuffle([yes, no]), ...rng.shuffle(waiting)], options: rng.shuffle(options), tried: [yes, no].map((c) => ({ c, passed: passes(c, gate) })) };
+    return {
+      gate,
+      critters: [...rng.shuffle([yes, no]), ...rng.shuffle(waiting)],
+      options: rng.shuffle(options),
+      tried: [yes, no].map((c) => ({ c, passed: passes(c, gate) })),
+    };
   }
   return null;
 }
@@ -217,7 +308,11 @@ export type CrossStep = { do: 'try'; critter: SortCritter } | { do: 'guess'; gat
  * the true rule, because every round is made so that trying everyone leaves exactly one picture standing. When the evidence
  * is already decisive but `minTests` has not been tried, any waiting critter is sent, since the button would only say "try more".
  */
-export function nextStep(round: CrossRound, plan: CrossPlan, tried: { c: SortCritter; passed: boolean }[]): CrossStep | null {
+export function nextStep(
+  round: CrossRound,
+  plan: CrossPlan,
+  tried: { c: SortCritter; passed: boolean }[],
+): CrossStep | null {
   const waiting = round.critters.filter((c) => !tried.some((t) => t.c === c));
   if (plan.mode === 'visible') {
     const fit = waiting.find((c) => passes(c, round.gate));
@@ -225,6 +320,12 @@ export function nextStep(round: CrossRound, plan: CrossPlan, tried: { c: SortCri
   }
   const left = consistent(round.options, tried);
   if (tried.length >= plan.minTests && left.length === 1) return { do: 'guess', gate: left[0] };
-  const test = bestTest(round.critters, tried.map((t) => t.c), round.options, tried) ?? waiting[0];
+  const test =
+    bestTest(
+      round.critters,
+      tried.map((t) => t.c),
+      round.options,
+      tried,
+    ) ?? waiting[0];
   return test ? { do: 'try', critter: test } : null;
 }

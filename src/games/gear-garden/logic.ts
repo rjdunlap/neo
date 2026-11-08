@@ -45,7 +45,8 @@ const dist = (a: Socket, b: Socket) => Math.hypot(a.x - b.x, a.y - b.y);
 /** No two sockets overlap or clash: each pair is either meshing (2 apart) or well clear (more than 2.4). */
 export function validate(board: Board): boolean {
   const s = board.sockets;
-  if (s.filter((k) => k.role === 'input').length !== 1 || s.filter((k) => k.role === 'output').length !== 1) return false;
+  if (s.filter((k) => k.role === 'input').length !== 1 || s.filter((k) => k.role === 'output').length !== 1)
+    return false;
   for (let i = 0; i < s.length; i++)
     for (let j = i + 1; j < s.length; j++) {
       const d = dist(s[i], s[j]);
@@ -177,7 +178,12 @@ export function planFor(level: number): Plan {
   return PLANS[Math.min(PLANS.length, Math.max(1, Math.round(level))) - 1];
 }
 
-const spec = (board: Board, flower: FlowerKind, color: FlowerColor, visitor: CritterName): MachineSpec => ({ board, flower, color, visitor });
+const spec = (board: Board, flower: FlowerKind, color: FlowerColor, visitor: CritterName): MachineSpec => ({
+  board,
+  flower,
+  color,
+  visitor,
+});
 
 /** The round: three machines (levels 1–2) or three cases (level 3). The first of each is authored; the rest follow the definition's stories with seeded art. */
 export function roundFor(level: number, rng: Rng): Step[] {
@@ -198,19 +204,37 @@ export function roundFor(level: number, rng: Rng): Step[] {
     return [
       one(spec(lineBoard(roles), 'daisy', 'pink', 'duck')),
       one(spec(lineBoard(roles, 0, true), rng.pick(FLOWERS), color(), visitor())),
-      one(spec(lineBoard(roles, rng.pick([15, -15]), rng.chance(0.5)), rng.pick(FLOWERS), color(), visitor())),
+      one(
+        spec(lineBoard(roles, rng.pick([15, -15]), rng.chance(0.5)), rng.pick(FLOWERS), color(), visitor()),
+      ),
     ];
   }
   const caseOf = (bGap: 1 | 2, t: number, m: boolean): Step => ({
     kind: 'choice',
     pair: {
       a: spec(lineBoard(['input', 'gap', 'output'], t, m), rng.pick(FLOWERS), color(), visitor()),
-      b: spec(lineBoard(bGap === 1 ? ['input', 'gap', 'idler', 'output'] : ['input', 'idler', 'gap', 'output'], t, m), rng.pick(FLOWERS), color(), visitor()),
+      b: spec(
+        lineBoard(
+          bGap === 1 ? ['input', 'gap', 'idler', 'output'] : ['input', 'idler', 'gap', 'output'],
+          t,
+          m,
+        ),
+        rng.pick(FLOWERS),
+        color(),
+        visitor(),
+      ),
     },
   });
   const first = caseOf(1, 0, false);
-  if (first.kind === 'choice') { first.pair.a.flower = 'tulip'; first.pair.b.flower = 'daisy'; }
-  return [first, caseOf(rng.pick([1, 2] as const), tilt(), rng.chance(0.5)), caseOf(rng.pick([1, 2] as const), tilt(), rng.chance(0.5))];
+  if (first.kind === 'choice') {
+    first.pair.a.flower = 'tulip';
+    first.pair.b.flower = 'daisy';
+  }
+  return [
+    first,
+    caseOf(rng.pick([1, 2] as const), tilt(), rng.chance(0.5)),
+    caseOf(rng.pick([1, 2] as const), tilt(), rng.chance(0.5)),
+  ];
 }
 
 /** The live state of one machine: where the loose gear rests, every gear's quarter turns and how far the flower has bloomed. */
@@ -312,7 +336,10 @@ export class GearTally {
 
   /** A turn of the handle. Returns 'glow' when the gap starts glowing and 'install' when the gear should go in by itself. */
   turned(moved: boolean): 'glow' | 'install' | null {
-    if (moved) { this.inTrial = false; return null; }
+    if (moved) {
+      this.inTrial = false;
+      return null;
+    }
     if (this.inTrial) return null;
     this.inTrial = true;
     this.trials++;
@@ -348,7 +375,12 @@ export class GearTally {
 // ---------------------------------------------------------------------------------------------------------------------
 // Layout
 
-export interface Rect { x: number; y: number; w: number; h: number }
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
 export const PET_CORNER = { w: 160, h: 170 };
 export const HOME_CORNER = { w: 110, h: 110 };
 export const BACK_SIZE = 116;
@@ -361,7 +393,12 @@ const M = 20;
 export function extent(board: Board) {
   const xs = board.sockets.map((s) => s.x);
   const ys = board.sockets.map((s) => s.y);
-  return { x0: Math.min(...xs) - TIP, x1: Math.max(...xs) + TIP, y0: Math.min(...ys) - TIP, y1: Math.max(...ys) + TIP };
+  return {
+    x0: Math.min(...xs) - TIP,
+    x1: Math.max(...xs) + TIP,
+    y0: Math.min(...ys) - TIP,
+    y1: Math.max(...ys) + TIP,
+  };
 }
 
 export interface GearLayout {
@@ -377,12 +414,16 @@ export interface GearLayout {
 }
 
 export const centre = (r: Rect) => ({ x: r.x + r.w / 2, y: r.y + r.h / 2 });
-export const overlaps = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+export const overlaps = (a: Rect, b: Rect) =>
+  a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 const inside = (a: Rect, v: View) => a.x >= 0 && a.y >= 0 && a.x + a.w <= v.w && a.y + a.h <= v.h;
 
 /** The corners the game keeps clear: the home button top-left and the guide bottom-left. */
 export function corners(v: View): Rect[] {
-  return [{ x: 0, y: 0, ...HOME_CORNER }, { x: 0, y: v.h - PET_CORNER.h, ...PET_CORNER }];
+  return [
+    { x: 0, y: 0, ...HOME_CORNER },
+    { x: 0, y: v.h - PET_CORNER.h, ...PET_CORNER },
+  ];
 }
 
 /**
@@ -412,7 +453,12 @@ export function gearLayout(v: View, board: Board, withCard = false): GearLayout 
       area = { x: PET_CORNER.w + 10, y: M, w: v.w - col - 2 * M - PET_CORNER.w - 10, h: v.h - 2 * M };
     } else {
       back = { x: v.w - M - BACK_SIZE, y: v.h - M - BACK_SIZE, w: BACK_SIZE, h: BACK_SIZE };
-      tray = { x: v.w / 2 - trayS / 2, y: v.h - M - Math.max(trayS, BACK_SIZE) + (Math.max(trayS, BACK_SIZE) - trayS) / 2, w: trayS, h: trayS };
+      tray = {
+        x: v.w / 2 - trayS / 2,
+        y: v.h - M - Math.max(trayS, BACK_SIZE) + (Math.max(trayS, BACK_SIZE) - trayS) / 2,
+        w: trayS,
+        h: trayS,
+      };
       if (withCard) card = { x: v.w - M - CARD_SIZE, y: M, w: CARD_SIZE, h: CARD_SIZE };
       const top = card ? card.y + card.h + 10 : HOME_CORNER.h + 10;
       const bottom = Math.min(tray.y, back.y, v.h - PET_CORNER.h) - 10;
@@ -436,26 +482,37 @@ export function gearLayout(v: View, board: Board, withCard = false): GearLayout 
 export function choiceLayout(v: View): [Rect, Rect] | null {
   const wide = v.w >= v.h;
   const pw = wide ? Math.min(360, (v.w - PET_CORNER.w - 10 - 3 * M) / 2) : Math.min(420, v.w - 2 * M);
-  const ph = wide ? Math.min(280, v.h - 2 * M) : Math.min(280, (v.h - HOME_CORNER.h - PET_CORNER.h - 4 * M) / 2);
+  const ph = wide
+    ? Math.min(280, v.h - 2 * M)
+    : Math.min(280, (v.h - HOME_CORNER.h - PET_CORNER.h - 4 * M) / 2);
   if (pw < 300 || ph < 220) return null;
   let rects: [Rect, Rect];
   if (wide) {
-    const x0 = PET_CORNER.w + 10 + ((v.w - PET_CORNER.w - 10 - M) - (2 * pw + M)) / 2;
+    const x0 = PET_CORNER.w + 10 + (v.w - PET_CORNER.w - 10 - M - (2 * pw + M)) / 2;
     const y = (v.h - ph) / 2;
-    rects = [{ x: x0, y, w: pw, h: ph }, { x: x0 + pw + M, y, w: pw, h: ph }];
+    rects = [
+      { x: x0, y, w: pw, h: ph },
+      { x: x0 + pw + M, y, w: pw, h: ph },
+    ];
   } else {
     const top = HOME_CORNER.h + M;
     const bottom = v.h - PET_CORNER.h - M;
-    const y0 = top + ((bottom - top) - (2 * ph + M)) / 2;
+    const y0 = top + (bottom - top - (2 * ph + M)) / 2;
     const x = (v.w - pw) / 2;
-    rects = [{ x, y: y0, w: pw, h: ph }, { x, y: y0 + ph + M, w: pw, h: ph }];
+    rects = [
+      { x, y: y0, w: pw, h: ph },
+      { x, y: y0 + ph + M, w: pw, h: ph },
+    ];
   }
   if (rects.some((p) => !inside(p, v) || corners(v).some((k) => overlaps(p, k)))) return null;
   return rects;
 }
 
 /** Board (x, y) in screen units. */
-export const toScreen = (l: GearLayout, s: { x: number; y: number }) => ({ x: l.origin.x + s.x * l.r, y: l.origin.y + s.y * l.r });
+export const toScreen = (l: GearLayout, s: { x: number; y: number }) => ({
+  x: l.origin.x + s.x * l.r,
+  y: l.origin.y + s.y * l.r,
+});
 
 /** A drop at (x, y) lands in the gap when the gear's centre is within 1.2r of it. */
 export function dropsInGap(l: GearLayout, board: Board, x: number, y: number): boolean {

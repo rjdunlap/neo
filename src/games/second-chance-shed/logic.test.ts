@@ -2,13 +2,48 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  accepts, CASES, centre, checkPlan, distance, GLOW_AFTER, greedyWorks, ITEM_IDS, ITEMS, judge, KIND_OF_PLACE, moveTo, nearestSolution,
-  nextMove, PLACES, placeAt, planFor, planLayout, PlanTally, PLANS, roundFor, shedLayout, ShedTally, solutions, SORT_MAX, spotAt, DROP_PAD,
-  type Place, type PlanMap, type Rect, type Round, type Spot,
+  accepts,
+  CASES,
+  centre,
+  checkPlan,
+  distance,
+  GLOW_AFTER,
+  greedyWorks,
+  ITEM_IDS,
+  ITEMS,
+  judge,
+  KIND_OF_PLACE,
+  moveTo,
+  nearestSolution,
+  nextMove,
+  PLACES,
+  placeAt,
+  planFor,
+  planLayout,
+  PlanTally,
+  PLANS,
+  roundFor,
+  shedLayout,
+  ShedTally,
+  solutions,
+  SORT_MAX,
+  spotAt,
+  DROP_PAD,
+  type Place,
+  type PlanMap,
+  type Rect,
+  type Round,
+  type Spot,
 } from './logic';
 
 const SEEDS = 500;
-const VIEWS = [computeView(1024, 768), computeView(768, 1024), computeView(1366, 1024), computeView(820, 1180), computeView(844, 390)];
+const VIEWS = [
+  computeView(1024, 768),
+  computeView(768, 1024),
+  computeView(1366, 1024),
+  computeView(820, 1180),
+  computeView(844, 390),
+];
 
 describe('item table', () => {
   it('gives every item one place of the matching kind and no paper', () => {
@@ -25,7 +60,8 @@ describe('item table', () => {
     expect(ITEM_IDS.filter((id) => ITEMS[id].from)).toEqual(['tin']);
     expect(ITEMS.tin.from).toBe(SORT_MAX + 1);
     for (let level = 1; level <= SORT_MAX; level++) {
-      for (let seed = 1; seed <= SEEDS; seed++) expect(roundFor(level, new Rng(seed)).items).not.toContain('tin');
+      for (let seed = 1; seed <= SEEDS; seed++)
+        expect(roundFor(level, new Rng(seed)).items).not.toContain('tin');
     }
   });
   it('gives fits only to whole things, and none to the bag', () => {
@@ -36,7 +72,8 @@ describe('item table', () => {
     expect(ITEMS.tub.fits).toEqual(['pencils', 'seedling']);
   });
   it('has at least two items for every place', () => {
-    for (const p of PLACES) expect(ITEM_IDS.filter((id) => ITEMS[id].place === p).length).toBeGreaterThanOrEqual(2);
+    for (const p of PLACES)
+      expect(ITEM_IDS.filter((id) => ITEMS[id].place === p).length).toBeGreaterThanOrEqual(2);
   });
 });
 
@@ -54,7 +91,8 @@ describe('rounds', () => {
         for (const p of plan.open) expect(places).toContain(p);
         for (const id of round.items) expect(ITEMS[id].paper).toBe(false);
         if (plan.open.length > 1) {
-          for (let i = 2; i < places.length; i++) expect(places[i] === places[i - 1] && places[i] === places[i - 2]).toBe(false);
+          for (let i = 2; i < places.length; i++)
+            expect(places[i] === places[i - 1] && places[i] === places[i - 2]).toBe(false);
         }
         expect(roundFor(plan.level, new Rng(seed))).toEqual(round);
       }
@@ -77,7 +115,8 @@ describe('judging drops', () => {
   });
   it('resolves a point between neighbours to the nearer one', () => {
     for (let i = 0; i < PLACES.length - 1; i++) {
-      const a = layout.places[PLACES[i]]!, b = layout.places[PLACES[i + 1]]!;
+      const a = layout.places[PLACES[i]]!,
+        b = layout.places[PLACES[i + 1]]!;
       const y = centre(a).y;
       const mid = (centre(a).x + centre(b).x) / 2;
       expect(placeAt(layout, mid - 5, y)).toBe(PLACES[i]);
@@ -102,7 +141,12 @@ describe('judging drops', () => {
 describe('accounting', () => {
   it('level 1 counts nothing and only glows', () => {
     const t = new ShedTally(false);
-    for (let i = 0; i < 4; i++) { t.drop('wrong'); t.drop('none'); t.drop('right'); expect(t.ask()).toBe('glow'); }
+    for (let i = 0; i < 4; i++) {
+      t.drop('wrong');
+      t.drop('none');
+      t.drop('right');
+      expect(t.ask()).toBe('glow');
+    }
     expect(t.misses).toBe(0);
     expect(t.hints).toBe(0);
   });
@@ -121,12 +165,14 @@ describe('accounting', () => {
     const t = new ShedTally(true);
     expect(t.ask()).toBe('glow');
     expect(t.hints).toBe(1);
-    t.drop('wrong'); t.drop('wrong');
+    t.drop('wrong');
+    t.drop('wrong');
     expect([t.misses, t.hints]).toEqual([2, 1]);
   });
   it('resets per-item help on nextItem but keeps totals', () => {
     const t = new ShedTally(true);
-    t.drop('wrong'); t.drop('wrong');
+    t.drop('wrong');
+    t.drop('wrong');
     t.nextItem();
     expect(t.glowing).toBe(false);
     expect([t.misses, t.hints]).toEqual([2, 1]);
@@ -136,8 +182,10 @@ describe('accounting', () => {
 });
 
 describe('layout', () => {
-  const overlap = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
-  const gap = (a: Rect, b: Rect) => Math.max(b.x - (a.x + a.w), a.x - (b.x + b.w), b.y - (a.y + a.h), a.y - (b.y + b.h));
+  const overlap = (a: Rect, b: Rect) =>
+    a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+  const gap = (a: Rect, b: Rect) =>
+    Math.max(b.x - (a.x + a.w), a.x - (b.x + b.w), b.y - (a.y + a.h), a.y - (b.y + b.h));
   for (const view of VIEWS) {
     for (let n = 1; n <= 4; n++) {
       it(`${view.w}x${view.h} with ${n} open place(s) is roomy and clear`, () => {
@@ -161,21 +209,23 @@ describe('layout', () => {
         });
         if (view.h > view.w && n === 4) {
           expect(new Set(rects.map((r) => r.y)).size).toBe(2);
-          for (const y of new Set(rects.map((r) => r.y))) expect(rects.filter((r) => r.y === y)).toHaveLength(2);
+          for (const y of new Set(rects.map((r) => r.y)))
+            expect(rects.filter((r) => r.y === y)).toHaveLength(2);
         }
       });
     }
   }
 });
 
-
 describe('Start again', () => {
-  it('never counts the same item\'s hint twice', () => {
+  it("never counts the same item's hint twice", () => {
     const t = new ShedTally(true);
     t.nextItem(0);
-    t.drop('wrong'); t.drop('wrong');
+    t.drop('wrong');
+    t.drop('wrong');
     t.nextItem(0);
-    t.drop('wrong'); t.drop('wrong');
+    t.drop('wrong');
+    t.drop('wrong');
     expect(t.ask()).toBe('glow');
     expect([t.misses, t.hints]).toEqual([4, 1]);
     t.nextItem(1);
@@ -183,7 +233,6 @@ describe('Start again', () => {
     expect(t.hints).toBe(2);
   });
 });
-
 
 // ---- levels 5–6 ----
 
@@ -198,7 +247,9 @@ function follow(round: Round, start: PlanMap): number {
     expect(plan[m.index]).not.toBe(sol[m.index]);
     const next = moveTo(plan, m.index, m.to);
     const kept = plan.map((s, i) => s === sol[i]);
-    next.forEach((s, i) => { if (kept[i]) expect(s).toBe(plan[i]); });
+    next.forEach((s, i) => {
+      if (kept[i]) expect(s).toBe(plan[i]);
+    });
     expect(distance(next, sol)).toBeLessThan(distance(plan, sol));
     plan = next;
   }
@@ -206,8 +257,14 @@ function follow(round: Round, start: PlanMap): number {
 }
 function randomPlan(round: Round, rng: Rng): PlanMap {
   let plan: PlanMap = round.items.map((): Spot => 'cart');
-  const spots: Spot[] = ['cart', ...round.open, ...round.requests.map((_, f): Spot => (f === 0 ? 'f0' : 'f1'))];
-  round.items.forEach((_, i) => { plan = moveTo(plan, i, rng.pick(spots)); });
+  const spots: Spot[] = [
+    'cart',
+    ...round.open,
+    ...round.requests.map((_, f): Spot => (f === 0 ? 'f0' : 'f1')),
+  ];
+  round.items.forEach((_, i) => {
+    plan = moveTo(plan, i, rng.pick(spots));
+  });
   return plan;
 }
 
@@ -219,7 +276,8 @@ describe('level 5: someone needs it', () => {
       expect(new Set(round.items).size).toBe(5);
       expect(round.items).toContain('tin');
       expect(round.items).toContain('bag');
-      for (const k of ['food', 'broken', 'squashed'] as const) expect(round.items.filter((id) => ITEMS[id].kind === k)).toHaveLength(1);
+      for (const k of ['food', 'broken', 'squashed'] as const)
+        expect(round.items.filter((id) => ITEMS[id].kind === k)).toHaveLength(1);
       expect(round.requests).toEqual(['pencils']);
       expect(round.items.filter((id) => ITEMS[id].fits.includes('pencils'))).toEqual(['tin']);
       for (const id of round.items) expect(ITEMS[id].paper).toBe(false);
@@ -236,7 +294,8 @@ describe('level 5: someone needs it', () => {
 
 describe('level 6: two friends', () => {
   it('has the case candidates, one accepted pairing, the both-fit thing first, and greedy failing with pencils first', () => {
-    const pencilsFirst = [0, 0], perCase = [0, 0];
+    const pencilsFirst = [0, 0],
+      perCase = [0, 0];
     for (let seed = 1; seed <= SEEDS; seed++) {
       const round = roundFor(6, new Rng(seed));
       const ci = CASES.findIndex((c) => round.items.includes(c.both) && round.requests.includes(c.other));
@@ -248,15 +307,18 @@ describe('level 6: two friends', () => {
       expect([...round.requests].sort()).toEqual(['pencils', c.other].sort());
       const fitting = round.items.filter((id) => ITEMS[id].fits.some((r) => round.requests.includes(r)));
       expect(fitting.sort()).toEqual([c.both, 'tin'].sort());
-      for (const id of round.items) if (id !== c.both && id !== 'tin' && ITEMS[id].kind === 'whole') expect(id).toBe('bag');
+      for (const id of round.items)
+        if (id !== c.both && id !== 'tin' && ITEMS[id].kind === 'whole') expect(id).toBe('bag');
       expect(round.items.indexOf(c.both)).toBeLessThan(round.items.indexOf('tin'));
       const sols = solutions(round);
       expect(sols).toHaveLength(1);
       const sol = sols[0];
       expect(sol[round.items.indexOf(c.both)]).toBe(round.requests[0] === c.other ? 'f0' : 'f1');
       expect(sol[round.items.indexOf('tin')]).toBe(round.requests[0] === 'pencils' ? 'f0' : 'f1');
-      if (round.requests[0] === 'pencils') { pencilsFirst[ci]++; expect(greedyWorks(round)).toBe(false); }
-      else expect(greedyWorks(round)).toBe(true);
+      if (round.requests[0] === 'pencils') {
+        pencilsFirst[ci]++;
+        expect(greedyWorks(round)).toBe(false);
+      } else expect(greedyWorks(round)).toBe(true);
     }
     for (let i = 0; i < 2; i++) {
       expect(perCase[i]).toBeGreaterThan(0);
@@ -266,14 +328,33 @@ describe('level 6: two friends', () => {
 });
 
 describe('checkPlan', () => {
-  const round: Round = { level: 6, open: [...PLACES], items: ['box', 'tin', 'peel', 'kite', 'caps'], requests: ['pencils', 'bed'] };
+  const round: Round = {
+    level: 6,
+    open: [...PLACES],
+    items: ['box', 'tin', 'peel', 'kite', 'caps'],
+    requests: ['pencils', 'bed'],
+  };
   const good: PlanMap = ['f1', 'f0', 'worm', 'mend', 'remake'];
   it('checks the cart, then misplaced things left to right, then empty friends in screen order', () => {
     expect(checkPlan(round, good)).toEqual({ kind: 'ok' });
-    expect(checkPlan(round, ['f1', 'cart', 'shelf', 'cart', 'remake'])).toEqual({ kind: 'onCart', indices: [1, 3] });
-    expect(checkPlan(round, ['f1', 'f0', 'shelf', 'worm', 'remake'])).toEqual({ kind: 'misplaced', index: 2, at: 'shelf' });
-    expect(checkPlan(round, ['f0', 'f1', 'worm', 'mend', 'remake'])).toEqual({ kind: 'misplaced', index: 1, at: 'f1' });
-    expect(checkPlan(round, ['shelf', 'shelf', 'worm', 'mend', 'remake'])).toEqual({ kind: 'unmet', friend: 0 });
+    expect(checkPlan(round, ['f1', 'cart', 'shelf', 'cart', 'remake'])).toEqual({
+      kind: 'onCart',
+      indices: [1, 3],
+    });
+    expect(checkPlan(round, ['f1', 'f0', 'shelf', 'worm', 'remake'])).toEqual({
+      kind: 'misplaced',
+      index: 2,
+      at: 'shelf',
+    });
+    expect(checkPlan(round, ['f0', 'f1', 'worm', 'mend', 'remake'])).toEqual({
+      kind: 'misplaced',
+      index: 1,
+      at: 'f1',
+    });
+    expect(checkPlan(round, ['shelf', 'shelf', 'worm', 'mend', 'remake'])).toEqual({
+      kind: 'unmet',
+      friend: 0,
+    });
     expect(checkPlan(round, ['f0', 'shelf', 'worm', 'mend', 'remake'])).toEqual({ kind: 'unmet', friend: 1 });
   });
   it('takes the tin on the shelf, in Remake and with the pencils friend, never with Bunny or the seedling friend', () => {
@@ -293,18 +374,38 @@ describe('checkPlan', () => {
 
 describe('levels 5–6 accounting', () => {
   it('scripted case A: an unchanged failed plan counts nothing, the second miss glows once, Show me one counts and swaps', () => {
-    const round: Round = { level: 6, open: [...PLACES], items: ['box', 'tin', 'peel', 'kite', 'caps'], requests: ['pencils', 'bed'] };
+    const round: Round = {
+      level: 6,
+      open: [...PLACES],
+      items: ['box', 'tin', 'peel', 'kite', 'caps'],
+      requests: ['pencils', 'bed'],
+    };
     const t = new PlanTally();
-    expect(t.ring(round, round.items.map((): Spot => 'cart')).kind).toBe('cart');
+    expect(
+      t.ring(
+        round,
+        round.items.map((): Spot => 'cart'),
+      ).kind,
+    ).toBe('cart');
     let plan: PlanMap = ['f0', 'shelf', 'worm', 'mend', 'remake'];
     let r = t.ring(round, plan);
-    expect(r).toMatchObject({ kind: 'fail', check: { kind: 'unmet', friend: 1 }, counted: true, glowed: false });
+    expect(r).toMatchObject({
+      kind: 'fail',
+      check: { kind: 'unmet', friend: 1 },
+      counted: true,
+      glowed: false,
+    });
     expect([t.misses, t.hints]).toEqual([1, 0]);
     expect(t.ring(round, plan)).toMatchObject({ kind: 'fail', counted: false });
     expect(t.misses).toBe(1);
     plan = moveTo(plan, 1, 'f1');
     r = t.ring(round, plan);
-    expect(r).toMatchObject({ kind: 'fail', check: { kind: 'misplaced', index: 1, at: 'f1' }, counted: true, glowed: true });
+    expect(r).toMatchObject({
+      kind: 'fail',
+      check: { kind: 'misplaced', index: 1, at: 'f1' },
+      counted: true,
+      glowed: true,
+    });
     expect([t.misses, t.hints, t.glowing]).toEqual([2, 1, true]);
     expect(t.ask()).toBe('glow');
     expect(t.hints).toBe(1);
@@ -335,7 +436,12 @@ describe('levels 5–6 help leads somewhere', () => {
       for (let seed = 1; seed <= 200; seed++) {
         const round = roundFor(level, new Rng(seed));
         const rng = new Rng(seed * 31 + 7);
-        expect(follow(round, round.items.map((): Spot => 'cart'))).toBeGreaterThan(0);
+        expect(
+          follow(
+            round,
+            round.items.map((): Spot => 'cart'),
+          ),
+        ).toBeGreaterThan(0);
         for (let k = 0; k < 6; k++) expect(follow(round, randomPlan(round, rng))).toBeGreaterThanOrEqual(0);
       }
     });
@@ -343,8 +449,14 @@ describe('levels 5–6 help leads somewhere', () => {
 });
 
 describe('levels 5–6 layout', () => {
-  const overlap = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
-  const pad = (r: Rect): Rect => ({ x: r.x - DROP_PAD, y: r.y - DROP_PAD, w: r.w + 2 * DROP_PAD, h: r.h + 2 * DROP_PAD });
+  const overlap = (a: Rect, b: Rect) =>
+    a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+  const pad = (r: Rect): Rect => ({
+    x: r.x - DROP_PAD,
+    y: r.y - DROP_PAD,
+    w: r.w + 2 * DROP_PAD,
+    h: r.h + 2 * DROP_PAD,
+  });
   for (const view of VIEWS) {
     for (const level of [5, 6]) {
       it(`${view.w}x${view.h} level ${level}: big targets, clear corners, no overlapping drop areas`, () => {
@@ -366,12 +478,15 @@ describe('levels 5–6 layout', () => {
           for (const corner of [pet, home, help]) expect(overlap(r, corner)).toBe(false);
         }
         expect(l.bell.w).toBeGreaterThanOrEqual(120);
-        for (let i = 1; i < l.slots.length; i++) expect(l.slots[i].x - (l.slots[i - 1].x + l.slots[i - 1].w)).toBeGreaterThanOrEqual(20);
+        for (let i = 1; i < l.slots.length; i++)
+          expect(l.slots[i].x - (l.slots[i - 1].x + l.slots[i - 1].w)).toBeGreaterThanOrEqual(20);
         const drops = [l.row, ...l.friends, ...places];
         for (let i = 0; i < drops.length; i++) {
           expect(overlap(pad(drops[i]), l.bell)).toBe(false);
           // Neighbouring places may share padding (the nearest wins, as at levels 1–4); nothing else may.
-          for (const o of drops.slice(i + 1)) if (!(places.includes(drops[i]) && places.includes(o))) expect(overlap(pad(drops[i]), pad(o))).toBe(false);
+          for (const o of drops.slice(i + 1))
+            if (!(places.includes(drops[i]) && places.includes(o)))
+              expect(overlap(pad(drops[i]), pad(o))).toBe(false);
         }
         for (const f of l.friends) expect(spotAt(l, centre(f).x, centre(f).y)).toMatch(/^f[01]$/);
         for (const p of round.open) expect(spotAt(l, centre(l.places[p]!).x, centre(l.places[p]!).y)).toBe(p);

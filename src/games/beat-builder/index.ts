@@ -13,9 +13,35 @@ import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { LEVELS, returnGate, returnHint, returnMove, returnStarter, type SectionOrder } from './logic';
-import { clonePiece, newPiece, pieceGate, previewOrder, sectionsMove, type Piece, type SectionId } from './logic';
+import {
+  clonePiece,
+  newPiece,
+  pieceGate,
+  previewOrder,
+  sectionsMove,
+  type Piece,
+  type SectionId,
+} from './logic';
 import { oneHit } from './logic';
-import { beatMove, firstMismatch, mendCopy, repairs, replayTick, empty, freeBeat, givenCell, givenStep, hits, reviseStart, INSTRUMENTS, roundPhrases, planFor, same, type Beat, type BeatPlan } from './logic';
+import {
+  beatMove,
+  firstMismatch,
+  mendCopy,
+  repairs,
+  replayTick,
+  empty,
+  freeBeat,
+  givenCell,
+  givenStep,
+  hits,
+  reviseStart,
+  INSTRUMENTS,
+  roundPhrases,
+  planFor,
+  same,
+  type Beat,
+  type BeatPlan,
+} from './logic';
 
 const CELL = 100;
 const STEP_SECONDS = 0.32;
@@ -26,20 +52,41 @@ function rowIcon(row: number): Graphics {
   const g = new Graphics();
   if (INSTRUMENTS[row].id === 'drum') {
     g.ellipse(0, -14, 30, 10).fill(swatch.white.fill).stroke({ width: 4, color: swatch.orange.line });
-    g.rect(-30, -14, 60, 34).fill(swatch.orange.fill).ellipse(0, 20, 30, 10).fill(swatch.orange.fill).stroke({ width: 4, color: swatch.orange.line });
-    g.moveTo(-30, -14).lineTo(-30, 20).moveTo(30, -14).lineTo(30, 20).stroke({ width: 4, color: swatch.orange.line });
+    g.rect(-30, -14, 60, 34)
+      .fill(swatch.orange.fill)
+      .ellipse(0, 20, 30, 10)
+      .fill(swatch.orange.fill)
+      .stroke({ width: 4, color: swatch.orange.line });
+    g.moveTo(-30, -14)
+      .lineTo(-30, 20)
+      .moveTo(30, -14)
+      .lineTo(30, 20)
+      .stroke({ width: 4, color: swatch.orange.line });
   } else if (INSTRUMENTS[row].id === 'clap') {
-    for (const s of [-1, 1]) g.ellipse(s * 12, 0, 14, 24).fill(swatch.teal.fill).stroke({ width: 4, color: swatch.teal.line });
-    g.moveTo(-30, -26).lineTo(-22, -18).moveTo(30, -26).lineTo(22, -18).stroke({ width: 4, color: swatch.teal.line, cap: 'round' });
+    for (const s of [-1, 1])
+      g.ellipse(s * 12, 0, 14, 24)
+        .fill(swatch.teal.fill)
+        .stroke({ width: 4, color: swatch.teal.line });
+    g.moveTo(-30, -26)
+      .lineTo(-22, -18)
+      .moveTo(30, -26)
+      .lineTo(22, -18)
+      .stroke({ width: 4, color: swatch.teal.line, cap: 'round' });
   } else {
-    g.poly([-24, 16, -18, -12, 0, -24, 18, -12, 24, 16]).fill(swatch.purple.fill).stroke({ width: 4, color: swatch.purple.line, join: 'round' });
+    g.poly([-24, 16, -18, -12, 0, -24, 18, -12, 24, 16])
+      .fill(swatch.purple.fill)
+      .stroke({ width: 4, color: swatch.purple.line, join: 'round' });
     g.circle(0, 22, 6).fill(swatch.purple.line);
   }
   return g;
 }
 
 function checkArt(): Graphics {
-  return new Graphics().moveTo(-20, 0).lineTo(-6, 16).lineTo(22, -16).stroke({ width: 10, color: 0xffffff, cap: 'round', join: 'round' });
+  return new Graphics()
+    .moveTo(-20, 0)
+    .lineTo(-6, 16)
+    .lineTo(22, -16)
+    .stroke({ width: 10, color: 0xffffff, cap: 'round', join: 'round' });
 }
 
 const sectionArt = (section: SectionId): Graphics => {
@@ -48,13 +95,28 @@ const sectionArt = (section: SectionId): Graphics => {
   else g.roundRect(-22, -22, 44, 44, 8).fill(0xffffff).stroke({ width: 6, color: swatch.purple.line });
   return g;
 };
-const copyArt = (): Graphics => new Graphics()
-  .roundRect(-26, -26, 30, 30, 6).fill(0xffffff).stroke({ width: 4, color: swatch.blue.line })
-  .roundRect(-4, -4, 30, 30, 6).fill(swatch.blue.light).stroke({ width: 4, color: swatch.blue.line });
-const undoArt = (): Graphics => new Graphics()
-  .moveTo(-14, -6).lineTo(-26, 6).lineTo(-8, 14).stroke({ width: 8, color: 0xffffff, cap: 'round', join: 'round' })
-  .moveTo(-24, 6).quadraticCurveTo(12, -26, 24, 6).stroke({ width: 8, color: 0xffffff, cap: 'round' });
-const playArt = (): Graphics => new Graphics().poly([-14, -22, 24, 0, -14, 22]).fill(0xffffff).stroke({ width: 4, color: 0xffffff, join: 'round' });
+const copyArt = (): Graphics =>
+  new Graphics()
+    .roundRect(-26, -26, 30, 30, 6)
+    .fill(0xffffff)
+    .stroke({ width: 4, color: swatch.blue.line })
+    .roundRect(-4, -4, 30, 30, 6)
+    .fill(swatch.blue.light)
+    .stroke({ width: 4, color: swatch.blue.line });
+const undoArt = (): Graphics =>
+  new Graphics()
+    .moveTo(-14, -6)
+    .lineTo(-26, 6)
+    .lineTo(-8, 14)
+    .stroke({ width: 8, color: 0xffffff, cap: 'round', join: 'round' })
+    .moveTo(-24, 6)
+    .quadraticCurveTo(12, -26, 24, 6)
+    .stroke({ width: 8, color: 0xffffff, cap: 'round' });
+const playArt = (): Graphics =>
+  new Graphics()
+    .poly([-14, -22, 24, 0, -14, 22])
+    .fill(0xffffff)
+    .stroke({ width: 4, color: 0xffffff, join: 'round' });
 
 class BeatBuilder implements Game {
   readonly plan: BeatPlan;
@@ -118,8 +180,20 @@ class BeatBuilder implements Game {
     this.piece = newPiece(this.plan);
     this.target = empty(this.plan.rows, this.plan.steps);
     this.beat = empty(this.plan.rows, this.plan.steps);
-    this.backdrop = new Backdrop({ sky: [swatch.blue.light, swatch.green.light], hills: [grass, swatch.green.light], horizon: 0.78, clouds: 2, seed: 88 }, ctx.view);
-    this.woodland = ctx.level === 3 || ctx.level === 5 ? new PicnicStage(this.plan.rows, rowIcon) : new WoodlandStage(this.plan.rows, rowIcon);
+    this.backdrop = new Backdrop(
+      {
+        sky: [swatch.blue.light, swatch.green.light],
+        hills: [grass, swatch.green.light],
+        horizon: 0.78,
+        clouds: 2,
+        seed: 88,
+      },
+      ctx.view,
+    );
+    this.woodland =
+      ctx.level === 3 || ctx.level === 5
+        ? new PicnicStage(this.plan.rows, rowIcon)
+        : new WoodlandStage(this.plan.rows, rowIcon);
     this.grid.addChild(this.cells);
     this.grid.eventMode = 'static';
     onTap(this.grid, (e) => this.tapGrid(e), { cooldown: 90 });
@@ -129,10 +203,14 @@ class BeatBuilder implements Game {
       this.icons.addChild(icon);
     }
     this.grid.addChild(this.icons);
-    this.listen = new RoundButton(musicNote(new Graphics(), 40, ink), swatch.white, 56, () => this.playTarget());
-    this.listen.visible = this.plan.mode === 'hear' || this.plan.mode === 'mend' || this.plan.mode === 'revise';
+    this.listen = new RoundButton(musicNote(new Graphics(), 40, ink), swatch.white, 56, () =>
+      this.playTarget(),
+    );
+    this.listen.visible =
+      this.plan.mode === 'hear' || this.plan.mode === 'mend' || this.plan.mode === 'revise';
     this.check = new RoundButton(checkArt(), swatch.green, 56, () => void this.checkBeat());
-    this.check.visible = this.plan.mode === 'hear' || this.plan.mode === 'mend' || this.plan.mode === 'revise';
+    this.check.visible =
+      this.plan.mode === 'hear' || this.plan.mode === 'mend' || this.plan.mode === 'revise';
     const soloArt = rowIcon(1);
     soloArt.scale.set(0.8);
     this.solo = new RoundButton(soloArt, swatch.teal, 56, () => this.playTarget(true));
@@ -152,7 +230,22 @@ class BeatBuilder implements Game {
     onTap(this.slots, (e) => this.tapSlot(e), { cooldown: 120 });
     if (sec) this.check.visible = true;
     this.marker.eventMode = 'none';
-    ctx.stage.addChild(this.backdrop, this.woodland, this.marker, this.tabA, this.tabB, this.copyBtn, this.undoBtn, this.previewBtn, this.slots, this.grid, this.listen, this.solo, this.check, this.model);
+    ctx.stage.addChild(
+      this.backdrop,
+      this.woodland,
+      this.marker,
+      this.tabA,
+      this.tabB,
+      this.copyBtn,
+      this.undoBtn,
+      this.previewBtn,
+      this.slots,
+      this.grid,
+      this.listen,
+      this.solo,
+      this.check,
+      this.model,
+    );
     this.model.eventMode = 'none';
   }
 
@@ -176,13 +269,17 @@ class BeatBuilder implements Game {
     this.model.position.set(v.w / 2, y + 95);
     if (this.plan.mode === 'return') {
       const x = v.w / 2;
-      [this.tabA, this.tabB, this.undoBtn, this.previewBtn, this.check].forEach((b, i) => b.position.set(x - 300 + i * 150, y));
+      [this.tabA, this.tabB, this.undoBtn, this.previewBtn, this.check].forEach((b, i) =>
+        b.position.set(x - 300 + i * 150, y),
+      );
       this.slots.position.set(x - 185, y + 85);
       this.slots.hitArea = new Rectangle(0, 0, 370, 110);
     }
     if (this.plan.mode === 'sections') {
       const x = v.w / 2;
-      [this.tabA, this.tabB, this.copyBtn, this.undoBtn].forEach((b, i) => b.position.set(x - 225 + i * 150, y));
+      [this.tabA, this.tabB, this.copyBtn, this.undoBtn].forEach((b, i) =>
+        b.position.set(x - 225 + i * 150, y),
+      );
       this.previewBtn.position.set(x - 75, y + 135);
       this.check.position.set(x + 75, y + 135);
     }
@@ -216,7 +313,9 @@ class BeatBuilder implements Game {
     // Free play: once the beat has gone round a couple of times, the green check can finish.
     // Two-year-olds finish after one sound has gone round once; every creation is welcome, even a single hit.
     if (this.plan.mode === 'free') {
-      const ready = this.gentle ? hits(this.beat) >= 1 && this.loops >= 1 : hits(this.beat) >= 3 && this.loops >= 2;
+      const ready = this.gentle
+        ? hits(this.beat) >= 1 && this.loops >= 1
+        : hits(this.beat) >= 3 && this.loops >= 2;
       if (!this.check.visible && ready) {
         this.check.visible = true;
         void this.ctx.say('beat.done-when');
@@ -244,17 +343,28 @@ class BeatBuilder implements Game {
       if (move === 'copy') return { tap: { on: this.copyBtn } };
       if (move === 'preview') return { tap: { on: this.previewBtn } };
       if (move === 'check') return { tap: { on: this.check } };
-      return { tap: { on: this.grid, x: move.step * CELL + CELL / 2, y: move.row * CELL + CELL / 2 }, pause: 0.15 };
+      return {
+        tap: { on: this.grid, x: move.step * CELL + CELL / 2, y: move.row * CELL + CELL / 2 },
+        pause: 0.15,
+      };
     }
-    const goal = this.plan.mode === 'free' ? (this.gentle ? oneHit(this.plan) : freeBeat(this.plan)) : this.target;
+    const goal =
+      this.plan.mode === 'free' ? (this.gentle ? oneHit(this.plan) : freeBeat(this.plan)) : this.target;
     const move = beatMove(this.plan, goal, this.beat, this.check.visible);
     if (!move) return null;
     if (move === 'check') return { tap: { on: this.check } };
     // A square's middle, in the grid's own units; the grid works out which square from where the touch lands.
-    return { tap: { on: this.grid, x: move.step * CELL + CELL / 2, y: move.row * CELL + CELL / 2 }, pause: 0.15 };
+    return {
+      tap: { on: this.grid, x: move.step * CELL + CELL / 2, y: move.row * CELL + CELL / 2 },
+      pause: 0.15,
+    };
   }
 
-  destroy() { this.finished = true; this.playingTarget = 0; this.previewIdx = -1; }
+  destroy() {
+    this.finished = true;
+    this.playingTarget = 0;
+    this.previewIdx = -1;
+  }
 
   private snapshot() {
     this.undoStack.push({ piece: clonePiece(this.piece), order: [...this.order] });
@@ -310,7 +420,9 @@ class BeatBuilder implements Game {
     this.current = at.section;
     this.beat = this.piece[at.section];
     this.step = at.step;
-    this.beat.forEach((row, r) => { if (row[at.step]) this.sound(r, at.step); });
+    this.beat.forEach((row, r) => {
+      if (row[at.step]) this.sound(r, at.step);
+    });
   }
 
   private async checkPiece() {
@@ -368,12 +480,27 @@ class BeatBuilder implements Game {
     // Repeat levels: the first half is already there.
     if (this.plan.mode === 'revise') this.beat = reviseStart(this.target, this.ctx.rng);
     if (this.plan.mode === 'mend') this.beat = mendCopy(this.target, this.index, this.ctx.rng);
-    if (this.plan.mode === 'repeat') this.target.forEach((row, r) => row.forEach((on, s) => (this.beat[r][s] = givenStep(this.plan, s) && on)));
+    if (this.plan.mode === 'repeat')
+      this.target.forEach((row, r) =>
+        row.forEach((on, s) => (this.beat[r][s] = givenStep(this.plan, s) && on)),
+      );
     this.resize(this.view);
-    const line = { free: 'beat.free', see: 'beat.see', hear: 'beat.hear', repeat: 'beat.repeat', mend: 'beat.mend', revise: 'beat.revise', sections: 'beat.ab', return: 'beat.ret' } as const;
+    const line = {
+      free: 'beat.free',
+      see: 'beat.see',
+      hear: 'beat.hear',
+      repeat: 'beat.repeat',
+      mend: 'beat.mend',
+      revise: 'beat.revise',
+      sections: 'beat.ab',
+      return: 'beat.ret',
+    } as const;
     if (this.plan.mode === 'free') {
       this.busy = false;
-      return this.ctx.instruct(this.gentle ? 'beat.free-toddler' : line.free, { drum: INSTRUMENTS[0].name, clap: INSTRUMENTS[1].name });
+      return this.ctx.instruct(this.gentle ? 'beat.free-toddler' : line.free, {
+        drum: INSTRUMENTS[0].name,
+        clap: INSTRUMENTS[1].name,
+      });
     }
     if (this.plan.mode === 'return') {
       const start = returnStarter(this.plan, this.ctx.rng);
@@ -385,8 +512,16 @@ class BeatBuilder implements Game {
       this.previewed = false;
       this.previewIdx = -1;
     }
-    if (this.plan.mode === 'sections') { this.piece = newPiece(this.plan); this.current = 'a'; this.beat = this.piece.a; this.undoStack = []; this.previewed = false; this.previewIdx = -1; }
-    if (this.index === 0) await this.ctx.instruct(line[this.plan.mode], { drum: INSTRUMENTS[0].name, clap: INSTRUMENTS[1].name });
+    if (this.plan.mode === 'sections') {
+      this.piece = newPiece(this.plan);
+      this.current = 'a';
+      this.beat = this.piece.a;
+      this.undoStack = [];
+      this.previewed = false;
+      this.previewIdx = -1;
+    }
+    if (this.index === 0)
+      await this.ctx.instruct(line[this.plan.mode], { drum: INSTRUMENTS[0].name, clap: INSTRUMENTS[1].name });
     if (phrase) await this.ctx.say('beat.phrase', { phrase: phrase.name });
     this.busy = false;
     if (this.plan.mode === 'hear' || this.plan.mode === 'revise') this.playTarget();
@@ -405,14 +540,24 @@ class BeatBuilder implements Game {
   private drawModel() {
     const m = this.model.clear();
     if (this.plan.mode !== 'mend') return;
-    const { rows, steps } = this.plan, c = 44;
+    const { rows, steps } = this.plan,
+      c = 44;
     const x0 = -(steps * c) / 2;
-    m.roundRect(x0 - 10, -8, steps * c + 20, rows * c + 16, 14).fill({ color: 0xffffff, alpha: 0.85 }).stroke({ width: 4, color: wood.line });
-    for (let r = 0; r < rows; r++) for (let s = 0; s < steps; s++) {
-      const on = this.target[r][s];
-      m.roundRect(x0 + s * c + 3, r * c + 3, c - 6, c - 6, 8).fill(on ? ROW_COLORS[r].fill : 0xf2f2f6).stroke({ width: 3, color: on ? ROW_COLORS[r].line : 0xd8d8e2 });
-    }
-    if (this.playingTarget > 0) m.roundRect(x0 + this.step * c, -4, c, rows * c + 8, 10).stroke({ width: 4, color: swatch.yellow.line });
+    m.roundRect(x0 - 10, -8, steps * c + 20, rows * c + 16, 14)
+      .fill({ color: 0xffffff, alpha: 0.85 })
+      .stroke({ width: 4, color: wood.line });
+    for (let r = 0; r < rows; r++)
+      for (let s = 0; s < steps; s++) {
+        const on = this.target[r][s];
+        m.roundRect(x0 + s * c + 3, r * c + 3, c - 6, c - 6, 8)
+          .fill(on ? ROW_COLORS[r].fill : 0xf2f2f6)
+          .stroke({ width: 3, color: on ? ROW_COLORS[r].line : 0xd8d8e2 });
+      }
+    if (this.playingTarget > 0)
+      m.roundRect(x0 + this.step * c, -4, c, rows * c + 8, 10).stroke({
+        width: 4,
+        color: swatch.yellow.line,
+      });
   }
 
   /** Three big cards in time order, each showing its part's picture and its notes. */
@@ -422,12 +567,26 @@ class BeatBuilder implements Game {
     const hint = this.helped ? returnHint(this.order) : -1;
     const playing = this.previewIdx >= 0 ? Math.min(2, Math.floor(this.previewIdx / this.plan.steps)) : -1;
     for (let i = 0; i < 3; i++) {
-      const x = i * 130, section = this.order[i], sw = section === 'a' ? swatch.orange : swatch.purple;
-      g.roundRect(x, 0, 110, 110, 18).fill(i === playing ? swatch.yellow.light : 0xffffff).stroke({ width: i === hint ? 8 : 5, color: i === hint ? swatch.yellow.line : sw.line });
-      if (section === 'a') g.circle(x + 22, 22, 11).fill(0xffffff).stroke({ width: 4, color: swatch.orange.line });
-      else g.roundRect(x + 11, 11, 22, 22, 4).fill(0xffffff).stroke({ width: 4, color: swatch.purple.line });
+      const x = i * 130,
+        section = this.order[i],
+        sw = section === 'a' ? swatch.orange : swatch.purple;
+      g.roundRect(x, 0, 110, 110, 18)
+        .fill(i === playing ? swatch.yellow.light : 0xffffff)
+        .stroke({ width: i === hint ? 8 : 5, color: i === hint ? swatch.yellow.line : sw.line });
+      if (section === 'a')
+        g.circle(x + 22, 22, 11)
+          .fill(0xffffff)
+          .stroke({ width: 4, color: swatch.orange.line });
+      else
+        g.roundRect(x + 11, 11, 22, 22, 4)
+          .fill(0xffffff)
+          .stroke({ width: 4, color: swatch.purple.line });
       const m = this.piece[section];
-      m.forEach((row, r) => row.forEach((on, s) => g.roundRect(x + 11 + s * 24, 48 + r * 28, 20, 22, 4).fill(on ? ROW_COLORS[r].fill : 0xf2f2f6)));
+      m.forEach((row, r) =>
+        row.forEach((on, s) =>
+          g.roundRect(x + 11 + s * 24, 48 + r * 28, 20, 22, 4).fill(on ? ROW_COLORS[r].fill : 0xf2f2f6),
+        ),
+      );
     }
   }
 
@@ -435,7 +594,9 @@ class BeatBuilder implements Game {
     const m = this.marker.clear();
     if (this.plan.mode !== 'sections' && this.plan.mode !== 'return') return;
     const tab = this.current === 'a' ? this.tabA : this.tabB;
-    m.circle(tab.x, tab.y, 68).fill({ color: swatch.yellow.light, alpha: 0.9 }).stroke({ width: 5, color: swatch.yellow.line });
+    m.circle(tab.x, tab.y, 68)
+      .fill({ color: swatch.yellow.light, alpha: 0.9 })
+      .stroke({ width: 5, color: swatch.yellow.line });
     this.undoBtn.alpha = this.undoStack.length ? 1 : 0.45;
   }
 
@@ -445,9 +606,14 @@ class BeatBuilder implements Game {
     this.drawMarker();
     const g = this.cells.clear();
     const { rows, steps } = this.plan;
-    g.roundRect(-14, -14, steps * CELL + 28, rows * CELL + 28, 24).fill({ color: 0xffffff, alpha: 0.7 }).stroke({ width: 5, color: wood.line });
+    g.roundRect(-14, -14, steps * CELL + 28, rows * CELL + 28, 24)
+      .fill({ color: 0xffffff, alpha: 0.7 })
+      .stroke({ width: 5, color: wood.line });
     // The playhead column.
-    g.roundRect(this.step * CELL + 2, -8, CELL - 4, rows * CELL + 16, 16).fill({ color: this.playingTarget > 0 ? swatch.yellow.light : swatch.blue.light, alpha: 0.8 });
+    g.roundRect(this.step * CELL + 2, -8, CELL - 4, rows * CELL + 16, 16).fill({
+      color: this.playingTarget > 0 ? swatch.yellow.light : swatch.blue.light,
+      alpha: 0.8,
+    });
     const help = this.helped && this.plan.mode !== 'return' ? repairs(this.plan, this.target, this.beat) : [];
     for (let r = 0; r < rows; r++)
       for (let s = 0; s < steps; s++) {
@@ -455,20 +621,28 @@ class BeatBuilder implements Game {
         const on = this.beat[r][s];
         const x = s * CELL + 10;
         const y = r * CELL + 10;
-        g.roundRect(x, y, CELL - 20, CELL - 20, 16).fill(on ? sw.fill : 0xffffff).stroke({ width: 4, color: on ? sw.line : 0xd8d8e2 });
-        if (givenCell(this.plan, r, s) && on) g.circle(x + CELL / 2 - 10, y + CELL / 2 - 10, 8).fill({ color: 0xffffff, alpha: 0.8 });
+        g.roundRect(x, y, CELL - 20, CELL - 20, 16)
+          .fill(on ? sw.fill : 0xffffff)
+          .stroke({ width: 4, color: on ? sw.line : 0xd8d8e2 });
+        if (givenCell(this.plan, r, s) && on)
+          g.circle(x + CELL / 2 - 10, y + CELL / 2 - 10, 8).fill({ color: 0xffffff, alpha: 0.8 });
         const repair = help.find((cell) => cell.row === r && cell.step === s);
         const faint = this.plan.mode === 'see' || repair?.add;
-        if (faint && this.target[r][s] && !on) g.circle(x + CELL / 2 - 10, y + CELL / 2 - 10, 16).fill({ color: sw.fill, alpha: 0.35 });
+        if (faint && this.target[r][s] && !on)
+          g.circle(x + CELL / 2 - 10, y + CELL / 2 - 10, 16).fill({ color: sw.fill, alpha: 0.35 });
         if (repair) {
           g.roundRect(x - 4, y - 4, CELL - 12, CELL - 12, 18).stroke({ width: 5, color: swatch.yellow.line });
-          const cx = x + 40, cy = y + 40;
+          const cx = x + 40,
+            cy = y + 40;
           g.moveTo(cx - 16, cy).lineTo(cx + 16, cy);
           if (repair.add) g.moveTo(cx, cy - 16).lineTo(cx, cy + 16);
           g.stroke({ width: 6, color: sw.line, cap: 'round' });
         }
       }
-    if (this.plan.mode === 'repeat') g.moveTo((steps / 2) * CELL, -14).lineTo((steps / 2) * CELL, rows * CELL + 14).stroke({ width: 4, color: wood.line });
+    if (this.plan.mode === 'repeat')
+      g.moveTo((steps / 2) * CELL, -14)
+        .lineTo((steps / 2) * CELL, rows * CELL + 14)
+        .stroke({ width: 4, color: wood.line });
   }
 
   private tapGrid(e: FederatedPointerEvent) {
@@ -509,7 +683,8 @@ class BeatBuilder implements Game {
 
   private async checkBeat() {
     if (this.busy || this.finished || this.playingTarget > 0 || this.previewIdx >= 0) return;
-    if (this.plan.mode === 'free') return this.gentle && hits(this.beat) === 0 ? undefined : void this.finale();
+    if (this.plan.mode === 'free')
+      return this.gentle && hits(this.beat) === 0 ? undefined : void this.finale();
     if (this.plan.mode === 'sections' || this.plan.mode === 'return') return void this.checkPiece();
     if (same(this.target, this.beat)) return void this.win();
     this.busy = true;
@@ -518,7 +693,10 @@ class BeatBuilder implements Game {
     sfx.boing();
     if (this.plan.mode === 'mend' || this.plan.mode === 'revise') {
       const m = firstMismatch(this.target, this.beat);
-      await this.ctx.say('beat.mendno', { instrument: INSTRUMENTS[m?.row ?? 0].name, place: ['first', 'second', 'third', 'fourth'][m?.step ?? 0] });
+      await this.ctx.say('beat.mendno', {
+        instrument: INSTRUMENTS[m?.row ?? 0].name,
+        place: ['first', 'second', 'third', 'fourth'][m?.step ?? 0],
+      });
     } else await this.ctx.say('beat.nothear');
     if (this.wrongs >= 2 && !this.helped) {
       this.hints++;
@@ -556,9 +734,19 @@ class BeatBuilder implements Game {
 class BeatIcon extends WigglyIcon {
   constructor() {
     const c = new Container();
-    const g = new Graphics().roundRect(-110, -170, 220, 150, 20).fill(0xffffff).stroke({ width: 5, color: wood.line });
-    const on = [[1, 0, 1, 0], [0, 1, 0, 1]];
-    on.forEach((row, r) => row.forEach((v, s) => g.roundRect(-98 + s * 52, -158 + r * 64, 44, 56, 10).fill(v ? ROW_COLORS[r].fill : 0xf2f2f6)));
+    const g = new Graphics()
+      .roundRect(-110, -170, 220, 150, 20)
+      .fill(0xffffff)
+      .stroke({ width: 5, color: wood.line });
+    const on = [
+      [1, 0, 1, 0],
+      [0, 1, 0, 1],
+    ];
+    on.forEach((row, r) =>
+      row.forEach((v, s) =>
+        g.roundRect(-98 + s * 52, -158 + r * 64, 44, 56, 10).fill(v ? ROW_COLORS[r].fill : 0xf2f2f6),
+      ),
+    );
     c.addChild(g);
     super(c);
   }
@@ -570,7 +758,12 @@ function sticker(seed: number): Container {
   for (let r = 0; r < 3; r++)
     for (let s = 0; s < 4; s++) {
       const on = rng.chance(0.45);
-      c.addChild(new Graphics().roundRect(-100 + s * 52, -70 + r * 50, 44, 42, 10).fill(on ? ROW_COLORS[r].fill : 0xffffff).stroke({ width: 3, color: ROW_COLORS[r].line }));
+      c.addChild(
+        new Graphics()
+          .roundRect(-100 + s * 52, -70 + r * 50, 44, 42, 10)
+          .fill(on ? ROW_COLORS[r].fill : 0xffffff)
+          .stroke({ width: 3, color: ROW_COLORS[r].line }),
+      );
     }
   return c;
 }
@@ -587,7 +780,8 @@ export const beatBuilder: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.quiet,
   coplayHint: 'Clap and stomp the beat together as the playhead goes round.',
-  offScreen: 'Make a beat on pots and a wooden spoon: boom, clap, boom, clap. Then take turns copying each other.',
+  offScreen:
+    'Make a beat on pots and a wooden spoon: boom, clap, boom, clap. Then take turns copying each other.',
   hubIcon: () => new BeatIcon(),
   touchDemo: true,
   sticker,

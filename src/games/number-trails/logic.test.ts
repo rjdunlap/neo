@@ -2,7 +2,21 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { rangeFor } from '../../progress/difficulty';
 import {
-  LEVELS, MAX_THINGS, PLANS, SPARE, THINGS, THING_GAP, THING_HIT, groupSize, numeralFor, planFor, roundFor, stickerDigit, thingFor, thingSpots, thingWord,
+  LEVELS,
+  MAX_THINGS,
+  PLANS,
+  SPARE,
+  THINGS,
+  THING_GAP,
+  THING_HIT,
+  groupSize,
+  numeralFor,
+  planFor,
+  roundFor,
+  stickerDigit,
+  thingFor,
+  thingSpots,
+  thingWord,
 } from './logic';
 import { LOOKS, hintDue, showTheWay, tuneStep } from '../../learning/tracing/feedback';
 import { sampleStroke } from '../../learning/tracing/strokes';
@@ -17,7 +31,8 @@ describe('number trails levels', () => {
   it('ends each band inside the ladder and opens pre-K at the bigger numbers', () => {
     expect(rangeFor(LEVELS, 'preschool')).toEqual({ min: 1, max: 2 });
     expect(rangeFor(LEVELS, 'prek')).toEqual({ min: 2, max: 3 });
-    for (const band of ['preschool', 'prek'] as const) expect(rangeFor(LEVELS, band).max).toBeLessThanOrEqual(PLANS.length);
+    for (const band of ['preschool', 'prek'] as const)
+      expect(rangeFor(LEVELS, band).max).toBeLessThanOrEqual(PLANS.length);
   });
   it('draws only 1 to 5 at level 1 and all of 0 to 9 above it', () => {
     const rng = new Rng(7);
@@ -59,22 +74,30 @@ describe('how many things wait', () => {
 });
 
 describe('where things sit', () => {
-  const views = [[1024, 768], [768, 1024], [1366, 1024], [1024, 1366], [1180, 820]];
+  const views = [
+    [1024, 768],
+    [768, 1024],
+    [1366, 1024],
+    [1024, 1366],
+    [1180, 820],
+  ];
   it('puts every group inside the room with every circle at least 100 units across and none touching', () => {
     expect(THING_HIT * 2).toBeGreaterThanOrEqual(100);
-    for (const [w, h] of views) for (let count = 0; count <= MAX_THINGS; count++) {
-      const rect = { x: 150, y: 140, w: w - 190, h: h - 190 };
-      const spots = thingSpots(count, rect);
-      expect(spots, `${count} things in ${w}x${h}`).not.toBeNull();
-      expect(spots!.length).toBe(count);
-      for (const [i, a] of spots!.entries()) {
-        expect(a.x - THING_HIT).toBeGreaterThanOrEqual(rect.x - 1e-9);
-        expect(a.x + THING_HIT).toBeLessThanOrEqual(rect.x + rect.w + 1e-9);
-        expect(a.y - THING_HIT).toBeGreaterThanOrEqual(rect.y - 1e-9);
-        expect(a.y + THING_HIT).toBeLessThanOrEqual(rect.y + rect.h + 1e-9);
-        for (const b of spots!.slice(i + 1)) expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThanOrEqual(THING_GAP - 1e-9);
+    for (const [w, h] of views)
+      for (let count = 0; count <= MAX_THINGS; count++) {
+        const rect = { x: 150, y: 140, w: w - 190, h: h - 190 };
+        const spots = thingSpots(count, rect);
+        expect(spots, `${count} things in ${w}x${h}`).not.toBeNull();
+        expect(spots!.length).toBe(count);
+        for (const [i, a] of spots!.entries()) {
+          expect(a.x - THING_HIT).toBeGreaterThanOrEqual(rect.x - 1e-9);
+          expect(a.x + THING_HIT).toBeLessThanOrEqual(rect.x + rect.w + 1e-9);
+          expect(a.y - THING_HIT).toBeGreaterThanOrEqual(rect.y - 1e-9);
+          expect(a.y + THING_HIT).toBeLessThanOrEqual(rect.y + rect.h + 1e-9);
+          for (const b of spots!.slice(i + 1))
+            expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThanOrEqual(THING_GAP - 1e-9);
+        }
       }
-    }
   });
   it('says so rather than shrinking a target when the room is too small', () => {
     expect(thingSpots(9, { x: 0, y: 0, w: 600, h: 130 })).toBeNull();
@@ -87,13 +110,15 @@ describe('where things sit', () => {
 
 describe('number trails hint, looks and tune', () => {
   it('draws the look after the numeral and the thing, so a seed keeps its round', () => {
-    for (let seed = 1; seed <= 200; seed++) for (const level of [1, 2, 3]) {
-      const a = new Rng(seed), round = roundFor(level, a);
-      const b = new Rng(seed);
-      expect(round.n).toBe(numeralFor(level, b));
-      expect(round.thing).toBe(thingFor(b));
-      expect(LOOKS).toContain(round.look);
-    }
+    for (let seed = 1; seed <= 200; seed++)
+      for (const level of [1, 2, 3]) {
+        const a = new Rng(seed),
+          round = roundFor(level, a);
+        const b = new Rng(seed);
+        expect(round.n).toBe(numeralFor(level, b));
+        expect(round.thing).toBe(thingFor(b));
+        expect(LOOKS).toContain(round.look);
+      }
     const looks = new Set(Array.from({ length: 200 }, (_, i) => roundFor(2, new Rng(i + 1)).look));
     expect(looks.size).toBe(LOOKS.length);
   });
@@ -101,25 +126,27 @@ describe('number trails hint, looks and tune', () => {
     expect([1, 2, 3, 4].map(hintDue)).toEqual([false, true, false, false]);
   });
   it('flies the shown stretch forward along every numeral stroke, from where she is, never past its end', () => {
-    for (const strokes of Object.values(DIGITS)) for (const stroke of strokes) {
-      const points = sampleStroke(stroke);
-      for (let progress = 0; progress < points.length - 1; progress++) {
-        const shown = showTheWay(points, progress);
-        expect(shown[0]).toBe(points[progress]);
-        expect(shown.length).toBeGreaterThan(1);
-        expect(points.indexOf(shown[shown.length - 1])).toBeGreaterThan(progress);
-        expect(points.indexOf(shown[shown.length - 1])).toBeLessThan(points.length);
+    for (const strokes of Object.values(DIGITS))
+      for (const stroke of strokes) {
+        const points = sampleStroke(stroke);
+        for (let progress = 0; progress < points.length - 1; progress++) {
+          const shown = showTheWay(points, progress);
+          expect(shown[0]).toBe(points[progress]);
+          expect(shown.length).toBeGreaterThan(1);
+          expect(points.indexOf(shown[shown.length - 1])).toBeGreaterThan(progress);
+          expect(points.indexOf(shown[shown.length - 1])).toBeLessThan(points.length);
+        }
       }
-    }
   });
   it('climbs the tune one pentatonic step a fifth of the way, from the first note to the top at the end', () => {
-    for (const strokes of Object.values(DIGITS)) for (const stroke of strokes) {
-      const n = sampleStroke(stroke).length;
-      const steps = Array.from({ length: n }, (_, i) => tuneStep(i, n));
-      expect(steps[0]).toBe(0);
-      expect(steps[n - 1]).toBe(4);
-      steps.slice(1).forEach((s, i) => expect(s - steps[i]).toBeGreaterThanOrEqual(0));
-      expect(new Set(steps).size).toBe(5);
-    }
+    for (const strokes of Object.values(DIGITS))
+      for (const stroke of strokes) {
+        const n = sampleStroke(stroke).length;
+        const steps = Array.from({ length: n }, (_, i) => tuneStep(i, n));
+        expect(steps[0]).toBe(0);
+        expect(steps[n - 1]).toBe(4);
+        steps.slice(1).forEach((s, i) => expect(s - steps[i]).toBeGreaterThanOrEqual(0));
+        expect(new Set(steps).size).toBe(5);
+      }
   });
 });

@@ -64,7 +64,9 @@ export class Cloud extends Container {
     const half = 110 * this.baseScale;
     if (this.x - half > view.w) this.x = -half;
     this.puff = Math.max(0, this.puff - dt * 2);
-    this.scale.set(this.baseScale * (1 + 0.2 * Math.sin((1 - this.puff) * Math.PI) * (this.puff > 0 ? 1 : 0)));
+    this.scale.set(
+      this.baseScale * (1 + 0.2 * Math.sin((1 - this.puff) * Math.PI) * (this.puff > 0 ? 1 : 0)),
+    );
   }
 }
 
@@ -168,7 +170,9 @@ export class Backdrop extends Container {
       for (let x = -20; x <= view.w + 20; x += 20) {
         g.lineTo(x, base + amp * (0.6 * Math.sin(x * 0.004 + p1) + 0.4 * Math.sin(x * 0.011 + p2)));
       }
-      g.lineTo(view.w + 20, view.h + 20).closePath().fill(color);
+      g.lineTo(view.w + 20, view.h + 20)
+        .closePath()
+        .fill(color);
     });
   }
 
@@ -183,16 +187,38 @@ export class Backdrop extends Container {
  * playable objects, its white trim, and from 60 units tall its X door and round loft. `base` is the ground
  * it stands on; the barn is `height * 1.1` wide. Pass a darker `body` and `trim` for an evening sky.
  */
-export function drawFarBarn(g: Graphics, x: number, base: number, height: number, body: number = swatch.red.line, trim: number = swatch.white.light) {
+export function drawFarBarn(
+  g: Graphics,
+  x: number,
+  base: number,
+  height: number,
+  body: number = swatch.red.line,
+  trim: number = swatch.white.light,
+) {
   const w = height * 1.1;
-  g.poly([x - w / 2, base, x - w / 2, base - height * 0.58, x, base - height, x + w / 2, base - height * 0.58, x + w / 2, base])
-    .fill(body);
-  g.moveTo(x - w / 2 - 4, base - height * 0.58).lineTo(x, base - height).lineTo(x + w / 2 + 4, base - height * 0.58)
+  g.poly([
+    x - w / 2,
+    base,
+    x - w / 2,
+    base - height * 0.58,
+    x,
+    base - height,
+    x + w / 2,
+    base - height * 0.58,
+    x + w / 2,
+    base,
+  ]).fill(body);
+  g.moveTo(x - w / 2 - 4, base - height * 0.58)
+    .lineTo(x, base - height)
+    .lineTo(x + w / 2 + 4, base - height * 0.58)
     .stroke({ color: trim, width: 5, cap: 'round', join: 'round' });
   if (height >= 60) {
     const door = height * 0.34;
     g.rect(x - door / 2, base - door, door, door).stroke({ color: trim, width: 3 });
-    g.moveTo(x - door / 2, base - door).lineTo(x + door / 2, base).moveTo(x + door / 2, base - door).lineTo(x - door / 2, base)
+    g.moveTo(x - door / 2, base - door)
+      .lineTo(x + door / 2, base)
+      .moveTo(x + door / 2, base - door)
+      .lineTo(x - door / 2, base)
       .stroke({ color: trim, width: 3 });
     g.circle(x, base - height * 0.65, height * 0.075).fill(trim);
   }

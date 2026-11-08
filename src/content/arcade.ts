@@ -18,13 +18,21 @@ export type ArcadeFilter = 'all' | 'played' | RegionId;
 
 /** A subject's one-word tag, from its spoken line (`subject.music` → Music). */
 const TOPIC_WORDS: Record<string, string> = {
-  senses: 'Senses', music: 'Music', art: 'Art', animals: 'Animals', numbers: 'Numbers',
-  everyday: 'Everyday', shapes: 'Shapes', puzzles: 'Puzzles', stories: 'Stories', science: 'Science',
+  senses: 'Senses',
+  music: 'Music',
+  art: 'Art',
+  animals: 'Animals',
+  numbers: 'Numbers',
+  everyday: 'Everyday',
+  shapes: 'Shapes',
+  puzzles: 'Puzzles',
+  stories: 'Stories',
+  science: 'Science',
 };
 
 export function topicWord(region: RegionId): string {
   const s = SUBJECTS.find((x) => x.id === region);
-  return s ? TOPIC_WORDS[s.line.slice('subject.'.length)] ?? s.name : region;
+  return s ? (TOPIC_WORDS[s.line.slice('subject.'.length)] ?? s.name) : region;
 }
 
 /** The filters in the order the Topics sheet shows them: All, Played before, then each subject that has a game. */
@@ -32,7 +40,8 @@ export function arcadeFilters(games: readonly GameModule[]): ArcadeFilter[] {
   return ['all', 'played', ...SUBJECTS.filter((s) => games.some((g) => g.region === s.id)).map((s) => s.id)];
 }
 
-export const isArcadeFilter = (v: unknown, games: readonly GameModule[]): v is ArcadeFilter => arcadeFilters(games).includes(v as ArcadeFilter);
+export const isArcadeFilter = (v: unknown, games: readonly GameModule[]): v is ArcadeFilter =>
+  arcadeFilters(games).includes(v as ArcadeFilter);
 
 /** A filter's name on its tile and on the Topics button. */
 export function filterName(f: ArcadeFilter): string {
@@ -41,7 +50,11 @@ export function filterName(f: ArcadeFilter): string {
 
 /** What a filter's tile says when it is chosen. */
 export function filterLine(f: ArcadeFilter): LineId {
-  return f === 'all' ? 'explore.all' : f === 'played' ? 'arcade.played' : SUBJECTS.find((s) => s.id === f)!.line;
+  return f === 'all'
+    ? 'explore.all'
+    : f === 'played'
+      ? 'arcade.played'
+      : SUBJECTS.find((s) => s.id === f)!.line;
 }
 
 /** When she last finished a round of a game, or 0. */
@@ -83,7 +96,8 @@ export function tagsFor(mod: GameModule, band: Band): string[] {
 
 /** The cards on one page of a list, and how many pages it takes (at least one: an empty page says so). */
 export const arcadePages = (n: number, perPage: number) => Math.max(1, Math.ceil(n / perPage));
-export const clampArcadePage = (page: number, n: number, perPage: number) => Math.min(Math.max(0, Math.floor(page) || 0), arcadePages(n, perPage) - 1);
+export const clampArcadePage = (page: number, n: number, perPage: number) =>
+  Math.min(Math.max(0, Math.floor(page) || 0), arcadePages(n, perPage) - 1);
 export function arcadePage<T>(items: readonly T[], page: number, perPage: number): T[] {
   const p = clampArcadePage(page, items.length, perPage);
   return items.slice(p * perPage, (p + 1) * perPage);

@@ -23,8 +23,12 @@ describe('demonstration cleanup ownership', () => {
         ctx.listen(target, 'touch', () => heard.push(round));
         ctx.own(() => released.push(round));
         return {
-          start() {}, update() {}, resize() {},
-          destroy() { expect(ctx.alive).toBe(false); },
+          start() {},
+          update() {},
+          resize() {},
+          destroy() {
+            expect(ctx.alive).toBe(false);
+          },
         };
       },
     } as unknown as GameModule;
@@ -33,12 +37,13 @@ describe('demonstration cleanup ownership', () => {
     expect(heard).toEqual([0]);
     demo.restart();
     expect(released).toEqual([0]);
-    expect(contexts.map(ctx => ctx.alive)).toEqual([false, true]);
+    expect(contexts.map((ctx) => ctx.alive)).toEqual([false, true]);
     target.dispatchEvent(new Event('touch'));
     expect(heard).toEqual([0, 1]);
-    demo.destroy(); demo.destroy();
+    demo.destroy();
+    demo.destroy();
     expect(released).toEqual([0, 1]);
-    expect(contexts.every(ctx => !ctx.alive)).toBe(true);
+    expect(contexts.every((ctx) => !ctx.alive)).toBe(true);
     target.dispatchEvent(new Event('touch'));
     expect(heard).toEqual([0, 1]);
   });

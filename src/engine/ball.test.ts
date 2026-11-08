@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { simulate, stepBall, type BallWorld } from './ball';
 
-const world = (pegs: BallWorld['pegs'] = []): BallWorld => ({ pegs, left: 0, right: 400, gravity: 900, bounce: 0.7 });
+const world = (pegs: BallWorld['pegs'] = []): BallWorld => ({
+  pegs,
+  left: 0,
+  right: 400,
+  gravity: 900,
+  bounce: 0.7,
+});
 
 describe('ball physics', () => {
   it('falls, bounces off a peg it lands on, and reports the hit once', () => {
@@ -24,7 +30,11 @@ describe('ball physics', () => {
   });
 
   it('is deterministic, so a preview matches the real shot', () => {
-    const pegs = [{ x: 180, y: 150, r: 15 }, { x: 230, y: 260, r: 15 }, { x: 160, y: 330, r: 15 }];
+    const pegs = [
+      { x: 180, y: 150, r: 15 },
+      { x: 230, y: 260, r: 15 },
+      { x: 160, y: 330, r: 15 },
+    ];
     const a = simulate({ x: 200, y: 0, vx: 30, vy: 0, r: 10 }, world(pegs), 500);
     const b = simulate({ x: 200, y: 0, vx: 30, vy: 0, r: 10 }, world(pegs), 500);
     expect(a).toEqual(b);

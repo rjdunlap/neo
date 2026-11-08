@@ -20,12 +20,109 @@ import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
-import { bagArt, bellArt, buildButtonArt, cellArt, hallArt, labelArt, rowArt, ruinCellArt, yearBarArt, doorArt, figureArt, fixedArt, frontArt, iconArt, keepArt, needArt, roomArt, spotArt, steamArt, stickerArt, tileArt, wellArt } from './art';
+import {
+  bagArt,
+  bellArt,
+  buildButtonArt,
+  cellArt,
+  hallArt,
+  labelArt,
+  rowArt,
+  ruinCellArt,
+  yearBarArt,
+  doorArt,
+  figureArt,
+  fixedArt,
+  frontArt,
+  iconArt,
+  keepArt,
+  needArt,
+  roomArt,
+  spotArt,
+  steamArt,
+  stickerArt,
+  tileArt,
+  wellArt,
+} from './art';
 import {
   LEVELS,
-  account, askBuild, decidingClue as decidingClueOf, askRuin, BUILDS_ORDER, buildTally, cost, fits, keepBuild, label, placeBuild, roomInCell, ruinDone, ruinHint, ruinTally, spareLabel, startBuild, startRuin, YEAR_STEP,
-  allPlaced, askPlacement, askPlan, askYard, briefFor, CELL, centre, doorsDone, drop, fixedRect, glowTarget, hintFor, keep, keepLayout, movePlan, NEEDS, nextDoor, place, PLAN_ROOMS, planFor, planTally, ringBell, solutions, SPOT, spotRects, startDoors, startPlacement, startPlan, startYard, stepsTo, tapDoor, tapWell, TILE, walkTally, workplaceOf, yardDone, yardTally,
-  type Board, type Brief, type Build, type BuildState, type Hall, type Ruin, type RuinState, type Situation, type DoorsState, type Figure, type KeepLayout, type Move, type Person, type Placement, type PlacementState, type PlanRoom, type PlanState, type Rect, type Room, type Spot, type YardState,
+  account,
+  askBuild,
+  decidingClue as decidingClueOf,
+  askRuin,
+  BUILDS_ORDER,
+  buildTally,
+  cost,
+  fits,
+  keepBuild,
+  label,
+  placeBuild,
+  roomInCell,
+  ruinDone,
+  ruinHint,
+  ruinTally,
+  spareLabel,
+  startBuild,
+  startRuin,
+  YEAR_STEP,
+  allPlaced,
+  askPlacement,
+  askPlan,
+  askYard,
+  briefFor,
+  CELL,
+  centre,
+  doorsDone,
+  drop,
+  fixedRect,
+  glowTarget,
+  hintFor,
+  keep,
+  keepLayout,
+  movePlan,
+  NEEDS,
+  nextDoor,
+  place,
+  PLAN_ROOMS,
+  planFor,
+  planTally,
+  ringBell,
+  solutions,
+  SPOT,
+  spotRects,
+  startDoors,
+  startPlacement,
+  startPlan,
+  startYard,
+  stepsTo,
+  tapDoor,
+  tapWell,
+  TILE,
+  walkTally,
+  workplaceOf,
+  yardDone,
+  yardTally,
+  type Board,
+  type Brief,
+  type Build,
+  type BuildState,
+  type Hall,
+  type Ruin,
+  type RuinState,
+  type Situation,
+  type DoorsState,
+  type Figure,
+  type KeepLayout,
+  type Move,
+  type Person,
+  type Placement,
+  type PlacementState,
+  type PlanRoom,
+  type PlanState,
+  type Rect,
+  type Room,
+  type Spot,
+  type YardState,
 } from './logic';
 
 /** A closed door glows after this long with no tap (entry guidance; it records nothing). */
@@ -45,13 +142,20 @@ const AT_WORK_SOUND: Record<Figure, () => void> = {
   hens: () => sfx.animal('cluck'),
 };
 /** Who comes back for a moment when a ruin's room is named. */
-const RUIN_FIGURE: Record<PlanRoom, Figure> = { hall: 'ringer', kitchen: 'cook', stable: 'horse', storeroom: 'steward', solar: 'groom' };
+const RUIN_FIGURE: Record<PlanRoom, Figure> = {
+  hall: 'ringer',
+  kitchen: 'cook',
+  stable: 'horse',
+  storeroom: 'steward',
+  solar: 'groom',
+};
 /** The lords of level 6, island critters. */
 const LORDS: (keyof typeof CRITTERS)[] = ['bunny', 'bear', 'pig', 'cow', 'cat', 'duck'];
 /** The castle's own bell, step by step, as the Finish sound. */
 const BELL_STEPS = [4, 7, 9];
 
-const contains = (r: Rect, x: number, y: number, pad = 0) => x >= r.x - pad && x <= r.x + r.w + pad && y >= r.y - pad && y <= r.y + r.h + pad;
+const contains = (r: Rect, x: number, y: number, pad = 0) =>
+  x >= r.x - pad && x <= r.x + r.w + pad && y >= r.y - pad && y <= r.y + r.h + pad;
 
 class KeepHouse implements Game {
   readonly brief: Brief;
@@ -124,7 +228,17 @@ class KeepHouse implements Game {
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.brief = briefFor(ctx.level, ctx.band, ctx.rng);
-    this.backdrop = new Backdrop({ sky: [0xd6ecf7, 0xfff6e0], hills: [0xb9dc9a, 0xa3cf85, 0x8fc277], horizon: 0.38, clouds: 2, sun: true, seed: 311 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0xd6ecf7, 0xfff6e0],
+        hills: [0xb9dc9a, 0xa3cf85, 0x8fc277],
+        horizon: 0.38,
+        clouds: 2,
+        sun: true,
+        seed: 311,
+      },
+      ctx.view,
+    );
     this.glow.eventMode = 'none';
     this.walkLayer.eventMode = 'none';
     ctx.stage.addChild(this.backdrop, this.board);
@@ -207,7 +321,10 @@ class KeepHouse implements Game {
     this.view = v;
     this.backdrop.resize(v);
     if (!this.layoutNow) return;
-    if (this.busy || this.finished || this.held || this.heldRoom || this.tileHeld || this.heldLabel) { this.relayout = true; return; }
+    if (this.busy || this.finished || this.held || this.heldRoom || this.tileHeld || this.heldLabel) {
+      this.relayout = true;
+      return;
+    }
     this.build();
   }
 
@@ -268,7 +385,8 @@ class KeepHouse implements Game {
   private buildDoors(l: KeepLayout) {
     const b = this.brief as { doors: Person[] };
     const doors = l.doors!;
-    const first = doors[0], last = doors[doors.length - 1];
+    const first = doors[0],
+      last = doors[doors.length - 1];
     const wallX = Math.min(first.x, l.well!.x) - 110;
     const wallW = Math.max(last.x + last.w, l.well!.x + l.well!.w) + 110 - wallX;
     const front = frontArt(wallW, first.h + 120);
@@ -291,7 +409,9 @@ class KeepHouse implements Game {
     this.wellNode = well;
     this.redrawDoors();
     // People already out stand in front of their doors.
-    this.doors!.opened.forEach((open, i) => { if (open) this.standOut(i, b.doors[i]); });
+    this.doors!.opened.forEach((open, i) => {
+      if (open) this.standOut(i, b.doors[i]);
+    });
   }
 
   private buildYard(l: KeepLayout) {
@@ -322,7 +442,10 @@ class KeepHouse implements Game {
       node.hitArea = new Rectangle(-s.w / 2 - 6, -s.h - 6, s.w + 12, s.h + 12);
       this.board.addChild(node);
       const drag = draggable(node, this.ctx.tw, {
-        onPick: () => { this.held = figure; this.idle = 0; },
+        onPick: () => {
+          this.held = figure;
+          this.idle = 0;
+        },
         onDrop: (x, y) => this.dropFigure(figure, x, y),
       });
       this.figureNodes.set(figure, { node, drag });
@@ -355,7 +478,10 @@ class KeepHouse implements Game {
     this.board.addChild(tile);
     this.tileNode = tile;
     this.tileDrag = draggable(tile, this.ctx.tw, {
-      onPick: () => { this.tileHeld = true; this.redrawSpots(); },
+      onPick: () => {
+        this.tileHeld = true;
+        this.redrawSpots();
+      },
       onMove: () => this.redrawSpots(),
       onDrop: (x, y) => this.dropTile(x, y),
     });
@@ -404,7 +530,10 @@ class KeepHouse implements Game {
       node.position.copyFrom(this.tileHome(room));
       this.board.addChild(node);
       const drag = draggable(node, this.ctx.tw, {
-        onPick: () => { this.heldRoom = room; this.redrawCells(); },
+        onPick: () => {
+          this.heldRoom = room;
+          this.redrawCells();
+        },
         onMove: () => this.redrawCells(),
         onDrop: (x, y) => this.dropRoom(room, x, y),
       });
@@ -493,7 +622,9 @@ class KeepHouse implements Game {
     if (!l?.cards) return;
     this.cardNodes.forEach((node, i) => {
       for (const ch of node.removeChildren()) ch.destroy({ children: true });
-      node.addChild(needArt(i + 1, l.cards![i].w, l.cards![i].h, this.verdict ? (this.verdict.get(i + 1) ?? null) : null));
+      node.addChild(
+        needArt(i + 1, l.cards![i].w, l.cards![i].h, this.verdict ? (this.verdict.get(i + 1) ?? null) : null),
+      );
     });
   }
 
@@ -517,7 +648,12 @@ class KeepHouse implements Game {
       const home = this.tileHome(room);
       t.drag.home = home;
       if (t.node.x !== home.x || t.node.y !== home.y) {
-        if (animated) void this.ctx.tw.to(t.node.position, { x: home.x, y: home.y }, { duration: 0.3, ease: ease.outQuad });
+        if (animated)
+          void this.ctx.tw.to(
+            t.node.position,
+            { x: home.x, y: home.y },
+            { duration: 0.3, ease: ease.outQuad },
+          );
         else t.node.position.set(home.x, home.y);
       }
     }
@@ -537,7 +673,12 @@ class KeepHouse implements Game {
     const b = this.brief as { doors: Person[] };
     if (this.doors.opened[i]) {
       const p = this.peopleOut[i];
-      if (p) { sfx.pop(9); void this.ctx.tw.to(p, { rotation: -0.15 }, { duration: 0.12 }).then(() => this.ctx.tw.to(p, { rotation: 0 }, { duration: 0.2, ease: ease.outBack })); }
+      if (p) {
+        sfx.pop(9);
+        void this.ctx.tw
+          .to(p, { rotation: -0.15 }, { duration: 0.12 })
+          .then(() => this.ctx.tw.to(p, { rotation: 0 }, { duration: 0.2, ease: ease.outBack }));
+      }
       return;
     }
     this.doors = tapDoor(this.doors, i);
@@ -563,7 +704,10 @@ class KeepHouse implements Game {
     sfx.splash();
     this.redrawDoors();
     const w = this.wellNode;
-    if (w) { w.scale.y = 0.95; void this.ctx.tw.to(w.scale, { y: 1 }, { duration: 0.25, ease: ease.outBack }); }
+    if (w) {
+      w.scale.y = 0.95;
+      void this.ctx.tw.to(w.scale, { y: 1 }, { duration: 0.25, ease: ease.outBack });
+    }
   }
 
   /** Every door is open: the people wave together, then the round finishes. */
@@ -572,7 +716,11 @@ class KeepHouse implements Game {
     this.busy = true;
     await this.ctx.tw.wait(0.5);
     if (!this.live(epoch)) return;
-    for (const p of this.peopleOut) if (p) void this.ctx.tw.to(p, { rotation: -0.12 }, { duration: 0.15 }).then(() => this.ctx.tw.to(p, { rotation: 0 }, { duration: 0.25, ease: ease.outBack }));
+    for (const p of this.peopleOut)
+      if (p)
+        void this.ctx.tw
+          .to(p, { rotation: -0.12 }, { duration: 0.15 })
+          .then(() => this.ctx.tw.to(p, { rotation: 0 }, { duration: 0.25, ease: ease.outBack }));
     sfx.giggle();
     await this.ctx.tw.wait(0.5);
     if (!this.live(epoch)) return;
@@ -587,15 +735,25 @@ class KeepHouse implements Game {
     if (!l?.rooms || this.finished) return false;
     const yb = this.yardBrief;
     const i = l.rooms.findIndex((r) => contains(r, x, y + 50, 10));
-    if (i < 0) { this.redrawRooms(); return false; }
+    if (i < 0) {
+      this.redrawRooms();
+      return false;
+    }
     const room = yb.rooms[i];
     const r = drop(yb, this.yard, figure, room);
     this.yards[this.yardIndex] = r.state;
-    if (r.taken) { void this.walkIn(figure, i); return true; }
+    if (r.taken) {
+      void this.walkIn(figure, i);
+      return true;
+    }
     sfx.boing();
-    void this.ctx.say(`kh.wrong.${figure}` as LineId).then(() => { if (r.glowed && this.alive) void this.ctx.say('kh.glow'); });
+    void this.ctx.say(`kh.wrong.${figure}` as LineId).then(() => {
+      if (r.glowed && this.alive) void this.ctx.say('kh.glow');
+    });
     const node = this.roomNodes[i];
-    void this.ctx.tw.to(node, { rotation: 0.04 }, { duration: 0.08 }).then(() => this.ctx.tw.to(node, { rotation: 0 }, { duration: 0.25, ease: ease.outElastic }));
+    void this.ctx.tw
+      .to(node, { rotation: 0.04 }, { duration: 0.08 })
+      .then(() => this.ctx.tw.to(node, { rotation: 0 }, { duration: 0.25, ease: ease.outElastic }));
     this.redrawRooms();
     return false;
   }
@@ -610,10 +768,15 @@ class KeepHouse implements Game {
     f.drag.enabled = false;
     f.node.eventMode = 'none';
     // One walk at a time: the other figures wait until this one is at work.
-    for (const [other, o] of this.figureNodes) if (other !== figure && !this.yard.placed[other]) o.drag.enabled = false;
+    for (const [other, o] of this.figureNodes)
+      if (other !== figure && !this.yard.placed[other]) o.drag.enabled = false;
     const r = l.rooms[roomIndex];
     sfx.pluck(6);
-    await this.ctx.tw.to(f.node.position, { x: r.x + r.w / 2, y: r.y + r.h - 14 }, { duration: this.ctx.demo ? 0.3 : 0.5, ease: ease.inOutSine });
+    await this.ctx.tw.to(
+      f.node.position,
+      { x: r.x + r.w / 2, y: r.y + r.h - 14 },
+      { duration: this.ctx.demo ? 0.3 : 0.5, ease: ease.inOutSine },
+    );
     if (!this.live(epoch)) return;
     for (const c of f.node.removeChildren()) c.destroy({ children: true });
     f.node.addChild(figureArt(figure, true));
@@ -628,7 +791,10 @@ class KeepHouse implements Game {
     }
     await this.ctx.tw.wait(1.2);
     if (!this.live(epoch)) return;
-    if (this.yardIndex + 1 >= this.yards.length) { this.celebrate(); return; }
+    if (this.yardIndex + 1 >= this.yards.length) {
+      this.celebrate();
+      return;
+    }
     this.yardIndex++;
     this.busy = false;
     this.build();
@@ -640,7 +806,10 @@ class KeepHouse implements Game {
   private dropTile(x: number, y: number): boolean {
     this.tileHeld = false;
     const l = this.layoutNow;
-    if (!l?.yard || this.finished || this.placement.done) { this.redrawSpots(); return false; }
+    if (!l?.yard || this.finished || this.placement.done) {
+      this.redrawSpots();
+      return false;
+    }
     const spots = spotRects(this.placementBrief, l.yard);
     const spot = (['near', 'far'] as const).find((s) => contains(spots[s], x, y, 30));
     this.redrawSpots();
@@ -679,20 +848,31 @@ class KeepHouse implements Game {
     this.walkLayer.addChild(walker);
     const steam = steamArt(true);
     steam.position.set(p.room === 'kitchen' ? 34 : 0, p.room === 'kitchen' ? -70 : -130);
-    if (p.room === 'kitchen') walker.addChild(steam); else steam.destroy();
+    if (p.room === 'kitchen') walker.addChild(steam);
+    else steam.destroy();
     const stepSeconds = this.ctx.demo ? 0.18 : 0.45;
     for (let s = 1; s <= steps; s++) {
       const k = s / steps;
       sfx.tick();
-      void this.ctx.tw.to(walker.scale, { y: 0.94 }, { duration: stepSeconds * 0.5 }).then(() => this.ctx.tw.to(walker.scale, { y: 1 }, { duration: stepSeconds * 0.5 }));
-      await this.ctx.tw.to(walker.position, { x: from.x + (dest.x - from.x) * k, y: from.y + (dest.y - from.y) * k }, { duration: stepSeconds, ease: ease.linear });
+      void this.ctx.tw
+        .to(walker.scale, { y: 0.94 }, { duration: stepSeconds * 0.5 })
+        .then(() => this.ctx.tw.to(walker.scale, { y: 1 }, { duration: stepSeconds * 0.5 }));
+      await this.ctx.tw.to(
+        walker.position,
+        { x: from.x + (dest.x - from.x) * k, y: from.y + (dest.y - from.y) * k },
+        { duration: stepSeconds, ease: ease.linear },
+      );
       if (!this.live(epoch)) return;
       // From the far spot the steam is gone by the second step.
-      if (!hot && s === 2 && p.room === 'kitchen') void this.ctx.tw.to(steam, { alpha: 0 }, { duration: stepSeconds });
+      if (!hot && s === 2 && p.room === 'kitchen')
+        void this.ctx.tw.to(steam, { alpha: 0 }, { duration: stepSeconds });
     }
     if (hot) {
       sfx.tada();
-      this.ctx.particles.burst(dest.x, dest.y - 80, { colors: [swatch.yellow.fill, swatch.orange.fill, 0xffffff], count: 12 });
+      this.ctx.particles.burst(dest.x, dest.y - 80, {
+        colors: [swatch.yellow.fill, swatch.orange.fill, 0xffffff],
+        count: 12,
+      });
       if (p.room === 'stable') AT_WORK_SOUND.horse();
       await this.ctx.say('kh.hot');
       if (!this.live(epoch)) return;
@@ -724,9 +904,13 @@ class KeepHouse implements Game {
   }
 
   keepIt() {
-    if (this.finished || this.busy || !this.keepShown || this.placement.done || this.placement.spot !== 'far') return;
+    if (this.finished || this.busy || !this.keepShown || this.placement.done || this.placement.spot !== 'far')
+      return;
     const k = this.keepNode;
-    if (k) { k.scale.set(0.94); void this.ctx.tw.to(k.scale, { x: 1, y: 1 }, { duration: 0.2, ease: ease.outBack }); }
+    if (k) {
+      k.scale.set(0.94);
+      void this.ctx.tw.to(k.scale, { x: 1, y: 1 }, { duration: 0.2, ease: ease.outBack });
+    }
     this.placements[this.placementIndex] = keep(this.placement);
     const now = this.placement;
     if (now.done) {
@@ -741,7 +925,10 @@ class KeepHouse implements Game {
   private async nextPlacement() {
     const epoch = this.epoch;
     this.tileDrag!.enabled = false;
-    if (this.placementIndex + 1 >= this.placements.length) { this.celebrate(); return; }
+    if (this.placementIndex + 1 >= this.placements.length) {
+      this.celebrate();
+      return;
+    }
     await this.ctx.tw.wait(0.6);
     if (!this.live(epoch)) return;
     this.placementIndex++;
@@ -757,12 +944,18 @@ class KeepHouse implements Game {
   private dropRoom(room: PlanRoom, x: number, y: number): boolean {
     this.heldRoom = null;
     const l = this.layoutNow;
-    if (!l?.cells || this.finished || this.plan.done) { this.redrawCells(); return false; }
+    if (!l?.cells || this.finished || this.plan.done) {
+      this.redrawCells();
+      return false;
+    }
     const c = l.cells.findIndex((r) => contains(r, x, y, 10));
     let move: Move | null = null;
     if (c >= 0 && c !== this.boardNow.well && c !== this.boardNow.gate) move = { room, to: c };
     else if (c < 0 && l.tray!.some((r) => contains(r, x, y, 60))) move = { room, to: 'tray' };
-    if (!move) { this.settleTiles(); return false; }
+    if (!move) {
+      this.settleTiles();
+      return false;
+    }
     this.plans[this.planIndex] = movePlan(this.boardNow, this.plan, move);
     this.verdict = null;
     this.redrawCards();
@@ -774,31 +967,50 @@ class KeepHouse implements Game {
   sayNeed(i: number) {
     if (this.finished) return;
     const node = this.cardNodes[i - 1];
-    if (node) { node.scale.set(0.96); void this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.2, ease: ease.outBack }); }
+    if (node) {
+      node.scale.set(0.96);
+      void this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.2, ease: ease.outBack });
+    }
     void this.ctx.say(`kh.need.${i}` as LineId);
   }
 
   ring() {
     if (this.finished || this.busy || this.plan.done) return;
     const bell = this.bellNode;
-    if (bell) { bell.rotation = -0.12; void this.ctx.tw.to(bell, { rotation: 0 }, { duration: 0.35, ease: ease.outElastic }); }
+    if (bell) {
+      bell.rotation = -0.12;
+      void this.ctx.tw.to(bell, { rotation: 0 }, { duration: 0.35, ease: ease.outElastic });
+    }
     const r = ringBell(this.boardNow, this.plan);
     this.plans[this.planIndex] = r.state;
     if (r.empty) {
       sfx.shake();
       void this.ctx.say('kh.tray');
-      for (const [room, t] of this.planTiles) if (this.plan.layout[room] === undefined) void this.ctx.tw.to(t.node, { rotation: 0.08 }, { duration: 0.08 }).then(() => this.ctx.tw.to(t.node, { rotation: 0 }, { duration: 0.3, ease: ease.outElastic }));
+      for (const [room, t] of this.planTiles)
+        if (this.plan.layout[room] === undefined)
+          void this.ctx.tw
+            .to(t.node, { rotation: 0.08 }, { duration: 0.08 })
+            .then(() => this.ctx.tw.to(t.node, { rotation: 0 }, { duration: 0.3, ease: ease.outElastic }));
       return;
     }
     this.verdict = new Map(NEEDS.map((n) => [n.index, !r.unmet.includes(n)]));
     this.redrawCards();
-    if (r.unmet.length === 0) { void this.moveIn(); return; }
-    sfx.boing();
-    for (const need of r.unmet) for (const room of need.rooms) {
-      const t = this.planTiles.get(room);
-      if (t) void this.ctx.tw.to(t.node, { rotation: 0.1 }, { duration: 0.08 }).then(() => this.ctx.tw.to(t.node, { rotation: 0 }, { duration: 0.35, ease: ease.outElastic }));
+    if (r.unmet.length === 0) {
+      void this.moveIn();
+      return;
     }
-    void this.ctx.say(`kh.unmet.${r.unmet[0].index}` as LineId).then(() => { if (r.glowed && this.alive) void this.ctx.say('kh.glow'); });
+    sfx.boing();
+    for (const need of r.unmet)
+      for (const room of need.rooms) {
+        const t = this.planTiles.get(room);
+        if (t)
+          void this.ctx.tw
+            .to(t.node, { rotation: 0.1 }, { duration: 0.08 })
+            .then(() => this.ctx.tw.to(t.node, { rotation: 0 }, { duration: 0.35, ease: ease.outElastic }));
+      }
+    void this.ctx.say(`kh.unmet.${r.unmet[0].index}` as LineId).then(() => {
+      if (r.glowed && this.alive) void this.ctx.say('kh.glow');
+    });
     this.redrawCells();
   }
 
@@ -811,9 +1023,17 @@ class KeepHouse implements Game {
     for (const t of this.planTiles.values()) t.drag.enabled = false;
     this.redrawBell();
     this.redrawCells();
-    for (const [i, step] of BELL_STEPS.entries()) { void this.ctx.tw.wait(i * 0.25).then(() => { if (this.alive) sfx.bell(step, 0.35); }); }
+    for (const [i, step] of BELL_STEPS.entries()) {
+      void this.ctx.tw.wait(i * 0.25).then(() => {
+        if (this.alive) sfx.bell(step, 0.35);
+      });
+    }
     void this.ctx.say('kh.plan-done');
-    const who: [Figure, PlanRoom][] = [['cook', 'kitchen'], ['horse', 'stable'], ['steward', 'storeroom']];
+    const who: [Figure, PlanRoom][] = [
+      ['cook', 'kitchen'],
+      ['horse', 'stable'],
+      ['steward', 'storeroom'],
+    ];
     const gate = l.cells[this.boardNow.gate];
     for (const [figure, room] of who) {
       const c = this.plan.layout[room]!;
@@ -822,14 +1042,24 @@ class KeepHouse implements Game {
       f.scale.set(0.55);
       f.position.set(gate.x + gate.w / 2, gate.y + gate.h - 8);
       this.walkLayer.addChild(f);
-      void this.ctx.tw.to(f.position, { x: r.x + r.w / 2, y: r.y + r.h - 8 }, { duration: this.ctx.demo ? 0.4 : 0.8, ease: ease.inOutSine });
+      void this.ctx.tw.to(
+        f.position,
+        { x: r.x + r.w / 2, y: r.y + r.h - 8 },
+        { duration: this.ctx.demo ? 0.4 : 0.8, ease: ease.inOutSine },
+      );
     }
     await this.ctx.tw.wait(this.ctx.demo ? 0.6 : 1.3);
     if (!this.live(epoch)) return;
-    this.ctx.particles.burst(l.cells[4].x + CELL / 2, l.cells[4].y, { colors: [swatch.yellow.fill, swatch.green.fill, 0xffffff], count: 14 });
+    this.ctx.particles.burst(l.cells[4].x + CELL / 2, l.cells[4].y, {
+      colors: [swatch.yellow.fill, swatch.green.fill, 0xffffff],
+      count: 14,
+    });
     await this.ctx.tw.wait(0.5);
     if (!this.live(epoch)) return;
-    if (this.planIndex + 1 >= this.plans.length) { this.celebrate(); return; }
+    if (this.planIndex + 1 >= this.plans.length) {
+      this.celebrate();
+      return;
+    }
     this.planIndex++;
     this.verdict = null;
     this.busy = false;
@@ -880,11 +1110,15 @@ class KeepHouse implements Game {
       for (const ch of node.removeChildren()) ch.destroy({ children: true });
       const at = roomInCell(ruin, c);
       if (!at) {
-        node.addChild(cellArt(CELL, c === ruin.board.well ? 'well' : c === ruin.board.gate ? 'gate' : 'ground'));
+        node.addChild(
+          cellArt(CELL, c === ruin.board.well ? 'well' : c === ruin.board.gate ? 'gate' : 'ground'),
+        );
         return;
       }
       const lit = !!held && contains(l.cells![c], held.x, held.y, 10);
-      node.addChild(ruinCellArt(CELL, at.shown, lit, hint && !hint.spare && hint.cell === c ? hint.clue : null));
+      node.addChild(
+        ruinCellArt(CELL, at.shown, lit, hint && !hint.spare && hint.cell === c ? hint.clue : null),
+      );
       if (this.ruin.settled.includes(at.room)) {
         const tag = labelArt(at.room, 50);
         tag.position.set(CELL - 26, 26);
@@ -928,21 +1162,34 @@ class KeepHouse implements Game {
   private dropLabel(room: PlanRoom, x: number, y: number): boolean {
     this.heldLabel = null;
     const l = this.layoutNow;
-    if (!l?.cells || this.finished || this.busy) { this.redrawRuin(); return false; }
+    if (!l?.cells || this.finished || this.busy) {
+      this.redrawRuin();
+      return false;
+    }
     const c = l.cells.findIndex((r) => contains(r, x, y, 10));
-    if (c < 0) { this.redrawRuin(); return false; }
+    if (c < 0) {
+      this.redrawRuin();
+      return false;
+    }
     const r = label(this.ruinBrief, this.ruin, room, c);
     this.ruins[this.ruinIndex] = r.state;
-    if (r.settled) { void this.settleLabel(room, c); return true; }
+    if (r.settled) {
+      void this.settleLabel(room, c);
+      return true;
+    }
     this.redrawRuin();
     if (!r.missed) return false;
     sfx.boing();
     const node = this.ruinCells[c];
-    void this.ctx.tw.to(node, { x: node.x + 8 }, { duration: 0.06 }).then(() => this.ctx.tw.to(node, { x: l.cells![c].x }, { duration: 0.3, ease: ease.outElastic }));
+    void this.ctx.tw
+      .to(node, { x: node.x + 8 }, { duration: 0.06 })
+      .then(() => this.ctx.tw.to(node, { x: l.cells![c].x }, { duration: 0.3, ease: ease.outElastic }));
     const epoch = this.epoch;
     void this.ctx.say('kh.has').then(() => {
       if (!this.live(epoch)) return;
-      return this.ctx.say(`kh.clue.${r.clue}` as LineId).then(() => { if (r.glowed && this.live(epoch)) void this.ctx.say('kh.glow-clue'); });
+      return this.ctx.say(`kh.clue.${r.clue}` as LineId).then(() => {
+        if (r.glowed && this.live(epoch)) void this.ctx.say('kh.glow-clue');
+      });
     });
     return false;
   }
@@ -985,7 +1232,10 @@ class KeepHouse implements Game {
       return;
     }
     // The household walks back into every room for a moment, then the ruin is quiet again.
-    for (const [i, step] of BELL_STEPS.entries()) void this.ctx.tw.wait(i * 0.25).then(() => { if (this.alive) sfx.bell(step, 0.35); });
+    for (const [i, step] of BELL_STEPS.entries())
+      void this.ctx.tw.wait(i * 0.25).then(() => {
+        if (this.alive) sfx.bell(step, 0.35);
+      });
     for (const rr of this.ruinBrief.rooms) {
       const cell = l.cells![rr.cell];
       const f = figureArt(RUIN_FIGURE[rr.room], true);
@@ -997,7 +1247,10 @@ class KeepHouse implements Game {
     if (!this.live(epoch)) return;
     await this.ctx.tw.wait(this.ctx.demo ? 0.3 : 0.6);
     if (!this.live(epoch)) return;
-    if (this.ruinIndex + 1 >= this.ruins.length) { this.celebrate(); return; }
+    if (this.ruinIndex + 1 >= this.ruins.length) {
+      this.celebrate();
+      return;
+    }
     this.ruinIndex++;
     this.looked = false;
     this.busy = false;
@@ -1047,12 +1300,16 @@ class KeepHouse implements Game {
     this.rowNodes.forEach((node, i) => {
       for (const ch of node.removeChildren()) ch.destroy({ children: true });
       const b = BUILDS_ORDER[i];
-      node.addChild(rowArt(b, l.rows![i].w, l.rows![i].h, this.lifted === b, s.hinted && b === want && !this.busy));
+      node.addChild(
+        rowArt(b, l.rows![i].w, l.rows![i].h, this.lifted === b, s.hinted && b === want && !this.busy),
+      );
       node.y = centre(l.rows![i]).y - (this.lifted === b ? 6 : 0);
     });
     if (this.buildNode) {
       for (const ch of this.buildNode.removeChildren()) ch.destroy({ children: true });
-      this.buildNode.addChild(buildButtonArt(l.build!.w, l.build!.h, !!this.lifted && !s.done && !this.busy, s.choice !== null));
+      this.buildNode.addChild(
+        buildButtonArt(l.build!.w, l.build!.h, !!this.lifted && !s.done && !this.busy, s.choice !== null),
+      );
     }
   }
 
@@ -1084,10 +1341,17 @@ class KeepHouse implements Game {
       const per = barW / sit.years;
       const y = l.lord.y + 110;
       if (this.lifted === 'timber') {
-        for (let t = 0; t < sit.years; t += 15) g.roundRect(bx + t * per + 2, y, Math.min(15, sit.years - t) * per - 4, 16, 6).fill(0xc8935a).stroke({ width: 2, color: 0x7a5530 });
+        for (let t = 0; t < sit.years; t += 15)
+          g.roundRect(bx + t * per + 2, y, Math.min(15, sit.years - t) * per - 4, 16, 6)
+            .fill(0xc8935a)
+            .stroke({ width: 2, color: 0x7a5530 });
       } else {
-        g.roundRect(bx + 2, y, 8 * per - 4, 16, 6).fill(0xd9b36a).stroke({ width: 2, color: 0x9c7a35 });
-        g.roundRect(bx + 8 * per + 2, y, (sit.years - 8) * per - 4, 16, 6).fill(0xc9c3b8).stroke({ width: 2, color: 0x8a837a });
+        g.roundRect(bx + 2, y, 8 * per - 4, 16, 6)
+          .fill(0xd9b36a)
+          .stroke({ width: 2, color: 0x9c7a35 });
+        g.roundRect(bx + 8 * per + 2, y, (sit.years - 8) * per - 4, 16, 6)
+          .fill(0xc9c3b8)
+          .stroke({ width: 2, color: 0x8a837a });
       }
       this.strip.addChild(g);
     }
@@ -1133,11 +1397,17 @@ class KeepHouse implements Game {
   doBuild() {
     if (this.finished || this.busy || this.buildState.done) return;
     const node = this.buildNode;
-    if (node) { node.scale.set(0.94); void this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.2, ease: ease.outBack }); }
+    if (node) {
+      node.scale.set(0.94);
+      void this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.2, ease: ease.outBack });
+    }
     if (!this.lifted) {
       sfx.shake();
       void this.ctx.say('kh.pick-build');
-      for (const r of this.rowNodes) void this.ctx.tw.to(r, { rotation: 0.05 }, { duration: 0.08 }).then(() => this.ctx.tw.to(r, { rotation: 0 }, { duration: 0.3, ease: ease.outElastic }));
+      for (const r of this.rowNodes)
+        void this.ctx.tw
+          .to(r, { rotation: 0.05 }, { duration: 0.08 })
+          .then(() => this.ctx.tw.to(r, { rotation: 0 }, { duration: 0.3, ease: ease.outElastic }));
       return;
     }
     this.builds[this.buildIndex] = placeBuild(this.situation, this.buildState, this.lifted);
@@ -1145,9 +1415,13 @@ class KeepHouse implements Game {
   }
 
   keepBuildIt() {
-    if (this.finished || this.busy || !this.keepShown || this.buildState.done || !this.buildState.choice) return;
+    if (this.finished || this.busy || !this.keepShown || this.buildState.done || !this.buildState.choice)
+      return;
     const k = this.keepNode;
-    if (k) { k.scale.set(0.94); void this.ctx.tw.to(k.scale, { x: 1, y: 1 }, { duration: 0.2, ease: ease.outBack }); }
+    if (k) {
+      k.scale.set(0.94);
+      void this.ctx.tw.to(k.scale, { x: 1, y: 1 }, { duration: 0.2, ease: ease.outBack });
+    }
     this.builds[this.buildIndex] = keepBuild(this.situation, this.buildState);
     this.lifted = this.buildState.choice;
     void this.playYears(this.buildState.choice!);
@@ -1186,7 +1460,10 @@ class KeepHouse implements Game {
     if (s.done && s.choice === want) {
       sfx.tada();
       const l = this.layoutNow!;
-      this.ctx.particles.burst(l.site!.x + l.site!.w / 2, l.site!.y + 60, { colors: [swatch.yellow.fill, swatch.green.fill, 0xffffff], count: 14 });
+      this.ctx.particles.burst(l.site!.x + l.site!.w / 2, l.site!.y + 60, {
+        colors: [swatch.yellow.fill, swatch.green.fill, 0xffffff],
+        count: 14,
+      });
       for (const [i, f] of (['cook', 'steward', 'ringer'] as Figure[]).entries()) {
         const a = figureArt(f, true);
         a.scale.set(0.55);
@@ -1225,7 +1502,10 @@ class KeepHouse implements Game {
 
   private async nextSituation() {
     const epoch = this.epoch;
-    if (this.buildIndex + 1 >= this.builds.length) { this.celebrate(); return; }
+    if (this.buildIndex + 1 >= this.builds.length) {
+      this.celebrate();
+      return;
+    }
     await this.ctx.tw.wait(this.ctx.demo ? 0.3 : 0.8);
     if (!this.live(epoch)) return;
     this.buildIndex++;
@@ -1260,7 +1540,10 @@ class KeepHouse implements Game {
   /** The pet's Help: at level 1 the ask again (free); at levels 2–4 the glow, the part's one hint if not yet spent. */
   askForHint() {
     if (this.finished) return;
-    if (this.brief.id === 'doors') { void this.ctx.instruct('kh.instruct.1'); return; }
+    if (this.brief.id === 'doors') {
+      void this.ctx.instruct('kh.instruct.1');
+      return;
+    }
     if (this.busy) return;
     if (this.brief.id === 'workplaces') {
       this.yards[this.yardIndex] = askYard(this.yard);
@@ -1294,7 +1577,16 @@ class KeepHouse implements Game {
 
   update(dt: number) {
     this.clock += dt;
-    if (this.relayout && !this.busy && !this.finished && !this.held && !this.heldRoom && !this.tileHeld && !this.heldLabel) this.build();
+    if (
+      this.relayout &&
+      !this.busy &&
+      !this.finished &&
+      !this.held &&
+      !this.heldRoom &&
+      !this.tileHeld &&
+      !this.heldLabel
+    )
+      this.build();
     if (this.brief.id === 'doors' && this.doors && !this.busy && !this.finished) {
       const was = this.idle >= IDLE_GLOW;
       this.idle += dt;
@@ -1303,7 +1595,10 @@ class KeepHouse implements Game {
     this.glow.clear();
     if (this.finished || !this.layoutNow || this.busy) return;
     const r = 1 + 0.05 * Math.sin(this.clock * 5);
-    const ring = (rect: Rect, pad: number) => this.glow.roundRect(rect.x - pad * r, rect.y - pad * r, rect.w + 2 * pad * r, rect.h + 2 * pad * r, 26).stroke({ width: 8, color: swatch.yellow.fill });
+    const ring = (rect: Rect, pad: number) =>
+      this.glow
+        .roundRect(rect.x - pad * r, rect.y - pad * r, rect.w + 2 * pad * r, rect.h + 2 * pad * r, 26)
+        .stroke({ width: 8, color: swatch.yellow.fill });
     if (this.brief.id === 'plan' && this.plan.hinted && !this.plan.done) {
       const h = hintFor(this.boardNow, this.plan.layout);
       if (h) {
@@ -1323,8 +1618,12 @@ class KeepHouse implements Game {
       const next = nextDoor(this.doors);
       if (next === null) return null;
       const left = this.doors.opened.filter((o) => !o).length;
-      if (!this.wellTapped && left === 1 && this.wellNode) return { tap: { on: this.wellNode, y: -l.well!.h / 2 }, pause: 0.8 };
-      return { tap: { on: this.doorNodes[next], x: l.doors![next].w / 2, y: l.doors![next].h / 2 }, pause: 1.0 };
+      if (!this.wellTapped && left === 1 && this.wellNode)
+        return { tap: { on: this.wellNode, y: -l.well!.h / 2 }, pause: 0.8 };
+      return {
+        tap: { on: this.doorNodes[next], x: l.doors![next].w / 2, y: l.doors![next].h / 2 },
+        pause: 1.0,
+      };
     }
     if (this.brief.id === 'workplaces') {
       const yb = this.yardBrief;
@@ -1333,7 +1632,11 @@ class KeepHouse implements Game {
       const f = this.figureNodes.get(figure);
       const i = yb.rooms.indexOf(workplaceOf(figure));
       if (!f || i < 0) return null;
-      return { drag: { on: f.node, y: -60 }, to: { on: this.roomNodes[i], x: l.rooms![i].w / 2, y: l.rooms![i].h / 2 }, pause: 0.9 };
+      return {
+        drag: { on: f.node, y: -60 },
+        to: { on: this.roomNodes[i], x: l.rooms![i].w / 2, y: l.rooms![i].h / 2 },
+        pause: 0.9,
+      };
     }
     if (this.brief.id === 'walk') {
       if (this.placement.done || this.placement.spot || !this.tileNode || !this.spotNodes) return null;
@@ -1344,10 +1647,15 @@ class KeepHouse implements Game {
       const next = ruin.rooms.find((r) => !this.ruin.settled.includes(r.room));
       if (!next) return null;
       const i = ruin.rooms.indexOf(next);
-      if (!this.looked) return { tap: { on: this.ruinCells[next.cell], x: CELL / 2, y: CELL / 2 }, pause: 1.2 };
+      if (!this.looked)
+        return { tap: { on: this.ruinCells[next.cell], x: CELL / 2, y: CELL / 2 }, pause: 1.2 };
       const t = this.labelNodes.get(next.room);
       if (!t || i < 0) return null;
-      return { drag: { on: t.node }, to: { on: this.ruinCells[next.cell], x: CELL / 2, y: CELL / 2 }, pause: 0.8 };
+      return {
+        drag: { on: t.node },
+        to: { on: this.ruinCells[next.cell], x: CELL / 2, y: CELL / 2 },
+        pause: 0.8,
+      };
     }
     if (this.brief.id === 'build') {
       if (this.buildState.done || this.keepShown) return null;
@@ -1364,7 +1672,11 @@ class KeepHouse implements Game {
       if (this.plan.layout[room] === target[room]) continue;
       const t = this.planTiles.get(room);
       if (!t) return null;
-      return { drag: { on: t.node }, to: { on: this.cellNodes[target[room]!], x: CELL / 2, y: CELL / 2 }, pause: 0.6 };
+      return {
+        drag: { on: t.node },
+        to: { on: this.cellNodes[target[room]!], x: CELL / 2, y: CELL / 2 },
+        pause: 0.6,
+      };
     }
     return this.bellNode ? { tap: { on: this.bellNode }, pause: 0.6 } : null;
   }
@@ -1394,10 +1706,10 @@ export const keepHouse: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
-  coplayHint: 'Steward and mason: one of you says who comes out of each door or reads the needs aloud, the other places; swap after each plan.',
+  coplayHint:
+    'Steward and mason: one of you says who comes out of each door or reads the needs aloud, the other places; swap after each plan.',
   hubIcon: () => new CastleIcon(),
   touchDemo: true,
   sticker,
   create: (ctx) => new KeepHouse(ctx),
 };
-

@@ -2,7 +2,47 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { levelsInOrder, stepLevel } from '../../progress/difficulty';
 import { quickTricks } from './index';
-import { bumpLine, CROSSERS, castFor, friendsFor, GAP, GAPS, idleLeaves, judgeLeaf, leafDrop, leafMiss, leafPlan, leavesFor, makeSocks, makeTwoSocks, MONSTER_COLORS, nextLeaf, nextPlank, partnerOf, RAIN_FRIENDS, SOCK_COLORS, partnerSock, planFor, plankLengths, plankPlan, plankToPlace, PLANS, reaches, reachesGap, leafLands, sameSock, shelters, stillWet, stretchReaches, STRETCH_TO, tricksFor, TRICKS, twoPlankLengths, type LeafUp, type OnGaps } from './logic';
+import {
+  bumpLine,
+  CROSSERS,
+  castFor,
+  friendsFor,
+  GAP,
+  GAPS,
+  idleLeaves,
+  judgeLeaf,
+  leafDrop,
+  leafMiss,
+  leafPlan,
+  leavesFor,
+  makeSocks,
+  makeTwoSocks,
+  MONSTER_COLORS,
+  nextLeaf,
+  nextPlank,
+  partnerOf,
+  RAIN_FRIENDS,
+  SOCK_COLORS,
+  partnerSock,
+  planFor,
+  plankLengths,
+  plankPlan,
+  plankToPlace,
+  PLANS,
+  reaches,
+  reachesGap,
+  leafLands,
+  sameSock,
+  shelters,
+  stillWet,
+  stretchReaches,
+  STRETCH_TO,
+  tricksFor,
+  TRICKS,
+  twoPlankLengths,
+  type LeafUp,
+  type OnGaps,
+} from './logic';
 
 /** The first show's single-step levels, 1 to 3; Two at once (level 7) and A tiny show (level 8) are tested on their own. */
 const ONE = PLANS.filter((p) => !p.two && !p.tiny);
@@ -136,7 +176,15 @@ describe('Quick Tricks', () => {
       const leaves = leavesFor(TWO);
       // No leaf covers all three, the small leaf never covers two, and the wider leaf covers two only as the pair.
       const xs = Array.from({ length: 1201 }, (_, i) => i - 600);
-      const sets = (l: number) => new Set(xs.map((x) => friends.filter((f) => shelters(x, leaves[l], f)).map((f) => friends.indexOf(f)).join(',')));
+      const sets = (l: number) =>
+        new Set(
+          xs.map((x) =>
+            friends
+              .filter((f) => shelters(x, leaves[l], f))
+              .map((f) => friends.indexOf(f))
+              .join(','),
+          ),
+        );
       expect([...sets(0)].every((k) => k.split(',').filter(Boolean).length <= 1)).toBe(true);
       expect([...sets(1)].filter((k) => k.split(',').length === 2)).toEqual(['0,1']);
       const plan = leafPlan(TWO);
@@ -207,7 +255,10 @@ describe('Quick Tricks', () => {
         const sorted = [...lengths].sort((a, b) => a - b);
         const [short, middle, long] = sorted.map((l) => lengths.indexOf(l));
         expect(GAPS.every((g) => !reachesGap(lengths[short], g))).toBe(true);
-        expect([reachesGap(lengths[middle], GAPS[0]), reachesGap(lengths[middle], GAPS[1])]).toEqual([true, false]);
+        expect([reachesGap(lengths[middle], GAPS[0]), reachesGap(lengths[middle], GAPS[1])]).toEqual([
+          true,
+          false,
+        ]);
         expect(GAPS.every((g) => reachesGap(lengths[long], g))).toBe(true);
         expect(plankPlan(lengths)).toEqual([middle, long]);
         // The long plank on the narrow gap: the middle one bumps short of the wide gap, and the pet says the long one could move.
@@ -221,7 +272,8 @@ describe('Quick Tricks', () => {
       const lengths = twoPlankLengths(new Rng(3));
       // Every state the child can reach: each gap empty or holding a different plank that reaches it.
       const states: OnGaps[] = [];
-      for (const a of [null, 0, 1, 2]) for (const b of [null, 0, 1, 2]) if (a === null || b === null || a !== b) states.push([a, b]);
+      for (const a of [null, 0, 1, 2])
+        for (const b of [null, 0, 1, 2]) if (a === null || b === null || a !== b) states.push([a, b]);
       const valid = states.filter((s) => s.every((p, g) => p === null || reachesGap(lengths[p], GAPS[g])));
       expect(valid.length).toBeGreaterThan(3);
       for (const start of valid) {
@@ -285,7 +337,9 @@ describe('Quick Tricks', () => {
 
     it("the demonstration's moves finish both tricks", () => {
       const drop = leafDrop(TINY, top);
-      expect(leafLands(TINY, judgeLeaf(leavesFor(TINY)[drop.leaf], drop.x, drop.y, friendsFor(TINY), top, sky))).toBe('dry');
+      expect(
+        leafLands(TINY, judgeLeaf(leavesFor(TINY)[drop.leaf], drop.x, drop.y, friendsFor(TINY), top, sky)),
+      ).toBe('dry');
       expect(stretchReaches(TINY, STRETCH_TO)).toBe(true);
     });
 

@@ -49,9 +49,14 @@ export function friendsLayout(v: { w: number; h: number }, count: number, page: 
     // Two columns of three on the right, centred on the screen's height.
     const right = v.w - 40 - CARD / 2;
     const top = Math.max(BACK.y + BACK.r + CARD / 2, v.h / 2 - step);
-    for (let i = 0; i < shown; i++) cards.push({ x: right - (1 - (i % 2)) * step, y: top + Math.floor(i / 2) * step });
+    for (let i = 0; i < shown; i++)
+      cards.push({ x: right - (1 - (i % 2)) * step, y: top + Math.floor(i / 2) * step });
     const gridLeft = right - step - CARD / 2;
-    if (pages > 1) arrows = { previous: { x: gridLeft + CARD / 2, y: top + 3 * step - CARD / 2 + ARROW_RADIUS }, next: { x: right, y: top + 3 * step - CARD / 2 + ARROW_RADIUS } };
+    if (pages > 1)
+      arrows = {
+        previous: { x: gridLeft + CARD / 2, y: top + 3 * step - CARD / 2 + ARROW_RADIUS },
+        next: { x: right, y: top + 3 * step - CARD / 2 + ARROW_RADIUS },
+      };
     const mid = (gridLeft - 30) / 2;
     stage = { x: mid - 50, y: Math.min(v.h - 90, v.h * 0.74), scale: 0.9 };
     come = { x: Math.min(gridLeft - 40 - COME_RADIUS, mid + 160), y: stage.y - 70 };
@@ -59,8 +64,13 @@ export function friendsLayout(v: { w: number; h: number }, count: number, page: 
     // Three across the bottom, two rows.
     const bottom = v.h - 40 - CARD / 2 - (pages > 1 ? 2 * ARROW_RADIUS + 16 : 0);
     const rows = Math.ceil(shown / 3);
-    for (let i = 0; i < shown; i++) cards.push({ x: v.w / 2 + ((i % 3) - 1) * step, y: bottom - (rows - 1 - Math.floor(i / 3)) * step });
-    if (pages > 1) arrows = { previous: { x: v.w / 2 - step, y: v.h - 40 - ARROW_RADIUS }, next: { x: v.w / 2 + step, y: v.h - 40 - ARROW_RADIUS } };
+    for (let i = 0; i < shown; i++)
+      cards.push({ x: v.w / 2 + ((i % 3) - 1) * step, y: bottom - (rows - 1 - Math.floor(i / 3)) * step });
+    if (pages > 1)
+      arrows = {
+        previous: { x: v.w / 2 - step, y: v.h - 40 - ARROW_RADIUS },
+        next: { x: v.w / 2 + step, y: v.h - 40 - ARROW_RADIUS },
+      };
     const gridTop = bottom - (Math.max(rows, 2) - 1) * step - CARD / 2;
     // The friend stands in the middle of the space above the cards, a little larger: portrait has the height.
     stage = { x: v.w / 2 - 70, y: Math.min(gridTop - 40, (BACK.y + BACK.r + gridTop) / 2 + 130), scale: 1.1 };

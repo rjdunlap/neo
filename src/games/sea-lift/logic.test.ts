@@ -1,13 +1,51 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
-  AUTHORED, apply, cardAt, cardLayout, check, countAloud, crossesZero, giveHint, HOME_BOX, hintFor, howFarAnswer, howFarCards, LANDING,
-  level1, level2, level3, level4, level5, makeRound, MIN_PITCH, nearestLanding, numeral, path, PET_CORNER, pickOrder, roundState, sameSide,
-  shaftLayout, startStop, STOPS, stopName, type Box, type HowFar, type Item, type LevelId, type Twin,
+  AUTHORED,
+  apply,
+  cardAt,
+  cardLayout,
+  check,
+  countAloud,
+  crossesZero,
+  giveHint,
+  HOME_BOX,
+  hintFor,
+  howFarAnswer,
+  howFarCards,
+  LANDING,
+  level1,
+  level2,
+  level3,
+  level4,
+  level5,
+  makeRound,
+  MIN_PITCH,
+  nearestLanding,
+  numeral,
+  path,
+  PET_CORNER,
+  pickOrder,
+  roundState,
+  sameSide,
+  shaftLayout,
+  startStop,
+  STOPS,
+  stopName,
+  type Box,
+  type HowFar,
+  type Item,
+  type LevelId,
+  type Twin,
 } from './logic';
 
 const SEEDS = 500;
-const views = [{ w: 1024, h: 768 }, { w: 1024, h: 1365 }, { w: 1366, h: 768 }, { w: 1180, h: 768 }];
+const views = [
+  { w: 1024, h: 768 },
+  { w: 1024, h: 1365 },
+  { w: 1366, h: 768 },
+  { w: 1180, h: 768 },
+];
 
 /** Play a round straight through, tapping the right stop each time. */
 function solve(level: LevelId, items: Item[]) {
@@ -28,8 +66,14 @@ describe('stops', () => {
     expect(stopName(-2, true)).toBe('Two below the water');
     for (const s of STOPS) {
       expect(stopName(s)).not.toMatch(/minus|negative|-|−/);
-      if (s < 0) { expect(stopName(s)).toContain('below'); expect(numeral(s)).toBe(`−${-s}`); }
-      if (s > 0) { expect(stopName(s)).toContain('above'); expect(numeral(s)).toBe(String(s)); }
+      if (s < 0) {
+        expect(stopName(s)).toContain('below');
+        expect(numeral(s)).toBe(`−${-s}`);
+      }
+      if (s > 0) {
+        expect(stopName(s)).toContain('above');
+        expect(numeral(s)).toBe(String(s));
+      }
     }
     expect(numeral(0)).toBe('0');
   });
@@ -123,9 +167,15 @@ describe('level 3, deepest first', () => {
 describe('authored first rounds', () => {
   it('open on the stories the how-to card tells', () => {
     const r1 = AUTHORED[1].map((i) => i.kind === 'ride' && [i.ride.friend, i.ride.to]);
-    expect(r1.slice(0, 2)).toEqual([['duck', 3], ['fish', -2]]);
+    expect(r1.slice(0, 2)).toEqual([
+      ['duck', 3],
+      ['fish', -2],
+    ]);
     const r2 = AUTHORED[2].map((i) => i.kind === 'ride' && [i.ride.friend, i.ride.from, i.ride.to]);
-    expect(r2.slice(0, 2)).toEqual([['bunny', 2, -3], ['turtle', -1, 3]]);
+    expect(r2.slice(0, 2)).toEqual([
+      ['bunny', 2, -3],
+      ['turtle', -1, 3],
+    ]);
     const first = AUTHORED[3][0];
     expect(first.kind === 'pick' && pickOrder(first.pick).map((f) => f.stop)).toEqual([-5, -2, 3]);
   });
@@ -187,17 +237,19 @@ describe('misses, hints and the supported finish', () => {
   });
 
   it('Show a hint glows once per request and the glow is the right landing', () => {
-    for (let seed = 1; seed <= 50; seed++) for (const level of [1, 2, 3] as LevelId[]) {
-      const s = roundState(level, makeRound(level, new Rng(seed), false));
-      while (!s.done) {
-        giveHint(s); giveHint(s);
-        expect(check(s, hintFor(s)).kind).toBe('right');
-        apply(s, check(s, hintFor(s)));
+    for (let seed = 1; seed <= 50; seed++)
+      for (const level of [1, 2, 3] as LevelId[]) {
+        const s = roundState(level, makeRound(level, new Rng(seed), false));
+        while (!s.done) {
+          giveHint(s);
+          giveHint(s);
+          expect(check(s, hintFor(s)).kind).toBe('right');
+          apply(s, check(s, hintFor(s)));
+        }
+        const asks = s.items.reduce((n, i) => n + (i.kind === 'pick' ? i.pick.friends.length : 1), 0);
+        expect(s.hints).toBe(asks);
+        expect(s.misses).toBe(0);
       }
-      const asks = s.items.reduce((n, i) => n + (i.kind === 'pick' ? i.pick.friends.length : 1), 0);
-      expect(s.hints).toBe(asks);
-      expect(s.misses).toBe(0);
-    }
   });
 });
 
@@ -260,9 +312,14 @@ function expectHowFarRound(cases: HowFar[]) {
     }
     const k = howFarCards(c.from.stop, c.to.stop);
     expect(new Set(c.cards).size).toBe(3);
-    expect([...c.cards].sort((a, b) => a - b)).toEqual([k.right, k.magnitude, k.bothEnds].sort((a, b) => a - b));
+    expect([...c.cards].sort((a, b) => a - b)).toEqual(
+      [k.right, k.magnitude, k.bothEnds].sort((a, b) => a - b),
+    );
     expect(c.cards.filter((v) => v === howFarAnswer(c))).toHaveLength(1);
-    for (const v of c.cards) { expect(v).toBeGreaterThanOrEqual(1); expect(v).toBeLessThanOrEqual(10); }
+    for (const v of c.cards) {
+      expect(v).toBeGreaterThanOrEqual(1);
+      expect(v).toBeLessThanOrEqual(10);
+    }
     if (i > 0) expect(howFarAnswer(c)).not.toBe(howFarAnswer(cases[i - 1]));
   }
   expect(side).toBeLessThanOrEqual(1);
@@ -309,20 +366,35 @@ describe('level 4, how far', () => {
     expect(howFarCards(-5, 4)).toEqual({ right: 9, magnitude: 1, bothEnds: 10 });
     expect(howFarCards(-1, -2)).toEqual({ right: 1, magnitude: 3, bothEnds: 2 });
     // Every pair the generator can draw keeps the three apart and within 1–10.
-    for (let a = -5; a <= 5; a++) for (let b = -5; b <= 5; b++) {
-      if (a === 0 || b === 0 || a === b || (Math.sign(a) !== Math.sign(b) && Math.abs(a) === Math.abs(b))) continue;
-      if (Math.sign(a) === Math.sign(b) && a > 0) continue;
-      const k = howFarCards(a, b);
-      expect(new Set([k.right, k.magnitude, k.bothEnds]).size).toBe(3);
-      for (const v of [k.right, k.magnitude, k.bothEnds]) { expect(v).toBeGreaterThanOrEqual(1); expect(v).toBeLessThanOrEqual(10); }
-    }
+    for (let a = -5; a <= 5; a++)
+      for (let b = -5; b <= 5; b++) {
+        if (a === 0 || b === 0 || a === b || (Math.sign(a) !== Math.sign(b) && Math.abs(a) === Math.abs(b)))
+          continue;
+        if (Math.sign(a) === Math.sign(b) && a > 0) continue;
+        const k = howFarCards(a, b);
+        expect(new Set([k.right, k.magnitude, k.bothEnds]).size).toBe(3);
+        for (const v of [k.right, k.magnitude, k.bothEnds]) {
+          expect(v).toBeGreaterThanOrEqual(1);
+          expect(v).toBeLessThanOrEqual(10);
+        }
+      }
   });
 
   it('opens on the fish at three below and the duck at four above, cards 1, 7 and 8, answers 7, 6, 7, 3, 5', () => {
-    const r = AUTHORED[4].map((i) => i.kind === 'howfar' && [i.howfar.from.friend, i.howfar.from.stop, i.howfar.to.friend, i.howfar.to.stop]);
+    const r = AUTHORED[4].map(
+      (i) =>
+        i.kind === 'howfar' && [
+          i.howfar.from.friend,
+          i.howfar.from.stop,
+          i.howfar.to.friend,
+          i.howfar.to.stop,
+        ],
+    );
     expect(r[0]).toEqual(['fish', -3, 'duck', 4]);
     expect(AUTHORED[4][0].kind === 'howfar' && AUTHORED[4][0].howfar.cards).toEqual([1, 7, 8]);
-    expect(AUTHORED[4].map((i) => (i.kind === 'howfar' ? howFarAnswer(i.howfar) : -1))).toEqual([7, 6, 7, 3, 5]);
+    expect(AUTHORED[4].map((i) => (i.kind === 'howfar' ? howFarAnswer(i.howfar) : -1))).toEqual([
+      7, 6, 7, 3, 5,
+    ]);
     const s = solve(4, AUTHORED[4]);
     expect([s.misses, s.hints]).toEqual([0, 0]);
   });
@@ -366,7 +438,10 @@ describe('level 5, twin stops', () => {
     for (let seed = 1; seed <= SEEDS; seed++) {
       const cases = level5(new Rng(seed));
       expectTwinRound(cases);
-      const s = roundState(5, cases.map((twin) => ({ kind: 'twin' as const, twin })));
+      const s = roundState(
+        5,
+        cases.map((twin) => ({ kind: 'twin' as const, twin })),
+      );
       while (!s.done) {
         const it = s.items[s.index];
         if (it.kind !== 'twin') throw new Error('twin');
@@ -408,11 +483,13 @@ describe('level 5, twin stops', () => {
 describe('the card layout', () => {
   it('fits three number cards below a shorter request card, clear of everything, on every view', () => {
     for (const v of views) {
-      const L = shaftLayout(v)!, C = cardLayout(v)!;
+      const L = shaftLayout(v)!,
+        C = cardLayout(v)!;
       expect(C).not.toBeNull();
       expect(C.card.h).toBeLessThan(L.card.h);
       const others: Box[] = [C.card, HOME_BOX, ...L.landings.values()];
-      const apart = (a: Box, b: Box) => a.x + a.w <= b.x || b.x + b.w <= a.x || a.y + a.h <= b.y || b.y + b.h <= a.y;
+      const apart = (a: Box, b: Box) =>
+        a.x + a.w <= b.x || b.x + b.w <= a.x || a.y + a.h <= b.y || b.y + b.h <= a.y;
       for (const [i, b] of C.cards.entries()) {
         expect(b.w).toBeGreaterThanOrEqual(120);
         expect(b.h).toBeGreaterThanOrEqual(110);
@@ -424,7 +501,9 @@ describe('the card layout', () => {
         for (const o of others) expect(apart(b, o)).toBe(true);
         for (const o of C.cards.slice(i + 1)) {
           expect(apart(b, o)).toBe(true);
-          expect(Math.min(Math.abs(o.y - (b.y + b.h)), Math.abs(b.y - (o.y + o.h)))).toBeGreaterThanOrEqual(16);
+          expect(Math.min(Math.abs(o.y - (b.y + b.h)), Math.abs(b.y - (o.y + o.h)))).toBeGreaterThanOrEqual(
+            16,
+          );
         }
         expect(cardAt(C.cards, b.x + b.w / 2, b.y + b.h / 2)).toBe(i);
         expect(nearestLanding(L, b.x + b.w / 2, b.y + b.h / 2)).toBeNull();

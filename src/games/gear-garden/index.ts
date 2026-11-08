@@ -12,11 +12,43 @@ import type { View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { arrowArt, backArt, flowerArt, GEAR_COLORS, gearArt, gearPair, handleArt, miniMachine, panelArt, socketArt, trayArt } from './art';
+import {
+  arrowArt,
+  backArt,
+  flowerArt,
+  GEAR_COLORS,
+  gearArt,
+  gearPair,
+  handleArt,
+  miniMachine,
+  panelArt,
+  socketArt,
+  trayArt,
+} from './art';
 import {
   LEVELS,
-  centre, choiceLayout, dropsInGap, FLOWER_COLORS, FLOWERS, gapOf, GearTally, gearLayout, helpFor, inputOf, Machine, outputOf, phases,
-  planFor, roundFor, TIP, toScreen, type GearLayout, type MachineSpec, type Plan, type Rect, type Step,
+  centre,
+  choiceLayout,
+  dropsInGap,
+  FLOWER_COLORS,
+  FLOWERS,
+  gapOf,
+  GearTally,
+  gearLayout,
+  helpFor,
+  inputOf,
+  Machine,
+  outputOf,
+  phases,
+  planFor,
+  roundFor,
+  TIP,
+  toScreen,
+  type GearLayout,
+  type MachineSpec,
+  type Plan,
+  type Rect,
+  type Step,
 } from './logic';
 
 /** Seconds one quarter turn takes. */
@@ -24,7 +56,12 @@ const TURN_TIME = 0.3;
 /** Finger travel below this is a press (a turn), not a drag. */
 const PRESS_TRAVEL = 15;
 
-interface Anim { from: number[]; delta: number[]; t: number; moved: boolean }
+interface Anim {
+  from: number[];
+  delta: number[];
+  t: number;
+  moved: boolean;
+}
 
 class GearGarden implements Game {
   readonly plan: Plan;
@@ -70,14 +107,30 @@ class GearGarden implements Game {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
     this.steps = roundFor(this.plan.level, ctx.rng);
-    this.backdrop = new Backdrop({ sky: [0xcfe9ff, 0xf3fbff], hills: [swatch.green.light, 0xbfe39a], horizon: 0.55, clouds: 3, sun: true, seed: 211 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0xcfe9ff, 0xf3fbff],
+        hills: [swatch.green.light, 0xbfe39a],
+        horizon: 0.55,
+        clouds: 3,
+        sun: true,
+        seed: 211,
+      },
+      ctx.view,
+    );
     for (const n of [this.glow, this.arrows]) n.eventMode = 'none';
     ctx.stage.addChild(this.backdrop, this.board);
   }
 
   start() {
     this.openStep();
-    void this.ctx.instruct(this.plan.level === 1 ? 'gears.instruct.turn' : this.plan.level === 2 ? 'gears.instruct.gap' : 'gears.instruct.choose');
+    void this.ctx.instruct(
+      this.plan.level === 1
+        ? 'gears.instruct.turn'
+        : this.plan.level === 2
+          ? 'gears.instruct.gap'
+          : 'gears.instruct.choose',
+    );
   }
 
   destroy() {
@@ -91,14 +144,20 @@ class GearGarden implements Game {
     this.view = v;
     this.backdrop.resize(v);
     // A turn, a gear flying in or a bloom finishes on the old layout first; the board is then rebuilt for the new view.
-    if (this.anim || this.busy || this.finished) { this.relayout = true; return; }
+    if (this.anim || this.busy || this.finished) {
+      this.relayout = true;
+      return;
+    }
     this.build();
   }
 
   /** Busy is over: rebuild if the view changed meanwhile. */
   private settled() {
     this.busy = false;
-    if (this.relayout && !this.anim && !this.finished) { this.relayout = false; this.build(); }
+    if (this.relayout && !this.anim && !this.finished) {
+      this.relayout = false;
+      this.build();
+    }
   }
 
   private get step(): Step {
@@ -214,10 +273,14 @@ class GearGarden implements Game {
     const bc = centre(l.back);
     back.position.set(bc.x, bc.y);
     back.hitArea = new Circle(0, 0, l.back.w / 2 + 6);
-    onTap(back, () => {
-      void this.bounce(back);
-      this.pressTurn(-1);
-    }, { cooldown: 60 });
+    onTap(
+      back,
+      () => {
+        void this.bounce(back);
+        this.pressTurn(-1);
+      },
+      { cooldown: 60 },
+    );
     this.board.addChild(back);
     this.back = back;
 
@@ -227,7 +290,9 @@ class GearGarden implements Game {
       card.position.set(cc.x, cc.y);
       const bg = panelArt(l.card.w, l.card.h);
       const pic = miniMachine(other.board.sockets, other.flower, other.color, 14);
-      pic.scale.set(Math.min((l.card.w - 20) / Math.max(1, pic.width), (l.card.h - 20) / Math.max(1, pic.height)));
+      pic.scale.set(
+        Math.min((l.card.w - 20) / Math.max(1, pic.width), (l.card.h - 20) / Math.max(1, pic.height)),
+      );
       bg.eventMode = pic.eventMode = 'none';
       card.addChild(bg, pic);
       card.hitArea = new Rectangle(-l.card.w / 2, -l.card.h / 2, l.card.w, l.card.h);
@@ -259,7 +324,11 @@ class GearGarden implements Game {
       this.press = { x: e.global.x, y: e.global.y, travel: 0, on: true };
     });
     node.on('globalpointermove', (e: FederatedPointerEvent) => {
-      if (this.press.on) this.press.travel = Math.max(this.press.travel, Math.hypot(e.global.x - this.press.x, e.global.y - this.press.y) / Math.max(0.01, this.view.scale));
+      if (this.press.on)
+        this.press.travel = Math.max(
+          this.press.travel,
+          Math.hypot(e.global.x - this.press.x, e.global.y - this.press.y) / Math.max(0.01, this.view.scale),
+        );
     });
     const drag = draggable(node, this.ctx.tw, {
       onPick: () => sfx.tick(),
@@ -333,14 +402,18 @@ class GearGarden implements Game {
 
   private async bounce(n: Container) {
     await this.ctx.tw.to(n.scale, { x: 0.9, y: 0.9 }, { duration: 0.06 });
-    if (this.alive && !n.destroyed) await this.ctx.tw.to(n.scale, { x: 1, y: 1 }, { duration: 0.15, ease: ease.outBack });
+    if (this.alive && !n.destroyed)
+      await this.ctx.tw.to(n.scale, { x: 1, y: 1 }, { duration: 0.15, ease: ease.outBack });
   }
 
   /** A tap on the face or Turn-back: the handle presses in now, the turn plays (or waits for the one in progress). */
   pressTurn(dir: 1 | -1) {
     if (this.finished || this.busy || !this.machine || this.machine.bloomed) return;
     if (this.handle) this.handle.scale.set(0.9);
-    if (this.anim) { this.queued = dir; return; }
+    if (this.anim) {
+      this.queued = dir;
+      return;
+    }
     this.turn(dir);
   }
 
@@ -370,7 +443,8 @@ class GearGarden implements Game {
 
   update(dt: number) {
     this.clock += dt;
-    if (this.handle && this.handle.scale.x < 1) this.handle.scale.set(Math.min(1, this.handle.scale.x + dt * 0.8));
+    if (this.handle && this.handle.scale.x < 1)
+      this.handle.scale.set(Math.min(1, this.handle.scale.x + dt * 0.8));
     const a = this.anim;
     if (a) {
       a.t = Math.min(1, a.t + dt / TURN_TIME);
@@ -386,7 +460,9 @@ class GearGarden implements Game {
     const l = this.layoutNow;
     if (this.tally.glowing && m && l && !m.looseIn && !this.finished) {
       const at = toScreen(l, m.spec.board.sockets[gapOf(m.spec.board)]);
-      this.glow.circle(at.x, at.y, l.r * (1.15 + 0.06 * Math.sin(this.clock * 5))).stroke({ width: 8, color: swatch.yellow.fill });
+      this.glow
+        .circle(at.x, at.y, l.r * (1.15 + 0.06 * Math.sin(this.clock * 5)))
+        .stroke({ width: 8, color: swatch.yellow.fill });
       if (this.loose && !this.drag?.dragging) this.loose.rotation = Math.sin(this.clock * 9) * 0.12;
     }
   }
@@ -419,8 +495,15 @@ class GearGarden implements Game {
       void this.ctx.say('gears.still');
     }
     if (verdict === 'glow') void this.ctx.say('gears.hint');
-    if (verdict === 'install') { this.queued = null; void this.autoPlace(); }
-    if (m.bloomed) { this.queued = null; void this.bloom(); return; }
+    if (verdict === 'install') {
+      this.queued = null;
+      void this.autoPlace();
+    }
+    if (m.bloomed) {
+      this.queued = null;
+      void this.bloom();
+      return;
+    }
     const q = this.queued;
     this.queued = null;
     if (q && !this.busy) this.turn(q);
@@ -464,7 +547,10 @@ class GearGarden implements Game {
     const epoch = this.epoch;
     const outAt = toScreen(l, m.spec.board.sockets[outputOf(m.spec.board)]);
     sfx.tada();
-    this.ctx.particles.burst(outAt.x, outAt.y, { colors: [swatch[FLOWER_COLORS[0]].fill, swatch.yellow.fill, swatch[m.spec.color].fill], count: 24 });
+    this.ctx.particles.burst(outAt.x, outAt.y, {
+      colors: [swatch[FLOWER_COLORS[0]].fill, swatch.yellow.fill, swatch[m.spec.color].fill],
+      count: 24,
+    });
     this.ctx.pet.cheer();
     const pop = this.flower!;
     await this.ctx.tw.to(pop.scale, { x: 1.3, y: 1.3 }, { duration: 0.25, ease: ease.outBack });
@@ -488,12 +574,23 @@ class GearGarden implements Game {
     v.eventMode = 'none';
     v.scale.set(0.38);
     const side = at.x > this.view.w / 2 ? -1 : 1;
-    v.position.set(side > 0 ? -80 : this.view.w + 80, Math.min(this.view.h - 20, at.y + (this.layoutNow!.r * 1.4)));
+    v.position.set(
+      side > 0 ? -80 : this.view.w + 80,
+      Math.min(this.view.h - 20, at.y + this.layoutNow!.r * 1.4),
+    );
     this.ctx.stage.addChild(v);
     this.ctx.track(v);
     this.visitor = v;
-    sfx.animal(({ duck: 'quack', cat: 'meow', pig: 'oink', dog: 'woof', bunny: 'hop', bear: 'growl' } as const)[this.machine!.spec.visitor as 'duck'] ?? 'hop');
-    await this.ctx.tw.to(v, { x: at.x - side * this.layoutNow!.r * 1.5 }, { duration: 0.8, ease: ease.inOutSine });
+    sfx.animal(
+      ({ duck: 'quack', cat: 'meow', pig: 'oink', dog: 'woof', bunny: 'hop', bear: 'growl' } as const)[
+        this.machine!.spec.visitor as 'duck'
+      ] ?? 'hop',
+    );
+    await this.ctx.tw.to(
+      v,
+      { x: at.x - side * this.layoutNow!.r * 1.5 },
+      { duration: 0.8, ease: ease.inOutSine },
+    );
     if (!this.alive || epoch !== this.epoch) return;
     v.cheer();
   }
@@ -583,7 +680,13 @@ class GearGarden implements Game {
     this.backShown = false;
     this.index = 0;
     this.openStep();
-    void this.ctx.instruct(this.plan.level === 1 ? 'gears.instruct.turn' : this.plan.level === 2 ? 'gears.instruct.gap' : 'gears.instruct.choose');
+    void this.ctx.instruct(
+      this.plan.level === 1
+        ? 'gears.instruct.turn'
+        : this.plan.level === 2
+          ? 'gears.instruct.gap'
+          : 'gears.instruct.choose',
+    );
   }
 
   /** The ghost finger: open machine B, carry the loose gear to the gap, then tap the face (one Turn-back on the second flower). */
@@ -649,7 +752,8 @@ export const gearGarden: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.stickers,
-  coplayHint: 'Take turns guessing: say "same way" or "other way" before she turns the handle, and let her check; then swap.',
+  coplayHint:
+    'Take turns guessing: say "same way" or "other way" before she turns the handle, and let her check; then swap.',
   offScreen: 'Look for something at home that turns, and watch which way it goes.',
   hubIcon: () => new GearIcon(),
   touchDemo: true,

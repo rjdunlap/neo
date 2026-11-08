@@ -13,7 +13,11 @@ export type Channel = 'view' | 'sound';
 export type ViewValue = 'round' | 'handled';
 export type SoundValue = 'ring' | 'shake' | 'beat';
 
-export interface Toy { id: ToyId; view: ViewValue; sound: SoundValue }
+export interface Toy {
+  id: ToyId;
+  view: ViewValue;
+  sound: SoundValue;
+}
 
 export const TOYS: Record<ToyId, Toy> = {
   bell: { id: 'bell', view: 'round', sound: 'ring' },
@@ -25,7 +29,10 @@ export const TOY_IDS: ToyId[] = ['bell', 'rattle', 'drum'];
 /** What a toy is called aloud. */
 export const TOY_NAMES: Record<ToyId, string> = { bell: 'bell', rattle: 'rattle', drum: 'drum' };
 
-export interface Observation { channel: Channel; value: ViewValue | SoundValue }
+export interface Observation {
+  channel: Channel;
+  value: ViewValue | SoundValue;
+}
 
 export function observe(toy: ToyId, channel: Channel): Observation {
   return { channel, value: TOYS[toy][channel] };
@@ -41,11 +48,23 @@ export function possible(cards: readonly ToyId[], record: readonly Observation[]
  * parcels, and level 4 then listens and narrows that set; level 5's quilted parcels ask whether a look can tell (`tell`).
  */
 export type Mode = 'one' | 'set' | 'tell';
-export interface Plan { name: string; shelf: ToyId[]; channels: Channel[]; mode: Mode; parcels: number }
+export interface Plan {
+  name: string;
+  shelf: ToyId[];
+  channels: Channel[];
+  mode: Mode;
+  parcels: number;
+}
 
 const PLANS: Record<number, Plan> = {
   1: { name: 'Peek inside', shelf: ['bell', 'rattle'], channels: ['view'], mode: 'one', parcels: 1 },
-  2: { name: 'Look or listen?', shelf: ['bell', 'drum'], channels: ['view', 'sound'], mode: 'one', parcels: 1 },
+  2: {
+    name: 'Look or listen?',
+    shelf: ['bell', 'drum'],
+    channels: ['view', 'sound'],
+    mode: 'one',
+    parcels: 1,
+  },
   3: { name: 'Which could it be?', shelf: [...TOY_IDS], channels: ['view'], mode: 'set', parcels: 2 },
   4: { name: 'Narrow it down', shelf: [...TOY_IDS], channels: ['view', 'sound'], mode: 'set', parcels: 1 },
   5: { name: 'Can we tell?', shelf: [...TOY_IDS], channels: ['view'], mode: 'tell', parcels: 2 },
@@ -62,7 +81,13 @@ export function planFor(level: number): Plan {
 }
 
 /** `hidden` is the first parcel's toy; `parcels` holds every parcel in order (one at levels 1, 2 and 4). */
-export interface Round { level: number; shelf: ToyId[]; hidden: ToyId; parcels: ToyId[]; channels: Channel[] }
+export interface Round {
+  level: number;
+  shelf: ToyId[];
+  hidden: ToyId;
+  parcels: ToyId[];
+  channels: Channel[];
+}
 
 /** Each set level's authored first round of a session: the shelf, then the parcels in order. */
 const AUTHORED: Record<number, { shelf: ToyId[]; parcels: ToyId[] }> = {
@@ -86,14 +111,13 @@ export function makeRound(level: number, rng: Rng, first = false): Round {
   }
   const shelf = rng.shuffle([...TOY_IDS]);
   // Two different toys hold at least one round toy, so a parcel is always ambiguous; a look always leaves two at level 4.
-  const parcels = plan.parcels === 2 ? rng.shuffle([...TOY_IDS]).slice(0, 2) : [rng.pick<ToyId>(['bell', 'drum'])];
+  const parcels =
+    plan.parcels === 2 ? rng.shuffle([...TOY_IDS]).slice(0, 2) : [rng.pick<ToyId>(['bell', 'drum'])];
   return { level: lv, shelf, hidden: parcels[0], parcels, channels };
 }
 
 export type Verdict =
-  | { kind: 'found' }
-  | { kind: 'miss'; ruledOut: Observation }
-  | { kind: 'notyet'; other: ToyId | null };
+  { kind: 'found' } | { kind: 'miss'; ruledOut: Observation } | { kind: 'notyet'; other: ToyId | null };
 
 /** Judge one selected card against what has been revealed (never against the hidden toy itself). */
 export function check(shelf: readonly ToyId[], record: readonly Observation[], card: ToyId): Verdict {
@@ -118,7 +142,12 @@ export type SetVerdict =
  * Levels 3-4: judge the selected set against what the clues allow (never against the parcel). `narrowing` is true while a
  * listen is still to come (level 4 before its listen), so the look's exact set is only "so far".
  */
-export function checkSet(shelf: readonly ToyId[], record: readonly Observation[], selected: readonly ToyId[], narrowing: boolean): SetVerdict {
+export function checkSet(
+  shelf: readonly ToyId[],
+  record: readonly Observation[],
+  selected: readonly ToyId[],
+  narrowing: boolean,
+): SetVerdict {
   if (selected.length === 0) return { kind: 'empty' };
   if (record.length === 0) return { kind: 'look-first' };
   const left = possible(shelf, record);
@@ -139,7 +168,11 @@ export function narrowingFor(round: Round, record: readonly Observation[]): bool
 
 /** The useful edit a hint glows: take out a ruled-out toy, else put in a missing one, else press Check. */
 export type Edit = { remove: ToyId } | { add: ToyId } | { check: true };
-export function hintEdit(shelf: readonly ToyId[], record: readonly Observation[], selected: readonly ToyId[]): Edit {
+export function hintEdit(
+  shelf: readonly ToyId[],
+  record: readonly Observation[],
+  selected: readonly ToyId[],
+): Edit {
   const left = possible(shelf, record);
   const out = shelf.find((t) => selected.includes(t) && !left.includes(t));
   if (out) return { remove: out };
@@ -149,7 +182,12 @@ export function hintEdit(shelf: readonly ToyId[], record: readonly Observation[]
 }
 
 /** The key an unchanged resubmit repeats: the parcel, the stage, the sorted selection and how much has been revealed. */
-export function setKey(parcel: number, stage: number, selected: readonly string[], record: readonly Observation[]): string {
+export function setKey(
+  parcel: number,
+  stage: number,
+  selected: readonly string[],
+  record: readonly Observation[],
+): string {
   return `${parcel}|${stage}|${[...selected].sort().join(',')}|${record.length}`;
 }
 
@@ -165,13 +203,22 @@ export class Tally {
   private lastKey: string | null = null;
   /** A wrong Check; returns true when the glow should come on. An unchanged resubmit counts nothing. */
   miss(key: string): boolean {
-    if (countsAsMiss(this.lastKey, key)) { this.misses++; this.parcelMisses++; }
+    if (countsAsMiss(this.lastKey, key)) {
+      this.misses++;
+      this.parcelMisses++;
+    }
     this.lastKey = key;
-    if (this.parcelMisses >= GLOW_AFTER) { this.hint(); return true; }
+    if (this.parcelMisses >= GLOW_AFTER) {
+      this.hint();
+      return true;
+    }
     return false;
   }
   hint() {
-    if (!this.hinted) { this.hinted = true; this.hints++; }
+    if (!this.hinted) {
+      this.hinted = true;
+      this.hints++;
+    }
   }
   nextParcel() {
     this.parcelMisses = 0;
@@ -182,7 +229,12 @@ export class Tally {
 
 /** The bot at levels 3-4: look first, listen once level 4 opens it, then make the useful edit until Check. */
 export type SetMove = { investigate: Channel } | { toggle: ToyId } | { check: true };
-export function setTouch(round: Round, record: readonly Observation[], selected: readonly ToyId[], listenOpen: boolean): SetMove {
+export function setTouch(
+  round: Round,
+  record: readonly Observation[],
+  selected: readonly ToyId[],
+  listenOpen: boolean,
+): SetMove {
   if (!record.some((o) => o.channel === 'view')) return { investigate: 'view' };
   if (listenOpen && !record.some((o) => o.channel === 'sound')) return { investigate: 'sound' };
   const e = hintEdit(round.shelf, record, selected);
@@ -212,7 +264,8 @@ export function senseTouch(round: Round, record: readonly Observation[], selecte
   const next = deciding(round, record);
   if (next && !record.some((o) => o.channel === next)) {
     // A look always comes first, as a child would, even when it cannot decide.
-    if (round.channels.includes('view') && !record.some((o) => o.channel === 'view')) return { investigate: 'view' };
+    if (round.channels.includes('view') && !record.some((o) => o.channel === 'view'))
+      return { investigate: 'view' };
     return { investigate: next };
   }
   if (left.length > 1 && round.channels.some((c) => !record.some((o) => o.channel === c))) {
@@ -239,7 +292,11 @@ export type TellVerdict =
  * is a miss (`miss`, `can-tell`); a fitting toy while another fits too is free (`both-fit`); the one fitting toy is `right`,
  * and *Can't tell yet* while two fit is right too, opening stage B (`cant-tell`).
  */
-export function checkTell(shelf: readonly ToyId[], record: readonly Observation[], answer: TellAnswer | null): TellVerdict {
+export function checkTell(
+  shelf: readonly ToyId[],
+  record: readonly Observation[],
+  answer: TellAnswer | null,
+): TellVerdict {
   if (answer === null) return { kind: 'empty' };
   if (record.length === 0) return { kind: 'look-first' };
   const left = possible(shelf, record);
@@ -247,7 +304,8 @@ export function checkTell(shelf: readonly ToyId[], record: readonly Observation[
     if (left.length >= 2) return { kind: 'cant-tell', left };
     return { kind: 'can-tell', only: left[0], obs: record.find((o) => o.channel === 'view') ?? record[0] };
   }
-  if (!left.includes(answer)) return { kind: 'miss', card: answer, obs: record.find((o) => TOYS[answer][o.channel] !== o.value)! };
+  if (!left.includes(answer))
+    return { kind: 'miss', card: answer, obs: record.find((o) => TOYS[answer][o.channel] !== o.value)! };
   if (left.length > 1) return { kind: 'both-fit', other: left.find((t) => t !== answer)! };
   return { kind: 'right', toy: answer };
 }
@@ -260,18 +318,31 @@ export function distinguishing(shelf: readonly ToyId[], record: readonly Observa
   const left = possible(shelf, record);
   if (left.length < 2) return null;
   const channels: Channel[] = ['view', 'sound'];
-  return channels.find((ch) => !record.some((o) => o.channel === ch)
-    && left.every((t) => possible(left, [...record, observe(t, ch)]).length === 1)) ?? null;
+  return (
+    channels.find(
+      (ch) =>
+        !record.some((o) => o.channel === ch) &&
+        left.every((t) => possible(left, [...record, observe(t, ch)]).length === 1),
+    ) ?? null
+  );
 }
 
 /** Level 5, stage B: the chosen sense is right when it would tell the possible toys apart. */
-export function checkSense(shelf: readonly ToyId[], record: readonly Observation[], choice: Channel | null): 'empty' | 'right' | 'miss' {
+export function checkSense(
+  shelf: readonly ToyId[],
+  record: readonly Observation[],
+  choice: Channel | null,
+): 'empty' | 'right' | 'miss' {
   if (choice === null) return 'empty';
   return choice === distinguishing(shelf, record) ? 'right' : 'miss';
 }
 
 /** The answer a level-5 hint glows: the one fitting toy or *Can't tell yet* in stage A, the deciding sense in stage B. */
-export function tellTarget(shelf: readonly ToyId[], record: readonly Observation[], stage: 'answer' | 'sense'): TellAnswer | Channel {
+export function tellTarget(
+  shelf: readonly ToyId[],
+  record: readonly Observation[],
+  stage: 'answer' | 'sense',
+): TellAnswer | Channel {
   if (stage === 'sense') return distinguishing(shelf, record) ?? 'sound';
   const left = possible(shelf, record);
   return left.length === 1 ? left[0] : 'cant-tell';
@@ -279,7 +350,12 @@ export function tellTarget(shelf: readonly ToyId[], record: readonly Observation
 
 /** The bot at level 5: look first, then choose the hint's target, then Check. */
 export type TellMove = { investigate: Channel } | { choose: TellAnswer | Channel } | { check: true };
-export function tellTouch(round: Round, record: readonly Observation[], stage: 'answer' | 'sense', chosen: TellAnswer | Channel | null): TellMove {
+export function tellTouch(
+  round: Round,
+  record: readonly Observation[],
+  stage: 'answer' | 'sense',
+  chosen: TellAnswer | Channel | null,
+): TellMove {
   if (!record.some((o) => o.channel === 'view')) return { investigate: 'view' };
   const target = tellTarget(round.shelf, record, stage);
   if (chosen !== target) return { choose: target };
@@ -293,7 +369,12 @@ export const ITS: Record<SoundValue, string> = { ring: 'rings', shake: 'shakes',
 
 export const GLOW_AFTER = 2;
 
-export interface Rect { x: number; y: number; w: number; h: number }
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
 export interface Exhibit {
   parcel: Rect;
   look: Rect;
@@ -317,7 +398,13 @@ export const CANT_TELL = 170;
  * Every rectangle of the museum counter. A test asserts sizes, clearances and no overlap at four views. `strip` slots
  * default to the channel buttons; level 5 has one button but two clues (the look, then the reveal's sound).
  */
-export function exhibitLayout(view: View, cards: number, channels: number, cantTell = false, strip = channels): Exhibit {
+export function exhibitLayout(
+  view: View,
+  cards: number,
+  channels: number,
+  cantTell = false,
+  strip = channels,
+): Exhibit {
   const { w, h } = view;
   const landscape = w >= h;
   const top = 120;
@@ -327,7 +414,8 @@ export function exhibitLayout(view: View, cards: number, channels: number, cantT
   const left = (w - rowW) / 2;
   const look: Rect = { x: left, y: top + 25, w: BUTTON, h: BUTTON };
   const parcel: Rect = { x: left + BUTTON + gap, y: top, w: parcelW, h: 200 };
-  const listen: Rect | null = channels > 1 ? { x: parcel.x + parcelW + gap, y: top + 25, w: BUTTON, h: BUTTON } : null;
+  const listen: Rect | null =
+    channels > 1 ? { x: parcel.x + parcelW + gap, y: top + 25, w: BUTTON, h: BUTTON } : null;
   const stripY = top + 200 + 30;
   const stripX = spread(strip, 0, w, EVIDENCE + 24);
   const slots: Rect[] = stripX.map((cx) => ({ x: cx - EVIDENCE / 2, y: stripY, w: EVIDENCE, h: EVIDENCE }));
@@ -335,13 +423,20 @@ export function exhibitLayout(view: View, cards: number, channels: number, cantT
   const checkX = w - 20 - CHECK;
   const lo = landscape ? PET_CORNER.w + 10 : 20;
   const hi = landscape ? checkX - 20 : w - 20;
-  const shelf: Rect[] = spread(cards, lo, hi, TOY_W + 30).map((cx) => ({ x: cx - TOY_W / 2, y: shelfY, w: TOY_W, h: TOY_H }));
+  const shelf: Rect[] = spread(cards, lo, hi, TOY_W + 30).map((cx) => ({
+    x: cx - TOY_W / 2,
+    y: shelfY,
+    w: TOY_W,
+    h: TOY_H,
+  }));
   const check: Rect = landscape
     ? { x: checkX, y: shelfY + (TOY_H - CHECK) / 2, w: CHECK, h: CHECK }
     : { x: checkX, y: shelfY + TOY_H + 20, w: CHECK, h: CHECK };
   // The card sits above Check in landscape (the column right of the shelf), and left of Check on its row in portrait.
-  const tell: Rect | null = !cantTell ? null : landscape
-    ? { x: checkX, y: check.y - 20 - CANT_TELL, w: CANT_TELL, h: CANT_TELL }
-    : { x: checkX - 30 - CANT_TELL, y: check.y, w: CANT_TELL, h: CANT_TELL };
+  const tell: Rect | null = !cantTell
+    ? null
+    : landscape
+      ? { x: checkX, y: check.y - 20 - CANT_TELL, w: CANT_TELL, h: CANT_TELL }
+      : { x: checkX - 30 - CANT_TELL, y: check.y, w: CANT_TELL, h: CANT_TELL };
   return { parcel, look, listen, strip: slots, shelf, check, cantTell: tell };
 }

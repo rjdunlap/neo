@@ -9,7 +9,13 @@ const frame = (patch: Partial<ReturnType<typeof neutral>> = {}): CouchControls =
   controllers: 0,
 });
 
-const spot = (id: string, x: number, y: number, press = () => undefined): FocusSpot => ({ id, x, y, r: 50, press });
+const spot = (id: string, x: number, y: number, press = () => undefined): FocusSpot => ({
+  id,
+  x,
+  y,
+  r: 50,
+  press,
+});
 
 describe('SpotFocus', () => {
   const press = vi.fn();

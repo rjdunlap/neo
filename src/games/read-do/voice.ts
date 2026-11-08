@@ -1,7 +1,9 @@
 // What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
 export const VOICE = {
   'game.read-do': ['Read and do!'],
-  'read.instruction': ['Read the sign, then choose its picture. Tap a word to hear it, or tap the speaker to hear the sign.'],
+  'read.instruction': [
+    'Read the sign, then choose its picture. Tap a word to hear it, or tap the speaker to hear the sign.',
+  ],
   'read.meaning': ['You made the sign happen: {words}.'],
   'read.compare': ['Your picture says {words}. Listen to the sign, then try again.'],
   'read.done': ['You brought the words to life!'],
@@ -22,14 +24,20 @@ export const VOICE = {
   'read.sleep': ['sleep'],
   'read.jumps': ['jumps'],
   'read.sleeps': ['sleeps'],
-  'read.cap.instruction': ['A sentence starts with a big letter. Tap the first word to make it big, then Send.'],
+  'read.cap.instruction': [
+    'A sentence starts with a big letter. Tap the first word to make it big, then Send.',
+  ],
   'read.stop.instruction': ['A sentence ends with a full stop. Put the stop at the end, then Send.'],
-  'read.both.instruction': ['Get the sign ready for a reader: a big letter at the start and a full stop at the end.'],
+  'read.both.instruction': [
+    'Get the sign ready for a reader: a big letter at the start and a full stop at the end.',
+  ],
   'read.cap.missing': ['A sentence starts with a big letter. Tap the first word.'],
   'read.stop.missing': ['A sentence ends with a full stop. Put the stop at the end.'],
   'read.ready': ['Now a reader can see where it starts and stops: {words}.'],
   'read.stamp': ['Full stop.'],
-  'read.make.instruction': ["Here's my wish! Make a sign so the animals do it. Drag words into the sign, tap Show it to try it, then Send."],
+  'read.make.instruction': [
+    "Here's my wish! Make a sign so the animals do it. Drag words into the sign, tap Show it to try it, then Send.",
+  ],
   'read.make.yes': ['The animals did just what I wished: {words}.'],
   'read.make.other': ['They did what the sign says: {words}. Look at my wish again.'],
   'read.make.which': ["Which {animal}? The sign doesn't say."],
@@ -40,7 +48,9 @@ export const VOICE = {
   'read.make.hint.out': ['Take this word out.'],
   'read.make.wish': ["That's my wish."],
   'read.mend.watch': ['Watch what this sign makes them do.'],
-  'read.mend.instruction': ["That's not my wish! Fix the sign: put a word in, or take a word out. Then Send."],
+  'read.mend.instruction': [
+    "That's not my wish! Fix the sign: put a word in, or take a word out. Then Send.",
+  ],
   'read.mend.swap.instruction': ["That's not my wish! Drop a word on a word to swap them. Then Send."],
   'read.mend.hint.swap': ['Swap this word for this one.'],
 } satisfies Record<string, string[]>;

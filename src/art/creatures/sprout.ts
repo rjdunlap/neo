@@ -31,7 +31,10 @@ export class Sprout extends Creature {
     g.ellipse(0, -88, 104, 86).fill(s.fill).stroke(stroke(s.line));
     g.ellipse(0, -60, 64, 50).fill(cream);
     // Little arms resting on the belly.
-    for (const x of [-1, 1]) g.ellipse(x * 70, -72, 16, 24).fill(s.fill).stroke(stroke(s.line, 5));
+    for (const x of [-1, 1])
+      g.ellipse(x * 70, -72, 16, 24)
+        .fill(s.fill)
+        .stroke(stroke(s.line, 5));
     this.body.addChild(g);
 
     const face = new Container();
@@ -46,7 +49,12 @@ export class Sprout extends Creature {
       this.eyes.push(e);
     }
     this.smile.moveTo(-12, -98).quadraticCurveTo(0, -86, 12, -98).stroke(stroke(MOUTH, 5));
-    this.open.moveTo(-15, -100).quadraticCurveTo(0, -72, 15, -100).closePath().fill(MOUTH).stroke(stroke(MOUTH, 4));
+    this.open
+      .moveTo(-15, -100)
+      .quadraticCurveTo(0, -72, 15, -100)
+      .closePath()
+      .fill(MOUTH)
+      .stroke(stroke(MOUTH, 4));
     this.open.visible = false;
     face.addChild(this.smile, this.open);
     this.body.addChild(face);
@@ -54,8 +62,18 @@ export class Sprout extends Creature {
     // The sprout: a stem and two leaves pivoting at the top of the head.
     const leaf = new Graphics();
     leaf.moveTo(0, 0).quadraticCurveTo(4, -22, 0, -40).stroke(stroke(swatch.green.line, 7));
-    leaf.moveTo(0, -38).bezierCurveTo(-18, -70, -58, -66, -62, -50).bezierCurveTo(-46, -30, -16, -30, 0, -38).fill(swatch.green.fill).stroke(stroke(swatch.green.line, 5));
-    leaf.moveTo(0, -38).bezierCurveTo(16, -78, 54, -80, 60, -64).bezierCurveTo(48, -40, 18, -34, 0, -38).fill(swatch.green.fill).stroke(stroke(swatch.green.line, 5));
+    leaf
+      .moveTo(0, -38)
+      .bezierCurveTo(-18, -70, -58, -66, -62, -50)
+      .bezierCurveTo(-46, -30, -16, -30, 0, -38)
+      .fill(swatch.green.fill)
+      .stroke(stroke(swatch.green.line, 5));
+    leaf
+      .moveTo(0, -38)
+      .bezierCurveTo(16, -78, 54, -80, 60, -64)
+      .bezierCurveTo(48, -40, 18, -34, 0, -38)
+      .fill(swatch.green.fill)
+      .stroke(stroke(swatch.green.line, 5));
     this.leaf.addChild(leaf);
     this.leaf.position.set(0, -170);
     this.body.addChild(this.leaf);

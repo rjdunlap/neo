@@ -48,7 +48,8 @@ export interface LaneRun {
   stall: { from: number; reason: StallReason; at: number } | null;
 }
 
-export const emptyPlacement = (line: Line): Placement => line.lanes.map((l) => new Array<number>(l.n + 1).fill(0));
+export const emptyPlacement = (line: Line): Placement =>
+  line.lanes.map((l) => new Array<number>(l.n + 1).fill(0));
 
 /** The size standing at a slot: the starter, a pinned domino, one she placed, or the end. 0 for nothing. */
 export function sizeAt(lane: Lane, placed: number[], slot: number): number {
@@ -73,7 +74,8 @@ export function runLane(lane: Lane, placed: number[], from = 0): LaneRun {
     let j = i + 1;
     while (j < lane.n && !sizeAt(lane, placed, j)) j++;
     const why = stallReason(i, h, j, sizeAt(lane, placed, j));
-    if (why) return { fallen, rung: false, stall: { from: i, reason: why, at: why === 'too-far' ? i + 1 : j } };
+    if (why)
+      return { fallen, rung: false, stall: { from: i, reason: why, at: why === 'too-far' ? i + 1 : j } };
     if (j === lane.n) return { fallen, rung: true, stall: null };
     fallen.push(j);
     i = j;
@@ -157,11 +159,12 @@ export function arrangements(line: Line, all = false): Placement[] {
 /** The tray dominoes not standing in a socket yet. */
 export function remaining(line: Line, placed: Placement): Size[] {
   const left = [...line.tray];
-  for (const l of placed) for (const s of l) {
-    if (!s) continue;
-    const i = left.indexOf(s as Size);
-    if (i >= 0) left.splice(i, 1);
-  }
+  for (const l of placed)
+    for (const s of l) {
+      if (!s) continue;
+      const i = left.indexOf(s as Size);
+      if (i >= 0) left.splice(i, 1);
+    }
   return left;
 }
 
@@ -181,14 +184,19 @@ export type Hint =
  */
 export function hintPlacement(line: Line, placed: Placement, sols = solutions(line)): Hint {
   if (rings(line, placed)) return { kind: 'run' };
-  let best: Placement | null = null, bestAgree = -1, bestOff = Infinity;
+  let best: Placement | null = null,
+    bestAgree = -1,
+    bestOff = Infinity;
   for (const sol of sols) {
-    let agree = 0, off = 0;
-    sol.forEach((l, k) => l.forEach((s, slot) => {
-      const p = placed[k][slot];
-      if (p && p === s) agree++;
-      else if (p !== s) off++;
-    }));
+    let agree = 0,
+      off = 0;
+    sol.forEach((l, k) =>
+      l.forEach((s, slot) => {
+        const p = placed[k][slot];
+        if (p && p === s) agree++;
+        else if (p !== s) off++;
+      }),
+    );
     if (agree > bestAgree || (agree === bestAgree && off < bestOff)) {
       best = sol;
       bestAgree = agree;
@@ -197,12 +205,15 @@ export function hintPlacement(line: Line, placed: Placement, sols = solutions(li
   }
   if (!best) return { kind: 'none' };
   const left = remaining(line, placed);
-  for (const [k, l] of best.entries()) for (const [slot, s] of l.entries()) {
-    if (s && !placed[k][slot] && left.includes(s as Size)) return { kind: 'place', lane: k, slot, size: s as Size };
-  }
-  for (const [k, l] of best.entries()) for (const [slot, s] of l.entries()) {
-    if (placed[k][slot] && placed[k][slot] !== s) return { kind: 'remove', lane: k, slot };
-  }
+  for (const [k, l] of best.entries())
+    for (const [slot, s] of l.entries()) {
+      if (s && !placed[k][slot] && left.includes(s as Size))
+        return { kind: 'place', lane: k, slot, size: s as Size };
+    }
+  for (const [k, l] of best.entries())
+    for (const [slot, s] of l.entries()) {
+      if (placed[k][slot] && placed[k][slot] !== s) return { kind: 'remove', lane: k, slot };
+    }
   return { kind: 'none' };
 }
 
@@ -227,11 +238,22 @@ export function puddles(lane: Lane): { from: number; to: number }[] {
 
 /** How an end looks and sounds. The rule only sees its `End`: a chime or a boat's horn is pushed like the bell, a drum like the gong. */
 export type EndLook = 'bell' | 'chime' | 'horn' | 'gong' | 'drum';
-export const LOOK_END: Record<EndLook, End> = { bell: 'bell', chime: 'bell', horn: 'bell', gong: 'gong', drum: 'gong' };
-export const looksFor = (end: End): EndLook[] => (Object.keys(LOOK_END) as EndLook[]).filter((k) => LOOK_END[k] === end);
+export const LOOK_END: Record<EndLook, End> = {
+  bell: 'bell',
+  chime: 'bell',
+  horn: 'bell',
+  gong: 'gong',
+  drum: 'gong',
+};
+export const looksFor = (end: End): EndLook[] =>
+  (Object.keys(LOOK_END) as EndLook[]).filter((k) => LOOK_END[k] === end);
 /** What the pet says when this end rings. */
 export const LOOK_LINE: Record<EndLook, keyof typeof VOICE> = {
-  bell: 'domino-run.ring', chime: 'domino-run.ring-chime', horn: 'domino-run.ring-horn', gong: 'domino-run.gong', drum: 'domino-run.gong-drum',
+  bell: 'domino-run.ring',
+  chime: 'domino-run.ring-chime',
+  horn: 'domino-run.ring-horn',
+  gong: 'domino-run.gong',
+  drum: 'domino-run.gong-drum',
 };
 
 /** The beach behind the lanes, picked per round; backdrop only. */
@@ -276,7 +298,8 @@ export const LEVELS: BandLevels = {
   school: { min: 4, max: 11 },
 };
 
-export const planFor = (level: number): Plan => PLANS[Math.min(Math.max(1, Math.round(level)), PLANS.length) - 1];
+export const planFor = (level: number): Plan =>
+  PLANS[Math.min(Math.max(1, Math.round(level)), PLANS.length) - 1];
 
 /**
  * A lane from a picture: `S` small, `T` tall, `G` giant (pinned), `_` a socket, `P` a socket under the pier (small only),
@@ -286,7 +309,8 @@ export function lane(picture: string): Lane {
   const n = picture.length;
   const fixed = new Array<number>(n + 1).fill(0);
   fixed[0] = 1;
-  const sockets: number[] = [], low: number[] = [];
+  const sockets: number[] = [],
+    low: number[] = [];
   [...picture.slice(0, -1)].forEach((c, i) => {
     const slot = i + 1;
     if (c === '_' || c === 'P') sockets.push(slot);
@@ -314,7 +338,10 @@ export const FIRST: Record<number, Line> = {
 };
 
 /** The standing dominoes she can tap as her guess at level 9: the starter and every pinned one. */
-export const standing = (lane: Lane): number[] => [0, ...lane.fixed.map((s, i) => (i > 0 && i < lane.n && s ? i : 0)).filter(Boolean)];
+export const standing = (lane: Lane): number[] => [
+  0,
+  ...lane.fixed.map((s, i) => (i > 0 && i < lane.n && s ? i : 0)).filter(Boolean),
+];
 
 /** Level 9's answer: the domino that falls last when the line runs as it stands, and why the chain stops there. */
 export function stopsAt(line: Line): { slot: number; reason: StallReason } | null {
@@ -354,7 +381,12 @@ export function passes(plan: Plan, line: Line): boolean {
   if (line.tray.length > 3) return false;
   if (plan.tapAny) {
     const l = lanes[0];
-    return !l.sockets.length && !line.tray.length && l.fixed.slice(0, l.n).every((s) => s === 1) && rings(line, emptyPlacement(line));
+    return (
+      !l.sockets.length &&
+      !line.tray.length &&
+      l.fixed.slice(0, l.n).every((s) => s === 1) &&
+      rings(line, emptyPlacement(line))
+    );
   }
   const sols = solutions(line);
   if (!sols.length || rings(line, emptyPlacement(line))) return false;
@@ -363,55 +395,116 @@ export function passes(plan: Plan, line: Line): boolean {
     case 2:
       return sockets(line) === 1 && line.tray.length === 1 && line.tray[0] === 1;
     case 3:
-      return sockets(line) >= 2 && sockets(line) <= 3 && line.tray.length === sockets(line) && line.tray.every((t) => t === 1)
-        && sols.length === 1 && start[0].stall?.reason === 'too-far';
+      return (
+        sockets(line) >= 2 &&
+        sockets(line) <= 3 &&
+        line.tray.length === sockets(line) &&
+        line.tray.every((t) => t === 1) &&
+        sols.length === 1 &&
+        start[0].stall?.reason === 'too-far'
+      );
     case 4:
-      return sockets(line) >= 3 && sockets(line) <= 4 && line.tray.length >= 2 && line.tray.length < sockets(line)
-        && line.tray.every((t) => t <= 2) && line.tray.includes(2) && sols.every((p) => spansWithTall(line, p));
+      return (
+        sockets(line) >= 3 &&
+        sockets(line) <= 4 &&
+        line.tray.length >= 2 &&
+        line.tray.length < sockets(line) &&
+        line.tray.every((t) => t <= 2) &&
+        line.tray.includes(2) &&
+        sols.every((p) => spansWithTall(line, p))
+      );
     case 5:
-      return lanes.every((l) => l.sockets.length >= 1 && l.sockets.length <= 2) && line.tray.length >= 2 && line.tray.every((t) => t === 1)
-        && lanes.every((l) => l.end === 'bell') && eachLaneNeeds(line);
+      return (
+        lanes.every((l) => l.sockets.length >= 1 && l.sockets.length <= 2) &&
+        line.tray.length >= 2 &&
+        line.tray.every((t) => t === 1) &&
+        lanes.every((l) => l.end === 'bell') &&
+        eachLaneNeeds(line)
+      );
     case 6:
-      return lanes[0].end === 'gong' && line.tray.length >= 2
-        && sols.every((p) => chainSizes(line, p)[0].every((s, i, a) => i === 0 || s >= a[i - 1]))
-        && arrangements(line).some((p) => run(line, p)[0].stall?.reason === 'too-heavy');
+      return (
+        lanes[0].end === 'gong' &&
+        line.tray.length >= 2 &&
+        sols.every((p) => chainSizes(line, p)[0].every((s, i, a) => i === 0 || s >= a[i - 1])) &&
+        arrangements(line).some((p) => run(line, p)[0].stall?.reason === 'too-heavy')
+      );
     case 7:
-      return line.tray.length >= 1 && line.tray.length === fewest(line)
-        && arrangements(line, true).some((p) => !rings(line, p));
+      return (
+        line.tray.length >= 1 &&
+        line.tray.length === fewest(line) &&
+        arrangements(line, true).some((p) => !rings(line, p))
+      );
     case 8:
-      return line.tray.length === 3 && new Set(line.tray).size >= 2 && lanes[0].end !== lanes[1].end && eachLaneNeeds(line)
-        && sols.every((p) => unevenSplit(p))
-        && arrangements(line).some((p) => run(line, p).some((r) => r.stall?.reason === 'too-heavy'));
+      return (
+        line.tray.length === 3 &&
+        new Set(line.tray).size >= 2 &&
+        lanes[0].end !== lanes[1].end &&
+        eachLaneNeeds(line) &&
+        sols.every((p) => unevenSplit(p)) &&
+        arrangements(line).some((p) => run(line, p).some((r) => r.stall?.reason === 'too-heavy'))
+      );
     case 9: {
       // The line as it stands stops at least two dominoes past the starter, and one tray piece (of one or two) fixes it.
       const stop = stopsAt(line);
-      return !!stop && stop.slot >= 2 && line.tray.length <= 2 && sols.length === 1 && sols[0][0].filter(Boolean).length === 1;
+      return (
+        !!stop &&
+        stop.slot >= 2 &&
+        line.tray.length <= 2 &&
+        sols.length === 1 &&
+        sols[0][0].filter(Boolean).length === 1
+      );
     }
     case 10: {
       // One two-wide puddle, a socket just before it that every solution fills with the tray's one giant, and a bell.
-      const l = lanes[0], wet = puddles(l), g = puddleGiantSlot(l);
-      if (l.end !== 'bell' || wet.length !== 1 || wet[0].to - wet[0].from !== 1 || g === null || !l.sockets.includes(g)) return false;
+      const l = lanes[0],
+        wet = puddles(l),
+        g = puddleGiantSlot(l);
+      if (
+        l.end !== 'bell' ||
+        wet.length !== 1 ||
+        wet[0].to - wet[0].from !== 1 ||
+        g === null ||
+        !l.sockets.includes(g)
+      )
+        return false;
       const giants = line.tray.filter((t) => t === 3).length;
       const without = [...line.tray];
       without.splice(without.indexOf(3), 1);
       // At most one decoy: the fullest solution leaves at most one tray piece unused.
       const most = Math.max(...sols.map((p) => p[0].filter(Boolean).length));
-      return giants === 1 && sols.every((p) => p[0][g] === 3) && !solutions({ ...line, tray: without }).length && most >= line.tray.length - 1;
+      return (
+        giants === 1 &&
+        sols.every((p) => p[0][g] === 3) &&
+        !solutions({ ...line, tray: without }).length &&
+        most >= line.tray.length - 1
+      );
     }
     case 11: {
       // One pier socket with a pinned small (or the starter) just before it, so no tall can reach over it; a gong.
-      const l = lanes[0], pier = l.low ?? [];
-      if (l.end !== 'gong' || pier.length !== 1 || !l.sockets.includes(pier[0]) || l.fixed[pier[0] - 1] !== 1) return false;
+      const l = lanes[0],
+        pier = l.low ?? [];
+      if (l.end !== 'gong' || pier.length !== 1 || !l.sockets.includes(pier[0]) || l.fixed[pier[0] - 1] !== 1)
+        return false;
       const P = pier[0];
       // Every solution stands a small under the pier, then climbs to the giant after it.
       const climbs = (p: Placement) => {
-        const after = runLane(l, p[0]).fallen.filter((s) => s >= P).map((s) => sizeAt(l, p[0], s));
-        return after[0] === 1 && after.every((s, i) => i === 0 || s >= after[i - 1]) && after[after.length - 1] === 3;
+        const after = runLane(l, p[0])
+          .fallen.filter((s) => s >= P)
+          .map((s) => sizeAt(l, p[0], s));
+        return (
+          after[0] === 1 &&
+          after.every((s, i) => i === 0 || s >= after[i - 1]) &&
+          after[after.length - 1] === 3
+        );
       };
       // The pier matters: without it, a bigger domino could stand there in some solution.
       const free = solutions({ ...line, lanes: [{ ...l, low: undefined }] });
       const most = Math.max(...sols.map((p) => p[0].filter(Boolean).length));
-      return sols.every((p) => p[0][P] === 1 && climbs(p)) && free.some((p) => p[0][P] > 1) && most >= line.tray.length - 1;
+      return (
+        sols.every((p) => p[0][P] === 1 && climbs(p)) &&
+        free.some((p) => p[0][P] > 1) &&
+        most >= line.tray.length - 1
+      );
     }
   }
   return false;
@@ -425,9 +518,12 @@ export function puddleGiantSlot(lane: Lane): number | null {
 
 /** A tall domino in this arrangement reaches over an empty slot to the next standing piece. */
 function spansWithTall(line: Line, placed: Placement): boolean {
-  const l = line.lanes[0], p = placed[0];
+  const l = line.lanes[0],
+    p = placed[0];
   const fallen = runLane(l, p).fallen;
-  return fallen.some((s, i) => sizeAt(l, p, s) === 2 && (i + 1 < fallen.length ? fallen[i + 1] : l.n) - s === 2);
+  return fallen.some(
+    (s, i) => sizeAt(l, p, s) === 2 && (i + 1 < fallen.length ? fallen[i + 1] : l.n) - s === 2,
+  );
 }
 
 /** The two lanes get different dominoes: by count or by size. */
@@ -440,7 +536,10 @@ function unevenSplit(placed: Placement): boolean {
 
 /** Pin small dominoes everywhere except some sockets; the starter is slot 0. */
 function smallLane(rng: Rng, n: number, holes: number, end: End = 'bell', from = 1): Lane {
-  const slots = rng.shuffle(Array.from({ length: n - from }, (_, i) => i + from)).slice(0, holes).sort((a, b) => a - b);
+  const slots = rng
+    .shuffle(Array.from({ length: n - from }, (_, i) => i + from))
+    .slice(0, holes)
+    .sort((a, b) => a - b);
   const fixed = new Array<number>(n + 1).fill(0);
   fixed[0] = 1;
   for (let s = 1; s < n; s++) if (!slots.includes(s)) fixed[s] = 1;
@@ -448,7 +547,13 @@ function smallLane(rng: Rng, n: number, holes: number, end: End = 'bell', from =
 }
 
 /** A lane whose chain a solution climbs: the solution's pieces laid at their slots, then some of them turned into sockets. */
-function chainLane(rng: Rng, n: number, end: End, pieces: number[], open: number): { lane: Lane; tray: Size[] } {
+function chainLane(
+  rng: Rng,
+  n: number,
+  end: End,
+  pieces: number[],
+  open: number,
+): { lane: Lane; tray: Size[] } {
   // `pieces[s]` is the size standing at slot s in the solution (0 empty); it is turned into a socket or pinned.
   const fixed = new Array<number>(n + 1).fill(0);
   fixed[0] = 1;
@@ -464,7 +569,8 @@ function chainLane(rng: Rng, n: number, end: End, pieces: number[], open: number
 function randomChain(rng: Rng, n: number, end: End, grow: boolean): number[] | null {
   const pieces = new Array<number>(n + 1).fill(0);
   pieces[0] = 1;
-  let i = 0, h = 1;
+  let i = 0,
+    h = 1;
   for (let tries = 0; tries < 20; tries++) {
     // Reach the end if it is in reach and pushable.
     if (n - i <= h && END_SIZE[end] <= h + 1 && (rng.chance(0.5) || n - i === 1)) return pieces;
@@ -501,7 +607,10 @@ function candidate(plan: Plan, rng: Rng): Line | null {
     case 5: {
       const total = rng.int(2, 3);
       const top = total === 3 ? rng.int(1, 2) : 1;
-      return { lanes: [smallLane(rng, rng.int(5, 6), top), smallLane(rng, rng.int(5, 6), total - top)], tray: new Array<Size>(total).fill(1) };
+      return {
+        lanes: [smallLane(rng, rng.int(5, 6), top), smallLane(rng, rng.int(5, 6), total - top)],
+        tray: new Array<Size>(total).fill(1),
+      };
     }
     case 6: {
       const chain = randomChain(rng, 6, 'gong', true);
@@ -525,13 +634,15 @@ function candidate(plan: Plan, rng: Rng): Line | null {
       return { lanes: built.map((b) => b.lane), tray: rng.shuffle(built.flatMap((b) => b.tray)) };
     }
     case 9: {
-      const decoy = (t: Size[]): Size[] => (rng.chance(0.35) ? rng.shuffle([...t, rng.pick(SIZES.filter((s) => s !== t[0]))]) : t);
+      const decoy = (t: Size[]): Size[] =>
+        rng.chance(0.35) ? rng.shuffle([...t, rng.pick(SIZES.filter((s) => s !== t[0]))]) : t;
       if (rng.chance(0.4)) {
         // Too heavy: a tall reaches over an empty socket to the gong, so only a giant stood there rings it.
         const n = rng.int(4, 6);
         const fixed = new Array<number>(n + 1).fill(0);
         fixed[0] = 1;
-        let i = 0, h = 1;
+        let i = 0,
+          h = 1;
         while (i < n - 2) {
           const step = Math.min(rng.int(1, h), n - 2 - i);
           i += step;
@@ -586,7 +697,9 @@ function candidate(plan: Plan, rng: Rng): Line | null {
       // The pier's small is always hers, and the tall, the giant or both; sometimes an empty slot is a socket too.
       const open = [P, ...rng.shuffle([P + 1, g]).slice(0, rng.int(1, 2))];
       const empty = Array.from({ length: n - P - 1 }, (_, i) => i + P + 1).filter((s) => !pieces[s]);
-      const sockets = [...open, ...(empty.length && rng.chance(0.35) ? [rng.pick(empty)] : [])].sort((a, b) => a - b);
+      const sockets = [...open, ...(empty.length && rng.chance(0.35) ? [rng.pick(empty)] : [])].sort(
+        (a, b) => a - b,
+      );
       const fixed = new Array<number>(n + 1).fill(0);
       fixed[0] = 1;
       for (let s = 1; s < n; s++) if (pieces[s] && !open.includes(s)) fixed[s] = pieces[s];
@@ -612,14 +725,17 @@ export function makeRound(plan: Plan, rng: Rng, count = plan.lines): Line[] {
   const out = [FIRST[plan.id]];
   while (out.length < count) {
     let line = makeLine(plan, rng).line;
-    for (let t = 0; t < 5 && describe(line) === describe(out[out.length - 1]); t++) line = makeLine(plan, rng).line;
+    for (let t = 0; t < 5 && describe(line) === describe(out[out.length - 1]); t++)
+      line = makeLine(plan, rng).line;
     out.push(line);
   }
   return out;
 }
 
 export const describe = (line: Line) =>
-  line.lanes.map((l) => `${l.fixed.join('')}:${l.sockets.join(',')}${l.low ? `:p${l.low.join(',')}` : ''}:${l.end}`).join('|') + `/${line.tray.join('')}`;
+  line.lanes
+    .map((l) => `${l.fixed.join('')}:${l.sockets.join(',')}${l.low ? `:p${l.low.join(',')}` : ''}:${l.end}`)
+    .join('|') + `/${line.tray.join('')}`;
 
 /* ---------------------------------------------------------------------------------------------- */
 /* Layout                                                                                         */
@@ -635,7 +751,12 @@ export const TRAY_W = 124;
 export const TRAY_H = 160;
 const TRAY_GAP = 30;
 
-export interface Box { x: number; y: number; w: number; h: number }
+export interface Box {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
 
 export interface DominoLayout {
   /** Per lane: slot 0's middle x and the lane's baseline (where dominoes stand). */
@@ -657,7 +778,11 @@ export function slotBox(l: { x0: number; base: number }, s: number): Box {
 export function dominoLayout(lanes: number, v: View, pieces = 3): DominoLayout {
   const width = 7 * PITCH;
   const portrait = v.h > v.w * 1.1;
-  const trayBox = (x: number, y: number) => ({ x, y, hit: { x: x - TRAY_W / 2, y: y - TRAY_H, w: TRAY_W, h: TRAY_H } });
+  const trayBox = (x: number, y: number) => ({
+    x,
+    y,
+    hit: { x: x - TRAY_W / 2, y: y - TRAY_H, w: TRAY_W, h: TRAY_H },
+  });
   if (!portrait) {
     const left = 150 + Math.max(0, (v.w - 20 - 150 - (width + TRAY_GAP + TRAY_W)) / 2);
     const dy = (v.h - 768) / 2;

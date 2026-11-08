@@ -1,4 +1,10 @@
-import { cleanPicture, cleanTune, type Creation, type StampPictureCreation, type TuneCreation } from './creations';
+import {
+  cleanPicture,
+  cleanTune,
+  type Creation,
+  type StampPictureCreation,
+  type TuneCreation,
+} from './creations';
 import { isSpecies, type SpeciesId } from '../creatures/species';
 import type { Band } from '../progress/bands';
 import type { LineId } from './voice-script';
@@ -46,7 +52,14 @@ export interface StepEvidence {
 export const MAX_STEP_ROUNDS = 9;
 const MAX_COUNT = 99;
 
-export const emptyWelcome = (): WelcomeProject => ({ band: null, steps: [], results: {}, newcomer: null, ended: false, evidence: {} });
+export const emptyWelcome = (): WelcomeProject => ({
+  band: null,
+  steps: [],
+  results: {},
+  newcomer: null,
+  ended: false,
+  evidence: {},
+});
 
 export interface WelcomeStepPlan {
   game: string;
@@ -92,7 +105,8 @@ export const WELCOME_PLAN: Partial<Record<WelcomeStep, WelcomeStepPlan>> = {
 export const builtSteps = (): WelcomeStep[] => WELCOME_STEPS.filter((s) => WELCOME_PLAN[s]);
 
 const isStep = (s: unknown): s is WelcomeStep => WELCOME_STEPS.some((w) => w === s);
-const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
+const isObj = (v: unknown): v is Record<string, unknown> =>
+  typeof v === 'object' && v !== null && !Array.isArray(v);
 
 /** Only a Stamp Studio picture is a `pretty` result: the board over the bed draws stamps. */
 export function stampPicture(raw: unknown): StampPictureCreation | null {
@@ -122,13 +136,18 @@ export function cleanWelcome(raw: unknown): WelcomeProject {
   };
 }
 
-const whole = (v: unknown, max: number) => (typeof v === 'number' && Number.isFinite(v) ? Math.min(max, Math.max(0, Math.floor(v))) : 0);
+const whole = (v: unknown, max: number) =>
+  typeof v === 'number' && Number.isFinite(v) ? Math.min(max, Math.max(0, Math.floor(v))) : 0;
 
 /**
  * Unknown steps go; counts are clamped; a finished record needs its step done; a record at any level but the plan's for
  * the project's band goes (so none survives without a band).
  */
-function cleanEvidence(raw: unknown, band: WelcomeBand | null, steps: readonly WelcomeStep[]): WelcomeProject['evidence'] {
+function cleanEvidence(
+  raw: unknown,
+  band: WelcomeBand | null,
+  steps: readonly WelcomeStep[],
+): WelcomeProject['evidence'] {
   const out: WelcomeProject['evidence'] = {};
   if (!isObj(raw) || !band) return out;
   for (const step of WELCOME_STEPS) {
@@ -153,7 +172,8 @@ function cleanEvidence(raw: unknown, band: WelcomeBand | null, steps: readonly W
 export const WELCOME_MET_AT = 'project:welcome';
 
 /** The friend the project adopted, if it has (it stays hers through a reset). */
-export const welcomeFriend = <T extends { metAt?: string }>(owned: readonly T[]): T | null => owned.find((o) => o.metAt === WELCOME_MET_AT) ?? null;
+export const welcomeFriend = <T extends { metAt?: string }>(owned: readonly T[]): T | null =>
+  owned.find((o) => o.metAt === WELCOME_MET_AT) ?? null;
 
 /**
  * The first of river and glider she does not own yet, or river when she owns both. Once the project has adopted, the
@@ -174,10 +194,15 @@ export function welcomeBand(p: WelcomeProject, profile: Band): WelcomeBand | nul
 }
 
 /** Home draws Continue while the project is open and is hers: a preschool or pre-K profile, or one that already began it. */
-export const showsContinue = (p: WelcomeProject, profile: Band) => !p.ended && welcomeBand(p, profile) !== null;
+export const showsContinue = (p: WelcomeProject, profile: Band) =>
+  !p.ended && welcomeBand(p, profile) !== null;
 
 /** Launching a step fixes the project's band and newcomer the first time; later launches change nothing. */
-export function beginWelcome(p: WelcomeProject, band: WelcomeBand, owned: readonly { species: SpeciesId; metAt?: string }[]): boolean {
+export function beginWelcome(
+  p: WelcomeProject,
+  band: WelcomeBand,
+  owned: readonly { species: SpeciesId; metAt?: string }[],
+): boolean {
   if (p.band) return false;
   p.band = band;
   p.newcomer ??= newcomerFor(owned);
@@ -208,7 +233,8 @@ export function completeWelcome(p: WelcomeProject, step: WelcomeStep, made: Crea
  */
 export function openWelcomeStep(p: WelcomeProject, step: WelcomeStep, at: number): boolean {
   const plan = WELCOME_PLAN[step];
-  if (!isStep(step) || !plan || p.ended || !p.band || p.evidence[step] || p.steps.includes(step)) return false;
+  if (!isStep(step) || !plan || p.ended || !p.band || p.evidence[step] || p.steps.includes(step))
+    return false;
   p.evidence[step] = { finished: false, misses: 0, hints: 0, level: plan.level[p.band], rounds: 0, at };
   return true;
 }
@@ -224,11 +250,23 @@ export interface StepRound {
  * A finished round of a step (with `completeWelcome`, in the same write): the last round's counts replace the earlier
  * ones and `rounds` counts up to 9. Nothing after the ending, without a band, or at a level the plan does not play.
  */
-export function finishWelcomeStep(p: WelcomeProject, step: WelcomeStep, round: StepRound, at: number): boolean {
+export function finishWelcomeStep(
+  p: WelcomeProject,
+  step: WelcomeStep,
+  round: StepRound,
+  at: number,
+): boolean {
   const plan = WELCOME_PLAN[step];
   if (!isStep(step) || !plan || p.ended || !p.band || round.level !== plan.level[p.band]) return false;
   const rounds = Math.min((p.evidence[step]?.rounds ?? 0) + 1, MAX_STEP_ROUNDS);
-  p.evidence[step] = { finished: true, misses: whole(round.misses, MAX_COUNT), hints: whole(round.hints, MAX_COUNT), level: round.level, rounds, at };
+  p.evidence[step] = {
+    finished: true,
+    misses: whole(round.misses, MAX_COUNT),
+    hints: whole(round.hints, MAX_COUNT),
+    level: round.level,
+    rounds,
+    at,
+  };
   return true;
 }
 
@@ -239,4 +277,5 @@ export function welcomeDoneLine(p: WelcomeProject, step: WelcomeStep, band: Welc
 }
 
 /** The first built step not done yet, or null when every built step is done. */
-export const nextWelcomeStep = (p: WelcomeProject): WelcomeStep | null => builtSteps().find((s) => !p.steps.includes(s)) ?? null;
+export const nextWelcomeStep = (p: WelcomeProject): WelcomeStep | null =>
+  builtSteps().find((s) => !p.steps.includes(s)) ?? null;

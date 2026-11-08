@@ -45,7 +45,13 @@ export interface Pair {
   B: Stop;
 }
 /** The pairs a round may show, nearer first: never {3, 4}, which look too alike. */
-export const PAIRS: readonly [Stop, Stop][] = [[1, 2], [1, 3], [1, 4], [2, 3], [2, 4]];
+export const PAIRS: readonly [Stop, Stop][] = [
+  [1, 2],
+  [1, 3],
+  [1, 4],
+  [2, 3],
+  [2, 4],
+];
 
 export const brighterOf = (p: Pair): Lane => (p.A < p.B ? 'A' : 'B');
 
@@ -54,12 +60,14 @@ export function pairsFor(rng: Rng, authored: boolean): Pair[] {
   const firstLane: Lane = authored ? 'A' : rng.pick(LANES);
   const first = authored ? PAIRS[1] : rng.pick(PAIRS);
   const second = rng.pick(PAIRS.filter((p) => p !== first));
-  const place = ([near, far]: [Stop, Stop], lane: Lane): Pair => (lane === 'A' ? { A: near, B: far } : { A: far, B: near });
+  const place = ([near, far]: [Stop, Stop], lane: Lane): Pair =>
+    lane === 'A' ? { A: near, B: far } : { A: far, B: near };
   return [place(first, firstLane), place(second, other(firstLane))];
 }
 
 export type BrighterVerdict = 'right' | 'dimmer';
-export const judgeBrighter = (p: Pair, lane: Lane): BrighterVerdict => (lane === brighterOf(p) ? 'right' : 'dimmer');
+export const judgeBrighter = (p: Pair, lane: Lane): BrighterVerdict =>
+  lane === brighterOf(p) ? 'right' : 'dimmer';
 
 // ----- level 4: make them match -----
 
@@ -85,19 +93,24 @@ export function boardsFor(rng: Rng, authored: boolean): Board[] {
 }
 
 export type MatchVerdict = 'same' | 'too-bright' | 'too-dim';
-export const judgeMatch = (b: Board, stop: Stop): MatchVerdict => (stop === b.r ? 'same' : stop < b.r ? 'too-bright' : 'too-dim');
+export const judgeMatch = (b: Board, stop: Stop): MatchVerdict =>
+  stop === b.r ? 'same' : stop < b.r ? 'too-bright' : 'too-dim';
 
 // ----- level 5: which is farther? -----
 
 /** The farther (dimmer-looking) light of a pair. Level 5 shows level 3's pairs, so the farther is in lane A once and B once. */
 export const fartherOf = (p: Pair): Lane => other(brighterOf(p));
 export type FartherVerdict = 'right' | 'nearer';
-export const judgeFarther = (p: Pair, lane: Lane): FartherVerdict => (lane === fartherOf(p) ? 'right' : 'nearer');
+export const judgeFarther = (p: Pair, lane: Lane): FartherVerdict =>
+  lane === fartherOf(p) ? 'right' : 'nearer';
 
 // ----- level 6: near to far -----
 
 /** Level 6's two stop sets: every neighbour at least 2.25× apart ({x, 3, 4} never). */
-export const ORDER_SETS: readonly (readonly [Stop, Stop, Stop])[] = [[1, 2, 3], [1, 2, 4]];
+export const ORDER_SETS: readonly (readonly [Stop, Stop, Stop])[] = [
+  [1, 2, 3],
+  [1, 2, 4],
+];
 
 /** Three lights in the window's three spots, left to right: each spot's stop. */
 export interface OrderBoard {
@@ -214,7 +227,7 @@ export function strongBoardsFor(rng: Rng, level: 7 | 8, authored: boolean): Stro
   const first = authored ? pool[0] : rng.pick(pool);
   const second = rng.pick(pool.filter((p) => p !== first));
   const place = ([gentle, strong]: readonly [Light, Light], lane: Lane): StrongBoard =>
-    (lane === 'A' ? { A: strong, B: gentle } : { A: gentle, B: strong });
+    lane === 'A' ? { A: strong, B: gentle } : { A: gentle, B: strong };
   return [place(first, strongLane), place(second, other(strongLane))];
 }
 
@@ -225,10 +238,12 @@ export const openingStop = (b: StrongBoard): Stop => b[strongOf(b)].stop;
 export const STEP_SHIFT = 120;
 export const shiftOf = (stop: Stop): number => STEP_SHIFT / stop;
 /** Two shifts read apart only if one is at least twice the other and they differ by at least 50 units. */
-export const readableShift = (a: number, b: number): boolean => Math.max(a, b) >= 2 * Math.min(a, b) && Math.abs(a - b) >= 50;
+export const readableShift = (a: number, b: number): boolean =>
+  Math.max(a, b) >= 2 * Math.min(a, b) && Math.abs(a - b) >= 50;
 
 /** Every light that could look like this: any glow at any stop whose look is exactly the same. */
-export const lightsLooking = (l: number): Light[] => GLOWS.flatMap((glow) => STOPS.filter((s) => look(glow, s) === l).map((s) => L(glow, s)));
+export const lightsLooking = (l: number): Light[] =>
+  GLOWS.flatMap((glow) => STOPS.filter((s) => look(glow, s) === l).map((s) => L(glow, s)));
 
 /**
  * The explanations that fit what she sees: every lane assignment whose looks match, and (after the step) whose shifts
@@ -236,16 +251,20 @@ export const lightsLooking = (l: number): Light[] => GLOWS.flatMap((glow) => STO
  */
 export function candidates(b: StrongBoard, shifts: Record<Lane, number> | null): StrongBoard[] {
   const out: StrongBoard[] = [];
-  for (const A of lightsLooking(lookOf(b.A))) for (const B of lightsLooking(lookOf(b.B))) {
-    if (shifts && (shiftOf(A.stop) !== shifts.A || shiftOf(B.stop) !== shifts.B)) continue;
-    out.push({ A, B });
-  }
+  for (const A of lightsLooking(lookOf(b.A)))
+    for (const B of lightsLooking(lookOf(b.B))) {
+      if (shifts && (shiftOf(A.stop) !== shifts.A || shiftOf(B.stop) !== shifts.B)) continue;
+      out.push({ A, B });
+    }
   return out;
 }
 /** The "which is farther" answers the candidates leave: a lane, or 'same' when both could be at one stop. */
 export const fartherAnswers = (cs: readonly StrongBoard[]): Set<Lane | 'same'> =>
   new Set(cs.map((c) => (c.A.stop === c.B.stop ? 'same' : c.A.stop > c.B.stop ? 'A' : 'B')));
-export const shiftsOf = (b: StrongBoard): Record<Lane, number> => ({ A: shiftOf(b.A.stop), B: shiftOf(b.B.stop) });
+export const shiftsOf = (b: StrongBoard): Record<Lane, number> => ({
+  A: shiftOf(b.A.stop),
+  B: shiftOf(b.B.stop),
+});
 
 /**
  * Level 8's board in hand: before the first step a tap is a prediction and Both could fit the right call (neither
@@ -423,8 +442,10 @@ export const corners = (v: View): Rect[] => [
   { x: 0, y: 0, ...HOME_CORNER },
   { x: 0, y: v.h - PET_CORNER.h, ...PET_CORNER },
 ];
-const overlaps = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
-const inside = (a: Rect, b: Rect) => a.x >= b.x && a.y >= b.y && a.x + a.w <= b.x + b.w && a.y + a.h <= b.y + b.h;
+const overlaps = (a: Rect, b: Rect) =>
+  a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+const inside = (a: Rect, b: Rect) =>
+  a.x >= b.x && a.y >= b.y && a.x + a.w <= b.x + b.w && a.y + a.h <= b.y + b.h;
 export const ringBox = (c: Ring): Rect => ({ x: c.x - c.r, y: c.y - c.r, w: c.r * 2, h: c.r * 2 });
 const ringsMeet = (a: Ring, b: Ring) => Math.hypot(a.x - b.x, a.y - b.y) < a.r + b.r;
 export function ringHits(c: Ring, r: Rect): boolean {
@@ -434,17 +455,27 @@ export function ringHits(c: Ring, r: Rect): boolean {
 }
 
 /** The strip's touch circles: one per lane per stop (none behind the curtain, where the strip is display only). */
-export const stripRings = (l: FarLayout): Ring[] => (l.strip && !l.tassel ? LANES.flatMap((lane) => l.stopX.map((x) => ({ x, y: l.laneY[lane], r: l.touchR }))) : []);
+export const stripRings = (l: FarLayout): Ring[] =>
+  l.strip && !l.tassel
+    ? LANES.flatMap((lane) => l.stopX.map((x) => ({ x, y: l.laneY[lane], r: l.touchR })))
+    : [];
 /** The window's touch circles (levels 1, 3, 5 and 6) and the biggest halos (stop 1) around each spot. */
 export const windowRings = (l: FarLayout): Ring[] => l.spots.map((s) => ({ ...s, r: l.touchR }));
 export const haloRings = (l: FarLayout): Ring[] => l.spots.map((s) => ({ ...s, r: HALO_MAX }));
 
 /** Every board level 8 can show: both readable-shift pairs, the strong light in either lane. */
 export const stepBoards = (): StrongBoard[] =>
-  STEP_PAIRS.flatMap(([gentle, strong]) => [{ A: strong, B: gentle }, { A: gentle, B: strong }]);
+  STEP_PAIRS.flatMap(([gentle, strong]) => [
+    { A: strong, B: gentle },
+    { A: gentle, B: strong },
+  ]);
 /** Level 8: the biggest halos (look 1) where each light sits, `t` of the way through the step (0 home, 1 stepped). */
 export const steppedHalos = (l: FarLayout, b: StrongBoard, t: number): Ring[] =>
-  LANES.map((lane, i) => ({ x: l.spots[i].x - t * shiftOf(b[lane].stop), y: l.spots[i].y, r: haloRadius(lookOf(b[lane])) }));
+  LANES.map((lane, i) => ({
+    x: l.spots[i].x - t * shiftOf(b[lane].stop),
+    y: l.spots[i].y,
+    r: haloRadius(lookOf(b[lane])),
+  }));
 
 /**
  * Where everything goes: the strip across the top (levels 2–4), the window view below it, right of the guide's column.
@@ -467,7 +498,8 @@ export function farLayout(v: View, level: number): FarLayout | null {
     house = { x: strip.x, y: strip.y + 10, w: HOUSE_W, h: 2 * LANE_H };
     const first = house.x + house.w + TOUCH / 2 + 10;
     const curtained = level >= 5;
-    if (curtained) tassel = { x: strip.x + strip.w - TASSEL / 2 - 10, y: strip.y + strip.h / 2, r: TASSEL / 2 };
+    if (curtained)
+      tassel = { x: strip.x + strip.w - TASSEL / 2 - 10, y: strip.y + strip.h / 2, r: TASSEL / 2 };
     const last = curtained ? tassel!.x - TASSEL / 2 - TOUCH / 2 : strip.x + strip.w - TOUCH / 2 - 10;
     const gap = Math.min(200, (last - first) / 3);
     if (gap < STOP_GAP) return null;
@@ -483,21 +515,49 @@ export function farLayout(v: View, level: number): FarLayout | null {
   // Level 8 centres the lights in the room above its buttons, and keeps them 150 from the centre so a stop-1 light can step 120 left.
   const cy = level === 8 ? win.y + (win.h - BUTTON - 20) / 2 : win.y + win.h / 2 - (level === 4 ? 30 : 0);
   const three = level === 1 || level === 6;
-  const half = three ? Math.min(240, (win.w - 2 * HALO_MAX) / 2) : level === 8 ? 150 : Math.max(130, Math.min(200, win.w / 2 - HALO_MAX - 30));
-  const spots = three ? [-1, 0, 1].map((k) => ({ x: cx + k * half, y: cy })) : [{ x: cx - half, y: cy }, { x: cx + half, y: cy }];
-  const check: Rect | null = level === 4 ? { x: win.x + win.w - CHECK - 20, y: win.y + win.h - CHECK - 20, w: CHECK, h: CHECK } : null;
+  const half = three
+    ? Math.min(240, (win.w - 2 * HALO_MAX) / 2)
+    : level === 8
+      ? 150
+      : Math.max(130, Math.min(200, win.w / 2 - HALO_MAX - 30));
+  const spots = three
+    ? [-1, 0, 1].map((k) => ({ x: cx + k * half, y: cy }))
+    : [
+        { x: cx - half, y: cy },
+        { x: cx + half, y: cy },
+      ];
+  const check: Rect | null =
+    level === 4 ? { x: win.x + win.w - CHECK - 20, y: win.y + win.h - CHECK - 20, w: CHECK, h: CHECK } : null;
   const by = win.y + win.h - BUTTON - 20;
   const fit: Rect | null = level === 8 ? { x: cx - 20 - BUTTON, y: by, w: BUTTON, h: BUTTON } : null;
   const step: Rect | null = level === 8 ? { x: cx + 20, y: by, w: BUTTON, h: BUTTON } : null;
-  const l: FarLayout = { strip, house, stopX, laneY, lanes3, tassel, window: win, spots, touchR, check, fit, step };
+  const l: FarLayout = {
+    strip,
+    house,
+    stopX,
+    laneY,
+    lanes3,
+    tassel,
+    window: win,
+    spots,
+    touchR,
+    check,
+    fit,
+    step,
+  };
 
   // Every touch area inside the room, clear of the corners and of each other.
-  const touches = [...stripRings(l), ...(level === 4 || level === 2 ? [] : windowRings(l)), ...(tassel ? [tassel] : [])];
+  const touches = [
+    ...stripRings(l),
+    ...(level === 4 || level === 2 ? [] : windowRings(l)),
+    ...(tassel ? [tassel] : []),
+  ];
   if (level === 1 && half < 200) return null;
   if (level === 6 && half < 240) return null;
   if (touches.some((c) => !inside(ringBox(c), room) || corners(v).some((k) => ringHits(c, k)))) return null;
   if (touches.some((a, i) => touches.some((b, j) => i < j && ringsMeet(a, b)))) return null;
-  if (corners(v).some((k) => overlaps(win, k)) || (strip && corners(v).some((k) => overlaps(strip!, k)))) return null;
+  if (corners(v).some((k) => overlaps(win, k)) || (strip && corners(v).some((k) => overlaps(strip!, k))))
+    return null;
   if (strip && overlaps(strip, win)) return null;
   if (tassel && strip && !inside(ringBox(tassel), strip)) return null;
   // The halos stay inside the window, never touch each other, and the Check covers none of them.
@@ -510,7 +570,8 @@ export function farLayout(v: View, level: number): FarLayout | null {
     for (const b of stepBoards()) {
       for (const t of [0, 1]) {
         const at = steppedHalos(l, b, t);
-        if (at.some((h) => !inside(ringBox(h), win) || [fit!, step!].some((r) => ringHits(h, r)))) return null;
+        if (at.some((h) => !inside(ringBox(h), win) || [fit!, step!].some((r) => ringHits(h, r))))
+          return null;
         if (ringsMeet(at[0], at[1])) return null;
       }
     }
@@ -543,4 +604,5 @@ export const LEVELS: BandLevels = {
   prek: { min: 3, max: 4 },
   school: { min: 4, max: 8 },
 };
-export const planFor = (level: number): PlanInfo => PLANS[Math.min(PLANS.length, Math.max(1, Math.round(level))) - 1];
+export const planFor = (level: number): PlanInfo =>
+  PLANS[Math.min(PLANS.length, Math.max(1, Math.round(level))) - 1];

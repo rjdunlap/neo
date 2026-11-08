@@ -2,8 +2,12 @@
 export const VOICE = {
   'game.sea-lift': ['Sea lift!'],
   'sealift.intro': ['The water is zero. Friends wait above it and below it.'],
-  'sealift.instruct.updown': ['The water is zero. Friends ask for stops above and below it. Tap where the lift should go.'],
-  'sealift.instruct.through': ['Friends in the lift ask to go up or down. The ride goes through the water. Tap where it ends.'],
+  'sealift.instruct.updown': [
+    'The water is zero. Friends ask for stops above and below it. Tap where the lift should go.',
+  ],
+  'sealift.instruct.through': [
+    'Friends in the lift ask to go up or down. The ride goes through the water. Tap where it ends.',
+  ],
   'sealift.instruct.deepest': ['Pick up the deepest friend first! Then the next deepest.'],
   'sealift.instruct.highest': ['Pick up the highest friend first! Then the next highest.'],
   'sealift.ask.up': ['Take me {n} above the water!', 'Please take me {n} above the water!'],
@@ -20,9 +24,14 @@ export const VOICE = {
   'sealift.aboard': ['All aboard!'],
   'sealift.done': ['Every friend is where they wanted to be. Thank you, {pet}!'],
   'sealift.instruct.howfar': ['How many stops from one friend to the other? Tap the number.'],
-  'sealift.instruct.twin': ['Each friend has a twin just as far from the water, on the other side. Tap where the twin lives.'],
+  'sealift.instruct.twin': [
+    'Each friend has a twin just as far from the water, on the other side. Tap where the twin lives.',
+  ],
   'sealift.ask.howfar': ['How many stops from the {a} to the {b}?'],
-  'sealift.ask.twin': ['My twin lives just as far from the water, on the other side.', 'My twin lives on the other side of the water, just as far away.'],
+  'sealift.ask.twin': [
+    'My twin lives just as far from the water, on the other side.',
+    'My twin lives on the other side of the water, just as far away.',
+  ],
   'sealift.ask.twin.dock': ['I live at the water. Where does my twin live?'],
   'sealift.howfar.right': ['{n} stops! Thank you.'],
   'sealift.howfar.count': ['{to} stops to the water, and {more} more.'],

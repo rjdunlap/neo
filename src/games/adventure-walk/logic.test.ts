@@ -3,12 +3,29 @@ import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import { WHERE_WORDS } from '../peekaround-island/logic';
 import {
-  LANDMARKS, PATH_WORDS, STOPS, askHint, askedSlot, botSlot, callAt, choose, groupOf, makeRoute, restart, startWalk, step, stopLayout, waysAt, wayInSlot,
-  type Rect, type WalkState,
+  LANDMARKS,
+  PATH_WORDS,
+  STOPS,
+  askHint,
+  askedSlot,
+  botSlot,
+  callAt,
+  choose,
+  groupOf,
+  makeRoute,
+  restart,
+  startWalk,
+  step,
+  stopLayout,
+  waysAt,
+  wayInSlot,
+  type Rect,
+  type WalkState,
 } from './logic';
 
 const seeds = Array.from({ length: 500 }, (_, i) => i + 1);
-const hit = (a: Rect, b: Rect, pad = 0) => a.x < b.x + b.w + pad && b.x < a.x + a.w + pad && a.y < b.y + b.h + pad && b.y < a.y + a.h + pad;
+const hit = (a: Rect, b: Rect, pad = 0) =>
+  a.x < b.x + b.w + pad && b.x < a.x + a.w + pad && a.y < b.y + b.h + pad && b.y < a.y + a.h + pad;
 
 describe('Adventure Walk: table', () => {
   it('has five landmarks, two different words each, and every path word turns up', () => {
@@ -17,13 +34,18 @@ describe('Adventure Walk: table', () => {
     for (const l of LANDMARKS) {
       expect(l.ways[0].word).not.toBe(l.ways[1].word);
       expect(l.ways[0].sound).not.toBe(l.ways[1].sound);
-      for (const w of l.ways) { all.add(w.word); expect(PATH_WORDS).toContain(w.word); expect(w.phrase.startsWith(w.word)).toBe(true); }
+      for (const w of l.ways) {
+        all.add(w.word);
+        expect(PATH_WORDS).toContain(w.word);
+        expect(w.phrase.startsWith(w.word)).toBe(true);
+      }
     }
     expect([...all].sort()).toEqual([...PATH_WORDS].sort());
   });
   it('shares no word with Peekaround Island', () => {
     const where = Object.values(WHERE_WORDS);
-    for (const l of LANDMARKS) for (const w of l.ways) for (const p of where) expect(w.phrase).not.toContain(p);
+    for (const l of LANDMARKS)
+      for (const w of l.ways) for (const p of where) expect(w.phrase).not.toContain(p);
   });
 });
 
@@ -37,7 +59,10 @@ describe('Adventure Walk: routes', () => {
         expect(r.stops).toHaveLength(STOPS);
         expect(new Set(r.stops.map((s) => s.landmark)).size).toBe(STOPS);
         expect(makeRoute(level, new Rng(seed))).toEqual(r);
-        r.stops.forEach((s) => { seen.add(s.landmark); firsts.add(s.first); });
+        r.stops.forEach((s) => {
+          seen.add(s.landmark);
+          firsts.add(s.first);
+        });
       }
       expect(seen.size).toBe(5);
       expect(firsts.size).toBe(2);
@@ -67,7 +92,10 @@ describe('Adventure Walk: choices', () => {
   it('level 1: every way at every stop goes', () => {
     for (const seed of seeds.slice(0, 50)) {
       const r = makeRoute(1, new Rng(seed));
-      r.stops.forEach((_, i) => { expect(choose(r, i, 0).kind).toBe('go'); expect(choose(r, i, 1).kind).toBe('go'); });
+      r.stops.forEach((_, i) => {
+        expect(choose(r, i, 0).kind).toBe('go');
+        expect(choose(r, i, 1).kind).toBe('go');
+      });
     }
   });
   it('levels 2-3: only the asked way goes; the other names both words', () => {
@@ -91,7 +119,10 @@ describe('Adventure Walk: misses and hints', () => {
   const wrongSlot = (s: WalkState): 0 | 1 => (askedSlot(s.route.stops[s.stop]) === 0 ? 1 : 0);
   it('level 1 is always 0/0 and reaches the picnic', () => {
     const s = startWalk(1, new Rng(3));
-    for (let i = 0; i < STOPS; i++) { const r = step(s, (i % 2) as 0 | 1); expect(r.kind).toBe('go'); }
+    for (let i = 0; i < STOPS; i++) {
+      const r = step(s, (i % 2) as 0 | 1);
+      expect(r.kind).toBe('go');
+    }
     expect([s.misses, s.hints, s.stop]).toEqual([0, 0, STOPS]);
   });
   it('a scripted level-2 round: misses count each wrong tap; two at a stop light the way once; Show a hint is once per stop', () => {
@@ -135,16 +166,24 @@ describe('Adventure Walk: misses and hints', () => {
 });
 
 describe('Adventure Walk: layout', () => {
-  const views = { landscape: computeView(1024, 768), portrait: computeView(768, 1024), phone: computeView(844, 390), notch: computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }) };
+  const views = {
+    landscape: computeView(1024, 768),
+    portrait: computeView(768, 1024),
+    phone: computeView(844, 390),
+    notch: computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
+  };
   for (const [name, view] of Object.entries(views)) {
     for (const level of [1, 2, 3]) {
       it(`fits level ${level} in ${name}`, () => {
         const l = stopLayout(view, level);
         const targets = l.badge ? [...l.zones, l.badge] : [...l.zones];
         for (const r of targets) {
-          expect(r.x).toBeGreaterThanOrEqual(0); expect(r.y).toBeGreaterThanOrEqual(0);
-          expect(r.x + r.w).toBeLessThanOrEqual(view.w); expect(r.y + r.h).toBeLessThanOrEqual(view.h);
-          expect(r.w).toBeGreaterThanOrEqual(100); expect(r.h).toBeGreaterThanOrEqual(100);
+          expect(r.x).toBeGreaterThanOrEqual(0);
+          expect(r.y).toBeGreaterThanOrEqual(0);
+          expect(r.x + r.w).toBeLessThanOrEqual(view.w);
+          expect(r.y + r.h).toBeLessThanOrEqual(view.h);
+          expect(r.w).toBeGreaterThanOrEqual(100);
+          expect(r.h).toBeGreaterThanOrEqual(100);
         }
         expect(l.zones[0].w).toBeGreaterThanOrEqual(view.w >= view.h ? 280 : 300);
         expect(l.zones[0].h).toBeGreaterThanOrEqual(view.w >= view.h ? 260 : 240);
@@ -152,7 +191,10 @@ describe('Adventure Walk: layout', () => {
         if (l.badge) for (const z of l.zones) expect(hit(z, l.badge)).toBe(false);
         const pet: Rect = { x: 0, y: view.h - 170, w: 160, h: 170 };
         const home: Rect = { x: 0, y: 0, w: 110, h: 110 };
-        for (const r of targets) { expect(hit(r, pet)).toBe(false); expect(hit(r, home)).toBe(false); }
+        for (const r of targets) {
+          expect(hit(r, pet)).toBe(false);
+          expect(hit(r, home)).toBe(false);
+        }
         expect(l.stand.y).toBeLessThanOrEqual(view.h);
       });
     }

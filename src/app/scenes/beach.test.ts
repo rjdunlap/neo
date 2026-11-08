@@ -24,7 +24,9 @@ describe('Bubble Beach as a location', () => {
           expect(overlaps(r, sunRect(view)), where).toBe(false);
         } else expect(y, where).toBeGreaterThan(ground + 20);
       }
-      for (const p of plan) for (const b of plan) if (p !== b) expect(overlaps(p.rect, b.rect), `${p.kind} on ${b.kind} ${where0}`).toBe(false);
+      for (const p of plan)
+        for (const b of plan)
+          if (p !== b) expect(overlaps(p.rect, b.rect), `${p.kind} on ${b.kind} ${where0}`).toBe(false);
       expect(beachPlan(layout, view, ground)).toEqual(plan);
     }
   });

@@ -24,10 +24,12 @@ describe('Bubble Pop mode cards', () => {
   it('a picture matches its level: counting pictures count, bond pictures add up, color pictures show the colors in play', () => {
     for (const [level, { picture }] of Object.entries(MODE_CARDS).map(([l, c]) => [Number(l), c] as const)) {
       const plan = PLANS[level - 1];
-      if (picture.kind === 'bond') expect(picture.numbers[0] + picture.numbers[1], `level ${level}`).toBe(plan.sum);
+      if (picture.kind === 'bond')
+        expect(picture.numbers[0] + picture.numbers[1], `level ${level}`).toBe(plan.sum);
       if (picture.kind === 'colors') expect(picture.colors, `level ${level}`).toBe(plan.colors);
       if (picture.kind === 'palm') expect(plan.anywhere, `level ${level}`).toBe(true);
-      if (picture.kind === 'plain') expect(plan.mode === 'free' && !plan.anywhere, `level ${level}`).toBe(true);
+      if (picture.kind === 'plain')
+        expect(plan.mode === 'free' && !plan.anywhere, `level ${level}`).toBe(true);
     }
   });
 

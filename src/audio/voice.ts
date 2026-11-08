@@ -9,7 +9,11 @@ export type LineVars = Record<string, string | number>;
  * A device-speech voice other than the pet's: a puppet's, say. `pitch` and `rate` are the Web Speech ranges the
  * islands' voices stay intelligible in (about 0.5–2 and 0.6–1.3); `volume` scales the app's voice volume (1 by default).
  */
-export interface VoicePreset { pitch: number; rate: number; volume?: number }
+export interface VoicePreset {
+  pitch: number;
+  rate: number;
+  volume?: number;
+}
 
 /** The pet's own device voice, so a preset can keep clear of it (`src/games/puppet-stage/logic.ts` tests the margin). */
 export const PET_VOICE: VoicePreset = { pitch: 1.15, rate: 0.95 };
@@ -73,7 +77,8 @@ class Voice {
    */
   sayIn(id: LineId, preset: VoicePreset, vars?: LineVars): Promise<void> {
     const text = this.line(id, vars);
-    if (envMuted || !this.enabled) return new Promise((resolve) => window.setTimeout(resolve, 600 + text.length * 45));
+    if (envMuted || !this.enabled)
+      return new Promise((resolve) => window.setTimeout(resolve, 600 + text.length * 45));
     this.cutClip();
     this.turn++;
     return this.device(text, preset);
@@ -81,7 +86,8 @@ class Voice {
 
   speak(text: string): Promise<void> {
     // Silenced: stay quiet but keep a spoken line's pacing so games that await it don't rush.
-    if (envMuted || !this.enabled) return new Promise((resolve) => window.setTimeout(resolve, 600 + text.length * 45));
+    if (envMuted || !this.enabled)
+      return new Promise((resolve) => window.setTimeout(resolve, 600 + text.length * 45));
     this.cutClip();
     const turn = ++this.turn;
     const url = clipUrl(text);

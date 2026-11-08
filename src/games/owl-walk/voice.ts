@@ -2,9 +2,15 @@
 export const VOICE = {
   'game.owl-walk': ['Owl walk home!'],
   'owl.one': ['Help the little owl walk home to the nest! Tap the cards to turn one over.'],
-  'owl.turns': ['The baby owls want to go home to their nest. You are the purple owl and I am the brown owl. Let us take turns! Your turn: tap the cards.'],
-  'owl.choose': ['Three owls want to go home! Turn over a card, tap the owl you want to hop, then tap its stone. We take turns.'],
-  'owl.farthest': ['Turn over a card. Then choose the owl that hops the farthest, and tap its stone, so everyone gets home sooner!'],
+  'owl.turns': [
+    'The baby owls want to go home to their nest. You are the purple owl and I am the brown owl. Let us take turns! Your turn: tap the cards.',
+  ],
+  'owl.choose': [
+    'Three owls want to go home! Turn over a card, tap the owl you want to hop, then tap its stone. We take turns.',
+  ],
+  'owl.farthest': [
+    'Turn over a card. Then choose the owl that hops the farthest, and tap its stone, so everyone gets home sooner!',
+  ],
   'owl.color': ['{color}!'],
   'owl.tap-stone': ['Now tap the next {color} stone ahead of the owl.'],
   'owl.pick-owl': ['Tap the owl you want to hop with the {color} card.'],

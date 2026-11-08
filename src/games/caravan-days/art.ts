@@ -14,7 +14,10 @@ const TILE = { fill: 0x5aa6d8, line: 0x2f6f9e, light: 0x9fd3f2 };
 const FLAG = { fill: 0xf26d6d, line: 0xb03a3a };
 
 function label(text: string, size = 30, fill: number = ink): Text {
-  const t = new Text({ text, style: { fontFamily: 'Nunito, sans-serif', fontSize: size, fontWeight: '800', fill, align: 'center' } });
+  const t = new Text({
+    text,
+    style: { fontFamily: 'Nunito, sans-serif', fontSize: size, fontWeight: '800', fill, align: 'center' },
+  });
   t.anchor.set(0.5);
   t.eventMode = 'none';
   return t;
@@ -60,20 +63,33 @@ export class Camel extends Container {
     torso.roundRect(-96, -70, 192, 84, 40).fill(CAMEL_COLORS.fill);
     torso.ellipse(-44, -78, 36, 26).fill(CAMEL_COLORS.light);
     torso.ellipse(30, -80, 36, 28).fill(CAMEL_COLORS.light);
-    const tail = new Graphics().moveTo(-96, -50).quadraticCurveTo(-120, -40, -118, -12).stroke(line(CAMEL_COLORS.line, 6));
+    const tail = new Graphics()
+      .moveTo(-96, -50)
+      .quadraticCurveTo(-120, -40, -118, -12)
+      .stroke(line(CAMEL_COLORS.line, 6));
     tail.circle(-118, -10, 9).fill(CAMEL_COLORS.line);
     this.body.addChild(torso, tail);
     // The neck rises from the chest and carries the head; it pivots at the chest.
     const neck = new Graphics();
     neck.moveTo(0, 0).quadraticCurveTo(26, -60, 28, -110).stroke(line(CAMEL_COLORS.fill, 34));
-    neck.moveTo(0, 0).quadraticCurveTo(26, -60, 28, -110).stroke({ width: 44, color: CAMEL_COLORS.line, cap: 'round', join: 'round', alpha: 0 });
+    neck
+      .moveTo(0, 0)
+      .quadraticCurveTo(26, -60, 28, -110)
+      .stroke({ width: 44, color: CAMEL_COLORS.line, cap: 'round', join: 'round', alpha: 0 });
     const head = new Graphics();
     head.roundRect(10, -140, 72, 44, 20).fill(CAMEL_COLORS.fill).stroke(line(CAMEL_COLORS.line, 5));
     head.ellipse(40, -112, 32, 20).fill(CAMEL_COLORS.light);
     head.circle(26, -148, 9).fill(CAMEL_COLORS.fill).stroke(line(CAMEL_COLORS.line, 4));
     head.circle(42, -150, 9).fill(CAMEL_COLORS.fill).stroke(line(CAMEL_COLORS.line, 4));
     head.circle(50, -126, 7).fill(ink);
-    head.moveTo(44, -134).lineTo(40, -140).moveTo(52, -135).lineTo(52, -142).moveTo(58, -132).lineTo(63, -138).stroke(line(ink, 3));
+    head
+      .moveTo(44, -134)
+      .lineTo(40, -140)
+      .moveTo(52, -135)
+      .lineTo(52, -142)
+      .moveTo(58, -132)
+      .lineTo(63, -138)
+      .stroke(line(ink, 3));
     head.ellipse(76, -112, 7, 5).fill(CAMEL_COLORS.line);
     head.moveTo(60, -104).quadraticCurveTo(70, -98, 80, -104).stroke(line(CAMEL_COLORS.line, 3));
     this.bells.circle(14, -72, 8).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 3));
@@ -114,9 +130,19 @@ export function baleArt(color: ColorName, size = 110): Graphics {
   const w = size * 0.8;
   const h = size * 0.62;
   g.ellipse(0, h * 0.5, w * 0.5, 10).fill({ color: shadow, alpha: 0.14 });
-  g.roundRect(-w / 2, -h / 2, w, h, 16).fill(sw.fill).stroke(line(sw.line, 5));
-  g.moveTo(-w / 2, -h * 0.15).lineTo(w / 2, -h * 0.15).moveTo(-w / 2, h * 0.15).lineTo(w / 2, h * 0.15).stroke(line(sw.line, 3));
-  g.moveTo(-w * 0.2, -h / 2).lineTo(-w * 0.2, h / 2).moveTo(w * 0.2, -h / 2).lineTo(w * 0.2, h / 2).stroke(line(sw.line, 3));
+  g.roundRect(-w / 2, -h / 2, w, h, 16)
+    .fill(sw.fill)
+    .stroke(line(sw.line, 5));
+  g.moveTo(-w / 2, -h * 0.15)
+    .lineTo(w / 2, -h * 0.15)
+    .moveTo(-w / 2, h * 0.15)
+    .lineTo(w / 2, h * 0.15)
+    .stroke(line(sw.line, 3));
+  g.moveTo(-w * 0.2, -h / 2)
+    .lineTo(-w * 0.2, h / 2)
+    .moveTo(w * 0.2, -h / 2)
+    .lineTo(w * 0.2, h / 2)
+    .stroke(line(sw.line, 3));
   g.roundRect(-w * 0.28, -h * 0.05, w * 0.56, h * 0.1, 4).fill(sw.light);
   return g;
 }
@@ -129,24 +155,54 @@ export function oasisArt(landmark: Landmark, size = 120, glow = false): Containe
   const g = new Graphics();
   const r = size / 2;
   if (glow) g.ellipse(0, r * 0.35, r * 1.15, r * 0.6).fill({ color: swatch.yellow.fill, alpha: 0.55 });
-  g.ellipse(0, r * 0.35, r * 0.95, r * 0.42).fill(WATER.fill).stroke(line(WATER.line, 5));
+  g.ellipse(0, r * 0.35, r * 0.95, r * 0.42)
+    .fill(WATER.fill)
+    .stroke(line(WATER.line, 5));
   g.ellipse(-r * 0.3, r * 0.28, r * 0.3, r * 0.1).fill({ color: 0xffffff, alpha: 0.5 });
   c.addChild(g);
   const mark = new Graphics();
   if (landmark === 'palm') {
-    mark.moveTo(r * 0.25, r * 0.2).quadraticCurveTo(r * 0.3, -r * 0.4, r * 0.1, -r * 0.9).stroke(line(PALM.trunk, 10));
+    mark
+      .moveTo(r * 0.25, r * 0.2)
+      .quadraticCurveTo(r * 0.3, -r * 0.4, r * 0.1, -r * 0.9)
+      .stroke(line(PALM.trunk, 10));
     for (const a of [-1.1, -0.6, -0.1, 0.4, 0.9]) {
       const x = r * 0.1 + Math.cos(a - 1.2) * r * 0.55;
       const y = -r * 0.9 + Math.sin(a - 1.2) * r * 0.45 + r * 0.15;
-      mark.moveTo(r * 0.1, -r * 0.9).quadraticCurveTo((r * 0.1 + x) / 2, y - r * 0.25, x, y).stroke(line(PALM.leaf, 9));
+      mark
+        .moveTo(r * 0.1, -r * 0.9)
+        .quadraticCurveTo((r * 0.1 + x) / 2, y - r * 0.25, x, y)
+        .stroke(line(PALM.leaf, 9));
     }
   } else if (landmark === 'rock') {
-    mark.moveTo(-r * 0.55, r * 0.05).lineTo(-r * 0.35, -r * 0.75).lineTo(-r * 0.05, -r * 0.5).lineTo(r * 0.2, -r * 0.95).lineTo(r * 0.55, r * 0.05).closePath().fill(ROCK.fill).stroke(line(ROCK.line, 5));
-    mark.moveTo(-r * 0.3, -r * 0.2).lineTo(-r * 0.05, -r * 0.5).stroke(line(0xffffff, 3));
+    mark
+      .moveTo(-r * 0.55, r * 0.05)
+      .lineTo(-r * 0.35, -r * 0.75)
+      .lineTo(-r * 0.05, -r * 0.5)
+      .lineTo(r * 0.2, -r * 0.95)
+      .lineTo(r * 0.55, r * 0.05)
+      .closePath()
+      .fill(ROCK.fill)
+      .stroke(line(ROCK.line, 5));
+    mark
+      .moveTo(-r * 0.3, -r * 0.2)
+      .lineTo(-r * 0.05, -r * 0.5)
+      .stroke(line(0xffffff, 3));
   } else {
-    mark.roundRect(-r * 0.45, -r * 0.5, r * 0.9, r * 0.45, 12).fill(SAND.dark).stroke(line(SAND.line, 4));
-    mark.moveTo(0, -r * 0.5).quadraticCurveTo(-r * 0.2, -r * 0.95, 0, -r * 1.05).quadraticCurveTo(r * 0.2, -r * 0.95, 0, -r * 0.5).fill(WATER.fill).stroke(line(WATER.line, 4));
-    mark.circle(-r * 0.3, -r * 0.85, 5).circle(r * 0.32, -r * 0.8, 5).fill(WATER.fill);
+    mark
+      .roundRect(-r * 0.45, -r * 0.5, r * 0.9, r * 0.45, 12)
+      .fill(SAND.dark)
+      .stroke(line(SAND.line, 4));
+    mark
+      .moveTo(0, -r * 0.5)
+      .quadraticCurveTo(-r * 0.2, -r * 0.95, 0, -r * 1.05)
+      .quadraticCurveTo(r * 0.2, -r * 0.95, 0, -r * 0.5)
+      .fill(WATER.fill)
+      .stroke(line(WATER.line, 4));
+    mark
+      .circle(-r * 0.3, -r * 0.85, 5)
+      .circle(r * 0.32, -r * 0.8, 5)
+      .fill(WATER.fill);
   }
   c.addChild(mark);
   return c;
@@ -157,10 +213,25 @@ export function homeArt(size = 120): Graphics {
   const g = new Graphics();
   const r = size / 2;
   g.ellipse(0, r * 0.4, r * 0.9, r * 0.2).fill({ color: shadow, alpha: 0.12 });
-  g.moveTo(-r * 0.9, r * 0.35).lineTo(0, -r * 0.8).lineTo(r * 0.9, r * 0.35).closePath().fill(swatch.orange.light).stroke(line(swatch.orange.line, 5));
-  g.moveTo(-r * 0.3, r * 0.35).lineTo(0, -r * 0.2).lineTo(r * 0.3, r * 0.35).closePath().fill(swatch.orange.line);
-  g.moveTo(0, -r * 0.8).lineTo(0, -r * 1.05).stroke(line(swatch.orange.line, 4));
-  g.moveTo(0, -r * 1.05).lineTo(r * 0.3, -r * 0.95).lineTo(0, -r * 0.85).closePath().fill(FLAG.fill);
+  g.moveTo(-r * 0.9, r * 0.35)
+    .lineTo(0, -r * 0.8)
+    .lineTo(r * 0.9, r * 0.35)
+    .closePath()
+    .fill(swatch.orange.light)
+    .stroke(line(swatch.orange.line, 5));
+  g.moveTo(-r * 0.3, r * 0.35)
+    .lineTo(0, -r * 0.2)
+    .lineTo(r * 0.3, r * 0.35)
+    .closePath()
+    .fill(swatch.orange.line);
+  g.moveTo(0, -r * 0.8)
+    .lineTo(0, -r * 1.05)
+    .stroke(line(swatch.orange.line, 4));
+  g.moveTo(0, -r * 1.05)
+    .lineTo(r * 0.3, -r * 0.95)
+    .lineTo(0, -r * 0.85)
+    .closePath()
+    .fill(FLAG.fill);
   return g;
 }
 
@@ -169,18 +240,35 @@ export function cityArt(size = 120, open = false): Graphics {
   const g = new Graphics();
   const r = size / 2;
   g.ellipse(0, r * 0.45, r, r * 0.2).fill({ color: shadow, alpha: 0.12 });
-  g.roundRect(-r, -r * 0.5, r * 2, r * 0.95, 10).fill(TILE.fill).stroke(line(TILE.line, 5));
-  for (let i = 0; i < 5; i++) g.rect(-r + i * r * 0.4 + r * 0.08, -r * 0.72, r * 0.24, r * 0.26).fill(TILE.fill).stroke(line(TILE.line, 4));
-  for (let y = 0; y < 3; y++) for (let x = 0; x < 4; x++) g.rect(-r * 0.86 + x * r * 0.46 + (y % 2) * r * 0.2, -r * 0.38 + y * r * 0.26, r * 0.22, r * 0.14).fill(TILE.light);
+  g.roundRect(-r, -r * 0.5, r * 2, r * 0.95, 10)
+    .fill(TILE.fill)
+    .stroke(line(TILE.line, 5));
+  for (let i = 0; i < 5; i++)
+    g.rect(-r + i * r * 0.4 + r * 0.08, -r * 0.72, r * 0.24, r * 0.26)
+      .fill(TILE.fill)
+      .stroke(line(TILE.line, 4));
+  for (let y = 0; y < 3; y++)
+    for (let x = 0; x < 4; x++)
+      g.rect(-r * 0.86 + x * r * 0.46 + (y % 2) * r * 0.2, -r * 0.38 + y * r * 0.26, r * 0.22, r * 0.14).fill(
+        TILE.light,
+      );
   g.roundRect(-r * 0.3, -r * 0.1, r * 0.6, r * 0.55, 14).fill(open ? WATER.fill : TILE.line);
   if (open) {
     g.rect(-r * 0.3, -r * 0.1, r * 0.1, r * 0.55).fill(SAND.line);
     g.rect(r * 0.2, -r * 0.1, r * 0.1, r * 0.55).fill(SAND.line);
   } else {
-    g.moveTo(0, -r * 0.1).lineTo(0, r * 0.45).stroke(line(TILE.light, 3));
+    g.moveTo(0, -r * 0.1)
+      .lineTo(0, r * 0.45)
+      .stroke(line(TILE.light, 3));
   }
-  g.moveTo(-r * 0.9, -r * 0.72).lineTo(-r * 0.9, -r * 1.05).stroke(line(TILE.line, 4));
-  g.moveTo(-r * 0.9, -r * 1.05).lineTo(-r * 0.6, -r * 0.95).lineTo(-r * 0.9, -r * 0.85).closePath().fill(TILE.light);
+  g.moveTo(-r * 0.9, -r * 0.72)
+    .lineTo(-r * 0.9, -r * 1.05)
+    .stroke(line(TILE.line, 4));
+  g.moveTo(-r * 0.9, -r * 1.05)
+    .lineTo(-r * 0.6, -r * 0.95)
+    .lineTo(-r * 0.9, -r * 0.85)
+    .closePath()
+    .fill(TILE.light);
   return g;
 }
 
@@ -190,9 +278,13 @@ export function sunArt(size = 44, lit = true): Graphics {
   const r = size / 2;
   for (let i = 0; i < 8; i++) {
     const a = (i / 8) * Math.PI * 2;
-    g.moveTo(Math.cos(a) * r * 0.7, Math.sin(a) * r * 0.7).lineTo(Math.cos(a) * r, Math.sin(a) * r).stroke(line(lit ? swatch.orange.fill : SAND.line, 4));
+    g.moveTo(Math.cos(a) * r * 0.7, Math.sin(a) * r * 0.7)
+      .lineTo(Math.cos(a) * r, Math.sin(a) * r)
+      .stroke(line(lit ? swatch.orange.fill : SAND.line, 4));
   }
-  g.circle(0, 0, r * 0.55).fill(lit ? swatch.yellow.fill : SAND.dark).stroke(line(lit ? swatch.orange.fill : SAND.line, 4));
+  g.circle(0, 0, r * 0.55)
+    .fill(lit ? swatch.yellow.fill : SAND.dark)
+    .stroke(line(lit ? swatch.orange.fill : SAND.line, 4));
   return g;
 }
 
@@ -202,7 +294,9 @@ export function skinArt(full: number, of = SKIN): Container {
   c.eventMode = 'none';
   const g = new Graphics();
   const w = 60 + of * 46;
-  g.roundRect(-w / 2, -32, w, 64, 26).fill(CAMEL_COLORS.dark).stroke(line(CAMEL_COLORS.line, 5));
+  g.roundRect(-w / 2, -32, w, 64, 26)
+    .fill(CAMEL_COLORS.dark)
+    .stroke(line(CAMEL_COLORS.line, 5));
   g.roundRect(-w / 2 - 14, -12, 20, 24, 8).fill(CAMEL_COLORS.line);
   c.addChild(g);
   for (let i = 0; i < of; i++) {
@@ -216,7 +310,11 @@ export function skinArt(full: number, of = SKIN): Container {
 /** One day's water. */
 export function dropArt(full = true): Graphics {
   const g = new Graphics();
-  g.moveTo(0, -20).quadraticCurveTo(16, 4, 0, 18).quadraticCurveTo(-16, 4, 0, -20).fill(full ? WATER.fill : CAMEL_COLORS.light).stroke(line(full ? WATER.line : CAMEL_COLORS.line, 4));
+  g.moveTo(0, -20)
+    .quadraticCurveTo(16, 4, 0, 18)
+    .quadraticCurveTo(-16, 4, 0, -20)
+    .fill(full ? WATER.fill : CAMEL_COLORS.light)
+    .stroke(line(full ? WATER.line : CAMEL_COLORS.line, 4));
   if (full) g.circle(-5, 2, 3).fill({ color: 0xffffff, alpha: 0.7 });
   return g;
 }
@@ -264,33 +362,81 @@ export function goodArt(good: Good, size = 90): Graphics {
   const g = new Graphics();
   const r = size / 2;
   if (good === 'silk') {
-    g.roundRect(-r * 0.85, -r * 0.4, r * 1.5, r * 0.8, r * 0.2).fill(c.fill).stroke(line(c.line, 4));
-    g.ellipse(r * 0.65, 0, r * 0.22, r * 0.4).fill(c.light).stroke(line(c.line, 4));
+    g.roundRect(-r * 0.85, -r * 0.4, r * 1.5, r * 0.8, r * 0.2)
+      .fill(c.fill)
+      .stroke(line(c.line, 4));
+    g.ellipse(r * 0.65, 0, r * 0.22, r * 0.4)
+      .fill(c.light)
+      .stroke(line(c.line, 4));
     g.ellipse(r * 0.65, 0, r * 0.08, r * 0.15).fill(c.line);
-    g.moveTo(-r * 0.6, -r * 0.4).quadraticCurveTo(-r * 0.4, 0, -r * 0.6, r * 0.4).stroke(line(c.light, 4));
+    g.moveTo(-r * 0.6, -r * 0.4)
+      .quadraticCurveTo(-r * 0.4, 0, -r * 0.6, r * 0.4)
+      .stroke(line(c.light, 4));
   } else if (good === 'tea') {
-    g.roundRect(-r * 0.8, -r * 0.55, r * 1.6, r * 1.1, 8).fill(c.fill).stroke(line(c.line, 4));
+    g.roundRect(-r * 0.8, -r * 0.55, r * 1.6, r * 1.1, 8)
+      .fill(c.fill)
+      .stroke(line(c.line, 4));
     g.roundRect(-r * 0.6, -r * 0.35, r * 1.2, r * 0.7, 6).stroke(line(c.light, 3));
-    for (const [x, y] of [[-0.25, -0.1], [0.2, 0.1], [0, -0.05]]) g.ellipse(x * r, y * r, r * 0.16, r * 0.08).fill(c.light);
+    for (const [x, y] of [
+      [-0.25, -0.1],
+      [0.2, 0.1],
+      [0, -0.05],
+    ])
+      g.ellipse(x * r, y * r, r * 0.16, r * 0.08).fill(c.light);
   } else if (good === 'salt') {
-    g.moveTo(-r * 0.7, -r * 0.2).lineTo(-r * 0.2, -r * 0.6).lineTo(r * 0.75, -r * 0.6).lineTo(r * 0.75, r * 0.45).lineTo(r * 0.25, r * 0.7).lineTo(-r * 0.7, r * 0.7).closePath().fill(c.fill).stroke(line(c.line, 4));
-    g.moveTo(-r * 0.7, -r * 0.2).lineTo(r * 0.25, -r * 0.2).lineTo(r * 0.75, -r * 0.6).moveTo(r * 0.25, -r * 0.2).lineTo(r * 0.25, r * 0.7).stroke(line(c.line, 3));
-    g.moveTo(-r * 0.35, r * 0.1).lineTo(-r * 0.35, r * 0.4).moveTo(-r * 0.5, r * 0.25).lineTo(-r * 0.2, r * 0.25).stroke(line(TILE.fill, 3));
+    g.moveTo(-r * 0.7, -r * 0.2)
+      .lineTo(-r * 0.2, -r * 0.6)
+      .lineTo(r * 0.75, -r * 0.6)
+      .lineTo(r * 0.75, r * 0.45)
+      .lineTo(r * 0.25, r * 0.7)
+      .lineTo(-r * 0.7, r * 0.7)
+      .closePath()
+      .fill(c.fill)
+      .stroke(line(c.line, 4));
+    g.moveTo(-r * 0.7, -r * 0.2)
+      .lineTo(r * 0.25, -r * 0.2)
+      .lineTo(r * 0.75, -r * 0.6)
+      .moveTo(r * 0.25, -r * 0.2)
+      .lineTo(r * 0.25, r * 0.7)
+      .stroke(line(c.line, 3));
+    g.moveTo(-r * 0.35, r * 0.1)
+      .lineTo(-r * 0.35, r * 0.4)
+      .moveTo(-r * 0.5, r * 0.25)
+      .lineTo(-r * 0.2, r * 0.25)
+      .stroke(line(TILE.fill, 3));
   } else if (good === 'glass') {
-    g.moveTo(-r * 0.2, -r * 0.75).lineTo(r * 0.2, -r * 0.75).lineTo(r * 0.2, -r * 0.4).quadraticCurveTo(r * 0.75, -r * 0.2, r * 0.6, r * 0.45)
-      .quadraticCurveTo(r * 0.5, r * 0.8, 0, r * 0.8).quadraticCurveTo(-r * 0.5, r * 0.8, -r * 0.6, r * 0.45).quadraticCurveTo(-r * 0.75, -r * 0.2, -r * 0.2, -r * 0.4).closePath()
-      .fill({ color: c.fill, alpha: 0.9 }).stroke(line(c.line, 4));
-    g.moveTo(r * 0.4, -r * 0.25).quadraticCurveTo(r * 0.95, -r * 0.1, r * 0.55, r * 0.3).stroke(line(c.line, 5));
+    g.moveTo(-r * 0.2, -r * 0.75)
+      .lineTo(r * 0.2, -r * 0.75)
+      .lineTo(r * 0.2, -r * 0.4)
+      .quadraticCurveTo(r * 0.75, -r * 0.2, r * 0.6, r * 0.45)
+      .quadraticCurveTo(r * 0.5, r * 0.8, 0, r * 0.8)
+      .quadraticCurveTo(-r * 0.5, r * 0.8, -r * 0.6, r * 0.45)
+      .quadraticCurveTo(-r * 0.75, -r * 0.2, -r * 0.2, -r * 0.4)
+      .closePath()
+      .fill({ color: c.fill, alpha: 0.9 })
+      .stroke(line(c.line, 4));
+    g.moveTo(r * 0.4, -r * 0.25)
+      .quadraticCurveTo(r * 0.95, -r * 0.1, r * 0.55, r * 0.3)
+      .stroke(line(c.line, 5));
     g.ellipse(-r * 0.25, r * 0.15, r * 0.1, r * 0.25).fill({ color: 0xffffff, alpha: 0.6 });
   } else if (good === 'paper') {
-    g.roundRect(-r * 0.75, -r * 0.45, r * 1.4, r * 0.9, 6).fill(c.fill).stroke(line(c.line, 4));
-    g.ellipse(-r * 0.75, 0, r * 0.18, r * 0.45).fill(c.light).stroke(line(c.line, 4));
-    for (const y of [-0.2, 0, 0.2]) g.moveTo(-r * 0.4, y * r).lineTo(r * 0.45, y * r).stroke(line(c.line, 2));
+    g.roundRect(-r * 0.75, -r * 0.45, r * 1.4, r * 0.9, 6)
+      .fill(c.fill)
+      .stroke(line(c.line, 4));
+    g.ellipse(-r * 0.75, 0, r * 0.18, r * 0.45)
+      .fill(c.light)
+      .stroke(line(c.line, 4));
+    for (const y of [-0.2, 0, 0.2])
+      g.moveTo(-r * 0.4, y * r)
+        .lineTo(r * 0.45, y * r)
+        .stroke(line(c.line, 2));
   } else {
     g.circle(0, -r * 0.05, r * 0.6).stroke(line(c.line, 3));
     for (let i = 0; i < 9; i++) {
       const a = (i / 9) * Math.PI * 2;
-      g.circle(Math.cos(a) * r * 0.6, -r * 0.05 + Math.sin(a) * r * 0.6, r * 0.17).fill(i % 2 ? c.light : c.fill).stroke(line(ink, 2));
+      g.circle(Math.cos(a) * r * 0.6, -r * 0.05 + Math.sin(a) * r * 0.6, r * 0.17)
+        .fill(i % 2 ? c.light : c.fill)
+        .stroke(line(ink, 2));
     }
   }
   return g;
@@ -300,7 +446,9 @@ export function goodArt(good: Good, size = 90): Graphics {
 export function offerArt(good: Good, size = 120, picked = false): Container {
   const c = new Container();
   const g = new Graphics();
-  g.roundRect(-size / 2, -size / 2, size, size, 22).fill(picked ? 0xfff6c8 : cream).stroke(line(picked ? swatch.yellow.line : SAND.line, picked ? 7 : 5));
+  g.roundRect(-size / 2, -size / 2, size, size, 22)
+    .fill(picked ? 0xfff6c8 : cream)
+    .stroke(line(picked ? swatch.yellow.line : SAND.line, picked ? 7 : 5));
   c.addChild(g, goodArt(good, size * 0.72));
   return c;
 }
@@ -310,9 +458,18 @@ export function bubbleArt(good: Good, size = 110): Container {
   const c = new Container();
   const g = new Graphics();
   const r = size / 2;
-  g.roundRect(-r, -r, size, size * 0.86, 26).fill(0xffffff).stroke(line(SAND.line, 4));
-  g.moveTo(-10, r * 0.7).lineTo(0, r).lineTo(12, r * 0.7).closePath().fill(0xffffff);
-  g.moveTo(-10, r * 0.72).lineTo(0, r).lineTo(12, r * 0.72).stroke(line(SAND.line, 4));
+  g.roundRect(-r, -r, size, size * 0.86, 26)
+    .fill(0xffffff)
+    .stroke(line(SAND.line, 4));
+  g.moveTo(-10, r * 0.7)
+    .lineTo(0, r)
+    .lineTo(12, r * 0.7)
+    .closePath()
+    .fill(0xffffff);
+  g.moveTo(-10, r * 0.72)
+    .lineTo(0, r)
+    .lineTo(12, r * 0.72)
+    .stroke(line(SAND.line, 4));
   const art = goodArt(good, size * 0.62);
   art.y = -r * 0.08;
   c.addChild(g, art);
@@ -323,8 +480,19 @@ export function bubbleArt(good: Good, size = 110): Container {
 export function shellArt(size = 18): Graphics {
   const g = new Graphics();
   const r = size / 2;
-  g.moveTo(0, r).lineTo(-r, -r * 0.1).quadraticCurveTo(0, -r * 1.3, r, -r * 0.1).closePath().fill(0xffd9c9).stroke(line(0xd98a6a, 2));
-  g.moveTo(0, r).lineTo(-r * 0.4, -r * 0.5).moveTo(0, r).lineTo(0, -r * 0.65).moveTo(0, r).lineTo(r * 0.4, -r * 0.5).stroke(line(0xd98a6a, 1.5));
+  g.moveTo(0, r)
+    .lineTo(-r, -r * 0.1)
+    .quadraticCurveTo(0, -r * 1.3, r, -r * 0.1)
+    .closePath()
+    .fill(0xffd9c9)
+    .stroke(line(0xd98a6a, 2));
+  g.moveTo(0, r)
+    .lineTo(-r * 0.4, -r * 0.5)
+    .moveTo(0, r)
+    .lineTo(0, -r * 0.65)
+    .moveTo(0, r)
+    .lineTo(r * 0.4, -r * 0.5)
+    .stroke(line(0xd98a6a, 1.5));
   return g;
 }
 
@@ -337,17 +505,25 @@ export function shellRow(n: number, size = 18, per = 5): Container {
     const row = Math.floor(i / per);
     const inRow = Math.min(per, n - row * per);
     const s = shellArt(size);
-    s.position.set((i % per - (inRow - 1) / 2) * (size + 2), (row - (rows - 1) / 2) * (size + 2));
+    s.position.set(((i % per) - (inRow - 1) / 2) * (size + 2), (row - (rows - 1) / 2) * (size + 2));
     c.addChild(s);
   }
   return c;
 }
 
 /** A stop's price board: each good with as many shells as it costs there. */
-export function boardArt(goods: [Good, Good], prices: [number, number], w = 150, h = 110, named = false): Container {
+export function boardArt(
+  goods: [Good, Good],
+  prices: [number, number],
+  w = 150,
+  h = 110,
+  named = false,
+): Container {
   const c = new Container();
   const g = new Graphics();
-  g.roundRect(-w / 2, -h / 2, w, h, 16).fill(named ? 0xfff6c8 : cream).stroke(line(named ? swatch.yellow.line : SAND.line, named ? 6 : 4));
+  g.roundRect(-w / 2, -h / 2, w, h, 16)
+    .fill(named ? 0xfff6c8 : cream)
+    .stroke(line(named ? swatch.yellow.line : SAND.line, named ? 6 : 4));
   c.addChild(g);
   goods.forEach((good, i) => {
     const y = -h / 4 + i * (h / 2);
@@ -364,10 +540,18 @@ export function boardArt(goods: [Good, Good], prices: [number, number], w = 150,
  * A three-bale load: each bale is its good; when `prices` is given (she has looked), each bale shows its shells at the
  * named stop underneath.
  */
-export function loadArt(goods: Good[], w = 230, h = 150, prices: number[] | null = null, lifted = false): Container {
+export function loadArt(
+  goods: Good[],
+  w = 230,
+  h = 150,
+  prices: number[] | null = null,
+  lifted = false,
+): Container {
   const c = new Container();
   const g = new Graphics();
-  g.roundRect(-w / 2, -h / 2, w, h, 22).fill(lifted ? 0xfff6c8 : cream).stroke(line(lifted ? swatch.yellow.line : SAND.line, lifted ? 7 : 5));
+  g.roundRect(-w / 2, -h / 2, w, h, 22)
+    .fill(lifted ? 0xfff6c8 : cream)
+    .stroke(line(lifted ? swatch.yellow.line : SAND.line, lifted ? 7 : 5));
   c.addChild(g);
   const step = w / goods.length;
   goods.forEach((good, i) => {
@@ -396,13 +580,27 @@ const STONE = { fill: 0xc9c3bb, line: 0x7d756c };
 /** Grey peaks with snowy tops, behind the pass road (scenery). */
 export function peaksArt(w: number, h: number): Graphics {
   const g = new Graphics();
-  const peaks = [[-0.38, 0.7], [-0.1, 1], [0.2, 0.85], [0.42, 0.6]];
+  const peaks = [
+    [-0.38, 0.7],
+    [-0.1, 1],
+    [0.2, 0.85],
+    [0.42, 0.6],
+  ];
   for (const [x, t] of peaks) {
     const px = x * w;
     const top = -h * t;
     const half = w * 0.2;
-    g.moveTo(px - half, 0).lineTo(px, top).lineTo(px + half, 0).closePath().fill(SNOW.peak).stroke(line(SNOW.peakLine, 4));
-    g.moveTo(px - half * 0.3, top + h * t * 0.3).lineTo(px, top).lineTo(px + half * 0.3, top + h * t * 0.3).closePath().fill(SNOW.fill);
+    g.moveTo(px - half, 0)
+      .lineTo(px, top)
+      .lineTo(px + half, 0)
+      .closePath()
+      .fill(SNOW.peak)
+      .stroke(line(SNOW.peakLine, 4));
+    g.moveTo(px - half * 0.3, top + h * t * 0.3)
+      .lineTo(px, top)
+      .lineTo(px + half * 0.3, top + h * t * 0.3)
+      .closePath()
+      .fill(SNOW.fill);
   }
   return g;
 }
@@ -411,8 +609,15 @@ export function peaksArt(w: number, h: number): Graphics {
 export function hutArt(size = 70): Graphics {
   const g = new Graphics();
   const s = size / 2;
-  g.rect(-s * 0.8, -s * 0.6, s * 1.6, s * 1.1).fill(0xa0683a).stroke(line(0x6b3f1e, 4));
-  g.moveTo(-s, -s * 0.5).lineTo(0, -s * 1.2).lineTo(s, -s * 0.5).closePath().fill(SNOW.fill).stroke(line(SNOW.line, 4));
+  g.rect(-s * 0.8, -s * 0.6, s * 1.6, s * 1.1)
+    .fill(0xa0683a)
+    .stroke(line(0x6b3f1e, 4));
+  g.moveTo(-s, -s * 0.5)
+    .lineTo(0, -s * 1.2)
+    .lineTo(s, -s * 0.5)
+    .closePath()
+    .fill(SNOW.fill)
+    .stroke(line(SNOW.line, 4));
   g.rect(-s * 0.2, -s * 0.05, s * 0.4, s * 0.55).fill(0x4a2f1c);
   return g;
 }
@@ -423,10 +628,16 @@ export function snowArt(size = 90): Container {
   c.eventMode = 'none';
   const g = new Graphics();
   const s = size / 2;
-  g.circle(-s * 0.4, 0, s * 0.42).circle(s * 0.15, -s * 0.2, s * 0.5).circle(s * 0.55, s * 0.05, s * 0.36).fill(0xd6dde4).stroke(line(SNOW.line, 3));
+  g.circle(-s * 0.4, 0, s * 0.42)
+    .circle(s * 0.15, -s * 0.2, s * 0.5)
+    .circle(s * 0.55, s * 0.05, s * 0.36)
+    .fill(0xd6dde4)
+    .stroke(line(SNOW.line, 3));
   for (let i = 0; i < 3; i++) {
     const a = (i / 3) * Math.PI;
-    g.moveTo(Math.cos(a) * 10, s * 0.62 + Math.sin(a) * 10).lineTo(-Math.cos(a) * 10, s * 0.62 - Math.sin(a) * 10).stroke(line(0x5aa6d8, 3));
+    g.moveTo(Math.cos(a) * 10, s * 0.62 + Math.sin(a) * 10)
+      .lineTo(-Math.cos(a) * 10, s * 0.62 - Math.sin(a) * 10)
+      .stroke(line(0x5aa6d8, 3));
   }
   c.addChild(g);
   const sun = sunArt(40, false);
@@ -439,8 +650,13 @@ export function snowArt(size = 90): Container {
 export function coatArt(size = 60): Graphics {
   const g = new Graphics();
   const s = size / 2;
-  g.roundRect(-s, -s * 0.55, s * 2, s * 1.1, 10).fill(0xa8452e).stroke(line(0x6e2a1a, 4));
-  for (let i = -2; i <= 2; i++) g.moveTo(i * s * 0.35, -s * 0.5).lineTo(i * s * 0.35, s * 0.5).stroke(line(0xe0a050, 3));
+  g.roundRect(-s, -s * 0.55, s * 2, s * 1.1, 10)
+    .fill(0xa8452e)
+    .stroke(line(0x6e2a1a, 4));
+  for (let i = -2; i <= 2; i++)
+    g.moveTo(i * s * 0.35, -s * 0.5)
+      .lineTo(i * s * 0.35, s * 0.5)
+      .stroke(line(0xe0a050, 3));
   return g;
 }
 
@@ -449,7 +665,9 @@ export function dayCardArt(n: number, size = 110, picked = false): Container {
   const c = new Container();
   const g = new Graphics();
   const s = size / 2;
-  g.roundRect(-s, -s, size, size, 20).fill(picked ? 0xfff1c4 : cream).stroke(line(picked ? swatch.orange.fill : SAND.line, picked ? 7 : 5));
+  g.roundRect(-s, -s, size, size, 20)
+    .fill(picked ? 0xfff1c4 : cream)
+    .stroke(line(picked ? swatch.orange.fill : SAND.line, picked ? 7 : 5));
   c.addChild(g);
   const t = label(String(n), 46);
   t.y = -14;
@@ -459,7 +677,7 @@ export function dayCardArt(n: number, size = 110, picked = false): Container {
     const row = Math.floor(i / 4);
     const inRow = row === 0 ? per : n - 4;
     const sun = sunArt(18);
-    sun.position.set((i % 4 - (inRow - 1) / 2) * 20, 24 + row * 18);
+    sun.position.set(((i % 4) - (inRow - 1) / 2) * 20, 24 + row * 18);
     c.addChild(sun);
   }
   return c;
@@ -475,8 +693,20 @@ export function hoofArt(): Graphics {
 /** A green patch where a well can be dug. */
 export function siteArt(size = 110): Graphics {
   const g = new Graphics();
-  g.ellipse(0, 0, size * 0.42, size * 0.3).fill({ color: GREEN.fill, alpha: 0.85 }).stroke(line(GREEN.line, 4));
-  for (const [x, y] of [[-18, -6], [10, -10], [20, 6], [-6, 10]]) g.moveTo(x, y + 6).lineTo(x - 3, y - 4).moveTo(x, y + 6).lineTo(x + 3, y - 4).stroke(line(GREEN.line, 3));
+  g.ellipse(0, 0, size * 0.42, size * 0.3)
+    .fill({ color: GREEN.fill, alpha: 0.85 })
+    .stroke(line(GREEN.line, 4));
+  for (const [x, y] of [
+    [-18, -6],
+    [10, -10],
+    [20, 6],
+    [-6, 10],
+  ])
+    g.moveTo(x, y + 6)
+      .lineTo(x - 3, y - 4)
+      .moveTo(x, y + 6)
+      .lineTo(x + 3, y - 4)
+      .stroke(line(GREEN.line, 3));
   return g;
 }
 
@@ -484,11 +714,21 @@ export function siteArt(size = 110): Graphics {
 export function wellArt(size = 80, ghost = false): Graphics {
   const g = new Graphics();
   const s = size / 2;
-  g.moveTo(-s * 0.7, -s * 0.9).lineTo(-s * 0.7, 0).moveTo(s * 0.7, -s * 0.9).lineTo(s * 0.7, 0).stroke(line(0x6b3f1e, 5));
-  g.moveTo(-s * 0.8, -s * 0.9).lineTo(s * 0.8, -s * 0.9).stroke(line(0x6b3f1e, 6));
-  g.moveTo(0, -s * 0.9).lineTo(0, -s * 0.35).stroke(line(ink, 2));
+  g.moveTo(-s * 0.7, -s * 0.9)
+    .lineTo(-s * 0.7, 0)
+    .moveTo(s * 0.7, -s * 0.9)
+    .lineTo(s * 0.7, 0)
+    .stroke(line(0x6b3f1e, 5));
+  g.moveTo(-s * 0.8, -s * 0.9)
+    .lineTo(s * 0.8, -s * 0.9)
+    .stroke(line(0x6b3f1e, 6));
+  g.moveTo(0, -s * 0.9)
+    .lineTo(0, -s * 0.35)
+    .stroke(line(ink, 2));
   g.roundRect(-s * 0.15, -s * 0.4, s * 0.3, s * 0.25, 4).fill(0xa0683a);
-  g.ellipse(0, s * 0.1, s * 0.8, s * 0.4).fill(STONE.fill).stroke(line(STONE.line, 4));
+  g.ellipse(0, s * 0.1, s * 0.8, s * 0.4)
+    .fill(STONE.fill)
+    .stroke(line(STONE.line, 4));
   g.ellipse(0, s * 0.02, s * 0.55, s * 0.2).fill(WATER.fill);
   g.alpha = ghost ? 0.35 : 1;
   return g;
@@ -499,7 +739,11 @@ export function treeArt(size = 70): Graphics {
   const g = new Graphics();
   const s = size / 2;
   g.rect(-s * 0.1, -s * 0.2, s * 0.2, s * 0.7).fill(PALM.trunk);
-  g.circle(0, -s * 0.5, s * 0.5).circle(-s * 0.35, -s * 0.3, s * 0.35).circle(s * 0.35, -s * 0.3, s * 0.35).fill(PALM.leaf).stroke(line(0x3f7f33, 3));
+  g.circle(0, -s * 0.5, s * 0.5)
+    .circle(-s * 0.35, -s * 0.3, s * 0.35)
+    .circle(s * 0.35, -s * 0.3, s * 0.35)
+    .fill(PALM.leaf)
+    .stroke(line(0x3f7f33, 3));
   return g;
 }
 
@@ -507,8 +751,12 @@ export function treeArt(size = 70): Graphics {
 export function dayStickArt(w = 160, h = 110, marks = 4): Container {
   const c = new Container();
   const g = new Graphics();
-  g.roundRect(-w / 2, -h / 2, w, h, 20).fill(cream).stroke(line(SAND.line, 5));
-  g.moveTo(-w * 0.38, 26).lineTo(w * 0.38, 26).stroke(line(SAND.line, 4));
+  g.roundRect(-w / 2, -h / 2, w, h, 20)
+    .fill(cream)
+    .stroke(line(SAND.line, 5));
+  g.moveTo(-w * 0.38, 26)
+    .lineTo(w * 0.38, 26)
+    .stroke(line(SAND.line, 4));
   c.addChild(g);
   const sun = sunArt(38);
   sun.y = -22;

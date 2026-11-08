@@ -12,7 +12,9 @@ export const VOICE = {
   'sense.so-far': ['Yes, it could be the {a} or the {b}.'],
   'sense.instruct-narrow': ['Now listen, and keep only the toys that still fit.'],
   'sense.next-parcel': ['Here comes another parcel!'],
-  'sense.instruct-tell': ['This parcel is wrapped in a thick quilt, so shaking it makes no sound. Look, then: can we tell which toy it is?'],
+  'sense.instruct-tell': [
+    'This parcel is wrapped in a thick quilt, so shaking it makes no sound. Look, then: can we tell which toy it is?',
+  ],
   'sense.both-fit': ['The {name} fits, but so does the {other}. Can we tell which one?'],
   'sense.can-tell': ['The peephole shows {seen}. Only the {name} has {seen}, so we can tell.'],
   'sense.cant-tell-right': ["That's right, we can't tell yet."],

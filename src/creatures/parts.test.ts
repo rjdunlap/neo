@@ -54,7 +54,9 @@ describe('the companion’s parts (RW05 slice 2)', () => {
           expect(p.x >= 0 && p.x <= A.width && p.y >= 0 && p.y <= A.height, `${s} ${name}`).toBe(true);
         }
       }
-      for (const name of ['nose', 'eyes', 'cheeks'] as const) for (const p of PARTS[s].points[name] ?? []) expect(inside(A.body, p.x, p.y), `${s} ${name}`).toBe(true);
+      for (const name of ['nose', 'eyes', 'cheeks'] as const)
+        for (const p of PARTS[s].points[name] ?? [])
+          expect(inside(A.body, p.x, p.y), `${s} ${name}`).toBe(true);
     }
   });
 
@@ -91,7 +93,8 @@ describe('the companion’s parts (RW05 slice 2)', () => {
       expect(b.width, s).toBeGreaterThan(60);
       expect(b.height, s).toBeGreaterThan(60);
       expect(b.bottom, s).toBeLessThanOrEqual(2);
-      for (const p of [...restPoints(s, 'nose'), ...restPoints(s, 'eyes')]) expect(b.contains(p.x, p.y), s).toBe(true);
+      for (const p of [...restPoints(s, 'nose'), ...restPoints(s, 'eyes')])
+        expect(b.contains(p.x, p.y), s).toBe(true);
       expect(restPoints(s, 'head')[0].y, s).toBeLessThan(restPoints(s, 'tummy')[0].y);
       // Pixi reads a container's `bounds` while measuring its parent, so the body box must not take that name.
       const holder = new Container();

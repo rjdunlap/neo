@@ -22,15 +22,23 @@ describe('Painted Canyon as a location', () => {
       const plan = canyonPlan(layout, view, ground);
       // A desert with a spring, not bare sand: the spring, a cactus or yucca, and one of its animals.
       expect(plan.filter((p) => p.kind === 'spring').length, where0).toBe(1);
-      expect(plan.filter((p) => p.kind === 'pear' || p.kind === 'yucca').length, where0).toBeGreaterThanOrEqual(2);
-      expect(plan.filter((p) => p.kind === 'roadrunner' || p.kind === 'lizard' || p.kind === 'jackrabbit').length, where0).toBeGreaterThanOrEqual(1);
+      expect(
+        plan.filter((p) => p.kind === 'pear' || p.kind === 'yucca').length,
+        where0,
+      ).toBeGreaterThanOrEqual(2);
+      expect(
+        plan.filter((p) => p.kind === 'roadrunner' || p.kind === 'lizard' || p.kind === 'jackrabbit').length,
+        where0,
+      ).toBeGreaterThanOrEqual(1);
       for (const { kind, y, rect: r } of plan) {
         const where = `${kind} ${where0}`;
         expect(r.x >= 0 && r.y >= 0 && r.x + r.w <= view.w && r.y + r.h <= view.h, where).toBe(true);
         for (const k of keepOut) expect(overlaps(r, k), where).toBe(false);
         expect(y, where).toBeGreaterThan(ground);
       }
-      for (const p of plan) for (const b of plan) if (p !== b) expect(overlaps(p.rect, b.rect), `${p.kind} on ${b.kind} ${where0}`).toBe(false);
+      for (const p of plan)
+        for (const b of plan)
+          if (p !== b) expect(overlaps(p.rect, b.rect), `${p.kind} on ${b.kind} ${where0}`).toBe(false);
       expect(canyonPlan(layout, view, ground)).toEqual(plan);
     }
   });
@@ -48,7 +56,8 @@ describe('Painted Canyon as a location', () => {
         expect(m.top).toBeGreaterThanOrEqual(130);
         expect(m.top).toBeLessThan(ground);
         // Across the sun the rock stays below its middle, so she can still find it to poke.
-        if (m.right + m.spread > sunX - 58 && m.left - m.spread < sunX + 58) expect(m.top).toBeGreaterThan(150);
+        if (m.right + m.spread > sunX - 58 && m.left - m.spread < sunX + 58)
+          expect(m.top).toBeGreaterThan(150);
       }
     }
   });

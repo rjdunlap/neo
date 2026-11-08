@@ -22,18 +22,79 @@ import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
-  bubbleArt, bulbIcon, cardPicture, cardPlate, cellArt, chipArt, finishIcon, FRIEND_SWATCH, friendArt, iconArt, makeIcon, metTick, padArt, pageArt, pawIcon,
-  requestPicture, rollerArt, stampArt, stickerArt, THEME, tryIcon, undoIcon, watchIcon,
+  bubbleArt,
+  bulbIcon,
+  cardPicture,
+  cardPlate,
+  cellArt,
+  chipArt,
+  finishIcon,
+  FRIEND_SWATCH,
+  friendArt,
+  iconArt,
+  makeIcon,
+  metTick,
+  padArt,
+  pageArt,
+  pawIcon,
+  requestPicture,
+  rollerArt,
+  stampArt,
+  stickerArt,
+  THEME,
+  tryIcon,
+  undoIcon,
+  watchIcon,
 } from './art';
 import {
   LEVELS,
-  accepts, acceptedPlans, blankTable, cardOrder, centre, check, complete, decisionNow, FRIENDS, give, hintFor, nextStep, pageOf, planFor, previewOf, replay,
-  specFor, Tally, variationFor, whyNot, workshopLayout, type Action, type Friend, type LevelSpec, type Plan, type PlanId, type Rect, type Surface, type Table,
-  type Tool, type Variation, type WorkshopLayout, type BannerTheme, type StampPicture,
+  accepts,
+  acceptedPlans,
+  blankTable,
+  cardOrder,
+  centre,
+  check,
+  complete,
+  decisionNow,
+  FRIENDS,
+  give,
+  hintFor,
+  nextStep,
+  pageOf,
+  planFor,
+  previewOf,
+  replay,
+  specFor,
+  Tally,
+  variationFor,
+  whyNot,
+  workshopLayout,
+  type Action,
+  type Friend,
+  type LevelSpec,
+  type Plan,
+  type PlanId,
+  type Rect,
+  type Surface,
+  type Table,
+  type Tool,
+  type Variation,
+  type WorkshopLayout,
+  type BannerTheme,
+  type StampPicture,
 } from './logic';
 
-const REQUEST_LINE = { page: 'playdate.request.page', banner: 'playdate.request.banner', bannerOr: 'playdate.request.bannerOr', own: 'playdate.request.own' } as const;
-const INSTRUCT: Record<number, LineId> = { 1: 'playdate.instruct.1', 2: 'playdate.instruct.2', 3: 'playdate.instruct.3' };
+const REQUEST_LINE = {
+  page: 'playdate.request.page',
+  banner: 'playdate.request.banner',
+  bannerOr: 'playdate.request.bannerOr',
+  own: 'playdate.request.own',
+} as const;
+const INSTRUCT: Record<number, LineId> = {
+  1: 'playdate.instruct.1',
+  2: 'playdate.instruct.2',
+  3: 'playdate.instruct.3',
+};
 /** Seconds between the pet's steps, and between steps of Watch again. */
 const PET_STEP = 0.7;
 const WATCH_STEP = 0.45;
@@ -41,7 +102,12 @@ const WATCH_STEP = 0.45;
 type Phase = 'plan' | 'make';
 type BubbleState = 'none' | 'met' | 'unmet';
 
-interface ToolNode { tool: Tool; node: Container; drag: DragHandle; both: Graphics }
+interface ToolNode {
+  tool: Tool;
+  node: Container;
+  drag: DragHandle;
+  both: Graphics;
+}
 
 class PlaydateWorkshop implements Game {
   readonly spec: LevelSpec;
@@ -106,17 +172,35 @@ class PlaydateWorkshop implements Game {
     this.cards = cardOrder(this.spec, ctx.rng, first);
     this.phase = this.spec.level === 1 ? 'make' : 'plan';
     if (this.phase === 'make') this.plan = planFor(this.spec.plans[0], this.spec.cells, this.own);
-    this.backdrop = ctx.track(new Backdrop({ sky: [0xffe3c8, 0xfff6e0], hills: [0xc9e8b8, 0xb4dca0, 0xe8d3b0], horizon: 0.52, clouds: 2, sun: true, seed: 211 }, ctx.view));
+    this.backdrop = ctx.track(
+      new Backdrop(
+        {
+          sky: [0xffe3c8, 0xfff6e0],
+          hills: [0xc9e8b8, 0xb4dca0, 0xe8d3b0],
+          horizon: 0.52,
+          clouds: 2,
+          sun: true,
+          seed: 211,
+        },
+        ctx.view,
+      ),
+    );
     this.glow.eventMode = 'none';
     this.companion = ctx.track(ctx.companion());
     this.companion.eventMode = 'none';
     ctx.stage.addChild(this.backdrop, this.board);
   }
 
-  private get level() { return this.spec.level; }
-  private get own(): Friend { return this.variation.own; }
+  private get level() {
+    return this.spec.level;
+  }
+  private get own(): Friend {
+    return this.variation.own;
+  }
   /** The table on screen: the live trace's, or Watch again's frame. */
-  get table(): Table { return this.shown ?? replay(this.trace); }
+  get table(): Table {
+    return this.shown ?? replay(this.trace);
+  }
 
   start() {
     this.started = true;
@@ -135,20 +219,32 @@ class PlaydateWorkshop implements Game {
     this.view = v;
     this.backdrop.resize(v);
     if (!this.started) return;
-    if (this.busy) { this.relayout = true; return; }
+    if (this.busy) {
+      this.relayout = true;
+      return;
+    }
     this.build();
   }
 
   /** A resize arrived while the pet or Watch again was busy: lay out again now. */
   private takeRelayout() {
-    if (this.relayout && !this.busy && !this.finished) { this.relayout = false; this.build(); }
+    if (this.relayout && !this.busy && !this.finished) {
+      this.relayout = false;
+      this.build();
+    }
   }
 
   // ——— Building the scene ———
 
   private layoutFor(): WorkshopLayout | null {
-    if (this.phase === 'plan') return workshopLayout(this.view, { level: this.level, phase: 'plan', cards: this.cards.length });
-    return workshopLayout(this.view, { level: this.level, phase: 'make', surfaces: this.plan!.surfaces, tools: this.plan!.tools.length });
+    if (this.phase === 'plan')
+      return workshopLayout(this.view, { level: this.level, phase: 'plan', cards: this.cards.length });
+    return workshopLayout(this.view, {
+      level: this.level,
+      phase: 'make',
+      surfaces: this.plan!.surfaces,
+      tools: this.plan!.tools.length,
+    });
   }
 
   private build() {
@@ -163,7 +259,14 @@ class PlaydateWorkshop implements Game {
     this.cellNodes = [];
     this.cardNodes.clear();
     this.stripNode = this.chosenNode = null;
-    this.tryButton = this.makeButton = this.bulbButton = this.petButton = this.undoButton = this.finishButton = this.againButton = null;
+    this.tryButton =
+      this.makeButton =
+      this.bulbButton =
+      this.petButton =
+      this.undoButton =
+      this.finishButton =
+      this.againButton =
+        null;
     this.companion.removeFromParent();
     this.glow.removeFromParent();
     for (const c of this.board.removeChildren()) c.destroy({ children: true });
@@ -192,7 +295,14 @@ class PlaydateWorkshop implements Game {
       const bubble = new Container();
       bubble.position.copyFrom(centre(br));
       bubble.hitArea = new Rectangle(-br.w / 2, -br.h / 2, br.w, br.h);
-      onTap(bubble, () => { critter.hop(0.6); void this.ctx.say(REQUEST_LINE[this.spec.requests[f]]); }, { cooldown: 400 });
+      onTap(
+        bubble,
+        () => {
+          critter.hop(0.6);
+          void this.ctx.say(REQUEST_LINE[this.spec.requests[f]]);
+        },
+        { cooldown: 400 },
+      );
       this.board.addChild(bubble);
       this.bubbleNodes[f] = bubble;
     }
@@ -257,13 +367,24 @@ class PlaydateWorkshop implements Game {
       // The tray's slots, then the tools.
       const slots = new Graphics();
       slots.eventMode = 'none';
-      for (const t of l.tray) slots.roundRect(t.x, t.y, t.w, t.h, 22).fill({ color: 0xffffff, alpha: 0.4 }).stroke({ width: 3, color: 0x9c6b3c, alpha: 0.4 });
-      for (const f of FRIENDS) { const h = l.hands[f]; slots.roundRect(h.x, h.y, h.w, h.h, 60).fill({ color: FRIEND_SWATCH[f].light, alpha: 0.5 }); }
+      for (const t of l.tray)
+        slots
+          .roundRect(t.x, t.y, t.w, t.h, 22)
+          .fill({ color: 0xffffff, alpha: 0.4 })
+          .stroke({ width: 3, color: 0x9c6b3c, alpha: 0.4 });
+      for (const f of FRIENDS) {
+        const h = l.hands[f];
+        slots.roundRect(h.x, h.y, h.w, h.h, 60).fill({ color: FRIEND_SWATCH[f].light, alpha: 0.5 });
+      }
       this.board.addChild(slots);
       for (const tool of this.plan!.tools) {
         const node = new Container();
         node.addChild(tool === 'pad' ? padArt(110) : rollerArt(116));
-        const both = new Graphics().circle(-52, -29, 11).fill(FRIEND_SWATCH.A.fill).circle(52, -29, 11).fill(FRIEND_SWATCH.B.fill);
+        const both = new Graphics()
+          .circle(-52, -29, 11)
+          .fill(FRIEND_SWATCH.A.fill)
+          .circle(52, -29, 11)
+          .fill(FRIEND_SWATCH.B.fill);
         both.visible = false;
         node.addChild(both);
         node.hitArea = new Rectangle(-60, -60, 120, 120);
@@ -322,22 +443,43 @@ class PlaydateWorkshop implements Game {
       if (!bubble) continue;
       for (const c of bubble.removeChildren()) c.destroy({ children: true });
       const r = l.bubbles[f];
-      const state: BubbleState = this.phase === 'make' ? (check(table, this.spec.requests[f], f, this.spec.cells) ? 'met' : 'none') : this.bubbleState[f];
+      const state: BubbleState =
+        this.phase === 'make'
+          ? check(table, this.spec.requests[f], f, this.spec.cells)
+            ? 'met'
+            : 'none'
+          : this.bubbleState[f];
       bubble.addChild(bubbleArt(f, r.w, r.h, state), requestPicture(this.spec.requests[f], f, v, r.w, r.h));
-      if (state === 'met') { const t = metTick(); t.position.set(r.w / 2 - 18, -r.h / 2 + 18); bubble.addChild(t); }
+      if (state === 'met') {
+        const t = metTick();
+        t.position.set(r.w / 2 - 18, -r.h / 2 + 18);
+        bubble.addChild(t);
+      }
     }
     if (this.phase !== 'make' || !this.plan) return;
     // Marks.
-    const markInto = (holder: Container, marks: readonly { by: Friend | 'both'; tool: Tool }[], size: number) => {
+    const markInto = (
+      holder: Container,
+      marks: readonly { by: Friend | 'both'; tool: Tool }[],
+      size: number,
+    ) => {
       const layer = holder.children[1] as Container;
       for (const c of layer.removeChildren()) c.destroy({ children: true });
       for (const m of marks.slice(0, 1)) {
         const color = m.by === 'both' ? swatch.purple.fill : FRIEND_SWATCH[m.by].fill;
-        if (m.tool === 'roller') layer.addChild(new Graphics().roundRect(-size * 0.42, -size * 0.18, size * 0.84, size * 0.36, 12).fill({ color, alpha: 0.25 }));
+        if (m.tool === 'roller')
+          layer.addChild(
+            new Graphics()
+              .roundRect(-size * 0.42, -size * 0.18, size * 0.84, size * 0.36, 12)
+              .fill({ color, alpha: 0.25 }),
+          );
         layer.addChild(stampArt(v.picture, size * 0.55, color));
       }
     };
-    for (const f of FRIENDS) { const p = this.pageNodes[f]; if (p) markInto(p, table.marks[pageOf(f)], l.pages!.A.w); }
+    for (const f of FRIENDS) {
+      const p = this.pageNodes[f];
+      if (p) markInto(p, table.marks[pageOf(f)], l.pages!.A.w);
+    }
     this.cellNodes.forEach((c, i) => markInto(c, table.marks.banner.slice(i, i + 1), l.banner[i].w));
     // Tools.
     for (const t of this.toolNodes) {
@@ -345,7 +487,8 @@ class PlaydateWorkshop implements Game {
       t.drag.home = at;
       t.both.visible = table.holder[t.tool] === 'both';
       t.node.scale.set(this.lifted === t.tool ? 1.15 : 1);
-      t.drag.enabled = !this.busy && !this.done && (table.holder[t.tool] === 'tray' || table.holder[t.tool] === 'both');
+      t.drag.enabled =
+        !this.busy && !this.done && (table.holder[t.tool] === 'tray' || table.holder[t.tool] === 'both');
       if (!t.drag.dragging) {
         if (animate) void this.ctx.tw.to(t.node, { x: at.x, y: at.y }, { duration: 0.3 });
         else t.node.position.set(at.x, at.y);
@@ -357,7 +500,22 @@ class PlaydateWorkshop implements Game {
       let t = blankTable();
       const shownTrace = this.shown ? this.trace.slice(0, this.watchAt) : this.trace;
       shownTrace.forEach((a, i) => {
-        const by = a.k === 'give' ? (a.to === 'both' ? 'both' : a.to) : a.k === 'pass' ? t.holder.pad === 'tray' ? null : (t.holder.pad as Friend) : a.k === 'stamp' ? (t.holder.pad === 'tray' ? null : t.holder.pad) : t.holder.roller === 'tray' ? null : t.holder.roller;
+        const by =
+          a.k === 'give'
+            ? a.to === 'both'
+              ? 'both'
+              : a.to
+            : a.k === 'pass'
+              ? t.holder.pad === 'tray'
+                ? null
+                : (t.holder.pad as Friend)
+              : a.k === 'stamp'
+                ? t.holder.pad === 'tray'
+                  ? null
+                  : t.holder.pad
+                : t.holder.roller === 'tray'
+                  ? null
+                  : t.holder.roller;
         const chip = chipArt(a.k, by, l.strip!.h);
         const step = l.strip!.h + 10;
         const n = shownTrace.length;
@@ -368,9 +526,17 @@ class PlaydateWorkshop implements Game {
     }
     // Finish and Watch again, once every request on the plan is met.
     const ready = this.done && !this.shown;
-    for (const b of [this.finishButton, this.againButton]) if (b) { b.visible = ready && !this.finished; b.eventMode = ready && !this.finished ? 'static' : 'none'; }
-    for (const n of [...Object.values(this.pageNodes), ...this.cellNodes]) if (n) n.eventMode = this.done ? 'none' : 'static';
-    for (const t of this.toolNodes) { t.node.visible = !this.done || !!this.shown; t.node.eventMode = this.done ? 'none' : 'static'; }
+    for (const b of [this.finishButton, this.againButton])
+      if (b) {
+        b.visible = ready && !this.finished;
+        b.eventMode = ready && !this.finished ? 'static' : 'none';
+      }
+    for (const n of [...Object.values(this.pageNodes), ...this.cellNodes])
+      if (n) n.eventMode = this.done ? 'none' : 'static';
+    for (const t of this.toolNodes) {
+      t.node.visible = !this.done || !!this.shown;
+      t.node.eventMode = this.done ? 'none' : 'static';
+    }
     if (this.undoButton) this.undoButton.alpha = this.level === 1 && this.trace.length === 0 ? 0.4 : 1;
   }
 
@@ -398,13 +564,18 @@ class PlaydateWorkshop implements Game {
   /** Try it: the chosen card's first trace on a blank table; each request ticks or outlines. Free. */
   tryIt(): boolean | null {
     if (this.busy || this.finished || this.phase !== 'plan') return null;
-    if (!this.selected) { this.nudgeCards(); return null; }
+    if (!this.selected) {
+      this.nudgeCards();
+      return null;
+    }
     const p = previewOf(planFor(this.selected, this.spec.cells, this.own), this.spec);
     this.previewed = this.selected;
     this.bubbleState = { A: p.met.A ? 'met' : 'unmet', B: p.met.B ? 'met' : 'unmet' };
     for (const f of FRIENDS) this.critters[f === 'A' ? 0 : 1]?.hop(p.met[f] ? 0.8 : 0.3);
-    if (p.ok) { sfx.marimba(4, 0.35); void this.ctx.say('playdate.preview.ok'); }
-    else {
+    if (p.ok) {
+      sfx.marimba(4, 0.35);
+      void this.ctx.say('playdate.preview.ok');
+    } else {
       sfx.pluck(0, 0.2);
       void this.ctx.say('playdate.preview.own');
       if (this.tally.unmetPreview()) this.glowRequest = p.met.A ? 'B' : 'A';
@@ -416,8 +587,14 @@ class PlaydateWorkshop implements Game {
   /** Make it: an accepted card starts the Make phase; a card that leaves a request out only previews. */
   makeIt() {
     if (this.busy || this.finished || this.phase !== 'plan') return;
-    if (!this.selected) { this.nudgeCards(); return; }
-    if (!previewOf(planFor(this.selected, this.spec.cells, this.own), this.spec).ok) { this.tryIt(); return; }
+    if (!this.selected) {
+      this.nudgeCards();
+      return;
+    }
+    if (!previewOf(planFor(this.selected, this.spec.cells, this.own), this.spec).ok) {
+      this.tryIt();
+      return;
+    }
     this.enterMake(this.selected);
   }
 
@@ -448,7 +625,10 @@ class PlaydateWorkshop implements Game {
   }
 
   private nudgeCards() {
-    for (const c of this.cardNodes.values()) void this.ctx.tw.to(c, { rotation: 0.04 }, { duration: 0.1 }).then(() => this.alive ? this.ctx.tw.to(c, { rotation: 0 }, { duration: 0.15 }) : undefined);
+    for (const c of this.cardNodes.values())
+      void this.ctx.tw
+        .to(c, { rotation: 0.04 }, { duration: 0.1 })
+        .then(() => (this.alive ? this.ctx.tw.to(c, { rotation: 0 }, { duration: 0.15 }) : undefined));
     void this.ctx.say('playdate.hint.pick');
   }
 
@@ -469,7 +649,9 @@ class PlaydateWorkshop implements Game {
 
   /** A give to a friend, or to both at once when the plan rolls together. */
   private giveTo(tool: Tool, f: Friend): Action {
-    const together = this.plan!.traces.some((t) => t.some((a) => a.k === 'give' && a.tool === tool && a.to === 'both'));
+    const together = this.plan!.traces.some((t) =>
+      t.some((a) => a.k === 'give' && a.tool === tool && a.to === 'both'),
+    );
     return give(tool, together ? 'both' : f);
   }
 
@@ -485,7 +667,10 @@ class PlaydateWorkshop implements Game {
       if (this.lifted) void this.ctx.say('playdate.why.chooseFirst');
       return;
     }
-    if (h === 'both') { this.act({ k: 'roll', surface: 'banner' }, node); return; }
+    if (h === 'both') {
+      this.act({ k: 'roll', surface: 'banner' }, node);
+      return;
+    }
     this.act({ k: 'pass', tool }, node);
   }
 
@@ -514,15 +699,22 @@ class PlaydateWorkshop implements Game {
     if (this.busy || this.done || this.table.holder[tn.tool] !== 'both') return;
     const next = this.table.marks.banner.length;
     const r = this.layoutNow?.banner[next];
-    if (r && x >= r.x && x <= r.x + r.w && y + 40 >= r.y && y - 40 <= r.y + r.h) this.act({ k: 'roll', surface: 'banner' }, this.cellNodes[next]);
+    if (r && x >= r.x && x <= r.x + r.w && y + 40 >= r.y && y - 40 <= r.y + r.h)
+      this.act({ k: 'roll', surface: 'banner' }, this.cellNodes[next]);
   }
 
   private dragDrop(tn: ToolNode, x: number, y: number): boolean {
     if (this.busy || this.done || this.table.holder[tn.tool] !== 'tray') return false;
     const l = this.layoutNow!;
     for (const f of FRIENDS) {
-      const near = [l.friends[f], l.hands[f]].some((r) => x >= r.x - 30 && x <= r.x + r.w + 30 && y >= r.y - 30 && y <= r.y + r.h + 30);
-      if (near) { this.lifted = null; this.act(this.giveTo(tn.tool, f), this.friendNodes[f]!); return this.table.holder[tn.tool] !== 'tray'; }
+      const near = [l.friends[f], l.hands[f]].some(
+        (r) => x >= r.x - 30 && x <= r.x + r.w + 30 && y >= r.y - 30 && y <= r.y + r.h + 30,
+      );
+      if (near) {
+        this.lifted = null;
+        this.act(this.giveTo(tn.tool, f), this.friendNodes[f]!);
+        return this.table.holder[tn.tool] !== 'tray';
+      }
     }
     return false;
   }
@@ -545,10 +737,14 @@ class PlaydateWorkshop implements Game {
     this.hintAction = null;
     if (a.k === 'stamp' || a.k === 'roll') {
       const by = before.holder[a.k === 'stamp' ? 'pad' : 'roller'];
-      if (a.k === 'stamp') sfx.marimba(by === 'B' ? 4 : 0, 0.45); else sfx.ratchet(2);
+      if (a.k === 'stamp') sfx.marimba(by === 'B' ? 4 : 0, 0.45);
+      else sfx.ratchet(2);
       if (by === 'A' || by === 'B') this.critters[by === 'A' ? 0 : 1]?.hop(0.7);
       else for (const c of this.critters) c.hop(0.6);
-      if (node) { node.scale.set(0.92); void this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.2 }); }
+      if (node) {
+        node.scale.set(0.92);
+        void this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.2 });
+      }
     } else sfx.whoosh();
     if (complete(this.plan, this.trace)) {
       this.done = true;
@@ -562,22 +758,27 @@ class PlaydateWorkshop implements Game {
 
   /** The friend who explains a refusal: the page's owner, or the pad's holder. */
   private speakerFor(a: Action): Friend | null {
-    if ((a.k === 'stamp' || a.k === 'roll') && a.surface !== 'banner') return a.surface === 'pageA' ? 'A' : 'B';
+    if ((a.k === 'stamp' || a.k === 'roll') && a.surface !== 'banner')
+      return a.surface === 'pageA' ? 'A' : 'B';
     const h = this.table.holder.pad;
     return h === 'A' || h === 'B' ? h : null;
   }
 
   private shake(node: Container) {
     const x = node.x;
-    void this.ctx.tw.to(node, { x: x + 10 }, { duration: 0.06 })
-      .then(() => this.alive ? this.ctx.tw.to(node, { x: x - 8 }, { duration: 0.08 }) : undefined)
-      .then(() => this.alive ? this.ctx.tw.to(node, { x }, { duration: 0.08 }) : undefined);
+    void this.ctx.tw
+      .to(node, { x: x + 10 }, { duration: 0.06 })
+      .then(() => (this.alive ? this.ctx.tw.to(node, { x: x - 8 }, { duration: 0.08 }) : undefined))
+      .then(() => (this.alive ? this.ctx.tw.to(node, { x }, { duration: 0.08 }) : undefined));
   }
 
   /** Undo one accepted action; at an empty trace, back to the cards (disabled at level 1). Free. */
   undo() {
     if (this.busy || this.finished || this.phase !== 'make') return;
-    if (this.trace.length === 0) { this.backToPlan(); return; }
+    if (this.trace.length === 0) {
+      this.backToPlan();
+      return;
+    }
     this.trace.pop();
     this.done = false;
     this.lifted = null;
@@ -604,7 +805,11 @@ class PlaydateWorkshop implements Game {
     } else {
       this.hintAction = h.action;
       const a = h.action;
-      void this.ctx.say(a.k === 'give' && a.tool === 'roller' ? 'playdate.hint.giveRoller' : (`playdate.hint.${a.k}` as LineId));
+      void this.ctx.say(
+        a.k === 'give' && a.tool === 'roller'
+          ? 'playdate.hint.giveRoller'
+          : (`playdate.hint.${a.k}` as LineId),
+      );
     }
   }
 
@@ -616,7 +821,11 @@ class PlaydateWorkshop implements Game {
     if (this.busy || this.finished || this.done) return;
     this.companion.hop(0.8);
     if (this.phase === 'plan') {
-      if (this.petPicked && this.selected) { this.enterMake(this.selected); void this.petMakes(); return; }
+      if (this.petPicked && this.selected) {
+        this.enterMake(this.selected);
+        void this.petMakes();
+        return;
+      }
       this.tally.help('plan');
       const ok = acceptedPlans(this.spec, this.own);
       this.selected = ok[Math.floor(this.ctx.rng.next() * ok.length)];
@@ -667,7 +876,11 @@ class PlaydateWorkshop implements Game {
     this.hintAction = this.hintCard = null;
     this.bubbleState = { A: 'none', B: 'none' };
     this.petPicked = false;
-    if (this.level > 1) { this.phase = 'plan'; this.plan = null; this.selected = null; }
+    if (this.level > 1) {
+      this.phase = 'plan';
+      this.plan = null;
+      this.selected = null;
+    }
     this.build();
   }
 
@@ -682,7 +895,8 @@ class PlaydateWorkshop implements Game {
     sfx.bell(4, 0.3);
     for (const c of this.critters) c.cheer();
     this.companion.cheer();
-    for (const n of [...Object.values(this.pageNodes), ...this.cellNodes]) if (n) void this.ctx.tw.to(n.scale, { x: 1.12, y: 1.12 }, { duration: 0.4 });
+    for (const n of [...Object.values(this.pageNodes), ...this.cellNodes])
+      if (n) void this.ctx.tw.to(n.scale, { x: 1.12, y: 1.12 }, { duration: 0.4 });
     await this.ctx.say('playdate.done');
     if (!this.alive || epoch !== this.epoch) return;
     await this.ctx.tw.wait(1.2);
@@ -699,7 +913,12 @@ class PlaydateWorkshop implements Game {
       this.watchAt = i;
       this.shown = replay(this.trace.slice(0, i));
       this.refresh();
-      if (i > 0) { const a = this.trace[i - 1]; if (a.k === 'stamp') sfx.marimba(2, 0.35); else if (a.k === 'roll') sfx.ratchet(2); else sfx.whoosh(); }
+      if (i > 0) {
+        const a = this.trace[i - 1];
+        if (a.k === 'stamp') sfx.marimba(2, 0.35);
+        else if (a.k === 'roll') sfx.ratchet(2);
+        else sfx.whoosh();
+      }
       await this.ctx.tw.wait(WATCH_STEP);
       if (!this.alive || epoch !== this.epoch) return;
     }
@@ -716,7 +935,8 @@ class PlaydateWorkshop implements Game {
     const t = this.table;
     if (a.k === 'give') {
       const inTray = this.plan?.tools.filter((x) => t.holder[x] === 'tray') ?? [];
-      if (inTray.length > 1 && this.lifted !== a.tool) return this.toolNodes.find((n) => n.tool === a.tool)?.node ?? null;
+      if (inTray.length > 1 && this.lifted !== a.tool)
+        return this.toolNodes.find((n) => n.tool === a.tool)?.node ?? null;
       return this.friendNodes[a.to === 'both' ? 'A' : a.to] ?? null;
     }
     if (a.k === 'pass') return this.toolNodes.find((n) => n.tool === a.tool)?.node ?? null;
@@ -733,10 +953,18 @@ class PlaydateWorkshop implements Game {
       if (!n) return;
       const p = n.getGlobalPosition();
       const q = this.board.toLocal(p);
-      this.glow.roundRect(q.x - w / 2 - pulse, q.y - h / 2 - pulse, w + 2 * pulse, h + 2 * pulse, 26).stroke({ width: 7, color: swatch.yellow.fill });
+      this.glow
+        .roundRect(q.x - w / 2 - pulse, q.y - h / 2 - pulse, w + 2 * pulse, h + 2 * pulse, 26)
+        .stroke({ width: 7, color: swatch.yellow.fill });
     };
-    if (this.glowRequest && this.phase === 'plan') { const r = this.layoutNow.bubbles[this.glowRequest]; ring(this.bubbleNodes[this.glowRequest], r.w, r.h); }
-    if (this.phase === 'plan' && this.hintCard) { const r = this.layoutNow.cards[0]; ring(this.cardNodes.get(this.hintCard), r.w, r.h); }
+    if (this.glowRequest && this.phase === 'plan') {
+      const r = this.layoutNow.bubbles[this.glowRequest];
+      ring(this.bubbleNodes[this.glowRequest], r.w, r.h);
+    }
+    if (this.phase === 'plan' && this.hintCard) {
+      const r = this.layoutNow.cards[0];
+      ring(this.cardNodes.get(this.hintCard), r.w, r.h);
+    }
     if (this.phase === 'make' && this.hintAction && !this.busy) {
       const n = this.nodeFor(this.hintAction);
       const b = n?.getLocalBounds();
@@ -747,8 +975,19 @@ class PlaydateWorkshop implements Game {
   /** The demonstration's own order (level 1 gives the pad to the right friend; level 3 lifts the roller onto the right friend). */
   private demoTrace(): readonly Action[] | null {
     if (!this.plan) return null;
-    if (this.plan.id === 'stampPass') return this.plan.traces.find((t) => t[0].k === 'give' && t[0].to === 'B') ?? null;
-    if (this.plan.id === 'side') return this.plan.traces.find((t) => t[0].k === 'give' && t[0].tool === 'roller' && t[0].to === 'B' && t[1].k === 'give' && t[2].k === 'stamp') ?? null;
+    if (this.plan.id === 'stampPass')
+      return this.plan.traces.find((t) => t[0].k === 'give' && t[0].to === 'B') ?? null;
+    if (this.plan.id === 'side')
+      return (
+        this.plan.traces.find(
+          (t) =>
+            t[0].k === 'give' &&
+            t[0].tool === 'roller' &&
+            t[0].to === 'B' &&
+            t[1].k === 'give' &&
+            t[2].k === 'stamp',
+        ) ?? null
+      );
     return null;
   }
 
@@ -756,15 +995,29 @@ class PlaydateWorkshop implements Game {
   autotouch(): TouchIntent | null {
     if (this.finished || this.busy || !this.layoutNow) return null;
     if (this.phase === 'plan') {
-      const want: PlanId = this.level === 2 ? 'turns' : this.previewed === 'justBanner' || this.previewed === 'side' ? 'side' : 'justBanner';
-      if (this.selected !== want) { const c = this.cardNodes.get(want); return c ? { tap: { on: c } } : null; }
-      if (this.level === 3 && want === 'justBanner') return this.tryButton ? { tap: { on: this.tryButton }, pause: 1.6 } : null;
-      if (this.level === 2 && this.previewed !== 'turns') return this.tryButton ? { tap: { on: this.tryButton }, pause: 1.2 } : null;
+      const want: PlanId =
+        this.level === 2
+          ? 'turns'
+          : this.previewed === 'justBanner' || this.previewed === 'side'
+            ? 'side'
+            : 'justBanner';
+      if (this.selected !== want) {
+        const c = this.cardNodes.get(want);
+        return c ? { tap: { on: c } } : null;
+      }
+      if (this.level === 3 && want === 'justBanner')
+        return this.tryButton ? { tap: { on: this.tryButton }, pause: 1.6 } : null;
+      if (this.level === 2 && this.previewed !== 'turns')
+        return this.tryButton ? { tap: { on: this.tryButton }, pause: 1.2 } : null;
       return this.makeButton ? { tap: { on: this.makeButton } } : null;
     }
     if (this.done) return this.finishButton ? { tap: { on: this.finishButton } } : null;
     const demo = this.demoTrace();
-    const onDemo = demo && this.trace.every((a, i) => demo[i] && a.k === demo[i].k && JSON.stringify(a) === JSON.stringify(demo[i]));
+    const onDemo =
+      demo &&
+      this.trace.every(
+        (a, i) => demo[i] && a.k === demo[i].k && JSON.stringify(a) === JSON.stringify(demo[i]),
+      );
     const a = onDemo ? demo![this.trace.length] : this.plan ? nextStep(this.plan, this.trace) : null;
     if (!a) return null;
     if (a.k === 'give') {
@@ -788,7 +1041,10 @@ class WorkshopIcon extends WigglyIcon {
 /** A seeded sticker: a banner with stamped pictures. */
 function sticker(seed: number): Container {
   const rng = new Rng(seed);
-  return stickerArt(rng.pick(['sun', 'sea', 'leaf'] as BannerTheme[]), rng.pick(['star', 'flower', 'fish'] as StampPicture[]));
+  return stickerArt(
+    rng.pick(['sun', 'sea', 'leaf'] as BannerTheme[]),
+    rng.pick(['star', 'flower', 'fish'] as StampPicture[]),
+  );
 }
 
 export const playdateWorkshop: GameModule = {
@@ -802,11 +1058,12 @@ export const playdateWorkshop: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => specFor(level).describe,
   music: STYLES.stickers,
-  coplayHint: 'One of you is the planner and points to a card and says why; the other is the maker and gives, stamps and passes. Swap next round.',
-  offScreen: 'With two toys and one crayon, act out taking turns to make two pictures with {name}. Either of you can say no thanks.',
+  coplayHint:
+    'One of you is the planner and points to a card and says why; the other is the maker and gives, stamps and passes. Swap next round.',
+  offScreen:
+    'With two toys and one crayon, act out taking turns to make two pictures with {name}. Either of you can say no thanks.',
   hubIcon: () => new WorkshopIcon(),
   touchDemo: true,
   sticker,
   create: (ctx) => new PlaydateWorkshop(ctx),
 };
-

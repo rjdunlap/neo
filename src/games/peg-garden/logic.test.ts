@@ -1,20 +1,73 @@
 import { describe, expect, it } from 'vitest';
 import { simulate, stepBall, type Ball, type BallWorld } from '../../engine/ball';
 import { Rng } from '../../engine/random';
-import { DROP_RANGE, HIT, PLACE_GAP, SEED_HOMES, SNAP, makePlantRound, plantDrop, plantRun, plantings, snapPlace } from './logic';
-import { CUP_MARGIN, CUP_TOP, CUP_W, CUPS, CUTOFF, SAMPLE, aimInto, cupAt, cupCentre, landing, makeCupRound, worldOf } from './logic';
-import { AIM_LIMIT, BIG_LEVEL, BIG_PEG, BIG_PLAN, aimAt, aimVelocity, BACKDROPS, blooms, BOARD, DRIFT, EDGE, driftOf, dropAt, grid, guided, ledgeX, makeBoard, pickTheme, PLANS, planFor, SHAPES, STALL_AT, targets, TRAY, traySlot } from './logic';
+import {
+  DROP_RANGE,
+  HIT,
+  PLACE_GAP,
+  SEED_HOMES,
+  SNAP,
+  makePlantRound,
+  plantDrop,
+  plantRun,
+  plantings,
+  snapPlace,
+} from './logic';
+import {
+  CUP_MARGIN,
+  CUP_TOP,
+  CUP_W,
+  CUPS,
+  CUTOFF,
+  SAMPLE,
+  aimInto,
+  cupAt,
+  cupCentre,
+  landing,
+  makeCupRound,
+  worldOf,
+} from './logic';
+import {
+  AIM_LIMIT,
+  BIG_LEVEL,
+  BIG_PEG,
+  BIG_PLAN,
+  aimAt,
+  aimVelocity,
+  BACKDROPS,
+  blooms,
+  BOARD,
+  DRIFT,
+  EDGE,
+  driftOf,
+  dropAt,
+  grid,
+  guided,
+  ledgeX,
+  makeBoard,
+  pickTheme,
+  PLANS,
+  planFor,
+  SHAPES,
+  STALL_AT,
+  targets,
+  TRAY,
+  traySlot,
+} from './logic';
 
 describe('Peg Garden', () => {
   it('grows every board shape with room for every plan, buds a pearl can pass between, and all above the sand', () => {
     for (const shape of SHAPES) {
       const all = grid(shape);
       expect(all.length, shape).toBeGreaterThanOrEqual(Math.max(...PLANS.map((p) => p.pegs)));
-      expect(all.filter((s) => s.x > 80 && s.x < BOARD.w - 80).length, shape).toBeGreaterThanOrEqual(2 * Math.max(...PLANS.map((p) => p.count)));
+      expect(all.filter((s) => s.x > 80 && s.x < BOARD.w - 80).length, shape).toBeGreaterThanOrEqual(
+        2 * Math.max(...PLANS.map((p) => p.count)),
+      );
       for (const a of all) {
         expect(a.y + BOARD.peg, shape).toBeLessThan(BOARD.h - 30);
         if (shape !== 'rows') expect(Math.min(a.x, BOARD.w - a.x), shape).toBeGreaterThanOrEqual(EDGE);
-        for (const b of all) if (a !== b) expect(Math.hypot(a.x - b.x, a.y - b.y), shape).toBeGreaterThanOrEqual(80);
+        for (const b of all)
+          if (a !== b) expect(Math.hypot(a.x - b.x, a.y - b.y), shape).toBeGreaterThanOrEqual(80);
       }
     }
   });
@@ -25,9 +78,21 @@ describe('Peg Garden', () => {
     for (const shape of SHAPES.filter((s) => s !== 'rows')) {
       for (let seed = 1; seed <= 3; seed++) {
         const spots = makeBoard(planFor(1), new Rng(seed), shape);
-        const world = { pegs: spots.map((s) => ({ x: s.x, y: s.y, r: BOARD.peg })), left: 0, right: BOARD.w, gravity: 900, bounce: 0.62 };
+        const world = {
+          pegs: spots.map((s) => ({ x: s.x, y: s.y, r: BOARD.peg })),
+          left: 0,
+          right: BOARD.w,
+          gravity: 900,
+          bounce: 0.62,
+        };
         for (let x = BOARD.ball; x <= BOARD.w - BOARD.ball; x += 40) {
-          const { landed } = simulate({ x, y: 40, vx: x < BOARD.w / 2 ? 12 : -12, vy: 60, r: BOARD.ball }, world, BOARD.h, 10, 1 / 60);
+          const { landed } = simulate(
+            { x, y: 40, vx: x < BOARD.w / 2 ? 12 : -12, vy: 60, r: BOARD.ball },
+            world,
+            BOARD.h,
+            10,
+            1 / 60,
+          );
           expect(landed.y - BOARD.ball, `${shape} seed ${seed} x ${x}`).toBeGreaterThanOrEqual(BOARD.h);
         }
       }
@@ -69,38 +134,62 @@ describe('Peg Garden', () => {
   });
 
   it('grows buds on the grid, with the right number of specials and numbers', () => {
-    for (const plan of PLANS) for (const shape of SHAPES) {
-      const all = grid(shape);
-      for (let seed = 1; seed <= 25; seed++) {
-        const board = makeBoard(plan, new Rng(seed), shape);
-        expect(board).toHaveLength(plan.pegs);
-        for (const s of board) expect(all.some((g) => g.x === s.x && g.y === s.y)).toBe(true);
-        if (plan.mode === 'color') expect(board.filter((s) => s.kind === 'special')).toHaveLength(plan.count);
-        if (plan.mode === 'number' || plan.mode === 'order') {
-          const nums = board.filter((s) => typeof s.kind === 'number').map((s) => s.kind).sort();
-          expect(nums).toEqual(Array.from({ length: plan.count }, (_, i) => i + 1));
-          for (const t of targets(plan, new Rng(seed))) expect(nums).toContain(t);
+    for (const plan of PLANS)
+      for (const shape of SHAPES) {
+        const all = grid(shape);
+        for (let seed = 1; seed <= 25; seed++) {
+          const board = makeBoard(plan, new Rng(seed), shape);
+          expect(board).toHaveLength(plan.pegs);
+          for (const s of board) expect(all.some((g) => g.x === s.x && g.y === s.y)).toBe(true);
+          if (plan.mode === 'color')
+            expect(board.filter((s) => s.kind === 'special')).toHaveLength(plan.count);
+          if (plan.mode === 'number' || plan.mode === 'order') {
+            const nums = board
+              .filter((s) => typeof s.kind === 'number')
+              .map((s) => s.kind)
+              .sort();
+            expect(nums).toEqual(Array.from({ length: plan.count }, (_, i) => i + 1));
+            for (const t of targets(plan, new Rng(seed))) expect(nums).toContain(t);
+          }
         }
       }
-    }
   });
 
   it('can hit every numbered bud with some aim, on every shape', { timeout: 60_000 }, () => {
     const plan = planFor(4);
-    for (const shape of SHAPES) for (let seed = 1; seed <= 8; seed++) {
-      const board = makeBoard(plan, new Rng(seed), shape);
-      const world = { pegs: board.map((s) => ({ x: s.x, y: s.y, r: BOARD.peg })), left: 0, right: BOARD.w, gravity: 900, bounce: 0.62 };
-      const reachable = new Set<number>();
-      for (let a = -AIM_LIMIT; a <= AIM_LIMIT; a += 0.01) {
-        const { hits } = simulate({ x: BOARD.w / 2, y: 40, ...aimVelocity(a), r: BOARD.ball }, world, BOARD.h, 6, 1 / 30);
-        for (const h of hits) if (typeof board[h].kind === 'number') reachable.add(board[h].kind as number);
+    for (const shape of SHAPES)
+      for (let seed = 1; seed <= 8; seed++) {
+        const board = makeBoard(plan, new Rng(seed), shape);
+        const world = {
+          pegs: board.map((s) => ({ x: s.x, y: s.y, r: BOARD.peg })),
+          left: 0,
+          right: BOARD.w,
+          gravity: 900,
+          bounce: 0.62,
+        };
+        const reachable = new Set<number>();
+        for (let a = -AIM_LIMIT; a <= AIM_LIMIT; a += 0.01) {
+          const { hits } = simulate(
+            { x: BOARD.w / 2, y: 40, ...aimVelocity(a), r: BOARD.ball },
+            world,
+            BOARD.h,
+            6,
+            1 / 30,
+          );
+          for (const h of hits) if (typeof board[h].kind === 'number') reachable.add(board[h].kind as number);
+        }
+        expect([...reachable].sort(), `${shape} seed ${seed}`).toEqual([1, 2, 3, 4, 5]);
       }
-      expect([...reachable].sort(), `${shape} seed ${seed}`).toEqual([1, 2, 3, 4, 5]);
-    }
   });
 
   /** The world of a board, as the game builds it. */
-  const worldOf = (spots: ReturnType<typeof makeBoard>): BallWorld => ({ pegs: spots.map((s) => ({ x: s.x, y: s.y, r: BOARD.peg })), left: 0, right: BOARD.w, gravity: 900, bounce: 0.62 });
+  const worldOf = (spots: ReturnType<typeof makeBoard>): BallWorld => ({
+    pegs: spots.map((s) => ({ x: s.x, y: s.y, r: BOARD.peg })),
+    left: 0,
+    right: BOARD.w,
+    gravity: 900,
+    bounce: 0.62,
+  });
 
   /** A pearl flown as the game flies it, in fixed steps of the ball engine's substep, and the buds it touched in order. */
   const fly = (ball: Ball, world: BallWorld) => {
@@ -111,124 +200,163 @@ describe('Peg Garden', () => {
     return touched;
   };
 
-  it("drops the ghost finger's pearls so every bloom level finishes in a few shots, and a color shot that the bot is sure of lights an orange flower", { timeout: 60_000 }, () => {
-    for (const plan of PLANS.filter((p) => p.mode === 'bloom' || p.mode === 'color')) {
-      let sureShots = 0;
-      let sureHits = 0;
-      for (const shape of SHAPES) for (let seed = 1; seed <= 4; seed++) {
-        const rng = new Rng(seed);
-        const spots = makeBoard(plan, rng, shape);
-        const world = worldOf(spots);
-        const bloomed = spots.map(() => false);
-        const want = (i: number) => !bloomed[i] && (plan.mode !== 'color' || spots[i].kind === 'special');
-        let shots = 0;
-        while (spots.some((_, i) => want(i))) {
-          // The bot reads the next draw from a copy, then the game makes the same draw.
-          const spread = driftOf(plan.mode);
-          const drift = spread ? rng.clone().range(-spread, spread) : 0;
-          const drop = dropAt(world, want, drift, plan.mode === 'color');
-          expect(drop.x).toBeGreaterThanOrEqual(BOARD.ball);
-          expect(drop.x).toBeLessThanOrEqual(BOARD.w - BOARD.ball);
-          const touched = fly({ x: drop.x, y: 40, vx: spread ? rng.range(-spread, spread) : 0, vy: 60, r: BOARD.ball }, world);
-          if (plan.mode === 'color' && drop.sure) {
-            sureShots++;
-            if (touched.some(want)) sureHits++;
+  it(
+    "drops the ghost finger's pearls so every bloom level finishes in a few shots, and a color shot that the bot is sure of lights an orange flower",
+    { timeout: 60_000 },
+    () => {
+      for (const plan of PLANS.filter((p) => p.mode === 'bloom' || p.mode === 'color')) {
+        let sureShots = 0;
+        let sureHits = 0;
+        for (const shape of SHAPES)
+          for (let seed = 1; seed <= 4; seed++) {
+            const rng = new Rng(seed);
+            const spots = makeBoard(plan, rng, shape);
+            const world = worldOf(spots);
+            const bloomed = spots.map(() => false);
+            const want = (i: number) => !bloomed[i] && (plan.mode !== 'color' || spots[i].kind === 'special');
+            let shots = 0;
+            while (spots.some((_, i) => want(i))) {
+              // The bot reads the next draw from a copy, then the game makes the same draw.
+              const spread = driftOf(plan.mode);
+              const drift = spread ? rng.clone().range(-spread, spread) : 0;
+              const drop = dropAt(world, want, drift, plan.mode === 'color');
+              expect(drop.x).toBeGreaterThanOrEqual(BOARD.ball);
+              expect(drop.x).toBeLessThanOrEqual(BOARD.w - BOARD.ball);
+              const touched = fly(
+                { x: drop.x, y: 40, vx: spread ? rng.range(-spread, spread) : 0, vy: 60, r: BOARD.ball },
+                world,
+              );
+              if (plan.mode === 'color' && drop.sure) {
+                sureShots++;
+                if (touched.some(want)) sureHits++;
+              }
+              touched.forEach((i) => (bloomed[i] = true));
+              // A pearl can be let go over and over; a round that takes more than this many is not one a card can show.
+              expect(++shots, `${plan.mode} ${shape} seed ${seed}`).toBeLessThanOrEqual(
+                plan.mode === 'bloom' ? 10 : 14,
+              );
+            }
           }
-          touched.forEach((i) => (bloomed[i] = true));
-          // A pearl can be let go over and over; a round that takes more than this many is not one a card can show.
-          expect(++shots, `${plan.mode} ${shape} seed ${seed}`).toBeLessThanOrEqual(plan.mode === 'bloom' ? 10 : 14);
-        }
+        // The game steps a pearl as the simulation does, so a shot the bot is sure of lands on the colour level.
+        if (plan.mode === 'color') expect(sureHits).toBe(sureShots);
       }
-      // The game steps a pearl as the simulation does, so a shot the bot is sure of lands on the colour level.
-      if (plan.mode === 'color') expect(sureHits).toBe(sureShots);
-    }
-  });
+    },
+  );
 
-  it("finishes a bloom level even when the same spot is tapped every time", { timeout: 60_000 }, () => {
+  it('finishes a bloom level even when the same spot is tapped every time', { timeout: 60_000 }, () => {
     for (const plan of PLANS.filter((p) => p.mode === 'bloom')) {
-      for (const shape of SHAPES) for (let seed = 1; seed <= 4; seed++) {
-        const rng = new Rng(seed);
-        const spots = makeBoard(plan, rng, shape);
-        const world = worldOf(spots);
-        const bloomed = spots.map(() => false);
-        for (const tapX of [BOARD.ball, BOARD.w / 2, BOARD.w - BOARD.ball]) {
-          bloomed.fill(false);
-          let stalled = 0;
-          let shots = 0;
-          while (bloomed.some((b) => !b)) {
-            const x = stalled >= STALL_AT ? dropAt(world, (i) => !bloomed[i], rng.clone().range(-DRIFT, DRIFT)).x : tapX;
-            const touched = fly({ x, y: 40, vx: rng.range(-DRIFT, DRIFT), vy: 60, r: BOARD.ball }, world);
-            stalled = touched.some((i) => !bloomed[i]) ? 0 : stalled + 1;
-            touched.forEach((i) => (bloomed[i] = true));
-            expect(++shots, `${shape} seed ${seed} tap ${tapX}`).toBeLessThanOrEqual(20);
+      for (const shape of SHAPES)
+        for (let seed = 1; seed <= 4; seed++) {
+          const rng = new Rng(seed);
+          const spots = makeBoard(plan, rng, shape);
+          const world = worldOf(spots);
+          const bloomed = spots.map(() => false);
+          for (const tapX of [BOARD.ball, BOARD.w / 2, BOARD.w - BOARD.ball]) {
+            bloomed.fill(false);
+            let stalled = 0;
+            let shots = 0;
+            while (bloomed.some((b) => !b)) {
+              const x =
+                stalled >= STALL_AT
+                  ? dropAt(world, (i) => !bloomed[i], rng.clone().range(-DRIFT, DRIFT)).x
+                  : tapX;
+              const touched = fly({ x, y: 40, vx: rng.range(-DRIFT, DRIFT), vy: 60, r: BOARD.ball }, world);
+              stalled = touched.some((i) => !bloomed[i]) ? 0 : stalled + 1;
+              touched.forEach((i) => (bloomed[i] = true));
+              expect(++shots, `${shape} seed ${seed} tap ${tapX}`).toBeLessThanOrEqual(20);
+            }
           }
         }
-      }
     }
   });
 
-  it('finishes the colour level even when the same spot is tapped every time, with a miss only for her own choice of spot', { timeout: 60_000 }, () => {
-    const plan = planFor(3);
-    expect(driftOf('color')).toBe(0);
-    for (const shape of SHAPES) for (let seed = 1; seed <= 4; seed++) {
-      const spots = makeBoard(plan, new Rng(seed), shape);
-      const world = worldOf(spots);
-      const bloomed = spots.map(() => false);
-      const want = (i: number) => !bloomed[i] && spots[i].kind === 'special';
-      for (const tapX of [0, BOARD.w / 2, BOARD.w + 200]) {
-        bloomed.fill(false);
-        let stalled = 0;
-        let wrongs = 0;
-        let hinting = false;
-        let shots = 0;
-        while (spots.some((_, i) => want(i))) {
-          const help = guided('color', stalled, hinting);
-          const x = help ? dropAt(world, want, 0, true).x : ledgeX(tapX);
-          const touched = fly({ x, y: 40, vx: 0, vy: 60, r: BOARD.ball }, world);
-          const fresh = touched.some(want);
-          stalled = fresh ? 0 : stalled + 1;
-          if (fresh) hinting = false;
-          if (touched.some((i) => spots[i].kind === 'special')) wrongs = 0;
-          else if (!help && ++wrongs >= 2) [hinting, wrongs] = [true, 0];
-          touched.forEach((i) => (bloomed[i] = true));
-          expect(++shots, `${shape} seed ${seed} tap ${tapX}`).toBeLessThanOrEqual(16);
+  it(
+    'finishes the colour level even when the same spot is tapped every time, with a miss only for her own choice of spot',
+    { timeout: 60_000 },
+    () => {
+      const plan = planFor(3);
+      expect(driftOf('color')).toBe(0);
+      for (const shape of SHAPES)
+        for (let seed = 1; seed <= 4; seed++) {
+          const spots = makeBoard(plan, new Rng(seed), shape);
+          const world = worldOf(spots);
+          const bloomed = spots.map(() => false);
+          const want = (i: number) => !bloomed[i] && spots[i].kind === 'special';
+          for (const tapX of [0, BOARD.w / 2, BOARD.w + 200]) {
+            bloomed.fill(false);
+            let stalled = 0;
+            let wrongs = 0;
+            let hinting = false;
+            let shots = 0;
+            while (spots.some((_, i) => want(i))) {
+              const help = guided('color', stalled, hinting);
+              const x = help ? dropAt(world, want, 0, true).x : ledgeX(tapX);
+              const touched = fly({ x, y: 40, vx: 0, vy: 60, r: BOARD.ball }, world);
+              const fresh = touched.some(want);
+              stalled = fresh ? 0 : stalled + 1;
+              if (fresh) hinting = false;
+              if (touched.some((i) => spots[i].kind === 'special')) wrongs = 0;
+              else if (!help && ++wrongs >= 2) [hinting, wrongs] = [true, 0];
+              touched.forEach((i) => (bloomed[i] = true));
+              expect(++shots, `${shape} seed ${seed} tap ${tapX}`).toBeLessThanOrEqual(16);
+            }
+          }
         }
-      }
-    }
-  });
+    },
+  );
 
-  it('puts the colour hint on a ledge spot whose pearl touches a waiting orange bud, on every board and as buds bloom', { timeout: 60_000 }, () => {
-    const plan = planFor(3);
-    for (const shape of SHAPES) for (let seed = 1; seed <= 10; seed++) {
-      const spots = makeBoard(plan, new Rng(seed), shape);
-      const world = worldOf(spots);
-      const bloomed = spots.map(() => false);
-      const want = (i: number) => !bloomed[i] && spots[i].kind === 'special';
-      while (spots.some((_, i) => want(i))) {
-        const { x } = dropAt(world, want, 0, true);
-        const { hits } = simulate({ x, y: 40, vx: 0, vy: 60, r: BOARD.ball }, world, BOARD.h, 12, 1 / 30);
-        expect(hits.some(want), `${shape} seed ${seed}`).toBe(true);
-        hits.forEach((i) => (bloomed[i] = true));
-      }
-    }
-  });
-
-  it("aims the ghost finger's launcher so the shot touches the flower asked for, on every board", { timeout: 60_000 }, () => {
-    for (const plan of PLANS.filter((p) => p.mode === 'number' || p.mode === 'order')) {
-      for (const shape of SHAPES) for (let seed = 1; seed <= 7; seed++) {
-        const rng = new Rng(seed);
-        const spots = makeBoard(plan, rng, shape);
-        const world = worldOf(spots);
-        for (const n of plan.mode === 'order' ? Array.from({ length: plan.count }, (_, i) => i + 1) : targets(plan, rng)) {
-          const want = spots.findIndex((s) => s.kind === n);
-          const angle = aimAt(world, want, 0);
-          expect(angle, `${plan.mode} ${shape} seed ${seed}: flower ${n}`).not.toBeNull();
-          expect(Math.abs(angle!)).toBeLessThanOrEqual(AIM_LIMIT);
-          expect(simulate({ x: BOARD.w / 2, y: 40, ...aimVelocity(angle!), r: BOARD.ball }, world, BOARD.h, 12, 1 / 30).hits).toContain(want);
+  it(
+    'puts the colour hint on a ledge spot whose pearl touches a waiting orange bud, on every board and as buds bloom',
+    { timeout: 60_000 },
+    () => {
+      const plan = planFor(3);
+      for (const shape of SHAPES)
+        for (let seed = 1; seed <= 10; seed++) {
+          const spots = makeBoard(plan, new Rng(seed), shape);
+          const world = worldOf(spots);
+          const bloomed = spots.map(() => false);
+          const want = (i: number) => !bloomed[i] && spots[i].kind === 'special';
+          while (spots.some((_, i) => want(i))) {
+            const { x } = dropAt(world, want, 0, true);
+            const { hits } = simulate({ x, y: 40, vx: 0, vy: 60, r: BOARD.ball }, world, BOARD.h, 12, 1 / 30);
+            expect(hits.some(want), `${shape} seed ${seed}`).toBe(true);
+            hits.forEach((i) => (bloomed[i] = true));
+          }
         }
+    },
+  );
+
+  it(
+    "aims the ghost finger's launcher so the shot touches the flower asked for, on every board",
+    { timeout: 60_000 },
+    () => {
+      for (const plan of PLANS.filter((p) => p.mode === 'number' || p.mode === 'order')) {
+        for (const shape of SHAPES)
+          for (let seed = 1; seed <= 7; seed++) {
+            const rng = new Rng(seed);
+            const spots = makeBoard(plan, rng, shape);
+            const world = worldOf(spots);
+            for (const n of plan.mode === 'order'
+              ? Array.from({ length: plan.count }, (_, i) => i + 1)
+              : targets(plan, rng)) {
+              const want = spots.findIndex((s) => s.kind === n);
+              const angle = aimAt(world, want, 0);
+              expect(angle, `${plan.mode} ${shape} seed ${seed}: flower ${n}`).not.toBeNull();
+              expect(Math.abs(angle!)).toBeLessThanOrEqual(AIM_LIMIT);
+              expect(
+                simulate(
+                  { x: BOARD.w / 2, y: 40, ...aimVelocity(angle!), r: BOARD.ball },
+                  world,
+                  BOARD.h,
+                  12,
+                  1 / 30,
+                ).hits,
+              ).toContain(want);
+            }
+          }
       }
-    }
-  });
+    },
+  );
 
   it('level 8 grows four huge buds, apart from each other and the walls, and every one is reachable with margin', () => {
     expect(planFor(BIG_LEVEL)).toBe(BIG_PLAN);
@@ -239,20 +367,41 @@ describe('Peg Garden', () => {
       expect(a.x - BIG_PEG).toBeGreaterThanOrEqual(2 * BOARD.ball);
       expect(BOARD.w - a.x - BIG_PEG).toBeGreaterThanOrEqual(2 * BOARD.ball);
       expect(a.y + BIG_PEG).toBeLessThan(BOARD.h - 30);
-      for (const b of spots) if (a !== b) expect(Math.hypot(a.x - b.x, a.y - b.y) - 2 * BIG_PEG).toBeGreaterThanOrEqual(2 * BOARD.ball);
+      for (const b of spots)
+        if (a !== b)
+          expect(Math.hypot(a.x - b.x, a.y - b.y) - 2 * BIG_PEG).toBeGreaterThanOrEqual(2 * BOARD.ball);
     }
-    const world = { pegs: spots.map((s) => ({ x: s.x, y: s.y, r: s.r! })), left: 0, right: BOARD.w, gravity: 900, bounce: 0.62 };
+    const world = {
+      pegs: spots.map((s) => ({ x: s.x, y: s.y, r: s.r! })),
+      left: 0,
+      right: BOARD.w,
+      gravity: 900,
+      bounce: 0.62,
+    };
     spots.forEach((_, i) => {
       // Some place on the ledge reaches the bud on every try, drifting either way.
-      for (const drift of [-DRIFT, DRIFT]) expect(dropAt(world, (b) => b === i, drift).sure, `bud ${i} drift ${drift}`).toBe(true);
+      for (const drift of [-DRIFT, DRIFT])
+        expect(dropAt(world, (b) => b === i, drift).sure, `bud ${i} drift ${drift}`).toBe(true);
     });
   });
 
   it('level 8 never traps a pearl: drops all along the ledge reach the sand', () => {
     const spots = makeBoard(BIG_PLAN, new Rng(1));
-    const world = { pegs: spots.map((s) => ({ x: s.x, y: s.y, r: s.r! })), left: 0, right: BOARD.w, gravity: 900, bounce: 0.62 };
+    const world = {
+      pegs: spots.map((s) => ({ x: s.x, y: s.y, r: s.r! })),
+      left: 0,
+      right: BOARD.w,
+      gravity: 900,
+      bounce: 0.62,
+    };
     for (let x = BOARD.ball; x <= BOARD.w - BOARD.ball; x += 20) {
-      const { landed } = simulate({ x, y: 40, vx: x < BOARD.w / 2 ? 12 : -12, vy: 60, r: BOARD.ball }, world, BOARD.h, 10, 1 / 60);
+      const { landed } = simulate(
+        { x, y: 40, vx: x < BOARD.w / 2 ? 12 : -12, vy: 60, r: BOARD.ball },
+        world,
+        BOARD.h,
+        10,
+        1 / 60,
+      );
       expect(landed.y - BOARD.ball, `x ${x}`).toBeGreaterThanOrEqual(BOARD.h);
     }
   });
@@ -265,7 +414,9 @@ describe('Peg Garden', () => {
 
 describe('Peg Garden level 6, Into the cup', () => {
   const SEEDS = Array.from({ length: 10 }, (_, i) => i * 7 + 1);
-  const rounds = SHAPES.flatMap((shape) => SEEDS.map((seed) => ({ shape, seed, round: makeCupRound(planFor(6), new Rng(seed), shape) })));
+  const rounds = SHAPES.flatMap((shape) =>
+    SEEDS.map((seed) => ({ shape, seed, round: makeCupRound(planFor(6), new Rng(seed), shape) })),
+  );
 
   it('level 6 is the cup plan', () => {
     expect(planFor(6).mode).toBe('cup');
@@ -289,7 +440,10 @@ describe('Peg Garden level 6, Into the cup', () => {
     for (const { shape, seed, round } of rounds) {
       const tag = `${shape} ${seed}`;
       expect(round.spots.length, tag).toBe(plan.pegs);
-      for (const s of round.spots) { expect(s.kind, tag).toBe('plain'); expect(s.y + BOARD.peg + 2 * BOARD.ball, tag).toBeLessThan(CUP_TOP); }
+      for (const s of round.spots) {
+        expect(s.kind, tag).toBe('plain');
+        expect(s.y + BOARD.peg + 2 * BOARD.ball, tag).toBeLessThan(CUP_TOP);
+      }
       expect([...round.dots].sort(), tag).toEqual(Array.from({ length: CUPS }, (_, i) => i + 1));
       expect(round.asks.length, tag).toBe(plan.count);
       expect(new Set(round.asks).size, tag).toBe(plan.count);
@@ -306,7 +460,8 @@ describe('Peg Garden level 6, Into the cup', () => {
       for (let c = 0; c < CUPS; c++) {
         const a = aimInto(worldOf(round.spots), round.table, c);
         expect(a, `${shape} ${seed} cup ${c}`).not.toBeNull();
-        for (const d of [-CUP_MARGIN, 0, CUP_MARGIN]) expect(landing(world, a! + d), `${shape} ${seed} cup ${c} d ${d}`).toBe(c);
+        for (const d of [-CUP_MARGIN, 0, CUP_MARGIN])
+          expect(landing(world, a! + d), `${shape} ${seed} cup ${c} d ${d}`).toBe(c);
       }
     }
   });
@@ -327,7 +482,16 @@ describe('Peg Garden level 6, Into the cup', () => {
   it("the game's own stepping (SAMPLE steps from the shot start) lands where landing() says", () => {
     for (const { shape, seed, round } of rounds.filter((r) => r.seed <= 22)) {
       const world = worldOf(round.spots);
-      const angles = [-1, -0.6, -0.2, 0, 0.3, 0.7, 1.1, ...Array.from({ length: CUPS }, (_, c) => aimInto(worldOf(round.spots), round.table, c)!)];
+      const angles = [
+        -1,
+        -0.6,
+        -0.2,
+        0,
+        0.3,
+        0.7,
+        1.1,
+        ...Array.from({ length: CUPS }, (_, c) => aimInto(worldOf(round.spots), round.table, c)!),
+      ];
       for (const a of angles) {
         const b: Ball = { x: BOARD.w / 2, y: 40, ...aimVelocity(a), r: BOARD.ball };
         let samples = 0;
@@ -353,8 +517,11 @@ describe('Peg Garden level 6, Into the cup', () => {
 });
 
 describe('Peg Garden level 7, Plant a bud', () => {
-  const rounds: { shape: (typeof SHAPES)[number]; seed: number; round: ReturnType<typeof makePlantRound> }[] = [];
-  for (const shape of SHAPES) for (let seed = 1; seed <= 150; seed++) rounds.push({ shape, seed, round: makePlantRound(planFor(7), new Rng(seed), shape) });
+  const rounds: { shape: (typeof SHAPES)[number]; seed: number; round: ReturnType<typeof makePlantRound> }[] =
+    [];
+  for (const shape of SHAPES)
+    for (let seed = 1; seed <= 150; seed++)
+      rounds.push({ shape, seed, round: makePlantRound(planFor(7), new Rng(seed), shape) });
 
   it('is the plant mode, and level 8 is still the big plan', () => {
     expect(planFor(7).mode).toBe('plant');
@@ -386,27 +553,41 @@ describe('Peg Garden level 7, Plant a bud', () => {
       expect(bare, id).not.toBe(round.cup);
       expect(plantRun(round.spots, [round.places[round.hint]], round.dropX), id).toBe(round.cup);
       for (const ix of plantings(round.places.length)) {
-        expect(plantRun(round.spots, ix.map((i) => round.places[i]), round.dropX), `${id} ${ix}`).not.toBeNull();
+        expect(
+          plantRun(
+            round.spots,
+            ix.map((i) => round.places[i]),
+            round.dropX,
+          ),
+          `${id} ${ix}`,
+        ).not.toBeNull();
       }
     }
   });
 
   it('the drop button clears both seed homes', () => {
     for (const { shape, seed, round } of rounds) {
-      for (const h of SEED_HOMES) expect(Math.hypot(round.dropX - h.x, 40 - h.y), `${shape} ${seed}`).toBeGreaterThanOrEqual(2 * HIT);
+      for (const h of SEED_HOMES)
+        expect(Math.hypot(round.dropX - h.x, 40 - h.y), `${shape} ${seed}`).toBeGreaterThanOrEqual(2 * HIT);
     }
   });
 
   it('the same seed gives the same round', () => {
     for (const shape of SHAPES) {
       for (const seed of [3, 11, 29, 97]) {
-        expect(makePlantRound(planFor(7), new Rng(seed), shape), `${shape} ${seed}`).toEqual(makePlantRound(planFor(7), new Rng(seed), shape));
+        expect(makePlantRound(planFor(7), new Rng(seed), shape), `${shape} ${seed}`).toEqual(
+          makePlantRound(planFor(7), new Rng(seed), shape),
+        );
       }
     }
   });
 
   it('snapPlace takes the nearest free place within SNAP, skips taken ones, and refuses beyond SNAP', () => {
-    const places = [{ x: 200, y: 300 }, { x: 320, y: 300 }, { x: 600, y: 300 }];
+    const places = [
+      { x: 200, y: 300 },
+      { x: 320, y: 300 },
+      { x: 600, y: 300 },
+    ];
     expect(snapPlace(places, 250, 300, () => false)).toBe(0);
     expect(snapPlace(places, 280, 300, () => false)).toBe(1);
     expect(snapPlace(places, 250, 300, (i) => i === 0)).toBe(1);
@@ -418,7 +599,13 @@ describe('Peg Garden level 7, Plant a bud', () => {
 
   it("the game's own stepping lands where plantRun says", () => {
     for (const { shape, seed, round } of rounds.filter((r) => r.seed <= 25)) {
-      for (const ix of [[], [round.hint], ...plantings(round.places.length).filter((a) => a.length === 2).slice(0, 3)]) {
+      for (const ix of [
+        [],
+        [round.hint],
+        ...plantings(round.places.length)
+          .filter((a) => a.length === 2)
+          .slice(0, 3),
+      ]) {
         const planted = ix.map((i) => round.places[i]);
         const world = worldOf([...round.spots, ...planted.map((p) => ({ ...p, kind: 'plain' as const }))]);
         const b: Ball = plantDrop(round.dropX);

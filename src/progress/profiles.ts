@@ -35,7 +35,8 @@ export interface ProfileIndex {
   profiles: ProfileEntry[];
 }
 
-const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
+const isObj = (v: unknown): v is Record<string, unknown> =>
+  typeof v === 'object' && v !== null && !Array.isArray(v);
 const BAND_IDS: readonly Band[] = BANDS.map((b) => b.id);
 const bandOrNull = (v: unknown): Band | null => BAND_IDS.find((b) => b === v) ?? null;
 
@@ -50,7 +51,8 @@ export function newProfileId(): string {
   return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-export const saveKey = (e: Pick<ProfileEntry, 'id' | 'legacy'>): string => (e.legacy ? LEGACY_SAVE_KEY : `${LEGACY_SAVE_KEY}.${e.id}`);
+export const saveKey = (e: Pick<ProfileEntry, 'id' | 'legacy'>): string =>
+  e.legacy ? LEGACY_SAVE_KEY : `${LEGACY_SAVE_KEY}.${e.id}`;
 /** Each profile's one-step undo snapshot (see `PreviousSave`). */
 export const previousKey = (e: Pick<ProfileEntry, 'id' | 'legacy'>): string => `${saveKey(e)}.previous`;
 
@@ -64,14 +66,16 @@ const whole = (v: unknown): v is number => typeof v === 'number' && Number.isInt
 /** Repairs a stored birth by shape alone, or gives null. */
 export function cleanBirth(raw: unknown): Birth | null {
   if (!isObj(raw) || !whole(raw.month) || !whole(raw.year)) return null;
-  if (raw.month < 1 || raw.month > 12 || raw.year < BIRTH_YEARS.min || raw.year > BIRTH_YEARS.max) return null;
+  if (raw.month < 1 || raw.month > 12 || raw.year < BIRTH_YEARS.min || raw.year > BIRTH_YEARS.max)
+    return null;
   return { month: raw.month, year: raw.year };
 }
 
 /** What a person typed, held to the clock: no later than this month, no earlier than 120 years ago. */
 export function checkBirthInput(month: unknown, year: unknown, now: Date): Birth | null {
   if (!whole(month) || !whole(year) || month < 1 || month > 12) return null;
-  const y = now.getFullYear(), m = now.getMonth() + 1;
+  const y = now.getFullYear(),
+    m = now.getMonth() + 1;
   if (year > y || (year === y && month > m) || year < y - 120) return null;
   return { month, year };
 }
@@ -88,7 +92,14 @@ export function completedYears(birth: Birth, now: Date): number {
 /**
  * Where age starts someone: under 2 lap, 2 toddler, 3 preschool, 4 and 5 pre-K, 6 to 12 early school, 13 and over grown-up.
  */
-const AGE_STARTS: readonly (readonly [number, Band])[] = [[0, 'lap'], [2, 'toddler'], [3, 'preschool'], [4, 'prek'], [6, 'school'], [13, 'grownup']];
+const AGE_STARTS: readonly (readonly [number, Band])[] = [
+  [0, 'lap'],
+  [2, 'toddler'],
+  [3, 'preschool'],
+  [4, 'prek'],
+  [6, 'school'],
+  [13, 'grownup'],
+];
 
 export function bandForYears(years: number): Band {
   let band: Band = 'lap';
@@ -98,7 +109,11 @@ export function bandForYears(years: number): Band {
 }
 
 /** A chosen start wins; then the age; a profile with neither keeps the band its save already has. */
-export function effectiveBand(entry: Pick<ProfileEntry, 'birth' | 'startBand'>, savedBand: Band, now: Date): Band {
+export function effectiveBand(
+  entry: Pick<ProfileEntry, 'birth' | 'startBand'>,
+  savedBand: Band,
+  now: Date,
+): Band {
   if (entry.startBand) return entry.startBand;
   if (entry.birth) return bandForYears(completedYears(entry.birth, now));
   return savedBand;
@@ -106,7 +121,13 @@ export function effectiveBand(entry: Pick<ProfileEntry, 'birth' | 'startBand'>, 
 
 // ---- The index --------------------------------------------------------------------------------------------------
 
-export const newEntry = (id: string, at: number, legacy = false): ProfileEntry => ({ id, legacy, birth: null, startBand: null, addedAt: at });
+export const newEntry = (id: string, at: number, legacy = false): ProfileEntry => ({
+  id,
+  legacy,
+  birth: null,
+  startBand: null,
+  addedAt: at,
+});
 
 /**
  * Accepts anything the index key held and returns a valid one. It is never empty: nothing there (a first run, or a device
@@ -130,7 +151,8 @@ export function repairIndex(raw: unknown, makeId: () => string, now: number): Pr
     });
   }
   if (!profiles.length) profiles.push(newEntry(makeId(), now, true));
-  const active = isObj(raw) && profiles.some((p) => p.id === raw.active) ? (raw.active as string) : profiles[0].id;
+  const active =
+    isObj(raw) && profiles.some((p) => p.id === raw.active) ? (raw.active as string) : profiles[0].id;
   return { version: 1, active, profiles };
 }
 
@@ -144,7 +166,12 @@ export function addEntry(index: ProfileIndex, entry: ProfileEntry): ProfileIndex
  * Takes one profile out. The index is never left empty (a fresh blank profile takes the place of the last one) and, if the
  * active profile went, the first one left becomes active.
  */
-export function removeEntry(index: ProfileIndex, id: string, makeId: () => string, now: number): ProfileIndex {
+export function removeEntry(
+  index: ProfileIndex,
+  id: string,
+  makeId: () => string,
+  now: number,
+): ProfileIndex {
   if (!index.profiles.some((p) => p.id === id)) return index;
   const profiles = index.profiles.filter((p) => p.id !== id);
   if (!profiles.length) profiles.push(newEntry(makeId(), now));
@@ -153,7 +180,11 @@ export function removeEntry(index: ProfileIndex, id: string, makeId: () => strin
 }
 
 /** The index with one entry's identity fields changed. */
-export function updateEntry(index: ProfileIndex, id: string, patch: Partial<Pick<ProfileEntry, 'birth' | 'startBand'>>): ProfileIndex {
+export function updateEntry(
+  index: ProfileIndex,
+  id: string,
+  patch: Partial<Pick<ProfileEntry, 'birth' | 'startBand'>>,
+): ProfileIndex {
   return { ...index, profiles: index.profiles.map((p) => (p.id === id ? { ...p, ...patch } : p)) };
 }
 
@@ -205,7 +236,12 @@ export function parseBackup(text: string): ParsedBackup | null {
     for (const p of raw.profiles) {
       if (profiles.length >= MAX_PROFILES) break;
       if (!isObj(p) || !isProfileId(p.id) || !isObj(p.save) || profiles.some((q) => q.id === p.id)) continue;
-      profiles.push({ id: p.id, birth: cleanBirth(p.birth), startBand: bandOrNull(p.startBand), save: migrate(p.save) });
+      profiles.push({
+        id: p.id,
+        birth: cleanBirth(p.birth),
+        startBand: bandOrNull(p.startBand),
+        save: migrate(p.save),
+      });
     }
     return profiles.length ? { kind: 'many', profiles } : null;
   }
@@ -231,11 +267,13 @@ export interface RestorePlan {
  * deleted**. A bare save from today's backups replaces the active profile, as a restore always has.
  */
 export function planRestore(index: ProfileIndex, backup: ParsedBackup): RestorePlan {
-  if (backup.kind === 'single') return { replace: [{ id: index.active, save: backup.save }], add: [], skipped: 0 };
+  if (backup.kind === 'single')
+    return { replace: [{ id: index.active, save: backup.save }], add: [], skipped: 0 };
   const plan: RestorePlan = { replace: [], add: [], skipped: 0 };
   let room = MAX_PROFILES - index.profiles.length;
   for (const p of backup.profiles) {
-    if (index.profiles.some((q) => q.id === p.id)) plan.replace.push({ id: p.id, save: p.save, entry: { birth: p.birth, startBand: p.startBand } });
+    if (index.profiles.some((q) => q.id === p.id))
+      plan.replace.push({ id: p.id, save: p.save, entry: { birth: p.birth, startBand: p.startBand } });
     else if (room > 0) {
       plan.add.push(p);
       room--;

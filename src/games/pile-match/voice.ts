@@ -1,14 +1,18 @@
 // What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
 export const VOICE = {
   'game.pile-match': ['Pile match!'],
-  'pile.instruct-free': ['Tap something on top of the heap and it hops into the tray. Put three the same together!'],
+  'pile.instruct-free': [
+    'Tap something on top of the heap and it hops into the tray. Put three the same together!',
+  ],
   'pile.covered': ['Something is on top of it.', 'That one is underneath. Take what is on top first.'],
   'pile.full': ['The tray is full. Tap one in the tray to put it back.'],
   'pile.pop': ['One, two, three!', 'Three the same!', 'Pop! Into the basket.'],
   'pile.hint': ['Try the glowing one.'],
   'pile.count-threes.15': ['Three, six, nine, twelve, fifteen. Fifteen things tidied!'],
   'pile.count-threes.18': ['Three, six, nine, twelve, fifteen, eighteen. Eighteen things tidied!'],
-  'pile.count-threes.24': ['Three, six, nine, twelve, fifteen, eighteen, twenty-one, twenty-four. Twenty-four things tidied!'],
+  'pile.count-threes.24': [
+    'Three, six, nine, twelve, fifteen, eighteen, twenty-one, twenty-four. Twenty-four things tidied!',
+  ],
   'pile.done': ['The grass is all clear. Thank you for tidying up!', 'All tidy! Thank you.'],
   'pile.find.shell': ['Find three shells.'],
   'pile.find.acorn': ['Find three acorns.'],

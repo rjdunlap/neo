@@ -1,7 +1,38 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
-import { check, checkSense, checkSet, checkTell, deciding, distinguishing, exhibitLayout, HEARD, hintEdit, ITS, makeRound, narrowingFor, observe, planFor, possible, SEEN, senseTouch, setKey, setTouch, Tally, TOY_IDS, TOYS, tellTarget, tellTouch, type Channel, type Observation, type Rect, type Round, type TellAnswer, type ToyId } from './logic';
+import {
+  check,
+  checkSense,
+  checkSet,
+  checkTell,
+  deciding,
+  distinguishing,
+  exhibitLayout,
+  HEARD,
+  hintEdit,
+  ITS,
+  makeRound,
+  narrowingFor,
+  observe,
+  planFor,
+  possible,
+  SEEN,
+  senseTouch,
+  setKey,
+  setTouch,
+  Tally,
+  TOY_IDS,
+  TOYS,
+  tellTarget,
+  tellTouch,
+  type Channel,
+  type Observation,
+  type Rect,
+  type Round,
+  type TellAnswer,
+  type ToyId,
+} from './logic';
 
 const SEEDS = Array.from({ length: 500 }, (_, i) => i + 1);
 
@@ -111,7 +142,12 @@ describe('Sense Detective: checking', () => {
   });
 
   it('a scripted level 2 round: not yet, miss, same check no new miss, then found', () => {
-    const r = { level: 2, shelf: ['bell', 'drum'] as ToyId[], hidden: 'drum' as ToyId, channels: ['view', 'sound'] as const };
+    const r = {
+      level: 2,
+      shelf: ['bell', 'drum'] as ToyId[],
+      hidden: 'drum' as ToyId,
+      channels: ['view', 'sound'] as const,
+    };
     const rec: Observation[] = [observe('drum', 'view')];
     expect(check(r.shelf, rec, 'bell').kind).toBe('notyet');
     rec.push(observe('drum', 'sound'));
@@ -128,8 +164,10 @@ describe('Sense Detective: checking', () => {
         let found = false;
         for (let i = 0; i < 8 && !found; i++) {
           const m = senseTouch(r, rec, sel);
-          if ('investigate' in m) { if (rec.length === 0) expect(m.investigate).toBe('view'); rec.push(observe(r.hidden, m.investigate)); }
-          else if ('select' in m) sel = m.select;
+          if ('investigate' in m) {
+            if (rec.length === 0) expect(m.investigate).toBe('view');
+            rec.push(observe(r.hidden, m.investigate));
+          } else if ('select' in m) sel = m.select;
           else found = check(r.shelf, rec, sel!).kind === 'found';
         }
         expect(found).toBe(true);
@@ -140,34 +178,73 @@ describe('Sense Detective: checking', () => {
 });
 
 describe('Sense Detective: layout', () => {
-  const views = { landscape: computeView(1024, 768), portrait: computeView(768, 1024), wide: computeView(1366, 1024), tall: computeView(820, 1180) };
+  const views = {
+    landscape: computeView(1024, 768),
+    portrait: computeView(768, 1024),
+    wide: computeView(1366, 1024),
+    tall: computeView(820, 1180),
+  };
   const hit = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
   for (const [name, view] of Object.entries(views)) {
-    for (const cards of [2, 3]) for (const channels of [1, 2]) for (const tell of cards === 3 && channels === 1 ? [false, true] : [false]) {
-      it(`fits ${cards} cards and ${channels} channel(s)${tell ? ' with the can\'t-tell card and two clues' : ''} in ${name}`, () => {
-        const l = exhibitLayout(view, cards, channels, tell, tell ? 2 : channels);
-        expect(l.cantTell !== null).toBe(tell);
-        if (tell) expect(l.strip.length).toBe(2);
-        const all: Rect[] = [l.parcel, l.look, ...(l.listen ? [l.listen] : []), ...l.strip, ...l.shelf, l.check, ...(l.cantTell ? [l.cantTell] : [])];
-        all.forEach((r) => {
-          expect(r.x).toBeGreaterThanOrEqual(0); expect(r.y).toBeGreaterThanOrEqual(0);
-          expect(r.x + r.w).toBeLessThanOrEqual(view.w); expect(r.y + r.h).toBeLessThanOrEqual(view.h);
-        });
-        for (const r of [l.look, ...(l.listen ? [l.listen] : []), ...l.strip, ...l.shelf, l.check, ...(l.cantTell ? [l.cantTell] : [])]) { expect(r.w).toBeGreaterThanOrEqual(100); expect(r.h).toBeGreaterThanOrEqual(100); }
-        for (let i = 0; i < all.length; i++) for (let j = i + 1; j < all.length; j++) expect(hit(all[i], all[j]), `${i} ${j}`).toBe(false);
-        // The pet's corner (bottom-left) and the home button (top-left) stay clear.
-        const pet: Rect = { x: 0, y: view.h - 170, w: 160, h: 170 };
-        const home: Rect = { x: 0, y: 0, w: 110, h: 110 };
-        for (const r of all) { expect(hit(r, pet)).toBe(false); expect(hit(r, home)).toBe(false); }
-      });
-    }
+    for (const cards of [2, 3])
+      for (const channels of [1, 2])
+        for (const tell of cards === 3 && channels === 1 ? [false, true] : [false]) {
+          it(`fits ${cards} cards and ${channels} channel(s)${tell ? " with the can't-tell card and two clues" : ''} in ${name}`, () => {
+            const l = exhibitLayout(view, cards, channels, tell, tell ? 2 : channels);
+            expect(l.cantTell !== null).toBe(tell);
+            if (tell) expect(l.strip.length).toBe(2);
+            const all: Rect[] = [
+              l.parcel,
+              l.look,
+              ...(l.listen ? [l.listen] : []),
+              ...l.strip,
+              ...l.shelf,
+              l.check,
+              ...(l.cantTell ? [l.cantTell] : []),
+            ];
+            all.forEach((r) => {
+              expect(r.x).toBeGreaterThanOrEqual(0);
+              expect(r.y).toBeGreaterThanOrEqual(0);
+              expect(r.x + r.w).toBeLessThanOrEqual(view.w);
+              expect(r.y + r.h).toBeLessThanOrEqual(view.h);
+            });
+            for (const r of [
+              l.look,
+              ...(l.listen ? [l.listen] : []),
+              ...l.strip,
+              ...l.shelf,
+              l.check,
+              ...(l.cantTell ? [l.cantTell] : []),
+            ]) {
+              expect(r.w).toBeGreaterThanOrEqual(100);
+              expect(r.h).toBeGreaterThanOrEqual(100);
+            }
+            for (let i = 0; i < all.length; i++)
+              for (let j = i + 1; j < all.length; j++) expect(hit(all[i], all[j]), `${i} ${j}`).toBe(false);
+            // The pet's corner (bottom-left) and the home button (top-left) stay clear.
+            const pet: Rect = { x: 0, y: view.h - 170, w: 160, h: 170 };
+            const home: Rect = { x: 0, y: 0, w: 110, h: 110 };
+            for (const r of all) {
+              expect(hit(r, pet)).toBe(false);
+              expect(hit(r, home)).toBe(false);
+            }
+          });
+        }
   }
 });
 
-const permutations = <T,>(xs: readonly T[]): T[][] =>
-  xs.length <= 1 ? [[...xs]] : xs.flatMap((x, i) => permutations([...xs.slice(0, i), ...xs.slice(i + 1)]).map((r) => [x, ...r]));
-const subsets = <T,>(xs: readonly T[]): T[][] => xs.reduce<T[][]>((acc, x) => [...acc, ...acc.map((a) => [...a, x])], [[]]);
-const records = (parcel: ToyId): Observation[][] => [[], [observe(parcel, 'view')], [observe(parcel, 'sound')], [observe(parcel, 'view'), observe(parcel, 'sound')]];
+const permutations = <T>(xs: readonly T[]): T[][] =>
+  xs.length <= 1
+    ? [[...xs]]
+    : xs.flatMap((x, i) => permutations([...xs.slice(0, i), ...xs.slice(i + 1)]).map((r) => [x, ...r]));
+const subsets = <T>(xs: readonly T[]): T[][] =>
+  xs.reduce<T[][]>((acc, x) => [...acc, ...acc.map((a) => [...a, x])], [[]]);
+const records = (parcel: ToyId): Observation[][] => [
+  [],
+  [observe(parcel, 'view')],
+  [observe(parcel, 'sound')],
+  [observe(parcel, 'view'), observe(parcel, 'sound')],
+];
 
 describe('Sense Detective: levels 3-4 rounds', () => {
   it('level 3: two different parcels on a full shelf, one round at least, all variety occurs, same seed same round', () => {
@@ -182,7 +259,10 @@ describe('Sense Detective: levels 3-4 rounds', () => {
       expect(r.hidden).toBe(r.parcels[0]);
       expect(r.channels).toEqual(['view']);
       expect(r.parcels.some((p) => TOYS[p].view === 'round')).toBe(true);
-      for (const p of r.parcels) { expect(r.shelf).toContain(p); asParcel.add(p); }
+      for (const p of r.parcels) {
+        expect(r.shelf).toContain(p);
+        asParcel.add(p);
+      }
       if (r.parcels.includes('rattle')) rattleIn++;
       if (r.parcels.every((p) => p !== 'rattle')) twoRound++;
       expect(makeRound(3, new Rng(s))).toEqual(r);
@@ -228,8 +308,14 @@ describe('Sense Detective: checkSet', () => {
           for (const sel of subsets(shelf)) {
             for (const narrowing of [false, true]) {
               const v = checkSet(shelf, record, sel, narrowing);
-              if (sel.length === 0) { expect(v.kind).toBe('empty'); continue; }
-              if (record.length === 0) { expect(v.kind).toBe('look-first'); continue; }
+              if (sel.length === 0) {
+                expect(v.kind).toBe('empty');
+                continue;
+              }
+              if (record.length === 0) {
+                expect(v.kind).toBe('look-first');
+                continue;
+              }
               const bad = sel.filter((t) => !left.includes(t));
               const same = bad.length === 0 && left.every((t) => sel.includes(t));
               if (bad.length > 0) {
@@ -242,10 +328,14 @@ describe('Sense Detective: checkSet', () => {
                 }
               } else if (!same) {
                 expect(v.kind).toBe('one-more');
-                if (v.kind === 'one-more') { expect(left).toContain(v.missing); expect(sel).not.toContain(v.missing); }
+                if (v.kind === 'one-more') {
+                  expect(left).toContain(v.missing);
+                  expect(sel).not.toContain(v.missing);
+                }
               } else {
                 expect(v.kind).toBe(narrowing ? 'so-far' : 'right');
-                if (v.kind === 'so-far' || v.kind === 'right') expect([...v.left].sort()).toEqual([...left].sort());
+                if (v.kind === 'so-far' || v.kind === 'right')
+                  expect([...v.left].sort()).toEqual([...left].sort());
               }
             }
           }
@@ -273,9 +363,10 @@ describe('Sense Detective: checkSet', () => {
     const shelf: ToyId[] = ['bell', 'rattle', 'drum'];
     const a = [observe('bell', 'view')];
     const b = [observe('drum', 'view')];
-    for (const sel of subsets(shelf)) for (const n of [false, true]) {
-      expect(checkSet(shelf, a, sel, n)).toEqual(checkSet(shelf, b, sel, n));
-    }
+    for (const sel of subsets(shelf))
+      for (const n of [false, true]) {
+        expect(checkSet(shelf, a, sel, n)).toEqual(checkSet(shelf, b, sel, n));
+      }
   });
 });
 
@@ -286,20 +377,25 @@ describe('Sense Detective: hints and bot', () => {
   };
 
   it('every hint edit reduces the difference by one and repeating reaches right', () => {
-    for (const shelf of permutations<ToyId>(TOY_IDS)) for (const parcel of TOY_IDS) for (const record of records(parcel).slice(1)) {
-      for (const start of subsets(shelf).filter((x) => x.length > 0)) {
-        let sel = start;
-        for (let guard = 0; guard < 6; guard++) {
-          const d = diff(shelf, record, sel);
-          const e = hintEdit(shelf, record, sel);
-          if ('check' in e) { expect(d).toBe(0); break; }
-          expect(d).toBeGreaterThan(0);
-          sel = 'remove' in e ? sel.filter((t) => t !== e.remove) : [...sel, e.add];
-          expect(diff(shelf, record, sel)).toBe(d - 1);
+    for (const shelf of permutations<ToyId>(TOY_IDS))
+      for (const parcel of TOY_IDS)
+        for (const record of records(parcel).slice(1)) {
+          for (const start of subsets(shelf).filter((x) => x.length > 0)) {
+            let sel = start;
+            for (let guard = 0; guard < 6; guard++) {
+              const d = diff(shelf, record, sel);
+              const e = hintEdit(shelf, record, sel);
+              if ('check' in e) {
+                expect(d).toBe(0);
+                break;
+              }
+              expect(d).toBeGreaterThan(0);
+              sel = 'remove' in e ? sel.filter((t) => t !== e.remove) : [...sel, e.add];
+              expect(diff(shelf, record, sel)).toBe(d - 1);
+            }
+            expect(checkSet(shelf, record, sel, false).kind).toBe('right');
+          }
         }
-        expect(checkSet(shelf, record, sel, false).kind).toBe('right');
-      }
-    }
   });
 
   it('accounting: level 3 authored round gives misses 1, hints 0', () => {
@@ -355,30 +451,36 @@ describe('Sense Detective: hints and bot', () => {
   });
 
   it('the bot finishes every level 3/4 round on every parcel, investigating view before any check', () => {
-    for (const level of [3, 4]) for (const s of SEEDS.slice(0, 200)) {
-      const r: Round = makeRound(level, new Rng(s), s % 2 === 0);
-      for (const p of r.parcels) {
-        let record: Observation[] = [];
-        let sel: ToyId[] = [];
-        let listenOpen = false;
-        let narrowing = level === 4;
-        let done = false;
-        for (let step = 0; step < 20 && !done; step++) {
-          const m = setTouch(r, record, sel, listenOpen);
-          if ('investigate' in m) record = [...record, observe(p, m.investigate)];
-          else if ('toggle' in m) sel = sel.includes(m.toggle) ? sel.filter((t) => t !== m.toggle) : [...sel, m.toggle];
-          else {
-            expect(record.some((o) => o.channel === 'view')).toBe(true);
-            const v = checkSet(r.shelf, record, sel, narrowing);
-            expect(v.kind).not.toBe('miss');
-            if (v.kind === 'so-far') { listenOpen = true; narrowing = false; }
-            else if (v.kind === 'right') { expect(sel).toContain(p); done = true; }
-            else throw new Error(`bot reached ${v.kind}`);
+    for (const level of [3, 4])
+      for (const s of SEEDS.slice(0, 200)) {
+        const r: Round = makeRound(level, new Rng(s), s % 2 === 0);
+        for (const p of r.parcels) {
+          let record: Observation[] = [];
+          let sel: ToyId[] = [];
+          let listenOpen = false;
+          let narrowing = level === 4;
+          let done = false;
+          for (let step = 0; step < 20 && !done; step++) {
+            const m = setTouch(r, record, sel, listenOpen);
+            if ('investigate' in m) record = [...record, observe(p, m.investigate)];
+            else if ('toggle' in m)
+              sel = sel.includes(m.toggle) ? sel.filter((t) => t !== m.toggle) : [...sel, m.toggle];
+            else {
+              expect(record.some((o) => o.channel === 'view')).toBe(true);
+              const v = checkSet(r.shelf, record, sel, narrowing);
+              expect(v.kind).not.toBe('miss');
+              if (v.kind === 'so-far') {
+                listenOpen = true;
+                narrowing = false;
+              } else if (v.kind === 'right') {
+                expect(sel).toContain(p);
+                done = true;
+              } else throw new Error(`bot reached ${v.kind}`);
+            }
           }
+          expect(done).toBe(true);
         }
-        expect(done).toBe(true);
       }
-    }
   });
 });
 
@@ -397,7 +499,8 @@ describe('Sense Detective: level 4 needs the listen', () => {
 
 describe('Sense Detective: level 5, can we tell?', () => {
   it('two different parcels on a full shelf, one round at least, rattle and two-toy rounds both occur, authored first round', () => {
-    let oneToy = 0; let twoToy = 0;
+    let oneToy = 0;
+    let twoToy = 0;
     const seen = new Set<ToyId>();
     for (const s of SEEDS) {
       const r = makeRound(5, new Rng(s));
@@ -406,31 +509,43 @@ describe('Sense Detective: level 5, can we tell?', () => {
       expect(r.parcels[0]).not.toBe(r.parcels[1]);
       expect(r.parcels.some((p) => TOYS[p].view === 'round')).toBe(true);
       expect(r.channels).toEqual(['view']);
-      for (const p of r.parcels) { seen.add(p); if (possible(r.shelf, [observe(p, 'view')]).length === 1) oneToy++; else twoToy++; }
+      for (const p of r.parcels) {
+        seen.add(p);
+        if (possible(r.shelf, [observe(p, 'view')]).length === 1) oneToy++;
+        else twoToy++;
+      }
       expect(makeRound(5, new Rng(s))).toEqual(r);
     }
-    expect(oneToy).toBeGreaterThan(0); expect(twoToy).toBeGreaterThan(0); expect(seen.size).toBe(3);
+    expect(oneToy).toBeGreaterThan(0);
+    expect(twoToy).toBeGreaterThan(0);
+    expect(seen.size).toBe(3);
     const a = makeRound(5, new Rng(1), true);
-    expect([a.shelf, a.parcels]).toEqual([['drum', 'bell', 'rattle'], ['drum', 'rattle']]);
+    expect([a.shelf, a.parcels]).toEqual([
+      ['drum', 'bell', 'rattle'],
+      ['drum', 'rattle'],
+    ]);
     expect(planFor(5).name).toBe('Can we tell?');
   });
 
-  it('the tell verdict: a round parcel allows only can\'t tell; a rattle parcel only the rattle', () => {
-    for (const shelf of permutations(TOY_IDS)) for (const p of TOY_IDS) {
-      const rec = [observe(p, 'view')];
-      const v = (a: TellAnswer) => checkTell(shelf, rec, a).kind;
-      if (TOYS[p].view === 'round') {
-        expect(v('cant-tell')).toBe('cant-tell');
-        expect(v('bell')).toBe('both-fit'); expect(v('drum')).toBe('both-fit');
-        expect(v('rattle')).toBe('miss');
-      } else {
-        expect(v('rattle')).toBe('right');
-        expect(v('cant-tell')).toBe('can-tell');
-        expect(v('bell')).toBe('miss'); expect(v('drum')).toBe('miss');
+  it("the tell verdict: a round parcel allows only can't tell; a rattle parcel only the rattle", () => {
+    for (const shelf of permutations(TOY_IDS))
+      for (const p of TOY_IDS) {
+        const rec = [observe(p, 'view')];
+        const v = (a: TellAnswer) => checkTell(shelf, rec, a).kind;
+        if (TOYS[p].view === 'round') {
+          expect(v('cant-tell')).toBe('cant-tell');
+          expect(v('bell')).toBe('both-fit');
+          expect(v('drum')).toBe('both-fit');
+          expect(v('rattle')).toBe('miss');
+        } else {
+          expect(v('rattle')).toBe('right');
+          expect(v('cant-tell')).toBe('can-tell');
+          expect(v('bell')).toBe('miss');
+          expect(v('drum')).toBe('miss');
+        }
+        expect(checkTell(shelf, [], 'bell').kind).toBe('look-first');
+        expect(checkTell(shelf, rec, null).kind).toBe('empty');
       }
-      expect(checkTell(shelf, [], 'bell').kind).toBe('look-first');
-      expect(checkTell(shelf, rec, null).kind).toBe('empty');
-    }
     const m = checkTell(TOY_IDS, [observe('drum', 'view')], 'rattle');
     expect(m.kind === 'miss' && TOYS.rattle[m.obs.channel] !== m.obs.value).toBe(true);
     const b = checkTell(TOY_IDS, [observe('bell', 'view')], 'bell');
@@ -439,21 +554,27 @@ describe('Sense Detective: level 5, can we tell?', () => {
 
   it('guesses are not knowledge: the bell and drum parcels give the same verdict for every answer', () => {
     for (const a of [...TOY_IDS, 'cant-tell'] as TellAnswer[]) {
-      expect(checkTell(TOY_IDS, [observe('bell', 'view')], a)).toEqual(checkTell(TOY_IDS, [observe('drum', 'view')], a));
+      expect(checkTell(TOY_IDS, [observe('bell', 'view')], a)).toEqual(
+        checkTell(TOY_IDS, [observe('drum', 'view')], a),
+      );
     }
   });
 
   it('listening always tells two possible toys apart, and hearing the parcel leaves exactly it', () => {
-    for (const shelf of permutations(TOY_IDS)) for (const p of TOY_IDS) {
-      const rec = [observe(p, 'view')];
-      const left = possible(shelf, rec);
-      if (left.length === 1) { expect(distinguishing(shelf, rec)).toBeNull(); continue; }
-      expect(distinguishing(shelf, rec)).toBe('sound');
-      expect(checkSense(shelf, rec, 'sound')).toBe('right');
-      expect(checkSense(shelf, rec, 'view')).toBe('miss');
-      expect(checkSense(shelf, rec, null)).toBe('empty');
-      expect(possible(shelf, [...rec, observe(p, 'sound')])).toEqual([p]);
-    }
+    for (const shelf of permutations(TOY_IDS))
+      for (const p of TOY_IDS) {
+        const rec = [observe(p, 'view')];
+        const left = possible(shelf, rec);
+        if (left.length === 1) {
+          expect(distinguishing(shelf, rec)).toBeNull();
+          continue;
+        }
+        expect(distinguishing(shelf, rec)).toBe('sound');
+        expect(checkSense(shelf, rec, 'sound')).toBe('right');
+        expect(checkSense(shelf, rec, 'view')).toBe('miss');
+        expect(checkSense(shelf, rec, null)).toBe('empty');
+        expect(possible(shelf, [...rec, observe(p, 'sound')])).toEqual([p]);
+      }
     expect(distinguishing(TOY_IDS, [])).toBe('sound');
   });
 
@@ -463,7 +584,8 @@ describe('Sense Detective: level 5, can we tell?', () => {
       const t = tellTarget(TOY_IDS, rec, 'answer');
       const v = checkTell(TOY_IDS, rec, t as TellAnswer).kind;
       expect(['right', 'cant-tell']).toContain(v);
-      if (v === 'cant-tell') expect(checkSense(TOY_IDS, rec, tellTarget(TOY_IDS, rec, 'sense') as Channel)).toBe('right');
+      if (v === 'cant-tell')
+        expect(checkSense(TOY_IDS, rec, tellTarget(TOY_IDS, rec, 'sense') as Channel)).toBe('right');
     }
   });
 
@@ -500,9 +622,13 @@ describe('Sense Detective: level 5, can we tell?', () => {
             expect(record.some((o) => o.channel === 'view')).toBe(true);
             if (stage === 'answer') {
               const v = checkTell(r.shelf, record, chosen as TellAnswer);
-              if (v.kind === 'right') { expect(v.toy).toBe(p); done = true; }
-              else if (v.kind === 'cant-tell') { stage = 'sense'; chosen = null; }
-              else throw new Error(`bot reached ${v.kind}`);
+              if (v.kind === 'right') {
+                expect(v.toy).toBe(p);
+                done = true;
+              } else if (v.kind === 'cant-tell') {
+                stage = 'sense';
+                chosen = null;
+              } else throw new Error(`bot reached ${v.kind}`);
             } else {
               expect(checkSense(r.shelf, record, chosen as Channel)).toBe('right');
               expect(possible(r.shelf, [...record, observe(p, 'sound')])).toEqual([p]);

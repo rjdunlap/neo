@@ -5,7 +5,9 @@ import manifest from '../content/voice-clips.json';
  * and precached offline. A line with no clip, a changed line, or a slotted one speaks with device speech.
  */
 const urls = import.meta.glob<string>('./clips/*.m4a', { eager: true, query: '?url', import: 'default' });
-const byKey = new Map(Object.entries(urls).map(([path, url]) => [path.slice('./clips/'.length, -'.m4a'.length), url]));
+const byKey = new Map(
+  Object.entries(urls).map(([path, url]) => [path.slice('./clips/'.length, -'.m4a'.length), url]),
+);
 const clips: Record<string, string> = manifest.clips;
 
 /** The clip's URL for this exact text, or null for device speech. */

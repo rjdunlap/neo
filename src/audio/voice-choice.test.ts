@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { chooseVoice, voiceLabel, voiceQuality, type VoiceInfo } from './voice-choice';
 
-const v = (name: string, voiceURI = name, lang = 'en-US', localService = true): VoiceInfo => ({ name, voiceURI, lang, localService });
+const v = (name: string, voiceURI = name, lang = 'en-US', localService = true): VoiceInfo => ({
+  name,
+  voiceURI,
+  lang,
+  localService,
+});
 
 describe('voice choice', () => {
   it('ranks Premium over Enhanced over a compact voice', () => {
@@ -33,7 +38,17 @@ describe('voice choice', () => {
   });
 
   it('never picks a novelty or Eloquence voice while a plain English voice exists', () => {
-    const odd = ['Bells', 'Bad News', 'Zarvox', 'Whisper', 'Jester', 'Eddy (English (US))', 'Grandma (English (US))', 'Rocko (English (UK))', 'Fred'].map((n) => v(n));
+    const odd = [
+      'Bells',
+      'Bad News',
+      'Zarvox',
+      'Whisper',
+      'Jester',
+      'Eddy (English (US))',
+      'Grandma (English (US))',
+      'Rocko (English (UK))',
+      'Fred',
+    ].map((n) => v(n));
     const plain = v('Moira', 'Moira', 'en-IE');
     expect(chooseVoice([...odd, plain])).toBe(plain);
     expect(chooseVoice([v('Bells'), v('Zarvox')])).toBeNull();

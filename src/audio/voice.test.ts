@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('./engine', () => ({ audio: { ctx: null as null | { state: string }, duck: vi.fn(), getVolume: () => 0.8, voiceOut: {} } }));
+vi.mock('./engine', () => ({
+  audio: { ctx: null as null | { state: string }, duck: vi.fn(), getVolume: () => 0.8, voiceOut: {} },
+}));
 
 class FakeUtterance {
   voice: unknown = null;
@@ -13,7 +15,10 @@ class FakeUtterance {
 }
 const spoken: FakeUtterance[] = [];
 const synth = {
-  speak: vi.fn((u: FakeUtterance) => { spoken.push(u); setTimeout(() => u.onend?.(), 1); }),
+  speak: vi.fn((u: FakeUtterance) => {
+    spoken.push(u);
+    setTimeout(() => u.onend?.(), 1);
+  }),
   cancel: vi.fn(),
   getVoices: () => [],
   addEventListener: vi.fn(),
@@ -25,10 +30,20 @@ describe('voice.sayIn', () => {
     vi.useFakeTimers();
     spoken.length = 0;
     synth.speak.mockClear();
-    vi.stubGlobal('window', Object.assign(new EventTarget(), { setTimeout: (...a: Parameters<typeof setTimeout>) => setTimeout(...a), clearTimeout: (...a: Parameters<typeof clearTimeout>) => clearTimeout(...a), speechSynthesis: synth }));
+    vi.stubGlobal(
+      'window',
+      Object.assign(new EventTarget(), {
+        setTimeout: (...a: Parameters<typeof setTimeout>) => setTimeout(...a),
+        clearTimeout: (...a: Parameters<typeof clearTimeout>) => clearTimeout(...a),
+        speechSynthesis: synth,
+      }),
+    );
     vi.stubGlobal('speechSynthesis', synth);
     vi.stubGlobal('SpeechSynthesisUtterance', FakeUtterance);
-    vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>(() => {})));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => new Promise<Response>(() => {})),
+    );
   });
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -54,7 +69,7 @@ describe('voice.sayIn', () => {
     expect(audio.duck).toHaveBeenLastCalledWith(false);
   });
 
-  it('leaves the pet\'s say on its clip, and its device voice at the pet preset', async () => {
+  it("leaves the pet's say on its clip, and its device voice at the pet preset", async () => {
     const { voice, PET_VOICE } = await import('./voice');
     const { audio } = await import('./engine');
     (audio as { ctx: { state: string } | null }).ctx = { state: 'running' };
@@ -70,11 +85,13 @@ describe('voice.sayIn', () => {
     expect(last.rate).toBe(PET_VOICE.rate);
   });
 
-  it('keeps a spoken line\'s pacing without speaking when the voice is off', async () => {
+  it("keeps a spoken line's pacing without speaking when the voice is off", async () => {
     const { voice } = await import('./voice');
     voice.enabled = false;
     let done = false;
-    const said = voice.sayIn('nav.home', { pitch: 2, rate: 1.3 }).then(() => { done = true; });
+    const said = voice.sayIn('nav.home', { pitch: 2, rate: 1.3 }).then(() => {
+      done = true;
+    });
     await vi.advanceTimersByTimeAsync(100);
     expect(done).toBe(false);
     await vi.runAllTimersAsync();

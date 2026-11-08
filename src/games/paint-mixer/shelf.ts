@@ -13,8 +13,19 @@ import type { View } from '../../engine/view';
 import type { Game, GameContext, TouchIntent } from '../types';
 import { button, drop as dropArt, jar as jarArt, labelJar, ratioTable } from './art';
 import {
-  CASES_PER_ROUND, TABLE_COLUMNS, checkJars, finishTaps, inLid, layoutJars, makeJarRound, matchingSet, namedJar, reveal,
-  type JarCase, type JarLayout, type Reveal,
+  CASES_PER_ROUND,
+  TABLE_COLUMNS,
+  checkJars,
+  finishTaps,
+  inLid,
+  layoutJars,
+  makeJarRound,
+  matchingSet,
+  namedJar,
+  reveal,
+  type JarCase,
+  type JarLayout,
+  type Reveal,
 } from './jars';
 import { BUTTON_H, BUTTON_W, JAR_H, JAR_W, emptyCounts, mix, type Pot, type Table } from './logic';
 
@@ -59,7 +70,17 @@ export class JarShelf implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.cases = makeJarRound(ctx.rng);
-    this.backdrop = new Backdrop({ sky: [cream, swatch.blue.light], hills: [grass, swatch.green.light], horizon: 0.34, clouds: 1, sun: false, seed: 67 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [cream, swatch.blue.light],
+        hills: [grass, swatch.green.light],
+        horizon: 0.34,
+        clouds: 1,
+        sun: false,
+        seed: 67,
+      },
+      ctx.view,
+    );
     this.sampleNode.hitArea = new Rectangle(-JAR_W / 2, -JAR_H / 2, JAR_W, JAR_H);
     onTap(this.sampleNode, () => this.tapSample());
     this.check = button('check', BUTTON_W, BUTTON_H);
@@ -78,23 +99,47 @@ export class JarShelf implements Game {
       this.jarNodes.push(n);
     }
     this.layoutNow = layoutJars(ctx.view);
-    ctx.stage.addChild(this.backdrop, this.sampleNode, this.recipeNode, this.tableNode, ...this.jarNodes, this.check, this.glowRing);
+    ctx.stage.addChild(
+      this.backdrop,
+      this.sampleNode,
+      this.recipeNode,
+      this.tableNode,
+      ...this.jarNodes,
+      this.check,
+      this.glowRing,
+    );
     this.dressCase();
     this.resize(ctx.view);
   }
 
-  get case(): JarCase { return this.cases[this.caseIndex]; }
+  get case(): JarCase {
+    return this.cases[this.caseIndex];
+  }
   /** What a scripted play reads. */
   get state() {
     const c = this.case;
     return {
-      level: 6, case: this.caseIndex, pair: c.pair, base: c.base, labels: c.jars.map((j) => j.label), matching: matchingSet(c),
-      chosen: this.chosen.slice(), opened: this.opened.slice(), shown: this.shown, misses: this.misses, hints: this.hints,
-      glow: this.glow, busy: this.busy, finished: this.finished, finishing: this.finishing,
+      level: 6,
+      case: this.caseIndex,
+      pair: c.pair,
+      base: c.base,
+      labels: c.jars.map((j) => j.label),
+      matching: matchingSet(c),
+      chosen: this.chosen.slice(),
+      opened: this.opened.slice(),
+      shown: this.shown,
+      misses: this.misses,
+      hints: this.hints,
+      glow: this.glow,
+      busy: this.busy,
+      finished: this.finished,
+      finishing: this.finishing,
     };
   }
 
-  start() { void this.instruct(); }
+  start() {
+    void this.instruct();
+  }
 
   private async instruct() {
     const turn = this.turn;
@@ -110,7 +155,10 @@ export class JarShelf implements Game {
 
   destroy() {
     this.finished = true;
-    for (const n of this.jarNodes) { this.ctx.tw.kill(n); this.ctx.tw.kill(n.scale); }
+    for (const n of this.jarNodes) {
+      this.ctx.tw.kill(n);
+      this.ctx.tw.kill(n.scale);
+    }
   }
 
   // ---- drawing ----
@@ -138,7 +186,11 @@ export class JarShelf implements Game {
     const r = this.shown === null ? null : reveal(c.base, c.jars[this.shown].label);
     const filled = !r ? 1 : r.kind === 'first' ? TABLE_COLUMNS : Math.max(1, Math.min(TABLE_COLUMNS, r.k));
     const values = Array.from({ length: TABLE_COLUMNS }, (_, i) => c.base.map((n) => (i + 1) * n));
-    return { table: { columns: TABLE_COLUMNS, filled, values }, glow: r && r.kind !== 'first' ? r.k : null, reveal: r };
+    return {
+      table: { columns: TABLE_COLUMNS, filled, values },
+      glow: r && r.kind !== 'first' ? r.k : null,
+      reveal: r,
+    };
   }
 
   private redraw() {
@@ -150,10 +202,17 @@ export class JarShelf implements Game {
       const n = this.jarNodes[i];
       n.removeChildren().forEach((k) => k.destroy({ children: true }));
       const mine = this.shown === i ? r : null;
-      n.addChild(labelJar({
-        pots: c.pair, label: jar.label, color: labelColor(c, jar.label), open: this.opened[i], chosen: this.chosen[i],
-        circle: mine?.kind === 'second' ? 1 : mine?.kind === 'first' ? 0 : null, fits: mine?.kind === 'fills',
-      }));
+      n.addChild(
+        labelJar({
+          pots: c.pair,
+          label: jar.label,
+          color: labelColor(c, jar.label),
+          open: this.opened[i],
+          chosen: this.chosen[i],
+          circle: mine?.kind === 'second' ? 1 : mine?.kind === 'first' ? 0 : null,
+          fits: mine?.kind === 'fills',
+        }),
+      );
     });
     this.place();
   }
@@ -176,7 +235,10 @@ export class JarShelf implements Game {
   /** Open a lid: its reveal plays. The first lid in a case is the case's one hint, whoever opened it. */
   openLid(i: number, by: 'her' | 'help') {
     if (this.busy || this.finished || this.finishing) return;
-    if (!this.hinted) { this.hinted = true; this.hints++; }
+    if (!this.hinted) {
+      this.hinted = true;
+      this.hints++;
+    }
     const first = !this.opened[i];
     this.opened[i] = true;
     this.shown = i;
@@ -186,13 +248,17 @@ export class JarShelf implements Game {
   }
 
   private async sayReveal(i: number, by: 'her' | 'help') {
-    const c = this.case, jar = c.jars[i], r = reveal(c.base, jar.label);
+    const c = this.case,
+      jar = c.jars[i],
+      r = reveal(c.base, jar.label);
     const words = { a: jar.label[0], potA: c.pair[0], b: jar.label[1], potB: c.pair[1] };
     const turn = this.turn;
     if (by === 'help') await this.ctx.say('pm.jars.look');
     if (this.finished || turn !== this.turn) return;
-    if (r.kind === 'fills') await this.ctx.say(r.k === 1 ? 'pm.jars.batch-1' : 'pm.jars.batches', { ...words, count: r.k });
-    else if (r.kind === 'second') await this.ctx.say('pm.jars.table-says', { ...words, expected: r.expected });
+    if (r.kind === 'fills')
+      await this.ctx.say(r.k === 1 ? 'pm.jars.batch-1' : 'pm.jars.batches', { ...words, count: r.k });
+    else if (r.kind === 'second')
+      await this.ctx.say('pm.jars.table-says', { ...words, expected: r.expected });
     else await this.ctx.say('pm.jars.not-in-row', words);
   }
 
@@ -208,9 +274,17 @@ export class JarShelf implements Game {
     this.check.scale.set(0.92);
     void this.ctx.tw.to(this.check.scale, { x: 1, y: 1 }, { duration: 0.2, ease: ease.outBack });
     const v = checkJars(this.case, this.chosen);
-    if (v.kind === 'match') { void this.celebrate(); return; }
-    if (v.kind === 'empty') { sfx.pop(3); void this.ctx.say('pm.jars.choose'); return; }
-    this.misses++; this.caseMisses++;
+    if (v.kind === 'match') {
+      void this.celebrate();
+      return;
+    }
+    if (v.kind === 'empty') {
+      sfx.pop(3);
+      void this.ctx.say('pm.jars.choose');
+      return;
+    }
+    this.misses++;
+    this.caseMisses++;
     sfx.boing();
     this.wiggle(v.jar);
     void this.hearWrong(v.way);
@@ -249,7 +323,10 @@ export class JarShelf implements Game {
   /** Asked-for help: a lid and its reveal (the case's one hint); asked again, the right jars choose themselves and Check glows. */
   askForHint() {
     if (this.busy || this.finished || this.finishing) return;
-    if (!this.glow) { this.help(); return; }
+    if (!this.glow) {
+      this.help();
+      return;
+    }
     void this.supportedFinish();
   }
 
@@ -275,8 +352,19 @@ export class JarShelf implements Game {
     this.case.jars.forEach((_, i) => {
       if (!this.chosen[i]) return;
       const n = this.jarNodes[i];
-      this.ctx.particles.burst(n.x, n.y - 40, { kind: 'star', colors: [labelColor(this.case, this.case.jars[i].label), swatch.yellow.fill, 0xffffff], count: 10, speed: [100, 240], gravity: 320, life: [0.4, 0.8] });
-      void this.ctx.tw.to(n, { y: l.jars[i].y - 34 }, { duration: 0.25, ease: ease.outQuad }).then(() => this.ctx.tw.to(n, { y: this.layoutNow.jars[i].y - 14 }, { duration: 0.35, ease: ease.outBack }));
+      this.ctx.particles.burst(n.x, n.y - 40, {
+        kind: 'star',
+        colors: [labelColor(this.case, this.case.jars[i].label), swatch.yellow.fill, 0xffffff],
+        count: 10,
+        speed: [100, 240],
+        gravity: 320,
+        life: [0.4, 0.8],
+      });
+      void this.ctx.tw
+        .to(n, { y: l.jars[i].y - 34 }, { duration: 0.25, ease: ease.outQuad })
+        .then(() =>
+          this.ctx.tw.to(n, { y: this.layoutNow.jars[i].y - 14 }, { duration: 0.35, ease: ease.outBack }),
+        );
     });
     await this.ctx.say('pm.jars.match');
     if (this.finished) return;
@@ -310,7 +398,7 @@ export class JarShelf implements Game {
   }
 
   resize(view: View) {
-    const l = this.layoutNow = layoutJars(view);
+    const l = (this.layoutNow = layoutJars(view));
     this.backdrop.resize(view);
     this.sampleNode.position.set(l.sample.x, l.sample.y);
     this.recipeNode.position.set(l.recipe.x, l.recipe.y);
@@ -326,7 +414,9 @@ export class JarShelf implements Game {
     const l = this.layoutNow;
     const b = this.glow.at === 'check' ? l.check : l.jars[this.glow.jar];
     const pulse = 6 + 4 * Math.sin(this.clock * 5);
-    this.glowRing.roundRect(b.x - b.w / 2 - pulse, b.y - b.h / 2 - pulse, b.w + 2 * pulse, b.h + 2 * pulse, 30).stroke({ width: 7, color: swatch.yellow.fill });
+    this.glowRing
+      .roundRect(b.x - b.w / 2 - pulse, b.y - b.h / 2 - pulse, b.w + 2 * pulse, b.h + 2 * pulse, 30)
+      .stroke({ width: 7, color: swatch.yellow.fill });
   }
 
   /** The bot taps the matching jars (never a lid, never a non-match), then Check. */
@@ -337,4 +427,3 @@ export class JarShelf implements Game {
     return { tap: { on: this.check }, pause: 0.6 };
   }
 }
-

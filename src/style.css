@@ -147,7 +147,8 @@ html.turning .pet-name-form {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: max(16px, var(--safe-top)) max(16px, var(--safe-right)) max(16px, var(--safe-bottom)) max(16px, var(--safe-left));
+  padding: max(16px, var(--safe-top)) max(16px, var(--safe-right)) max(16px, var(--safe-bottom))
+    max(16px, var(--safe-left));
   background: rgb(43 43 58 / 0.45);
 }
 .pause__card {
@@ -207,7 +208,8 @@ html.turning .pet-name-form {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: max(16px, var(--safe-top)) max(16px, var(--safe-right)) max(16px, var(--safe-bottom)) max(16px, var(--safe-left));
+  padding: max(16px, var(--safe-top)) max(16px, var(--safe-right)) max(16px, var(--safe-bottom))
+    max(16px, var(--safe-left));
   touch-action: pan-y;
   -webkit-user-select: text;
   user-select: text;
@@ -433,7 +435,8 @@ html.turning .pet-name-form {
   font-size: 16px;
   touch-action: manipulation;
 }
-.pet-name-form input, .pet-name-form button {
+.pet-name-form input,
+.pet-name-form button {
   font: inherit;
   padding: 10px 14px;
   border: 2px solid var(--teal-line);
@@ -441,7 +444,11 @@ html.turning .pet-name-form {
   background: var(--card);
   color: var(--ink);
 }
-.pet-name-form input { width: 170px; user-select: text; -webkit-user-select: text; }
+.pet-name-form input {
+  width: 170px;
+  user-select: text;
+  -webkit-user-select: text;
+}
 
 /* The root page's way to the island game at classic/ (src/rework.ts), plain HTML over the canvas. */
 .classic-link {
@@ -456,5 +463,10 @@ html.turning .pet-name-form {
   transition: transform 0.18s cubic-bezier(0.3, 1.8, 0.5, 1);
   -webkit-tap-highlight-color: transparent;
 }
-.classic-link[hidden] { display: none; }
-.classic-link:active { transform: scale(1.07, 0.86); transition-duration: 0.05s; }
+.classic-link[hidden] {
+  display: none;
+}
+.classic-link:active {
+  transform: scale(1.07, 0.86);
+  transition-duration: 0.05s;
+}

@@ -20,9 +20,13 @@ export type Action =
   | { k: 'roll'; surface: Surface };
 export type Trace = readonly Action[];
 
-export interface Mark { by: Friend | 'both'; tool: Tool }
+export interface Mark {
+  by: Friend | 'both';
+  tool: Tool;
+}
 
-export type PlanId = 'stampPass' | 'turns' | 'roll' | 'side' | 'bannerThenPage' | 'pageThenBanner' | 'justBanner';
+export type PlanId =
+  'stampPass' | 'turns' | 'roll' | 'side' | 'bannerThenPage' | 'pageThenBanner' | 'justBanner';
 export type RequestId = 'page' | 'banner' | 'bannerOr' | 'own';
 export type Why = 'full' | 'notInPlan' | 'waiting' | 'turns' | 'myStep' | 'chooseFirst' | 'later';
 
@@ -37,7 +41,11 @@ export const stamp = (surface: Surface): Action => ({ k: 'stamp', surface });
 export const roll = (surface: Surface): Action => ({ k: 'roll', surface });
 
 export function key(a: Action): string {
-  return a.k === 'give' ? `give:${a.tool}:${a.to}` : a.k === 'pass' ? `pass:${a.tool}` : `${a.k}:${a.surface}`;
+  return a.k === 'give'
+    ? `give:${a.tool}:${a.to}`
+    : a.k === 'pass'
+      ? `pass:${a.tool}`
+      : `${a.k}:${a.surface}`;
 }
 export const sameAction = (a: Action, b: Action) => key(a) === key(b);
 
@@ -99,9 +107,27 @@ export const VARIATIONS: Record<number, readonly Variation[]> = {
 };
 
 const PLANS: readonly Omit<LevelSpec, 'requests'>[] = [
-  { level: 1, name: 'Stamp and pass', describe: 'Stamp and pass: one stamp pad, a star on each friend\'s page', cells: 0, plans: ['stampPass'] },
-  { level: 2, name: 'Two ways to make', describe: 'Two ways to make: take turns or roll together for one banner', cells: 4, plans: ['turns', 'roll'] },
-  { level: 3, name: 'My page, our plan', describe: 'My page, our plan: a plan that works for both friends\' requests', cells: 2, plans: ['side', 'bannerThenPage', 'pageThenBanner', 'justBanner'] },
+  {
+    level: 1,
+    name: 'Stamp and pass',
+    describe: "Stamp and pass: one stamp pad, a star on each friend's page",
+    cells: 0,
+    plans: ['stampPass'],
+  },
+  {
+    level: 2,
+    name: 'Two ways to make',
+    describe: 'Two ways to make: take turns or roll together for one banner',
+    cells: 4,
+    plans: ['turns', 'roll'],
+  },
+  {
+    level: 3,
+    name: 'My page, our plan',
+    describe: "My page, our plan: a plan that works for both friends' requests",
+    cells: 2,
+    plans: ['side', 'bannerThenPage', 'pageThenBanner', 'justBanner'],
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -114,7 +140,13 @@ export const LEVEL_COUNT = PLANS.length;
 export function specFor(level: number, own: Friend = 'B'): LevelSpec {
   const s = PLANS[Math.max(1, Math.min(LEVEL_COUNT, level)) - 1];
   const requests: Record<Friend, RequestId> =
-    s.level === 1 ? { A: 'page', B: 'page' } : s.level === 2 ? { A: 'banner', B: 'banner' } : own === 'B' ? { A: 'bannerOr', B: 'own' } : { A: 'own', B: 'bannerOr' };
+    s.level === 1
+      ? { A: 'page', B: 'page' }
+      : s.level === 2
+        ? { A: 'banner', B: 'banner' }
+        : own === 'B'
+          ? { A: 'bannerOr', B: 'own' }
+          : { A: 'own', B: 'bannerOr' };
   return { ...s, requests };
 }
 
@@ -122,7 +154,10 @@ export function specFor(level: number, own: Friend = 'B'): LevelSpec {
 function interleavings<T>(a: readonly T[], b: readonly T[]): T[][] {
   if (!a.length) return [[...b]];
   if (!b.length) return [[...a]];
-  return [...interleavings(a.slice(1), b).map((r) => [a[0], ...r]), ...interleavings(a, b.slice(1)).map((r) => [b[0], ...r])];
+  return [
+    ...interleavings(a.slice(1), b).map((r) => [a[0], ...r]),
+    ...interleavings(a, b.slice(1)).map((r) => [b[0], ...r]),
+  ];
 }
 
 /** The banner in turns with the pad, the pad starting with `starter` already holding it: stamp, pass, stamp… */
@@ -141,16 +176,34 @@ export function planFor(id: PlanId, cells: number, own: Friend = 'B'): Plan {
   switch (id) {
     case 'stampPass':
       return {
-        id, surfaces: ['pageA', 'pageB'], tools: ['pad'], takesTurns: true,
+        id,
+        surfaces: ['pageA', 'pageB'],
+        tools: ['pad'],
+        takesTurns: true,
         traces: FRIENDS.map((x) => [give('pad', x), stamp(pageOf(x)), pass(), stamp(pageOf(other(x)))]),
       };
     case 'turns':
-      return { id, surfaces: ['banner'], tools: ['pad'], takesTurns: true, traces: FRIENDS.map((x) => [give('pad', x), ...bannerTurns(cells)]) };
+      return {
+        id,
+        surfaces: ['banner'],
+        tools: ['pad'],
+        takesTurns: true,
+        traces: FRIENDS.map((x) => [give('pad', x), ...bannerTurns(cells)]),
+      };
     case 'roll':
-      return { id, surfaces: ['banner'], tools: ['roller'], takesTurns: false, traces: [[give('roller', 'both'), ...Array.from({ length: cells }, () => roll('banner'))]] };
+      return {
+        id,
+        surfaces: ['banner'],
+        tools: ['roller'],
+        takesTurns: false,
+        traces: [[give('roller', 'both'), ...Array.from({ length: cells }, () => roll('banner'))]],
+      };
     case 'side': {
       const traces: Action[][] = [];
-      for (const [tA, tB] of [['pad', 'roller'], ['roller', 'pad']] as [Tool, Tool][]) {
+      for (const [tA, tB] of [
+        ['pad', 'roller'],
+        ['roller', 'pad'],
+      ] as [Tool, Tool][]) {
         const mark = (f: Friend, t: Tool) => (t === 'pad' ? stamp(pageOf(f)) : roll(pageOf(f)));
         traces.push(...interleavings([give(tA, 'A'), mark('A', tA)], [give(tB, 'B'), mark('B', tB)]));
       }
@@ -158,7 +211,10 @@ export function planFor(id: PlanId, cells: number, own: Friend = 'B'): Plan {
     }
     case 'bannerThenPage':
       return {
-        id, surfaces: ['banner', pageOf(own)], tools: ['pad'], takesTurns: true,
+        id,
+        surfaces: ['banner', pageOf(own)],
+        tools: ['pad'],
+        takesTurns: true,
         traces: FRIENDS.map((x) => {
           const t: Action[] = [give('pad', x), ...bannerTurns(cells)];
           // After the banner the pad is with whoever stamped last.
@@ -170,14 +226,23 @@ export function planFor(id: PlanId, cells: number, own: Friend = 'B'): Plan {
       };
     case 'pageThenBanner':
       return {
-        id, surfaces: [pageOf(own), 'banner'], tools: ['pad'], takesTurns: true,
+        id,
+        surfaces: [pageOf(own), 'banner'],
+        tools: ['pad'],
+        takesTurns: true,
         traces: [
           [give('pad', own), stamp(pageOf(own)), ...bannerTurns(cells)],
           [give('pad', own), stamp(pageOf(own)), pass(), ...bannerTurns(cells)],
         ],
       };
     case 'justBanner':
-      return { id, surfaces: ['banner'], tools: ['pad'], takesTurns: true, traces: [mate, own].map((x) => [give('pad', x), ...bannerTurns(cells)]) };
+      return {
+        id,
+        surfaces: ['banner'],
+        tools: ['pad'],
+        takesTurns: true,
+        traces: [mate, own].map((x) => [give('pad', x), ...bannerTurns(cells)]),
+      };
   }
 }
 
@@ -191,23 +256,39 @@ export interface Table {
 }
 
 export function blankTable(): Table {
-  return { holder: { pad: 'tray', roller: 'tray' }, marks: { pageA: [], pageB: [], banner: [] }, padUsed: false };
+  return {
+    holder: { pad: 'tray', roller: 'tray' },
+    marks: { pageA: [], pageB: [], banner: [] },
+    padUsed: false,
+  };
 }
 
 export const capacity = (s: Surface, cells: number) => (s === 'banner' ? cells : 1);
 
 /** Who would make the mark (null when nobody holds the tool). */
 export function marker(t: Table, a: Action): Friend | 'both' | null {
-  if (a.k === 'stamp') { const h = t.holder.pad; return h === 'tray' ? null : h; }
-  if (a.k === 'roll') { const h = t.holder.roller; return h === 'tray' ? null : h; }
+  if (a.k === 'stamp') {
+    const h = t.holder.pad;
+    return h === 'tray' ? null : h;
+  }
+  if (a.k === 'roll') {
+    const h = t.holder.roller;
+    return h === 'tray' ? null : h;
+  }
   return null;
 }
 
 /** The table after an action, applied without asking whether the plan allows it (the trace rule does that). */
 export function apply(t: Table, a: Action): Table {
-  const n: Table = { holder: { ...t.holder }, marks: { pageA: [...t.marks.pageA], pageB: [...t.marks.pageB], banner: [...t.marks.banner] }, padUsed: t.padUsed };
-  if (a.k === 'give') { n.holder[a.tool] = a.to; if (a.tool === 'pad') n.padUsed = false; }
-  else if (a.k === 'pass') {
+  const n: Table = {
+    holder: { ...t.holder },
+    marks: { pageA: [...t.marks.pageA], pageB: [...t.marks.pageB], banner: [...t.marks.banner] },
+    padUsed: t.padUsed,
+  };
+  if (a.k === 'give') {
+    n.holder[a.tool] = a.to;
+    if (a.tool === 'pad') n.padUsed = false;
+  } else if (a.k === 'pass') {
     const h = n.holder[a.tool];
     if (h === 'A' || h === 'B') n.holder[a.tool] = other(h);
     if (a.tool === 'pad') n.padUsed = false;
@@ -221,7 +302,8 @@ export function apply(t: Table, a: Action): Table {
 
 export const replay = (trace: Trace): Table => trace.reduce(apply, blankTable());
 
-const isPrefix = (p: Trace, full: Trace) => p.length <= full.length && p.every((a, i) => sameAction(a, full[i]));
+const isPrefix = (p: Trace, full: Trace) =>
+  p.length <= full.length && p.every((a, i) => sameAction(a, full[i]));
 
 /** The allowed traces that extend this one. */
 export const extensions = (plan: Plan, trace: Trace) => plan.traces.filter((t) => isPrefix(trace, t));
@@ -229,14 +311,16 @@ export const extensions = (plan: Plan, trace: Trace) => plan.traces.filter((t) =
 export const accepts = (plan: Plan, trace: Trace, a: Action) => extensions(plan, [...trace, a]).length > 0;
 
 /** The chosen plan has been carried out. */
-export const complete = (plan: Plan, trace: Trace) => plan.traces.some((t) => t.length === trace.length && isPrefix(trace, t));
+export const complete = (plan: Plan, trace: Trace) =>
+  plan.traces.some((t) => t.length === trace.length && isPrefix(trace, t));
 
 /**
  * Why an action is refused, the first that applies. Only explains: whether an action is accepted is `accepts`.
  */
 export function whyNot(plan: Plan, trace: Trace, a: Action, cells: number): Why {
   const t = replay(trace);
-  if ((a.k === 'stamp' || a.k === 'roll') && t.marks[a.surface].length >= capacity(a.surface, cells)) return 'full';
+  if ((a.k === 'stamp' || a.k === 'roll') && t.marks[a.surface].length >= capacity(a.surface, cells))
+    return 'full';
   if ((a.k === 'stamp' || a.k === 'roll') && !plan.surfaces.includes(a.surface)) return 'notInPlan';
   const tool: Tool = a.k === 'stamp' ? 'pad' : a.k === 'roll' ? 'roller' : a.tool;
   if (!plan.tools.includes(tool)) return 'notInPlan';
@@ -254,15 +338,21 @@ export function whyNot(plan: Plan, trace: Trace, a: Action, cells: number): Why 
 // ——— Requests ———
 
 const madeBy = (marks: readonly Mark[], f: Friend) => marks.some((m) => m.by === f || m.by === 'both');
-const ownPage = (t: Table, f: Friend) => t.marks[pageOf(f)].length > 0 && t.marks[pageOf(f)].every((m) => m.by === f);
-const bannerTogether = (t: Table, cells: number) => cells > 0 && t.marks.banner.length >= cells && FRIENDS.every((f) => madeBy(t.marks.banner, f));
+const ownPage = (t: Table, f: Friend) =>
+  t.marks[pageOf(f)].length > 0 && t.marks[pageOf(f)].every((m) => m.by === f);
+const bannerTogether = (t: Table, cells: number) =>
+  cells > 0 && t.marks.banner.length >= cells && FRIENDS.every((f) => madeBy(t.marks.banner, f));
 
 /** Is the friend's request met by these surfaces? */
 export function check(t: Table, request: RequestId, f: Friend, cells: number): boolean {
   switch (request) {
-    case 'page': case 'own': return ownPage(t, f);
-    case 'banner': return bannerTogether(t, cells);
-    case 'bannerOr': return bannerTogether(t, cells) || (ownPage(t, 'A') && ownPage(t, 'B'));
+    case 'page':
+    case 'own':
+      return ownPage(t, f);
+    case 'banner':
+      return bannerTogether(t, cells);
+    case 'bannerOr':
+      return bannerTogether(t, cells) || (ownPage(t, 'A') && ownPage(t, 'B'));
   }
 }
 
@@ -275,12 +365,16 @@ export interface Preview {
 /** The plan's first allowed trace run on a blank table, and each request's result. */
 export function previewOf(plan: Plan, spec: LevelSpec): Preview {
   const table = replay(plan.traces[0]);
-  const met = { A: check(table, spec.requests.A, 'A', spec.cells), B: check(table, spec.requests.B, 'B', spec.cells) };
+  const met = {
+    A: check(table, spec.requests.A, 'A', spec.cells),
+    B: check(table, spec.requests.B, 'B', spec.cells),
+  };
   return { table, met, ok: met.A && met.B };
 }
 
 /** The cards whose preview meets both requests. */
-export const acceptedPlans = (spec: LevelSpec, own: Friend) => spec.plans.filter((p) => previewOf(planFor(p, spec.cells, own), spec).ok);
+export const acceptedPlans = (spec: LevelSpec, own: Friend) =>
+  spec.plans.filter((p) => previewOf(planFor(p, spec.cells, own), spec).ok);
 
 /** The next action of the shortest allowed completion (null when finished). */
 export function nextStep(plan: Plan, trace: Trace): Action | null {
@@ -293,7 +387,14 @@ export function nextStep(plan: Plan, trace: Trace): Action | null {
 export type Hint = { card: PlanId } | { action: Action } | null;
 
 /** One next useful thing: in the Plan phase an accepted card (the selected one if it is accepted), in the Make phase the next step. */
-export function hintFor(spec: LevelSpec, own: Friend, phase: 'plan' | 'make', selected: PlanId | null, plan: Plan | null, trace: Trace): Hint {
+export function hintFor(
+  spec: LevelSpec,
+  own: Friend,
+  phase: 'plan' | 'make',
+  selected: PlanId | null,
+  plan: Plan | null,
+  trace: Trace,
+): Hint {
   if (phase === 'plan') {
     const ok = acceptedPlans(spec, own);
     return { card: selected && ok.includes(selected) ? selected : ok[0] };
@@ -351,24 +452,40 @@ export function variationFor(level: number, rng: Rng, first: boolean): Variation
 export function cardOrder(spec: LevelSpec, rng: Rng, first: boolean): PlanId[] {
   const cards = [...spec.plans];
   if (spec.level < 3 || first) return cards;
-  for (let i = cards.length - 1; i > 0; i--) { const j = rng.int(0, i); [cards[i], cards[j]] = [cards[j], cards[i]]; }
+  for (let i = cards.length - 1; i > 0; i--) {
+    const j = rng.int(0, i);
+    [cards[i], cards[j]] = [cards[j], cards[i]];
+  }
   return cards;
 }
 
 // ——— Layout ———
 
-export interface Rect { x: number; y: number; w: number; h: number }
-export interface Pt { x: number; y: number }
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+export interface Pt {
+  x: number;
+  y: number;
+}
 export const centre = (r: Rect): Pt => ({ x: r.x + r.w / 2, y: r.y + r.h / 2 });
-export const overlaps = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
-export const gapBetween = (a: Rect, b: Rect) => Math.max(b.x - (a.x + a.w), a.x - (b.x + b.w), b.y - (a.y + a.h), a.y - (b.y + b.h));
+export const overlaps = (a: Rect, b: Rect) =>
+  a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+export const gapBetween = (a: Rect, b: Rect) =>
+  Math.max(b.x - (a.x + a.w), a.x - (b.x + b.w), b.y - (a.y + a.h), a.y - (b.y + b.h));
 export const insideView = (a: Rect, v: View) => a.x >= 0 && a.y >= 0 && a.x + a.w <= v.w && a.y + a.h <= v.h;
 
 /** The home and ? buttons (top left) and the guide (bottom left). */
 export const HOME_CORNER = { w: 130, h: 215 };
 export const PET_CORNER = { w: 160, h: 170 };
 export function corners(v: View): Rect[] {
-  return [{ x: 0, y: 0, ...HOME_CORNER }, { x: 0, y: v.h - PET_CORNER.h, ...PET_CORNER }];
+  return [
+    { x: 0, y: 0, ...HOME_CORNER },
+    { x: 0, y: v.h - PET_CORNER.h, ...PET_CORNER },
+  ];
 }
 
 export const BOX = { w: 1024, h: 768 };
@@ -433,9 +550,25 @@ export function workshopLayout(v: View, ask: LayoutAsk): WorkshopLayout | null {
   };
   if (ask.phase === 'plan') {
     const n = ask.cards ?? 2;
-    const cards = n <= 2 ? row(n, CARD.w, CARD.h, 305) : [...row(2, CARD.w, CARD.h, 200), ...row(n - 2, CARD.w, CARD.h, 200 + CARD.h + GAP)];
+    const cards =
+      n <= 2
+        ? row(n, CARD.w, CARD.h, 305)
+        : [...row(2, CARD.w, CARD.h, 200), ...row(n - 2, CARD.w, CARD.h, 200 + CARD.h + GAP)];
     const buttons = row(4, BUTTON.w, BUTTON.h, 625, 180, BOX.w);
-    return { bubbles, friends, cards, hands, chosen: null, strip: null, banner: [], pages: null, tray: [], buttons, finish: null, again: null };
+    return {
+      bubbles,
+      friends,
+      cards,
+      hands,
+      chosen: null,
+      strip: null,
+      banner: [],
+      pages: null,
+      tray: [],
+      buttons,
+      finish: null,
+      again: null,
+    };
   }
   const surfaces = ask.surfaces ?? [];
   const cells = ask.level === 2 ? 4 : ask.level === 3 ? 2 : 0;
@@ -449,7 +582,16 @@ export function workshopLayout(v: View, ask: LayoutAsk): WorkshopLayout | null {
   // Watch again takes the row's first slot once done; Finish takes the cleared tray, so the made banner and pages stay in view.
   const [again, ...buttons] = row(4, BUTTON.w, BUTTON.h, 650, 180, BOX.w);
   return {
-    bubbles, friends, cards: [], hands, chosen, strip, banner, pages, tray, buttons,
+    bubbles,
+    friends,
+    cards: [],
+    hands,
+    chosen,
+    strip,
+    banner,
+    pages,
+    tray,
+    buttons,
     finish: r((BOX.w - 200) / 2, 445, 200, 150),
     again,
   };
@@ -461,5 +603,15 @@ export function targets(l: WorkshopLayout, done = false): Rect[] {
   if (!l.pages) return [...base, ...l.cards];
   if (done) return [...base, l.finish!, l.again!];
   // Watch again's slot is empty until done, but it stays clear of everything live.
-  return [...base, l.pages.A, l.pages.B, ...l.banner, ...l.tray, l.friends.A, l.friends.B, l.hands.A, l.hands.B];
+  return [
+    ...base,
+    l.pages.A,
+    l.pages.B,
+    ...l.banner,
+    ...l.tray,
+    l.friends.A,
+    l.friends.B,
+    l.hands.A,
+    l.hands.B,
+  ];
 }

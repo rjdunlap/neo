@@ -3,7 +3,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // IndexedDB is replaced by a Map: set() copies what it is given, as IndexedDB does, and get() can be made to fail or wait.
 const { disk, ctl } = vi.hoisted(() => ({
   disk: new Map<string, unknown>(),
-  ctl: { writes: new Map<string, Promise<unknown>>(), writeGate: new Map<string, Promise<void>>(), failWrite: ((_key: string) => false) as (key: string) => boolean, fail: ((_key: string) => false) as (key: string) => boolean, gate: new Map<string, Promise<void>>() },
+  ctl: {
+    writes: new Map<string, Promise<unknown>>(),
+    writeGate: new Map<string, Promise<void>>(),
+    failWrite: ((_key: string) => false) as (key: string) => boolean,
+    fail: ((_key: string) => false) as (key: string) => boolean,
+    gate: new Map<string, Promise<void>>(),
+  },
 }));
 vi.mock('idb-keyval', () => ({
   get: async (key: string) => {
@@ -21,9 +27,17 @@ vi.mock('idb-keyval', () => ({
     const gate = ctl.writeGate.get(key);
     const previous = ctl.writes.get(key);
     if (!gate && !previous) {
-      try { commit(); return Promise.resolve(); } catch (error) { return Promise.reject(error); }
+      try {
+        commit();
+        return Promise.resolve();
+      } catch (error) {
+        return Promise.reject(error);
+      }
     }
-    const write = (previous ?? Promise.resolve()).catch(() => {}).then(() => gate).then(commit);
+    const write = (previous ?? Promise.resolve())
+      .catch(() => {})
+      .then(() => gate)
+      .then(commit);
     ctl.writes.set(key, write);
     return write;
   },
@@ -140,7 +154,7 @@ describe('switching profiles', () => {
     expect(savedAs(`neo.save.${b}`).profile.name).toBe('Bob');
   });
 
-  it('keeps each player\'s last place her own: another player starts with none (RW14 slice 8)', async () => {
+  it("keeps each player's last place her own: another player starts with none (RW14 slice 8)", async () => {
     const store = make();
     await store.load();
     const a = store.activeId;
@@ -296,7 +310,9 @@ describe('undo belongs to each profile', () => {
     await store.load();
     store.data.profile.name = 'Alice';
     const b = store.addProfile()!;
-    expect(store.importJson(JSON.stringify({ ...defaults(), profile: { name: 'Imported', band: 'lap' } }))).toBe(true);
+    expect(
+      store.importJson(JSON.stringify({ ...defaults(), profile: { name: 'Imported', band: 'lap' } })),
+    ).toBe(true);
     expect(store.data.profile.name).toBe('Imported');
     await store.switchTo(b);
     expect(store.undo()).toBe(false);
@@ -451,7 +467,10 @@ describe('backing up every profile', () => {
     const file = JSON.parse(await store.exportAll());
     expect(file.kind).toBe('puddle-island-backup');
     expect(file.active).toBe('id0001');
-    expect(file.profiles.map((p: { id: string; save: SaveData }) => [p.id, p.save.profile.name])).toEqual([['id0001', 'Alice R'], [b, 'Bob']]);
+    expect(file.profiles.map((p: { id: string; save: SaveData }) => [p.id, p.save.profile.name])).toEqual([
+      ['id0001', 'Alice R'],
+      [b, 'Bob'],
+    ]);
     expect(file.profiles[0].birth).toEqual({ month: 10, year: 2025 });
     expect(file.profiles[1].startBand).toBe('school');
   });
@@ -492,7 +511,10 @@ describe('backing up every profile', () => {
     device.save();
     vi.advanceTimersByTime(300);
 
-    const other = new Store(() => 'zz' + Math.random().toString(36).slice(2, 8), () => NOW);
+    const other = new Store(
+      () => 'zz' + Math.random().toString(36).slice(2, 8),
+      () => NOW,
+    );
     disk.clear();
     await other.load();
     other.data.profile.name = 'Grandma';
@@ -541,7 +563,8 @@ describe('backing up every profile', () => {
     const { store } = await setUp();
     const before = JSON.stringify(store.data);
     const index = JSON.stringify(indexOnDisk());
-    for (const bad of ['', '{}', '[]', 'hello', '{"party":{},"settings":{},"stickers":[]}']) expect(await store.restoreAll(bad)).toBeNull();
+    for (const bad of ['', '{}', '[]', 'hello', '{"party":{},"settings":{},"stickers":[]}'])
+      expect(await store.restoreAll(bad)).toBeNull();
     expect(JSON.stringify(store.data)).toBe(before);
     expect(JSON.stringify(indexOnDisk())).toBe(index);
     expect(store.undoAt).toBeNull();
@@ -587,7 +610,7 @@ describe('the level a game starts at', () => {
 describe('an entry level carried into a band that does not list it', () => {
   const toddler = { min: 1, max: 6 };
 
-  it('starts at that band\'s easiest level, not at its hardest (a level above the top is not always the harder one)', async () => {
+  it("starts at that band's easiest level, not at its hardest (a level above the top is not always the harder one)", async () => {
     const store = make();
     await store.load();
     store.stats('bubble-pop').level = 15;
@@ -621,7 +644,11 @@ describe('stories', () => {
     store.completeStep('invitations', 'woodland');
     expect(store.woodland.steps).toEqual(['invitations', 'baskets', 'beat']);
     store.endStory('woodland');
-    expect(store.woodland).toEqual({ steps: ['invitations', 'baskets', 'beat'], ended: true, keepsake: true });
+    expect(store.woodland).toEqual({
+      steps: ['invitations', 'baskets', 'beat'],
+      ended: true,
+      keepsake: true,
+    });
     expect(store.picnic.ended).toBe(false);
     // Telling it again clears this telling and keeps the photo; the Windy Picnic is untouched.
     store.retellStory('woodland');
@@ -666,14 +693,24 @@ describe('her friends (RW05)', () => {
     store.meet('sprout', 'Mochi', 'pink', 'start');
     expect(store.beginWelcome('preschool', 'pretty')).toBe(true);
     expect(savedAs('neo.save').projects.welcome).toMatchObject({ band: 'preschool', newcomer: 'river' });
-    const picture = { kind: 'picture' as const, stamps: [{ kind: 'star' as const, color: 'pink' as const, x: 0.5, y: 0.5, size: 1, turns: 0 }] };
+    const picture = {
+      kind: 'picture' as const,
+      stamps: [{ kind: 'star' as const, color: 'pink' as const, x: 0.5, y: 0.5, size: 1, turns: 0 }],
+    };
     expect(store.completeWelcomeStep('pretty', picture, ANY_ROUND)).toBe(true);
     store.flush();
     await Promise.resolve();
     expect(savedAs('neo.save').projects.welcome.results.pretty).toEqual(picture);
     expect(store.data.creations.picture.current).toBeNull();
     store.reset();
-    expect(store.welcome).toEqual({ band: null, steps: [], results: {}, newcomer: null, ended: false, evidence: {} });
+    expect(store.welcome).toEqual({
+      band: null,
+      steps: [],
+      results: {},
+      newcomer: null,
+      ended: false,
+      evidence: {},
+    });
     expect(store.companion?.name).toBe('Mochi');
     expect(store.undo()).toBe(true);
     expect(store.welcome.steps).toEqual(['pretty']);
@@ -685,7 +722,8 @@ describe('her friends (RW05)', () => {
     const mochi = store.meet('sprout', 'Mochi', 'pink', 'start')!;
     const finishSteps = () => {
       store.beginWelcome('preschool', 'pretty');
-      for (const step of ['pretty', 'yummy', 'song'] as const) store.completeWelcomeStep(step, null, ANY_ROUND);
+      for (const step of ['pretty', 'yummy', 'song'] as const)
+        store.completeWelcomeStep(step, null, ANY_ROUND);
     };
     store.beginWelcome('preschool', 'pretty');
     store.completeWelcomeStep('pretty', null, ANY_ROUND);
@@ -693,7 +731,12 @@ describe('her friends (RW05)', () => {
     expect(store.welcome.ended).toBe(false);
     finishSteps();
     const ripple = store.adoptWelcome('Ripple')!;
-    expect(ripple).toMatchObject({ species: 'river', name: 'Ripple', look: { color: 'orange' }, metAt: 'project:welcome' });
+    expect(ripple).toMatchObject({
+      species: 'river',
+      name: 'Ripple',
+      look: { color: 'orange' },
+      metAt: 'project:welcome',
+    });
     await Promise.resolve();
     expect(savedAs('neo.save').projects.welcome.ended).toBe(true);
     expect(savedAs('neo.save').creatures.owned).toHaveLength(2);
@@ -728,7 +771,14 @@ describe('her friends (RW05)', () => {
     const a = store.activeId;
     store.beginWelcome('preschool', 'yummy');
     await Promise.resolve();
-    expect(savedAs('neo.save').projects.welcome.evidence.yummy).toEqual({ finished: false, misses: 0, hints: 0, level: 2, rounds: 0, at: NOW });
+    expect(savedAs('neo.save').projects.welcome.evidence.yummy).toEqual({
+      finished: false,
+      misses: 0,
+      hints: 0,
+      level: 2,
+      rounds: 0,
+      at: NOW,
+    });
     store.completeWelcomeStep('yummy', null, { misses: 1, hints: 1, level: 2 });
     store.beginWelcome('preschool', 'yummy');
     store.beginWelcome('preschool', 'pretty');
@@ -765,7 +815,7 @@ describe('her friends (RW05)', () => {
     expect(JSON.stringify(store.data.creatures)).toBe(before);
   });
 
-  it('keeps each profile\'s friends to itself', async () => {
+  it("keeps each profile's friends to itself", async () => {
     const store = make();
     await store.load();
     const a = store.activeId;
@@ -819,7 +869,12 @@ describe('asynchronous save writes', () => {
     const a = store.activeId;
     const b = store.addProfile()!;
     let release!: () => void;
-    ctl.writeGate.set('neo.save', new Promise<void>(r => { release = r; }));
+    ctl.writeGate.set(
+      'neo.save',
+      new Promise<void>((r) => {
+        release = r;
+      }),
+    );
     store.data.profile.name = 'Alice';
     store.save();
     store.flush();
@@ -843,7 +898,12 @@ describe('asynchronous save writes', () => {
     await store.switchTo(b);
     const key = `neo.save.${b}`;
     let release!: () => void;
-    ctl.writeGate.set(key, new Promise<void>(r => { release = r; }));
+    ctl.writeGate.set(
+      key,
+      new Promise<void>((r) => {
+        release = r;
+      }),
+    );
     store.data.profile.name = 'Bob';
     store.save();
     store.flush();
@@ -852,14 +912,14 @@ describe('asynchronous save writes', () => {
     expect(await removing).toBe(true);
     await vi.advanceTimersByTimeAsync(1000);
     expect(disk.has(key)).toBe(false);
-    expect(store.profiles.some(p => p.id === b)).toBe(false);
+    expect(store.profiles.some((p) => p.id === b)).toBe(false);
   });
 
   it('reports a rejected progress write and persists the latest state on the next save', async () => {
     const store = make();
     await store.load();
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    ctl.failWrite = key => key === 'neo.save';
+    ctl.failWrite = (key) => key === 'neo.save';
     store.data.profile.name = 'Alice';
     store.save();
     await vi.advanceTimersByTimeAsync(300);
@@ -878,26 +938,53 @@ describe('asynchronous save writes', () => {
     await store.load();
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const before = structuredClone(indexOnDisk());
-    ctl.failWrite = key => key === INDEX_KEY;
+    ctl.failWrite = (key) => key === INDEX_KEY;
     const b = store.addProfile()!;
     await Promise.resolve();
     expect(indexOnDisk()).toEqual(before);
     expect(warn).toHaveBeenCalledWith('Could not save the list of players', expect.any(Error));
     ctl.failWrite = () => false;
     store.setBirth(b, { month: 1, year: 2020 });
-    expect(indexOnDisk().profiles.some(p => p.id === b)).toBe(true);
+    expect(indexOnDisk().profiles.some((p) => p.id === b)).toBe(true);
     warn.mockRestore();
   });
 });
 
 it('cloth Keep survives profile switching, reload and backup restore with previous ownership intact', async () => {
-  const store=make();await store.load();const a=store.activeId;
-  const cloth={kind:'picture' as const,medium:'cloth' as const,version:1 as const,cols:6 as const,rows:8 as const,cells:Array.from({length:48},(_,i)=>i%4)};
-  const stamp={kind:'picture' as const,stamps:[{kind:'star' as const,color:'pink' as const,x:.5,y:.5,size:1,turns:0}]};
-  store.keepCreation(stamp);store.keepCreation(cloth);store.flush();
-  const b=store.addProfile()!;await store.switchTo(b);expect(store.creations.picture.current).toBeNull();store.keepCreation(stamp);store.flush();
-  await store.switchTo(a);expect(store.creations.picture).toEqual({current:cloth,previous:stamp});
-  const file=await store.exportAll();store.takeDownCreation('picture');expect(store.creations.picture.current).toBeNull();
-  await store.restoreAll(file);expect(store.creations.picture).toEqual({current:cloth,previous:stamp});
-  store.flush();const loaded=make();await loaded.load();expect(loaded.creations.picture.current).toEqual(cloth);await loaded.switchTo(b);expect(loaded.creations.picture.current).toEqual(stamp);
+  const store = make();
+  await store.load();
+  const a = store.activeId;
+  const cloth = {
+    kind: 'picture' as const,
+    medium: 'cloth' as const,
+    version: 1 as const,
+    cols: 6 as const,
+    rows: 8 as const,
+    cells: Array.from({ length: 48 }, (_, i) => i % 4),
+  };
+  const stamp = {
+    kind: 'picture' as const,
+    stamps: [{ kind: 'star' as const, color: 'pink' as const, x: 0.5, y: 0.5, size: 1, turns: 0 }],
+  };
+  store.keepCreation(stamp);
+  store.keepCreation(cloth);
+  store.flush();
+  const b = store.addProfile()!;
+  await store.switchTo(b);
+  expect(store.creations.picture.current).toBeNull();
+  store.keepCreation(stamp);
+  store.flush();
+  await store.switchTo(a);
+  expect(store.creations.picture).toEqual({ current: cloth, previous: stamp });
+  const file = await store.exportAll();
+  store.takeDownCreation('picture');
+  expect(store.creations.picture.current).toBeNull();
+  await store.restoreAll(file);
+  expect(store.creations.picture).toEqual({ current: cloth, previous: stamp });
+  store.flush();
+  const loaded = make();
+  await loaded.load();
+  expect(loaded.creations.picture.current).toEqual(cloth);
+  await loaded.switchTo(b);
+  expect(loaded.creations.picture.current).toEqual(stamp);
 });

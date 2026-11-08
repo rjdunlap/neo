@@ -1,7 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { FLOOR, starterItem } from '../content/room';
 import { ROOM_ITEMS } from '../content/world';
-import { cleanCreatures, companionOf, defaults, MAX_CREATURES, meetIn, migrate, remember, repairPrevious, swapWithPrevious } from './save';
+import {
+  cleanCreatures,
+  companionOf,
+  defaults,
+  MAX_CREATURES,
+  meetIn,
+  migrate,
+  remember,
+  repairPrevious,
+  swapWithPrevious,
+} from './save';
 import { changeWorn, cleanWorn } from '../art/creatures/wear-slots';
 
 describe('migrate', () => {
@@ -20,7 +30,15 @@ describe('migrate', () => {
     });
     expect(save.profile).toEqual({ name: 'Mia', band: 'lap' });
     // A save from when the app had a play timer: the limit is retired, and always saved as 0 (no limit).
-    expect(save.settings).toEqual({ placeLayout: 'path', volume: 1, music: false, sessionMinutes: 0, coplayHints: true, howToCards: true, speech: true });
+    expect(save.settings).toEqual({
+      placeLayout: 'path',
+      volume: 1,
+      music: false,
+      sessionMinutes: 0,
+      coplayHints: true,
+      howToCards: true,
+      speech: true,
+    });
     expect(defaults().settings.sessionMinutes).toBe(0);
     expect(save.games['bubble-pop'].level).toBe(1);
     expect(save.games['bubble-pop'].pinned).toBeNull();
@@ -41,11 +59,16 @@ describe('migrate', () => {
     const save = migrate({ profile: { name: 'Sam', band: 'grownup' }, world: { band: 'grownup' } });
     expect(save.profile.band).toBe('grownup');
     expect(save.world.band).toBe('grownup');
-    expect(migrate({ profile: { name: 'Sam', band: 'adult' }, world: { band: 'adult' } })).toMatchObject({ profile: { band: 'lap' }, world: { band: null } });
+    expect(migrate({ profile: { name: 'Sam', band: 'adult' }, world: { band: 'adult' } })).toMatchObject({
+      profile: { band: 'lap' },
+      world: { band: null },
+    });
     // Levels for a grown-up puzzle are saved under its own id like any game's, and survive a round trip.
     const played = defaults();
     played.games['lantern-lights'] = { plays: 2, level: 4, pinned: 5, history: [] };
-    expect(migrate(JSON.parse(JSON.stringify(played))).games['lantern-lights']).toEqual(played.games['lantern-lights']);
+    expect(migrate(JSON.parse(JSON.stringify(played))).games['lantern-lights']).toEqual(
+      played.games['lantern-lights'],
+    );
   });
 
   it('keeps a pinned level', () => {
@@ -53,14 +76,25 @@ describe('migrate', () => {
   });
 
   it('keeps only the last ten rounds', () => {
-    const history = Array.from({ length: 15 }, (_, i) => ({ level: 1, misses: i, hints: 0, seconds: 1, at: i }));
+    const history = Array.from({ length: 15 }, (_, i) => ({
+      level: 1,
+      misses: i,
+      hints: 0,
+      seconds: 1,
+      at: i,
+    }));
     const save = migrate({ games: { g: { plays: 15, level: 1, history } } });
     expect(save.games.g.history).toHaveLength(10);
     expect(save.games.g.history[0].at).toBe(5);
   });
 
   it('upgrades a version-one save without losing progress or earned stickers', () => {
-    const legacy = { version: 1, profile: { name: 'Mia', band: 'preschool' }, games: { 'bubble-pop': { plays: 7, level: 3, pinned: 2, history: [] } }, stickers: [{ game: 'bubble-pop', seed: 42, at: 10 }] };
+    const legacy = {
+      version: 1,
+      profile: { name: 'Mia', band: 'preschool' },
+      games: { 'bubble-pop': { plays: 7, level: 3, pinned: 2, history: [] } },
+      stickers: [{ game: 'bubble-pop', seed: 42, at: 10 }],
+    };
     const save = migrate(legacy);
     expect(save.version).toBe(3);
     expect(save.profile).toEqual(legacy.profile);
@@ -77,8 +111,13 @@ describe('migrate', () => {
     expect(valid.world).toEqual({ band: 'preschool' });
   });
 
-  it('keeps a version-two save\'s progress but not its pet: that profile meets its first friend again at the egg', () => {
-    const old = { version: 2, profile: { name: 'Mia', band: 'prek' }, pet: { name: 'Clover', color: 'purple', hatched: true }, stickers: [{ game: 'pet-kitchen', seed: 4, at: 1 }] };
+  it("keeps a version-two save's progress but not its pet: that profile meets its first friend again at the egg", () => {
+    const old = {
+      version: 2,
+      profile: { name: 'Mia', band: 'prek' },
+      pet: { name: 'Clover', color: 'purple', hatched: true },
+      stickers: [{ game: 'pet-kitchen', seed: 4, at: 1 }],
+    };
     const save = migrate(old);
     expect(save.version).toBe(3);
     expect(save.stickers).toEqual(old.stickers);
@@ -86,32 +125,71 @@ describe('migrate', () => {
     expect('pet' in save).toBe(false);
   });
 
-  const friend = (id: string, extra: Record<string, unknown> = {}) => ({ id, species: 'sprout', name: 'Mochi', look: { color: 'pink', worn: [] as string[] }, metAt: 'start', ...extra });
+  const friend = (id: string, extra: Record<string, unknown> = {}) => ({
+    id,
+    species: 'sprout',
+    name: 'Mochi',
+    look: { color: 'pink', worn: [] as string[] },
+    metAt: 'start',
+    ...extra,
+  });
 
   it('round-trips a valid creature collection unchanged', () => {
-    const c = { owned: [friend('abcd'), friend('riv1', { species: 'river', name: 'Pebble', look: { color: 'blue', worn: ['crown', 'scarf'] }, metAt: 'dev:river' })], companion: 'riv1' };
+    const c = {
+      owned: [
+        friend('abcd'),
+        friend('riv1', {
+          species: 'river',
+          name: 'Pebble',
+          look: { color: 'blue', worn: ['crown', 'scarf'] },
+          metAt: 'dev:river',
+        }),
+      ],
+      companion: 'riv1',
+    };
     expect(cleanCreatures(JSON.parse(JSON.stringify(c)))).toEqual(c);
   });
 
   it('drops unknown species, malformed and duplicate ids, keeping the first', () => {
     const c = cleanCreatures({
-      owned: [friend('abcd'), friend('ABCD'), friend('ab'), friend('dino', { species: 'dragon' }), friend('abcd', { name: 'Second' }), 'x', null, friend('efgh')],
+      owned: [
+        friend('abcd'),
+        friend('ABCD'),
+        friend('ab'),
+        friend('dino', { species: 'dragon' }),
+        friend('abcd', { name: 'Second' }),
+        'x',
+        null,
+        friend('efgh'),
+      ],
       companion: 'abcd',
     });
     expect(c.owned.map((o) => o.id)).toEqual(['abcd', 'efgh']);
     expect(c.owned[0].name).toBe('Mochi');
   });
 
-  it('repairs a name, a colour and a token, falling back to the species\' own', () => {
-    const [a, b] = cleanCreatures({ owned: [friend('abcd', { name: '   ', look: { color: 'ultraviolet' }, metAt: 7 }), friend('efgh', { species: 'glider', name: 'x'.repeat(80), look: null, metAt: 'y'.repeat(90) })] }).owned;
-    expect(a).toEqual({ id: 'abcd', species: 'sprout', name: 'Pip', look: { color: 'teal', worn: [] }, metAt: '' });
+  it("repairs a name, a colour and a token, falling back to the species' own", () => {
+    const [a, b] = cleanCreatures({
+      owned: [
+        friend('abcd', { name: '   ', look: { color: 'ultraviolet' }, metAt: 7 }),
+        friend('efgh', { species: 'glider', name: 'x'.repeat(80), look: null, metAt: 'y'.repeat(90) }),
+      ],
+    }).owned;
+    expect(a).toEqual({
+      id: 'abcd',
+      species: 'sprout',
+      name: 'Pip',
+      look: { color: 'teal', worn: [] },
+      metAt: '',
+    });
     expect(b.name).toHaveLength(40);
     expect(b.look.color).toBe('purple');
     expect(b.metAt).toHaveLength(60);
   });
 
   it('repairs what a friend wears: unknown ids, repeats, two in a slot, seven at most, misfits kept (RW06)', () => {
-    const worn = (w: unknown) => cleanCreatures({ owned: [friend('abcd', { look: { color: 'pink', worn: w } })] }).owned[0].look.worn;
+    const worn = (w: unknown) =>
+      cleanCreatures({ owned: [friend('abcd', { look: { color: 'pink', worn: w } })] }).owned[0].look.worn;
     expect(worn(undefined)).toEqual([]);
     expect(worn('crown')).toEqual([]);
     expect(worn(['crown', 'cape', 7, null, 'scarf'])).toEqual(['crown', 'scarf']);
@@ -120,7 +198,17 @@ describe('migrate', () => {
     expect(worn(['crown', 'scarf', 'sunhat'])).toEqual(['scarf', 'sunhat']);
     // Boots on a sprout are a misfit, kept and simply not drawn.
     expect(worn(['boots', 'raincoat'])).toEqual(['boots', 'raincoat']);
-    const all = ['crown', 'sunglasses', 'scarf', 'raincoat', 'umbrella', 'mittens', 'boots', 'beanie', 'sunhat'];
+    const all = [
+      'crown',
+      'sunglasses',
+      'scarf',
+      'raincoat',
+      'umbrella',
+      'mittens',
+      'boots',
+      'beanie',
+      'sunhat',
+    ];
     expect(worn(all)).toEqual(['sunglasses', 'scarf', 'raincoat', 'umbrella', 'mittens', 'boots', 'sunhat']);
     expect(worn(all).length).toBeLessThanOrEqual(7);
   });
@@ -131,11 +219,14 @@ describe('migrate', () => {
     expect(changeWorn(['crown', 'scarf'], 'crown', true)).toEqual(['scarf', 'crown']);
     expect(changeWorn(['crown', 'scarf'], 'crown', false)).toEqual(['scarf']);
     expect(changeWorn(['scarf'], 'beanie', false)).toEqual(['scarf']);
-    for (const w of [['crown'], ['scarf', 'sunhat', 'boots']] as const) expect(cleanWorn(changeWorn(w, 'beanie', true))).toEqual(changeWorn(w, 'beanie', true));
+    for (const w of [['crown'], ['scarf', 'sunhat', 'boots']] as const)
+      expect(cleanWorn(changeWorn(w, 'beanie', true))).toEqual(changeWorn(w, 'beanie', true));
   });
 
   it('keeps the earliest 24', () => {
-    const owned = Array.from({ length: 30 }, (_, i) => friend(`id${String(i).padStart(2, '0')}`, { metAt: `dev:${i}` }));
+    const owned = Array.from({ length: 30 }, (_, i) =>
+      friend(`id${String(i).padStart(2, '0')}`, { metAt: `dev:${i}` }),
+    );
     const c = cleanCreatures({ owned, companion: 'id29' });
     expect(c.owned).toHaveLength(MAX_CREATURES);
     expect(c.owned.at(-1)!.id).toBe('id23');
@@ -143,8 +234,12 @@ describe('migrate', () => {
   });
 
   it('points the companion at an owned friend, else the first, else nobody', () => {
-    expect(cleanCreatures({ owned: [friend('abcd'), friend('efgh')], companion: 'efgh' }).companion).toBe('efgh');
-    expect(cleanCreatures({ owned: [friend('abcd'), friend('efgh')], companion: 'gone' }).companion).toBe('abcd');
+    expect(cleanCreatures({ owned: [friend('abcd'), friend('efgh')], companion: 'efgh' }).companion).toBe(
+      'efgh',
+    );
+    expect(cleanCreatures({ owned: [friend('abcd'), friend('efgh')], companion: 'gone' }).companion).toBe(
+      'abcd',
+    );
     expect(cleanCreatures({ owned: [], companion: 'abcd' }).companion).toBeNull();
     expect(cleanCreatures('garbage')).toEqual({ owned: [], companion: null });
   });
@@ -154,7 +249,13 @@ describe('migrate', () => {
     let n = 0;
     const ids = () => `id${n++}aa`;
     const first = meetIn(c, 'sprout', ' Mochi ', 'pink', 'start', ids)!;
-    expect(first).toEqual({ id: 'id0aa', species: 'sprout', name: 'Mochi', look: { color: 'pink', worn: [] }, metAt: 'start' });
+    expect(first).toEqual({
+      id: 'id0aa',
+      species: 'sprout',
+      name: 'Mochi',
+      look: { color: 'pink', worn: [] },
+      metAt: 'start',
+    });
     expect(c.companion).toBe('id0aa');
     expect(meetIn(c, 'sprout', 'Other', 'blue', 'start', ids)).toBe(first);
     const river = meetIn(c, 'river', '', 'blue', 'dev:river', ids)!;
@@ -170,7 +271,8 @@ describe('migrate', () => {
     let calls = 0;
     const b = meetIn(c, 'river', 'B', 'teal', 'dev:river', () => (calls++ ? 'other' : 'same'))!;
     expect(b.id).toBe('other');
-    for (let i = 0; c.owned.length < MAX_CREATURES; i++) meetIn(c, 'glider', 'G', 'teal', `t${i}`, () => `g${i}xxx`);
+    for (let i = 0; c.owned.length < MAX_CREATURES; i++)
+      meetIn(c, 'glider', 'G', 'teal', `t${i}`, () => `g${i}xxx`);
     expect(meetIn(c, 'glider', 'G', 'teal', 'one-more', () => 'zzzzzz')).toBeNull();
     expect(c.owned).toHaveLength(MAX_CREATURES);
   });
@@ -183,12 +285,14 @@ describe('migrate', () => {
 
   it('preserves valid sticker placements, clamps positions, and removes invalid placements', () => {
     const base = { game: 'memory-match', seed: 9, at: 22 };
-    const save = migrate({ stickers: [
-      { ...base, placement: { page: 'space', x: 0.3, y: 0.7 } },
-      { ...base, placement: { page: 'sea', x: -3, y: 4 } },
-      { ...base, placement: { page: 'bogus', x: 0, y: 1 } },
-      { ...base, placement: { page: 'meadow', x: NaN, y: Infinity } },
-    ] });
+    const save = migrate({
+      stickers: [
+        { ...base, placement: { page: 'space', x: 0.3, y: 0.7 } },
+        { ...base, placement: { page: 'sea', x: -3, y: 4 } },
+        { ...base, placement: { page: 'bogus', x: 0, y: 1 } },
+        { ...base, placement: { page: 'meadow', x: NaN, y: Infinity } },
+      ],
+    });
     expect(save.stickers[0].placement).toEqual({ page: 'space', x: 0.3, y: 0.7 });
     expect(save.stickers[1].placement).toEqual({ page: 'sea', x: 0, y: 1 });
     expect(save.stickers[2]).toEqual(base);
@@ -197,13 +301,25 @@ describe('migrate', () => {
   });
 
   it('starts the Windy Picnic untold, and repairs story progress from untrusted backups', () => {
-    expect(migrate({}).stories).toEqual({ picnic: { steps: [], ended: false, keepsake: false }, woodland: { steps: [], ended: false, keepsake: false } });
+    expect(migrate({}).stories).toEqual({
+      picnic: { steps: [], ended: false, keepsake: false },
+      woodland: { steps: [], ended: false, keepsake: false },
+    });
     // Unknown and repeated steps drop out and the rest keep story order; an ending needs every step.
-    const odd = migrate({ stories: { picnic: { steps: ['invitation', 'dragon', 'blanket', 'blanket', 7], ended: true, keepsake: 'yes' } } });
+    const odd = migrate({
+      stories: {
+        picnic: { steps: ['invitation', 'dragon', 'blanket', 'blanket', 7], ended: true, keepsake: 'yes' },
+      },
+    });
     expect(odd.stories.picnic).toEqual({ steps: ['blanket', 'invitation'], ended: false, keepsake: false });
     // A finished telling always keeps its keepsake, and a keepsake survives a retelling.
-    expect(migrate({ stories: { picnic: { steps: ['blanket', 'sandwiches', 'invitation'], ended: true } } }).stories.picnic.keepsake).toBe(true);
-    expect(migrate({ stories: { picnic: { steps: [], ended: false, keepsake: true } } }).stories.picnic).toEqual({ steps: [], ended: false, keepsake: true });
+    expect(
+      migrate({ stories: { picnic: { steps: ['blanket', 'sandwiches', 'invitation'], ended: true } } })
+        .stories.picnic.keepsake,
+    ).toBe(true);
+    expect(
+      migrate({ stories: { picnic: { steps: [], ended: false, keepsake: true } } }).stories.picnic,
+    ).toEqual({ steps: [], ended: false, keepsake: true });
     expect(migrate({ stories: 'nope' }).stories).toEqual(defaults().stories);
   });
 
@@ -213,9 +329,16 @@ describe('migrate', () => {
     expect(old.stories.picnic).toEqual(picnic);
     expect(old.stories.woodland).toEqual({ steps: [], ended: false, keepsake: false });
     // Each story keeps only its own steps: a Windy Picnic step saved under the woodland drops out.
-    const mixed = migrate({ stories: { woodland: { steps: ['beat', 'blanket', 'invitations', 'beat'], ended: true, keepsake: false } } });
+    const mixed = migrate({
+      stories: {
+        woodland: { steps: ['beat', 'blanket', 'invitations', 'beat'], ended: true, keepsake: false },
+      },
+    });
     expect(mixed.stories.woodland).toEqual({ steps: ['invitations', 'beat'], ended: false, keepsake: false });
-    expect(migrate({ stories: { woodland: { steps: ['beat', 'baskets', 'invitations'], ended: true } } }).stories.woodland).toEqual({ steps: ['invitations', 'baskets', 'beat'], ended: true, keepsake: true });
+    expect(
+      migrate({ stories: { woodland: { steps: ['beat', 'baskets', 'invitations'], ended: true } } }).stories
+        .woodland,
+    ).toEqual({ steps: ['invitations', 'baskets', 'beat'], ended: true, keepsake: true });
   });
 
   it('keeps picnic progress through a backup and restore, with older progress untouched', () => {
@@ -233,7 +356,11 @@ describe('migrate', () => {
     expect(room.frame).toBeNull();
     expect(migrate({}).room).toEqual(room);
     // A save from before the treehouse existed gets the starter room and keeps everything else.
-    const old = { version: 2, profile: { name: 'Mia', band: 'prek' }, stickers: [{ game: 'pet-kitchen', seed: 4, at: 1 }] };
+    const old = {
+      version: 2,
+      profile: { name: 'Mia', band: 'prek' },
+      stickers: [{ game: 'pet-kitchen', seed: 4, at: 1 }],
+    };
     const upgraded = migrate(old);
     expect(upgraded.room).toEqual(room);
     expect(upgraded.stickers).toHaveLength(1);
@@ -241,13 +368,18 @@ describe('migrate', () => {
   });
 
   it('repairs a damaged treehouse: one of each known item, on the floor, never lost', () => {
-    const odd = migrate({ room: { items: [
-      { id: 'bed', x: 5, y: -2, flip: 'yes' },
-      { id: 'bed', x: 0.5, y: 0.7, flip: true },
-      { id: 'dragon', x: 0.5, y: 0.7 },
-      { id: 'lamp', x: 'left', y: NaN, flip: true },
-      'junk',
-    ], frame: { game: 'x'.repeat(200), seed: 1 } } });
+    const odd = migrate({
+      room: {
+        items: [
+          { id: 'bed', x: 5, y: -2, flip: 'yes' },
+          { id: 'bed', x: 0.5, y: 0.7, flip: true },
+          { id: 'dragon', x: 0.5, y: 0.7 },
+          { id: 'lamp', x: 'left', y: NaN, flip: true },
+          'junk',
+        ],
+        frame: { game: 'x'.repeat(200), seed: 1 },
+      },
+    });
     expect(odd.room.items.map((i) => i.id)).toEqual([...ROOM_ITEMS]);
     for (const it of odd.room.items) {
       expect(it.x).toBeGreaterThanOrEqual(FLOOR.left);
@@ -256,7 +388,12 @@ describe('migrate', () => {
       expect(it.y).toBeLessThanOrEqual(FLOOR.bottom);
     }
     // The first bed wins, clamped to the nearest floor spot, with a non-boolean "flip" read as not flipped.
-    expect(odd.room.items.find((i) => i.id === 'bed')).toEqual({ id: 'bed', x: FLOOR.right, y: FLOOR.top, flip: false });
+    expect(odd.room.items.find((i) => i.id === 'bed')).toEqual({
+      id: 'bed',
+      x: FLOOR.right,
+      y: FLOOR.top,
+      flip: false,
+    });
     // A lamp with unreadable numbers goes back to its starting spot but keeps its facing.
     expect(odd.room.items.find((i) => i.id === 'lamp')).toEqual({ ...starterItem('lamp'), flip: true });
     expect(odd.room.frame).toBeNull();
@@ -267,7 +404,10 @@ describe('migrate', () => {
   it('keeps a hung sticker and a rearranged room through a backup and restore', () => {
     const save = defaults();
     save.stickers.push({ game: 'pet-kitchen', seed: 4, at: 1 });
-    save.room = { items: save.room.items.map((i) => (i.id === 'rug' ? { ...i, x: 0.3, y: 0.7, flip: true } : i)), frame: { game: 'pet-kitchen', seed: 4 } };
+    save.room = {
+      items: save.room.items.map((i) => (i.id === 'rug' ? { ...i, x: 0.3, y: 0.7, flip: true } : i)),
+      frame: { game: 'pet-kitchen', seed: 4 },
+    };
     expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
     expect(save.room.items).toHaveLength(ROOM_ITEMS.length);
   });
@@ -276,18 +416,26 @@ describe('migrate', () => {
     expect(defaults().favorites).toEqual([]);
     expect(migrate({}).favorites).toEqual([]);
     // A save from before the shelf existed keeps its progress and gets an empty shelf.
-    const old = migrate({ version: 2, profile: { name: 'Mia', band: 'prek' }, games: { 'duck-pond': { plays: 4, level: 3, pinned: null, history: [] } } });
+    const old = migrate({
+      version: 2,
+      profile: { name: 'Mia', band: 'prek' },
+      games: { 'duck-pond': { plays: 4, level: 3, pinned: null, history: [] } },
+    });
     expect(old.favorites).toEqual([]);
     expect(old.games['duck-pond'].plays).toBe(4);
     expect(migrate({ favorites: 'duck-pond' }).favorites).toEqual([]);
-    expect(migrate({ favorites: ['duck-pond', 7, 'duck-pond', '', 'bubble-pop'] }).favorites).toEqual(['duck-pond', 'bubble-pop']);
+    expect(migrate({ favorites: ['duck-pond', 7, 'duck-pond', '', 'bubble-pop'] }).favorites).toEqual([
+      'duck-pond',
+      'bubble-pop',
+    ]);
     expect(migrate({ favorites: Array.from({ length: 50 }, (_, i) => `g${i}`) }).favorites).toHaveLength(12);
   });
 
   it('remembers no place at first, keeps a known last place through a backup, and drops a damaged one (RW14 slice 8)', () => {
     expect(defaults().explore).toEqual({ last: null });
     expect(migrate({ version: 3, profile: { name: 'Mia', band: 'prek' } }).explore).toEqual({ last: null });
-    for (const bad of [null, 'counting-cove', { last: 'nowhere' }, { last: 7 }, { last: ['counting-cove'] }]) expect(migrate({ explore: bad }).explore).toEqual({ last: null });
+    for (const bad of [null, 'counting-cove', { last: 'nowhere' }, { last: 7 }, { last: ['counting-cove'] }])
+      expect(migrate({ explore: bad }).explore).toEqual({ last: null });
     const save = defaults();
     save.explore.last = 'counting-cove';
     expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
@@ -302,7 +450,12 @@ describe('migrate', () => {
   it('starts with the how-to cards on, repairs the switch, and drops the list an earlier version kept', () => {
     expect(defaults().settings.howToCards).toBe(true);
     // A save from before the cards existed keeps its progress and gets the cards.
-    const old = migrate({ version: 2, profile: { name: 'Mia', band: 'prek' }, settings: { volume: 0.5 }, games: { 'duck-pond': { plays: 4, level: 3, pinned: null, history: [] } } });
+    const old = migrate({
+      version: 2,
+      profile: { name: 'Mia', band: 'prek' },
+      settings: { volume: 0.5 },
+      games: { 'duck-pond': { plays: 4, level: 3, pinned: null, history: [] } },
+    });
     expect(old.settings.howToCards).toBe(true);
     expect(old.settings.volume).toBe(0.5);
     expect(old.games['duck-pond'].plays).toBe(4);
@@ -328,15 +481,38 @@ describe('migrate', () => {
   });
 
   it('starts with nothing hung, and repairs damaged creations without touching anything else', () => {
-    expect(defaults().creations).toEqual({ picture: { current: null, previous: null }, tune: { current: null, previous: null } });
+    expect(defaults().creations).toEqual({
+      picture: { current: null, previous: null },
+      tune: { current: null, previous: null },
+    });
     expect(migrate({}).creations).toEqual(defaults().creations);
     // A save from before creations existed keeps its progress and its room.
-    const old = migrate({ version: 2, profile: { name: 'Mia', band: 'prek' }, favorites: ['duck-pond'], room: { items: [], frame: { game: 'pet-kitchen', seed: 4 } } });
+    const old = migrate({
+      version: 2,
+      profile: { name: 'Mia', band: 'prek' },
+      favorites: ['duck-pond'],
+      room: { items: [], frame: { game: 'pet-kitchen', seed: 4 } },
+    });
     expect(old.creations).toEqual(defaults().creations);
     expect(old.favorites).toEqual(['duck-pond']);
     expect(old.room.frame).toEqual({ game: 'pet-kitchen', seed: 4 });
-    const odd = migrate({ creations: { picture: { current: { kind: 'picture', stamps: [{ kind: 'star', color: 'pink', x: 0.5, y: 0.5, size: 1, turns: 0 }, 'junk'] }, previous: 7 }, tune: 'la' } });
-    expect(odd.creations.picture.current && 'stamps' in odd.creations.picture.current ? odd.creations.picture.current.stamps : []).toHaveLength(1);
+    const odd = migrate({
+      creations: {
+        picture: {
+          current: {
+            kind: 'picture',
+            stamps: [{ kind: 'star', color: 'pink', x: 0.5, y: 0.5, size: 1, turns: 0 }, 'junk'],
+          },
+          previous: 7,
+        },
+        tune: 'la',
+      },
+    });
+    expect(
+      odd.creations.picture.current && 'stamps' in odd.creations.picture.current
+        ? odd.creations.picture.current.stamps
+        : [],
+    ).toHaveLength(1);
     expect(odd.creations.picture.previous).toBeNull();
     expect(odd.creations.tune).toEqual({ current: null, previous: null });
     expect(migrate({ creations: 5 }).creations).toEqual(defaults().creations);
@@ -344,10 +520,31 @@ describe('migrate', () => {
 
   it('keeps a hung picture and tune, and the ones before them, through a backup and restore', () => {
     const save = defaults();
-    const stamp = (x: number) => ({ kind: 'cat' as const, color: 'blue' as const, x, y: 0.4, size: 1.3, turns: 2 });
+    const stamp = (x: number) => ({
+      kind: 'cat' as const,
+      color: 'blue' as const,
+      x,
+      y: 0.4,
+      size: 1.3,
+      turns: 2,
+    });
     save.creations = {
-      picture: { current: { kind: 'picture', stamps: [stamp(0.2), stamp(0.7)] }, previous: { kind: 'picture', stamps: [stamp(0.5)] } },
-      tune: { current: { kind: 'tune', cols: 4, rows: 3, notes: [{ col: 0, row: 0 }, { col: 2, row: 2 }] }, previous: null },
+      picture: {
+        current: { kind: 'picture', stamps: [stamp(0.2), stamp(0.7)] },
+        previous: { kind: 'picture', stamps: [stamp(0.5)] },
+      },
+      tune: {
+        current: {
+          kind: 'tune',
+          cols: 4,
+          rows: 3,
+          notes: [
+            { col: 0, row: 0 },
+            { col: 2, row: 2 },
+          ],
+        },
+        previous: null,
+      },
     };
     expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
   });
@@ -383,10 +580,18 @@ describe('migrate', () => {
   it('starts with an empty journal, and repairs a damaged one without touching anything else', () => {
     expect(defaults().journal).toEqual({ found: [], seen: 0 });
     expect(migrate({}).journal).toEqual({ found: [], seen: 0 });
-    const old = migrate({ version: 2, profile: { name: 'Mia', band: 'prek' }, creations: { picture: { current: null, previous: null } }, favorites: ['duck-pond'] });
+    const old = migrate({
+      version: 2,
+      profile: { name: 'Mia', band: 'prek' },
+      creations: { picture: { current: null, previous: null } },
+      favorites: ['duck-pond'],
+    });
     expect(old.journal).toEqual({ found: [], seen: 0 });
     expect(old.favorites).toEqual(['duck-pond']);
-    expect(migrate({ journal: { found: ['sink-float:duck', 'retired:thing', 4, 'sink-float:duck'], seen: 7 } }).journal).toEqual({ found: ['sink-float:duck'], seen: 1 });
+    expect(
+      migrate({ journal: { found: ['sink-float:duck', 'retired:thing', 4, 'sink-float:duck'], seen: 7 } })
+        .journal,
+    ).toEqual({ found: ['sink-float:duck'], seen: 1 });
     expect(migrate({ journal: 'x' }).journal).toEqual({ found: [], seen: 0 });
   });
 
@@ -418,7 +623,12 @@ describe('undo for a reset or restore', () => {
   it('brings the stickers back, and a second undo is a redo', () => {
     const before = played();
     const snap = remember(before, 1);
-    const afterReset = { ...defaults(), profile: before.profile, settings: before.settings, creatures: before.creatures };
+    const afterReset = {
+      ...defaults(),
+      profile: before.profile,
+      settings: before.settings,
+      creatures: before.creatures,
+    };
     const undone = swapWithPrevious(afterReset, snap, 2);
     expect(undone.data).toEqual(before);
     expect(undone.previous.at).toBe(2);
@@ -429,10 +639,24 @@ describe('undo for a reset or restore', () => {
   it('reads back a stored snapshot, repairing it, and rejects anything else', () => {
     const stored = JSON.parse(JSON.stringify(remember(played(), 7)));
     expect(repairPrevious(stored)).toEqual(remember(played(), 7));
-    const damaged = repairPrevious({ at: 5, data: { profile: { name: 'Mia', band: 'dinosaur' }, stickers: 'x' } });
+    const damaged = repairPrevious({
+      at: 5,
+      data: { profile: { name: 'Mia', band: 'dinosaur' }, stickers: 'x' },
+    });
     expect(damaged?.data.profile).toEqual({ name: 'Mia', band: 'lap' });
     expect(damaged?.data.stickers).toEqual([]);
-    for (const junk of [null, undefined, 'x', 4, [], {}, { at: 'now', data: {} }, { at: Infinity, data: {} }, { at: 1 }, { at: 1, data: 'x' }]) {
+    for (const junk of [
+      null,
+      undefined,
+      'x',
+      4,
+      [],
+      {},
+      { at: 'now', data: {} },
+      { at: Infinity, data: {} },
+      { at: 1 },
+      { at: 1, data: 'x' },
+    ]) {
       expect(repairPrevious(junk)).toBeNull();
     }
   });

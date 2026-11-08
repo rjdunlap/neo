@@ -1,12 +1,41 @@
 import { describe, expect, it } from 'vitest';
 import { SCRIPT } from '../../content/voice-script';
-import { allowedParts, askedParts, askedPhrase, cleanPhrase, IdleNudge, MUD_BOX, NAME_GAP, Namer, NUDGE_AFTER, PHRASES, nearMud, nearestIndex, nextToScrub, PATS_PER_PATCH, PLANS, planFor, SCRUB_R, scrubPath, wrongTouches, brushOn, crowded, planOn, spotsOn, STAR, type Part, type Plan, type Spot } from './logic';
+import {
+  allowedParts,
+  askedParts,
+  askedPhrase,
+  cleanPhrase,
+  IdleNudge,
+  MUD_BOX,
+  NAME_GAP,
+  Namer,
+  NUDGE_AFTER,
+  PHRASES,
+  nearMud,
+  nearestIndex,
+  nextToScrub,
+  PATS_PER_PATCH,
+  PLANS,
+  planFor,
+  SCRUB_R,
+  scrubPath,
+  wrongTouches,
+  brushOn,
+  crowded,
+  planOn,
+  spotsOn,
+  STAR,
+  type Part,
+  type Plan,
+  type Spot,
+} from './logic';
 import { restPoints } from '../../creatures/companion';
 import { PARTS } from '../../creatures/parts';
 import { SPECIES_IDS, type SpeciesId } from '../../creatures/species';
 
 /** A level's splotches on a species, in its own units, as the game lays them (one on each point of each part asked for). */
-const spotsFor = (species: SpeciesId, plan: Plan): Spot[] => spotsOn(planOn(plan, STAR[species].parts).parts, (q) => restPoints(species, q), STAR[species]);
+const spotsFor = (species: SpeciesId, plan: Plan): Spot[] =>
+  spotsOn(planOn(plan, STAR[species].parts).parts, (q) => restPoints(species, q), STAR[species]);
 const ALL: readonly Part[] = ['tummy', 'head', 'cheeks', 'ears', 'nose'];
 
 describe('Splish Splash', () => {
@@ -64,27 +93,37 @@ describe('Splish Splash', () => {
   });
 
   it('draws a scrub path that leaves no mud behind on any splotch, however the mud falls', () => {
-    const sizes = new Set(SPECIES_IDS.flatMap((sp) => spotsOn(ALL, (q) => restPoints(sp, q), STAR[sp]).map((m) => m.size)));
+    const sizes = new Set(
+      SPECIES_IDS.flatMap((sp) => spotsOn(ALL, (q) => restPoints(sp, q), STAR[sp]).map((m) => m.size)),
+    );
     expect(sizes.size).toBeGreaterThanOrEqual(4);
-    const brushes = new Set(SPECIES_IDS.flatMap((sp) => PLANS.map((p) => brushOn(STAR[sp].scale, p.brush ?? 1))));
+    const brushes = new Set(
+      SPECIES_IDS.flatMap((sp) => PLANS.map((p) => brushOn(STAR[sp].scale, p.brush ?? 1))),
+    );
     expect(brushes).toContain(1.6);
-    for (const brush of brushes) for (const size of sizes) {
-      const reach = (SCRUB_R * brush) / size;
-      const path = scrubPath(size, brush);
-      expect(path.length).toBeGreaterThanOrEqual(2);
-      const near = (x: number, y: number) =>
-        path.slice(1).some((b, i) => {
-          const a = path[i];
-          const dx = b.x - a.x;
-          const dy = b.y - a.y;
-          const t = dx || dy ? Math.max(0, Math.min(1, ((x - a.x) * dx + (y - a.y) * dy) / (dx * dx + dy * dy))) : 0;
-          return Math.hypot(x - (a.x + t * dx), y - (a.y + t * dy)) < reach;
-        });
-      // Every point of the box the mud can lie in is inside the brush's reach, so the whole splotch goes and the 75% that counts as clean is always met.
-      for (let x = -MUD_BOX.x; x <= MUD_BOX.x; x += 2) for (let y = -MUD_BOX.y; y <= MUD_BOX.y; y += 2) expect(near(x, y), `size ${size} brush ${brush} at ${x},${y}`).toBe(true);
-      // And the path stays on the splotch's texture (120 by 96), where the game takes a touch as scrubbing it.
-      for (const p of path) expect(Math.abs(p.x) <= 60 && Math.abs(p.y) <= 48).toBe(true);
-    }
+    for (const brush of brushes)
+      for (const size of sizes) {
+        const reach = (SCRUB_R * brush) / size;
+        const path = scrubPath(size, brush);
+        expect(path.length).toBeGreaterThanOrEqual(2);
+        const near = (x: number, y: number) =>
+          path.slice(1).some((b, i) => {
+            const a = path[i];
+            const dx = b.x - a.x;
+            const dy = b.y - a.y;
+            const t =
+              dx || dy
+                ? Math.max(0, Math.min(1, ((x - a.x) * dx + (y - a.y) * dy) / (dx * dx + dy * dy)))
+                : 0;
+            return Math.hypot(x - (a.x + t * dx), y - (a.y + t * dy)) < reach;
+          });
+        // Every point of the box the mud can lie in is inside the brush's reach, so the whole splotch goes and the 75% that counts as clean is always met.
+        for (let x = -MUD_BOX.x; x <= MUD_BOX.x; x += 2)
+          for (let y = -MUD_BOX.y; y <= MUD_BOX.y; y += 2)
+            expect(near(x, y), `size ${size} brush ${brush} at ${x},${y}`).toBe(true);
+        // And the path stays on the splotch's texture (120 by 96), where the game takes a touch as scrubbing it.
+        for (const p of path) expect(Math.abs(p.x) <= 60 && Math.abs(p.y) <= 48).toBe(true);
+      }
   });
 
   it('does not tell a child off for brushing a neighbor while she scrubs the part she was asked for', () => {
@@ -108,12 +147,23 @@ describe('Splish Splash', () => {
             for (const step of scrubPath(m.size, brush)) {
               // The point in body units, then which splotches of the whole level it is near.
               const body = { x: m.x + step.x * m.size, y: m.y + step.y * m.size };
-              const near = [...new Set(spots.filter((q) => nearMud((body.x - q.x) / q.size, (body.y - q.y) / q.size, q.size, brush)).map((q) => q.part))];
+              const near = [
+                ...new Set(
+                  spots
+                    .filter((q) => nearMud((body.x - q.x) / q.size, (body.y - q.y) / q.size, q.size, brush))
+                    .map((q) => q.part),
+                ),
+              ];
               expect(near).toContain(m.part);
               if (near.some((q) => !asked.includes(q))) overlaps++;
               // Scrubbing the asked splotch is never "not that part", whatever neighbors are muddy.
               const before = asked.slice(0, asked.indexOf(m.part));
-              expect(wrongTouches(allowedParts(plan, index, (q) => before.includes(q)), near)).toEqual([]);
+              expect(
+                wrongTouches(
+                  allowedParts(plan, index, (q) => before.includes(q)),
+                  near,
+                ),
+              ).toEqual([]);
             }
           }
         }
@@ -127,9 +177,12 @@ describe('Splish Splash', () => {
       const brush = brushOn(STAR[species].scale);
       const spots = spotsOn(STAR[species].parts, (q) => restPoints(species, q), STAR[species]);
       /** Whether a point on the star is within the reach of a splotch, as the game measures it: in that splotch's own texture units. */
-      const within = (p: { x: number; y: number }, m: Spot) => nearMud((p.x - m.x) / m.size, (p.y - m.y) / m.size, m.size, brush);
+      const within = (p: { x: number; y: number }, m: Spot) =>
+        nearMud((p.x - m.x) / m.size, (p.y - m.y) / m.size, m.size, brush);
       // The whole scrub path of a splotch lies within that splotch's own reach, so a stroke that goes on after it is clean stays forgiven.
-      for (const m of spots) for (const step of scrubPath(m.size, brush)) expect(within({ x: m.x + step.x * m.size, y: m.y + step.y * m.size }, m)).toBe(true);
+      for (const m of spots)
+        for (const step of scrubPath(m.size, brush))
+          expect(within({ x: m.x + step.x * m.size, y: m.y + step.y * m.size }, m)).toBe(true);
       // A finger that scrubbed one part and slides to the middle of a splotch of another part is outside the first's reach, so it is
       // still told off for it (the "first this, then that" levels keep their correction).
       let slides = 0;
@@ -148,16 +201,23 @@ describe('Splish Splash', () => {
   it('asks each species only for parts it has, far enough apart at stage scale for "not that part" (decided 2026-10-23)', () => {
     for (const species of SPECIES_IDS) {
       const star = STAR[species];
-      for (const part of star.parts) expect(PARTS[species].points[part]?.length, `${species} ${part}`).toBeGreaterThan(0);
+      for (const part of star.parts)
+        expect(PARTS[species].points[part]?.length, `${species} ${part}`).toBeGreaterThan(0);
       // Every level still has at least two parts to name, and no two of a naming level's splotches sit in each other's reach.
       for (const level of PLANS) {
         const plan = planOn(level, star.parts);
         expect(plan.parts.length, `${species} ${level.mode}`).toBeGreaterThanOrEqual(2);
-        if (plan.mode === 'parts') expect(crowded(spotsFor(species, plan), brushOn(star.scale)), species).toEqual([]);
+        if (plan.mode === 'parts')
+          expect(crowded(spotsFor(species, plan), brushOn(star.scale)), species).toEqual([]);
       }
     }
     // The rule bites: the pip's old head and ear splotches, side by side at full size, are crowded.
-    expect(crowded([{ part: 'head', x: 6, y: -214, size: 0.9 }, { part: 'ears', x: 74, y: -226, size: 0.7 }]).length).toBeGreaterThan(0);
+    expect(
+      crowded([
+        { part: 'head', x: 6, y: -214, size: 0.9 },
+        { part: 'ears', x: 74, y: -226, size: 0.7 },
+      ]).length,
+    ).toBeGreaterThan(0);
     // A star drawn larger gets a smaller brush in its own units, the same on screen.
     expect(brushOn(2.4)).toBeCloseTo(0.5);
   });
@@ -199,7 +259,10 @@ describe('Splish Splash', () => {
         for (const p of parts) {
           const filled = text
             .replace('{touched}', PHRASES[p].word)
-            .replace(/\{(part|a|b)\}/g, id === 'bath.cleanpart' || id === 'bath.named' ? PHRASES[p].word : askedPhrase([p]))
+            .replace(
+              /\{(part|a|b)\}/g,
+              id === 'bath.cleanpart' || id === 'bath.named' ? PHRASES[p].word : askedPhrase([p]),
+            )
             .replace('{pet}', 'Pip');
           expect(filled, id).not.toMatch(/[{}]|my my/);
         }
@@ -217,7 +280,8 @@ describe('Splish Splash', () => {
     }
     expect(said.map(([p]) => p).sort()).toEqual([...parts].sort());
     expect(said[0][1]).toBeGreaterThanOrEqual(2);
-    for (let i = 1; i < said.length; i++) expect(said[i][1] - said[i - 1][1]).toBeGreaterThanOrEqual(NAME_GAP);
+    for (let i = 1; i < said.length; i++)
+      expect(said[i][1] - said[i - 1][1]).toBeGreaterThanOrEqual(NAME_GAP);
     // A name held back is tried again at the next touch, not lost.
     const fresh = new Namer();
     expect(fresh.touch('nose', 0, true)).toBeNull();

@@ -16,7 +16,30 @@ import { spread, type View } from '../../engine/view';
 import { RoundButton } from '../../ui/buttons';
 import type { Game, GameContext, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
-import { benchArt, BUD_H, BUD_W, BudCard, CAN_R, canArt, cantTellArt, CARD, CHECK_R, ChoiceCard, copiesPic, coverArt, leafArt, PACKET_R, packetArt, plantArt, RECORD_H, recordArt, slotX, Sprout, testerArt, tileArt } from './art';
+import {
+  benchArt,
+  BUD_H,
+  BUD_W,
+  BudCard,
+  CAN_R,
+  canArt,
+  cantTellArt,
+  CARD,
+  CHECK_R,
+  ChoiceCard,
+  copiesPic,
+  coverArt,
+  leafArt,
+  PACKET_R,
+  packetArt,
+  plantArt,
+  RECORD_H,
+  recordArt,
+  slotX,
+  Sprout,
+  testerArt,
+  tileArt,
+} from './art';
 import {
   CANDIDATES,
   candidates,
@@ -118,7 +141,17 @@ export class SproutHidden implements Game {
     this.picking = s.bench.length > 0;
     this.phase = this.picking ? 'pick' : 'water1';
     this.lastInstruction = this.picking ? 'sprout.tester-intro' : 'sprout.hidden-intro';
-    this.backdrop = new Backdrop({ sky: [0xc4ecff, 0xfff6e0], hills: [0xf5d0e6, 0xbfe39a, 0x9ad77e], horizon: 0.42, clouds: 3, sun: false, seed: 131 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0xc4ecff, 0xfff6e0],
+        hills: [0xf5d0e6, 0xbfe39a, 0x9ad77e],
+        horizon: 0.42,
+        clouds: 3,
+        sun: false,
+        seed: 131,
+      },
+      ctx.view,
+    );
     ctx.stage.addChild(this.backdrop, this.board);
     onTap(this.backdrop, () => this.repeat(), { cooldown: 1200 });
 
@@ -150,7 +183,9 @@ export class SproutHidden implements Game {
     this.checkButton.visible = false;
 
     this.fanPanel.eventMode = 'static';
-    onTap(this.fanPanel, () => { if (!this.busy) this.closeFan(); });
+    onTap(this.fanPanel, () => {
+      if (!this.busy) this.closeFan();
+    });
     this.fan.addChild(this.fanPanel);
     this.fan.visible = false;
 
@@ -166,9 +201,20 @@ export class SproutHidden implements Game {
     this.bench.visible = this.picking;
 
     this.board.addChild(
-      this.hiddenPlant, this.testerPlant, ...this.hiddenTiles, ...this.testerTiles, this.cover, this.banner,
-      this.canButton, this.tryButton, this.recordCard, ...this.cards, this.checkButton, this.bench,
-      ...this.benchPlants.map((b) => b.art), this.fan,
+      this.hiddenPlant,
+      this.testerPlant,
+      ...this.hiddenTiles,
+      ...this.testerTiles,
+      this.cover,
+      this.banner,
+      this.canButton,
+      this.tryButton,
+      this.recordCard,
+      ...this.cards,
+      this.checkButton,
+      this.bench,
+      ...this.benchPlants.map((b) => b.art),
+      this.fan,
     );
   }
 
@@ -224,15 +270,18 @@ export class SproutHidden implements Game {
     const tx = v.w * 0.72;
     this.hiddenPlant.position.set(hx, feet);
     this.testerPlant.position.set(tx, feet);
-    for (const [i, t] of this.hiddenTiles.entries()) t.position.set(hx + (i === 0 ? -1 : 1) * (TRAY_TILE / 2 + 8), trayY);
-    for (const [i, t] of this.testerTiles.entries()) t.position.set(tx + (i === 0 ? -1 : 1) * (TRAY_TILE / 2 + 8), trayY);
+    for (const [i, t] of this.hiddenTiles.entries())
+      t.position.set(hx + (i === 0 ? -1 : 1) * (TRAY_TILE / 2 + 8), trayY);
+    for (const [i, t] of this.testerTiles.entries())
+      t.position.set(tx + (i === 0 ? -1 : 1) * (TRAY_TILE / 2 + 8), trayY);
     if (!this.finished) this.cover.position.set(hx, trayY);
     this.banner.position.set(hx, feet - PLANT_H - 34);
     this.canButton.position.set(v.w / 2, feet - 90);
     this.tryButton.position.set(v.w - 90, feet - 90);
     const recordY = trayY + 48 + 10 + RECORD_H / 2;
     this.recordCard.position.set(v.w / 2, recordY);
-    for (const [i, sp] of this.sprouts.entries()) sp.position.set(v.w / 2 + slotX(i), recordY + RECORD_H / 2 - 18);
+    for (const [i, sp] of this.sprouts.entries())
+      sp.position.set(v.w / 2 + slotX(i), recordY + RECORD_H / 2 - 18);
     const cardY = Math.min(v.h - 16 - CARD / 2, recordY + RECORD_H / 2 + 26 + CARD / 2 + (off > 0 ? 40 : 0));
     const xs = spread(3, 150, v.w - 40, CARD + 50);
     for (const [i, c] of this.cards.entries()) {
@@ -256,21 +305,32 @@ export class SproutHidden implements Game {
     // The fan covers the plants' band while open.
     const top = off + TOP + 4;
     const bottom = trayY + 48;
-    this.fanPanel.clear().roundRect(20, top, v.w - 40, bottom - top, 28).fill({ color: 0xfffaf0, alpha: 0.94 }).stroke({ width: 5, color: swatch.green.line });
+    this.fanPanel
+      .clear()
+      .roundRect(20, top, v.w - 40, bottom - top, 28)
+      .fill({ color: 0xfffaf0, alpha: 0.94 })
+      .stroke({ width: 5, color: swatch.green.line });
     // Two fans side by side share one row in landscape, with a wider gap between them and clear of the corner buttons, and stack in portrait.
     const pair = this.buds.length > 4;
     const rows = pair && v.h > v.w ? 2 : 1;
     const perRow = this.buds.length / rows;
     const split = pair && rows === 1 ? 40 : 0;
     const left = pair && rows === 1 ? 130 : 40;
-    const scale = Math.min(1, (bottom - top - 24 - (rows - 1) * FAN_GAP) / (rows * BUD_H), (v.w - 40 - left - split) / (perRow * BUD_W + (perRow - 1) * FAN_GAP));
+    const scale = Math.min(
+      1,
+      (bottom - top - 24 - (rows - 1) * FAN_GAP) / (rows * BUD_H),
+      (v.w - 40 - left - split) / (perRow * BUD_W + (perRow - 1) * FAN_GAP),
+    );
     const bx = spread(perRow, left, v.w - 40, BUD_W * scale + FAN_GAP);
     const rowH = BUD_H * scale + FAN_GAP;
     for (const [i, b] of this.buds.entries()) {
       const row = Math.floor(i / perRow);
       const col = i % perRow;
       b.scale.set(scale);
-      b.position.set(bx[col] + (split ? (col < perRow / 2 ? -split / 2 : split / 2) : 0), (top + bottom) / 2 + (row - (rows - 1) / 2) * rowH);
+      b.position.set(
+        bx[col] + (split ? (col < perRow / 2 ? -split / 2 : split / 2) : 0),
+        (top + bottom) / 2 + (row - (rows - 1) / 2) * rowH,
+      );
     }
   }
 
@@ -464,7 +524,10 @@ export class SproutHidden implements Game {
     this.misses++;
     this.wrong++;
     sfx.boing();
-    if (this.wrong === 2 && !this.glowHintedIn.has(this.phase)) { this.glowHintedIn.add(this.phase); this.hints++; }
+    if (this.wrong === 2 && !this.glowHintedIn.has(this.phase)) {
+      this.glowHintedIn.add(this.phase);
+      this.hints++;
+    }
     if (this.wrong >= 2) this.glowCards = true;
     void this.counter(verdict);
   }
@@ -519,7 +582,9 @@ export class SproutHidden implements Game {
     }
     this.busy = true;
     this.checkButton.visible = false;
-    await this.ctx.say(fit.length === 1 ? 'sprout.plain-tells' : this.picking ? 'sprout.tester-couldnt' : 'sprout.still-both');
+    await this.ctx.say(
+      fit.length === 1 ? 'sprout.plain-tells' : this.picking ? 'sprout.tester-couldnt' : 'sprout.still-both',
+    );
     if (!this.alive) return;
     await this.reveal();
   }
@@ -531,9 +596,16 @@ export class SproutHidden implements Game {
     this.banner.visible = false;
     sfx.tada();
     this.ctx.pet.cheer();
-    void this.ctx.tw.to(this.cover, { y: this.cover.y - 80, alpha: 0 }, { duration: 0.7, ease: ease.outQuad });
+    void this.ctx.tw.to(
+      this.cover,
+      { y: this.cover.y - 80, alpha: 0 },
+      { duration: 0.7, ease: ease.outQuad },
+    );
     const p = this.ctx.stage.toLocal(this.hiddenPlant.getGlobalPosition());
-    this.ctx.particles.burst(p.x, p.y + 60, { colors: [swatch.green.fill, swatch[this.setup.colors[0]].fill, 0xffffff], count: 10 });
+    this.ctx.particles.burst(p.x, p.y + 60, {
+      colors: [swatch.green.fill, swatch[this.setup.colors[0]].fill, 0xffffff],
+      count: 10,
+    });
     await this.ctx.say(this.setup.truth === 'Aa' ? 'sprout.reveal-one' : 'sprout.reveal-two');
     if (!this.alive) return;
     this.finished = true;
@@ -553,7 +625,10 @@ export class SproutHidden implements Game {
         const bud = new BudCard(route.sprout, colors, route.from);
         // Both fans together are a picture the pet explains, too small to tap; one fan's buds regrow on a tap.
         if (cs.length > 1) bud.eventMode = 'none';
-        else onTap(bud, () => { if (!this.busy) void this.growBud(k); });
+        else
+          onTap(bud, () => {
+            if (!this.busy) void this.growBud(k);
+          });
         this.buds.push(bud);
         this.budLooks.push(looks(route.sprout));
         this.fan.addChild(bud);
@@ -600,7 +675,10 @@ export class SproutHidden implements Game {
     if (this.finished || this.busy) return;
     if (this.phase === 'pick') {
       // Show me plants the tester that could tell, counted once; she waters it herself.
-      if (!this.showMeIn.has('pick')) { this.showMeIn.add('pick'); this.hints++; }
+      if (!this.showMeIn.has('pick')) {
+        this.showMeIn.add('pick');
+        this.hints++;
+      }
       const step = pickStep(this.potted);
       if ('plant' in step) void this.plant(step.plant);
       this.canButton.scale.set(1.15);
@@ -615,7 +693,10 @@ export class SproutHidden implements Game {
       void this.ctx.say('sprout.help.water');
       return;
     }
-    if (!this.showMeIn.has(this.phase)) { this.showMeIn.add(this.phase); this.hints++; }
+    if (!this.showMeIn.has(this.phase)) {
+      this.showMeIn.add(this.phase);
+      this.hints++;
+    }
     const shown = this.checkButton.visible;
     const fit = candidates(this.tester, this.record);
     for (const c of this.cards) this.setChosen(c.key, fit.includes(c.key));
@@ -628,18 +709,28 @@ export class SproutHidden implements Game {
 
   update(dt: number) {
     this.clock += dt;
-    for (const g of this.budGrows) if (!g.card.destroyed) g.card.open(g.look, this.setup.colors[0], Math.min(1, Math.max(0.01, g.p.v)));
-    for (const g of this.grows) if (!g.sprout.destroyed) g.sprout.open(g.look, this.setup.colors[0], Math.min(1, Math.max(0.01, g.p.v)));
+    for (const g of this.budGrows)
+      if (!g.card.destroyed) g.card.open(g.look, this.setup.colors[0], Math.min(1, Math.max(0.01, g.p.v)));
+    for (const g of this.grows)
+      if (!g.sprout.destroyed)
+        g.sprout.open(g.look, this.setup.colors[0], Math.min(1, Math.max(0.01, g.p.v)));
     const r = 1 + 0.06 * Math.sin(this.clock * 5);
     const live = !this.finished;
     for (const [k, b] of this.buds.entries()) b.glow(live && this.glowBuds.has(k) ? r : null);
     const fit = candidates(this.tester, this.record);
-    for (const c of this.cards) c.glow(live && this.glowCards && this.choosing && fit.includes(c.key) && !this.chosen.has(c.key) ? r : null);
+    for (const c of this.cards)
+      c.glow(
+        live && this.glowCards && this.choosing && fit.includes(c.key) && !this.chosen.has(c.key) ? r : null,
+      );
     this.glowLayer.clear();
     // At the glow, the deciding plain sprout glows with the fitting cards.
     const slots = new Set(this.glowSlots);
-    if (live && this.glowCards && this.choosing) this.record.forEach((l, i) => { if (l === 'plain') slots.add(i); });
-    for (const i of slots) this.glowLayer.circle(slotX(i), -4, 36 * r).stroke({ width: 7, color: swatch.yellow.fill });
+    if (live && this.glowCards && this.choosing)
+      this.record.forEach((l, i) => {
+        if (l === 'plain') slots.add(i);
+      });
+    for (const i of slots)
+      this.glowLayer.circle(slotX(i), -4, 36 * r).stroke({ width: 7, color: swatch.yellow.fill });
   }
 
   /** The ghost finger: (level 6) the plain tester, then the can, the fitting cards, the leaf; again for level 5's second watering. It never presses Try one. */

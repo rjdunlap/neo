@@ -22,15 +22,105 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import type { LineId } from '../../content/voice-script';
 import {
-  ballArt, basketArt, cantTellArt, cartArt, cellArt, crackArt, crateArt, goodArt, handInArt, iconArt, jarArt, neitherArt, numberArt, pairTabletArt, penArt, pickArt, riverArt, rowArt,
-  signArt, stampArt, stickerArt, storeArt, stripArt, tabletArt, tenWedgeArt, tokenArt, verdictArt, wedgeArt, yardArt,
+  ballArt,
+  basketArt,
+  cantTellArt,
+  cartArt,
+  cellArt,
+  crackArt,
+  crateArt,
+  goodArt,
+  handInArt,
+  iconArt,
+  jarArt,
+  neitherArt,
+  numberArt,
+  pairTabletArt,
+  penArt,
+  pickArt,
+  riverArt,
+  rowArt,
+  signArt,
+  stampArt,
+  stickerArt,
+  storeArt,
+  stripArt,
+  tabletArt,
+  tenWedgeArt,
+  tokenArt,
+  verdictArt,
+  wedgeArt,
+  yardArt,
 } from './art';
 import {
   LEVELS,
-  answerFor, arrive, askCheck, askDisagree, disagreeTally, pickAnswer, startDisagree, askEnvelope, askTablet, askTens, briefFor, CART_VERDICTS, cartOf, CELL, centre, checkTally, chooseNumber, chooseVerdict, crackEnvelope, envelopeTally, handIn, hintFor, KINDS, lift, lineUp,
-  markCount, planFor, press, pressRow, readBack, readyToTip, ROW_CELLS, SCATTER_COLS, SCATTER_ROWS, scatterFor, shortest, SIGN, stamp, startCheck, startEnvelope, startPen, startTablet, startTens, tabletLayout,
-  tabletTally, tapJar, tensHint, tensTally, value, verdictFor, waiting,
-  type Answer, type Brief, type Cart, type DisagreeState, type CartVerdict, type CheckState, type EnvelopeState, type Kind, type Mark, type PenState, type Pt, type Reading, type Rect, type TabletLayout, type TabletState, type TensState,
+  answerFor,
+  arrive,
+  askCheck,
+  askDisagree,
+  disagreeTally,
+  pickAnswer,
+  startDisagree,
+  askEnvelope,
+  askTablet,
+  askTens,
+  briefFor,
+  CART_VERDICTS,
+  cartOf,
+  CELL,
+  centre,
+  checkTally,
+  chooseNumber,
+  chooseVerdict,
+  crackEnvelope,
+  envelopeTally,
+  handIn,
+  hintFor,
+  KINDS,
+  lift,
+  lineUp,
+  markCount,
+  planFor,
+  press,
+  pressRow,
+  readBack,
+  readyToTip,
+  ROW_CELLS,
+  SCATTER_COLS,
+  SCATTER_ROWS,
+  scatterFor,
+  shortest,
+  SIGN,
+  stamp,
+  startCheck,
+  startEnvelope,
+  startPen,
+  startTablet,
+  startTens,
+  tabletLayout,
+  tabletTally,
+  tapJar,
+  tensHint,
+  tensTally,
+  value,
+  verdictFor,
+  waiting,
+  type Answer,
+  type Brief,
+  type Cart,
+  type DisagreeState,
+  type CartVerdict,
+  type CheckState,
+  type EnvelopeState,
+  type Kind,
+  type Mark,
+  type PenState,
+  type Pt,
+  type Reading,
+  type Rect,
+  type TabletLayout,
+  type TabletState,
+  type TensState,
 } from './logic';
 
 /** Spoken counts come from bounded slots, never free text. */
@@ -111,7 +201,17 @@ class RiverTablets implements Game {
     this.view = ctx.view;
     this.brief = briefFor(ctx.level, ctx.rng);
     this.walkSeconds = ctx.demo ? 0.5 : 1.2;
-    this.backdrop = new Backdrop({ sky: [0xcfe9f7, 0xfff6e0], hills: [0xd9c58f, 0xcfe0a3], horizon: 0.42, clouds: 2, sun: true, seed: 211 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0xcfe9f7, 0xfff6e0],
+        hills: [0xd9c58f, 0xcfe0a3],
+        horizon: 0.42,
+        clouds: 2,
+        sun: true,
+        seed: 211,
+      },
+      ctx.view,
+    );
     this.glow.eventMode = 'none';
     this.lineupLayer.eventMode = 'none';
     ctx.stage.addChild(this.backdrop, this.board);
@@ -149,7 +249,10 @@ class RiverTablets implements Game {
     this.build();
     if (this.brief.id === 'disagree') {
       // One line at a time (a new line cuts the last): the instruction, then the empty cart's story if it comes first.
-      void this.ctx.instruct('rt.instruct.6').then(() => { if (this.alive && !this.finished && this.pairCase.cart === null) void this.ctx.say('rt.disagree.gone'); });
+      void this.ctx.instruct('rt.instruct.6').then(() => {
+        if (this.alive && !this.finished && this.pairCase.cart === null)
+          void this.ctx.say('rt.disagree.gone');
+      });
       return;
     }
     void this.ctx.instruct(`rt.instruct.${this.level}` as LineId);
@@ -166,7 +269,10 @@ class RiverTablets implements Game {
     this.view = v;
     this.backdrop.resize(v);
     if (!this.layoutNow) return;
-    if (this.busy || this.finished) { this.relayout = true; return; }
+    if (this.busy || this.finished) {
+      this.relayout = true;
+      return;
+    }
     this.build();
   }
 
@@ -209,7 +315,8 @@ class RiverTablets implements Game {
       this.buildYard(l);
       this.buildTablet(l);
       this.board.addChild(this.lineupLayer, this.glow);
-      if (this.brief.id === 'check' && this.check.lined) this.drawLineup(shortest(this.check.t), cartOf(this.check.c), true);
+      if (this.brief.id === 'check' && this.check.lined)
+        this.drawLineup(shortest(this.check.t), cartOf(this.check.c), true);
       return;
     }
     if (this.brief.id === 'disagree') {
@@ -274,7 +381,14 @@ class RiverTablets implements Game {
       const node = new Container();
       node.position.set(centre(c).x - ball.x, centre(c).y - ball.y);
       node.hitArea = new Rectangle(-c.w / 2, -c.h / 2, c.w, c.h);
-      onTap(node, (e) => { e.stopPropagation(); this.pressCell(i); }, { cooldown: 150 });
+      onTap(
+        node,
+        (e) => {
+          e.stopPropagation();
+          this.pressCell(i);
+        },
+        { cooldown: 150 },
+      );
       ball.addChild(node);
       return node;
     });
@@ -364,7 +478,8 @@ class RiverTablets implements Game {
     if (!ball || !l?.ball) return;
     const e = this.envelope;
     const open = this.opened || this.peekLeft > 0;
-    if (ball.children[0] && !this.cellNodes.includes(ball.children[0] as Container)) ball.children[0].destroy();
+    if (ball.children[0] && !this.cellNodes.includes(ball.children[0] as Container))
+      ball.children[0].destroy();
     ball.addChildAt(ballArt(l.ball.w, l.ball.h, open), 0);
     const h = e.glowing ? hintFor(e) : null;
     this.cellNodes.forEach((node, i) => {
@@ -427,8 +542,14 @@ class RiverTablets implements Game {
   // ——— The round's beginning ———
 
   private async begin() {
-    if (this.brief.id === 'tokens') { void this.walkNext(); return; }
-    if (this.brief.id === 'envelope') { void this.fillEnvelope(); return; }
+    if (this.brief.id === 'tokens') {
+      void this.walkNext();
+      return;
+    }
+    if (this.brief.id === 'envelope') {
+      void this.fillEnvelope();
+      return;
+    }
     if (this.brief.id === 'tens' || this.brief.id === 'check') return;
     void this.arrival();
   }
@@ -469,7 +590,10 @@ class RiverTablets implements Game {
     // Touch-down feedback before any rule.
     j.scale.set(1.06, 0.92);
     void this.ctx.tw.to(j.scale, { x: 1, y: 1 }, { duration: 0.25, ease: ease.outBack });
-    if (this.busy) { sfx.pop(5); return; }
+    if (this.busy) {
+      sfx.pop(5);
+      return;
+    }
     const { state, result } = tapJar(p);
     this.pen = state;
     if (result === 'token') {
@@ -480,20 +604,30 @@ class RiverTablets implements Game {
       const y = t.y;
       t.y = y - 120;
       void this.ctx.tw.to(t.position, { y }, { duration: 0.3, ease: ease.inQuad });
-      if (this.firstToken) { this.firstToken = false; void this.ctx.say('rt.token-in'); }
+      if (this.firstToken) {
+        this.firstToken = false;
+        void this.ctx.say('rt.token-in');
+      }
       this.redrawJar();
       if (state.walking) void this.walkNext();
       else if (readyToTip(state)) void this.ctx.say('rt.tip');
       return;
     }
-    if (result === 'tip') { void this.tip(); return; }
+    if (result === 'tip') {
+      void this.tip();
+      return;
+    }
     // A wobble: nothing changes.
     sfx.pop(4);
-    void this.ctx.tw.to(j, { rotation: 0.08 }, { duration: 0.1 }).then(() => this.ctx.tw.to(j, { rotation: 0 }, { duration: 0.2, ease: ease.outElastic }));
+    void this.ctx.tw
+      .to(j, { rotation: 0.08 }, { duration: 0.1 })
+      .then(() => this.ctx.tw.to(j, { rotation: 0 }, { duration: 0.2, ease: ease.outElastic }));
     const last = this.tokenNodes.at(-1);
     if (last) {
       const y = last.y;
-      void this.ctx.tw.to(last.position, { y: y - 40 }, { duration: 0.12 }).then(() => this.ctx.tw.to(last.position, { y }, { duration: 0.2, ease: ease.inQuad }));
+      void this.ctx.tw
+        .to(last.position, { y: y - 40 }, { duration: 0.12 })
+        .then(() => this.ctx.tw.to(last.position, { y }, { duration: 0.2, ease: ease.inQuad }));
     }
     void this.ctx.say(readyToTip(state) ? 'rt.tip' : 'rt.already');
   }
@@ -513,7 +647,11 @@ class RiverTablets implements Game {
     for (let i = 0; i < p.sheep; i++) {
       const t = this.tokenNodes[i];
       const slot = this.sheepSlot(i);
-      void this.ctx.tw.to(t.position, { x: slot.x, y: l.lineup.y + 40 }, { duration: 0.5, delay: i * 0.12, ease: ease.outQuad });
+      void this.ctx.tw.to(
+        t.position,
+        { x: slot.x, y: l.lineup.y + 40 },
+        { duration: 0.5, delay: i * 0.12, ease: ease.outQuad },
+      );
     }
     await this.ctx.tw.wait(0.6 + p.sheep * 0.12);
     if (!this.live(epoch)) return;
@@ -554,7 +692,11 @@ class RiverTablets implements Game {
       this.board.addChildAt(t, this.board.getChildIndex(ball));
       this.insideNodes.push(t);
       sfx.marimba(2 + i, 0.35);
-      await this.ctx.tw.to(t.position, { x: to.x, y: to.y }, { duration: this.ctx.demo ? 0.25 : 0.45, ease: ease.inOutSine });
+      await this.ctx.tw.to(
+        t.position,
+        { x: to.x, y: to.y },
+        { duration: this.ctx.demo ? 0.25 : 0.45, ease: ease.inOutSine },
+      );
       if (!this.live(epoch)) return;
     }
     await this.ctx.tw.wait(this.ctx.demo ? 0.3 : 0.7);
@@ -571,7 +713,10 @@ class RiverTablets implements Game {
   /** Where a token sits inside the ball (a loose heap, so counting them is the point of the marks). */
   private insideAt(i: number): Pt {
     const b = this.ballNode!;
-    return { x: b.x - 90 + (i % 3) * 70 + (Math.floor(i / 3) % 2) * 20, y: b.y + 40 - Math.floor(i / 3) * 44 };
+    return {
+      x: b.x - 90 + (i % 3) * 70 + (Math.floor(i / 3) % 2) * 20,
+      y: b.y + 40 - Math.floor(i / 3) * 44,
+    };
   }
 
   pressCell(i: number) {
@@ -582,7 +727,8 @@ class RiverTablets implements Game {
     const before = markCount(this.envelope);
     this.envelopes[this.envelopeIndex] = press(this.envelope, i);
     const after = markCount(this.envelope);
-    if (after > before) sfx.marimba(1 + after, 0.35); else sfx.pop(5);
+    if (after > before) sfx.marimba(1 + after, 0.35);
+    else sfx.pop(5);
     this.redrawBall();
   }
 
@@ -590,7 +736,10 @@ class RiverTablets implements Game {
   peek() {
     if (this.finished || this.busy) return;
     this.peekLeft = this.ctx.demo ? 1 : PEEK_SECONDS;
-    if (!this.peeked) { this.peeked = true; void this.ctx.say('rt.peek'); }
+    if (!this.peeked) {
+      this.peeked = true;
+      void this.ctx.say('rt.peek');
+    }
     sfx.pop(8);
     this.redrawBall();
   }
@@ -614,14 +763,18 @@ class RiverTablets implements Game {
     const l = this.layoutNow!;
     const n = Math.max(crack.marks, crack.tokens);
     const spacing = Math.min(100, (l.lineup.w - 60) / Math.max(1, n - 1));
-    const x0 = l.lineup.x + l.lineup.w / 2 - spacing * (n - 1) / 2;
+    const x0 = l.lineup.x + l.lineup.w / 2 - (spacing * (n - 1)) / 2;
     for (let i = 0; i < crack.marks; i++) {
       const m = wedgeArt(40);
       m.position.set(x0 + i * spacing, l.lineup.y + 26);
       this.lineupLayer.addChild(m);
     }
     this.insideNodes.forEach((t, i) => {
-      void this.ctx.tw.to(t.position, { x: x0 + i * spacing, y: l.lineup.y + 80 }, { duration: 0.45, delay: i * 0.1, ease: ease.outQuad });
+      void this.ctx.tw.to(
+        t.position,
+        { x: x0 + i * spacing, y: l.lineup.y + 80 },
+        { duration: 0.45, delay: i * 0.1, ease: ease.outQuad },
+      );
     });
     await this.ctx.tw.wait(0.6 + crack.tokens * 0.1);
     if (!this.live(epoch)) return;
@@ -629,7 +782,10 @@ class RiverTablets implements Game {
       sfx.sparkle();
       await this.ctx.say('rt.match', { count: word(crack.marks), lower: word(crack.marks).toLowerCase() });
       if (!this.live(epoch)) return;
-      if (this.envelopeIndex + 1 >= this.envelopes.length) { this.celebrate(); return; }
+      if (this.envelopeIndex + 1 >= this.envelopes.length) {
+        this.celebrate();
+        return;
+      }
       this.envelopeIndex++;
       this.clearLineup();
       this.build();
@@ -639,16 +795,30 @@ class RiverTablets implements Game {
     }
     // The unmatched ones wiggle alone.
     sfx.boing();
-    const loners = crack.verdict === 'fewer' ? this.insideNodes.slice(crack.paired) : this.lineupLayer.children.slice(crack.paired);
+    const loners =
+      crack.verdict === 'fewer'
+        ? this.insideNodes.slice(crack.paired)
+        : this.lineupLayer.children.slice(crack.paired);
     for (const t of loners) {
-      void this.ctx.tw.to(t, { rotation: 0.3 }, { duration: 0.15 }).then(() => this.ctx.tw.to(t, { rotation: -0.3 }, { duration: 0.3 })).then(() => this.ctx.tw.to(t, { rotation: 0 }, { duration: 0.15 }));
+      void this.ctx.tw
+        .to(t, { rotation: 0.3 }, { duration: 0.15 })
+        .then(() => this.ctx.tw.to(t, { rotation: -0.3 }, { duration: 0.3 }))
+        .then(() => this.ctx.tw.to(t, { rotation: 0 }, { duration: 0.15 }));
     }
-    const vars = { marks: word(crack.marks), tokens: word(crack.tokens).toLowerCase(), diff: word(crack.diff) };
+    const vars = {
+      marks: word(crack.marks),
+      tokens: word(crack.tokens).toLowerCase(),
+      diff: word(crack.diff),
+    };
     await this.ctx.say(`rt.${crack.verdict}.${crack.diff === 1 ? 'one' : 'many'}` as LineId, vars);
     if (!this.live(epoch)) return;
     // The ball closes again with her marks kept.
     this.clearLineup();
-    this.insideNodes.forEach((t, i) => { const to = this.insideAt(i); t.position.set(to.x, to.y); t.visible = false; });
+    this.insideNodes.forEach((t, i) => {
+      const to = this.insideAt(i);
+      t.position.set(to.x, to.y);
+      t.visible = false;
+    });
     this.opened = false;
     this.busy = false;
     this.redrawBall();
@@ -676,8 +846,16 @@ class RiverTablets implements Game {
     cart.x = l.lane.x + 60;
     g.x = cart.x;
     sfx.ratchet(3);
-    void this.ctx.tw.to(cart.position, { x: toX }, { duration: this.ctx.demo ? 0.4 : 0.9, ease: ease.inOutSine });
-    await this.ctx.tw.to(g.position, { x: toX }, { duration: this.ctx.demo ? 0.4 : 0.9, ease: ease.inOutSine });
+    void this.ctx.tw.to(
+      cart.position,
+      { x: toX },
+      { duration: this.ctx.demo ? 0.4 : 0.9, ease: ease.inOutSine },
+    );
+    await this.ctx.tw.to(
+      g.position,
+      { x: toX },
+      { duration: this.ctx.demo ? 0.4 : 0.9, ease: ease.inOutSine },
+    );
     if (!this.live(epoch)) return;
     this.busy = false;
     if (this.relayout) this.build();
@@ -690,12 +868,21 @@ class RiverTablets implements Game {
     // The row lifts on touch-down, before any rule.
     node.y -= 8;
     void this.ctx.tw.to(node.position, { y: node.y + 8 }, { duration: 0.2, ease: ease.outQuad });
-    if (this.busy || waiting(this.tablet) === null) { sfx.pop(5); return; }
+    if (this.busy || waiting(this.tablet) === null) {
+      sfx.pop(5);
+      return;
+    }
     const good = waiting(this.tablet)!;
     const r = pressRow(this.tablet, kind);
     this.tablets[this.tabletIndex] = r.state;
-    if (r.accepted) { void this.landMark(kind, false); return; }
-    if (r.moved) { void this.landMark(good, true); return; }
+    if (r.accepted) {
+      void this.landMark(kind, false);
+      return;
+    }
+    if (r.moved) {
+      void this.landMark(good, true);
+      return;
+    }
     void this.bounceMark(kind, good);
   }
 
@@ -710,7 +897,10 @@ class RiverTablets implements Game {
     this.board.addChild(m);
     void this.ctx.say(`rt.wrong-row.${good}` as LineId);
     await this.ctx.tw.to(m.position, { y: at.y - 90 }, { duration: 0.25, ease: ease.outQuad });
-    if (!this.live(epoch)) { m.destroy(); return; }
+    if (!this.live(epoch)) {
+      m.destroy();
+      return;
+    }
     await this.ctx.tw.to(m, { alpha: 0 }, { duration: 0.2 });
     m.destroy();
     if (!this.live(epoch)) return;
@@ -729,15 +919,29 @@ class RiverTablets implements Game {
     const g = this.goodNode;
     m.position.set(g ? g.x : to.x, g ? g.y - 40 : to.y - 100);
     this.board.addChild(m);
-    if (moved) { void this.ctx.say('rt.moved'); this.redrawRows(); }
-    await this.ctx.tw.to(m.position, { x: to.x, y: to.y }, { duration: moved ? 0.7 : 0.35, ease: ease.inOutSine });
-    if (!this.live(epoch)) { m.destroy(); return; }
+    if (moved) {
+      void this.ctx.say('rt.moved');
+      this.redrawRows();
+    }
+    await this.ctx.tw.to(
+      m.position,
+      { x: to.x, y: to.y },
+      { duration: moved ? 0.7 : 0.35, ease: ease.inOutSine },
+    );
+    if (!this.live(epoch)) {
+      m.destroy();
+      return;
+    }
     m.destroy();
     sfx.squish();
     this.redrawRows();
     if (g) {
       const s = l.store!;
-      await this.ctx.tw.to(g.position, { x: s.x + s.w / 2, y: s.y + s.h - 100 }, { duration: 0.45, ease: ease.inQuad });
+      await this.ctx.tw.to(
+        g.position,
+        { x: s.x + s.w / 2, y: s.y + s.h - 100 },
+        { duration: 0.45, ease: ease.inQuad },
+      );
       if (!this.live(epoch)) return;
       g.destroy({ children: true });
       this.goodNode = null;
@@ -767,15 +971,27 @@ class RiverTablets implements Game {
         g.position.set(s.x + s.w / 2, s.y + s.h - 70);
         const cell = this.cellAt(kind, i);
         this.lineupLayer.addChild(g);
-        void this.ctx.tw.to(g.position, { x: cell.x, y: l.lineup.y + (kind === 'sheep' ? 0 : 50) }, { duration: 0.5, delay: shown * 0.1, ease: ease.outQuad });
+        void this.ctx.tw.to(
+          g.position,
+          { x: cell.x, y: l.lineup.y + (kind === 'sheep' ? 0 : 50) },
+          { duration: 0.5, delay: shown * 0.1, ease: ease.outQuad },
+        );
         shown++;
       }
     }
     await this.ctx.tw.wait(0.6 + shown * 0.1);
     if (!this.live(epoch)) return;
-    await this.ctx.say('rt.read-back', { sheep: word(counts.sheep), sheepLower: word(counts.sheep).toLowerCase(), jars: word(counts.jar), jarsLower: word(counts.jar).toLowerCase() });
+    await this.ctx.say('rt.read-back', {
+      sheep: word(counts.sheep),
+      sheepLower: word(counts.sheep).toLowerCase(),
+      jars: word(counts.jar),
+      jarsLower: word(counts.jar).toLowerCase(),
+    });
     if (!this.live(epoch)) return;
-    if (this.tabletIndex + 1 >= this.tablets.length) { this.celebrate(); return; }
+    if (this.tabletIndex + 1 >= this.tablets.length) {
+      this.celebrate();
+      return;
+    }
     this.tabletIndex++;
     this.clearLineup();
     this.build();
@@ -835,7 +1051,14 @@ class RiverTablets implements Game {
       node.position.set(r.x + r.w / 2 - l.lane.x, r.y + r.h - l.lane.y);
       node.addChild(crateArt(r.w - 10, r.h - 40, this.openCrate === i));
       node.hitArea = new Rectangle(-r.w / 2, -r.h, r.w, r.h);
-      onTap(node, (e) => { e.stopPropagation(); void this.openCrateAt(i); }, { cooldown: 300 });
+      onTap(
+        node,
+        (e) => {
+          e.stopPropagation();
+          void this.openCrateAt(i);
+        },
+        { cooldown: 300 },
+      );
       yard.addChild(node);
       return node;
     });
@@ -845,7 +1068,10 @@ class RiverTablets implements Game {
       const row = Math.floor(slot / SCATTER_COLS);
       const jitter = ((slot * 37) % 9) - 4;
       const g = basketArt(Math.min(40, b.w / SCATTER_COLS - 4));
-      g.position.set(b.x - l.lane.x + (col + 0.5) * (b.w / SCATTER_COLS) + jitter, b.y - l.lane.y + (row + 1) * (b.h / SCATTER_ROWS) - 6 + jitter / 2);
+      g.position.set(
+        b.x - l.lane.x + (col + 0.5) * (b.w / SCATTER_COLS) + jitter,
+        b.y - l.lane.y + (row + 1) * (b.h / SCATTER_ROWS) - 6 + jitter / 2,
+      );
       yard.addChild(g);
       return g;
     });
@@ -897,7 +1123,16 @@ class RiverTablets implements Game {
       if (!node) return;
       for (const ch of node.removeChildren()) ch.destroy({ children: true });
       const r = shortest(n);
-      node.addChild(pairTabletArt(l.pair![i].w, l.pair![i].h, i === 0 ? 'farm' : 'store', r.tens, r.ones, this.linedAgainst === i));
+      node.addChild(
+        pairTabletArt(
+          l.pair![i].w,
+          l.pair![i].h,
+          i === 0 ? 'farm' : 'store',
+          r.tens,
+          r.ones,
+          this.linedAgainst === i,
+        ),
+      );
     });
   }
 
@@ -950,7 +1185,8 @@ class RiverTablets implements Game {
     sfx.boing();
     const says = a === 'farm' ? c.farm : c.store;
     if (r.reason === 'wrong-tablet') await this.ctx.say('rt.disagree.wrong-tablet', { says, c: c.cart ?? 0 });
-    else if (r.reason === 'wrong-neither') await this.ctx.say('rt.disagree.wrong-neither', { c: c.cart ?? 0 });
+    else if (r.reason === 'wrong-neither')
+      await this.ctx.say('rt.disagree.wrong-neither', { c: c.cart ?? 0 });
     else if (r.reason === 'wrong-cant') await this.ctx.say('rt.disagree.wrong-cant');
     else await this.ctx.say('rt.disagree.wrong-gone');
     if (!this.live(epoch)) return;
@@ -1018,7 +1254,14 @@ class RiverTablets implements Game {
       node.position.set(r.x - t.x, r.y - t.y);
       if (tens) {
         node.hitArea = new Rectangle(0, 0, r.w, r.h);
-        onTap(node, (e) => { e.stopPropagation(); this.liftMark(mark); }, { cooldown: 150 });
+        onTap(
+          node,
+          (e) => {
+            e.stopPropagation();
+            this.liftMark(mark);
+          },
+          { cooldown: 150 },
+        );
       } else node.eventMode = 'none';
       tablet.addChild(node);
       return node;
@@ -1115,7 +1358,8 @@ class RiverTablets implements Game {
   /** The ghost finger's spot for a step: strips are drawn from their top-left, so it aims at their middle. */
   private tensSpot(h: ReturnType<typeof tensHint>) {
     const on = this.tensTarget(h);
-    const strip = h === 'liftTen' ? this.layoutNow!.strips![0] : h === 'liftOne' ? this.layoutNow!.strips![1] : null;
+    const strip =
+      h === 'liftTen' ? this.layoutNow!.strips![0] : h === 'liftOne' ? this.layoutNow!.strips![1] : null;
     return strip ? { on, x: strip.w / 2, y: strip.h / 2 } : { on };
   }
 
@@ -1160,7 +1404,9 @@ class RiverTablets implements Game {
     let n = 0;
     const bounce = (node: Container) => {
       const y = node.y;
-      void this.ctx.tw.to(node.position, { y: y - 16 }, { duration: 0.12 }).then(() => this.ctx.tw.to(node.position, { y }, { duration: 0.18, ease: ease.inQuad }));
+      void this.ctx.tw
+        .to(node.position, { y: y - 16 }, { duration: 0.12 })
+        .then(() => this.ctx.tw.to(node.position, { y }, { duration: 0.18, ease: ease.inQuad }));
     };
     for (const crate of this.crateNodes) {
       n += 10;
@@ -1190,7 +1436,9 @@ class RiverTablets implements Game {
     const { state, capped } = stamp(this.tensNow, mark);
     if (capped) {
       sfx.pop(3);
-      void this.ctx.tw.to(node, { rotation: 0.12 }, { duration: 0.08 }).then(() => this.ctx.tw.to(node, { rotation: 0 }, { duration: 0.25, ease: ease.outElastic }));
+      void this.ctx.tw
+        .to(node, { rotation: 0.12 }, { duration: 0.08 })
+        .then(() => this.ctx.tw.to(node, { rotation: 0 }, { duration: 0.25, ease: ease.outElastic }));
       return;
     }
     this.tens[this.cartIndex] = state;
@@ -1242,7 +1490,10 @@ class RiverTablets implements Game {
     }
     sfx.boing();
     for (const t of mismatched) {
-      void this.ctx.tw.to(t, { rotation: 0.3 }, { duration: 0.15 }).then(() => this.ctx.tw.to(t, { rotation: -0.3 }, { duration: 0.3 })).then(() => this.ctx.tw.to(t, { rotation: 0 }, { duration: 0.15 }));
+      void this.ctx.tw
+        .to(t, { rotation: 0.3 }, { duration: 0.15 })
+        .then(() => this.ctx.tw.to(t, { rotation: -0.3 }, { duration: 0.3 }))
+        .then(() => this.ctx.tw.to(t, { rotation: 0 }, { duration: 0.15 }));
     }
     await this.ctx.say('rt.tens.wrong', { says: value(hers), n });
     if (!this.live(epoch)) return;
@@ -1262,7 +1513,11 @@ class RiverTablets implements Game {
     void this.ctx.say(`rt.verdict.${v}` as LineId);
     const r = chooseVerdict(this.check, v);
     this.checks[this.cartIndex] = r.state;
-    if (r.result === 'none') { sfx.pop(7); this.redrawTablet(); return; }
+    if (r.result === 'none') {
+      sfx.pop(7);
+      this.redrawTablet();
+      return;
+    }
     await this.settleCheck(r.result === 'right');
   }
 
@@ -1287,7 +1542,10 @@ class RiverTablets implements Game {
       if (!this.live(epoch)) return;
       sfx.sparkle();
       const want = verdictFor(c.t, c.c);
-      await this.ctx.say(want.verdict === 'right' ? 'rt.check.right.same' : `rt.check.right.${want.verdict}` as LineId, { t: c.t, c: c.c, by: want.by });
+      await this.ctx.say(
+        want.verdict === 'right' ? 'rt.check.right.same' : (`rt.check.right.${want.verdict}` as LineId),
+        { t: c.t, c: c.c, by: want.by },
+      );
       if (!this.live(epoch)) return;
       void this.nextCart(this.checks.length);
       return;
@@ -1307,7 +1565,10 @@ class RiverTablets implements Game {
 
   /** The next cart rolls into the yard, or the round is done. */
   private async nextCart(count: number) {
-    if (this.cartIndex + 1 >= count) { this.celebrate(); return; }
+    if (this.cartIndex + 1 >= count) {
+      this.celebrate();
+      return;
+    }
     this.cartIndex++;
     this.yardCounted = false;
     this.openCrate = -1;
@@ -1318,7 +1579,9 @@ class RiverTablets implements Game {
     sfx.ratchet(3);
     if (this.brief.id === 'disagree' && this.pairCase.cart === null) {
       const alive = () => this.alive && !this.finished;
-      void this.ctx.say('rt.next-cart').then(() => { if (alive()) void this.ctx.say('rt.disagree.gone'); });
+      void this.ctx.say('rt.next-cart').then(() => {
+        if (alive()) void this.ctx.say('rt.disagree.gone');
+      });
       return;
     }
     void this.ctx.say('rt.next-cart');
@@ -1341,7 +1604,9 @@ class RiverTablets implements Game {
     const odd: Container[] = [];
     const lit = (c: Container) => {
       if (glow) {
-        const g = new Graphics().circle(0, -step * 0.35, step * 0.55).fill({ color: swatch.yellow.fill, alpha: 0.6 });
+        const g = new Graphics()
+          .circle(0, -step * 0.35, step * 0.55)
+          .fill({ color: swatch.yellow.fill, alpha: 0.6 });
         c.addChildAt(g, 0);
       }
       odd.push(c);
@@ -1361,12 +1626,15 @@ class RiverTablets implements Game {
       } else {
         // Ten places in a 5 × 2 block, filled with what loose baskets there are.
         for (let i = 0; i < 10; i++) {
-          const px = x + (i % 5 + 0.5) * (w / 5);
+          const px = x + ((i % 5) + 0.5) * (w / 5);
           const py = goodsY - (i < 5 ? 0 : step * 0.5);
           const c = new Container();
           c.position.set(px, py);
           if (i < t.filled) c.addChild(basketArt(w / 5 - 2));
-          else { c.addChild(new Graphics().circle(0, -w / 14, w / 14).stroke({ width: 3, color: ink })); lit(c); }
+          else {
+            c.addChild(new Graphics().circle(0, -w / 14, w / 14).stroke({ width: 3, color: ink }));
+            lit(c);
+          }
           this.lineupLayer.addChild(c);
         }
       }
@@ -1379,7 +1647,10 @@ class RiverTablets implements Game {
       const c = new Container();
       c.position.set(x + step / 2, goodsY);
       if (filled) c.addChild(basketArt(step * 0.85));
-      else { c.addChild(new Graphics().circle(0, -step * 0.3, step * 0.3).stroke({ width: 3, color: ink })); lit(c); }
+      else {
+        c.addChild(new Graphics().circle(0, -step * 0.3, step * 0.3).stroke({ width: 3, color: ink }));
+        lit(c);
+      }
       this.lineupLayer.addChild(c);
       x += step;
     }
@@ -1407,7 +1678,11 @@ class RiverTablets implements Game {
     sfx.tada();
     this.ctx.pet.cheer();
     const l = this.layoutNow;
-    if (l) this.ctx.particles.burst(l.lineup.x + l.lineup.w / 2, l.lineup.y + 40, { colors: [swatch.yellow.fill, swatch.orange.fill, 0xffffff], count: 14 });
+    if (l)
+      this.ctx.particles.burst(l.lineup.x + l.lineup.w / 2, l.lineup.y + 40, {
+        colors: [swatch.yellow.fill, swatch.orange.fill, 0xffffff],
+        count: 14,
+      });
     const result = this.tally;
     void this.ctx.say('rt.done').then(() => {
       if (!this.alive || this.finished) return;
@@ -1421,7 +1696,10 @@ class RiverTablets implements Game {
   /** The pet's Help: at level 1 the ask again (free); at levels 2–6 the help, the part's one hint if not yet spent. */
   askForHint() {
     if (this.finished) return;
-    if (this.brief.id === 'tokens') { void this.ctx.instruct('rt.instruct.1'); return; }
+    if (this.brief.id === 'tokens') {
+      void this.ctx.instruct('rt.instruct.1');
+      return;
+    }
     if (this.busy) return;
     if (this.brief.id === 'envelope') {
       this.envelopes[this.envelopeIndex] = askEnvelope(this.envelope);
@@ -1473,7 +1751,10 @@ class RiverTablets implements Game {
     }
     if (this.peekLeft > 0) {
       this.peekLeft -= dt;
-      if (this.peekLeft <= 0) { this.peekLeft = 0; this.redrawBall(); }
+      if (this.peekLeft <= 0) {
+        this.peekLeft = 0;
+        this.redrawBall();
+      }
     }
     this.glow.clear();
     if (this.finished || !this.layoutNow) return;
@@ -1482,28 +1763,45 @@ class RiverTablets implements Game {
       const h = hintFor(this.envelope);
       if (h) {
         const c = this.layoutNow.cells![h.cell];
-        this.glow.roundRect(c.x - 8 * r, c.y - 8 * r, c.w + 16 * r, c.h + 16 * r, 24).stroke({ width: 8, color: swatch.yellow.fill });
+        this.glow
+          .roundRect(c.x - 8 * r, c.y - 8 * r, c.w + 16 * r, c.h + 16 * r, 24)
+          .stroke({ width: 8, color: swatch.yellow.fill });
       } else if (this.crackNode) {
         const c = this.layoutNow.crack!;
-        this.glow.roundRect(c.x - 10 * r, c.y - 10 * r, c.w + 20 * r, c.h + 20 * r, 30).stroke({ width: 8, color: swatch.yellow.fill });
+        this.glow
+          .roundRect(c.x - 10 * r, c.y - 10 * r, c.w + 20 * r, c.h + 20 * r, 30)
+          .stroke({ width: 8, color: swatch.yellow.fill });
       }
     }
-    if (this.brief.id === 'disagree' && this.pairCase.lined && this.pairCase.cart === null && !this.pairCase.done && this.layoutNow.lane) {
+    if (
+      this.brief.id === 'disagree' &&
+      this.pairCase.lined &&
+      this.pairCase.cart === null &&
+      !this.pairCase.done &&
+      this.layoutNow.lane
+    ) {
       // Gone: the empty cart glows while the help holds.
       const y = this.layoutNow.lane;
       const b = this.layoutNow.baskets!;
       const w = Math.min(220, b.w * 0.6) + 40;
-      this.glow.roundRect(b.x + b.w / 2 - w / 2 - 6 * r, y.y + y.h - 110 - 6 * r, w + 12 * r, 100 + 12 * r, 28).stroke({ width: 8, color: swatch.yellow.fill });
+      this.glow
+        .roundRect(b.x + b.w / 2 - w / 2 - 6 * r, y.y + y.h - 110 - 6 * r, w + 12 * r, 100 + 12 * r, 28)
+        .stroke({ width: 8, color: swatch.yellow.fill });
     }
     if (this.brief.id === 'tens' && this.tensNow.glowing && !this.busy) {
       const c = this.tensGlowRect();
-      if (c) this.glow.roundRect(c.x - 10 * r, c.y - 10 * r, c.w + 20 * r, c.h + 20 * r, 28).stroke({ width: 8, color: swatch.yellow.fill });
+      if (c)
+        this.glow
+          .roundRect(c.x - 10 * r, c.y - 10 * r, c.w + 20 * r, c.h + 20 * r, 28)
+          .stroke({ width: 8, color: swatch.yellow.fill });
     }
     const glowRow = this.brief.id === 'rows' ? this.glowRow() : null;
     if (glowRow && !this.busy) {
       const i = KINDS.indexOf(glowRow);
       const row = this.layoutNow.rows![i];
-      this.glow.roundRect(row.x - 8 * r, row.y - 8 * r, SIGN + 16 * r, row.h + 16 * r, 24).stroke({ width: 8, color: swatch.yellow.fill });
+      this.glow
+        .roundRect(row.x - 8 * r, row.y - 8 * r, SIGN + 16 * r, row.h + 16 * r, 24)
+        .stroke({ width: 8, color: swatch.yellow.fill });
     }
   }
 
@@ -1520,7 +1818,8 @@ class RiverTablets implements Game {
     }
     if (this.brief.id === 'envelope') {
       const e = this.envelope;
-      if (!this.peeked && this.ballNode) return { tap: { on: this.ballNode, y: -this.layoutNow.ball!.h / 2 + 36 }, pause: 1.1 };
+      if (!this.peeked && this.ballNode)
+        return { tap: { on: this.ballNode, y: -this.layoutNow.ball!.h / 2 + 36 }, pause: 1.1 };
       const h = hintFor(e);
       if (h) return { tap: { on: this.cellNodes[h.cell] }, pause: 0.4 };
       return this.crackNode ? { tap: { on: this.crackNode }, pause: 0.5 } : null;
@@ -1528,21 +1827,37 @@ class RiverTablets implements Game {
     if (this.brief.id === 'tens') {
       const s = this.tensNow;
       if (s.done) return null;
-      if (!this.yardCounted && this.yardNode) return { tap: { on: this.yardNode, x: this.layoutNow.baskets!.x + this.layoutNow.baskets!.w / 2 - this.yardNode.x, y: this.layoutNow.lane.h / 2 }, pause: 0.6 };
+      if (!this.yardCounted && this.yardNode)
+        return {
+          tap: {
+            on: this.yardNode,
+            x: this.layoutNow.baskets!.x + this.layoutNow.baskets!.w / 2 - this.yardNode.x,
+            y: this.layoutNow.lane.h / 2,
+          },
+          pause: 0.6,
+        };
       return { tap: this.tensSpot(tensHint(s)), pause: 0.4 };
     }
     if (this.brief.id === 'check') {
       const c = this.check;
       if (c.done) return null;
       const want = verdictFor(c.t, c.c);
-      if (want.verdict !== 'right' && c.open === want.verdict) return { tap: { on: this.numberNodes[want.by - 1] }, pause: 0.6 };
+      if (want.verdict !== 'right' && c.open === want.verdict)
+        return { tap: { on: this.numberNodes[want.by - 1] }, pause: 0.6 };
       return { tap: { on: this.verdictNodes[CART_VERDICTS.indexOf(want.verdict)] }, pause: 0.9 };
     }
     if (this.brief.id === 'disagree') {
       const c = this.pairCase;
       if (c.done) return null;
       const a = answerFor(c);
-      const node = a === 'farm' ? this.pickNodes[0] : a === 'storehouse' ? this.pickNodes[1] : a === 'neither' ? this.neitherNode : this.cantTellNode;
+      const node =
+        a === 'farm'
+          ? this.pickNodes[0]
+          : a === 'storehouse'
+            ? this.pickNodes[1]
+            : a === 'neither'
+              ? this.neitherNode
+              : this.cantTellNode;
       return node ? { tap: { on: node }, pause: 1.2 } : null;
     }
     const good = waiting(this.tablet);
@@ -1574,7 +1889,8 @@ export const riverTablets: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
-  coplayHint: 'Counter and scribe: one of you counts the goods aloud as they pass, the other presses the marks; swap after each tablet.',
+  coplayHint:
+    'Counter and scribe: one of you counts the goods aloud as they pass, the other presses the marks; swap after each tablet.',
   hubIcon: () => new TabletIcon(),
   touchDemo: true,
   sticker,

@@ -16,7 +16,9 @@ const REED = 0x6fae5a;
 export function tokenArt(r = 26): Graphics {
   const g = new Graphics();
   g.ellipse(0, r * 0.15, r, r * 0.8).fill(CLAY.dark);
-  g.ellipse(0, 0, r, r * 0.8).fill(CLAY.fill).stroke(line(CLAY.line, Math.max(3, r * 0.14)));
+  g.ellipse(0, 0, r, r * 0.8)
+    .fill(CLAY.fill)
+    .stroke(line(CLAY.line, Math.max(3, r * 0.14)));
   g.ellipse(-r * 0.2, -r * 0.2, r * 0.3, r * 0.2).fill({ color: CLAY.light, alpha: 0.8 });
   g.eventMode = 'none';
   return g;
@@ -26,8 +28,14 @@ export function tokenArt(r = 26): Graphics {
 export function wedgeArt(size = 54, color = CLAY.line): Graphics {
   const g = new Graphics();
   const h = size / 2;
-  g.moveTo(-h * 0.55, -h).lineTo(h * 0.55, -h).lineTo(0, h).closePath().fill(color);
-  g.moveTo(-h * 0.55, -h).lineTo(0, h).stroke(line(CLAY.dark, Math.max(2, size * 0.06)));
+  g.moveTo(-h * 0.55, -h)
+    .lineTo(h * 0.55, -h)
+    .lineTo(0, h)
+    .closePath()
+    .fill(color);
+  g.moveTo(-h * 0.55, -h)
+    .lineTo(0, h)
+    .stroke(line(CLAY.dark, Math.max(2, size * 0.06)));
   g.eventMode = 'none';
   return g;
 }
@@ -36,9 +44,21 @@ export function wedgeArt(size = 54, color = CLAY.line): Graphics {
 export function jarArt(w: number, h: number, glow = false): Graphics {
   const g = new Graphics();
   if (glow) g.ellipse(0, -h / 2, w * 0.62, h * 0.6).fill({ color: swatch.yellow.fill, alpha: 0.35 });
-  g.moveTo(-w * 0.32, -h * 0.92).lineTo(w * 0.32, -h * 0.92).lineTo(w * 0.42, -h * 0.75).quadraticCurveTo(w * 0.55, -h * 0.4, w * 0.4, 0).lineTo(-w * 0.4, 0).quadraticCurveTo(-w * 0.55, -h * 0.4, -w * 0.42, -h * 0.75).closePath().fill(CLAY.fill).stroke(line(CLAY.line, 6));
-  g.ellipse(0, -h * 0.92, w * 0.32, h * 0.07).fill(CLAY.dark).stroke(line(CLAY.line, 5));
-  g.moveTo(-w * 0.3, -h * 0.55).quadraticCurveTo(0, -h * 0.47, w * 0.3, -h * 0.55).stroke(line(CLAY.dark, 4));
+  g.moveTo(-w * 0.32, -h * 0.92)
+    .lineTo(w * 0.32, -h * 0.92)
+    .lineTo(w * 0.42, -h * 0.75)
+    .quadraticCurveTo(w * 0.55, -h * 0.4, w * 0.4, 0)
+    .lineTo(-w * 0.4, 0)
+    .quadraticCurveTo(-w * 0.55, -h * 0.4, -w * 0.42, -h * 0.75)
+    .closePath()
+    .fill(CLAY.fill)
+    .stroke(line(CLAY.line, 6));
+  g.ellipse(0, -h * 0.92, w * 0.32, h * 0.07)
+    .fill(CLAY.dark)
+    .stroke(line(CLAY.line, 5));
+  g.moveTo(-w * 0.3, -h * 0.55)
+    .quadraticCurveTo(0, -h * 0.47, w * 0.3, -h * 0.55)
+    .stroke(line(CLAY.dark, 4));
   g.ellipse(-w * 0.22, -h * 0.3, w * 0.08, h * 0.16).fill({ color: CLAY.light, alpha: 0.6 });
   return g;
 }
@@ -48,7 +68,9 @@ export function ballArt(w: number, h: number, open = false, glow = false): Graph
   const g = new Graphics();
   if (glow) g.ellipse(0, 0, w / 2 + 14, h / 2 + 14).fill({ color: swatch.yellow.fill, alpha: 0.35 });
   g.ellipse(0, 6, w / 2, h / 2).fill(CLAY.dark);
-  g.ellipse(0, 0, w / 2, h / 2).fill(open ? CLAY.light : CLAY.fill).stroke(line(CLAY.line, 6));
+  g.ellipse(0, 0, w / 2, h / 2)
+    .fill(open ? CLAY.light : CLAY.fill)
+    .stroke(line(CLAY.line, 6));
   g.ellipse(-w * 0.3, -h * 0.3, w * 0.1, h * 0.08).fill({ color: CLAY.light, alpha: 0.7 });
   return g;
 }
@@ -57,8 +79,14 @@ export function ballArt(w: number, h: number, open = false, glow = false): Graph
 export function cellArt(size: number, marked: boolean, glow = false): Container {
   const c = new Container();
   const g = new Graphics();
-  if (glow) g.roundRect(-size / 2 - 8, -size / 2 - 8, size + 16, size + 16, 22).fill({ color: swatch.yellow.fill, alpha: 0.55 });
-  g.roundRect(-size / 2, -size / 2, size, size, 18).fill(CLAY.dark).stroke(line(CLAY.line, 4));
+  if (glow)
+    g.roundRect(-size / 2 - 8, -size / 2 - 8, size + 16, size + 16, 22).fill({
+      color: swatch.yellow.fill,
+      alpha: 0.55,
+    });
+  g.roundRect(-size / 2, -size / 2, size, size, 18)
+    .fill(CLAY.dark)
+    .stroke(line(CLAY.line, 4));
   g.roundRect(-size / 2 + 6, -size / 2 + 6, size - 12, size - 12, 14).fill(marked ? CLAY.fill : CLAY.light);
   c.addChild(g);
   if (marked) c.addChild(wedgeArt(size * 0.5));
@@ -73,9 +101,15 @@ export function crackArt(w: number, h: number): Container {
   g.ellipse(0, 0, 24, 20).fill(CLAY.fill).stroke(line(CLAY.line, 4));
   g.moveTo(-6, -16).lineTo(2, 0).lineTo(-6, 16).stroke(line(CLAY.line, 3));
   for (const s of [-1, 1]) {
-    g.roundRect(s * 30 - 14, -20, 28, 40, 12).fill(swatch.yellow.light).stroke(line(ink, 4));
-    g.moveTo(s * 30 - 6, -20).lineTo(s * 30 - 6, 2).stroke(line(ink, 3));
-    g.moveTo(s * 30 + 6, -20).lineTo(s * 30 + 6, 2).stroke(line(ink, 3));
+    g.roundRect(s * 30 - 14, -20, 28, 40, 12)
+      .fill(swatch.yellow.light)
+      .stroke(line(ink, 4));
+    g.moveTo(s * 30 - 6, -20)
+      .lineTo(s * 30 - 6, 2)
+      .stroke(line(ink, 3));
+    g.moveTo(s * 30 + 6, -20)
+      .lineTo(s * 30 + 6, 2)
+      .stroke(line(ink, 3));
   }
   c.addChild(g);
   g.eventMode = 'none';
@@ -103,19 +137,34 @@ export function goodArt(kind: Kind, size = 90): Container {
 export function signArt(kind: Kind, size: number, glow = false): Container {
   const c = new Container();
   const g = new Graphics();
-  if (glow) g.roundRect(-size / 2 - 8, -size / 2 - 8, size + 16, size + 16, 22).fill({ color: swatch.yellow.fill, alpha: 0.6 });
-  g.roundRect(-size / 2, -size / 2, size, size, 18).fill(CLAY.light).stroke(line(CLAY.line, 4));
+  if (glow)
+    g.roundRect(-size / 2 - 8, -size / 2 - 8, size + 16, size + 16, 22).fill({
+      color: swatch.yellow.fill,
+      alpha: 0.6,
+    });
+  g.roundRect(-size / 2, -size / 2, size, size, 18)
+    .fill(CLAY.light)
+    .stroke(line(CLAY.line, 4));
   c.addChild(g, goodArt(kind, size * 0.62));
   c.eventMode = 'none';
   return c;
 }
 
 /** A row of the tablet: a clay strip `w` × `h` with four cells to the right of the sign, each holding a mark or empty; `lift` raises it on touch-down. */
-export function rowArt(w: number, h: number, sign: number, marks: number, cells: number, cellSize: number): Container {
+export function rowArt(
+  w: number,
+  h: number,
+  sign: number,
+  marks: number,
+  cells: number,
+  cellSize: number,
+): Container {
   const c = new Container();
   const g = new Graphics();
   g.roundRect(-w / 2, -h / 2 + 5, w, h, 20).fill(CLAY.dark);
-  g.roundRect(-w / 2, -h / 2, w, h, 20).fill(CLAY.fill).stroke(line(CLAY.line, 5));
+  g.roundRect(-w / 2, -h / 2, w, h, 20)
+    .fill(CLAY.fill)
+    .stroke(line(CLAY.line, 5));
   c.addChild(g);
   const x0 = -w / 2 + sign + 6;
   const step = (w - sign - 12) / cells;
@@ -133,8 +182,12 @@ export function rowArt(w: number, h: number, sign: number, marks: number, cells:
 export function cartArt(w = 150): Graphics {
   const g = new Graphics();
   const h = w * 0.3;
-  g.roundRect(-w / 2, -h, w, h * 0.8, 10).fill(wood.fill).stroke(line(wood.line, 5));
-  g.moveTo(w / 2, -h * 0.6).lineTo(w * 0.7, -h * 0.9).stroke(line(wood.line, 7));
+  g.roundRect(-w / 2, -h, w, h * 0.8, 10)
+    .fill(wood.fill)
+    .stroke(line(wood.line, 5));
+  g.moveTo(w / 2, -h * 0.6)
+    .lineTo(w * 0.7, -h * 0.9)
+    .stroke(line(wood.line, 7));
   for (const x of [-w * 0.3, w * 0.3]) {
     g.circle(x, 0, h * 0.42).fill(wood.line);
     g.circle(x, 0, h * 0.22).fill(wood.light);
@@ -146,13 +199,28 @@ export function cartArt(w = 150): Graphics {
 /** The storehouse: a mud-brick house `w` × `h` at (0, 0) top-left, its door open or shut. */
 export function storeArt(w: number, h: number, open = false): Graphics {
   const g = new Graphics();
-  g.rect(0, h * 0.2, w, h * 0.8).fill(CLAY.fill).stroke(line(CLAY.line, 5));
-  g.moveTo(-6, h * 0.22).lineTo(w / 2, 0).lineTo(w + 6, h * 0.22).closePath().fill(CLAY.dark).stroke(line(CLAY.line, 5));
-  for (let i = 0; i < 3; i++) g.moveTo(10, h * (0.4 + i * 0.18)).lineTo(w - 10, h * (0.4 + i * 0.18)).stroke(line(CLAY.dark, 3));
+  g.rect(0, h * 0.2, w, h * 0.8)
+    .fill(CLAY.fill)
+    .stroke(line(CLAY.line, 5));
+  g.moveTo(-6, h * 0.22)
+    .lineTo(w / 2, 0)
+    .lineTo(w + 6, h * 0.22)
+    .closePath()
+    .fill(CLAY.dark)
+    .stroke(line(CLAY.line, 5));
+  for (let i = 0; i < 3; i++)
+    g.moveTo(10, h * (0.4 + i * 0.18))
+      .lineTo(w - 10, h * (0.4 + i * 0.18))
+      .stroke(line(CLAY.dark, 3));
   const dw = Math.min(w * 0.4, 110);
   const dh = h * 0.5;
-  g.roundRect(w / 2 - dw / 2, h - dh, dw, dh, 12).fill(open ? 0x4a3a2c : wood.fill).stroke(line(wood.line, 5));
-  if (!open) g.moveTo(w / 2, h - dh + 10).lineTo(w / 2, h - 10).stroke(line(wood.line, 4));
+  g.roundRect(w / 2 - dw / 2, h - dh, dw, dh, 12)
+    .fill(open ? 0x4a3a2c : wood.fill)
+    .stroke(line(wood.line, 5));
+  if (!open)
+    g.moveTo(w / 2, h - dh + 10)
+      .lineTo(w / 2, h - 10)
+      .stroke(line(wood.line, 4));
   g.eventMode = 'none';
   return g;
 }
@@ -165,7 +233,9 @@ export function penArt(w: number, h: number, gate: 'left' | 'right'): Graphics {
   for (let i = 0; i <= posts; i++) {
     const x = (w * i) / posts;
     const gateSide = gate === 'left' ? i <= 1 : i >= posts - 1;
-    g.roundRect(x - 7, h * 0.3, 14, h * 0.5, 6).fill(gateSide ? wood.light : wood.fill).stroke(line(wood.line, 4));
+    g.roundRect(x - 7, h * 0.3, 14, h * 0.5, 6)
+      .fill(gateSide ? wood.light : wood.fill)
+      .stroke(line(wood.line, 4));
   }
   for (const y of [h * 0.42, h * 0.62]) g.moveTo(0, y).lineTo(w, y).stroke(line(wood.line, 6));
   g.eventMode = 'none';
@@ -178,11 +248,15 @@ export function riverArt(w: number, h: number): Graphics {
   g.roundRect(0, 0, w, h, 30).fill(RIVER.fill).stroke(line(RIVER.line, 4));
   for (let i = 0; i < 4; i++) {
     const y = h * (0.25 + i * 0.18);
-    g.moveTo(w * 0.1 + i * 40, y).quadraticCurveTo(w * 0.3 + i * 40, y - 8, w * 0.5 + i * 40, y).stroke(line(0xffffff, 3));
+    g.moveTo(w * 0.1 + i * 40, y)
+      .quadraticCurveTo(w * 0.3 + i * 40, y - 8, w * 0.5 + i * 40, y)
+      .stroke(line(0xffffff, 3));
   }
   for (let i = 0; i < 6; i++) {
     const x = w * (0.08 + i * 0.17);
-    g.moveTo(x, h).quadraticCurveTo(x + 6, h * 0.5, x - 4, h * 0.15).stroke(line(REED, 5));
+    g.moveTo(x, h)
+      .quadraticCurveTo(x + 6, h * 0.5, x - 4, h * 0.15)
+      .stroke(line(REED, 5));
     g.ellipse(x - 5, h * 0.18, 6, 16).fill(CLAY.line);
   }
   g.eventMode = 'none';
@@ -240,9 +314,18 @@ export { CELL };
 export function tenWedgeArt(size = 54, color = CLAY.line): Graphics {
   const g = new Graphics();
   const h = size / 2;
-  g.moveTo(h, -h * 0.75).lineTo(h, h * 0.75).lineTo(-h, 0).closePath().fill(color);
-  g.moveTo(h, -h * 0.75).lineTo(-h, 0).lineTo(h, h * 0.75).stroke(line(CLAY.dark, Math.max(2, size * 0.05)));
-  g.moveTo(h * 0.2, -h * 0.35).lineTo(-h * 0.6, 0).stroke(line(CLAY.dark, Math.max(2, size * 0.04)));
+  g.moveTo(h, -h * 0.75)
+    .lineTo(h, h * 0.75)
+    .lineTo(-h, 0)
+    .closePath()
+    .fill(color);
+  g.moveTo(h, -h * 0.75)
+    .lineTo(-h, 0)
+    .lineTo(h, h * 0.75)
+    .stroke(line(CLAY.dark, Math.max(2, size * 0.05)));
+  g.moveTo(h * 0.2, -h * 0.35)
+    .lineTo(-h * 0.6, 0)
+    .stroke(line(CLAY.dark, Math.max(2, size * 0.04)));
   g.eventMode = 'none';
   return g;
 }
@@ -252,9 +335,19 @@ export function basketArt(size = 40): Graphics {
   const g = new Graphics();
   const w = size;
   const h = size * 0.7;
-  g.ellipse(0, -h, w * 0.42, h * 0.22).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 3));
-  g.moveTo(-w / 2, -h).lineTo(w / 2, -h).lineTo(w * 0.36, 0).lineTo(-w * 0.36, 0).closePath().fill(wood.light).stroke(line(wood.line, 3));
-  g.moveTo(-w * 0.44, -h * 0.55).lineTo(w * 0.44, -h * 0.55).stroke(line(wood.line, 2));
+  g.ellipse(0, -h, w * 0.42, h * 0.22)
+    .fill(swatch.yellow.fill)
+    .stroke(line(swatch.yellow.line, 3));
+  g.moveTo(-w / 2, -h)
+    .lineTo(w / 2, -h)
+    .lineTo(w * 0.36, 0)
+    .lineTo(-w * 0.36, 0)
+    .closePath()
+    .fill(wood.light)
+    .stroke(line(wood.line, 3));
+  g.moveTo(-w * 0.44, -h * 0.55)
+    .lineTo(w * 0.44, -h * 0.55)
+    .stroke(line(wood.line, 2));
   g.eventMode = 'none';
   return g;
 }
@@ -263,14 +356,21 @@ export function basketArt(size = 40): Graphics {
 export function crateArt(w: number, h: number, open = false): Container {
   const c = new Container();
   const g = new Graphics();
-  g.roundRect(-w / 2, -h, w, h, 8).fill(wood.fill).stroke(line(wood.line, 5));
+  g.roundRect(-w / 2, -h, w, h, 8)
+    .fill(wood.fill)
+    .stroke(line(wood.line, 5));
   // Ten basket rims show through the slats.
   for (let i = 0; i < 10; i++) {
     const x = -w / 2 + w * (0.14 + (i % 5) * 0.18);
     const y = -h + h * (i < 5 ? 0.3 : 0.62);
-    g.ellipse(x, y, w * 0.07, h * 0.08).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 2));
+    g.ellipse(x, y, w * 0.07, h * 0.08)
+      .fill(swatch.yellow.fill)
+      .stroke(line(swatch.yellow.line, 2));
   }
-  for (const y of [0.15, 0.47, 0.8]) g.moveTo(-w / 2 + 4, -h + h * y).lineTo(w / 2 - 4, -h + h * y).stroke(line(wood.line, 3));
+  for (const y of [0.15, 0.47, 0.8])
+    g.moveTo(-w / 2 + 4, -h + h * y)
+      .lineTo(w / 2 - 4, -h + h * y)
+      .stroke(line(wood.line, 3));
   c.addChild(g);
   if (open) {
     for (let i = 0; i < 10; i++) {
@@ -300,8 +400,12 @@ export function tabletArt(w: number, h: number, readH: number): Graphics {
   g.roundRect(14, 12, w * 0.3, 16, 8).fill({ color: CLAY.light, alpha: 0.6 });
   const cx = w / 2;
   const cy = readH / 2 + 8;
-  g.circle(cx - 30, cy, 22).fill(CLAY.light).stroke(line(CLAY.line, 4));
-  g.moveTo(cx - 40, cy + 4).quadraticCurveTo(cx - 30, cy + 14, cx - 20, cy + 4).stroke(line(ink, 4));
+  g.circle(cx - 30, cy, 22)
+    .fill(CLAY.light)
+    .stroke(line(CLAY.line, 4));
+  g.moveTo(cx - 40, cy + 4)
+    .quadraticCurveTo(cx - 30, cy + 14, cx - 20, cy + 4)
+    .stroke(line(ink, 4));
   for (const r of [14, 28]) g.arc(cx + 2, cy, r, -0.7, 0.7).stroke(line(CLAY.line, 4));
   return g;
 }
@@ -318,7 +422,9 @@ export function stripArt(w: number, h: number, mark: 'ten' | 'one', count: numbe
   guide.alpha = 0.35;
   guide.position.set(36, h / 2);
   c.addChild(guide);
-  g.moveTo(70, 10).lineTo(70, h - 10).stroke(line(CLAY.dark, 3));
+  g.moveTo(70, 10)
+    .lineTo(70, h - 10)
+    .stroke(line(CLAY.dark, 3));
   for (let i = 0; i < count; i++) {
     const m = mark === 'ten' ? tenWedgeArt(80) : wedgeArt(36);
     if (mark === 'ten') m.position.set(130 + i * 110, h / 2);
@@ -332,10 +438,17 @@ export function stripArt(w: number, h: number, mark: 'ten' | 'one', count: numbe
 /** A stamp `w` × `h` centred on (0, 0): a wooden handle over the big or small mark it presses. */
 export function stampArt(w: number, h: number, mark: 'ten' | 'one', glow = false): Container {
   const c = new Container();
-  if (glow) c.addChild(new Graphics().roundRect(-w / 2 - 10, -h / 2 - 10, w + 20, h + 20, 30).fill({ color: swatch.yellow.fill, alpha: 0.55 }));
+  if (glow)
+    c.addChild(
+      new Graphics()
+        .roundRect(-w / 2 - 10, -h / 2 - 10, w + 20, h + 20, 30)
+        .fill({ color: swatch.yellow.fill, alpha: 0.55 }),
+    );
   c.addChild(finish({ w, h, corner: 28 }, mark === 'ten' ? swatch.orange : swatch.yellow));
   const g = new Graphics();
-  g.roundRect(-14, -h * 0.4, 28, h * 0.32, 10).fill(wood.fill).stroke(line(wood.line, 4));
+  g.roundRect(-14, -h * 0.4, 28, h * 0.32, 10)
+    .fill(wood.fill)
+    .stroke(line(wood.line, 4));
   c.addChild(g);
   const m = mark === 'ten' ? tenWedgeArt(62) : wedgeArt(36);
   m.position.set(0, h * 0.14);
@@ -347,21 +460,39 @@ export function stampArt(w: number, h: number, mark: 'ten' | 'one', glow = false
 /** Hand in: the pet's two hands holding a little tablet up. */
 export function handInArt(w: number, h: number, glow = false): Container {
   const c = new Container();
-  if (glow) c.addChild(new Graphics().roundRect(-w / 2 - 10, -h / 2 - 10, w + 20, h + 20, 34).fill({ color: swatch.yellow.fill, alpha: 0.55 }));
+  if (glow)
+    c.addChild(
+      new Graphics()
+        .roundRect(-w / 2 - 10, -h / 2 - 10, w + 20, h + 20, 34)
+        .fill({ color: swatch.yellow.fill, alpha: 0.55 }),
+    );
   c.addChild(finish({ w, h, corner: 28 }, swatch.green));
   const g = new Graphics();
   g.roundRect(-26, -30, 52, 40, 8).fill(CLAY.fill).stroke(line(CLAY.line, 4));
   g.moveTo(-10, -18).lineTo(10, -18).lineTo(0, -4).closePath().fill(CLAY.line);
-  for (const s of [-1, 1]) g.roundRect(s * 34 - 12, -4, 24, 34, 10).fill(swatch.yellow.light).stroke(line(ink, 4));
+  for (const s of [-1, 1])
+    g.roundRect(s * 34 - 12, -4, 24, 34, 10)
+      .fill(swatch.yellow.light)
+      .stroke(line(ink, 4));
   c.addChild(g);
   c.eventMode = 'none';
   return c;
 }
 
 /** A verdict button `size` square centred on (0, 0), pictured, never worded: short (a gap in the cart), right (tablet and cart joined), extra (a basket over the edge). */
-export function verdictArt(kind: 'short' | 'right' | 'extra', size: number, chosen = false, glow = false): Container {
+export function verdictArt(
+  kind: 'short' | 'right' | 'extra',
+  size: number,
+  chosen = false,
+  glow = false,
+): Container {
   const c = new Container();
-  if (glow) c.addChild(new Graphics().roundRect(-size / 2 - 10, -size / 2 - 10, size + 20, size + 20, 30).fill({ color: swatch.yellow.fill, alpha: 0.55 }));
+  if (glow)
+    c.addChild(
+      new Graphics()
+        .roundRect(-size / 2 - 10, -size / 2 - 10, size + 20, size + 20, 30)
+        .fill({ color: swatch.yellow.fill, alpha: 0.55 }),
+    );
   c.addChild(finish({ w: size, h: size, corner: 28 }, chosen ? swatch.blue : swatch.purple));
   const g = new Graphics();
   // A small tablet above a small cart bed.
@@ -374,7 +505,8 @@ export function verdictArt(kind: 'short' | 'right' | 'extra', size: number, chos
     if (i < slots) g.circle(x, 2, 7).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 2));
     else g.circle(x, 2, 7).stroke(line(ink, 2));
   }
-  if (kind === 'right') g.roundRect(-4, -12, 8, 14, 3).fill(swatch.green.fill).stroke(line(swatch.green.line, 2));
+  if (kind === 'right')
+    g.roundRect(-4, -12, 8, 14, 3).fill(swatch.green.fill).stroke(line(swatch.green.line, 2));
   if (kind === 'extra') g.circle(40, -4, 8).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 2));
   c.addChild(g);
   c.eventMode = 'none';
@@ -384,12 +516,26 @@ export function verdictArt(kind: 'short' | 'right' | 'extra', size: number, chos
 /** A number button `size` square centred on (0, 0): `n` dots over the numeral. */
 export function numberArt(n: number, size: number, glow = false): Container {
   const c = new Container();
-  if (glow) c.addChild(new Graphics().roundRect(-size / 2 - 10, -size / 2 - 10, size + 20, size + 20, 30).fill({ color: swatch.yellow.fill, alpha: 0.55 }));
+  if (glow)
+    c.addChild(
+      new Graphics()
+        .roundRect(-size / 2 - 10, -size / 2 - 10, size + 20, size + 20, 30)
+        .fill({ color: swatch.yellow.fill, alpha: 0.55 }),
+    );
   c.addChild(finish({ w: size, h: size, corner: 26 }, swatch.blue));
   const g = new Graphics();
   for (let i = 0; i < n; i++) g.circle((i - (n - 1) / 2) * 22, -26, 8).fill(cream);
   c.addChild(g);
-  const t = new Text({ text: String(n), style: { fontFamily: 'Nunito, sans-serif', fontSize: 44, fontWeight: '800', fill: cream, align: 'center' } });
+  const t = new Text({
+    text: String(n),
+    style: {
+      fontFamily: 'Nunito, sans-serif',
+      fontSize: 44,
+      fontWeight: '800',
+      fill: cream,
+      align: 'center',
+    },
+  });
   t.anchor.set(0.5);
   t.position.set(0, 14);
   c.addChild(t);
@@ -402,10 +548,14 @@ export function numberArt(n: number, size: number, glow = false): Container {
 /** A small field of sprouts, `w` wide, standing on (0, 0): the farm's sign. */
 function fieldSign(w: number): Graphics {
   const g = new Graphics();
-  g.roundRect(-w / 2, -w * 0.32, w, w * 0.32, 10).fill(0x9ccf6a).stroke(line(0x5f9a3a, 3));
+  g.roundRect(-w / 2, -w * 0.32, w, w * 0.32, 10)
+    .fill(0x9ccf6a)
+    .stroke(line(0x5f9a3a, 3));
   for (let i = 0; i < 4; i++) {
     const x = -w * 0.36 + i * w * 0.24;
-    g.moveTo(x, -w * 0.08).lineTo(x, -w * 0.3).stroke(line(REED, 3));
+    g.moveTo(x, -w * 0.08)
+      .lineTo(x, -w * 0.3)
+      .stroke(line(REED, 3));
     g.ellipse(x - 5, -w * 0.28, 6, 3).fill(REED);
     g.ellipse(x + 5, -w * 0.24, 6, 3).fill(REED);
   }
@@ -416,15 +566,27 @@ function fieldSign(w: number): Graphics {
  * Level 6: one of the two tablets, `w` × `h` at (0, 0) top-left, in shortest form: its place's picture (the farm's field or
  * the storehouse) and a speaker sign in the top band, then its big marks in a row and its small marks in rows of five.
  */
-export function pairTabletArt(w: number, h: number, side: 'farm' | 'store', tens: number, ones: number, glow = false): Container {
+export function pairTabletArt(
+  w: number,
+  h: number,
+  side: 'farm' | 'store',
+  tens: number,
+  ones: number,
+  glow = false,
+): Container {
   const c = new Container();
   const g = new Graphics();
   if (glow) g.roundRect(-12, -12, w + 24, h + 24, 38).fill({ color: swatch.yellow.fill, alpha: 0.55 });
   g.roundRect(0, 8, w, h, 30).fill(CLAY.dark);
   g.roundRect(0, 0, w, h, 30).fill(CLAY.fill).stroke(line(CLAY.line, 6));
-  g.moveTo(16, 70).lineTo(w - 16, 70).stroke(line(CLAY.dark, 3));
+  g.moveTo(16, 70)
+    .lineTo(w - 16, 70)
+    .stroke(line(CLAY.dark, 3));
   // The speaker sign: tap to hear it.
-  for (const r of [10, 20]) g.moveTo(w - 46 + r * Math.cos(-0.7), 36 + r * Math.sin(-0.7)).arc(w - 46, 36, r, -0.7, 0.7).stroke(line(CLAY.line, 4));
+  for (const r of [10, 20])
+    g.moveTo(w - 46 + r * Math.cos(-0.7), 36 + r * Math.sin(-0.7))
+      .arc(w - 46, 36, r, -0.7, 0.7)
+      .stroke(line(CLAY.line, 4));
   g.circle(w - 52, 36, 6).fill(CLAY.line);
   c.addChild(g);
   if (side === 'farm') {
@@ -455,7 +617,12 @@ export function pairTabletArt(w: number, h: number, side: 'farm' | 'store', tens
 /** "This one": a hand pointing up at the tablet above, `size` square centred on (0, 0). */
 export function pickArt(size: number, glow = false): Container {
   const c = new Container();
-  if (glow) c.addChild(new Graphics().roundRect(-size / 2 - 10, -size / 2 - 10, size + 20, size + 20, 30).fill({ color: swatch.yellow.fill, alpha: 0.55 }));
+  if (glow)
+    c.addChild(
+      new Graphics()
+        .roundRect(-size / 2 - 10, -size / 2 - 10, size + 20, size + 20, 30)
+        .fill({ color: swatch.yellow.fill, alpha: 0.55 }),
+    );
   c.addChild(finish({ w: size, h: size, corner: 28 }, swatch.green));
   const g = new Graphics();
   g.roundRect(-20, -4, 40, 36, 14).fill(swatch.yellow.light).stroke(line(ink, 4));
@@ -469,10 +636,18 @@ export function pickArt(size: number, glow = false): Container {
 /** Neither: both little tablets with a wedge cross over them, `size` square centred on (0, 0). */
 export function neitherArt(size: number, glow = false): Container {
   const c = new Container();
-  if (glow) c.addChild(new Graphics().roundRect(-size / 2 - 10, -size / 2 - 10, size + 20, size + 20, 30).fill({ color: swatch.yellow.fill, alpha: 0.55 }));
+  if (glow)
+    c.addChild(
+      new Graphics()
+        .roundRect(-size / 2 - 10, -size / 2 - 10, size + 20, size + 20, 30)
+        .fill({ color: swatch.yellow.fill, alpha: 0.55 }),
+    );
   c.addChild(finish({ w: size, h: size, corner: 28 }, swatch.purple));
   const g = new Graphics();
-  for (const x of [-22, 22]) g.roundRect(x - 18, -24, 36, 48, 6).fill(CLAY.fill).stroke(line(CLAY.line, 3));
+  for (const x of [-22, 22])
+    g.roundRect(x - 18, -24, 36, 48, 6)
+      .fill(CLAY.fill)
+      .stroke(line(CLAY.line, 3));
   g.moveTo(-34, -30).lineTo(34, 30).stroke(line(swatch.red.line, 9));
   g.moveTo(34, -30).lineTo(-34, 30).stroke(line(swatch.red.line, 9));
   c.addChild(g);
@@ -483,15 +658,24 @@ export function neitherArt(size: number, glow = false): Container {
 /** Can't tell: the pet's two hands up in a shrug over an empty cart, `size` square centred on (0, 0). */
 export function cantTellArt(size: number, glow = false): Container {
   const c = new Container();
-  if (glow) c.addChild(new Graphics().roundRect(-size / 2 - 10, -size / 2 - 10, size + 20, size + 20, 30).fill({ color: swatch.yellow.fill, alpha: 0.55 }));
+  if (glow)
+    c.addChild(
+      new Graphics()
+        .roundRect(-size / 2 - 10, -size / 2 - 10, size + 20, size + 20, 30)
+        .fill({ color: swatch.yellow.fill, alpha: 0.55 }),
+    );
   c.addChild(finish({ w: size, h: size, corner: 28 }, swatch.blue));
   const cart = cartArt(70);
   cart.position.set(0, 34);
   c.addChild(cart);
   const g = new Graphics();
   for (const s of [-1, 1]) {
-    g.moveTo(s * 14, -2).lineTo(s * 30, -22).stroke(line(ink, 4));
-    g.ellipse(s * 33, -28, 11, 8).fill(swatch.yellow.light).stroke(line(ink, 4));
+    g.moveTo(s * 14, -2)
+      .lineTo(s * 30, -22)
+      .stroke(line(ink, 4));
+    g.ellipse(s * 33, -28, 11, 8)
+      .fill(swatch.yellow.light)
+      .stroke(line(ink, 4));
   }
   g.circle(0, -18, 12).fill(swatch.yellow.light).stroke(line(ink, 4));
   g.moveTo(-5, -14).quadraticCurveTo(0, -18, 5, -14).stroke(line(ink, 3));

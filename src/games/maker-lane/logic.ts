@@ -12,10 +12,26 @@ export type Chain = 'wool' | 'cotton' | 'wheat' | 'tree';
 export const CHAINS: readonly Chain[] = ['wool', 'cotton', 'wheat', 'tree'];
 
 export type Form =
-  | 'sheep' | 'fleece' | 'cleanFleece' | 'yarn' | 'scarf'
-  | 'cottonPlant' | 'bolls' | 'cleanCotton' | 'thread' | 'sock'
-  | 'wheatField' | 'sheaf' | 'grain' | 'flour' | 'loaf'
-  | 'tree' | 'log' | 'chips' | 'pulp' | 'box';
+  | 'sheep'
+  | 'fleece'
+  | 'cleanFleece'
+  | 'yarn'
+  | 'scarf'
+  | 'cottonPlant'
+  | 'bolls'
+  | 'cleanCotton'
+  | 'thread'
+  | 'sock'
+  | 'wheatField'
+  | 'sheaf'
+  | 'grain'
+  | 'flour'
+  | 'loaf'
+  | 'tree'
+  | 'log'
+  | 'chips'
+  | 'pulp'
+  | 'box';
 
 /** Each chain's five forms: the living beginning, three middle forms and the product. */
 export const FORMS: Record<Chain, readonly Form[]> = {
@@ -27,30 +43,89 @@ export const FORMS: Record<Chain, readonly Form[]> = {
 
 export type Step = 1 | 2 | 3 | 4;
 export type Job =
-  | 'shearer' | 'washer' | 'spinner' | 'weaver'
-  | 'picker' | 'cleaner' | 'threadSpinner' | 'knitter'
-  | 'cutter' | 'thresher' | 'miller' | 'baker'
-  | 'woodcutter' | 'chipper' | 'pulper' | 'presser';
+  | 'shearer'
+  | 'washer'
+  | 'spinner'
+  | 'weaver'
+  | 'picker'
+  | 'cleaner'
+  | 'threadSpinner'
+  | 'knitter'
+  | 'cutter'
+  | 'thresher'
+  | 'miller'
+  | 'baker'
+  | 'woodcutter'
+  | 'chipper'
+  | 'pulper'
+  | 'presser';
 export type Tool =
-  | 'shears' | 'tub' | 'wheel' | 'loom'
-  | 'bag' | 'comb' | 'spindle' | 'needles'
-  | 'sickle' | 'flail' | 'millstone' | 'oven'
-  | 'saw' | 'chipperBox' | 'vat' | 'press';
+  | 'shears'
+  | 'tub'
+  | 'wheel'
+  | 'loom'
+  | 'bag'
+  | 'comb'
+  | 'spindle'
+  | 'needles'
+  | 'sickle'
+  | 'flail'
+  | 'millstone'
+  | 'oven'
+  | 'saw'
+  | 'chipperBox'
+  | 'vat'
+  | 'press';
 
-export interface Maker { chain: Chain; step: Step; job: Job; tool: Tool; accepts: Form; gives: Form }
+export interface Maker {
+  chain: Chain;
+  step: Step;
+  job: Job;
+  tool: Tool;
+  accepts: Form;
+  gives: Form;
+}
 
 const JOBS: Record<Chain, readonly [Job, Tool][]> = {
-  wool: [['shearer', 'shears'], ['washer', 'tub'], ['spinner', 'wheel'], ['weaver', 'loom']],
-  cotton: [['picker', 'bag'], ['cleaner', 'comb'], ['threadSpinner', 'spindle'], ['knitter', 'needles']],
-  wheat: [['cutter', 'sickle'], ['thresher', 'flail'], ['miller', 'millstone'], ['baker', 'oven']],
-  tree: [['woodcutter', 'saw'], ['chipper', 'chipperBox'], ['pulper', 'vat'], ['presser', 'press']],
+  wool: [
+    ['shearer', 'shears'],
+    ['washer', 'tub'],
+    ['spinner', 'wheel'],
+    ['weaver', 'loom'],
+  ],
+  cotton: [
+    ['picker', 'bag'],
+    ['cleaner', 'comb'],
+    ['threadSpinner', 'spindle'],
+    ['knitter', 'needles'],
+  ],
+  wheat: [
+    ['cutter', 'sickle'],
+    ['thresher', 'flail'],
+    ['miller', 'millstone'],
+    ['baker', 'oven'],
+  ],
+  tree: [
+    ['woodcutter', 'saw'],
+    ['chipper', 'chipperBox'],
+    ['pulper', 'vat'],
+    ['presser', 'press'],
+  ],
 };
 
-export const MAKERS: readonly Maker[] = CHAINS.flatMap((chain) => JOBS[chain].map(([job, tool], k) => ({
-  chain, step: (k + 1) as Step, job, tool, accepts: FORMS[chain][k], gives: FORMS[chain][k + 1],
-})));
+export const MAKERS: readonly Maker[] = CHAINS.flatMap((chain) =>
+  JOBS[chain].map(([job, tool], k) => ({
+    chain,
+    step: (k + 1) as Step,
+    job,
+    tool,
+    accepts: FORMS[chain][k],
+    gives: FORMS[chain][k + 1],
+  })),
+);
 
-export const makerOf = (chain: Chain, step: Step): Maker => MAKERS.find((m) => m.chain === chain && m.step === step)!;
+export const makerOf = (chain: Chain, step: Step): Maker =>
+  MAKERS.find((m) => m.chain === chain && m.step === step)!;
 /** The one maker who can use this form, or null for a product. */
 export const makerFor = (form: Form): Maker | null => MAKERS.find((m) => m.accepts === form) ?? null;
 export const nextForm = (form: Form): Form | null => makerFor(form)?.gives ?? null;
@@ -82,7 +157,8 @@ export function cardResult(card: Card): CardResult {
   return productOf(chainOf(card));
 }
 /** The chain a card walks, or null for the cow, the hen and the factory, which never take a maker step. */
-export const cardChain = (card: Card): Chain | null => (card === 'cow' || card === 'hen' || card === 'factory' ? null : chainOf(card));
+export const cardChain = (card: Card): Chain | null =>
+  card === 'cow' || card === 'hen' || card === 'factory' ? null : chainOf(card);
 
 // Levels -------------------------------------------------------------------------------------------------------------
 
@@ -92,17 +168,27 @@ export const LEVELS: BandLevels = {
   prek: { min: 2, max: 3 },
   school: { min: 2, max: 3 },
 };
-export const LEVEL_NAMES: Record<number, string> = { 1: 'Along the lane', 2: 'Who can use it now?', 3: 'Where did it begin?' };
+export const LEVEL_NAMES: Record<number, string> = {
+  1: 'Along the lane',
+  2: 'Who can use it now?',
+  3: 'Where did it begin?',
+};
 export const clampLevel = (level: number) => Math.max(1, Math.min(3, Math.round(level))) as 1 | 2 | 3;
 
 // Rounds -------------------------------------------------------------------------------------------------------------
 
 /** A bundle to carry along the lane: its chain, the stalls left to right, and the form it starts as. */
-export interface Bundle { chain: Chain; stalls: readonly Maker[]; start: Form }
-export interface Question { thing: Thing; cards: readonly Card[] }
+export interface Bundle {
+  chain: Chain;
+  stalls: readonly Maker[];
+  start: Form;
+}
+export interface Question {
+  thing: Thing;
+  cards: readonly Card[];
+}
 export type Round =
-  | { level: 1 | 2; bundles: readonly Bundle[] }
-  | { level: 3; questions: readonly Question[] };
+  { level: 1 | 2; bundles: readonly Bundle[] } | { level: 3; questions: readonly Question[] };
 
 const steps = (chain: Chain, order: readonly Step[]) => order.map((s) => makerOf(chain, s));
 
@@ -115,7 +201,9 @@ export function stallOrder(rng: Rng): Step[] {
 }
 
 const bundle = (level: 1 | 2, chain: Chain, order: readonly Step[]): Bundle => ({
-  chain, stalls: steps(chain, order), start: FORMS[chain][level === 1 ? 0 : 1],
+  chain,
+  stalls: steps(chain, order),
+  start: FORMS[chain][level === 1 ? 0 : 1],
 });
 
 /** Level 3 cards: the right beginning, the tempting wrong one and one from the pool, in a seeded order. */
@@ -141,7 +229,14 @@ export const AUTHORED: { 1: Round; 2: Round; 3: Round } = {
 export function roundFor(level: number, rng: Rng, authored = false): Round {
   const l = clampLevel(level);
   if (authored) return AUTHORED[l];
-  if (l === 3) return { level: 3, questions: rng.shuffle([...THINGS]).slice(0, 3).map((t) => question(t, rng)) };
+  if (l === 3)
+    return {
+      level: 3,
+      questions: rng
+        .shuffle([...THINGS])
+        .slice(0, 3)
+        .map((t) => question(t, rng)),
+    };
   const chains = rng.shuffle([...CHAINS]).slice(0, 2);
   return { level: l, bundles: chains.map((c) => bundle(l, c, l === 1 ? [1, 2, 3, 4] : stallOrder(rng))) };
 }
@@ -181,11 +276,21 @@ export class Play {
     this.form = round.level === 3 ? 'sheep' : round.bundles[0].start;
   }
 
-  get level() { return this.round.level; }
-  get count() { return this.round.level === 3 ? this.round.questions.length : this.round.bundles.length; }
-  get done() { return this.index >= this.count; }
-  get bundle(): Bundle | null { return this.round.level === 3 ? null : this.round.bundles[Math.min(this.index, this.count - 1)]; }
-  get question(): Question | null { return this.round.level === 3 ? this.round.questions[Math.min(this.index, this.count - 1)] : null; }
+  get level() {
+    return this.round.level;
+  }
+  get count() {
+    return this.round.level === 3 ? this.round.questions.length : this.round.bundles.length;
+  }
+  get done() {
+    return this.index >= this.count;
+  }
+  get bundle(): Bundle | null {
+    return this.round.level === 3 ? null : this.round.bundles[Math.min(this.index, this.count - 1)];
+  }
+  get question(): Question | null {
+    return this.round.level === 3 ? this.round.questions[Math.min(this.index, this.count - 1)] : null;
+  }
 
   /** The stall whose maker can use the bundle now, or the right card. */
   target(): Target | null {
@@ -256,7 +361,10 @@ export class Play {
 
   private light() {
     this.glowing = true;
-    if (!this.helped) { this.helped = true; this.hints++; }
+    if (!this.helped) {
+      this.helped = true;
+      this.hints++;
+    }
   }
 
   private next() {
@@ -272,17 +380,31 @@ export class Play {
 
 // Layout -------------------------------------------------------------------------------------------------------------
 
-export interface Rect { x: number; y: number; w: number; h: number }
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
 /** A stall's target: the maker and their tool (levels 1–2), and the smaller watched stalls of level 3. */
-export const STALL_W = 160, STALL_H = 220, STALL_GAP = 28;
-export const SMALL_W = 120, SMALL_H = 165, SMALL_GAP = 16;
-export const BUNDLE = 130, SMALL_BUNDLE = 96;
-export const BUBBLE_W = 120, BUBBLE_H = 100;
-export const FRAME = 220, CARD = 200, CARD_GAP = 24;
+export const STALL_W = 160,
+  STALL_H = 220,
+  STALL_GAP = 28;
+export const SMALL_W = 120,
+  SMALL_H = 165,
+  SMALL_GAP = 16;
+export const BUNDLE = 130,
+  SMALL_BUNDLE = 96;
+export const BUBBLE_W = 120,
+  BUBBLE_H = 100;
+export const FRAME = 220,
+  CARD = 200,
+  CARD_GAP = 24;
 /** The space in front of a stall where the bundle waits. */
 export const PATH_H = 150;
 /** The pet's bottom-left corner and the Home button's top-left corner, kept clear. */
-export const PET_CORNER = 150, HOME_CORNER = 120;
+export const PET_CORNER = 150,
+  HOME_CORNER = 120;
 
 export interface MakerLaneLayout {
   portrait: boolean;
@@ -312,7 +434,12 @@ export function makerLaneLayout(view: { w: number; h: number }, level: number): 
     const frame = { x: view.w - 24 - FRAME, y: 24, w: FRAME, h: FRAME };
     const laneY = frame.y + FRAME + 24;
     const x0 = cx - rowW / 2;
-    const rects = Array.from({ length: slots }, (_, k) => ({ x: x0 + k * (SMALL_W + SMALL_GAP), y: laneY, w: SMALL_W, h: SMALL_H }));
+    const rects = Array.from({ length: slots }, (_, k) => ({
+      x: x0 + k * (SMALL_W + SMALL_GAP),
+      y: laneY,
+      w: SMALL_W,
+      h: SMALL_H,
+    }));
     const spotY = laneY + SMALL_H + SMALL_BUNDLE / 2 + 6;
     const spots = rects.map((r) => ({ x: r.x + r.w / 2, y: spotY }));
     const cardsW = 3 * CARD + 2 * CARD_GAP;
@@ -320,7 +447,16 @@ export function makerLaneLayout(view: { w: number; h: number }, level: number): 
     const cy = portrait ? view.h - PET_CORNER - 24 - CARD : view.h - 24 - CARD;
     const cardX = portrait ? cx - cardsW / 2 : Math.max(PET_CORNER + 24, cx - cardsW / 2);
     const cards = [0, 1, 2].map((k) => ({ x: cardX + k * (CARD + CARD_GAP), y: cy, w: CARD, h: CARD }));
-    return { portrait, begin: rects[0], stalls: rects.slice(1), spots, bundle: SMALL_BUNDLE, frame, cards, rows: 1 };
+    return {
+      portrait,
+      begin: rects[0],
+      stalls: rects.slice(1),
+      spots,
+      bundle: SMALL_BUNDLE,
+      frame,
+      cards,
+      rows: 1,
+    };
   }
   const slots = 1 + n;
   const rowH = STALL_H + PATH_H;
@@ -328,9 +464,23 @@ export function makerLaneLayout(view: { w: number; h: number }, level: number): 
     const rowW = slots * STALL_W + (slots - 1) * STALL_GAP;
     const y = Math.max(HOME_CORNER, (view.h - rowH) / 2 - 20);
     const x0 = cx - rowW / 2;
-    const rects = Array.from({ length: slots }, (_, k) => ({ x: x0 + k * (STALL_W + STALL_GAP), y, w: STALL_W, h: STALL_H }));
+    const rects = Array.from({ length: slots }, (_, k) => ({
+      x: x0 + k * (STALL_W + STALL_GAP),
+      y,
+      w: STALL_W,
+      h: STALL_H,
+    }));
     const spots = rects.map((r) => ({ x: r.x + r.w / 2, y: r.y + STALL_H + PATH_H / 2 }));
-    return { portrait, begin: rects[0], stalls: rects.slice(1), spots, bundle: BUNDLE, frame: null, cards: [], rows: 1 };
+    return {
+      portrait,
+      begin: rects[0],
+      stalls: rects.slice(1),
+      spots,
+      bundle: BUNDLE,
+      frame: null,
+      cards: [],
+      rows: 1,
+    };
   }
   // Portrait: three columns; the beginning and two stalls left to right, then the rest right to left beneath, so the
   // lane bends and its end stays clear of the pet's corner.
@@ -347,10 +497,21 @@ export function makerLaneLayout(view: { w: number; h: number }, level: number): 
     rects.push({ x: colX(col), y: top + row * (rowH + vgap), w: STALL_W, h: STALL_H });
   }
   const spots = rects.map((r) => ({ x: r.x + r.w / 2, y: r.y + STALL_H + PATH_H / 2 }));
-  return { portrait, begin: rects[0], stalls: rects.slice(1), spots, bundle: BUNDLE, frame: null, cards: [], rows: 2 };
+  return {
+    portrait,
+    begin: rects[0],
+    stalls: rects.slice(1),
+    spots,
+    bundle: BUNDLE,
+    frame: null,
+    cards: [],
+    rows: 2,
+  };
 }
 
 /** The stall whose rect holds (x, y), or -1: a drop anywhere else floats home, free. */
 export function stallAt(layout: MakerLaneLayout, x: number, y: number): number {
-  return layout.stalls.findIndex((r) => x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h + PATH_H * 0.5);
+  return layout.stalls.findIndex(
+    (r) => x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h + PATH_H * 0.5,
+  );
 }

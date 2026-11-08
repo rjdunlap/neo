@@ -2,9 +2,33 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { SCRIPT } from '../../content/voice-script';
 import {
-  allRiddles, andList, ARGUABLE, basketFor, BASKETS, chipsFor, familySong, fails, familyOf, FAMILIES, fitsBoth, guessFor, holds, makeQuestions, makeRiddles, makeTap, makeTrays, mateTags,
+  allRiddles,
+  andList,
+  ARGUABLE,
+  basketFor,
+  BASKETS,
+  chipsFor,
+  familySong,
+  fails,
+  familyOf,
+  FAMILIES,
+  fitsBoth,
+  guessFor,
+  holds,
+  makeQuestions,
+  makeRiddles,
+  makeTap,
+  makeTrays,
+  mateTags,
   planFor,
-  PLANS, rhymes, SCENES, sceneFor, spokenList, TAG_IDS, TAGS, wordToTap,
+  PLANS,
+  rhymes,
+  SCENES,
+  sceneFor,
+  spokenList,
+  TAG_IDS,
+  TAGS,
+  wordToTap,
 } from './logic';
 import { rhymeTime } from './index';
 import { levelsInOrder, stepLevel } from '../../progress/difficulty';
@@ -18,12 +42,18 @@ describe('Rhyme Time', () => {
   it('has 38 pictures in fifteen families, eight of them three-word groups', () => {
     expect(Object.keys(FAMILIES)).toHaveLength(15);
     expect(Object.values(FAMILIES).flat()).toHaveLength(38);
-    expect(Object.keys(FAMILIES).filter((f) => FAMILIES[f].length >= 3).sort()).toEqual(['ail', 'ar', 'at', 'ear', 'ee', 'ock', 'og', 'ug']);
+    expect(
+      Object.keys(FAMILIES)
+        .filter((f) => FAMILIES[f].length >= 3)
+        .sort(),
+    ).toEqual(['ail', 'ar', 'at', 'ear', 'ee', 'ock', 'og', 'ug']);
   });
 
   it('shows the fresh families in odd-one-out rounds', () => {
     const seen = new Set<string>();
-    for (let seed = 1; seed <= 100; seed++) for (const q of makeQuestions(PLANS[3], new Rng(seed))) seen.add(familyOf(q.words.find((w) => !q.answer.includes(w))!));
+    for (let seed = 1; seed <= 100; seed++)
+      for (const q of makeQuestions(PLANS[3], new Rng(seed)))
+        seen.add(familyOf(q.words.find((w) => !q.answer.includes(w))!));
     for (const f of ['ug', 'ock', 'ail']) expect(seen.has(f)).toBe(true);
   });
 
@@ -39,7 +69,12 @@ describe('Rhyme Time', () => {
             expect(q.words).not.toContain(q.prompt);
           }
           if (plan.mode === 'pair') {
-            const pairs = q.words.flatMap((a, i) => q.words.slice(i + 1).filter((b) => rhymes(a, b)).map((b) => [a, b]));
+            const pairs = q.words.flatMap((a, i) =>
+              q.words
+                .slice(i + 1)
+                .filter((b) => rhymes(a, b))
+                .map((b) => [a, b]),
+            );
             expect(pairs).toHaveLength(1);
             expect([...pairs[0]].sort()).toEqual([...q.answer].sort());
           }
@@ -121,14 +156,16 @@ describe('Rhyme Riddles (levels 5-7)', () => {
   });
 
   it('is deterministic per seed', () => {
-    for (const li of levels) expect(makeRiddles(PLANS[li], new Rng(7))).toEqual(makeRiddles(PLANS[li], new Rng(7)));
+    for (const li of levels)
+      expect(makeRiddles(PLANS[li], new Rng(7))).toEqual(makeRiddles(PLANS[li], new Rng(7)));
   });
 
   it('has a pinned pool where every big family supplies answers and tagless pictures never answer', () => {
     const all = allRiddles();
     expect(all.length).toBe(178);
     const answered = new Set(all.map((r) => familyOf(r.answer)));
-    for (const f of Object.keys(FAMILIES).filter((k) => FAMILIES[k].length >= 3)) expect(answered.has(f)).toBe(true);
+    for (const f of Object.keys(FAMILIES).filter((k) => FAMILIES[k].length >= 3))
+      expect(answered.has(f)).toBe(true);
     for (const w of ['key', 'clock', 'snail']) expect(all.some((r) => r.answer === w)).toBe(false);
     // the fresh families (bug, sock and snail) each answer riddles
     for (const f of ['ug', 'ock', 'ail']) expect(answered.has(f)).toBe(true);
@@ -152,9 +189,12 @@ describe('Rhyme Riddles (levels 5-7)', () => {
         expect(guessFor(r, r.clueWord, r.mateTag!)).toBe(r.mate);
         expect(guessFor(r, r.decoyWord!, r.tag)).toBe(r.trap);
         expect(guessFor(r, r.decoyWord!, r.mateTag!)).toBeNull();
-        const hits = sound.flatMap((s) => meaning.map((t) => guessFor(r, s, t))).filter((g) => g === r.answer);
+        const hits = sound
+          .flatMap((s) => meaning.map((t) => guessFor(r, s, t)))
+          .filter((g) => g === r.answer);
         expect(hits).toHaveLength(1);
-        for (const s of sound) for (const t of meaning) expect(fitsBoth(r.words, s, t).length).toBeLessThanOrEqual(1);
+        for (const s of sound)
+          for (const t of meaning) expect(fitsBoth(r.words, s, t).length).toBeLessThanOrEqual(1);
         // the capable-child path reaches Guess within three taps
         let snd: string | null = null;
         let tg: typeof r.tag | null = null;
@@ -188,7 +228,23 @@ describe('Rhyme Riddles (levels 5-7)', () => {
   });
 
   it('has every riddle voice line', () => {
-    const ids = ['rhyme.riddle', 'rhyme.riddle2', 'rhyme.riddleClues', 'rhyme.riddleNoMeaning', 'rhyme.riddleNoRhyme', 'rhyme.riddleYes', 'rhyme.riddleHint', 'rhyme.make', 'rhyme.chipSound', 'rhyme.chipMeaning', 'rhyme.makeGuess', 'rhyme.makeWrong', 'rhyme.makeNone', 'rhyme.makeBoth', 'rhyme.makeHint'];
+    const ids = [
+      'rhyme.riddle',
+      'rhyme.riddle2',
+      'rhyme.riddleClues',
+      'rhyme.riddleNoMeaning',
+      'rhyme.riddleNoRhyme',
+      'rhyme.riddleYes',
+      'rhyme.riddleHint',
+      'rhyme.make',
+      'rhyme.chipSound',
+      'rhyme.chipMeaning',
+      'rhyme.makeGuess',
+      'rhyme.makeWrong',
+      'rhyme.makeNone',
+      'rhyme.makeBoth',
+      'rhyme.makeHint',
+    ];
     for (const id of ids) expect(Object.keys(SCRIPT)).toContain(id);
   });
 });
@@ -234,7 +290,8 @@ describe('Silly pairs (level 8)', () => {
 
   it('shows every scene across seeds, and the same seed gives the same round', () => {
     const seen = new Set<string>();
-    for (let seed = 1; seed <= 100; seed++) for (const q of makeQuestions(plan, new Rng(seed))) seen.add(q.prompt!);
+    for (let seed = 1; seed <= 100; seed++)
+      for (const q of makeQuestions(plan, new Rng(seed))) seen.add(q.prompt!);
     expect(seen.size).toBe(SCENES.length);
     expect(makeQuestions(plan, new Rng(9))).toEqual(makeQuestions(plan, new Rng(9)));
   });
@@ -250,14 +307,15 @@ describe('Silly pairs (level 8)', () => {
   });
 
   it('has its voice lines', () => {
-    for (const id of ['rhyme.scene', 'rhyme.sceneYes', 'rhyme.sceneNo']) expect(Object.keys(SCRIPT)).toContain(id);
+    for (const id of ['rhyme.scene', 'rhyme.sceneYes', 'rhyme.sceneNo'])
+      expect(Object.keys(SCRIPT)).toContain(id);
   });
 });
 
 describe('Silly pairs, two to choose (level 9, the preschool opening)', () => {
   const plan = planFor(9);
 
-  it('is level 8\'s scenes with two pictures and three scenes', () => {
+  it("is level 8's scenes with two pictures and three scenes", () => {
     expect(plan).toBe(PLANS[8]);
     expect(plan.mode).toBe('scene');
     expect(plan.choices).toBe(2);
@@ -284,7 +342,8 @@ describe('Silly pairs, two to choose (level 9, the preschool opening)', () => {
 
   it('puts the rider first and second across seeds', () => {
     const at = new Set<number>();
-    for (let seed = 1; seed <= 50; seed++) for (const q of makeQuestions(plan, new Rng(seed))) at.add(q.words.indexOf(q.answer[0]));
+    for (let seed = 1; seed <= 50; seed++)
+      for (const q of makeQuestions(plan, new Rng(seed))) at.add(q.words.indexOf(q.answer[0]));
     expect([...at].sort()).toEqual([0, 1]);
   });
 
@@ -342,14 +401,16 @@ describe('Rhyme baskets (level 10)', () => {
           expect(rhymes(t.keys[b], w)).toBe(true);
         }
         for (const k of t.keys) expect(t.words.filter((w) => rhymes(k, w))).toHaveLength(2);
-        for (const k of t.keys) expect(familySong(k).slice(1).sort()).toEqual(t.words.filter((w) => rhymes(k, w)).sort());
+        for (const k of t.keys)
+          expect(familySong(k).slice(1).sort()).toEqual(t.words.filter((w) => rhymes(k, w)).sort());
       }
     }
   });
 
   it('uses every three-word family across seeds, and the same seed gives the same round', () => {
     const seen = new Set<string>();
-    for (let seed = 1; seed <= 100; seed++) for (const t of makeTrays(BASKETS, new Rng(seed))) for (const k of t.keys) seen.add(familyOf(k));
+    for (let seed = 1; seed <= 100; seed++)
+      for (const t of makeTrays(BASKETS, new Rng(seed))) for (const k of t.keys) seen.add(familyOf(k));
     expect(seen.size).toBe(8);
     expect(makeTrays(BASKETS, new Rng(4))).toEqual(makeTrays(BASKETS, new Rng(4)));
   });
@@ -361,6 +422,7 @@ describe('Rhyme baskets (level 10)', () => {
   });
 
   it('has its voice lines', () => {
-    for (const id of ['rhyme.baskets', 'rhyme.basketNo', 'rhyme.basketHint', 'rhyme.basketSong']) expect(Object.keys(SCRIPT)).toContain(id);
+    for (const id of ['rhyme.baskets', 'rhyme.basketNo', 'rhyme.basketHint', 'rhyme.basketSong'])
+      expect(Object.keys(SCRIPT)).toContain(id);
   });
 });

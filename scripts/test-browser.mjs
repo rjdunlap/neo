@@ -5,7 +5,7 @@ export function silenceSpeech() {
   if (!('speechSynthesis' in window)) return;
   const speech = window.speechSynthesis;
   const speak = speech.speak.bind(speech);
-  speech.speak = utterance => {
+  speech.speak = (utterance) => {
     utterance.volume = 0;
     return speak(utterance);
   };
@@ -16,7 +16,9 @@ export function launchTestBrowser() {
   return chromium.launch({
     headless: true,
     ...(process.env.BROWSER_EXECUTABLE ? { executablePath: process.env.BROWSER_EXECUTABLE } : {}),
-    ...(process.env.TEST_AUDIO === 'on' ? { ignoreDefaultArgs: ['--mute-audio'] } : { args: ['--mute-audio'] }),
+    ...(process.env.TEST_AUDIO === 'on'
+      ? { ignoreDefaultArgs: ['--mute-audio'] }
+      : { args: ['--mute-audio'] }),
   });
 }
 

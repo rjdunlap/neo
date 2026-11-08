@@ -13,11 +13,59 @@ import type { LineId } from '../../content/voice-script';
 import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { LEVELS, act, actionOf, answerIndex, hintFor, makeMendSigns, makeSigns, makeTasks, makeWishes, matches, MAX_SLOTS, meaning, missing, planFor, printed, resolveDrop, sameAct, signLayout, stepFor, type Box, type Choice, type Drop, type Hint, type Marks, type Outcome, type Sign, type SignLayout, type SlotWord, type Step, type Wish, type WishSign, type Word } from './logic';
+import {
+  LEVELS,
+  act,
+  actionOf,
+  answerIndex,
+  hintFor,
+  makeMendSigns,
+  makeSigns,
+  makeTasks,
+  makeWishes,
+  matches,
+  MAX_SLOTS,
+  meaning,
+  missing,
+  planFor,
+  printed,
+  resolveDrop,
+  sameAct,
+  signLayout,
+  stepFor,
+  type Box,
+  type Choice,
+  type Drop,
+  type Hint,
+  type Marks,
+  type Outcome,
+  type Sign,
+  type SignLayout,
+  type SlotWord,
+  type Step,
+  type Wish,
+  type WishSign,
+  type Word,
+} from './logic';
 
 export const WORD_LINES: Record<Word, LineId> = {
-  red: 'read.red', blue: 'read.blue', yellow: 'read.yellow', green: 'read.green', pink: 'read.pink', big: 'read.big', small: 'read.small',
-  duck: 'read.duck', cat: 'read.cat', pig: 'read.pig', dog: 'read.dog', the: 'read.the', can: 'read.can', jump: 'read.jump', sleep: 'read.sleep', jumps: 'read.jumps', sleeps: 'read.sleeps',
+  red: 'read.red',
+  blue: 'read.blue',
+  yellow: 'read.yellow',
+  green: 'read.green',
+  pink: 'read.pink',
+  big: 'read.big',
+  small: 'read.small',
+  duck: 'read.duck',
+  cat: 'read.cat',
+  pig: 'read.pig',
+  dog: 'read.dog',
+  the: 'read.the',
+  can: 'read.can',
+  jump: 'read.jump',
+  sleep: 'read.sleep',
+  jumps: 'read.jumps',
+  sleeps: 'read.sleeps',
 };
 
 /** Pictures are choices; the printed sign never gives away its answer with color or an animal picture. */
@@ -25,9 +73,17 @@ function picture(choice: Choice): Container {
   const node = new Container();
   if (choice.kind === 'hat') {
     const color = swatch[choice.color];
-    node.addChild(new Graphics().roundRect(-43, -50, 86, 65, 17).fill(color.fill).stroke({ width: 5, color: color.line })
-      .roundRect(-66, 6, 132, 22, 10).fill(color.fill).stroke({ width: 5, color: color.line })
-      .rect(-42, -4, 84, 12).fill(cream));
+    node.addChild(
+      new Graphics()
+        .roundRect(-43, -50, 86, 65, 17)
+        .fill(color.fill)
+        .stroke({ width: 5, color: color.line })
+        .roundRect(-66, 6, 132, 22, 10)
+        .fill(color.fill)
+        .stroke({ width: 5, color: color.line })
+        .rect(-42, -4, 84, 12)
+        .fill(cream),
+    );
   } else {
     const animal = new Critter(CRITTERS[choice.animal]);
     animal.alive = false;
@@ -36,9 +92,16 @@ function picture(choice: Choice): Container {
     if (choice.kind === 'action' && choice.action === 'sleep') animal.setMood('sleepy');
     node.addChild(animal);
     if (choice.kind === 'action') {
-      const mark = choice.action === 'sleep' ? label('Z', 34, swatch.blue.line) : new Graphics()
-        .moveTo(50, 35).lineTo(50, -30).moveTo(32, -12).lineTo(50, -30).lineTo(68, -12)
-        .stroke({ width: 8, color: swatch.green.line, cap: 'round', join: 'round' });
+      const mark =
+        choice.action === 'sleep'
+          ? label('Z', 34, swatch.blue.line)
+          : new Graphics()
+              .moveTo(50, 35)
+              .lineTo(50, -30)
+              .moveTo(32, -12)
+              .lineTo(50, -30)
+              .lineTo(68, -12)
+              .stroke({ width: 8, color: swatch.green.line, cap: 'round', join: 'round' });
       if (choice.action === 'sleep') mark.position.set(50, -20);
       mark.eventMode = 'none';
       node.addChild(mark);
@@ -47,11 +110,15 @@ function picture(choice: Choice): Container {
   node.eventMode = 'none';
   return node;
 }
-interface Tile { node: Container; bg: Graphics; choice: Choice }
+interface Tile {
+  node: Container;
+  bg: Graphics;
+  choice: Choice;
+}
 
 /** The animal performs a choice: a jump is the arc, anything else a small rock. */
 async function actOut(ctx: GameContext, actor: Container, choice: Choice) {
-  actor.removeChildren().forEach(c => c.destroy({ children: true }));
+  actor.removeChildren().forEach((c) => c.destroy({ children: true }));
   const art = picture(choice);
   art.scale.set(1.3);
   actor.addChild(art);
@@ -65,9 +132,17 @@ async function actOut(ctx: GameContext, actor: Container, choice: Choice) {
 }
 function speaker() {
   const node = new Container();
-  node.addChild(new Graphics().roundRect(-55, -50, 110, 100, 24).fill(cream).stroke({ width: 4, color: wood.line })
-    .poly([-32, -12, -18, -12, 0, -28, 0, 28, -18, 12, -32, 12]).fill(ink)
-    .moveTo(12, -24).quadraticCurveTo(40, 0, 12, 24).stroke({ width: 5, color: ink, cap: 'round' }));
+  node.addChild(
+    new Graphics()
+      .roundRect(-55, -50, 110, 100, 24)
+      .fill(cream)
+      .stroke({ width: 4, color: wood.line })
+      .poly([-32, -12, -18, -12, 0, -28, 0, 28, -18, 12, -32, 12])
+      .fill(ink)
+      .moveTo(12, -24)
+      .quadraticCurveTo(40, 0, 12, 24)
+      .stroke({ width: 5, color: ink, cap: 'round' }),
+  );
   node.hitArea = new Rectangle(-55, -50, 110, 100);
   return node;
 }
@@ -94,37 +169,63 @@ class ReadDo implements Game {
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.tasks = makeTasks(ctx.level, ctx.rng);
-    this.backdrop = new Backdrop({ sky: [swatch.green.light, cream], hills: [swatch.green.fill, swatch.teal.light], horizon: 0.72, clouds: 2, sun: false, seed: 47 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [swatch.green.light, cream],
+        hills: [swatch.green.fill, swatch.teal.light],
+        horizon: 0.72,
+        clouds: 2,
+        sun: false,
+        seed: 47,
+      },
+      ctx.view,
+    );
     this.actor.eventMode = this.glow.eventMode = 'none';
     this.replay.addChild(speaker());
     this.replay.hitArea = new Rectangle(-55, -50, 110, 100);
     onTap(this.replay, () => void this.readSign());
     ctx.stage.addChild(this.backdrop, this.actor, this.replay, this.glow);
   }
-  get task() { return this.tasks[this.index]; }
-  start() { void this.next(); }
-  destroy() { this.alive = false; }
+  get task() {
+    return this.tasks[this.index];
+  }
+  start() {
+    void this.next();
+  }
+  destroy() {
+    this.alive = false;
+  }
   resize(v: View) {
     this.view = v;
     this.backdrop.resize(v);
     // Five separate, unscaled 108-unit word targets fit even in the 1024-unit design width.
-    this.words.forEach((word, i) => word.position.set(v.w / 2 + (i - (this.words.length - 1) / 2) * 116, 185));
+    this.words.forEach((word, i) =>
+      word.position.set(v.w / 2 + (i - (this.words.length - 1) / 2) * 116, 185),
+    );
     this.replay.position.set(v.w / 2 + 365, 185);
     this.actor.position.set(v.w / 2, v.h * 0.43);
-    this.choices.forEach((c, i) => c.node.position.set(
-      this.choices.length === 4 ? v.w / 2 + (i % 2 ? 170 : -170) : v.w / 2 + (i - (this.choices.length - 1) / 2) * 220,
-      this.choices.length === 4 ? v.h * (i < 2 ? 0.62 : 0.85) : v.h * 0.7,
-    ));
+    this.choices.forEach((c, i) =>
+      c.node.position.set(
+        this.choices.length === 4
+          ? v.w / 2 + (i % 2 ? 170 : -170)
+          : v.w / 2 + (i - (this.choices.length - 1) / 2) * 220,
+        this.choices.length === 4 ? v.h * (i < 2 ? 0.62 : 0.85) : v.h * 0.7,
+      ),
+    );
   }
   update(dt: number) {
     this.clock += dt;
     this.glow.clear();
     if (!this.hinted || this.busy || this.finished) return;
     const c = this.choices[answerIndex(this.task)].node;
-    this.glow.roundRect(c.x - 90, c.y - 85, 180, 170, 26).stroke({ width: 6 + Math.sin(this.clock * 5), color: swatch.yellow.fill });
+    this.glow
+      .roundRect(c.x - 90, c.y - 85, 180, 170, 26)
+      .stroke({ width: 6 + Math.sin(this.clock * 5), color: swatch.yellow.fill });
   }
   autotouch(): TouchIntent | null {
-    return this.busy || this.finished || !this.task ? null : { tap: { on: this.choices[answerIndex(this.task)].node } };
+    return this.busy || this.finished || !this.task
+      ? null
+      : { tap: { on: this.choices[answerIndex(this.task)].node } };
   }
   private async next() {
     if (!this.alive) return;
@@ -142,24 +243,32 @@ class ReadDo implements Game {
     }
     for (const c of this.choices.splice(0)) c.node.destroy({ children: true });
     for (const w of this.words.splice(0)) w.destroy({ children: true });
-    this.actor.removeChildren().forEach(c => c.destroy({ children: true }));
+    this.actor.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.actor.addChild(label('?', 72, wood.line));
     for (const word of this.task.words) {
       const node = new Container();
-      node.addChild(new Graphics().roundRect(-54, -50, 108, 100, 16).fill(cream).stroke({ width: 3, color: wood.line }), label(word, 30));
+      node.addChild(
+        new Graphics().roundRect(-54, -50, 108, 100, 16).fill(cream).stroke({ width: 3, color: wood.line }),
+        label(word, 30),
+      );
       node.hitArea = new Rectangle(-54, -50, 108, 100);
       onTap(node, () => {
         if (this.busy || this.finished) return;
         sfx.pop(2);
         void this.ctx.say(WORD_LINES[word]);
-        void this.ctx.tw.to(node, { alpha: 0.65 }, { duration: 0.08 }).then(() => { if (this.alive && !node.destroyed) return this.ctx.tw.to(node, { alpha: 1 }, { duration: 0.15 }); });
+        void this.ctx.tw.to(node, { alpha: 0.65 }, { duration: 0.08 }).then(() => {
+          if (this.alive && !node.destroyed) return this.ctx.tw.to(node, { alpha: 1 }, { duration: 0.15 });
+        });
       });
       this.words.push(node);
       this.ctx.stage.addChild(node);
     }
     for (const choice of this.task.choices) {
       const node = new Container();
-      const bg = new Graphics().roundRect(-85, -80, 170, 160, 24).fill(swatch.white.fill).stroke({ width: 5, color: wood.line });
+      const bg = new Graphics()
+        .roundRect(-85, -80, 170, 160, 24)
+        .fill(swatch.white.fill)
+        .stroke({ width: 5, color: wood.line });
       node.addChild(bg, picture(choice));
       node.hitArea = new Rectangle(-85, -80, 170, 160);
       const tile = { node, bg, choice };
@@ -187,13 +296,20 @@ class ReadDo implements Game {
     await this.speakWords(this.task.words, true);
     if (this.alive) this.busy = false;
   }
-  private act(choice: Choice) { return actOut(this.ctx, this.actor, choice); }
+  private act(choice: Choice) {
+    return actOut(this.ctx, this.actor, choice);
+  }
   private async choose(tile: Tile) {
     if (this.busy || this.finished) return;
     this.busy = true;
     tile.bg.tint = swatch.yellow.light;
     const right = matches(this.task, tile.choice);
-    if (right) sfx.sparkle(); else { sfx.boing(); this.misses++; this.wrongs++; }
+    if (right) sfx.sparkle();
+    else {
+      sfx.boing();
+      this.misses++;
+      this.wrongs++;
+    }
     await this.act(tile.choice);
     if (!this.alive) return;
     tile.bg.tint = swatch.white.fill;
@@ -206,12 +322,19 @@ class ReadDo implements Game {
       await this.ctx.say('read.compare', { words: meaning(tile.choice).join(' ') });
       await this.speakWords(this.task.words, true);
       if (!this.alive) return;
-      if (this.wrongs >= 2 && !this.hinted) { this.hinted = true; this.hints++; }
+      if (this.wrongs >= 2 && !this.hinted) {
+        this.hinted = true;
+        this.hints++;
+      }
       this.busy = false;
     }
   }
 }
-const STEP_LINES: Record<Step, LineId> = { cap: 'read.cap.instruction', stop: 'read.stop.instruction', both: 'read.both.instruction' };
+const STEP_LINES: Record<Step, LineId> = {
+  cap: 'read.cap.instruction',
+  stop: 'read.stop.instruction',
+  both: 'read.both.instruction',
+};
 function button(text: string, fill: number, line: number, icon: Graphics, width = 200) {
   const node = new Container();
   const narrow = width < 200;
@@ -219,17 +342,38 @@ function button(text: string, fill: number, line: number, icon: Graphics, width 
   if (narrow) icon.scale.set(0.6);
   const words = label(text, narrow ? 26 : 30);
   words.x = narrow ? 18 : 26;
-  node.addChild(new Graphics().roundRect(-width / 2, -50, width, 100, 26).fill(fill).stroke({ width: 5, color: line }), icon, words);
+  node.addChild(
+    new Graphics()
+      .roundRect(-width / 2, -50, width, 100, 26)
+      .fill(fill)
+      .stroke({ width: 5, color: line }),
+    icon,
+    words,
+  );
   node.hitArea = new Rectangle(-width / 2, -50, width, 100);
   return node;
 }
 const sendIcon = () => new Graphics().poly([-22, -22, 24, 0, -22, 22, -12, 0]).fill(swatch.green.line);
-const eyeIcon = () => new Graphics().ellipse(0, 0, 26, 16).fill(swatch.white.fill).stroke({ width: 4, color: ink }).circle(0, 0, 8).fill(ink);
+const eyeIcon = () =>
+  new Graphics()
+    .ellipse(0, 0, 26, 16)
+    .fill(swatch.white.fill)
+    .stroke({ width: 4, color: ink })
+    .circle(0, 0, 8)
+    .fill(ink);
 /** A plain dotted rectangle (a square by default): where a full stop or a word can go, never highlighted until help. */
 function socketArt(hw = 46, hh = 46, color: number = wood.line) {
   const g = new Graphics();
-  for (let i = -hw; i < hw; i += 16) g.moveTo(i, -hh).lineTo(Math.min(hw, i + 8), -hh).moveTo(i, hh).lineTo(Math.min(hw, i + 8), hh);
-  for (let i = -hh; i < hh; i += 16) g.moveTo(-hw, i).lineTo(-hw, Math.min(hh, i + 8)).moveTo(hw, i).lineTo(hw, Math.min(hh, i + 8));
+  for (let i = -hw; i < hw; i += 16)
+    g.moveTo(i, -hh)
+      .lineTo(Math.min(hw, i + 8), -hh)
+      .moveTo(i, hh)
+      .lineTo(Math.min(hw, i + 8), hh);
+  for (let i = -hh; i < hh; i += 16)
+    g.moveTo(-hw, i)
+      .lineTo(-hw, Math.min(hh, i + 8))
+      .moveTo(hw, i)
+      .lineTo(hw, Math.min(hh, i + 8));
   return g.stroke({ width: 4, color, cap: 'round' });
 }
 
@@ -270,16 +414,41 @@ class SignDo implements Game {
     this.view = ctx.view;
     this.step = stepFor(ctx.level) ?? 'both';
     this.signs = makeSigns(ctx.level, ctx.rng);
-    this.backdrop = new Backdrop({ sky: [swatch.green.light, cream], hills: [swatch.green.fill, swatch.teal.light], horizon: 0.72, clouds: 2, sun: false, seed: 47 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [swatch.green.light, cream],
+        hills: [swatch.green.fill, swatch.teal.light],
+        horizon: 0.72,
+        clouds: 2,
+        sun: false,
+        seed: 47,
+      },
+      ctx.view,
+    );
     this.actor.eventMode = this.glow.eventMode = 'none';
     onTap(this.replay, () => void this.free(() => this.speakSign()));
-    onTap(this.show, () => void this.free(async () => { await this.speakSign(); if (this.alive) await this.perform(); }));
+    onTap(
+      this.show,
+      () =>
+        void this.free(async () => {
+          await this.speakSign();
+          if (this.alive) await this.perform();
+        }),
+    );
     onTap(this.send, () => void this.sendSign());
     this.socket.addChild(socketArt());
     this.socket.hitArea = new Rectangle(-50, -50, 100, 100);
-    onTap(this.socket, () => { if (!this.busy && this.selected) this.place(); });
-    this.stop.addChild(new Graphics().roundRect(-50, -50, 100, 100, 22).fill(swatch.yellow.light).stroke({ width: 4, color: wood.line })
-      .circle(0, 18, 12).fill(ink));
+    onTap(this.socket, () => {
+      if (!this.busy && this.selected) this.place();
+    });
+    this.stop.addChild(
+      new Graphics()
+        .roundRect(-50, -50, 100, 100, 22)
+        .fill(swatch.yellow.light)
+        .stroke({ width: 4, color: wood.line })
+        .circle(0, 18, 12)
+        .fill(ink),
+    );
     this.stop.hitArea = new Rectangle(-50, -50, 100, 100);
     this.drag = draggable(this.stop, ctx.tw, {
       onPick: () => {
@@ -289,13 +458,31 @@ class SignDo implements Game {
       },
       onDrop: (x, y) => this.dropStop(x, y),
     });
-    ctx.stage.addChild(this.backdrop, this.actor, this.replay, this.socket, this.show, this.send, this.stop, this.glow);
+    ctx.stage.addChild(
+      this.backdrop,
+      this.actor,
+      this.replay,
+      this.socket,
+      this.show,
+      this.send,
+      this.stop,
+      this.glow,
+    );
   }
-  get sign() { return this.signs[this.index]; }
+  get sign() {
+    return this.signs[this.index];
+  }
   /** Where the stamp rests while it is not on the sign. */
-  get rest() { return { x: this.view.w / 2 - 270, y: 300 }; }
-  start() { void this.next(); }
-  destroy() { this.alive = false; this.drag.destroy(); }
+  get rest() {
+    return { x: this.view.w / 2 - 270, y: 300 };
+  }
+  start() {
+    void this.next();
+  }
+  destroy() {
+    this.alive = false;
+    this.drag.destroy();
+  }
   resize(v: View) {
     this.view = v;
     this.backdrop.resize(v);
@@ -318,10 +505,16 @@ class SignDo implements Game {
     this.clock += dt;
     this.glow.clear();
     if (this.finished || !this.sign) return;
-    if (this.selected) this.glow.roundRect(this.stop.x - 60, this.stop.y - 60, 120, 120, 26).stroke({ width: 5, color: swatch.blue.fill });
+    if (this.selected)
+      this.glow
+        .roundRect(this.stop.x - 60, this.stop.y - 60, 120, 120, 26)
+        .stroke({ width: 5, color: swatch.blue.fill });
     if (!this.hinted) return;
-    const c = this.needed, wide = c === this.send ? 220 : 128;
-    this.glow.roundRect(c.x - wide / 2, c.y - 62, wide, 124, 26).stroke({ width: 6 + Math.sin(this.clock * 5), color: swatch.yellow.fill });
+    const c = this.needed,
+      wide = c === this.send ? 220 : 128;
+    this.glow
+      .roundRect(c.x - wide / 2, c.y - 62, wide, 124, 26)
+      .stroke({ width: 6 + Math.sin(this.clock * 5), color: swatch.yellow.fill });
   }
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.sign) return null;
@@ -363,7 +556,10 @@ class SignDo implements Game {
     for (const w of this.words.splice(0)) w.destroy({ children: true });
     this.sign.words.forEach((word, i) => {
       const node = new Container();
-      node.addChild(new Graphics().roundRect(-54, -50, 108, 100, 16).fill(cream).stroke({ width: 3, color: wood.line }), label(word, 30));
+      node.addChild(
+        new Graphics().roundRect(-54, -50, 108, 100, 16).fill(cream).stroke({ width: 3, color: wood.line }),
+        label(word, 30),
+      );
       node.hitArea = new Rectangle(-54, -50, 108, 100);
       onTap(node, () => {
         if (this.busy || this.finished) return;
@@ -373,13 +569,15 @@ class SignDo implements Game {
           this.drawFirst();
         }
         void this.ctx.say(WORD_LINES[word]);
-        void this.ctx.tw.to(node, { alpha: 0.65 }, { duration: 0.08 }).then(() => { if (this.alive && !node.destroyed) return this.ctx.tw.to(node, { alpha: 1 }, { duration: 0.15 }); });
+        void this.ctx.tw.to(node, { alpha: 0.65 }, { duration: 0.08 }).then(() => {
+          if (this.alive && !node.destroyed) return this.ctx.tw.to(node, { alpha: 1 }, { duration: 0.15 });
+        });
       });
       this.words.push(node);
       this.ctx.stage.addChildAt(node, this.ctx.stage.getChildIndex(this.stop));
     });
     this.drawFirst();
-    this.actor.removeChildren().forEach(c => c.destroy({ children: true }));
+    this.actor.removeChildren().forEach((c) => c.destroy({ children: true }));
     const art = picture(actionOf(this.sign));
     art.scale.set(1.3);
     this.actor.addChild(art);
@@ -410,7 +608,10 @@ class SignDo implements Game {
       return false;
     }
     this.selected = false;
-    if (Math.hypot(x - this.socket.x, y - this.socket.y) < 90) { this.place(); return true; }
+    if (Math.hypot(x - this.socket.x, y - this.socket.y) < 90) {
+      this.place();
+      return true;
+    }
     this.marks.stop = false;
     return false;
   }
@@ -431,7 +632,9 @@ class SignDo implements Game {
     // The stop is named, never read as silence.
     if (this.marks.stop) await this.ctx.say('read.stamp');
   }
-  private perform() { return actOut(this.ctx, this.actor, actionOf(this.sign)); }
+  private perform() {
+    return actOut(this.ctx, this.actor, actionOf(this.sign));
+  }
   private async sendSign() {
     if (this.busy || this.finished) return;
     this.lock(true);
@@ -452,7 +655,10 @@ class SignDo implements Game {
     sfx.boing();
     this.misses++;
     this.wrongs++;
-    if (this.wrongs >= 2 && !this.hinted) { this.hinted = true; this.hints++; }
+    if (this.wrongs >= 2 && !this.hinted) {
+      this.hinted = true;
+      this.hints++;
+    }
     await this.ctx.say(gap === 'cap' ? 'read.cap.missing' : 'read.stop.missing');
     if (this.alive) this.lock(false);
   }
@@ -465,9 +671,16 @@ function wishArt(wish: Wish): Container {
   animal.scale.set(wish.actor.size === 'big' ? 0.42 : 0.23);
   animal.position.set(-22, 58);
   if (wish.verb === 'sleeps') animal.setMood('sleepy');
-  const mark = wish.verb === 'sleeps' ? label('Z', 34, swatch.blue.line) : new Graphics()
-    .moveTo(0, 35).lineTo(0, -30).moveTo(-18, -12).lineTo(0, -30).lineTo(18, -12)
-    .stroke({ width: 8, color: swatch.green.line, cap: 'round', join: 'round' });
+  const mark =
+    wish.verb === 'sleeps'
+      ? label('Z', 34, swatch.blue.line)
+      : new Graphics()
+          .moveTo(0, 35)
+          .lineTo(0, -30)
+          .moveTo(-18, -12)
+          .lineTo(0, -30)
+          .lineTo(18, -12)
+          .stroke({ width: 8, color: swatch.green.line, cap: 'round', join: 'round' });
   mark.position.set(66, wish.verb === 'sleeps' ? -30 : -10);
   node.addChild(animal, mark);
   node.eventMode = 'none';
@@ -475,11 +688,19 @@ function wishArt(wish: Wish): Container {
 }
 function wordTile(word: string, size = 30) {
   const node = new Container();
-  node.addChild(new Graphics().roundRect(-54, -50, 108, 100, 16).fill(cream).stroke({ width: 3, color: wood.line }), label(word, size));
+  node.addChild(
+    new Graphics().roundRect(-54, -50, 108, 100, 16).fill(cream).stroke({ width: 3, color: wood.line }),
+    label(word, size),
+  );
   node.hitArea = new Rectangle(-54, -50, 108, 100);
   return node;
 }
-interface MakeTile { word: SlotWord; node: Container; drag: DragHandle; slot: number }
+interface MakeTile {
+  word: SlotWord;
+  node: Container;
+  drag: DragHandle;
+  slot: number;
+}
 const STAGE_SCALE = 1.3;
 const centre = (b: Box) => ({ x: b.x + b.w / 2, y: b.y + b.h / 2 });
 
@@ -532,23 +753,71 @@ class MakeDo implements Game {
     this.level = ctx.level;
     this.L = signLayout(ctx.view, this.level);
     this.wishes = this.level >= 8 ? makeMendSigns(ctx.rng, this.level) : makeWishes(ctx.rng);
-    this.backdrop = new Backdrop({ sky: [swatch.green.light, cream], hills: [swatch.green.fill, swatch.teal.light], horizon: 0.72, clouds: 2, sun: false, seed: 47 }, ctx.view);
-    this.actors.eventMode = this.glow.eventMode = this.outlines.eventMode = this.socket.eventMode = this.gapMark.eventMode = 'none';
+    this.backdrop = new Backdrop(
+      {
+        sky: [swatch.green.light, cream],
+        hills: [swatch.green.fill, swatch.teal.light],
+        horizon: 0.72,
+        clouds: 2,
+        sun: false,
+        seed: 47,
+      },
+      ctx.view,
+    );
+    this.actors.eventMode =
+      this.glow.eventMode =
+      this.outlines.eventMode =
+      this.socket.eventMode =
+      this.gapMark.eventMode =
+        'none';
     this.socket.addChild(socketArt());
     this.gapMark.addChild(socketArt(16, 46, swatch.yellow.line));
     onTap(this.replay, () => void this.free(() => this.speakSign()));
-    onTap(this.show, () => void this.free(async () => { await this.speakSign(); if (this.alive) await this.perform(act(this.sign, this.round.stage)); }));
+    onTap(
+      this.show,
+      () =>
+        void this.free(async () => {
+          await this.speakSign();
+          if (this.alive) await this.perform(act(this.sign, this.round.stage));
+        }),
+    );
     onTap(this.send, () => void this.sendSign());
     onTap(this.the, () => this.hear('read.the', this.the));
     onTap(this.stop, () => this.hear('read.stamp', this.stop));
-    onTap(this.card, () => { if (!this.busy && !this.finished) { sfx.pop(2); void ctx.say('read.make.wish'); } });
-    ctx.stage.addChild(this.backdrop, this.actors, this.card, this.outlines, this.socket, this.the, this.stop, this.replay, this.show, this.send, this.gapMark, this.glow);
+    onTap(this.card, () => {
+      if (!this.busy && !this.finished) {
+        sfx.pop(2);
+        void ctx.say('read.make.wish');
+      }
+    });
+    ctx.stage.addChild(
+      this.backdrop,
+      this.actors,
+      this.card,
+      this.outlines,
+      this.socket,
+      this.the,
+      this.stop,
+      this.replay,
+      this.show,
+      this.send,
+      this.gapMark,
+      this.glow,
+    );
   }
-  get round() { return this.wishes[this.index]; }
+  get round() {
+    return this.wishes[this.index];
+  }
   private get instruction(): LineId {
-    return this.level >= 9 ? 'read.mend.swap.instruction' : this.level === 8 ? 'read.mend.instruction' : 'read.make.instruction';
+    return this.level >= 9
+      ? 'read.mend.swap.instruction'
+      : this.level === 8
+        ? 'read.mend.instruction'
+        : 'read.make.instruction';
   }
-  start() { void this.next(); }
+  start() {
+    void this.next();
+  }
   destroy() {
     this.alive = false;
     for (const t of this.tiles) t.drag.destroy();
@@ -582,13 +851,20 @@ class MakeDo implements Game {
       if (t.drag.dragging) continue;
       const to = this.spot(t);
       if (animate) void this.ctx.tw.to(t.node, to, { duration: 0.18 });
-      else { this.ctx.tw.kill(t.node); t.node.position.copyFrom(to); }
+      else {
+        this.ctx.tw.kill(t.node);
+        t.node.position.copyFrom(to);
+      }
     }
     this.socket.visible = this.sign.length === 0;
   }
   /** The centres of `words` slot words at rest, with nothing spread open. */
-  private rest(words: number) { return this.L.row.slice(1, 1 + words).map(b => centre(b).x); }
-  private gapX(gap: number) { return centre(this.L.row[1]).x - 58 + gap * 116; }
+  private rest(words: number) {
+    return this.L.row.slice(1, 1 + words).map((b) => centre(b).x);
+  }
+  private gapX(gap: number) {
+    return centre(this.L.row[1]).x - 58 + gap * 116;
+  }
   private overSign(x: number, y: number) {
     const d = this.L.drop;
     return x >= d.x && x <= d.x + d.w && y >= d.y && y <= d.y + d.h;
@@ -598,12 +874,15 @@ class MakeDo implements Game {
     this.glow.clear();
     this.gapMark.visible = false;
     if (this.swapNode && !this.swapNode.destroyed) this.swapNode.rotation = Math.sin(this.clock * 14) * 0.07;
-    if (!this.hinted || this.busy || this.finished || !this.round || this.tiles.some(t => t.drag.dragging)) return;
+    if (!this.hinted || this.busy || this.finished || !this.round || this.tiles.some((t) => t.drag.dragging))
+      return;
     const hint = hintFor(this.sign, this.round, this.level);
     if (hint.kind === 'add') this.gapMark.visible = true;
     for (const target of this.hintTargets(hint)) {
       const wide = target === this.send ? 170 : 128;
-      this.glow.roundRect(target.x - wide / 2, target.y - 62, wide, 124, 26).stroke({ width: 6 + Math.sin(this.clock * 5), color: swatch.yellow.fill });
+      this.glow
+        .roundRect(target.x - wide / 2, target.y - 62, wide, 124, 26)
+        .stroke({ width: 6 + Math.sin(this.clock * 5), color: swatch.yellow.fill });
     }
   }
   /** What the hint points at, the thing to move first; for a word to add, also sets the dotted mark at its gap; a swap glows the tray word and the word it replaces. */
@@ -614,15 +893,20 @@ class MakeDo implements Game {
     this.gapMark.position.set(this.gapX(hint.gap), centre(this.L.row[1]).y);
     return [this.tileOf(hint.word).node];
   }
-  private tileOf(word: SlotWord) { return this.tiles.find(t => t.word === word)!; }
+  private tileOf(word: SlotWord) {
+    return this.tiles.find((t) => t.word === word)!;
+  }
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished || !this.round || this.tiles.some(t => t.drag.dragging)) return null;
+    if (this.busy || this.finished || !this.round || this.tiles.some((t) => t.drag.dragging)) return null;
     const hint = hintFor(this.sign, this.round, this.level);
     const [target, onto] = this.hintTargets(hint);
     if (hint.kind === 'send') return { tap: { on: this.send } };
     if (hint.kind === 'add') return { drag: { on: target }, to: { on: this.gapMark } };
     if (hint.kind === 'swap') return { drag: { on: target }, to: { on: onto } };
-    return { drag: { on: target }, to: { on: this.outlines.children[this.tileOf(this.sign[hint.index]).slot] as Container } };
+    return {
+      drag: { on: target },
+      to: { on: this.outlines.children[this.tileOf(this.sign[hint.index]).slot] as Container },
+    };
   }
   private lock(on: boolean) {
     this.busy = on;
@@ -632,10 +916,12 @@ class MakeDo implements Game {
     if (this.busy || this.finished) return;
     sfx.pop(2);
     void this.ctx.say(line);
-    void this.ctx.tw.to(node, { alpha: 0.65 }, { duration: 0.08 }).then(() => { if (this.alive && !node.destroyed) return this.ctx.tw.to(node, { alpha: 1 }, { duration: 0.15 }); });
+    void this.ctx.tw.to(node, { alpha: 0.65 }, { duration: 0.08 }).then(() => {
+      if (this.alive && !node.destroyed) return this.ctx.tw.to(node, { alpha: 1 }, { duration: 0.15 });
+    });
   }
   private async free(run: () => Promise<void>) {
-    if (this.busy || this.finished || this.tiles.some(t => t.drag.dragging)) return;
+    if (this.busy || this.finished || this.tiles.some((t) => t.drag.dragging)) return;
     this.lock(true);
     sfx.pop(2);
     await run();
@@ -648,7 +934,10 @@ class MakeDo implements Game {
     this.wrongs = 0;
     this.hinted = this.toldFull = false;
     this.sign = [];
-    for (const t of this.tiles.splice(0)) { t.drag.destroy(); t.node.destroy({ children: true }); }
+    for (const t of this.tiles.splice(0)) {
+      t.drag.destroy();
+      t.node.destroy({ children: true });
+    }
     if (this.index === this.wishes.length) {
       this.finished = true;
       sfx.tada();
@@ -656,7 +945,7 @@ class MakeDo implements Game {
       if (this.alive) this.ctx.finish({ misses: this.misses, hints: this.hints });
       return;
     }
-    this.outlines.removeChildren().forEach(c => c.destroy({ children: true }));
+    this.outlines.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.round.tray.forEach((word, slot) => {
       this.outlines.addChild(socketArt(50, 46)).alpha = 0.35;
       const node = wordTile(word);
@@ -670,18 +959,32 @@ class MakeDo implements Game {
         onDrop: (x, y) => this.dropTile(tile, x, y),
       });
       tile.drag.enabled = false;
-      node.on('pointerdown', e => { const p = this.ctx.stage.toLocal(e.global); this.finger = { x: p.x, y: p.y, travel: 0 }; });
-      node.on('globalpointermove', e => {
+      node.on('pointerdown', (e) => {
+        const p = this.ctx.stage.toLocal(e.global);
+        this.finger = { x: p.x, y: p.y, travel: 0 };
+      });
+      node.on('globalpointermove', (e) => {
         if (!tile.drag.dragging) return;
         const p = this.ctx.stage.toLocal(e.global);
-        this.finger.travel = Math.max(this.finger.travel, Math.hypot(p.x - this.finger.x, p.y - this.finger.y));
+        this.finger.travel = Math.max(
+          this.finger.travel,
+          Math.hypot(p.x - this.finger.x, p.y - this.finger.y),
+        );
       });
       this.tiles.push(tile);
       this.ctx.stage.addChildAt(node, this.ctx.stage.getChildIndex(this.gapMark));
     });
-    this.card.removeChildren().forEach(c => c.destroy({ children: true }));
-    this.card.addChild(new Graphics().poly([-60, 70, -100, 110, -30, 78]).fill(cream).stroke({ width: 4, color: wood.line })
-      .roundRect(-100, -80, 200, 160, 30).fill(cream).stroke({ width: 4, color: wood.line }), wishArt(this.round.wish));
+    this.card.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.card.addChild(
+      new Graphics()
+        .poly([-60, 70, -100, 110, -30, 78])
+        .fill(cream)
+        .stroke({ width: 4, color: wood.line })
+        .roundRect(-100, -80, 200, 160, 30)
+        .fill(cream)
+        .stroke({ width: 4, color: wood.line }),
+      wishArt(this.round.wish),
+    );
     this.card.hitArea = new Rectangle(-100, -80, 200, 160);
     this.sign = 'start' in this.round ? [...(this.round.start as SlotWord[])] : [];
     this.cast();
@@ -700,7 +1003,7 @@ class MakeDo implements Game {
   }
   /** Puts the stage's animals in their places: one in the middle, or the big one left and the small one right. */
   private cast() {
-    this.actors.removeChildren().forEach(c => c.destroy({ children: true }));
+    this.actors.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.critters = this.round.stage.map((a, i, all) => {
       const critter = new Critter(CRITTERS[a.animal]);
       critter.alive = false;
@@ -713,7 +1016,7 @@ class MakeDo implements Game {
   /** Where a held tile would land; only a tray tile can swap (a sign word moves to a gap, as at level 7). */
   private landing(tile: MakeTile, x: number, y: number): Drop | null {
     if (!this.overSign(x, y)) return null;
-    const others = this.sign.filter(w => w !== tile.word).length;
+    const others = this.sign.filter((w) => w !== tile.word).length;
     return resolveDrop(x, this.rest(others), others === this.sign.length ? this.level : 7, this.held);
   }
   /** Dims and wobbles the slot word a held tile would replace (null: none). */
@@ -721,20 +1024,26 @@ class MakeDo implements Game {
     const node = drop?.kind === 'swap' ? this.tileOf(this.sign[drop.index]).node : null;
     this.held = drop?.kind === 'swap' ? drop : null;
     if (node === this.swapNode) return;
-    if (this.swapNode && !this.swapNode.destroyed) { this.swapNode.alpha = 1; this.swapNode.rotation = 0; }
+    if (this.swapNode && !this.swapNode.destroyed) {
+      this.swapNode.alpha = 1;
+      this.swapNode.rotation = 0;
+    }
     this.swapNode = node;
-    if (node) { node.alpha = 0.55; sfx.pop(1); }
+    if (node) {
+      node.alpha = 0.55;
+      sfx.pop(1);
+    }
   }
   private hovering(tile: MakeTile, x: number, y: number) {
     const drop = this.landing(tile, x, y);
     this.setSwap(drop);
-    const others = this.sign.filter(w => w !== tile.word).length;
+    const others = this.sign.filter((w) => w !== tile.word).length;
     const gap = drop?.kind === 'gap' && others < MAX_SLOTS ? drop.gap : null;
     if (gap === this.hover) return;
     this.hover = gap;
     // Spread the words around the gap she is over, as if she had taken hers out.
     const was = this.sign;
-    this.sign = was.filter(w => w !== tile.word);
+    this.sign = was.filter((w) => w !== tile.word);
     this.place(true);
     this.sign = was;
   }
@@ -743,16 +1052,22 @@ class MakeDo implements Game {
     const drop = this.landing(tile, x, y);
     this.setSwap(null);
     const tapped = this.finger.travel < 30;
-    const others = this.sign.filter(w => w !== tile.word);
-    if (this.busy) { /* never changes a sign mid-read */ }
-    else if (tapped) { sfx.pop(2); void this.ctx.say(WORD_LINES[tile.word]); }
-    else if (drop?.kind === 'swap') {
+    const others = this.sign.filter((w) => w !== tile.word);
+    if (this.busy) {
+      /* never changes a sign mid-read */
+    } else if (tapped) {
+      sfx.pop(2);
+      void this.ctx.say(WORD_LINES[tile.word]);
+    } else if (drop?.kind === 'swap') {
       // The tray word takes the slot word's place; the replaced word floats to its home slot.
       this.sign = this.sign.map((w, i) => (i === drop.index ? tile.word : w));
       sfx.marimba(drop.index + 3, 0.2);
     } else if (drop) {
       if (others.length >= MAX_SLOTS) {
-        if (!this.toldFull) { this.toldFull = true; void this.ctx.say('read.make.full'); }
+        if (!this.toldFull) {
+          this.toldFull = true;
+          void this.ctx.say('read.make.full');
+        }
       } else {
         const gap = drop.gap;
         this.sign = [...others.slice(0, gap), tile.word, ...others.slice(gap)];
@@ -763,8 +1078,8 @@ class MakeDo implements Game {
     return true;
   }
   private async speakSign() {
-    const nodes = [this.the, ...this.sign.map(w => this.tileOf(w).node)];
-    const lines: LineId[] = ['read.the', ...this.sign.map(w => WORD_LINES[w])];
+    const nodes = [this.the, ...this.sign.map((w) => this.tileOf(w).node)];
+    const lines: LineId[] = ['read.the', ...this.sign.map((w) => WORD_LINES[w])];
     for (let i = 0; i < lines.length; i++) {
       if (!this.alive) return;
       nodes[i].alpha = 0.6;
@@ -777,8 +1092,11 @@ class MakeDo implements Game {
   private async perform(o: Outcome) {
     const tw = this.ctx.tw;
     if (o.kind === 'unreadable') {
-      const row = [this.the, ...this.sign.map(w => this.tileOf(w).node), this.stop];
-      for (const dx of [-10, 10, 0]) { row.forEach(n => void tw.to(n, { x: n.x + dx }, { duration: 0.1 })); await tw.wait(0.1); }
+      const row = [this.the, ...this.sign.map((w) => this.tileOf(w).node), this.stop];
+      for (const dx of [-10, 10, 0]) {
+        row.forEach((n) => void tw.to(n, { x: n.x + dx }, { duration: 0.1 }));
+        await tw.wait(0.1);
+      }
       this.place(false);
       return;
     }
@@ -786,19 +1104,27 @@ class MakeDo implements Game {
       const mark = label('?', 72, wood.line);
       mark.position.set(0, -130);
       this.actors.addChild(mark);
-      for (const r of [-0.15, 0.15, 0]) await Promise.all(this.critters.map(c => tw.to(c, { rotation: r }, { duration: 0.25 })));
+      for (const r of [-0.15, 0.15, 0])
+        await Promise.all(this.critters.map((c) => tw.to(c, { rotation: r }, { duration: 0.25 })));
       if (!mark.destroyed) mark.destroy();
       return;
     }
     if (o.kind === 'which') {
-      this.critters.forEach(c => c.setMood('surprised'));
-      await Promise.all(this.critters.map((c, i) => tw.to(c, { rotation: i === 0 ? 0.18 : -0.18 }, { duration: 0.25 })));
+      this.critters.forEach((c) => c.setMood('surprised'));
+      await Promise.all(
+        this.critters.map((c, i) => tw.to(c, { rotation: i === 0 ? 0.18 : -0.18 }, { duration: 0.25 })),
+      );
       await tw.wait(0.5);
-      await Promise.all(this.critters.map(c => tw.to(c, { rotation: 0 }, { duration: 0.25 })));
-      this.critters.forEach(c => { if (!c.destroyed) c.setMood('happy'); });
+      await Promise.all(this.critters.map((c) => tw.to(c, { rotation: 0 }, { duration: 0.25 })));
+      this.critters.forEach((c) => {
+        if (!c.destroyed) c.setMood('happy');
+      });
       return;
     }
-    const critter = this.critters[this.round.stage.findIndex(a => a.animal === o.actor.animal && a.size === o.actor.size)];
+    const critter =
+      this.critters[
+        this.round.stage.findIndex((a) => a.animal === o.actor.animal && a.size === o.actor.size)
+      ];
     if (o.verb === 'jumps') {
       const y = critter.y;
       await tw.to(critter, { y: y - 60 }, { duration: 0.25 });
@@ -814,7 +1140,7 @@ class MakeDo implements Game {
     if (!critter.destroyed) critter.setMood('happy');
   }
   private async sendSign() {
-    if (this.busy || this.finished || this.tiles.some(t => t.drag.dragging)) return;
+    if (this.busy || this.finished || this.tiles.some((t) => t.drag.dragging)) return;
     if (!this.sign.length) {
       // Nothing to judge yet: the instruction again, never a miss.
       this.lock(true);
@@ -842,33 +1168,62 @@ class MakeDo implements Game {
     this.wrongs++;
     if (outcome.kind === 'act') await this.ctx.say('read.make.other', { words });
     else if (outcome.kind === 'which') await this.ctx.say('read.make.which', { animal: outcome.animal });
-    else if (outcome.kind === 'none') await this.ctx.say('read.make.none', { words: outcome.size ? `${outcome.size} ${outcome.animal}` : outcome.animal });
+    else if (outcome.kind === 'none')
+      await this.ctx.say('read.make.none', {
+        words: outcome.size ? `${outcome.size} ${outcome.animal}` : outcome.animal,
+      });
     else await this.ctx.say('read.make.mixed');
     if (!this.alive) return;
-    if (this.wrongs >= 2 && !this.hinted) { this.hinted = true; this.hints++; }
+    if (this.wrongs >= 2 && !this.hinted) {
+      this.hinted = true;
+      this.hints++;
+    }
     if (this.hinted) {
       const hint = hintFor(this.sign, this.round, this.level);
-      if (hint.kind === 'add') { await this.ctx.say('read.make.hint.add'); if (this.alive) await this.ctx.say(WORD_LINES[hint.word]); }
-      else if (hint.kind === 'swap') { await this.ctx.say('read.mend.hint.swap'); if (this.alive) await this.ctx.say(WORD_LINES[hint.word]); }
-      else if (hint.kind === 'out') await this.ctx.say('read.make.hint.out');
+      if (hint.kind === 'add') {
+        await this.ctx.say('read.make.hint.add');
+        if (this.alive) await this.ctx.say(WORD_LINES[hint.word]);
+      } else if (hint.kind === 'swap') {
+        await this.ctx.say('read.mend.hint.swap');
+        if (this.alive) await this.ctx.say(WORD_LINES[hint.word]);
+      } else if (hint.kind === 'out') await this.ctx.say('read.make.hint.out');
     }
     if (this.alive) this.lock(false);
   }
 }
 function sticker(seed: number) {
   const c = new Container();
-  c.addChild(new Graphics().roundRect(-95, -70, 190, 140, 20).fill(cream).stroke({ width: 6, color: wood.line }), picture(new Rng(seed).pick([
-    { kind: 'action', animal: 'duck', action: 'jump' }, { kind: 'action', animal: 'cat', action: 'sleep' },
-  ] as const)));
+  c.addChild(
+    new Graphics().roundRect(-95, -70, 190, 140, 20).fill(cream).stroke({ width: 6, color: wood.line }),
+    picture(
+      new Rng(seed).pick([
+        { kind: 'action', animal: 'duck', action: 'jump' },
+        { kind: 'action', animal: 'cat', action: 'sleep' },
+      ] as const),
+    ),
+  );
   return c;
 }
 export const readDo: GameModule = {
-  id: 'read-do', name: 'Read & Do', titleLine: 'game.read-do', region: 'story-grove', challenge: 'words',
-  skills: ['reading', 'word meaning', 'sentences'], bands: ['prek', 'school'],
-  levels: band => rangeFor(LEVELS, band), describeLevel: level => planFor(level).name,
-  music: STYLES.quiet, touchDemo: true,
+  id: 'read-do',
+  name: 'Read & Do',
+  titleLine: 'game.read-do',
+  region: 'story-grove',
+  challenge: 'words',
+  skills: ['reading', 'word meaning', 'sentences'],
+  bands: ['prek', 'school'],
+  levels: (band) => rangeFor(LEVELS, band),
+  describeLevel: (level) => planFor(level).name,
+  music: STYLES.quiet,
+  touchDemo: true,
   coplayHint: 'Read the sign together, then let your child choose. Hearing a word is free support.',
   offScreen: 'Write big pig or green hat on a card and find a matching toy or drawing together.',
-  hubIcon: () => { const art = sticker(1); art.y = -80; return new WigglyIcon(art); },
-  sticker, create: ctx => (ctx.level >= 7 ? new MakeDo(ctx) : stepFor(ctx.level) ? new SignDo(ctx) : new ReadDo(ctx)),
+  hubIcon: () => {
+    const art = sticker(1);
+    art.y = -80;
+    return new WigglyIcon(art);
+  },
+  sticker,
+  create: (ctx) =>
+    ctx.level >= 7 ? new MakeDo(ctx) : stepFor(ctx.level) ? new SignDo(ctx) : new ReadDo(ctx),
 };

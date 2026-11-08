@@ -1,6 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { distances, goal, inPlace, makeBoard, neighbours, nookLayout, planFor, pool, slide, solutionStep, solved } from './logic';
+import {
+  distances,
+  goal,
+  inPlace,
+  makeBoard,
+  neighbours,
+  nookLayout,
+  planFor,
+  pool,
+  slide,
+  solutionStep,
+  solved,
+} from './logic';
 import { square, uprightProblems, UPRIGHT_VIEWS } from '../upright-check';
 
 describe('Number Nook', () => {
@@ -14,7 +26,10 @@ describe('Number Nook', () => {
     expect(pool(1).length).toBe(6);
     expect(pool(2).length).toBe(40);
     expect(pool(3).length).toBe(1893);
-    for (const [level, least] of [[1, 4], [2, 20]] as const) {
+    for (const [level, least] of [
+      [1, 4],
+      [2, 20],
+    ] as const) {
       const seen = new Set<string>();
       for (let seed = 1; seed <= 80; seed++) seen.add(makeBoard(level, new Rng(seed)).join(''));
       expect(seen.size, `level ${level}`).toBeGreaterThanOrEqual(least);
@@ -26,22 +41,25 @@ describe('Number Nook', () => {
     expect(inPlace([1, 2, 0, 3])).toBe(2);
   });
   it('generates seeded boards at a shortest distance inside the level range and solves them with legal hints', () => {
-    for (let level = 1; level <= 3; level++) for (let seed = 1; seed <= 25; seed++) {
-      const p = planFor(level);
-      let board = makeBoard(level, new Rng(seed));
-      expect(board).toEqual(makeBoard(level, new Rng(seed)));
-      expect(board.slice().sort((a, b) => a - b)).toEqual(Array.from({ length: p.rows * p.cols }, (_, i) => i));
-      const start = solutionStep(board, p.cols)!.distance;
-      expect(start).toBeGreaterThanOrEqual(p.near);
-      expect(start).toBeLessThanOrEqual(p.far);
-      for (let remaining = start; remaining > 0; remaining--) {
-        const step = solutionStep(board, p.cols)!;
-        expect(step.distance).toBe(remaining);
-        board = slide(board, p.cols, step.next)!;
-        expect(board).not.toBeNull();
+    for (let level = 1; level <= 3; level++)
+      for (let seed = 1; seed <= 25; seed++) {
+        const p = planFor(level);
+        let board = makeBoard(level, new Rng(seed));
+        expect(board).toEqual(makeBoard(level, new Rng(seed)));
+        expect(board.slice().sort((a, b) => a - b)).toEqual(
+          Array.from({ length: p.rows * p.cols }, (_, i) => i),
+        );
+        const start = solutionStep(board, p.cols)!.distance;
+        expect(start).toBeGreaterThanOrEqual(p.near);
+        expect(start).toBeLessThanOrEqual(p.far);
+        for (let remaining = start; remaining > 0; remaining--) {
+          const step = solutionStep(board, p.cols)!;
+          expect(step.distance).toBe(remaining);
+          board = slide(board, p.cols, step.next)!;
+          expect(board).not.toBeNull();
+        }
+        expect(solved(board)).toBe(true);
       }
-      expect(solved(board)).toBe(true);
-    }
   });
   it('hints still shorten the route after any legal exploratory slide', () => {
     for (const [key, info] of distances(2, 3)) {
@@ -55,7 +73,8 @@ describe('Number Nook', () => {
     }
   });
   it('rejects distant, diagonal, blank and wrapped moves without mutating the board', () => {
-    const b = goal(3, 3), before = b.slice();
+    const b = goal(3, 3),
+      before = b.slice();
     for (const at of [0, 4, 8, -1, 9]) expect(slide(b, 3, at)).toBeNull();
     expect(b).toEqual(before);
     expect(neighbours([1, 2, 0, 3, 4, 5], 3)).toEqual([5, 1]);
@@ -64,13 +83,29 @@ describe('Number Nook', () => {
 
 describe('Number Nook on a phone held upright (chunk 31)', () => {
   it('fits every board, the goal picture and the buttons in each upright view', () => {
-    for (const [name, v] of Object.entries(UPRIGHT_VIEWS)) for (const level of [1, 2, 3]) {
-      const { rows, cols } = planFor(level);
-      const l = nookLayout(v.w, v.h, rows, cols);
-      const cells = Array.from({ length: rows * cols }, (_, i) => square(`cell ${i}`, { x: l.grid.x + (i % cols) * l.cell, y: l.grid.y + Math.floor(i / cols) * l.cell }, l.cell - 1));
-      const goalPicture = { what: 'goal', x: l.target.x, y: 250 + ((rows - 1) * 50) / 2 - 20, w: cols * 50, h: rows * 50 + 40 };
-      const buttons = l.buttons.map((b, i) => square(`button ${i}`, b, 120));
-      expect(uprightProblems(v, [...cells, goalPicture, ...buttons], 100), `${name} level ${level}`).toEqual([]);
-    }
+    for (const [name, v] of Object.entries(UPRIGHT_VIEWS))
+      for (const level of [1, 2, 3]) {
+        const { rows, cols } = planFor(level);
+        const l = nookLayout(v.w, v.h, rows, cols);
+        const cells = Array.from({ length: rows * cols }, (_, i) =>
+          square(
+            `cell ${i}`,
+            { x: l.grid.x + (i % cols) * l.cell, y: l.grid.y + Math.floor(i / cols) * l.cell },
+            l.cell - 1,
+          ),
+        );
+        const goalPicture = {
+          what: 'goal',
+          x: l.target.x,
+          y: 250 + ((rows - 1) * 50) / 2 - 20,
+          w: cols * 50,
+          h: rows * 50 + 40,
+        };
+        const buttons = l.buttons.map((b, i) => square(`button ${i}`, b, 120));
+        expect(
+          uprightProblems(v, [...cells, goalPicture, ...buttons], 100),
+          `${name} level ${level}`,
+        ).toEqual([]);
+      }
   });
 });

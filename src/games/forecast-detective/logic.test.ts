@@ -2,14 +2,41 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  AUTHORED, CLUES, LEVEL1_WORLDS, WEATHERS, WORLDS, answerOf, answersFor, available, canTell, check, clueOrder, decided,
-  forecastLayout, freshHistory, isMiss, makeCase, possible, rainUpwind, ruledOutBy, tomorrow, usefulClue,
-  type Answer, type Box, type Case, type ClueId, type History, type Weather,
+  AUTHORED,
+  CLUES,
+  LEVEL1_WORLDS,
+  WEATHERS,
+  WORLDS,
+  answerOf,
+  answersFor,
+  available,
+  canTell,
+  check,
+  clueOrder,
+  decided,
+  forecastLayout,
+  freshHistory,
+  isMiss,
+  makeCase,
+  possible,
+  rainUpwind,
+  ruledOutBy,
+  tomorrow,
+  usefulClue,
+  type Answer,
+  type Box,
+  type Case,
+  type ClueId,
+  type History,
+  type Weather,
 } from './logic';
 
-const subsets = <T,>(xs: readonly T[]): T[][] => xs.reduce<T[][]>((acc, x) => [...acc, ...acc.map((s) => [...s, x])], [[]]);
+const subsets = <T>(xs: readonly T[]): T[][] =>
+  xs.reduce<T[][]>((acc, x) => [...acc, ...acc.map((s) => [...s, x])], [[]]);
 const MISSINGS: (ClueId | undefined)[] = [undefined, ...CLUES];
-const ALL_CASES: Case[] = WORLDS.flatMap((w) => MISSINGS.map((missing): Case => (missing ? { ...w, missing } : { ...w })));
+const ALL_CASES: Case[] = WORLDS.flatMap((w) =>
+  MISSINGS.map((missing): Case => (missing ? { ...w, missing } : { ...w })),
+);
 const names = (s: Set<Weather>) => WEATHERS.filter((w) => s.has(w));
 const W = (s: string): Weather[] => s.split(',').filter(Boolean) as Weather[];
 const ALL4 = 'sunny,cloudy,rainy,snowy';
@@ -19,22 +46,35 @@ describe('tomorrow', () => {
     expect(WORLDS.length).toBe(36);
     for (const w of WORLDS) {
       const sky = w[w.wind];
-      const want = sky === 'sun' ? 'sunny' : sky === 'cloud' ? 'cloudy' : w.temp === 'freezing' ? 'snowy' : 'rainy';
+      const want =
+        sky === 'sun' ? 'sunny' : sky === 'cloud' ? 'cloudy' : w.temp === 'freezing' ? 'snowy' : 'rainy';
       expect(tomorrow(w)).toBe(want);
       if (tomorrow(w) === 'snowy') expect(sky === 'rain' && w.temp === 'freezing').toBe(true);
       const down = w.wind === 'west' ? 'east' : 'west';
-      for (const s of ['sun', 'cloud', 'rain'] as const) expect(tomorrow({ ...w, [down]: s })).toBe(tomorrow(w));
+      for (const s of ['sun', 'cloud', 'rain'] as const)
+        expect(tomorrow({ ...w, [down]: s })).toBe(tomorrow(w));
     }
   });
 });
 
 describe('possible sets', () => {
   const rows1: [ClueId[], string][] = [
-    [[], ALL4], [['wind'], ALL4], [['west'], ALL4], [['east'], ALL4], [['temp'], 'sunny,cloudy,rainy'],
-    [['wind', 'west'], 'rainy,snowy'], [['wind', 'east'], ALL4], [['wind', 'temp'], 'sunny,cloudy,rainy'],
-    [['west', 'east'], 'sunny,rainy,snowy'], [['west', 'temp'], 'sunny,cloudy,rainy'], [['temp', 'east'], 'sunny,cloudy,rainy'],
-    [['wind', 'west', 'temp'], 'rainy'], [['wind', 'west', 'east'], 'rainy,snowy'], [['wind', 'temp', 'east'], 'sunny,cloudy,rainy'],
-    [['west', 'temp', 'east'], 'sunny,rainy'], [['wind', 'west', 'east', 'temp'], 'rainy'],
+    [[], ALL4],
+    [['wind'], ALL4],
+    [['west'], ALL4],
+    [['east'], ALL4],
+    [['temp'], 'sunny,cloudy,rainy'],
+    [['wind', 'west'], 'rainy,snowy'],
+    [['wind', 'east'], ALL4],
+    [['wind', 'temp'], 'sunny,cloudy,rainy'],
+    [['west', 'east'], 'sunny,rainy,snowy'],
+    [['west', 'temp'], 'sunny,cloudy,rainy'],
+    [['temp', 'east'], 'sunny,cloudy,rainy'],
+    [['wind', 'west', 'temp'], 'rainy'],
+    [['wind', 'west', 'east'], 'rainy,snowy'],
+    [['wind', 'temp', 'east'], 'sunny,cloudy,rainy'],
+    [['west', 'temp', 'east'], 'sunny,rainy'],
+    [['wind', 'west', 'east', 'temp'], 'rainy'],
   ];
   it('level-1 authored table, row for row (16 rows, any order)', () => {
     expect(rows1.length).toBe(16);
@@ -50,8 +90,14 @@ describe('possible sets', () => {
     const c = AUTHORED[2];
     expect(c.missing).toBe('east');
     const rows: [ClueId[], string][] = [
-      [[], ALL4], [['wind'], ALL4], [['west'], ALL4], [['temp'], 'sunny,cloudy,rainy'], [['wind', 'west'], ALL4],
-      [['wind', 'temp'], 'sunny,cloudy,rainy'], [['west', 'temp'], 'sunny,cloudy,rainy'], [['wind', 'west', 'temp'], 'sunny,cloudy,rainy'],
+      [[], ALL4],
+      [['wind'], ALL4],
+      [['west'], ALL4],
+      [['temp'], 'sunny,cloudy,rainy'],
+      [['wind', 'west'], ALL4],
+      [['wind', 'temp'], 'sunny,cloudy,rainy'],
+      [['west', 'temp'], 'sunny,cloudy,rainy'],
+      [['wind', 'west', 'temp'], 'sunny,cloudy,rainy'],
     ];
     expect(rows.length).toBe(8);
     for (const [open, want] of rows) expect(names(possible(c, open))).toEqual(W(want));
@@ -64,19 +110,24 @@ describe('possible sets', () => {
       for (const open of subsets(CLUES)) {
         const p = possible(c, open);
         expect(p.has(tomorrow(c))).toBe(true);
-        for (const k of CLUES) if (!open.includes(k)) for (const w of possible(c, [...open, k])) expect(p.has(w)).toBe(true);
+        for (const k of CLUES)
+          if (!open.includes(k)) for (const w of possible(c, [...open, k])) expect(p.has(w)).toBe(true);
       }
     }
-    for (const w of WORLDS) { expect(decided(w, CLUES)).toBe(true); expect(answerOf(w)).toBe(tomorrow(w)); }
+    for (const w of WORLDS) {
+      expect(decided(w, CLUES)).toBe(true);
+      expect(answerOf(w)).toBe(tomorrow(w));
+    }
   });
   it('has no likelihoods: a Set of weathers only, nothing numeric per weather', () => {
-    for (const c of ALL_CASES) for (const open of subsets(CLUES)) {
-      const p = possible(c, open);
-      expect(p).toBeInstanceOf(Set);
-      for (const w of p) expect(WEATHERS).toContain(w);
-      expect(p.size).toBeGreaterThan(0);
-      expect(p.size).toBeLessThanOrEqual(4);
-    }
+    for (const c of ALL_CASES)
+      for (const open of subsets(CLUES)) {
+        const p = possible(c, open);
+        expect(p).toBeInstanceOf(Set);
+        for (const w of p) expect(WEATHERS).toContain(w);
+        expect(p.size).toBeGreaterThan(0);
+        expect(p.size).toBeLessThanOrEqual(4);
+      }
     const p: Set<Weather> = possible(AUTHORED[1], []);
     expect(Object.keys(p)).toEqual([]);
   });
@@ -131,34 +182,49 @@ describe('check', () => {
     expect(isMiss({ kind: 'overclaim' })).toBe(true);
     expect(check(AUTHORED[1], [], 'rainy').kind).toBe('not-yet');
     expect(check(AUTHORED[1], ['wind', 'west'], 'snowy').kind).toBe('not-yet');
-    expect(check(AUTHORED[1], ['wind', 'west', 'east', 'temp'], 'snowy')).toEqual({ kind: 'ruled-out', by: 'temp' });
+    expect(check(AUTHORED[1], ['wind', 'west', 'east', 'temp'], 'snowy')).toEqual({
+      kind: 'ruled-out',
+      by: 'temp',
+    });
     expect(check(AUTHORED[2], ['wind', 'west', 'temp'], 'sunny').kind).toBe('overclaim');
     expect(check(AUTHORED[2], ['wind', 'west', 'temp'], 'cant-tell').kind).toBe('right');
     expect(check(AUTHORED[1], ['wind', 'west', 'temp'], 'cant-tell').kind).toBe('overclaim');
   });
   it('ruledOutBy names an open clue whose presence removes the weather, cumulatively in teaching order', () => {
-    for (const c of ALL_CASES) for (const open of subsets(available(c))) for (const wx of WEATHERS) {
-      const by = ruledOutBy(c, open, wx);
-      if (by === null) {
-        if (possible(c, open).has(wx)) continue;
-        throw new Error('ruled out but no remover');
-      }
-      expect(open).toContain(by);
-      expect(possible(c, open).has(wx)).toBe(false);
-      const order = clueOrder(c);
-      const prior = order.slice(0, order.indexOf(by)).filter((k) => open.includes(k));
-      expect(possible(c, prior).has(wx)).toBe(true);
-      expect(possible(c, [...prior, by]).has(wx)).toBe(false);
-      const down = c.wind === 'west' ? 'east' : 'west';
-      if (by === down) expect(open).not.toContain('wind');
-      expect(by).not.toBe('wind');
-    }
+    for (const c of ALL_CASES)
+      for (const open of subsets(available(c)))
+        for (const wx of WEATHERS) {
+          const by = ruledOutBy(c, open, wx);
+          if (by === null) {
+            if (possible(c, open).has(wx)) continue;
+            throw new Error('ruled out but no remover');
+          }
+          expect(open).toContain(by);
+          expect(possible(c, open).has(wx)).toBe(false);
+          const order = clueOrder(c);
+          const prior = order.slice(0, order.indexOf(by)).filter((k) => open.includes(k));
+          expect(possible(c, prior).has(wx)).toBe(true);
+          expect(possible(c, [...prior, by]).has(wx)).toBe(false);
+          const down = c.wind === 'west' ? 'east' : 'west';
+          if (by === down) expect(open).not.toContain('wind');
+          expect(by).not.toBe('wind');
+        }
   });
   it('clueOrder is wind, upwind postcard, temp, downwind postcard', () => {
-    expect(clueOrder({ wind: 'west', west: 'sun', east: 'sun', temp: 'warm' })).toEqual(['wind', 'west', 'temp', 'east']);
-    expect(clueOrder({ wind: 'east', west: 'sun', east: 'sun', temp: 'warm' })).toEqual(['wind', 'east', 'temp', 'west']);
+    expect(clueOrder({ wind: 'west', west: 'sun', east: 'sun', temp: 'warm' })).toEqual([
+      'wind',
+      'west',
+      'temp',
+      'east',
+    ]);
+    expect(clueOrder({ wind: 'east', west: 'sun', east: 'sun', temp: 'warm' })).toEqual([
+      'wind',
+      'east',
+      'temp',
+      'west',
+    ]);
   });
-  it('level 2: Can\'t tell yet is right exactly when every available clue is open and canTell is false', () => {
+  it("level 2: Can't tell yet is right exactly when every available clue is open and canTell is false", () => {
     for (const c of ALL_CASES.filter((x) => x.missing)) {
       const av = available(c);
       for (const open of subsets(av)) {
@@ -183,7 +249,8 @@ describe('hints', () => {
           expect(open).not.toContain(k);
           const size = possible(c, open).size;
           const closed = av.filter((x) => !open.includes(x));
-          if (closed.some((x) => possible(c, [...open, x]).size < size)) expect(possible(c, [...open, k!]).size).toBeLessThan(size);
+          if (closed.some((x) => possible(c, [...open, x]).size < size))
+            expect(possible(c, [...open, k!]).size).toBeLessThan(size);
           open = [...open, k!];
           steps++;
           expect(steps).toBeLessThanOrEqual(3);
@@ -222,26 +289,32 @@ describe('seeded rounds', () => {
     return out;
   };
   it('the first round of each level is the authored case', () => {
-    for (const lv of [1, 2] as const) for (let s = 1; s <= 20; s++) expect(run(lv, s, 1)[0]).toEqual(AUTHORED[lv]);
+    for (const lv of [1, 2] as const)
+      for (let s = 1; s <= 20; s++) expect(run(lv, s, 1)[0]).toEqual(AUTHORED[lv]);
   });
   it('makeCase is pure: same seed and history give the same case and history', () => {
-    for (const lv of [1, 2]) for (let s = 1; s <= 50; s++) {
-      expect(run(lv, s, 8)).toEqual(run(lv, s, 8));
-      const a = makeCase(lv, new Rng(s), false, freshHistory());
-      const b = makeCase(lv, new Rng(s), false, freshHistory());
-      expect(a).toEqual(b);
-    }
+    for (const lv of [1, 2])
+      for (let s = 1; s <= 50; s++) {
+        expect(run(lv, s, 8)).toEqual(run(lv, s, 8));
+        const a = makeCase(lv, new Rng(s), false, freshHistory());
+        const b = makeCase(lv, new Rng(s), false, freshHistory());
+        expect(a).toEqual(b);
+      }
   });
   it('level 1: postcards differ, always decidable, and rain upwind in every window of three rounds (300 seeds)', () => {
     for (let s = 1; s <= 300; s++) {
       const cs = run(1, s, 14);
-      cs.slice(1).forEach((c) => { expect(c.west).not.toBe(c.east); expect(c.missing).toBeUndefined(); });
+      cs.slice(1).forEach((c) => {
+        expect(c.west).not.toBe(c.east);
+        expect(c.missing).toBeUndefined();
+      });
       cs.forEach((c) => expect(canTell(c)).toBe(true));
       for (let i = 0; i + 3 <= cs.length; i++) expect(cs.slice(i, i + 3).some(rainUpwind)).toBe(true);
     }
   });
-  it('level 2: both kinds occur, they alternate after the authored round, never two can\'t-tell in a row (300 seeds)', () => {
-    let tell = 0, cant = 0;
+  it("level 2: both kinds occur, they alternate after the authored round, never two can't-tell in a row (300 seeds)", () => {
+    let tell = 0,
+      cant = 0;
     for (let s = 1; s <= 300; s++) {
       const cs = run(2, s, 10);
       const kinds = cs.map(canTell);
@@ -253,17 +326,25 @@ describe('seeded rounds', () => {
     expect(tell).toBeGreaterThan(0);
     expect(cant).toBeGreaterThan(0);
   });
-  it('answers: four weathers at level 1, plus Can\'t tell at level 2', () => {
+  it("answers: four weathers at level 1, plus Can't tell at level 2", () => {
     expect(answersFor(1)).toEqual([...WEATHERS]);
     expect(answersFor(2)).toEqual([...WEATHERS, 'cant-tell']);
   });
 });
 
 describe('layout', () => {
-  const VIEWS = { landscape: computeView(1024, 768), portrait: computeView(768, 1024), phone: computeView(844, 390), notch: computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }) };
-  const overlap = (a: Box, b: Box) => Math.abs(a.x - b.x) * 2 < a.w + b.w && Math.abs(a.y - b.y) * 2 < a.h + b.h;
-  const inside = (b: Box, v: { w: number; h: number }) => b.x - b.w / 2 >= 0 && b.y - b.h / 2 >= 0 && b.x + b.w / 2 <= v.w && b.y + b.h / 2 <= v.h;
-  const corner = (b: Box, x0: number, y0: number, x1: number, y1: number) => b.x - b.w / 2 < x1 && b.x + b.w / 2 > x0 && b.y - b.h / 2 < y1 && b.y + b.h / 2 > y0;
+  const VIEWS = {
+    landscape: computeView(1024, 768),
+    portrait: computeView(768, 1024),
+    phone: computeView(844, 390),
+    notch: computeView(844, 390, { top: 0, right: 47, bottom: 21, left: 47 }),
+  };
+  const overlap = (a: Box, b: Box) =>
+    Math.abs(a.x - b.x) * 2 < a.w + b.w && Math.abs(a.y - b.y) * 2 < a.h + b.h;
+  const inside = (b: Box, v: { w: number; h: number }) =>
+    b.x - b.w / 2 >= 0 && b.y - b.h / 2 >= 0 && b.x + b.w / 2 <= v.w && b.y + b.h / 2 <= v.h;
+  const corner = (b: Box, x0: number, y0: number, x1: number, y1: number) =>
+    b.x - b.w / 2 < x1 && b.x + b.w / 2 > x0 && b.y - b.h / 2 < y1 && b.y + b.h / 2 > y0;
   for (const [name, v] of Object.entries(VIEWS)) {
     for (const level of [1, 2]) {
       it(`${name}, level ${level}: big targets, inside, apart, corners clear`, () => {
@@ -278,11 +359,18 @@ describe('layout', () => {
           expect(corner(b, 0, 0, 120, 215)).toBe(false);
           expect(corner(b, 0, v.h - 170, 170, v.h)).toBe(false);
         }
-        for (let i = 0; i < targets.length; i++) for (let k = i + 1; k < targets.length; k++) expect(overlap(targets[i], targets[k])).toBe(false);
-        for (const k of CLUES) { expect(l.flaps[k].w).toBeGreaterThanOrEqual(150); expect(l.flaps[k].h).toBeGreaterThanOrEqual(150); }
+        for (let i = 0; i < targets.length; i++)
+          for (let k = i + 1; k < targets.length; k++) expect(overlap(targets[i], targets[k])).toBe(false);
+        for (const k of CLUES) {
+          expect(l.flaps[k].w).toBeGreaterThanOrEqual(150);
+          expect(l.flaps[k].h).toBeGreaterThanOrEqual(150);
+        }
         expect(l.rule.w).toBeGreaterThanOrEqual(110);
         expect(l.rule.h).toBeGreaterThanOrEqual(110);
-        for (const c of l.cards) { expect(c.w).toBeGreaterThanOrEqual(150); expect(c.h).toBeGreaterThanOrEqual(170); }
+        for (const c of l.cards) {
+          expect(c.w).toBeGreaterThanOrEqual(150);
+          expect(c.h).toBeGreaterThanOrEqual(170);
+        }
         expect(l.checkBtn.w).toBeGreaterThanOrEqual(130);
         expect(l.checkBtn.h).toBeGreaterThanOrEqual(130);
       });

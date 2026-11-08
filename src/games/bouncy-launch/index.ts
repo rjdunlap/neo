@@ -19,7 +19,36 @@ import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { CLOUDS } from './course';
-import { LEVELS, betweenTriples, type BetweenTriple, cloudAt, cloudCount, NEAR_FAR_LEVEL, NEAR_FAR_WINDOW, airtimeFor, gravityFor, planetPairs, planetSide, planetBotLanding, type PlanetPair, friendSpots, judge, judgeFriend, MAX_PULL, MIN_PULL, nextAsk, padAt, PADS, planFor, pullFor, pullToTake, reach, revealsPullRule, targets, type LaunchPlan } from './logic';
+import {
+  LEVELS,
+  betweenTriples,
+  type BetweenTriple,
+  cloudAt,
+  cloudCount,
+  NEAR_FAR_LEVEL,
+  NEAR_FAR_WINDOW,
+  airtimeFor,
+  gravityFor,
+  planetPairs,
+  planetSide,
+  planetBotLanding,
+  type PlanetPair,
+  friendSpots,
+  judge,
+  judgeFriend,
+  MAX_PULL,
+  MIN_PULL,
+  nextAsk,
+  padAt,
+  PADS,
+  planFor,
+  pullFor,
+  pullToTake,
+  reach,
+  revealsPullRule,
+  targets,
+  type LaunchPlan,
+} from './logic';
 import { rangeFor } from '../../progress/difficulty';
 
 const PET_SCALE = 0.5;
@@ -32,11 +61,25 @@ const SPRING = { fill: 0xc9d3dc, line: 0x8c9aa8 };
 /** A soft landing cloud resting on the grass. */
 function padArt(w: number): Graphics {
   const r = w / 4;
-  return puffs(new Graphics(), [[-r * 1.4, 0, r], [-r * 0.5, -r * 0.5, r * 1.2], [r * 0.5, -r * 0.4, r * 1.15], [r * 1.4, 0, r]], 0xffffff, 0xbfe0f4, 6);
+  return puffs(
+    new Graphics(),
+    [
+      [-r * 1.4, 0, r],
+      [-r * 0.5, -r * 0.5, r * 1.2],
+      [r * 0.5, -r * 0.4, r * 1.15],
+      [r * 1.4, 0, r],
+    ],
+    0xffffff,
+    0xbfe0f4,
+    6,
+  );
 }
 
 function starArt(r: number): Graphics {
-  return new Graphics().poly(starPoints(r, r * 0.45, 5)).fill(swatch.yellow.fill).stroke({ width: 5, color: swatch.yellow.line, join: 'round' });
+  return new Graphics()
+    .poly(starPoints(r, r * 0.45, 5))
+    .fill(swatch.yellow.fill)
+    .stroke({ width: 5, color: swatch.yellow.line, join: 'round' });
 }
 
 class BouncyLaunch implements Game {
@@ -117,12 +160,15 @@ class BouncyLaunch implements Game {
     this.returnToSeat();
   };
   private returnToSeat() {
-    void this.ctx.tw.to(this.pet, { x: this.seat.x, y: this.seat.y }, { duration: 0.3, ease: ease.outBack }).then(() => this.drawSpring());
+    void this.ctx.tw
+      .to(this.pet, { x: this.seat.x, y: this.seat.y }, { duration: 0.3, ease: ease.outBack })
+      .then(() => this.drawSpring());
   }
   private wrongs = 0;
   private clock = 0;
   private seat = { x: 0, y: 0 };
-  private flight: { pts: { x: number; y: number }[]; t: number; duration: number; done: () => void } | null = null;
+  private flight: { pts: { x: number; y: number }[]; t: number; duration: number; done: () => void } | null =
+    null;
   private strip = { x0: 0, x1: 0, y: 0 };
   private controllerPower = 0.5;
   /** Driven by a stick or keys (couch play, or a key pressed on the island) instead of a finger: the spring squashes straight down by the power. */
@@ -164,7 +210,9 @@ class BouncyLaunch implements Game {
     if (this.flying || this.finished || this.grab) return null;
     if (this.plan.mode === 'planet') {
       const pair = this.pairs[this.shot];
-      return this.planetPhase === 'choose' && pair ? { tap: { on: this.planetInput, x: this.landX(planetBotLanding(pair)), y: this.strip.y - 160 } } : null;
+      return this.planetPhase === 'choose' && pair
+        ? { tap: { on: this.planetInput, x: this.landX(planetBotLanding(pair)), y: this.strip.y - 160 } }
+        : null;
     }
     if (this.plan.mode === 'tap') return { tap: { on: this.pet, x: this.pet.touch.x, y: this.pet.touch.y } };
     if (this.plan.mode === 'between' && this.betweenStep < 2) return null;
@@ -174,7 +222,10 @@ class BouncyLaunch implements Game {
     }
     const pull = pullToTake(this.plan, this.shot, this.targets, this.last, this.spots);
     // Back and down, the way the leash allows; the finger travels as far as the pet is to be pulled.
-    const from = { x: this.seat.x + this.pet.touch.x * PET_SCALE, y: this.seat.y + this.pet.touch.y * PET_SCALE };
+    const from = {
+      x: this.seat.x + this.pet.touch.x * PET_SCALE,
+      y: this.seat.y + this.pet.touch.y * PET_SCALE,
+    };
     const d = { x: -0.35, y: 0.94 };
     const len = Math.hypot(d.x, d.y);
     return {
@@ -188,10 +239,13 @@ class BouncyLaunch implements Game {
     // Shown pulls only: a key never squashes the spring away from the pull on screen.
     if (this.plan.mode === 'planet' || this.plan.mode === 'between') return;
     if (this.flying || this.finished || this.grab) return;
-    const p = input.players.find(p => p.x || p.y || p.action);
+    const p = input.players.find((p) => p.x || p.y || p.action);
     if (!p) {
       // The first key on the island (GameScene passes control() only after a real press) shows the spring at once.
-      if (!this.stick) { this.stick = true; this.squash(); }
+      if (!this.stick) {
+        this.stick = true;
+        this.squash();
+      }
       return;
     }
     // Down (or right) squashes the spring for more power; up (or left) lets it back up.
@@ -256,20 +310,57 @@ class BouncyLaunch implements Game {
         this.spots = friendSpots(this.plan, ctx.rng);
       } else if (this.plan.mode === 'between') {
         this.betweens = betweenTriples(ctx.rng, this.plan.shots);
-        this.targets = this.betweens.map(t => t.mid);
+        this.targets = this.betweens.map((t) => t.mid);
       } else this.targets = targets(this.plan, ctx.rng);
     }
-    this.backdrop = new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0x9edb86], horizon: 0.78, clouds: 4, sun: true, seed: 88 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0x8fd3f7, 0xe9f7ff],
+        hills: [0xc8ecb0, 0x9edb86],
+        horizon: 0.78,
+        clouds: 4,
+        sun: true,
+        seed: 88,
+      },
+      ctx.view,
+    );
     if (this.plan.mode === 'planet') {
       for (const light of [true, false]) {
-        const backdrop = new Backdrop({ sky: light ? [swatch.purple.light, swatch.blue.light] : [swatch.orange.light, swatch.yellow.light], hills: light ? [swatch.purple.fill, swatch.purple.light] : [swatch.orange.line, swatch.orange.fill], horizon: 0.78, clouds: 0, seed: 88 }, ctx.view);
+        const backdrop = new Backdrop(
+          {
+            sky: light
+              ? [swatch.purple.light, swatch.blue.light]
+              : [swatch.orange.light, swatch.yellow.light],
+            hills: light
+              ? [swatch.purple.fill, swatch.purple.light]
+              : [swatch.orange.line, swatch.orange.fill],
+            horizon: 0.78,
+            clouds: 0,
+            seed: 88,
+          },
+          ctx.view,
+        );
         backdrop.visible = false;
         this.planetBackdrops.push(backdrop);
       }
       this.planetArt.eventMode = 'none';
     }
-    this.flag.eventMode = this.flagNumbers.eventMode = this.lastArc.eventMode = this.compareRing.eventMode = 'none';
-    ctx.stage.addChild(this.backdrop, ...this.planetBackdrops, this.planetArt, this.lastArc, this.flag, this.flagNumbers, this.compareRing, this.predictionRing, this.pullArrow);
+    this.flag.eventMode =
+      this.flagNumbers.eventMode =
+      this.lastArc.eventMode =
+      this.compareRing.eventMode =
+        'none';
+    ctx.stage.addChild(
+      this.backdrop,
+      ...this.planetBackdrops,
+      this.planetArt,
+      this.lastArc,
+      this.flag,
+      this.flagNumbers,
+      this.compareRing,
+      this.predictionRing,
+      this.pullArrow,
+    );
     this.pullArrow.eventMode = 'none';
     const padW = this.course?.padWidth ?? 0.85;
     for (let i = 0; i < cloudCount(this.plan); i++) {
@@ -285,7 +376,8 @@ class BouncyLaunch implements Game {
       this.pads.push(pad);
       pad.visible = this.plan.mode !== 'friend' && this.plan.mode !== 'planet';
       ctx.stage.addChild(pad);
-      if (this.plan.mode === 'predict' || this.plan.mode === 'between') onTap(pad, () => void this.predict(i), { cooldown: 500 });
+      if (this.plan.mode === 'predict' || this.plan.mode === 'between')
+        onTap(pad, () => void this.predict(i), { cooldown: 500 });
     }
     this.star.visible = this.plan.mode === 'star' || this.plan.mode === 'nearfar';
     this.stick = !!ctx.couch;
@@ -350,21 +442,27 @@ class BouncyLaunch implements Game {
   }
 
   private drawPlanet(v: View) {
-    this.planetBackdrops.forEach(b => b.resize(v));
+    this.planetBackdrops.forEach((b) => b.resize(v));
     this.planetInput.hitArea = new Rectangle(0, 0, v.w, v.h);
     const g = this.planetArt.clear();
     const pair = this.pairs[this.shot];
     const onPlanet = this.planetPhase !== 'home' && !!pair;
     this.backdrop.visible = !onPlanet;
-    this.planetBackdrops.forEach((b, i) => { b.visible = onPlanet && i === (pair.planet === 'light' ? 0 : 1); });
+    this.planetBackdrops.forEach((b, i) => {
+      b.visible = onPlanet && i === (pair.planet === 'light' ? 0 : 1);
+    });
     if (!onPlanet) return;
     if (pair.planet === 'light') {
-      for (const f of [0.15, 0.5, 0.85]) g.ellipse(v.w * f, this.strip.y + 75, 40, 12).fill(swatch.purple.fill).stroke({ width: 3, color: swatch.purple.line });
+      for (const f of [0.15, 0.5, 0.85])
+        g.ellipse(v.w * f, this.strip.y + 75, 40, 12)
+          .fill(swatch.purple.fill)
+          .stroke({ width: 3, color: swatch.purple.line });
       const x = v.w * 0.75;
       g.ellipse(x, 130, 60, 17).fill(swatch.green.fill);
       g.poly([x - 58, 135, x, 170, x + 58, 135]).fill(wood.fill);
     } else {
-      const x = v.w * 0.78, y = v.h * 0.56;
+      const x = v.w * 0.78,
+        y = v.h * 0.56;
       g.circle(x, y, 52).fill(swatch.purple.light).stroke({ width: 4, color: swatch.purple.line });
       g.ellipse(x, y + 8, 90, 18).stroke({ width: 8, color: swatch.purple.fill });
     }
@@ -377,7 +475,10 @@ class BouncyLaunch implements Game {
     this.planetRingSide = side;
     const flagX = this.landX(this.pairs[this.shot].base);
     const x = side === 'before' ? (this.strip.x0 + flagX) / 2 : (flagX + this.strip.x1) / 2;
-    this.predictionRing.clear().ellipse(x, this.strip.y - 80, 48, 48).stroke({ width: 6, color: swatch.yellow.fill });
+    this.predictionRing
+      .clear()
+      .ellipse(x, this.strip.y - 80, 48, 48)
+      .stroke({ width: 6, color: swatch.yellow.fill });
   }
 
   private async predictPlanet(x: number) {
@@ -410,14 +511,22 @@ class BouncyLaunch implements Game {
       this.last = this.pairs[this.shot].base;
       this.planetPhase = 'choose';
       this.drawFlag();
-      await this.ctx.tw.to(this.pet, { x: this.seat.x, y: this.seat.y }, { duration: 0.7, ease: ease.outBack });
+      await this.ctx.tw.to(
+        this.pet,
+        { x: this.seat.x, y: this.seat.y },
+        { duration: 0.7, ease: ease.outBack },
+      );
       this.flying = false;
       this.drawPlanet(this.view);
       this.showPredictionPull();
-      await this.instruct(this.pairs[this.shot].planet === 'light' ? 'launch.planet-light' : 'launch.planet-heavy');
+      await this.instruct(
+        this.pairs[this.shot].planet === 'light' ? 'launch.planet-light' : 'launch.planet-heavy',
+      );
       return;
     }
-    await this.ctx.say(this.pairs[this.shot].planet === 'light' ? 'launch.planet-why-light' : 'launch.planet-why-heavy');
+    await this.ctx.say(
+      this.pairs[this.shot].planet === 'light' ? 'launch.planet-why-light' : 'launch.planet-why-heavy',
+    );
     this.shot++;
     this.predictionRing.clear();
     if (this.shot >= this.pairs.length) return void this.finale();
@@ -434,7 +543,9 @@ class BouncyLaunch implements Game {
       this.hintLabel = 'Show a hint';
       this.ctx.stage.addChildAt(this.planetInput, this.ctx.stage.getChildIndex(this.replay));
       onTap(this.pet, () => this.repeatInstruction(), { cooldown: 500 });
-      onTap(this.planetInput, e => void this.predictPlanet(this.ctx.stage.toLocal(e.global).x), { cooldown: 500 });
+      onTap(this.planetInput, (e) => void this.predictPlanet(this.ctx.stage.toLocal(e.global).x), {
+        cooldown: 500,
+      });
       return void this.homePlanet();
     }
     void this.askShot();
@@ -451,11 +562,12 @@ class BouncyLaunch implements Game {
     if (this.plan.mode === 'nearfar') {
       // As wide as the landing that counts (the cloud's window), and never narrower than a big target.
       const w = Math.max(140, 2 * NEAR_FAR_WINDOW * (this.strip.x1 - this.strip.x0));
-      for (const pad of this.pads) pad.removeChildren().forEach(c => c.destroy());
+      for (const pad of this.pads) pad.removeChildren().forEach((c) => c.destroy());
       for (const pad of this.pads) pad.addChild(padArt(w));
     }
     if (!this.flying && !this.grab) {
-      if (this.plan.mode === 'predict' || this.plan.mode === 'planet' || this.plan.mode === 'between') this.showPredictionPull();
+      if (this.plan.mode === 'predict' || this.plan.mode === 'planet' || this.plan.mode === 'between')
+        this.showPredictionPull();
       else this.pet.position.set(this.seat.x, this.restingY());
     }
     if (this.stick && !this.flying) this.squash();
@@ -492,8 +604,17 @@ class BouncyLaunch implements Game {
     this.pet.cheer();
     this.friend?.cheer();
     sfx.sparkle();
-    if (this.friend) this.ctx.particles.burst(this.friend.x, this.friend.y - 100, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.yellow.fill], count: 18, speed: [120, 300], gravity: 0, life: [0.6, 1] });
-    if (this.snack) void this.ctx.tw.to(this.snack.scale, { x: 0, y: 0 }, { duration: 0.4, ease: ease.outBack });
+    if (this.friend)
+      this.ctx.particles.burst(this.friend.x, this.friend.y - 100, {
+        kind: 'star',
+        colors: [0xffffff, 0xfff3a0, swatch.yellow.fill],
+        count: 18,
+        speed: [120, 300],
+        gravity: 0,
+        life: [0.6, 1],
+      });
+    if (this.snack)
+      void this.ctx.tw.to(this.snack.scale, { x: 0, y: 0 }, { duration: 0.4, ease: ease.outBack });
     await this.ctx.say('launch.fed', { friend: this.friendName });
     this.lastFlight = undefined;
     this.drawHistory();
@@ -509,14 +630,25 @@ class BouncyLaunch implements Game {
     this.lastArc.alpha = Math.max(0, 1 - this.arcAge / 16);
     if (!this.flying && this.wobble > 0) {
       this.wobble = Math.max(0, this.wobble - dt);
-      this.pet.rotation = 0.09 * Math.sin(this.clock * 35) * this.wobble / 0.35;
+      this.pet.rotation = (0.09 * Math.sin(this.clock * 35) * this.wobble) / 0.35;
     }
     const arrow = this.pullArrow.clear();
     if (this.emptyPulls >= 2 && !this.flying) {
-      const x = this.seat.x - 65, y = this.seat.y + 55;
-      arrow.moveTo(x + 30, y - 30).lineTo(x, y).lineTo(x + 28, y + 3)
-        .moveTo(x, y).lineTo(x + 3, y - 28)
-        .stroke({ width: 9, color: swatch.yellow.fill, alpha: 0.65 + 0.3 * Math.sin(this.clock * 4), cap: 'round', join: 'round' });
+      const x = this.seat.x - 65,
+        y = this.seat.y + 55;
+      arrow
+        .moveTo(x + 30, y - 30)
+        .lineTo(x, y)
+        .lineTo(x + 28, y + 3)
+        .moveTo(x, y)
+        .lineTo(x + 3, y - 28)
+        .stroke({
+          width: 9,
+          color: swatch.yellow.fill,
+          alpha: 0.65 + 0.3 * Math.sin(this.clock * 4),
+          cap: 'round',
+          join: 'round',
+        });
     }
     this.star.rotation = 0.2 * Math.sin(this.clock * 2);
     this.star.scale.set(1 + 0.08 * Math.sin(this.clock * 5));
@@ -527,7 +659,10 @@ class BouncyLaunch implements Game {
       const { pts } = fl;
       const i = Math.min(pts.length - 2, Math.floor(fl.t * (pts.length - 1)));
       const k = fl.t * (pts.length - 1) - i;
-      this.pet.position.set(pts[i].x + (pts[i + 1].x - pts[i].x) * k, pts[i].y + (pts[i + 1].y - pts[i].y) * k);
+      this.pet.position.set(
+        pts[i].x + (pts[i + 1].x - pts[i].x) * k,
+        pts[i].y + (pts[i + 1].y - pts[i].y) * k,
+      );
       this.pet.rotation = fl.t * Math.PI * 2;
       if (fl.t >= 1) {
         this.flight = null;
@@ -623,9 +758,14 @@ class BouncyLaunch implements Game {
   private showPredictionPull() {
     const target = this.targets[this.shot];
     const between = this.betweens[this.shot];
-    const base = this.plan.mode === 'planet' ? this.pairs[this.shot]?.base
-      : this.plan.mode === 'between' ? between && padAt([between.low, between.high, between.mid][this.betweenStep])
-      : target === undefined ? undefined : padAt(target);
+    const base =
+      this.plan.mode === 'planet'
+        ? this.pairs[this.shot]?.base
+        : this.plan.mode === 'between'
+          ? between && padAt([between.low, between.high, between.mid][this.betweenStep])
+          : target === undefined
+            ? undefined
+            : padAt(target);
     if (base === undefined) return;
     const pull = pullFor(base);
     const d = { x: -0.35, y: 0.94 };
@@ -637,10 +777,19 @@ class BouncyLaunch implements Game {
   /** Pick first, then watch the same fixed pull fly. A different guess teaches by showing, never by marking a miss. */
   private async predict(pad: number) {
     if (this.plan.mode !== 'predict' && this.plan.mode !== 'between') return;
-    if (this.flying || this.finished || this.prediction !== undefined || (this.plan.mode === 'between' && this.betweenStep < 2)) return;
+    if (
+      this.flying ||
+      this.finished ||
+      this.prediction !== undefined ||
+      (this.plan.mode === 'between' && this.betweenStep < 2)
+    )
+      return;
     this.prediction = pad;
     const x = this.landX(padAt(pad));
-    this.predictionRing.clear().ellipse(x, this.strip.y - 4, 67, 30).stroke({ width: 6, color: swatch.yellow.fill, alpha: 0.95 });
+    this.predictionRing
+      .clear()
+      .ellipse(x, this.strip.y - 4, 67, 30)
+      .stroke({ width: 6, color: swatch.yellow.fill, alpha: 0.95 });
     sfx.pop(5);
     await this.ctx.say('launch.lets-see');
     if (!this.finished) void this.launch(padAt(this.targets[this.shot]));
@@ -690,17 +839,36 @@ class BouncyLaunch implements Game {
     const f = this.stick ? this.controllerPower : reach(this.pullNow());
     const x1 = this.landX(f);
     const pts = this.arc(f);
-    for (let i = 2; i < pts.length; i += 3) g.circle(pts[i].x, pts[i].y, 6).fill({ color: 0xffffff, alpha: 0.85 });
+    for (let i = 2; i < pts.length; i += 3)
+      g.circle(pts[i].x, pts[i].y, 6).fill({ color: 0xffffff, alpha: 0.85 });
     g.ellipse(x1, this.strip.y - 4, 46, 14).stroke({ width: 5, color: 0xffffff, alpha: 0.9 });
     // A ring shows how far the right pull is: a circle around the seat for a pulled pet, and for a squashed
     // spring an outline where the red plate should be pushed down to.
     const t = this.targets[this.shot];
     const spot = this.spots[this.shot];
-    if (spot !== undefined && !this.stick) g.circle(this.seat.x, this.seat.y, pullFor(spot)).stroke({ width: 4, color: swatch.yellow.fill, alpha: 0.7 });
-    if (t !== undefined && (this.plan.mode === 'star' || this.plan.mode === 'number' || this.plan.mode === 'nearfar')) {
+    if (spot !== undefined && !this.stick)
+      g.circle(this.seat.x, this.seat.y, pullFor(spot)).stroke({
+        width: 4,
+        color: swatch.yellow.fill,
+        alpha: 0.7,
+      });
+    if (
+      t !== undefined &&
+      (this.plan.mode === 'star' || this.plan.mode === 'number' || this.plan.mode === 'nearfar')
+    ) {
       const at = cloudAt(this.plan, t);
-      if (this.stick) g.roundRect(this.seat.x - 68, this.seat.y + at * SQUASH - 8, 136, 36, 14).stroke({ width: 5, color: swatch.yellow.fill, alpha: 0.85 });
-      else g.circle(this.seat.x, this.seat.y, pullFor(at)).stroke({ width: 4, color: swatch.yellow.fill, alpha: 0.7 });
+      if (this.stick)
+        g.roundRect(this.seat.x - 68, this.seat.y + at * SQUASH - 8, 136, 36, 14).stroke({
+          width: 5,
+          color: swatch.yellow.fill,
+          alpha: 0.85,
+        });
+      else
+        g.circle(this.seat.x, this.seat.y, pullFor(at)).stroke({
+          width: 4,
+          color: swatch.yellow.fill,
+          alpha: 0.7,
+        });
     }
   }
 
@@ -719,7 +887,9 @@ class BouncyLaunch implements Game {
     const g = this.spring.clear();
     const base = { x: this.seat.x, y: this.strip.y + 4 };
     const top = this.flying ? this.seat : { x: this.pet.x, y: this.pet.y };
-    g.roundRect(base.x - 70, base.y - 22, 140, 30, 12).fill(wood.fill).stroke({ width: 5, color: wood.line });
+    g.roundRect(base.x - 70, base.y - 22, 140, 30, 12)
+      .fill(wood.fill)
+      .stroke({ width: 5, color: wood.line });
     const coils = 7;
     g.moveTo(base.x, base.y - 20);
     for (let i = 1; i <= coils; i++) {
@@ -730,7 +900,9 @@ class BouncyLaunch implements Game {
     }
     g.lineTo(top.x, top.y + 10);
     g.stroke({ width: 10, color: SPRING.line, join: 'round', cap: 'round' });
-    g.roundRect(top.x - 60, top.y - 2, 120, 22, 10).fill(swatch.red.fill).stroke({ width: 5, color: swatch.red.line });
+    g.roundRect(top.x - 60, top.y - 2, 120, 22, 10)
+      .fill(swatch.red.fill)
+      .stroke({ width: 5, color: swatch.red.line });
   }
 
   /** Wheee: up, over and down onto the grass or a cloud. */
@@ -739,7 +911,13 @@ class BouncyLaunch implements Game {
     this.flying = true;
     // A squashed spring is not a pull: only a finger's pulls count toward the "bigger pull" journal entry.
     // Level 9's pulls are all shown ones, not hers, so they never file the observation.
-    if (this.plan.mode !== 'tap' && this.plan.mode !== 'planet' && this.plan.mode !== 'between' && !this.stick) this.observedPulls.push(f);
+    if (
+      this.plan.mode !== 'tap' &&
+      this.plan.mode !== 'planet' &&
+      this.plan.mode !== 'between' &&
+      !this.stick
+    )
+      this.observedPulls.push(f);
     if (this.course) {
       this.tries++;
       this.report();
@@ -751,16 +929,37 @@ class BouncyLaunch implements Game {
     // Fly from where the pull let go.
     pts[0] = { x: this.pet.x, y: this.pet.y };
     this.drawSpring();
-    await new Promise<void>((done) => (this.flight = { pts, t: 0, duration: (0.7 + 0.6 * f) * (this.plan.mode === 'planet' && this.planetPhase !== 'home' ? airtimeFor(this.pairs[this.shot].planet) : 1), done }));
+    await new Promise<void>(
+      (done) =>
+        (this.flight = {
+          pts,
+          t: 0,
+          duration:
+            (0.7 + 0.6 * f) *
+            (this.plan.mode === 'planet' && this.planetPhase !== 'home'
+              ? airtimeFor(this.pairs[this.shot].planet)
+              : 1),
+          done,
+        }),
+    );
     this.lastFlight = f;
     this.arcAge = 0;
     this.lastArc.alpha = 1;
     this.drawHistory();
     this.pet.rotation = 0;
     this.pet.y = this.strip.y - 20;
-    const planet = this.plan.mode === 'planet' && this.planetPhase !== 'home' ? this.pairs[this.shot].planet : undefined;
+    const planet =
+      this.plan.mode === 'planet' && this.planetPhase !== 'home' ? this.pairs[this.shot].planet : undefined;
     sfx.pop(planet === 'light' ? 5 : planet === 'heavy' ? 3 : 4);
-    this.ctx.particles.burst(this.pet.x, this.pet.y, { colors: [0xffffff, 0xd6eefa], count: 14, speed: [80, 220], gravity: 300 * (planet ? gravityFor(planet) : 1), angle: -Math.PI / 2, spread: 1.6, size: [0.3, 0.6] });
+    this.ctx.particles.burst(this.pet.x, this.pet.y, {
+      colors: [0xffffff, 0xd6eefa],
+      count: 14,
+      speed: [80, 220],
+      gravity: 300 * (planet ? gravityFor(planet) : 1),
+      angle: -Math.PI / 2,
+      spread: 1.6,
+      size: [0.3, 0.6],
+    });
     this.pet.poke();
     await this.landed(f);
   }
@@ -769,23 +968,41 @@ class BouncyLaunch implements Game {
     if (this.plan.mode === 'planet') return this.planetLanded();
     if (this.plan.mode === 'between' && this.betweenStep < 2) return this.betweenWatched();
     const tw = this.ctx.tw;
-    const verdict = this.plan.mode === 'friend' ? judgeFriend(f, this.spots[this.shot]) : judge(this.plan, f, this.targets[this.shot] ?? 0, this.ask, this.last, this.course?.padWidth);
-    if (this.plan.mode === 'star' || this.plan.mode === 'number' || this.plan.mode === 'nearfar') this.off += Math.abs(f - cloudAt(this.plan, this.targets[this.shot]));
+    const verdict =
+      this.plan.mode === 'friend'
+        ? judgeFriend(f, this.spots[this.shot])
+        : judge(this.plan, f, this.targets[this.shot] ?? 0, this.ask, this.last, this.course?.padWidth);
+    if (this.plan.mode === 'star' || this.plan.mode === 'number' || this.plan.mode === 'nearfar')
+      this.off += Math.abs(f - cloudAt(this.plan, this.targets[this.shot]));
     const firstCompare = this.plan.mode === 'compare' && this.last === undefined;
-    const predicted = this.plan.mode === 'predict' || this.plan.mode === 'between' ? this.prediction === this.targets[this.shot] : undefined;
+    const predicted =
+      this.plan.mode === 'predict' || this.plan.mode === 'between'
+        ? this.prediction === this.targets[this.shot]
+        : undefined;
     if (verdict === 'yes') {
       if (this.plan.mode === 'friend') {
         await this.feed();
       } else if (this.plan.mode === 'predict') {
-        await this.ctx.say(predicted ? 'launch.predicted' : 'launch.revealed', { n: (this.targets[this.shot] ?? 0) + 1 });
+        await this.ctx.say(predicted ? 'launch.predicted' : 'launch.revealed', {
+          n: (this.targets[this.shot] ?? 0) + 1,
+        });
       } else if (this.plan.mode === 'between') {
         this.betweenFlights.push(this.targets[this.shot]);
         this.drawFlag();
-        await this.ctx.say(predicted ? 'launch.predicted' : 'launch.between-why', { n: this.targets[this.shot] + 1 });
+        await this.ctx.say(predicted ? 'launch.predicted' : 'launch.between-why', {
+          n: this.targets[this.shot] + 1,
+        });
       } else if (!firstCompare && this.plan.mode !== 'tap' && this.plan.mode !== 'free') {
         this.pet.cheer();
         sfx.sparkle();
-        this.ctx.particles.burst(this.pet.x, this.pet.y - 100, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.yellow.fill], count: 18, speed: [120, 300], gravity: 0, life: [0.6, 1] });
+        this.ctx.particles.burst(this.pet.x, this.pet.y - 100, {
+          kind: 'star',
+          colors: [0xffffff, 0xfff3a0, swatch.yellow.fill],
+          count: 18,
+          speed: [120, 300],
+          gravity: 0,
+          life: [0.6, 1],
+        });
         if (!this.course) await this.ctx.say('praise');
       } else {
         this.pet.cheer();
@@ -820,7 +1037,11 @@ class BouncyLaunch implements Game {
     this.flying = false;
     if (this.stick) this.squash();
     else this.drawSpring();
-    const goal = this.course ? this.targets.length : this.plan.mode === 'compare' ? this.plan.shots + 1 : this.plan.shots;
+    const goal = this.course
+      ? this.targets.length
+      : this.plan.mode === 'compare'
+        ? this.plan.shots + 1
+        : this.plan.shots;
     if (this.shot >= goal) return void this.finale();
     if (verdict === 'yes') await this.askShot();
   }
@@ -829,7 +1050,15 @@ class BouncyLaunch implements Game {
   private report(finished = false) {
     const run = this.ctx.couch?.course;
     if (!run || !this.course) return;
-    run.progress({ board: this.shot, boards: this.targets.length, done: this.done.slice(), attempts: finished ? 0 : this.tries, par: 1, minimum: this.targets.length, assisted: this.assisted });
+    run.progress({
+      board: this.shot,
+      boards: this.targets.length,
+      done: this.done.slice(),
+      attempts: finished ? 0 : this.tries,
+      par: 1,
+      minimum: this.targets.length,
+      assisted: this.assisted,
+    });
   }
 
   /** Previous flight in normalized strip coordinates, so a resize preserves the evidence. */
@@ -837,19 +1066,29 @@ class BouncyLaunch implements Game {
     const g = this.lastArc.clear();
     if (this.lastFlight !== undefined && this.plan.mode !== 'tap' && !this.ctx.couch) {
       const pts = this.arc(this.lastFlight);
-      for (let i = 2; i < pts.length; i += 3) g.circle(pts[i].x, pts[i].y, 4).fill({ color: ink, alpha: 0.25 });
+      for (let i = 2; i < pts.length; i += 3)
+        g.circle(pts[i].x, pts[i].y, 4).fill({ color: ink, alpha: 0.25 });
       // Feed the friend: a puff where the pet came down, so the next pull can be judged against it.
-      if (this.plan.mode === 'friend') g.ellipse(this.landX(this.lastFlight), this.strip.y - 4, 40, 12).stroke({ width: 5, color: ink, alpha: 0.3 });
+      if (this.plan.mode === 'friend')
+        g.ellipse(this.landX(this.lastFlight), this.strip.y - 4, 40, 12).stroke({
+          width: 5,
+          color: ink,
+          alpha: 0.3,
+        });
     }
     const ring = this.compareRing.clear();
     if (this.plan.mode === 'compare' && this.wrongs > 0 && this.last !== undefined && !this.ctx.couch) {
-      ring.circle(this.seat.x, this.seat.y, pullFor(this.last)).stroke({ width: 4, color: swatch.red.fill, alpha: 0.5 });
+      ring
+        .circle(this.seat.x, this.seat.y, pullFor(this.last))
+        .stroke({ width: 4, color: swatch.red.fill, alpha: 0.5 });
     }
     // Between two flights: the two watched pulls stay as faint rings at the spring, so the middle pull is seen to sit between them.
     const between = this.betweens[this.shot];
     if (this.plan.mode === 'between' && between && this.betweenStep >= 1) {
       for (const pad of this.betweenStep === 1 ? [between.low] : [between.low, between.high]) {
-        ring.circle(this.seat.x, this.seat.y, pullFor(padAt(pad))).stroke({ width: 4, color: ink, alpha: 0.3 });
+        ring
+          .circle(this.seat.x, this.seat.y, pullFor(padAt(pad)))
+          .stroke({ width: 4, color: ink, alpha: 0.3 });
       }
     }
   }
@@ -858,16 +1097,31 @@ class BouncyLaunch implements Game {
   private drawFlag() {
     const g = this.flag.clear();
     this.flagNumbers.removeChildren().forEach((child) => child.destroy());
-    const flights = this.plan.mode === 'compare' && this.last !== undefined ? [this.last]
-      : this.plan.mode === 'predict' ? [...new Set(this.predictionFlights)].map(padAt)
-      : this.plan.mode === 'between' ? this.betweenFlights.map(padAt)
-      : this.plan.mode === 'planet' && this.planetPhase !== 'home' && this.pairs[this.shot] ? [this.pairs[this.shot].base] : [];
+    const flights =
+      this.plan.mode === 'compare' && this.last !== undefined
+        ? [this.last]
+        : this.plan.mode === 'predict'
+          ? [...new Set(this.predictionFlights)].map(padAt)
+          : this.plan.mode === 'between'
+            ? this.betweenFlights.map(padAt)
+            : this.plan.mode === 'planet' && this.planetPhase !== 'home' && this.pairs[this.shot]
+              ? [this.pairs[this.shot].base]
+              : [];
     for (const f of flights) {
-      const x = this.landX(f), y = this.strip.y + 10;
-      g.moveTo(x, y).lineTo(x, y - 90).stroke({ width: 6, color: wood.line, cap: 'round' });
-      g.poly([x, y - 90, x + 50, y - 74, x, y - 58]).fill(swatch.red.fill).stroke({ width: 4, color: swatch.red.line, join: 'round' });
+      const x = this.landX(f),
+        y = this.strip.y + 10;
+      g.moveTo(x, y)
+        .lineTo(x, y - 90)
+        .stroke({ width: 6, color: wood.line, cap: 'round' });
+      g.poly([x, y - 90, x + 50, y - 74, x, y - 58])
+        .fill(swatch.red.fill)
+        .stroke({ width: 4, color: swatch.red.line, join: 'round' });
       if (this.plan.mode === 'predict' || this.plan.mode === 'planet' || this.plan.mode === 'between') {
-        const n = label(String(this.plan.mode === 'planet' ? this.shot + 1 : Math.round(f * PADS + 0.5)), 24, 0xffffff);
+        const n = label(
+          String(this.plan.mode === 'planet' ? this.shot + 1 : Math.round(f * PADS + 0.5)),
+          24,
+          0xffffff,
+        );
         n.position.set(x + 17, y - 75);
         this.flagNumbers.addChild(n);
       }
@@ -884,7 +1138,9 @@ class BouncyLaunch implements Game {
       misses: this.misses,
       hints: this.hints,
       score: Math.round(this.off * 100),
-      discoveries: revealsPullRule(this.observedPulls, 0.15, !!this.ctx.couch, !!this.course) ? [entryId('bouncy-launch', 'bigger-pull')] : [],
+      discoveries: revealsPullRule(this.observedPulls, 0.15, !!this.ctx.couch, !!this.course)
+        ? [entryId('bouncy-launch', 'bigger-pull')]
+        : [],
     });
   }
 }
@@ -945,7 +1201,8 @@ export const bouncyLaunch: GameModule = {
   offScreen: {
     all: 'Roll a ball down a ramp: tilt it more or less and see how far it goes.',
     // School: a build or test with a result, predicting first.
-    school: 'Make a ramp from a book and roll a ball off it. Mark where it lands with a sock, tilt the book and guess the new spot first.',
+    school:
+      'Make a ramp from a book and roll a ball off it. Mark where it lands with a sock, tilt the book and guess the new spot first.',
   },
   hubIcon: () => new LaunchIcon(),
   touchDemo: true,

@@ -20,16 +20,25 @@ export const PAGE_SIZE = 4;
  * All games: every land's games for her age and younger, land by land in `LANDS` order and each land's own order.
  * With `others`, the rest: the games each land's signpost shows (for bigger kids). The two together hold every game once.
  */
-export function allGames(band: Band, games: readonly GameModule[], lands: readonly Land[], others = false): GameModule[] {
+export function allGames(
+  band: Band,
+  games: readonly GameModule[],
+  lands: readonly Land[],
+  others = false,
+): GameModule[] {
   return lands.flatMap((land) => (others ? olderIn(land, band, games) : visibleIn(land, band, games)));
 }
 
 /** Whether All games has an Other ages signpost: only when there is something on the other side (never at grown-up). */
-export const hasOthers = (band: Band, games: readonly GameModule[], lands: readonly Land[]) => allGames(band, games, lands, true).length > 0;
+export const hasOthers = (band: Band, games: readonly GameModule[], lands: readonly Land[]) =>
+  allGames(band, games, lands, true).length > 0;
 
 /** Her hearted games, newest first (hearts are kept newest last), skipping any ID the registry no longer has. */
 export function favoriteGames(favorites: readonly string[], games: readonly GameModule[]): GameModule[] {
-  return [...favorites].reverse().map((id) => games.find((g) => g.id === id)).filter((g): g is GameModule => !!g);
+  return [...favorites]
+    .reverse()
+    .map((id) => games.find((g) => g.id === id))
+    .filter((g): g is GameModule => !!g);
 }
 
 /** Who a game is for, seen from her band: hers (and younger ones she still sees), bigger kids', or only little ones'. */
@@ -45,10 +54,12 @@ export function ageOf(mod: Pick<GameModule, 'bands'>, band: Band): 'hers' | 'big
 export type PageCard<T> = { game: T } | { signpost: true } | { mix: true };
 
 /** How many pages a list takes, with room for a signpost as its last card and a mix as its first; at least one (an empty page says so). */
-export const pageCount = (n: number, signpost = false, mix = false) => Math.max(1, Math.ceil((n + (signpost ? 1 : 0) + (mix ? 1 : 0)) / PAGE_SIZE));
+export const pageCount = (n: number, signpost = false, mix = false) =>
+  Math.max(1, Math.ceil((n + (signpost ? 1 : 0) + (mix ? 1 : 0)) / PAGE_SIZE));
 
 /** A page held inside the list's pages (a heart taken back can shorten Favorites under a remembered page). */
-export const clampPage = (page: number, n: number, signpost = false, mix = false) => Math.min(Math.max(0, Math.floor(page) || 0), pageCount(n, signpost, mix) - 1);
+export const clampPage = (page: number, n: number, signpost = false, mix = false) =>
+  Math.min(Math.max(0, Math.floor(page) || 0), pageCount(n, signpost, mix) - 1);
 
 /** The cards on one page: the mix first on the first page, the signpost last on the last page. */
 export function pageOf<T>(items: readonly T[], page: number, signpost = false, mix = false): PageCard<T>[] {

@@ -11,7 +11,10 @@ describe('Counting Cove as a location', () => {
       const keepOut = meadowKeepOut(layout, view);
       const plan = covePlan(layout, view, ground);
       // A marsh, not a bare field: reeds or cattails at every size.
-      expect(plan.filter((p) => p.kind === 'reeds' || p.kind === 'cattail').length, where0).toBeGreaterThanOrEqual(4);
+      expect(
+        plan.filter((p) => p.kind === 'reeds' || p.kind === 'cattail').length,
+        where0,
+      ).toBeGreaterThanOrEqual(4);
       for (const { kind, x, rect: r } of plan) {
         const where = `${kind} ${where0}`;
         expect(r.x >= 0 && r.y >= 0 && r.x + r.w <= view.w && r.y + r.h <= view.h, where).toBe(true);
@@ -22,7 +25,9 @@ describe('Counting Cove as a location', () => {
       }
       // Nothing stands on anything else.
       const big = plan;
-      for (const p of plan) for (const b of big) if (p !== b) expect(overlaps(p.rect, b.rect), `${p.kind} on ${b.kind} ${where0}`).toBe(false);
+      for (const p of plan)
+        for (const b of big)
+          if (p !== b) expect(overlaps(p.rect, b.rect), `${p.kind} on ${b.kind} ${where0}`).toBe(false);
       expect(covePlan(layout, view, ground)).toEqual(plan);
     }
   });

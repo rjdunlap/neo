@@ -46,7 +46,6 @@ it('keeps Make it fair below Fill it up, with no number on its sign', () => {
   expect(card).not.toContain('cows');
 });
 
-
 it('offers Fill it up after Make it fair with a remainder-specific card', () => {
   expect(nextLevelOffer(8, roundup.levels('prek'))).toBe(9);
   expect(stepLevel(9, 1, roundup.levels('prek'))).toBe(12);

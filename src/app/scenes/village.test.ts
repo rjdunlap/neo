@@ -22,7 +22,10 @@ describe('Cozy Village as a location', () => {
       const plan = villagePlan(layout, view, ground);
       // A village with hedgerows, not a bare green: a hedge, and one of the animals that lives in it.
       expect(plan.filter((p) => p.kind === 'hedge').length, where0).toBeGreaterThanOrEqual(1);
-      expect(plan.filter((p) => p.kind === 'robin' || p.kind === 'hedgehog').length, where0).toBeGreaterThanOrEqual(1);
+      expect(
+        plan.filter((p) => p.kind === 'robin' || p.kind === 'hedgehog').length,
+        where0,
+      ).toBeGreaterThanOrEqual(1);
       for (const { kind, rect: r } of plan) {
         const where = `${kind} ${where0}`;
         expect(r.x >= 0 && r.y >= 0 && r.x + r.w <= view.w && r.y + r.h <= view.h, where).toBe(true);
@@ -30,7 +33,9 @@ describe('Cozy Village as a location', () => {
         // Off the lane, on the green.
         expect(r.y, where).toBeGreaterThan(ground + LANE_DEPTH);
       }
-      for (const p of plan) for (const b of plan) if (p !== b) expect(overlaps(p.rect, b.rect), `${p.kind} on ${b.kind} ${where0}`).toBe(false);
+      for (const p of plan)
+        for (const b of plan)
+          if (p !== b) expect(overlaps(p.rect, b.rect), `${p.kind} on ${b.kind} ${where0}`).toBe(false);
       expect(villagePlan(layout, view, ground)).toEqual(plan);
     }
   });

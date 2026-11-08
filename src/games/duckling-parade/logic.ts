@@ -29,16 +29,56 @@ export interface ParadePlan {
 
 export const PLANS: ParadePlan[] = [
   { mode: 'tap', ducklings: 3, colors: 1, name: 'Tap to walk Mama Duck; ducklings join her line' },
-  { mode: 'walk', ducklings: 4, colors: 1, name: 'Tap the grass or lead with a finger; bring every duckling to the pond' },
+  {
+    mode: 'walk',
+    ducklings: 4,
+    colors: 1,
+    name: 'Tap the grass or lead with a finger; bring every duckling to the pond',
+  },
   { mode: 'count', ducklings: 6, colors: 1, min: 2, max: 3, name: 'Bring 2 or 3 ducklings home' },
   { mode: 'color', ducklings: 6, colors: 2, name: 'Find the ducklings of one color' },
   { mode: 'count', ducklings: 7, colors: 1, min: 3, max: 5, name: 'Bring 3 to 5 ducklings home' },
-  { mode: 'colorCount', ducklings: 8, colors: 3, min: 2, max: 3, name: 'Bring 2 or 3 ducklings of one color home' },
-  { mode: 'pattern', ducklings: 6, colors: 2, unit: 2, name: 'Make a repeating pattern with two alternating colors' },
+  {
+    mode: 'colorCount',
+    ducklings: 8,
+    colors: 3,
+    min: 2,
+    max: 3,
+    name: 'Bring 2 or 3 ducklings of one color home',
+  },
+  {
+    mode: 'pattern',
+    ducklings: 6,
+    colors: 2,
+    unit: 2,
+    name: 'Make a repeating pattern with two alternating colors',
+  },
   { mode: 'pattern', ducklings: 6, colors: 3, unit: 3, name: 'Make a repeating pattern with three colors' },
-  { mode: 'pattern', ducklings: 6, colors: 2, unit: 3, repeatedPair: 'aab', name: 'Make the pattern: two of one color, then one of another' },
-  { mode: 'pattern', ducklings: 6, colors: 3, unit: 3, repeatedPair: 'aab', oddDuckling: true, name: 'Make the pattern, leaving out the duckling that does not fit' },
-  { mode: 'pattern', ducklings: 6, colors: 2, unit: 3, repeatedPair: 'abb', name: 'Make the pattern: one of a color, then two of another' },
+  {
+    mode: 'pattern',
+    ducklings: 6,
+    colors: 2,
+    unit: 3,
+    repeatedPair: 'aab',
+    name: 'Make the pattern: two of one color, then one of another',
+  },
+  {
+    mode: 'pattern',
+    ducklings: 6,
+    colors: 3,
+    unit: 3,
+    repeatedPair: 'aab',
+    oddDuckling: true,
+    name: 'Make the pattern, leaving out the duckling that does not fit',
+  },
+  {
+    mode: 'pattern',
+    ducklings: 6,
+    colors: 2,
+    unit: 3,
+    repeatedPair: 'abb',
+    name: 'Make the pattern: one of a color, then two of another',
+  },
 ];
 
 export const LEVELS: BandLevels = {
@@ -66,11 +106,16 @@ export interface Round {
 }
 
 export function makeRound(plan: ParadePlan, rng: Rng): Round {
-  const palette = plan.colors === 1 ? ['yellow' as ColorName] : rng.shuffle([...DUCK_COLORS]).slice(0, plan.colors);
+  const palette =
+    plan.colors === 1 ? ['yellow' as ColorName] : rng.shuffle([...DUCK_COLORS]).slice(0, plan.colors);
   const target = plan.min !== undefined ? rng.int(plan.min, plan.max ?? plan.min) : undefined;
   if (plan.mode === 'pattern') {
     const unit =
-      plan.repeatedPair === 'aab' ? [palette[0], palette[0], palette[1]] : plan.repeatedPair === 'abb' ? [palette[0], palette[1], palette[1]] : palette.slice(0, plan.unit ?? 2);
+      plan.repeatedPair === 'aab'
+        ? [palette[0], palette[0], palette[1]]
+        : plan.repeatedPair === 'abb'
+          ? [palette[0], palette[1], palette[1]]
+          : palette.slice(0, plan.unit ?? 2);
     const pattern = Array.from({ length: plan.ducklings }, (_, i) => unit[i % unit.length]);
     const ducklings = [...pattern];
     if (plan.oddDuckling) ducklings.push(palette[2]);
@@ -81,7 +126,10 @@ export function makeRound(plan: ParadePlan, rng: Rng): Round {
     // Enough of the wanted color (always at least one spare for colorCount), the rest mixed.
     const wanted = plan.mode === 'color' ? Math.ceil(plan.ducklings / 2) : target! + 1;
     const others = palette.slice(1);
-    const ducklings = [...Array(wanted).fill(want), ...Array.from({ length: plan.ducklings - wanted }, (_, i) => others[i % others.length])];
+    const ducklings = [
+      ...Array(wanted).fill(want),
+      ...Array.from({ length: plan.ducklings - wanted }, (_, i) => others[i % others.length]),
+    ];
     return { ducklings: rng.shuffle(ducklings), want, target };
   }
   return { ducklings: Array(plan.ducklings).fill('yellow'), target };
@@ -137,7 +185,10 @@ export interface DemoDuckling {
  * go to first when the straight way is blocked (the finger taps it, then the next call goes on from there); `drag` says
  * the way to `via` (or to the stop) is clear, so a dragged finger may lead her; otherwise the finger taps the spot instead.
  */
-export type ParadeStop = ({ to: 'duckling'; index: number } | { to: 'pond' }) & { drag: boolean; via?: { x: number; y: number } };
+export type ParadeStop = ({ to: 'duckling'; index: number } | { to: 'pond' }) & {
+  drag: boolean;
+  via?: { x: number; y: number };
+};
 
 /** How close a finger may pass a duckling that must not join before the game takes it as aimed at that duckling, and how close Mama may pass one that would join. */
 export const AIM_REACH = 108;
@@ -171,7 +222,10 @@ export function nextStop(
   pond: Pt,
   field = { x0: 60, x1: 964, y0: 277, y1: 728 },
 ): ParadeStop | null {
-  const done = plan.mode === 'pattern' ? line.length === round.pattern!.length : homeCount + line.length >= needed(plan, round);
+  const done =
+    plan.mode === 'pattern'
+      ? line.length === round.pattern!.length
+      : homeCount + line.length >= needed(plan, round);
   // When the round asks for a number, a spare duckling that joins on the way is one too many (it hops back out as a miss); in a
   // pattern, one that joins on the way changes which color comes next, so the one being led to may stop being the right one.
   const exact = round.target !== undefined || plan.mode === 'pattern';
@@ -234,7 +288,12 @@ export interface Meadow {
 }
 
 /** The colors dressing is drawn in: none is a duckling color, so it never reads as a duckling to find. */
-export const DRESSING_COLORS: Record<DressingKind, ColorName[]> = { daisy: ['white', 'orange'], clover: ['white', 'green'], reed: ['green'], cattail: ['green', 'brown'] };
+export const DRESSING_COLORS: Record<DressingKind, ColorName[]> = {
+  daisy: ['white', 'orange'],
+  clover: ['white', 'green'],
+  reed: ['green'],
+  cattail: ['green', 'brown'],
+};
 
 /** Rim dressing stands behind the pond (it is drawn under the water), clear of the screen's edge and the meadow side where Mama walks in. */
 export const RIM_ARC = { from: -2.0, to: -0.5 };
@@ -249,14 +308,32 @@ export function makeMeadow(rng: Rng): Meadow {
   const style = MEADOWS[id];
   const dressing: Dressing[] = [];
   const back = rng.int(7, 10);
-  for (let i = 0; i < back; i++) dressing.push({ kind: rng.pick(style.back), place: 'back', t: (i + rng.range(0.2, 0.8)) / back, size: rng.range(0.8, 1.2) });
+  for (let i = 0; i < back; i++)
+    dressing.push({
+      kind: rng.pick(style.back),
+      place: 'back',
+      t: (i + rng.range(0.2, 0.8)) / back,
+      size: rng.range(0.8, 1.2),
+    });
   const rim = rng.int(3, 5);
-  for (let i = 0; i < rim; i++) dressing.push({ kind: rng.pick(style.rim), place: 'rim', t: RIM_ARC.from + ((RIM_ARC.to - RIM_ARC.from) * (i + rng.range(0.25, 0.75))) / rim, size: rng.range(0.85, 1.15) });
+  for (let i = 0; i < rim; i++)
+    dressing.push({
+      kind: rng.pick(style.rim),
+      place: 'rim',
+      t: RIM_ARC.from + ((RIM_ARC.to - RIM_ARC.from) * (i + rng.range(0.25, 0.75))) / rim,
+      size: rng.range(0.85, 1.15),
+    });
   return { id, hills: style.hills, dressing };
 }
 
 /** Where a piece of dressing stands, in stage units: `field` is the meadow, `horizon` where the hills meet it, `pond` the pond's ellipse. */
-export function dressingAt(d: Dressing, field: { x0: number; x1: number; y0: number }, horizon: number, pond: { x: number; y: number; rx: number; ry: number }) {
-  if (d.place === 'back') return { x: field.x0 + (field.x1 - field.x0) * d.t, y: horizon + (field.y0 - horizon) * 0.7 };
+export function dressingAt(
+  d: Dressing,
+  field: { x0: number; x1: number; y0: number },
+  horizon: number,
+  pond: { x: number; y: number; rx: number; ry: number },
+) {
+  if (d.place === 'back')
+    return { x: field.x0 + (field.x1 - field.x0) * d.t, y: horizon + (field.y0 - horizon) * 0.7 };
   return { x: pond.x + Math.cos(d.t) * (pond.rx + 34), y: pond.y + Math.sin(d.t) * (pond.ry + 26) };
 }

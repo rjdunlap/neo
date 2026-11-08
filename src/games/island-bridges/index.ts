@@ -14,7 +14,27 @@ import type { LineId } from '../../content/voice-script';
 import { courseMinimum, courseSeas, isBridgeCourse } from './course';
 import {
   LEVELS,
-  canAdd, directionOf, edgeToward, focusPath, hintFor, isSolved, islandToward, makePuzzles, otherEnd, planFor, planksAt, edgeAt, headStart, trouble, touchLayout, waterOf, type Slot, type BridgePlan, type Forced, type Hint, type Puzzle,
+  canAdd,
+  directionOf,
+  edgeToward,
+  focusPath,
+  hintFor,
+  isSolved,
+  islandToward,
+  makePuzzles,
+  otherEnd,
+  planFor,
+  planksAt,
+  edgeAt,
+  headStart,
+  trouble,
+  touchLayout,
+  waterOf,
+  type Slot,
+  type BridgePlan,
+  type Forced,
+  type Hint,
+  type Puzzle,
 } from './logic';
 
 const SEA = 0xcfe8f7;
@@ -26,7 +46,11 @@ const DONE_LINE = 0x4a9a35;
 
 type Mode = 'move' | 'add' | 'remove';
 
-const FORCED_LINE: Record<Forced, LineId> = { full: 'bridges.hint-full', 'last-way': 'bridges.hint-last-way', 'every-way': 'bridges.hint-every-way' };
+const FORCED_LINE: Record<Forced, LineId> = {
+  full: 'bridges.hint-full',
+  'last-way': 'bridges.hint-last-way',
+  'every-way': 'bridges.hint-every-way',
+};
 
 class IslandBridges implements Game {
   readonly plan: BridgePlan;
@@ -102,7 +126,8 @@ class IslandBridges implements Game {
       this.puzzles = makePuzzles(this.plan, ctx.rng);
       this.course = null;
     }
-    for (const part of [this.board, this.water, this.bridges, this.islands, this.glow, this.tally]) part.eventMode = 'none';
+    for (const part of [this.board, this.water, this.bridges, this.islands, this.glow, this.tally])
+      part.eventMode = 'none';
     this.board.addChild(this.water, this.bridges, this.islands, this.glow);
     ctx.stage.addChild(this.board, this.tally);
     this.touch = !ctx.couch;
@@ -116,9 +141,13 @@ class IslandBridges implements Game {
     }
   }
 
-  get layout() { return this.puzzle.layout; }
+  get layout() {
+    return this.puzzle.layout;
+  }
 
-  start() { void this.next(); }
+  start() {
+    void this.next();
+  }
 
   /* -------------------------------------------------------------------------------------------- */
   /* Layout and drawing                                                                            */
@@ -131,7 +160,8 @@ class IslandBridges implements Game {
     if (this.touch) return this.resizeTouch(v);
     // The controller reminder covers the bottom of the screen for the first ten seconds, so the sea stays above it.
     this.cell = Math.max(40, Math.min(76, Math.floor((v.h - 100 - 200) / size)));
-    const w = size * this.cell, left = Math.max(160, (v.w - w - 300) / 2);
+    const w = size * this.cell,
+      left = Math.max(160, (v.w - w - 300) / 2);
     this.board.position.set(left, 104);
     this.tally.anchor.set(0, 0.5);
     this.tally.position.set(left + w + 44, 128);
@@ -141,7 +171,8 @@ class IslandBridges implements Game {
 
   /** Touch layout (`touchLayout`): three buttons beside or under the sea; every cell and button at least 64 for grown-ups, 100 at school. */
   private resizeTouch(v: View) {
-    const size = this.puzzle.size, fit = touchLayout(size, v.w, v.h, this.ctx.band === 'school');
+    const size = this.puzzle.size,
+      fit = touchLayout(size, v.w, v.h, this.ctx.band === 'school');
     this.cell = fit.cell;
     this.slots = fit.slots;
     this.board.position.set(fit.x, fit.y);
@@ -172,9 +203,18 @@ class IslandBridges implements Game {
     this.slots.forEach((s, k) => {
       const down = this.pressed?.slot === k && this.clock < this.pressed.until ? 3 : 0;
       const sw = s.kind === 'take' ? swatch.red : s.kind === 'hint' ? swatch.blue : swatch.teal;
-      const text = s.kind === 'take' ? (this.taking ? 'Take off: on' : 'Take off') : s.kind === 'hint' ? 'Hint ◇' : 'Start over ↺';
+      const text =
+        s.kind === 'take'
+          ? this.taking
+            ? 'Take off: on'
+            : 'Take off'
+          : s.kind === 'hint'
+            ? 'Hint ◇'
+            : 'Start over ↺';
       g.roundRect(s.x, s.y + 4, s.w, s.h, 14).fill(sw.line);
-      g.roundRect(s.x, s.y + down, s.w, s.h, 14).fill(s.kind === 'take' && this.taking ? sw.fill : sw.light).stroke({ width: 3, color: sw.line });
+      g.roundRect(s.x, s.y + down, s.w, s.h, 14)
+        .fill(s.kind === 'take' && this.taking ? sw.fill : sw.light)
+        .stroke({ width: 3, color: sw.line });
       const t = label(text, 22, ink);
       if (t.width > s.w - 14) t.scale.set((s.w - 14) / t.width);
       t.position.set(s.x + s.w / 2, s.y + s.h / 2 + down);
@@ -189,21 +229,40 @@ class IslandBridges implements Game {
 
   private buildNumbers() {
     this.islands.removeChildren().forEach((c) => c.destroy());
-    this.numbers = this.layout.islands.map((il) => { const t = label(String(il.n), 30, ink); t.eventMode = 'none'; this.islands.addChild(t); return t; });
+    this.numbers = this.layout.islands.map((il) => {
+      const t = label(String(il.n), 30, ink);
+      t.eventMode = 'none';
+      this.islands.addChild(t);
+      return t;
+    });
   }
 
   private layoutNumbers() {
     // Two digits (up to 12 on a three-plank sea) a little smaller, so they sit inside the island.
-    this.numbers.forEach((t, i) => { const p = this.at(i); t.style.fontSize = Math.round(this.cell * (this.layout.islands[i].n >= 10 ? 0.38 : 0.46)); t.position.set(p.x, p.y + 1); });
+    this.numbers.forEach((t, i) => {
+      const p = this.at(i);
+      t.style.fontSize = Math.round(this.cell * (this.layout.islands[i].n >= 10 ? 0.38 : 0.46));
+      t.position.set(p.x, p.y + 1);
+    });
   }
 
   /** The sea, the bridges and the islands, redrawn when anything changes. */
   private paint() {
     this.dirty = false;
-    const size = this.puzzle.size, cell = this.cell, w = size * cell, rad = cell * 0.38;
+    const size = this.puzzle.size,
+      cell = this.cell,
+      w = size * cell,
+      rad = cell * 0.38;
     const wet = this.water.clear();
-    wet.roundRect(-16, -16, w + 32, w + 32, 22).fill(SEA).stroke({ width: 6, color: this.taking ? swatch.red.line : SEA_LINE });
-    for (let k = 0; k < size * 2; k++) wet.moveTo((k * 83) % w, (k * 47 + 13) % w).lineTo(((k * 83) % w) + 22, (k * 47 + 13) % w).stroke({ width: 3, color: 0xffffff, alpha: 0.5, cap: 'round' });
+    wet
+      .roundRect(-16, -16, w + 32, w + 32, 22)
+      .fill(SEA)
+      .stroke({ width: 6, color: this.taking ? swatch.red.line : SEA_LINE });
+    for (let k = 0; k < size * 2; k++)
+      wet
+        .moveTo((k * 83) % w, (k * 47 + 13) % w)
+        .lineTo(((k * 83) % w) + 22, (k * 47 + 13) % w)
+        .stroke({ width: 3, color: 0xffffff, alpha: 0.5, cap: 'round' });
     const g = this.bridges.clear();
     this.layout.edges.forEach((e, k) => {
       const n = this.planks[k];
@@ -213,29 +272,49 @@ class IslandBridges implements Game {
         return;
       }
       // One plank on the line, two either side of it, three (level 7) a little apart and thinner so each reads as its own.
-      const a = this.at(e.a), b = this.at(e.b), horizontal = e.dir === 'h', off = n === 3 ? cell * 0.15 : n === 2 ? cell * 0.11 : 0;
+      const a = this.at(e.a),
+        b = this.at(e.b),
+        horizontal = e.dir === 'h',
+        off = n === 3 ? cell * 0.15 : n === 2 ? cell * 0.11 : 0;
       const thin = n === 3 ? 0.75 : 1;
       for (const side of n === 3 ? [-1, 0, 1] : n === 2 ? [-1, 1] : [0]) {
-        const dx = horizontal ? 0 : side * off, dy = horizontal ? side * off : 0;
-        g.moveTo(a.x + dx, a.y + dy).lineTo(b.x + dx, b.y + dy).stroke({ width: cell * 0.12 * thin, color: wood.line, cap: 'butt' });
-        g.moveTo(a.x + dx, a.y + dy).lineTo(b.x + dx, b.y + dy).stroke({ width: cell * 0.07 * thin, color: wood.light, cap: 'butt' });
+        const dx = horizontal ? 0 : side * off,
+          dy = horizontal ? side * off : 0;
+        g.moveTo(a.x + dx, a.y + dy)
+          .lineTo(b.x + dx, b.y + dy)
+          .stroke({ width: cell * 0.12 * thin, color: wood.line, cap: 'butt' });
+        g.moveTo(a.x + dx, a.y + dy)
+          .lineTo(b.x + dx, b.y + dy)
+          .stroke({ width: cell * 0.07 * thin, color: wood.light, cap: 'butt' });
       }
     });
     const bad = new Set(trouble(this.layout, this.planks));
     this.layout.islands.forEach((il, i) => {
-      const p = this.at(i), have = planksAt(this.layout, this.planks, i), done = have === il.n;
-      g.circle(p.x, p.y, rad).fill(done ? DONE_FILL : SAND).stroke({ width: 4, color: bad.has(i) ? 0xc23a40 : done ? DONE_LINE : SAND_LINE });
+      const p = this.at(i),
+        have = planksAt(this.layout, this.planks, i),
+        done = have === il.n;
+      g.circle(p.x, p.y, rad)
+        .fill(done ? DONE_FILL : SAND)
+        .stroke({ width: 4, color: bad.has(i) ? 0xc23a40 : done ? DONE_LINE : SAND_LINE });
     });
-    this.tally.text = this.touch ? `Planks: ${this.entries}` : `${this.entries} ${this.entries === 1 ? 'plank' : 'planks'} laid`;
+    this.tally.text = this.touch
+      ? `Planks: ${this.entries}`
+      : `${this.entries} ${this.entries === 1 ? 'plank' : 'planks'} laid`;
     if (this.touch) this.tally.style.fontSize = 20;
   }
 
   /** A row of small dots along a stretch of water between two islands. */
   private guide(g: Graphics, e: { a: number; b: number; dir: 'h' | 'v' }, cell: number) {
-    const a = this.at(e.a), b = this.at(e.b), len = Math.hypot(b.x - a.x, b.y - a.y), steps = Math.max(1, Math.round(len / (cell * 0.34)));
+    const a = this.at(e.a),
+      b = this.at(e.b),
+      len = Math.hypot(b.x - a.x, b.y - a.y),
+      steps = Math.max(1, Math.round(len / (cell * 0.34)));
     for (let k = 1; k < steps; k++) {
       const t = k / steps;
-      g.circle(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, cell * 0.045).fill({ color: SEA_LINE, alpha: 0.65 });
+      g.circle(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, cell * 0.045).fill({
+        color: SEA_LINE,
+        alpha: 0.65,
+      });
     }
   }
 
@@ -243,10 +322,15 @@ class IslandBridges implements Game {
     this.clock += dt;
     if (!this.puzzle) return;
     if (this.dirty) this.paint();
-    if (this.pressed && this.clock >= this.pressed.until) { this.pressed = null; this.paintButtons(); }
+    if (this.pressed && this.clock >= this.pressed.until) {
+      this.pressed = null;
+      this.paintButtons();
+    }
     const g = this.glow.clear();
     if (this.finished || this.busy) return;
-    const cell = this.cell, rad = cell * 0.38, p = this.at(this.focus);
+    const cell = this.cell,
+      rad = cell * 0.38,
+      p = this.at(this.focus);
     // What a push would reach from the highlighted island: a faint line to each neighbour, in the mode's color.
     if (this.mode !== 'move' && !this.touch) {
       const color = this.mode === 'add' ? swatch.yellow.fill : swatch.red.fill;
@@ -256,9 +340,24 @@ class IslandBridges implements Game {
       }
     }
     if (this.hinted) {
-      const h = this.hinted, e = this.layout.edges[h.edge], a = this.at(e.a), b = this.at(e.b);
-      g.moveTo(a.x, a.y).lineTo(b.x, b.y).stroke({ width: cell * 0.2 + 3 * Math.sin(this.clock * 6), color: h.kind === 'fix' ? swatch.red.fill : swatch.yellow.fill, alpha: 0.7 });
-      const ring = (i: number) => { const q = this.at(i); g.circle(q.x, q.y, rad + 7 + 2 * Math.sin(this.clock * 6)).stroke({ width: 5, color: h.kind === 'fix' ? swatch.red.fill : swatch.orange.fill }); };
+      const h = this.hinted,
+        e = this.layout.edges[h.edge],
+        a = this.at(e.a),
+        b = this.at(e.b);
+      g.moveTo(a.x, a.y)
+        .lineTo(b.x, b.y)
+        .stroke({
+          width: cell * 0.2 + 3 * Math.sin(this.clock * 6),
+          color: h.kind === 'fix' ? swatch.red.fill : swatch.yellow.fill,
+          alpha: 0.7,
+        });
+      const ring = (i: number) => {
+        const q = this.at(i);
+        g.circle(q.x, q.y, rad + 7 + 2 * Math.sin(this.clock * 6)).stroke({
+          width: 5,
+          color: h.kind === 'fix' ? swatch.red.fill : swatch.orange.fill,
+        });
+      };
       ring(e.a);
       ring(e.b);
       // Keep them joined: the group that would be cut off in dashed amber rings, and the bridge that would do it dashed red.
@@ -271,7 +370,10 @@ class IslandBridges implements Game {
       }
     }
     if (this.touch) return;
-    g.circle(p.x, p.y, rad + 6).stroke({ width: this.mode === 'move' ? 5 : 8, color: this.mode === 'add' ? swatch.yellow.line : this.mode === 'remove' ? swatch.red.line : ink });
+    g.circle(p.x, p.y, rad + 6).stroke({
+      width: this.mode === 'move' ? 5 : 8,
+      color: this.mode === 'add' ? swatch.yellow.line : this.mode === 'remove' ? swatch.red.line : ink,
+    });
   }
 
   destroy() {}
@@ -300,7 +402,8 @@ class IslandBridges implements Game {
     this.report();
     if (this.spoken) return;
     this.spoken = true;
-    if (this.plan.maxPlanks) return this.ctx.instruct(this.touch ? 'bridges.go-three-touch' : 'bridges.go-three');
+    if (this.plan.maxPlanks)
+      return this.ctx.instruct(this.touch ? 'bridges.go-three-touch' : 'bridges.go-three');
     return this.ctx.instruct(this.touch ? 'bridges.go-touch' : 'bridges.go');
   }
 
@@ -321,8 +424,12 @@ class IslandBridges implements Game {
 
   /** The score for the sea just joined, over the board for a moment. */
   private async seaScore() {
-    const best = this.puzzle.par, total = this.puzzles.length;
-    const text = this.entries === best ? `Sea ${this.index + 1} of ${total}: ${this.entries} planks, the fewest possible!` : `Sea ${this.index + 1} of ${total}: ${this.entries} planks (fewest ${best})`;
+    const best = this.puzzle.par,
+      total = this.puzzles.length;
+    const text =
+      this.entries === best
+        ? `Sea ${this.index + 1} of ${total}: ${this.entries} planks, the fewest possible!`
+        : `Sea ${this.index + 1} of ${total}: ${this.entries} planks (fewest ${best})`;
     const note = label(text, 32, ink);
     note.position.set(this.view.w / 2, 52);
     note.alpha = 0;
@@ -343,15 +450,32 @@ class IslandBridges implements Game {
       this.done.push(this.entries);
       this.report(true);
     }
-    const order = this.layout.islands.map((_, i) => i).sort((a, b) => this.layout.islands[a].r - this.layout.islands[b].r || this.layout.islands[a].c - this.layout.islands[b].c);
+    const order = this.layout.islands
+      .map((_, i) => i)
+      .sort(
+        (a, b) =>
+          this.layout.islands[a].r - this.layout.islands[b].r ||
+          this.layout.islands[a].c - this.layout.islands[b].c,
+      );
     for (const [step, i] of order.entries()) {
       const t = this.numbers[i];
-      void this.ctx.tw.to(t.scale, { x: 1.5, y: 1.5 }, { duration: 0.1 }).then(() => this.ctx.tw.to(t.scale, { x: 1, y: 1 }, { duration: 0.14 }));
+      void this.ctx.tw
+        .to(t.scale, { x: 1.5, y: 1.5 }, { duration: 0.1 })
+        .then(() => this.ctx.tw.to(t.scale, { x: 1, y: 1 }, { duration: 0.14 }));
       sfx.bell(3 + (step % 7), 0.2);
       await this.ctx.tw.wait(0.06);
     }
-    const mid = this.ctx.stage.toLocal(this.board.toGlobal({ x: (this.puzzle.size * this.cell) / 2, y: (this.puzzle.size * this.cell) / 2 }));
-    this.ctx.particles.burst(mid.x, mid.y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.blue.light], count: 28, speed: [160, 400], gravity: 0, life: [0.6, 1.1] });
+    const mid = this.ctx.stage.toLocal(
+      this.board.toGlobal({ x: (this.puzzle.size * this.cell) / 2, y: (this.puzzle.size * this.cell) / 2 }),
+    );
+    this.ctx.particles.burst(mid.x, mid.y, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0, swatch.blue.light],
+      count: 28,
+      speed: [160, 400],
+      gravity: 0,
+      life: [0.6, 1.1],
+    });
     this.ctx.pet.cheer();
     sfx.sparkle();
     if (this.course) await this.seaScore();
@@ -395,8 +519,11 @@ class IslandBridges implements Game {
     if (this.busy || this.finished || !this.puzzle) return;
     const s = this.slots[k];
     this.pressed = { slot: k, until: this.clock + 0.15 };
-    if (s.kind === 'take') { this.taking = !this.taking; sfx.pop(this.taking ? 3 : 2); this.dirty = true; }
-    else if (s.kind === 'hint') this.askForHint();
+    if (s.kind === 'take') {
+      this.taking = !this.taking;
+      sfx.pop(this.taking ? 3 : 2);
+      this.dirty = true;
+    } else if (s.kind === 'hint') this.askForHint();
     else this.restart();
     this.paintButtons();
   }
@@ -472,7 +599,12 @@ class IslandBridges implements Game {
     this.report();
     if (isSolved(this.layout, this.planks)) return void this.joined();
     // At school, the first island in a round that can no longer reach its number says what to do (the red outline shows which).
-    if (this.ctx.band === 'school' && this.touch && !this.troubleSaid && trouble(this.layout, this.planks).length) {
+    if (
+      this.ctx.band === 'school' &&
+      this.touch &&
+      !this.troubleSaid &&
+      trouble(this.layout, this.planks).length
+    ) {
       this.troubleSaid = true;
       void this.ctx.say('bridges.trouble');
     }
@@ -485,7 +617,10 @@ class IslandBridges implements Game {
     if (this.hinted?.kind === 'fix' && this.hinted.edge === edge) {
       this.hinted = null;
       // By touch, the hint switched Take off on for her; once its bridge is lifted, laying is what comes next.
-      if (this.touch && this.taking) { this.taking = false; this.paintButtons(); }
+      if (this.touch && this.taking) {
+        this.taking = false;
+        this.paintButtons();
+      }
     }
     sfx.pop(2);
     this.dirty = true;
@@ -505,14 +640,26 @@ class IslandBridges implements Game {
     this.assisted = true;
     this.mode = 'move';
     // By touch, a hint to take a plank off switches Take off on for her, and any other hint switches it off.
-    if (this.touch) { this.taking = h.kind === 'fix'; this.dirty = true; this.paintButtons(); }
+    if (this.touch) {
+      this.taking = h.kind === 'fix';
+      this.dirty = true;
+      this.paintButtons();
+    }
     const e = this.layout.edges[h.edge];
     this.focus = h.kind === 'forced' || h.kind === 'joined' ? h.island : e.a;
     this.report();
-    const line: LineId = h.kind === 'fix' ? (this.touch ? 'bridges.hint-fix-touch' : 'bridges.hint-fix')
-      : h.kind === 'forced' ? FORCED_LINE[h.why]
-      : h.kind === 'joined' ? (h.closing === h.edge ? 'bridges.hint-joined-same' : 'bridges.hint-joined')
-      : 'bridges.hint-next';
+    const line: LineId =
+      h.kind === 'fix'
+        ? this.touch
+          ? 'bridges.hint-fix-touch'
+          : 'bridges.hint-fix'
+        : h.kind === 'forced'
+          ? FORCED_LINE[h.why]
+          : h.kind === 'joined'
+            ? h.closing === h.edge
+              ? 'bridges.hint-joined-same'
+              : 'bridges.hint-joined'
+            : 'bridges.hint-next';
     void this.ctx.say(line);
   }
 
@@ -538,10 +685,14 @@ class IslandBridges implements Game {
     const wrong = this.planks.findIndex((n, k) => n > sol[k]);
     const need = wrong >= 0 ? wrong : sol.findIndex((s, k) => this.planks[k] < s);
     if (need < 0) return null;
-    if (this.taking !== (wrong >= 0)) {
+    if (this.taking !== wrong >= 0) {
       const k = this.slots.findIndex((s) => s.kind === 'take');
       const s = this.slots[k];
-      return { tap: { on: this.touchLayer, x: s.x + s.w / 2, y: s.y + s.h / 2 }, receiver: this.slotNodes[k], pause: 0.3 };
+      return {
+        tap: { on: this.touchLayer, x: s.x + s.w / 2, y: s.y + s.h / 2 },
+        receiver: this.slotNodes[k],
+        pause: 0.3,
+      };
     }
     const at = waterOf(this.layout, this.cell, need);
     return { tap: { on: this.board, x: at.x, y: at.y }, receiver: this.tapLayer, pause: 0.3 };
@@ -559,10 +710,12 @@ class IslandBridges implements Game {
     const wrong = this.planks.findIndex((n, k) => n > sol[k]);
     const need = wrong >= 0 ? wrong : sol.findIndex((s, k) => this.planks[k] < s);
     if (need < 0) return out;
-    const e = this.layout.edges[need], from = e.a;
+    const e = this.layout.edges[need],
+      from = e.a;
     if (this.mode !== 'move' && !(this.focus === from && this.mode === (wrong >= 0 ? 'remove' : 'add'))) {
       // Armed in the wrong place or the wrong way: let go with the same button that armed it.
-      if (this.mode === 'add') p.action = true; else p.undo = true;
+      if (this.mode === 'add') p.action = true;
+      else p.undo = true;
       this.botWait = 0.2;
       return out;
     }
@@ -574,7 +727,8 @@ class IslandBridges implements Game {
       return out;
     }
     if (this.mode === 'move') {
-      if (wrong >= 0) p.undo = true; else p.action = true;
+      if (wrong >= 0) p.undo = true;
+      else p.action = true;
       this.botWait = 0.22;
       return out;
     }
@@ -592,11 +746,25 @@ class IslandBridges implements Game {
 function miniSea(cell: number): Container {
   const c = new Container();
   const w = 4 * cell;
-  c.addChild(new Graphics().roundRect(-w / 2 - 10, -w / 2 - 10, w + 20, w + 20, 18).fill(SEA).stroke({ width: 5, color: SEA_LINE }));
-  const spots: [number, number, number][] = [[0, 0, 3], [3, 0, 2], [0, 3, 2], [3, 3, 3]];
+  c.addChild(
+    new Graphics()
+      .roundRect(-w / 2 - 10, -w / 2 - 10, w + 20, w + 20, 18)
+      .fill(SEA)
+      .stroke({ width: 5, color: SEA_LINE }),
+  );
+  const spots: [number, number, number][] = [
+    [0, 0, 3],
+    [3, 0, 2],
+    [0, 3, 2],
+    [3, 3, 3],
+  ];
   const at = (r: number, k: number) => ({ x: -w / 2 + cell / 2 + k * cell, y: -w / 2 + cell / 2 + r * cell });
   const g = new Graphics();
-  const line = (a: { x: number; y: number }, b: { x: number; y: number }, off: number, horizontal: boolean) => g.moveTo(a.x + (horizontal ? 0 : off), a.y + (horizontal ? off : 0)).lineTo(b.x + (horizontal ? 0 : off), b.y + (horizontal ? off : 0)).stroke({ width: cell * 0.12, color: wood.line });
+  const line = (a: { x: number; y: number }, b: { x: number; y: number }, off: number, horizontal: boolean) =>
+    g
+      .moveTo(a.x + (horizontal ? 0 : off), a.y + (horizontal ? off : 0))
+      .lineTo(b.x + (horizontal ? 0 : off), b.y + (horizontal ? off : 0))
+      .stroke({ width: cell * 0.12, color: wood.line });
   line(at(0, 0), at(0, 3), -cell * 0.1, true);
   line(at(0, 0), at(0, 3), cell * 0.1, true);
   line(at(0, 0), at(3, 0), 0, false);
@@ -606,7 +774,12 @@ function miniSea(cell: number): Container {
   c.addChild(g);
   for (const [r, k, n] of spots) {
     const p = at(r, k);
-    c.addChild(new Graphics().circle(p.x, p.y, cell * 0.4).fill(SAND).stroke({ width: 4, color: SAND_LINE }));
+    c.addChild(
+      new Graphics()
+        .circle(p.x, p.y, cell * 0.4)
+        .fill(SAND)
+        .stroke({ width: 4, color: SAND_LINE }),
+    );
     const t = label(String(n), Math.round(cell * 0.46), ink);
     t.position.set(p.x, p.y + 1);
     c.addChild(t);
@@ -629,10 +802,16 @@ function sticker(seed: number): Container {
   const c = new Container();
   c.addChild(new Graphics().circle(0, 0, 78).fill(SEA).stroke({ width: 6, color: SEA_LINE }));
   const g = new Graphics();
-  g.moveTo(-42, 8).lineTo(42, 8).stroke({ width: 10, color: wood.line }).moveTo(-42, 8).lineTo(42, 8).stroke({ width: 5, color: wood.light });
+  g.moveTo(-42, 8)
+    .lineTo(42, 8)
+    .stroke({ width: 10, color: wood.line })
+    .moveTo(-42, 8)
+    .lineTo(42, 8)
+    .stroke({ width: 5, color: wood.light });
   for (const x of [-42, 42]) g.circle(x, 8, 26).fill(SAND).stroke({ width: 4, color: SAND_LINE });
   c.addChild(g);
-  const a = label(String(rng.int(1, 4)), 28, ink), b = label(String(rng.int(1, 4)), 28, ink);
+  const a = label(String(rng.int(1, 4)), 28, ink),
+    b = label(String(rng.int(1, 4)), 28, ink);
   a.position.set(-42, 9);
   b.position.set(42, 9);
   c.addChild(a, b);
@@ -650,8 +829,10 @@ export const islandBridges: GameModule = {
   bands: ['school', 'grownup'],
   inputs: ['touch', 'controller'],
   touchDemo: true,
-  coplayHint: 'Tap the water between two islands to lay a plank, and again for a second. Ask which island has only one way to finish its number.',
-  offScreen: 'Draw dots on paper and join them with lines so each dot has as many lines as its number, and none cross.',
+  coplayHint:
+    'Tap the water between two islands to lay a plank, and again for a second. Ask which island has only one way to finish its number.',
+  offScreen:
+    'Draw dots on paper and join them with lines so each dot has as many lines as its number, and none cross.',
   levels: (band) => rangeFor(LEVELS, band),
   entryLevels: [5],
   describeLevel: (level) => planFor(level).name,
@@ -664,18 +845,34 @@ export const islandBridges: GameModule = {
 
 /** A dashed ring, turning slowly: Pixi has no dashed stroke, so each dash is its own arc. */
 function dashedCircle(g: Graphics, at: { x: number; y: number }, r: number, color: number, clock: number) {
-  const dashes = 14, step = (Math.PI * 2) / dashes, spin = clock * 0.6;
+  const dashes = 14,
+    step = (Math.PI * 2) / dashes,
+    spin = clock * 0.6;
   for (let i = 0; i < dashes; i++) {
     const a = spin + i * step;
-    g.moveTo(at.x + r * Math.cos(a), at.y + r * Math.sin(a)).arc(at.x, at.y, r, a, a + step * 0.55).stroke({ width: 5, color });
+    g.moveTo(at.x + r * Math.cos(a), at.y + r * Math.sin(a))
+      .arc(at.x, at.y, r, a, a + step * 0.55)
+      .stroke({ width: 5, color });
   }
 }
 
 /** A dashed line between two island centres, starting and ending `inset` units in from each. */
-function dashedLine(g: Graphics, a: { x: number; y: number }, b: { x: number; y: number }, inset: number, color: number) {
-  const len = Math.hypot(b.x - a.x, b.y - a.y), ux = (b.x - a.x) / len, uy = (b.y - a.y) / len, dash = 14, gap = 10;
+function dashedLine(
+  g: Graphics,
+  a: { x: number; y: number },
+  b: { x: number; y: number },
+  inset: number,
+  color: number,
+) {
+  const len = Math.hypot(b.x - a.x, b.y - a.y),
+    ux = (b.x - a.x) / len,
+    uy = (b.y - a.y) / len,
+    dash = 14,
+    gap = 10;
   for (let d = inset; d < len - inset; d += dash + gap) {
     const e = Math.min(d + dash, len - inset);
-    g.moveTo(a.x + ux * d, a.y + uy * d).lineTo(a.x + ux * e, a.y + uy * e).stroke({ width: 6, color });
+    g.moveTo(a.x + ux * d, a.y + uy * d)
+      .lineTo(a.x + ux * e, a.y + uy * e)
+      .stroke({ width: 6, color });
   }
 }

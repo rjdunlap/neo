@@ -31,7 +31,18 @@ if (missing.length) {
   for (const [key, text] of missing) {
     const audio = await tts.generate(text, { voice: SETTINGS.voice, speed: SETTINGS.speed });
     await audio.save(wav);
-    execFileSync('afconvert', ['-f', 'm4af', '-d', 'aac', '-b', '32000', '-c', '1', wav, join(outDir, `${key}.m4a`)]);
+    execFileSync('afconvert', [
+      '-f',
+      'm4af',
+      '-d',
+      'aac',
+      '-b',
+      '32000',
+      '-c',
+      '1',
+      wav,
+      join(outDir, `${key}.m4a`),
+    ]);
     if (++n % 25 === 0 || n === missing.length) console.log(`${n}/${missing.length}`);
   }
   rmSync(wav, { force: true });
@@ -40,6 +51,8 @@ if (missing.length) {
 for (const file of readdirSync(outDir)) {
   if (file.endsWith('.m4a') && !wanted.has(file.slice(0, -4))) rmSync(join(outDir, file));
 }
-const clips = Object.fromEntries([...wanted].map(([key, text]) => [text, key]).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)));
+const clips = Object.fromEntries(
+  [...wanted].map(([key, text]) => [text, key]).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)),
+);
 writeFileSync(manifestPath, `${JSON.stringify({ settings: SETTINGS, clips }, null, 1)}\n`);
 console.log(`wrote ${Object.keys(clips).length} entries to src/content/voice-clips.json`);

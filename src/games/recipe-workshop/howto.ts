@@ -15,7 +15,15 @@ export const HOW_TO: GameHowTo = {
     { from: 3, to: 3, text: "When both friends have their bowl, it's done." },
   ],
   note: [
-    { from: 1, to: 1, text: 'Every bowl is right here, so this shows play, not following a recipe. Pretend food only: nothing here is a real recipe or advice about what to eat.' },
-    { from: 2, to: 3, text: "Adding, mixing and Undo are free to try; only a Serve that doesn't match the card counts as a miss, and two on one bowl light up the next step and count as help. Pretend food only: nothing here is a real recipe or advice about what to eat." },
+    {
+      from: 1,
+      to: 1,
+      text: 'Every bowl is right here, so this shows play, not following a recipe. Pretend food only: nothing here is a real recipe or advice about what to eat.',
+    },
+    {
+      from: 2,
+      to: 3,
+      text: "Adding, mixing and Undo are free to try; only a Serve that doesn't match the card counts as a miss, and two on one bowl light up the next step and count as help. Pretend food only: nothing here is a real recipe or advice about what to eat.",
+    },
   ],
 };

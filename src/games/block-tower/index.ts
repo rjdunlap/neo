@@ -13,7 +13,29 @@ import { RoundButton } from '../../ui/buttons';
 import { label } from '../../ui/text';
 import { symbol, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { LEVELS, compare, finish, makeRounds, makeStandRounds, StandObservation, middleFrom, nextReach, planFor, makeReachRounds, reachX, reachDrop, reached, stackMove, standingTower, topples, W, type DirectedReachRound, type StandRound, type TowerPlan, type TowerRound } from './logic';
+import {
+  LEVELS,
+  compare,
+  finish,
+  makeRounds,
+  makeStandRounds,
+  StandObservation,
+  middleFrom,
+  nextReach,
+  planFor,
+  makeReachRounds,
+  reachX,
+  reachDrop,
+  reached,
+  stackMove,
+  standingTower,
+  topples,
+  W,
+  type DirectedReachRound,
+  type StandRound,
+  type TowerPlan,
+  type TowerRound,
+} from './logic';
 
 /** A block's size in logical units; positions in the logic are eighths of BW. */
 const BW = 104;
@@ -132,21 +154,37 @@ class BlockTower implements Game {
     this.ctx.listen(window, 'pointercancel', this.cancelReach, true);
     this.plan = planFor(ctx.level);
     this.reachRounds = this.plan.mode === 'reach' ? makeReachRounds(ctx.rng) : [];
-    this.rounds = this.plan.mode === 'reach' ? this.reachRounds.map(() => ({ target: 0 })) : makeRounds(this.plan, ctx.rng);
+    this.rounds =
+      this.plan.mode === 'reach'
+        ? this.reachRounds.map(() => ({ target: 0 }))
+        : makeRounds(this.plan, ctx.rng);
     this.standRounds = this.plan.mode === 'stand' ? makeStandRounds(ctx.rng, ctx.band === 'school') : [];
-    const replayIcon = new Graphics().arc(0, 0, 24, 0.5, 5.7).stroke(line(ink, 6)).poly([20, -22, 32, -15, 17, -8]).fill(ink);
+    const replayIcon = new Graphics()
+      .arc(0, 0, 24, 0.5, 5.7)
+      .stroke(line(ink, 6))
+      .poly([20, -22, 32, -15, 17, -8])
+      .fill(ink);
     const nextIcon = new Graphics().poly([-16, -25, 20, 0, -16, 25]).stroke(line(ink, 7));
     this.watchAgain = new RoundButton(replayIcon, swatch.blue, 54, () => void this.replayStand());
     this.continueStand = new RoundButton(nextIcon, swatch.green, 54, () => this.advanceStand());
-    for (const [button, text] of [[this.watchAgain, 'Watch again'], [this.continueStand, 'Continue']] as const) {
-      const caption = label(text, 22, ink); caption.y = 78; button.addChild(caption);
+    for (const [button, text] of [
+      [this.watchAgain, 'Watch again'],
+      [this.continueStand, 'Continue'],
+    ] as const) {
+      const caption = label(text, 22, ink);
+      caption.y = 78;
+      button.addChild(caption);
       button.visible = false;
     }
     this.prediction.eventMode = 'none';
     this.bell = new RoundButton(symbol('bell', 0, 30), swatch.yellow, 54, () => void this.check());
     const basket = new Graphics()
-      .poly([-70, -60, 70, -60, 56, 0, -56, 0]).fill(wood.fill).stroke(line(wood.line, 5))
-      .moveTo(-62, -36).lineTo(62, -36).stroke(line(wood.line, 4));
+      .poly([-70, -60, 70, -60, 56, 0, -56, 0])
+      .fill(wood.fill)
+      .stroke(line(wood.line, 5))
+      .moveTo(-62, -36)
+      .lineTo(62, -36)
+      .stroke(line(wood.line, 4));
     const peek = new Container();
     ['red', 'blue', 'yellow'].forEach((c, i) => {
       const b = blockArt(c as ColorName);
@@ -169,7 +207,22 @@ class BlockTower implements Game {
     const basketModes = mode === 'flag' || mode === 'match';
     this.bin.visible = this.bell.visible = this.towerHit.visible = basketModes;
     // The tower's tap area has no drawing, so it can sit over the blocks it stands for.
-    ctx.stage.addChild(this.room, this.table, this.marks, this.glow, this.layer, this.explain, this.towerHit, this.ghost, this.hintGhost, this.bin, this.bell, this.prediction, this.watchAgain, this.continueStand);
+    ctx.stage.addChild(
+      this.room,
+      this.table,
+      this.marks,
+      this.glow,
+      this.layer,
+      this.explain,
+      this.towerHit,
+      this.ghost,
+      this.hintGhost,
+      this.bin,
+      this.bell,
+      this.prediction,
+      this.watchAgain,
+      this.continueStand,
+    );
     if (mode === 'tumble' || mode === 'friend') {
       // Lap play: a tap anywhere stacks, so the input layer goes last, on top.
       onTap(this.input, () => this.lapTap(), { cooldown: 200 });
@@ -214,9 +267,24 @@ class BlockTower implements Game {
   resize(v: View) {
     this.view = v;
     const f = v.h - 70;
-    this.room.clear().rect(0, 0, v.w, v.h).fill(cream).rect(0, f, v.w, v.h - f).fill(wood.light).rect(0, f - 6, v.w, 8).fill(wood.fill);
+    this.room
+      .clear()
+      .rect(0, 0, v.w, v.h)
+      .fill(cream)
+      .rect(0, f, v.w, v.h - f)
+      .fill(wood.light)
+      .rect(0, f - 6, v.w, 8)
+      .fill(wood.fill);
     // A window, for a playroom feel.
-    this.room.roundRect(v.w * 0.72, 70, 170, 130, 12).fill(swatch.blue.light).stroke(line(wood.line, 6)).moveTo(v.w * 0.72 + 85, 70).lineTo(v.w * 0.72 + 85, 200).moveTo(v.w * 0.72, 135).lineTo(v.w * 0.72 + 170, 135).stroke(line(wood.line, 5));
+    this.room
+      .roundRect(v.w * 0.72, 70, 170, 130, 12)
+      .fill(swatch.blue.light)
+      .stroke(line(wood.line, 6))
+      .moveTo(v.w * 0.72 + 85, 70)
+      .lineTo(v.w * 0.72 + 85, 200)
+      .moveTo(v.w * 0.72, 135)
+      .lineTo(v.w * 0.72 + 170, 135)
+      .stroke(line(wood.line, 5));
     this.input.clear();
     this.input.hitArea = new Rectangle(0, 0, v.w, v.h);
     this.bin.position.set(v.w - 120, f + 20);
@@ -226,7 +294,8 @@ class BlockTower implements Game {
     this.layoutReach();
     this.watchAgain.position.set(v.w * 0.43, 290);
     this.continueStand.position.set(v.w * 0.65, 290);
-    if (this.observation.phase === 'result' || this.observation.phase === 'releasing') this.drawStandExplanation();
+    if (this.observation.phase === 'result' || this.observation.phase === 'releasing')
+      this.drawStandExplanation();
     this.drawPrediction();
   }
 
@@ -274,10 +343,18 @@ class BlockTower implements Game {
       case 'reach': {
         const round = this.reachRound;
         const placed = this.placed;
-        const next = round ? nextReach(placed.map((t) => t.x!), round) : undefined;
+        const next = round
+          ? nextReach(
+              placed.map((t) => t.x!),
+              round,
+            )
+          : undefined;
         const block = this.tray.find((t) => t.x === null && !t.drag.dragging);
         if (next === undefined || !block) return null;
-        return { drag: { on: block.node }, to: { on: this.ctx.stage, x: this.reachScreen(next), y: this.tableTop - placed.length * BH } };
+        return {
+          drag: { on: block.node },
+          to: { on: this.ctx.stage, x: this.reachScreen(next), y: this.tableTop - placed.length * BH },
+        };
       }
     }
   }
@@ -295,11 +372,21 @@ class BlockTower implements Game {
     });
     this.bearStack.forEach((b, i) => b.position.set(this.bearX, this.floor - i * BH));
     this.bear?.position.set(this.bearX - 120, this.floor);
-    if (this.friend) this.friend.position.set(this.towerX + BW / 2 + 30 + 135 * this.friend.scale.x, this.floor);
+    if (this.friend)
+      this.friend.position.set(this.towerX + BW / 2 + 30 + 135 * this.friend.scale.x, this.floor);
     const n = Math.max(1, this.stack.length);
-    this.towerHit.hitArea = new Rectangle(this.towerX - 75, this.floor - n * BH - 30, 150, Math.max(110, n * BH + 40));
+    this.towerHit.hitArea = new Rectangle(
+      this.towerX - 75,
+      this.floor - n * BH - 30,
+      150,
+      Math.max(110, n * BH + 40),
+    );
     if (this.stand) {
-      this.standTowers.forEach((t, i) => t.forEach((b, k) => b.position.set(this.standX(i) + px(this.stand!.towers[i][k]), this.floor - k * BH)));
+      this.standTowers.forEach((t, i) =>
+        t.forEach((b, k) =>
+          b.position.set(this.standX(i) + px(this.stand!.towers[i][k]), this.floor - k * BH),
+        ),
+      );
     }
   }
 
@@ -316,19 +403,32 @@ class BlockTower implements Game {
     const r = this.round;
     if (mode === 'friend' && r) {
       const y = this.floor - r.target * BH;
-      dashed(g, this.towerX - 70, y, this.towerX + BW / 2 + 30 + 135 * (this.friend?.scale.x ?? 1), y, swatch.purple.fill);
+      dashed(
+        g,
+        this.towerX - 70,
+        y,
+        this.towerX + BW / 2 + 30 + 135 * (this.friend?.scale.x ?? 1),
+        y,
+        swatch.purple.fill,
+      );
     }
     if (mode === 'flag' && r) {
       const x = this.towerX + 130;
       const y = this.floor - r.target * BH;
       g.rect(x - 4, y - 10, 8, this.floor - y + 10).fill(wood.line);
-      g.poly([x, y + 22, x + 46, y - 10, x + 92, y + 22, x + 46, y + 54]).fill(swatch.red.fill).stroke(line(swatch.red.line, 4));
+      g.poly([x, y + 22, x + 46, y - 10, x + 92, y + 22, x + 46, y + 54])
+        .fill(swatch.red.fill)
+        .stroke(line(swatch.red.line, 4));
       dashed(g, this.towerX - 70, y, x, y, swatch.red.line);
       const n = label(String(r.target), 30, 0xffffff);
       n.position.set(x + 46, y + 22);
       // One pip per equal-height block; art never draws from the puzzle RNG.
       for (let i = 0; i < r.target; i++) g.circle(x + 12 + i * 14, y + 73, 5).fill(swatch.red.line);
-      g.moveTo(x + 46, y + 54).lineTo(x + 96, y + 65).lineTo(x + 102, y + 91).lineTo(x + 88, y + 107).stroke(line(swatch.red.line, 3));
+      g.moveTo(x + 46, y + 54)
+        .lineTo(x + 96, y + 65)
+        .lineTo(x + 102, y + 91)
+        .lineTo(x + 88, y + 107)
+        .stroke(line(swatch.red.line, 3));
       g.addChild(n);
     }
     if (mode === 'stand' && this.stand && this.observation.phase === 'held') {
@@ -336,7 +436,9 @@ class BlockTower implements Game {
       g.rect(0, 40, this.view.w, 22).fill(wood.fill);
       this.standTowers.forEach((t) => {
         const top = t[t.length - 1];
-        g.moveTo(top.x, 62).lineTo(top.x, top.y - BH).stroke(line(swatch.white.line, 4));
+        g.moveTo(top.x, 62)
+          .lineTo(top.x, top.y - BH)
+          .stroke(line(swatch.white.line, 4));
       });
     }
   }
@@ -390,7 +492,14 @@ class BlockTower implements Game {
           await this.ctx.tw.to(b.scale, { x: 1, y: 1 }, { duration: 0.18, ease: ease.outBack });
         }
         this.bear.cheer();
-        await this.ctx.instruct(r.ask === 'same' ? 'tower.match-same' : r.ask === 'taller' ? 'tower.match-taller' : 'tower.match-shorter', { friend: 'Duck' });
+        await this.ctx.instruct(
+          r.ask === 'same'
+            ? 'tower.match-same'
+            : r.ask === 'taller'
+              ? 'tower.match-taller'
+              : 'tower.match-shorter',
+          { friend: 'Duck' },
+        );
         break;
       }
       case 'stand':
@@ -409,7 +518,12 @@ class BlockTower implements Game {
   /** Knocks everything from the last round away and tidies up. */
   private async clear() {
     for (const t of this.tray) t.drag.destroy();
-    const gone = [...this.stack, ...this.bearStack, ...this.standTowers.flat(), ...this.tray.map((t) => t.node)];
+    const gone = [
+      ...this.stack,
+      ...this.bearStack,
+      ...this.standTowers.flat(),
+      ...this.tray.map((t) => t.node),
+    ];
     for (const b of gone) {
       this.ctx.tw.kill(b);
       void this.ctx.tw.to(b, { alpha: 0 }, { duration: 0.25 }).then(() => b.destroy());
@@ -486,7 +600,9 @@ class BlockTower implements Game {
     this.glowTop = false;
     sfx.whoosh();
     this.layoutTowers();
-    void this.ctx.tw.to(b, { x: this.bin.x, y: this.bin.y - 60, alpha: 0 }, { duration: 0.35, ease: ease.inQuad }).then(() => b.destroy());
+    void this.ctx.tw
+      .to(b, { x: this.bin.x, y: this.bin.y - 60, alpha: 0 }, { duration: 0.35, ease: ease.inQuad })
+      .then(() => b.destroy());
   }
 
   /** A big, giggly tumble. */
@@ -508,8 +624,17 @@ class BlockTower implements Game {
     for (const node of blocks) {
       this.ctx.tw.kill(node);
       const away = lean || Math.sign(node.x - from + this.ctx.rng.range(-1, 1));
-      const [vx, vy] = lean ? [this.ctx.rng.range(60, 150), this.ctx.rng.range(80, 200)] : [this.ctx.rng.range(120, 420), this.ctx.rng.range(250, 650)];
-      this.flying.push({ node, vx: away * vx, vy: -vy, vr: away * this.ctx.rng.range(2, 5), floor: this.floor - BH / 2 + 20, age: 0 });
+      const [vx, vy] = lean
+        ? [this.ctx.rng.range(60, 150), this.ctx.rng.range(80, 200)]
+        : [this.ctx.rng.range(120, 420), this.ctx.rng.range(250, 650)];
+      this.flying.push({
+        node,
+        vx: away * vx,
+        vy: -vy,
+        vr: away * this.ctx.rng.range(2, 5),
+        floor: this.floor - BH / 2 + 20,
+        age: 0,
+      });
       node.pivot.set(0, -BH / 2);
       node.y -= BH / 2;
     }
@@ -536,7 +661,8 @@ class BlockTower implements Game {
     this.misses++;
     this.wrongs++;
     sfx.boing();
-    if (this.plan.mode === 'match') await this.ctx.say('tower.match-wrong', { bear: r.bear!, have, want: r.target, friend: 'Duck' });
+    if (this.plan.mode === 'match')
+      await this.ctx.say('tower.match-wrong', { bear: r.bear!, have, want: r.target, friend: 'Duck' });
     else await this.ctx.say(result === 'short' ? 'tower.short' : 'tower.tall');
     if (result === 'tall') this.glowTop = true;
     if (this.wrongs >= 2) {
@@ -547,7 +673,9 @@ class BlockTower implements Game {
       }
       await this.ctx.say('tower.count-hint');
       for (const [k, b] of this.stack.entries()) {
-        void this.ctx.tw.to(b.scale, { x: 1.12, y: 1.12 }, { duration: 0.15 }).then(() => this.ctx.tw.to(b.scale, { x: 1, y: 1 }, { duration: 0.15 }));
+        void this.ctx.tw
+          .to(b.scale, { x: 1.12, y: 1.12 }, { duration: 0.15 })
+          .then(() => this.ctx.tw.to(b.scale, { x: 1, y: 1 }, { duration: 0.15 }));
         sfx.bell(3 + k, 0.2);
         await this.ctx.say('count', { n: k + 1 });
       }
@@ -583,20 +711,27 @@ class BlockTower implements Game {
   }
 
   private restoreStand() {
-    for (const b of [...this.standTowers.flat(), ...this.flying.map(f => f.node)]) if (!b.destroyed) b.destroy();
+    for (const b of [...this.standTowers.flat(), ...this.flying.map((f) => f.node)])
+      if (!b.destroyed) b.destroy();
     this.flying = [];
-    this.standTowers = this.stand!.towers.map(t => t.map((_, k) => {
-      const b = blockArt(colorFor(this.standRounds[this.index].color + k));
-      this.layer.addChild(b);
-      return b;
-    }));
+    this.standTowers = this.stand!.towers.map((t) =>
+      t.map((_, k) => {
+        const b = blockArt(colorFor(this.standRounds[this.index].color + k));
+        this.layer.addChild(b);
+        return b;
+      }),
+    );
     this.layoutTowers();
   }
 
   private drawPrediction() {
     const g = this.prediction.clear();
     if (!this.stand || this.guess === null) return;
-    g.moveTo(0, 18).bezierCurveTo(-30, -6, -16, -28, 0, -12).bezierCurveTo(16, -28, 30, -6, 0, 18).fill(swatch.pink.fill).stroke(line(swatch.pink.line, 4));
+    g.moveTo(0, 18)
+      .bezierCurveTo(-30, -6, -16, -28, 0, -12)
+      .bezierCurveTo(16, -28, 30, -6, 0, 18)
+      .fill(swatch.pink.fill)
+      .stroke(line(swatch.pink.line, 4));
     g.position.set(this.standX(this.guess) + px(this.stand.towers[this.guess][2]), this.floor - 3 * BH - 40);
   }
 
@@ -648,11 +783,18 @@ class BlockTower implements Game {
     const g = this.explain.clear();
     const x0 = this.standX(fall);
     const offs = this.stand!.towers[fall];
-    for (let j = 0; j < offs.length; j++) g.roundRect(x0 + px(offs[j]) - BW / 2, this.floor - (j + 1) * BH, BW, BH, 10).stroke({ width: 3, color: ink, alpha: 0.35 });
+    for (let j = 0; j < offs.length; j++)
+      g.roundRect(x0 + px(offs[j]) - BW / 2, this.floor - (j + 1) * BH, BW, BH, 10).stroke({
+        width: 3,
+        color: ink,
+        alpha: 0.35,
+      });
     const mid = x0 + px(middleFrom(offs, k));
     const below = x0 + px(offs[k - 1]);
     dashed(g, mid, this.floor - (offs.length + 0.5) * BH, mid, this.floor - (k - 1) * BH, swatch.red.fill, 5);
-    g.moveTo(below + (lean * BW) / 2, this.floor - k * BH - 10).lineTo(below + (lean * BW) / 2, this.floor - k * BH + 18).stroke(line(swatch.red.line, 6));
+    g.moveTo(below + (lean * BW) / 2, this.floor - k * BH - 10)
+      .lineTo(below + (lean * BW) / 2, this.floor - k * BH + 18)
+      .stroke(line(swatch.red.line, 6));
     // And the middle line for the tower that stands: over the block below.
     const up = this.stand!.stands;
     const ux = this.standX(up);
@@ -703,12 +845,22 @@ class BlockTower implements Game {
     const g = this.table.clear();
     const left = round.direction === 1 ? -20 : e;
     const right = round.direction === 1 ? e : v.w + 20;
-    g.rect(left, top, right - left, 26).fill(wood.fill).stroke(line(wood.line, 5));
-    g.rect(round.direction === 1 ? 40 : v.w - 62, top + 26, 22, this.floor - top - 26).rect(e - round.direction * 59 - 11, top + 26, 22, this.floor - top - 26).fill(wood.line);
+    g.rect(left, top, right - left, 26)
+      .fill(wood.fill)
+      .stroke(line(wood.line, 5));
+    g.rect(round.direction === 1 ? 40 : v.w - 62, top + 26, 22, this.floor - top - 26)
+      .rect(e - round.direction * 59 - 11, top + 26, 22, this.floor - top - 26)
+      .fill(wood.line);
     const sx = this.reachScreen(round.star);
     const highest = top - (round.blocks + 0.6) * BH;
     dashed(g, sx, top + 20, sx, highest, swatch.yellow.line, 5);
-    g.poly([0, -30, 9, -10, 30, -9, 13, 5, 19, 27, 0, 15, -19, 27, -13, 5, -30, -9, -9, -10].map((n, i) => n + (i % 2 ? highest - 10 : sx))).fill(swatch.yellow.fill).stroke(line(swatch.yellow.line, 4));
+    g.poly(
+      [0, -30, 9, -10, 30, -9, 13, 5, 19, 27, 0, 15, -19, 27, -13, 5, -30, -9, -9, -10].map(
+        (n, i) => n + (i % 2 ? highest - 10 : sx),
+      ),
+    )
+      .fill(swatch.yellow.fill)
+      .stroke(line(swatch.yellow.line, 4));
     const loose = this.tray.filter((t) => t.x === null);
     loose.forEach((t, i) => {
       const home = { x: v.w - 330 + i * 120, y: this.floor + 30 };
@@ -717,12 +869,17 @@ class BlockTower implements Game {
     });
     const placed = this.placed;
     placed.forEach((t, k) => {
-      if (!t.drag.dragging && !this.ctx.tw.busy(t.node)) t.node.position.set(this.reachScreen(t.x!), top - k * BH);
+      if (!t.drag.dragging && !this.ctx.tw.busy(t.node))
+        t.node.position.set(this.reachScreen(t.x!), top - k * BH);
     });
-    if (this.ghost.visible && this.aimSlot !== null) this.ghost.position.set(this.reachScreen(this.aimSlot), top - placed.length * BH);
-    if (this.hintGhost.visible && this.hintSlot !== null) this.hintGhost.position.set(this.reachScreen(this.hintSlot), top - placed.length * BH);
+    if (this.ghost.visible && this.aimSlot !== null)
+      this.ghost.position.set(this.reachScreen(this.aimSlot), top - placed.length * BH);
+    if (this.hintGhost.visible && this.hintSlot !== null)
+      this.hintGhost.position.set(this.reachScreen(this.hintSlot), top - placed.length * BH);
     // Blocks in the tray move freely; on the stack only the top one lifts off again.
-    for (const t of this.tray) if (!t.drag.dragging) t.drag.enabled = !this.busy && !this.finished && (t.x === null || t === placed[placed.length - 1]);
+    for (const t of this.tray)
+      if (!t.drag.dragging)
+        t.drag.enabled = !this.busy && !this.finished && (t.x === null || t === placed[placed.length - 1]);
   }
 
   /** The slot a block over (x, y) would drop into: the next level up, snapped to eighths. */
@@ -747,7 +904,10 @@ class BlockTower implements Game {
     this.ghost.visible = s !== null;
     if (s === null) return;
     const k = this.placed.length;
-    this.ghost.clear().roundRect(-BW / 2, -BH, BW, BH, 10).stroke({ width: 4, color: ink, alpha: 0.5 });
+    this.ghost
+      .clear()
+      .roundRect(-BW / 2, -BH, BW, BH, 10)
+      .stroke({ width: 4, color: ink, alpha: 0.5 });
     this.ghost.position.set(this.reachScreen(s), this.tableTop - k * BH);
   }
 
@@ -768,7 +928,13 @@ class BlockTower implements Game {
     t.depth = k;
     this.busy = true;
     for (const block of this.tray) block.drag.enabled = false;
-    void this.ctx.tw.to(t.node, { x: this.reachScreen(s), y: this.tableTop - k * BH }, { duration: 0.15, ease: ease.outQuad }).then(() => void this.settled());
+    void this.ctx.tw
+      .to(
+        t.node,
+        { x: this.reachScreen(s), y: this.tableTop - k * BH },
+        { duration: 0.15, ease: ease.outQuad },
+      )
+      .then(() => void this.settled());
     sfx.clunk();
     return true;
   }
@@ -787,10 +953,25 @@ class BlockTower implements Game {
       // The ghosts of the falling blocks stay a moment with the line through their middle.
       const g = this.explain.clear();
       const mid = this.reachScreen(middleFrom(xs, falls));
-      const under = falls === 0 ? this.edge : this.reachScreen(xs[falls - 1]) + round.direction * BW / 2;
-      for (let j = falls; j < xs.length; j++) g.roundRect(this.reachScreen(xs[j]) - BW / 2, this.tableTop - (j + 1) * BH, BW, BH, 10).stroke({ width: 3, color: ink, alpha: 0.35 });
-      dashed(g, mid, this.tableTop - (xs.length + 0.3) * BH, mid, this.tableTop - falls * BH + 30, swatch.red.fill, 5);
-      g.moveTo(under, this.tableTop - falls * BH - 8).lineTo(under, this.tableTop - falls * BH + 20).stroke(line(swatch.red.line, 6));
+      const under = falls === 0 ? this.edge : this.reachScreen(xs[falls - 1]) + (round.direction * BW) / 2;
+      for (let j = falls; j < xs.length; j++)
+        g.roundRect(this.reachScreen(xs[j]) - BW / 2, this.tableTop - (j + 1) * BH, BW, BH, 10).stroke({
+          width: 3,
+          color: ink,
+          alpha: 0.35,
+        });
+      dashed(
+        g,
+        mid,
+        this.tableTop - (xs.length + 0.3) * BH,
+        mid,
+        this.tableTop - falls * BH + 30,
+        swatch.red.fill,
+        5,
+      );
+      g.moveTo(under, this.tableTop - falls * BH - 8)
+        .lineTo(under, this.tableTop - falls * BH + 20)
+        .stroke(line(swatch.red.line, 6));
       sfx.rumble();
       const down = stack.slice(falls);
       for (const t of down) {
@@ -826,7 +1007,14 @@ class BlockTower implements Game {
       sfx.sparkle();
       sfx.tada();
       const sx = this.reachScreen(round.star);
-      this.ctx.particles.burst(sx, this.tableTop - (round.blocks + 0.6) * BH - 10, { kind: 'star', colors: [0xffd54a, 0xffffff], count: 18, speed: [150, 320], gravity: 0, life: [0.6, 1] });
+      this.ctx.particles.burst(sx, this.tableTop - (round.blocks + 0.6) * BH - 10, {
+        kind: 'star',
+        colors: [0xffd54a, 0xffffff],
+        count: 18,
+        speed: [150, 320],
+        gravity: 0,
+        life: [0.6, 1],
+      });
       for (const t of this.tray) t.drag.enabled = false;
       await this.ctx.say('tower.star');
       await this.ctx.tw.wait(0.6);
@@ -854,7 +1042,11 @@ class BlockTower implements Game {
     const way = finish(xs, round);
     if (way && way.length) {
       this.hintSlot = way[0];
-      this.hintGhost.clear().roundRect(-BW / 2, -BH, BW, BH, 10).fill({ color: 0xfff3a0, alpha: 0.7 }).stroke({ width: 4, color: swatch.yellow.line });
+      this.hintGhost
+        .clear()
+        .roundRect(-BW / 2, -BH, BW, BH, 10)
+        .fill({ color: 0xfff3a0, alpha: 0.7 })
+        .stroke({ width: 4, color: swatch.yellow.line });
       this.hintGhost.position.set(this.reachScreen(way[0]), this.tableTop - xs.length * BH);
       this.hintGhost.visible = true;
       void this.ctx.say('tower.reach-hint');
@@ -871,7 +1063,10 @@ class BlockTower implements Game {
     const top = stack[stack.length - 1];
     if (!top) return;
     const a = 0.55 + 0.3 * Math.sin(this.clock * 6);
-    g.roundRect(top.x - BW / 2 - 16, top.y - BH - 16, BW + 32, BH + 32, 18).fill({ color: 0xfff3a0, alpha: a });
+    g.roundRect(top.x - BW / 2 - 16, top.y - BH - 16, BW + 32, BH + 32, 18).fill({
+      color: 0xfff3a0,
+      alpha: a,
+    });
   }
 
   private async finale() {
@@ -926,11 +1121,13 @@ export const blockTower: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.stickers,
   touchDemo: true,
-  coplayHint: 'Stack real blocks or cups with {name} and knock them down together: "One, two, three... crash!"',
+  coplayHint:
+    'Stack real blocks or cups with {name} and knock them down together: "One, two, three... crash!"',
   offScreen: {
     all: 'On the floor, build towers with blocks or cups: which is taller? Try shifting the top block a little and see whether it stands.',
     // School: a build or test with a result, predicting first.
-    school: 'Build two towers from the same blocks, one wide at the bottom and one narrow. Guess which stands taller before it wobbles, then try.',
+    school:
+      'Build two towers from the same blocks, one wide at the bottom and one narrow. Guess which stands taller before it wobbles, then try.',
   },
   hubIcon: () => new TowerIcon(),
   sticker,

@@ -1,7 +1,9 @@
 // What this game says, keyed by line id; src/content/voice-script.ts gathers every game's lines into SCRIPT.
 export const VOICE = {
   'swap-meet.title': ['Swap Meet!'],
-  'swap-meet.one': ['{friend} wants the {thing}. Give {friend} the {thing}. {friend} gives you a {returned}.'],
+  'swap-meet.one': [
+    '{friend} wants the {thing}. Give {friend} the {thing}. {friend} gives you a {returned}.',
+  ],
   'swap-meet.two': ['Give each friend the thing in their picture. See what comes back.'],
   'swap-meet.three': ["Find two friends who want each other's things. Swap them."],
   'swap-meet.four': ['Our friend wants a {goal}. Trade what you carry to get it.'],

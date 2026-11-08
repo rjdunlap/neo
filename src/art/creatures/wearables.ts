@@ -13,7 +13,8 @@ import { WEARABLES, type WearableId } from './wear-slots';
  * the species has no place for it. Separate from the Graphics `Accessory` kinds the RW02 rigs share.
  */
 export { MAX_WORN, SLOT, WEARABLES, type WearableId, type WearSlot } from './wear-slots';
-type File = 'crown' | 'scarf' | 'sunhat' | 'sunglasses' | 'raincoat' | 'umbrella' | 'beanie' | 'boot' | 'mitten';
+type File =
+  'crown' | 'scarf' | 'sunhat' | 'sunglasses' | 'raincoat' | 'umbrella' | 'beanie' | 'boot' | 'mitten';
 
 /** A prepared item sprite, in its own pixels: its size and the point that goes on the creature. */
 export interface ItemArt {
@@ -92,7 +93,12 @@ export function itemNode(id: WearableId, texture: Texture, fit: Fit): Container 
 const worn = new WeakMap<IllustratedCreature, Map<WearableId, Container[]>>();
 
 /** Puts an item on (or takes it off). False when the species does not wear it. */
-export function wearItem(c: IllustratedCreature, table: WearTable, id: WearableId, texture: Texture | null): boolean {
+export function wearItem(
+  c: IllustratedCreature,
+  table: WearTable,
+  id: WearableId,
+  texture: Texture | null,
+): boolean {
   const mine = worn.get(c) ?? new Map<WearableId, Container[]>();
   worn.set(c, mine);
   for (const n of mine.get(id) ?? []) {

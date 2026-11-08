@@ -16,7 +16,22 @@ import { KIND_WORDS } from '../../learning/sorting/rules';
 import { ruleIcon } from '../../art/sort-rule-icon';
 import type { Rule, SortCritter } from '../../learning/sorting/rules';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { LEVELS, bestTest, consistent, gateKey, gateWords, makeRound, nextStep, passes, planFor, sameGate, splits, type CrossPlan, type CrossRound, type Gate } from './logic';
+import {
+  LEVELS,
+  bestTest,
+  consistent,
+  gateKey,
+  gateWords,
+  makeRound,
+  nextStep,
+  passes,
+  planFor,
+  sameGate,
+  splits,
+  type CrossPlan,
+  type CrossRound,
+  type Gate,
+} from './logic';
 
 const SCALE = 0.32;
 /** The small copies on the bank shelf, and the gap between them. */
@@ -38,7 +53,14 @@ export function gateIcon(g: Gate, size = 1): Container {
     c.addChild(plus);
   }
   if (g.kind === 'not') {
-    c.addChild(new Graphics().circle(0, 0, 50 * size).stroke({ width: 9 * size, color: swatch.red.fill }).moveTo(-35 * size, -35 * size).lineTo(35 * size, 35 * size).stroke({ width: 9 * size, color: swatch.red.fill, cap: 'round' }));
+    c.addChild(
+      new Graphics()
+        .circle(0, 0, 50 * size)
+        .stroke({ width: 9 * size, color: swatch.red.fill })
+        .moveTo(-35 * size, -35 * size)
+        .lineTo(35 * size, 35 * size)
+        .stroke({ width: 9 * size, color: swatch.red.fill, cap: 'round' }),
+    );
   }
   return c;
 }
@@ -47,9 +69,16 @@ const cardWidth = (g: Gate) => (g.kind === 'and' || g.kind === 'or' ? 200 : 150)
 
 function bulbIcon(): Graphics {
   return new Graphics()
-    .circle(0, -6, 22).fill(swatch.yellow.fill).stroke({ width: 5, color: swatch.yellow.line })
-    .roundRect(-11, 14, 22, 16, 4).fill(swatch.white.fill).stroke({ width: 4, color: swatch.white.line })
-    .moveTo(-6, -2).lineTo(0, 8).lineTo(6, -2).stroke({ width: 3, color: swatch.yellow.line, cap: 'round', join: 'round' });
+    .circle(0, -6, 22)
+    .fill(swatch.yellow.fill)
+    .stroke({ width: 5, color: swatch.yellow.line })
+    .roundRect(-11, 14, 22, 16, 4)
+    .fill(swatch.white.fill)
+    .stroke({ width: 4, color: swatch.white.line })
+    .moveTo(-6, -2)
+    .lineTo(0, 8)
+    .lineTo(6, -2)
+    .stroke({ width: 3, color: swatch.yellow.line, cap: 'round', join: 'round' });
 }
 
 interface Slot {
@@ -96,7 +125,17 @@ class CritterCrossing implements Game {
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
-    this.backdrop = new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0xc8ecb0, 0x9edb86], horizon: 0.3, clouds: 2, sun: false, seed: 61 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0x8fd3f7, 0xe9f7ff],
+        hills: [0xc8ecb0, 0x9edb86],
+        horizon: 0.3,
+        clouds: 2,
+        sun: false,
+        seed: 61,
+      },
+      ctx.view,
+    );
     this.scenery.eventMode = 'none';
     this.glow.eventMode = 'none';
     this.sign.eventMode = 'none';
@@ -104,11 +143,29 @@ class CritterCrossing implements Game {
     this.dots.eventMode = 'none';
     this.shelf.eventMode = 'none';
     const bulb = new Container();
-    bulb.addChild(new Graphics().circle(0, 5, 56).fill(wood.line).circle(0, 0, 56).fill(0xffffff).stroke({ width: 6, color: swatch.yellow.line }), bulbIcon());
+    bulb.addChild(
+      new Graphics()
+        .circle(0, 5, 56)
+        .fill(wood.line)
+        .circle(0, 0, 56)
+        .fill(0xffffff)
+        .stroke({ width: 6, color: swatch.yellow.line }),
+      bulbIcon(),
+    );
     bulb.hitArea = new Circle(0, 0, 70);
     onTap(bulb, () => this.toggleGuess(), { cooldown: 300 });
     this.bulb = bulb;
-    ctx.stage.addChild(this.backdrop, this.scenery, this.sign, this.bar, this.glow, this.dots, this.shelf, this.bulb, this.panel);
+    ctx.stage.addChild(
+      this.backdrop,
+      this.scenery,
+      this.sign,
+      this.bar,
+      this.glow,
+      this.dots,
+      this.shelf,
+      this.bulb,
+      this.panel,
+    );
   }
 
   start() {
@@ -146,10 +203,18 @@ class CritterCrossing implements Game {
     const riverL = v.w * 0.42;
     const riverR = v.w * 0.58;
     g.rect(riverL, top, riverR - riverL, v.h - top).fill(swatch.blue.fill);
-    for (let y = top + 40; y < v.h; y += 70) g.moveTo(riverL + 24, y).quadraticCurveTo((riverL + riverR) / 2, y - 14, riverR - 24, y).stroke({ width: 4, color: 0xffffff, alpha: 0.5, cap: 'round' });
+    for (let y = top + 40; y < v.h; y += 70)
+      g.moveTo(riverL + 24, y)
+        .quadraticCurveTo((riverL + riverR) / 2, y - 14, riverR - 24, y)
+        .stroke({ width: 4, color: 0xffffff, alpha: 0.5, cap: 'round' });
     const by = this.gatePoint().y;
-    g.roundRect(riverL - 20, by - 36, riverR - riverL + 40, 52, 8).fill(wood.fill).stroke({ width: 5, color: wood.line });
-    for (let x = riverL; x < riverR; x += 36) g.moveTo(x, by - 34).lineTo(x, by + 14).stroke({ width: 3, color: wood.line, alpha: 0.6 });
+    g.roundRect(riverL - 20, by - 36, riverR - riverL + 40, 52, 8)
+      .fill(wood.fill)
+      .stroke({ width: 5, color: wood.line });
+    for (let x = riverL; x < riverR; x += 36)
+      g.moveTo(x, by - 34)
+        .lineTo(x, by + 14)
+        .stroke({ width: 3, color: wood.line, alpha: 0.6 });
     this.drawGate(false);
     this.sign.position.set(this.gatePoint().x, by - 150);
     this.bulb.position.set(v.w * 0.5, v.h - 80);
@@ -157,7 +222,10 @@ class CritterCrossing implements Game {
     this.drawDots();
     this.shelf.position.set(v.w - 24, v.h - 20);
     for (const [i, s] of this.slots.entries()) {
-      const home = s.state === 'crossed' ? this.rightSlot(this.slots.filter((x, j) => j < i && x.state === 'crossed').length) : this.leftSlot(i);
+      const home =
+        s.state === 'crossed'
+          ? this.rightSlot(this.slots.filter((x, j) => j < i && x.state === 'crossed').length)
+          : this.leftSlot(i);
       s.home = home;
       s.node.position.set(home.x, home.y);
     }
@@ -176,7 +244,10 @@ class CritterCrossing implements Game {
     const ex = bx + Math.cos(ang) * len;
     const ey = by + Math.sin(ang) * len;
     g.moveTo(bx, by).lineTo(ex, ey).stroke({ width: 14, color: swatch.red.fill, cap: 'round' });
-    for (let k = 1; k < 5; k++) g.moveTo(bx + (ex - bx) * (k / 5) - 4, by + (ey - by) * (k / 5)).lineTo(bx + (ex - bx) * (k / 5) + 4, by + (ey - by) * (k / 5)).stroke({ width: 14, color: 0xffffff, alpha: k % 2 ? 1 : 0 });
+    for (let k = 1; k < 5; k++)
+      g.moveTo(bx + (ex - bx) * (k / 5) - 4, by + (ey - by) * (k / 5))
+        .lineTo(bx + (ex - bx) * (k / 5) + 4, by + (ey - by) * (k / 5))
+        .stroke({ width: 14, color: 0xffffff, alpha: k % 2 ? 1 : 0 });
   }
 
   update(dt: number) {
@@ -194,7 +265,14 @@ class CritterCrossing implements Game {
       g.circle(s.node.x, s.node.y - 50, 74).stroke({ width: pulse, color: swatch.yellow.fill });
     } else if (this.hinting?.kind === 'option' && this.open) {
       const card = this.cards.find((c) => sameGate(c.gate, (this.hinting as { gate: Gate }).gate));
-      if (card) g.roundRect(this.panel.x + card.node.x - cardWidth(card.gate) / 2 - 8, this.panel.y + card.node.y - 70, cardWidth(card.gate) + 16, 140, 24).stroke({ width: pulse, color: swatch.yellow.fill });
+      if (card)
+        g.roundRect(
+          this.panel.x + card.node.x - cardWidth(card.gate) / 2 - 8,
+          this.panel.y + card.node.y - 70,
+          cardWidth(card.gate) + 16,
+          140,
+          24,
+        ).stroke({ width: pulse, color: swatch.yellow.fill });
     }
   }
 
@@ -258,7 +336,12 @@ class CritterCrossing implements Game {
     this.sign.removeChildren().forEach((c) => c.destroy({ children: true }));
     const card = new Container();
     const w = this.hidden ? 130 : cardWidth(this.round.gate) - 20;
-    card.addChild(new Graphics().roundRect(-w / 2, -64, w, 128, 24).fill(0xffffff).stroke({ width: 7, color: wood.line }));
+    card.addChild(
+      new Graphics()
+        .roundRect(-w / 2, -64, w, 128, 24)
+        .fill(0xffffff)
+        .stroke({ width: 7, color: wood.line }),
+    );
     card.addChild(this.hidden ? label('?', 76, ink) : gateIcon(this.round.gate));
     this.sign.addChild(card);
     this.drawGate(false);
@@ -273,14 +356,16 @@ class CritterCrossing implements Game {
   }
 
   private evidence() {
-    return this.slots.filter((s) => s.state !== 'waiting').map((s) => ({ c: s.c, passed: s.state === 'crossed' }));
+    return this.slots
+      .filter((s) => s.state !== 'waiting')
+      .map((s) => ({ c: s.c, passed: s.state === 'crossed' }));
   }
 
   private mark(slot: Slot, passed: boolean) {
     slot.badge?.destroy();
     const b = CritterCrossing.badge(passed);
     b.position.set(0, -330);
-    b.scale.set(1 / SCALE * 0.9);
+    b.scale.set((1 / SCALE) * 0.9);
     b.eventMode = 'none';
     slot.node.addChild(b);
     slot.badge = b;
@@ -290,8 +375,23 @@ class CritterCrossing implements Game {
 
   private static badge(passed: boolean): Graphics {
     const b = new Graphics();
-    if (passed) b.circle(0, 0, 22).fill(swatch.green.fill).stroke({ width: 4, color: swatch.green.line }).moveTo(-10, 1).lineTo(-3, 8).lineTo(11, -9).stroke({ width: 6, color: 0xffffff, cap: 'round', join: 'round' });
-    else b.circle(0, 0, 22).fill(swatch.red.fill).stroke({ width: 4, color: swatch.red.line }).moveTo(-9, -9).lineTo(9, 9).moveTo(9, -9).lineTo(-9, 9).stroke({ width: 6, color: 0xffffff, cap: 'round' });
+    if (passed)
+      b.circle(0, 0, 22)
+        .fill(swatch.green.fill)
+        .stroke({ width: 4, color: swatch.green.line })
+        .moveTo(-10, 1)
+        .lineTo(-3, 8)
+        .lineTo(11, -9)
+        .stroke({ width: 6, color: 0xffffff, cap: 'round', join: 'round' });
+    else
+      b.circle(0, 0, 22)
+        .fill(swatch.red.fill)
+        .stroke({ width: 4, color: swatch.red.line })
+        .moveTo(-9, -9)
+        .lineTo(9, 9)
+        .moveTo(9, -9)
+        .lineTo(-9, 9)
+        .stroke({ width: 6, color: 0xffffff, cap: 'round' });
     return b;
   }
 
@@ -305,7 +405,15 @@ class CritterCrossing implements Game {
     const rows = [true, false].map((passed) => this.tried.filter((s) => (s.state === 'crossed') === passed));
     const most = Math.max(5, ...rows.map((r) => r.length));
     const w = 70 + most * SHELF_GAP;
-    this.shelf.addChild(new Graphics().roundRect(-w, -138, w, 134, 18).fill({ color: 0xffffff, alpha: 0.85 }).stroke({ width: 5, color: wood.line }).moveTo(-w + 12, -70).lineTo(-12, -70).stroke({ width: 3, color: wood.line, alpha: 0.5 }));
+    this.shelf.addChild(
+      new Graphics()
+        .roundRect(-w, -138, w, 134, 18)
+        .fill({ color: 0xffffff, alpha: 0.85 })
+        .stroke({ width: 5, color: wood.line })
+        .moveTo(-w + 12, -70)
+        .lineTo(-12, -70)
+        .stroke({ width: 3, color: wood.line, alpha: 0.5 }),
+    );
     rows.forEach((row, r) => {
       const y = r ? -12 : -78;
       const badge = CritterCrossing.badge(!r);
@@ -372,7 +480,8 @@ class CritterCrossing implements Game {
     if (this.plan.settle) await this.noteSettle(slot);
     this.drawDots();
     this.busy = false;
-    if (!this.hidden && this.slots.every((s) => s.state === 'crossed' || !passes(s.c, this.round.gate))) void this.roundDone();
+    if (!this.hidden && this.slots.every((s) => s.state === 'crossed' || !passes(s.c, this.round.gate)))
+      void this.roundDone();
   }
 
   /**
@@ -385,7 +494,12 @@ class CritterCrossing implements Game {
     this.sames++;
     await this.ctx.say('cross.same');
     if (this.sames < 2 || this.hinting) return;
-    const next = bestTest(this.round.critters, this.slots.filter((s) => s.state !== 'waiting').map((s) => s.c), this.round.options, this.evidence());
+    const next = bestTest(
+      this.round.critters,
+      this.slots.filter((s) => s.state !== 'waiting').map((s) => s.c),
+      this.round.options,
+      this.evidence(),
+    );
     const pick = next && this.slots.find((s) => s.c === next);
     if (!pick) return;
     this.hints++;
@@ -397,7 +511,11 @@ class CritterCrossing implements Game {
     const dist = Math.hypot(slot.node.x - x, slot.node.y - y);
     if (dist < 8) return;
     slot.node.hop(0.6);
-    await this.ctx.tw.to(slot.node, { x, y }, { duration: Math.min(0.9, 0.2 + dist / 700), ease: ease.inOutSine });
+    await this.ctx.tw.to(
+      slot.node,
+      { x, y },
+      { duration: Math.min(0.9, 0.2 + dist / 700), ease: ease.inOutSine },
+    );
   }
 
   private async shakeGate() {
@@ -412,7 +530,10 @@ class CritterCrossing implements Game {
     if (!this.hidden) return;
     const n = this.plan.minTests;
     const done = this.testsDone();
-    for (let i = 0; i < n; i++) g.circle((i - (n - 1) / 2) * 34, 0, 11).fill(i < done ? swatch.yellow.fill : 0xffffff).stroke({ width: 3, color: swatch.yellow.line });
+    for (let i = 0; i < n; i++)
+      g.circle((i - (n - 1) / 2) * 34, 0, 11)
+        .fill(i < done ? swatch.yellow.fill : 0xffffff)
+        .stroke({ width: 3, color: swatch.yellow.line });
   }
 
   // --- guessing ---
@@ -435,7 +556,13 @@ class CritterCrossing implements Game {
     for (const gate of this.round.options) {
       const node = new Container();
       const w = cardWidth(gate);
-      node.addChild(new Graphics().roundRect(-w / 2, -64, w, 128, 24).fill(0xffffff).stroke({ width: 7, color: wood.line }), gateIcon(gate));
+      node.addChild(
+        new Graphics()
+          .roundRect(-w / 2, -64, w, 128, 24)
+          .fill(0xffffff)
+          .stroke({ width: 7, color: wood.line }),
+        gateIcon(gate),
+      );
       node.hitArea = new Rectangle(-w / 2 - 6, -70, w + 12, 140);
       onTap(node, () => void this.guess(gate), { cooldown: 350 });
       this.cards.push({ gate, node });
@@ -475,7 +602,12 @@ class CritterCrossing implements Game {
     // Narrow screens: two rows.
     const cols = Math.ceil(n / 2);
     const colW = Math.max(...widths) + gap;
-    this.cards.forEach((c, i) => c.node.position.set(v.w / 2 - (cols * colW) / 2 + colW / 2 + (i % cols) * colW, 130 + Math.floor(i / cols) * 150));
+    this.cards.forEach((c, i) =>
+      c.node.position.set(
+        v.w / 2 - (cols * colW) / 2 + colW / 2 + (i % cols) * colW,
+        130 + Math.floor(i / cols) * 150,
+      ),
+    );
   }
 
   private async guess(gate: Gate) {
@@ -495,7 +627,9 @@ class CritterCrossing implements Game {
       sfx.boing();
       const slot = this.slots.find((s) => s.c === witness.c)!;
       slot.node.hop(0.9);
-      await this.ctx.say(witness.passed ? 'cross.cont-yes' : 'cross.cont-no', { who: KIND_WORDS[witness.c.kind] });
+      await this.ctx.say(witness.passed ? 'cross.cont-yes' : 'cross.cont-no', {
+        who: KIND_WORDS[witness.c.kind],
+      });
       if (this.wrongs >= 2 && !this.hinting) this.giveHint();
     } else {
       // It fits everything seen so far, so it was a fair guess: no mistake, just more to find out.
@@ -506,7 +640,12 @@ class CritterCrossing implements Game {
   }
 
   private giveHint() {
-    const next = bestTest(this.round.critters, this.slots.filter((s) => s.state !== 'waiting').map((s) => s.c), this.round.options, this.evidence());
+    const next = bestTest(
+      this.round.critters,
+      this.slots.filter((s) => s.state !== 'waiting').map((s) => s.c),
+      this.round.options,
+      this.evidence(),
+    );
     const slot = next && this.slots.find((s) => s.c === next);
     this.hints++;
     this.wrongs = 0;
@@ -574,9 +713,15 @@ class CrossingIcon extends WigglyIcon {
   constructor() {
     const c = new Container();
     c.addChild(
-      new Graphics().roundRect(-110, -150, 220, 60, 8).fill(wood.fill).stroke({ width: 6, color: wood.line })
-        .rect(-26, -190, 52, 170).fill(swatch.blue.fill)
-        .roundRect(-60, -148, 120, 40, 6).fill(wood.fill).stroke({ width: 5, color: wood.line }),
+      new Graphics()
+        .roundRect(-110, -150, 220, 60, 8)
+        .fill(wood.fill)
+        .stroke({ width: 6, color: wood.line })
+        .rect(-26, -190, 52, 170)
+        .fill(swatch.blue.fill)
+        .roundRect(-60, -148, 120, 40, 6)
+        .fill(wood.fill)
+        .stroke({ width: 5, color: wood.line }),
     );
     const bear = new Critter(CRITTERS.bear);
     bear.alive = false;
@@ -595,7 +740,17 @@ class CrossingIcon extends WigglyIcon {
 function sticker(seed: number): Container {
   const rng = new Rng(seed);
   const c = new Container();
-  c.addChild(new Graphics().roundRect(-90, 10, 180, 40, 8).fill(wood.fill).stroke({ width: 6, color: wood.line }).roundRect(-8, -60, 16, 70, 4).fill(wood.line).moveTo(8, -48).lineTo(70, -48).stroke({ width: 12, color: swatch.red.fill, cap: 'round' }));
+  c.addChild(
+    new Graphics()
+      .roundRect(-90, 10, 180, 40, 8)
+      .fill(wood.fill)
+      .stroke({ width: 6, color: wood.line })
+      .roundRect(-8, -60, 16, 70, 4)
+      .fill(wood.line)
+      .moveTo(8, -48)
+      .lineTo(70, -48)
+      .stroke({ width: 12, color: swatch.red.fill, cap: 'round' }),
+  );
   const k = new Critter(CRITTERS[rng.pick(['cow', 'cat', 'dog', 'bunny'] as const)]);
   k.alive = false;
   k.scale.set(0.3);
@@ -618,7 +773,8 @@ export const critterCrossing: GameModule = {
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
   coplayHint: 'Ask: who crossed, and who had to wait? What do the ones who crossed have in common?',
-  offScreen: 'Make up a secret rule ("only toys with wheels") and let her try toys at a "bridge"; say yes or no, then let her guess.',
+  offScreen:
+    'Make up a secret rule ("only toys with wheels") and let her try toys at a "bridge"; say yes or no, then let her guess.',
   hubIcon: () => new CrossingIcon(),
   touchDemo: true,
   sticker,

@@ -15,7 +15,32 @@ import { label } from '../../ui/text';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { courseBest, courseDoors, courseMinimum, isCodeCourse } from './course';
-import { LEVELS, contradictsClues, crossedOut, detectiveDoor, demoCode, doorKinds, ignoredClues, makeCode, nextMark, nextMove, petTry, planFor, quickCode, rowsThatFit, score, STONES, suggestion, swapResult, visibleRows, wrongMarks, type CodePlan, type DoorKind, type Guess, type Mark } from './logic';
+import {
+  LEVELS,
+  contradictsClues,
+  crossedOut,
+  detectiveDoor,
+  demoCode,
+  doorKinds,
+  ignoredClues,
+  makeCode,
+  nextMark,
+  nextMove,
+  petTry,
+  planFor,
+  quickCode,
+  rowsThatFit,
+  score,
+  STONES,
+  suggestion,
+  swapResult,
+  visibleRows,
+  wrongMarks,
+  type CodePlan,
+  type DoorKind,
+  type Guess,
+  type Mark,
+} from './logic';
 
 /** Each stone has a shape as well as a color, so colors never have to be told apart by hue alone. */
 const MARKS: ShapeKind[] = ['circle', 'triangle', 'square', 'star', 'heart'];
@@ -23,15 +48,34 @@ const MARKS: ShapeKind[] = ['circle', 'triangle', 'square', 'star', 'heart'];
 function stoneArt(color: number, r: number): Container {
   const c = new Container();
   const sw = swatch[STONES[color]];
-  c.addChild(new Graphics().circle(0, 0, r).fill(sw.fill).stroke({ width: Math.max(3, r * 0.1), color: sw.line }).circle(-r * 0.35, -r * 0.35, r * 0.18).fill({ color: 0xffffff, alpha: 0.7 }));
+  c.addChild(
+    new Graphics()
+      .circle(0, 0, r)
+      .fill(sw.fill)
+      .stroke({ width: Math.max(3, r * 0.1), color: sw.line })
+      .circle(-r * 0.35, -r * 0.35, r * 0.18)
+      .fill({ color: 0xffffff, alpha: 0.7 }),
+  );
   c.addChild(shapePath(new Graphics(), MARKS[color], r * 0.38).fill({ color: 0xffffff, alpha: 0.85 }));
   return c;
 }
 
 function markArt(mark: Mark, r: number): Graphics {
-  const g = new Graphics().circle(0, 0, r).fill(mark === 'green' ? swatch.green.fill : mark === 'yellow' ? swatch.yellow.fill : 0xc9ccd6).stroke({ width: 3, color: 0xffffff });
-  if (mark === 'green') g.moveTo(-r * 0.45, 0).lineTo(-r * 0.1, r * 0.4).lineTo(r * 0.5, -r * 0.4).stroke({ width: r * 0.28, color: 0xffffff, cap: 'round', join: 'round' });
-  else if (mark === 'gray') g.moveTo(-r * 0.35, -r * 0.35).lineTo(r * 0.35, r * 0.35).moveTo(r * 0.35, -r * 0.35).lineTo(-r * 0.35, r * 0.35).stroke({ width: r * 0.22, color: 0xffffff, cap: 'round' });
+  const g = new Graphics()
+    .circle(0, 0, r)
+    .fill(mark === 'green' ? swatch.green.fill : mark === 'yellow' ? swatch.yellow.fill : 0xc9ccd6)
+    .stroke({ width: 3, color: 0xffffff });
+  if (mark === 'green')
+    g.moveTo(-r * 0.45, 0)
+      .lineTo(-r * 0.1, r * 0.4)
+      .lineTo(r * 0.5, -r * 0.4)
+      .stroke({ width: r * 0.28, color: 0xffffff, cap: 'round', join: 'round' });
+  else if (mark === 'gray')
+    g.moveTo(-r * 0.35, -r * 0.35)
+      .lineTo(r * 0.35, r * 0.35)
+      .moveTo(r * 0.35, -r * 0.35)
+      .lineTo(-r * 0.35, r * 0.35)
+      .stroke({ width: r * 0.22, color: 0xffffff, cap: 'round' });
   else g.circle(0, 0, r * 0.3).fill(0xffffff);
   return g;
 }
@@ -42,21 +86,50 @@ function drawDoor(g: Graphics, kind: DoorKind, x0: number, y: number, w: number)
   if (kind === 'gate') {
     // Hedge on both sides, two posts, and a gate of slats behind the slots.
     g.roundRect(x0 - 40, y - 100, w + 80, 200, 50).fill(swatch.green.line);
-    g.roundRect(x0, y - 82, w, 164, 18).fill(swatch.green.light).stroke({ width: 5, color: swatch.green.line });
-    for (let x = x0 + 28; x < x0 + w - 10; x += 44) g.roundRect(x - 9, y - 90, 18, 180, 9).fill(0xffffff).stroke({ width: 3, color: swatch.white.line });
-    g.rect(x0, y - 52, w, 14).fill(0xffffff).rect(x0, y + 40, w, 14).fill(0xffffff);
-    for (const px of [x0 - 6, x0 + w + 6]) g.roundRect(px - 16, y - 112, 32, 224, 12).fill(wood.fill).stroke({ width: 5, color: wood.line }).circle(px, y - 116, 18).fill(wood.light).stroke({ width: 5, color: wood.line });
+    g.roundRect(x0, y - 82, w, 164, 18)
+      .fill(swatch.green.light)
+      .stroke({ width: 5, color: swatch.green.line });
+    for (let x = x0 + 28; x < x0 + w - 10; x += 44)
+      g.roundRect(x - 9, y - 90, 18, 180, 9)
+        .fill(0xffffff)
+        .stroke({ width: 3, color: swatch.white.line });
+    g.rect(x0, y - 52, w, 14)
+      .fill(0xffffff)
+      .rect(x0, y + 40, w, 14)
+      .fill(0xffffff);
+    for (const px of [x0 - 6, x0 + w + 6])
+      g.roundRect(px - 16, y - 112, 32, 224, 12)
+        .fill(wood.fill)
+        .stroke({ width: 5, color: wood.line })
+        .circle(px, y - 116, 18)
+        .fill(wood.light)
+        .stroke({ width: 5, color: wood.line });
     return;
   }
   if (kind === 'chest') {
     // A lid above the body, gold bands at the corners and a gold clasp where they meet.
-    g.roundRect(x0 - 10, y - 118, w + 20, 60, 28).fill(swatch.brown.line).roundRect(x0, y - 110, w, 44, 20).fill(swatch.brown.light);
-    g.roundRect(x0 - 10, y - 72, w + 20, 164, 18).fill(swatch.brown.line).roundRect(x0, y - 62, w, 144, 14).fill(swatch.brown.fill);
-    for (const bx of [x0 + 8, x0 + w - 30]) g.rect(bx, y - 116, 22, 206).fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line });
-    g.roundRect(x0 + w / 2 - 18, y - 82, 36, 30, 8).fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line });
+    g.roundRect(x0 - 10, y - 118, w + 20, 60, 28)
+      .fill(swatch.brown.line)
+      .roundRect(x0, y - 110, w, 44, 20)
+      .fill(swatch.brown.light);
+    g.roundRect(x0 - 10, y - 72, w + 20, 164, 18)
+      .fill(swatch.brown.line)
+      .roundRect(x0, y - 62, w, 144, 14)
+      .fill(swatch.brown.fill);
+    for (const bx of [x0 + 8, x0 + w - 30])
+      g.rect(bx, y - 116, 22, 206)
+        .fill(swatch.yellow.fill)
+        .stroke({ width: 3, color: swatch.yellow.line });
+    g.roundRect(x0 + w / 2 - 18, y - 82, 36, 30, 8)
+      .fill(swatch.yellow.fill)
+      .stroke({ width: 3, color: swatch.yellow.line });
     return;
   }
-  g.roundRect(x0 - 10, y - 92, w + 20, 184, 34).fill(wood.line).roundRect(x0, y - 82, w, 164, 28).fill(wood.fill).stroke({ width: 5, color: wood.light });
+  g.roundRect(x0 - 10, y - 92, w + 20, 184, 34)
+    .fill(wood.line)
+    .roundRect(x0, y - 82, w, 164, 28)
+    .fill(wood.fill)
+    .stroke({ width: 5, color: wood.light });
 }
 
 /** Be the door: the disc under each of the pet's stones, blank until she taps it. */
@@ -68,7 +141,11 @@ function discArt(mark: Mark | null, r: number): Graphics {
 
 /** Swap seats: the "Just me" button, the pet's face. */
 function petFaceArt(): Graphics {
-  const g = new Graphics().circle(-18, -18, 10).fill(swatch.brown.fill).circle(18, -18, 10).fill(swatch.brown.fill);
+  const g = new Graphics()
+    .circle(-18, -18, 10)
+    .fill(swatch.brown.fill)
+    .circle(18, -18, 10)
+    .fill(swatch.brown.fill);
   g.circle(0, 0, 25).fill(swatch.brown.light).stroke({ width: 4, color: swatch.brown.line });
   g.circle(-9, -4, 4).fill(ink).circle(9, -4, 4).fill(ink);
   return g.moveTo(-9, 8).quadraticCurveTo(0, 16, 9, 8).stroke({ width: 3, color: ink, cap: 'round' });
@@ -76,23 +153,49 @@ function petFaceArt(): Graphics {
 
 /** Swap seats: the wooden lid over a hidden code, the size of the code panel. */
 function lidArt(): Graphics {
-  const g = new Graphics().roundRect(-200, -62, 400, 124, 30).fill(wood.fill).stroke({ width: 5, color: wood.line });
-  g.moveTo(-180, -20).lineTo(180, -20).moveTo(-180, 20).lineTo(180, 20).stroke({ width: 3, color: wood.line, alpha: 0.5 });
-  return g.roundRect(-32, -11, 64, 22, 11).fill(swatch.yellow.fill).stroke({ width: 3, color: swatch.yellow.line });
+  const g = new Graphics()
+    .roundRect(-200, -62, 400, 124, 30)
+    .fill(wood.fill)
+    .stroke({ width: 5, color: wood.line });
+  g.moveTo(-180, -20)
+    .lineTo(180, -20)
+    .moveTo(-180, 20)
+    .lineTo(180, 20)
+    .stroke({ width: 3, color: wood.line, alpha: 0.5 });
+  return g
+    .roundRect(-32, -11, 64, 22, 11)
+    .fill(swatch.yellow.fill)
+    .stroke({ width: 3, color: swatch.yellow.line });
 }
 
 function checkArt(): Graphics {
-  return new Graphics().moveTo(-20, 2).lineTo(-6, 18).lineTo(22, -16).stroke({ width: 10, color: swatch.green.line, cap: 'round', join: 'round' });
+  return new Graphics()
+    .moveTo(-20, 2)
+    .lineTo(-6, 18)
+    .lineTo(22, -16)
+    .stroke({ width: 10, color: swatch.green.line, cap: 'round', join: 'round' });
 }
 
 function arrowArt(): Graphics {
-  return new Graphics().moveTo(-20, 0).lineTo(16, 0).moveTo(4, -16).lineTo(20, 0).lineTo(4, 16).stroke({ width: 10, color: swatch.blue.line, cap: 'round', join: 'round' });
+  return new Graphics()
+    .moveTo(-20, 0)
+    .lineTo(16, 0)
+    .moveTo(4, -16)
+    .lineTo(20, 0)
+    .lineTo(4, 16)
+    .stroke({ width: 10, color: swatch.blue.line, cap: 'round', join: 'round' });
 }
 
 function keyArt(): Graphics {
   const g = new Graphics();
   g.circle(-16, 0, 15).stroke({ width: 8, color: swatch.yellow.line });
-  g.moveTo(-2, 0).lineTo(30, 0).moveTo(22, 0).lineTo(22, 12).moveTo(30, 0).lineTo(30, 10).stroke({ width: 8, color: swatch.yellow.line, cap: 'round' });
+  g.moveTo(-2, 0)
+    .lineTo(30, 0)
+    .moveTo(22, 0)
+    .lineTo(22, 12)
+    .moveTo(30, 0)
+    .lineTo(30, 10)
+    .stroke({ width: 8, color: swatch.yellow.line, cap: 'round' });
   return g;
 }
 
@@ -125,7 +228,11 @@ class SecretCode implements Game {
   /** Couch face-off score: every key turned across the round's doors (lower is better). */
   guesses = 0;
   /** Couch challenge course: frozen doors in a row, scored by turns of the key. Null in ordinary play, where codes are drawn. */
-  private readonly course: { doors: { plan: CodePlan; code: number[] }[]; minimum: number; par: number[] } | null = null;
+  private readonly course: {
+    doors: { plan: CodePlan; code: number[] }[];
+    minimum: number;
+    par: number[];
+  } | null = null;
   private done: number[] = [];
   /** Turns already spent on the door we are resuming, so leaving and coming back cannot erase them. */
   private carry = 0;
@@ -234,7 +341,13 @@ class SecretCode implements Game {
     const y = this.doorY();
     const w = this.plan.slots * 124 + 60;
     const x0 = this.slotX(0) - 92;
-    drawDoor(this.door, this.doors[Math.min(this.doors.length - 1, Math.max(0, this.plan.swap ? this.half - 1 : this.index))], x0, y, w);
+    drawDoor(
+      this.door,
+      this.doors[Math.min(this.doors.length - 1, Math.max(0, this.plan.swap ? this.half - 1 : this.index))],
+      x0,
+      y,
+      w,
+    );
     this.slots.forEach((s, i) => s.position.set(this.slotX(i), y));
     this.ghost.children.forEach((s, i) => s.position.set(this.slotX(i), y));
     this.key.position.set(x0 + w + 80, y);
@@ -244,9 +357,14 @@ class SecretCode implements Game {
     if (this.seats === 'two') {
       // Two of us shows the tray and the hidden code together, so the code sits up at the right, clear of the tries above the door.
       this.mine.position.set(v.w - 224, y - 210);
-      this.mine.children.forEach((s, i) => s.position.set(i === 0 ? 0 : (i - 1 - (this.plan.slots - 1) / 2) * 124, 0));
+      this.mine.children.forEach((s, i) =>
+        s.position.set(i === 0 ? 0 : (i - 1 - (this.plan.slots - 1) / 2) * 124, 0),
+      );
       this.lid.position.copyFrom(this.mine.position);
-    } else this.mine.children.forEach((s, i) => s.position.set(i === 0 ? this.view.w / 2 - 40 : this.slotX(i - 1), v.h - 90));
+    } else
+      this.mine.children.forEach((s, i) =>
+        s.position.set(i === 0 ? this.view.w / 2 - 40 : this.slotX(i - 1), v.h - 90),
+      );
     this.together.position.set(v.w / 2 - 40 - 110, y);
     this.alone.position.set(v.w / 2 - 40 + 110, y);
     this.bubble.position.set(x0 + w + 60, y - 150);
@@ -332,7 +450,9 @@ class SecretCode implements Game {
     if (this.phase === 'seats') return { tap: { on: this.together }, pause: 0.6 };
     if (this.plan.maker || this.phase === 'make2') return this.makerTouch();
     const move = nextMove(this.plan, this.history, this.code, this.guess);
-    return 'key' in move ? { tap: { on: this.key }, pause: 0.9 } : { tap: { on: this.tray[move.stone] }, pause: 0.3 };
+    return 'key' in move
+      ? { tap: { on: this.key }, pause: 0.9 }
+      : { tap: { on: this.tray[move.stone] }, pause: 0.3 };
   }
 
   private async next() {
@@ -351,7 +471,11 @@ class SecretCode implements Game {
       this.carry = 0;
       this.doorTries = 0;
     }
-    const door = frozen ? { code: [...frozen.code], history: [] } : this.plan.detective ? detectiveDoor(this.plan, this.ctx.rng) : { code: makeCode(this.plan, this.ctx.rng), history: [] };
+    const door = frozen
+      ? { code: [...frozen.code], history: [] }
+      : this.plan.detective
+        ? detectiveDoor(this.plan, this.ctx.rng)
+        : { code: makeCode(this.plan, this.ctx.rng), history: [] };
     this.setDoor(door.code, door.history);
     if (this.course) {
       this.report();
@@ -381,7 +505,14 @@ class SecretCode implements Game {
 
   /** Tap a stone in the tray: it goes into the first empty slot. */
   private add(color: number) {
-    if (this.busy || this.finished || this.phase === 'mark' || this.phase === 'seats' || color >= this.plan.colors) return;
+    if (
+      this.busy ||
+      this.finished ||
+      this.phase === 'mark' ||
+      this.phase === 'seats' ||
+      color >= this.plan.colors
+    )
+      return;
     if (crossedOut(this.plan, this.history).has(color)) return void this.crossed(color);
     const i = this.guess.indexOf(null);
     if (i < 0) {
@@ -399,7 +530,14 @@ class SecretCode implements Game {
 
   /** Tap a filled slot: the stone goes back. */
   private clear(i: number) {
-    if (this.busy || this.finished || this.phase === 'mark' || this.phase === 'seats' || this.guess[i] === null) return;
+    if (
+      this.busy ||
+      this.finished ||
+      this.phase === 'mark' ||
+      this.phase === 'seats' ||
+      this.guess[i] === null
+    )
+      return;
     this.guess[i] = null;
     this.slots[i].removeChildAt(1).destroy({ children: true });
     sfx.pop(3);
@@ -455,7 +593,8 @@ class SecretCode implements Game {
       if (this.plan.detective) await this.ctx.say('code.contradiction');
       else await this.ctx.say('code.ignored', { color: STONES[stones[ignored[0]]] });
     } else if (this.plan.oneSlot) await this.ctx.say('code.notthis');
-    else if (this.plan.yellow) await this.ctx.say('code.marks', { g: green, y: marks.filter((m) => m === 'yellow').length });
+    else if (this.plan.yellow)
+      await this.ctx.say('code.marks', { g: green, y: marks.filter((m) => m === 'yellow').length });
     else await this.ctx.say('code.green', { g: green });
     await this.ctx.tw.wait(0.4);
     badges.forEach((b) => b.destroy());
@@ -477,7 +616,10 @@ class SecretCode implements Game {
     sfx.boing();
     const b = this.tray[color];
     // A wobble on the pivot, so a resize mid-wobble keeps the tray in place.
-    void this.ctx.tw.to(b.pivot, { x: -10 }, { duration: 0.06 }).then(() => this.ctx.tw.to(b.pivot, { x: 10 }, { duration: 0.08 })).then(() => this.ctx.tw.to(b.pivot, { x: 0 }, { duration: 0.06 }));
+    void this.ctx.tw
+      .to(b.pivot, { x: -10 }, { duration: 0.06 })
+      .then(() => this.ctx.tw.to(b.pivot, { x: 10 }, { duration: 0.08 }))
+      .then(() => this.ctx.tw.to(b.pivot, { x: 0 }, { duration: 0.06 }));
     if (!this.hinted && this.wrongs >= 2) this.hint();
     else void this.ctx.say('code.crossed');
   }
@@ -555,7 +697,8 @@ class SecretCode implements Game {
     this.show.visible = false;
     // The ghost finger's code reads copies of the generator, so the pet's tries are the same with or without it.
     // With two seats, seat 2 plays the reasoning player's tries, so the ghost finger makes a code those crack quickly.
-    this.botCode = this.seats === 'two' ? quickCode(this.plan, this.ctx.rng, 0x51) : demoCode(this.plan, this.ctx.rng);
+    this.botCode =
+      this.seats === 'two' ? quickCode(this.plan, this.ctx.rng, 0x51) : demoCode(this.plan, this.ctx.rng);
     this.resize(this.view);
     this.busy = false;
     if (this.seats === 'two') return this.ctx.instruct('code.lookaway');
@@ -588,7 +731,10 @@ class SecretCode implements Game {
     sfx.sparkle();
     this.ready.visible = false;
     this.trayOn = false;
-    const panel = new Graphics().roundRect(-200, -62, 400, 124, 30).fill({ color: 0xfff3a0, alpha: 0.9 }).stroke({ width: 5, color: wood.line });
+    const panel = new Graphics()
+      .roundRect(-200, -62, 400, 124, 30)
+      .fill({ color: 0xfff3a0, alpha: 0.9 })
+      .stroke({ width: 5, color: wood.line });
     panel.circle(-170, -40, 12).fill(wood.line);
     this.mine.addChild(panel);
     this.code.forEach((c) => this.mine.addChild(stoneArt(c, 40)));
@@ -610,7 +756,15 @@ class SecretCode implements Game {
     this.busy = true;
     this.phase = 'mark';
     this.guess.forEach((_, i) => this.clear0(i));
-    this.bubble.clear().circle(0, 0, 48).fill(0xffffff).stroke({ width: 4, color: 0xc9ccd6 }).circle(-50, 62, 14).fill(0xffffff).circle(-70, 86, 8).fill(0xffffff);
+    this.bubble
+      .clear()
+      .circle(0, 0, 48)
+      .fill(0xffffff)
+      .stroke({ width: 4, color: 0xc9ccd6 })
+      .circle(-50, 62, 14)
+      .fill(0xffffff)
+      .circle(-70, 86, 8)
+      .fill(0xffffff);
     for (const dx of [-20, 0, 20]) this.bubble.circle(dx, 0, 7).fill(ink);
     await this.ctx.tw.wait(0.5);
     this.bubble.clear();
@@ -659,13 +813,15 @@ class SecretCode implements Game {
     if (this.plan.oneSlot) {
       // After two crossed-out stones tried, the stone behind the door glows in the tray.
       const b = this.tray[this.code[0]];
-      if (this.hinted && b && !this.finished) g.circle(b.x, b.y, 62).stroke({ width: 10, color: swatch.yellow.fill, alpha: 0.9 });
+      if (this.hinted && b && !this.finished)
+        g.circle(b.x, b.y, 62).stroke({ width: 10, color: swatch.yellow.fill, alpha: 0.9 });
       return;
     }
     if (!this.plan.maker || !this.hinted || this.phase !== 'mark') return;
     const right = score(this.code, this.petStones, true);
     for (const i of wrongMarks(this.code, this.petStones, this.marks)) {
-      const fill = right[i] === 'green' ? swatch.green.fill : right[i] === 'yellow' ? swatch.yellow.fill : 0x8a8f9e;
+      const fill =
+        right[i] === 'green' ? swatch.green.fill : right[i] === 'yellow' ? swatch.yellow.fill : 0x8a8f9e;
       g.circle(this.slotX(i), this.doorY() + 134, 54).stroke({ width: 10, color: fill, alpha: 0.9 });
     }
   }
@@ -718,15 +874,21 @@ class SecretCode implements Game {
     if (this.phase === 'break') {
       // Seat 2 (Swap seats): the reasoning player's tries against her code.
       const move = nextMove(this.plan, this.history, this.code, this.guess);
-      return 'key' in move ? { tap: { on: this.key }, pause: 0.9 } : { tap: { on: this.tray[move.stone] }, pause: 0.3 };
+      return 'key' in move
+        ? { tap: { on: this.key }, pause: 0.9 }
+        : { tap: { on: this.tray[move.stone] }, pause: 0.3 };
     }
     if (this.phase === 'make' || this.phase === 'make2') {
       const empty = this.guess.indexOf(null);
-      return empty < 0 ? { tap: { on: this.ready }, pause: 0.6 } : { tap: { on: this.tray[this.botCode[empty]] }, pause: 0.25 };
+      return empty < 0
+        ? { tap: { on: this.ready }, pause: 0.6 }
+        : { tap: { on: this.tray[this.botCode[empty]] }, pause: 0.25 };
     }
     if (this.phase !== 'mark') return null;
     const wrong = wrongMarks(this.code, this.petStones, this.marks);
-    return wrong.length ? { tap: { on: this.discs[wrong[0]] }, pause: 0.2 } : { tap: { on: this.show }, pause: 0.5 };
+    return wrong.length
+      ? { tap: { on: this.discs[wrong[0]] }, pause: 0.2 }
+      : { tap: { on: this.show }, pause: 0.5 };
   }
 
   private async open() {
@@ -736,13 +898,24 @@ class SecretCode implements Game {
     const x0 = this.slotX(0) - 92;
     const w = this.plan.slots * 124 + 60;
     // Light pours out of the doorway.
-    this.leaf.clear().roundRect(x0, y - 82, w, 164, 28).fill({ color: 0xfff3a0, alpha: 0.9 });
+    this.leaf
+      .clear()
+      .roundRect(x0, y - 82, w, 164, 28)
+      .fill({ color: 0xfff3a0, alpha: 0.9 });
     this.leaf.alpha = 0;
     await this.ctx.tw.to(this.leaf, { alpha: 1 }, { duration: 0.35 });
-    this.ctx.particles.burst(this.view.w / 2, y, { kind: 'star', colors: [0xffffff, 0xfff3a0, swatch.yellow.fill], count: 24, speed: [150, 380], gravity: 0, life: [0.6, 1] });
+    this.ctx.particles.burst(this.view.w / 2, y, {
+      kind: 'star',
+      colors: [0xffffff, 0xfff3a0, swatch.yellow.fill],
+      count: 24,
+      speed: [150, 380],
+      gravity: 0,
+      life: [0.6, 1],
+    });
     this.ctx.pet.cheer();
     // Swap seats: the lid lifts to show the grown-up's code she cracked.
-    if (this.lid.visible) void this.ctx.tw.to(this.lid, { alpha: 0 }, { duration: 0.3 }).then(() => (this.lid.visible = false));
+    if (this.lid.visible)
+      void this.ctx.tw.to(this.lid, { alpha: 0 }, { duration: 0.3 }).then(() => (this.lid.visible = false));
     // A course moves straight on after a short score; ordinary play praises.
     if (this.course) await this.doorScore();
     else {
@@ -897,9 +1070,16 @@ class SecretCode implements Game {
 
   /** The score for the door just opened, over it for a moment. */
   private async doorScore() {
-    const par = this.course!.par[this.index], total = this.course!.doors.length, n = this.done[this.index];
+    const par = this.course!.par[this.index],
+      total = this.course!.doors.length,
+      n = this.done[this.index];
     const tries = `${n} ${n === 1 ? 'try' : 'tries'}`;
-    const text = n < par ? `Door ${this.index + 1} of ${total}: ${tries}, under par (${par})!` : n === par ? `Door ${this.index + 1} of ${total}: ${tries}, right on par!` : `Door ${this.index + 1} of ${total}: ${tries} (par ${par})`;
+    const text =
+      n < par
+        ? `Door ${this.index + 1} of ${total}: ${tries}, under par (${par})!`
+        : n === par
+          ? `Door ${this.index + 1} of ${total}: ${tries}, right on par!`
+          : `Door ${this.index + 1} of ${total}: ${tries} (par ${par})`;
     const note = label(text, 34, ink);
     note.position.set(this.view.w / 2 - 40, this.doorY() - 130);
     note.alpha = 0;
@@ -918,7 +1098,9 @@ class SecretCode implements Game {
     await this.ctx.say('code.done');
     await this.ctx.tw.wait(0.5);
     // Swap seats with two seats is supported completion (never smooth); every other round passes her result unchanged.
-    const result = this.plan.swap ? swapResult(this.seats === 'two', this.misses, this.hints) : { misses: this.misses, hints: this.hints };
+    const result = this.plan.swap
+      ? swapResult(this.seats === 'two', this.misses, this.hints)
+      : { misses: this.misses, hints: this.hints };
     this.ctx.finish({ ...result, score: this.guesses });
   }
 }
@@ -926,7 +1108,12 @@ class SecretCode implements Game {
 class CodeIcon extends WigglyIcon {
   constructor() {
     const c = new Container();
-    c.addChild(new Graphics().roundRect(-90, -200, 180, 200, 30).fill(wood.fill).stroke({ width: 6, color: wood.line }));
+    c.addChild(
+      new Graphics()
+        .roundRect(-90, -200, 180, 200, 30)
+        .fill(wood.fill)
+        .stroke({ width: 6, color: wood.line }),
+    );
     [0, 1, 2].forEach((color, i) => {
       const s = stoneArt(color, 22);
       s.position.set(-55 + i * 55, -100);
@@ -943,7 +1130,9 @@ class CodeIcon extends WigglyIcon {
 function sticker(seed: number): Container {
   const rng = new Rng(seed);
   const c = new Container();
-  c.addChild(new Graphics().roundRect(-80, -100, 160, 200, 30).fill(0xfff3a0).stroke({ width: 8, color: wood.line }));
+  c.addChild(
+    new Graphics().roundRect(-80, -100, 160, 200, 30).fill(0xfff3a0).stroke({ width: 8, color: wood.line }),
+  );
   for (let i = 0; i < 3; i++) {
     const s = stoneArt(rng.int(0, 4), 26);
     s.position.set(-50 + i * 50, 0);
@@ -965,8 +1154,10 @@ export const secretCode: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.hub,
-  coplayHint: 'After each try, say what the marks tell you: "Red is right! Blue is in the code, but somewhere else."',
-  offScreen: 'Hide three toys in a row behind your back and let her guess the order, saying which ones are in the right spot.',
+  coplayHint:
+    'After each try, say what the marks tell you: "Red is right! Blue is in the code, but somewhere else."',
+  offScreen:
+    'Hide three toys in a row behind your back and let her guess the order, saying which ones are in the right spot.',
   hubIcon: () => new CodeIcon(),
   touchDemo: true,
   sticker,

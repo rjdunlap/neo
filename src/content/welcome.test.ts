@@ -6,11 +6,39 @@ import { songPlan } from '../games/song-maker/logic';
 import { defaults, migrate } from '../progress/save';
 import type { StampPictureCreation, TuneCreation } from './creations';
 import { SCRIPT as VOICE } from './voice-script';
-import { beginWelcome, builtSteps, cleanWelcome, completeWelcome, emptyWelcome, newcomerFor, nextWelcomeStep, showsContinue, WELCOME_BANDS, WELCOME_PLAN, WELCOME_STEPS, welcomeBand, welcomeDoneLine } from './welcome';
+import {
+  beginWelcome,
+  builtSteps,
+  cleanWelcome,
+  completeWelcome,
+  emptyWelcome,
+  newcomerFor,
+  nextWelcomeStep,
+  showsContinue,
+  WELCOME_BANDS,
+  WELCOME_PLAN,
+  WELCOME_STEPS,
+  welcomeBand,
+  welcomeDoneLine,
+} from './welcome';
 
-const picture: StampPictureCreation = { kind: 'picture', stamps: [{ kind: 'star', color: 'pink', x: 0.5, y: 0.5, size: 1, turns: 0 }] };
-const tune: TuneCreation = { kind: 'tune', cols: 6, rows: 4, notes: [{ col: 0, row: 0 }, { col: 2, row: 3 }] };
-const other: StampPictureCreation = { kind: 'picture', stamps: [{ kind: 'fish', color: 'blue', x: 0.2, y: 0.3, size: 1, turns: 1 }] };
+const picture: StampPictureCreation = {
+  kind: 'picture',
+  stamps: [{ kind: 'star', color: 'pink', x: 0.5, y: 0.5, size: 1, turns: 0 }],
+};
+const tune: TuneCreation = {
+  kind: 'tune',
+  cols: 6,
+  rows: 4,
+  notes: [
+    { col: 0, row: 0 },
+    { col: 2, row: 3 },
+  ],
+};
+const other: StampPictureCreation = {
+  kind: 'picture',
+  stamps: [{ kind: 'fish', color: 'blue', x: 0.2, y: 0.3, size: 1, turns: 1 }],
+};
 
 describe('the welcome plan', () => {
   it('plays every step at a level inside the game’s range for both bands, except the one free-making song level, with spoken asks and done lines', () => {
@@ -53,12 +81,27 @@ describe('the welcome record', () => {
   it('starts empty in a new save and survives a backup and restore', () => {
     expect(defaults().projects.welcome).toEqual(emptyWelcome());
     const save = defaults();
-    save.projects.welcome = { band: 'prek', steps: ['pretty', 'yummy'], results: { pretty: picture }, newcomer: 'glider', ended: false, evidence: { yummy: { finished: true, misses: 2, hints: 1, level: 5, rounds: 3, at: 7 } } };
+    save.projects.welcome = {
+      band: 'prek',
+      steps: ['pretty', 'yummy'],
+      results: { pretty: picture },
+      newcomer: 'glider',
+      ended: false,
+      evidence: { yummy: { finished: true, misses: 2, hints: 1, level: 5, rounds: 3, at: 7 } },
+    };
     expect(migrate(JSON.parse(JSON.stringify(save)))).toEqual(save);
   });
 
   it('repairs unknown and repeated steps, a result without its step, a bad band, species or ending', () => {
-    expect(cleanWelcome({ band: 'school', steps: ['yummy', 'cake', 'pretty', 'yummy'], results: { pretty: picture }, newcomer: 'dragon', ended: true })).toEqual({
+    expect(
+      cleanWelcome({
+        band: 'school',
+        steps: ['yummy', 'cake', 'pretty', 'yummy'],
+        results: { pretty: picture },
+        newcomer: 'dragon',
+        ended: true,
+      }),
+    ).toEqual({
       band: null,
       steps: ['pretty', 'yummy'],
       results: { pretty: picture },
@@ -66,10 +109,34 @@ describe('the welcome record', () => {
       ended: false,
       evidence: {},
     });
-    expect(cleanWelcome({ steps: ['yummy'], results: { pretty: picture, song: { kind: 'tune', cols: 6, rows: 4, notes: [{ col: 0, row: 0 }, { col: 1, row: 1 }] } } }).results).toEqual({});
-    expect(cleanWelcome({ steps: ['pretty'], results: { pretty: { kind: 'picture', stamps: [] } } }).results).toEqual({});
-    expect(cleanWelcome({ steps: ['pretty'], results: { pretty: { kind: 'picture', size: 4, pixels: [{ x: 0, y: 0, color: 'pink' }] } } }).results).toEqual({});
-    for (const junk of [null, 'x', 3, [], { steps: 'pretty' }]) expect(cleanWelcome(junk)).toEqual(emptyWelcome());
+    expect(
+      cleanWelcome({
+        steps: ['yummy'],
+        results: {
+          pretty: picture,
+          song: {
+            kind: 'tune',
+            cols: 6,
+            rows: 4,
+            notes: [
+              { col: 0, row: 0 },
+              { col: 1, row: 1 },
+            ],
+          },
+        },
+      }).results,
+    ).toEqual({});
+    expect(
+      cleanWelcome({ steps: ['pretty'], results: { pretty: { kind: 'picture', stamps: [] } } }).results,
+    ).toEqual({});
+    expect(
+      cleanWelcome({
+        steps: ['pretty'],
+        results: { pretty: { kind: 'picture', size: 4, pixels: [{ x: 0, y: 0, color: 'pink' }] } },
+      }).results,
+    ).toEqual({});
+    for (const junk of [null, 'x', 3, [], { steps: 'pretty' }])
+      expect(cleanWelcome(junk)).toEqual(emptyWelcome());
     expect(migrate({ projects: 'x' }).projects.welcome).toEqual(emptyWelcome());
     expect(cleanWelcome({ steps: ['pretty', 'yummy', 'song'], ended: true }).ended).toBe(true);
   });
@@ -94,21 +161,40 @@ describe('the welcome record', () => {
     completeWelcome(p, 'pretty', other);
     expect(p.results.pretty).toEqual(other);
     completeWelcome(p, 'pretty', { kind: 'picture', stamps: [] } as StampPictureCreation);
-    completeWelcome(p, 'pretty', { kind: 'tune', cols: 6, rows: 4, notes: [{ col: 0, row: 0 }, { col: 1, row: 1 }] });
+    completeWelcome(p, 'pretty', {
+      kind: 'tune',
+      cols: 6,
+      rows: 4,
+      notes: [
+        { col: 0, row: 0 },
+        { col: 1, row: 1 },
+      ],
+    });
     expect(p.results.pretty).toEqual(other);
     expect(completeWelcome(p, 'cake' as 'pretty', picture)).toBe(false);
   });
 
   it('keeps her tune for the song step, replaces it on a finished replay, and keeps nothing for a one-note song', () => {
     const p = emptyWelcome();
-    expect(completeWelcome(p, 'song', { kind: 'tune', cols: 6, rows: 4, notes: [{ col: 1, row: 1 }] })).toBe(true);
+    expect(completeWelcome(p, 'song', { kind: 'tune', cols: 6, rows: 4, notes: [{ col: 1, row: 1 }] })).toBe(
+      true,
+    );
     expect(p.steps).toEqual(['song']);
     expect(p.results.song).toBeUndefined();
     expect(welcomeDoneLine(p, 'song', 'preschool')).toBe('welcome.done.song-hum');
     completeWelcome(p, 'song', tune);
     expect(p.results.song).toEqual(tune);
     expect(welcomeDoneLine(p, 'song', 'prek')).toBe('welcome.done.song');
-    const again: TuneCreation = { kind: 'tune', cols: 6, rows: 4, notes: [{ col: 3, row: 0 }, { col: 4, row: 1 }, { col: 5, row: 2 }] };
+    const again: TuneCreation = {
+      kind: 'tune',
+      cols: 6,
+      rows: 4,
+      notes: [
+        { col: 3, row: 0 },
+        { col: 4, row: 1 },
+        { col: 5, row: 2 },
+      ],
+    };
     completeWelcome(p, 'song', again);
     expect(p.results.song).toEqual(again);
     // A one-note or empty replay, or a picture, keeps the tune she already made.
@@ -128,7 +214,8 @@ describe('the welcome record', () => {
     const p = emptyWelcome();
     expect(showsContinue(p, 'preschool')).toBe(true);
     expect(showsContinue(p, 'prek')).toBe(true);
-    for (const band of ['lap', 'toddler', 'school', 'grownup'] as const) expect(showsContinue(p, band)).toBe(false);
+    for (const band of ['lap', 'toddler', 'school', 'grownup'] as const)
+      expect(showsContinue(p, band)).toBe(false);
     p.band = 'prek';
     expect(showsContinue(p, 'school')).toBe(true);
     expect(welcomeBand(p, 'preschool')).toBe('prek');

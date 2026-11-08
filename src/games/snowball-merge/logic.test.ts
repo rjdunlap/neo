@@ -10,14 +10,18 @@ describe('Snowball Merge', () => {
     expect(slide([2, 0, 0, 2, 0, 0, 4, 0, 0], 'down').board).toEqual([0, 0, 0, 4, 0, 0, 4, 0, 0]);
   });
   it('conserves quantity, adds no snowballs, moves each input once and leaves its input untouched', () => {
-    for (const plan of PLANS) for (const d of DIRECTIONS) {
-      const before = [...plan.board], next = slide(before, d);
-      expect(before).toEqual(plan.board);
-      expect(next.board.reduce((s, v) => s + v, 0)).toBe(plan.target);
-      expect(next.board.filter(Boolean).length).toBe(before.filter(Boolean).length - next.merges);
-      expect(next.motions.map(m => m.from).sort()).toEqual(before.flatMap((v, i) => v ? [i] : []).sort());
-      expect(next.motions.every(m => m.to >= 0 && m.to < 9)).toBe(true);
-    }
+    for (const plan of PLANS)
+      for (const d of DIRECTIONS) {
+        const before = [...plan.board],
+          next = slide(before, d);
+        expect(before).toEqual(plan.board);
+        expect(next.board.reduce((s, v) => s + v, 0)).toBe(plan.target);
+        expect(next.board.filter(Boolean).length).toBe(before.filter(Boolean).length - next.merges);
+        expect(next.motions.map((m) => m.from).sort()).toEqual(
+          before.flatMap((v, i) => (v ? [i] : [])).sort(),
+        );
+        expect(next.motions.every((m) => m.to >= 0 && m.to < 9)).toBe(true);
+      }
     expect(slide([2, 0, 0, 0, 0, 0, 0, 0, 0], 'left').changed).toBe(false);
   });
   it('makes reproducible solvable variants at every level and every hint leads to completion', () => {
@@ -27,7 +31,8 @@ describe('Snowball Merge', () => {
         const puzzle = makePuzzle(level, new Rng(seed));
         expect(puzzle).toEqual(makePuzzle(level, new Rng(seed)));
         variants.add(puzzle.board.join(','));
-        let board = puzzle.board, route = solve(board, puzzle.target);
+        let board = puzzle.board,
+          route = solve(board, puzzle.target);
         expect(route).not.toBeNull();
         let remaining = route!.length;
         while (!complete(board, puzzle.target)) {
@@ -35,7 +40,8 @@ describe('Snowball Merge', () => {
           expect(route).toHaveLength(remaining);
           const step = slide(board, route[0]);
           expect(step.changed).toBe(true);
-          board = step.board; remaining--;
+          board = step.board;
+          remaining--;
         }
         expect(remaining).toBe(0);
       }

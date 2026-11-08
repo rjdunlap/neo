@@ -18,13 +18,47 @@ const w = (...parts: string[]): Word => ({ word: parts.join(''), parts });
 /** Words with a picture (see `art.ts`): the one-beat words are Rhyme Time's drawings, the others props and new pictures. */
 export const WORDS: readonly Word[] = [
   // One clap
-  w('cat'), w('dog'), w('duck'), w('frog'), w('bee'), w('tree'), w('star'), w('moon'), w('fish'), w('cake'), w('boat'), w('hat'), w('bell'), w('car'), w('bear'), w('key'),
+  w('cat'),
+  w('dog'),
+  w('duck'),
+  w('frog'),
+  w('bee'),
+  w('tree'),
+  w('star'),
+  w('moon'),
+  w('fish'),
+  w('cake'),
+  w('boat'),
+  w('hat'),
+  w('bell'),
+  w('car'),
+  w('bear'),
+  w('key'),
   // Two claps
-  w('ap', 'ple'), w('or', 'ange'), w('lem', 'on'), w('bal', 'loon'), w('flow', 'er'), w('bun', 'ny'), w('piz', 'za'), w('rain', 'bow'), w('pen', 'cil'), w('win', 'dow'), w('spi', 'der'),
+  w('ap', 'ple'),
+  w('or', 'ange'),
+  w('lem', 'on'),
+  w('bal', 'loon'),
+  w('flow', 'er'),
+  w('bun', 'ny'),
+  w('piz', 'za'),
+  w('rain', 'bow'),
+  w('pen', 'cil'),
+  w('win', 'dow'),
+  w('spi', 'der'),
   // Three claps
-  w('ba', 'na', 'na'), w('but', 'ter', 'fly'), w('um', 'brel', 'la'), w('la', 'dy', 'bug'), w('blue', 'ber', 'ries'), w('to', 'ma', 'to'), w('straw', 'ber', 'ry'), w('pine', 'ap', 'ple'),
+  w('ba', 'na', 'na'),
+  w('but', 'ter', 'fly'),
+  w('um', 'brel', 'la'),
+  w('la', 'dy', 'bug'),
+  w('blue', 'ber', 'ries'),
+  w('to', 'ma', 'to'),
+  w('straw', 'ber', 'ry'),
+  w('pine', 'ap', 'ple'),
   // Four claps
-  w('wa', 'ter', 'mel', 'on'), w('hel', 'i', 'cop', 'ter'), w('cat', 'er', 'pil', 'lar'),
+  w('wa', 'ter', 'mel', 'on'),
+  w('hel', 'i', 'cop', 'ter'),
+  w('cat', 'er', 'pil', 'lar'),
 ];
 
 export const byCount = (n: number) => WORDS.filter((x) => syllables(x) === n);
@@ -59,12 +93,27 @@ export const LEVELS: BandLevels = {
 export const CARS = 3;
 
 export const COMPARE_LEVEL = 8;
-export const COMPARE_PLAN: ClapPlan = { mode: 'compare', count: 4, max: 4, name: 'Longer or shorter? Choose the word with more or fewer claps' };
+export const COMPARE_PLAN: ClapPlan = {
+  mode: 'compare',
+  count: 4,
+  max: 4,
+  name: 'Longer or shorter? Choose the word with more or fewer claps',
+};
 
 export const SHORT_LEVEL = 9;
-export const SHORT_PLAN: ClapPlan = { mode: 'along', count: 2, max: 2, name: 'Clap along (short): two words with one and two beats' };
+export const SHORT_PLAN: ClapPlan = {
+  mode: 'along',
+  count: 2,
+  max: 2,
+  name: 'Clap along (short): two words with one and two beats',
+};
 
-export const planFor = (level: number) => level === SHORT_LEVEL ? SHORT_PLAN : level === COMPARE_LEVEL ? COMPARE_PLAN : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
+export const planFor = (level: number) =>
+  level === SHORT_LEVEL
+    ? SHORT_PLAN
+    : level === COMPARE_LEVEL
+      ? COMPARE_PLAN
+      : PLANS[Math.min(PLANS.length, Math.max(1, level)) - 1];
 
 export interface Question {
   /** One word to clap ('along', 'solo'), the pictures to sort ('sort'), the pictures to choose from ('match', 'compare'), or the jumble to line up ('train'). */
@@ -94,7 +143,9 @@ export function makeQuestions(plan: ClapPlan, rng: Rng): Question[] {
   if (plan.mode === 'sort') {
     const picked = [...counts];
     while (picked.length < plan.count) {
-      const available = counts.filter((n) => pools.get(n)!.length > picked.filter((selected) => selected === n).length);
+      const available = counts.filter(
+        (n) => pools.get(n)!.length > picked.filter((selected) => selected === n).length,
+      );
       picked.push(rng.pick(available));
     }
     return [{ words: rng.shuffle(picked.map(take)) }];
@@ -116,7 +167,11 @@ export function makeQuestions(plan: ClapPlan, rng: Rng): Question[] {
       const a = rng.pick(counts.filter((n) => pools.get(n)!.length > 0));
       const b = rng.pick(counts.filter((n) => n !== a && pools.get(n)!.length > 0));
       const comparison = i % 2 === 0 ? first : first === 'more' ? 'fewer' : 'more';
-      return { comparison, target: comparison === 'more' ? Math.max(a, b) : Math.min(a, b), words: rng.shuffle([take(a), take(b)]) };
+      return {
+        comparison,
+        target: comparison === 'more' ? Math.max(a, b) : Math.min(a, b),
+        words: rng.shuffle([take(a), take(b)]),
+      };
     });
   }
   // match: each question shows one picture of each size and plays one of those sizes.
@@ -126,13 +181,15 @@ export function makeQuestions(plan: ClapPlan, rng: Rng): Question[] {
 }
 
 /** "one clap", "two claps": the spoken count. */
-export const clapsWord = (n: number) => `${['zero', 'one', 'two', 'three', 'four'][n] ?? n} ${n === 1 ? 'clap' : 'claps'}`;
+export const clapsWord = (n: number) =>
+  `${['zero', 'one', 'two', 'three', 'four'][n] ?? n} ${n === 1 ? 'clap' : 'claps'}`;
 
 /** Seconds of quiet after the last clap before a word she clapped by herself is counted. */
 export const PAUSE = 1.5;
 
 /** How full the wait ring is (0 to 1): it fills across the `PAUSE` after her last clap, so she can see the word is about to be counted. 0 before her first clap. */
-export const waitFill = (clock: number, lastClap: number, claps: number, pause = PAUSE) => (claps > 0 ? Math.min(1, Math.max(0, (clock - lastClap) / pause)) : 0);
+export const waitFill = (clock: number, lastClap: number, claps: number, pause = PAUSE) =>
+  claps > 0 ? Math.min(1, Math.max(0, (clock - lastClap) / pause)) : 0;
 
 /**
  * What a capable child does next, for the ghost finger. Clapping a word: a clap for each beat still to go (none once the
@@ -141,7 +198,10 @@ export const waitFill = (clock: number, lastClap: number, claps: number, pause =
  */
 export const clapsToGo = (word: Word, claps: number) => Math.max(0, syllables(word) - claps);
 
-export function nextToSort<C extends { word: Word; sorted: boolean }, B extends { count: number }>(cards: readonly C[], bins: readonly B[]): { card: C; bin: B } | undefined {
+export function nextToSort<C extends { word: Word; sorted: boolean }, B extends { count: number }>(
+  cards: readonly C[],
+  bins: readonly B[],
+): { card: C; bin: B } | undefined {
   for (const card of cards) {
     const bin = bins.find((b) => b.count === syllables(card.word));
     if (!card.sorted && bin) return { card, bin };
@@ -149,20 +209,29 @@ export function nextToSort<C extends { word: Word; sorted: boolean }, B extends 
   return undefined;
 }
 
-export const pictureToTap = <C extends { word: Word }>(q: Question, cards: readonly C[]): C | undefined => cards.find((c) => c.word === answerOf(q));
+export const pictureToTap = <C extends { word: Word }>(q: Question, cards: readonly C[]): C | undefined =>
+  cards.find((c) => c.word === answerOf(q));
 
 /** The beat train, fewest claps to most: the clap count each car holds, left to right. Equal counts may go either way round. */
 export const trainCounts = (words: readonly Word[]) => words.map(syllables).sort((a, b) => a - b);
 
 /** Whether a picture belongs in an empty car: the car's place in the fewest-to-most line has as many claps as the picture. */
-export const fitsCar = (words: readonly Word[], cars: readonly (Word | undefined)[], word: Word, car: number) =>
-  car >= 0 && car < words.length && !cars[car] && trainCounts(words)[car] === syllables(word);
+export const fitsCar = (
+  words: readonly Word[],
+  cars: readonly (Word | undefined)[],
+  word: Word,
+  car: number,
+) => car >= 0 && car < words.length && !cars[car] && trainCounts(words)[car] === syllables(word);
 
 /**
  * What goes next in a beat train, for the hint and the ghost finger: the first empty car, and a picture still waiting
  * whose claps fit it.
  */
-export function nextForTrain<C extends { word: Word; loaded: boolean }>(words: readonly Word[], cars: readonly (Word | undefined)[], cards: readonly C[]): { card: C; car: number } | undefined {
+export function nextForTrain<C extends { word: Word; loaded: boolean }>(
+  words: readonly Word[],
+  cars: readonly (Word | undefined)[],
+  cards: readonly C[],
+): { card: C; car: number } | undefined {
   const car = words.findIndex((_, i) => !cars[i]);
   if (car < 0) return undefined;
   const card = cards.find((c) => !c.loaded && fitsCar(words, cars, c.word, car));

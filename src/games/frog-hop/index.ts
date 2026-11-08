@@ -13,17 +13,39 @@ import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { LEVELS, answerOf, answerSlot, GAP_CARDS, makeQuestions, planFor, PLANS, missKind, hintCharge, stickerNumber, WINDOW, type HopPlan, type HopQuestion, splitsAtTen } from './logic';
+import {
+  LEVELS,
+  answerOf,
+  answerSlot,
+  GAP_CARDS,
+  makeQuestions,
+  planFor,
+  PLANS,
+  missKind,
+  hintCharge,
+  stickerNumber,
+  WINDOW,
+  type HopPlan,
+  type HopQuestion,
+  splitsAtTen,
+} from './logic';
 
 const STEP = 104;
-
 
 class Pad extends Container {
   readonly num: Text;
   n = 0;
   constructor() {
     super();
-    this.addChild(new Graphics().ellipse(0, 0, 48, 28).fill(swatch.green.light).stroke({ width: 5, color: swatch.green.line }).moveTo(0, 0).lineTo(30, -16).stroke({ width: 4, color: swatch.green.line }));
+    this.addChild(
+      new Graphics()
+        .ellipse(0, 0, 48, 28)
+        .fill(swatch.green.light)
+        .stroke({ width: 5, color: swatch.green.line })
+        .moveTo(0, 0)
+        .lineTo(30, -16)
+        .stroke({ width: 4, color: swatch.green.line }),
+    );
     this.num = label('0', 34, ink);
     this.num.y = 44;
     this.addChild(this.num);
@@ -73,8 +95,23 @@ class FrogHop implements Game {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
     this.questions = makeQuestions(this.plan, ctx.rng);
-    this.backdrop = new Backdrop({ sky: [0x8fd3f7, 0xe9f7ff], hills: [0x7fd0e8, 0x5bb8d8, 0x4aa8c9], horizon: 0.42, clouds: 2, sun: true, seed: 61 }, ctx.view);
-    this.sign.addChild(new Graphics().roundRect(-170, -46, 340, 92, 24).fill(wood.light).stroke({ width: 6, color: wood.line }));
+    this.backdrop = new Backdrop(
+      {
+        sky: [0x8fd3f7, 0xe9f7ff],
+        hills: [0x7fd0e8, 0x5bb8d8, 0x4aa8c9],
+        horizon: 0.42,
+        clouds: 2,
+        sun: true,
+        seed: 61,
+      },
+      ctx.view,
+    );
+    this.sign.addChild(
+      new Graphics()
+        .roundRect(-170, -46, 340, 92, 24)
+        .fill(wood.light)
+        .stroke({ width: 6, color: wood.line }),
+    );
     this.signText = label('', 46, ink);
     this.sign.addChild(this.signText);
     this.glow.eventMode = 'none';
@@ -136,13 +173,18 @@ class FrogHop implements Game {
     if (this.glowing && !this.busy) {
       const p = this.glowing.getGlobalPosition();
       const at = this.ctx.stage.toLocal(p);
-      g.circle(at.x, at.y + (this.glowing instanceof Pad ? 6 : 0), 66 + 4 * Math.sin(this.clock * 6)).stroke({ width: 7, color: swatch.yellow.fill });
+      g.circle(at.x, at.y + (this.glowing instanceof Pad ? 6 : 0), 66 + 4 * Math.sin(this.clock * 6)).stroke({
+        width: 7,
+        color: swatch.yellow.fill,
+      });
     }
     const ring = this.ring.clear();
     const spot = this.couchOn && !this.busy && !this.finished ? this.spots[this.focus] : undefined;
     if (spot) {
-      if (spot instanceof Pad) ring.roundRect(spot.x - 58, spot.y - 56, 116, 118, 26).stroke({ width: 8, color: swatch.teal.line });
-      else ring.roundRect(spot.x - 66, spot.y - 68, 132, 136, 26).stroke({ width: 8, color: swatch.teal.line });
+      if (spot instanceof Pad)
+        ring.roundRect(spot.x - 58, spot.y - 56, 116, 118, 26).stroke({ width: 8, color: swatch.teal.line });
+      else
+        ring.roundRect(spot.x - 66, spot.y - 68, 132, 136, 26).stroke({ width: 8, color: swatch.teal.line });
     }
   }
 
@@ -164,7 +206,8 @@ class FrogHop implements Game {
       if (p.direction === 0) this.focus = Math.min(last, this.focus + 1);
       else if (p.direction === 2) this.focus = Math.max(0, this.focus - 1);
       if (!p.action) continue;
-      if (this.plan.mode === 'gap' || (splitsAtTen(this.plan.mode) && this.makeTenStage === 'bridge')) void this.tapCard(this.cards[this.focus].n);
+      if (this.plan.mode === 'gap' || (splitsAtTen(this.plan.mode) && this.makeTenStage === 'bridge'))
+        void this.tapCard(this.cards[this.focus].n);
       else void this.tapPad(this.pads[this.focus].n);
     }
   }
@@ -175,9 +218,10 @@ class FrogHop implements Game {
     out.players[0].active = true;
     this.botWait -= dt;
     if (this.busy || this.finished || !this.q || this.botWait > 0) return out;
-    const want = splitsAtTen(this.plan.mode) && this.makeTenStage === 'bridge'
-      ? GAP_CARDS.indexOf(this.q.toTen!)
-      : answerSlot(this.plan.mode, this.q, this.lo);
+    const want =
+      splitsAtTen(this.plan.mode) && this.makeTenStage === 'bridge'
+        ? GAP_CARDS.indexOf(this.q.toTen!)
+        : answerSlot(this.plan.mode, this.q, this.lo);
     if (want < 0) return out;
     if (want === this.focus) {
       out.players[0].action = true;
@@ -192,9 +236,10 @@ class FrogHop implements Game {
   /** The ghost finger on the how-to card: tap the lily pad (or on counting levels the number card) that answers the question. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.q) return null;
-    const slot = splitsAtTen(this.plan.mode) && this.makeTenStage === 'bridge'
-      ? GAP_CARDS.indexOf(this.q.toTen!)
-      : answerSlot(this.plan.mode, this.q, this.lo);
+    const slot =
+      splitsAtTen(this.plan.mode) && this.makeTenStage === 'bridge'
+        ? GAP_CARDS.indexOf(this.q.toTen!)
+        : answerSlot(this.plan.mode, this.q, this.lo);
     return slot < 0 ? null : { tap: { on: this.spots[slot] } };
   }
 
@@ -205,7 +250,7 @@ class FrogHop implements Game {
     this.helped = false;
     this.inertTaps = 0;
     this.makeTenStage = 'bridge';
-    this.cards.forEach((c) => c.node.visible = true);
+    this.cards.forEach((c) => (c.node.visible = true));
     this.glowing = null;
     if (this.index >= this.questions.length) return void this.finale();
     const q = this.q;
@@ -213,14 +258,25 @@ class FrogHop implements Game {
     if (this.at !== q.start) await this.leap(q.start);
     const mode = this.plan.mode;
     const k = Math.abs(q.hops);
-    this.signText.text = mode === 'find' ? String(q.target) : mode === 'gap' ? `${q.start} → ${q.target}` : mode === 'make-ten' ? `${q.start} + ${q.hops}` : mode === 'back-ten' ? `${q.start} − ${k}` : `${q.start} ${q.hops > 0 ? '+' : '−'} ${k}`;
+    this.signText.text =
+      mode === 'find'
+        ? String(q.target)
+        : mode === 'gap'
+          ? `${q.start} → ${q.target}`
+          : mode === 'make-ten'
+            ? `${q.start} + ${q.hops}`
+            : mode === 'back-ten'
+              ? `${q.start} − ${k}`
+              : `${q.start} ${q.hops > 0 ? '+' : '−'} ${k}`;
     // The ring starts where the frog sits (or on the first card), so choosing is a few steps along.
-    this.focus = mode === 'gap' || splitsAtTen(mode) ? 0 : Math.max(0, Math.min(WINDOW - 1, this.at - this.lo));
+    this.focus =
+      mode === 'gap' || splitsAtTen(mode) ? 0 : Math.max(0, Math.min(WINDOW - 1, this.at - this.lo));
     this.busy = false;
     if (mode === 'find') return this.ctx.instruct('hop.find', { n: q.target });
     if (mode === 'next') return this.ctx.instruct(q.ask === 'more' ? 'hop.more' : 'hop.less', { n: q.start });
     if (mode === 'gap') return this.ctx.instruct('hop.gap', { n: q.start, m: q.target });
-    if (splitsAtTen(mode)) return this.ctx.instruct(mode === 'make-ten' ? 'hop.ten' : 'hop.backten', { n: q.start, k });
+    if (splitsAtTen(mode))
+      return this.ctx.instruct(mode === 'make-ten' ? 'hop.ten' : 'hop.backten', { n: q.start, k });
     return this.ctx.instruct(q.hops > 0 ? 'hop.add' : 'hop.back', { n: q.start, k });
   }
 
@@ -237,7 +293,9 @@ class FrogHop implements Game {
     this.frogMoving = true;
     const y = this.padY() - 8;
     sfx.whoosh();
-    void this.ctx.tw.to(this.frog, { y: y - 90 }, { duration: 0.22, ease: ease.outQuad }).then(() => this.ctx.tw.to(this.frog, { y }, { duration: 0.22, ease: ease.inQuad }));
+    void this.ctx.tw
+      .to(this.frog, { y: y - 90 }, { duration: 0.22, ease: ease.outQuad })
+      .then(() => this.ctx.tw.to(this.frog, { y }, { duration: 0.22, ease: ease.inQuad }));
     await this.ctx.tw.to(this.frog, { x: this.padX(to) }, { duration: 0.44 });
     await this.ctx.tw.wait(0.05);
     this.frog.y = y;
@@ -255,7 +313,9 @@ class FrogHop implements Game {
       const next = this.at + dir;
       void this.ctx.say('count', { n: k });
       sfx.pop(5 + k);
-      void this.ctx.tw.to(this.frog, { y: y - 50 }, { duration: 0.16, ease: ease.outQuad }).then(() => this.ctx.tw.to(this.frog, { y }, { duration: 0.16, ease: ease.inQuad }));
+      void this.ctx.tw
+        .to(this.frog, { y: y - 50 }, { duration: 0.16, ease: ease.outQuad })
+        .then(() => this.ctx.tw.to(this.frog, { y }, { duration: 0.16, ease: ease.inQuad }));
       await this.ctx.tw.to(this.frog, { x: this.padX(next) }, { duration: 0.32 });
       this.frog.y = y;
       this.at = next;
@@ -273,7 +333,8 @@ class FrogHop implements Game {
       if (this.inertTaps === 2) {
         void this.ctx.say('hop.cards');
         for (const { node } of this.cards) {
-          void this.ctx.tw.to(node.scale, { x: 1.08, y: 1.08 }, { duration: 0.15 })
+          void this.ctx.tw
+            .to(node.scale, { x: 1.08, y: 1.08 }, { duration: 0.15 })
             .then(() => this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.15 }));
         }
       }
@@ -286,7 +347,8 @@ class FrogHop implements Game {
   private async tapCard(n: number) {
     if (this.busy || this.finished) return;
     if (this.plan.mode === 'gap' && n === answerOf('gap', this.q)) return void this.right();
-    if (splitsAtTen(this.plan.mode) && this.makeTenStage === 'bridge' && n === this.q.toTen) return void this.bridgeTen();
+    if (splitsAtTen(this.plan.mode) && this.makeTenStage === 'bridge' && n === this.q.toTen)
+      return void this.bridgeTen();
     this.miss(n);
   }
 
@@ -295,13 +357,17 @@ class FrogHop implements Game {
     this.glowing = null;
     await this.hopCount(10);
     this.makeTenStage = 'rest';
-    this.cards.forEach((c) => c.node.visible = false);
+    this.cards.forEach((c) => (c.node.visible = false));
     this.wrongs = 0;
     this.focus = Math.max(0, Math.min(WINDOW - 1, this.at - this.lo));
     const back = this.plan.mode === 'back-ten';
     this.signText.text = `${this.q.start} ${back ? '−' : '+'} ${this.q.toTen} ${back ? '−' : '+'} ${this.q.remaining}`;
     this.busy = false;
-    await this.ctx.instruct(back ? 'hop.restback' : 'hop.rest', { a: this.q.toTen!, k: Math.abs(this.q.hops), n: this.q.remaining! });
+    await this.ctx.instruct(back ? 'hop.restback' : 'hop.rest', {
+      a: this.q.toTen!,
+      k: Math.abs(this.q.hops),
+      n: this.q.remaining!,
+    });
   }
 
   private async right() {
@@ -315,7 +381,14 @@ class FrogHop implements Game {
       await this.hopCount(q.target);
     }
     sfx.sparkle();
-    this.ctx.particles.burst(this.frog.x, this.frog.y - 40, { kind: 'star', colors: [0xffffff, swatch.green.light, 0xfff3a0], count: 14, speed: [100, 260], gravity: 0, life: [0.5, 0.9] });
+    this.ctx.particles.burst(this.frog.x, this.frog.y - 40, {
+      kind: 'star',
+      colors: [0xffffff, swatch.green.light, 0xfff3a0],
+      count: 14,
+      speed: [100, 260],
+      gravity: 0,
+      life: [0.5, 0.9],
+    });
     this.ctx.pet.cheer();
     await this.ctx.say('hop.yay');
     await this.next();
@@ -330,16 +403,20 @@ class FrogHop implements Game {
     const mode = this.plan.mode;
     if (mode === 'find') {
       this.frog.scale.x = q.target > n ? 1 : -1;
-      await this.ctx.say(q.target > n ? 'hop.wrong.find-forward' : 'hop.wrong.find-backward', { m: n, n: q.target });
-    }
-    else if (mode === 'next') await this.ctx.say(q.ask === 'more' ? 'hop.wrong.more' : 'hop.wrong.less');
+      await this.ctx.say(q.target > n ? 'hop.wrong.find-forward' : 'hop.wrong.find-backward', {
+        m: n,
+        n: q.target,
+      });
+    } else if (mode === 'next') await this.ctx.say(q.ask === 'more' ? 'hop.wrong.more' : 'hop.wrong.less');
     else {
       const card = mode === 'gap' || (splitsAtTen(mode) && this.makeTenStage === 'bridge');
       const start = splitsAtTen(mode) && this.makeTenStage === 'rest' ? 10 : q.start;
       const answer = card ? (mode === 'gap' ? answerOf(mode, q) : q.toTen!) : q.target;
       const kind = missKind(start, answer, n, card);
-      if (kind === 'forward' || kind === 'backward') await this.ctx.say(kind === 'forward' ? 'hop.wrong.forward' : 'hop.wrong.backward');
-      else if (kind === 'one-more' || kind === 'one-less') await this.ctx.say(kind === 'one-more' ? 'hop.wrong.one-more' : 'hop.wrong.one-less');
+      if (kind === 'forward' || kind === 'backward')
+        await this.ctx.say(kind === 'forward' ? 'hop.wrong.forward' : 'hop.wrong.backward');
+      else if (kind === 'one-more' || kind === 'one-less')
+        await this.ctx.say(kind === 'one-more' ? 'hop.wrong.one-more' : 'hop.wrong.one-less');
       else await this.ctx.say('hop.wrong.count', { n: start });
     }
     if (this.wrongs >= 2 && !this.glowing) {
@@ -352,9 +429,10 @@ class FrogHop implements Game {
         await this.ctx.tw.wait(0.3);
         await this.leap(splitsAtTen(mode) && this.makeTenStage === 'rest' ? 10 : q.start);
       }
-      this.glowing = mode === 'gap' || (splitsAtTen(mode) && this.makeTenStage === 'bridge')
-        ? this.cards.find((c) => c.n === (splitsAtTen(mode) ? q.toTen : answerOf('gap', q)))!.node
-        : this.pads[q.target - this.lo];
+      this.glowing =
+        mode === 'gap' || (splitsAtTen(mode) && this.makeTenStage === 'bridge')
+          ? this.cards.find((c) => c.n === (splitsAtTen(mode) ? q.toTen : answerOf('gap', q)))!.node
+          : this.pads[q.target - this.lo];
     }
     this.busy = false;
   }

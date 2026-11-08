@@ -1,6 +1,37 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { DUEL_PLAN, duelServeDir, duelWinner, countFor, isZoneMode, makeSequence, serveAngleFor, LOB, petLob, farWall, isGoalMode, reachableZones, keeperReach, keeperSpeed, landingY, paddleForLanding, versusMisses, volleySpeed, zoneOf, ZONES, type AimGeometry, COURTS, courtFor, afterHit, afterMiss, paddleBounce, paddleTarget, PLANS, predictY, type PaddleGeometry } from './logic';
+import {
+  DUEL_PLAN,
+  duelServeDir,
+  duelWinner,
+  countFor,
+  isZoneMode,
+  makeSequence,
+  serveAngleFor,
+  LOB,
+  petLob,
+  farWall,
+  isGoalMode,
+  reachableZones,
+  keeperReach,
+  keeperSpeed,
+  landingY,
+  paddleForLanding,
+  versusMisses,
+  volleySpeed,
+  zoneOf,
+  ZONES,
+  type AimGeometry,
+  COURTS,
+  courtFor,
+  afterHit,
+  afterMiss,
+  paddleBounce,
+  paddleTarget,
+  PLANS,
+  predictY,
+  type PaddleGeometry,
+} from './logic';
 
 describe('Bounce Back', () => {
   it('predicts where the ball arrives, folding in wall bounces', () => {
@@ -35,7 +66,16 @@ describe('Bounce Back', () => {
     const plan = PLANS.find((p) => p.mode === 'stars')!;
     const R = 26;
     const half = plan.paddle / 2;
-    const g: PaddleGeometry = { faceX: 984 - 46 - R, top: 90 + R, bottom: 728 - R, low: 90 + half, high: 728 - half, paddle: plan.paddle, speed: plan.speed, starReach: R + 52 };
+    const g: PaddleGeometry = {
+      faceX: 984 - 46 - R,
+      top: 90 + R,
+      bottom: 728 - R,
+      low: 90 + half,
+      high: 728 - half,
+      paddle: plan.paddle,
+      speed: plan.speed,
+      starReach: R + 52,
+    };
     const rng = new Rng(11);
     // Follow the ball after the bounce, wall to wall, and report how near it comes to the star on its way across.
     const nearest = (arrive: number, paddleY: number, star: { x: number; y: number }) => {
@@ -71,7 +111,8 @@ describe('Bounce Back', () => {
     // Without a star the paddle sits on the ball.
     expect(paddleTarget(300, null, g)).toBe(300);
     // When no star is asked for, every level meets the ball on the same line.
-    for (const p of PLANS) expect(paddleTarget(250, null, { ...g, paddle: p.paddle, speed: p.speed })).toBe(250);
+    for (const p of PLANS)
+      expect(paddleTarget(250, null, { ...g, paddle: p.paddle, speed: p.speed })).toBe(250);
   });
 
   it('starts a hint after two misses in a row, ends it on her next bounce, and can start another', () => {
@@ -119,9 +160,24 @@ describe('Bounce Back', () => {
     const x1 = w - 40;
     const y0 = 90;
     const y1 = h - 40;
-    return { faceX: x1 - 46 - R, leftX: x0 + 46 + R, top: y0 + R, bottom: y1 - R, low: y0 + half, high: y1 - half, paddle: plan.paddle, speed: plan.speed, starReach: R + 52 };
+    return {
+      faceX: x1 - 46 - R,
+      leftX: x0 + 46 + R,
+      top: y0 + R,
+      bottom: y1 - R,
+      low: y0 + half,
+      high: y1 - half,
+      paddle: plan.paddle,
+      speed: plan.speed,
+      starReach: R + 52,
+    };
   };
-  const VIEWS: [number, number][] = [[1024, 768], [768, 1024], [1366, 768], [1194, 834]];
+  const VIEWS: [number, number][] = [
+    [1024, 768],
+    [768, 1024],
+    [1366, 768],
+    [1194, 834],
+  ];
 
   it('only calls a color zone the paddle can send the ball to, and always has two to choose from', () => {
     const plan = PLANS[5];
@@ -205,7 +261,10 @@ describe('Bounce Back', () => {
     for (const [w, h] of VIEWS) {
       const g = aim(w, h, plan);
       for (let z = 0; z < ZONES.length; z++) {
-        expect(serveAngleFor(z, angles, (180 + w - 40) / 2, (90 + h - 40) / 2, g), `${w}x${h} zone ${z}`).not.toBeNull();
+        expect(
+          serveAngleFor(z, angles, (180 + w - 40) / 2, (90 + h - 40) / 2, g),
+          `${w}x${h} zone ${z}`,
+        ).not.toBeNull();
       }
     }
   });

@@ -1,6 +1,25 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { allowedChecks, AILMENTS, AIM_PARTS, CHECK_PART, CHECKS, CHECKUP_STEPS, CURE, doctorTouch, LEVELS, makeRounds, nearestPart, partSpot, PATIENTS, planFor, PLANS, SCRAPE_PARTS, wantedTool, type Part } from './logic';
+import {
+  allowedChecks,
+  AILMENTS,
+  AIM_PARTS,
+  CHECK_PART,
+  CHECKS,
+  CHECKUP_STEPS,
+  CURE,
+  doctorTouch,
+  LEVELS,
+  makeRounds,
+  nearestPart,
+  partSpot,
+  PATIENTS,
+  planFor,
+  PLANS,
+  SCRAPE_PARTS,
+  wantedTool,
+  type Part,
+} from './logic';
 
 describe('Teddy Doctor', () => {
   it('gives every level in every band its own plan, never a clamped neighbour', () => {
@@ -14,46 +33,53 @@ describe('Teddy Doctor', () => {
   });
 
   it('at level 1 a touch anywhere on the patient finds a boo-boo still to bandage, and the one touched when on it', () => {
-    const subsets = (parts: Part[]): Part[][] => parts.flatMap((_, i) => [[parts[i]], ...subsets(parts.slice(i + 1)).map((rest) => [parts[i], ...rest])]);
-    for (const patient of PATIENTS) for (const left of subsets(SCRAPE_PARTS)) {
-      for (const part of left) {
-        const s = partSpot(patient, part);
-        expect(nearestPart(patient, s.x, s.y, left)).toBe(part);
-        expect(nearestPart(patient, -s.x, s.y, left)).toBe(part);
+    const subsets = (parts: Part[]): Part[][] =>
+      parts.flatMap((_, i) => [
+        [parts[i]],
+        ...subsets(parts.slice(i + 1)).map((rest) => [parts[i], ...rest]),
+      ]);
+    for (const patient of PATIENTS)
+      for (const left of subsets(SCRAPE_PARTS)) {
+        for (const part of left) {
+          const s = partSpot(patient, part);
+          expect(nearestPart(patient, s.x, s.y, left)).toBe(part);
+          expect(nearestPart(patient, -s.x, s.y, left)).toBe(part);
+        }
+        // Anywhere on the body, even far from every boo-boo, bandages one of those left.
+        for (let x = -170; x <= 170; x += 34)
+          for (let y = -330; y <= 40; y += 37) expect(left).toContain(nearestPart(patient, x, y, left));
       }
-      // Anywhere on the body, even far from every boo-boo, bandages one of those left.
-      for (let x = -170; x <= 170; x += 34) for (let y = -330; y <= 40; y += 37) expect(left).toContain(nearestPart(patient, x, y, left));
-    }
   });
 
   it('demonstrates every patient with the right tool, place, and check-up order', () => {
-    for (const plan of PLANS.filter((p) => p.mode !== 'rules')) for (let seed = 1; seed <= 50; seed++) {
-      for (const round of makeRounds(plan, new Rng(seed))) {
-        const scrapes = [...round.scrapes];
-        let step = 0;
-        for (let moves = 0; moves < 5; moves++) {
-          const touch = doctorTouch(plan.mode, round, step, scrapes);
-          if (!touch) break;
-          if ((plan.mode === 'play' || plan.mode === 'choose')) {
-            expect(touch).toEqual({ kind: 'tap', part: scrapes[0] });
-            scrapes.shift();
-          } else if (plan.mode === 'part') {
-            expect(touch).toEqual({ kind: 'tool', tool: 'bandage', part: scrapes[0] });
-            scrapes.shift();
-          } else if (plan.mode === 'tool' || plan.mode === 'clue') {
-            expect(touch).toEqual({ kind: 'tool', tool: CURE[round.ailment!].tool, part: round.part });
-            step++;
-            break;
-          } else {
-            const tool = round.steps[step];
-            expect(touch).toEqual({ kind: 'tool', tool, part: CHECK_PART[tool] });
-            step++;
+    for (const plan of PLANS.filter((p) => p.mode !== 'rules'))
+      for (let seed = 1; seed <= 50; seed++) {
+        for (const round of makeRounds(plan, new Rng(seed))) {
+          const scrapes = [...round.scrapes];
+          let step = 0;
+          for (let moves = 0; moves < 5; moves++) {
+            const touch = doctorTouch(plan.mode, round, step, scrapes);
+            if (!touch) break;
+            if (plan.mode === 'play' || plan.mode === 'choose') {
+              expect(touch).toEqual({ kind: 'tap', part: scrapes[0] });
+              scrapes.shift();
+            } else if (plan.mode === 'part') {
+              expect(touch).toEqual({ kind: 'tool', tool: 'bandage', part: scrapes[0] });
+              scrapes.shift();
+            } else if (plan.mode === 'tool' || plan.mode === 'clue') {
+              expect(touch).toEqual({ kind: 'tool', tool: CURE[round.ailment!].tool, part: round.part });
+              step++;
+              break;
+            } else {
+              const tool = round.steps[step];
+              expect(touch).toEqual({ kind: 'tool', tool, part: CHECK_PART[tool] });
+              step++;
+            }
           }
+          expect(scrapes).toHaveLength(0);
+          if (plan.mode === 'card' || plan.mode === 'told') expect(step).toBe(round.steps.length);
         }
-        expect(scrapes).toHaveLength(0);
-        if (plan.mode === 'card' || plan.mode === 'told') expect(step).toBe(round.steps.length);
       }
-    }
   });
 
   it('makes three different-kind pairs, alternates the hurt side and shows exactly one boo-boo', () => {
@@ -72,29 +98,55 @@ describe('Teddy Doctor', () => {
   });
 
   it('accepts exactly every order that keeps the rules, with useful hints and a legal bot', () => {
-    for (let seed = 1; seed <= 200; seed++) for (const [i, r] of makeRounds(planFor(8), new Rng(seed)).entries()) {
-      const orders = r.steps.flatMap((a) => r.steps.filter((b) => b !== a).map((b) => [a, b, r.steps.find((c) => c !== a && c !== b)!]));
-      const valid = orders.filter((order) => r.rules.every((rule) => rule.kind === 'first' ? order[0] === rule.tool : rule.kind === 'last' ? order[2] === rule.tool : order.indexOf(rule.tool) < order.indexOf(rule.other)));
-      expect(valid.length).toBeGreaterThanOrEqual(i === 0 ? 2 : 1);
-      expect(r.rules).toHaveLength(i + 1);
-      for (const order of orders) {
-        const done: typeof r.steps = [];
-        let accepted = true;
-        for (const tool of order) {
-          if (!allowedChecks(r, done).includes(tool)) { accepted = false; break; }
-          done.push(tool);
-          expect(allowedChecks(r, done).sort()).toEqual([...new Set(valid.filter((v) => done.every((d, k) => v[k] === d)).map((v) => v[done.length]).filter(Boolean))].sort());
+    for (let seed = 1; seed <= 200; seed++)
+      for (const [i, r] of makeRounds(planFor(8), new Rng(seed)).entries()) {
+        const orders = r.steps.flatMap((a) =>
+          r.steps.filter((b) => b !== a).map((b) => [a, b, r.steps.find((c) => c !== a && c !== b)!]),
+        );
+        const valid = orders.filter((order) =>
+          r.rules.every((rule) =>
+            rule.kind === 'first'
+              ? order[0] === rule.tool
+              : rule.kind === 'last'
+                ? order[2] === rule.tool
+                : order.indexOf(rule.tool) < order.indexOf(rule.other),
+          ),
+        );
+        expect(valid.length).toBeGreaterThanOrEqual(i === 0 ? 2 : 1);
+        expect(r.rules).toHaveLength(i + 1);
+        for (const order of orders) {
+          const done: typeof r.steps = [];
+          let accepted = true;
+          for (const tool of order) {
+            if (!allowedChecks(r, done).includes(tool)) {
+              accepted = false;
+              break;
+            }
+            done.push(tool);
+            expect(allowedChecks(r, done).sort()).toEqual(
+              [
+                ...new Set(
+                  valid
+                    .filter((v) => done.every((d, k) => v[k] === d))
+                    .map((v) => v[done.length])
+                    .filter(Boolean),
+                ),
+              ].sort(),
+            );
+          }
+          expect(accepted).toBe(valid.some((v) => v.join() === order.join()));
         }
-        expect(accepted).toBe(valid.some((v) => v.join() === order.join()));
+        const done: typeof r.steps = [];
+        for (let k = 0; k < 3; k++) {
+          const touch = doctorTouch('rules', r, k, [], done);
+          expect(touch?.kind).toBe('tool');
+          if (touch?.kind === 'tool') {
+            expect(allowedChecks(r, done)).toContain(touch.tool);
+            done.push(touch.tool as (typeof r.steps)[number]);
+          }
+        }
+        expect(doctorTouch('rules', r, 3, [], done)).toBeNull();
       }
-      const done: typeof r.steps = [];
-      for (let k = 0; k < 3; k++) {
-        const touch = doctorTouch('rules', r, k, [], done);
-        expect(touch?.kind).toBe('tool');
-        if (touch?.kind === 'tool') { expect(allowedChecks(r, done)).toContain(touch.tool); done.push(touch.tool as typeof r.steps[number]); }
-      }
-      expect(doctorTouch('rules', r, 3, [], done)).toBeNull();
-    }
   });
 
   it('gives every ailment its own cure', () => {
@@ -143,10 +195,11 @@ describe('Teddy Doctor', () => {
     for (const plan of PLANS.filter((p) => p.mode === 'card' || p.mode === 'told')) {
       const seen = new Map<string, number>();
       const sets = new Set<string>();
-      for (let seed = 1; seed <= 300; seed++) for (const r of makeRounds(plan, new Rng(seed))) {
-        for (const step of r.steps) seen.set(step, (seen.get(step) ?? 0) + 1);
-        sets.add([...r.steps].sort().join());
-      }
+      for (let seed = 1; seed <= 300; seed++)
+        for (const r of makeRounds(plan, new Rng(seed))) {
+          for (const step of r.steps) seen.set(step, (seen.get(step) ?? 0) + 1);
+          sets.add([...r.steps].sort().join());
+        }
       // Every step turns up often, and all ten sets of three are met.
       for (const step of CHECKS) expect(seen.get(step) ?? 0, `${plan.mode} ${step}`).toBeGreaterThan(200);
       expect(sets.size, plan.mode).toBe(10);
@@ -177,7 +230,10 @@ describe('Teddy Doctor', () => {
       for (const part of ['feet', 'ear'] as const) {
         const s = partSpot(patient, part);
         expect(nearestPart(patient, -s.x, s.y), `${patient} left ${part}`).toBe(part);
-        expect(nearestPart(patient, -s.x, s.y, SCRAPE_PARTS), `${patient} left ${part} among the boo-boo places`).toBe(part);
+        expect(
+          nearestPart(patient, -s.x, s.y, SCRAPE_PARTS),
+          `${patient} left ${part} among the boo-boo places`,
+        ).toBe(part);
       }
     }
   });

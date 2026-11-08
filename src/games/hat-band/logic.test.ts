@@ -3,12 +3,54 @@ import { PENTATONIC, stepToMidi } from '../../audio/notes';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  advance, BEATS, botMove, canFinish, earlyDone, HAT_IDS, HATS, hatBandLayout, makeRound, mixKey, newBand, nextStep,
-  noteStep, onRack, PER_BEAT, spotlight, takeOff, wear,
-  type Band, type BeatEvent, type Friend, type HatId, type Mix,
-  advanceSong, check, distance, EVERYBODY, friendFor, makeSongRound, newArrange, playSong, repair, ROLE_BIT, ROLE_ORDER,
-  select, songBotMove, songLayout, START_SONG, toggle, toggleRole, undoStep, UNDO_LIMIT,
-  type Arrange, type Part, type Role, type Song, type SongEvent, type SongRound,
+  advance,
+  BEATS,
+  botMove,
+  canFinish,
+  earlyDone,
+  HAT_IDS,
+  HATS,
+  hatBandLayout,
+  makeRound,
+  mixKey,
+  newBand,
+  nextStep,
+  noteStep,
+  onRack,
+  PER_BEAT,
+  spotlight,
+  takeOff,
+  wear,
+  type Band,
+  type BeatEvent,
+  type Friend,
+  type HatId,
+  type Mix,
+  advanceSong,
+  check,
+  distance,
+  EVERYBODY,
+  friendFor,
+  makeSongRound,
+  newArrange,
+  playSong,
+  repair,
+  ROLE_BIT,
+  ROLE_ORDER,
+  select,
+  songBotMove,
+  songLayout,
+  START_SONG,
+  toggle,
+  toggleRole,
+  undoStep,
+  UNDO_LIMIT,
+  type Arrange,
+  type Part,
+  type Role,
+  type Song,
+  type SongEvent,
+  type SongRound,
 } from './logic';
 
 /** Runs the clock in small frames until `n` more beats have been sounded (rests included). */
@@ -44,11 +86,12 @@ describe('Hat Band loops', () => {
         expect(h.notes).toHaveLength(BEATS);
         expect(h.hits).toBeUndefined();
         expect(h.notes!.some((n) => n !== null)).toBe(true);
-        for (const n of h.notes!) if (n !== null) {
-          expect(PENTATONIC).toContain(n);
-          expect(Number.isFinite(noteStep(n))).toBe(true);
-          expect(PENTATONIC.indexOf(n)).toBeGreaterThanOrEqual(0);
-        }
+        for (const n of h.notes!)
+          if (n !== null) {
+            expect(PENTATONIC).toContain(n);
+            expect(Number.isFinite(noteStep(n))).toBe(true);
+            expect(PENTATONIC.indexOf(n)).toBeGreaterThanOrEqual(0);
+          }
       }
     }
     const loops = HAT_IDS.map((id) => JSON.stringify(HATS[id].hits ?? HATS[id].notes));
@@ -110,7 +153,11 @@ describe('Hat Band hats and friends', () => {
         next.push(takeOff(b, f));
         for (const h of HAT_IDS) next.push(wear(b, f, h));
       }
-      for (const n of next) if (!seen.has(k(n))) { seen.set(k(n), n); queue.push(n); }
+      for (const n of next)
+        if (!seen.has(k(n))) {
+          seen.set(k(n), n);
+          queue.push(n);
+        }
     }
     expect(seen.size).toBe(21);
   });
@@ -173,7 +220,8 @@ describe('Hat Band beat clock', () => {
       expect(idx).toEqual([...idx].sort((a, c) => a - c));
       for (const e of bigEvents) expect(e.step).toBe(e.index % BEATS);
       // Event times lie inside the call and ascend.
-      for (let i = 1; i < bigEvents.length; i++) expect(bigEvents[i].at).toBeGreaterThanOrEqual(bigEvents[i - 1].at);
+      for (let i = 1; i < bigEvents.length; i++)
+        expect(bigEvents[i].at).toBeGreaterThanOrEqual(bigEvents[i - 1].at);
       expect(bigEvents.at(-1)!.at).toBeLessThanOrEqual(frames / 60);
     }
   });
@@ -364,10 +412,20 @@ describe('Hat Band bot', () => {
 });
 
 describe('Hat Band layout', () => {
-  const VIEWS: [number, number][] = [[1024, 768], [768, 1024], [1366, 768], [1194, 834]];
+  const VIEWS: [number, number][] = [
+    [1024, 768],
+    [768, 1024],
+    [1366, 768],
+    [1194, 834],
+  ];
   type R = { x: number; y: number; w: number; h: number };
   const overlap = (a: R, b: R) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
-  const box = (d: { x: number; y: number; r: number }): R => ({ x: d.x - d.r, y: d.y - d.r, w: 2 * d.r, h: 2 * d.r });
+  const box = (d: { x: number; y: number; r: number }): R => ({
+    x: d.x - d.r,
+    y: d.y - d.r,
+    w: 2 * d.r,
+    h: 2 * d.r,
+  });
   for (const [pw, ph] of VIEWS)
     for (const level of [1, 2, 3])
       it(`keeps every target large, apart, on screen and clear of the pet at ${pw}x${ph}, level ${level}`, () => {
@@ -500,9 +558,16 @@ describe('Hat Band level 4 undo', () => {
 });
 
 describe('Hat Band level 4 clock', () => {
-  const round: SongRound = { cast: ['cat', 'dog', 'fox'] as unknown as SongRound['cast'], hats: ['steady', 'cuckoo', 'walk'] };
+  const round: SongRound = {
+    cast: ['cat', 'dog', 'fox'] as unknown as SongRound['cast'],
+    hats: ['steady', 'cuckoo', 'walk'],
+  };
   /** Runs small frames until `until` says stop; returns the events, the final state and what ended. */
-  function run(a: Arrange, stop: (a: Arrange, ended: 'song' | 'check' | null) => boolean, edit?: (a: Arrange, ev: SongEvent[]) => Arrange) {
+  function run(
+    a: Arrange,
+    stop: (a: Arrange, ended: 'song' | 'check' | null) => boolean,
+    edit?: (a: Arrange, ev: SongEvent[]) => Arrange,
+  ) {
     const events: SongEvent[] = [];
     let ended: 'song' | 'check' | null = null;
     let cur = a;
@@ -546,7 +611,9 @@ describe('Hat Band level 4 clock', () => {
     // after the song, it loops the selected part (1)
     const after = events.filter((e) => e.index >= startIdx + 12);
     expect(after.every((e) => e.part === 1)).toBe(true);
-    function has(e: SongEvent) { return ((end.song[e.part] & ROLE_BIT[e.role]) !== 0); }
+    function has(e: SongEvent) {
+      return (end.song[e.part] & ROLE_BIT[e.role]) !== 0;
+    }
   });
 
   it('ticks every beat index exactly once, in order, with rests as gaps only', () => {
@@ -597,8 +664,12 @@ describe('Hat Band level 4 clock', () => {
   });
 
   it('low-hat pitches sit at least 10 semitones below every tune pitch; drums are pitchless', () => {
-    const lows = (['thump', 'walk'] as HatId[]).flatMap((h) => HATS[h].low!.filter((n): n is number => n !== null).map(stepToMidi));
-    const tunes = (['cuckoo', 'rain'] as HatId[]).flatMap((h) => HATS[h].notes!.filter((n): n is number => n !== null).map((n) => stepToMidi(noteStep(n))));
+    const lows = (['thump', 'walk'] as HatId[]).flatMap((h) =>
+      HATS[h].low!.filter((n): n is number => n !== null).map(stepToMidi),
+    );
+    const tunes = (['cuckoo', 'rain'] as HatId[]).flatMap((h) =>
+      HATS[h].notes!.filter((n): n is number => n !== null).map((n) => stepToMidi(noteStep(n))),
+    );
     expect(lows.length).toBeGreaterThan(0);
     expect(Math.min(...tunes) - Math.max(...lows)).toBeGreaterThanOrEqual(10);
     for (let seed = 1; seed <= 30; seed++) {
@@ -614,7 +685,9 @@ describe('Hat Band level 4 clock', () => {
       for (const e of events) {
         if (e.role === 'drum') expect(e.pitch).toBeNull();
         else expect(e.pitch).not.toBeNull();
-        if (e.role === 'bass') for (const t of events.filter((x) => x.role === 'tune')) expect(stepToMidi(t.pitch!) - stepToMidi(e.pitch!)).toBeGreaterThanOrEqual(10);
+        if (e.role === 'bass')
+          for (const t of events.filter((x) => x.role === 'tune'))
+            expect(stepToMidi(t.pitch!) - stepToMidi(e.pitch!)).toBeGreaterThanOrEqual(10);
       }
     }
   });
@@ -671,10 +744,20 @@ describe('Hat Band level 4 bot', () => {
 });
 
 describe('Hat Band level 4 layout', () => {
-  const VIEWS: [number, number][] = [[1024, 768], [768, 1024], [1366, 768], [1194, 834]];
+  const VIEWS: [number, number][] = [
+    [1024, 768],
+    [768, 1024],
+    [1366, 768],
+    [1194, 834],
+  ];
   type R = { x: number; y: number; w: number; h: number };
   const overlap = (a: R, b: R) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
-  const box = (d: { x: number; y: number; r: number }): R => ({ x: d.x - d.r, y: d.y - d.r, w: 2 * d.r, h: 2 * d.r });
+  const box = (d: { x: number; y: number; r: number }): R => ({
+    x: d.x - d.r,
+    y: d.y - d.r,
+    w: 2 * d.r,
+    h: 2 * d.r,
+  });
   for (const [pw, ph] of VIEWS)
     it(`keeps every target large, apart, on screen and clear of the pet at ${pw}x${ph}`, () => {
       const view = computeView(pw, ph);

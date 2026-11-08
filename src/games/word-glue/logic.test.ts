@@ -3,13 +3,40 @@ import { overlaps, petCorner } from '../../content/lands';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  applyHint, canDrag, CARD, check, COMPOUNDS, currentAsk, DENY, distractorsFor, drop, dropTarget, forHead, forms, HEADS, hintFor,
-  MADE, makeRound, makes, newState, OPAQUE, PICTURES, POOL, restartState, SHELF, shelfLayout, tableCentre, tableLayout, type GlueState,
+  applyHint,
+  canDrag,
+  CARD,
+  check,
+  COMPOUNDS,
+  currentAsk,
+  DENY,
+  distractorsFor,
+  drop,
+  dropTarget,
+  forHead,
+  forms,
+  HEADS,
+  hintFor,
+  MADE,
+  makeRound,
+  makes,
+  newState,
+  OPAQUE,
+  PICTURES,
+  POOL,
+  restartState,
+  SHELF,
+  shelfLayout,
+  tableCentre,
+  tableLayout,
+  type GlueState,
 } from './logic';
 
 const SEEDS = Array.from({ length: 500 }, (_, i) => i);
-const stateFor = (level: number, seed: number, authored = false): GlueState => newState(makeRound(level, new Rng(seed), authored));
-const pairs = <T>(xs: readonly T[]): [T, T][] => xs.flatMap((a, i) => xs.slice(i + 1).map((b) => [a, b] as [T, T]));
+const stateFor = (level: number, seed: number, authored = false): GlueState =>
+  newState(makeRound(level, new Rng(seed), authored));
+const pairs = <T>(xs: readonly T[]): [T, T][] =>
+  xs.flatMap((a, i) => xs.slice(i + 1).map((b) => [a, b] as [T, T]));
 
 describe('the compound table', () => {
   it('every word is its two parts said together, and no word is denied or opaque', () => {
@@ -45,7 +72,8 @@ describe('the compound table', () => {
   });
 
   it('gives every level-2 word a fair distractor', () => {
-    for (const c of COMPOUNDS.filter((x) => x.levels.includes(2))) expect(distractorsFor(c).length, c.word).toBeGreaterThanOrEqual(3);
+    for (const c of COMPOUNDS.filter((x) => x.levels.includes(2)))
+      expect(distractorsFor(c).length, c.word).toBeGreaterThanOrEqual(3);
   });
 
   it('lists only lowercase words with no spaces as denied', () => {
@@ -55,7 +83,13 @@ describe('the compound table', () => {
 
 describe('level 1: Stick them', () => {
   it('the authored round opens with the sunflower, then dog, cup, bee and sail', () => {
-    expect(makeRound(1, new Rng(1), true).asks.map((a) => a.entry.word)).toEqual(['sunflower', 'doghouse', 'cupcake', 'beehive', 'sailboat']);
+    expect(makeRound(1, new Rng(1), true).asks.map((a) => a.entry.word)).toEqual([
+      'sunflower',
+      'doghouse',
+      'cupcake',
+      'beehive',
+      'sailboat',
+    ]);
   });
 
   it('over 500 seeds: five distinct level-1 pairs, the sunflower first, and only its two parts on the table', () => {
@@ -87,9 +121,21 @@ describe('level 1: Stick them', () => {
 describe('level 2: What do they make?', () => {
   it('the authored round matches the definition', () => {
     const r = makeRound(2, new Rng(9), true);
-    expect(r.asks.map((a) => a.entry.word)).toEqual(['doghouse', 'raincoat', 'cupcake', 'mailbox', 'sunflower']);
+    expect(r.asks.map((a) => a.entry.word)).toEqual([
+      'doghouse',
+      'raincoat',
+      'cupcake',
+      'mailbox',
+      'sunflower',
+    ]);
     expect(r.asks[0].pictures).toEqual(['dog', 'house', 'moon']);
-    expect(r.asks.map((a) => a.pictures.find((p) => p !== a.entry.first && p !== a.entry.second))).toEqual(['moon', 'key', 'star', 'duck', 'jar']);
+    expect(r.asks.map((a) => a.pictures.find((p) => p !== a.entry.first && p !== a.entry.second))).toEqual([
+      'moon',
+      'key',
+      'star',
+      'duck',
+      'jar',
+    ]);
   });
 
   it('over 500 seeds: five distinct asks, and no pair on screen but the asked one forms a word in either order', () => {
@@ -123,7 +169,10 @@ describe('level 2: What do they make?', () => {
     applyHint(s);
     expect(s.misses).toBe(2);
     expect(s.hints).toBe(1);
-    expect(drop(s, 'moon', 'dog')).toEqual({ kind: 'assist', entry: COMPOUNDS.find((c) => c.word === 'doghouse') });
+    expect(drop(s, 'moon', 'dog')).toEqual({
+      kind: 'assist',
+      entry: COMPOUNDS.find((c) => c.word === 'doghouse'),
+    });
     expect(s.misses).toBe(2);
     expect(s.hints).toBe(1);
     expect(currentAsk(s)!.entry.word).toBe('raincoat');
@@ -276,11 +325,12 @@ describe('check', () => {
     for (const level of [1, 2, 3]) {
       const s = stateFor(level, 7);
       const ask = currentAsk(s)!;
-      for (const a of ask.pictures) for (const b of ask.pictures) {
-        const k = check(s, a, b);
-        if (a === b) expect(k).toBe('ignore');
-        if (k === 'right') expect(makes(a, b)).toBe(ask.entry);
-      }
+      for (const a of ask.pictures)
+        for (const b of ask.pictures) {
+          const k = check(s, a, b);
+          if (a === b) expect(k).toBe('ignore');
+          if (k === 'right') expect(makes(a, b)).toBe(ask.entry);
+        }
     }
   });
 });

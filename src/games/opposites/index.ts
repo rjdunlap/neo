@@ -12,7 +12,18 @@ import { spread, type View } from '../../engine/view';
 import { rangeFor } from '../../progress/difficulty';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { LEVELS, STICKER_CONCEPTS, cardToTap, makeRounds, opposites, planFor, word, type Card, type OppPlan, type OppRound } from './logic';
+import {
+  LEVELS,
+  STICKER_CONCEPTS,
+  cardToTap,
+  makeRounds,
+  opposites,
+  planFor,
+  word,
+  type Card,
+  type OppPlan,
+  type OppRound,
+} from './logic';
 
 /** A picture of one side of a concept, about 140 units square, centered on (0, 0). */
 export function picture(card: Card): Container {
@@ -24,7 +35,7 @@ export function picture(card: Card): Container {
       const bear = new Critter(CRITTERS[card.who ?? 'bear']);
       bear.alive = false;
       // Long bunny ears still fit inside the card at both sizes.
-      bear.scale.set(card.who === 'bunny' ? (side === 0 ? 0.38 : 0.17) : (side === 0 ? 0.48 : 0.22));
+      bear.scale.set(card.who === 'bunny' ? (side === 0 ? 0.38 : 0.17) : side === 0 ? 0.48 : 0.22);
       bear.y = 60;
       c.addChild(bear);
       return c;
@@ -40,8 +51,14 @@ export function picture(card: Card): Container {
     }
     case 'height': {
       const y = side === 0 ? -40 : 34;
-      g.moveTo(0, y + 30).quadraticCurveTo(10, y + 55, 0, side === 0 ? 60 : y + 40).stroke({ width: 3, color: ink, alpha: 0.6 });
-      g.ellipse(0, y, 26, 32).fill(swatch.red.fill).stroke({ width: 4, color: swatch.red.line }).ellipse(-8, y - 12, 6, 9).fill({ color: 0xffffff, alpha: 0.6 });
+      g.moveTo(0, y + 30)
+        .quadraticCurveTo(10, y + 55, 0, side === 0 ? 60 : y + 40)
+        .stroke({ width: 3, color: ink, alpha: 0.6 });
+      g.ellipse(0, y, 26, 32)
+        .fill(swatch.red.fill)
+        .stroke({ width: 4, color: swatch.red.line })
+        .ellipse(-8, y - 12, 6, 9)
+        .fill({ color: 0xffffff, alpha: 0.6 });
       g.rect(-60, 60, 120, 6).fill(swatch.green.fill);
       const a = side === 0 ? -1 : 1;
       g.poly([46, 0 + a * 20, 58, a * -4, 34, a * -4]).fill(swatch.blue.fill);
@@ -50,30 +67,65 @@ export function picture(card: Card): Container {
     }
     case 'lid':
       g.roundRect(-50, -10, 100, 64, 8).fill(wood.fill).stroke({ width: 4, color: wood.line });
-      if (side === 0) g.poly([-50, -10, -60, -64, 40, -74, 50, -20]).fill(wood.light).stroke({ width: 4, color: wood.line, join: 'round' }).ellipse(0, -10, 44, 8).fill(0x6b4a2b);
+      if (side === 0)
+        g.poly([-50, -10, -60, -64, 40, -74, 50, -20])
+          .fill(wood.light)
+          .stroke({ width: 4, color: wood.line, join: 'round' })
+          .ellipse(0, -10, 44, 8)
+          .fill(0x6b4a2b);
       else g.roundRect(-56, -26, 112, 22, 8).fill(wood.light).stroke({ width: 4, color: wood.line });
       break;
     case 'cup':
-      g.moveTo(-36, -50).lineTo(36, -50).lineTo(28, 56).lineTo(-28, 56).closePath().fill({ color: 0xdff3ff, alpha: 0.6 }).stroke({ width: 5, color: swatch.blue.line });
-      if (side === 0) g.moveTo(-33, -30).lineTo(33, -30).lineTo(28, 54).lineTo(-28, 54).closePath().fill(swatch.orange.fill);
+      g.moveTo(-36, -50)
+        .lineTo(36, -50)
+        .lineTo(28, 56)
+        .lineTo(-28, 56)
+        .closePath()
+        .fill({ color: 0xdff3ff, alpha: 0.6 })
+        .stroke({ width: 5, color: swatch.blue.line });
+      if (side === 0)
+        g.moveTo(-33, -30)
+          .lineTo(33, -30)
+          .lineTo(28, 54)
+          .lineTo(-28, 54)
+          .closePath()
+          .fill(swatch.orange.fill);
       break;
     case 'temp':
       if (side === 0) {
         g.roundRect(-36, -14, 64, 64, 12).fill(swatch.red.fill).stroke({ width: 4, color: swatch.red.line });
         g.moveTo(28, 0).bezierCurveTo(56, 0, 56, 34, 28, 34).stroke({ width: 8, color: swatch.red.line });
-        for (const x of [-20, -4, 12]) g.moveTo(x, -22).quadraticCurveTo(x + 10, -40, x, -58).stroke({ width: 5, color: 0xb9c6d1, cap: 'round' });
+        for (const x of [-20, -4, 12])
+          g.moveTo(x, -22)
+            .quadraticCurveTo(x + 10, -40, x, -58)
+            .stroke({ width: 5, color: 0xb9c6d1, cap: 'round' });
       } else {
-        g.roundRect(-40, -30, 80, 80, 14).fill({ color: swatch.blue.light, alpha: 0.9 }).stroke({ width: 5, color: swatch.blue.fill });
+        g.roundRect(-40, -30, 80, 80, 14)
+          .fill({ color: swatch.blue.light, alpha: 0.9 })
+          .stroke({ width: 5, color: swatch.blue.fill });
         g.moveTo(-24, -16).lineTo(-6, -16).stroke({ width: 5, color: 0xffffff, cap: 'round' });
-        for (const [x, y] of [[-50, -40], [48, -46], [52, 30]]) g.poly(starPoints(9, 3).map((n, i) => n + (i % 2 ? y : x))).fill(0xffffff).stroke({ width: 2, color: swatch.blue.fill });
+        for (const [x, y] of [
+          [-50, -40],
+          [48, -46],
+          [52, 30],
+        ])
+          g.poly(starPoints(9, 3).map((n, i) => n + (i % 2 ? y : x)))
+            .fill(0xffffff)
+            .stroke({ width: 2, color: swatch.blue.fill });
       }
       break;
     case 'sky':
       g.roundRect(-64, -64, 128, 128, 18).fill(side === 0 ? 0x8fd3f7 : 0x2b2f63);
-      if (side === 0) g.circle(20, -14, 26).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line });
+      if (side === 0)
+        g.circle(20, -14, 26).fill(swatch.yellow.fill).stroke({ width: 4, color: swatch.yellow.line });
       else {
         g.circle(18, -16, 24).fill(swatch.yellow.light).circle(30, -24, 20).fill(0x2b2f63);
-        for (const [x, y] of [[-36, -30], [-20, 24], [30, 34]]) g.poly(starPoints(8, 3).map((n, i) => n + (i % 2 ? y : x))).fill(swatch.yellow.fill);
+        for (const [x, y] of [
+          [-36, -30],
+          [-20, 24],
+          [30, 34],
+        ])
+          g.poly(starPoints(8, 3).map((n, i) => n + (i % 2 ? y : x))).fill(swatch.yellow.fill);
       }
       break;
     case 'stature': {
@@ -82,7 +134,7 @@ export function picture(card: Card): Container {
       g.moveTo(0, 58).lineTo(0, top).stroke({ width: 7, color: swatch.green.line });
       g.ellipse(-14, (top + 58) / 2, 16, 7).fill(swatch.green.fill);
       for (let i = 0; i < 6; i++) {
-        const angle = i * Math.PI / 3;
+        const angle = (i * Math.PI) / 3;
         g.circle(Math.cos(angle) * 15, top + Math.sin(angle) * 15, 12).fill(swatch.purple.fill);
       }
       g.circle(0, top, 10).fill(swatch.yellow.fill);
@@ -91,10 +143,18 @@ export function picture(card: Card): Container {
     case 'lamp':
       g.moveTo(0, 0).lineTo(0, 52).stroke({ width: 8, color: wood.line });
       g.roundRect(-34, 48, 68, 12, 6).fill(wood.fill).stroke({ width: 3, color: wood.line });
-      g.poly([-28, -46, 28, -46, 46, 4, -46, 4]).fill(side === 0 ? swatch.yellow.light : swatch.blue.light).stroke({ width: 4, color: swatch.blue.line, join: 'round' });
+      g.poly([-28, -46, 28, -46, 46, 4, -46, 4])
+        .fill(side === 0 ? swatch.yellow.light : swatch.blue.light)
+        .stroke({ width: 4, color: swatch.blue.line, join: 'round' });
       if (side === 0) {
-        for (const [x, y] of [[-58, -34], [58, -34], [0, -66]])
-          g.moveTo(x, y).lineTo(x * 1.2, y - 10).stroke({ width: 5, color: swatch.yellow.line, cap: 'round' });
+        for (const [x, y] of [
+          [-58, -34],
+          [58, -34],
+          [0, -66],
+        ])
+          g.moveTo(x, y)
+            .lineTo(x * 1.2, y - 10)
+            .stroke({ width: 5, color: swatch.yellow.line, cap: 'round' });
         g.circle(0, 9, 8).fill(swatch.yellow.fill);
       }
       break;
@@ -107,38 +167,95 @@ export function picture(card: Card): Container {
       c.addChild(cat);
       if (side === 1) {
         // Code-drawn sleep marks; the closed eyes carry the answer without reading.
-        for (const [x, y, r] of [[30, -48, 9], [48, -66, 7]])
-          g.moveTo(x - r, y - r).lineTo(x + r, y - r).lineTo(x - r, y + r).lineTo(x + r, y + r).stroke({ width: 3, color: swatch.blue.line, cap: 'round', join: 'round' });
+        for (const [x, y, r] of [
+          [30, -48, 9],
+          [48, -66, 7],
+        ])
+          g.moveTo(x - r, y - r)
+            .lineTo(x + r, y - r)
+            .lineTo(x - r, y + r)
+            .lineTo(x + r, y + r)
+            .stroke({ width: 3, color: swatch.blue.line, cap: 'round', join: 'round' });
       }
       break;
     }
     case 'basket':
       // The same basket and ball in each picture: only the ball's position changes.
       g.ellipse(-20, 0, 32, 12).fill(wood.line);
-      g.circle(side === 0 ? -20 : 52, side === 0 ? 0 : 39, 18).fill(swatch.red.fill).stroke({ width: 3, color: swatch.red.line });
-      g.poly([-54, 0, 14, 0, 6, 60, -46, 60]).fill(wood.fill).stroke({ width: 4, color: wood.line, join: 'round' });
+      g.circle(side === 0 ? -20 : 52, side === 0 ? 0 : 39, 18)
+        .fill(swatch.red.fill)
+        .stroke({ width: 3, color: swatch.red.line });
+      g.poly([-54, 0, 14, 0, 6, 60, -46, 60])
+        .fill(wood.fill)
+        .stroke({ width: 4, color: wood.line, join: 'round' });
       for (const y of [16, 32, 48]) g.moveTo(-48, y).lineTo(8, y).stroke({ width: 3, color: wood.line });
       for (const x of [-34, -18, -2]) g.moveTo(x, 5).lineTo(x, 57).stroke({ width: 3, color: wood.line });
       g.moveTo(-52, 0).quadraticCurveTo(-20, 13, 12, 0).stroke({ width: 4, color: wood.light });
       break;
     case 'sponge': {
       // The same sponge: wet is blue and dripping, dry is pale and crumbly.
-      g.roundRect(-52, -30, 104, 62, 14).fill(side === 0 ? swatch.blue.light : swatch.yellow.light).stroke({ width: 5, color: side === 0 ? swatch.blue.fill : swatch.yellow.line });
-      for (const [x, y] of [[-30, -10], [-6, 8], [20, -12], [32, 14], [-24, 16]]) g.circle(x, y, 6).fill({ color: side === 0 ? swatch.blue.fill : swatch.yellow.line, alpha: 0.5 });
-      if (side === 0) for (const [x, y] of [[-28, 50], [4, 58], [34, 48]]) g.moveTo(x, y - 14).quadraticCurveTo(x - 9, y + 4, x, y + 8).quadraticCurveTo(x + 9, y + 4, x, y - 14).fill(swatch.blue.fill);
-      else for (const x of [-30, 0, 30]) g.moveTo(x - 6, 52).lineTo(x + 6, 52).stroke({ width: 3, color: swatch.yellow.line, alpha: 0.5, cap: 'round' });
+      g.roundRect(-52, -30, 104, 62, 14)
+        .fill(side === 0 ? swatch.blue.light : swatch.yellow.light)
+        .stroke({ width: 5, color: side === 0 ? swatch.blue.fill : swatch.yellow.line });
+      for (const [x, y] of [
+        [-30, -10],
+        [-6, 8],
+        [20, -12],
+        [32, 14],
+        [-24, 16],
+      ])
+        g.circle(x, y, 6).fill({ color: side === 0 ? swatch.blue.fill : swatch.yellow.line, alpha: 0.5 });
+      if (side === 0)
+        for (const [x, y] of [
+          [-28, 50],
+          [4, 58],
+          [34, 48],
+        ])
+          g.moveTo(x, y - 14)
+            .quadraticCurveTo(x - 9, y + 4, x, y + 8)
+            .quadraticCurveTo(x + 9, y + 4, x, y - 14)
+            .fill(swatch.blue.fill);
+      else
+        for (const x of [-30, 0, 30])
+          g.moveTo(x - 6, 52)
+            .lineTo(x + 6, 52)
+            .stroke({ width: 3, color: swatch.yellow.line, alpha: 0.5, cap: 'round' });
       break;
     }
     case 'plate':
-      g.circle(0, 4, 56).fill(0xffffff).stroke({ width: 5, color: swatch.blue.line }).circle(0, 4, 36).stroke({ width: 3, color: swatch.blue.light });
-      if (side === 0) for (const [x, y, r] of [[-30, -34, 5], [34, -26, 7], [38, 26, 5]]) g.poly(starPoints(r * 2, r * 0.8).map((n, i) => n + (i % 2 ? y : x))).fill(swatch.yellow.fill);
-      else for (const [x, y, r] of [[-18, -8, 14], [14, 14, 18], [20, -20, 9], [-10, 28, 8]]) g.circle(x, y, r).fill(wood.line).circle(x + r * 0.3, y - r * 0.3, r * 0.3).fill(wood.fill);
+      g.circle(0, 4, 56)
+        .fill(0xffffff)
+        .stroke({ width: 5, color: swatch.blue.line })
+        .circle(0, 4, 36)
+        .stroke({ width: 3, color: swatch.blue.light });
+      if (side === 0)
+        for (const [x, y, r] of [
+          [-30, -34, 5],
+          [34, -26, 7],
+          [38, 26, 5],
+        ])
+          g.poly(starPoints(r * 2, r * 0.8).map((n, i) => n + (i % 2 ? y : x))).fill(swatch.yellow.fill);
+      else
+        for (const [x, y, r] of [
+          [-18, -8, 14],
+          [14, 14, 18],
+          [20, -20, 9],
+          [-10, 28, 8],
+        ])
+          g.circle(x, y, r)
+            .fill(wood.line)
+            .circle(x + r * 0.3, y - r * 0.3, r * 0.3)
+            .fill(wood.fill);
       break;
     case 'book': {
       // The same book on its side: only the thickness of its pages changes.
       const h = side === 0 ? 78 : 22;
-      g.roundRect(-58, 30 - h, 116, h, 6).fill(swatch.purple.fill).stroke({ width: 4, color: swatch.purple.line });
-      g.rect(-52, 34 - h, 104, Math.max(6, h - 10)).fill(0xffffff).stroke({ width: 2, color: swatch.purple.line });
+      g.roundRect(-58, 30 - h, 116, h, 6)
+        .fill(swatch.purple.fill)
+        .stroke({ width: 4, color: swatch.purple.line });
+      g.rect(-52, 34 - h, 104, Math.max(6, h - 10))
+        .fill(0xffffff)
+        .stroke({ width: 2, color: swatch.purple.line });
       g.rect(-64, 30, 128, 6).fill(swatch.green.fill);
       break;
     }
@@ -146,7 +263,9 @@ export function picture(card: Card): Container {
       // The house stays put; the ball sits close to its door or far along the path.
       g.rect(-60, 60, 120, 6).fill(swatch.green.fill);
       g.rect(-60, -12, 40, 50).fill(swatch.orange.light).stroke({ width: 4, color: swatch.orange.line });
-      g.poly([-66, -12, -40, -40, -14, -12]).fill(swatch.red.fill).stroke({ width: 4, color: swatch.red.line, join: 'round' });
+      g.poly([-66, -12, -40, -40, -14, -12])
+        .fill(swatch.red.fill)
+        .stroke({ width: 4, color: swatch.red.line, join: 'round' });
       g.rect(-46, 12, 12, 26).fill(wood.fill);
       const x = side === 0 ? -4 : 50;
       g.circle(x, 42, 14).fill(swatch.blue.fill).stroke({ width: 3, color: swatch.blue.line });
@@ -160,12 +279,22 @@ export function picture(card: Card): Container {
         bunny.scale.set(0.34);
         bunny.position.set(10, 56);
         c.addChild(bunny);
-        for (const y of [-10, 10, 30]) g.moveTo(-70, y).lineTo(-36, y).stroke({ width: 5, color: swatch.blue.fill, cap: 'round' });
+        for (const y of [-10, 10, 30])
+          g.moveTo(-70, y).lineTo(-36, y).stroke({ width: 5, color: swatch.blue.fill, cap: 'round' });
       } else {
         g.ellipse(0, 36, 46, 12).fill(swatch.green.light).stroke({ width: 4, color: swatch.green.line });
         g.circle(4, 8, 30).fill(swatch.orange.light).stroke({ width: 4, color: swatch.orange.line });
-        g.moveTo(4, 8).arc(4, 8, 14, 0, Math.PI * 1.5).stroke({ width: 4, color: swatch.orange.line });
-        g.moveTo(-40, 30).lineTo(-52, 0).moveTo(-42, 30).lineTo(-36, 0).stroke({ width: 3, color: swatch.green.line }).circle(-52, 0, 4).circle(-36, 0, 4).fill(ink);
+        g.moveTo(4, 8)
+          .arc(4, 8, 14, 0, Math.PI * 1.5)
+          .stroke({ width: 4, color: swatch.orange.line });
+        g.moveTo(-40, 30)
+          .lineTo(-52, 0)
+          .moveTo(-42, 30)
+          .lineTo(-36, 0)
+          .stroke({ width: 3, color: swatch.green.line })
+          .circle(-52, 0, 4)
+          .circle(-36, 0, 4)
+          .fill(ink);
       }
       break;
   }
@@ -203,7 +332,17 @@ class Opposites implements Game {
     this.view = ctx.view;
     this.plan = planFor(ctx.level);
     this.rounds = makeRounds(this.plan, ctx.rng);
-    this.backdrop = new Backdrop({ sky: [0xffe9b8, 0xfff8ec], hills: [0xc8ecb0, 0xa6de8e], horizon: 0.75, clouds: 2, sun: false, seed: 17 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0xffe9b8, 0xfff8ec],
+        hills: [0xc8ecb0, 0xa6de8e],
+        horizon: 0.75,
+        clouds: 2,
+        sun: false,
+        seed: 17,
+      },
+      ctx.view,
+    );
     this.glow.eventMode = 'none';
     this.shown.eventMode = 'none';
     ctx.stage.addChild(this.backdrop, this.shown, this.glow);
@@ -225,7 +364,9 @@ class Opposites implements Game {
     else if (mode === 'spot') {
       const top = spread(3, 200, v.w - 80, 230);
       const low = spread(2, 200, v.w - 80, 230);
-      this.cards.forEach((c, i) => c.node.position.set(i < 3 ? top[i] : low[i - 3], i < 3 ? v.h * 0.36 : v.h * 0.72));
+      this.cards.forEach((c, i) =>
+        c.node.position.set(i < 3 ? top[i] : low[i - 3], i < 3 ? v.h * 0.36 : v.h * 0.72),
+      );
     } else if (mode === 'pairs') {
       const xs = spread(3, 200, v.w - 80, 230);
       this.cards.forEach((c, i) => c.node.position.set(xs[i % 3], i < 3 ? v.h * 0.36 : v.h * 0.72));
@@ -239,14 +380,23 @@ class Opposites implements Game {
   update(dt: number) {
     this.clock += dt;
     const g = this.glow.clear();
-    if (this.glowing && !this.busy) g.roundRect(this.glowing.node.x - 100, this.glowing.node.y - 100, 200, 200, 36).stroke({ width: 7 + 2 * Math.sin(this.clock * 5), color: swatch.yellow.fill });
+    if (this.glowing && !this.busy)
+      g.roundRect(this.glowing.node.x - 100, this.glowing.node.y - 100, 200, 200, 36).stroke({
+        width: 7 + 2 * Math.sin(this.clock * 5),
+        color: swatch.yellow.fill,
+      });
   }
 
   /** The ghost finger on the how-to card: tap the picture (it flips), the one named, the opposite, or each pair in turn. */
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.round) return null;
     const picked = this.picked ? this.cards.indexOf(this.picked) : null;
-    const i = cardToTap(this.plan, this.round, this.cards.map((c) => c.done), picked);
+    const i = cardToTap(
+      this.plan,
+      this.round,
+      this.cards.map((c) => c.done),
+      picked,
+    );
     return i === null ? null : { tap: { on: this.cards[i].node } };
   }
 
@@ -266,7 +416,11 @@ class Opposites implements Game {
   }
 
   private drawCard(c: CardView, on: boolean) {
-    c.bg.clear().roundRect(-85, -85, 170, 170, 30).fill(on ? swatch.yellow.light : 0xffffff).stroke({ width: 6, color: on ? swatch.yellow.line : wood.line });
+    c.bg
+      .clear()
+      .roundRect(-85, -85, 170, 170, 30)
+      .fill(on ? swatch.yellow.light : 0xffffff)
+      .stroke({ width: 6, color: on ? swatch.yellow.line : wood.line });
   }
 
   private async next() {
@@ -281,7 +435,10 @@ class Opposites implements Game {
     const r = this.round;
     for (const card of r.cards) this.cards.push(this.makeCard(card, this.plan.mode === 'switch' ? 1.7 : 1));
     if (this.plan.mode === 'opposite') {
-      const bubble = new Graphics().roundRect(-95, -95, 190, 190, 40).fill(0xffffff).stroke({ width: 6, color: swatch.purple.line });
+      const bubble = new Graphics()
+        .roundRect(-95, -95, 190, 190, 40)
+        .fill(0xffffff)
+        .stroke({ width: 6, color: swatch.purple.line });
       this.shown.addChild(bubble, picture(r.ask!));
     }
     this.resize(this.view);
@@ -293,7 +450,10 @@ class Opposites implements Game {
     await this.ctx.tw.wait(0.35);
     this.busy = false;
     const mode = this.plan.mode;
-    if (mode === 'switch') return this.index === 0 ? this.ctx.instruct('opp.switch') : this.ctx.say('opp.word', { word: word(r.cards[0]) });
+    if (mode === 'switch')
+      return this.index === 0
+        ? this.ctx.instruct('opp.switch')
+        : this.ctx.say('opp.word', { word: word(r.cards[0]) });
     if (mode === 'find') return this.ctx.instruct('opp.find', { word: word(r.ask!) });
     if (mode === 'opposite') return this.ctx.instruct('opp.opposite', { word: word(r.ask!) });
     return this.ctx.instruct(mode === 'spot' ? 'opp.spot' : 'opp.pairs');
@@ -315,7 +475,11 @@ class Opposites implements Game {
     if (concept === 'size') {
       // Heavy stomps versus little tiptoes, both returning to the same resting pose.
       for (let step = 0; step < 2; step++) {
-        await this.ctx.tw.to(pic, { y: side === 0 ? -9 : -4, rotation: side === 0 ? 0 : 0.04 }, { duration: side === 0 ? 0.18 : 0.12 });
+        await this.ctx.tw.to(
+          pic,
+          { y: side === 0 ? -9 : -4, rotation: side === 0 ? 0 : 0.04 },
+          { duration: side === 0 ? 0.18 : 0.12 },
+        );
         await this.ctx.tw.to(pic, { y: 0, rotation: 0 }, { duration: side === 0 ? 0.12 : 0.18 });
       }
     } else if (concept === 'speed') {
@@ -341,8 +505,14 @@ class Opposites implements Game {
       return void this.next();
     }
     const r = this.round;
-    if (mode === 'find') return void (word(c.card) === word(r.ask!) ? this.right([c]) : this.wrong('opp.notfind', { what: word(c.card), word: word(r.ask!) }));
-    if (mode === 'opposite') return void (opposites(c.card, r.ask!) ? this.right([c]) : this.wrong('opp.notopp', { what: word(c.card), word: word(r.ask!) }));
+    if (mode === 'find')
+      return void (word(c.card) === word(r.ask!)
+        ? this.right([c])
+        : this.wrong('opp.notfind', { what: word(c.card), word: word(r.ask!) }));
+    if (mode === 'opposite')
+      return void (opposites(c.card, r.ask!)
+        ? this.right([c])
+        : this.wrong('opp.notopp', { what: word(c.card), word: word(r.ask!) }));
     // Pairs: the first tap picks, the second checks.
     if (!this.picked) {
       this.picked = c;
@@ -377,7 +547,14 @@ class Opposites implements Game {
     if (this.wrongs >= 2 && !this.glowing) {
       this.hints++;
       const r = this.round;
-      this.glowing = this.plan.mode === 'find' ? this.cards.find((x) => word(x.card) === word(r.ask!))! : this.plan.mode === 'opposite' ? this.cards.find((x) => opposites(x.card, r.ask!))! : this.plan.mode === 'spot' ? this.cards.find((x) => this.cards.some((o) => o !== x && opposites(o.card, x.card)))! : this.cards.find((x) => !x.done)!;
+      this.glowing =
+        this.plan.mode === 'find'
+          ? this.cards.find((x) => word(x.card) === word(r.ask!))!
+          : this.plan.mode === 'opposite'
+            ? this.cards.find((x) => opposites(x.card, r.ask!))!
+            : this.plan.mode === 'spot'
+              ? this.cards.find((x) => this.cards.some((o) => o !== x && opposites(o.card, x.card)))!
+              : this.cards.find((x) => !x.done)!;
     }
   }
 

@@ -63,18 +63,27 @@ export class StickerPicker extends Container {
       const inRow = Math.min(COLS, shown.length - row * COLS);
       node.position.set(width / 2 + ((i % COLS) - (inRow - 1) / 2) * 160, 100 + row * 150);
       const here = this.current?.game === record.game && this.current.seed === record.seed;
-      if (here) node.addChild(new Graphics().circle(0, 0, RADIUS + 10).stroke({ width: 7, color: swatch.green.fill }));
+      if (here)
+        node.addChild(
+          new Graphics().circle(0, 0, RADIUS + 10).stroke({ width: 7, color: swatch.green.fill }),
+        );
       onTap(node, () => this.onPick(record), { radius: RADIUS + 6, cooldown: 400 });
       panel.addChild(node);
     });
     const close = new RoundButton(checkIcon(), swatch.green, 46, this.onClose);
     close.position.set(width / 2, bottom);
-    const empty = new RoundButton(crossIcon(), swatch.white, 40, () => { if (this.current) this.onPick(null); });
+    const empty = new RoundButton(crossIcon(), swatch.white, 40, () => {
+      if (this.current) this.onPick(null);
+    });
     empty.position.set(width / 2 - 130, bottom);
     empty.alpha = this.current ? 1 : 0.35;
     panel.addChild(close, empty);
     if (pages > 1) {
-      const turn = (dir: number) => { this.page = (this.page + dir + pages) % pages; sfx.whoosh(); this.layout(view); };
+      const turn = (dir: number) => {
+        this.page = (this.page + dir + pages) % pages;
+        sfx.whoosh();
+        this.layout(view);
+      };
       const prev = new RoundButton(arrowIcon(-1), swatch.purple, 40, () => turn(-1));
       const next = new RoundButton(arrowIcon(1), swatch.purple, 40, () => turn(1));
       prev.position.set(40, height / 2 - 20);

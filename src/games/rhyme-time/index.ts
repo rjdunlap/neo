@@ -13,7 +13,30 @@ import { rangeFor } from '../../progress/difficulty';
 import { RoundButton } from '../../ui/buttons';
 import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { LEVELS, andList, basketFor, chipsFor, FAMILIES, familySong, guessFor, makeQuestions, makeRiddles, makeTap, makeTrays, planFor, rhymes, sceneFor, spokenList, TAGS, wordToTap, type Riddle, type RhymePlan, type RhymeQuestion, type Tag, type Tray } from './logic';
+import {
+  LEVELS,
+  andList,
+  basketFor,
+  chipsFor,
+  FAMILIES,
+  familySong,
+  guessFor,
+  makeQuestions,
+  makeRiddles,
+  makeTap,
+  makeTrays,
+  planFor,
+  rhymes,
+  sceneFor,
+  spokenList,
+  TAGS,
+  wordToTap,
+  type Riddle,
+  type RhymePlan,
+  type RhymeQuestion,
+  type Tag,
+  type Tray,
+} from './logic';
 import { picture, tagGlyph } from './pictures';
 
 /** Level 8's place is drawn this much larger than a card picture, its rider this much smaller inside it. */
@@ -69,10 +92,14 @@ const BASKET_MID = 20;
 function basketArt(key: string): Container {
   const g = new Graphics();
   g.arc(0, -10, 80, Math.PI, 2 * Math.PI).stroke({ width: 12, color: wood.line, cap: 'round' });
-  g.poly([-100, -10, 100, -10, 82, 112, -82, 112]).fill(wood.fill).stroke({ width: 6, color: wood.line, join: 'round' });
+  g.poly([-100, -10, 100, -10, 82, 112, -82, 112])
+    .fill(wood.fill)
+    .stroke({ width: 6, color: wood.line, join: 'round' });
   for (let y = 26; y < 112; y += 28) {
     const inset = ((y + 10) * 18) / 122;
-    g.moveTo(-100 + inset, y).lineTo(100 - inset, y).stroke({ width: 3, color: wood.line, alpha: 0.45 });
+    g.moveTo(-100 + inset, y)
+      .lineTo(100 - inset, y)
+      .stroke({ width: 3, color: wood.line, alpha: 0.45 });
   }
   g.roundRect(-110, -24, 220, 26, 13).fill(wood.light).stroke({ width: 6, color: wood.line });
   g.circle(0, 56, 50).fill(0xffffff).stroke({ width: 5, color: swatch.pink.line });
@@ -131,10 +158,25 @@ class RhymeTime implements Game {
     this.questions = riddle || baskets ? [] : makeQuestions(this.plan, ctx.rng);
     this.riddles = riddle ? makeRiddles(this.plan, ctx.rng) : null;
     this.trays = baskets ? makeTrays(this.plan, ctx.rng) : null;
-    this.backdrop = new Backdrop({ sky: [0xffd6e6, 0xfff4e3], hills: [0xc8ecb0, 0xa6de8e], horizon: 0.72, clouds: 2, sun: true, seed: 14 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0xffd6e6, 0xfff4e3],
+        hills: [0xc8ecb0, 0xa6de8e],
+        horizon: 0.72,
+        clouds: 2,
+        sun: true,
+        seed: 14,
+      },
+      ctx.view,
+    );
     this.glow.eventMode = 'none';
     this.prompt.eventMode = 'none';
-    this.replay = new RoundButton(musicNote(new Graphics(), 40, ink), swatch.white, 52, () => void this.ask());
+    this.replay = new RoundButton(
+      musicNote(new Graphics(), 40, ink),
+      swatch.white,
+      52,
+      () => void this.ask(),
+    );
     ctx.stage.addChild(this.backdrop, this.prompt, this.glow, this.replay);
   }
 
@@ -167,24 +209,39 @@ class RhymeTime implements Game {
     const cx = spread(row.length, 240, v.w - 50, 165);
     row.forEach((n, i) => n.position.set(cx[i], Math.min(v.h - 90, v.h * 0.42 + 250)));
     // Level 8's place stands just above the riders, its top clear of the corner buttons.
-    this.prompt.position.set(v.w / 2, this.plan.mode === 'scene' ? Math.max(250, v.h * 0.64 - 230) : Math.max(170, v.h * 0.27));
+    this.prompt.position.set(
+      v.w / 2,
+      this.plan.mode === 'scene' ? Math.max(250, v.h * 0.64 - 230) : Math.max(170, v.h * 0.27),
+    );
     this.replay.position.set(v.w - 80, 90);
   }
 
   update(dt: number) {
     this.clock += dt;
     const g = this.glow.clear();
-    if (this.glowing && !this.busy) g.roundRect(this.glowing.node.x - 92, this.glowing.node.y - 92, 184, 184, 34).stroke({ width: 7 + 2 * Math.sin(this.clock * 5), color: swatch.yellow.fill });
+    if (this.glowing && !this.busy)
+      g.roundRect(this.glowing.node.x - 92, this.glowing.node.y - 92, 184, 184, 34).stroke({
+        width: 7 + 2 * Math.sin(this.clock * 5),
+        color: swatch.yellow.fill,
+      });
     const r = this.riddle;
     if (this.chipGlow && r && !this.busy) {
-      for (const c of this.chips.filter((c) => c.sound === r.clueWord || c.tag === r.tag)) g.roundRect(c.node.x - 74, c.node.y - 74, 148, 148, 30).stroke({ width: 7 + 2 * Math.sin(this.clock * 5), color: swatch.yellow.fill });
+      for (const c of this.chips.filter((c) => c.sound === r.clueWord || c.tag === r.tag))
+        g.roundRect(c.node.x - 74, c.node.y - 74, 148, 148, 30).stroke({
+          width: 7 + 2 * Math.sin(this.clock * 5),
+          color: swatch.yellow.fill,
+        });
     }
     const bg = this.basketGlow;
     if (bg && !this.busy) {
       const { node: b } = bg.basket;
       const w = 7 + 2 * Math.sin(this.clock * 5);
       g.roundRect(b.x - 122, b.y - 104, 244, 230, 36).stroke({ width: w, color: swatch.yellow.fill });
-      if (!bg.card.drag?.dragging) g.roundRect(bg.card.node.x - 92, bg.card.node.y - 92, 184, 184, 34).stroke({ width: w, color: swatch.yellow.fill });
+      if (!bg.card.drag?.dragging)
+        g.roundRect(bg.card.node.x - 92, bg.card.node.y - 92, 184, 184, 34).stroke({
+          width: w,
+          color: swatch.yellow.fill,
+        });
     }
   }
 
@@ -230,7 +287,8 @@ class RhymeTime implements Game {
     this.chipGlow = false;
     this.basketGlow = null;
     this.basketMisses.clear();
-    if (this.index >= (this.trays?.length ?? (this.riddles ?? this.questions).length)) return void this.finale();
+    if (this.index >= (this.trays?.length ?? (this.riddles ?? this.questions).length))
+      return void this.finale();
     for (const b of this.baskets.splice(0)) {
       this.ctx.tw.kill(b.node.scale);
       b.node.destroy({ children: true });
@@ -257,7 +315,10 @@ class RhymeTime implements Game {
     const words = tray?.words ?? this.riddle?.words ?? q.words;
     if (q?.prompt && this.plan.mode === 'scene') this.drawPlace(q.prompt);
     else if (q?.prompt) {
-      const bubble = new Graphics().roundRect(-95, -95, 190, 190, 40).fill(0xffffff).stroke({ width: 6, color: swatch.pink.line });
+      const bubble = new Graphics()
+        .roundRect(-95, -95, 190, 190, 40)
+        .fill(0xffffff)
+        .stroke({ width: 6, color: swatch.pink.line });
       const art = picture(q.prompt);
       this.prompt.addChild(bubble, art);
     }
@@ -269,11 +330,18 @@ class RhymeTime implements Game {
       const card: Card = { word, node, bg };
       this.drawCard(card, false);
       if (tray) {
-        card.drag = draggable(node, this.ctx.tw, { onPick: () => this.pickUp(card), onDrop: (x, y) => this.dropOn(card, x, y) });
+        card.drag = draggable(node, this.ctx.tw, {
+          onPick: () => this.pickUp(card),
+          onDrop: (x, y) => this.dropOn(card, x, y),
+        });
         card.drag.enabled = false;
       } else onTap(node, () => void this.tap(card), { cooldown: 350 });
       node.scale.set(0);
-      void this.ctx.tw.to(node.scale, { x: 1, y: 1 }, { duration: 0.3, delay: this.cards.length * 0.07, ease: ease.outBack });
+      void this.ctx.tw.to(
+        node.scale,
+        { x: 1, y: 1 },
+        { duration: 0.3, delay: this.cards.length * 0.07, ease: ease.outBack },
+      );
       this.cards.push(card);
       this.ctx.stage.addChild(node);
     }
@@ -303,15 +371,25 @@ class RhymeTime implements Game {
     const q = this.q;
     if (!q || this.finished) return;
     const list = q.words.join(', ');
-    if (this.plan.mode === 'scene' && this.plan.choices === 2) return this.ctx.instruct('rhyme.scene2', { place: q.prompt!, list: spokenList(q.words) });
-    if (this.plan.mode === 'scene') return this.ctx.instruct('rhyme.scene', { place: q.prompt!, prep: sceneFor(q.prompt!).prep, list: spokenList(q.words) });
+    if (this.plan.mode === 'scene' && this.plan.choices === 2)
+      return this.ctx.instruct('rhyme.scene2', { place: q.prompt!, list: spokenList(q.words) });
+    if (this.plan.mode === 'scene')
+      return this.ctx.instruct('rhyme.scene', {
+        place: q.prompt!,
+        prep: sceneFor(q.prompt!).prep,
+        list: spokenList(q.words),
+      });
     if (this.plan.mode === 'match') return this.ctx.instruct('rhyme.match', { prompt: q.prompt!, list });
     if (this.plan.mode === 'pair') return this.ctx.instruct('rhyme.pair', { list });
     return this.ctx.instruct('rhyme.odd', { list });
   }
 
   private drawCard(c: Card, selected: boolean) {
-    c.bg.clear().roundRect(-80, -80, 160, 160, 28).fill(selected ? swatch.yellow.light : 0xffffff).stroke({ width: 6, color: selected ? swatch.yellow.line : wood.line });
+    c.bg
+      .clear()
+      .roundRect(-80, -80, 160, 160, 28)
+      .fill(selected ? swatch.yellow.light : 0xffffff)
+      .stroke({ width: 6, color: selected ? swatch.yellow.line : wood.line });
   }
 
   private async tap(c: Card) {
@@ -337,14 +415,19 @@ class RhymeTime implements Game {
       if (rhymes(a.word, c.word)) return void this.right(a, c);
       return void this.wrong('rhyme.nopair', { a: a.word, b: c.word });
     }
-    if (this.plan.mode === 'scene') return void (q.answer.includes(c.word) ? this.rightScene(c) : this.wrongScene(c));
+    if (this.plan.mode === 'scene')
+      return void (q.answer.includes(c.word) ? this.rightScene(c) : this.wrongScene(c));
     if (q.answer.includes(c.word)) return void this.right(c, null);
     if (this.plan.mode === 'match') return void this.wrong('rhyme.no', { word: c.word, prompt: q.prompt! });
     const other = this.cards.find((x) => x !== c && rhymes(x.word, c.word))!;
     return void this.wrong('rhyme.noodd', { word: c.word, other: other.word });
   }
 
-  private async wrong(line: 'rhyme.no' | 'rhyme.nopair' | 'rhyme.noodd' | 'rhyme.sceneNo', vars: Record<string, string>, after?: () => Promise<void>) {
+  private async wrong(
+    line: 'rhyme.no' | 'rhyme.nopair' | 'rhyme.noodd' | 'rhyme.sceneNo',
+    vars: Record<string, string>,
+    after?: () => Promise<void>,
+  ) {
     this.busy = true;
     this.misses++;
     this.wrongs++;
@@ -366,7 +449,9 @@ class RhymeTime implements Game {
     this.ctx.pet.cheer();
     for (const c of [a, b].filter(Boolean) as Card[]) {
       this.drawCard(c, true);
-      void this.ctx.tw.to(c.node, { y: c.node.y - 30 }, { duration: 0.18, ease: ease.outQuad }).then(() => this.ctx.tw.to(c.node, { y: c.node.y + 30 }, { duration: 0.2, ease: ease.inQuad }));
+      void this.ctx.tw
+        .to(c.node, { y: c.node.y - 30 }, { duration: 0.18, ease: ease.outQuad })
+        .then(() => this.ctx.tw.to(c.node, { y: c.node.y + 30 }, { duration: 0.2, ease: ease.inQuad }));
     }
     const q = this.q;
     if (this.plan.mode === 'match') await this.ctx.say('rhyme.yes', { a: q.prompt!, b: a.word });
@@ -405,8 +490,16 @@ class RhymeTime implements Game {
     const to = this.anchorPoint(place);
     sfx.pop(7);
     void tw.to(c.bg, { alpha: 0 }, { duration: 0.2 });
-    void tw.to(c.node.scale, { x: PLACE_SCALE * RIDER_SCALE, y: PLACE_SCALE * RIDER_SCALE }, { duration: 0.4 });
-    await tw.to(c.node, { x: (c.node.x + to.x) / 2, y: Math.min(c.node.y, to.y) - 90 }, { duration: 0.2, ease: ease.outQuad });
+    void tw.to(
+      c.node.scale,
+      { x: PLACE_SCALE * RIDER_SCALE, y: PLACE_SCALE * RIDER_SCALE },
+      { duration: 0.4 },
+    );
+    await tw.to(
+      c.node,
+      { x: (c.node.x + to.x) / 2, y: Math.min(c.node.y, to.y) - 90 },
+      { duration: 0.2, ease: ease.outQuad },
+    );
     await tw.to(c.node, { x: to.x, y: to.y }, { duration: 0.2, ease: ease.inQuad });
   }
 
@@ -422,7 +515,11 @@ class RhymeTime implements Game {
       const home = { x: xs[this.cards.indexOf(c)], y: this.view.h * 0.64 };
       void tw.to(c.bg, { alpha: 1 }, { duration: 0.3 });
       void tw.to(c.node.scale, { x: 1, y: 1 }, { duration: 0.4 });
-      await tw.to(c.node, { x: (c.node.x + home.x) / 2, y: c.node.y - 70 }, { duration: 0.2, ease: ease.outQuad });
+      await tw.to(
+        c.node,
+        { x: (c.node.x + home.x) / 2, y: c.node.y - 70 },
+        { duration: 0.2, ease: ease.outQuad },
+      );
       await tw.to(c.node, home, { duration: 0.22, ease: ease.inQuad });
     });
   }
@@ -471,11 +568,15 @@ class RhymeTime implements Game {
       const node = basketArt(key);
       node.hitArea = new Rectangle(-112, -100, 224, 220);
       const b: Basket = { key, node, filled: 0 };
-      onTap(node, () => {
-        if (this.finished) return;
-        sfx.pop(4);
-        void this.ctx.say('rhyme.word', { word: key });
-      }, { cooldown: 350 });
+      onTap(
+        node,
+        () => {
+          if (this.finished) return;
+          sfx.pop(4);
+          void this.ctx.say('rhyme.word', { word: key });
+        },
+        { cooldown: 350 },
+      );
       this.baskets.push(b);
       this.ctx.stage.addChild(node);
     }
@@ -490,7 +591,8 @@ class RhymeTime implements Game {
     const row1 = Math.max(by + 250, v.h * 0.6);
     const row2 = Math.min(v.h - 90, row1 + 185);
     this.cards.forEach((c, i) => {
-      if (c.placed !== undefined) return void c.node.position.copyFrom(this.slotPoint(this.baskets[c.placed], c.slot!));
+      if (c.placed !== undefined)
+        return void c.node.position.copyFrom(this.slotPoint(this.baskets[c.placed], c.slot!));
       const home = { x: tx[i % 3], y: i < 3 ? row1 : row2 };
       if (c.drag) c.drag.home = home;
       if (!c.drag?.dragging) c.node.position.set(home.x, home.y);
@@ -555,7 +657,10 @@ class RhymeTime implements Game {
     sfx.boing();
     const { tw } = this.ctx;
     const x = b.node.x;
-    void tw.to(b.node, { x: x - 12 }, { duration: 0.07 }).then(() => tw.to(b.node, { x: x + 12 }, { duration: 0.1 })).then(() => tw.to(b.node, { x }, { duration: 0.2, ease: ease.outElastic }));
+    void tw
+      .to(b.node, { x: x - 12 }, { duration: 0.07 })
+      .then(() => tw.to(b.node, { x: x + 12 }, { duration: 0.1 }))
+      .then(() => tw.to(b.node, { x }, { duration: 0.2, ease: ease.outElastic }));
     await this.ctx.say('rhyme.basketNo', { word: c.word, key: b.key });
     if (n === 2) {
       this.hints++;
@@ -567,7 +672,9 @@ class RhymeTime implements Game {
 
   private bounce(node: Container) {
     const { tw } = this.ctx;
-    return tw.to(node.scale, { y: 0.88 }, { duration: 0.12 }).then(() => tw.to(node.scale, { y: 1 }, { duration: 0.4, ease: ease.outElastic }));
+    return tw
+      .to(node.scale, { y: 0.88 }, { duration: 0.12 })
+      .then(() => tw.to(node.scale, { y: 1 }, { duration: 0.4, ease: ease.outElastic }));
   }
 
   /** The tray is empty: each basket sings its family in turn, then the next tray, or the end. */
@@ -594,7 +701,11 @@ class RhymeTime implements Game {
       this.ctx.pet.cheer();
       this.drawCard(c, true);
       void this.act(c, r.tag);
-      await this.ctx.say('rhyme.riddleYes', { answer: r.answer, sound: r.clueWord, clue: inSentence(clue.clue) });
+      await this.ctx.say('rhyme.riddleYes', {
+        answer: r.answer,
+        sound: r.clueWord,
+        clue: inSentence(clue.clue),
+      });
       await this.ctx.tw.wait(0.3);
       return void this.next();
     }
@@ -603,7 +714,8 @@ class RhymeTime implements Game {
     this.wrongs++;
     sfx.boing();
     // A mate rhymes but fails the meaning; a trap or the decoy does not rhyme.
-    if (rhymes(c.word, r.clueWord)) await this.ctx.say('rhyme.riddleNoMeaning', { word: c.word, sound: r.clueWord, fact: clue.fact });
+    if (rhymes(c.word, r.clueWord))
+      await this.ctx.say('rhyme.riddleNoMeaning', { word: c.word, sound: r.clueWord, fact: clue.fact });
     else await this.ctx.say('rhyme.riddleNoRhyme', { word: c.word, sound: r.clueWord });
     if (this.wrongs === 1) await this.ctx.say('rhyme.riddleClues', { sound: r.clueWord, clue: clue.clue });
     else if (!this.glowing) {
@@ -628,24 +740,40 @@ class RhymeTime implements Game {
     switch (tag) {
       case 'fly':
       case 'sky':
-        return tw.to(n, { y: y - 60 }, { duration: 0.35, ease: ease.outQuad }).then(() => tw.to(n, { y }, { duration: 0.45, ease: ease.inOutSine }));
+        return tw
+          .to(n, { y: y - 60 }, { duration: 0.35, ease: ease.outQuad })
+          .then(() => tw.to(n, { y }, { duration: 0.45, ease: ease.inOutSine }));
       case 'ride':
-        return tw.to(n, { x: x + 70 }, { duration: 0.3, ease: ease.inQuad }).then(() => tw.to(n, { x }, { duration: 0.4, ease: ease.outBack }));
+        return tw
+          .to(n, { x: x + 70 }, { duration: 0.3, ease: ease.inQuad })
+          .then(() => tw.to(n, { x }, { duration: 0.4, ease: ease.outBack }));
       case 'swim':
-        return tw.to(n, { rotation: 0.15 }, { duration: 0.15 }).then(() => tw.to(n, { rotation: -0.15 }, { duration: 0.2 })).then(() => tw.to(n, { rotation: 0 }, { duration: 0.35, ease: ease.outElastic }));
+        return tw
+          .to(n, { rotation: 0.15 }, { duration: 0.15 })
+          .then(() => tw.to(n, { rotation: -0.15 }, { duration: 0.2 }))
+          .then(() => tw.to(n, { rotation: 0 }, { duration: 0.35, ease: ease.outElastic }));
       case 'sit':
       case 'eat':
       case 'eatwith':
-        return tw.to(n.scale, { y: 0.8 }, { duration: 0.15 }).then(() => tw.to(n.scale, { y: 1 }, { duration: 0.35, ease: ease.outElastic }));
+        return tw
+          .to(n.scale, { y: 0.8 }, { duration: 0.15 })
+          .then(() => tw.to(n.scale, { y: 1 }, { duration: 0.35, ease: ease.outElastic }));
       default:
-        return tw.to(n, { y: y - 30 }, { duration: 0.18, ease: ease.outQuad }).then(() => tw.to(n, { y }, { duration: 0.2, ease: ease.inQuad }));
+        return tw
+          .to(n, { y: y - 30 }, { duration: 0.18, ease: ease.outQuad })
+          .then(() => tw.to(n, { y }, { duration: 0.2, ease: ease.inQuad }));
     }
   }
 
   /** Level 7: a star on the pet's picture, the sound and meaning chips, and the mouth that guesses. */
   private makeChips(r: Riddle) {
     const answer = this.cards.find((c) => c.word === r.answer)!;
-    answer.node.addChild(new Graphics().poly(starPoints(30, 13).map((p, i) => p + (i % 2 ? -112 : 0))).fill(swatch.yellow.fill).stroke({ width: 5, color: swatch.yellow.line, join: 'round' }));
+    answer.node.addChild(
+      new Graphics()
+        .poly(starPoints(30, 13).map((p, i) => p + (i % 2 ? -112 : 0)))
+        .fill(swatch.yellow.fill)
+        .stroke({ width: 5, color: swatch.yellow.line, join: 'round' }),
+    );
     const { sound, meaning } = chipsFor(r);
     const add = (chip: Omit<Chip, 'node' | 'bg'>, art: Container) => {
       const node = new Container();
@@ -672,7 +800,11 @@ class RhymeTime implements Game {
     for (const c of this.chips) {
       const on = c.sound ? c.sound === this.sound : c.tag === this.tag;
       const sw = c.sound ? swatch.pink : swatch.green;
-      c.bg.clear().roundRect(-62, -62, 124, 124, 26).fill(on ? swatch.yellow.light : 0xffffff).stroke({ width: on ? 9 : 6, color: on ? swatch.yellow.line : sw.line });
+      c.bg
+        .clear()
+        .roundRect(-62, -62, 124, 124, 26)
+        .fill(on ? swatch.yellow.light : 0xffffff)
+        .stroke({ width: on ? 9 : 6, color: on ? swatch.yellow.line : sw.line });
     }
   }
 
@@ -703,7 +835,11 @@ class RhymeTime implements Game {
       this.ctx.pet.cheer();
       this.drawCard(card, true);
       void this.act(card, r.tag);
-      await this.ctx.say('rhyme.makeGuess', { sound: r.clueWord, clue: inSentence(TAGS[r.tag].clue), answer: r.answer });
+      await this.ctx.say('rhyme.makeGuess', {
+        sound: r.clueWord,
+        clue: inSentence(TAGS[r.tag].clue),
+        answer: r.answer,
+      });
       await this.ctx.tw.wait(0.3);
       return void this.next();
     }
@@ -771,7 +907,8 @@ export const rhymeTime: GameModule = {
   entryLevels: [9],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
-  coplayHint: 'Say the words slowly and stretch the ends: "caaat, haaat". Then make up a silly rhyme together, or ask the pet\'s riddle back: it rhymes with cat and you wear it. What is it?',
+  coplayHint:
+    'Say the words slowly and stretch the ends: "caaat, haaat". Then make up a silly rhyme together, or ask the pet\'s riddle back: it rhymes with cat and you wear it. What is it?',
   offScreen: 'Play "I spy something that rhymes with..." around the house or on a walk.',
   hubIcon: () => new RhymeIcon(),
   touchDemo: true,

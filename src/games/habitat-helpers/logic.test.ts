@@ -1,7 +1,39 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { allArrangements, makeShoreRounds, shoreAccepted, shoreHint, shoreSolutions, shoreTouch, type Arrangement, type Place, type ShoreRound } from './logic';
-import { afterChange, CHANGES, EQUIVALENTS, habitatTouch, helpingPieces, lostNeed, makeRounds, missingNeeds, NEEDS, PIECES, PIECE_IDS, PLANS, PREDICTION_GARDENS, restores, solutions, visitorsFor, welcomes, type HabitatTouch, type Need, type PieceId, type Visitor } from './logic';
+import {
+  allArrangements,
+  makeShoreRounds,
+  shoreAccepted,
+  shoreHint,
+  shoreSolutions,
+  shoreTouch,
+  type Arrangement,
+  type Place,
+  type ShoreRound,
+} from './logic';
+import {
+  afterChange,
+  CHANGES,
+  EQUIVALENTS,
+  habitatTouch,
+  helpingPieces,
+  lostNeed,
+  makeRounds,
+  missingNeeds,
+  NEEDS,
+  PIECES,
+  PIECE_IDS,
+  PLANS,
+  PREDICTION_GARDENS,
+  restores,
+  solutions,
+  visitorsFor,
+  welcomes,
+  type HabitatTouch,
+  type Need,
+  type PieceId,
+  type Visitor,
+} from './logic';
 
 /** Levels 1–7 build gardens; the shore levels above them have their own rounds and tests. */
 const GARDEN_LEVELS = PLANS.findIndex((p) => p.mode === 'shore');
@@ -15,7 +47,8 @@ describe('Habitat Helpers', () => {
   });
 
   it('gives each new equivalent piece exactly one use, the same as its older partner', () => {
-    for (const id of ['dandelions', 'log-burrow', 'pond-weed', 'reed-island'] as PieceId[]) expect(Object.values(PIECES[id].for).flat()).toHaveLength(1);
+    for (const id of ['dandelions', 'log-burrow', 'pond-weed', 'reed-island'] as PieceId[])
+      expect(Object.values(PIECES[id].for).flat()).toHaveLength(1);
     for (const visitor of ['bunny', 'duck'] as Visitor[]) {
       for (const [need, pair] of Object.entries(EQUIVALENTS[visitor])) {
         for (const id of pair) expect(PIECES[id].for, `${id}`).toEqual({ [visitor]: [need] });
@@ -31,13 +64,15 @@ describe('Habitat Helpers', () => {
           expect(round.offered).toHaveLength(level === 3 ? 5 : 3);
           expect(solutions(round), `level ${level}, seed ${seed}`).toHaveLength(1);
           for (const visitor of ['bunny', 'duck'] as Visitor[]) {
-            for (const pair of Object.values(EQUIVALENTS[visitor])) expect(pair.filter((id) => round.offered.includes(id)).length).toBeLessThanOrEqual(1);
+            for (const pair of Object.values(EQUIVALENTS[visitor]))
+              expect(pair.filter((id) => round.offered.includes(id)).length).toBeLessThanOrEqual(1);
           }
           round.offered.forEach((id) => seen.add(id));
         }
       }
     }
-    for (const id of ['dandelions', 'log-burrow', 'pond-weed', 'reed-island'] as PieceId[]) expect(seen.has(id), id).toBe(true);
+    for (const id of ['dandelions', 'log-burrow', 'pond-weed', 'reed-island'] as PieceId[])
+      expect(seen.has(id), id).toBe(true);
   });
 
   it('pools every two-piece garden that welcomes exactly one visitor, and level 4 never repeats one in a play', () => {
@@ -48,7 +83,9 @@ describe('Habitat Helpers', () => {
         if (who.length === 1) singles.push(`${who[0]}:${[a, b].sort().join('+')}`);
       }),
     );
-    const pooled = (['bunny', 'duck'] as Visitor[]).flatMap((v) => PREDICTION_GARDENS[v].map((g) => `${v}:${[...g].sort().join('+')}`));
+    const pooled = (['bunny', 'duck'] as Visitor[]).flatMap((v) =>
+      PREDICTION_GARDENS[v].map((g) => `${v}:${[...g].sort().join('+')}`),
+    );
     expect(pooled.sort()).toEqual(singles.sort());
 
     const used = new Set<string>();
@@ -97,7 +134,11 @@ describe('Habitat Helpers', () => {
     }
 
     const bunny = level2.find((r) => r.visitors[0] === 'bunny')!;
-    expect(missingNeeds(['clover'], bunny.visitors).map((m) => m.need).sort()).toEqual(['shelter', 'water']);
+    expect(
+      missingNeeds(['clover'], bunny.visitors)
+        .map((m) => m.need)
+        .sort(),
+    ).toEqual(['shelter', 'water']);
     expect(welcomes(['clover', 'shallow-pool', 'brush-pile'], ['bunny'])).toBe(true);
     expect(welcomes(['seed-grass', 'shallow-pool', 'tall-reeds'], ['duck'])).toBe(true);
   });
@@ -122,7 +163,9 @@ describe('Habitat Helpers', () => {
     expect(solutions(duck).every((s) => s.includes('pond-reeds'))).toBe(true);
 
     const together = makeRounds(6, new Rng(9))[0];
-    expect(solutions(together).map((s) => [...s].sort())).toEqual([['berry-hedge', 'pond-reeds', 'seed-grass'].sort()]);
+    expect(solutions(together).map((s) => [...s].sort())).toEqual([
+      ['berry-hedge', 'pond-reeds', 'seed-grass'].sort(),
+    ]);
   });
 
   it('offers help that always supplies something still missing', () => {
@@ -134,7 +177,9 @@ describe('Habitat Helpers', () => {
         const helpers = helpingPieces(round, selected);
         expect(helpers.length).toBeGreaterThan(0);
         const before = missingNeeds(selected, round.visitors).length;
-        helpers.forEach((piece) => expect(missingNeeds([...selected, piece], round.visitors).length).toBeLessThan(before));
+        helpers.forEach((piece) =>
+          expect(missingNeeds([...selected, piece], round.visitors).length).toBeLessThan(before),
+        );
       }
     }
   });
@@ -181,9 +226,17 @@ describe('Habitat Helpers', () => {
 
     it('offers exactly one repair card that restores the need, and one that meets no missing need', () => {
       for (const c of CHANGES) {
-        expect(c.repairs.filter((piece) => restores(c, piece)), c.id).toHaveLength(1);
+        expect(
+          c.repairs.filter((piece) => restores(c, piece)),
+          c.id,
+        ).toHaveLength(1);
         const other = c.repairs.find((piece) => !restores(c, piece))!;
-        expect(missingNeeds(afterChange(c), [c.visitor]).some((m) => PIECES[other].for[m.visitor]?.includes(m.need)), `${c.id}: ${other}`).toBe(false);
+        expect(
+          missingNeeds(afterChange(c), [c.visitor]).some((m) =>
+            PIECES[other].for[m.visitor]?.includes(m.need),
+          ),
+          `${c.id}: ${other}`,
+        ).toBe(false);
         // Neither card is already in the garden, so the tray never shows a copy of a garden piece.
         c.repairs.forEach((piece) => expect(c.garden).not.toContain(piece));
       }
@@ -225,7 +278,11 @@ describe('Habitat Helpers', () => {
         let prediction: Visitor | null = null;
         let need: Need | null = null;
         const touches: HabitatTouch[] = [];
-        for (let touch = habitatTouch(round, mode, selected, prediction, !!need); touch && touches.length < 12; touch = habitatTouch(round, mode, selected, prediction, !!need)) {
+        for (
+          let touch = habitatTouch(round, mode, selected, prediction, !!need);
+          touch && touches.length < 12;
+          touch = habitatTouch(round, mode, selected, prediction, !!need)
+        ) {
           touches.push(touch);
           if (touch === 'gate') break;
           if ('piece' in touch) selected.push(touch.piece);
@@ -233,10 +290,18 @@ describe('Habitat Helpers', () => {
           else prediction = touch.visitor;
         }
         out.push(touches);
-        if (mode === 'predict') expect(prediction, `level ${level} seed ${seed}: the prediction is right`).toEqual(round.visitors[0]);
+        if (mode === 'predict')
+          expect(prediction, `level ${level} seed ${seed}: the prediction is right`).toEqual(
+            round.visitors[0],
+          );
         else if (mode === 'change') {
-          expect(need, `level ${level} seed ${seed}: the need named is the lost one`).toBe(lostNeed(round.change!));
-          expect(welcomes([...afterChange(round.change!), ...selected], round.visitors), `level ${level} seed ${seed}`).toBe(true);
+          expect(need, `level ${level} seed ${seed}: the need named is the lost one`).toBe(
+            lostNeed(round.change!),
+          );
+          expect(
+            welcomes([...afterChange(round.change!), ...selected], round.visitors),
+            `level ${level} seed ${seed}`,
+          ).toBe(true);
         } else expect(welcomes(selected, round.visitors), `level ${level} seed ${seed}`).toBe(true);
         expect(touches.at(-1)).toBe('gate');
       }
@@ -244,7 +309,8 @@ describe('Habitat Helpers', () => {
     }
 
     it('finishes every round at every level with a working garden or a right prediction, and opens the gate last', () => {
-      for (let level = 1; level <= GARDEN_LEVELS; level++) for (let seed = 1; seed <= 100; seed++) play(level, seed);
+      for (let level = 1; level <= GARDEN_LEVELS; level++)
+        for (let seed = 1; seed <= 100; seed++) play(level, seed);
     });
 
     it('takes only what the garden needs, never more pieces than it has spaces, and never a distractor', () => {
@@ -258,7 +324,14 @@ describe('Habitat Helpers', () => {
             expect(new Set(pieces).size).toBe(pieces.length);
             expect(welcomes(pieces, rounds[i].visitors)).toBe(true);
             // Taking out any one piece would leave something missing, so the bot places no spare.
-            pieces.forEach((_, k) => expect(welcomes(pieces.filter((__, j) => j !== k), rounds[i].visitors)).toBe(false));
+            pieces.forEach((_, k) =>
+              expect(
+                welcomes(
+                  pieces.filter((__, j) => j !== k),
+                  rounds[i].visitors,
+                ),
+              ).toBe(false),
+            );
           });
         }
       }
@@ -266,18 +339,29 @@ describe('Habitat Helpers', () => {
 
     it('shows the idea of the top level: one hedge, one seed grass and one pond with reeds', () => {
       const touches = play(6, 11)[0];
-      expect(touches.filter((t) => typeof t === 'object' && 'piece' in t).map((t) => (t as { piece: PieceId }).piece).sort()).toEqual(['berry-hedge', 'pond-reeds', 'seed-grass']);
+      expect(
+        touches
+          .filter((t) => typeof t === 'object' && 'piece' in t)
+          .map((t) => (t as { piece: PieceId }).piece)
+          .sort(),
+      ).toEqual(['berry-hedge', 'pond-reeds', 'seed-grass']);
     });
 
     it('does nothing once the round is tested or the prediction round has no answer', () => {
-      expect(habitatTouch({ visitors: ['bunny'], offered: [], capacity: 2, prepared: [] }, 'predict', [], null)).toBeNull();
+      expect(
+        habitatTouch({ visitors: ['bunny'], offered: [], capacity: 2, prepared: [] }, 'predict', [], null),
+      ).toBeNull();
     });
   });
 });
 
 describe('Habitat Helpers, the rocky shore (levels 8–9)', () => {
   const key = (a: readonly (Place | null)[]) => a.join(',');
-  const shore = (friends: ShoreRound['friends'], places: Place[], room: ShoreRound['room']): ShoreRound => ({ friends, places, room });
+  const shore = (friends: ShoreRound['friends'], places: Place[], room: ShoreRound['room']): ShoreRound => ({
+    friends,
+    places,
+    room,
+  });
 
   it('makes two shore rounds at levels 8 and 9, with the pool holding one at level 9', () => {
     expect(PLANS.slice(GARDEN_LEVELS).map((p) => p.mode)).toEqual(['shore', 'shore']);
@@ -292,7 +376,8 @@ describe('Habitat Helpers, the rocky shore (levels 8–9)', () => {
         expect(r.room['rock-pool']).toBe(1);
       }
       // No place ever holds more than two friends, so placed friends never overlap.
-      for (const r of [...eight, ...nine]) for (const place of r.places) expect(r.room[place]).toBeLessThanOrEqual(2);
+      for (const r of [...eight, ...nine])
+        for (const place of r.places) expect(r.room[place]).toBeLessThanOrEqual(2);
     }
   });
 
@@ -304,15 +389,26 @@ describe('Habitat Helpers, the rocky shore (levels 8–9)', () => {
     expect(shoreAccepted(r, ['high-rock', 'high-rock'])).toBe(false);
     // A friend still on the sand is not a finished shore.
     expect(shoreAccepted(r, ['rock-pool', null])).toBe(false);
-    const r2 = shore(['anemone', 'barnacle', 'barnacle'], ['high-rock', 'rock-pool'], { 'high-rock': 2, 'rock-pool': 2 });
-    expect(shoreSolutions(r2).map(key).sort()).toEqual(['rock-pool,high-rock,high-rock', 'rock-pool,high-rock,rock-pool', 'rock-pool,rock-pool,high-rock'].sort());
+    const r2 = shore(['anemone', 'barnacle', 'barnacle'], ['high-rock', 'rock-pool'], {
+      'high-rock': 2,
+      'rock-pool': 2,
+    });
+    expect(shoreSolutions(r2).map(key).sort()).toEqual(
+      [
+        'rock-pool,high-rock,high-rock',
+        'rock-pool,high-rock,rock-pool',
+        'rock-pool,rock-pool,high-rock',
+      ].sort(),
+    );
   });
 
   it('level 9 accepts exactly the hand-listed arrangements: the pool forces the anemone, the crab hides under seaweed', () => {
     const room = { 'rock-pool': 1, 'seaweed-rocks': 2, 'high-rock': 2 };
     const places: Place[] = ['rock-pool', 'seaweed-rocks', 'high-rock'];
     const r = shore(['barnacle', 'crab', 'anemone'], places, room);
-    expect(shoreSolutions(r).map(key).sort()).toEqual(['high-rock,seaweed-rocks,rock-pool', 'seaweed-rocks,seaweed-rocks,rock-pool'].sort());
+    expect(shoreSolutions(r).map(key).sort()).toEqual(
+      ['high-rock,seaweed-rocks,rock-pool', 'seaweed-rocks,seaweed-rocks,rock-pool'].sort(),
+    );
     // The barnacle in the pool takes the anemone's only wet place.
     expect(shoreAccepted(r, ['rock-pool', 'seaweed-rocks', 'rock-pool'])).toBe(false);
     // The seaweed rocks give a hiding place but are not wet.
@@ -320,7 +416,13 @@ describe('Habitat Helpers, the rocky shore (levels 8–9)', () => {
     // The crab on bare rock has nowhere to hide.
     expect(shoreAccepted(r, ['seaweed-rocks', 'high-rock', 'rock-pool'])).toBe(false);
     const r2 = shore(['barnacle', 'crab', 'anemone', 'barnacle'], places, room);
-    expect(shoreSolutions(r2).map(key).sort()).toEqual(['high-rock,seaweed-rocks,rock-pool,high-rock', 'high-rock,seaweed-rocks,rock-pool,seaweed-rocks', 'seaweed-rocks,seaweed-rocks,rock-pool,high-rock'].sort());
+    expect(shoreSolutions(r2).map(key).sort()).toEqual(
+      [
+        'high-rock,seaweed-rocks,rock-pool,high-rock',
+        'high-rock,seaweed-rocks,rock-pool,seaweed-rocks',
+        'seaweed-rocks,seaweed-rocks,rock-pool,high-rock',
+      ].sort(),
+    );
   });
 
   it('every generated round has an accepted arrangement, and every accepted one meets every need', () => {

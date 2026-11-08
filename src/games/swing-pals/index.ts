@@ -13,9 +13,44 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
-  applyPush, backTimes, BASKET_HALF, clapTimes, FRIEND_SCALE, friendBox, firstBack, MARK_R, markerAt, HOOKS, land, makeRound, nextBackTime, nextToPush, period, planFor,
-  raceTempts, raceWatch, requestStrip, rightHook, ropeOf, seatAt, swingLayout, together, watchTime, WEIGHT, type Column, type Friend, type Goal, type Hook, type Line,
-  type Plan, type PushLine, type Race, type Request, type Round, type Swing, type SwingLayout,
+  applyPush,
+  backTimes,
+  BASKET_HALF,
+  clapTimes,
+  FRIEND_SCALE,
+  friendBox,
+  firstBack,
+  MARK_R,
+  markerAt,
+  HOOKS,
+  land,
+  makeRound,
+  nextBackTime,
+  nextToPush,
+  period,
+  planFor,
+  raceTempts,
+  raceWatch,
+  requestStrip,
+  rightHook,
+  ropeOf,
+  seatAt,
+  swingLayout,
+  together,
+  watchTime,
+  WEIGHT,
+  type Column,
+  type Friend,
+  type Goal,
+  type Hook,
+  type Line,
+  type Plan,
+  type PushLine,
+  type Race,
+  type Request,
+  type Round,
+  type Swing,
+  type SwingLayout,
 } from './logic';
 
 /** Each level's authored first line leads its first round of a session. */
@@ -25,7 +60,14 @@ const SPECS: Record<Friend, CritterSpec> = {
   bunny: CRITTERS.bunny,
   duck: CRITTERS.duck,
   bear: CRITTERS.bear,
-  mouse: { color: 'white', ears: 'round', earColor: 'pink', snout: 'nose', noseColor: 0xff8fa3, whiskers: true },
+  mouse: {
+    color: 'white',
+    ears: 'round',
+    earColor: 'pink',
+    snout: 'nose',
+    noseColor: 0xff8fa3,
+    whiskers: true,
+  },
   frog: { color: 'green', ears: 'none', snout: 'none', belly: true },
   cat: CRITTERS.cat,
   dog: CRITTERS.dog,
@@ -33,15 +75,47 @@ const SPECS: Record<Friend, CritterSpec> = {
   cow: CRITTERS.cow,
 };
 /** Each friend's bell note (pentatonic steps), so a round plays a little tune; the heaviest sing lowest. */
-const NOTES: Record<Friend, number> = { cow: 1, pig: 2, bear: 3, dog: 4, bunny: 5, frog: 6, duck: 7, cat: 8, mouse: 9 };
+const NOTES: Record<Friend, number> = {
+  cow: 1,
+  pig: 2,
+  bear: 3,
+  dog: 4,
+  bunny: 5,
+  frog: 6,
+  duck: 7,
+  cat: 8,
+  mouse: 9,
+};
 const NAMES: Record<Friend, string> = {
-  bunny: 'Bunny', duck: 'Duck', mouse: 'Mouse', bear: 'Bear', frog: 'Frog', cat: 'Cat', dog: 'Dog', pig: 'Pig', cow: 'Cow',
+  bunny: 'Bunny',
+  duck: 'Duck',
+  mouse: 'Mouse',
+  bear: 'Bear',
+  frog: 'Frog',
+  cat: 'Cat',
+  dog: 'Dog',
+  pig: 'Pig',
+  cow: 'Cow',
 };
 /** The goal's name in the instructions, one and two. */
-const GOAL_NAME: Record<Goal, [string, string]> = { bell: ['bell', 'bells'], chimes: ['chimes', 'chimes'], apple: ['apple', 'apples'], nest: ['nest', 'nests'] };
-const GOAL_LINE: Record<Goal, LineId> = { bell: 'swing-pals.ring', chimes: 'swing-pals.ring-chimes', apple: 'swing-pals.ring-apple', nest: 'swing-pals.ring-nest' };
+const GOAL_NAME: Record<Goal, [string, string]> = {
+  bell: ['bell', 'bells'],
+  chimes: ['chimes', 'chimes'],
+  apple: ['apple', 'apples'],
+  nest: ['nest', 'nests'],
+};
+const GOAL_LINE: Record<Goal, LineId> = {
+  bell: 'swing-pals.ring',
+  chimes: 'swing-pals.ring-chimes',
+  apple: 'swing-pals.ring-apple',
+  nest: 'swing-pals.ring-nest',
+};
 /** Level 8: each request's spoken ask, and what she hears when it comes true. */
-const REQUEST_LINE: Record<Request, LineId> = { twice: 'swing-pals.instruct-twice', half: 'swing-pals.instruct-half', together: 'swing-pals.instruct-same' };
+const REQUEST_LINE: Record<Request, LineId> = {
+  twice: 'swing-pals.instruct-twice',
+  half: 'swing-pals.instruct-half',
+  together: 'swing-pals.instruct-same',
+};
 const BRASS = { fill: 0xf2c14e, line: 0xb8862b };
 const LEAF = [0x6cc070, 0x5bb062, 0x7fd07c];
 const ROPE = 0xa8865a;
@@ -50,11 +124,21 @@ const ROPE = 0xa8865a;
 
 function bellArt(): Graphics {
   return new Graphics()
-    .moveTo(0, -80).lineTo(0, -26).stroke({ width: 3, color: wood.line })
-    .moveTo(-22, 12).quadraticCurveTo(-22, -26, 0, -28).quadraticCurveTo(22, -26, 22, 12).lineTo(28, 18).lineTo(-28, 18).closePath()
-    .fill(BRASS.fill).stroke({ width: 4, color: BRASS.line, join: 'round' })
-    .circle(0, 22, 7).fill(BRASS.line)
-    .ellipse(-9, -10, 5, 9).fill({ color: 0xffffff, alpha: 0.45 });
+    .moveTo(0, -80)
+    .lineTo(0, -26)
+    .stroke({ width: 3, color: wood.line })
+    .moveTo(-22, 12)
+    .quadraticCurveTo(-22, -26, 0, -28)
+    .quadraticCurveTo(22, -26, 22, 12)
+    .lineTo(28, 18)
+    .lineTo(-28, 18)
+    .closePath()
+    .fill(BRASS.fill)
+    .stroke({ width: 4, color: BRASS.line, join: 'round' })
+    .circle(0, 22, 7)
+    .fill(BRASS.line)
+    .ellipse(-9, -10, 5, 9)
+    .fill({ color: 0xffffff, alpha: 0.45 });
 }
 
 const NEST_BIRD = { hid: 16, up: -14 };
@@ -66,7 +150,9 @@ function chimesArt(): Graphics {
   for (const [i, len] of [44, 54, 62, 50].entries()) {
     const x = -24 + i * 16;
     g.moveTo(x, -28).lineTo(x, -20).stroke({ width: 2, color: wood.line });
-    g.roundRect(x - 5, -20, 10, len, 5).fill(BRASS.fill).stroke({ width: 3, color: BRASS.line });
+    g.roundRect(x - 5, -20, 10, len, 5)
+      .fill(BRASS.fill)
+      .stroke({ width: 3, color: BRASS.line });
   }
   return g.circle(0, 10, 7).fill(BRASS.line);
 }
@@ -75,15 +161,29 @@ function chimesArt(): Graphics {
 function appleArt(): { art: Container; apple: Container } {
   const art = new Container();
   art.addChild(
-    new Graphics().moveTo(0, -80).lineTo(0, -12).stroke({ width: 4, color: wood.line })
-      .ellipse(12, -16, 13, 7).fill(LEAF[0]).stroke({ width: 3, color: 0x3f8a46 }),
+    new Graphics()
+      .moveTo(0, -80)
+      .lineTo(0, -12)
+      .stroke({ width: 4, color: wood.line })
+      .ellipse(12, -16, 13, 7)
+      .fill(LEAF[0])
+      .stroke({ width: 3, color: 0x3f8a46 }),
   );
   const apple = new Container();
   apple.addChild(
-    new Graphics().moveTo(0, 0).bezierCurveTo(-30, -10, -34, 40, -6, 38).quadraticCurveTo(0, 36, 6, 38).bezierCurveTo(34, 40, 30, -10, 0, 0)
-      .closePath().fill(swatch.red.fill).stroke({ width: 4, color: swatch.red.line, join: 'round' })
-      .moveTo(0, -2).lineTo(1, -10).stroke({ width: 4, color: wood.line, cap: 'round' })
-      .ellipse(-10, 6, 5, 8).fill({ color: 0xffffff, alpha: 0.4 }),
+    new Graphics()
+      .moveTo(0, 0)
+      .bezierCurveTo(-30, -10, -34, 40, -6, 38)
+      .quadraticCurveTo(0, 36, 6, 38)
+      .bezierCurveTo(34, 40, 30, -10, 0, 0)
+      .closePath()
+      .fill(swatch.red.fill)
+      .stroke({ width: 4, color: swatch.red.line, join: 'round' })
+      .moveTo(0, -2)
+      .lineTo(1, -10)
+      .stroke({ width: 4, color: wood.line, cap: 'round' })
+      .ellipse(-10, 6, 5, 8)
+      .fill({ color: 0xffffff, alpha: 0.4 }),
   );
   art.addChild(apple);
   return { art, apple };
@@ -95,15 +195,28 @@ function nestArt(): { art: Container; bird: Container } {
   art.addChild(new Graphics().moveTo(0, -80).lineTo(0, -2).stroke({ width: 4, color: wood.line }));
   const bird = new Container();
   bird.addChild(
-    new Graphics().circle(0, 0, 16).fill(swatch.blue.fill).stroke({ width: 4, color: swatch.blue.line })
-      .poly([14, -2, 28, 3, 14, 8]).fill(swatch.yellow.fill).stroke({ width: 2, color: swatch.yellow.line })
-      .circle(6, -4, 3.5).fill(0x2b2b3a),
+    new Graphics()
+      .circle(0, 0, 16)
+      .fill(swatch.blue.fill)
+      .stroke({ width: 4, color: swatch.blue.line })
+      .poly([14, -2, 28, 3, 14, 8])
+      .fill(swatch.yellow.fill)
+      .stroke({ width: 2, color: swatch.yellow.line })
+      .circle(6, -4, 3.5)
+      .fill(0x2b2b3a),
   );
   bird.y = NEST_BIRD.hid;
   art.addChild(
     bird,
-    new Graphics().ellipse(0, 22, 36, 16).fill(wood.fill).stroke({ width: 4, color: wood.line })
-      .moveTo(-28, 18).lineTo(26, 26).moveTo(-24, 28).lineTo(30, 18).stroke({ width: 2, color: wood.line }),
+    new Graphics()
+      .ellipse(0, 22, 36, 16)
+      .fill(wood.fill)
+      .stroke({ width: 4, color: wood.line })
+      .moveTo(-28, 18)
+      .lineTo(26, 26)
+      .moveTo(-24, 28)
+      .lineTo(30, 18)
+      .stroke({ width: 2, color: wood.line }),
   );
   return { art, bird };
 }
@@ -112,31 +225,54 @@ function nestArt(): { art: Container; bird: Container } {
 function basketArt(): Graphics {
   const { w, h } = BASKET_HALF;
   return new Graphics()
-    .poly([-w, -h + 8, w, -h + 8, w - 8, h, -w + 8, h]).fill(wood.fill).stroke({ width: 4, color: wood.line, join: 'round' })
-    .moveTo(-w + 4, 0).lineTo(w - 4, 0).moveTo(-w + 6, h - 10).lineTo(w - 6, h - 10).stroke({ width: 3, color: wood.line })
-    .roundRect(-w - 4, -h + 2, 2 * w + 8, 12, 6).fill(wood.fill).stroke({ width: 4, color: wood.line });
+    .poly([-w, -h + 8, w, -h + 8, w - 8, h, -w + 8, h])
+    .fill(wood.fill)
+    .stroke({ width: 4, color: wood.line, join: 'round' })
+    .moveTo(-w + 4, 0)
+    .lineTo(w - 4, 0)
+    .moveTo(-w + 6, h - 10)
+    .lineTo(w - 6, h - 10)
+    .stroke({ width: 3, color: wood.line })
+    .roundRect(-w - 4, -h + 2, 2 * w + 8, 12, 6)
+    .fill(wood.fill)
+    .stroke({ width: 4, color: wood.line });
 }
 
 /** Level 7's guess marker: a small paw over the friend she picked. */
 function pawArt(g: Graphics): Graphics {
   g.circle(0, 0, MARK_R).fill({ color: 0xffffff, alpha: 0.9 }).stroke({ width: 4, color: swatch.red.line });
   g.ellipse(0, 6, 12, 10).fill(swatch.red.fill);
-  for (const [x, y] of [[-13, -8], [-4, -14], [5, -14], [14, -8]]) g.circle(x, y, 5).fill(swatch.red.fill);
+  for (const [x, y] of [
+    [-13, -8],
+    [-4, -14],
+    [5, -14],
+    [14, -8],
+  ])
+    g.circle(x, y, 5).fill(swatch.red.fill);
   return g;
 }
 
 function mittenArt(): Graphics {
   return new Graphics()
-    .roundRect(-34, -30, 56, 60, 26).fill(swatch.red.fill).stroke({ width: 4, color: swatch.red.line })
-    .ellipse(22, -6, 14, 11).fill(swatch.red.fill).stroke({ width: 4, color: swatch.red.line })
-    .roundRect(-44, -26, 18, 52, 8).fill(0xffffff).stroke({ width: 3, color: swatch.white.line });
+    .roundRect(-34, -30, 56, 60, 26)
+    .fill(swatch.red.fill)
+    .stroke({ width: 4, color: swatch.red.line })
+    .ellipse(22, -6, 14, 11)
+    .fill(swatch.red.fill)
+    .stroke({ width: 4, color: swatch.red.line })
+    .roundRect(-44, -26, 18, 52, 8)
+    .fill(0xffffff)
+    .stroke({ width: 3, color: swatch.white.line });
 }
 
 /** One swing: a container at the pivot, turned by the swing's angle, with two ropes, a seat and the friend standing on it. */
 class Rig {
   readonly arm = new Container();
   readonly rope = new Graphics();
-  readonly seat = new Graphics().roundRect(-62, -6, 124, 20, 8).fill(wood.fill).stroke({ width: 4, color: wood.line });
+  readonly seat = new Graphics()
+    .roundRect(-62, -6, 124, 20, 8)
+    .fill(wood.fill)
+    .stroke({ width: 4, color: wood.line });
   critter: Critter;
   /** Drawn rope length, eased when the rope moves hooks. */
   L = 0;
@@ -148,7 +284,11 @@ class Rig {
   held: number | null = null;
   private lastPhase = 0;
 
-  constructor(public hook: Hook, public friend: Friend, readonly col: Column) {
+  constructor(
+    public hook: Hook,
+    public friend: Friend,
+    readonly col: Column,
+  ) {
     this.critter = this.makeCritter(friend);
     this.arm.eventMode = 'none';
     this.arm.addChild(this.rope, this.seat, this.critter);
@@ -179,7 +319,13 @@ class Rig {
     this.arm.position.set(pivotX, pivotY);
     this.arm.rotation = (-a * Math.PI) / 180;
     const heavy = WEIGHT[this.friend] === 'heavy' ? 6 : 0;
-    this.rope.clear().moveTo(-52, 0).lineTo(-52, this.L + heavy).moveTo(52, 0).lineTo(52, this.L + heavy).stroke({ width: 5, color: ROPE, cap: 'round' });
+    this.rope
+      .clear()
+      .moveTo(-52, 0)
+      .lineTo(-52, this.L + heavy)
+      .moveTo(52, 0)
+      .lineTo(52, this.L + heavy)
+      .stroke({ width: 5, color: ROPE, cap: 'round' });
     this.seat.y = this.L + heavy;
     this.critter.position.set(0, this.L + heavy - 4);
     const phase = this.A > 0.5 ? a / this.A : 0;
@@ -268,7 +414,17 @@ class SwingPals implements Game {
     if (authored) authoredShown.add(this.plan.id);
     this.round = makeRound(this.plan, ctx.rng, authored).round;
     this.layout = swingLayout(this.plan.two ? 2 : 1, ctx.view);
-    this.backdrop = new Backdrop({ sky: [0xbfe6ff, 0xf3fbe8], hills: [0xbfe3a0, 0x9fd38a, 0x86c96e], horizon: 0.72, clouds: 2, sun: true, seed: 317 }, ctx.view);
+    this.backdrop = new Backdrop(
+      {
+        sky: [0xbfe6ff, 0xf3fbe8],
+        hills: [0xbfe3a0, 0x9fd38a, 0x86c96e],
+        horizon: 0.72,
+        clouds: 2,
+        sun: true,
+        seed: 317,
+      },
+      ctx.view,
+    );
     this.tree.eventMode = 'none';
     this.glow.eventMode = 'none';
     this.swingLayer.eventMode = 'none';
@@ -314,7 +470,21 @@ class SwingPals implements Game {
     this.marker.eventMode = 'none';
     this.marker.visible = false;
     pawArt(this.marker);
-    ctx.stage.addChild(this.backdrop, this.tree, ...this.baskets, ...this.bells, this.glow, this.swingLayer, ...this.nowRings, ...this.waitRings, ...this.mittens, this.ground, this.strip, this.marker, this.hookLayer);
+    ctx.stage.addChild(
+      this.backdrop,
+      this.tree,
+      ...this.baskets,
+      ...this.bells,
+      this.glow,
+      this.swingLayer,
+      ...this.nowRings,
+      ...this.waitRings,
+      ...this.mittens,
+      this.ground,
+      this.strip,
+      this.marker,
+      this.hookLayer,
+    );
     this.ground.eventMode = this.plan.mode === 'push' ? 'static' : 'none';
     this.ground.on('pointerdown', this.onGround);
 
@@ -341,14 +511,23 @@ class SwingPals implements Game {
 
   start() {
     const lines: Record<number, LineId> = {
-      1: 'swing-pals.instruct-push', 2: 'swing-pals.instruct-back', 3: 'swing-pals.instruct-two',
-      4: 'swing-pals.instruct-together', 5: 'swing-pals.instruct-heavy', 6: 'swing-pals.instruct-big', 7: 'swing-pals.instruct-first',
+      1: 'swing-pals.instruct-push',
+      2: 'swing-pals.instruct-back',
+      3: 'swing-pals.instruct-two',
+      4: 'swing-pals.instruct-together',
+      5: 'swing-pals.instruct-heavy',
+      6: 'swing-pals.instruct-big',
+      7: 'swing-pals.instruct-first',
     };
     if (this.plan.requests) {
       void this.ctx.instruct(REQUEST_LINE[this.pairLine.request ?? 'together']);
       return;
     }
-    void this.ctx.instruct(lines[this.plan.id], { friend: this.friendName(), goal: GOAL_NAME[this.goal][0], goals: GOAL_NAME[this.goal][1] });
+    void this.ctx.instruct(lines[this.plan.id], {
+      friend: this.friendName(),
+      goal: GOAL_NAME[this.goal][0],
+      goals: GOAL_NAME[this.goal][1],
+    });
   }
 
   private get goal(): Goal {
@@ -477,7 +656,8 @@ class SwingPals implements Game {
       const rig = this.rigs[i];
       b.visible = this.plan.mode === 'push' && !!rig;
       if (rig) b.position.copyFrom(L.columns[i].bell[rig.hook]);
-      const apple = this.apples[i], basket = this.baskets[i];
+      const apple = this.apples[i],
+        basket = this.baskets[i];
       if (apple && basket) {
         basket.visible = b.visible;
         if (rig) basket.position.copyFrom(L.columns[i].basket[rig.hook]);
@@ -504,15 +684,31 @@ class SwingPals implements Game {
   /** Level 8's request in pictures under the pet's swing: big dots for the pet's returns, small dots for hers. */
   private drawStrip() {
     const g = this.strip.clear();
-    if (!this.plan.requests || this.round.kind !== 'together' || !this.rigs[0] || this.line >= this.round.lines.length) return;
+    if (
+      !this.plan.requests ||
+      this.round.kind !== 'together' ||
+      !this.rigs[0] ||
+      this.line >= this.round.lines.length
+    )
+      return;
     const req = this.pairLine.request ?? 'together';
-    const pets = req === 'half' ? 2 : 1, hers = req === 'twice' ? 2 : 1;
+    const pets = req === 'half' ? 2 : 1,
+      hers = req === 'twice' ? 2 : 1;
     const box = requestStrip(this.layout);
-    const cx = box.x + box.w / 2, cy = box.y + box.h / 2;
-    g.roundRect(box.x, box.y, box.w, box.h, box.h / 2).fill({ color: 0xffffff, alpha: 0.85 }).stroke({ width: 4, color: swatch.blue.line });
-    for (let k = 0; k < pets; k++) g.circle(cx - 50 + (k - (pets - 1) / 2) * 36, cy, 15).fill(swatch.blue.fill).stroke({ width: 3, color: swatch.blue.line });
+    const cx = box.x + box.w / 2,
+      cy = box.y + box.h / 2;
+    g.roundRect(box.x, box.y, box.w, box.h, box.h / 2)
+      .fill({ color: 0xffffff, alpha: 0.85 })
+      .stroke({ width: 4, color: swatch.blue.line });
+    for (let k = 0; k < pets; k++)
+      g.circle(cx - 50 + (k - (pets - 1) / 2) * 36, cy, 15)
+        .fill(swatch.blue.fill)
+        .stroke({ width: 3, color: swatch.blue.line });
     g.roundRect(cx - 3, cy - 18, 6, 36, 3).fill(swatch.white.line);
-    for (let k = 0; k < hers; k++) g.circle(cx + 50 + (k - (hers - 1) / 2) * 28, cy, 9).fill(swatch.red.fill).stroke({ width: 3, color: swatch.red.line });
+    for (let k = 0; k < hers; k++)
+      g.circle(cx + 50 + (k - (hers - 1) / 2) * 28, cy, 9)
+        .fill(swatch.red.fill)
+        .stroke({ width: 3, color: swatch.red.line });
   }
 
   private drawTree() {
@@ -520,15 +716,23 @@ class SwingPals implements Game {
     const g = this.tree.clear();
     const cols = L.columns;
     const top = Math.min(...cols.map((c) => c.pivot.long.y));
-    const trunkX = cols.length === 1 ? Math.min(this.view.w - 60, cols[0].pivot.middle.x + 300) : (cols[0].pivot.middle.x + cols[1].pivot.middle.x) / 2 + 30;
-    g.roundRect(trunkX - 34, top - 40, 68, L.seatY - top + 140, 26).fill(wood.fill).stroke({ width: 5, color: wood.line });
+    const trunkX =
+      cols.length === 1
+        ? Math.min(this.view.w - 60, cols[0].pivot.middle.x + 300)
+        : (cols[0].pivot.middle.x + cols[1].pivot.middle.x) / 2 + 30;
+    g.roundRect(trunkX - 34, top - 40, 68, L.seatY - top + 140, 26)
+      .fill(wood.fill)
+      .stroke({ width: 5, color: wood.line });
     for (const [i, c] of cols.entries()) {
       // Only the boughs in use: her three hooks at levels 4–6, otherwise the hook each swing hangs from.
       const used = this.plan.mode === 'together' && i === 1 ? HOOKS : this.rigs[i] ? [this.rigs[i].hook] : [];
       for (const h of used) {
         const p = c.pivot[h];
-        const from = Math.min(p.x - 70, trunkX), to = Math.max(p.x + 70, trunkX);
-        g.roundRect(from, p.y - 14, to - from, 22, 11).fill(wood.fill).stroke({ width: 4, color: wood.line });
+        const from = Math.min(p.x - 70, trunkX),
+          to = Math.max(p.x + 70, trunkX);
+        g.roundRect(from, p.y - 14, to - from, 22, 11)
+          .fill(wood.fill)
+          .stroke({ width: 4, color: wood.line });
         g.circle(p.x, p.y + 6, 7).stroke({ width: 4, color: 0x8c8c9c });
       }
     }
@@ -549,7 +753,14 @@ class SwingPals implements Game {
     for (const h of this.hookTargets) {
       const on = this.rigs[1]?.hook === h.hook;
       const glowing = this.glowHook === h.hook;
-      h.ring.clear().circle(0, 0, 60).fill({ color: 0xffffff, alpha: on ? 0.22 : 0.12 }).stroke({ width: glowing ? 9 : 6, color: glowing ? swatch.yellow.fill : on ? swatch.blue.line : 0xffffff });
+      h.ring
+        .clear()
+        .circle(0, 0, 60)
+        .fill({ color: 0xffffff, alpha: on ? 0.22 : 0.12 })
+        .stroke({
+          width: glowing ? 9 : 6,
+          color: glowing ? swatch.yellow.fill : on ? swatch.blue.line : 0xffffff,
+        });
       h.ring.circle(0, 6, 12).stroke({ width: 6, color: 0x8c8c9c });
     }
   }
@@ -616,7 +827,8 @@ class SwingPals implements Game {
 
   /** How far the apple drops, in its own units, to sit in the basket. */
   private appleDrop(i: number): number {
-    const b = this.bells[i], basket = this.baskets[i];
+    const b = this.bells[i],
+      basket = this.baskets[i];
     return basket.y - b.y - 18;
   }
 
@@ -628,11 +840,19 @@ class SwingPals implements Game {
     const goal = this.goal;
     this.ctx.pet.cheer();
     rig.critter.setMood('happy', 1);
-    this.ctx.particles.burst(b.x, b.y, { kind: 'star', colors: [BRASS.fill, 0xffffff, swatch.yellow.light], count: 14, speed: [100, 260], gravity: 0, life: [0.5, 0.9] });
+    this.ctx.particles.burst(b.x, b.y, {
+      kind: 'star',
+      colors: [BRASS.fill, 0xffffff, swatch.yellow.light],
+      count: 14,
+      speed: [100, 260],
+      gravity: 0,
+      life: [0.5, 0.9],
+    });
     this.ctx.tw.kill(b);
     if (goal === 'apple') {
       sfx.marimba(note);
-      const apple = this.apples[i], basket = this.baskets[i];
+      const apple = this.apples[i],
+        basket = this.baskets[i];
       this.fallen[i] = true;
       this.ctx.tw.kill(apple);
       void this.ctx.tw.to(apple, { y: this.appleDrop(i) }, { duration: 0.55, ease: ease.inQuad }).then(() => {
@@ -707,8 +927,16 @@ class SwingPals implements Game {
       void this.ctx.tw.to(target.ring.scale, { x: 1, y: 1 }, { duration: 0.3 });
     }
     if (her.hook !== hook) {
-      const from = { x: this.layout.columns[1].pivot[her.hook].x, y: this.layout.columns[1].pivot[her.hook].y, L: her.L };
-      const to = { x: this.layout.columns[1].pivot[hook].x, y: this.layout.columns[1].pivot[hook].y, L: ropeOf(this.layout, hook) };
+      const from = {
+        x: this.layout.columns[1].pivot[her.hook].x,
+        y: this.layout.columns[1].pivot[her.hook].y,
+        L: her.L,
+      };
+      const to = {
+        x: this.layout.columns[1].pivot[hook].x,
+        y: this.layout.columns[1].pivot[hook].y,
+        L: ropeOf(this.layout, hook),
+      };
       const move = { k: 0 };
       this.moving = { from, to, move };
       her.hook = hook;
@@ -738,13 +966,20 @@ class SwingPals implements Game {
     await this.ctx.tw.wait(watchTime(l));
     if (this.destroyed) return;
     // Settle.
-    await Promise.all([this.ctx.tw.to(pet, { A: 0 }, { duration: 1.1 }), this.ctx.tw.to(her, { A: 0 }, { duration: 1.1 })]);
+    await Promise.all([
+      this.ctx.tw.to(pet, { A: 0 }, { duration: 1.1 }),
+      this.ctx.tw.to(her, { A: 0 }, { duration: 1.1 }),
+    ]);
     if (this.destroyed) return;
     pet.t0 = her.t0 = null;
     await this.judge(hook);
   }
 
-  private moving: { from: { x: number; y: number; L: number }; to: { x: number; y: number; L: number }; move: { k: number } } | null = null;
+  private moving: {
+    from: { x: number; y: number; L: number };
+    to: { x: number; y: number; L: number };
+    move: { k: number };
+  } | null = null;
 
   private async judge(hook: Hook) {
     const l = this.pairLine;
@@ -756,11 +991,15 @@ class SwingPals implements Game {
       this.glowHook = null;
       this.drawHooks();
       const extra: LineId =
-        l.request === 'twice' ? 'swing-pals.twice-yes'
-        : l.request === 'half' ? 'swing-pals.half-yes'
-        : this.plan.id === 5 && WEIGHT[l.friend] !== WEIGHT[l.petFriend] ? 'swing-pals.heavy-same'
-        : this.plan.id === 6 ? 'swing-pals.big-same'
-        : 'swing-pals.together';
+        l.request === 'twice'
+          ? 'swing-pals.twice-yes'
+          : l.request === 'half'
+            ? 'swing-pals.half-yes'
+            : this.plan.id === 5 && WEIGHT[l.friend] !== WEIGHT[l.petFriend]
+              ? 'swing-pals.heavy-same'
+              : this.plan.id === 6
+                ? 'swing-pals.big-same'
+                : 'swing-pals.together';
       await this.ctx.say(extra);
       if (this.destroyed) return;
       await this.nextLine();
@@ -778,7 +1017,8 @@ class SwingPals implements Game {
       if (l.request === 'twice') await this.ctx.say('swing-pals.twice-not-yet');
       else if (l.request === 'half') await this.ctx.say('swing-pals.half-not-yet');
       else await this.ctx.say(r.side === 'quicker' ? 'swing-pals.quicker' : 'swing-pals.slower');
-      if (!free && this.plan.id === 5 && WEIGHT[l.friend] !== WEIGHT[l.petFriend]) await this.ctx.say('swing-pals.heavy-same');
+      if (!free && this.plan.id === 5 && WEIGHT[l.friend] !== WEIGHT[l.petFriend])
+        await this.ctx.say('swing-pals.heavy-same');
       if (!free && this.plan.id === 6) await this.ctx.say('swing-pals.big-same');
     }
     this.tried.add(hook);
@@ -795,14 +1035,19 @@ class SwingPals implements Game {
     this.busy = true;
     this.guess = i;
     const race = this.race;
-    const first = firstBack(race), slow = first === 0 ? 1 : 0;
+    const first = firstBack(race),
+      slow = first === 0 ? 1 : 0;
     this.marker.visible = true;
     this.marker.scale.set(0.5);
     void this.ctx.tw.to(this.marker.scale, { x: 1, y: 1 }, { duration: 0.2, ease: ease.outBack });
     sfx.pop();
     void this.ctx.say('swing-pals.ready-go');
     this.ctx.tw.kill(this.hold);
-    await this.ctx.tw.to(this.hold, { k: 1 }, { duration: 0.2 + 0.7 * (1 - this.hold.k), ease: ease.inOutSine });
+    await this.ctx.tw.to(
+      this.hold,
+      { k: 1 },
+      { duration: 0.2 + 0.7 * (1 - this.hold.k), ease: ease.inOutSine },
+    );
     if (this.destroyed) return;
     await this.ctx.tw.wait(0.4);
     if (this.destroyed) return;
@@ -821,7 +1066,14 @@ class SwingPals implements Game {
     sfx.clap();
     sfx.bell(NOTES[race.friends[first]] + 5, 0.3);
     const m = this.mittens[first];
-    this.ctx.particles.burst(m.x, m.y - 30, { kind: 'star', colors: [0xffffff, swatch.yellow.light], count: 10, speed: [80, 200], gravity: 0, life: [0.4, 0.7] });
+    this.ctx.particles.burst(m.x, m.y - 30, {
+      kind: 'star',
+      colors: [0xffffff, swatch.yellow.light],
+      count: 10,
+      speed: [80, 200],
+      gravity: 0,
+      life: [0.4, 0.7],
+    });
     this.rigs[first].critter.setMood('happy', 1);
     void this.ctx.tw.to(m.scale, { x: 0, y: 0 }, { duration: 0.3, delay: 0.5 });
     await this.ctx.tw.wait(raceWatch(race) - quickT);
@@ -904,8 +1156,10 @@ class SwingPals implements Game {
       if (!this.busy && this.pushLineDone()) void this.finishPushLine();
     }
     for (const [i, rig] of this.rigs.entries()) {
-      if (this.round.kind === 'push') rig.A += (rig.target - rig.A) * (1 - Math.exp((-dt * 4) / period(rig.hook)));
-      let px = rig.col.pivot[rig.hook].x, py = rig.col.pivot[rig.hook].y;
+      if (this.round.kind === 'push')
+        rig.A += (rig.target - rig.A) * (1 - Math.exp((-dt * 4) / period(rig.hook)));
+      let px = rig.col.pivot[rig.hook].x,
+        py = rig.col.pivot[rig.hook].y;
       if (i === 1 && this.moving) {
         const { from, to, move } = this.moving;
         px = from.x + (to.x - from.x) * move.k;
@@ -941,8 +1195,16 @@ class SwingPals implements Game {
       while (this.clapsLeft.length && this.clapsLeft[0] <= since) {
         this.clapsLeft.shift();
         sfx.clap();
-        const a = seatAt(L, L.columns[0], this.rigs[0].hook, -this.rigs[0].A), b = seatAt(L, L.columns[1], this.rigs[1].hook, -this.rigs[1].A);
-        this.ctx.particles.burst((a.x + b.x) / 2, Math.min(a.y, b.y) - 120, { kind: 'star', colors: [0xffffff, swatch.yellow.light], count: 8, speed: [80, 180], gravity: 0, life: [0.4, 0.7] });
+        const a = seatAt(L, L.columns[0], this.rigs[0].hook, -this.rigs[0].A),
+          b = seatAt(L, L.columns[1], this.rigs[1].hook, -this.rigs[1].A);
+        this.ctx.particles.burst((a.x + b.x) / 2, Math.min(a.y, b.y) - 120, {
+          kind: 'star',
+          colors: [0xffffff, swatch.yellow.light],
+          count: 8,
+          speed: [80, 180],
+          gravity: 0,
+          life: [0.4, 0.7],
+        });
       }
     }
     // Level 7: the paw rides over her guess.
@@ -958,15 +1220,25 @@ class SwingPals implements Game {
       const rig = this.rigs[firstBack(this.race)];
       const p = rig.col.pivot[rig.hook];
       const rot = (-rig.angle(this.t) * Math.PI) / 180;
-      const c = Math.cos(rot), sn = Math.sin(rot);
+      const c = Math.cos(rot),
+        sn = Math.sin(rot);
       for (const x of [-52, 52]) {
-        this.glow.moveTo(p.x + x * c, p.y + x * sn).lineTo(p.x + x * c - rig.L * sn, p.y + x * sn + rig.L * c);
+        this.glow
+          .moveTo(p.x + x * c, p.y + x * sn)
+          .lineTo(p.x + x * c - rig.L * sn, p.y + x * sn + rig.L * c);
       }
-      this.glow.stroke({ width: 16 + 3 * Math.sin(this.t * 5), color: swatch.yellow.fill, alpha: 0.75, cap: 'round' });
+      this.glow.stroke({
+        width: 16 + 3 * Math.sin(this.t * 5),
+        color: swatch.yellow.fill,
+        alpha: 0.75,
+        cap: 'round',
+      });
     }
     if (this.glowHook) {
       const p = L.columns[1].pivot[this.glowHook];
-      this.glow.circle(p.x, p.y, 72 + 6 * Math.sin(this.t * 5)).stroke({ width: 8, color: swatch.yellow.fill, alpha: 0.8 });
+      this.glow
+        .circle(p.x, p.y, 72 + 6 * Math.sin(this.t * 5))
+        .stroke({ width: 8, color: swatch.yellow.fill, alpha: 0.8 });
     }
     if (this.round.kind !== 'push' && !this.busy) this.lookT += dt;
   }
@@ -983,10 +1255,16 @@ class SwingPals implements Game {
       const spot = { on: this.ground, x: z.x + z.w / 2, y: z.y + z.h * 0.55 };
       if (this.plan.id === 1 || s.t0 === null) return { tap: spot, receiver: this.ground, pause: 0.7 };
       if (s.waiting) return null;
-      return { tap: spot, receiver: this.ground, when: () => (this.busy ? 'cancel' : nextBackTime(this.swings[i], this.t) - this.t < 0.45), pause: 0.2 };
+      return {
+        tap: spot,
+        receiver: this.ground,
+        when: () => (this.busy ? 'cancel' : nextBackTime(this.swings[i], this.t) - this.t < 0.45),
+        pause: 0.2,
+      };
     }
     if (this.lookT < 1) return null;
-    if (this.round.kind === 'predict') return this.guess === null ? { tap: { on: this.friendNodes[firstBack(this.race)] } } : null;
+    if (this.round.kind === 'predict')
+      return this.guess === null ? { tap: { on: this.friendNodes[firstBack(this.race)] } } : null;
     const right = this.hookTargets.find((h) => h.hook === rightHook(this.pairLine));
     return right ? { tap: { on: right.node } } : null;
   }
@@ -997,7 +1275,8 @@ class SwingPals implements Game {
     this.finished = true;
     this.busy = true;
     const friends: Friend[] = [];
-    if (this.round.kind === 'push') for (const l of this.round.lines) for (const s of l.swings) friends.push(s.friend);
+    if (this.round.kind === 'push')
+      for (const l of this.round.lines) for (const s of l.swings) friends.push(s.friend);
     else if (this.round.kind === 'predict') for (const r of this.round.lines) friends.push(...r.friends);
     else for (const l of this.round.lines) friends.push(l.petFriend, l.friend);
     const row = new Container();
@@ -1043,7 +1322,9 @@ class SwingPals implements Game {
 
 function swingPicture(friend: Friend, angle: number): Container {
   const c = new Container();
-  c.addChild(new Graphics().roundRect(-110, -230, 220, 24, 12).fill(wood.fill).stroke({ width: 4, color: wood.line }));
+  c.addChild(
+    new Graphics().roundRect(-110, -230, 220, 24, 12).fill(wood.fill).stroke({ width: 4, color: wood.line }),
+  );
   const arm = new Container();
   arm.position.set(0, -215);
   arm.rotation = angle;
@@ -1052,7 +1333,12 @@ function swingPicture(friend: Friend, angle: number): Container {
   critter.scale.set(0.42);
   critter.position.set(0, 160);
   arm.addChild(
-    new Graphics().moveTo(-40, 0).lineTo(-40, 165).moveTo(40, 0).lineTo(40, 165).stroke({ width: 5, color: ROPE }),
+    new Graphics()
+      .moveTo(-40, 0)
+      .lineTo(-40, 165)
+      .moveTo(40, 0)
+      .lineTo(40, 165)
+      .stroke({ width: 5, color: ROPE }),
     new Graphics().roundRect(-50, 160, 100, 16, 6).fill(wood.fill).stroke({ width: 3, color: wood.line }),
     critter,
   );
@@ -1100,7 +1386,8 @@ export const swingPals: GameModule = {
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
-  coplayHint: 'One of you pushes; the other says "now!" when the friend comes back. On the rope levels, both guess the rope aloud before tapping.',
+  coplayHint:
+    'One of you pushes; the other says "now!" when the friend comes back. On the rope levels, both guess the rope aloud before tapping.',
   offScreen: {
     all: 'Tie a sock to a string and swing it short and long: count the swings together. At the playground, push in time and feel it go higher.',
     // Under 3: no string (a cord).
