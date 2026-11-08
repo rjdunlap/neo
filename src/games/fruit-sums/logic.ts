@@ -330,11 +330,11 @@ export interface TreeLayout {
   basket: Pt;
 }
 
-export const BASKET_W = 230;
+export const BASKET_W = 260;
 export const BASKET_H = 96;
 /** A fruit in the basket is drawn this size, the k-th one along this far from its middle. */
 export const BASKET_SCALE = 0.5;
-export const basketSpot = (basket: Pt, k: number): Pt => ({ x: basket.x + (k - 2.5) * 34, y: basket.y - 26 });
+export const basketSpot = (basket: Pt, k: number): Pt => ({ x: basket.x + (k - 2.5) * 40, y: basket.y - 66 });
 
 export function layoutFor(w: number, h: number, count: number, signs: boolean): TreeLayout {
   // A tall window (portrait) puts the working rows lower rather than leaving the bottom empty.

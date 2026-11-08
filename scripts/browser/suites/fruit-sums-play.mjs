@@ -32,13 +32,14 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       if (way.op) await tap(`kit.tapOn(neo.scene.game.leaves.get('${way.op}'))`);
       await tap('kit.tapOn(neo.scene.game.check)');
     };
-    // FROM_LEVEL=4 plays only the newest level.
+    // FROM_LEVEL=4 starts at level 4; FROM_LEVEL=5 plays only the newest level.
     const from = Number(process.env.FROM_LEVEL ?? 1);
     if (from <= 3) await levelsOneToThree();
-    await levelFour();
+    if (from <= 4) await levelFour();
+    await levelFive();
     assert.deepEqual(errors, []);
     log(
-      `Fruit Sums: ${from <= 3 ? 'levels 1 and 3, no-pick check, two misses and one hint that glows the start fruit, its partner and the check, the same sum the other way round, two ways to finish, a take away by leaf, portrait in the cove look; ' : ''}level 4 with the sum on the sign, one wrong total, the sign's own pair as the same way when the tray holds it, two ways written "x + y = p + q", portrait; one sticker per round passed`,
+      `Fruit Sums: ${from <= 3 ? 'levels 1 and 3, no-pick check, two misses and one hint that glows the start fruit, its partner and the check, the same sum the other way round, two ways to finish, a take away by leaf, portrait in the cove look; ' : ''}${from <= 4 ? 'level 4 with the sum on the sign, one wrong total, the sign\'s own pair as the same way when the tray holds it, two ways written "x + y = p + q", portrait; ' : ''}level 5 portrait, one wrong pair as a miss, three pairs into the basket until the tree is empty; one sticker per round passed`,
     );
 
     async function levelsOneToThree() {
@@ -155,6 +156,56 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       await build(ways[1]);
       await finished('fruit-sums');
       log(`Fruit Sums level 4: sign ${sign.join(' + ')}, tray ${t4.join(',')}, own pair in tray: ${!!own}`);
+    }
+
+    async function levelFive() {
+      // Level 5: six fruit make three pairs; one wrong pair is a miss and the fruit stay; each right pair drops into the basket and
+      // leaves the tree, and the round ends with one sticker once the tree is empty.
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await launch('fruit-sums', 5);
+      await landed();
+      const t5 = await page.evaluate(() => [
+        neo.scene.game.target,
+        neo.scene.game.tray,
+        neo.scene.game.clear,
+      ]);
+      assert.equal(t5[2], true, 'level 5 clears the tree');
+      const pairOnTree = () =>
+        page.evaluate(() => {
+          const g = neo.scene.game,
+            t = g.tray;
+          let right = null,
+            wrong = null;
+          for (let a = 0; a < t.length; a++)
+            for (let b = a + 1; b < t.length; b++) {
+              if (g.gone[a] || g.gone[b]) continue;
+              if (t[a] + t[b] === g.target) right ??= { a, b };
+              else wrong ??= { a, b };
+            }
+          return { right, wrong };
+        });
+      const first = await pairOnTree();
+      assert.ok(first.wrong, 'a wrong pair to try');
+      await build(first.wrong);
+      assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.checkMade.visible]), [
+        1,
+        true,
+      ]);
+      for (const kk of ['slotA', 'slotB'])
+        if (await page.evaluate((kk) => neo.scene.game[kk] !== null, kk))
+          await tap(`kit.tapOn(neo.scene.game.tiles[neo.scene.game['${kk}']])`);
+      for (let pair = 1; pair <= 3; pair++) {
+        const { right } = await pairOnTree();
+        assert.ok(right, `a right pair is on the tree before pair ${pair}`);
+        await build(right);
+        if (pair < 3) {
+          await idle();
+          assert.equal(await page.evaluate(() => neo.scene.game.gone.filter(Boolean).length), pair * 2);
+          if (pair === 1) await screenshot('fruit-sums-5-portrait-basket');
+        }
+      }
+      await finished('fruit-sums');
+      log(`Fruit Sums level 5: make ${t5[0]}, tray ${t5[1].join(',')}, cleared in three pairs`);
     }
   }
 
