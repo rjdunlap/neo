@@ -249,6 +249,7 @@ class PuddleGobble implements Game {
   /** Level 12: full pails' tap targets, above the steering layer so tipping one back never steers. */
   private readonly pailTaps = new Container();
   private pailTargets: (Container | null)[] = [];
+  private pailArt: Container[] = [];
   /** Level 12: a pail that refused a pour re-arms once the puddle has left it. */
   private readonly pailArmed = [true, true];
 
@@ -440,6 +441,7 @@ class PuddleGobble implements Game {
     this.pail.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.pailTaps.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.pailTargets = [];
+    this.pailArt = [];
     if (this.plan.mode !== 'pail') return;
     pailSpots(this.plan, this.field).forEach((at, i) => {
       const full = this.state.filled[i] ?? null;
@@ -480,7 +482,9 @@ class PuddleGobble implements Game {
       n.position.set(0, 10);
       c.addChild(g, n);
       c.position.set(at.x, at.y);
-      this.pail.addChild(c);
+      this.pailArt.push(c);
+      // A full pail sits above the puddle, so its tick and number show even with the puddle still on it.
+      (full ? this.pailTaps : this.pail).addChild(c);
       if (!full) {
         this.pailTargets.push(null);
         return;
@@ -808,7 +812,7 @@ class PuddleGobble implements Game {
     this.speak('gobble.tip-back');
     this.drawPail();
     // Touch-down feedback: the emptied pail lifts and settles as its things fly out.
-    const emptied = this.pail.children[i];
+    const emptied = this.pailArt[i];
     if (emptied) {
       emptied.y -= 14;
       void this.ctx.tw.to(emptied, { y: at.y }, { duration: 0.3, ease: ease.outBack });

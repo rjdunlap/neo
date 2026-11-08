@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, errors, log, scene, tap, screenshot, launch, finished }) {
-  /** Puddle Gobble by touch: level 1 led by taps, level 8 with a too-big touch (never a miss), a refused overshoot (one miss), a requested hint (one hint), finished by taps; level 9 with one bigger number first (one miss); level 10 with a too-big touch and the 5 → 10 → 6 step; level 11 under the pail and a requested hint; level 4 upright; level 5 upright in the evening mood. */
+  /** Puddle Gobble by touch: level 1 led by taps, level 8 with a too-big touch (never a miss), a refused overshoot (one miss), a requested hint (one hint), finished by taps; level 9 with one bigger number first (one miss); level 10 with a too-big touch and the 5 → 10 → 6 step; level 11 under the pail and a requested hint; level 4 upright; level 5 upright in the evening mood; level 12 (two pails) upright with a lead onto the wrong pail, a refused overshoot, a pour, a tip back and a requested hint. `PUDDLE_ONLY=12` plays level 12 alone. */
   async function puddleGobblePlay() {
     const state = () =>
       page.evaluate(() => {
@@ -85,7 +85,12 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
         return L.hintTarget(g.board, g.state);
       });
       if (!h) return;
-      if ('letGo' in h) {
+      if ('pour' in h) {
+        await besidePail(h.pour);
+        await tapPail(h.pour);
+      } else if ('tip' in h) {
+        await tapPail(h.tip);
+      } else if ('letGo' in h) {
         const p = await page.evaluate((id) => {
           const g = neo.scene.game;
           return g.tokens.find((t) => t.id === id).node.toGlobal({ x: 0, y: 0 });
@@ -100,6 +105,107 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
     };
     const sticker = (n) =>
       page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, n, { timeout: 20000 });
+
+    /** Level 12: set the puddle down just below pail i, clear of the things, so a tap on the pail reaches only it. */
+    const besidePail = (i) =>
+      page.evaluate(async (i) => {
+        const L = await import('/src/games/puddle-gobble/logic.ts');
+        const g = neo.scene.game,
+          at = L.pailSpots(g.plan, g.field)[i],
+          R = g.diameter / 2;
+        for (const a of [Math.PI / 2, (Math.PI * 2) / 3, Math.PI / 3, (Math.PI * 5) / 6, Math.PI]) {
+          const x = at.x + Math.cos(a) * (R + 40),
+            y = at.y + Math.sin(a) * (R + 40);
+          if (g.items.some((o) => o.where === 'sand' && Math.hypot(o.node.x - x, o.node.y - y) < R + 70)) continue;
+          g.puddle.position.set(x, y);
+          g.target.x = x;
+          g.target.y = y;
+          return true;
+        }
+        return false;
+      }, i);
+    /** Tap pail i: an open one steers the puddle onto it, a full one tips back. */
+    const tapPail = async (i) => {
+      const p = await page.evaluate(async (i) => {
+        const L = await import('/src/games/puddle-gobble/logic.ts');
+        const g = neo.scene.game;
+        return g.ctx.stage.toGlobal(L.pailSpots(g.plan, g.field)[i]);
+      }, i);
+      await page.evaluate(({ x, y }) => kit.tap(x, y), p);
+      await page.waitForTimeout(300);
+      await still();
+    };
+    const sizeId = (v) =>
+      page.evaluate((v) => neo.scene.game.board.things.find((t) => t.size === v).id, v);
+    const filled = () =>
+      page.evaluate(() => {
+        const g = neo.scene.game;
+        return g.state.filled.map((f) => (f ? f.map((id) => g.items[id].thing.size).sort((a, b) => a - b) : null));
+      });
+
+    // Level 12 upright, the authored round: pails 9 (left) and 11, puddle 3, things 1, 2, 3, 4, 5 and 7.
+    async function twoPails() {
+      await page.setViewportSize({ width: 1024, height: 1365 });
+      await launch('puddle-gobble', 12);
+      await still();
+      const n = await page.evaluate(() => kit.store.data.stickers.length);
+      let st = await state();
+      assert.deepEqual([st.puddle, st.left], [3, 6], 'two pails: puddle 3 with six on the sand');
+      assert.deepEqual(await page.evaluate(() => neo.scene.game.board.pails), [9, 11]);
+      // A lead onto the wrong pail: nothing moves, never a miss.
+      assert.ok(await besidePail(1));
+      await tapPail(1);
+      st = await state();
+      assert.deepEqual([st.misses, st.puddle, st.left], [0, 3, 6], 'a lead onto the wrong pail changes nothing');
+      assert.deepEqual(await filled(), [null, null]);
+      // Smallest first to 9, then the 7 would pass the bigger pail: refused, one miss.
+      for (const v of [1, 2, 3]) {
+        const id = await sizeId(v);
+        assert.ok(await besides(id));
+        await tapThing(id);
+      }
+      st = await state();
+      assert.equal(st.puddle, 9, '1 + 2 + 3 makes the puddle 9');
+      const seven = await sizeId(7);
+      assert.ok(await besides(seven));
+      await tapThing(seven);
+      st = await state();
+      assert.deepEqual([st.misses, st.puddle], [1, 9], 'the 7 would pass 11: refused, one miss');
+      // Pour into the 9; the puddle drops to 3 and the 11 is now stranded.
+      assert.ok(await besidePail(0));
+      await tapPail(0);
+      st = await state();
+      assert.deepEqual(await filled(), [[1, 2, 3], null], 'the 9 is full of 1, 2 and 3');
+      assert.equal(st.puddle, 3, 'the puddle is back to 3');
+      await page.waitForTimeout(400);
+      await screenshot('puddle-gobble-12-portrait');
+      // Tip it back: free, never a miss.
+      await tapPail(0);
+      st = await state();
+      assert.deepEqual([st.misses, st.hints, st.left], [1, 0, 6], 'tipping back is free');
+      assert.deepEqual(await filled(), [null, null]);
+      await page.evaluate(() => neo.scene.game.askForHint());
+      await page.waitForTimeout(150);
+      st = await state();
+      assert.equal(st.hints, 1, 'a requested hint counts once');
+      assert.ok(st.glow, 'and glows');
+      for (let guard = 0; guard < 16 && !(await page.evaluate(() => neo.scene.finished)); guard++)
+        await followHint(true);
+      await sticker(n);
+      st = await state();
+      assert.deepEqual([st.misses, st.hints], [1, 1], 'level 12 finishes with one miss and one hint');
+      assert.deepEqual(await filled(), [
+        [2, 4],
+        [3, 5],
+      ]);
+      await page.setViewportSize({ width: 1024, height: 768 });
+    }
+    if (process.env.PUDDLE_ONLY === '12') {
+      await twoPails();
+      assert.deepEqual(errors, [], 'page errors');
+      log('Puddle Gobble level 12: a wrong pail, a refused overshoot, a pour, a tip back and a requested hint, upright');
+      return;
+    }
 
     // Level 1: tap each shell; the puddle glides over and soaks it. No misses or hints; one sticker.
     await launch('puddle-gobble', 1);
@@ -300,9 +406,10 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       await followHint(true);
     await sticker(n);
     await page.setViewportSize({ width: 1024, height: 768 });
+    await twoPails();
     assert.deepEqual(errors, [], 'page errors');
     log(
-      'Puddle Gobble: level 1 by taps, level 8 with a too-big touch, a refused overshoot and a requested hint, level 9 with a bigger number first, level 10 with dots, level 11 too full, level 4 upright, level 5 upright in the evening',
+      'Puddle Gobble: level 1 by taps, level 8 with a too-big touch, a refused overshoot and a requested hint, level 9 with a bigger number first, level 10 with dots, level 11 too full, level 4 upright, level 5 upright in the evening, level 12 two pails upright',
     );
   }
 
