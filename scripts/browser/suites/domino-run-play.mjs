@@ -4,7 +4,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
 /**
  * Domino Run by touch: level 1 tipped by taps, level 8 with a stalled run, a requested hint and the rest by drags, level 5
  * upright, level 6 upright at sunset with a drop on a puddle, level 9 upright with a wrong guess and a requested hint,
- * level 10 upright with a giant stood too soon. `DOMINO_LEVELS=10` (a comma list) plays only those levels.
+ * level 10 upright with a giant stood too soon, level 11 upright with a tall refused under the pier. `DOMINO_LEVELS=10` (a comma list) plays only those levels.
  */
 async function dominoRunPlay() {
   const state = () => page.evaluate(() => { const g = neo.scene.game; return { busy: g.busy, misses: g.misses, hints: g.hints, stalls: g.stalls, hinted: !!g.hinted, index: g.index }; });
@@ -154,6 +154,26 @@ async function dominoRunPlay() {
   st = await state(); assert.deepEqual([st.misses, st.hints], [0, 1], 'level 10: no misses, the one requested hint');
   await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, stickers10, { timeout: 15000 });
   played.push('level 10 upright with a giant too soon, a requested hint and the fix');
+  }
+  if (want(11)) {
+  // Level 11 upright: the first line has the pier at slot 3; the tall dropped under it springs back (never a miss, hint or
+  // stall), and the hint's way (small under the pier, tall, giant) rings the gong.
+  const stickers11 = await page.evaluate(() => kit.store.data.stickers.length);
+  await launch('domino-run', 11); await idle(); await page.waitForTimeout(500);
+  const first = await page.evaluate(async () => {
+    const L = await import('/src/games/domino-run/logic.ts'), g = neo.scene.game, l = g.lay.lanes[0];
+    const p = g.pieces.find((q) => !q.at && q.size === 2);
+    return { low: g.line.lanes[0].low, end: g.line.lanes[0].end, a: p.node.toGlobal({ x: 0, y: -60 }), b: g.pieceLayer.parent.toGlobal({ x: l.x0 + 3 * L.PITCH, y: l.base + 40 }) };
+  });
+  assert.deepEqual([first.low, first.end], [[3], 'gong'], 'level 11 opens with the pier at slot 3 and a gong');
+  await page.evaluate(({ a, b }) => kit.drag(kit.line([a.x, a.y], [b.x, b.y], 16)), first); await page.waitForTimeout(600);
+  st = await page.evaluate(() => { const g = neo.scene.game; return { misses: g.misses, hints: g.hints, stalls: g.stalls, inTray: g.pieces.every((q) => !q.at), pier: g.placed[0][3] }; });
+  assert.deepEqual(st, { misses: 0, hints: 0, stalls: 0, inTray: true, pier: 0 }, 'a tall dropped under the pier springs back, never a miss');
+  await screenshot('domino-run-11-portrait');
+  await solveAll();
+  st = await state(); assert.deepEqual([st.misses, st.hints], [0, 0], 'level 11: no misses, no hints');
+  await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, stickers11, { timeout: 15000 });
+  played.push('level 11 upright with a refused tall under the pier and the climb to the gong');
   }
   await page.setViewportSize({ width: 1024, height: 768 });
   assert.deepEqual(errors, [], 'page errors');

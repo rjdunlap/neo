@@ -16,7 +16,7 @@ Typecheck, build, source review and both level-1 ghost-finger demos passed. Full
 
 [PR #1379](https://github.com/rjdunlap/neo/pull/1379) completes the three-game pilot [PR #1377](https://github.com/rjdunlap/neo/pull/1377) (Animal Snack, Frog Hop and Pond Typing): 133 remaining `LEVELS` tables and ten inline ladders moved from `index.ts` into `logic.ts`; Playdate Workshop's internal plans are now `PLANS`. The source scan rejects tables and inline ladders in every game `index.ts`, with no allowlists. The codemod also handles tightly spaced imports. Supported-band ranges and order are unchanged; unsupported inline bands use the standard `rangeFor` fallback. No game rules, content or shared runtime changed.
 
-Typecheck, full units (6,057 passed, 5 skipped), source guards and game-docs staleness passed on base `566ad6be` plus working diff; direct probes confirmed the 133 unchanged initializers and ten supported-band ladders. Browser, build and offline were not run. [Verification](../VERIFICATION.md#2026-11-07--level-ladders-into-logicts-complete-codebase-item-5-pr-1379).
+Typecheck, full units (6,057 passed, 5 skipped), source guards and game-docs staleness passed on base `566ad6be` plus working diff; direct probes confirmed the 133 unchanged initializers and ten supported-band ladders. Browser, build and offline were not run. [Verification](VERIFICATION-2026-11-07.md#2026-11-07--level-ladders-into-logicts-complete-codebase-item-5-pr-1379).
 
 
 

@@ -13,7 +13,7 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   LEVELS,
-  DOMINO_H, DOMINO_W, dominoLayout, emptyPlacement, hintPlacement, LOOK_LINE, looksFor, makeRound, MOODS, PITCH, planFor, puddles,
+  DOMINO_H, DOMINO_W, dominoLayout, emptyPlacement, fits, hintPlacement, LOOK_LINE, looksFor, makeRound, MOODS, PITCH, planFor, puddles,
   remaining, run, sizeAt, slotBox, solutions, SLOT_H, stopsAt, TRAY_H, TRAY_W, type DominoLayout, type EndLook, type Hint, type Line, type Mood,
   type Placement, type Plan, type Size,
 } from './logic';
@@ -333,6 +333,7 @@ class DominoRun implements Game {
     if (this.plan.id === 4) await this.ctx.say('domino-run.tall');
     if (this.plan.id === 6) await this.ctx.say('domino-run.grow');
     if (this.plan.id === 10) await this.ctx.say('domino-run.puddle');
+    if (this.plan.id === 11) await this.ctx.say('domino-run.pier');
   }
 
   /** Draw the line as it stands: lanes, pinned dominoes, starters, ends, and her dominoes in their sockets or the tray. */
@@ -376,6 +377,12 @@ class DominoRun implements Game {
         socket.position.set(x(s), l.base);
         socket.eventMode = 'none';
         this.laneLayer.addChild(socket);
+      }
+      // Level 11: a low boardwalk over the pier's socket, too low for a tall domino; it never takes the socket's touches.
+      for (const s of lane.low ?? []) {
+        const pier = pierArt();
+        pier.position.set(x(s), l.base);
+        this.laneLayer.addChild(pier);
       }
       for (let s = 1; s < lane.n; s++) {
         if (!lane.fixed[s]) continue;
@@ -497,9 +504,17 @@ class DominoRun implements Game {
       else sfx.tick();
       return false;
     }
+    const lane = this.line.lanes[target.lane];
+    if (!fits(lane, target.slot, p.size)) {
+      // Too tall for the pier: a knock, and it springs back. Never a miss.
+      sfx.knock();
+      void this.ctx.say('domino-run.too-tall');
+      return false;
+    }
     const other = this.pieces.find((q) => q !== p && q.at?.lane === target.lane && q.at.slot === target.slot);
     const from = p.at;
-    if (other) this.moveTo(other, from, false);
+    // A swap never stands a big domino under the pier: it goes back to the tray instead.
+    if (other) this.moveTo(other, from && fits(this.line.lanes[from.lane], from.slot, other.size) ? from : null, false);
     this.moveTo(p, target);
     return true;
   }
@@ -611,7 +626,7 @@ class DominoRun implements Game {
 
   private stallLine(stall: { reason: string; at: number }): keyof typeof VOICE {
     if (stall.reason === 'too-far') return 'domino-run.too-far';
-    return (this.plan.id === 6 || this.plan.id === 10) && sizeAt(this.line!.lanes[0], this.placed[0], stall.at) === 3 ? 'domino-run.too-heavy-giant' : 'domino-run.too-heavy';
+    return (this.plan.id === 6 || this.plan.id >= 10) && sizeAt(this.line!.lanes[0], this.placed[0], stall.at) === 3 ? 'domino-run.too-heavy-giant' : 'domino-run.too-heavy';
   }
 
   /** The chain falls, lane by lane, until each end rings or stalls; a stall rings its gap unless `ring` is off. */
@@ -737,6 +752,20 @@ class DominoRun implements Game {
     const a = 0.35 + 0.15 * Math.sin(this.clock * 6);
     g.roundRect(l.x0 + slot * PITCH - w / 2, l.base - h, w, h, 9).fill({ color: swatch.yellow.fill, alpha: a }).stroke({ width: 4, color: swatch.yellow.line, alpha: a + 0.2 });
   }
+}
+
+/** The pier on (0, 0), a socket's foot: a plank on two posts, low enough that only a small domino stands under it. */
+function pierArt(): Graphics {
+  const top = -(DOMINO_H[1] + 14);
+  const g = new Graphics()
+    .rect(-44, top, 8, -top).fill(wood.fill).stroke({ width: 2, color: wood.line })
+    .rect(36, top, 8, -top).fill(wood.fill).stroke({ width: 2, color: wood.line })
+    .roundRect(-56, top - 16, 112, 16, 5).fill(wood.light).stroke({ width: 3, color: wood.line })
+    .moveTo(-20, top - 16).lineTo(-20, top).moveTo(18, top - 16).lineTo(18, top).stroke({ width: 2, color: wood.line, alpha: 0.6 })
+    .rect(-50, top - 44, 6, 28).rect(44, top - 44, 6, 28).fill(wood.line)
+    .roundRect(-52, top - 48, 104, 7, 3).fill(wood.fill).stroke({ width: 2, color: wood.line });
+  g.eventMode = 'none';
+  return g;
 }
 
 /** Level 9's guess: a little flag planted above the domino she tapped, apart from it so it stays up when the domino falls. */

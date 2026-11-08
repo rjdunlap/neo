@@ -113,3 +113,10 @@ Changed: `scripts/ladders-into-logic.mjs` (moves a game's `LEVELS` table into `l
 ## 2026-11-07 — Mossy Path slice 1: more mazes, coverage plans and looks
 
 Changed: six mazes per level at 4–7; three coverage plans per level at 1–3 (open 3 × 3 instead of the dive's 2 × 5); seeded season and berry looks in `src/games/mossy-path/`; `MOSSY_ONLY=look` mode in the `mossypath` suite. Ran: `npm run typecheck`; `npx vitest run src/games/mossy-path src/games/registry.test.ts` 55 passed; `BROWSER_SUITE=mossypath MOSSY_ONLY=look` pass (level 6 forced autumn, one wrong branch, one hint, portrait 768×1024 with cells ≥ 100, one sticker; level-7 snow and strawberry screenshot). Open: `fingerdemo` (bot unchanged), build, offline and the full `mossypath` suite (levels 1, 3, 4, 7) not run; how the looks read on an iPad is unchecked.
+
+## 2026-11-07 — Level ladders into `logic.ts`, complete (codebase item 5, PR #1379)
+
+Changed: 133 remaining tables and ten inline ladders moved to `logic.ts`; Playdate Workshop's internal plans renamed `PLANS`; source-scan allowlists removed; codemod handles tightly spaced imports.
+Tested: base `566ad6be` plus working diff. Ran: `npm run typecheck`; `npm test` (325 files, 6,057 passed, 5 skipped; 6,062 total), including both source guards and game-docs staleness.
+Direct probes (`test-results/check-ladders.mjs` and `test-results/check-inline-ladders.mjs`, ignored and retained in the worktree): all 133 table initializers byte-identical; all ten inline tables match original supported-band ranges and order. Unsupported inline bands now use the standard `rangeFor` fallback. Fresh-context reviewer found no issues.
+Not run: browser play, build or offline (no shared runtime change). No new device check.
