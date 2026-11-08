@@ -217,7 +217,11 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
     await tapJar(fill.little);
     await page.waitForTimeout(400);
     st = await state();
-    assert.deepEqual([st.misses, st.board], [1, before10], 'a third fruit on the little jar is refused, one miss');
+    assert.deepEqual(
+      [st.misses, st.board],
+      [1, before10],
+      'a third fruit on the little jar is refused, one miss',
+    );
     for (let k = 0; k < 2; k++) {
       await page.evaluate(() => neo.scene.game.undoButton.press());
       await page.waitForTimeout(300);

@@ -385,8 +385,7 @@ class JarSort implements Game {
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.jars.length) return null;
     const key = render(this.board);
-    if (this.botPlan?.key !== key)
-      this.botPlan = { key, path: solve(this.board, this.caps, this.labels) };
+    if (this.botPlan?.key !== key) this.botPlan = { key, path: solve(this.board, this.caps, this.labels) };
     const next = this.botPlan.path?.[0];
     if (!next) return null;
     const tapJar = (i: number, pause?: number): TouchIntent => {

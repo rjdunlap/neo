@@ -240,10 +240,19 @@ export function moves(b: Board, cap: Caps): Move[] {
 export function canonical(b: Board, labels?: Labels, cap?: Caps): string {
   if (cap !== undefined && typeof cap !== 'number' && new Set(cap).size > 1 && !labels) {
     // Capacity first, so jars sort by size and kinds are named in that order; the capacity itself is never renamed.
-    const sorted = b.map((j, i) => [capAt(cap, i), j.join('')] as const).sort((x, y) => x[0] - y[0] || (x[1] < y[1] ? -1 : x[1] > y[1] ? 1 : 0));
+    const sorted = b
+      .map((j, i) => [capAt(cap, i), j.join('')] as const)
+      .sort((x, y) => x[0] - y[0] || (x[1] < y[1] ? -1 : x[1] > y[1] ? 1 : 0));
     const names = new Map<string, string>();
     return sorted
-      .map(([c, j]) => c + ':' + [...j].map((k) => names.get(k) ?? (names.set(k, String(names.size)), String(names.size - 1))).join(''))
+      .map(
+        ([c, j]) =>
+          c +
+          ':' +
+          [...j]
+            .map((k) => names.get(k) ?? (names.set(k, String(names.size)), String(names.size - 1)))
+            .join(''),
+      )
       .sort()
       .join('|');
   }

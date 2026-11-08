@@ -213,7 +213,10 @@ describe('Jar Sort rules', () => {
       // With the little jar closed the board takes longer or cannot finish, so every shortest way parks in it.
       const without = solve(b, closed);
       expect(without === null || without.length > path.length, s).toBe(true);
-      expect(path.some((m) => m.to === 4), s).toBe(true);
+      expect(
+        path.some((m) => m.to === 4),
+        s,
+      ).toBe(true);
       let at = b;
       for (const m of path) at = move(at, m.from, m.to);
       expect(at[4], `${s} ends with the little jar empty`).toEqual([]);
@@ -223,7 +226,9 @@ describe('Jar Sort rules', () => {
     const b = parse('0012|11|2|222|00');
     expect(refusal(b, plan.caps!, 0, 4)).toBe('full');
     expect(legal(b, plan.caps!, 0, 2)).toBe(true); // the same fruit onto a tall jar with room
-    expect(canonical(parse('0|1|||'), undefined, plan.caps)).not.toBe(canonical(parse('|1|||0'), undefined, plan.caps));
+    expect(canonical(parse('0|1|||'), undefined, plan.caps)).not.toBe(
+      canonical(parse('|1|||0'), undefined, plan.caps),
+    );
     // A full little jar of one fruit is not a finished jar: the board is not solved while its other two wait.
     expect(solved(parse('0000|1111|22|22|22'), plan.caps!)).toBe(false);
     expect(solved(parse('0000|1111|2222||'), plan.caps!)).toBe(true);
@@ -250,7 +255,10 @@ describe('Jar Sort rules', () => {
           expect(render(a.board)).toBe(render(b.board));
           expect(solve(a.board, a.caps, a.labels)!.length, s).toBe(fewest);
           // Each jar keeps its own capacity wherever the shuffle puts it.
-          expect(a.board.every((j, i) => j.length <= capAt(a.caps, i)), s).toBe(true);
+          expect(
+            a.board.every((j, i) => j.length <= capAt(a.caps, i)),
+            s,
+          ).toBe(true);
           expect(
             a.board.flat().every((k) => k >= 0 && k < FRUITS.length),
             s,
