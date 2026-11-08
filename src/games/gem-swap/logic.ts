@@ -1,5 +1,5 @@
 import type { Rng } from '../../engine/random';
-import { POOLS } from './boards';
+import { POOLS } from './boards.ts';
 import type { BandLevels } from '../../progress/difficulty';
 
 export type Board = readonly number[];
@@ -37,6 +37,21 @@ export function fall(board: Board, size: number): number[] {
   for (let x = 0; x < size; x++) {
     const column = Array.from({ length: size }, (_, y) => board[y * size + x]).filter(k => k >= 0);
     column.forEach((k, y) => { out[(size - column.length + y) * size + x] = k; });
+  }
+  return out;
+}
+/**
+ * For each cell after `removed` goes and the rest falls, the row its gem fell from (-1 for an empty cell), so the
+ * fall can be shown: gravity keeps each column's order, so the k-th survivor from the bottom lands k rows up.
+ */
+export function drops(board: Board, removed: readonly number[], size: number): number[] {
+  const out = Array<number>(size * size).fill(-1);
+  for (let x = 0; x < size; x++) {
+    let y = size - 1;
+    for (let from = size - 1; from >= 0; from--) {
+      const i = from * size + x;
+      if (board[i] >= 0 && !removed.includes(i)) out[y-- * size + x] = from;
+    }
   }
   return out;
 }

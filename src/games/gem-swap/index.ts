@@ -11,12 +11,21 @@ import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { LEVELS, botTarget, clear, makePuzzle, neighbors, planFor, solve, swap, type Step, type Swap } from './logic';
+import { LEVELS, botTarget, clear, drops, makePuzzle, neighbors, planFor, solve, swap, type Step, type Swap } from './logic';
 
 function gem(g: Graphics, kind: number, size: number) {
   const color = swatch[RAINBOW[kind]];
   shapePath(g, SHAPES[kind], size).fill(color.fill).stroke({ width: 4, color: color.line });
 }
+
+/** A seeded look for the tray: cell tint, cell rim and the plate behind it. Rims avoid the hint (orange) and selection (blue) rings. */
+const LOOKS = [
+  { name: 'lantern night', cell: swatch.purple.light, rim: swatch.yellow.fill, plate: swatch.purple.line },
+  { name: 'autumn', cell: swatch.orange.light, rim: swatch.brown.fill, plate: swatch.brown.light },
+  { name: 'first snow', cell: swatch.white.light, rim: swatch.white.line, plate: swatch.blue.light },
+] as const;
+/** Each wave: the cleared line pulses, the gems above fall (accelerating, as dropped things do), then squash as they land. */
+const PULSE = 0.35, FALL = 0.25, SQUASH = 0.1, WAVE = PULSE + FALL + SQUASH;
 
 class GemSwap implements Game {
   readonly puzzle;
@@ -29,7 +38,9 @@ class GemSwap implements Game {
   presses = 0;
   busy = false;
   finished = false;
+  readonly look;
   readonly tray = new Container();
+  private readonly plate = new Graphics();
   readonly nodes: Container[] = [];
   readonly undoButton = new Container();
   readonly hintButton = new Container();
@@ -56,8 +67,11 @@ class GemSwap implements Game {
     this.view = ctx.view;
     this.touch = !ctx.couch;
     this.puzzle = makePuzzle(ctx.level, ctx.rng);
+    this.look = ctx.rng.pick(LOOKS);
     this.board = [...this.puzzle.board];
     this.route = solve(this.board, this.puzzle.size);
+    this.plate.eventMode = 'none';
+    this.tray.addChild(this.plate);
     ctx.stage.addChild(this.tray, this.tally, this.help);
     this.tally.eventMode = this.help.eventMode = 'none';
     this.board.forEach((_, i) => {
@@ -92,19 +106,28 @@ class GemSwap implements Game {
       n.hitArea = new Rectangle(-this.pitch / 2, -this.pitch / 2, this.pitch, this.pitch);
       const bg = n.children[0] as Graphics;
       bg.clear().roundRect(-this.pitch / 2 + 3, -this.pitch / 2 + 3, this.pitch - 6, this.pitch - 6, 12)
-        .fill(swatch.purple.light).stroke({ width: 2, color: swatch.purple.fill });
+        .fill(this.look.cell).stroke({ width: 3, color: this.look.rim });
     });
+    const edge = this.pitch / 2 + 10, span = (size - 1) * this.pitch + edge * 2;
+    this.plate.clear().roundRect(-edge, -edge, span, span, 22).fill(this.look.plate);
     this.tally.position.set(v.w / 2, 64); this.help.position.set(v.w / 2, 105);
     [this.undoButton, this.hintButton, this.restartButton].forEach((n, i) => n.position.set(v.w / 2 + (i - 1) * 170, v.h - 65));
     this.draw();
   }
   private draw() {
-    const shown = this.pending?.waves[this.wave];
-    const board = shown?.board ?? this.board;
+    const size = this.puzzle.size, shown = this.pending?.waves[this.wave];
+    const falling = shown && this.clock >= PULSE;
+    const board = !shown ? this.board : !falling ? shown.board : this.pending!.waves[this.wave + 1]?.board ?? this.pending!.board;
+    const from = falling ? drops(shown.board, shown.removed, size) : null;
+    const fell = Math.min(1, (this.clock - PULSE) / FALL), landed = Math.min(1, Math.max(0, (this.clock - PULSE - FALL) / SQUASH));
     this.nodes.forEach((_, i) => {
       const g = this.pictures[i].clear();
       if (board[i] >= 0) gem(g, board[i], this.pitch * 0.29);
-      g.alpha = shown?.removed.includes(i) ? 0.35 + 0.3 * Math.sin(this.clock * 10) : 1;
+      g.alpha = !falling && shown?.removed.includes(i) ? 0.35 + 0.3 * Math.sin(this.clock * 10) : 1;
+      const rows = from && from[i] >= 0 ? Math.floor(i / size) - from[i] : 0;
+      g.y = -rows * this.pitch * (1 - fell * fell);
+      const squash = rows && fell >= 1 ? 0.1 * Math.sin(landed * Math.PI) : 0;
+      g.scale.set(1 + squash * 0.5, 1 - squash);
       const ring = this.outlines[i].clear();
       const color = this.hinted?.includes(i) ? swatch.orange.line : this.selected === i ? swatch.blue.line : !this.touch && this.cursor === i ? ink : null;
       if (color !== null && !this.finished) ring.roundRect(-this.pitch / 2 + 6, -this.pitch / 2 + 6, this.pitch - 12, this.pitch - 12, 10).stroke({ width: 5, color });
@@ -159,9 +182,10 @@ class GemSwap implements Game {
   update(dt: number) {
     if (this.dead || !this.pending) return;
     this.clock += dt;
-    if (this.clock < 0.5) { this.draw(); return; }
+    if (this.clock < WAVE) { this.draw(); return; }
     this.clock = 0; this.wave++;
-    if (this.wave < this.pending.waves.length) { sfx.pop(3); this.draw(); return; }
+    // A cascade climbs the pentatonic scale, one step a falling line.
+    if (this.wave < this.pending.waves.length) { sfx.pop(3 + this.wave); this.draw(); return; }
     this.board = this.pending.board; this.pending = null; this.busy = false;
     this.route = solve(this.board, this.puzzle.size); this.draw();
     if (clear(this.board)) void this.complete();
