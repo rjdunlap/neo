@@ -1,5 +1,5 @@
-// Writes src/games/log-roll/floors.ts: Log Roll's frozen floors, four a level. The first floor of each level is the
-// hand-made original and keeps its place; the rest are seeded random floors of the level's size and gap count with the
+// Writes src/games/log-roll/floors.ts: Log Roll's frozen floors, four a level. The first floor of levels 1–3 is the
+// hand-made original and keeps its place (level 4 has none); the rest are seeded random floors of the level's size and gap count with the
 // hollow on an edge stone, kept only when the reverse breadth-first search finds at least three upright starts at the
 // level's exact depth. Floors equal under mirroring count once. Reproducible:
 //   node scripts/log-roll-floors.mjs
@@ -13,15 +13,16 @@ const PER_LEVEL = 4,
     [5, 5, 1],
     [6, 5, 2],
     [7, 5, 3],
+    [8, 6, 7],
   ],
   MIN_STARTS = 3;
 
 const rng = new Rng(2026_11_07);
-const out = FLOORS.map((pool, level) => {
+const out = PLANS.map(({ depth }, level) => {
   const [w, h, gaps] = SIZES[level],
-    { depth } = PLANS[level],
-    kept = [pool[0]];
-  const seen = new Set([pool[0].join('/'), mirror(pool[0]).join('/')]);
+    original = FLOORS[level]?.[0],
+    kept = original ? [original] : [];
+  const seen = new Set(original ? [original.join('/'), mirror(original).join('/')] : []);
   for (let tries = 0; kept.length < PER_LEVEL; tries++) {
     if (tries > 200_000) throw new Error(`Level ${level + 1}: only ${kept.length} floors`);
     const cells = Array.from({ length: h }, () => Array(w).fill('.'));
@@ -47,7 +48,7 @@ const body = out
   .join('\n');
 writeFileSync(
   new URL('../src/games/log-roll/floors.ts', import.meta.url),
-  `// Frozen floors, written by \`node scripts/log-roll-floors.mjs\`: the first floor of each level is the hand-made original.
+  `// Frozen floors, written by \`node scripts/log-roll-floors.mjs\`: the first floor of levels 1–3 is the hand-made original.
 // '.' is a stone, 'G' the hollow (a stone the log must finish standing on) and ' ' open water.
 export const FLOORS: readonly (readonly (readonly string[])[])[] = [
 ${body}

@@ -15,6 +15,7 @@ export const PLANS = [
   { depth: 4, name: 'Open stones: learn to tip and stand' },
   { depth: 8, name: 'Two gaps: plan the log’s footprint' },
   { depth: 12, name: 'Broken path: weave around three gaps' },
+  { depth: 16, name: 'The long way round: loop past the dead ends' },
 ] as const;
 export const planFor = (level: number) => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 export const floorsFor = (level: number) => FLOORS[Math.max(0, Math.min(FLOORS.length - 1, level - 1))];
@@ -105,5 +106,5 @@ export function makePuzzle(level: number, rng: Rng) {
 }
 
 export const LEVELS: BandLevels = {
-  grownup: { min: 1, max: 3 },
+  grownup: { min: 1, max: 4 },
 };

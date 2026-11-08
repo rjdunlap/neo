@@ -8,19 +8,20 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| grown-up | 1–3 |
+| grown-up | 1–4 |
 
 | Level | Plays like |
 | --- | --- |
 | 1 | Open stones: learn to tip and stand |
 | 2 | Two gaps: plan the log’s footprint |
 | 3 | Broken path: weave around three gaps |
+| 4 | The long way round: loop past the dead ends |
 
 <!-- end generated -->
 
 **Starts as:** tip a log across stones and stand it upright on the goal
 
-**Grows into:** three levels of four frozen floors each (mirrored, so eight shapes a level) with exact shortest-route hints, a visible tip, three pond looks, Undo, restart and ghost finger; touch only, in Tinker Lab
+**Grows into:** four levels of four frozen floors each (mirrored, so eight shapes a level; level 4 is an 8×6 floor at depth 16) with exact shortest-route hints, a visible tip, three pond looks, Undo, restart and ghost finger; touch only, in Tinker Lab
 
 ## Design notes
 

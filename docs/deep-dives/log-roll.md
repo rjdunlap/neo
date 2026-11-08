@@ -4,7 +4,7 @@
 
 ## The game today
 
-*Updated after slice 1 (PR #1402): floors, looks, the tip and the hint count below are built; the "Known gaps" list is what slice 1 closed. Levels and the grown-up range 1–3 are unchanged.*
+*Updated after slice 1 (PR #1402): floors, looks, the tip and the hint count below are built; the "Known gaps" list is what slice 1 closed. Levels and the grown-up range 1–3 are unchanged.* *Slice 2 then added level 4 (8×6 floors at depth 16); the grown-up range is now 1–4.*
 
 A grown-up tips a wooden log across a pond of stepping stones with four arrow buttons and finishes by standing it upright in the dark hollow with the gold rim. A standing log tips onto two stones; tipping a lying log along its length stands it up again; rolling it sideways moves it one space. Both ends need a stone, so the puzzle is planning the log's **footprint and orientation** several moves ahead, a classic rolling-block maze. It lives in Tinker Lab, touch only (no couch entry in `src/couch/catalog.ts`), and is the `grownup` band's only orientation puzzle; younger players reach it behind the land's signpost and play level 1.
 
@@ -13,8 +13,9 @@ A grown-up tips a wooden log across a pond of stepping stones with four arrow bu
 | 1 | Open stones: learn to tip and stand | grown-up | How tipping changes pose on an open 5×5 floor (start exactly 4 rolls away) |
 | 2 | Two gaps: plan the log's footprint | grown-up | A route around two holes on 6×5 (exactly 8 rolls) |
 | 3 | Broken path: weave around three gaps | grown-up | A 12-roll route on 7×5 where a standing log must line up for the last tips |
+| 4 | The long way round: loop past the dead ends | grown-up | A 16-roll route on 8×6 (seven gaps) that loops past dead ends; each start is only 2–8 rolls away if the gaps were filled |
 
-`BandLevels`: `grownup 1–3`, no `order`, no `entryLevels`.
+`BandLevels`: `grownup 1–4`, no `order`, no `entryLevels`.
 
 **Content pools.** One frozen floor per level (`PLANS` in `logic.ts`); the hollow is always the bottom-right stone. `makePuzzle` picks an upright start at the plan's exact depth from a reverse breadth-first search of the floor. Counted for this dive with a port of `roll`: level 1 has **5** possible starts (65 reachable poses), level 2 **5** (69), level 3 only **2** (77). Replay variety is therefore close to nil: a grown-up who plays level 3 twice has a coin-flip chance of the identical puzzle.
 
@@ -106,7 +107,7 @@ Slices 1–5 go ahead regardless.
 ## Build slices, in order
 
 1. **Built.** **Floors, looks, a visible tip and a fair hint count.** The floor generator script and four frozen floors per level with `G` hollows and mirroring; the layout derived from the floor size; three seeded looks; the tip tween with one queued tap; the refusal lean; a hint already glowing is not counted again; the par line after finishing. Checks: typecheck, rule tests, one filtered `logroll` play at level 3 with one portrait screenshot in a new look, `fingerdemo` at 3 (the bot now waits for the tip); build only if shared files change.
-2. **Level 4 *The long way round*.** Frozen 8×6 floors at depth 16; grown-up range 1–4. Checks: new level on the existing interaction: typecheck, rule and registry/how-to tests, one browser play of 4, `fingerdemo` at 4.
+2. **Built.** **Level 4 *The long way round*.** Frozen 8×6 floors at depth 16; grown-up range 1–4. Checks: new level on the existing interaction: typecheck, rule and registry/how-to tests, one browser play of 4, `fingerdemo` at 4.
 3. **Level 5 *Lay it in the cradle*.** The lying goal, its drawing and voice; range 1–5. Checks: typecheck, rule tests, one browser play of 5 with one upright stop on a cradle, `fingerdemo` at 5.
 4. **Level 6 *Soft moss*.** The moss stone, its refusal and voice; range 1–6. Checks: model change: typecheck, rule tests with levels 1–5 unchanged, one browser play of 6 with one refused stand on moss, one portrait screenshot, `fingerdemo` at 6, build.
 5. **Level 7 *The stone bridge*.** The switch state, forward-search solver and the bridge; range 1–7. After slice 4. Checks: new interaction: typecheck, unit tests, one scripted play with one lying press and one hint, one portrait screenshot, `fingerdemo` at 7, build.
@@ -119,3 +120,6 @@ Design session: research and design only (links and `git diff --check`).
 
 **Slice 1 built (PR #1402).** `scripts/log-roll-floors.mjs` writes `src/games/log-roll/floors.ts`: four frozen floors a level (the original first; `.` stone, `G` hollow, space water), each with at least two upright starts at the exact depth (generated floors at least three). Starts per floor: level 1 5, 4, 5, 4; level 2 5, 3, 3, 4; level 3 2, 5, 4, 4, so level 3 went from 2 possible starts to 15. Each puzzle picks a floor and a seeded left-right mirror that moves the hollow: eight floor shapes a level. The layout derives from the floor's rows and columns. Three seeded pond looks (spring pond, autumn leaves, evening water) with stone undersides and floating pads or leaves. The log tips over 0.22 s (footprint stretch and fold, landing squash) with at most one queued tap; a refused roll leans toward the missing stone; ripples ring the hollow on finishing; the status reads "Finished in N rolls · the shortest route is D" as information only (no voice line added). A glowing hint is counted once (`countsAsHint` in `logic.ts`, rule-tested). The ghost-finger bot waits for the tip; the how-to card note is updated.
 Ran: `npm run typecheck`; `npm test` (328 files); `BROWSER_SUITE=logroll` (levels 1 and 3, refused roll, double hint counted once, tip present and bot waits, undo, restart, one sticker each, portrait screenshot at level 3 in the spring pond on a mirrored floor, landscape screenshot); `fingerdemo` with `FINGER_ONLY=log-roll FINGER_LEVELS=3`. Not run: build, offline. Open person check: whether the tip makes the rule obvious.
+
+**Slice 2 built.** Level 4 *The long way round*: `PLANS` gains depth 16 and `LEVELS` grownup 1–4. `scripts/log-roll-floors.mjs` now generates from `PLANS` (sizes add 8×6 with seven gaps; levels 1–3 regenerate byte-identical; level 4 has no hand-made original). Four frozen 8×6 floors with 5, 3, 5, 3 upright starts at depth 16 (16 starts, 32 with mirrors). A rule test asserts each start is 2–8 rolls away with the gaps filled (so the gaps add at least eight rolls), plus 8×6 size, depth 16 and range 1–4; the existing tests loop over every `PLANS` level. The `logroll` browser suite plays levels 1 and 4, screenshots at 4. Voice and how-to card unchanged.
+Ran: `npm run typecheck`; `npm test` (329 files); `BROWSER_SUITE=logroll`; `fingerdemo` with `FINGER_ONLY=log-roll FINGER_LEVELS=4`. Not run: build, offline.
