@@ -31,7 +31,7 @@
 
 **Starts as:** touch a fruit hanging at the top of its slow arc and it splits
 
-**Grows into:** swipe across it, only one kind, only fruit, stop at the number and send the bowl, two kinds, one straight line through exactly N, pieces by twos, two lines that together cut every fruit, and twos and threes (apples two pieces, oranges three); a wrong cut bounces off with a boing, missed fruit drifts back, no clock
+**Grows into:** swipe across it, only one kind, only fruit, stop at the number and send the bowl, two kinds, one straight line through exactly N, pieces by twos, two lines that together cut every fruit, twos and threes (apples two pieces, oranges three), and for the youngest a few (stop at two or three, level 11); a wrong cut bounces off with a boing, missed fruit drifts back, no clock
 
 ## Design notes
 
