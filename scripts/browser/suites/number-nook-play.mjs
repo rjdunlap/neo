@@ -17,10 +17,10 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       }
       const original = await page.evaluate(() => neo.scene.game.board.slice());
       const wrong = await page.evaluate(async () => {
-        const { neighbours } = await import('/src/games/number-nook/logic.ts');
-        const g = neo.scene.game,
-          legal = neighbours(g.board, g.plan.cols);
-        return g.board.findIndex((v, i) => v && !legal.includes(i));
+        // A tile outside the gap's row and column (diagonal): line slides make every in-line tap legal.
+        const { lineSlide } = await import('/src/games/number-nook/logic.ts');
+        const g = neo.scene.game;
+        return g.board.findIndex((v, i) => v && !lineSlide(g.board, g.plan.cols, i));
       });
       await tap(`neo.scene.game.nodes[${wrong}]`);
       assert.equal(await page.evaluate(() => neo.scene.game.misses), 1);
@@ -47,6 +47,50 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       await tap('neo.scene.game.againButton');
       assert.deepEqual(await page.evaluate(() => neo.scene.game.board), original);
       assert.equal(await page.evaluate(() => neo.scene.game.moves), 2);
+      if (level === 3) {
+        // A line slide: a tile two away in the gap's row or column moves both tiles, counts two slides and undoes whole.
+        const far = await page.evaluate(async () => {
+          const { lineSlide } = await import('/src/games/number-nook/logic.ts');
+          const g = neo.scene.game,
+            twoAway = () =>
+              g.board.findIndex((_, i) => lineSlide(g.board, g.plan.cols, i)?.steps.length === 2);
+          if (twoAway() < 0) {
+            kit.tapOn(
+              g.nodes[g.board.findIndex((_, i) => lineSlide(g.board, g.plan.cols, i)?.steps.length === 1)],
+            );
+            await kit.sleep(260);
+          }
+          const at = twoAway();
+          return {
+            at,
+            before: g.board.slice(),
+            moves: g.moves,
+            expect: lineSlide(g.board, g.plan.cols, at).board,
+          };
+        });
+        assert.equal(
+          await page.evaluate(
+            (at) => (kit.tapOn(neo.scene.game.nodes[at]), neo.scene.game.glide?.tiles.length),
+            far.at,
+          ),
+          2,
+          'both tiles glide',
+        );
+        await page.waitForTimeout(260);
+        assert.deepEqual(await page.evaluate(() => neo.scene.game.board), far.expect);
+        assert.equal(
+          await page.evaluate(() => neo.scene.game.moves),
+          far.moves + 2,
+          'each tile moved is one slide',
+        );
+        assert.equal(await page.evaluate(() => neo.scene.game.misses), 1, 'a line slide is not a miss');
+        await tap('neo.scene.game.undoButton');
+        assert.deepEqual(
+          await page.evaluate(() => neo.scene.game.board),
+          far.before,
+          'undo takes back the whole line',
+        );
+      }
       if (level === 1) {
         await page.setViewportSize({ width: 768, height: 1024 });
         await page.waitForTimeout(300);

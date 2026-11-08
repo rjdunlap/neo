@@ -4,6 +4,7 @@ import {
   distances,
   goal,
   inPlace,
+  lineSlide,
   makeBoard,
   neighbours,
   nookLayout,
@@ -78,6 +79,53 @@ describe('Number Nook', () => {
     for (const at of [0, 4, 8, -1, 9]) expect(slide(b, 3, at)).toBeNull();
     expect(b).toEqual(before);
     expect(neighbours([1, 2, 0, 3, 4, 5], 3)).toEqual([5, 1]);
+  });
+  it('a line slide equals the same single slides in order, and every tile moved counts one slide', () => {
+    for (const [rows, cols] of [
+      [2, 2],
+      [2, 3],
+      [3, 3],
+    ] as const)
+      for (const [k] of [...distances(rows, cols)].slice(0, 400)) {
+        const b = k.split('').map(Number),
+          z = b.indexOf(0);
+        for (let at = 0; at < b.length; at++) {
+          const line = lineSlide(b, cols, at),
+            inLine = at !== z && (Math.floor(at / cols) === Math.floor(z / cols) || at % cols === z % cols);
+          if (!inLine) {
+            expect(line, `${k} tap ${at}`).toBeNull();
+            continue;
+          }
+          let single: number[] = b;
+          for (const c of line!.steps) single = slide(single, cols, c)!;
+          expect(line!.board).toEqual(single);
+          expect(line!.steps.length).toBe(
+            Math.abs((at % cols) - (z % cols)) + Math.abs(Math.floor(at / cols) - Math.floor(z / cols)),
+          );
+          expect(line!.steps.at(-1)).toBe(at);
+          expect(line!.board[at]).toBe(0);
+          // A one-tile line slide is exactly the old single slide.
+          if (line!.steps.length === 1) expect(line!.board).toEqual(slide(b, cols, at));
+          expect(solutionStep(line!.board, cols)).not.toBeNull();
+        }
+      }
+    // Gap at the top right of 3 by 3: tapping the left end of the row slides two tiles.
+    expect(lineSlide([1, 2, 0, 3, 4, 5, 6, 7, 8], 3, 0)).toEqual({
+      board: [0, 1, 2, 3, 4, 5, 6, 7, 8],
+      steps: [1, 0],
+    });
+    expect(lineSlide([1, 2, 3, 4, 5, 6, 7, 8, 0], 3, 2)).toEqual({
+      board: [1, 2, 0, 4, 5, 3, 7, 8, 6],
+      steps: [5, 2],
+    });
+  });
+  it('refuses diagonal, other-row, blank and off-board taps without changing the board', () => {
+    const b = [1, 2, 3, 4, 0, 5, 6, 7, 8],
+      before = b.slice();
+    for (const at of [0, 2, 6, 8, 4, -1, 9]) expect(lineSlide(b, 3, at)).toBeNull();
+    // Row-major neighbours across a row edge are not in line.
+    expect(lineSlide([1, 2, 0, 3, 4, 5], 3, 3)).toBeNull();
+    expect(b).toEqual(before);
   });
 });
 
