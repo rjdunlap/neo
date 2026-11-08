@@ -67,6 +67,8 @@ Each game writes the "boing, spoken hint, glow after two misses" rule itself: Fi
 
 ## 9. Split the largest files
 
+**Claimed:** `codex/light-lab-art-split`, Light Lab only. Extract drawing helpers, `Bloom`, hub icon and sticker art from `src/games/light-lab/index.ts` to `art.ts`; retain game state, input and layout in the entry point. No rule, level, rendering or lifecycle changes. Expected files: those two source files, this review and verification/archive closeout. Check tier: typecheck, Light Lab rules, one filtered Light Lab regression play, and build to prove bundling.
+
 Game files of 40–68 KB (Caravan Days, River Tablets, Logic Grid, Keep House, Light Lab and others) often hold several modes as separate classes. Fill and Dump has four game classes in one file, chosen in `create()`. Split by mode (`modes/<mode>.ts`) and art (`art.ts`, as Caravan Days and Measuring Post do). The shell scenes `GameScene.ts` (49 KB) and `CouchScene.ts` (63 KB) are next. Do it when each file next comes up for work, not as a sweep.
 
 ## 10. A formatter and a minimal lint
