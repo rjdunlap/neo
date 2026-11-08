@@ -159,8 +159,8 @@ export interface Plan {
   prebuilt?: Rig;
   /** Knots tick past a counter (levels 4–6). */
   counter: boolean;
-  /** Questions before the haul: a free knots guess (4), or paws and knots cards (6). */
-  ask: 'none' | 'knots' | 'numbers';
+  /** Questions before the haul: a free knots guess (4), a paws card (9), or paws and knots cards (6). */
+  ask: 'none' | 'knots' | 'paws' | 'numbers';
   /** Levels 5–6: a request names the pullers, and misses count. */
   request: boolean;
   lines: number;
@@ -209,6 +209,17 @@ export const PLANS: readonly Plan[] = [
     lines: 3,
   },
   {
+    // Placed between 4 and 5 in the school order: level 4's lines (even weights only), and a paws card before every haul.
+    id: 9,
+    name: 'How many paws?',
+    hooks: ['branch', 'crate'],
+    tray: 2,
+    counter: false,
+    ask: 'paws',
+    request: false,
+    lines: 3,
+  },
+  {
     id: 5,
     name: 'Who pulls?',
     hooks: ['branch', 'crate'],
@@ -233,14 +244,14 @@ export const PLANS: readonly Plan[] = [
 export const LEVELS: BandLevels = {
   preschool: { min: 1, max: 2 },
   prek: { min: 2, max: 4 },
-  school: { min: 3, max: 6 },
+  school: { min: 3, max: 9, order: [3, 4, 9, 5, 6] },
 };
 
 export function planFor(level: number): Plan {
   return PLANS.find((p) => p.id === level) ?? PLANS[0];
 }
 
-/** Whether a level counts misses (5–6 only; levels 1–4 adapt through hints alone). */
+/** Whether a tug can be a miss (5–6 only; levels 1–4 adapt through hints alone, and 9 counts only its cards). */
 export const countsMisses = (plan: Plan) => plan.request;
 
 /** The rigs she can make at a plan: the prebuilt one, or what its hooks allow; no hands-only push once a request names a rope. */
@@ -289,6 +300,9 @@ export function lineFits(plan: Plan, line: Line): boolean {
       );
     case 4:
       return w >= 2 && w <= 4 && h <= 2 && g >= 1;
+    case 9:
+      // Even weights, so the paws card is exact for every rig on offer.
+      return (w === 2 || w === 4) && h <= 2 && g >= 1;
     case 5:
     case 6: {
       if (plan.id === 6 && (w < 3 || h < 2)) return false;
@@ -306,7 +320,7 @@ export function lineFits(plan: Plan, line: Line): boolean {
 /** Does a whole round meet its plan's filter? */
 export function roundFits(plan: Plan, lines: readonly Line[]): boolean {
   if (lines.length !== plan.lines || !lines.every((l) => lineFits(plan, l))) return false;
-  if (plan.id === 4) {
+  if (plan.id === 4 || plan.id === 9) {
     // At least one line a one-strand rig can lift, and one only two strands can.
     const among = rigsFor(plan);
     if (!lines.some((l) => workingRigs(l, among).some((r) => ratio(r) === 1))) return false;
@@ -328,6 +342,8 @@ export function authored(plan: Plan): Line[] {
       return [{ w: 4, h: 2, g: 2, l: 2, waiting: 'bunny', puller: 'bear', parcel: 'pumpkin' }];
     case 4:
       return [{ w: 4, h: 1, g: 2, l: 2, waiting: 'duck', puller: 'bear', parcel: 'books' }];
+    case 9:
+      return [{ w: 4, h: 1, g: 2, l: 2, waiting: 'cat', puller: 'pig', parcel: 'teapot' }];
     case 5:
       return [
         { w: 4, h: 2, g: 3, l: 0, waiting: 'bunny', puller: 'mouse', ask: 'ground', parcel: 'teapot' },
@@ -352,6 +368,8 @@ function seededLine(plan: Plan, rng: Rng, want?: Ask): Line {
       return { ...base, w: rng.int(3, 4), h: rng.int(1, 3), g: 2, l: 2 };
     case 4:
       return { ...base, w: rng.int(2, 4), h: rng.int(1, 2), g: rng.int(1, 3), l: rng.int(0, 2) };
+    case 9:
+      return { ...base, w: rng.pick([2, 4]), h: rng.int(1, 2), g: rng.int(1, 3), l: rng.int(0, 2) };
     default: {
       const ask = want ?? (rng.chance(0.5) ? 'ground' : 'ledge');
       const w = plan.id === 6 ? rng.int(3, 6) : rng.int(2, 5);
@@ -380,6 +398,10 @@ export function fallbackRound(plan: Plan): Line[] {
     4: [
       { w: 2, h: 2, g: 2, l: 1, waiting: 'mouse', puller: 'frog' },
       { w: 3, h: 2, g: 3, l: 2, waiting: 'bear', puller: 'bunny' },
+    ],
+    9: [
+      { w: 2, h: 2, g: 2, l: 0, waiting: 'dog', puller: 'duck' },
+      { w: 4, h: 2, g: 3, l: 2, waiting: 'mouse', puller: 'bunny' },
     ],
     5: [{ w: 3, h: 3, g: 2, l: 1, waiting: 'frog', puller: 'bear', ask: 'ground' }],
     6: [
@@ -418,7 +440,7 @@ export function makeRound(plan: Plan, rng: Rng, first: boolean): { lines: Line[]
   return { lines: fallbackRound(plan), fellBack: true };
 }
 
-/* Number cards (levels 4 and 6) --------------------------------------------------------------------- */
+/* Number cards (levels 4, 6 and 9) --------------------------------------------------------------------- */
 
 /** The knots cards: one, two and three times the height, so the two ratios always give different right cards. */
 export function knotsCards(line: Line): number[] {

@@ -298,3 +298,9 @@ Ran on base `9132176c` plus the feature diff: clean `npm ci`, typecheck, 42 Ligh
 `BROWSER_SUITE=woods WOODS_ONLY=materials GAME_URL=http://localhost:5199` passed level 11: a free mismatched guess, shadow/dim beam, two wrong things then a glow, saved 2 misses/1 hint and one sticker. Portrait `test-results/browser/woods/light-lab-11-portrait.png` visually checked.
 PR CI passed full units, formatting, lint and build at `ccdd598c`; integrated unrelated Log Roll `92f27bcb` with only this log conflicting. Light Lab source and prior play proof are unchanged.
 Not run: full units locally (PR CI runs them), `fingerdemo` (bot unchanged), other browser suites, offline or device checks. Rules, levels, input, rendering and lifecycle are unchanged.
+
+## 2026-11-07 — Jar Sort slice 2: level 9 Three kinds, bright jars (PR #1412)
+
+Changed: level 9 (four jars of three, three kinds, par 4–6, lit target jars) with 20 solver-checked boards, none equal to level 3's; preschool 1, 2, 9, 3 and pre-K 2, 9, 3, 4, 5; `entryLevels` [9] so a school move lands on 4; how-to card holds the bright-jars step at 9.
+Ran: `npm run typecheck`; vitest for `src/games/jar-sort`, the registry test and `src/content` (231 passed, with a new level 9 rule test); `BROWSER_SUITE=jarsort` (level 9: four jars, lit, one refused move free with the board unchanged, solved by taps with 0 misses and 0 hints, a sticker, landscape screenshot); `fingerdemo` with `FINGER_ONLY=jar-sort FINGER_LEVELS=9` (15.9 s); `npm run build`.
+Not run: full `npm test` (CI runs it), offline, other suites. Open: device checks.

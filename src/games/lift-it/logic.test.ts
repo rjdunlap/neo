@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
+import { levelsInOrder, rangeFor } from '../../progress/difficulty';
 import {
   applyPull,
   authored,
@@ -13,6 +14,7 @@ import {
   CRATE_H,
   CRATE_W,
   counterBox,
+  countsMisses,
   endsRight,
   fallbackRound,
   FRIENDS,
@@ -23,6 +25,7 @@ import {
   HOOK_HIT,
   hooksOf,
   KNOT,
+  LEVELS,
   knotsCards,
   ledgeSpots,
   liftLayout,
@@ -176,6 +179,40 @@ describe('plans and rounds', () => {
     expect(rigsFor(planFor(6))).toEqual(['fixed', 'movable', 'both']);
   });
 
+  it('level 9 sits between 4 and 5 for school only, and its authored line asks 4 paws on the branch, 2 on the crate', () => {
+    expect(levelsInOrder(rangeFor(LEVELS, 'school'))).toEqual([3, 4, 9, 5, 6]);
+    expect(levelsInOrder(rangeFor(LEVELS, 'prek'))).not.toContain(9);
+    const p9 = planFor(9);
+    expect(p9.ask).toBe('paws');
+    expect(countsMisses(p9)).toBe(false);
+    expect(rigsFor(p9)).toEqual(RIGS);
+    const [l9] = authored(p9);
+    expect([l9.w, l9.h, l9.g, l9.l]).toEqual([4, 1, 2, 2]);
+    expect(paws('fixed', l9)).toBe(4);
+    expect(paws('movable', l9)).toBe(2);
+    expect(pawsCards('fixed', l9)).toContain(4);
+    expect(pawsCards('movable', l9)).toContain(2);
+  });
+
+  it('level 9: the paws card is exact for every rig on offer, and each round mixes one- and two-strand lines', () => {
+    const p9 = planFor(9);
+    for (let seed = 1; seed <= 500; seed++) {
+      const { lines } = makeRound(p9, new Rng(seed), seed % 2 === 0);
+      expect(lines.some((l) => workingRigs(l, RIGS).some((r) => ratio(r) === 1))).toBe(true);
+      expect(lines.some((l) => !workingRigs(l, RIGS).some((r) => ratio(r) === 1))).toBe(true);
+      for (const l of lines) {
+        expect(l.ask).toBeUndefined();
+        expect([2, 4]).toContain(l.w);
+        for (const r of RIGS) {
+          expect(l.w % ratio(r)).toBe(0);
+          const cards = pawsCards(r, l);
+          expect(new Set(cards).size).toBe(3);
+          expect(cards.filter((c) => c === paws(r, l))).toHaveLength(1);
+        }
+      }
+    }
+  });
+
   for (const plan of PLANS) {
     it(`level ${plan.id} rounds fit the plan over 500 seeds, never falling back`, () => {
       for (let seed = 1; seed <= 500; seed++) {
@@ -223,6 +260,7 @@ describe('fresh content', () => {
       [2, 2, 0, 2, 'duck', 'frog', 'ledge'],
     ]);
     expect(nums(6)).toEqual([[6, 3, 3, 0, 'frog', 'bear', 'ground']]);
+    expect(nums(9)).toEqual([[4, 1, 2, 2, 'cat', 'pig', undefined]]);
     // The definition's first parcel: a crate of apples.
     expect(authored(planFor(1))[0].parcel).toBe('apples');
   });

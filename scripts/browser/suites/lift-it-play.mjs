@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, errors, log, scene, tap, screenshot, launch, finished }) {
-  /** Lift It by touch: level 1 hauled in strokes; level 6 with one wrong rig (one miss) and a requested glow (one hint), then the cards and the haul; level 3 upright with two wheels hung. */
+  /** Lift It by touch: level 1 hauled in strokes; level 6 with one wrong rig (one miss) and a requested glow (one hint), then the cards and the haul; level 3 upright with two wheels hung; level 4 replay; level 9 paws cards (FROM_LEVEL=9 plays only 9). */
   async function liftItPlay() {
     const state = () =>
       page.evaluate(() => {
@@ -84,6 +84,90 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       await sticker(n);
     };
 
+    const tapCard = (v) =>
+      page.evaluate((v) => {
+        const p = neo.scene.game.cards.find((c) => c.value === v).node.getGlobalPosition();
+        kit.tap(p.x, p.y);
+      }, v);
+
+    // Level 9: the authored four-stone crate. The branch wheel hides its paws until she picks a card; a wrong card (2) is
+    // one miss, the tug that follows is free, and a requested hint on the crate wheel's card glows the right one once.
+    async function level9() {
+      await launch('lift-it', 9);
+      await idle();
+      const m = await page.evaluate(() => kit.store.data.stickers.length);
+      assert.deepEqual(
+        await page.evaluate(() => {
+          const l = neo.scene.game.cur;
+          return [l.w, l.h, l.g, l.l, l.ask];
+        }),
+        [4, 1, 2, 2, undefined],
+        'level 9: the authored first parcel',
+      );
+      await step('fixed');
+      await idle();
+      await page.waitForTimeout(200);
+      assert.deepEqual(
+        await page.evaluate(() => [neo.scene.game.rig, neo.scene.game.paws.children.length]),
+        ['fixed', 0],
+        'the paws are hidden until the card',
+      );
+      assert.equal(await step('fixed'), 'tap');
+      await page.waitForFunction(() => neo.scene.game.question?.kind === 'paws', null, { timeout: 5000 });
+      assert.deepEqual(
+        await page.evaluate(() => [neo.scene.game.question.values, neo.scene.game.question.answer]),
+        [[2, 3, 4], 4],
+        'the branch wheel asks 4 paws',
+      );
+      await tapCard(2);
+      await page.waitForFunction(() => !neo.scene.game.question && !neo.scene.game.busy, null, {
+        timeout: 15000,
+      });
+      await page.waitForTimeout(200);
+      st = await state();
+      assert.deepEqual([st.misses, st.hints], [1, 0], 'a wrong paws card is one miss');
+      assert.equal(
+        await page.evaluate(() => neo.scene.game.paws.children.length),
+        4,
+        'the four paws show after the card',
+      );
+      assert.equal(await step('fixed'), 'stroke');
+      await idle();
+      await page.waitForTimeout(300);
+      st = await state();
+      assert.deepEqual([st.misses, st.rung], [1, 0], 'the tug on a rig too heavy is free and moves nothing');
+      await step('movable');
+      await idle();
+      await step('movable');
+      await idle();
+      assert.equal((await state()).rig, 'movable');
+      assert.equal(await step('movable'), 'tap');
+      await page.waitForFunction(() => neo.scene.game.question?.kind === 'paws', null, { timeout: 5000 });
+      assert.equal(
+        await page.evaluate(() => neo.scene.game.question.answer),
+        2,
+        'the crate wheel asks 2 paws',
+      );
+      await screenshot('lift-it-9-paws-card');
+      await page.evaluate(() => neo.scene.game.askForHint());
+      await page.evaluate(() => neo.scene.game.askForHint());
+      assert.deepEqual(
+        await page.evaluate(() => [neo.scene.game.hints, neo.scene.game.cardGlow]),
+        [1, 2],
+        'a requested hint glows the right card once',
+      );
+      await playOut(m);
+      st = await state();
+      assert.deepEqual([st.misses, st.hints], [1, 1], 'level 9: one miss, one hint');
+    }
+    let st;
+    if (process.env.FROM_LEVEL === '9') {
+      await level9();
+      assert.deepEqual(errors, [], 'page errors');
+      log('Lift It: level 9 with a wrong paws card, a free tug and a requested card glow');
+      return;
+    }
+
     // Level 1: the rope hangs over the branch wheel; strokes down haul each parcel up. No misses or hints.
     await launch('lift-it', 1);
     await idle();
@@ -107,7 +191,7 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       'the paw lets go after the stroke',
     );
     await playOut(n);
-    let st = await state();
+    st = await state();
     assert.deepEqual([st.misses, st.hints], [0, 1], 'level 1: no misses, the one requested hint');
 
     // Level 6: the authored six-stone crate; the branch wheel alone needs six paws (one miss on the tug), a requested hint glows both hooks once.
@@ -218,9 +302,10 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       'one sticker for the round',
     );
     await page.setViewportSize({ width: 1024, height: 768 });
+    await level9();
     assert.deepEqual(errors, [], 'page errors');
     log(
-      'Lift It: level 1 by strokes, level 6 with a wrong rig and a requested hint, level 3 upright in the autumn look with a heavy parcel and two wheels, level 4 upright replaying the first parcel',
+      'Lift It: level 1 by strokes, level 6 with a wrong rig and a requested hint, level 3 upright in the autumn look with a heavy parcel and two wheels, level 4 upright replaying the first parcel, level 9 with a wrong paws card and a card glow',
     );
   }
 

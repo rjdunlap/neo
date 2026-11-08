@@ -534,6 +534,7 @@ class LiftIt implements Game {
       4: 'lift-it.instruct-knots',
       5: 'lift-it.instruct-who',
       6: 'lift-it.instruct-numbers',
+      9: 'lift-it.instruct-paws',
     };
     void this.ctx.instruct(lines[this.plan.id]);
     if (this.plan.request) void this.sayAsk();
@@ -803,12 +804,13 @@ class LiftIt implements Game {
     const rig = this.rig;
     const l = this.cur;
     const can = works(rig, l) && endsRight(rig, l);
-    if (pullers(rig, l) === 0) {
-      this.tug(rig);
+    // Level 9 asks the paws for any rig, even one that cannot lift: she says its paws and the tug checks her card.
+    if ((can || this.plan.ask === 'paws') && this.plan.ask !== 'none' && this.answeredFor !== rig) {
+      this.ask(rig);
       return;
     }
-    if (can && this.plan.ask !== 'none' && this.answeredFor !== rig) {
-      this.ask(rig);
+    if (pullers(rig, l) === 0) {
+      this.tug(rig);
       return;
     }
     this.grab = { id: e.pointerId, from: this.ctx.stage.toLocal(e.global), best: 0, haul: can };
@@ -882,7 +884,7 @@ class LiftIt implements Game {
     void this.ctx.say(id, vars);
   }
 
-  /* Questions (levels 4 and 6) -------------------------------------------------------------------- */
+  /* Questions (levels 4, 6 and 9) -------------------------------------------------------------------- */
 
   private ask(rig: Rig) {
     const l = this.cur;
@@ -975,7 +977,13 @@ class LiftIt implements Game {
       this.parcelMisses++;
       sfx.boing();
       this.drawCards(q.answer);
-      await this.ctx.say(q.kind === 'paws' ? 'lift-it.count-paws' : 'lift-it.count-knots', {
+      const said: LineId =
+        q.kind !== 'paws'
+          ? 'lift-it.count-knots'
+          : ratio(q.rig) === 2
+            ? 'lift-it.count-paws'
+            : 'lift-it.count-paws-one';
+      await this.ctx.say(said, {
         paws: q.answer,
         knots: q.answer,
         w: l.w,
@@ -984,7 +992,7 @@ class LiftIt implements Game {
     }
     if (this.destroyed) return;
     this.clearCards();
-    if (q.kind === 'paws') {
+    if (q.kind === 'paws' && this.plan.ask === 'numbers') {
       this.question = null;
       this.showQuestion({ kind: 'knots', values: knotsCards(l), answer: travel(q.rig, l), rig: q.rig });
     } else {
@@ -1264,9 +1272,10 @@ class LiftIt implements Game {
       .lineTo(0, ay)
       .lineTo(18, ay + (up ? 14 : -14))
       .stroke({ width: 7, color: nobody ? 0x9a9a9a : 0xffffff, cap: 'round', join: 'round' });
-    // Paw prints: how many friends' pulls the rope needs (hidden at level 6 until the cards are answered).
+    // Paw prints: how many friends' pulls the rope needs (hidden at levels 6 and 9 until the cards are answered).
     const need = paws(rig, l);
-    const hide = this.plan.ask === 'numbers' && this.answeredFor !== rig && !this.replaying;
+    const hidesPaws = this.plan.ask === 'numbers' || this.plan.ask === 'paws';
+    const hide = hidesPaws && this.answeredFor !== rig && !this.replaying;
     if (this.paws.children.length !== (hide ? 0 : need)) {
       for (const c of this.paws.removeChildren()) c.destroy();
       if (!hide) for (let i = 0; i < need; i++) this.paws.addChild(pawArt());

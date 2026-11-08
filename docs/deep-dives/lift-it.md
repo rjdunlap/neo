@@ -1,6 +1,6 @@
 # Lift It deep dive
 
-*ID `lift-it` · bands preschool, pre-K, school · levels 1–6 on 2026-11-07 · session `claude/dive-lift-it` ([PR #1364](https://github.com/rjdunlap/neo/pull/1364))*
+*ID `lift-it` · bands preschool, pre-K, school · levels 1–6 and 9 on 2026-11-08 · session `claude/dive-lift-it` ([PR #1364](https://github.com/rjdunlap/neo/pull/1364))*
 
 ## The game today
 
@@ -14,22 +14,23 @@ A friend waits on the tree's ledge for a parcel. She hauls the crate up by dragg
 | 4 | Twice the rope | pre-K, school | `w` 2–4 · `h` 1–2 · `g` 1–3 · `l` 0–2, knot counter | Which rig, and a free guess at the knots |
 | 5 | Who pulls? | school | `w` 2–5 · `h` 1–3, a request names ground or ledge | A rig that lifts it and ends at the named friends |
 | 6 | By the numbers | school | `w` 3–6 · `h` 2–3, request, paws and knots cards | The rig, then the paws and the knots before the haul |
+| 9 | How many paws? | school | level 4's filter with `w` 2 or 4, no request, one paws card | Any rig she likes, then how many paws it needs (paw prints hidden until she answers) |
 
-`LEVELS` is `{ preschool: 1–2, prek: 2–4, school: 3–6 }`, with no `order` or `entryLevels`. A round is three parcels; each level's first round of a session leads with its authored line(s).
+`LEVELS` is `{ preschool: 1–2, prek: 2–4, school: 3–9 }`, with school `order` `[3, 4, 9, 5, 6]` (level 9 sits between 4 and 5) and no `entryLevels`; pre-K stays 2–4 (school only, decision 2's default). A round is three parcels; each level's first round of a session leads with its authored line(s).
 
 **Content pools.** Four rigs (`direct`, `fixed`, `movable`, `both`); `ratio` is typed `1 | 2`. Eight friend kinds (bunny, duck, mouse, bear, frog, cat, dog, pig); the waiting friend and the pullers are two different kinds. One look: a `Backdrop` with seed 271 (one sky, three hill greens), one leaf palette, one wooden crate with a stone dot per stone, one red parcel with a yellow bow. Speech uses the ideal rule only.
 
-**Accounting.** Levels 1–4 record no misses; a tug on a rig that cannot lift only stretches the rope and wobbles the crate, and the knot guess at 4 is a prediction. At 5–6 the first tug per rig per parcel on a rig that cannot lift, or that ends at the wrong friends, is a miss ("We tried that one" after); at 6 a wrong card is a miss and the right card lights. A parcel's second miss glows `bestRig`'s hooks (or the right card), one hint per parcel. Show a hint pulls a stroke with her at 1–2 and glows at 3–6. One sticker per round; nothing is filed in the journal.
+**Accounting.** Levels 1–4 record no misses; a tug on a rig that cannot lift only stretches the rope and wobbles the crate, and the knot guess at 4 is a prediction. At 5–6 the first tug per rig per parcel on a rig that cannot lift, or that ends at the wrong friends, is a miss ("We tried that one" after); at 6 and 9 a wrong card is a miss and the right card lights (at 9 tugs stay free, on any rig, and the pet says the count; a one-rope rig says "One rope holds it"). A parcel's second miss glows `bestRig`'s hooks (or the right card), one hint per parcel; at 9 two wrong cards make the next card question glow the right card. Show a hint pulls a stroke with her at 1–2 and glows at 3–9. One sticker per round; nothing is filed in the journal.
 
 **Known gaps.** (Slice 1 closed the fixed lines at 1–3, the single look and parcel, and the five friend kinds: see *What was built*.)
 - The **replay** button (level 3 up) and the pet's drawn paw on the level 1–2 hint are built (slice 2); device speech of the counting and whether the button reads as "again" are open.
 - The ladder stops at two strands. The rule the game teaches (the ideal advantage is the number of strands holding the load, [OpenStax 9.3](https://openstax.org/books/physics/pages/9-3-simple-machines)) has its next step one rope-tie away: with both wheels hung, tying the rope's end to the crate instead of the branch ring makes three strands.
-- The numbers step is abrupt. Level 4's guess is free; level 6 adds the request, hidden paws and two cards at once. No level asks only "how many paws?".
+- The numbers step is abrupt. Level 4's guess is free; level 6 adds the request, hidden paws and two cards at once. Level 9 (slice 3) now asks only "how many paws?", with no request and no knots card.
 - Levels 1–4 can only step down through hints, by design (definition decision 2).
 - No toddler toy (definition decision 1), no couch entry, no journal coupling (decision 4).
 - Person checks open in [DEVICE-CHECKS](../DEVICE-CHECKS.md): whether a preschooler reads the handle as "pull me", whether the stretch reads as "too heavy" rather than "broken", whether two strands are visibly two. Nothing in [OBSERVATIONS](../OBSERVATIONS.md).
 
-**Browser coverage.** `liftit` was re-run 2026-11-08 after slice 2 (level 1 with a requested hint showing the paw, level 6 wrong rig plus hint, level 3 autumn portrait, level 4 portrait with the replay button tapped and nothing counted or awarded). `liftit` (`scripts/browser/suites/lift-it-play.mjs`) and `fingerdemo`, 2026-10-20: level 1 by strokes, level 6 with one wrong rig (one miss), a repeat tug free and a requested glow (one hint), then cards and haul; a level 3 portrait screenshot with two wheels.
+**Browser coverage.** `liftit` at level 9 (`FROM_LEVEL=9`, 2026-11-08, slice 3: authored parcel, paws hidden until the card, a wrong card on the branch wheel counts one miss, four paws then shown, a free tug on a too-heavy rig, the crate wheel asks 2, a requested hint glows the right card once, round finished with 1 miss and 1 hint; landscape screenshot `lift-it-9-paws-card`) and `fingerdemo` at 9 (43.0 s). `liftit` was re-run 2026-11-08 after slice 2 (level 1 with a requested hint showing the paw, level 6 wrong rig plus hint, level 3 autumn portrait, level 4 portrait with the replay button tapped and nothing counted or awarded). `liftit` (`scripts/browser/suites/lift-it-play.mjs`) and `fingerdemo`, 2026-10-20: level 1 by strokes, level 6 with one wrong rig (one miss), a repeat tug free and a requested glow (one hint), then cards and haul; a level 3 portrait screenshot with two wheels.
 
 ## Similar games
 
@@ -115,7 +116,7 @@ By the [standing rules](../archive/DECISIONS-2026-10-23.md#standing-rules) (S8) 
 
 1. **Built.** **Looks, parcels, three more friends and varied lines at 1–3** (preschool to school; typecheck, rule tests, one filtered `liftit` play at level 3 with one portrait screenshot in the autumn look; no `fingerdemo`, since the bot's actions do not change; build only if shared files change).
 2. **Built.** **The replay button and the helping paw** (from the definition; level 3 up: the replay button replays the last haul with the knots counted aloud; levels 1–2: a drawn pet paw rides the handle when Show a hint pulls; typecheck, unit tests including a layout test for the button clear of the pet and shell, one browser play at level 4 that taps replay, one portrait screenshot; build because voice lines change).
-3. **Level 9 *How many paws?*** placed between 4 and 5 (new level on the existing card interaction: typecheck, rule and registry/how-to tests with the new `order`, one browser play of 9 with one wrong card, `fingerdemo` at 9, build because voice lines change).
+3. **Built.** **Level 9 *How many paws?*** placed between 4 and 5 (new level on the existing card interaction: typecheck, rule and registry/how-to tests with the new `order`, one browser play of 9 with one wrong card, `fingerdemo` at 9, build because voice lines change).
 4. **Level 7 *Three ropes*** (new interaction, the movable knot: layout probe at 768×1024 first, then unit tests, one scripted play with one wrong rig and one hint, one portrait screenshot, `fingerdemo` at 7, build).
 5. **Level 8 *Three ropes by the numbers*** after slice 4 (new level on the existing interaction: typecheck, rule tests, one browser play of 8, `fingerdemo` at 8).
 
@@ -138,3 +139,11 @@ Slice 2 (the replay button and the helping paw), on branch `claude/lift-it-repla
 - Levels 1–2: Show a hint draws the pet's paw (in `swatch[pet.color]`) riding the handle and pulls the handle down with the stroke.
 - Layout test per view (four views): the button is at least 100 across, inside the view and clear of the pet corner, shell buttons, tray, hooks, ground and ledge handles, counter, crate column, ring, friends and the card row. How-to card notes for levels 3–6 and the level 1–2 hint note updated.
 - Checks 2026-11-08: typecheck; `npm test` (329 files, 6271 passed); `npm run build`; `BROWSER_SUITE=liftit` (level 1 with a requested hint showing the paw and counting one hint, level 6 wrong rig plus hint, level 3 autumn portrait screenshot, and new: level 4 portrait delivers one parcel, shows the button, taps replay, asserts line, misses, hints and rig unchanged and one sticker for the round; screenshot `lift-it-4-replay-portrait`). Not run: `fingerdemo` (bot's actions unchanged), offline, device speech of the counting.
+
+Slice 3 (level 9 *How many paws?*), on branch `claude/lift-it-how-many-paws` (PR #1427).
+
+- New plan id 9 (hooks branch and crate, tray 2, counter off, ask `paws`, no request, three lines) in `logic.ts`; school `order` is now `[3, 4, 9, 5, 6]`, pre-K unchanged. Lines use level 4's filter with `w` 2 or 4 only (`h` at most 2, `g` at least 1); `roundFits` needs one line a one-strand rig lifts and one only two strands lift (shared with level 4). Authored first line `w` 4, `h` 1, `g` 2, `l` 2 (cat waits, pig pulls, teapot); a fallback round was added.
+- `index.ts`: paw prints stay hidden until she answers; tapping the handle on any rig (even one that cannot lift, or with nobody at the ledge) asks one paws card (`pawsCards`) and no knots card follows. The right card lights with a bell; a wrong card is a miss, the right card lights and the pet says the count (new line `lift-it.count-paws-one`: "One rope holds it. {w} stones: {paws} paws."). Tugs stay free (`countsMisses` false). Two wrong cards make the next card question glow the right card (one hint); Show a hint during a card glows it once (one hint). New line `lift-it.instruct-paws`.
+- How-to card: wheel steps and replay note widened to levels 3–9, plus a level 9 step and accounting note.
+- Tests: 28 rule tests (new: level 9 order and school-only; the authored line asks 4 for fixed and 2 for movable; the paws card is exact for every rig over 500 seeds and the round mix). `lift-it-play.mjs` gained a level 9 play (runs alone with `FROM_LEVEL=9`).
+- Checks 2026-11-08: typecheck; `npm test` (329 files, 6293 passed, 1 skipped); `BROWSER_SUITE=liftit FROM_LEVEL=9`; `BROWSER_SUITE=fingerdemo FINGER_ONLY=lift-it FINGER_LEVELS=9` (43.0 s); `npm run build`. Not run: the full `liftit` suite for levels 1–6 (code paths unchanged), offline, device speech of the new lines, a portrait screenshot of level 9.
