@@ -18,6 +18,8 @@ export interface Plan {
   numbers?: true;
   /** Dots under each numeral and on the puddle (level 10), to count or to read. */
   dots?: true;
+  /** Level 12: two pails, each with its own number, poured into by leading the puddle onto one. */
+  twoPails?: true;
 }
 
 const PLANS: Plan[] = [
@@ -32,6 +34,7 @@ const PLANS: Plan[] = [
   { id: 9, name: 'Smallest number first', mode: 'order', grow: 0, numbers: true },
   { id: 10, name: 'Count the dots', mode: 'plus', grow: 0, dots: true },
   { id: 11, name: 'Too full', mode: 'pail', grow: 0 },
+  { id: 12, name: 'Two pails', mode: 'pail', grow: 0, twoPails: true },
 ];
 
 export const LEVELS: BandLevels = {
@@ -39,7 +42,7 @@ export const LEVELS: BandLevels = {
   preschool: { min: 2, max: 4 },
   // Level 10 sits between pictured order (5) and bare numerals (6).
   prek: { min: 3, max: 10, order: [3, 4, 5, 10, 6] },
-  school: { min: 5, max: 11, order: [5, 10, 6, 7, 8, 9, 11] },
+  school: { min: 5, max: 12, order: [5, 10, 6, 7, 8, 9, 11, 12] },
 };
 
 export const LEVEL_COUNT = PLANS.length;
@@ -167,6 +170,8 @@ export interface Board {
   start: number;
   /** The pail's number (levels 8 and 11). */
   pail?: number;
+  /** Level 12: the two pails' numbers, left first (distinct, 8–16, at least 2 apart), in place of `pail`. */
+  pails?: [number, number];
   /**
    * Level 11: ids already in the puddle at the start, so it begins too full. Everything on the sand came out of the
    * puddle, so a soak back is never too big; only the pail can refuse it.
@@ -184,6 +189,8 @@ export interface State {
   soaked: number[];
   /** Ids still on the sand. */
   left: number[];
+  /** Level 12: per pail, the ids poured into it, or null while it is open (empty elsewhere). */
+  filled: (number[] | null)[];
 }
 
 export function startState(board: Board): State {
@@ -194,6 +201,7 @@ export function startState(board: Board): State {
     drops: 0,
     soaked: [...held],
     left: board.things.map((t) => t.id).filter((id) => !held.includes(id)),
+    filled: board.pails ? [null, null] : [],
   };
 }
 
@@ -205,12 +213,23 @@ export function fits(puddle: number, thing: Thing) {
 
 export type Refusal = 'too-big' | 'order' | 'too-much';
 
+/** Level 12: the pails still open, by index. */
+export function openPails(board: Board, s: State): number[] {
+  return board.pails ? [0, 1].filter((i) => s.filled[i] === null) : [];
+}
+
+/** The number the puddle may not pass: the pail, or at level 12 the bigger open pail. */
+export function capOf(board: Board, s: State): number {
+  if (!board.pails) return board.pail!;
+  return Math.max(0, ...openPails(board, s).map((i) => board.pails![i]));
+}
+
 /** Why soaking `id` now is refused, or null when it slides in. */
 export function refusal(board: Board, s: State, id: number): Refusal | null {
   const t = thingOf(board, id);
   if (!board.held && !fits(s.puddle, t)) return 'too-big';
   if (board.plan.mode === 'order' && s.left.some((o) => thingOf(board, o).size < t.size)) return 'order';
-  if (board.plan.mode === 'pail' && s.puddle + t.size > board.pail!) return 'too-much';
+  if (board.plan.mode === 'pail' && s.puddle + t.size > capOf(board, s)) return 'too-much';
   return null;
 }
 
@@ -252,7 +271,28 @@ export function letGo(board: Board, s: State, id: number): State {
   };
 }
 
+/**
+ * Level 12: leading the puddle onto open pail i pours it in when the numbers match: the pail keeps what was soaked and
+ * the puddle drops back to its start, empty. A mismatch (or a full pail) leaves the state alone and is never a miss.
+ */
+export function pour(board: Board, s: State, i: number): { ok: true; state: State } | { ok: false } {
+  if (!board.pails || s.filled[i] !== null || s.puddle !== board.pails[i]) return { ok: false };
+  const filled = [...s.filled];
+  filled[i] = [...s.soaked];
+  return { ok: true, state: { ...s, puddle: board.start, soaked: [], filled } };
+}
+
+/** Level 12: tapping a full pail tips its things back to their places on the sand and reopens it. Free, never a miss. */
+export function tip(board: Board, s: State, i: number): State {
+  const ids = s.filled[i];
+  if (!board.pails || !ids) throw new Error(`pail ${i} is not full`);
+  const filled = [...s.filled];
+  filled[i] = null;
+  return { ...s, left: [...s.left, ...ids], filled };
+}
+
 export function done(board: Board, s: State) {
+  if (board.pails) return s.filled.every((f) => f !== null);
   return board.plan.mode === 'pail' ? s.puddle === board.pail : s.left.length === 0;
 }
 
@@ -278,9 +318,13 @@ export function greedyClears(board: Board, s: State = startState(board)) {
  * Level 8: every set of things on the sand that would bring the puddle exactly to the pail, soaked in some order that
  * fits each one when it goes in (smallest first is always the best order). Each is listed smallest first, by id.
  */
-export function exactSolutions(board: Board, s: State = startState(board)): number[][] {
+export function exactSolutions(
+  board: Board,
+  s: State = startState(board),
+  target: number = board.pail!,
+): number[][] {
   const left = [...s.left].sort((a, b) => thingOf(board, a).size - thingOf(board, b).size || a - b);
-  const need = board.pail! - s.puddle;
+  const need = target - s.puddle;
   const out: number[][] = [];
   if (need === 0) return [[]];
   if (need < 0) return out;
@@ -302,7 +346,76 @@ export function exactSolutions(board: Board, s: State = startState(board)): numb
   return out;
 }
 
-export type Hint = { soak: number } | { letGo: number };
+export type Hint = { soak: number } | { letGo: number } | { pour: number } | { tip: number };
+
+/**
+ * Level 12: each way to finish from here. The puddle's pail is an open pail it can still reach exactly (soaking `ids`,
+ * smallest first, then pouring); the other open pail, if any, must then fill from the start with what is left.
+ */
+export function finishes(board: Board, s: State): { pail: number; ids: number[] }[] {
+  const open = openPails(board, s);
+  const out: { pail: number; ids: number[] }[] = [];
+  for (const j of open) {
+    for (const ids of exactSolutions(board, s, board.pails![j])) {
+      const other = open.find((k) => k !== j);
+      if (other === undefined) {
+        out.push({ pail: j, ids });
+        continue;
+      }
+      const rest: State = { ...s, puddle: board.start, soaked: [], left: s.left.filter((id) => !ids.includes(id)) };
+      if (exactSolutions(board, rest, board.pails![other]).length) out.push({ pail: j, ids });
+    }
+  }
+  return out;
+}
+
+/** Level 12's split count: unordered ways to fill both pails from the start (left pail's set, right pail's set). */
+export function splits(board: Board): [number[], number[]][] {
+  const s0 = startState(board);
+  const out: [number[], number[]][] = [];
+  for (const a of exactSolutions(board, s0, board.pails![0])) {
+    const rest: State = { ...s0, left: s0.left.filter((id) => !a.includes(id)) };
+    for (const b of exactSolutions(board, rest, board.pails![1])) out.push([a, b]);
+  }
+  return out;
+}
+
+/** Level 12: some way to fill one pail from the start leaves the other impossible. */
+export function pailDeadEnd(board: Board): boolean {
+  const s0 = startState(board);
+  return [0, 1].some((i) =>
+    exactSolutions(board, s0, board.pails![i]).some(
+      (ids) =>
+        exactSolutions(board, { ...s0, left: s0.left.filter((id) => !ids.includes(id)) }, board.pails![1 - i])
+          .length === 0,
+    ),
+  );
+}
+
+/** Level 12's hint: pour, then soak towards a finish, then the fewest let-gos, then tip a full pail back. */
+function twoPailHint(board: Board, s: State, nearest: (ids: number[]) => number | null): Hint | null {
+  const ways = finishes(board, s);
+  const pourNow = ways.find((w) => w.ids.length === 0);
+  if (pourNow) return { pour: pourNow.pail };
+  if (ways.length) return { soak: nearest([...new Set(ways.map((w) => w.ids[0]))])! };
+  for (let k = 1; k <= s.soaked.length; k++) {
+    for (const drop of subsets([...s.soaked].reverse(), k)) {
+      let st = s;
+      for (const id of drop) st = letGo(board, st, id);
+      if (finishes(board, st).length) return { letGo: drop[0] };
+    }
+  }
+  const full = [0, 1].filter((i) => s.filled[i] !== null);
+  // Tip back the pail whose tipping leaves a finish with the fewest let-gos; any full pail otherwise.
+  for (let k = 0; k <= s.soaked.length; k++)
+    for (const i of full)
+      for (const drop of subsets([...s.soaked].reverse(), k)) {
+        let st = tip(board, s, i);
+        for (const id of drop) st = letGo(board, st, id);
+        if (finishes(board, st).length) return { tip: i };
+      }
+  return full.length ? { tip: full[0] } : null;
+}
 
 /**
  * The next good move: the nearest thing that fits (1–4, 6–7); the smallest left (5, 9); at level 8 a soak on some exact
@@ -311,6 +424,7 @@ export type Hint = { soak: number } | { letGo: number };
 export function hintTarget(board: Board, s: State, near: (id: number) => number = () => 0): Hint | null {
   if (done(board, s)) return null;
   const nearest = (ids: number[]) => (ids.length ? ids.reduce((a, b) => (near(b) < near(a) ? b : a)) : null);
+  if (board.pails) return twoPailHint(board, s, nearest);
   if (board.plan.mode === 'pail') {
     const sols = exactSolutions(board, s);
     if (sols.length) {
@@ -493,6 +607,20 @@ export function authoredBoard(plan: Plan): Board {
           ['starfish', 6],
         ]),
       };
+    case 12:
+      return {
+        plan,
+        start: 3,
+        pails: [9, 11],
+        things: things([
+          ['pebble', 1],
+          ['shell', 2],
+          ['pebble', 3],
+          ['shell', 4],
+          ['pebble', 5],
+          ['starfish', 7],
+        ]),
+      };
     case 9:
       return {
         plan,
@@ -582,6 +710,15 @@ export function passesFilter(board: Board): boolean {
       const total = start + things.reduce((sum, t) => sum + t.size, 0);
       return things.some((t) => t.size > start + smallest) && greedyClears(board) && total <= 60;
     }
+    case 12: {
+      // Two distinct pails 8–16 at least 2 apart; one or two splits; and a way to fill one pail that strands the other.
+      const [a, b] = board.pails!;
+      if (a < 8 || b < 8 || a > 16 || b > 16 || Math.abs(a - b) < 2) return false;
+      if (things.length < 6 || things.length > 7 || new Set(things.map((t) => t.size)).size !== things.length)
+        return false;
+      const n = splits(board).length;
+      return n >= 1 && n <= 2 && pailDeadEnd(board);
+    }
     case 11: {
       // Every thing starts in the puddle and the total is over the pail; letting go some set of two or more (never one) makes it.
       const held = board.held ?? [];
@@ -623,6 +760,12 @@ function draw(plan: Plan, rng: Rng): Board {
     }
     case 10:
       return { plan, start: 2, things: numbered(rng, distinct(rng, 5, 1, 6)) };
+    case 12: {
+      const start = rng.int(3, 4);
+      const things = numbered(rng, distinct(rng, rng.int(6, 7), 1, 9));
+      const [a, b] = distinct(rng, 2, 8, 16);
+      return { plan, start, pails: [a, b], things };
+    }
     default:
       return {
         plan,
@@ -694,7 +837,15 @@ export function inPetCorner(v: View2, x: number, y: number, r: number) {
 }
 
 export function inPailBox(plan: Plan, f: Rect, x: number, y: number, r: number) {
-  return plan.mode === 'pail' && x + r > f.x1 - PAIL_BOX && y - r < f.y0 + PAIL_BOX;
+  const across = plan.twoPails ? 2 * PAIL_BOX : PAIL_BOX;
+  return plan.mode === 'pail' && x + r > f.x1 - across && y - r < f.y0 + PAIL_BOX;
+}
+
+/** Each pail's centre (level 12: the left pail is index 0, a box left of the right one, where levels 8 and 11 keep theirs). */
+export function pailSpots(plan: Plan, f: Rect): { x: number; y: number }[] {
+  if (plan.mode !== 'pail') return [];
+  const right = { x: f.x1 - PAIL_BOX / 2, y: f.y0 + PAIL_BOX / 2 + 10 };
+  return plan.twoPails ? [{ x: right.x - PAIL_BOX, y: right.y }, right] : [right];
 }
 
 /** The sum strip along the top (levels 7, 8 and 11): a start chip, then a + and a token per soak, then = and the total. */

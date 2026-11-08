@@ -11,7 +11,7 @@
 | toddler | 1–2 |
 | preschool | 2–4 |
 | pre-K | 3, 4, 5, 10, 6 |
-| school | 5, 10, 6, 7, 8, 9, 11 |
+| school | 5, 10, 6, 7, 8, 9, 11, 12 |
 
 | Level | Plays like |
 | --- | --- |
@@ -26,6 +26,7 @@
 | 9 | Smallest number first |
 | 10 | Count the dots |
 | 11 | Too full |
+| 12 | Two pails |
 
 <!-- end generated -->
 
