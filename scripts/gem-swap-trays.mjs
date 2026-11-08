@@ -1,8 +1,10 @@
 // Writes src/games/gem-swap/boards.ts: Gem Swap's frozen trays, 20 a level. The first three of levels 1–4 are the
 // hand-made originals and keep their place; the rest are built backwards from an empty tray (drop in a line of three,
 // then undo a swap that would make it) and kept only when an exact breadth-first search finds the level's par, the tray
-// is settled with no starting line, and (levels 2–5) one accepted first swap is a dead end and some shortest route has a
-// falling line; at level 5 every column starts with a gem. Trays equal under mirroring or recolouring count once. Reproducible:
+// is settled with no starting line, and (levels 2–6) one accepted first swap is a dead end and some shortest route has a
+// falling line; at level 5 every column starts with a gem. Level 6 (ten trays at par 3, ten at par 4) drops in a long piece
+// (a line of five, an L/T/cross of five, or two lines of four) and keeps a tray only when every shortest route (enumerated)
+// has a swap whose first wave makes a run of four or more or two crossing runs. Trays equal under mirroring or recolouring count once. Reproducible:
 //   node scripts/gem-swap-trays.mjs
 import { writeFileSync } from 'node:fs';
 import { Rng } from '../src/engine/random.ts';
@@ -50,6 +52,9 @@ function interesting(board, size, best, level) {
   const deadEnd = moves(board, size).some((pair) => d(swap(board, size, pair).board) === null);
   return level === 1 || (deadEnd && cascades(board, best));
 }
+/** Level 6: what makes the other levels interesting, and no shortest route that skips the long swap. */
+const longOnly = (board, size, best) =>
+  interesting(board, size, best, 6) && everyRouteLong(board, size, best, distances(size));
 /** One name for a tray and its mirror image under any recolouring. */
 function canonical(board, size) {
   return [false, true]
@@ -99,6 +104,47 @@ function insertLine(board, size, rng) {
   else for (let i = 0; i < 3; i++) columns[o.x + i].splice(o.h, 0, kind);
   return boardOf(columns, size);
 }
+/**
+ * Drop in a long piece of one kind: a line of four or five, or (length 5, cross) a horizontal three and a vertical three
+ * sharing one cell, which covers every L, T and plus shape.
+ */
+function insertLong(board, size, rng, length, cross) {
+  const columns = columnsOf(board, size),
+    kind = rng.int(0, 5);
+  const options = [];
+  for (let x = 0; x < size; x++) {
+    if (!cross) {
+      for (let h = 0; h <= columns[x].length && columns[x].length + length <= size; h++)
+        options.push({ x, h, at: x, v: 0, up: length, wide: 1 });
+      if (x <= size - length) {
+        const low = Math.min(...columns.slice(x, x + length).map((c) => c.length));
+        for (let h = 0; h <= low; h++)
+          if (columns.slice(x, x + length).every((c) => c.length < size))
+            options.push({ x, h, at: -1, v: 0, up: 1, wide: length });
+      }
+    } else if (x <= size - 3)
+      for (let o = 0; o < 3; o++)
+        for (let v = 0; v < 3; v++) {
+          const stem = columns[x + o];
+          for (let h = v; h <= size; h++) {
+            const ok = [0, 1, 2].every((i) =>
+              i === o
+                ? h - v <= stem.length && stem.length + 3 <= size
+                : h <= columns[x + i].length && columns[x + i].length < size,
+            );
+            if (ok) options.push({ x, h, at: x + o, v, up: 3, wide: 3 });
+          }
+        }
+  }
+  if (!options.length) return null;
+  const o = rng.pick(options);
+  for (let i = 0; i < o.wide; i++) {
+    const c = o.x + i;
+    if (c === o.at) columns[c].splice(o.h - o.v, 0, ...Array(o.up).fill(kind));
+    else columns[c].splice(o.h, 0, kind);
+  }
+  return boardOf(columns, size);
+}
 /** Undo a swap: exchange two different occupied neighbours so that no line shows; swapping them back makes one. */
 function unswap(board, size, rng) {
   const pairs = [];
@@ -129,21 +175,95 @@ function candidate(plan, swaps, rng) {
   return board;
 }
 
+/** Level 6: one long piece (a line of four or five, a cross of five, or two lines of four) among lines of three. */
+function candidateLong(plan, swaps, rng) {
+  const long = rng.pick([[5], [5], [4, 4]]),
+    cross = long.length === 1 && rng.chance(0.5);
+  const threes = (plan.gems - long.reduce((a, b) => a + b, 0)) / 3;
+  const groups = Array.from({ length: swaps }, () => ({ threes: 0, long: [] }));
+  long.forEach((length) => groups[rng.int(0, swaps - 1)].long.push(length));
+  groups.forEach((g) => {
+    if (!g.long.length) g.threes = 1;
+  });
+  for (let extra = threes - groups.reduce((a, g) => a + g.threes, 0); extra > 0; extra--)
+    groups[rng.int(0, swaps - 1)].threes++;
+  if (groups.reduce((a, g) => a + g.threes, 0) !== threes) return null;
+  let board = Array(plan.size * plan.size).fill(-1);
+  for (const g of groups) {
+    for (let i = 0; i < g.threes; i++) {
+      board = insertLine(board, plan.size, rng);
+      if (!board) return null;
+    }
+    for (const length of g.long) {
+      board = insertLong(board, plan.size, rng, length, cross);
+      if (!board) return null;
+    }
+    board = unswap(board, plan.size, rng);
+    if (!board) return null;
+  }
+  return board;
+}
+/**
+ * A swap does two lines' work when its first wave holds a run of four or more, or a horizontal and a vertical run crossing
+ * at one gem (an L, T or plus). Two separate lines of three made at once do not count: the level is about the long line.
+ */
+function longSwap(board, size, pair) {
+  const b = swap(board, size, pair).waves[0].board;
+  const across = new Set(),
+    down = new Set();
+  for (const [d, into] of [
+    [1, across],
+    [size, down],
+  ])
+    for (let i = 0; i < b.length; i++) {
+      if (b[i] < 0 || (d === 1 ? i % size > 0 && b[i - 1] === b[i] : i >= size && b[i - size] === b[i]))
+        continue;
+      const run = [i];
+      while (true) {
+        const n = run[run.length - 1] + d;
+        if (n >= b.length || (d === 1 && n % size === 0) || b[n] !== b[i]) break;
+        run.push(n);
+      }
+      if (run.length >= 4) return true;
+      if (run.length === 3) run.forEach((c) => into.add(c));
+    }
+  return [...across].some((c) => down.has(c));
+}
+/** Every shortest route from `board` (with `left` swaps to go) uses a long swap somewhere. */
+function everyRouteLong(board, size, left, d) {
+  if (left === 0) return false;
+  return moves(board, size).every((pair) => {
+    const after = swap(board, size, pair).board;
+    return d(after) !== left - 1 || longSwap(board, size, pair) || everyRouteLong(after, size, left - 1, d);
+  });
+}
+function distances(size) {
+  const dist = new Map();
+  return (b) => {
+    const key = b.join(',');
+    if (!dist.has(key)) dist.set(key, par(b, size));
+    return dist.get(key);
+  };
+}
+
 const pools = PLANS.map((plan, index) => {
-  // Levels 1–4 open with their hand-made originals; level 5 (6×6) is all generated. Every level's par is its number.
-  const level = index + 1,
-    target = level;
+  // Levels 1–4 open with their hand-made originals; levels 5–6 are all generated. Levels 1–5's par is their number; level 6
+  // alternates par 3 and par 4, ten of each.
+  const level = index + 1;
   const kept = (level <= 4 ? POOLS[index] : []).slice(0, 3).map((t) => ({ par: t.par, board: [...t.board] }));
   const seen = new Set(kept.map((t) => canonical(t.board, plan.size)));
   const rng = new Rng(20261107 + level * 1009);
   for (let tries = 0; kept.length < PER_LEVEL && tries < 200000; tries++) {
-    const board = candidate(plan, target, rng);
+    const target = level === 6 ? 3 + (kept.length % 2) : level;
+    const board = level === 6 ? candidateLong(plan, target, rng) : candidate(plan, target, rng);
     if (!board) continue;
     const name = canonical(board, plan.size);
     if (seen.has(name) || matches(board, plan.size).length || fall(board, plan.size).join() !== board.join())
       continue;
     if (level === 5 && !spansWidth(board, plan.size)) continue;
-    if (par(board, plan.size) !== target || !interesting(board, plan.size, target, level)) continue;
+    if (par(board, plan.size) !== target) continue;
+    if (level === 6 ? !longOnly(board, plan.size, target) : !interesting(board, plan.size, target, level))
+      continue;
     seen.add(name);
     kept.push({ par: target, board });
   }

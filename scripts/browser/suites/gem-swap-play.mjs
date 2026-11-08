@@ -39,7 +39,7 @@ export function createSuite({
           L = await import('/src/games/gem-swap/logic.ts');
         return L.hintFor(g.board, g.puzzle.size);
       });
-    for (const level of [1, 5]) {
+    for (const level of [1, 6]) {
       const before = await page.evaluate(() => kit.store.data.stickers.length);
       await launch('gem-swap', level);
       await page.waitForTimeout(400);
@@ -70,7 +70,7 @@ export function createSuite({
       assert.equal((await state()).selected, s.hinted[0]);
       await tapCell(s.hinted[0]);
       assert.equal((await state()).selected, null, 'tap again cancels');
-      if (level === 5) {
+      if (level === 6) {
         await page.setViewportSize({ width: 768, height: 1024 });
         await page.waitForTimeout(250);
         const geometry = await page.evaluate(() =>
@@ -89,7 +89,7 @@ export function createSuite({
           assert.ok(r.w >= 64 && r.h >= 64);
           assert.ok(r.x >= 0 && r.y >= 0 && r.x + r.w <= view.w + 1 && r.y + r.h <= view.h + 1);
         }
-        await screenshot('gem-swap-5-portrait');
+        await screenshot('gem-swap-6-portrait');
         const pair = await next();
         await tapCell(pair[0]);
         await tapCell(pair[1]);
@@ -118,7 +118,7 @@ export function createSuite({
           const r = kit.store.stats('gem-swap').history.at(-1);
           return [r.misses, r.hints];
         }),
-        [2, level === 5 ? 2 : 1],
+        [2, level === 6 ? 2 : 1],
       );
     }
     await page.evaluate(() => {
