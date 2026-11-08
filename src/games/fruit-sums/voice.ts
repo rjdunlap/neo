@@ -32,4 +32,10 @@ export const VOICE = {
   'fsums.right5': ['{a} plus {b} makes {n}! Into the basket!', 'Yes! {a} plus {b} is {n}! Into the basket!'],
   'fsums.again5': ['Which two fruit make {n} now?'],
   'fsums.done5': ['The tree is empty! Every fruit found a partner to make {n}!'],
+  'fsums.start6': ['Make {n} with three fruit! Tap three fruit, then tap the check to add them up.'],
+  'fsums.fill6': ['Tap three fruit first, then the check.'],
+  'fsums.third': ['Tap a third fruit first, then the check.'],
+  'fsums.right6': ['{a} plus {b} plus {c} makes {n}!', 'Yes! {a} plus {b} plus {c} is {n}!'],
+  'fsums.wrong6': ['{a} plus {b} plus {c} makes {m}. We need {n}.'],
+  'fsums.done6': ['Two ways to make {n} with three fruit! Great thinking!'],
 } satisfies Record<string, string[]>;

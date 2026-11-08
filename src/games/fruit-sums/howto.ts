@@ -17,14 +17,24 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 5,
+      to: 5,
       text: 'Tap two fruit that add up to the number; they hop into the boxes. Tap a fruit in a box to put it back.',
+    },
+    {
+      from: 6,
+      text: 'Tap three fruit that add up to the number; they hop into the three boxes. Tap a fruit in a box to put it back.',
     },
     'Tap the green check to see what you made. Any way that makes the number counts.',
   ],
   finish: [
     { to: 3, text: 'The round ends after two different ways to make the number.' },
     { from: 4, to: 4, text: 'The round ends after two different pairs that make the same as the sign.' },
-    { from: 5, text: 'Each right pair drops into the basket, and the round ends when the tree is empty.' },
+    {
+      from: 5,
+      to: 5,
+      text: 'Each right pair drops into the basket, and the round ends when the tree is empty.',
+    },
+    { from: 6, text: 'The round ends after two different sets of three fruit that make the number.' },
   ],
   note: [
     {
@@ -42,7 +52,12 @@ export const HOW_TO: GameHowTo = {
       text: 'A try that makes another number tells how much it made and how much the sign makes. The sign’s own two numbers are not a miss; they just ask for a different pair. After two misses a glow shows a fruit to start with, then its partner. Each way is written like 7 + 5 = 6 + 4.',
     },
     {
+      from: 6,
+      text: 'Finding two fruit that make ten first, then adding the third, is a good way in. A check with only two fruit asks for a third and is not a miss; the same three numbers in another order are the same way. After two misses a glow shows the fruit to use, a pair that makes ten first.',
+    },
+    {
       from: 5,
+      to: 5,
       text: 'Every fruit on the tree has a partner, so any right pair keeps the tree clearable. Two fruit with the same numbers as a pair already in the basket are a new pair. A try that makes another number tells how much it made; after two misses a glow shows a fruit to start with, then its partner.',
     },
   ],
