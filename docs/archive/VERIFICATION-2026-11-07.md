@@ -284,3 +284,9 @@ Not run: browser, ghost finger, offline or device checks; no game, asset, save o
 Changed: level 12 *Two pails* (school 5–12, order adds 12): two pails, pour by leading onto a matching pail, tap a full pail to tip it back; a pail re-arms when the puddle moves 30 away or its number changes; voice lines `gobble.hint-pour`, `gobble.hint-tip`, `gobble.done-two-pails`; the browser suite gained a level 12 section.
 Ran: `npm run typecheck`; `npm test` (passing after `npm run game-docs`); `npm run build`; `BROWSER_SUITE=puddlegobble PUDDLE_ONLY=12` (upright 1024×1365: wrong-pail lead, refused overshoot of the 7 = 1 miss, pour 1+2+3 into the 9, tip back, requested hint = 1 hint, finished to a sticker; screenshot `puddle-gobble-12-portrait`); `BROWSER_SUITE=fingerdemo FINGER_ONLY=puddle-gobble FINGER_LEVELS=12` (finished in 19.3 s, after the re-arm fix it found).
 Not run: the rest of the puddlegobble suite (levels 1–11 unchanged), other suites, offline. Open: whether a full pail is tipped back unaided and whether an accidental tip happens on an iPad ([DEVICE-CHECKS.md](../DEVICE-CHECKS.md)).
+
+## 2026-11-07 — Log Roll slice 2: level 4 The long way round (PR #1410)
+
+Changed: level 4 (grown-up range 1–4): four frozen 8×6 floors at depth 16 (5, 3, 5, 3 upright starts); `scripts/log-roll-floors.mjs` now generates from `PLANS`, levels 1–3 byte-identical; a rule test that each start is 2–8 rolls away with the gaps filled; `logroll` suite plays levels 1 and 4.
+Ran: `npm run typecheck`; `npm test` (329 files, 6,219 passed / 1 skipped); `BROWSER_SUITE=logroll` (levels 1 and 4: refused edge roll, double hint counted once, tip, undo, start over, one sticker each, portrait screenshot at level 4, cell 96); `fingerdemo` with `FINGER_ONLY=log-roll FINGER_LEVELS=4` (23.4 s).
+Not run: build (no shared files or assets changed), offline. Open: whether the long loops feel fair to a grown-up and device speech.
