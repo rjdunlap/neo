@@ -1,18 +1,19 @@
 # Fruit Sums deep dive
 
-*ID `fruit-sums` · bands school · levels 1–3 on 2026-11-07 · build slice 1 built ([PR #1362](https://github.com/rjdunlap/neo/pull/1362)) · session `claude/dive-fruit-sums` ([PR #1358](https://github.com/rjdunlap/neo/pull/1358))*
+*ID `fruit-sums` · bands school · levels 1–4 on 2026-11-07 · build slices 1–2 built ([PR #1362](https://github.com/rjdunlap/neo/pull/1362), [PR #1413](https://github.com/rjdunlap/neo/pull/1413)) · session `claude/dive-fruit-sums` ([PR #1358](https://github.com/rjdunlap/neo/pull/1358))*
 
 ## The game today
 
-A hanging sign names a number and the tree holds five or six numbered fruit. She taps two fruit into two boxes (at level 3 also a plus or take-away leaf) and taps the green check. **Any way that makes the number counts**, and a round asks for **two different ways**; the found ways are listed under the sign as "7 + 5 = 12". The learning purpose is number sense and choosing an operation, and seeing that many routes reach one answer (CCSS 1.OA.C.6 and 2.OA.B.2, adding and taking away within 20). Built 2026-10-13 from the notebook's *Make Twelve* (after Donkey Kong Jr. Math's *Calculate* mode); no definition file, the plan is in [GAMES](../GAMES.md#fruit-sums) and the [IDEAS row](../IDEAS.md).
+A hanging sign names a number (at level 4, shows a sum of two fruit) and the tree holds five or six numbered fruit. She taps two fruit into two boxes (at level 3 also a plus or take-away leaf) and taps the green check. **Any way that makes the number counts**, and a round asks for **two different ways**; the found ways are listed under the sign as "7 + 5 = 12". The learning purpose is number sense and choosing an operation, and seeing that many routes reach one answer (CCSS 1.OA.C.6 and 2.OA.B.2, adding and taking away within 20). Built 2026-10-13 from the notebook's *Make Twelve* (after Donkey Kong Jr. Math's *Calculate* mode); no definition file, the plan is in [GAMES](../GAMES.md#fruit-sums) and the [IDEAS row](../IDEAS.md).
 
 | Level | Plan name (`describeLevel`) | Bands | What she decides |
 | --- | --- | --- | --- |
 | 1 | Make a number up to 10 by adding two fruit, two different ways | school | Which two fruit (of five, up to 9) add to a target of 4–10, then a different pair |
 | 2 | Make a number up to 20 by adding two fruit, two different ways | school | The same with targets 11–20 and fruit up to 19 |
 | 3 | Make a number up to 15 by adding or taking away, two different ways | school | Two of six fruit (up to 20) and a sign leaf; the fruit tapped first is the one to start from; targets 5–15 |
+| 4 | Add two fruit to make the same as the sum on the sign, two different ways | school | Tray of five fruit (up to 9); the sign shows a sum such as "7 + 5" in fruit, targets 6–14; any pair with that total counts, and the sign's own pair (either order) is "the same as the sign", not a miss |
 
-`LEVELS` is `{ school: { min: 1, max: 3 } }`, with no `order` or `entryLevels`.
+`LEVELS` is `{ school: { min: 1, max: 4 } }`, with no `order` or `entryLevels`.
 
 **Content pools.** The tray is generated (`makeRound` in `logic.ts`): two planted ways (two sums, or at level 3 a sum and a take-away), padded with random fruit; whatever else the padding makes is accepted too. Six fruit colours by tray position; one backdrop (green sky, hills, `seed: 57`); one fruit drawing (a round fruit with a stem and a leaf); the sticker is one fruit with a numeral 2–9.
 
@@ -25,7 +26,7 @@ A hanging sign names a number and the tree holds five or six numbered fruit. She
 - No couch entry (`src/couch/catalog.ts` has none) and no journal coupling.
 - Person checks: none recorded for this game in [OBSERVATIONS](../OBSERVATIONS.md); whether a six-year-old reads "take away" leaves as signs or needs the spoken word each time is a person question.
 
-**Browser coverage.** `fruitsums` covers levels 1 and 3 (a check before picking, two wrong totals and a hint, the same sum reversed, a take-away by leaf, portrait, one sticker).
+**Browser coverage.** `fruitsums` covers levels 1, 3 and 4 (`FROM_LEVEL=4` plays only level 4: sign 7 + 5, one wrong total as a miss, two ways, one sticker, portrait; a check before picking, two wrong totals and a hint, the same sum reversed, a take-away by leaf, portrait, one sticker).
 
 ## Similar games
 
@@ -113,7 +114,7 @@ The game's point is the second way: many routes to one number. The ladder grows 
 ## Build slices, in order
 
 1. **Trees, moods, the drop and a hint that follows through** (built, PR #1362; all levels; typecheck, rule tests for the partner hint, one filtered `fruitsums` play at level 3 with one hint and one portrait screenshot in the cove sunset look; no `fingerdemo`, since the bot path is unchanged; build only if shared art files change).
-2. **Level 4 *Same as the sign*** (new level on the existing interaction: typecheck, rule tests, one browser play of level 4, `fingerdemo` at 4).
+2. **Level 4 *Same as the sign*** (built, PR #1413; new level on the existing interaction: typecheck, rule tests, one browser play of level 4, `fingerdemo` at 4).
 3. **Level 5 *Clear the tree*** with the school `order` (same interaction with a basket; typecheck, rule tests including the no-dead-end invariant, registry/how-to tests, one browser play of level 5 with one wrong pair, one portrait screenshot, `fingerdemo` at 5).
 4. **Level 6 *Three fruit*** (new interaction, a third box: layout probe at 768×1024 first, unit tests, one scripted play with a two-fruit check and one hint, one portrait screenshot, `fingerdemo` at 6).
 5. **Level 7 *A times leaf*** after slice 4's layout work is merged only if the leaves row needs it (new level on the sign-choice interaction: typecheck, rule tests, one browser play of 7, `fingerdemo` at 7).
@@ -121,3 +122,5 @@ The game's point is the second way: many routes to one number. The ladder grows 
 ## What was built in this session
 
 Dive session: nothing (research only). **Slice 1 built 2026-11-07 (PR #1362, `claude/fruit-sums-trees`).** Three seeded looks per round (`LOOKS`, chosen by the round's RNG after the tray): orchard morning (round fruit), cove palm at sunset (coconuts ringed in the tray colour, teal sea and sand), autumn (pears and plums alternating, golden sky). The drop: fruit fall from above the top edge, staggered 0.09 s (`DROP_GAP`), landing on falling pentatonic pops; a fruit takes taps only once landed and `autotouch` waits for it. A found way's two fruit hop. `hintWay(..., first)` prefers a way starting from the fruit in the first box and `hintGlow` glows start fruit, partner, needed leaf (level 3), then the check; a dead-end first-box fruit glows so a tap sends it home. Still one hint per sum, counted when the glow first appears; `fsums.hint` now says "Follow the glow! It shows the next step." Sticker unchanged. Not run: `fingerdemo` (bot path unchanged), the level-3 hint in a browser (unit-tested, including a simulation that following the glow from every box state finishes an unfound way at levels 1 and 3).
+
+**Slice 2 built 2026-11-07 (PR #1413, `claude/fruit-sums-same-as-sign`).** Level 4: the sign shows a sum of two fruit (pink fruit in the round's look, scale 0.7) instead of a numeral; tray of five fruit (up to 9), targets 6–14. `makeRound` for level 4 (`pairRound`) plants the sign pair's half and two other distinct pairs, then pads one random fruit; `TreeRound.sign` carries the pair. `takenWays(round, found)` prepends the sign key, so `judge`, `hintGlow` and the bot's `hintWay` treat the sign's own pair (either order) as `same` (no miss, spoken `fsums.samesign`). Found ways are written "x + y = p + q". New voice lines: `fsums.start4`, `right4`, `wrong4`, `again4`, `samesign`, `done4`. The how-to card's goal now says "what the sign shows" and the level-3-only lines are scoped `from 3 to 3`. Ran: typecheck; `npm test` (6229 passed); `BROWSER_SUITE=fruitsums FROM_LEVEL=4`; `fingerdemo` at 4. Not run: build, levels 1–3 browser play, the sign's-own-pair tap in a browser (unit-tested in `judge`), offline.

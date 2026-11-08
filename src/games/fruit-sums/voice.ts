@@ -15,4 +15,15 @@ export const VOICE = {
   'fsums.wrong': ['{a} {op} {b} makes {m}. We need {n}.', '{a} {op} {b} is {m}. Let us make {n}.'],
   'fsums.hint': ['Follow the glow! It shows the next step.'],
   'fsums.done': ['Two ways to make {n}! Great thinking!'],
+  'fsums.start4': [
+    'Look at the sign: {p} plus {q}. Tap two other fruit that make the same, then tap the check.',
+  ],
+  'fsums.right4': [
+    '{a} plus {b} is the same as {p} plus {q}!',
+    'Yes! {a} plus {b} makes the same as {p} plus {q}!',
+  ],
+  'fsums.wrong4': ['{a} plus {b} makes {m}. {p} plus {q} makes {n}.'],
+  'fsums.again4': ['Can you find two different fruit that make the same as {p} plus {q}?'],
+  'fsums.samesign': ['That is the sum on the sign! Can you find two different fruit?'],
+  'fsums.done4': ['Two ways to make the same as {p} plus {q}! Great thinking!'],
 } satisfies Record<string, string[]>;

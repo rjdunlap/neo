@@ -17,6 +17,8 @@ export interface TreePlan {
   tiles: number;
   /** The biggest number on a fruit. */
   maxTile: number;
+  /** The sign holds a sum of two fruit instead of a numeral; she makes the same amount with two other fruit. */
+  signPair?: true;
   name: string;
 }
 
@@ -42,9 +44,17 @@ export const PLANS: readonly TreePlan[] = [
     maxTile: 20,
     name: 'Make a number up to 15 by adding or taking away, two different ways',
   },
+  {
+    ops: ['plus'],
+    target: [6, 14],
+    tiles: 5,
+    maxTile: 9,
+    signPair: true,
+    name: 'Add two fruit to make the same as the sum on the sign, two different ways',
+  },
 ];
 
-export const LEVELS: BandLevels = { school: { min: 1, max: 3 } };
+export const LEVELS: BandLevels = { school: { min: 1, max: 4 } };
 
 export const planFor = (level: number): TreePlan =>
   PLANS[Math.min(PLANS.length, Math.max(1, Math.floor(level))) - 1];
@@ -166,6 +176,36 @@ export function hintGlow(
 export interface TreeRound {
   target: number;
   tray: number[];
+  /** At a sign-pair level, the sum on the sign (in the order shown); `target` is its total. */
+  sign?: readonly [number, number];
+}
+
+/** The ways already taken before she makes one: the sign's own sum at a sign-pair level, then the ways she found. */
+export function takenWays(round: TreeRound, found: readonly string[]): string[] {
+  return round.sign ? [wayKey(round.sign[0], 'plus', round.sign[1]), ...found] : [...found];
+}
+
+/** "Same as the sign": the sign shows one sum, and two other pairs in the tray make the same amount. */
+function pairRound(plan: TreePlan, rng: Rng): TreeRound {
+  const [lo, hi] = plan.target;
+  for (let attempt = 0; attempt < 200; attempt++) {
+    const target = rng.int(lo, hi);
+    // Every pair of fruit up to maxTile that makes the target, by its smaller number; targets 6–14 always have at least three.
+    const halves: number[] = [];
+    for (let h = Math.max(1, target - plan.maxTile); h <= Math.floor(target / 2); h++) halves.push(h);
+    if (halves.length < 3) continue;
+    const [s, x, y] = rng.shuffle(halves);
+    const sign: [number, number] = rng.chance(0.5) ? [s, target - s] : [target - s, s];
+    const tray = [x, target - x, y, target - y];
+    while (tray.length < plan.tiles) tray.push(rng.int(1, plan.maxTile));
+    const taken = [wayKey(sign[0], 'plus', sign[1])];
+    const open = solutions(tray, plan.ops, target).filter(
+      (w) => !taken.includes(wayKey(tray[w.a], w.op, tray[w.b])),
+    );
+    if (open.length < WAYS_PER_ROUND) continue;
+    return { target, tray: rng.shuffle(tray), sign };
+  }
+  throw new Error('Fruit Sums: no sign-pair tray');
 }
 
 /**
@@ -175,6 +215,7 @@ export interface TreeRound {
 export function makeRound(level: number, rng: Rng): TreeRound {
   const plan = planFor(level),
     [lo, hi] = plan.target;
+  if (plan.signPair) return pairRound(plan, rng);
   for (let attempt = 0; attempt < 200; attempt++) {
     const target = rng.int(lo, hi);
     const tray: number[] = [];
