@@ -16,7 +16,10 @@ export const HOW_TO: GameHowTo = {
     },
     'Tap the green check to see what you made. Any way that makes the number counts.',
   ],
-  finish: 'The round ends after two different ways to make the number.',
+  finish: [
+    { to: 3, text: 'The round ends after two different ways to make the number.' },
+    { from: 4, text: 'The round ends after two different pairs that make the same as the sign.' },
+  ],
   note: [
     {
       to: 2,

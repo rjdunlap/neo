@@ -186,7 +186,10 @@ class FruitSums implements Game {
         this.sign.addChild(f);
       });
       this.sign.addChild(signArt('plus', 40, swatch.brown.line));
-    } else this.sign.addChild(this.signNumber);
+    }
+    // The numeral stays on the sign (hidden at level 4) so it is destroyed with the stage.
+    this.signNumber.visible = !this.signSum;
+    this.sign.addChild(this.signNumber);
     this.sign.eventMode = 'none';
 
     for (const at of ['a', 'b'] as const) this.slots.addChild(this.slotArt(at));
