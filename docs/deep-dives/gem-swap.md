@@ -122,7 +122,7 @@ None needed for grown-ups: 6 → 12 → 15 → 18 gems is already a gentle slope
 2. **Level 5 *Six by six: five swaps* (built 2026-11-07, PR #1401).** 20 generated frozen 6×6 trays at par 5 from the generator script, the node-budget test, grown-up range 1–5; the couch trip mapping is unchanged. Checks: new level on the existing interaction: typecheck, rule and registry/how-to tests, one browser play of 5, `fingerdemo` at 5.
 3. **Level 6 *One swap, a long line* (built 2026-11-07, PR #1407).** Content-tagged trays and the enumerated-route test; range 1–6. Checks: typecheck, rule tests, one browser play of 6, `fingerdemo` at 6.
 4. **Level 7 *Stones that stay* (built 2026-11-08, PR #1420).** The stone model, drawing and voice; range 1–7. Checks: model change: typecheck, rule tests with levels 1–6 unchanged, one browser play of 7 with one refused stone tap, one portrait screenshot, `fingerdemo` at 7, build.
-5. **Level 8 *Iced gems*.** The ice model; range 1–8. Checks: new interaction: typecheck, unit tests, one scripted play with one iced-gem tap and one hint, one portrait screenshot, `fingerdemo` at 8, build. After slice 4.
+5. **Level 8 *Iced gems* (claimed 2026-11-08, branch `claude/gem-swap-iced-gems`).** The ice model; range 1–8. Expected files: `src/games/gem-swap/{logic,logic.test,boards,index,voice,howto}.ts`, `scripts/gem-swap-trays.mjs`, the `gemswap` browser suite and docs. Checks: new interaction: typecheck, unit tests, one scripted play with one iced-gem tap and one hint, one portrait screenshot, `fingerdemo` at 8, build. After slice 4.
 
 The school opening (decision 1) and the couch course (decision 3) are gated and stay out of the ready list.
 
