@@ -107,6 +107,8 @@ class NumberNook implements Game {
     const before = inPlace(this.board);
     this.history.push(this.board.slice()); this.board = next; this.moves++; this.hinted = -1;
     this.glide = { cell: gap, from: at, t: 0 }; this.nudge = null;
+    // The gliding tile rides above the new gap's square, with the hint glow still on top.
+    this.grid.addChild(this.nodes[gap], this.glow);
     sfx.tick();
     // The in-place note climbs a step for each tile now home and falls back when one leaves.
     const now = inPlace(this.board);
