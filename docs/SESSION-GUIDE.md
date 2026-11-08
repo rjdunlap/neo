@@ -85,4 +85,4 @@ Report briefly to the grown-up after each finished game or feature: what it does
 
 ## Formatting and minimal lint
 
-`npm ci` installs the app and isolated typed-lint dependencies. Run `npm run format` after code edits, then `npm run format:check` and `npm run lint`; pull-request CI runs both. Fix existing lint findings as their code is touched, then `npm run lint:prune`; do not grow the baseline. [Tooling, exclusions and blame history](../tooling/lint/README.md).
+`npm ci` installs the app and typed-lint dependencies from the root lockfile. Run `npm run format` after code edits, then `npm run format:check` and `npm run lint`; pull-request CI runs both. Fix existing lint findings as their code is touched, then `npm run lint:prune`; do not grow the baseline. [Tooling, exclusions and blame history](CODE-QUALITY.md).
