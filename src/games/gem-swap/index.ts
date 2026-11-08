@@ -18,10 +18,10 @@ function gem(g: Graphics, kind: number, size: number) {
   shapePath(g, SHAPES[kind], size).fill(color.fill).stroke({ width: 4, color: color.line });
 }
 
-/** A seeded look for the tray: cell tint, cell rim and the plate behind it. Rims avoid the hint (orange) and selection (blue) rings. */
+/** A seeded look for the tray: cell tint, cell rim and the plate behind it. Cells and rims avoid the hint (orange) and selection (blue) rings. */
 const LOOKS = [
   { name: 'lantern night', cell: swatch.purple.light, rim: swatch.yellow.fill, plate: swatch.purple.line },
-  { name: 'autumn', cell: swatch.orange.light, rim: swatch.brown.fill, plate: swatch.brown.light },
+  { name: 'autumn', cell: swatch.yellow.light, rim: swatch.brown.fill, plate: swatch.brown.light },
   { name: 'first snow', cell: swatch.white.light, rim: swatch.white.line, plate: swatch.blue.light },
 ] as const;
 /** Each wave: the cleared line pulses, the gems above fall (accelerating, as dropped things do), then squash as they land. */
