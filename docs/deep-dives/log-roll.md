@@ -4,6 +4,8 @@
 
 ## The game today
 
+*Updated after slice 1 (PR #1402): floors, looks, the tip and the hint count below are built; the "Known gaps" list is what slice 1 closed. Levels and the grown-up range 1–3 are unchanged.*
+
 A grown-up tips a wooden log across a pond of stepping stones with four arrow buttons and finishes by standing it upright in the dark hollow with the gold rim. A standing log tips onto two stones; tipping a lying log along its length stands it up again; rolling it sideways moves it one space. Both ends need a stone, so the puzzle is planning the log's **footprint and orientation** several moves ahead, a classic rolling-block maze. It lives in Tinker Lab, touch only (no couch entry in `src/couch/catalog.ts`), and is the `grownup` band's only orientation puzzle; younger players reach it behind the land's signpost and play level 1.
 
 | Level | Plan name | Bands whose window includes it | What she decides |
@@ -103,7 +105,7 @@ Slices 1–5 go ahead regardless.
 
 ## Build slices, in order
 
-1. **Floors, looks, a visible tip and a fair hint count.** The floor generator script and four frozen floors per level with `G` hollows and mirroring; the layout derived from the floor size; three seeded looks; the tip tween with one queued tap; the refusal lean; a hint already glowing is not counted again; the par line after finishing. Checks: typecheck, rule tests, one filtered `logroll` play at level 3 with one portrait screenshot in a new look, `fingerdemo` at 3 (the bot now waits for the tip); build only if shared files change.
+1. **Built.** **Floors, looks, a visible tip and a fair hint count.** The floor generator script and four frozen floors per level with `G` hollows and mirroring; the layout derived from the floor size; three seeded looks; the tip tween with one queued tap; the refusal lean; a hint already glowing is not counted again; the par line after finishing. Checks: typecheck, rule tests, one filtered `logroll` play at level 3 with one portrait screenshot in a new look, `fingerdemo` at 3 (the bot now waits for the tip); build only if shared files change.
 2. **Level 4 *The long way round*.** Frozen 8×6 floors at depth 16; grown-up range 1–4. Checks: new level on the existing interaction: typecheck, rule and registry/how-to tests, one browser play of 4, `fingerdemo` at 4.
 3. **Level 5 *Lay it in the cradle*.** The lying goal, its drawing and voice; range 1–5. Checks: typecheck, rule tests, one browser play of 5 with one upright stop on a cradle, `fingerdemo` at 5.
 4. **Level 6 *Soft moss*.** The moss stone, its refusal and voice; range 1–6. Checks: model change: typecheck, rule tests with levels 1–5 unchanged, one browser play of 6 with one refused stand on moss, one portrait screenshot, `fingerdemo` at 6, build.
@@ -113,4 +115,7 @@ The school opening, the couch course and swipes (decisions 1–3) are gated and 
 
 ## What was built in this session
 
-Nothing: research and design only. Ran `node scripts/check-links.mjs` and `git diff --check`.
+Design session: research and design only (links and `git diff --check`).
+
+**Slice 1 built (PR #1402).** `scripts/log-roll-floors.mjs` writes `src/games/log-roll/floors.ts`: four frozen floors a level (the original first; `.` stone, `G` hollow, space water), each with at least two upright starts at the exact depth (generated floors at least three). Starts per floor: level 1 5, 4, 5, 4; level 2 5, 3, 3, 4; level 3 2, 5, 4, 4, so level 3 went from 2 possible starts to 15. Each puzzle picks a floor and a seeded left-right mirror that moves the hollow: eight floor shapes a level. The layout derives from the floor's rows and columns. Three seeded pond looks (spring pond, autumn leaves, evening water) with stone undersides and floating pads or leaves. The log tips over 0.22 s (footprint stretch and fold, landing squash) with at most one queued tap; a refused roll leans toward the missing stone; ripples ring the hollow on finishing; the status reads "Finished in N rolls · the shortest route is D" as information only (no voice line added). A glowing hint is counted once (`countsAsHint` in `logic.ts`, rule-tested). The ghost-finger bot waits for the tip; the how-to card note is updated.
+Ran: `npm run typecheck`; `npm test` (328 files); `BROWSER_SUITE=logroll` (levels 1 and 3, refused roll, double hint counted once, tip present and bot waits, undo, restart, one sticker each, portrait screenshot at level 3 in the spring pond on a mirrored floor, landscape screenshot); `fingerdemo` with `FINGER_ONLY=log-roll FINGER_LEVELS=3`. Not run: build, offline. Open person check: whether the tip makes the rule obvious.
