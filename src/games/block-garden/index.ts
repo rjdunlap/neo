@@ -13,9 +13,9 @@ import { WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import { GARDENS } from './puzzles';
 import {
-  LEVELS,
+  ENTRY_LEVELS, LEVELS,
   apply, decode, FIRST_GARDEN, fits, flowerAt, gardenLayout, goalMet, has, hintPlacement, makeGarden, nearestAnchor, place, placements,
-  lookFor, planFor, RIDE, search, SHAPES, startState, transformGarden, trayIndex, trayNow, TRAY_CELL, type Anchor, type Family, type Garden,
+  kindOf, lookFor, planFor, RIDE, search, SHAPES, startState, transformGarden, trayIndex, trayNow, TRAY_CELL, type Anchor, type Family, type Garden,
   type FlowerKind, type GardenLayout, type GardenLook, type GardenPlan, type Placement, type State,
 } from './logic';
 
@@ -204,7 +204,7 @@ class BlockGarden implements Game {
   private pickGarden(i: number): Garden {
     const { plan, ctx } = this;
     if (plan.id === 1 && i === 0) return decode(FIRST_GARDEN, plan);
-    if (plan.id <= 4) return makeGarden(plan, ctx.rng).garden;
+    if (kindOf(plan) <= 4) return makeGarden(plan, ctx.rng).garden;
     const list = GARDENS[plan.id];
     return transformGarden(decode(ctx.rng.pick(list), plan), ctx.rng.int(0, 7));
   }
@@ -300,7 +300,7 @@ class BlockGarden implements Game {
     if (this.told) return;
     this.told = true;
     await this.ctx.instruct(this.plan.goal === 'clear' ? 'block-garden.instruct-clear' : 'block-garden.instruct');
-    if (this.plan.id === 3) await this.ctx.say('block-garden.two-lines');
+    if (kindOf(this.plan) === 3) await this.ctx.say('block-garden.two-lines');
   }
 
   /** Redraw the bed and fill the slots from the tray in front of her. */
@@ -771,6 +771,7 @@ export const blockGarden: GameModule = {
   skills: ['spatial-planning', 'shape-composition', 'planning'],
   bands: ['prek', 'school', 'grownup'],
   levels: (band) => rangeFor(LEVELS, band),
+  entryLevels: ENTRY_LEVELS,
   describeLevel: (level) => planFor(level).name,
   music: STYLES.paint,
   coplayHint: 'One of you points at a gap, and the other finds the shape that fills it. Say "row" and "column" out loud.',

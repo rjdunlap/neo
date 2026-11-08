@@ -2,11 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import {
-  allShortest, anchors, apply, cloneBed, decode, emptyBed, encode, FIRST_GARDEN, fits, FLOWER_KINDS, flowerAt, fullLines, gardenLayout, goalMet, has,
-  hintPlacement, LOOKS, lookFor, makeGarden, mirrorShape, nearestAnchor, noRoom, passesFilter, place, placements, PLANS, planFor, popcount,
+  allShortest, anchors, apply, cloneBed, decode, emptyBed, encode, ENTRY_LEVELS, FIRST_GARDEN, fits, FLOWER_KINDS, flowerAt, fullLines, gardenLayout, goalMet, has,
+  hintPlacement, kindOf, LEVELS, LOOKS, lookFor, makeGarden, mirrorShape, nearestAnchor, noRoom, passesFilter, place, placements, PLANS, planFor, popcount,
   RIDE, search, SEARCH_CAP, SHAPES, solve, startState, transformGarden, trayIndex, trayNow, type Garden, type State,
 } from './logic';
 import { GARDENS } from './puzzles';
+import { landing, stepLevel } from '../../progress/difficulty';
 
 const VIEWS = Object.entries({
   landscape: computeView(1024, 768),
@@ -104,7 +105,7 @@ describe('level 1, garden 1', () => {
 
 describe('rounds, looks and flowers', () => {
   it('a pre-K round at levels 1 and 2 is three gardens; the rest keep theirs', () => {
-    expect(PLANS.map((p) => p.gardens)).toEqual([3, 3, 2, 2, 2, 1, 1, 1]);
+    expect(PLANS.map((p) => p.gardens)).toEqual([3, 3, 2, 2, 2, 1, 1, 1, 2]);
   });
 
   it('every look and every flower kind is reachable', () => {
@@ -121,7 +122,7 @@ describe('rounds, looks and flowers', () => {
   });
 });
 
-describe.each(PLANS.filter((p) => p.id <= 4).map((p) => [p.id, p] as const))('generated gardens, level %i', (_, plan) => {
+describe.each(PLANS.filter((p) => kindOf(p) <= 4).map((p) => [p.id, p] as const))('generated gardens, level %i', (_, plan) => {
   it('over 500 seeds: well formed, solvable at par inside the range, passing the filter, never the fallback, the same for a seed', () => {
     for (let seed = 1; seed <= 500; seed++) {
       const made = makeGarden(plan, new Rng(seed));
@@ -138,6 +139,40 @@ describe.each(PLANS.filter((p) => p.id <= 4).map((p) => [p.id, p] as const))('ge
       expect(passesFilter(plan, g, par)).toBe(true);
       if (seed <= 20) expect(encode(makeGarden(plan, new Rng(seed)).garden)).toBe(encode(g));
     }
+  });
+});
+
+describe('level 9, Corner with stripes', () => {
+  const plan = planFor(9);
+  it("is level 3's corner gardens with the stripes on and refused drops free", () => {
+    const three = planFor(3);
+    expect(plan.id).toBe(9);
+    expect(kindOf(plan)).toBe(3);
+    expect(plan.tinted).toBe(true);
+    expect(plan.refusalCounts).toBe(false);
+    const same = (p: typeof plan) => [p.n, p.cell, p.goal, p.pieces, p.traySize, p.buds, p.par, p.gardens, p.families];
+    expect(same(plan)).toEqual(same(three));
+  });
+
+  it("over 200 seeds its gardens pass level 3's filter, and a seed gives level 3's garden", () => {
+    for (let seed = 1; seed <= 200; seed++) {
+      const g = makeGarden(plan, new Rng(seed)).garden;
+      expect(passesFilter(planFor(3), g, shortest(g, startState(g)))).toBe(true);
+      expect(encode(g)).toBe(encode(makeGarden(planFor(3), new Rng(seed)).garden));
+    }
+  });
+
+  it('sits between 2 and 3 for pre-K and school; grown-ups never reach it', () => {
+    expect(LEVELS.prek).toEqual({ min: 1, max: 9, order: [1, 2, 9, 3] });
+    expect(LEVELS.school).toEqual({ min: 2, max: 9, order: [2, 9, 3, 4, 5, 6] });
+    expect(LEVELS.grownup).toEqual({ min: 5, max: 8 });
+    expect(ENTRY_LEVELS).toEqual([9]);
+    expect(stepLevel(2, 1, LEVELS.prek!)).toBe(9);
+    expect(stepLevel(9, 1, LEVELS.prek!)).toBe(3);
+    expect(stepLevel(3, -1, LEVELS.school!)).toBe(9);
+    expect(landing(9, LEVELS.grownup!, ENTRY_LEVELS)).toBe(5);
+    expect(landing(9, LEVELS.prek!, ENTRY_LEVELS)).toBe(9);
+    expect(planFor(9).name).toBe('Corner with stripes');
   });
 });
 
