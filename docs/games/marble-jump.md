@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| grown-up | 1–6 |
+| grown-up | 1–7 |
 
 | Level | Plays like |
 | --- | --- |
@@ -18,6 +18,7 @@
 | 4 | 9 marbles on a triangular board; leave one |
 | 5 | 11 marbles on a triangular board; leave one |
 | 6 | 14 marbles on a triangular board; leave one |
+| 7 | 14 marbles; the last one must finish in the star hole |
 
 <!-- end generated -->
 
