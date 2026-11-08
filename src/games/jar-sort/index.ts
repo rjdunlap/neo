@@ -17,6 +17,8 @@ import { BOARDS } from './puzzles';
 import {
   LEVELS,
   FRUITS,
+  capAt,
+  capsFor,
   hintMove,
   jarHeight,
   jarLayout,
@@ -38,6 +40,7 @@ import {
   solve,
   solved,
   UNDO_INSET,
+  type Caps,
   uniformFull,
   type Board,
   type JarPlan,
@@ -205,10 +208,10 @@ const PANTRY: Record<Look, { wall: number; pane: number }> = {
  * The pantry behind the jars, drawn from the view and the jars' places: a window whose pane changes with the look (a morning sun,
  * rain streaks, an evening lamp) and a wooden shelf with a striped cloth under each row of jars. Decoration only.
  */
-function drawPantry(g: Graphics, look: Look, v: View, spots: JarSpot[], cap: number) {
+function drawPantry(g: Graphics, look: Look, v: View, spots: JarSpot[]) {
   const { wall, pane } = PANTRY[look];
   g.clear().rect(0, 0, v.w, v.h).fill(wall);
-  const jarTop = spots.length ? Math.min(...spots.map((s) => s.y - jarHeight(cap))) : v.h / 2;
+  const jarTop = spots.length ? Math.min(...spots.map((s) => s.hit.y)) : v.h / 2;
   const w = Math.min(360, v.w * 0.42),
     x = (v.w - w) / 2,
     y = 20;
@@ -275,6 +278,8 @@ class JarSort implements Game {
   finished = false;
   board: Board = [];
   labels: Labels | undefined;
+  /** Each jar's capacity, moved with the jars when the round shuffles them (level 10's little jar). */
+  caps: Caps;
   /** The jar whose top piece is lifted, if any. */
   lifted: number | null = null;
   /** The two jars of the move the glow suggests, until she moves. */
@@ -308,6 +313,7 @@ class JarSort implements Game {
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
+    this.caps = capsFor(this.plan);
     const list = BOARDS[this.plan.id];
     // The how-to card's demonstration shows one board, so two-board levels stay inside its time.
     const boards = ctx.demo ? 1 : this.plan.boards;
@@ -331,8 +337,8 @@ class JarSort implements Game {
     this.back.clear().rect(0, 0, v.w, v.h).fill({ color: 0xffffff, alpha: 0.001 });
     this.back.hitArea = new Rectangle(0, 0, v.w, v.h);
     this.undoButton.position.set(v.w - UNDO_INSET, v.h - UNDO_INSET);
-    const spots = jarLayout(this.plan.jars, this.plan.cap, v);
-    drawPantry(this.pantry, this.look, v, spots, this.plan.cap);
+    const spots = jarLayout(this.plan.jars, this.caps, v);
+    drawPantry(this.pantry, this.look, v, spots);
     if (!this.jars.length) return;
     this.setDown();
     this.jars.forEach((j, i) => this.placeJar(j, spots[i]));
@@ -358,7 +364,7 @@ class JarSort implements Game {
     };
     if (this.lifted !== null && this.plan.lit) {
       for (let i = 0; i < this.board.length; i++) {
-        if (!legal(this.board, this.plan.cap, this.lifted, i)) continue;
+        if (!legal(this.board, this.caps, this.lifted, i)) continue;
         g.roundRect(...box(i, 4), 24)
           .fill({ color: swatch.yellow.light, alpha: 0.35 })
           .stroke({ width: 5, color: swatch.yellow.fill });
@@ -379,8 +385,7 @@ class JarSort implements Game {
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.jars.length) return null;
     const key = render(this.board);
-    if (this.botPlan?.key !== key)
-      this.botPlan = { key, path: solve(this.board, this.plan.cap, this.labels) };
+    if (this.botPlan?.key !== key) this.botPlan = { key, path: solve(this.board, this.caps, this.labels) };
     const next = this.botPlan.path?.[0];
     if (!next) return null;
     const tapJar = (i: number, pause?: number): TouchIntent => {
@@ -407,7 +412,8 @@ class JarSort implements Game {
     const shown = present(this.puzzles[this.index], this.plan, this.ctx.rng);
     this.board = shown.board;
     this.labels = shown.labels;
-    this.par = solve(this.board, this.plan.cap, this.labels)?.length ?? this.plan.par[1];
+    this.caps = shown.caps;
+    this.par = solve(this.board, this.caps, this.labels)?.length ?? this.plan.par[1];
     this.build();
     this.jarLayer.alpha = this.pieceLayer.alpha = 0;
     await Promise.all([
@@ -428,7 +434,7 @@ class JarSort implements Game {
     for (const j of this.jars) j.handle.destroy();
     this.jarLayer.removeChildren().forEach((c) => c.destroy({ children: true }));
     this.pieceLayer.removeChildren().forEach((c) => c.destroy({ children: true }));
-    const spots = jarLayout(this.plan.jars, this.plan.cap, this.ctx.view);
+    const spots = jarLayout(this.plan.jars, this.caps, this.ctx.view);
     this.jars = this.board.map((_, i) => this.makeJar(i, spots[i]));
     this.pieces = this.board.map((jar) =>
       jar.map((k) => {
@@ -445,7 +451,7 @@ class JarSort implements Game {
   private makeJar(i: number, spot: JarSpot): JarNode {
     const root = new Container();
     root.eventMode = 'none';
-    root.addChild(jarArt(this.plan.cap));
+    root.addChild(jarArt(capAt(this.caps, i)));
     const lid = lidArt(this.look);
     lid.visible = false;
     root.addChild(lid);
@@ -466,7 +472,7 @@ class JarSort implements Game {
     }
     this.jarLayer.addChild(root);
     const carrier = new Container();
-    const h = jarHeight(this.plan.cap);
+    const h = jarHeight(capAt(this.caps, i));
     carrier.hitArea = new Rectangle(-spot.hit.w / 2, -h, spot.hit.w, h);
     this.jarLayer.addChild(carrier);
     const handle = draggable(carrier, this.ctx.tw, {
@@ -512,10 +518,12 @@ class JarSort implements Game {
     const j = this.jars[i],
       jar = this.board[i];
     const want = this.labels?.[i];
-    const full = uniformFull(jar, this.plan.cap);
-    // On a labelled board a jar full of the wrong fruit waits for its lid, and so does a full spare jar.
-    const lid = full && (!this.labels || want === jar[0]);
-    j.lid.position.set(0, -jarHeight(this.plan.cap) + RIM - 14);
+    const cap = capAt(this.caps, i);
+    const full = uniformFull(jar, cap);
+    // On a labelled board a jar full of the wrong fruit waits for its lid, and so does a full spare jar; the little jar never
+    // takes one, since two of a fruit are not all of it.
+    const lid = full && cap === this.plan.cap && (!this.labels || want === jar[0]);
+    j.lid.position.set(0, -jarHeight(cap) + RIM - 14);
     if (lid && !j.lid.visible && chime) {
       sfx.bell(10, 0.3);
       void this.ctx.say('jar.lid');
@@ -628,7 +636,7 @@ class JarSort implements Game {
   }
 
   private tryMove(from: number, to: number) {
-    const why = refusal(this.board, this.plan.cap, from, to);
+    const why = refusal(this.board, this.caps, from, to);
     if (why) return this.refuse(from, to, why);
     void this.doMove(from, to);
   }
@@ -642,7 +650,14 @@ class JarSort implements Game {
     void this.ctx.tw
       .to(t, { x: t.x + 8 }, { duration: 0.06 })
       .then(() => this.ctx.tw.to(t, { x: this.jars[to].spot.x }, { duration: 0.1 }));
-    void this.ctx.say(why === 'full' ? 'jar.refuse-full' : (`jar.refuse-kind.${FRUITS[kind]}` as LineId));
+    const little = capAt(this.caps, to) < this.plan.cap;
+    void this.ctx.say(
+      why === 'kind'
+        ? (`jar.refuse-kind.${FRUITS[kind]}` as LineId)
+        : little
+          ? 'jar.refuse-little'
+          : 'jar.refuse-full',
+    );
     if (this.plan.lit) return;
     this.misses++;
     this.boardMisses++;
@@ -661,7 +676,7 @@ class JarSort implements Game {
     const p = this.pieces[from].pop()!;
     this.pieces[to].push(p);
     const at = this.slot(to, this.pieces[to].length - 1);
-    const over = Math.min(p.y, this.jars[to].spot.y - jarHeight(this.plan.cap)) - 30;
+    const over = Math.min(p.y, this.jars[to].spot.y - jarHeight(capAt(this.caps, to))) - 30;
     this.ctx.tw.kill(p);
     // A short arc: up over the target's rim, then down into place.
     await this.ctx.tw.to(p, { x: at.x, y: over }, { duration: HOP * 0.55, ease: ease.outQuad });
@@ -675,7 +690,7 @@ class JarSort implements Game {
       this.relayout = false;
       this.placePieces();
     }
-    if (solved(this.board, this.plan.cap, this.labels)) return void this.boardDone();
+    if (solved(this.board, this.caps, this.labels)) return void this.boardDone();
     this.checkStuck();
     if (this.sinceHint >= Math.max(8, 2 * this.par)) this.showHint();
   }
@@ -696,8 +711,8 @@ class JarSort implements Game {
   /** Stuck: no move is left, or a small search proves there is no way out from here. Never a miss or a hint. */
   private checkStuck() {
     const dead =
-      !moves(this.board, this.plan.cap).length ||
-      search(this.board, this.plan.cap, this.labels, DEAD_END_LIMIT) === 'none';
+      !moves(this.board, this.caps).length ||
+      search(this.board, this.caps, this.labels, DEAD_END_LIMIT) === 'none';
     if (!dead) return;
     this.undoPulse = 4;
     void this.ctx.say('jar.stuck');
@@ -706,7 +721,7 @@ class JarSort implements Game {
   /** The hint move's two jars glow until she moves; past the search's room, the round arrow glows instead. Counts once. */
   private showHint() {
     if (this.hinted || this.finished) return;
-    const hint = hintMove(this.board, this.plan.cap, this.labels, this.history);
+    const hint = hintMove(this.board, this.caps, this.labels, this.history);
     this.sinceHint = 0;
     if (hint.kind === 'stuck') {
       this.undoPulse = 4;
@@ -736,7 +751,7 @@ class JarSort implements Game {
       this.jars[i].root.addChildAt(jam, this.jars[i].mat ? 2 : 1);
       void this.ctx.tw.to(jam, { alpha: 1 }, { duration: 0.4 });
       for (const p of this.pieces[i]) void this.ctx.tw.to(p, { alpha: 0 }, { duration: 0.4 });
-      this.ctx.particles.burst(s.x, s.y - jarHeight(this.plan.cap) / 2, {
+      this.ctx.particles.burst(s.x, s.y - s.hit.h / 2, {
         kind: 'dot',
         colors: [JAM[jar[0]], 0xffffff],
         count: 10,

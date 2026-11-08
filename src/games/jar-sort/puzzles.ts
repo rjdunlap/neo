@@ -184,4 +184,28 @@ export const BOARDS: Record<number, readonly string[]> = {
     '021|1|001|22',
     '11|20|122|00',
   ],
+  // Level 10: four tall jars of four and a little jar of two (last, empty at the start; a round shuffles it among the others).
+  // Every board's shortest way needs the little jar: with it closed, the board takes longer or cannot finish.
+  10: [
+    '022|011|1210|20|',
+    '2000|2120|21|11|',
+    '121|20|012|0201|',
+    '012|2100|12|012|',
+    '10|220|210|1210|',
+    '210|1201|0|0212|',
+    '0202|2110|12|01|',
+    '221|120|0200|11|',
+    '01|201|011|0222|',
+    '002|10|012|1221|',
+    '1012|002|0122|1|',
+    '1200|201|2021|1|',
+    '121|0|0002|1122|',
+    '100|222|01|2101|',
+    '1021|0011|2|022|',
+    '000|012|211|122|',
+    '221|2|1000|0211|',
+    '201|10|2101|220|',
+    '01|1011|220|022|',
+    '1221|021|000|12|',
+  ],
 };

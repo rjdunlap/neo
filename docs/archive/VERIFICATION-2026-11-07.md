@@ -233,3 +233,9 @@ Changed: `npm run new-game` and templates create colocated starters, a browser s
 Ran on `13b4871d` plus the feature diff: 20 focused generator safety/CLI/formatting tests; temporary `scaffold-check` typecheck, `npm run game-docs`, six content barrel/docs checks; temporary game and its generated inventory changes removed afterwards.
 Full `npm test`: 328 files, 6,187 passed / 5 skipped (before the final two generator tests); `npm run build` passed. Final focused generator checks cover the last CLI/formatting/rollback edits. Links and diff whitespace checked at closeout.
 Not run: browser, ghost finger, offline or device checks; this changes developer tooling only. Generated starters remain unfinished until their game-specific implementation and checks are done.
+
+## 2026-11-07 — Log Roll slice 1: four floors a level, three looks, a visible tip (PR #1402)
+
+Changed: `scripts/log-roll-floors.mjs` writes `floors.ts` (four frozen floors a level with `G` hollows, at least two exact-depth upright starts each; level 3 went from 2 starts to 15) with a seeded mirror; layout from floor size; three seeded looks; 0.22 s tip with one queued tap, refusal lean, finish ripples and a par line; a glowing hint counts once (`countsAsHint`); the bot waits for the tip. Levels and range unchanged.
+Ran: `npm run typecheck`; `npm test` (328 files); `BROWSER_SUITE=logroll` (levels 1 and 3, refused roll, double hint counted once, undo, restart, one sticker each, portrait screenshot at level 3 on a mirrored floor, landscape screenshot); `fingerdemo` with `FINGER_ONLY=log-roll FINGER_LEVELS=3` (17.2 s); game-reviewer found no defects.
+Not run: build (no shared files or assets), offline, other suites. Open: no device or person check; whether the tip makes the rule obvious ([DEVICE-CHECKS.md](../DEVICE-CHECKS.md)).
