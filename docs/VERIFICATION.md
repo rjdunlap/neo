@@ -90,12 +90,6 @@ Changed: level 4 (the sign shows a sum of two fruit; any pair with that total co
 Ran: `npm run typecheck`; `npm test` (329 files, 6229 passed); `BROWSER_SUITE=fruitsums FROM_LEVEL=4` (portrait 768×1024, sign 7 + 5, one wrong total as a miss, two ways, one sticker, screenshot); `fingerdemo` with `FINGER_ONLY=fruit-sums FINGER_LEVELS=4` (11.1 s); game-reviewer found no defects.
 Not run: build, levels 1–3 browser play (unchanged), tapping the sign's own pair in a browser (unit-tested in `judge`), offline. Open: device checks.
 
-## 2026-11-07 — Jar Sort slice 2: level 9 Three kinds, bright jars (PR #1412)
-
-Changed: level 9 (four jars of three, three kinds, par 4–6, lit target jars) with 20 solver-checked boards, none equal to level 3's; preschool 1, 2, 9, 3 and pre-K 2, 9, 3, 4, 5; `entryLevels` [9] so a school move lands on 4; how-to card holds the bright-jars step at 9.
-Ran: `npm run typecheck`; vitest for `src/games/jar-sort`, the registry test and `src/content` (231 passed, with a new level 9 rule test); `BROWSER_SUITE=jarsort` (level 9: four jars, lit, one refused move free with the board unchanged, solved by taps with 0 misses and 0 hints, a sticker, landscape screenshot); `fingerdemo` with `FINGER_ONLY=jar-sort FINGER_LEVELS=9` (15.9 s); `npm run build`.
-Not run: full `npm test` (CI runs it), offline, other suites. Open: device checks.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
