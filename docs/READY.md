@@ -6,7 +6,7 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **`puddle-gobble` slice 5, Two pails** (`bubble-beach`; define, docs only; slices 1–4 are built): a `beachLayout` and strip probe in `logic.test.ts` at four views, then a definition. [build slices](deep-dives/puddle-gobble.md#build-slices-in-order)
+- **`puddle-gobble` slice 5, Two pails** (claimed on `claude/puddle-gobble-two-pails`; `bubble-beach`; define, docs only; slices 1–4 are built): a `beachLayout` and strip probe in `logic.test.ts` at four views, then a definition. [build slices](deep-dives/puddle-gobble.md#build-slices-in-order)
 - **`gem-swap` slice 3, level 6 *One swap, a long line*** (grown-up; slices 1–2 are built; content-tagged trays and the enumerated-route test, range 1–6; new level on the existing interaction: typecheck, rule tests, one browser play of 6, `fingerdemo` at 6): [build slices](deep-dives/gem-swap.md#build-slices-in-order).
 - **`log-roll` slice 2, level 4 *The long way round*** (grown-up; slice 1 is built; frozen 8×6 floors at depth 16, range 1–4; new level on the existing interaction: typecheck, rule and registry/how-to tests, one browser play of 4, `fingerdemo` at 4): [build slices](deep-dives/log-roll.md#build-slices-in-order).
 
