@@ -10,7 +10,7 @@
 | --- | --- |
 | preschool | 1, 2, 9, 3 |
 | pre-K | 2, 9, 3, 4, 5 |
-| school | 4–8 |
+| school | 4, 5, 6, 7, 8, 10 |
 
 | Level | Plays like |
 | --- | --- |
@@ -23,6 +23,7 @@
 | 7 | Five kinds |
 | 8 | Every fruit has its jar |
 | 9 | Three kinds, bright jars |
+| 10 | A little jar to park in |
 
 <!-- end generated -->
 

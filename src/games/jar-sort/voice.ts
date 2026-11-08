@@ -13,6 +13,7 @@ export const VOICE = {
   'jar.refuse-kind.cherry': ['Cherries go on cherries, or in an empty jar.'],
   'jar.refuse-kind.lemon': ['Lemon goes on lemon, or in an empty jar.'],
   'jar.refuse-full': ['That jar is full.'],
+  'jar.refuse-little': ['The little jar holds two.'],
   'jar.lid': ['A whole jar of one fruit! On goes the lid.', 'Pop! The lid goes on.'],
   'jar.wrong-jar.strawberry': ['The strawberries go in the strawberry jar.'],
   'jar.wrong-jar.blueberry': ['The blueberries go in the blueberry jar.'],
