@@ -9,6 +9,8 @@ import {
   finishable, keeps, left, LEVELS, MIXED, mixedHint, piecesOf, putBack, STRIP_MAX, stuck, TOKEN, tokenAt, type Sign,
 } from './logic';
 import { VOICE } from './voice';
+import { fruitSlice } from './index';
+import { landing } from '../../progress/difficulty';
 
 const VIEWS = {
   landscape: computeView(1024, 768),
@@ -418,6 +420,10 @@ describe('level 11 just a few', () => {
     }
     expect(LEVELS.school).toEqual({ min: 5, max: 10 });
     expect(LEVELS.toddler).toEqual({ min: 1, max: 2 });
+  });
+  it('a carried 11 starts school at its easiest, not its hardest', () => {
+    expect(landing(11, LEVELS.school!, fruitSlice.entryLevels)).toBe(5);
+    expect(landing(11, LEVELS.prek!, fruitSlice.entryLevels)).toBe(11);
   });
 });
 
