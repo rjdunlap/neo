@@ -98,8 +98,9 @@ class MarbleJump implements Game {
     if (!j) {
       this.misses++; this.consecutiveMisses++; sfx.boing();
       void this.ctx.say('marble.miss');
-      this.tilt = { hole: this.selected, toward: i, t: 0 };
+      const hole = this.selected;
       if (this.consecutiveMisses >= 2 && !this.hinted) this.askForHint();
+      this.tilt = { hole, toward: i, t: 0 };
       this.draw(); return;
     }
     this.history.push({ board: this.board, colors: this.colors, taken: this.taken });
