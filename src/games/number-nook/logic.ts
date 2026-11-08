@@ -28,6 +28,29 @@ export function slide(board: readonly number[], cols: number, at: number): numbe
   [next[z], next[at]] = [next[at], next[z]];
   return next;
 }
+/**
+ * A tap in the gap's row or column slides that tile and every tile between it and the gap, as single slides from the gap
+ * outward: `steps` lists the cells slid, nearest the gap first, so the count stays in one-tile moves. Any other tap is null.
+ */
+export function lineSlide(
+  board: readonly number[],
+  cols: number,
+  at: number,
+): { board: number[]; steps: number[] } | null {
+  const z = board.indexOf(0);
+  if (at < 0 || at >= board.length || at === z) return null;
+  const sameRow = Math.floor(at / cols) === Math.floor(z / cols),
+    sameCol = at % cols === z % cols;
+  if (!sameRow && !sameCol) return null;
+  const step = sameRow ? Math.sign(at - z) : cols * Math.sign(at - z),
+    steps: number[] = [];
+  let next = board.slice();
+  for (let c = z + step; ; c += step) {
+    next = slide(next, cols, c)!;
+    steps.push(c);
+    if (c === at) return { board: next, steps };
+  }
+}
 
 /** The boards a level draws from, every one at an exact shortest distance inside its range. */
 export function pool(level: number): number[][] {

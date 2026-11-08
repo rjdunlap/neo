@@ -8,7 +8,17 @@ import { rangeFor } from '../../progress/difficulty';
 import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
-import { LEVELS, goal, inPlace, makeBoard, nookLayout, planFor, slide, solutionStep, solved } from './logic';
+import {
+  LEVELS,
+  goal,
+  inPlace,
+  lineSlide,
+  makeBoard,
+  nookLayout,
+  planFor,
+  solutionStep,
+  solved,
+} from './logic';
 
 type Tone = { fill: number; line: number; light: number };
 /** Three seeded looks, all from the palette. A tile in its goal place is green in every look, and yellow stays for the hint. */
@@ -84,8 +94,8 @@ class NumberNook implements Game {
   private history: number[][] = [];
   private cell = 120;
   private view: View;
-  /** The tile gliding into the old gap (`cell`) from the cell she tapped. */
-  glide: { cell: number; from: number; t: number } | null = null;
+  /** The tiles gliding one cell each, into `cell` from `from`: one for a single slide, the whole line for a line slide. */
+  glide: { tiles: { cell: number; from: number }[]; t: number } | null = null;
   private nudge: { cell: number; toward: number; t: number } | null = null;
   queued: number | null = null;
   finished = false;
@@ -144,8 +154,8 @@ class NumberNook implements Game {
     }
     if (this.board[at] === 0) return;
     const gap = this.board.indexOf(0),
-      next = slide(this.board, this.plan.cols, at);
-    if (!next) {
+      line = lineSlide(this.board, this.plan.cols, at);
+    if (!line) {
       this.misses++;
       sfx.boing();
       void this.ctx.say('nook.miss');
@@ -155,13 +165,15 @@ class NumberNook implements Game {
     }
     const before = inPlace(this.board);
     this.history.push(this.board.slice());
-    this.board = next;
-    this.moves++;
+    this.board = line.board;
+    // Each tile moved is one slide, so a line slide counts the same as its single slides and Undo takes it back whole.
+    this.moves += line.steps.length;
     this.hinted = -1;
-    this.glide = { cell: gap, from: at, t: 0 };
+    const tiles = line.steps.map((from, i) => ({ cell: i ? line.steps[i - 1] : gap, from }));
+    this.glide = { tiles, t: 0 };
     this.nudge = null;
-    // The gliding tile rides above the new gap's square, with the hint glow still on top.
-    this.grid.addChild(this.nodes[gap], this.glow);
+    // The gliding tiles ride above the new gap's square, with the hint glow still on top.
+    this.grid.addChild(...tiles.map((g) => this.nodes[g.cell]), this.glow);
     sfx.tick();
     // The in-place note climbs a step for each tile now home and falls back when one leaves.
     const now = inPlace(this.board);
@@ -225,9 +237,11 @@ class NumberNook implements Game {
     });
     if (this.glide) {
       const k = 1 - this.glide.t / GLIDE,
-        ease = k * k,
-        d = offset(this.glide.from, this.glide.cell);
-      this.nodes[this.glide.cell].children[0]?.position.set(d.x * ease, d.y * ease);
+        ease = k * k;
+      for (const g of this.glide.tiles) {
+        const d = offset(g.from, g.cell);
+        this.nodes[g.cell].children[0]?.position.set(d.x * ease, d.y * ease);
+      }
     }
     if (this.nudge) {
       const d = offset(this.nudge.toward, this.nudge.cell),
