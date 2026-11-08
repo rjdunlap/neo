@@ -10,12 +10,16 @@ import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
   ANY,
+  GOLD_LEVEL,
   HOLES,
   LEVELS,
+  NONE,
   STAR_LEVEL,
+  allowed,
   carry,
   count,
   fewestMoves,
+  goldAfter,
   jump,
   makeRound,
   marblesFor,
@@ -68,6 +72,13 @@ function marbleArt(seed = 0, marbles: Look['marbles'] = LOOKS[0].marbles, r = 29
     .arc(0, 0, r * 0.62, -2.5, -0.7)
     .stroke({ color: cream, width: r / 6, cap: 'round' });
 }
+/** The gold marble that must stay: yellow, with a cream glint and a small star so it reads in every tray look. */
+function goldArt(r = 29): Graphics {
+  return marbleArt(0, [swatch.yellow, swatch.yellow, swatch.yellow], r)
+    .star(0, r * 0.08, 5, r * 0.38, r * 0.17)
+    .fill(cream)
+    .stroke({ color: swatch.yellow.line, width: 2 });
+}
 /** The board is laid out from its row count, so a bigger triangle only needs more rows. */
 const ROWS = HOLES.at(-1)!.row + 1,
   DX = 102,
@@ -79,6 +90,7 @@ const FLY = 0.3,
   SLOT = 34;
 interface Snapshot {
   board: number;
+  gold: number;
   colors: number[];
   taken: number[];
   route: Jump[];
@@ -87,9 +99,13 @@ class MarbleJump implements Game {
   readonly initial: number;
   /** The hole the last marble must stop in, or ANY. */
   readonly goal: number;
+  /** The gold marble's starting hole, or NONE. */
+  readonly initialGold: number;
   readonly look: Look;
   private readonly initialColors: number[];
   board: number;
+  /** The hole the gold marble is in now, or NONE; it moves when it jumps and is never jumped. */
+  gold: number;
   colors: number[];
   taken: number[] = [];
   /** The jumps on the board now, so undone and recovered jumps never count as moves. */
@@ -127,7 +143,16 @@ class MarbleJump implements Game {
     const round = makeRound(ctx.level, ctx.rng);
     this.board = this.initial = round.board;
     this.goal = round.goal;
-    this.title = label(this.goal === ANY ? 'Leave one marble' : 'Finish on the star', 38, ink);
+    this.gold = this.initialGold = round.gold;
+    this.title = label(
+      this.goal !== ANY
+        ? 'Finish on the star'
+        : this.gold !== NONE
+          ? 'Keep the gold marble'
+          : 'Leave one marble',
+      38,
+      ink,
+    );
     this.look = ctx.rng.pick(LOOKS);
     this.colors = this.initialColors = paint(this.board, ctx.rng);
     this.root.addChild(this.background, this.tray, this.pocket, this.title, this.status);
@@ -163,7 +188,9 @@ class MarbleJump implements Game {
     this.resize(ctx.view);
   }
   start() {
-    void this.ctx.instruct(this.goal === ANY ? 'marble.go' : 'marble.go7');
+    void this.ctx.instruct(
+      this.goal !== ANY ? 'marble.go7' : this.gold !== NONE ? 'marble.go8' : 'marble.go',
+    );
   }
   destroy() {
     this.finished = true;
@@ -182,21 +209,32 @@ class MarbleJump implements Game {
       return;
     }
     if (this.selected === null) return;
-    const j = moves(this.board).find((m) => m.from === this.selected && m.to === i);
+    const j = allowed(this.board, this.gold).find((m) => m.from === this.selected && m.to === i);
     if (!j) {
       this.misses++;
       this.consecutiveMisses++;
       sfx.boing();
-      void this.ctx.say('marble.miss');
+      // A jump the board allows but that would take the gold marble gets its own reason.
+      const overGold = moves(this.board).some(
+        (m) => m.from === this.selected && m.to === i && m.over === this.gold,
+      );
+      void this.ctx.say(overGold ? 'marble.gold' : 'marble.miss');
       const hole = this.selected;
       if (this.consecutiveMisses >= 2 && !this.hinted) this.askForHint();
       this.tilt = { hole, toward: i, t: 0 };
       this.draw();
       return;
     }
-    this.history.push({ board: this.board, colors: this.colors, taken: this.taken, route: this.route });
+    this.history.push({
+      board: this.board,
+      gold: this.gold,
+      colors: this.colors,
+      taken: this.taken,
+      route: this.route,
+    });
     const { colors, taken } = carry(this.colors, j);
     this.board = jump(this.board, j);
+    this.gold = goldAfter(this.gold, j);
     this.colors = colors;
     this.taken = [...this.taken, taken];
     this.route = [...this.route, j];
@@ -206,11 +244,18 @@ class MarbleJump implements Game {
     this.consecutiveMisses = 0;
     this.flight = { j, t: 0 };
     sfx.bell(2 + Math.min(this.history.length, 10), 0.3);
-    if (count(this.board) === 1 && solve(this.board, this.goal) !== null) {
+    if (count(this.board) === 1 && this.clears()) {
       this.finished = true;
-      this.fewest = fewestMoves(this.initial, this.goal);
+      this.fewest = fewestMoves(this.initial, this.goal, this.initialGold);
     }
     this.draw();
+  }
+  /** A route from the board she sees, onto the star and with gold last where the level asks. */
+  private firstRoute() {
+    return solve(this.board, this.goal, this.gold);
+  }
+  private clears() {
+    return this.firstRoute() !== null;
   }
   /** Ends any motion at once, so Undo, Hint and Start over act on the board she sees. */
   private settle() {
@@ -232,8 +277,7 @@ class MarbleJump implements Game {
       if (this.ctx.alive) this.ctx.finish({ misses: this.misses, hints: this.hints });
       return;
     }
-    if (solve(this.board, this.goal) === null)
-      void this.ctx.say(this.goal === ANY ? 'marble.revise' : 'marble.star');
+    if (!this.clears()) void this.ctx.say(this.goal === ANY ? 'marble.revise' : 'marble.star');
     if (this.queued !== null) {
       const i = this.queued;
       this.queued = null;
@@ -242,6 +286,7 @@ class MarbleJump implements Game {
   }
   private restore(s: Snapshot) {
     this.board = s.board;
+    this.gold = s.gold;
     this.colors = s.colors;
     this.taken = s.taken;
     this.route = s.route;
@@ -259,7 +304,13 @@ class MarbleJump implements Game {
   restart() {
     if (this.finished) return;
     this.settle();
-    this.restore({ board: this.initial, colors: this.initialColors, taken: [], route: [] });
+    this.restore({
+      board: this.initial,
+      gold: this.initialGold,
+      colors: this.initialColors,
+      taken: [],
+      route: [],
+    });
     this.history = [];
     this.selected = null;
     this.hinted = null;
@@ -278,10 +329,11 @@ class MarbleJump implements Game {
     }
     this.hints++;
     this.consecutiveMisses = 0;
-    if (solve(this.board, this.goal) === null) {
+    if (!this.clears()) {
       const back = recovery(
         this.history.map((s) => s.board),
         this.goal,
+        this.history.map((s) => s.gold),
       );
       if (back !== null) {
         this.restore(this.history[back]);
@@ -290,12 +342,12 @@ class MarbleJump implements Game {
       void this.ctx.say('marble.recover');
     } else void this.ctx.say('marble.hint');
     this.selected = null;
-    this.hinted = solve(this.board, this.goal)?.[0] ?? null;
+    this.hinted = this.firstRoute()?.[0] ?? null;
     this.draw();
   }
   autotouch(_dt: number): TouchIntent | null {
     if (this.finished || this.flight) return null;
-    const next = solve(this.board, this.goal)?.[0];
+    const next = this.firstRoute()?.[0];
     if (!next) return { tap: { on: this.hintButton } };
     return { tap: { on: this.nodes[this.selected === next.from ? next.to : next.from] }, pause: 0.25 };
   }
@@ -369,7 +421,7 @@ class MarbleJump implements Game {
       if (!occupied(this.board, i) || this.flight?.j.to === i) return null;
       if (this.selected === i)
         node.addChild(new Graphics().ellipse(4, 12, 30, 14).fill({ color: shadow, alpha: 0.25 }));
-      const art = marbleArt(this.colors[i], look.marbles);
+      const art = i === this.gold ? goldArt() : marbleArt(this.colors[i], look.marbles);
       art.eventMode = 'none';
       node.addChild(art);
       art.scale.set(this.selected === i ? 1.08 : 1);
@@ -381,7 +433,10 @@ class MarbleJump implements Game {
       [this.faller, this.flight && this.taken.at(-1)],
     ] as const) {
       layer.removeChildren().forEach((c) => c.destroy());
-      if (this.flight && color != null) layer.addChild(marbleArt(color, look.marbles));
+      if (this.flight && color != null)
+        layer.addChild(
+          layer === this.flyer && this.flight.j.to === this.gold ? goldArt() : marbleArt(color, look.marbles),
+        );
     }
     if (this.flight) this.place(this.flight);
     this.pocket.clear();
@@ -413,7 +468,7 @@ class MarbleJump implements Game {
     const left = count(this.board);
     this.status.text = this.finished
       ? `${movesIn(this.route)} moves · fewest possible ${this.fewest}`
-      : solve(this.board, this.goal) !== null
+      : this.clears()
         ? `${left} marbles · jump over one into an empty hole`
         : left === 1
           ? 'One marble, not on the star: Undo to try another route'
@@ -458,9 +513,11 @@ export const marbleJump: GameModule = {
   touchDemo: true,
   levels: (band) => rangeFor(LEVELS, band),
   describeLevel: (level) =>
-    level >= STAR_LEVEL
-      ? `${marblesFor(level)} marbles; the last one must finish in the star hole`
-      : `${marblesFor(level)} marbles on a triangular board; leave one`,
+    level >= GOLD_LEVEL
+      ? `${marblesFor(level)} marbles, one gold; the gold one must be the last left`
+      : level === STAR_LEVEL
+        ? `${marblesFor(level)} marbles; the last one must finish in the star hole`
+        : `${marblesFor(level)} marbles on a triangular board; leave one`,
   music: STYLES.lullaby,
   coplayHint: 'Plan the next two jumps together before trying them.',
   offScreen: 'Make a triangle of fifteen circles on paper and use counters to try the same jumps.',

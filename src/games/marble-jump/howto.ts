@@ -11,6 +11,10 @@ export const HOW_TO: GameHowTo = {
   ],
   finish: [
     {
+      from: 8,
+      text: 'The gold marble may jump but is never jumped (trying counts a miss), so it is left last. The end shows your moves and the fewest possible.',
+    },
+    {
       from: 7,
       text: 'The last marble must stop on the star; one elsewhere is not a finish, so Undo or Hint. The end shows your moves and the fewest possible.',
     },
