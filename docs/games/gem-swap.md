@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| grown-up | 1–6 |
+| grown-up | 1–7 |
 
 | Level | Plays like |
 | --- | --- |
@@ -18,6 +18,7 @@
 | 4 | Eighteen gems: plan four swaps and cascades |
 | 5 | Twenty-four gems: plan five swaps on a six-by-six tray |
 | 6 | One swap, a long line: find the swap that clears four or more |
+| 7 | Stones that stay: gems above a grey stone rest on it |
 
 <!-- end generated -->
 

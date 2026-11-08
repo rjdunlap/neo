@@ -13,6 +13,7 @@ import {
   neighbors,
   PLANS,
   solve,
+  STONE,
   swap,
   type Board,
   type Swap,
@@ -195,6 +196,72 @@ describe('Gem Swap', () => {
       expect(used).toBe(true);
     }
   });
+  it('lets a stone split its column at level 7: each segment keeps its order and no stone moves, swaps or clears', () => {
+    // Column 0 of a 3×3: a gem over a stone over a hole; column 1: two gems with a hole between; column 2: a stone on top.
+    const b = [1, 2, STONE, STONE, -1, 3, -1, 4, -1];
+    expect(fall(b, 3)).toEqual([1, -1, STONE, STONE, 2, -1, -1, 4, 3]);
+    expect(drops(b, [], 3)).toEqual([0, -1, -1, -1, 0, -1, -1, 2, 1]);
+    expect(swap([STONE, 0, 0, 0, -1, -1, -1, -1, -1], 3, [0, 3])).toBeNull();
+    expect(swap([0, STONE, 0, -1, 0, -1, -1, -1, -1], 3, [1, 4])).toBeNull();
+    expect(matches([STONE, STONE, STONE, -1, -1, -1, -1, -1, -1], 3)).toEqual([]);
+    expect(clear([STONE, -1, -1, -1, STONE, -1, -1, -1, -1])).toBe(true);
+    expect(PLANS[6]).toMatchObject({ size: 5, gems: 15 });
+    for (const puzzle of POOLS[6]) {
+      const stones = puzzle.board.flatMap((k, i) => (k === STONE ? [i] : []));
+      expect(puzzle.par).toBe(4);
+      expect(stones).toHaveLength(2);
+      // Stones sit in the middle rows of two columns, a gem rests on each, and some column has gems on both sides.
+      expect(new Set(stones.map((i) => i % 5)).size).toBe(2);
+      for (const i of stones) {
+        expect([2, 3]).toContain(Math.floor(i / 5));
+        expect(puzzle.board[i - 5]).toBeGreaterThanOrEqual(0);
+      }
+      expect(stones.some((i) => puzzle.board.some((k, j) => j % 5 === i % 5 && j > i && k >= 0))).toBe(true);
+      // The pool's stones survive mirroring and recolouring.
+      for (let seed = 1; seed <= 4; seed++)
+        expect(makePuzzle(7, new Rng(seed)).board.filter((k) => k === STONE)).toHaveLength(2);
+      // Along every shortest route the stones stay put, and the hint search stays under budget.
+      const walk = (b: Board) => {
+        const stats = { nodes: 0 },
+          route = solve(b, 5, stats);
+        expect(stats.nodes).toBeLessThan(2000);
+        expect(b.flatMap((k, i) => (k === STONE ? [i] : []))).toEqual(stones);
+        if (!clear(b))
+          for (const pair of moves(b, 5))
+            if (solve(swap(b, 5, pair)!.board, 5)?.length === route!.length - 1)
+              walk(swap(b, 5, pair)!.board);
+      };
+      walk(puzzle.board);
+    }
+  });
+  it('gives levels 1–6 the same fall as the stone-free gravity they were built with', () => {
+    const plain = (board: Board, size: number) => {
+      const out = Array<number>(size * size).fill(-1);
+      for (let x = 0; x < size; x++) {
+        const column = Array.from({ length: size }, (_, y) => board[y * size + x]).filter((k) => k >= 0);
+        column.forEach((k, y) => (out[(size - column.length + y) * size + x] = k));
+      }
+      return out;
+    };
+    POOLS.slice(0, 6).forEach((pool) =>
+      pool.forEach((puzzle) => {
+        const size = Math.sqrt(puzzle.board.length);
+        expect(puzzle.board.every((k) => k !== STONE)).toBe(true);
+        const seen = new Set<string>();
+        const visit = (b: Board) => {
+          if (seen.has(b.join())) return;
+          seen.add(b.join());
+          for (const pair of moves(b, size))
+            for (const wave of swap(b, size, pair)!.waves) {
+              const removed = wave.board.map((k, i) => (wave.removed.includes(i) ? -1 : k));
+              expect(fall(removed, size)).toEqual(plain(removed, size));
+            }
+          for (const pair of moves(b, size)) visit(swap(b, size, pair)!.board);
+        };
+        visit(puzzle.board);
+      }),
+    );
+  });
   it('tells the drawing which row each surviving gem fell from', () => {
     for (const pool of POOLS)
       for (const puzzle of pool) {
@@ -207,7 +274,8 @@ describe('Gem Swap', () => {
             );
             drops(wave.board, wave.removed, size).forEach((from, i) => {
               if (from < 0) {
-                expect(after[i]).toBe(-1);
+                // An empty cell, or a stone that stays where it was.
+                expect(after[i]).toBe(wave.board[i] === STONE ? STONE : -1);
                 return;
               }
               expect(after[i]).toBe(wave.board[from * size + (i % size)]);
