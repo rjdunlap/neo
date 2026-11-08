@@ -1,0 +1,10 @@
+{
+  "name": "neo-lint",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "eslint": "^10.0.0",
+    "typescript": "~6.0.0",
+    "typescript-eslint": "^8.72.1"
+  }
+}

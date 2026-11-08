@@ -1,0 +1,12 @@
+# Generated gathering blocks have their own exact-text freshness checks.
+src/content/voice-script.ts
+src/content/howto.ts
+# Generated data is maintained by its generator, not the formatter.
+src/content/voice-clips.json
+package-lock.json
+# Documentation includes generated inventories and archived source material.
+**/*.md
+# Only tracked maintained code is selected by the npm scripts.
+
+# Tool package lock is also npm-generated.
+tooling/lint/package-lock.json
