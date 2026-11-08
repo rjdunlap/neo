@@ -3,6 +3,7 @@ import { ink, swatch, type Swatch } from '../../art/palette';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
 import { draggable, type DragHandle } from '../../engine/drag';
+import { onTap } from '../../engine/input';
 import { Rng } from '../../engine/random';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
@@ -52,6 +53,8 @@ import {
 
 /** The bloom: taps are ignored while the flowers open. */
 const BLOOM = 0.5;
+/** Seconds a faded next-tray piece wiggles when she tries it. */
+const WIGGLE = 0.5;
 /** The search that looks for a dead end after each planting stays small; the hint's is bigger. */
 const DEAD_END_CAP = 4_000;
 /** Each line's flowers ring up a pentatonic run (marimba steps through `sfx`, from `src/audio/notes.ts`). */
@@ -231,6 +234,15 @@ interface Slot {
   piece: number | null;
 }
 
+/** At level 10, a faded piece of the next tray: a tap or a try to lift it wiggles it and says it comes next. */
+interface Ghost {
+  node: Container;
+  art: Container;
+  piece: number | null;
+  /** Seconds of wiggle left. */
+  wiggle: number;
+}
+
 class BlockGarden implements Game {
   readonly plan: GardenPlan;
   gardens: Garden[] = [];
@@ -259,6 +271,7 @@ class BlockGarden implements Game {
   look: GardenLook;
   private readonly undoButton: RoundButton;
   private slots: Slot[] = [];
+  private ghosts: Ghost[] = [];
   private history: State[] = [];
   private gardenMisses = 0;
   private sinceHint = 0;
@@ -298,6 +311,7 @@ class BlockGarden implements Game {
     );
     ctx.stage.addChild(this.root);
     for (let i = 0; i < 3; i++) this.slots.push(this.makeSlot(i));
+    if (this.plan.preview) for (let i = 0; i < 3; i++) this.ghosts.push(this.makeGhost());
     this.ctx.listen(window, 'pointercancel', this.onCancel, { capture: true });
   }
 
@@ -318,6 +332,7 @@ class BlockGarden implements Game {
     this.undoButton.position.set(this.lay.undo.x, this.lay.undo.y);
     if (this.carrying !== null) this.cancelled = true;
     this.slots.forEach((s, i) => this.placeSlot(s, i));
+    this.ghosts.forEach((gh, i) => this.placeGhost(gh, i));
     this.drawBasket(v);
     if (this.garden) this.drawBed();
   }
@@ -326,6 +341,10 @@ class BlockGarden implements Game {
     this.clock += dt;
     const g = this.glow.clear();
     this.undoButton.scale.set(this.undoPulse > 0 ? 1 + 0.08 * Math.sin(this.clock * 8) : 1);
+    for (const gh of this.ghosts) {
+      gh.wiggle = Math.max(0, gh.wiggle - dt);
+      gh.node.rotation = 0.14 * (gh.wiggle / WIGGLE) * Math.sin(this.clock * 28);
+    }
     if (this.undoPulse > 0) {
       this.undoPulse -= dt;
       g.circle(this.undoButton.x, this.undoButton.y, 62 + 3 * Math.sin(this.clock * 6)).stroke({
@@ -425,7 +444,53 @@ class BlockGarden implements Game {
       slot.carrier.visible = slot.piece !== null;
       slot.handle.enabled = slot.piece !== null;
     });
+    // The next tray, faded: the pieces that arrive when these are planted.
+    const later = start + this.garden.traySize;
+    this.ghosts.forEach((gh, i) => {
+      const piece = later + i;
+      gh.piece = piece < this.garden.pieces.length ? piece : null;
+      gh.node.visible = gh.piece !== null;
+      this.drawGhost(gh, i);
+    });
     this.drawPackets();
+  }
+
+  private makeGhost(): Ghost {
+    const node = new Container();
+    const art = new Container();
+    art.eventMode = 'none';
+    art.alpha = 0.4;
+    node.addChild(art);
+    node.visible = false;
+    this.root.addChild(node);
+    const gh: Ghost = { node, art, piece: null, wiggle: 0 };
+    onTap(node, () => this.peek(gh), { cooldown: 400 });
+    return gh;
+  }
+
+  private placeGhost(gh: Ghost, i: number) {
+    const r = this.lay.next[i];
+    gh.node.position.set(r.x + r.w / 2, r.y + r.h / 2);
+    gh.node.hitArea = new Rectangle(-r.w / 2, -r.h / 2, r.w, r.h);
+    this.drawGhost(gh, i);
+  }
+
+  /** A faded piece drawn small enough to sit inside its card. */
+  private drawGhost(gh: Ghost, i: number) {
+    gh.art.removeChildren().forEach((c) => c.destroy());
+    const r = this.lay?.next[i];
+    if (gh.piece === null || !r || !this.garden) return;
+    const s = SHAPES[this.garden.pieces[gh.piece]];
+    const cell = Math.min(26, (r.w - 28) / s.w, (r.h - 28) / s.h);
+    gh.art.addChild(pieceArt(this.garden.pieces[gh.piece], cell));
+  }
+
+  /** She tried to take a piece that has not arrived: it wiggles, and is never a miss. */
+  private peek(gh: Ghost) {
+    if (this.finished || gh.piece === null) return;
+    gh.wiggle = WIGGLE;
+    sfx.tick();
+    void this.ctx.say('block-garden.comes-next');
   }
 
   private makeSlot(i: number): Slot {
@@ -925,7 +990,7 @@ class BlockGarden implements Game {
     }
   }
 
-  /** Small seed packets under the tray, one for each piece still to come. */
+  /** Small seed packets under the tray, one for each piece still to come (at level 10, cards for the faded next tray). */
   private drawPackets() {
     const g = this.packets.clear();
     if (!this.garden) return;
@@ -936,6 +1001,16 @@ class BlockGarden implements Game {
         .fill({ color: swatch.brown.light, alpha: slot.piece === null ? 0.25 : 0.6 })
         .stroke({ width: 3, color: swatch.brown.line, alpha: 0.4 });
     });
+    if (this.plan.preview) {
+      this.ghosts.forEach((gh, i) => {
+        if (gh.piece === null) return;
+        const r = this.lay.next[i];
+        g.roundRect(r.x + 6, r.y + 6, r.w - 12, r.h - 12, 18)
+          .fill({ color: swatch.brown.light, alpha: 0.2 })
+          .stroke({ width: 3, color: swatch.brown.line, alpha: 0.25 });
+      });
+      return;
+    }
     const later =
       this.garden.pieces.length - (trayIndex(this.garden, this.state.used) + 1) * this.garden.traySize;
     if (later <= 0) return;
