@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| grown-up | 1–7 |
+| grown-up | 1–8 |
 
 | Level | Plays like |
 | --- | --- |
@@ -19,6 +19,7 @@
 | 5 | Twenty-four gems: plan five swaps on a six-by-six tray |
 | 6 | One swap, a long line: find the swap that clears four or more |
 | 7 | Stones that stay: gems above a grey stone rest on it |
+| 8 | Iced gems: clear a line beside an iced gem to thaw it |
 
 <!-- end generated -->
 

@@ -10,6 +10,10 @@ export const VOICE = {
   'gem-swap.stones': [
     'Tap a gem, then its neighbour. Make a line of three matching shapes. The grey stones never move, so the gems above a stone fall onto it. Clear the gems!',
   ],
+  'gem-swap.ice': [
+    'Tap a gem, then its neighbour. Make a line of three matching shapes. A frosty gem cannot be swapped until a line clears right beside it. Clear the tray!',
+  ],
+  'gem-swap.iced': ['That gem is frozen. Clear a line beside it first.'],
   'gem-swap.stone': ['That grey stone stays put. Swap the gems around it.'],
   'gem-swap.miss': ['That swap makes no line. Look for three matching shapes in a row or column.'],
   'gem-swap.hint': ['Swap the two outlined gems. This starts a way to clear the tray.'],

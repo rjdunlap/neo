@@ -17,10 +17,15 @@ export const HOW_TO: GameHowTo = {
     {
       text: 'Make lines of matching shapes; no new gems arrive. Grey stones never move or clear: the gems above a stone fall onto it, not past it.',
       from: 7,
+      to: 7,
+    },
+    {
+      text: 'Make lines of matching shapes; no new gems arrive. A frosty gem still makes lines and falls, but cannot be swapped until a line clears in a cell right beside it (not diagonally), which thaws it.',
+      from: 8,
     },
     'Tap Undo to revise a swap, or Restart to bring back the starting tray.',
     'Tap Hint to outline a swap that starts a clearing route.',
   ],
   finish: 'The round ends when every gem is cleared (the stones stay); there is no turn limit.',
-  note: 'A swap that makes no line stays put and counts as a miss; tapping a stone is not a miss. Undo keeps your swap count; Restart counts as help. If no clearing route remains, revise with Undo or Restart.',
+  note: 'A swap that makes no line stays put and counts as a miss; tapping a stone or a frosty gem is not a miss. Undo keeps your swap count; Restart counts as help. If no clearing route remains, revise with Undo or Restart.',
 };
