@@ -1,6 +1,6 @@
 # Domino Run deep dive
 
-*ID `domino-run` · bands toddler, preschool, pre-K, school · levels 1–10 on 2026-11-07 · build slices 1–3 built ([PR #1360](https://github.com/rjdunlap/neo/pull/1360), [#1386](https://github.com/rjdunlap/neo/pull/1386), [#1392](https://github.com/rjdunlap/neo/pull/1392)) · session `claude/dive-domino-run` ([PR #1357](https://github.com/rjdunlap/neo/pull/1357))*
+*ID `domino-run` · bands toddler, preschool, pre-K, school · levels 1–11 on 2026-11-07 · build slices 1–4 built ([PR #1360](https://github.com/rjdunlap/neo/pull/1360), [#1386](https://github.com/rjdunlap/neo/pull/1386), [#1392](https://github.com/rjdunlap/neo/pull/1392), [#1395](https://github.com/rjdunlap/neo/pull/1395)) · session `claude/dive-domino-run` ([PR #1357](https://github.com/rjdunlap/neo/pull/1357))*
 
 ## The game today
 
@@ -18,7 +18,7 @@ She drags dominoes from a tray into the sockets of a sandy lane, taps the green 
 | 8 | Two bells, one tray | school | A fork with a bell and a gong: share three mixed pieces unevenly between the lanes |
 | 9 | Where will it stop? | school | Guess which domino the line stops at (tap it), watch it run, then fix the line with one piece (stalls too far or too heavy) |
 
-`BandLevels`: toddler 1–2, preschool 2–4, pre-K 3–5, school 4–9. There is no `order`, no `entryLevels`, and no lap or grown-up range (the kept default in the [October 23 record](../archive/DECISIONS-2026-10-23.md)).
+`BandLevels`: toddler 1–2, preschool 2–4, pre-K 3–5, school 4–11. There is no `order`, no `entryLevels`, and no lap or grown-up range (the kept default in the [October 23 record](../archive/DECISIONS-2026-10-23.md)).
 
 **Content pools.** Each level has one authored first line (`FIRST`) and seeded lines after it: a lane of 3–6 slots (sockets at most 5, tray at most 3), six line colours (`LINE_COLORS`), three sizes and two ends. The lane is always the same sandy strip on the plain game background, and pinned dominoes are always the same brown. The generator builds a lane backward from a random chain (`randomChain`, `chainLane`) and accepts it only through the plan filter (`passes`). A test asserts that 500 seeds per plan never need the fallback.
 
@@ -26,7 +26,8 @@ She drags dominoes from a tray into the sockets of a sandy lane, taps the green 
 
 **Known gaps.**
 - **Puddles on a real iPad:** whether a puddle reads as "nothing can stand here" without speech is a person check (below).
-- **School stops at level 9,** and the ladder's newest idea is level 9's predict-then-fix guess.
+- **School stops at level 11;** the build slices are all built, and further levels need a new definition pass.
+- **The pier on a real iPad:** whether the low pier reads as "too low for a tall" and the knock-and-spring-back as a try, not an error, is a person check (below); `domino-run.pier` and `too-tall` have no rendered clips.
 - **The level 9 flag and ring on a real iPad:** whether the orange guess flag and the ring on the real last domino read clearly is a person check (below); the new voice lines have no rendered clips.
 - **The stalled-chain accounting** is hints-only (misses are always 0). That is a kept default, not a gap.
 - **Nothing is saved, and there is no couch play.**
@@ -128,3 +129,7 @@ Plan 9 (`predict: true`); first line `SS_SSB` with tray S (stops at slot 2, too 
 ### Slice 3, level 10 Over the puddle (PR #1392)
 
 Plan 10 (school, so `LEVELS.school` is 4–10); two lines, first line `S__~~B` (pinned small, two sockets, a two-wide puddle at slots 4–5, bell) with tray tall and giant, whose only solution is tall at 2 and giant at 3. `lane()` reads `~` as a puddle. `passes` case 10: bell end, exactly one puddle two wide, the slot just before it (new helper `puddleGiantSlot`) a socket every solution fills with the tray's one giant, no solution without the giant, tray of at most three with at most one decoy. The generator goes puddle-first (giant at 2 or 3, then the puddle, then a bell or one more pinned piece and the bell; a small plus tall or tall plus tall before the giant; 35% chance of one small or tall decoy); 500 seeds never fall back and give at least six distinct pictures. A tall just before the puddle stalls too far with the ring at the puddle's first slot; a giant straight after the small says the existing too-heavy line. New voice id `domino-run.puddle` (no rendered clip). How-to steps 3–9, 2–9 and 6–9 reach 10 and a new level 10 step explains the puddle. Six new rule tests (27 domino-run tests). The `dominorun` suite gained a `DOMINO_LEVELS` filter and plays level 10 upright (wide puddle drawn at the start, a giant right after the small stalls as a stall not a miss, a requested hint, the fix; 0 misses, 1 hint, sticker; screenshot `domino-run-10-portrait`). `fingerdemo` at 10 passed (10.0 s).
+
+### Slice 4, level 11 Under the pier (PR #1395)
+
+Plan 11 (school, so `LEVELS.school` is 4–11); two lines, first line `SSP__O` (pinned smalls at slots 1–2, the pier socket at 3, sockets 4–5, gong) with tray small, tall, giant, whose only solution is small at 3, tall at 4, giant at 5. `Lane` gained optional `low?: number[]` (a `P` in `lane()` pictures) and `fits(lane, slot, size)`; `solutions()` and `arrangements()` never stand more than a small in a low socket, so `hintPlacement` never asks for one. `passes` case 11: one pier socket with a pinned small (or the starter) just before it, a gong, every solution stands a small at the pier and climbs (non-decreasing) to a giant after it, the pier matters (without the cap some solution would stand a bigger piece there), at most one decoy. The generator goes pier-first (pier at slot 1–3, pinned smalls before, a tall just after, a giant one or two past, the gong within reach; opens the pier plus the tall, the giant or both; 35% an extra empty socket after the pier; 35% a tall or giant decoy when the tray has room); 500 seeds never fall back and give 160 distinct pictures. A tall or giant dropped on the pier knocks (`sfx.knock`) and springs back with `domino-run.too-tall`, never a miss, hint or stall; a swap never moves a bigger domino into the pier (it goes to the tray). The pier is a plank on two posts with a rail, its top 94 units up (clears a small, not a tall), `eventMode` none. Level 11 says `domino-run.pier` after the instruct line; a small pushing a giant at 10–11 says the too-heavy-giant line. New voice ids `domino-run.pier` and `domino-run.too-tall` (no rendered clips). How-to steps 3–10, 2–10, 6–10 and note 3–10 now reach 11, plus a level 11 step. Eight new rule tests (35 domino-run tests), including levels 1–10 never having a pier. The `dominorun` suite plays level 11 upright (`DOMINO_LEVELS=11`): a tall dropped under the pier springs back (misses 0, hints 0, stalls 0; screenshot `domino-run-11-portrait`), then the hint's way to the gong and a sticker. `fingerdemo` at 11 passed (12.5 s).

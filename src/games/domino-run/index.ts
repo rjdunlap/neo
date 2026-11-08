@@ -754,7 +754,6 @@ class DominoRun implements Game {
   }
 }
 
-/** Level 9's guess: a little flag planted above the domino she tapped, apart from it so it stays up when the domino falls. */
 /** The pier on (0, 0), a socket's foot: a plank on two posts, low enough that only a small domino stands under it. */
 function pierArt(): Graphics {
   const top = -(DOMINO_H[1] + 14);
@@ -769,6 +768,7 @@ function pierArt(): Graphics {
   return g;
 }
 
+/** Level 9's guess: a little flag planted above the domino she tapped, apart from it so it stays up when the domino falls. */
 function flagArt(l: { x0: number; base: number }, slot: number, size: number): Graphics {
   const x = l.x0 + slot * PITCH, foot = l.base - DOMINO_H[size || 1] - 8;
   const g = new Graphics().roundRect(x - 3, foot - 52, 6, 52, 3).fill(wood.fill).stroke({ width: 2, color: ink2 })
