@@ -8,13 +8,14 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| grown-up | 1–3 |
+| grown-up | 1–4 |
 
 | Level | Plays like |
 | --- | --- |
 | 1 | Four spaces: one small loop |
 | 2 | Six spaces: plan around two rows |
 | 3 | Nine spaces: weave rows and columns |
+| 4 | Eight spaces: two long rows |
 
 <!-- end generated -->
 

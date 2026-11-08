@@ -21,12 +21,14 @@ describe('Number Nook', () => {
     expect(distances(2, 2).size).toBe(12);
     expect(distances(2, 3).size).toBe(360);
     expect(distances(3, 3).size).toBe(181440);
+    expect(distances(2, 4).size).toBe(20160);
     expect(solutionStep([2, 1, 3, 4, 5, 6, 7, 8, 0], 3)).toBeNull();
   });
   it('draws levels 1 and 2 from a pool of boards 3–5 and 7–9 slides from home, level 3 at 14', () => {
     expect(pool(1).length).toBe(6);
     expect(pool(2).length).toBe(40);
     expect(pool(3).length).toBe(1893);
+    expect(pool(4).length).toBe(788);
     for (const [level, least] of [
       [1, 4],
       [2, 20],
@@ -36,13 +38,32 @@ describe('Number Nook', () => {
       expect(seen.size, `level ${level}`).toBeGreaterThanOrEqual(least);
     }
   });
+  it('keeps the seeded boards of levels 1–3 unchanged by level 4', () => {
+    const boards: Record<string, string> = {};
+    for (let level = 1; level <= 3; level++)
+      for (let seed = 1; seed <= 3; seed++)
+        boards[`${level}-${seed}`] = makeBoard(level, new Rng(seed)).join('');
+    expect(boards).toEqual({
+      '1-1': '2310',
+      '1-2': '3021',
+      '1-3': '3021',
+      '2-1': '523104',
+      '2-2': '041532',
+      '2-3': '431502',
+      '3-1': '034126758',
+      '3-2': '014732586',
+      '3-3': '712643580',
+    });
+    expect(planFor(4)).toMatchObject({ rows: 2, cols: 4, near: 18, far: 18 });
+    expect(planFor(9)).toBe(planFor(4));
+  });
   it('counts the numbered tiles in their goal place', () => {
     expect(inPlace(goal(3, 3))).toBe(8);
     expect(inPlace([3, 1, 2, 0])).toBe(0);
     expect(inPlace([1, 2, 0, 3])).toBe(2);
   });
   it('generates seeded boards at a shortest distance inside the level range and solves them with legal hints', () => {
-    for (let level = 1; level <= 3; level++)
+    for (let level = 1; level <= 4; level++)
       for (let seed = 1; seed <= 25; seed++) {
         const p = planFor(level);
         let board = makeBoard(level, new Rng(seed));
@@ -63,15 +84,20 @@ describe('Number Nook', () => {
       }
   });
   it('hints still shorten the route after any legal exploratory slide', () => {
-    for (const [key, info] of distances(2, 3)) {
-      const b = key.split('').map(Number);
-      if (info.distance) expect(solutionStep(slide(b, 3, info.next)!, 3)!.distance).toBe(info.distance - 1);
-      for (const at of neighbours(b, 3)) {
-        const next = slide(b, 3, at)!;
-        expect(solutionStep(next, 3)).not.toBeNull();
-        expect(slide(next, 3, b.indexOf(0))).toEqual(b);
+    for (const [rows, cols] of [
+      [2, 3],
+      [2, 4],
+    ] as const)
+      for (const [key, info] of distances(rows, cols)) {
+        const b = key.split('').map(Number);
+        if (info.distance)
+          expect(solutionStep(slide(b, cols, info.next)!, cols)!.distance).toBe(info.distance - 1);
+        for (const at of neighbours(b, cols)) {
+          const next = slide(b, cols, at)!;
+          expect(solutionStep(next, cols)).not.toBeNull();
+          expect(slide(next, cols, b.indexOf(0))).toEqual(b);
+        }
       }
-    }
   });
   it('rejects distant, diagonal, blank and wrapped moves without mutating the board', () => {
     const b = goal(3, 3),
@@ -85,6 +111,7 @@ describe('Number Nook', () => {
       [2, 2],
       [2, 3],
       [3, 3],
+      [2, 4],
     ] as const)
       for (const [k] of [...distances(rows, cols)].slice(0, 400)) {
         const b = k.split('').map(Number),
@@ -132,7 +159,7 @@ describe('Number Nook', () => {
 describe('Number Nook on a phone held upright (chunk 31)', () => {
   it('fits every board, the goal picture and the buttons in each upright view', () => {
     for (const [name, v] of Object.entries(UPRIGHT_VIEWS))
-      for (const level of [1, 2, 3]) {
+      for (const level of [1, 2, 3, 4]) {
         const { rows, cols } = planFor(level);
         const l = nookLayout(v.w, v.h, rows, cols);
         const cells = Array.from({ length: rows * cols }, (_, i) =>
@@ -150,10 +177,22 @@ describe('Number Nook on a phone held upright (chunk 31)', () => {
           h: rows * 50 + 40,
         };
         const buttons = l.buttons.map((b, i) => square(`button ${i}`, b, 120));
+        // Four columns upright give 87-unit cells: the grown-up band's 64-unit floor, not the 100 the smaller boards keep.
         expect(
-          uprightProblems(v, [...cells, goalPicture, ...buttons], 100),
+          uprightProblems(v, [...cells, goalPicture, ...buttons], cols === 4 ? 64 : 100),
           `${name} level ${level}`,
         ).toEqual([]);
+        if (cols === 4) expect(l.cell).toBeGreaterThanOrEqual(87);
       }
+  });
+  it('lays the two long rows out sideways at full-size cells', () => {
+    const l = nookLayout(1024, 768, 2, 4);
+    expect(l.cell).toBe(136);
+    // The goal picture's 42-unit tiles sit 50 apart around `target.x`; the tray reaches 10 units past the last cell.
+    const goalLeft = l.target.x - 1.5 * 50 - 21,
+      goalRight = l.target.x + 1.5 * 50 + 21,
+      trayRight = l.grid.x + 3.5 * l.cell + 10;
+    expect(goalRight).toBeLessThan(1024);
+    expect(trayRight).toBeLessThan(goalLeft);
   });
 });

@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 export function createSuite({ page, log, scene, tap, screenshot, launch, finished, next }) {
   /** Number Nook: both ends, rejected tap, a hint counted once, the glide, revision, a portrait in a new look, shortest route and one sticker. */
   async function numberNookPlay() {
-    for (const level of [1, 3]) {
+    // NOOK_LEVELS=4 plays only the newest level; the default is both ends plus the nine-space board.
+    for (const level of (process.env.NOOK_LEVELS ?? '1,3,4').split(',').map(Number)) {
       await launch('number-nook', level);
       await page.waitForTimeout(400);
       // Level 1's portrait is taken in a look other than today's lantern paper.
@@ -47,7 +48,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       await tap('neo.scene.game.againButton');
       assert.deepEqual(await page.evaluate(() => neo.scene.game.board), original);
       assert.equal(await page.evaluate(() => neo.scene.game.moves), 2);
-      if (level === 3) {
+      if (level >= 3) {
         // A line slide: a tile two away in the gap's row or column moves both tiles, counts two slides and undoes whole.
         const far = await page.evaluate(async () => {
           const { lineSlide } = await import('/src/games/number-nook/logic.ts');
@@ -91,12 +92,12 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
           'undo takes back the whole line',
         );
       }
-      if (level === 1) {
+      if (level === 1 || level === 4) {
         await page.setViewportSize({ width: 768, height: 1024 });
         await page.waitForTimeout(300);
         assert.ok(await page.evaluate(() => neo.scene.game.cell >= 64));
         log(`Number Nook portrait look: ${await page.evaluate(() => neo.scene.game.look.name)}`);
-        await screenshot('number-nook-portrait');
+        await screenshot(level === 1 ? 'number-nook-portrait' : 'number-nook-portrait-4');
         await page.setViewportSize({ width: 1024, height: 768 });
         await page.waitForTimeout(300);
       }
@@ -104,7 +105,7 @@ export function createSuite({ page, log, scene, tap, screenshot, launch, finishe
       const line = await page.evaluate(async () => {
         const { solutionStep } = await import('/src/games/number-nook/logic.ts');
         const g = neo.scene.game;
-        for (let guard = 0; guard < 40 && !g.finished; guard++) {
+        for (let guard = 0; guard < 60 && !g.finished; guard++) {
           const step = solutionStep(g.board, g.plan.cols);
           if (!step || step.next < 0) throw new Error('Missing sliding route');
           kit.tapOn(g.nodes[step.next]);
