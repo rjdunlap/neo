@@ -71,6 +71,8 @@ Game files of 40–68 KB (Caravan Days, River Tablets, Logic Grid, Keep House, L
 
 ## 10. A formatter and a minimal lint
 
+Follow-up claimed on `codex/compiler-aliases`: use Microsoft’s side-by-side npm aliases for the TypeScript 7 CLI and TypeScript 6 API; consolidate ESLint in the root manifest/config and remove the nested install. Expected files: package manifests, ESLint config/test, tooling guide and verification.
+
 **Built 2026-11-07 ([PR #1405](https://github.com/rjdunlap/neo/pull/1405)).** Prettier formats maintained code/configuration in a separate commit recorded in `.git-blame-ignore-revs`; generated barrels/manifests, npm locks and Markdown keep their own layout. Pull-request CI runs formatting and minimal typed ESLint checks for assertions to `any`, floating promises and direct native game listeners. A per-file/rule baseline records 32 pre-existing floating promises across 11 files; increases fail. Lint uses an isolated supported TypeScript 6 dependency while the app retains TypeScript 7. [Tooling guide](../tooling/lint/README.md). The original analysis follows.
 
 There is no formatter or linter. `howto.ts` is written as `{from:2,to:2,text:…}` while game code uses normal spacing, so AI edits produce noisy diffs. Add Prettier, with one reformat commit listed in `.git-blame-ignore-revs`. Add a minimal ESLint covering `as any` (43 files), floating promises and raw listeners.
