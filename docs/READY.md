@@ -6,7 +6,6 @@ Queue reconciled with `origin/main` 2026-10-21; related game work is grouped in 
 
 ## Next ten
 
-- **`puddle-gobble` slice 6, level 12 *Two pails*** (school; `bubble-beach`; slices 1–5 are done, the definition is [Puddle Gobble, Two pails](definitions/puddle-gobble-two-pails.md)): new interaction (pour by leading, tip a full pail back): typecheck, unit tests including registry, lands and how-to, one scripted play of 12 via `BROWSER_SUITE=puddlegobble` with one refused overshoot, one lead onto the wrong pail, one tip back and one hint, one portrait screenshot at 1024×1365, `fingerdemo` at 12, build. [build slices](deep-dives/puddle-gobble.md#build-slices-in-order)
 - **`log-roll` slice 2, level 4 *The long way round*** (grown-up; slice 1 is built; frozen 8×6 floors at depth 16, range 1–4; new level on the existing interaction: typecheck, rule and registry/how-to tests, one browser play of 4, `fingerdemo` at 4): [build slices](deep-dives/log-roll.md#build-slices-in-order).
 - **`jar-sort` slice 2, level 9 *Three kinds, bright jars*** (preschool to school; slice 1 is built; new level on the existing interaction placed between 2 and 3: typecheck, rule and registry/how-to tests, one browser play of 9, `fingerdemo` at 9, build): [build slices](deep-dives/jar-sort.md#build-slices-in-order).
 - **`fruit-sums` slice 2, level 4 *Same as the sign*** (school; slice 1 is built; new level on the existing interaction: typecheck, rule tests, one browser play of 4, `fingerdemo` at 4): [build slices](deep-dives/fruit-sums.md#build-slices-in-order).
