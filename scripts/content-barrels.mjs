@@ -10,14 +10,14 @@ import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from '
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const gamesDir = join(root, 'src/games');
+const defaultRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 /** `fill-dump` → `fillDump`. */
 export const camel = (id) => id.replace(/-([a-z0-9])/g, (_, c) => c.toUpperCase());
 
 /** Game folders that have `file`, sorted. */
-export function gamesWith(file) {
+export function gamesWith(file, root = defaultRoot) {
+  const gamesDir = join(root, 'src/games');
   return readdirSync(gamesDir)
     .filter((d) => statSync(join(gamesDir, d)).isDirectory() && existsSync(join(gamesDir, d, file)))
     .sort();
@@ -48,9 +48,9 @@ function fill(text, name, lines, path) {
 }
 
 /** The files as they should be: [{ path, text, stale }]. */
-export function barrels() {
+export function barrels(root = defaultRoot) {
   return BLOCKS.map((b) => {
-    const ids = gamesWith(b.file);
+    const ids = gamesWith(b.file, root);
     const old = readFileSync(join(root, b.path), 'utf8');
     let text = fill(old, 'game imports', b.imports(ids), b.path);
     text = fill(text, 'game entries', b.entries(ids), b.path);
@@ -66,7 +66,7 @@ if (isMain) {
     if (!b.stale) continue;
     stale++;
     if (check) console.log(`${b.path} is stale: run node scripts/content-barrels.mjs`);
-    else writeFileSync(join(root, b.path), b.text);
+    else writeFileSync(join(defaultRoot, b.path), b.text);
   }
   if (!check) console.log(stale ? `rewrote ${stale} file(s)` : 'barrels current');
   process.exit(check && stale ? 1 : 0);

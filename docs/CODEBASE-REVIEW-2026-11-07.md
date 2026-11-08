@@ -75,6 +75,8 @@ There is no formatter or linter. `howto.ts` is written as `{from:2,to:2,text:…
 
 ## 11. A new-game scaffold
 
+**Built 2026-11-07 ([PR #1399](https://github.com/rjdunlap/neo/pull/1399)).** `npm run new-game -- …` creates the colocated starter, rule-test placeholders, voice/how-to, browser-suite stub, game page and land entry, then refreshes both content barrels. Dry-run and preflight protect existing work; implementation and suite registration remain explicit. [Usage](NEW-GAME.md), [build note](archive/COMPLETED-2026-10-09.md#new-game-scaffold-codebase-item-11-2026-11-07). The original analysis follows.
+
 `.claude/skills/` has only `codex-image`. A scaffold script or skill that creates the item 1 layout (module, logic, tests, voice, how-to, suite stub, land entry) would replace much of the "Adding or extending a minigame" prose with one command. Do it after items 1 and 2.
 
 ## 12. Repository weight

@@ -1,5 +1,12 @@
 # Puddle Island verification
 
+## 2026-11-07 — New-game scaffold (codebase item 11, PR #1399)
+
+Changed: `npm run new-game` and templates create colocated starters, a browser stub/page and land entry; content barrels accept an optional repository root for isolated generation. No production game added.
+Ran on `13b4871d` plus the feature diff: 20 focused generator safety/CLI/formatting tests; temporary `scaffold-check` typecheck, `npm run game-docs`, six content barrel/docs checks; temporary game and its generated inventory changes removed afterwards.
+Full `npm test`: 328 files, 6,187 passed / 5 skipped (before the final two generator tests); `npm run build` passed. Final focused generator checks cover the last CLI/formatting/rollback edits. Links and diff whitespace checked at closeout.
+Not run: browser, ghost finger, offline or device checks; this changes developer tooling only. Generated starters remain unfinished until their game-specific implementation and checks are done.
+
 ## 2026-11-07 — Gem Swap slice 1: 20 trays a level, three looks, a visible fall (PR #1398)
 
 Changed: `scripts/gem-swap-trays.mjs` writes `boards.ts` (20 exact-par trays a level at 1–4; generated ones are distinct, settled, match-free and, above level 1, have a dead-end first swap and a falling line on a shortest route); three seeded looks; `drops()` and the fall tween with landing squash; cascade pops on rising steps. Ran: `npm run typecheck`; `npx vitest run src/games/gem-swap` (8/8); `BROWSER_SUITE=gemswap` filtered (levels 1 and 4, rejected swaps, hint, undo/restart, portrait 768×1024 screenshot at level 4 in first snow); `game-reviewer` (autumn cell tint changed to yellow.light afterwards).
@@ -84,6 +91,7 @@ One row per suite or area, overwritten with its latest pass (suite names and fil
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
+| New-game scaffold tooling | 2026-11-07: 20 focused tests, temporary generated-game typecheck/docs/barrels, full units (6,187 passed / 5 skipped), build | [Scaffold](#2026-11-07--new-game-scaffold-codebase-item-11-pr-1399) | Browser/offline not run; generated starters still require implementation and game verification |
 | Round cleanup / native global listeners | 2026-11-07: typecheck, full 327-file units (6,084 passed, 5 skipped), final 61 targeted tests and build; standard `early` paint level 3 and `blocktopple` level 3 passed; 296 demo restart/destruction checks across 46 games retained no native listeners | [Cleanup migration](#2026-11-07--scene-owned-cleanup-migration-codebase-item-7-follow-up-pr-1387); [original pilots](#2026-11-07--scene-owned-cleanup-helpers-codebase-item-7-pr-1385) | Draw the Pattern level 5 demo constructor fails on unchanged code too; no world, offline, device or child checks. Paint harness now waits on the game clock; bot actions unchanged. |
 | Ladder scan (`src/games/ladders.test.ts`) | 2026-11-07: typecheck; full units, 6,057 passed / 5 skipped | [Complete sweep](archive/VERIFICATION-2026-11-07.md#2026-11-07--level-ladders-into-logicts-complete-codebase-item-5-pr-1379) | No allowlists; 133 table and ten inline-ladder equivalence probes passed; browser/build/offline not run |
 | Shared learning modules | 2026-11-07: typecheck/build; 325 files, 6,068 units passed, 5 skipped; Number Trails/Critter Crossing level-1 demos and woods sort9 passed | [Tracing/sorting completion](archive/VERIFICATION-2026-11-07.md#2026-11-07--shared-tracing-and-sorting-helpers-codebase-item-6-complete-pr-1383) | Item 6 complete after the word-learning pilot; no device/offline check |

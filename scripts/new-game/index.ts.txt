@@ -1,0 +1,59 @@
+import { Container, Graphics } from 'pixi.js';
+import { swatch } from '../../art/palette';
+import { STYLES } from '../../audio/music';
+import type { View } from '../../engine/view';
+import { rangeFor } from '../../progress/difficulty';
+import { WigglyIcon } from '../shared';
+import type { Game, GameContext, GameModule, TouchIntent } from '../types';
+import { LEVELS, describeLevel } from './logic';
+
+// Replace with prepared art or Graphics using the shared palette.
+function picture() {
+  return new Container().addChild(new Graphics().circle(0, 0, 45).fill(swatch.teal.fill));
+}
+
+class Round implements Game {
+  private readonly root = new Container();
+
+  constructor(private readonly ctx: GameContext) {
+    ctx.stage.addChild(this.root);
+    this.resize(ctx.view);
+  }
+
+  start() {
+    void this.ctx.instruct(@INSTRUCTION@);
+    // TODO: seeded board, onTap/draggable input and immediate touch-down feedback.
+    // Use ctx.own/ctx.listen for resources; ctx.alive guards async continuations.
+    // Use progress/coach for deliberate miss/hint accounting and ctx.finish(tally).
+    throw new Error('Scaffold: implement @ID@ before publishing this game');
+  }
+
+  update(_dt: number) {}
+  resize(_view: View) {
+    // TODO: layout from view; >=100-unit targets, pet/corner clearance, both orientations.
+  }
+  autotouch(_dt: number): TouchIntent | null {
+    // TODO: return the next real touch, never mutate the board directly.
+    return null;
+  }
+  destroy() {
+    this.root.destroy({ children: true });
+  }
+}
+
+export const game: GameModule = {
+  id: @ID_LITERAL@,
+  name: @NAME@,
+  titleLine: @TITLE@,
+  region: @REGION@,
+  challenge: @CHALLENGE@,
+  skills: ['TODO: the learning purpose'],
+  bands: [@BAND@],
+  levels: band => rangeFor(LEVELS, band),
+  describeLevel,
+  music: STYLES.quiet,
+  // Add touchDemo: true only after autotouch finishes every supported level.
+  hubIcon: () => new WigglyIcon(picture()),
+  sticker: _seed => picture(),
+  create: ctx => new Round(ctx),
+};
