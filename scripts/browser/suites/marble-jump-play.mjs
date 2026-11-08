@@ -147,6 +147,75 @@ export function createSuite({
         [1, level === 6 ? 2 : 1],
       );
     }
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await page.waitForTimeout(300);
+    await launch('marble-jump', 7);
+    await page.waitForTimeout(400);
+    {
+      const before = await page.evaluate(() => kit.store.data.stickers.length);
+      const goal = await page.evaluate(() => neo.scene.game.goal);
+      assert.ok(goal >= 0, 'level 7 has a star hole');
+      const route = await page.evaluate(async () => {
+        const L = await import('/src/games/marble-jump/logic.ts'),
+          g = neo.scene.game;
+        function off(b) {
+          if (L.count(b) === 1) return b === 1 << g.goal ? null : [];
+          for (const j of L.moves(b)) {
+            if (L.solve(L.jump(b, j)) === null) continue;
+            const rest = off(L.jump(b, j));
+            if (rest) return [j, ...rest];
+          }
+          return null;
+        }
+        return off(g.board);
+      });
+      assert.ok(route, 'a legal route can finish off the star');
+      for (const j of route) {
+        await tapHole(j.from);
+        await tapHole(j.to);
+      }
+      assert.equal(
+        await page.evaluate(() => neo.scene.finished),
+        false,
+        'one marble off the star is not a finish',
+      );
+      assert.equal(await page.evaluate(() => neo.scene.game.misses), 0, 'a legal route adds no miss');
+      assert.match(await page.evaluate(() => neo.scene.game.status.text), /not on the star/);
+      await screenshot('marble-jump-7-off-star-portrait');
+      await tap('neo.scene.game.hintButton');
+      assert.ok(
+        await page.evaluate(async () => {
+          const L = await import('/src/games/marble-jump/logic.ts'),
+            g = neo.scene.game;
+          return L.solve(g.board, g.goal) !== null && L.count(g.board) > 1;
+        }),
+        'hint returns to a board that can still finish on the star',
+      );
+      let jumps = 0;
+      while (!(await page.evaluate(() => neo.scene.finished))) {
+        const next = await page.evaluate(async () => {
+          const L = await import('/src/games/marble-jump/logic.ts'),
+            g = neo.scene.game;
+          return L.solve(g.board, g.goal)[0];
+        });
+        await tapHole(next.from);
+        await tapHole(next.to);
+        assert.ok(++jumps <= 13);
+      }
+      assert.equal(
+        await page.evaluate(() => neo.scene.game.board),
+        1 << goal,
+        'the last marble is on the star',
+      );
+      assert.match(
+        await page.evaluate(() => neo.scene.game.status.text),
+        /^\d+ moves · fewest possible \d+$/,
+      );
+      await finished('marble-jump');
+      assert.equal(await page.evaluate(() => kit.store.data.stickers.length), before + 1);
+    }
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.waitForTimeout(300);
     await page.evaluate(() => neo.go.land('puzzle-peaks'));
     await scene('LandScene');
     await turnToGame('marble-jump');
@@ -159,7 +228,7 @@ export function createSuite({
     await page.waitForTimeout(400);
     assert.deepEqual(errors, []);
     log(
-      'Marble Jump: first/last, illegal jump, hint recovery, undo/restart, portrait, land launch/leave and one sticker passed',
+      'Marble Jump: first/last, level 7 off-star finish and star finish, illegal jump, hint recovery, undo/restart, portrait, land launch/leave and one sticker passed',
     );
   }
 

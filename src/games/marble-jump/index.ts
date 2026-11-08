@@ -9,14 +9,18 @@ import { label } from '../../ui/text';
 import { tile, WigglyIcon } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  ANY,
   HOLES,
   LEVELS,
+  STAR_LEVEL,
   carry,
   count,
+  fewestMoves,
   jump,
-  makeBoard,
+  makeRound,
   marblesFor,
   moves,
+  movesIn,
   occupied,
   paint,
   recovery,
@@ -77,14 +81,19 @@ interface Snapshot {
   board: number;
   colors: number[];
   taken: number[];
+  route: Jump[];
 }
 class MarbleJump implements Game {
   readonly initial: number;
+  /** The hole the last marble must stop in, or ANY. */
+  readonly goal: number;
   readonly look: Look;
   private readonly initialColors: number[];
   board: number;
   colors: number[];
   taken: number[] = [];
+  /** The jumps on the board now, so undone and recovered jumps never count as moves. */
+  route: Jump[] = [];
   history: Snapshot[] = [];
   selected: number | null = null;
   hinted: Jump | null = null;
@@ -107,13 +116,18 @@ class MarbleJump implements Game {
   private readonly flyer = new Container();
   private readonly faller = new Container();
   private readonly status = label('', 28, ink);
-  private readonly title = label('Leave one marble', 38, ink);
+  private readonly title: ReturnType<typeof label>;
   private marbles: (Graphics | null)[] = [];
   private cx = 0;
   private top = 0;
   private consecutiveMisses = 0;
+  /** The fewest moves for this puzzle, worked out once the round is cleared. */
+  private fewest: number | null = null;
   constructor(private readonly ctx: GameContext) {
-    this.board = this.initial = makeBoard(ctx.level, ctx.rng);
+    const round = makeRound(ctx.level, ctx.rng);
+    this.board = this.initial = round.board;
+    this.goal = round.goal;
+    this.title = label(this.goal === ANY ? 'Leave one marble' : 'Finish on the star', 38, ink);
     this.look = ctx.rng.pick(LOOKS);
     this.colors = this.initialColors = paint(this.board, ctx.rng);
     this.root.addChild(this.background, this.tray, this.pocket, this.title, this.status);
@@ -149,7 +163,7 @@ class MarbleJump implements Game {
     this.resize(ctx.view);
   }
   start() {
-    void this.ctx.instruct('marble.go');
+    void this.ctx.instruct(this.goal === ANY ? 'marble.go' : 'marble.go7');
   }
   destroy() {
     this.finished = true;
@@ -180,18 +194,22 @@ class MarbleJump implements Game {
       this.draw();
       return;
     }
-    this.history.push({ board: this.board, colors: this.colors, taken: this.taken });
+    this.history.push({ board: this.board, colors: this.colors, taken: this.taken, route: this.route });
     const { colors, taken } = carry(this.colors, j);
     this.board = jump(this.board, j);
     this.colors = colors;
     this.taken = [...this.taken, taken];
+    this.route = [...this.route, j];
     this.selected = null;
     this.hinted = null;
     this.tilt = null;
     this.consecutiveMisses = 0;
     this.flight = { j, t: 0 };
     sfx.bell(2 + Math.min(this.history.length, 10), 0.3);
-    if (count(this.board) === 1) this.finished = true;
+    if (count(this.board) === 1 && solve(this.board, this.goal) !== null) {
+      this.finished = true;
+      this.fewest = fewestMoves(this.initial, this.goal);
+    }
     this.draw();
   }
   /** Ends any motion at once, so Undo, Hint and Start over act on the board she sees. */
@@ -214,7 +232,8 @@ class MarbleJump implements Game {
       if (this.ctx.alive) this.ctx.finish({ misses: this.misses, hints: this.hints });
       return;
     }
-    if (solve(this.board) === null) void this.ctx.say('marble.revise');
+    if (solve(this.board, this.goal) === null)
+      void this.ctx.say(this.goal === ANY ? 'marble.revise' : 'marble.star');
     if (this.queued !== null) {
       const i = this.queued;
       this.queued = null;
@@ -225,6 +244,7 @@ class MarbleJump implements Game {
     this.board = s.board;
     this.colors = s.colors;
     this.taken = s.taken;
+    this.route = s.route;
   }
   undo() {
     if (this.finished || !this.history.length) return;
@@ -239,7 +259,7 @@ class MarbleJump implements Game {
   restart() {
     if (this.finished) return;
     this.settle();
-    this.restore({ board: this.initial, colors: this.initialColors, taken: [] });
+    this.restore({ board: this.initial, colors: this.initialColors, taken: [], route: [] });
     this.history = [];
     this.selected = null;
     this.hinted = null;
@@ -258,8 +278,11 @@ class MarbleJump implements Game {
     }
     this.hints++;
     this.consecutiveMisses = 0;
-    if (solve(this.board) === null) {
-      const back = recovery(this.history.map((s) => s.board));
+    if (solve(this.board, this.goal) === null) {
+      const back = recovery(
+        this.history.map((s) => s.board),
+        this.goal,
+      );
       if (back !== null) {
         this.restore(this.history[back]);
         this.history = this.history.slice(0, back);
@@ -267,12 +290,12 @@ class MarbleJump implements Game {
       void this.ctx.say('marble.recover');
     } else void this.ctx.say('marble.hint');
     this.selected = null;
-    this.hinted = solve(this.board)?.[0] ?? null;
+    this.hinted = solve(this.board, this.goal)?.[0] ?? null;
     this.draw();
   }
   autotouch(_dt: number): TouchIntent | null {
     if (this.finished || this.flight) return null;
-    const next = solve(this.board)?.[0];
+    const next = solve(this.board, this.goal)?.[0];
     if (!next) return { tap: { on: this.hintButton } };
     return { tap: { on: this.nodes[this.selected === next.from ? next.to : next.from] }, pause: 0.25 };
   }
@@ -333,6 +356,14 @@ class MarbleJump implements Game {
         .fill(look.rim)
         .circle(0, 0, 26)
         .fill(look.deep);
+      if (i === this.goal) {
+        hole
+          .circle(0, 0, 36)
+          .stroke({ color: swatch.yellow.line, width: 5 })
+          .star(0, 0, 5, 20, 9)
+          .fill(swatch.yellow.fill)
+          .stroke({ color: swatch.yellow.line, width: 2 });
+      }
       hole.eventMode = 'none';
       node.addChild(hole);
       if (!occupied(this.board, i) || this.flight?.j.to === i) return null;
@@ -379,10 +410,14 @@ class MarbleJump implements Game {
         .lineTo(b.x, b.y)
         .stroke({ color: swatch.orange.line, width: 4, alpha: 0.6 });
     }
-    const stuck = solve(this.board) === null;
-    this.status.text = stuck
-      ? 'Try Undo, or Hint to return to a clearing route'
-      : `${count(this.board)} marbles · jump over one into an empty hole`;
+    const left = count(this.board);
+    this.status.text = this.finished
+      ? `${movesIn(this.route)} moves · fewest possible ${this.fewest}`
+      : solve(this.board, this.goal) !== null
+        ? `${left} marbles · jump over one into an empty hole`
+        : left === 1
+          ? 'One marble, not on the star: Undo to try another route'
+          : 'Try Undo, or Hint to return to a clearing route';
     this.undoButton.alpha = this.history.length ? 1 : 0.45;
   }
   resize(view: View) {
@@ -422,7 +457,10 @@ export const marbleJump: GameModule = {
   bands: ['grownup'],
   touchDemo: true,
   levels: (band) => rangeFor(LEVELS, band),
-  describeLevel: (level) => `${marblesFor(level)} marbles on a triangular board; leave one`,
+  describeLevel: (level) =>
+    level >= STAR_LEVEL
+      ? `${marblesFor(level)} marbles; the last one must finish in the star hole`
+      : `${marblesFor(level)} marbles on a triangular board; leave one`,
   music: STYLES.lullaby,
   coplayHint: 'Plan the next two jumps together before trying them.',
   offScreen: 'Make a triangle of fifteen circles on paper and use counters to try the same jumps.',

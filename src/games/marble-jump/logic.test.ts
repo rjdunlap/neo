@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
 import {
+  ANY,
   FULL,
   HOLES,
   JUMPS,
@@ -9,14 +10,19 @@ import {
   hasTrap,
   jump,
   makeBoard,
+  makeRound,
   marblesFor,
   moves,
+  movesIn,
+  fewestMoves,
   occupied,
   paint,
   poolFor,
   reachable,
   recovery,
   solve,
+  starPairs,
+  type Jump,
 } from './logic';
 
 /** The triangle's six rotations and reflections permute the three corner distances of a hole. */
@@ -132,5 +138,104 @@ describe('Marble Jump', () => {
     expect(recovery([good, bad, good, bad])).toBe(2);
     expect(recovery([bad])).toBeNull();
     expect(jump(good, { from: 0, over: 1, to: 14 })).toBe(good);
+  });
+  it('keeps the level 1–6 rounds exactly as before, with no goal', () => {
+    let hash = 7;
+    for (let level = 1; level <= 6; level++)
+      for (let seed = 1; seed <= 40; seed++) {
+        const round = makeRound(level, new Rng(seed));
+        expect(round.goal).toBe(ANY);
+        hash = (hash * 31 + round.board) % 2147483647;
+      }
+    expect(hash).toBe(1560790864);
+  });
+  it('agrees with independent reachability for every board and goal hole', () => {
+    for (let goal = 0; goal < 15; goal++) {
+      const can = new Uint8Array(FULL + 1);
+      can[1 << goal] = 1;
+      for (let n = 2; n <= 15; n++)
+        for (let board = 1; board <= FULL; board++) {
+          if (count(board) !== n) continue;
+          for (const j of moves(board)) if (can[jump(board, j)]) can[board] = 1;
+        }
+      for (let board = 1; board <= FULL; board++)
+        if (count(board) >= 1)
+          expect(solve(board, goal) !== null, `board ${board} goal ${goal}`).toBe(!!can[board]);
+    }
+  });
+  it('seeds level 7 with a classic start whose star the solver reaches', () => {
+    const pairs = starPairs();
+    // 12 of the 15 starts can finish where they started; the three inner holes cannot.
+    expect(pairs.filter((p) => p.board === (FULL ^ (1 << p.goal)))).toHaveLength(12);
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 80; seed++) {
+      const round = makeRound(7, new Rng(seed));
+      expect(round).toEqual(makeRound(7, new Rng(seed)));
+      expect(count(round.board)).toBe(14);
+      expect(round.goal).toBeGreaterThanOrEqual(0);
+      seen.add(`${round.board}:${round.goal}`);
+      let board = round.board;
+      for (const j of solve(board, round.goal)!) board = jump(board, j);
+      expect(board).toBe(1 << round.goal);
+    }
+    expect(seen.size).toBeGreaterThanOrEqual(20);
+  });
+  it('recovers to the nearest board that can still finish on the star', () => {
+    const { board, goal } = makeRound(7, new Rng(5));
+    // Play a legal route to one marble anywhere but the star.
+    function off(b: number): Jump[] | null {
+      if (count(b) === 1) return b === 1 << goal ? null : [];
+      for (const j of moves(b)) {
+        if (solve(jump(b, j)) === null) continue;
+        const rest = off(jump(b, j));
+        if (rest) return [j, ...rest];
+      }
+      return null;
+    }
+    const route = off(board)!;
+    expect(route).toHaveLength(13);
+    const history = [board];
+    for (const j of route) history.push(jump(history.at(-1)!, j));
+    expect(solve(history.at(-1)!, goal)).toBeNull();
+    expect(solve(history.at(-1)!)).toEqual([]);
+    const back = recovery(history, goal)!;
+    expect(solve(history[back], goal)).not.toBeNull();
+    for (let i = back + 1; i < history.length; i++) expect(solve(history[i], goal)).toBeNull();
+    expect(recovery(history)).toBe(history.length - 1);
+  });
+  it('counts a chain by one marble as one move, and finds the exact fewest', () => {
+    const a: Jump = { from: 0, over: 1, to: 3 },
+      b: Jump = { from: 3, over: 4, to: 5 },
+      c: Jump = { from: 12, over: 8, to: 5 };
+    expect(movesIn([])).toBe(0);
+    expect(movesIn([a, b])).toBe(1);
+    expect(movesIn([a, c])).toBe(2);
+    expect(movesIn([a, b, c])).toBe(2);
+    // Brute force over every clearing route on small boards.
+    function brute(board: number, goal: number, route: Jump[] = []): number | null {
+      if (count(board) === 1) return goal === ANY || board === 1 << goal ? movesIn(route) : null;
+      let low: number | null = null;
+      for (const j of moves(board)) {
+        const r = brute(jump(board, j), goal, [...route, j]);
+        if (r !== null && (low === null || r < low)) low = r;
+      }
+      return low;
+    }
+    for (const level of [1, 2, 3])
+      for (let seed = 1; seed <= 25; seed++) {
+        const board = makeBoard(level, new Rng(seed));
+        expect(fewestMoves(board), `level ${level} seed ${seed}`).toBe(brute(board, ANY));
+        for (const goal of [0, 4, 12]) expect(fewestMoves(board, goal)).toBe(brute(board, goal));
+      }
+    expect(fewestMoves((1 << 0) | (1 << 14))).toBeNull();
+  });
+  it('works out the fewest moves on a full triangle quickly, never above the jump count', () => {
+    const started = performance.now();
+    for (const { board, goal } of starPairs().slice(0, 15)) {
+      const fewest = fewestMoves(board, goal)!;
+      expect(fewest).toBeGreaterThan(0);
+      expect(fewest).toBeLessThanOrEqual(movesIn(solve(board, goal)!));
+    }
+    expect(performance.now() - started).toBeLessThan(3000);
   });
 });
