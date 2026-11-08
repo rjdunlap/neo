@@ -519,6 +519,8 @@ export interface GardenPlan {
   stones?: [number, number];
   /** The level whose garden generator and filter this one reuses (level 9 plays level 3's gardens); itself when absent. */
   like?: number;
+  /** The next tray shows faded beside the one in front of her, and cannot be lifted (level 10). */
+  preview?: boolean;
 }
 
 const SMALL: Family[] = ['domino', 'I3', 'corner3', 'square2'];
@@ -676,6 +678,23 @@ export const PLANS: GardenPlan[] = [
     families: ['corner3', 'domino', 'I3'],
     like: 3,
   },
+  {
+    id: 10,
+    name: 'See what comes next',
+    n: 6,
+    cell: 100,
+    goal: 'buds',
+    pieces: 6,
+    traySize: 3,
+    buds: [3, 4],
+    par: [4, 6],
+    gardens: 1,
+    tinted: false,
+    refusalCounts: true,
+    families: MID,
+    like: 6,
+    preview: true,
+  },
 ];
 
 /** The level a plan's gardens are built and filtered as. */
@@ -683,9 +702,10 @@ export const kindOf = (plan: Pick<GardenPlan, 'id' | 'like'>): number => plan.li
 
 export const LEVELS: BandLevels = {
   // Level 9 is level 3's corner gardens with the stripes on and refused drops free: a gentler step between 2 and 3.
+  // Level 10 is level 6's two trays with the next one shown: a step before the blind tray at 6.
   prek: { min: 1, max: 9, order: [1, 2, 9, 3] },
-  school: { min: 2, max: 9, order: [2, 9, 3, 4, 5, 6] },
-  grownup: { min: 5, max: 8 },
+  school: { min: 2, max: 10, order: [2, 9, 3, 4, 5, 10, 6] },
+  grownup: { min: 5, max: 10, order: [5, 10, 6, 7, 8] },
 };
 
 /** Easy levels with high IDs, placed earlier by a band's `order`. */
@@ -1049,7 +1069,7 @@ function blockGarden(plan: GardenPlan, rng: Rng): Draft | null {
   const spec =
     plan.id === 4
       ? { m: 2, k: 2, density: 0.15 }
-      : plan.id === 6
+      : kindOf(plan) === 6
         ? { m: rng.int(2, 3), k: rng.int(2, 3), density: 0.2 }
         : plan.id === 7
           ? { m: rng.int(3, 4), k: rng.int(3, 5), density: 0.2 }
@@ -1162,6 +1182,22 @@ function clearsOf(g: Garden, sol: Placement[]): { rows: number; cols: number; bo
   });
 }
 
+/**
+ * A first-tray planting that leaves a piece of the next tray nowhere to fit and makes the garden longer (or impossible) than
+ * `par`: the reason to look at the coming tray at level 10. Null when no such planting exists.
+ */
+export function nextTrap(g: Garden, par: number, cap = SEARCH_CAP): Placement | null {
+  const start = startState(g);
+  const coming = g.pieces.map((_, i) => i).filter((i) => i >= g.traySize && i < 2 * g.traySize);
+  for (const p of placements(g, start)) {
+    const after = apply(g, start, p);
+    if (!coming.some((i) => anchors(after.bed, g.pieces[i]).length === 0)) continue;
+    const rest = search(g, after, cap);
+    if (rest === 'none' || (Array.isArray(rest) && 1 + rest.length > par)) return p;
+  }
+  return null;
+}
+
 /** Whether a garden passes its level's filter (from the definition's table). `par` is the solver's fewest placements. */
 export function passesFilter(plan: GardenPlan, g: Garden, par: number): boolean {
   if (par < plan.par[0] || par > plan.par[1] || g.n !== plan.n || g.pieces.length !== plan.pieces)
@@ -1206,7 +1242,8 @@ export function passesFilter(plan: GardenPlan, g: Garden, par: number): boolean 
       );
     }
     case 6:
-      return par > g.traySize; // needs the second tray
+      // Needs the second tray; at 10, where she sees it, one first-tray planting would leave a coming piece no room.
+      return par > g.traySize && (!plan.preview || !!nextTrap(g, par));
     case 7:
       return (
         par > 2 * g.traySize &&
@@ -1237,7 +1274,7 @@ export function candidate(plan: GardenPlan, rng: Rng, cap = SEARCH_CAP): Garden 
   if (d.plan.length + d.extras.length > plan.pieces) return null;
   // At level 8 every planted piece has to empty again, so the planned pieces come first and the extras wait in the last tray.
   const order = plan.goal === 'clear' ? 'planned-first' : plan.traySize < plan.pieces ? 'trays' : 'shuffle';
-  let g = toGarden(d, plan, order, rng, plan.id >= 6 && plan.id <= 7);
+  let g = toGarden(d, plan, order, rng, kindOf(plan) >= 6 && kindOf(plan) <= 7);
   g = transformGarden(g, rng.int(0, 7));
   const sol = solve(g, startState(g), cap);
   if (!sol) return null;
@@ -1280,6 +1317,9 @@ export const SLOT = 180;
 /** Pieces in the tray are drawn at this many units per square. */
 export const TRAY_CELL = 40;
 export const UNDO_R = 54;
+/** At level 10, the faded next tray's cards: a column left of the bed (landscape) or a row under the tray (upright). */
+export const NEXT_W = 136;
+export const NEXT_H = 110;
 /** A carried piece's bottom edge rides this far above the finger. */
 export const RIDE = 40;
 
@@ -1297,12 +1337,14 @@ export interface GardenLayout {
   cell: number;
   n: number;
   slots: Rect[];
+  /** The faded next tray's cards at level 10 (`preview`); empty otherwise. */
+  next: Rect[];
   undo: { x: number; y: number };
   portrait: boolean;
 }
 
 /** Bed, three tray slots and the round arrow, clear of the shell's top-left buttons and the pet's bottom-left corner. */
-export function gardenLayout(plan: Pick<GardenPlan, 'n' | 'cell'>, v: View): GardenLayout {
+export function gardenLayout(plan: Pick<GardenPlan, 'n' | 'cell' | 'preview'>, v: View): GardenLayout {
   const size = plan.n * plan.cell;
   const portrait = v.h > v.w;
   if (!portrait) {
@@ -1318,28 +1360,36 @@ export function gardenLayout(plan: Pick<GardenPlan, 'n' | 'cell'>, v: View): Gar
       w: SLOT,
       h: SLOT,
     }));
+    // The next tray stands in the free strip left of the bed, below the shell's Home and ? (to y 210) and above the pet.
+    const nh = Math.min(146, (v.h - 170 - 214 - 12) / 3);
+    const next = plan.preview
+      ? [0, 1, 2].map((i) => ({ x: x - 20 - NEXT_W, y: 214 + i * (nh + 6), w: NEXT_W, h: nh }))
+      : [];
     return {
       x,
       y,
       cell: plan.cell,
       n: plan.n,
       slots,
+      next,
       undo: { x: tx + SLOT / 2, y: Math.max(UNDO_R + 12, slots[0].y - UNDO_R - 16) },
       portrait,
     };
   }
   const x = (v.w - size) / 2;
-  const block = size + 40 + SLOT;
+  const block = size + 40 + SLOT + (plan.preview ? 8 + NEXT_H : 0);
   const y = Math.max(128, 128 + (v.h - 128 - 74 - block) / 2);
   const ty = y + size + 40;
   const left = Math.max(170, (v.w - 3 * SLOT) / 2 + 40);
   const slots = [0, 1, 2].map((i) => ({ x: left + i * SLOT, y: ty, w: SLOT, h: SLOT }));
+  const next = plan.preview ? slots.map((s) => ({ x: s.x, y: ty + SLOT + 8, w: SLOT, h: NEXT_H })) : [];
   return {
     x,
     y,
     cell: plan.cell,
     n: plan.n,
     slots,
+    next,
     undo: { x: v.w - 80, y: Math.max(UNDO_R + 12, y - UNDO_R - 14) },
     portrait,
   };

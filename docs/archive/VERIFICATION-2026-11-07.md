@@ -257,3 +257,11 @@ Hint counted once is proven by the browser play only (the counting lives in `ind
 Changed: a probe test only (`logic.test.ts` › *the beach layout* › *two pails probe*: eight numbered things clear of two side-by-side 170-unit pail boxes, the pet corner and the puddle's start on 300 seeds at four views, the five-token strip above both pails) and the [level 12 *Two pails* definition](../definitions/puddle-gobble-two-pails.md). No game code.
 Ran: `npm run typecheck`; `npx vitest run src/games/puddle-gobble` (38 passed); `node scripts/check-links.mjs`; `git diff --check`.
 Not run: full `npm test`, build, any browser suite or `fingerdemo` (define tier; level 12 is not built). Open: whether tipping a full pail back is found without help, and any accidental tip on an iPad, once built ([DEVICE-CHECKS.md](../DEVICE-CHECKS.md)).
+
+## 2026-11-07 — Prettier and minimal ESLint (codebase item 10, PR #1405)
+
+Changed: repeatable formatting, typed lint for any assertions/floating promises/native game listeners, CI gates, 32 existing floating-promise findings baselined across 11 files; isolated lint compiler leaves app TypeScript 7 unchanged.
+Ran on base `9c283897` plus the feature diff: clean `npm ci` including nested locked lint install; typecheck; full `npm test` (329 files, 6,201 passed / 5 skipped); build; ESLint and final formatting check; 25 focused lint/scaffold/barrel tests. All passed.
+After upstream `397e9e76` landed, preserved and formatted its Two Pails test additions; targeted Puddle Gobble tests (38), typecheck, lint/format checks, links and whitespace passed.
+The formatting commit `1e9db159` was checked across all 1,500 files against Prettier applied to their prior contents: no non-formatting changes. Its full hash is in `.git-blame-ignore-revs`. The final ten formatting adjustments were formatting-only; full tests were not repeated locally after them.
+Not run: browser, ghost finger, offline or device checks; this changes tooling and layout of source text only. Existing lint findings remain unreviewed, and count-based suppressions cannot detect a replacement finding within the same file/rule.

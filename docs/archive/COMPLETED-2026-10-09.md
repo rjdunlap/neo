@@ -16,7 +16,7 @@ Clean installation, compiler routing, dependency compatibility, lint, formatting
 
 [PR #1405](https://github.com/rjdunlap/neo/pull/1405) adds formatting commands and pull-request gates, plus minimal typed lint for assertions to `any`, floating promises and unmanaged native game listeners. Existing floating-promise counts (32 across 11 files) are recorded in ESLint's baseline; new counts fail. Lint dependencies and their supported compiler are isolated from the app's TypeScript 7. The 1,500-file mechanical formatting commit is listed in `.git-blame-ignore-revs`; generated content barrels/manifests, npm locks and Markdown keep their existing layout. [Tooling guide](../CODE-QUALITY.md).
 
-Clean locked installation, typecheck, all 329 unit files (6,201 passed / 5 skipped), build, lint, format check and focused tooling checks passed. An exact comparison against formatted prior contents established that the formatting commit contains only formatter output. No browser/offline/device checks; no intended runtime changes. [Verification](../VERIFICATION.md#2026-11-07--prettier-and-minimal-eslint-codebase-item-10-pr-1405).
+Clean locked installation, typecheck, all 329 unit files (6,201 passed / 5 skipped), build, lint, format check and focused tooling checks passed. An exact comparison against formatted prior contents established that the formatting commit contains only formatter output. No browser/offline/device checks; no intended runtime changes. [Verification](VERIFICATION-2026-11-07.md#2026-11-07--prettier-and-minimal-eslint-codebase-item-10-pr-1405).
 
 ### New-game scaffold (codebase item 11, 2026-11-07)
 

@@ -20,6 +20,7 @@ import {
   has,
   hintPlacement,
   kindOf,
+  nextTrap,
   LEVELS,
   LOOKS,
   lookFor,
@@ -150,7 +151,7 @@ describe('level 1, garden 1', () => {
 
 describe('rounds, looks and flowers', () => {
   it('a pre-K round at levels 1 and 2 is three gardens; the rest keep theirs', () => {
-    expect(PLANS.map((p) => p.gardens)).toEqual([3, 3, 2, 2, 2, 1, 1, 1, 2]);
+    expect(PLANS.map((p) => p.gardens)).toEqual([3, 3, 2, 2, 2, 1, 1, 1, 2, 1]);
   });
 
   it('every look and every flower kind is reachable', () => {
@@ -223,8 +224,8 @@ describe('level 9, Corner with stripes', () => {
 
   it('sits between 2 and 3 for pre-K and school; grown-ups never reach it', () => {
     expect(LEVELS.prek).toEqual({ min: 1, max: 9, order: [1, 2, 9, 3] });
-    expect(LEVELS.school).toEqual({ min: 2, max: 9, order: [2, 9, 3, 4, 5, 6] });
-    expect(LEVELS.grownup).toEqual({ min: 5, max: 8 });
+    expect(LEVELS.school).toEqual({ min: 2, max: 10, order: [2, 9, 3, 4, 5, 10, 6] });
+    expect(LEVELS.grownup).toEqual({ min: 5, max: 10, order: [5, 10, 6, 7, 8] });
     expect(ENTRY_LEVELS).toEqual([9]);
     expect(stepLevel(2, 1, LEVELS.prek!)).toBe(9);
     expect(stepLevel(9, 1, LEVELS.prek!)).toBe(3);
@@ -235,7 +236,51 @@ describe('level 9, Corner with stripes', () => {
   });
 });
 
-describe.each([5, 6, 7, 8].map((id) => [id, planFor(id)] as const))(
+describe('level 10, See what comes next', () => {
+  it('sits between 5 and 6 for school and grown-ups, and plays level 6 gardens with the next tray shown', () => {
+    expect(stepLevel(5, 1, LEVELS.school!)).toBe(10);
+    expect(stepLevel(10, 1, LEVELS.school!)).toBe(6);
+    expect(stepLevel(6, -1, LEVELS.grownup!)).toBe(10);
+    expect(stepLevel(10, -1, LEVELS.grownup!)).toBe(5);
+    const plan = planFor(10);
+    expect(plan.name).toBe('See what comes next');
+    expect(kindOf(plan)).toBe(6);
+    expect(plan.preview).toBe(true);
+    expect(planFor(6).preview).toBeFalsy();
+    const { preview: _a, like: _b, id: _c, name: _d, ...same } = plan;
+    const { id: _e, name: _f, ...six } = planFor(6);
+    expect(same).toEqual(six);
+  });
+
+  it('no garden repeats a level 6 bed, and each has a first-tray planting that leaves a coming piece no room and costs a step', () => {
+    const six = new Set(GARDENS[6].map((t) => t.split(':')[0]));
+    for (const text of GARDENS[10]) {
+      expect(six.has(text.split(':')[0])).toBe(false);
+      const g = decode(text, planFor(10));
+      const par = g.solution.length;
+      const trap = nextTrap(g, par, 2_000_000)!;
+      expect(trap).not.toBeNull();
+      // The trap is a first-tray piece, and the stored solution does not start with it.
+      expect(trap.piece).toBeLessThan(g.traySize);
+      const after = apply(g, startState(g), trap);
+      expect(g.pieces.slice(g.traySize).some((id) => anchors(after.bed, id).length === 0)).toBe(true);
+      expect(shortest(g, after) + 1).toBeGreaterThan(par);
+      // And the garden really needs the tray she can see coming.
+      expect(par).toBeGreaterThan(g.traySize);
+    }
+  }, 60_000);
+
+  it("a level 6 garden with no such planting fails level 10's filter", () => {
+    const blind = GARDENS[6]
+      .map((t) => decode(t, planFor(6)))
+      .find((g) => !nextTrap(g, g.solution.length, 2_000_000));
+    expect(blind).toBeDefined();
+    expect(passesFilter(planFor(10), blind!, blind!.solution.length)).toBe(false);
+    expect(passesFilter(planFor(6), blind!, blind!.solution.length)).toBe(true);
+  }, 60_000);
+});
+
+describe.each([5, 6, 7, 8, 10].map((id) => [id, planFor(id)] as const))(
   'frozen gardens, level %i',
   (id, plan) => {
     const list = GARDENS[id];
@@ -294,7 +339,7 @@ function wander(g: Garden, rng: Rng, steps: number): State[] {
 describe('hintPlacement', () => {
   it('from reachable states, the hint is legal and brings the shortest remaining solution one closer, or it is stuck at a dead end', () => {
     const rng = new Rng(11);
-    for (const plan of PLANS.filter((p) => p.id <= 6)) {
+    for (const plan of PLANS.filter((p) => p.id <= 6 || p.id === 10)) {
       for (let k = 0; k < 12; k++) {
         const g =
           plan.id <= 4
@@ -407,19 +452,23 @@ describe('gardenLayout', () => {
       expect(bed.x + bed.w).toBeLessThanOrEqual(v.w);
       expect(bed.y).toBeGreaterThanOrEqual(0);
       expect(bed.y + bed.h + RIDE).toBeLessThanOrEqual(v.h - 40);
-      // Clear of the shell's Home and ? (top-left, about 124 square) and the pet's corner (bottom-left 150 × 170).
+      // Clear of the shell's Home and ? (top-left: Home about 124 square, ? centred at 62, 160) and the pet's corner (bottom-left 150 × 170).
       const shell = { x: 0, y: 0, w: 124, h: 124 },
+        help = { x: 0, y: 112, w: 112, h: 98 },
         pet = { x: 0, y: v.h - 170, w: 150, h: 170 };
       const undo = { x: lay.undo.x - 54, y: lay.undo.y - 54, w: 108, h: 108 };
-      for (const r of [bed, ...lay.slots, undo]) {
+      expect(lay.next.length).toBe(plan.preview ? 3 : 0);
+      for (const r of lay.next) expect(Math.min(r.w, r.h)).toBeGreaterThanOrEqual(100);
+      for (const r of [bed, ...lay.slots, ...lay.next, undo]) {
         expect(overlap(r, shell)).toBe(false);
+        expect(overlap(r, help)).toBe(false);
         expect(overlap(r, pet)).toBe(false);
         expect(r.x).toBeGreaterThanOrEqual(0);
         expect(r.x + r.w).toBeLessThanOrEqual(v.w);
         expect(r.y).toBeGreaterThanOrEqual(0);
         expect(r.y + r.h).toBeLessThanOrEqual(v.h);
       }
-      const hits = [bed, ...lay.slots, undo];
+      const hits = [bed, ...lay.slots, ...lay.next, undo];
       for (let i = 0; i < hits.length; i++)
         for (let j = i + 1; j < hits.length; j++) expect(overlap(hits[i], hits[j])).toBe(false);
       for (const s of lay.slots) expect(Math.min(s.w, s.h)).toBeGreaterThanOrEqual(120);

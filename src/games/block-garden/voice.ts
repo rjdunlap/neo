@@ -11,6 +11,7 @@ export const VOICE = {
   'block-garden.refuse': ['It needs an empty space just its shape.'],
   'block-garden.bloom': ['They bloomed!', 'Flowers!', 'Look, the buds woke up!'],
   'block-garden.next-tray': ['Here come three more.'],
+  'block-garden.comes-next': ['That one comes next.'],
   'block-garden.stuck': ["No room for this one! Let's take one back. Tap the round arrow."],
   'block-garden.hint': ['Try the glowing piece where its shadow is.'],
   'block-garden.done': ['Every bud is blooming! What a garden.', 'A whole basket of flowers!'],
