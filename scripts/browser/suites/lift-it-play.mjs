@@ -88,9 +88,27 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
     await launch('lift-it', 1);
     await idle();
     let n = await page.evaluate(() => kit.store.data.stickers.length);
+    // Show a hint pulls one stroke with the pet's paw on the handle.
+    await page.evaluate(() => neo.scene.game.askForHint());
+    await page.waitForTimeout(150);
+    assert.deepEqual(
+      await page.evaluate(() => [
+        neo.scene.game.helperPaw.visible,
+        neo.scene.game.hints,
+        neo.scene.game.haul.rung > 0,
+      ]),
+      [true, 1, true],
+      "the hint's stroke is pulled by the pet's paw",
+    );
+    await page.waitForTimeout(800);
+    assert.equal(
+      await page.evaluate(() => neo.scene.game.helperPaw.visible),
+      false,
+      'the paw lets go after the stroke',
+    );
     await playOut(n);
     let st = await state();
-    assert.deepEqual([st.misses, st.hints], [0, 0], 'level 1 has no misses or hints');
+    assert.deepEqual([st.misses, st.hints], [0, 1], 'level 1: no misses, the one requested hint');
 
     // Level 6: the authored six-stone crate; the branch wheel alone needs six paws (one miss on the tug), a requested hint glows both hooks once.
     await launch('lift-it', 6);
@@ -153,10 +171,56 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
     await page.waitForTimeout(400);
     assert.equal((await state()).rig, 'both', 'two wheels hung');
     await screenshot('lift-it-3-portrait');
+
+    // Level 4 upright: deliver one parcel, then the replay button hauls it again with the knots counted, changing nothing.
+    await launch('lift-it', 4);
+    await idle();
+    n = await page.evaluate(() => kit.store.data.stickers.length);
+    assert.equal(
+      await page.evaluate(() => neo.scene.game.replayButton.visible),
+      false,
+      'no replay before a parcel',
+    );
+    for (let guard = 0; guard < 80 && (await state()).line === 0; guard++) await step();
+    await idle();
+    await page.waitForTimeout(300);
+    const before = await state();
+    const shown = await page.evaluate(() => {
+      const g = neo.scene.game;
+      return { visible: g.replayButton.visible, knots: g.last && g.last.line.h, cur: g.cur.w };
+    });
+    assert.equal(shown.visible, true, 'the replay button shows after the first parcel');
+    await screenshot('lift-it-4-replay-portrait');
+    await page.evaluate(() => {
+      const p = neo.scene.game.replayButton.getGlobalPosition();
+      kit.tap(p.x, p.y);
+    });
+    await page.waitForFunction(() => neo.scene.game.replaying, null, { timeout: 3000 });
+    const during = await page.evaluate(() => [
+      neo.scene.game.cur === neo.scene.game.last.line,
+      neo.scene.game.replayButton.visible,
+    ]);
+    assert.deepEqual(during, [true, false], 'the replay shows the last parcel and hides its button');
+    await page.waitForFunction(() => neo.scene.game.haul.knots >= 1, null, { timeout: 8000 });
+    await idle();
+    const after = await state();
+    assert.deepEqual(
+      [after.line, after.misses, after.hints, after.rig, after.rung],
+      [before.line, before.misses, before.hints, before.rig, 0],
+      'the replay changes no parcel, miss, hint or wheel',
+    );
+    assert.equal(await page.evaluate(() => neo.scene.game.cur.w), shown.cur, 'her own parcel is back');
+    await playOut(n);
+    await page.waitForTimeout(500);
+    assert.equal(
+      await page.evaluate(() => kit.store.data.stickers.length),
+      n + 1,
+      'one sticker for the round',
+    );
     await page.setViewportSize({ width: 1024, height: 768 });
     assert.deepEqual(errors, [], 'page errors');
     log(
-      'Lift It: level 1 by strokes, level 6 with a wrong rig and a requested hint, level 3 upright in the autumn look with a heavy parcel and two wheels',
+      'Lift It: level 1 by strokes, level 6 with a wrong rig and a requested hint, level 3 upright in the autumn look with a heavy parcel and two wheels, level 4 upright replaying the first parcel',
     );
   }
 

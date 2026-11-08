@@ -11,6 +11,8 @@ import {
   crateBottom,
   crateHook,
   CRATE_H,
+  CRATE_W,
+  counterBox,
   endsRight,
   fallbackRound,
   FRIENDS,
@@ -40,6 +42,8 @@ import {
   pullersAt,
   ratio,
   rectsOverlap,
+  REPLAY_HIT,
+  replaySpot,
   rigOf,
   RIGS,
   rigsFor,
@@ -338,6 +342,39 @@ describe('layout', () => {
           expect(inside(r)).toBe(true);
           expect(clear(r)).toBe(true);
         }
+    });
+
+    it(`keeps the replay button clear of the pet, the shell and every other target in the ${name} view`, () => {
+      const L = liftLayout(v);
+      const b = circleBox(replaySpot(v), REPLAY_HIT);
+      expect(b.w).toBeGreaterThanOrEqual(100);
+      expect(b.x >= 0 && b.y >= 0 && b.x + b.w <= v.w && b.y + b.h <= v.h).toBe(true);
+      const others: Rect[] = [
+        petCorner(v),
+        ...shellButtons(v),
+        ...L.tray.map((p) => circleBox(p, TRAY_HIT)),
+        circleBox(L.branchHook, HOOK_HIT),
+        circleBox(L.groundHandle, HANDLE_HIT),
+        counterBox(L),
+        // The crate's whole travel column and the rope's standing end at the ring.
+        { x: L.cx - CRATE_W / 2, y: 0, w: CRATE_W, h: v.h },
+        circleBox(L.ring, 30),
+        ...[1, 2, 3].flatMap((h) => {
+          const ledge = ledgeSpots(L, v, h);
+          return [
+            circleBox(ledge.handle, HANDLE_HIT),
+            circleBox(crateHook(L, h), HOOK_HIT),
+            ...[...ledge.pullers, ledge.waiting, ...L.ground].map(friendBox),
+          ];
+        }),
+        ...cardSpots(v, 3).map((c) => ({
+          x: c.x - CARD / 2 - 24,
+          y: c.y - CARD / 2 - 24,
+          w: CARD + 48,
+          h: CARD + 48,
+        })),
+      ];
+      for (const o of others) expect(rectsOverlap(b, o)).toBe(false);
     });
   }
 });

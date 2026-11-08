@@ -31,6 +31,11 @@ export const HOW_TO: GameHowTo = {
   finish: 'Every parcel reaches its friend on the ledge.',
   note: [
     { text: 'Pulling is never counted against her, and a crate that is too heavy only wobbles.' },
+    {
+      from: 3,
+      to: 6,
+      text: 'After a parcel arrives, the round arrow button hauls it up again while the pet counts the knots aloud; watching is never a miss or a hint.',
+    },
     { from: 4, to: 4, text: 'The knot guess is a prediction, never a miss.' },
     {
       from: 5,
@@ -41,7 +46,7 @@ export const HOW_TO: GameHowTo = {
     {
       from: 1,
       to: 2,
-      text: 'Show a hint in the pause sheet pulls a stroke with her, which counts as a hint.',
+      text: "Show a hint in the pause sheet puts the pet's paw on the rope to pull a stroke with her, which counts as a hint.",
     },
     {
       text: 'The rope follows the ideal rule: two ropes holding the crate halve the pull and double the rope, and nothing rubs or weighs anything. Real ropes and wheels lose a little to friction.',

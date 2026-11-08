@@ -26,6 +26,8 @@ export const VOICE = {
   'lift-it.count-paws': ['{ropes} ropes, {w} stones: {paws} paws.'],
   'lift-it.wrong-pullers': ['That rope ends at the wrong friends.'],
   'lift-it.tried': ['We tried that one.'],
+  'lift-it.replay': ['Watch it again, and count the knots with me!'],
+  'lift-it.knot-n': ['{n}!'],
   'lift-it.landed': ['Up it goes! Thank you!', 'Delivered!'],
   'lift-it.hint': ['Try the glowing hooks.', 'Look where it glows.'],
   'lift-it.hint-pull': ['I will pull with you. Keep pulling!'],
