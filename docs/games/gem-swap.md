@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| grown-up | 1–4 |
+| grown-up | 1–5 |
 
 | Level | Plays like |
 | --- | --- |
@@ -16,6 +16,7 @@
 | 2 | Twelve gems: plan two swaps and falling lines |
 | 3 | Fifteen gems: plan three swaps through the gaps |
 | 4 | Eighteen gems: plan four swaps and cascades |
+| 5 | Twenty-four gems: plan five swaps on a six-by-six tray |
 
 <!-- end generated -->
 
