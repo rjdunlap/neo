@@ -107,7 +107,7 @@ Puddle Gobble dive (2026-11-06), two calls; slices 1–4 go ahead on both defaul
 
 | Step | What happens next | Written in |
 | --- | --- | --- |
-| **A lap entry for Puddle Gobble (appended level 12 *Splash*)?** | Default: no, as the definition left it | [Puddle Gobble dive](deep-dives/puddle-gobble.md#decisions-for-the-developer) |
+| **A lap entry for Puddle Gobble (appended level 13 *Splash*)?** | Default: no, as the definition left it | [Puddle Gobble dive](deep-dives/puddle-gobble.md#decisions-for-the-developer) |
 | **File the finish's tidy row as a journal discovery?** | Default: no, nothing is filed | [Puddle Gobble dive](deep-dives/puddle-gobble.md#decisions-for-the-developer) |
 
 Draw the Pattern dive (2026-11-05), three calls; slices 1 and 2 and slice 3 on decision 1's default go ahead ([the dive](deep-dives/draw-the-pattern.md#decisions-for-the-developer)):
