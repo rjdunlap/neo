@@ -10,7 +10,7 @@
 | --- | --- |
 | preschool | 1–2 |
 | pre-K | 2–4 |
-| school | 3–6 |
+| school | 3, 4, 9, 5, 6 |
 
 | Level | Plays like |
 | --- | --- |
@@ -20,6 +20,7 @@
 | 4 | Twice the rope |
 | 5 | Who pulls? |
 | 6 | By the numbers |
+| 9 | How many paws? |
 
 <!-- end generated -->
 

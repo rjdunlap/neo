@@ -12,15 +12,20 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 3,
-      to: 6,
+      to: 9,
       text: "Drag a wheel to the branch hook or the crate's hook. The rope shows where the pull ends and how many paws it needs.",
     },
     {
       from: 3,
-      to: 6,
+      to: 9,
       text: 'A wheel on the crate, held by two ropes, needs half the paws, and twice as much rope comes past.',
     },
     { from: 4, to: 4, text: 'Guess how many knots will go by, then pull and count them.' },
+    {
+      from: 9,
+      to: 9,
+      text: 'Once the wheels hang, say how many paws the rope will need, then pull to check. Wheels that cannot lift it are fine: the wobble agrees with the card.',
+    },
     { from: 5, to: 6, text: 'Pick wheels that end the rope at the friends who will pull.' },
     {
       from: 6,
@@ -33,7 +38,7 @@ export const HOW_TO: GameHowTo = {
     { text: 'Pulling is never counted against her, and a crate that is too heavy only wobbles.' },
     {
       from: 3,
-      to: 6,
+      to: 9,
       text: 'After a parcel arrives, the round arrow button hauls it up again while the pet counts the knots aloud; watching is never a miss or a hint.',
     },
     { from: 4, to: 4, text: 'The knot guess is a prediction, never a miss.' },
@@ -43,6 +48,11 @@ export const HOW_TO: GameHowTo = {
       text: 'Pulling with wheels that cannot lift it, or that end at the wrong friends, counts as a miss; after two the right hooks glow, which counts as a hint.',
     },
     { from: 6, to: 6, text: 'A wrong number card counts as a miss, and the right one then lights.' },
+    {
+      from: 9,
+      to: 9,
+      text: 'A wrong paws card counts as a miss and the right one then lights; pulling never counts. After two wrong cards on a parcel, the next card question glows the right card, which counts as a hint.',
+    },
     {
       from: 1,
       to: 2,
