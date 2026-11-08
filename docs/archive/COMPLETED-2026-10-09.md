@@ -22,7 +22,7 @@ Clean locked installation, typecheck, all 329 unit files (6,201 passed / 5 skipp
 
 [PR #1399](https://github.com/rjdunlap/neo/pull/1399) adds `npm run new-game`, with templates for the typed module/lifecycle, Pixi-free ladder, pending rule tests, voice/how-to, browser test stub and game page. It validates source-defined metadata, appends one land entry and refreshes the content barrels; the registry discovers the folder. Dry-run writes nothing, existing files and symlinks are refused, voice alias collisions are checked, and failed writes roll back. The starter explicitly throws until implemented; it adds no production game. [Contributor guide](../NEW-GAME.md).
 
-Validation: 20 focused generator tests; a temporary generated game passed typecheck, docs generation and six barrel/doc checks, then was removed. Full units (328 files, 6,187 passed / 5 skipped, before two added CLI/formatting cases) and build passed; the final focused tests cover those added cases and rollback changes. No browser/offline run: app behavior, assets and navigation are unchanged. [Verification](../VERIFICATION.md#2026-11-07--new-game-scaffold-codebase-item-11-pr-1399).
+Validation: 20 focused generator tests; a temporary generated game passed typecheck, docs generation and six barrel/doc checks, then was removed. Full units (328 files, 6,187 passed / 5 skipped, before two added CLI/formatting cases) and build passed; the final focused tests cover those added cases and rollback changes. No browser/offline run: app behavior, assets and navigation are unchanged. [Verification](VERIFICATION-2026-11-07.md#2026-11-07--new-game-scaffold-codebase-item-11-pr-1399).
 
 ### Shared tracing and sorting helpers (codebase item 6 complete, 2026-11-07)
 

@@ -226,3 +226,10 @@ Not run: `fingerdemo` (bot actions unchanged), build (no shared files), full `np
 Changed: level 5 (`PLANS` 6×6, 24 gems, par 5; grown-up 1–5) with 20 generated 6×6 trays from `scripts/gem-swap-trays.mjs` (levels 1–4 unchanged byte for byte; each level-5 tray has a dead-end first swap, a falling line on a shortest route and a gem in all six columns); `solve` counts visited trays and a test holds the hint search under 2000 nodes from every state on the stored route (worst 251, about 3 ms). Layout unchanged (cells about 80 at 1024×768, about 98 portrait).
 Ran: `npm run typecheck`; `npm test` (328 files, 6,196 passed, 1 skipped); `BROWSER_SUITE=gemswap` (levels 1 and 5, two rejected swaps, hint once, Undo/Restart accounting, portrait targets at least 64, sticker, leave mid-clear; screenshot `gem-swap-5-portrait`); `BROWSER_SUITE=fingerdemo FINGER_ONLY=gem-swap FINGER_LEVELS=5` (13.9 s).
 Not run: build (no shared files or assets), offline, other suites. Open: no device or person check; whether the six-by-six tray reads comfortably on an iPad ([DEVICE-CHECKS.md](../DEVICE-CHECKS.md)).
+
+## 2026-11-07 — New-game scaffold (codebase item 11, PR #1399)
+
+Changed: `npm run new-game` and templates create colocated starters, a browser stub/page and land entry; content barrels accept an optional repository root for isolated generation. No production game added.
+Ran on `13b4871d` plus the feature diff: 20 focused generator safety/CLI/formatting tests; temporary `scaffold-check` typecheck, `npm run game-docs`, six content barrel/docs checks; temporary game and its generated inventory changes removed afterwards.
+Full `npm test`: 328 files, 6,187 passed / 5 skipped (before the final two generator tests); `npm run build` passed. Final focused generator checks cover the last CLI/formatting/rollback edits. Links and diff whitespace checked at closeout.
+Not run: browser, ghost finger, offline or device checks; this changes developer tooling only. Generated starters remain unfinished until their game-specific implementation and checks are done.
