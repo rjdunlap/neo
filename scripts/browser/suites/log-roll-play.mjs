@@ -59,9 +59,16 @@ export function createSuite({ page, log, scene, tap, screenshot, turnToGame, lau
           await page.waitForTimeout(330);
         }
         assert.equal(await page.evaluate(() => neo.scene.game.state.pose), 'up');
-        assert.equal(await page.evaluate(() => neo.scene.game.finished), false, 'standing on a cradle never finishes');
+        assert.equal(
+          await page.evaluate(() => neo.scene.game.finished),
+          false,
+          'standing on a cradle never finishes',
+        );
         assert.equal(await page.evaluate(() => neo.scene.game.misses), 0);
-        assert.match(await page.evaluate(() => neo.scene.game.status.text), /lie it across both cradle stones/);
+        assert.match(
+          await page.evaluate(() => neo.scene.game.status.text),
+          /lie it across both cradle stones/,
+        );
         assert.match(await page.evaluate(() => neo.scene.game.heading.text), /cradle/);
         await screenshot('log-roll-cradle-stand');
       }
