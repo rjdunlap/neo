@@ -17,11 +17,19 @@ export const PLANS = [
   { size: 6, gems: 24, name: 'Twenty-four gems: plan five swaps on a six-by-six tray' },
   { size: 5, gems: 20, name: 'One swap, a long line: find the swap that clears four or more' },
   { size: 5, gems: 15, name: 'Stones that stay: gems above a grey stone rest on it' },
+  { size: 5, gems: 15, name: 'Iced gems: clear a line beside an iced gem to thaw it' },
 ];
 
 /** A grey stone (level 7): it never moves, swaps or clears, and the gems above it rest on it. -1 is an empty cell. */
 export const STONE = -2;
-export const LEVELS: BandLevels = { grownup: { min: 1, max: 7 } };
+/**
+ * An iced gem (level 8) is its kind plus ICE: it still makes lines and falls with its ice, but it cannot be swapped
+ * until a line clears in a cell orthogonally beside it, which thaws it back to its kind.
+ */
+export const ICE = 8;
+export const iced = (k: number) => k >= ICE;
+export const kindOf = (k: number) => (k >= ICE ? k - ICE : k);
+export const LEVELS: BandLevels = { grownup: { min: 1, max: 8 } };
 export const planFor = (level: number) => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 export const clear = (b: Board) => b.every((k) => k < 0);
 export const neighbors = (a: number, b: number, size: number) =>
@@ -35,11 +43,11 @@ export const neighbors = (a: number, b: number, size: number) =>
 export function matches(board: Board, size: number): number[] {
   const out = new Set<number>();
   for (let i = 0; i < board.length; i++) {
-    const kind = board[i];
-    if (kind < 0) continue;
+    if (board[i] < 0) continue;
+    const kind = kindOf(board[i]);
     for (const d of [1, size]) {
       if (d === 1 ? i % size > size - 3 : Math.floor(i / size) > size - 3) continue;
-      if (board[i + d] === kind && board[i + d * 2] === kind)
+      if (kindOf(board[i + d]) === kind && kindOf(board[i + d * 2]) === kind)
         [i, i + d, i + d * 2].forEach((c) => out.add(c));
     }
   }
@@ -84,15 +92,28 @@ export interface Step {
   board: number[];
   waves: { board: number[]; removed: number[] }[];
 }
-/** A swap is accepted only between occupied neighbours and only if it immediately makes a line. */
+/** Iced gems orthogonally beside a removed cell thaw (diagonal neighbours do not); the removed cells themselves go. */
+export function thaw(board: Board, removed: readonly number[], size: number): number[] {
+  const out = [...board];
+  for (const r of removed)
+    for (const n of [r - size, r + size, r % size > 0 ? r - 1 : -1, r % size < size - 1 ? r + 1 : -1])
+      if (n >= 0 && n < out.length && iced(out[n]) && !removed.includes(n)) out[n] -= ICE;
+  return out;
+}
+/**
+ * A swap is accepted only between occupied, unfrozen neighbours of different kinds and only if it immediately makes a
+ * line. Each wave thaws the ice beside its line before the gems above fall.
+ */
 export function swap(board: Board, size: number, [a, b]: Swap): Step | null {
-  if (!neighbors(a, b, size) || board[a] < 0 || board[b] < 0 || board[a] === board[b]) return null;
+  if (!neighbors(a, b, size) || board[a] < 0 || board[b] < 0 || iced(board[a]) || iced(board[b])) return null;
+  if (board[a] === board[b]) return null;
   let next = [...board];
   [next[a], next[b]] = [next[b], next[a]];
   if (!matches(next, size).length) return null;
   const waves: Step['waves'] = [];
   for (let removed = matches(next, size); removed.length; removed = matches(next, size)) {
     waves.push({ board: [...next], removed });
+    next = thaw(next, removed, size);
     removed.forEach((i) => {
       next[i] = -1;
     });
@@ -130,7 +151,7 @@ export function solve(board: Board, size: number, stats?: { nodes: number }): Sw
   };
   return visit(board);
 }
-/** Board choice, left/right reflection and shape/color permutation preserve gravity, stones and exact par. */
+/** Board choice, left/right reflection and shape/color permutation preserve gravity, stones, ice and exact par. */
 export function makePuzzle(level: number, rng: Rng): Puzzle {
   const index = Math.max(0, Math.min(PLANS.length - 1, level - 1));
   const source = rng.pick(POOLS[index]),
@@ -139,7 +160,7 @@ export function makePuzzle(level: number, rng: Rng): Puzzle {
     mirror = rng.chance(0.5);
   const board = source.board.map((_, i) => {
     const k = source.board[Math.floor(i / size) * size + (mirror ? size - 1 - (i % size) : i % size)];
-    return k < 0 ? k : colors[k];
+    return k < 0 ? k : colors[kindOf(k)] + (iced(k) ? ICE : 0);
   });
   return { board, size, par: source.par };
 }

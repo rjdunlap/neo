@@ -10,7 +10,7 @@ Clean installation, typecheck, 42 Light Lab tests, build, targeted lint/format a
 
 [PR #1408](https://github.com/rjdunlap/neo/pull/1408) replaces the isolated lint package from item 10 with Microsoft’s supported root npm aliases: the TypeScript 7.0.2 CLI and TypeScript 6.0.3 API (through compatibility package 6.0.2), with ESLint 10.14.0 / typescript-eslint 8.72.1. One manifest/lockfile and a root config replace the nested postinstall; lint rules and baseline are unchanged. [Contributor guide](../CODE-QUALITY.md).
 
-Clean installation, compiler routing, dependency compatibility, lint, formatting, 329 unit files (6,204 passed / 5 skipped), build/typecheck, links and whitespace passed. Browser/offline/device checks not run; app code is unchanged. [Verification](../VERIFICATION.md#2026-11-07--supported-compiler-aliases-and-root-eslint-pr-1408).
+Clean installation, compiler routing, dependency compatibility, lint, formatting, 329 unit files (6,204 passed / 5 skipped), build/typecheck, links and whitespace passed. Browser/offline/device checks not run; app code is unchanged. [Verification](VERIFICATION-2026-11-07.md#2026-11-07--supported-compiler-aliases-and-root-eslint-pr-1408).
 
 ### Prettier and minimal ESLint (codebase item 10, 2026-11-07)
 

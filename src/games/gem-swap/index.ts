@@ -16,6 +16,8 @@ import {
   botTarget,
   clear,
   drops,
+  iced,
+  kindOf,
   makePuzzle,
   neighbors,
   planFor,
@@ -43,6 +45,31 @@ function stone(g: Graphics, pitch: number) {
     .moveTo(r * 0.25, -r * 0.55)
     .lineTo(r * 0.45, -r * 0.2)
     .stroke({ width: 3, color: ink, alpha: 0.5 });
+}
+
+/**
+ * Frost on an iced gem (level 8): a pale icy frame around the cell and a six-spoke snowflake in its corner, so the ice
+ * reads by shape as well as colour; the gem's own shape stays visible underneath.
+ */
+function frost(g: Graphics, pitch: number) {
+  const r = pitch / 2 - 10;
+  g.roundRect(-r, -r, r * 2, r * 2, r * 0.35)
+    .fill({ color: swatch.white.fill, alpha: 0.4 })
+    .stroke({ width: 7, color: swatch.teal.light })
+    .roundRect(-r, -r, r * 2, r * 2, r * 0.35)
+    .stroke({ width: 2, color: swatch.teal.line });
+  const fx = r * 0.6,
+    fy = -r * 0.6,
+    arm = r * 0.36;
+  g.circle(fx, fy, arm + 4).fill(swatch.white.fill);
+  for (let k = 0; k < 3; k++) {
+    const a = (k * Math.PI) / 3;
+    g.moveTo(fx - Math.cos(a) * arm, fy - Math.sin(a) * arm).lineTo(
+      fx + Math.cos(a) * arm,
+      fy + Math.sin(a) * arm,
+    );
+  }
+  g.stroke({ width: 4, color: swatch.teal.line });
 }
 
 /** A seeded look for the tray: cell tint, cell rim and the plate behind it. Cells and rims avoid the hint (orange) and selection (blue) rings. */
@@ -90,6 +117,7 @@ class GemSwap implements Game {
   private dead = false;
   private sinceMatch = 0;
   private stoneSaid = false;
+  private iceSaid = false;
   private botWait = 0.4;
   /** Touch layout (buttons, tappable gems) until a key or pad is used; couch play never has it. */
   private touch: boolean;
@@ -146,7 +174,9 @@ class GemSwap implements Game {
           ? 'gem-swap.long'
           : this.ctx.level === 7
             ? 'gem-swap.stones'
-            : 'gem-swap.go',
+            : this.ctx.level === 8
+              ? 'gem-swap.ice'
+              : 'gem-swap.go',
     );
   }
   resize(v: View) {
@@ -190,7 +220,8 @@ class GemSwap implements Game {
       landed = Math.min(1, Math.max(0, (this.clock - PULSE - FALL) / SQUASH));
     this.nodes.forEach((_, i) => {
       const g = this.pictures[i].clear();
-      if (board[i] >= 0) gem(g, board[i], this.pitch * 0.29);
+      if (board[i] >= 0) gem(g, kindOf(board[i]), this.pitch * 0.29);
+      if (iced(board[i])) frost(g, this.pitch);
       else if (board[i] === STONE) stone(g, this.pitch);
       g.alpha = !falling && shown?.removed.includes(i) ? 0.35 + 0.3 * Math.sin(this.clock * 10) : 1;
       const rows = from && from[i] >= 0 ? Math.floor(i / size) - from[i] : 0;
@@ -219,7 +250,9 @@ class GemSwap implements Game {
           ? 'Swap neighbours · one swap makes a long line'
           : this.ctx.level === 7
             ? 'Swap neighbours · gems rest on the grey stones'
-            : 'Swap neighbours · make a line of three';
+            : this.ctx.level === 8
+              ? 'Swap neighbours · a line beside a frosty gem thaws it'
+              : 'Swap neighbours · make a line of three';
   }
   private choose(i: number) {
     if (this.busy || this.finished || this.dead) return;
@@ -234,6 +267,15 @@ class GemSwap implements Game {
       return;
     }
     if (this.board[i] < 0) return;
+    // An iced gem cannot be swapped yet: the same spoken reason and no miss, as for a stone.
+    if (iced(this.board[i])) {
+      this.cursor = i;
+      sfx.tick();
+      if (!this.iceSaid) void this.ctx.say('gem-swap.iced');
+      this.iceSaid = true;
+      this.draw();
+      return;
+    }
     this.cursor = i;
     if (this.selected === i) {
       this.selected = null;
@@ -261,7 +303,7 @@ class GemSwap implements Game {
     this.history.push([...this.board]);
     this.presses++;
     this.sinceMatch = 0;
-    this.stoneSaid = false;
+    this.stoneSaid = this.iceSaid = false;
     this.hinted = null;
     this.pending = step;
     this.wave = 0;

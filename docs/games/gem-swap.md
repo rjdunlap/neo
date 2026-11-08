@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| grown-up | 1–7 |
+| grown-up | 1–8 |
 
 | Level | Plays like |
 | --- | --- |
@@ -19,14 +19,17 @@
 | 5 | Twenty-four gems: plan five swaps on a six-by-six tray |
 | 6 | One swap, a long line: find the swap that clears four or more |
 | 7 | Stones that stay: gems above a grey stone rest on it |
+| 8 | Iced gems: clear a line beside an iced gem to thaw it |
 
 <!-- end generated -->
 
 **Starts as:** swap occupied neighbours to make matching lines of three and clear a finite tray
 
-**Grows into:** seven untimed levels with 6/12/15/18/24 gems (level 5 on a 6×6 tray), a level 6 of one swap with a long line, and a level 7 where grey stones stay put and gems rest on them, falling cascades, 20 solver-checked trays per step, three seeded looks, exact shortest-route hints, Undo and Restart; couch score is swaps over par; no refill or turn limit
+**Grows into:** eight untimed levels with 6/12/15/18/24 gems (level 5 on a 6×6 tray), a level 6 of one swap with a long line, a level 7 where grey stones stay put and gems rest on them, and a level 8 where iced gems cannot be swapped until a line clears beside them, falling cascades, 20 solver-checked trays per step, three seeded looks, exact shortest-route hints, Undo and Restart; couch score is swaps over par; no refill or turn limit
 
 ## Design notes
+
+*Ice (level 8).* An iced gem is a gem with frost on it (stored as kind + `ICE`, so 8–13 means iced; drawn with a white wash, teal frame and snowflake). It makes lines and falls with its ice, but cannot be swapped until a line clears in an orthogonally adjacent cell (not diagonal). Thawing happens per wave, cascades included, before the gems fall. Tapping an iced gem ticks, says the ice line once until the next swap, keeps the selection, and is not a miss or a hint. Level 8 is 5×5 with 15 gems and par 4; its 20 generated trays start from a par-3 tray with two gems iced and are kept only when the ice costs exactly one swap (ice-free par 3), some shortest route swaps a gem that started iced, and there is a dead-end first swap and a falling line. Levels 1–7 have no ice and their trays are unchanged.
 
 *Stones (level 7).* A grey stone never moves, clears or swaps; it is a floor that splits its column, so gems above it rest on it and gems below fall separately. Tapping a stone ticks, says the stone line once until the next swap, keeps the selection, and is not a miss or a hint. Levels 1–6 have no stones and fall exactly as before.
 

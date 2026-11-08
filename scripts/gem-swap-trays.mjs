@@ -6,13 +6,27 @@
 // (a line of five, an L/T/cross of five, or two lines of four) and keeps a tray only when every shortest route (enumerated)
 // has a swap whose first wave makes a run of four or more or two crossing runs. Level 7 (par 4) places two grey stones
 // in the middle rows of different columns and drops its lines into the segments the stones make; it keeps a tray only
-// when a gem rests on each stone and some column holds gems both above and below its stone. Trays equal under mirroring
+// when a gem rests on each stone and some column holds gems both above and below its stone. Level 8 (par 4) builds a
+// par-3 tray and ices two gems; it keeps a tray only when the ice costs exactly one swap and some shortest route swaps a
+// gem that started iced. Trays equal under mirroring
 // or recolouring count once. Reproducible:
 //   node scripts/gem-swap-trays.mjs
 import { writeFileSync } from 'node:fs';
 import { Rng } from '../src/engine/random.ts';
 import { POOLS } from '../src/games/gem-swap/boards.ts';
-import { clear, fall, matches, moves, PLANS, STONE, swap } from '../src/games/gem-swap/logic.ts';
+import {
+  clear,
+  drops,
+  fall,
+  ICE,
+  iced,
+  kindOf,
+  matches,
+  moves,
+  PLANS,
+  STONE,
+  swap,
+} from '../src/games/gem-swap/logic.ts';
 
 const PER_LEVEL = 20;
 
@@ -68,8 +82,8 @@ function canonical(board, size) {
           const k = board[Math.floor(i / size) * size + (mirror ? size - 1 - (i % size) : i % size)];
           if (k === STONE) return 's';
           if (k < 0) return '.';
-          if (!names.has(k)) names.set(k, names.size);
-          return names.get(k);
+          if (!names.has(kindOf(k))) names.set(kindOf(k), names.size);
+          return names.get(kindOf(k)) + (iced(k) ? 'i' : '');
         })
         .join('');
     })
@@ -241,6 +255,46 @@ function stonesMatter(board, size) {
   };
   return stones.every((i) => board[i - size] >= 0) && stones.some(below);
 }
+/**
+ * Level 8: a tray built without ice at one swap fewer, then two of its gems iced. The obvious route needs an iced gem to
+ * move, so the ice costs a swap: the tray is kept only when its ice-free par is one less than the level's.
+ */
+function candidateIce(plan, swaps, rng) {
+  const board = candidate(plan, swaps - 1, rng);
+  if (!board) return null;
+  const gems = board.flatMap((k, i) => (k >= 0 ? [i] : []));
+  rng
+    .shuffle(gems)
+    .slice(0, 2)
+    .forEach((i) => (board[i] += ICE));
+  return board;
+}
+const thawed = (board) => board.map((k) => (iced(k) ? k - ICE : k));
+/** Some shortest route swaps a gem that started iced, so thawing it is part of the plan, not decoration. */
+function movesThawed(board, size, left, d, ice = board.flatMap((k, i) => (iced(k) ? [i] : []))) {
+  if (left === 0 || !ice.length) return false;
+  return moves(board, size).some(([a, b]) => {
+    const step = swap(board, size, [a, b]);
+    if (d(step.board) !== left - 1) return false;
+    return (
+      ice.includes(a) ||
+      ice.includes(b) ||
+      movesThawed(step.board, size, left - 1, d, follow(step, ice, size))
+    );
+  });
+}
+/** Where the starting ice gems are after a swap's waves, thawed or not: a cleared one is gone, the rest fall. */
+function follow(step, ice, size) {
+  let at = ice;
+  for (const wave of step.waves) {
+    const from = drops(wave.board, wave.removed, size);
+    at = at.flatMap((i) => {
+      const j = from.findIndex((row, c) => row === Math.floor(i / size) && c % size === i % size);
+      return wave.removed.includes(i) || j < 0 ? [] : [j];
+    });
+  }
+  return at;
+}
 /** The six-by-six level is about planning across a wider tray, so every column starts with a gem in it. */
 const spansWidth = (board, size) => columnsOf(board, size).every((col) => col.length > 0);
 function candidate(plan, swaps, rng) {
@@ -332,19 +386,21 @@ function distances(size) {
 
 const pools = PLANS.map((plan, index) => {
   // Levels 1–4 open with their hand-made originals; levels 5–6 are all generated. Levels 1–5's par is their number; level 6
-  // alternates par 3 and par 4, ten of each; level 7's par is 4.
+  // alternates par 3 and par 4, ten of each; levels 7 and 8 have par 4.
   const level = index + 1;
   const kept = (level <= 4 ? POOLS[index] : []).slice(0, 3).map((t) => ({ par: t.par, board: [...t.board] }));
   const seen = new Set(kept.map((t) => canonical(t.board, plan.size)));
   const rng = new Rng(20261107 + level * 1009);
   for (let tries = 0; kept.length < PER_LEVEL && tries < 200000; tries++) {
-    const target = level === 6 ? 3 + (kept.length % 2) : level === 7 ? 4 : level;
+    const target = level === 6 ? 3 + (kept.length % 2) : level >= 7 ? 4 : level;
     const board =
-      level === 7
-        ? candidateStones(plan, target, rng)
-        : level === 6
-          ? candidateLong(plan, target, rng)
-          : candidate(plan, target, rng);
+      level === 8
+        ? candidateIce(plan, target, rng)
+        : level === 7
+          ? candidateStones(plan, target, rng)
+          : level === 6
+            ? candidateLong(plan, target, rng)
+            : candidate(plan, target, rng);
     if (!board) continue;
     const name = canonical(board, plan.size);
     if (seen.has(name) || matches(board, plan.size).length || fall(board, plan.size).join() !== board.join())
@@ -352,6 +408,8 @@ const pools = PLANS.map((plan, index) => {
     if (level === 5 && !spansWidth(board, plan.size)) continue;
     if (level === 7 && !stonesMatter(board, plan.size)) continue;
     if (par(board, plan.size) !== target) continue;
+    if (level === 8 && par(thawed(board), plan.size) !== target - 1) continue;
+    if (level === 8 && !movesThawed(board, plan.size, target, distances(plan.size))) continue;
     if (level === 6 ? !longOnly(board, plan.size, target) : !interesting(board, plan.size, target, level))
       continue;
     seen.add(name);
@@ -370,7 +428,7 @@ writeFileSync(
   new URL('../src/games/gem-swap/boards.ts', import.meta.url),
   `// Frozen puzzle pool, written by \`node scripts/gem-swap-trays.mjs\`: the first three trays of each level are the hand-made
 // originals; the rest were built backwards and kept only when an exact breadth-first par matched the level's. Exact pars are
-// checked again independently in logic.test.ts. -1 is an empty cell; -2 (level 7) is a grey stone.
+// checked again independently in logic.test.ts. -1 is an empty cell; -2 (level 7) is a grey stone; 8–13 (level 8) are iced gems (kind + 8).
 export const POOLS: readonly (readonly { board: readonly number[]; par: number }[])[] = [
 ${pools.map((pool, i) => `  [\n${pool.map((t) => tray(t, PLANS[i].size)).join('\n')}\n  ],`).join('\n')}
 ];

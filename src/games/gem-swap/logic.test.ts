@@ -7,6 +7,8 @@ import {
   drops,
   fall,
   hintFor,
+  ICE,
+  iced,
   makePuzzle,
   matches,
   moves,
@@ -261,6 +263,125 @@ describe('Gem Swap', () => {
         visit(puzzle.board);
       }),
     );
+  });
+  it('freezes an iced gem at level 8: it makes lines and falls with its ice, but never swaps until a line clears beside it', () => {
+    const I = (k: number) => k + ICE;
+    // Refused as either side of a swap, even when the swap would make a line; the board is untouched.
+    const frozen = [-1, -1, -1, 1, 0, 0, I(0), 1, 1];
+    expect(swap(frozen, 3, [3, 6])).toBeNull();
+    expect(swap(frozen, 3, [6, 3])).toBeNull();
+    expect(moves(frozen, 3)).toEqual([]);
+    // An iced gem still completes a line of its kind (and goes with it).
+    expect(matches([I(2), 2, 2, -1, -1, -1, -1, -1, -1], 3)).toEqual([0, 1, 2]);
+    // A line cleared beside it thaws it (8, above the line); a diagonal neighbour stays iced (11); ice falls with its gem.
+    const empty = Array<number>(8).fill(-1);
+    const step = swap([...empty, I(5), 0, 2, I(4), 0, 3, 0, 1], 4, [9, 13])!;
+    expect(step.waves).toHaveLength(1);
+    expect(step.waves[0].board[8]).toBe(I(5));
+    expect(step.board).toEqual([...empty, -1, -1, -1, I(4), 5, 3, 2, 1]);
+    // In a cascade, the falling line thaws what is beside it: 11 is diagonal to the first line, above the second.
+    const cascade = swap([...empty, 3, 1, 0, I(2), 0, 0, 1, 1], 4, [10, 14])!;
+    expect(cascade.waves.map((w) => w.removed)).toEqual([
+      [12, 13, 14],
+      [13, 14, 15],
+    ]);
+    expect(cascade.waves[1].board[11]).toBe(I(2));
+    expect(cascade.board).toEqual([...empty, -1, -1, -1, -1, 3, -1, -1, 2]);
+  });
+  it('gives level 8 two iced gems per tray that cost exactly one swap, with pars checked by an independent ice rule', () => {
+    // An independent rule set: kinds and ice kept apart, thaw by a fresh neighbour scan, gravity by columns.
+    const refSwap = (kinds: number[], ice: boolean[], size: number, a: number, b: number) => {
+      if (kinds[a] < 0 || kinds[b] < 0 || ice[a] || ice[b] || kinds[a] === kinds[b]) return null;
+      if (Math.abs((a % size) - (b % size)) + Math.abs(Math.floor(a / size) - Math.floor(b / size)) !== 1)
+        return null;
+      let k = [...kinds],
+        c = [...ice];
+      [k[a], k[b]] = [k[b], k[a]];
+      for (let first = true; ; first = false) {
+        const gone = new Set<number>();
+        for (let y = 0; y < size; y++)
+          for (let x = 0; x < size; x++) {
+            const at = y * size + x;
+            if (k[at] < 0) continue;
+            if (x + 2 < size && k[at + 1] === k[at] && k[at + 2] === k[at])
+              [0, 1, 2].forEach((o) => gone.add(at + o));
+            if (y + 2 < size && k[at + size] === k[at] && k[at + 2 * size] === k[at])
+              [0, 1, 2].forEach((o) => gone.add(at + o * size));
+          }
+        if (!gone.size) return first ? null : { k, c };
+        for (let at = 0; at < k.length; at++) {
+          const x = at % size,
+            y = Math.floor(at / size);
+          const beside = [
+            [x - 1, y],
+            [x + 1, y],
+            [x, y - 1],
+            [x, y + 1],
+          ].some(([nx, ny]) => nx >= 0 && ny >= 0 && nx < size && ny < size && gone.has(ny * size + nx));
+          if (c[at] && beside && !gone.has(at)) c[at] = false;
+        }
+        const nk = Array<number>(k.length).fill(-1),
+          nc = Array<boolean>(k.length).fill(false);
+        for (let x = 0; x < size; x++) {
+          let floor = size - 1;
+          for (let y = size - 1; y >= 0; y--) {
+            const at = y * size + x;
+            if (k[at] < 0 || gone.has(at)) continue;
+            nk[floor * size + x] = k[at];
+            nc[floor-- * size + x] = c[at];
+          }
+        }
+        k = nk;
+        c = nc;
+      }
+    };
+    const refPar = (board: Board, size: number, ignoreIce = false) => {
+      let frontier = [
+        { k: board.map((v) => (v < 0 ? v : v % ICE)), c: board.map((v) => !ignoreIce && iced(v)) },
+      ];
+      const seen = new Set<string>();
+      for (let depth = 0; frontier.length; depth++) {
+        const next: typeof frontier = [];
+        for (const s of frontier) {
+          if (s.k.every((v) => v < 0)) return depth;
+          for (let a = 0; a < s.k.length; a++)
+            for (const b of [a + 1, a + size]) {
+              const out = b < s.k.length ? refSwap(s.k, s.c, size, a, b) : null,
+                key = out && `${out.k}|${out.c}`;
+              if (out && !seen.has(key!)) {
+                seen.add(key!);
+                next.push(out);
+              }
+            }
+        }
+        frontier = next;
+      }
+      return null;
+    };
+    expect(PLANS[7]).toMatchObject({ size: 5, gems: 15 });
+    POOLS.slice(0, 7).forEach((pool) => pool.forEach((t) => expect(t.board.some(iced)).toBe(false)));
+    for (const puzzle of POOLS[7]) {
+      expect(puzzle.par).toBe(4);
+      expect(puzzle.board.filter(iced)).toHaveLength(2);
+      expect(puzzle.board.every((k) => k < ICE + 6 && k !== STONE)).toBe(true);
+      expect(refPar(puzzle.board, 5)).toBe(4);
+      // The ice is not decoration: thawed from the start, the tray clears in one swap fewer.
+      expect(refPar(puzzle.board, 5, true)).toBe(3);
+      // The hint search stays under budget from every state on the hinted route.
+      let b: Board = puzzle.board;
+      while (!clear(b)) {
+        const stats = { nodes: 0 },
+          route = solve(b, 5, stats)!;
+        expect(stats.nodes).toBeLessThan(2000);
+        b = swap(b, 5, route[0])!.board;
+      }
+    }
+    // Mirroring and recolouring keep both iced gems and a valid kind under each.
+    for (let seed = 1; seed <= 20; seed++) {
+      const board = makePuzzle(8, new Rng(seed)).board;
+      expect(board.filter(iced)).toHaveLength(2);
+      expect(board.every((k) => k < ICE + 6)).toBe(true);
+    }
   });
   it('tells the drawing which row each surviving gem fell from', () => {
     for (const pool of POOLS)
