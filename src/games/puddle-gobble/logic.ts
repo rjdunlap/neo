@@ -362,7 +362,12 @@ export function finishes(board: Board, s: State): { pail: number; ids: number[] 
         out.push({ pail: j, ids });
         continue;
       }
-      const rest: State = { ...s, puddle: board.start, soaked: [], left: s.left.filter((id) => !ids.includes(id)) };
+      const rest: State = {
+        ...s,
+        puddle: board.start,
+        soaked: [],
+        left: s.left.filter((id) => !ids.includes(id)),
+      };
       if (exactSolutions(board, rest, board.pails![other]).length) out.push({ pail: j, ids });
     }
   }

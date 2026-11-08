@@ -1157,7 +1157,9 @@ class PuddleGobble implements Game {
       it.icon = undefined;
       const w = widths[i] * k;
       it.node.visible = true;
-      const from = this.board.pails ? spots[this.state.filled.findIndex((ids) => ids?.includes(it.thing.id))] : null;
+      const from = this.board.pails
+        ? spots[this.state.filled.findIndex((ids) => ids?.includes(it.thing.id))]
+        : null;
       it.node.position.copyFrom(from ?? this.puddle.position);
       it.node.scale.set(0.3);
       const tier = numeric(this.plan) ? Math.min(4, Math.ceil(it.thing.size / 5)) : it.thing.size;

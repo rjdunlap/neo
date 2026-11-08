@@ -691,7 +691,10 @@ describe('level 12, two pails', () => {
   it('the authored board: one split, 2 + 4 into the 9 and 3 + 5 into the 11', () => {
     const b = authoredBoard(plan);
     expect(passesFilter(b)).toBe(true);
-    const got = splits(b).map(([a, c]) => [a.map((i) => thingOf(b, i).size), c.map((i) => thingOf(b, i).size)]);
+    const got = splits(b).map(([a, c]) => [
+      a.map((i) => thingOf(b, i).size),
+      c.map((i) => thingOf(b, i).size),
+    ]);
     expect(got).toEqual([
       [
         [2, 4],
@@ -781,7 +784,10 @@ describe('level 12, two pails', () => {
   });
 
   it('from every reachable state, following the hint (soaks, let-gos, pours, tips) finishes within 12 steps', () => {
-    const boards = [authoredBoard(plan), ...Array.from({ length: 200 }, (_, i) => makeBoard(plan, new Rng(i + 1)))];
+    const boards = [
+      authoredBoard(plan),
+      ...Array.from({ length: 200 }, (_, i) => makeBoard(plan, new Rng(i + 1))),
+    ];
     let worst = 0;
     for (const b of boards) {
       for (const st of reachable(b)) {

@@ -116,7 +116,8 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
         for (const a of [Math.PI / 2, (Math.PI * 2) / 3, Math.PI / 3, (Math.PI * 5) / 6, Math.PI]) {
           const x = at.x + Math.cos(a) * (R + 40),
             y = at.y + Math.sin(a) * (R + 40);
-          if (g.items.some((o) => o.where === 'sand' && Math.hypot(o.node.x - x, o.node.y - y) < R + 70)) continue;
+          if (g.items.some((o) => o.where === 'sand' && Math.hypot(o.node.x - x, o.node.y - y) < R + 70))
+            continue;
           g.puddle.position.set(x, y);
           g.target.x = x;
           g.target.y = y;
@@ -135,12 +136,13 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       await page.waitForTimeout(300);
       await still();
     };
-    const sizeId = (v) =>
-      page.evaluate((v) => neo.scene.game.board.things.find((t) => t.size === v).id, v);
+    const sizeId = (v) => page.evaluate((v) => neo.scene.game.board.things.find((t) => t.size === v).id, v);
     const filled = () =>
       page.evaluate(() => {
         const g = neo.scene.game;
-        return g.state.filled.map((f) => (f ? f.map((id) => g.items[id].thing.size).sort((a, b) => a - b) : null));
+        return g.state.filled.map((f) =>
+          f ? f.map((id) => g.items[id].thing.size).sort((a, b) => a - b) : null,
+        );
       });
 
     // Level 12 upright, the authored round: pails 9 (left) and 11, puddle 3, things 1, 2, 3, 4, 5 and 7.
@@ -156,7 +158,11 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       assert.ok(await besidePail(1));
       await tapPail(1);
       st = await state();
-      assert.deepEqual([st.misses, st.puddle, st.left], [0, 3, 6], 'a lead onto the wrong pail changes nothing');
+      assert.deepEqual(
+        [st.misses, st.puddle, st.left],
+        [0, 3, 6],
+        'a lead onto the wrong pail changes nothing',
+      );
       assert.deepEqual(await filled(), [null, null]);
       // Smallest first to 9, then the 7 would pass the bigger pail: refused, one miss.
       for (const v of [1, 2, 3]) {
@@ -203,7 +209,9 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
     if (process.env.PUDDLE_ONLY === '12') {
       await twoPails();
       assert.deepEqual(errors, [], 'page errors');
-      log('Puddle Gobble level 12: a wrong pail, a refused overshoot, a pour, a tip back and a requested hint, upright');
+      log(
+        'Puddle Gobble level 12: a wrong pail, a refused overshoot, a pour, a tip back and a requested hint, upright',
+      );
       return;
     }
 
