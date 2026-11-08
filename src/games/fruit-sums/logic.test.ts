@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
+import { levelsInOrder } from '../../progress/difficulty';
 import {
+  BASKET_H,
+  BASKET_SCALE,
+  BASKET_W,
   DROP_GAP,
   DROP_TIME,
   LEVELS,
@@ -9,6 +13,7 @@ import {
   SLOT,
   TILE,
   WAYS_PER_ROUND,
+  basketSpot,
   choosesSign,
   dropStep,
   hintGlow,
@@ -23,6 +28,7 @@ import {
   stickerNumber,
   takenWays,
   wayKey,
+  waysNeeded,
   type HintGlow,
   type Op,
 } from './logic';
@@ -58,11 +64,9 @@ describe('Fruit Sums rounds', () => {
     }
   });
 
-  it('levels 1, 2 and 4 add only, and the sign is a choice only at level 3', () => {
-    expect(planFor(1).ops).toEqual(['plus']);
-    expect(planFor(2).ops).toEqual(['plus']);
-    expect(planFor(4).ops).toEqual(['plus']);
-    expect([1, 2, 3, 4].map(choosesSign)).toEqual([false, false, true, false]);
+  it('levels 1, 2, 4 and 5 add only, and the sign is a choice only at level 3', () => {
+    for (const level of [1, 2, 4, 5]) expect(planFor(level).ops).toEqual(['plus']);
+    expect([1, 2, 3, 4, 5].map(choosesSign)).toEqual([false, false, true, false, false]);
   });
 
   it('level 4: the sign holds a sum of two fruit up to 9, and at least two other ways make the same', () => {
@@ -109,10 +113,138 @@ describe('Fruit Sums rounds', () => {
     expect(makeRound(2, new Rng(9))).toEqual(makeRound(2, new Rng(9)));
   });
 
-  it('is a school ladder of four levels and a level beyond the plans reads as the last', () => {
-    expect(LEVELS.school).toEqual({ min: 1, max: 4 });
+  it('is a school ladder of five levels with Clear the tree after level 1, and a level beyond the plans reads as the last', () => {
+    expect(LEVELS.school).toEqual({ min: 1, max: 5, order: [1, 5, 2, 4, 3] });
+    expect([...levelsInOrder(LEVELS.school!)].sort()).toEqual(PLANS.map((_, i) => i + 1));
     expect(planFor(0)).toBe(PLANS[0]);
-    expect(planFor(9)).toBe(PLANS[3]);
+    expect(planFor(9)).toBe(PLANS[4]);
+    expect(waysNeeded(planFor(1))).toBe(WAYS_PER_ROUND);
+    expect(waysNeeded(planFor(5))).toBe(3);
+  });
+});
+
+/** Every order of right picks over the fruit still on the tree empties it: no pick ever strands a fruit without a partner. */
+function clearsInAnyOrder(tray: readonly number[], target: number, gone: boolean[]): boolean {
+  const left = tray.map((_, i) => i).filter((i) => !gone[i]);
+  if (left.length === 0) return true;
+  let any = false;
+  for (const a of left)
+    for (const b of left) {
+      if (b <= a || tray[a] + tray[b] !== target) continue;
+      any = true;
+      gone[a] = gone[b] = true;
+      const ok = clearsInAnyOrder(tray, target, gone);
+      gone[a] = gone[b] = false;
+      if (!ok) return false;
+    }
+  return any;
+}
+
+describe('Fruit Sums level 5, Clear the tree', () => {
+  const plan = planFor(5);
+
+  it('every tray is six fruit to 9 that make three pairs to a number from 6 to 10, with a wrong pair to try', () => {
+    expect(plan.clearTree).toBe(true);
+    for (const seed of SEEDS) {
+      const round = makeRound(5, new Rng(seed));
+      const { target, tray } = round;
+      expect(round.clear).toBe(true);
+      expect(round.sign).toBeUndefined();
+      expect(target).toBeGreaterThanOrEqual(6);
+      expect(target).toBeLessThanOrEqual(10);
+      expect(tray).toHaveLength(6);
+      for (const v of tray) expect(v >= 1 && v <= 9).toBe(true);
+      // Not three of the same pair: some two fruit make another number.
+      expect(tray.some((v, i) => tray.some((u, j) => j > i && u + v !== target))).toBe(true);
+    }
+  });
+
+  it('the no-dead-end invariant: each number comes as often as its partner, and any order of right pairs empties the tree', () => {
+    for (const seed of SEEDS) {
+      const { target, tray } = makeRound(5, new Rng(seed));
+      const count = (v: number) => tray.filter((u) => u === v).length;
+      for (const v of tray) {
+        if (2 * v === target) expect(count(v) % 2).toBe(0);
+        else expect(count(v)).toBe(count(target - v));
+      }
+      expect(
+        clearsInAnyOrder(
+          tray,
+          target,
+          tray.map(() => false),
+        ),
+      ).toBe(true);
+    }
+  });
+
+  it('counts by fruit, not by number: a second 3 + 7 from two other fruit is a new pair, never "the same way"', () => {
+    const round = { target: 10, tray: [3, 7, 3, 7, 5, 5], clear: true as const };
+    const taken = takenWays(round, [wayKey(3, 'plus', 7)]);
+    expect(taken).toEqual([]);
+    expect(judge(7, 'plus', 3, 10, taken).kind).toBe('right');
+    expect(judge(3, 'plus', 5, 10, taken)).toEqual({ kind: 'wrong', made: 8 });
+  });
+
+  it('fruit in the basket are off the tree: no way, hint or glow uses them', () => {
+    const tray = [3, 7, 3, 7, 5, 5];
+    const gone = [true, true, false, false, false, false];
+    for (const w of solutions(tray, ['plus'], 10, gone)) {
+      expect(gone[w.a]).toBe(false);
+      expect(gone[w.b]).toBe(false);
+    }
+    const way = hintWay(tray, ['plus'], 10, [], null, gone)!;
+    expect([way.a, way.b].some((i) => gone[i])).toBe(false);
+    expect(
+      hintWay(
+        tray,
+        ['plus'],
+        10,
+        [],
+        null,
+        tray.map(() => true),
+      ),
+    ).toBeNull();
+  });
+
+  it('following the glow from any boxes, with any pairs already in the basket, builds a right pair from fruit on the tree', () => {
+    for (const seed of SEEDS.slice(0, 120)) {
+      const { target, tray } = makeRound(5, new Rng(seed));
+      // Every state reached by taking right pairs, in some order, out of the tree.
+      const states: boolean[][] = [tray.map(() => false)];
+      for (let n = 0; n < states.length && n < 40; n++) {
+        const g = states[n];
+        for (let a = 0; a < 6; a++)
+          for (let b = a + 1; b < 6; b++)
+            if (!g[a] && !g[b] && tray[a] + tray[b] === target && g.filter(Boolean).length < 4) {
+              const next = [...g];
+              next[a] = next[b] = true;
+              states.push(next);
+            }
+      }
+      for (const gone of states) {
+        const live = [-1, ...tray.map((_, i) => i).filter((i) => !gone[i])];
+        for (const a of live)
+          for (const b of live) {
+            if (a === b && a >= 0) continue;
+            const s = { a: a < 0 ? null : a, b: b < 0 ? null : b };
+            let done = false;
+            for (let step = 0; step < 6 && !done; step++) {
+              const glow = hintGlow(tray, ['plus'], target, [], s.a, s.b, 'plus', gone)!;
+              expect(glow).not.toBeNull();
+              if ('check' in glow) done = true;
+              else if ('tile' in glow) {
+                expect(gone[glow.tile]).toBe(false);
+                if (s.a === glow.tile) s.a = null;
+                else if (s.b === glow.tile) s.b = null;
+                else if (s.a === null) s.a = glow.tile;
+                else s.b = glow.tile;
+              }
+            }
+            expect(done).toBe(true);
+            expect(tray[s.a!] + tray[s.b!]).toBe(target);
+          }
+      }
+    }
   });
 });
 
@@ -171,7 +303,7 @@ describe('Fruit Sums layout', () => {
     [1024, 1366],
   ];
   for (const [w, h] of views) {
-    for (const level of [1, 2, 3, 4]) {
+    for (const level of [1, 2, 3, 4, 5]) {
       it(`${w}x${h} level ${level}: every touch target is at least 100 units, on screen, apart, and clear of the pet corner`, () => {
         const plan = planFor(level),
           signs = choosesSign(level);
@@ -200,6 +332,21 @@ describe('Fruit Sums layout', () => {
           }
         }
         expect(l.leaves).toHaveLength(signs ? 2 : 0);
+        if (plan.clearTree) {
+          // The basket is on screen, clear of the pet corner, and covers no touch target; the six fruit in it stay inside it.
+          const k = l.basket;
+          expect(k.x - BASKET_W / 2).toBeGreaterThanOrEqual(170);
+          expect(k.x + BASKET_W / 2).toBeLessThanOrEqual(w);
+          expect(k.y + BASKET_H / 2).toBeLessThanOrEqual(h);
+          for (const b of boxes)
+            expect(
+              Math.abs(b.x - k.x) >= (b.s + BASKET_W) / 2 || Math.abs(b.y - k.y) >= (b.s + BASKET_H) / 2,
+            ).toBe(true);
+          for (let i = 0; i < plan.tiles; i++) {
+            const at = basketSpot(k, i);
+            expect(Math.abs(at.x - k.x) + (TILE * BASKET_SCALE) / 2).toBeLessThanOrEqual(BASKET_W / 2);
+          }
+        }
         // Below the sign and the found list, not under the home button.
         expect(l.a.y - SLOT / 2).toBeGreaterThan(l.found.y);
       });

@@ -11,13 +11,16 @@ import { label } from '../../ui/text';
 import { WigglyIcon, tile } from '../shared';
 import type { Game, GameContext, GameModule, TouchIntent } from '../types';
 import {
+  BASKET_H,
+  BASKET_SCALE,
+  BASKET_W,
   DROP_GAP,
   DROP_TIME,
   LEVELS,
   LOOKS,
   SLOT,
   TILE,
-  WAYS_PER_ROUND,
+  basketSpot,
   choosesSign,
   dropStep,
   hintGlow,
@@ -31,6 +34,7 @@ import {
   stickerNumber,
   takenWays,
   wayKey,
+  waysNeeded,
   type FruitShape,
   type HintGlow,
   type Look,
@@ -118,6 +122,11 @@ class FruitSums implements Game {
   readonly tray: number[];
   /** At level 4 the sign shows a sum, "6 + 4", rather than its total. */
   readonly signSum: readonly [number, number] | null;
+  /** At level 5 each right pair drops into the basket and the round ends when the tree is empty. */
+  readonly clear: boolean;
+  /** Fruit in the basket, in the order they went in; `gone[i]` says fruit i is off the tree. */
+  readonly gone: boolean[] = [];
+  private readonly basketOrder: number[] = [];
   private readonly round: TreeRound;
   readonly tiles: Container[] = [];
   readonly leaves = new Map<Op, Container>();
@@ -152,6 +161,8 @@ class FruitSums implements Game {
   private readonly checkMade = label('', 64, swatch.red.line);
   private readonly pick = new Graphics();
   private readonly glow = new Graphics();
+  private readonly basketBack = new Graphics();
+  private readonly basketFront = new Graphics();
 
   constructor(private readonly ctx: GameContext) {
     this.plan = planFor(ctx.level);
@@ -160,6 +171,7 @@ class FruitSums implements Game {
     this.target = round.target;
     this.tray = round.tray;
     this.signSum = round.sign ?? null;
+    this.clear = !!round.clear;
     this.op = this.signs ? null : 'plus';
     this.look = ctx.rng.pick(LOOKS);
     this.layout = layoutFor(ctx.view.w, ctx.view.h, this.tray.length, this.signs);
@@ -173,7 +185,10 @@ class FruitSums implements Game {
       this.slots.eventMode =
       this.ropes.eventMode =
       this.equals.eventMode =
+      this.basketBack.eventMode =
+      this.basketFront.eventMode =
         'none';
+    this.basketBack.visible = this.basketFront.visible = this.clear;
 
     this.signNumber = label(`${this.target}`, 84, ink);
     this.sign.addChild(tile(260, 120, 'yellow'));
@@ -213,6 +228,7 @@ class FruitSums implements Game {
       onTap(c, () => this.tapTile(i));
       this.tiles.push(c);
       this.landed.push(false);
+      this.gone.push(false);
     });
     if (this.signs) {
       for (const op of this.plan.ops) {
@@ -235,7 +251,9 @@ class FruitSums implements Game {
       this.check,
       ...this.leaves.values(),
       this.pick,
+      this.basketBack,
       ...this.tiles,
+      this.basketFront,
       this.glow,
     );
     this.fixedPlus.visible = !this.signs;
@@ -257,6 +275,7 @@ class FruitSums implements Game {
   start() {
     this.drop();
     if (this.signSum) void this.ctx.instruct('fsums.start4', this.signWords());
+    else if (this.clear) void this.ctx.instruct('fsums.start5', { n: this.target });
     else void this.ctx.instruct(this.signs ? 'fsums.start3' : 'fsums.start', { n: this.target });
   }
 
@@ -299,7 +318,7 @@ class FruitSums implements Game {
   // ---- play ----
 
   private tapTile(i: number) {
-    if (this.busy || this.finished || !this.landed[i]) return;
+    if (this.busy || this.finished || !this.landed[i] || this.gone[i]) return;
     if (this.slotA === i) this.slotA = null;
     else if (this.slotB === i) this.slotB = null;
     else if (this.slotA === null) this.slotA = i;
@@ -327,6 +346,14 @@ class FruitSums implements Game {
   private place(animate = true) {
     const l = this.layout;
     this.tiles.forEach((t, i) => {
+      if (this.gone[i]) {
+        // In the basket: its own tween carries it there; a resize puts it straight in its spot.
+        if (!animate) {
+          const to = basketSpot(l.basket, this.basketOrder.indexOf(i));
+          t.position.set(to.x, to.y);
+        }
+        return;
+      }
       const to = i === this.slotA ? l.a : i === this.slotB ? l.b : l.tiles[i];
       if (animate)
         void this.ctx.tw.to(t.position, { x: to.x, y: to.y }, { duration: 0.22, ease: ease.outBack });
@@ -403,6 +430,7 @@ class FruitSums implements Game {
       this.slotA,
       this.slotB,
       this.signs ? this.op : 'plus',
+      this.gone,
     );
   }
 
@@ -414,12 +442,16 @@ class FruitSums implements Game {
   private async celebrate(words: Record<string, string | number>, key: string) {
     this.busy = true;
     this.found.push(key);
-    this.foundText.text = this.found.map((k) => this.sentence(k)).join('     ');
+    this.foundText.text = this.found.map((k) => this.sentence(k)).join(this.clear ? '   ' : '     ');
+    this.fitFound();
     this.checkMark.visible = true;
     this.checkMade.visible = false;
     this.hinted = false;
-    if (this.slotA !== null) this.hop(this.slotA);
-    if (this.slotB !== null) this.hop(this.slotB);
+    if (this.clear) this.toBasket();
+    else {
+      if (this.slotA !== null) this.hop(this.slotA);
+      if (this.slotB !== null) this.hop(this.slotB);
+    }
     sfx.sparkle();
     this.ctx.particles.burst(this.layout.check.x, this.layout.check.y, {
       kind: 'star',
@@ -429,10 +461,10 @@ class FruitSums implements Game {
       gravity: 300,
       life: [0.5, 0.9],
     });
-    await this.ctx.say(this.signSum ? 'fsums.right4' : 'fsums.right', words);
-    if (this.found.length >= WAYS_PER_ROUND) {
+    await this.ctx.say(this.signSum ? 'fsums.right4' : this.clear ? 'fsums.right5' : 'fsums.right', words);
+    if (this.found.length >= waysNeeded(this.plan)) {
       this.finished = true;
-      await this.ctx.say(this.signSum ? 'fsums.done4' : 'fsums.done', words);
+      await this.ctx.say(this.signSum ? 'fsums.done4' : this.clear ? 'fsums.done5' : 'fsums.done', words);
       await this.ctx.tw.wait(0.6);
       this.ctx.finish({ misses: this.misses, hints: this.hints });
       return;
@@ -441,6 +473,7 @@ class FruitSums implements Game {
     this.clearSlots();
     this.sumMisses = 0;
     if (this.signSum) await this.ctx.instruct('fsums.again4', this.signWords());
+    else if (this.clear) await this.ctx.instruct('fsums.again5', { n: this.target });
     else await this.ctx.instruct('fsums.again', { n: this.target });
     this.busy = false;
   }
@@ -450,6 +483,29 @@ class FruitSums implements Game {
     const [x, y] = key.slice(1).split(',').map(Number);
     const total = this.signSum ? `${this.signSum[0]} + ${this.signSum[1]}` : `${this.target}`;
     return key[0] === '+' ? `${x} + ${y} = ${total}` : `${x} − ${y} = ${total}`;
+  }
+
+  /** The right pair leaves the tree: both fruit shrink into the basket, and the boxes are empty again. */
+  private toBasket() {
+    for (const i of [this.slotA, this.slotB]) {
+      if (i === null) continue;
+      this.gone[i] = true;
+      this.basketOrder.push(i);
+      const t = this.tiles[i],
+        to = basketSpot(this.layout.basket, this.basketOrder.length - 1);
+      t.eventMode = 'none';
+      void this.ctx.tw.to(t.position, { x: to.x, y: to.y }, { duration: 0.45, ease: ease.inOutSine });
+      void this.ctx.tw.to(t.scale, { x: BASKET_SCALE, y: BASKET_SCALE }, { duration: 0.45 });
+    }
+    sfx.pop(6);
+    this.slotA = this.slotB = null;
+  }
+
+  /** The found ways stay on one line under the sign, narrower than the screen. */
+  private fitFound() {
+    this.foundText.scale.set(1);
+    const room = this.ctx.view.w - 260;
+    if (this.foundText.width > room) this.foundText.scale.set(room / this.foundText.width);
   }
 
   private clearSlots() {
@@ -465,6 +521,8 @@ class FruitSums implements Game {
     this.backdrop.resize(view);
     this.sign.position.set(l.sign.x, l.sign.y);
     this.foundText.position.set(l.found.x, l.found.y);
+    this.fitFound();
+    this.drawBasket(l.basket);
     this.ropes
       .clear()
       .moveTo(l.sign.x - 90, 0)
@@ -492,6 +550,28 @@ class FruitSums implements Game {
     this.place(false);
   }
 
+  /** A woven basket: the back sits behind the fruit and the front band in front, so fruit peek over the rim. */
+  private drawBasket(at: { x: number; y: number }) {
+    const w = BASKET_W,
+      h = BASKET_H;
+    this.basketBack
+      .clear()
+      .ellipse(at.x, at.y - h / 2 + 8, w / 2, 16)
+      .fill(wood.line)
+      .ellipse(at.x, at.y + h / 2 + 4, w / 2 - 6, 9)
+      .fill({ color: ink, alpha: 0.12 });
+    this.basketFront
+      .clear()
+      .roundRect(at.x - w / 2, at.y - h / 2 + 8, w, h - 8, 22)
+      .fill(wood.fill)
+      .stroke({ width: 5, color: wood.line });
+    for (let k = 1; k < 4; k++) {
+      const y = at.y - h / 2 + 8 + (k * (h - 8)) / 4;
+      this.basketFront.moveTo(at.x - w / 2 + 10, y).lineTo(at.x + w / 2 - 10, y);
+    }
+    this.basketFront.stroke({ width: 3, color: wood.line, alpha: 0.5 });
+  }
+
   update(dt: number) {
     this.clock += dt;
     this.glow.clear();
@@ -506,7 +586,7 @@ class FruitSums implements Game {
 
   autotouch(): TouchIntent | null {
     if (this.busy || this.finished || !this.landed.every(Boolean)) return null;
-    const way = hintWay(this.tray, this.plan.ops, this.target, this.taken());
+    const way = hintWay(this.tray, this.plan.ops, this.target, this.taken(), null, this.gone);
     if (!way) return null;
     const want = [way.a, way.b],
       have = [this.slotA, this.slotB];

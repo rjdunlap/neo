@@ -12,13 +12,19 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 4,
+      to: 4,
       text: 'The sign shows a sum, like 6 + 4. Tap two other fruit that add up to the same; they hop into the boxes.',
+    },
+    {
+      from: 5,
+      text: 'Tap two fruit that add up to the number; they hop into the boxes. Tap a fruit in a box to put it back.',
     },
     'Tap the green check to see what you made. Any way that makes the number counts.',
   ],
   finish: [
     { to: 3, text: 'The round ends after two different ways to make the number.' },
-    { from: 4, text: 'The round ends after two different pairs that make the same as the sign.' },
+    { from: 4, to: 4, text: 'The round ends after two different pairs that make the same as the sign.' },
+    { from: 5, text: 'Each right pair drops into the basket, and the round ends when the tree is empty.' },
   ],
   note: [
     {
@@ -32,7 +38,12 @@ export const HOW_TO: GameHowTo = {
     },
     {
       from: 4,
+      to: 4,
       text: 'A try that makes another number tells how much it made and how much the sign makes. The sign’s own two numbers are not a miss; they just ask for a different pair. After two misses a glow shows a fruit to start with, then its partner. Each way is written like 7 + 5 = 6 + 4.',
+    },
+    {
+      from: 5,
+      text: 'Every fruit on the tree has a partner, so any right pair keeps the tree clearable. Two fruit with the same numbers as a pair already in the basket are a new pair. A try that makes another number tells how much it made; after two misses a glow shows a fruit to start with, then its partner.',
     },
   ],
 };
