@@ -1166,6 +1166,8 @@ export const fruitSlice: GameModule = {
   skills: ['fine-motor', 'sorting', 'counting', 'spatial-reasoning'],
   bands: ['toddler', 'preschool', 'prek', 'school'],
   levels: (band) => rangeFor(LEVELS, band),
+  // Level 11 is an easy step placed early in preschool's and pre-K's order; carried to school it starts at school's easiest.
+  entryLevels: [11],
   describeLevel: (level) => planFor(level).name,
   music: STYLES.bubbles,
   coplayHint: 'One of you names the fruit to slice; the other slices it.',

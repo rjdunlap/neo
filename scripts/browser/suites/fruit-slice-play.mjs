@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 export function createSuite({ page, errors, log, scene, tap, screenshot, launch, finished }) {
-/** Fruit Slice by touch: level 1 by taps, two wrong-kind swipes at 3 (two misses, one glow), level 7's boards by straight lines (portrait screenshot), level 3 at sunset with a new fruit (portrait screenshot), level 8 by swipes, the bowl and the pair board, level 9 upright with a stranding first line and a requested hint (portrait screenshot), level 10 upright with a stuck total, a hinted put-back (portrait screenshot) and an overshoot. `FRUIT_LEVELS=10` (a comma list) plays only those levels. */
+/** Fruit Slice by touch: level 1 by taps, two wrong-kind swipes at 3 (two misses, one glow), level 7's boards by straight lines (portrait screenshot), level 3 at sunset with a new fruit (portrait screenshot), level 8 by swipes, the bowl and the pair board, level 9 upright with a stranding first line and a requested hint (portrait screenshot), level 10 upright with a stuck total, a hinted put-back (portrait screenshot) and an overshoot, level 11 upright with an early bowl tap (portrait screenshot) and an overshoot. `FRUIT_LEVELS=10` (a comma list) plays only those levels. */
 async function fruitSlicePlay() {
   const state = () => page.evaluate(() => { const g = neo.scene.game; return { misses: g.misses, hints: g.hints, glow: g.glow?.kind ?? null, index: g.index }; });
   const idle = () => page.waitForFunction(() => neo.scene.finished || (neo.scene.game && !neo.scene.game.busy), null, { timeout: 15000 });
@@ -36,13 +36,13 @@ async function fruitSlicePlay() {
     await page.waitForTimeout(400);
   };
   const want = (l) => !process.env.FRUIT_LEVELS || process.env.FRUIT_LEVELS.split(',').map(Number).includes(l);
-  /** Level 10: wait for a hanging fruit of this kind (or, for 'good', one the hint would cut). */
+  /** Level 10: wait for a hanging fruit of this kind (or, for 'good', one the hint would cut; for 'any', any). */
   const hangingKind = async (kind) => {
     await page.evaluate(async () => { window.FS = await import('/src/games/fruit-slice/logic.ts'); });
     const h = await page.waitForFunction((kind) => {
       const L = window.FS, g = neo.scene.game;
       if (!g || g.busy) return null;
-      const f = g.flyers.find((q) => !q.gone && q.t > L.RISE + 0.15 && q.t < L.RISE + L.HANG - 0.6 && (kind === 'good' ? g.goodNow(q.toss.kind) : q.toss.kind === kind));
+      const f = g.flyers.find((q) => !q.gone && q.t > L.RISE + 0.15 && q.t < L.RISE + L.HANG - 0.6 && (kind === 'any' || (kind === 'good' ? g.goodNow(q.toss.kind) : q.toss.kind === kind)));
       return f ? g.ctx.stage.toGlobal({ x: f.node.x, y: f.node.y }) : null;
     }, kind, { timeout: 30000, polling: 50 });
     return h.jsonValue();
@@ -192,8 +192,41 @@ async function fruitSlicePlay() {
     await page.setViewportSize({ width: 1024, height: 768 });
   }
 
+  if (want(11)) {
+    // Level 11 upright: two aloft and a sign of 2 (portrait screenshot); an early bowl tap is free; a cut past the full
+    // bowl is one miss; then the signs of 3 and 3.
+    await page.setViewportSize({ width: 768, height: 1024 });
+    await launch('fruit-slice', 11); await idle();
+    n = await page.evaluate(() => kit.store.data.stickers.length);
+    st = await page.evaluate(() => { const g = neo.scene.game; return { aloft: g.plan.aloft, n: g.current.rows[0].n }; });
+    assert.deepEqual(st, { aloft: 2, n: 2 }, 'level 11: two aloft and a first sign of 2');
+    await swipe(await hanging(true));
+    const bowlAt = await page.evaluate(() => neo.scene.game.bowl.toGlobal({ x: 0, y: -10 }));
+    await page.evaluate(({ x, y }) => kit.tap(x, y), bowlAt); await page.waitForTimeout(300);
+    st = await state(); assert.deepEqual([st.misses, st.hints, st.index], [0, 0, 0], 'level 11: an early bowl tap is free and sends nothing');
+    await screenshot('fruit-slice-11-portrait');
+    for (let guard = 0; guard < 6; guard++) {
+      if (await page.evaluate(async () => { const L = await import('/src/games/fruit-slice/logic.ts'); return L.met(neo.scene.game.current); })) break;
+      await swipe(await hanging(true));
+    }
+    await swipe(await hangingKind('any'));
+    st = await state(); assert.deepEqual([st.misses, st.hints], [1, 0], 'level 11: a cut past the full bowl is one miss');
+    await tapBowl(); await idle();
+    for (let sign = 1; sign < 3; sign++) {
+      assert.equal(await page.evaluate(() => neo.scene.game.current.rows[0].n), 3, 'level 11: then signs of 3');
+      for (let guard = 0; guard < 8; guard++) {
+        if (await page.evaluate(async () => { const L = await import('/src/games/fruit-slice/logic.ts'); return L.met(neo.scene.game.current); })) break;
+        await swipe(await hanging(true));
+      }
+      await tapBowl(); await idle();
+    }
+    await sticker(n);
+    st = await state(); assert.deepEqual([st.misses, st.hints], [1, 0], 'level 11: the one overshoot');
+    await page.setViewportSize({ width: 1024, height: 768 });
+  }
+
   assert.deepEqual(errors, [], 'page errors');
-  log('Fruit Slice: level 1 by taps, two wrong-kind swipes and a glow at 3, level 7 by lines (upright), level 3 at sunset with a new fruit (upright), level 8 by swipes, the bowl and the pair board, level 9 upright with a stranding line, a hint and two lines a board, level 10 upright with a stuck total, a hinted put-back and an overshoot');
+  log('Fruit Slice: level 1 by taps, two wrong-kind swipes and a glow at 3, level 7 by lines (upright), level 3 at sunset with a new fruit (upright), level 8 by swipes, the bowl and the pair board, level 9 upright with a stranding line, a hint and two lines a board, level 10 upright with a stuck total, a hinted put-back and an overshoot, level 11 upright with an early bowl tap and an overshoot');
 }
 
 return { fruitSlicePlay };

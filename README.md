@@ -77,7 +77,7 @@ The [verification log](docs/VERIFICATION.md) records which checks each one has p
 | [Bumper Garden](docs/games/bumper-garden.md) | lap–pre-K | Bubble Beach | 8 | tap to launch a ladybug through flower bumpers |
 | [Sink or Float](docs/games/sink-float.md) | lap–school | Bubble Beach | 9 | drop things in the water and watch |
 | [Domino Run](docs/games/domino-run.md) | toddler–school | Bubble Beach | 11 | stand dominoes from a tray in a lane's gaps and tap the green starter; the line clacks down to the bell |
-| [Fruit Slice](docs/games/fruit-slice.md) | toddler–school | Bubble Beach | 10 | touch a fruit hanging at the top of its slow arc and it splits |
+| [Fruit Slice](docs/games/fruit-slice.md) | toddler–school | Bubble Beach | 11 | touch a fruit hanging at the top of its slow arc and it splits |
 | [Puddle Gobble](docs/games/puddle-gobble.md) | toddler–school | Bubble Beach | 11 | lead a smiling rain puddle with a finger (or taps) and it soaks up the beach things that fit inside it, growing every few |
 | [Lost Layers](docs/games/lost-layers.md) | school | Bubble Beach | 2 | drag Shell Cove's broken rock pieces beside Gull Cliff's six layers until the fossil twins go green and no wavy line is squeezed, stamp each fit as a story card, then claim a story or Can't tell |
 | [Sea Lift](docs/games/sea-lift.md) | school | Bubble Beach | 5 | tap the stop a friend asks for on a glass lift whose zero is the water line: three up, two below the water; the lift rides there and the friend counts it out |

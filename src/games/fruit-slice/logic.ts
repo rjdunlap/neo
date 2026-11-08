@@ -32,7 +32,7 @@ export interface Plan {
   mode: Mode;
   /** Fruit in the air at once. */
   aloft: number;
-  /** Slices in the round (levels 1–4), signs (5, 6, 8, 10) or boards (7, 9). */
+  /** Slices in the round (levels 1–4), signs (5, 6, 8, 10, 11) or boards (7, 9). */
   count: number;
 }
 
@@ -47,12 +47,17 @@ const PLANS: Plan[] = [
   { id: 8, name: 'Pieces by twos', mode: 'pieces', aloft: 3, count: 3 },
   { id: 9, name: 'Two lines clear it', mode: 'cover', aloft: 0, count: 4 },
   { id: 10, name: 'Twos and threes', mode: 'mixed', aloft: 3, count: 3 },
+  // An easier step between 4's sorting and 5's counts, appended so no saved level moves; placed by `order`.
+  { id: 11, name: 'Just a few', mode: 'enough', aloft: 2, count: 3 },
 ];
+
+/** Level 11's signs: small numbers she can see at a glance. */
+export const FEW = [2, 3, 3];
 
 export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
-  preschool: { min: 2, max: 4 },
-  prek: { min: 3, max: 6 },
+  preschool: { min: 2, max: 11, order: [2, 3, 4, 11] },
+  prek: { min: 3, max: 11, order: [3, 4, 11, 5, 6] },
   school: { min: 5, max: 10 },
 };
 
@@ -86,7 +91,7 @@ export function signsFor(plan: Plan, rng: Rng): Sign[] {
     case 'kind':
       return [one(rng.pick(FRUIT), plan.count)];
     case 'enough':
-      return [3, 4, rng.int(5, 6)].map((n) => one(null, n));
+      return (plan.id === 11 ? FEW : [3, 4, rng.int(5, 6)]).map((n) => one(null, n));
     case 'two':
       return [0, 1, 2].map(() => {
         const [a, b] = rng.shuffle([...FRUIT]).slice(0, 2);

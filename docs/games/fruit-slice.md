@@ -9,8 +9,8 @@
 | Band | Levels, easiest first |
 | --- | --- |
 | toddler | 1–2 |
-| preschool | 2–4 |
-| pre-K | 3–6 |
+| preschool | 2, 3, 4, 11 |
+| pre-K | 3, 4, 11, 5, 6 |
 | school | 5–10 |
 
 | Level | Plays like |
@@ -25,6 +25,7 @@
 | 8 | Pieces by twos |
 | 9 | Two lines clear it |
 | 10 | Twos and threes |
+| 11 | Just a few |
 
 <!-- end generated -->
 
