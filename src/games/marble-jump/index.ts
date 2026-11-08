@@ -233,7 +233,7 @@ class MarbleJump implements Game {
       return;
     }
     if (solve(this.board, this.goal) === null)
-      void this.ctx.say(count(this.board) === 1 ? 'marble.star' : 'marble.revise');
+      void this.ctx.say(this.goal === ANY ? 'marble.revise' : 'marble.star');
     if (this.queued !== null) {
       const i = this.queued;
       this.queued = null;

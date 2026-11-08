@@ -12,7 +12,9 @@ export const VOICE = {
   'marble.revise': [
     'This route cannot leave one marble. Undo a jump to try another plan, or ask for a hint.',
   ],
-  'marble.star': ['One marble is left, but not on the star. Undo to try another route, or ask for a hint.'],
+  'marble.star': [
+    'This route cannot finish on the star. Undo a jump to try another route, or ask for a hint.',
+  ],
   'marble.recover': ['I took back the jumps to the nearest clearing route. Try the outlined jump.'],
   'marble.restart': ['The starting marbles are back. Try another plan.'],
   'marble.done': ['One marble left! You planned a clearing route.'],
