@@ -4,7 +4,7 @@ import { stepLevel } from '../../progress/difficulty';
 import { thingArt } from './art';
 import {
   authoredBoard, beachLayout, deadEndReachable, dotSpots, LEVELS, letGoWays, MAX_HELD, stripSpan, detour, blocker, done, exactSolutions, fieldFor, fits, greedyClears, hintTarget, inPailBox, inPetCorner,
-  KINDS_BY_TIER, LEVEL_COUNT, letGo, makeBoard, MAX_PUDDLE_D, moodFor, MOODS, NAMES, NUMBER_KINDS, numeric, passesFilter, placeOn, planFor, PUDDLE_D, puddleStart, soak, soakable, startState, THING_D, thingDiameter,
+  KINDS_BY_TIER, LEVEL_COUNT, PAIL_BOX, STRIP, type Rect, letGo, makeBoard, MAX_PUDDLE_D, moodFor, MOODS, NAMES, NUMBER_KINDS, numeric, passesFilter, placeOn, planFor, PUDDLE_D, puddleStart, soak, soakable, startState, THING_D, thingDiameter,
   refusal, thingOf, type Board, type State,
 } from './logic';
 
@@ -443,6 +443,70 @@ describe('the beach layout', () => {
   it('gives the same board on every view', () => {
     const b = makeBoard(planFor(4), new Rng(3));
     expect(beachLayout(b, new Rng(9))).toEqual(beachLayout(b, new Rng(9)));
+  });
+
+  // Slice 5 probe for two pails (docs/definitions/puddle-gobble-two-pails.md): a second 170-unit pail box left of the
+  // first, eight numbered things at 120 across, placed as beachLayout places them (biggest first, 40 × 400 tries).
+  describe('two pails probe', () => {
+    const plan = planFor(8);
+    const inTwoPails = (f: Rect, x: number, y: number, r: number) => x + r > f.x1 - 2 * PAIL_BOX && y - r < f.y0 + PAIL_BOX;
+    const DESIGN = { w: 1024, h: 768 };
+    function placeTwoPails(n: number, rng: Rng) {
+      const f = fieldFor(plan, DESIGN);
+      const start = puddleStart(plan, f);
+      const r = thingDiameter(plan, { id: 0, kind: 'pebble', size: 1 }) / 2;
+      const out: { x: number; y: number }[] = [];
+      for (let attempt = 0; attempt < 40 && out.length < n; attempt++) {
+        out.length = 0;
+        for (let i = 0; i < n; i++) {
+          for (let tries = 0; tries < 400; tries++) {
+            const x = rng.range(f.x0 + r, f.x1 - r);
+            const y = rng.range(f.y0 + r, f.y1 - r);
+            if (inPetCorner(DESIGN, x, y, r) || inTwoPails(f, x, y, r)) continue;
+            if (Math.hypot(x - start.x, y - start.y) < MAX_PUDDLE_D / 2 + r) continue;
+            if (out.some((o) => Math.hypot(o.x - x, o.y - y) < 2 * r + 30)) continue;
+            out.push({ x, y });
+            break;
+          }
+        }
+      }
+      if (out.length !== n) return null;
+      const W = f.x1 - f.x0, H = f.y1 - f.y0;
+      return { r, places: out.map((o) => ({ fx: (o.x - f.x0) / W, fy: (o.y - f.y0) / H })) };
+    }
+
+    it('places eight things clear of both pails, the pet and the puddle on every view', () => {
+      for (let seed = 1; seed <= 300; seed++) {
+        const got = placeTwoPails(8, new Rng(seed));
+        expect(got, `seed ${seed}`).not.toBeNull();
+        for (const v of views) {
+          const f = fieldFor(plan, v);
+          const start = puddleStart(plan, f);
+          const pts = got!.places.map((q) => placeOn(f, q));
+          for (const [i, q] of pts.entries()) {
+            expect(q.x - got!.r).toBeGreaterThanOrEqual(f.x0 - 0.01);
+            expect(q.y + got!.r).toBeLessThanOrEqual(f.y1 + 0.01);
+            expect(inPetCorner(v, q.x, q.y, got!.r)).toBe(false);
+            expect(inTwoPails(f, q.x, q.y, got!.r)).toBe(false);
+            expect(Math.hypot(q.x - start.x, q.y - start.y)).toBeGreaterThanOrEqual(MAX_PUDDLE_D / 2 + got!.r - 0.01);
+            for (const o of pts.slice(i + 1)) expect(Math.hypot(o.x - q.x, o.y - q.y)).toBeGreaterThanOrEqual(2 * got!.r + 30 - 0.01);
+          }
+        }
+      }
+    });
+
+    it('keeps the strip of five tokens above both pails, and both pails inside the field, on every view', () => {
+      for (const v of views) {
+        const f = fieldFor(plan, v);
+        const span = stripSpan(plan, MAX_HELD, v.w);
+        expect(span.x0).toBeGreaterThanOrEqual(STRIP.left);
+        expect(span.x1).toBeLessThanOrEqual(v.w - 40);
+        // The strip's tokens end 50 below its line; the pail art's handle tops out about 22 inside the field (drawPail).
+        expect(STRIP.y + 50).toBeLessThan(f.y0);
+        // Two boxes side by side leave the strip's start chip and the field's left half alone.
+        expect(f.x1 - 2 * PAIL_BOX).toBeGreaterThan(v.w / 2);
+      }
+    });
   });
 });
 
