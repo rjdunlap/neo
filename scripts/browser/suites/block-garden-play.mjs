@@ -87,6 +87,73 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
         }
         return null;
       });
+    // Level 11 (school's top), upright: the snail's line has an easy gap; the carried piece over it shows the snail worried, a drop
+    // there is refused as a miss, a second one lights the hint, the hinted piece is planted, then the rest by drags and one sticker.
+    // GARDEN_LEVELS=11 runs this part alone.
+    if (!process.env.GARDEN_LEVELS || process.env.GARDEN_LEVELS === '11') {
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await launch('block-garden', 11);
+      await idle();
+      const stickers11 = await page.evaluate(() => kit.store.data.stickers.length);
+      const snailSpot = () =>
+        page.evaluate(async () => {
+          const L = await import('/src/games/block-garden/logic.ts'),
+            g = neo.scene.game;
+          for (const piece of L.trayNow(g.garden, g.state.used)) {
+            const id = g.garden.pieces[piece];
+            const a = L.anchors(g.state.bed, id).find((at) => !L.allowed(g.state.bed, id, at));
+            if (a) return { piece, r: a.r, c: a.c, snails: L.place(g.state.bed, id, a).snails };
+          }
+          return null;
+        });
+      const spot = await snailSpot();
+      assert.ok(spot && spot.snails.length === 1, 'level 11 has a tray piece that would fill the snail line');
+      await page.waitForTimeout(400);
+      await screenshot('block-garden-11-portrait');
+      // The shadow over the snail's line: the worried snail instead of the shimmer.
+      await page.evaluate(({ piece, r, c }) => (neo.scene.game.shadow = { piece, at: { r, c } }), spot);
+      await page.waitForTimeout(200);
+      await screenshot('block-garden-11-worried');
+      await page.evaluate(() => (neo.scene.game.shadow = null));
+      for (let k = 1; k <= 2; k++) {
+        const s = await snailSpot();
+        await dragTo(s.piece, s.r, s.c);
+        await page.waitForTimeout(400);
+        const st = await state();
+        assert.deepEqual([st.misses, st.used], [k, 0], `snail drop ${k} is refused as a miss`);
+      }
+      let st11 = await state();
+      assert.deepEqual([st11.hints, st11.hinted], [1, true], 'the second miss lights the hint once');
+      const kept = await page.evaluate(() => neo.scene.game.state.bed.keep.join(','));
+      const hinted = await page.evaluate(() => neo.scene.game.hinted);
+      const ok = await page.evaluate(async (h) => {
+        const L = await import('/src/games/block-garden/logic.ts'),
+          g = neo.scene.game;
+        return L.allowed(g.state.bed, g.garden.pieces[h.piece], h);
+      }, hinted);
+      assert.ok(ok, 'the hint never fills the snail line');
+      await dragTo(hinted.piece, hinted.r, hinted.c);
+      await idle();
+      assert.notEqual((await state()).used, 0, 'the hinted piece is planted');
+      await plantAll();
+      st11 = await state();
+      assert.deepEqual([st11.misses, st11.hints], [2, 1]);
+      assert.equal(
+        await page.evaluate(() => neo.scene.game.state.bed.keep.join(',')),
+        kept,
+        'the snail is still home at the end',
+      );
+      await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, stickers11, {
+        timeout: 15000,
+      });
+      assert.deepEqual(errors, [], 'page errors');
+      if (process.env.GARDEN_LEVELS === '11') {
+        log(
+          'Block Garden level 11 upright: the worried snail over its line, two refused snail drops (two misses), the hint lit once and planted, the rest by drags, the snail kept, one sticker',
+        );
+        return;
+      }
+    }
     // Level 10 (school, between 5 and 6), upright: the next tray shows faded under the tray; a tap on a faded piece wiggles it and
     // is never a miss; a refused drop is one miss; planted by drags, one sticker. GARDEN_LEVELS=10 runs this part alone.
     await page.setViewportSize({ width: 768, height: 1024 });

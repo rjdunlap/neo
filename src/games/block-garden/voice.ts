@@ -9,6 +9,7 @@ export const VOICE = {
   ],
   'block-garden.two-lines': ['One piece can finish two lines.'],
   'block-garden.refuse': ['It needs an empty space just its shape.'],
+  'block-garden.snail': ["That would pick the snail's house."],
   'block-garden.bloom': ['They bloomed!', 'Flowers!', 'Look, the buds woke up!'],
   'block-garden.next-tray': ['Here come three more.'],
   'block-garden.comes-next': ['That one comes next.'],

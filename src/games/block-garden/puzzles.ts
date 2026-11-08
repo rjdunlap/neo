@@ -1,5 +1,5 @@
 /**
- * Block Garden's frozen gardens for levels 5–8 and 10, written by `node scripts/block-garden-gardens.mjs`: each a seeded candidate built
+ * Block Garden's frozen gardens for levels 5–8, 10 and 11, written by `node scripts/block-garden-gardens.mjs`: each a seeded candidate built
  * from its level's template and kept only when the solver finds its par inside the level's range and the level's filter passes.
  * Format: `encode()` in `logic.ts` (bed rows, pieces in arrival order, the solver's shortest solution). `logic.test.ts` checks
  * every one again. A round picks one and may show it under one of the square's symmetries.
@@ -134,5 +134,31 @@ export const GARDENS: Record<number, readonly string[]> = {
     '...**o/..oo../o..o../o....o/.....o/.....*:T4-0,L4-0,corner3-1,L4-0,I3-1,J4-3:0@0,0 1@0,4 2@2,1 4@0,5',
     '.o.oo./o.oo../...*../oo.o.*/o....*/...oo.:L4-0,domino-1,J4-0,T4-2,J4-2,I3-0:0@2,2 1@2,3 2@2,3 3@4,0',
     '*o*.oo/....../...oo./o..o.o/o...o./o*....:corner3-0,I3-0,L4-0,L4-1,T4-1,corner3-3:0@1,0 1@5,2 2@2,1 4@1,1',
+  ],
+  11: [
+    'o..o.o/o..o../o..s../....../.**.../o**o..:domino-0,domino-1,corner3-0,corner3-2,I3-0,domino-0:0@0,1 1@1,4 2@1,1 3@2,1',
+    '....s./o*.oo./.o**o./.....o/.*.o../.ooo..:domino-0,T4-0,I3-1,J4-0,T4-0,I4-0:0@0,0 1@3,1 2@0,5 3@0,0',
+    '...o**/.o...*/.ooo*o/.....o/o...../soo..o:corner3-0,I4-1,J4-1,J4-2,domino-0,domino-0:0@3,2 2@0,2 1@0,2 3@0,0',
+    '..o**o/....*o/...oos/.o...o/.o*o../......:corner3-2,domino-1,domino-0,L4-3,I4-1,J4-1:0@0,0 1@2,2 2@1,2 3@4,2 5@0,0',
+    'soo..o/..o.o./....../o...*o/o....*/o**.oo:T4-0,J4-1,domino-0,L4-1,I4-1,L4-0:0@3,1 1@1,1 2@4,3 3@3,1',
+    'o....*/...*.o/.....o/..o.../oo..*./so.o..:T4-3,J4-0,I3-1,corner3-3,domino-1,L4-2:0@2,3 1@3,4 2@0,1 5@0,3',
+    '..o.*./..s.o./o.o.../o..**./....../..o*..:corner3-1,T4-0,domino-1,T4-2,L4-0,L4-0:0@0,0 1@4,3 2@0,5 4@0,3',
+    'oo**o./s...oo/.oo.o./.**.../o...../oo....:corner3-1,J4-2,domino-1,I4-1,I3-0,L4-2:0@1,2 1@3,3 2@4,2 4@4,1 5@1,1',
+    'o..o**/s.o.../..oo*./..o*oo/...ooo/o.o..o:I3-1,L4-1,domino-0,domino-0,J4-3,corner3-2:0@2,1 2@0,1 1@0,1 3@5,3 5@0,3',
+    'o.o..*/oo..oo/s..o../oo.o.o/...o.o/.o.**o:corner3-1,I3-0,domino-1,I3-0,J4-2,corner3-0:2@0,3 0@3,3 1@2,3 3@0,3',
+    'oo**.o/*...../*.oo.o/....o./os...o/......:I3-0,T4-3,L4-3,domino-0,L4-3,L4-1:0@1,1 1@0,4 2@4,0 5@1,1',
+    '.o..../oo**o./..oo../o.oo.s/..o*.o/.....o:domino-0,I3-1,corner3-0,corner3-1,domino-1,domino-0:0@0,2 1@2,4 2@4,0 3@0,4',
+    'soo..o/....../....../.....*/o.**.*/.ooo..:T4-3,square2-0,corner3-1,L4-2,domino-0,T4-0:0@0,4 1@1,0 2@3,3 5@3,0',
+    'o.*o../..*o../*...../.o..o./...so./.*ooo.:corner3-2,domino-1,J4-3,T4-2,T4-3,L4-2:0@0,0 1@0,4 2@2,3 4@3,0 5@2,1',
+    'o...os/oooo*./**..../*...../o..o.o/.....o:domino-0,I3-0,L4-0,I3-0,T4-2,J4-0:0@2,4 1@5,0 2@1,0 5@3,3 3@2,2',
+    'so...o/...o.o/.*o.../..*.../.*ooo./oo.o..:J4-3,L4-1,I3-0,T4-3,corner3-1,I3-0:0@3,3 1@1,0 2@2,3 4@0,3 3@2,0',
+    '....../*.oo.*/*...../oos.../..oo../......:corner3-1,I3-0,corner3-0,T4-2,I3-0,corner3-3:0@0,0 1@2,1 2@0,4 5@1,4',
+    '.o..../sooo../.o**.o/.....*/.....o/.oo..o:square2-0,I4-0,corner3-1,domino-0,L4-3,corner3-3:0@3,0 1@0,0 2@2,0 4@2,2',
+    '....../sooo../.....o/o....*/o.o.*o/o..*oo:domino-0,T4-0,corner3-3,J4-2,J4-3,L4-0:0@0,0 1@3,2 2@4,1 3@2,1',
+    '....../....o./.o.*oo/.s.ooo/.o*oo./.o*o*o:corner3-1,corner3-3,J4-2,L4-0,I3-0,domino-1:0@0,2 1@0,0 2@0,3 3@1,2',
+    'sooo../....oo/.o*oo./.o..*./.oo.*./.ooo..:domino-0,I3-1,corner3-1,T4-1,I3-1,J4-0:0@5,4 1@2,0 2@3,2 4@2,5',
+    '..**../oo..../...o.o/.....o/.ooo.s/oo*o.o:domino-1,corner3-1,corner3-0,domino-0,T4-2,I3-1:0@0,4 1@2,0 2@1,2 3@3,2',
+    '....../..ooso/....../o....*/**.o.o/.o....:I4-0,domino-0,corner3-1,I4-0,I4-1,corner3-1:0@0,0 1@0,4 2@3,1 5@3,3',
+    '.o*o../..oo../*.oo../...s../..o.../.**...:L4-0,domino-1,domino-1,I3-1,T4-3,corner3-1:0@0,4 1@1,1 2@2,2 3@2,1',
   ],
 };

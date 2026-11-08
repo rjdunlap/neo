@@ -16,6 +16,7 @@ import { GARDENS } from './puzzles';
 import {
   ENTRY_LEVELS,
   LEVELS,
+  allowed,
   apply,
   decode,
   FIRST_GARDEN,
@@ -222,6 +223,36 @@ function leafArt(g: Graphics, x: number, y: number, size: number, color: number)
   g.star(x, y, 5, size * 0.6, size * 0.3)
     .fill(color)
     .stroke({ width: 2, color: ink, alpha: 0.2 });
+}
+
+/** The snail on its stone (level 11): a curled shell on a soft body, eyes on stalks. Worried, it leans back with its eyes wide. */
+function snailArt(g: Graphics, x: number, y: number, cell: number, worried = false) {
+  const lean = worried ? -cell * 0.04 : 0;
+  // The body along the stone, its head up at the right.
+  g.roundRect(x - cell * 0.32, y + cell * 0.08, cell * 0.66, cell * 0.16, cell * 0.08)
+    .fill(swatch.yellow.light)
+    .stroke({ width: 2.5, color: swatch.yellow.line });
+  const hx = x + cell * 0.26 + lean,
+    hy = y + cell * 0.06;
+  for (const dx of [-0.05, 0.05]) {
+    const ex = hx + cell * dx + lean,
+      ey = hy - cell * (worried ? 0.24 : 0.2);
+    g.moveTo(hx + cell * dx * 0.4, hy)
+      .lineTo(ex, ey)
+      .stroke({ width: 2.5, color: swatch.yellow.line, cap: 'round' });
+    g.circle(ex, ey, cell * (worried ? 0.045 : 0.035)).fill(ink);
+  }
+  // The shell: a round spiral.
+  const sx = x - cell * 0.04 + lean,
+    sy = y - cell * 0.04;
+  g.circle(sx, sy, cell * 0.2)
+    .fill(swatch.orange.fill)
+    .stroke({ width: 3, color: swatch.orange.line });
+  g.circle(sx + cell * 0.02, sy + cell * 0.01, cell * 0.11).stroke({ width: 2.5, color: swatch.orange.line });
+  g.circle(sx + cell * 0.04, sy + cell * 0.02, cell * 0.04).fill(swatch.orange.line);
+  if (worried)
+    // A little drop of worry.
+    g.ellipse(hx + cell * 0.14, hy - cell * 0.1, cell * 0.03, cell * 0.05).fill(swatch.blue.light);
 }
 
 const PETALS = [swatch.pink.fill, swatch.red.fill, swatch.purple.fill, swatch.orange.fill, swatch.blue.fill];
@@ -590,6 +621,12 @@ class BlockGarden implements Game {
     const inSlot = fx >= r.x && fx <= r.x + r.w && fy >= r.y && fy <= r.y + r.h;
     if (cancelled || inSlot || this.busy || this.finished) return (this.home(slot), true);
     if (shadow) {
+      // A planting that would fill the snail's line is refused, like a drop that does not fit.
+      if (!allowed(this.state.bed, this.garden.pieces[shadow.piece], shadow.at)) {
+        this.home(slot);
+        this.refuse('block-garden.snail');
+        return true;
+      }
       void this.plant({ piece: shadow.piece, ...shadow.at });
       return true;
     }
@@ -622,10 +659,10 @@ class BlockGarden implements Game {
     return x >= this.lay.x && x <= this.lay.x + size && y >= this.lay.y && y <= this.lay.y + size;
   }
 
-  /** A piece let go over the bed with no shadow: a boing and the reason. From level 3 it counts, and every second one lights the hint. */
-  private refuse() {
+  /** A piece let go over the bed with no shadow, or onto the snail's line: a boing and the reason. From level 3 it counts, and every second one lights the hint. */
+  private refuse(line: 'block-garden.refuse' | 'block-garden.snail' = 'block-garden.refuse') {
     sfx.boing();
-    void this.ctx.say('block-garden.refuse');
+    void this.ctx.say(line);
     if (!this.plan.refusalCounts) return;
     this.misses++;
     this.gardenMisses++;
@@ -911,6 +948,7 @@ class BlockGarden implements Game {
               .stroke({ width: 3, color: art.bud.line });
             g.ellipse(px + cell * 0.4, py + cell * 0.52, cell * 0.1, cell * 0.05).fill(swatch.green.fill);
           }
+          if (bed.keep && has(bed.keep, r, c)) snailArt(g, px + cell / 2, py + cell / 2, cell);
         } else {
           // Planted: a seedling in turned soil.
           g.roundRect(px + cell * 0.08, py + cell * 0.08, cell * 0.84, cell * 0.84, cell * 0.2)
@@ -974,11 +1012,29 @@ class BlockGarden implements Game {
     if (!fits(this.state.bed, shape, show.at)) return;
     const { x, y, cell, n } = this.lay;
     const out = place(this.state.bed, shape, show.at);
-    const a = 0.25 + 0.15 * Math.sin(this.clock * 7);
-    for (const r of out.rows)
-      g.roundRect(x, y + r * cell, n * cell, cell, 12).fill({ color: swatch.yellow.light, alpha: a });
-    for (const c of out.cols)
-      g.roundRect(x + c * cell, y, cell, n * cell, 12).fill({ color: swatch.yellow.light, alpha: a });
+    if (out.snails.length) {
+      // That would pick the snail's house: no shimmer; the line goes cool blue and the snail, lifted on a pale ring, shakes worried.
+      const a = 0.3 + 0.1 * Math.sin(this.clock * 7);
+      for (const r of out.rows)
+        g.roundRect(x, y + r * cell, n * cell, cell, 12).fill({ color: swatch.blue.light, alpha: a });
+      for (const c of out.cols)
+        g.roundRect(x + c * cell, y, cell, n * cell, 12).fill({ color: swatch.blue.light, alpha: a });
+      const shake = Math.sin(this.clock * 18) * cell * 0.03;
+      for (const [r, c] of out.snails) {
+        const cx = x + (c + 0.5) * cell,
+          cy = y + (r + 0.5) * cell;
+        g.circle(cx, cy, cell * 0.46)
+          .fill(swatch.white.fill)
+          .stroke({ width: 4, color: swatch.blue.line });
+        snailArt(g, cx + shake, cy, cell * 1.2, true);
+      }
+    } else {
+      const a = 0.25 + 0.15 * Math.sin(this.clock * 7);
+      for (const r of out.rows)
+        g.roundRect(x, y + r * cell, n * cell, cell, 12).fill({ color: swatch.yellow.light, alpha: a });
+      for (const c of out.cols)
+        g.roundRect(x + c * cell, y, cell, n * cell, 12).fill({ color: swatch.yellow.light, alpha: a });
+    }
     for (const [r, c] of SHAPES[shape].cells) {
       g.roundRect(
         x + (show.at.c + c) * cell + 6,

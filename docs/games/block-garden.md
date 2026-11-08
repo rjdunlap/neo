@@ -9,8 +9,8 @@
 | Band | Levels, easiest first |
 | --- | --- |
 | pre-K | 1, 2, 9, 3 |
-| school | 2, 9, 3, 4, 5, 10, 6 |
-| grown-up | 5, 10, 6, 7, 8 |
+| school | 2, 9, 3, 4, 5, 10, 6, 11 |
+| grown-up | 5, 10, 6, 7, 8, 11 |
 
 | Level | Plays like |
 | --- | --- |
@@ -24,6 +24,7 @@
 | 8 | Clear the whole garden |
 | 9 | Corner with stripes |
 | 10 | See what comes next |
+| 11 | Mind the snail |
 
 <!-- end generated -->
 
