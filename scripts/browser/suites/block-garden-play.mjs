@@ -43,8 +43,6 @@ async function blockGardenPlay() {
   await plantAll();
   let st = await state(); assert.deepEqual([st.misses, st.hints], [0, 0]);
   await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, stickers, { timeout: 15000 });
-  // Level 3: a drop over the bed where the piece cannot fit springs back as one miss; the second lights the hint once.
-  await launch('block-garden', 3); await idle();
   const refusedSpot = () => page.evaluate(async () => {
     const L = await import('/src/games/block-garden/logic.ts'), g = neo.scene.game, lay = g.lay;
     for (const piece of L.trayNow(g.garden, g.state.used)) {
@@ -55,6 +53,20 @@ async function blockGardenPlay() {
     }
     return null;
   });
+  // Level 9 (pre-K, between 2 and 3): level 3's corner gardens with the stripes on; a refused drop is free; planted by drags, one sticker.
+  await launch('block-garden', 9); await idle();
+  const stickers9 = await page.evaluate(() => kit.store.data.stickers.length);
+  assert.ok(await page.evaluate(() => neo.scene.game.plan.tinted && neo.scene.game.garden.n === 6), 'level 9 is a striped 6 by 6 garden');
+  const free = await refusedSpot();
+  assert.ok(free, 'level 9 has a spot where a piece cannot fit');
+  await dragTo(free.piece, free.r, free.c); await page.waitForTimeout(400);
+  st = await state(); assert.deepEqual([st.misses, st.hints, st.used], [0, 0, 0], 'a refused drop at 9 plants nothing and is never a miss');
+  await screenshot('block-garden-9');
+  await plantAll();
+  st = await state(); assert.deepEqual([st.misses, st.hints], [0, 0]);
+  await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, stickers9, { timeout: 15000 });
+  // Level 3: a drop over the bed where the piece cannot fit springs back as one miss; the second lights the hint once.
+  await launch('block-garden', 3); await idle();
   for (let k = 1; k <= 2; k++) {
     const spot = await refusedSpot();
     assert.ok(spot, 'level 3 has a spot where a piece cannot fit');
@@ -100,7 +112,7 @@ async function blockGardenPlay() {
   st = await state(); assert.deepEqual([st.misses, st.hints], [0, 0]);
   await page.waitForFunction((n) => kit.store.data.stickers.length === n + 1, stickers8, { timeout: 15000 });
   assert.deepEqual(errors, [], 'page errors');
-  log('Block Garden: levels 1 and 8 planted by drags, refused drops at 3 (two misses, one hint), the hint planted, undo, level 6 upright, level 5 upright in autumn');
+  log('Block Garden: levels 1, 9 and 8 planted by drags, a free refused drop at 9, refused drops at 3 (two misses, one hint), the hint planted, undo, level 6 upright, level 5 upright in autumn');
 }
 
 return { blockGardenPlay };

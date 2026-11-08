@@ -473,6 +473,8 @@ export interface GardenPlan {
   families: Family[];
   /** Starting stones, inclusive (level 8). */
   stones?: [number, number];
+  /** The level whose garden generator and filter this one reuses (level 9 plays level 3's gardens); itself when absent. */
+  like?: number;
 }
 
 const SMALL: Family[] = ['domino', 'I3', 'corner3', 'square2'];
@@ -488,16 +490,25 @@ export const PLANS: GardenPlan[] = [
   { id: 6, name: 'Two trays', n: 6, cell: 100, goal: 'buds', pieces: 6, traySize: 3, buds: [3, 4], par: [4, 6], gardens: 1, tinted: false, refusalCounts: true, families: MID },
   { id: 7, name: 'The big garden', n: 8, cell: 72, goal: 'buds', pieces: 9, traySize: 3, buds: [4, 6], par: [7, 9], gardens: 1, tinted: false, refusalCounts: true, families: BIG },
   { id: 8, name: 'Clear the whole garden', n: 8, cell: 72, goal: 'clear', pieces: 9, traySize: 3, buds: [0, 0], par: [6, 9], gardens: 1, tinted: false, refusalCounts: true, families: BIG, stones: [8, 16] },
+  { id: 9, name: 'Corner with stripes', n: 6, cell: 100, goal: 'buds', pieces: 3, traySize: 3, buds: [2, 3], par: [2, 3], gardens: 2, tinted: true, refusalCounts: false, families: ['corner3', 'domino', 'I3'], like: 3 },
 ];
 
+/** The level a plan's gardens are built and filtered as. */
+export const kindOf = (plan: Pick<GardenPlan, 'id' | 'like'>): number => plan.like ?? plan.id;
+
 export const LEVELS: BandLevels = {
-  prek: { min: 1, max: 3 },
-  school: { min: 2, max: 6 },
+  // Level 9 is level 3's corner gardens with the stripes on and refused drops free: a gentler step between 2 and 3.
+  prek: { min: 1, max: 9, order: [1, 2, 9, 3] },
+  school: { min: 2, max: 9, order: [2, 9, 3, 4, 5, 6] },
   grownup: { min: 5, max: 8 },
 };
 
+/** Easy levels with high IDs, placed earlier by a band's `order`. */
+export const ENTRY_LEVELS = [9] as const;
+
 export function planFor(level: number): GardenPlan {
-  return PLANS[Math.min(PLANS.length, Math.max(1, Math.round(level))) - 1];
+  const id = Math.round(level);
+  return PLANS.find((p) => p.id === id) ?? PLANS[Math.min(8, Math.max(1, id)) - 1];
 }
 
 /* ---------------------------------------------------------------------------------------------- */
@@ -874,7 +885,7 @@ export function passesFilter(plan: GardenPlan, g: Garden, par: number): boolean 
   if (goalMet(start.bed, g.goal) || fullLines(start.bed)) return false;
   const budCount = g.bed.buds.reduce((a, m) => a + popcount(m), 0);
   if (budCount < plan.buds[0] || budCount > plan.buds[1]) return false;
-  switch (plan.id) {
+  switch (kindOf(plan)) {
     case 1: {
       // The buds share one line.
       const cells: Cell[] = [];
@@ -914,7 +925,7 @@ export function candidate(plan: GardenPlan, rng: Rng, cap = SEARCH_CAP): Garden 
   const d =
     plan.id === 1 ? lineGarden(plan, rng) :
     plan.id === 2 ? crossGarden(plan, rng) :
-    plan.id === 3 ? cornerGarden(plan, rng) :
+    kindOf(plan) === 3 ? cornerGarden(plan, rng) :
     plan.id === 5 ? roomGarden(plan, rng) :
     blockGarden(plan, rng);
   if (!d) return null;
@@ -953,7 +964,7 @@ export function makeGarden(plan: GardenPlan, rng: Rng): Made {
     const g = candidate(plan, rng);
     if (g) return { garden: g, fallback: false };
   }
-  const g = decode(FALLBACK[plan.id] ?? FIRST_GARDEN, plan);
+  const g = decode(FALLBACK[kindOf(plan)] ?? FIRST_GARDEN, plan);
   return { garden: g, fallback: true };
 }
 

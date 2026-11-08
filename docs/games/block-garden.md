@@ -8,8 +8,8 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| pre-K | 1–3 |
-| school | 2–6 |
+| pre-K | 1, 2, 9, 3 |
+| school | 2, 9, 3, 4, 5, 6 |
 | grown-up | 5–8 |
 
 | Level | Plays like |
@@ -22,6 +22,7 @@
 | 6 | Two trays |
 | 7 | The big garden |
 | 8 | Clear the whole garden |
+| 9 | Corner with stripes |
 
 <!-- end generated -->
 
