@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 export function createSuite({ page, log, scene, tap, screenshot, turnToGame, launch, finished, next }) {
   /** Log Roll: both ends, rejected edge roll, solver hint, revision and upright completion. */
   async function logRollPlay() {
-    for (const level of [1, 3]) {
+    for (const level of [1, 4]) {
       await launch('log-roll', level);
       await page.waitForTimeout(400);
       const original = await page.evaluate(() => ({ ...neo.scene.game.state }));
@@ -47,11 +47,11 @@ export function createSuite({ page, log, scene, tap, screenshot, turnToGame, lau
       await tap('neo.scene.game.undoButton');
       assert.deepEqual(await page.evaluate(() => neo.scene.game.state), original);
       assert.equal(await page.evaluate(() => neo.scene.game.hints), 1);
-      if (level === 3) {
+      if (level === 4) {
         await page.setViewportSize({ width: 768, height: 1024 });
         await page.waitForTimeout(300);
         assert.ok(await page.evaluate(() => neo.scene.game.cell >= 64));
-        log(`Log Roll level 3 look: ${await page.evaluate(() => neo.scene.game.look.name)}`);
+        log(`Log Roll level 4 look: ${await page.evaluate(() => neo.scene.game.look.name)}`);
         await screenshot('log-roll-portrait');
         await page.setViewportSize({ width: 1024, height: 768 });
         await page.waitForTimeout(300);
