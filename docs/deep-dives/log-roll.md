@@ -108,7 +108,7 @@ Slices 1–5 go ahead regardless.
 
 1. **Built.** **Floors, looks, a visible tip and a fair hint count.** The floor generator script and four frozen floors per level with `G` hollows and mirroring; the layout derived from the floor size; three seeded looks; the tip tween with one queued tap; the refusal lean; a hint already glowing is not counted again; the par line after finishing. Checks: typecheck, rule tests, one filtered `logroll` play at level 3 with one portrait screenshot in a new look, `fingerdemo` at 3 (the bot now waits for the tip); build only if shared files change.
 2. **Built.** **Level 4 *The long way round*.** Frozen 8×6 floors at depth 16; grown-up range 1–4. Checks: new level on the existing interaction: typecheck, rule and registry/how-to tests, one browser play of 4, `fingerdemo` at 4.
-3. **Level 5 *Lay it in the cradle*.** The lying goal, its drawing and voice; range 1–5. Checks: typecheck, rule tests, one browser play of 5 with one upright stop on a cradle, `fingerdemo` at 5.
+3. **Level 5 *Lay it in the cradle*.** In progress on `claude/log-roll-cradle`. The lying goal, its drawing and voice; range 1–5. Checks: typecheck, rule tests, one browser play of 5 with one upright stop on a cradle, `fingerdemo` at 5.
 4. **Level 6 *Soft moss*.** The moss stone, its refusal and voice; range 1–6. Checks: model change: typecheck, rule tests with levels 1–5 unchanged, one browser play of 6 with one refused stand on moss, one portrait screenshot, `fingerdemo` at 6, build.
 5. **Level 7 *The stone bridge*.** The switch state, forward-search solver and the bridge; range 1–7. After slice 4. Checks: new interaction: typecheck, unit tests, one scripted play with one lying press and one hint, one portrait screenshot, `fingerdemo` at 7, build.
 
