@@ -142,3 +142,17 @@ Changed: shared tracing/feedback, sorting predicates/types, name normalization a
 Ran: `npm run typecheck`; `npm test` (325 files, 6,068 passed, 5 skipped, 67.51 s); `npm run build`; source review (caught and fixed the woods level-9 dynamic predicate import).
 Browser: `GAME_URL=http://localhost:5196 BROWSER_SUITE=fingerdemo FINGER_ONLY=number-trails,critter-crossing FINGER_LEVELS=1` passed (Number Trails preschool 5.0 s; Critter Crossing pre-K 7.1 s). Same URL: `BROWSER_SUITE=woods WOODS_ONLY=sort FROM_LEVEL=9 TO_LEVEL=9` passed (both/neither predicates, free bare grass, misses/glow, saved score and sticker). Server stopped.
 Not run: offline, `world`, device and child play; no behavior, assets, persistence or navigation changed.
+
+## 2026-11-07 — Scene-owned cleanup helpers (codebase item 7, PR #1385)
+
+Changed: `Lifetime` and `GameContext.alive`/`own`/`listen`, owned by touch/couch rounds and each demo replay; Rainbow Fingers listeners and Puzzle Pals drag handles migrated without gameplay changes. Fresh-context review found no defects.
+Tested: `a08d04de` plus working diff, full `npm test` (326 files, 6,074 passed, 5 skipped); seven helper/demo tests passed after adding replay integration coverage. After integrating `a800c6ee` as `230d6975`, typecheck, seven targeted files (81 passed, 1 skipped) and production build passed.
+Browser at `http://localhost:5187`: `BROWSER_SUITE=fourth FOURTH_ONLY=puzzle PUZZLE_LEVELS=4` passed exploration, two misses, hint, completion and sticker. `early EARLY_ONLY=paint FROM_LEVEL=3 TO_LEVEL=3` initially missed its second wrong stroke (1/0); original game baseline passed. The logging probe paced the four-second hint cooldown by game clock instead of a 4,200 ms wall wait and passed two misses, hint, all pictures and sticker.
+The same ignored `test-results/cleanup-probe.mjs` verified `alive`/owned cleanup/listener release on leaving a round and real paint demo listeners across replay/destruction (2→0→2→0); no page errors. Server stopped.
+Not run: `world`, offline, device or child play (no navigation, persistence or assets changed); bot gestures unchanged. The wall-time paint harness remains timing-sensitive.
+
+## 2026-11-07 — Domino Run slice 2: level 9 Where will it stop? (PR #1386)
+
+Changed: school range now 4–9; predict-then-fix level (guess flag, ring on the real stop, one-piece fix), `stopsAt`/`standing`, three voice ids, how-to step, four rule tests.
+Ran: `npm run typecheck`; `npm test` (325 files, 6,085 passed); `npm run build`; `BROWSER_SUITE=dominorun` passed (also level 9 upright: wrong guess, waiting hint, 0 misses, 1 hint, sticker; portrait screenshot kept); `FINGER_ONLY=domino-run FINGER_LEVELS=9` `fingerdemo` passed (11.5 s).
+Not run: iPad reading of the flag and ring (open in DEVICE-CHECKS), other suites, offline, `world`.
