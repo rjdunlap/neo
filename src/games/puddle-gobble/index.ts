@@ -17,6 +17,7 @@ import {
   authoredBoard,
   beachLayout,
   blocker,
+  capOf,
   detour,
   dotSpots,
   done,
@@ -28,7 +29,9 @@ import {
   NAMES,
   numeric,
   PAIL_BOX,
+  pailSpots,
   placeOn,
+  pour,
   planFor,
   puddleDiameter,
   puddleStart,
@@ -39,6 +42,7 @@ import {
   stripSpan,
   stripToken,
   thingDiameter,
+  tip,
   type Board,
   type Hint,
   type Kind,
@@ -172,7 +176,7 @@ interface Item {
   thing: Thing;
   node: Container;
   place: Placed;
-  where: 'sand' | 'moving' | 'in';
+  where: 'sand' | 'moving' | 'in' | 'pail';
   /** A too-big or refused touch disarms it until the puddle has moved away or changed size. */
   armed: boolean;
   /** The puddle's size when it was disarmed. */
@@ -242,6 +246,13 @@ class PuddleGobble implements Game {
   /** When something last slid in: a refusal after that, before her finger aims again, came from the way there, not her choice. */
   private soakedAt = -2;
   private tokens: { id: number; node: Container }[] = [];
+  /** Level 12: full pails' tap targets, above the steering layer so tipping one back never steers. */
+  private readonly pailTaps = new Container();
+  private pailTargets: (Container | null)[] = [];
+  private pailArt: Container[] = [];
+  /** Level 12: a pail that refused a pour (or was just tipped) re-arms once the puddle has left it or changed its number. */
+  private readonly pailArmed = [true, true];
+  private readonly pailDisarmedAt = [0, 0];
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -310,6 +321,7 @@ class PuddleGobble implements Game {
       this.world,
       this.destination,
       this.ground,
+      this.pailTaps,
       this.strip,
     );
     this.ground.eventMode = 'static';
@@ -379,7 +391,8 @@ class PuddleGobble implements Game {
       add: 'gobble.instruct-add',
       pail: 'gobble.instruct-pail',
     } as const;
-    if (this.plan.id === 1) void this.ctx.instruct('gobble.instruct-1');
+    if (this.plan.twoPails) void this.ctx.instruct('gobble.instruct-two-pails');
+    else if (this.plan.id === 1) void this.ctx.instruct('gobble.instruct-1');
     else if (this.plan.grow === 3) void this.ctx.instruct('gobble.instruct-grow');
     else if (this.plan.numbers) void this.ctx.instruct('gobble.instruct-order-number');
     else if (this.board.held) void this.ctx.instruct('gobble.instruct-too-full', { t: this.board.pail! });
@@ -424,34 +437,66 @@ class PuddleGobble implements Game {
     return Math.max(this.field.y0, Math.min(this.field.y1, y));
   }
 
+  /** The pail (levels 8 and 11), or level 12's two: a full one shows its water line and a tick, and tips back when tapped. */
   private drawPail() {
     this.pail.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.pailTaps.removeChildren().forEach((c) => c.destroy({ children: true }));
+    this.pailTargets = [];
+    this.pailArt = [];
     if (this.plan.mode !== 'pail') return;
-    const f = this.field;
-    const x = f.x1 - PAIL_BOX / 2,
-      y = f.y0 + PAIL_BOX / 2 + 10;
-    const g = new Graphics()
-      .moveTo(-55, -40)
-      .lineTo(55, -40)
-      .lineTo(42, 55)
-      .lineTo(-42, 55)
-      .closePath()
-      .fill(swatch.blue.fill)
-      .stroke({ width: 5, color: swatch.blue.line, join: 'round' })
-      .moveTo(-55, -40)
-      .quadraticCurveTo(0, -100, 55, -40)
-      .stroke({ width: 5, color: swatch.blue.line })
-      .circle(0, 10, 36)
-      .fill(0xffffff)
-      .stroke({ width: 4, color: ink });
-    const n = new Text({
-      text: String(this.board.pail),
-      style: { fontFamily: FONT, fontSize: 40, fontWeight: '700', fill: ink },
+    pailSpots(this.plan, this.field).forEach((at, i) => {
+      const full = this.state.filled[i] ?? null;
+      const c = new Container();
+      const g = new Graphics()
+        .moveTo(-55, -40)
+        .lineTo(55, -40)
+        .lineTo(42, 55)
+        .lineTo(-42, 55)
+        .closePath()
+        .fill(swatch.blue.fill);
+      if (full) g.moveTo(-53, -28).lineTo(53, -28).lineTo(43, 53).lineTo(-43, 53).closePath().fill(WATER);
+      g.moveTo(-55, -40)
+        .lineTo(55, -40)
+        .lineTo(42, 55)
+        .lineTo(-42, 55)
+        .closePath()
+        .stroke({ width: 5, color: swatch.blue.line, join: 'round' })
+        .moveTo(-55, -40)
+        .quadraticCurveTo(0, -100, 55, -40)
+        .stroke({ width: 5, color: swatch.blue.line })
+        .circle(0, 10, 36)
+        .fill(0xffffff)
+        .stroke({ width: 4, color: ink });
+      if (full)
+        g.circle(40, -42, 20)
+          .fill(swatch.green.fill)
+          .stroke({ width: 3, color: ink })
+          .moveTo(31, -42)
+          .lineTo(38, -35)
+          .lineTo(50, -50)
+          .stroke({ width: 5, color: 0xffffff, cap: 'round', join: 'round' });
+      const n = new Text({
+        text: String(this.board.pails ? this.board.pails[i] : this.board.pail),
+        style: { fontFamily: FONT, fontSize: 40, fontWeight: '700', fill: ink },
+      });
+      n.anchor.set(0.5);
+      n.position.set(0, 10);
+      c.addChild(g, n);
+      c.position.set(at.x, at.y);
+      this.pailArt.push(c);
+      // A full pail sits above the puddle, so its tick and number show even with the puddle still on it.
+      (full ? this.pailTaps : this.pail).addChild(c);
+      if (!full) {
+        this.pailTargets.push(null);
+        return;
+      }
+      const hit = new Container();
+      hit.position.set(at.x, at.y);
+      hit.hitArea = new Rectangle(-PAIL_BOX / 2, -PAIL_BOX / 2 - 10, PAIL_BOX, PAIL_BOX);
+      onTap(hit, () => this.tipBack(i));
+      this.pailTaps.addChild(hit);
+      this.pailTargets.push(hit);
     });
-    n.anchor.set(0.5);
-    n.position.set(0, 10);
-    this.pail.addChild(g, n);
-    this.pail.position.set(x, y);
   }
 
   /** Levels 7–8: the start number and each soaked number in a row up top, a sum she can read; level 8's tokens let go when tapped. */
@@ -670,6 +715,111 @@ class PuddleGobble implements Game {
       if (why === null) this.soakIt(it);
       else this.refuse(it, why);
     }
+    if (this.board.pails && !this.busy) this.pailContacts(R);
+  }
+
+  /** Level 12: the puddle led onto an open pail pours when the numbers match; otherwise the pet says both, once per visit. */
+  private pailContacts(R: number) {
+    if (this.items.some((i) => i.where === 'moving')) return;
+    pailSpots(this.plan, this.field).forEach((at, i) => {
+      if (this.busy || this.state.filled[i] !== null) return;
+      const d = Math.hypot(at.x - this.puddle.x, at.y - this.puddle.y);
+      if (!this.pailArmed[i]) {
+        if (d > R + REARM || this.state.puddle !== this.pailDisarmedAt[i]) this.pailArmed[i] = true;
+        else return;
+      }
+      if (d >= R) return;
+      const r = pour(this.board, this.state, i);
+      if (r.ok) {
+        void this.pourIt(i, r.state);
+        return;
+      }
+      this.pailArmed[i] = false;
+      this.pailDisarmedAt[i] = this.state.puddle;
+      sfx.pop(9);
+      this.speak('gobble.pail-wants', { p: this.state.puddle, t: this.board.pails![i] });
+    });
+  }
+
+  /** The strip's tokens slide into the pail, which fills; the puddle drops back to its start, empty. */
+  private async pourIt(i: number, next: State) {
+    this.busy = true;
+    const at = pailSpots(this.plan, this.field)[i];
+    const ids = this.state.soaked;
+    this.state = next;
+    this.glow = null;
+    this.tooBigs = 0;
+    this.missesSince = 0;
+    this.glowCounted = false;
+    this.soakedAt = this.clock;
+    for (const id of ids) {
+      const it = this.items[id];
+      it.icon?.destroy();
+      it.icon = undefined;
+      it.where = 'pail';
+    }
+    sfx.sparkle();
+    this.ctx.particles.burst(at.x, at.y - 30, {
+      colors: [WATER, 0xffffff],
+      count: 10,
+      speed: [80, 180],
+      gravity: 300,
+      angle: -Math.PI / 2,
+      spread: 1.2,
+      size: [0.2, 0.32],
+    });
+    this.speak('gobble.pail-full');
+    const tw = this.ctx.tw;
+    await Promise.all(
+      this.tokens.map((k) =>
+        Promise.all([
+          tw.to(k.node, { x: at.x, y: at.y }, { duration: 0.4, ease: ease.inQuad }),
+          tw.to(k.node.scale, { x: 0.3, y: 0.3 }, { duration: 0.4, ease: ease.inQuad }),
+        ]),
+      ),
+    );
+    if (this.destroyed) return;
+    this.busy = false;
+    this.drawStrip();
+    this.drawPail();
+    if (done(this.board, this.state)) void this.finale();
+  }
+
+  /** Level 12: a full pail tips its things back to their places on the sand and opens again. Free, never a miss. */
+  private tipBack(i: number) {
+    const ids = this.state.filled[i];
+    if (this.busy || this.finished || this.destroyed || !ids) return;
+    this.state = tip(this.board, this.state, i);
+    this.glow = null;
+    this.missesSince = 0;
+    this.pailArmed[i] = false;
+    this.pailDisarmedAt[i] = this.state.puddle;
+    const at = pailSpots(this.plan, this.field)[i];
+    for (const id of ids) {
+      const it = this.items[id];
+      it.where = 'moving';
+      it.armed = false;
+      it.disarmedAt = this.state.puddle;
+      it.node.visible = true;
+      it.node.scale.set(0.5);
+      it.node.position.set(at.x, at.y);
+      const home = placeOn(this.field, it.place);
+      void this.ctx.tw.to(it.node.scale, { x: 1, y: 1 }, { duration: 0.45, ease: ease.outBack });
+      void this.ctx.tw
+        .to(it.node, { x: home.x, y: home.y }, { duration: 0.45, ease: ease.outQuad })
+        .then(() => {
+          if (!this.destroyed && it.where === 'moving') it.where = 'sand';
+        });
+    }
+    sfx.pop(5);
+    this.speak('gobble.tip-back');
+    this.drawPail();
+    // Touch-down feedback: the emptied pail lifts and settles as its things fly out.
+    const emptied = this.pailArt[i];
+    if (emptied) {
+      emptied.y -= 14;
+      void this.ctx.tw.to(emptied, { y: at.y }, { duration: 0.3, ease: ease.outBack });
+    }
   }
 
   /** The finger chose this thing: the destination is on it and no thing that fits is nearer the finger. */
@@ -722,7 +872,10 @@ class PuddleGobble implements Game {
       if (numeric(this.plan)) this.speak('gobble.smaller-first-number', { v: small.size });
       else this.speak('gobble.smaller-first', { thing: NAMES[small.kind] });
     } else {
-      this.speak('gobble.too-much', { sum: this.state.puddle + it.thing.size, t: this.board.pail! });
+      this.speak('gobble.too-much', {
+        sum: this.state.puddle + it.thing.size,
+        t: capOf(this.board, this.state),
+      });
     }
     if (this.missesSince >= 2) this.autoGlow();
   }
@@ -756,7 +909,7 @@ class PuddleGobble implements Game {
     void tw
       .to(node, { x: this.puddle.x, y: this.puddle.y }, { duration: 0.35, ease: ease.inQuad })
       .then(() => {
-        if (this.destroyed) return;
+        if (this.destroyed || it.where !== 'moving') return;
         node.visible = false;
         it.where = 'in';
         const icon = thingArt(t.kind, Math.min(46, thingDiameter(this.plan, t) * 0.4));
@@ -870,7 +1023,16 @@ class PuddleGobble implements Game {
       this.hints++;
       this.glowCounted = true;
     }
-    if (fresh) this.speak('letGo' in h ? 'gobble.hint-let-go' : 'gobble.hint');
+    if (fresh)
+      this.speak(
+        'letGo' in h
+          ? 'gobble.hint-let-go'
+          : 'pour' in h
+            ? 'gobble.hint-pour'
+            : 'tip' in h
+              ? 'gobble.hint-tip'
+              : 'gobble.hint',
+      );
   }
 
   readonly hintLabel = 'Show a hint';
@@ -895,17 +1057,28 @@ class PuddleGobble implements Game {
         .stroke({ width: 8, color: 0xffe066, alpha: pulse });
       return;
     }
-    const it = this.items[h.soak];
-    if (it.where !== 'sand') return;
-    const r = thingDiameter(this.plan, it.thing) / 2;
-    ring
-      .circle(it.node.x, it.node.y, r + 16)
-      .fill({ color: 0xfff3a0, alpha: 0.35 * pulse })
-      .stroke({ width: 6, color: 0xffe066, alpha: pulse });
+    let bx: number, by: number, r: number;
+    if ('pour' in h || 'tip' in h) {
+      const at = pailSpots(this.plan, this.field)['pour' in h ? h.pour : h.tip];
+      const half = PAIL_BOX / 2 - 6;
+      ring
+        .roundRect(at.x - half, at.y - half - 10, half * 2, half * 2, 28)
+        .fill({ color: 0xfff3a0, alpha: 0.3 * pulse })
+        .stroke({ width: 8, color: 0xffe066, alpha: pulse });
+      if ('tip' in h) return;
+      [bx, by, r] = [at.x, at.y, half];
+    } else {
+      const it = this.items[h.soak];
+      if (it.where !== 'sand') return;
+      r = thingDiameter(this.plan, it.thing) / 2;
+      ring
+        .circle(it.node.x, it.node.y, r + 16)
+        .fill({ color: 0xfff3a0, alpha: 0.35 * pulse })
+        .stroke({ width: 6, color: 0xffe066, alpha: pulse });
+      [bx, by] = [it.node.x, it.node.y];
+    }
     const ax = this.puddle.x,
-      ay = this.puddle.y,
-      bx = it.node.x,
-      by = it.node.y;
+      ay = this.puddle.y;
     const len = Math.hypot(bx - ax, by - ay);
     for (let s = 40; s < len - r; s += 34)
       trail
@@ -929,10 +1102,15 @@ class PuddleGobble implements Game {
       const tok = this.tokens.find((k) => k.id === h.letGo);
       return tok ? { tap: { on: tok.node } } : null;
     }
-    const goal = this.items[h.soak].node;
+    if ('tip' in h) {
+      const hit = this.pailTargets[h.tip];
+      return hit ? { tap: { on: hit } } : null;
+    }
+    const goal = 'pour' in h ? pailSpots(this.plan, this.field)[h.pour] : this.items[h.soak].node;
+    const skip = 'soak' in h ? h.soak : -1;
     const R = this.diameter / 2;
     const others = this.items
-      .filter((i) => i.where === 'sand' && i.thing.id !== h.soak)
+      .filter((i) => i.where === 'sand' && i.thing.id !== skip)
       .map((i) => ({ x: i.node.x, y: i.node.y, r: thingDiameter(this.plan, i.thing) / 2 }));
     const via = detour(this.puddle, goal, R, others, this.field);
     if (via) return { tap: { on: this.ground, x: via.x, y: via.y }, receiver: this.ground };
@@ -961,7 +1139,9 @@ class PuddleGobble implements Game {
       await tw.to(this.puddle, { rotation: -0.08 }, { duration: 0.06 });
     }
     this.puddle.rotation = 0;
-    const row = this.state.soaked
+    const kept = this.board.pails ? this.state.filled.flatMap((f) => f ?? []) : this.state.soaked;
+    const spots = pailSpots(this.plan, this.field);
+    const row = kept
       .map((id) => this.items[id])
       .sort((a, b) => a.thing.size - b.thing.size || a.thing.id - b.thing.id);
     const f = this.field;
@@ -970,13 +1150,17 @@ class PuddleGobble implements Game {
     const natural = widths.reduce((a, b) => a + b, 0) + gap * (row.length - 1);
     const k = Math.min(1, (f.x1 - f.x0 - 280) / natural);
     let x = (f.x0 + f.x1) / 2 - (natural * k) / 2;
-    const y = f.y0 + 120;
+    // Level 12's row sits below the two pails it came out of.
+    const y = f.y0 + 120 + (this.board.pails ? PAIL_BOX : 0);
     for (const [i, it] of row.entries()) {
       it.icon?.destroy();
       it.icon = undefined;
       const w = widths[i] * k;
       it.node.visible = true;
-      it.node.position.copyFrom(this.puddle.position);
+      const from = this.board.pails
+        ? spots[this.state.filled.findIndex((ids) => ids?.includes(it.thing.id))]
+        : null;
+      it.node.position.copyFrom(from ?? this.puddle.position);
       it.node.scale.set(0.3);
       const tier = numeric(this.plan) ? Math.min(4, Math.ceil(it.thing.size / 5)) : it.thing.size;
       sfx.marimba(11 - tier * 2);
@@ -993,9 +1177,11 @@ class PuddleGobble implements Game {
       gravity: 0,
       life: [0.8, 1.2],
     });
-    await this.ctx.say(this.plan.mode === 'pail' ? 'gobble.done-pail' : 'gobble.done', {
-      t: this.board.pail ?? 0,
-    });
+    if (this.board.pails) await this.ctx.say('gobble.done-two-pails');
+    else
+      await this.ctx.say(this.plan.mode === 'pail' ? 'gobble.done-pail' : 'gobble.done', {
+        t: this.board.pail ?? 0,
+      });
     await tw.wait(0.8);
     this.ctx.finish({ misses: this.misses, hints: this.hints });
   }

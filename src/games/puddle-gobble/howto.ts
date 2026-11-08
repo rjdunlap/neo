@@ -24,11 +24,15 @@ export const HOW_TO: GameHowTo = {
       to: 11,
       text: 'The puddle starts too full: tap numbers at the top to let them go until it matches the pail. One let go too many can be soaked back.',
     },
+    { from: 12, to: 12, text: 'Each number adds to the puddle; tap one at the top to let it go.' },
+    { from: 12, to: 12, text: 'Lead the puddle onto a pail with the same number to pour it in.' },
+    { from: 12, to: 12, text: 'Tap a full pail to tip it back out.' },
   ],
   finish: [
     { from: 1, to: 7, text: 'The beach is clean.' },
     { from: 8, to: 8, text: 'The puddle matches the pail.' },
     { from: 11, to: 11, text: 'The puddle matches the pail.' },
+    { from: 12, to: 12, text: 'Both pails are full.' },
     { from: 9, to: 10, text: 'The beach is clean.' },
   ],
   note: [
@@ -68,6 +72,11 @@ export const HOW_TO: GameHowTo = {
       from: 11,
       to: 11,
       text: "Letting one go is never counted, and going under the pail's number is allowed. Steering onto one that would go past the pail counts as a miss; after two misses the next good move glows, which counts as a hint.",
+    },
+    {
+      from: 12,
+      to: 12,
+      text: "Going past the bigger pail's number counts as a miss; pouring, letting go and tipping back never do.",
     },
   ],
 };

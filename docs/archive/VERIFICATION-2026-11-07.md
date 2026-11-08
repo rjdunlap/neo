@@ -177,3 +177,22 @@ Changed: four seeded looks, six parcels by weight, cat/dog/pig friends, widened 
 ## 2026-11-07 — Block Garden slice 1: looks, flower kinds, 24 gardens, three-garden pre-K rounds (PR #1390)
 
 Changed: four seeded looks, four flower kinds with flowers kept in the basket, frozen gardens at 5–8 raised from 14 to 24 each, levels 1–2 rounds of three gardens. Ran: typecheck; 36 block-garden rule tests (minimum now 24); `npm test` (327 files, 6104 tests); `npm run game-docs` (no changes); `BROWSER_SUITE=blockgarden` (levels 1, 3, 6 upright, 5 upright in autumn, 8) with a visual check of rain and evening at level 5 and evening stripes at level 2. Not run: build (no shared files or assets changed), `fingerdemo` (bot unchanged), offline, `world`, iPad; whether the looks read well to a child is open.
+
+## 2026-11-07 — Block Garden slice 2: level 9 Corner with stripes
+
+Changed: level 9 is level 3's corner gardens (`like: 3`, `kindOf`) with stripes on and refused drops free; pre-K order [1, 2, 9, 3], school [2, 9, 3, 4, 5, 6], `entryLevels: [9]`; how-to lines; a level-9 section in the `blockgarden` suite. Ran: `npm run typecheck`; `npm test` (327 files, 6175 tests); `BROWSER_SUITE=blockgarden` (a free refused drop, planted by drags, no misses, one sticker; the first attempt hit a TimeoutError right after Vite started, the immediate rerun passed, recorded as a cold-start flake); `fingerdemo` with `FINGER_ONLY=block-garden FINGER_LEVELS=9 FINGER_BAND=prek` (10.0 s); landscape screenshot of the striped 6×6 corner garden reviewed; `npm run game-docs`. Not run: build (no shared files or assets changed), iPad or child check.
+
+## 2026-11-07 — Cut Along slice 2: level 9 Round and round (PR #1391)
+
+Changed: school's range is now 6–9; level 9 is a spiral cut (snail shell, snake, then a cat's tail or a mirrored snake) with a lead-in from the bottom edge and a `garden` picture; `cut.instruct.round` and `cut.piece.*` lines, how-to step, `CUT_LEVELS` filter and level-9 block in the `cutalong` suite. Ran: typecheck; `npm test` (327 files, 6,110 passed; rule tests for ring spacing, a swipe never over 135° of a turn, fit, completion by hand and bot, mirrored turning, corridor ≥ 30 units); `npm run build`; `BROWSER_SUITE=cutalong CUT_LEVELS=9` at 768×1024 (one stray = one miss, progress kept, 1 miss 0 hints, portrait screenshot); `BROWSER_SUITE=fingerdemo FINGER_ONLY=cut-along FINGER_LEVELS=9` (17.4 s). `game-reviewer`: no blocking findings. Not run: the full `cutalong` suite at levels 1–8 (unchanged), offline, world, any device. Open: iPad check that a toddler-to-school finger follows the inner curl.
+
+## 2026-11-07 — Domino Run slice 3: level 10 Over the puddle (PR #1392)
+
+Changed: school range now 4–10; puddle-first level (a two-wide puddle only a giant reaches over), `puddleGiantSlot`, `lane()` reads `~`, one voice id, how-to step, six rule tests (27); `dominorun` gained a `DOMINO_LEVELS` filter.
+Ran: `npm run typecheck`; domino-run rule tests 27/27; `npm test` (327 files, 6,116 passed, 1 skipped); `npm run build`; `BROWSER_SUITE=dominorun DOMINO_LEVELS=10` passed (level 10 upright: stall not a miss, hint, fix, 0 misses, 1 hint, sticker; portrait screenshot); `FINGER_ONLY=domino-run FINGER_LEVELS=10` `fingerdemo` passed (10.0 s).
+Not run: levels 1, 5, 6, 8, 9 of `dominorun` (unchanged), offline, `world`, other suites; no iPad or child check.
+
+## 2026-11-07 — Fruit Slice slice 3: level 10 Twos and threes (PR #1393)
+
+Changed: level 10 (apples 2 pieces, oranges 3; put-back strip of fruit tokens; `piecesFor`, `stuck`, `putBack`, `mixedHint`, `tokenAt` and friends in `logic.ts`), four voice lines, how-to steps, a level 10 segment and `FRUIT_LEVELS` filter in `fruitslice`. Ran: typecheck; 55 fruit-slice rule tests (ten new); `npm test` (6,126 passed); `BROWSER_SUITE=fruitslice` at level 10 (stuck total, bowl tap, requested hint on a token, put-back, overshoot miss, finish, portrait screenshot); `fingerdemo` at 10 (11.2 s); build. game-reviewer findings applied (double-tap lock, slot order, strip cleared on send).
+Not run: offline, `world`, couch, device; whether a seven-year-old finds the put-back unaided is open.

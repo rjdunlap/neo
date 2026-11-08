@@ -12,6 +12,12 @@ export const VOICE = {
     'The puddle is too full! Tap numbers at the top to let them go, until it is exactly {t}, like the pail.',
   ],
   'gobble.instruct-pail': ['Make the puddle just right: exactly {t}, like the pail!'],
+  'gobble.instruct-two-pails': ['Fill both pails. Each pail wants its own number.'],
+  'gobble.pail-wants': ['The puddle is {p}. This pail wants {t}.'],
+  'gobble.pail-full': ['That pail is full!'],
+  'gobble.tip-back': ['Back on the sand.'],
+  'gobble.hint-pour': ['Lead the puddle onto the glowing pail.'],
+  'gobble.hint-tip': ['Tap the glowing pail to tip it back.'],
   'gobble.too-big': ['Too big yet! Soak little things to grow.'],
   'gobble.too-big-number': ['{v}. The puddle is {p}: too big yet.'],
   'gobble.grow': ['The puddle grew!', 'Bigger!'],
@@ -25,4 +31,5 @@ export const VOICE = {
   'gobble.hint-let-go': ['Tap the glowing one at the top to let it go.'],
   'gobble.done': ['Thank you! The beach is clean.'],
   'gobble.done-pail': ['Just right! {t}, like the pail!'],
+  'gobble.done-two-pails': ['Both pails are full!'],
 } satisfies Record<string, string[]>;

@@ -15,6 +15,13 @@ import {
   blocker,
   done,
   exactSolutions,
+  finishes,
+  capOf,
+  pailDeadEnd,
+  pailSpots,
+  pour,
+  splits,
+  tip,
   fieldFor,
   fits,
   greedyClears,
@@ -59,7 +66,12 @@ function followHints(board: Board, s: State, limit = 30) {
     const h = hintTarget(board, s);
     if (!h) return -1;
     if ('letGo' in h) s = letGo(board, s, h.letGo);
-    else {
+    else if ('tip' in h) s = tip(board, s, h.tip);
+    else if ('pour' in h) {
+      const r = pour(board, s, h.pour);
+      if (!r.ok) return -1;
+      s = r.state;
+    } else {
       const r = soak(board, s, h.soak);
       if (!r.ok) return -1;
       s = r.state;
@@ -651,3 +663,203 @@ describe('kinds and beach moods', () => {
     expect(seen.size).toBe(MOODS.length);
   });
 });
+
+describe('level 12, two pails', () => {
+  const plan = planFor(12);
+  const ids = (b: Board, ...vals: number[]) => vals.map((v) => b.things.find((t) => t.size === v)!.id);
+  /** Soak these numbers in order from s, expecting each to slide in. */
+  const soakAll = (b: Board, s: State, vals: number[]) =>
+    ids(b, ...vals).reduce((st, id) => {
+      const r = soak(b, st, id);
+      expect(r.ok, `soak ${thingOf(b, id).size}`).toBe(true);
+      return r.ok ? r.state : st;
+    }, s);
+  const pourOk = (b: Board, s: State, i: number) => {
+    const r = pour(b, s, i);
+    expect(r.ok).toBe(true);
+    return r.ok ? r.state : s;
+  };
+
+  it('is appended for school only, after 11, with nothing renumbered', () => {
+    expect(LEVEL_COUNT).toBe(12);
+    expect(plan.name).toBe('Two pails');
+    expect(LEVELS.school).toEqual({ min: 5, max: 12, order: [5, 10, 6, 7, 8, 9, 11, 12] });
+    expect(LEVELS.prek?.max).toBe(10);
+    expect(planFor(11).name).toBe('Too full');
+  });
+
+  it('the authored board: one split, 2 + 4 into the 9 and 3 + 5 into the 11', () => {
+    const b = authoredBoard(plan);
+    expect(passesFilter(b)).toBe(true);
+    const got = splits(b).map(([a, c]) => [
+      a.map((i) => thingOf(b, i).size),
+      c.map((i) => thingOf(b, i).size),
+    ]);
+    expect(got).toEqual([
+      [
+        [2, 4],
+        [3, 5],
+      ],
+    ]);
+  });
+
+  it('the authored board: smallest first into the 9, or 1 + 3 + 4 or 1 + 2 + 5 into the 11, strands the other pail', () => {
+    const b = authoredBoard(plan);
+    const s0 = startState(b);
+    const nine = pourOk(b, soakAll(b, s0, [1, 2, 3]), 0);
+    expect(finishes(b, nine)).toEqual([]);
+    for (const vals of [
+      [1, 3, 4],
+      [1, 2, 5],
+    ]) {
+      const eleven = pourOk(b, soakAll(b, s0, vals), 1);
+      expect(finishes(b, eleven), vals.join('+')).toEqual([]);
+    }
+    expect(pailDeadEnd(b)).toBe(true);
+  });
+
+  it('the authored 7 is never soakable: too big, then too much', () => {
+    const b = authoredBoard(plan);
+    const [seven] = ids(b, 7);
+    const s0 = startState(b);
+    expect(refusal(b, s0, seven)).toBe('too-big');
+    const at7 = soakAll(b, s0, [1, 3]);
+    expect(at7.puddle).toBe(7);
+    expect(refusal(b, at7, seven)).toBe('too-much');
+    // Every reachable puddle of 7 or more passes 11 with the 7.
+    for (const st of reachable(b)) if (st.left.includes(seven)) expect(refusal(b, st, seven)).not.toBeNull();
+  });
+
+  it('pours only when the puddle equals that open pail; a mismatch leaves the state alone', () => {
+    const b = authoredBoard(plan);
+    const s0 = startState(b);
+    expect(pour(b, s0, 0).ok).toBe(false);
+    const at9 = soakAll(b, s0, [2, 4]);
+    expect(pour(b, at9, 1).ok).toBe(false);
+    const r = pour(b, at9, 0);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.state.puddle).toBe(b.start);
+    expect(r.state.soaked).toEqual([]);
+    expect(r.state.filled[0]!.map((i) => thingOf(b, i).size).sort()).toEqual([2, 4]);
+    expect(r.state.filled[1]).toBeNull();
+    // A full pail takes nothing more, even at its number.
+    expect(pour(b, { ...r.state, puddle: 9 }, 0).ok).toBe(false);
+    expect(done(b, r.state)).toBe(false);
+    expect(done(b, pourOk(b, soakAll(b, r.state, [3, 5]), 1))).toBe(true);
+  });
+
+  it('tip returns exactly that pail’s things to the sand and reopens it; too-much is against the bigger open pail', () => {
+    const b = authoredBoard(plan);
+    const s0 = startState(b);
+    expect(capOf(b, s0)).toBe(11);
+    const full11 = pourOk(b, soakAll(b, s0, [3, 5]), 1);
+    expect(capOf(b, full11)).toBe(9);
+    // With the 11 full, 1 + 4 makes 8 and the 2 would pass the 9 (it would not pass the 11).
+    const at8 = soakAll(b, full11, [1, 4]);
+    expect(refusal(b, at8, ids(b, 2)[0])).toBe('too-much');
+    const back = tip(b, full11, 1);
+    expect(back.filled).toEqual([null, null]);
+    expect([...back.left].sort()).toEqual([...s0.left].sort());
+    expect(back.puddle).toBe(b.start);
+    expect(() => tip(b, back, 1)).toThrow();
+  });
+
+  it('over 500 seeds: well formed, passes its filter, repeats by seed, never the fallback, at most four tokens', () => {
+    for (let seed = 1; seed <= 500; seed++) {
+      const b = makeBoard(plan, new Rng(seed));
+      expect(b.fallback, `seed ${seed}`).toBeUndefined();
+      expect(passesFilter(b)).toBe(true);
+      expect(b).toEqual(makeBoard(plan, new Rng(seed)));
+      expect([3, 4]).toContain(b.start);
+      expect(b.pail).toBeUndefined();
+      expect(b.things.length === 6 || b.things.length === 7).toBe(true);
+      for (const t of b.things) {
+        expect(t.size).toBeGreaterThanOrEqual(1);
+        expect(t.size).toBeLessThanOrEqual(9);
+        expect(NUMBER_KINDS).toContain(t.kind);
+      }
+      for (const st of reachable(b)) expect(st.soaked.length).toBeLessThanOrEqual(4);
+    }
+  });
+
+  it('from every reachable state, following the hint (soaks, let-gos, pours, tips) finishes within 12 steps', () => {
+    const boards = [
+      authoredBoard(plan),
+      ...Array.from({ length: 200 }, (_, i) => makeBoard(plan, new Rng(i + 1))),
+    ];
+    let worst = 0;
+    for (const b of boards) {
+      for (const st of reachable(b)) {
+        const steps = followHints(b, st, 12);
+        expect(steps, JSON.stringify(st)).toBeGreaterThanOrEqual(0);
+        worst = Math.max(worst, steps);
+      }
+    }
+    expect(worst).toBeLessThanOrEqual(12);
+  });
+
+  it('the hint pours when the puddle matches a pail that still leaves a finish, and never when it strands the other', () => {
+    const b = authoredBoard(plan);
+    const s0 = startState(b);
+    expect(hintTarget(b, soakAll(b, s0, [2, 4]))).toEqual({ pour: 0 });
+    // 1 + 2 + 3 is 9, but pouring it strands the 11: the hint lets one go instead.
+    expect('letGo' in hintTarget(b, soakAll(b, s0, [1, 2, 3]))!).toBe(true);
+    // With the wrong set in the 9 and nothing in the puddle, the hint tips it back.
+    expect(hintTarget(b, pourOk(b, soakAll(b, s0, [1, 2, 3]), 0))).toEqual({ tip: 0 });
+  });
+
+  it('places seven things clear of both pails, and both pails inside the field, on every view', () => {
+    const views = [
+      { w: 1024, h: 768 },
+      { w: 1024, h: 1365 },
+      { w: 1366, h: 768 },
+      { w: 1180, h: 768 },
+    ];
+    for (let seed = 1; seed <= 200; seed++) {
+      const b = makeBoard(plan, new Rng(seed));
+      const placed = beachLayout(b, new Rng(seed + 7));
+      expect(placed.length).toBe(b.things.length);
+      for (const v of views) {
+        const f = fieldFor(plan, v);
+        const spots = pailSpots(plan, f);
+        expect(spots.length).toBe(2);
+        expect(spots[1].x - spots[0].x).toBe(PAIL_BOX);
+        for (const p of spots) {
+          expect(p.x - PAIL_BOX / 2).toBeGreaterThanOrEqual(v.w / 2);
+          expect(inPailBox(plan, f, p.x, p.y, 0)).toBe(true);
+        }
+        for (const q of placed) {
+          const at = placeOn(f, q);
+          expect(inPailBox(plan, f, at.x, at.y, thingDiameter(plan, thingOf(b, q.id)) / 2)).toBe(false);
+        }
+      }
+    }
+  });
+});
+
+/** Level 12: every state she can reach (each thing on the sand, in the puddle or in a pail), by soaks, pours, let-gos and tips. */
+function reachable(b: Board): State[] {
+  const seen = new Map<string, State>();
+  const key = (s: State) =>
+    [[...s.soaked].sort().join(','), ...s.filled.map((f) => (f ? [...f].sort().join(',') : '-'))].join('|');
+  const stack = [startState(b)];
+  while (stack.length) {
+    const s = stack.pop()!;
+    const k = key(s);
+    if (seen.has(k)) continue;
+    seen.set(k, s);
+    if (done(b, s)) continue;
+    for (const id of soakable(b, s)) {
+      const r = soak(b, s, id);
+      if (r.ok) stack.push(r.state);
+    }
+    for (const id of s.soaked) stack.push(letGo(b, s, id));
+    for (const i of [0, 1]) {
+      const r = pour(b, s, i);
+      if (r.ok) stack.push(r.state);
+      if (s.filled[i]) stack.push(tip(b, s, i));
+    }
+  }
+  return [...seen.values()].filter((s) => !done(b, s));
+}
