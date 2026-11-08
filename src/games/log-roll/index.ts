@@ -15,11 +15,13 @@ import {
   DIRECTIONS,
   footprint,
   goal,
+  isCradle,
   makePuzzle,
   planFor,
   roll,
   solutionStep,
   solved,
+  standsOnCradle,
   type Direction,
   type State,
 } from './logic';
@@ -108,7 +110,7 @@ class LogRoll implements Game {
   private readonly ripples = new Graphics();
   private readonly log = new Container();
   private readonly logShape = logArt(48, 48, true);
-  private readonly heading = label('Stand the log in the hollow', 32, ink);
+  private readonly heading = label('', 32, ink);
   private readonly status = label('', 23, ink);
   private readonly floats: { x: number; y: number; r: number; color: number }[] = [];
   private history: State[] = [];
@@ -126,9 +128,13 @@ class LogRoll implements Game {
   misses = 0;
   hints = 0;
   moves = 0;
+  /** Level 5's finish is a lying log across two cradle stones; earlier levels stand in the hollow. */
+  readonly cradle: boolean;
   constructor(private readonly ctx: GameContext) {
     this.puzzle = makePuzzle(ctx.level, ctx.rng);
     this.state = { ...this.puzzle.start };
+    this.cradle = isCradle(this.puzzle.plan.floor);
+    this.heading.text = this.cradle ? 'Lay the log in the cradle' : 'Stand the log in the hollow';
     this.look = ctx.rng.pick(LOOKS);
     const floor = this.puzzle.plan.floor;
     floor.forEach((row, y) =>
@@ -179,7 +185,7 @@ class LogRoll implements Game {
     this.resize(ctx.view);
   }
   start() {
-    void this.ctx.instruct('log.go');
+    void this.ctx.instruct(this.cradle ? 'log.go.cradle' : 'log.go');
   }
   choose(d: Direction) {
     if (this.finished || !this.ctx.alive) return;
@@ -206,6 +212,7 @@ class LogRoll implements Game {
     this.failed = 0;
     sfx.pop(3);
     if (solved(this.state, this.puzzle.plan.floor)) this.finished = true;
+    else if (standsOnCradle(this.state, this.puzzle.plan.floor)) void this.ctx.say('log.cradle');
     this.draw();
   }
   /** Ends any motion at once, so Undo, Hint and Start over always act on the pose she sees. */
@@ -225,7 +232,7 @@ class LogRoll implements Game {
     }
     this.ripple = 0;
     this.status.text = `Finished in ${this.moves} ${this.moves === 1 ? 'roll' : 'rolls'} · the shortest route is ${this.puzzle.plan.depth}`;
-    void this.ctx.say('log.done').then(() => {
+    void this.ctx.say(this.cradle ? 'log.done.cradle' : 'log.done').then(() => {
       if (this.ctx.alive) this.ctx.finish({ misses: 0, hints: this.hints });
     });
   }
@@ -264,14 +271,18 @@ class LogRoll implements Game {
           .stroke({ width: 2, color: under });
       }),
     );
-    const hollow = goal(floor);
-    this.board
-      .circle(this.bx + (hollow.x + 0.5) * c, this.by + (hollow.y + 0.5) * c - 2, c * 0.32)
-      .fill(ink)
-      .stroke({ width: 4, color: swatch.yellow.fill });
+    const finish = goal(floor);
+    if (this.cradle) this.drawCradle(finish);
+    else
+      this.board
+        .circle(this.bx + (finish.x + 0.5) * c, this.by + (finish.y + 0.5) * c - 2, c * 0.32)
+        .fill(ink)
+        .stroke({ width: 4, color: swatch.yellow.fill });
     this.drawLog();
     if (!this.finished)
-      this.status.text = `${this.moves} ${this.moves === 1 ? 'roll' : 'rolls'} · ${this.state.pose === 'up' ? 'standing on one stone' : 'lying across two stones'}`;
+      this.status.text = standsOnCradle(this.state, floor)
+        ? 'Standing does not fit · lie it across both cradle stones'
+        : `${this.moves} ${this.moves === 1 ? 'roll' : 'rolls'} · ${this.state.pose === 'up' ? 'standing on one stone' : 'lying across two stones'}`;
     for (const d of DIRECTIONS) {
       const node = this.directions[d];
       const old = node.getChildByLabel('hint');
@@ -287,6 +298,29 @@ class LogRoll implements Game {
         glow.eventMode = 'none';
         node.addChild(glow);
       }
+    }
+  }
+  /** Two shallow wooden cradles inside a gold rim around both stones; each cradle's trough runs along the lying log. */
+  private drawCradle(finish: State) {
+    const c = this.cell,
+      { cx, cy, w, h } = boxOf(finish),
+      x0 = this.bx + (cx - w / 2) * c,
+      y0 = this.by + (cy - h / 2) * c;
+    this.board
+      .roundRect(x0 + 1, y0 + 1, w * c - 2, h * c - 4, 16)
+      .stroke({ width: 5, color: swatch.yellow.fill });
+    for (const [x, y] of footprint(finish)) {
+      const mx = this.bx + (x + 0.5) * c,
+        my = this.by + (y + 0.5) * c - 2,
+        r = c * 0.3;
+      // Seen from above, a cradle is a wooden saddle: two raised rims either side of a dark trough.
+      const [rw, rh] = w > h ? [c * 0.62, r * 2] : [r * 2, c * 0.62];
+      this.board
+        .roundRect(mx - rw / 2, my - rh / 2, rw, rh, 10)
+        .fill(wood.fill)
+        .stroke({ width: 3, color: wood.line });
+      if (w > h) this.board.roundRect(mx - rw / 2, my - rh * 0.22, rw, rh * 0.44, 6).fill(wood.line);
+      else this.board.roundRect(mx - rw * 0.22, my - rh / 2, rw * 0.44, rh, 6).fill(wood.line);
     }
   }
   /** The log at its place in the tip (or lean), in cells, then scaled to the board. */
@@ -324,7 +358,7 @@ class LogRoll implements Game {
     if (countsAsHint(this.hinted, next)) this.hints++;
     this.hinted = next;
     this.draw();
-    if (spoken) void this.ctx.say('log.hint');
+    if (spoken) void this.ctx.say(this.cradle ? 'log.hint.cradle' : 'log.hint');
   }
   askForHint() {
     if (!this.finished) {
@@ -392,9 +426,9 @@ class LogRoll implements Game {
     if (this.ripple >= 0) {
       this.ripple = Math.min(RIPPLE, this.ripple + dt);
       const c = this.cell,
-        hollow = goal(this.puzzle.plan.floor),
-        x = this.bx + (hollow.x + 0.5) * c,
-        y = this.by + (hollow.y + 0.5) * c;
+        finish = boxOf(goal(this.puzzle.plan.floor)),
+        x = this.bx + finish.cx * c,
+        y = this.by + finish.cy * c;
       this.ripples.clear();
       for (const lag of [0, 0.25, 0.5]) {
         const k = (this.ripple - lag) / (RIPPLE - 0.5);

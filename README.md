@@ -279,7 +279,7 @@ Pond Conga was the last that took only a controller; the island's route to a con
 | Game | Land | Levels | Starts as |
 | --- | --- | --- | --- |
 | [Marble Jump](docs/games/marble-jump.md) | Puzzle Peaks | 7 | jump a marble over a neighbour into an empty hole to leave one |
-| [Log Roll](docs/games/log-roll.md) | Tinker Lab | 4 | tip a log across stones and stand it upright on the goal |
+| [Log Roll](docs/games/log-roll.md) | Tinker Lab | 5 | tip a log across stones and stand it upright on the goal |
 | [Snowball Merge](docs/games/snowball-merge.md) | Lantern Lake | 3 | slide equal numbered snowballs together to make the pictured target |
 | [Brain Break](docs/games/brain-break.md) | Lantern Lake | 6 | find and light 1 to 9 on a shuffled pond of numbered stones, then of stones showing sums and take-aways |
 | [Pyramid Solitaire](docs/games/pyramid-solitaire.md) | Lantern Lake | 3 | lift exposed pairs totaling thirteen, or a king alone, to clear six face-up cards |
@@ -404,7 +404,7 @@ BROWSER_SUITE=woods WOODS_ONLY=penguin npm run test:browser       # one game's o
 | `gemswap` | Gem Swap first/last levels: rejected swaps and one hint, selection cancellation, Undo/Restart accounting, portrait targets, one sticker, land launch and leaving during a clear | Demos: `FINGER_ONLY=gem-swap`, `COUCH_ONLY=gem-swap` |
 | `marblejump` | Marble Jump levels 1 and 6: invalid jump, hint recovery, repeated-hint accounting, portrait and land placement | Ghost finger: `FINGER_ONLY=marble-jump` |
 | `blocktopple` | Block Topple levels 1, 3, 4 and 5 (`TOPPLE_LEVELS=5` for one): three solver pulls at level 1 (0/0); level 3 in portrait with a short shot and a hill shot (2 misses), the dotted path, three tips, saved 2/1, and Tinker Lab launch; level 4 in portrait with two thumps (no miss), the golden band, three tips, saved 0/1; level 5 in portrait with two wrong counts on line 1 (1 miss, counted aloud), the glowing pad (1 hint), three tips with right counts, saved 1/1 | Ghost finger: `FINGER_ONLY=block-topple` |
-| `logroll` | Log Roll levels 1 and 3: invalid rolls, Hint, Undo, portrait and Tinker Lab launch | Ghost finger: `FINGER_ONLY=log-roll` |
+| `logroll` | Log Roll levels 1, 4 and 5: invalid rolls, Hint, Undo, an upright stop on a cradle at 5, portrait and Tinker Lab launch | Ghost finger: `FINGER_ONLY=log-roll` |
 | `snowball` | Snowball Merge levels 1 and 3: inert press, Hint counted once, Undo/Restart, portrait and Lantern Lake return | Ghost finger: `FINGER_ONLY=snowball-merge` |
 | `cuestudio` | Cue Studio levels 1–3: creative Play/Step and edit invalidation, requested and actual traces, free watch, wrong Checks, automatic mismatch clue, local repair/Undo, counted-once help, Check invalidation, 112-unit targets in four views, portrait screenshot, one sticker each | `CUE_LEVELS=3`; ghost finger: `FINGER_ONLY=cue-studio FINGER_LEVELS=3` |
 | `comeback` | Species Comeback levels 1 and 3: a forbidden sibling pair (a miss naming the shared relative), nest undo, an early Spring, one requested hint; level 3's unsuitable release site (a miss naming the need); portrait sites, 64-unit cards, one sticker each | Ghost finger: `FINGER_ONLY=species-comeback` |

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 export function createSuite({ page, log, scene, tap, screenshot, turnToGame, launch, finished, next }) {
   /** Log Roll: both ends, rejected edge roll, solver hint, revision and upright completion. */
   async function logRollPlay() {
-    for (const level of [1, 4]) {
+    for (const level of [1, 4, 5]) {
       await launch('log-roll', level);
       await page.waitForTimeout(400);
       const original = await page.evaluate(() => ({ ...neo.scene.game.state }));
@@ -32,6 +32,46 @@ export function createSuite({ page, log, scene, tap, screenshot, turnToGame, lau
       assert.deepEqual(await page.evaluate(() => neo.scene.game.state), edgeState);
       assert.equal(await page.evaluate(() => neo.scene.game.misses), 0);
       assert.match(await page.evaluate(() => neo.scene.game.status.text), /Both ends need stones/);
+      if (level === 5) {
+        // Stand the log up on a cradle stone: it does not finish, costs nothing, and the status says to lie it down.
+        const toCradle = await page.evaluate(async () => {
+          const { DIRECTIONS, roll, key, standsOnCradle } = await import('/src/games/log-roll/logic.ts');
+          const g = neo.scene.game,
+            floor = g.puzzle.plan.floor,
+            queue = [{ state: g.puzzle.start, route: [] }],
+            seen = new Set([key(g.puzzle.start)]);
+          for (let head = 0; head < queue.length; head++) {
+            const v = queue[head];
+            if (standsOnCradle(v.state, floor)) return v.route;
+            for (const d of DIRECTIONS) {
+              const n = roll(v.state, d, floor);
+              if (n && !seen.has(key(n))) {
+                seen.add(key(n));
+                queue.push({ state: n, route: [...v.route, d] });
+              }
+            }
+          }
+          throw new Error('No way to stand on a cradle stone');
+        });
+        await tap('neo.scene.game.againButton');
+        for (const d of toCradle) {
+          await tap(`neo.scene.game.directions.${d}`);
+          await page.waitForTimeout(330);
+        }
+        assert.equal(await page.evaluate(() => neo.scene.game.state.pose), 'up');
+        assert.equal(
+          await page.evaluate(() => neo.scene.game.finished),
+          false,
+          'standing on a cradle never finishes',
+        );
+        assert.equal(await page.evaluate(() => neo.scene.game.misses), 0);
+        assert.match(
+          await page.evaluate(() => neo.scene.game.status.text),
+          /lie it across both cradle stones/,
+        );
+        assert.match(await page.evaluate(() => neo.scene.game.heading.text), /cradle/);
+        await screenshot('log-roll-cradle-stand');
+      }
       await tap('neo.scene.game.againButton');
       assert.deepEqual(await page.evaluate(() => neo.scene.game.state), original);
       await tap('neo.scene.game.hintButton');
