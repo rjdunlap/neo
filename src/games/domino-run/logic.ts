@@ -24,6 +24,8 @@ export interface Lane {
   fixed: number[];
   /** Slots where she can stand a domino. */
   sockets: number[];
+  /** Level 11: sockets under the pier, where only a small domino fits. */
+  low?: number[];
   end: End;
 }
 
@@ -85,6 +87,9 @@ export function run(line: Line, placed: Placement, from = 0): LaneRun[] {
 
 export const rings = (line: Line, placed: Placement) => run(line, placed).every((r) => r.rung);
 
+/** Can a domino of this size stand in this socket? Only a small fits under the pier. */
+export const fits = (lane: Lane, slot: number, size: number) => size <= 1 || !lane.low?.includes(slot);
+
 const key = (p: Placement) => p.map((l) => l.join('')).join('|');
 
 /**
@@ -110,7 +115,7 @@ export function solutions(line: Line): Placement[] {
     const [lane, slot] = sockets[i];
     walk(i + 1);
     for (const s of SIZES) {
-      if (!counts[s]) continue;
+      if (!counts[s] || !fits(line.lanes[lane], slot, s)) continue;
       counts[s]--;
       placed[lane][slot] = s;
       walk(i + 1);
@@ -137,7 +142,7 @@ export function arrangements(line: Line, all = false): Placement[] {
     const [lane, slot] = sockets[i];
     walk(i + 1, left);
     for (const s of SIZES) {
-      if (!counts[s]) continue;
+      if (!counts[s] || !fits(line.lanes[lane], slot, s)) continue;
       counts[s]--;
       placed[lane][slot] = s;
       walk(i + 1, left - 1);
@@ -261,32 +266,34 @@ export const PLANS: Plan[] = [
   { id: 8, name: 'Two bells, one tray', lines: 2, fork: true, tapAny: false, hop: false },
   { id: 9, name: 'Where will it stop?', lines: 2, fork: false, tapAny: false, hop: false, predict: true },
   { id: 10, name: 'Over the puddle', lines: 2, fork: false, tapAny: false, hop: false },
+  { id: 11, name: 'Under the pier', lines: 2, fork: false, tapAny: false, hop: false },
 ];
 
 export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 4 },
   prek: { min: 3, max: 5 },
-  school: { min: 4, max: 10 },
+  school: { min: 4, max: 11 },
 };
 
 export const planFor = (level: number): Plan => PLANS[Math.min(Math.max(1, Math.round(level)), PLANS.length) - 1];
 
 /**
- * A lane from a picture: `S` small, `T` tall, `G` giant (pinned), `_` a socket, `~` a puddle (an empty slot where nothing
- * can stand), ending in `B` bell or `O` gong; the starter is implied.
+ * A lane from a picture: `S` small, `T` tall, `G` giant (pinned), `_` a socket, `P` a socket under the pier (small only),
+ * `~` a puddle (an empty slot where nothing can stand), ending in `B` bell or `O` gong; the starter is implied.
  */
 export function lane(picture: string): Lane {
   const n = picture.length;
   const fixed = new Array<number>(n + 1).fill(0);
   fixed[0] = 1;
-  const sockets: number[] = [];
+  const sockets: number[] = [], low: number[] = [];
   [...picture.slice(0, -1)].forEach((c, i) => {
     const slot = i + 1;
-    if (c === '_') sockets.push(slot);
-    else if (c !== '~') fixed[slot] = 'STG'.indexOf(c) + 1;
+    if (c === '_' || c === 'P') sockets.push(slot);
+    if (c === 'P') low.push(slot);
+    else if (c !== '~' && c !== '_') fixed[slot] = 'STG'.indexOf(c) + 1;
   });
-  return { n, fixed, sockets, end: picture.endsWith('O') ? 'gong' : 'bell' };
+  return { n, fixed, sockets, end: picture.endsWith('O') ? 'gong' : 'bell', ...(low.length ? { low } : {}) };
 }
 
 const tray = (s: string): Size[] => [...s].map((c) => ('STG'.indexOf(c) + 1) as Size);
@@ -303,6 +310,7 @@ export const FIRST: Record<number, Line> = {
   8: { lanes: [lane('S____O'), lane('SS__TB')], tray: tray('TTG') },
   9: { lanes: [lane('SS_SSB')], tray: tray('S') },
   10: { lanes: [lane('S__~~B')], tray: tray('TG') },
+  11: { lanes: [lane('SSP__O')], tray: tray('STG') },
 };
 
 /** The standing dominoes she can tap as her guess at level 9: the starter and every pinned one. */
@@ -389,6 +397,21 @@ export function passes(plan: Plan, line: Line): boolean {
       // At most one decoy: the fullest solution leaves at most one tray piece unused.
       const most = Math.max(...sols.map((p) => p[0].filter(Boolean).length));
       return giants === 1 && sols.every((p) => p[0][g] === 3) && !solutions({ ...line, tray: without }).length && most >= line.tray.length - 1;
+    }
+    case 11: {
+      // One pier socket with a pinned small (or the starter) just before it, so no tall can reach over it; a gong.
+      const l = lanes[0], pier = l.low ?? [];
+      if (l.end !== 'gong' || pier.length !== 1 || !l.sockets.includes(pier[0]) || l.fixed[pier[0] - 1] !== 1) return false;
+      const P = pier[0];
+      // Every solution stands a small under the pier, then climbs to the giant after it.
+      const climbs = (p: Placement) => {
+        const after = runLane(l, p[0]).fallen.filter((s) => s >= P).map((s) => sizeAt(l, p[0], s));
+        return after[0] === 1 && after.every((s, i) => i === 0 || s >= after[i - 1]) && after[after.length - 1] === 3;
+      };
+      // The pier matters: without it, a bigger domino could stand there in some solution.
+      const free = solutions({ ...line, lanes: [{ ...l, low: undefined }] });
+      const most = Math.max(...sols.map((p) => p[0].filter(Boolean).length));
+      return sols.every((p) => p[0][P] === 1 && climbs(p)) && free.some((p) => p[0][P] > 1) && most >= line.tray.length - 1;
     }
   }
   return false;
@@ -551,6 +574,26 @@ function candidate(plan: Plan, rng: Rng): Line | null {
       if (t.length < 3 && rng.chance(0.35)) t.push(rng.pick([1, 2] as Size[]));
       return { lanes: [{ n, fixed, sockets, end: 'bell' }], tray: rng.shuffle(t) };
     }
+    case 11: {
+      // Pier first: pinned smalls up to the pier at P, then a tall just after it, a giant one or two past that, and the gong.
+      const P = rng.int(1, 3);
+      const g = P + (P === 3 ? 2 : rng.int(2, 3));
+      const n = rng.int(g + 1, Math.min(6, g + 3));
+      const pieces = new Array<number>(n + 1).fill(0);
+      for (let s = 0; s <= P; s++) pieces[s] = 1;
+      pieces[P + 1] = 2;
+      pieces[g] = 3;
+      // The pier's small is always hers, and the tall, the giant or both; sometimes an empty slot is a socket too.
+      const open = [P, ...rng.shuffle([P + 1, g]).slice(0, rng.int(1, 2))];
+      const empty = Array.from({ length: n - P - 1 }, (_, i) => i + P + 1).filter((s) => !pieces[s]);
+      const sockets = [...open, ...(empty.length && rng.chance(0.35) ? [rng.pick(empty)] : [])].sort((a, b) => a - b);
+      const fixed = new Array<number>(n + 1).fill(0);
+      fixed[0] = 1;
+      for (let s = 1; s < n; s++) if (pieces[s] && !open.includes(s)) fixed[s] = pieces[s];
+      const t: Size[] = open.map((s) => pieces[s] as Size);
+      if (t.length < 3 && rng.chance(0.35)) t.push(rng.pick([2, 3] as Size[]));
+      return { lanes: [{ n, fixed, sockets, low: [P], end: 'gong' }], tray: rng.shuffle(t) };
+    }
   }
   return null;
 }
@@ -575,7 +618,8 @@ export function makeRound(plan: Plan, rng: Rng, count = plan.lines): Line[] {
   return out;
 }
 
-export const describe = (line: Line) => line.lanes.map((l) => `${l.fixed.join('')}:${l.sockets.join(',')}:${l.end}`).join('|') + `/${line.tray.join('')}`;
+export const describe = (line: Line) =>
+  line.lanes.map((l) => `${l.fixed.join('')}:${l.sockets.join(',')}${l.low ? `:p${l.low.join(',')}` : ''}:${l.end}`).join('|') + `/${line.tray.join('')}`;
 
 /* ---------------------------------------------------------------------------------------------- */
 /* Layout                                                                                         */

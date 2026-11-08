@@ -3,7 +3,7 @@ import { Rng } from '../../engine/random';
 import { computeView } from '../../engine/view';
 import { VOICE } from './voice';
 import {
-  arrangements, describe as name, dominoLayout, emptyPlacement, END_SIZE, FIRST, hintPlacement, lane, LOOK_END, LOOK_LINE, looksFor, makeLine,
+  arrangements, describe as name, dominoLayout, emptyPlacement, END_SIZE, FIRST, fits, hintPlacement, lane, LOOK_END, LOOK_LINE, looksFor, makeLine,
   makeRound, MOODS, passes, PITCH, PLANS, planFor, puddleGiantSlot, puddles, remaining, rings, run, runLane, slotBox, solutions, SLOT_H, stallReason, standing, stopsAt, TRAY_W, type Line, type Placement,
 } from './logic';
 
@@ -80,6 +80,8 @@ describe('Domino Run first lines', () => {
     expect(stopsAt(FIRST[9])).toEqual({ slot: 2, reason: 'too-far' });
     expect(pictures(solutions(FIRST[10]))).toEqual(['0023000']);
     expect(puddles(FIRST[10].lanes[0])).toEqual([{ from: 4, to: 5 }]);
+    expect(pictures(solutions(FIRST[11]))).toEqual(['0001230']);
+    expect(FIRST[11].lanes[0].low).toEqual([3]);
   });
 
   it('their named wrong arrangements stall for the named reason', () => {
@@ -91,6 +93,8 @@ describe('Domino Run first lines', () => {
     expect(run(FIRST[10], at(FIRST[10], { 2: 2 }))[0].stall).toMatchObject({ reason: 'too-far', at: 3 });
     expect(run(FIRST[10], at(FIRST[10], { 2: 3 }))[0].stall).toMatchObject({ reason: 'too-heavy', at: 2 });
     expect(run(FIRST[10], at(FIRST[10], { 3: 3 }))[0].stall).toMatchObject({ reason: 'too-far', at: 2 });
+    // Level 11: the small under the pier pushing the giant straight away.
+    expect(run(FIRST[11], at(FIRST[11], { 3: 1, 4: 3 }))[0].stall).toMatchObject({ reason: 'too-heavy', at: 4 });
   });
 
   it('pass their own plan filters', () => {
@@ -128,7 +132,7 @@ describe('Domino Run generation', () => {
       expect(round).toHaveLength(plan.lines);
     }
     expect(planFor(0).id).toBe(1);
-    expect(planFor(99).id).toBe(10);
+    expect(planFor(99).id).toBe(11);
   });
 });
 
@@ -225,6 +229,81 @@ describe('Domino Run level 10, Over the puddle', () => {
 
   it('the seeds give more than one picture', () => {
     expect(new Set(lines.map(name)).size).toBeGreaterThanOrEqual(6);
+  });
+});
+
+describe('Domino Run level 11, Under the pier', () => {
+  const plan = planFor(11);
+  const lines = [FIRST[11], ...Array.from({ length: 500 }, (_, i) => makeLine(plan, new Rng(i + 1)).line)];
+  const pierOf = (line: Line) => line.lanes[0].low![0];
+
+  it('levels 1–10 never have a pier, so their lines are unchanged', () => {
+    for (const p of PLANS.filter((q) => q.id < 11)) {
+      expect(FIRST[p.id].lanes.every((l) => !l.low), `level ${p.id}`).toBe(true);
+      for (let seed = 1; seed <= 100; seed++) expect(makeLine(p, new Rng(seed)).line.lanes.every((l) => !l.low)).toBe(true);
+    }
+  });
+
+  it('only a small fits under the pier, in every solution and every arrangement she can make', () => {
+    for (const line of lines) {
+      const l = line.lanes[0], P = pierOf(line);
+      expect([1, 2, 3].map((s) => fits(l, P, s))).toEqual([true, false, false]);
+      for (const p of arrangements(line)) expect(p[0][P], name(line)).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it('one pier socket with a small just before it, ending in a gong', () => {
+    for (const line of lines) {
+      const l = line.lanes[0], P = pierOf(line);
+      expect(l.low, name(line)).toHaveLength(1);
+      expect(l.sockets, name(line)).toContain(P);
+      expect(l.fixed[P - 1], name(line)).toBe(1);
+      expect(l.end, name(line)).toBe('gong');
+    }
+  });
+
+  it('every solution stands a small under the pier, then climbs to a giant after it', () => {
+    for (const line of lines) {
+      const l = line.lanes[0], P = pierOf(line), sols = solutions(line);
+      expect(sols.length, name(line)).toBeGreaterThan(0);
+      for (const p of sols) {
+        expect(p[0][P], name(line)).toBe(1);
+        const after = runLane(l, p[0]).fallen.filter((s) => s >= P).map((s) => p[0][s] || l.fixed[s]);
+        expect(after[0]).toBe(1);
+        expect(after[after.length - 1], name(line)).toBe(3);
+        for (let i = 1; i < after.length; i++) expect(after[i], name(line)).toBeGreaterThanOrEqual(after[i - 1]);
+      }
+    }
+  });
+
+  it('the pier matters: without it, a bigger domino could stand there', () => {
+    for (const line of lines) {
+      const P = pierOf(line), free = solutions({ ...line, lanes: [{ ...line.lanes[0], low: undefined }] });
+      expect(free.some((p) => p[0][P] > 1), name(line)).toBe(true);
+    }
+  });
+
+  it('a line where a tall stands before the pier, reaching over it, never passes', () => {
+    expect(passes(plan, { lanes: [lane('TP__O')], tray: [1, 2, 3] })).toBe(false);
+    expect(passes(plan, { lanes: [lane('S_P__O')], tray: [1, 2, 3] })).toBe(false);
+  });
+
+  it('a tray of at most three with at most one decoy, and more than one picture', () => {
+    for (const line of lines) {
+      const most = Math.max(...solutions(line).map((p) => p[0].filter(Boolean).length));
+      expect(line.tray.length - most, name(line)).toBeLessThanOrEqual(1);
+    }
+    expect(new Set(lines.map(name)).size).toBeGreaterThanOrEqual(6);
+  });
+
+  it('following the hint from any state never asks for a big domino under the pier', () => {
+    for (const line of lines.slice(0, 60)) {
+      const P = pierOf(line), sols = solutions(line);
+      for (const start of arrangements(line)) {
+        const h = hintPlacement(line, start, sols);
+        if (h.kind === 'place' && h.slot === P) expect(h.size, name(line)).toBe(1);
+      }
+    }
   });
 });
 
