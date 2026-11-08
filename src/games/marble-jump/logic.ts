@@ -126,12 +126,18 @@ export function starPairs(): readonly { board: number; goal: number }[] {
 export const hasGoldTrap = (board: number, gold: number) =>
   allowed(board, gold).some((j) => solve(jump(board, j), ANY, goldAfter(gold, j)) === null);
 let golds: { board: number; gold: number }[] | null = null;
-/** Every reachable nine-marble board and gold marble that can finish with gold last and has a first jump that strands it, in a fixed order. */
+/**
+ * Every reachable nine-marble board and gold marble where a jump over gold is on offer from the start (so the rule matters at once),
+ * gold can finish last, and a first jump strands it; in a fixed order.
+ */
 export function goldPairs(): readonly { board: number; gold: number }[] {
   golds ??= (reachable().get(marblesFor(GOLD_LEVEL)) ?? []).flatMap((board) =>
     HOLES.map((_, gold) => ({ board, gold })).filter(
       (p) =>
-        occupied(p.board, p.gold) && solve(p.board, ANY, p.gold) !== null && hasGoldTrap(p.board, p.gold),
+        occupied(p.board, p.gold) &&
+        moves(p.board).some((j) => j.over === p.gold) &&
+        solve(p.board, ANY, p.gold) !== null &&
+        hasGoldTrap(p.board, p.gold),
     ),
   );
   return golds;

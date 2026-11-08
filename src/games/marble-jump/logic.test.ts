@@ -266,7 +266,7 @@ describe('Marble Jump', () => {
   });
   it('seeds level 8 with nine marbles and a gold one that can finish last, with a trap', () => {
     const pairs = goldPairs();
-    expect(pairs.length).toBeGreaterThanOrEqual(1000);
+    expect(pairs.length).toBeGreaterThanOrEqual(500);
     expect(GOLD_LEVEL).toBe(8);
     const seen = new Set<string>();
     for (let seed = 1; seed <= 80; seed++) {
@@ -276,6 +276,9 @@ describe('Marble Jump', () => {
       expect(round.goal).toBe(ANY);
       expect(occupied(round.board, round.gold)).toBe(true);
       expect(hasGoldTrap(round.board, round.gold)).toBe(true);
+      // The first board already offers a jump over gold, which is refused.
+      expect(moves(round.board).some((j) => j.over === round.gold)).toBe(true);
+      expect(allowed(round.board, round.gold).some((j) => j.over === round.gold)).toBe(false);
       seen.add(`${round.board}:${round.gold}`);
       // The route the hint and the bot follow never jumps gold, and leaves gold last.
       let { board, gold } = round;
@@ -286,7 +289,7 @@ describe('Marble Jump', () => {
       }
       expect(board).toBe(1 << gold);
     }
-    expect(seen.size).toBeGreaterThanOrEqual(60);
+    expect(seen.size).toBeGreaterThanOrEqual(50);
     for (let level = 1; level < GOLD_LEVEL; level++) expect(makeRound(level, new Rng(3)).gold).toBe(NONE);
   });
   it('refuses jumps over gold and never hints one, even after recovery', () => {
