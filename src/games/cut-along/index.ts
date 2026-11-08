@@ -2,6 +2,7 @@ import { Container, Graphics, Rectangle, type FederatedPointerEvent } from 'pixi
 import { cream, ink, swatch, type ColorName } from '../../art/palette';
 import { STYLES } from '../../audio/music';
 import { sfx } from '../../audio/sfx';
+import { draggable, type DragHandle } from '../../engine/drag';
 import { onTap, palmOnGlass } from '../../engine/input';
 import { ease } from '../../engine/tween';
 import type { View } from '../../engine/view';
@@ -17,6 +18,7 @@ import {
   pieceColor, pieceLine, slotsFor, stickerShape, themeFor, tolerance, wrongReached, type Board, type Cut, type Layout, type Mark,
   type PieceId, type Rect, type Slot, type Theme,
   PAIR_PIECE, judgeLine, lineOfCut, makesLine, splitBoardsFor, splitSheet, twinOf, type SplitBoard,
+  OWN_R, OWN_SIZE, OWN_XS, OWN_Y, botSpots, choiceAt, ownChoicesFor, pictureCut, placeIn, type PictureShape,
 } from './logic';
 
 /** One outline's cutting state: which way round, and how far the scissors have come. */
@@ -234,6 +236,8 @@ class CutAlong implements Game {
   private readonly piecesG = new Graphics();
   private readonly layer = new Container();
   private readonly flyers = new Container();
+  /** Level 11's cut piece, waiting above everything for her to carry it into the picture. */
+  private readonly hand = new Container();
 
   // Level 1
   private marks: Mark[] = [];
@@ -244,6 +248,12 @@ class CutAlong implements Game {
   private boards: Board[] = [];
   // Level 10
   private splits: SplitBoard[] = [];
+  // Level 11: the shapes each sheet offers, whether she is still choosing, the piece she carries, and where pieces went.
+  private choices: PictureShape[][] = [];
+  private choosing = false;
+  private held: { holder: Container; inner: Graphics; piece: PieceId; handle: DragHandle } | null = null;
+  private owned: { piece: PieceId; x: number; y: number }[] = [];
+  private spots: { x: number; y: number }[] = [];
   private index = 0;
   private tracks: Track[] = [];
   private active: Track | null = null;
@@ -271,12 +281,13 @@ class CutAlong implements Game {
     this.level = levelOf(ctx.level);
     this.plan = planFor(this.level);
     this.tol = tolerance(this.level);
-    this.layout = layoutFor(ctx.view);
+    this.layout = layoutFor(ctx.view, this.level);
+    if (this.plan.mode === 'own') { this.choices = ownChoicesFor(ctx.rng); this.spots = botSpots(ctx.rng); }
     if (this.plan.mode === 'fits') this.boards = boardsFor(ctx.rng);
     else if (this.plan.mode === 'two') this.splits = splitBoardsFor(ctx.rng);
     else if (this.plan.mode === 'cut') this.cuts = cutsFor(this.level, ctx.rng);
     // The how-to card's demonstration plays one piece.
-    if (ctx.demo) { this.cuts = this.cuts.slice(-1); this.boards = this.boards.slice(0, 1); this.splits = this.splits.slice(0, 1); }
+    if (ctx.demo) { this.cuts = this.cuts.slice(-1); this.boards = this.boards.slice(0, 1); this.splits = this.splits.slice(0, 1); this.choices = this.choices.slice(0, 1); }
     const pieces: PieceId[] = this.plan.mode === 'snip' ? Array(ctx.demo ? 1 : 3).fill('grass') : this.cuts.map((c) => c.piece);
     this.theme = themeFor(this.level, ctx.rng);
     this.slots = slotsFor(this.level, this.theme, pieces);
@@ -287,6 +298,7 @@ class CutAlong implements Game {
     for (const g of [this.back, this.sheetG, this.lineG, this.slitG, this.cueG, this.bee, this.sceneG, this.piecesG]) g.eventMode = 'none';
     this.paper.eventMode = 'none';
     this.flyers.eventMode = 'none';
+    this.hand.eventMode = 'passive';
     this.layer.eventMode = 'static';
     this.layer.on('pointerdown', (e) => this.down(e));
     this.layer.on('globalpointermove', (e) => this.move(e));
@@ -295,7 +307,7 @@ class CutAlong implements Game {
     // Pixi does not pass a cancelled touch on, so the window is watched for it.
     this.ctx.listen(window, 'pointercancel', this.cancel, { capture: true });
     onTap(this.picture, () => void this.ctx.instruct(this.instructLine()), { cooldown: 600 });
-    ctx.stage.addChild(this.back, this.paper, this.picture, this.flyers, this.layer);
+    ctx.stage.addChild(this.back, this.paper, this.picture, this.flyers, this.layer, this.hand);
     this.nextSheet();
     this.resize(ctx.view);
   }
@@ -308,11 +320,13 @@ class CutAlong implements Game {
 
   private instructLine(): LineId {
     if (this.level === 9) return 'cut.instruct.round';
+    if (this.plan.mode === 'own') return this.held ? 'cut.place' : this.choosing ? 'cut.instruct.own' : 'cut.instruct.ring';
     if (this.plan.mode === 'two') return `cut.instruct.two.${this.splits[Math.min(this.index, this.splits.length - 1)].need}`;
     return this.plan.mode === 'snip' ? 'cut.instruct.snip' : this.plan.mode === 'fits' ? 'cut.instruct.fits' : 'cut.instruct.ring';
   }
 
   private get pieceCount() {
+    if (this.plan.mode === 'own') return this.choices.length;
     return this.plan.mode === 'snip' ? this.slots.length : this.plan.mode === 'fits' ? this.boards.length : this.plan.mode === 'two' ? this.splits.length : this.cuts.length;
   }
 
@@ -328,6 +342,9 @@ class CutAlong implements Game {
       this.tracks = this.boards[this.index].cuts.map((cut) => ({ cut, order: null, progress: 0, tried: false }));
     } else if (this.plan.mode === 'two') {
       this.tracks = this.splits[this.index].cuts.map((cut) => ({ cut, order: null, progress: 0, tried: false }));
+    } else if (this.plan.mode === 'own') {
+      this.tracks = [];
+      this.choosing = true;
     } else {
       this.tracks = [{ cut: this.cuts[this.index], order: null, progress: 0, tried: false }];
       this.active = this.tracks[0];
@@ -349,6 +366,16 @@ class CutAlong implements Game {
       this.marks.forEach((m, i) => {
         if (this.snipped.has(i)) return;
         lines.moveTo(m.x * s, s).lineTo(m.x * s, (1 - m.length) * s).stroke({ width: 14, color: ink, alpha: 0.75, cap: 'round' });
+      });
+    } else if (this.choosing) {
+      // Level 11 offers three shapes, drawn small with a soft tile behind each; she taps the one she wants.
+      sheet.rect(0, 0, PAPER_W * s, s).fill(color.fill).stroke({ width: 4, color: color.line });
+      this.choices[this.index].forEach((k, i) => {
+        const cx = OWN_XS[i] * s, cy = OWN_Y * s;
+        sheet.roundRect(cx - 0.19 * s, cy - 0.19 * s, 0.38 * s, 0.38 * s, 18).fill({ color: 0xffffff, alpha: 0.4 });
+        // Drawn whole, not dashed: this is a picture to choose from, and the cut itself is dashed once she has chosen.
+        lines.poly(OUTLINES[k].loop.flatMap(([x, y]) => [(OWN_XS[i] + x * OWN_R) * s, (OWN_Y + y * OWN_R) * s]))
+          .fill({ color: 0xffffff, alpha: 0.85 }).stroke({ width: 5, color: ink, alpha: 0.7, join: 'round' });
       });
     } else {
       const sh = this.tracks[0].cut.sheet;
@@ -430,6 +457,8 @@ class CutAlong implements Game {
     this.sceneG.clear(); drawScene(this.sceneG, this.theme, w, h, this.slots);
     const g = this.piecesG.clear();
     this.slots.forEach((slot, i) => drawPiece(g, slot.piece, { x: slot.x * w, y: slot.y * h, w: slot.w * w, h: slot.h * h }, !this.placed.has(i), this.theme));
+    const side = OWN_SIZE * w;
+    for (const o of this.owned) drawPiece(g, o.piece, { x: o.x * w - side / 2, y: o.y * h - side / 2, w: side, h: side }, false, this.theme);
   }
 
   /* ------------------------------------------------------------ input */
@@ -446,6 +475,13 @@ class CutAlong implements Game {
     if (this.plan.mode === 'snip') {
       this.drag = { id: e.pointerId, prev: p, track: null, missed: false, stopped: false, travel: 0, outside: false };
       if (!this.snipMark(p)) this.wiggle = 0.5;
+      return;
+    }
+    if (this.choosing) {
+      // Any offered shape is a fine choice; a touch between them chooses nothing.
+      const i = choiceAt(p);
+      if (i === null) { sfx.tick(); return; }
+      this.choose(i);
       return;
     }
     // A touch on the scissors (or a start ring) carries on; anywhere else the scissors wiggle to show where they are.
@@ -525,10 +561,78 @@ class CutAlong implements Game {
     this.drag = null;
     this.scissors.opening = 0.3;
     // After the hint lights the next stretch, a paper bee flies it once she lifts.
-    if (this.glow && !this.beeShown && this.active && this.plan.mode === 'cut') { this.beeShown = true; void this.flyBee(this.active); }
+    if (this.glow && !this.beeShown && this.active && this.lightsStretch) { this.beeShown = true; void this.flyBee(this.active); }
   }
 
   /* ------------------------------------------------------------ rules */
+
+  /** Levels that light the next stretch for a hint (levels 8 and 10 glow the piece or line that works instead). */
+  private get lightsStretch() { return this.plan.mode === 'cut' || this.plan.mode === 'own'; }
+
+  /** Level 11: the chosen shape grows to full size with its lead-in and ring, and she cuts it as at level 7. */
+  private choose(i: number) {
+    const kind = this.choices[this.index][i];
+    this.choosing = false;
+    this.tracks = [{ cut: pictureCut(kind), order: null, progress: 0, tried: false }];
+    this.active = this.tracks[0];
+    sfx.pop(5 + i);
+    this.drawPaper();
+    void this.ctx.instruct('cut.instruct.ring');
+  }
+
+  /** Level 11: the cut piece lifts off the paper and waits for her to carry it anywhere into the picture. */
+  private holdPiece(t: Track) {
+    const s = this.s, color = swatch[this.paperColor], p = this.layout.paper;
+    const inner = new Graphics().poly(t.cut.outline!.flatMap((q) => [q[0] * s, q[1] * s])).fill(color.fill).stroke({ width: 4, color: color.line });
+    const b = inner.getLocalBounds();
+    inner.pivot.set(b.x + b.width / 2, b.y + b.height / 2);
+    const holder = new Container();
+    holder.addChild(inner);
+    holder.position.set(p.x + b.x + b.width / 2, p.y + b.y + b.height / 2);
+    this.hand.addChild(holder);
+    const fit = (OWN_SIZE * this.layout.picture.w) / Math.max(b.width, b.height);
+    const handle = draggable(holder, this.ctx.tw, {
+      onPick: () => void this.ctx.tw.to(inner.scale, { x: fit, y: fit }, { duration: 0.2, ease: ease.outQuad }),
+      onDrop: (x, y) => { void this.placePiece(x, y); return true; },
+    });
+    this.held = { holder, inner, piece: t.cut.piece, handle };
+    void this.ctx.tw.to(holder, { y: holder.y - 20 }, { duration: 0.25, ease: ease.outQuad });
+    void this.ctx.say('cut.place');
+  }
+
+  /** Let go at (x, y) on the stage: inside the picture it stays where she put it; anywhere else it floats to the middle. */
+  private async placePiece(x: number, y: number) {
+    const h = this.held;
+    if (!h || this.finished) return;
+    h.handle.enabled = false;
+    const pic = this.layout.picture, q = this.picture.toLocal({ x, y }, this.hand);
+    const at = placeIn(q.x / pic.w, q.y / pic.h);
+    const to = this.hand.toLocal(this.picture.toGlobal({ x: at.x * pic.w, y: at.y * pic.h }));
+    const fit = (OWN_SIZE * pic.w) / Math.max(h.inner.width / h.inner.scale.x, h.inner.height / h.inner.scale.y);
+    await Promise.all([
+      this.ctx.tw.to(h.holder, { x: to.x, y: to.y }, { duration: 0.35, ease: ease.inOutSine }),
+      this.ctx.tw.to(h.inner.scale, { x: fit, y: fit }, { duration: 0.35, ease: ease.inOutSine }),
+    ]);
+    if (this.held !== h) return;
+    h.handle.destroy();
+    h.holder.destroy({ children: true });
+    this.held = null;
+    this.owned.push({ piece: h.piece, ...at });
+    this.drawPicture();
+    sfx.pop(7);
+    await this.ctx.say(pieceLine(this.theme, h.piece) as LineId);
+    this.nextPiece();
+  }
+
+  /** On to the next sheet, or the end of the round. */
+  private nextPiece() {
+    this.index++;
+    if (this.index >= this.pieceCount) return void this.finish();
+    this.nextSheet();
+    this.busy = false;
+    this.placeScissors();
+    void this.ctx.instruct(this.instructLine());
+  }
 
   private snipMark(p: Point): boolean {
     const i = markAt(this.marks, this.snipped, p, this.s);
@@ -593,6 +697,12 @@ class CutAlong implements Game {
     this.busy = true;
     this.placeScissors();
     sfx.sparkle();
+    if (this.plan.mode === 'own' && t) {
+      this.sheetG.clear(); this.lineG.clear(); this.slitG.clear(); this.cueG.clear();
+      this.scissors.visible = false;
+      this.holdPiece(t);
+      return;
+    }
     const s = this.s, color = swatch[this.paperColor];
     const parts: { poly: readonly Point[]; slot: number }[] = [];
     if (!t) {
@@ -637,12 +747,7 @@ class CutAlong implements Game {
     this.drawPicture();
     sfx.pop(7);
     await this.ctx.say(pieceLine(this.theme, this.slots[flying[0].slot].piece) as LineId);
-    this.index++;
-    if (this.index >= this.pieceCount) return void this.finish();
-    this.nextSheet();
-    this.busy = false;
-    this.placeScissors();
-    void this.ctx.instruct(this.instructLine());
+    this.nextPiece();
   }
 
   private async finish() {
@@ -679,7 +784,7 @@ class CutAlong implements Game {
 
   resize(v: View) {
 
-    this.layout = layoutFor(v);
+    this.layout = layoutFor(v, this.level);
     const { paper, picture } = this.layout;
     this.back.clear().rect(0, 0, v.w, v.h).fill(cream);
     this.paper.position.set(paper.x, paper.y);
@@ -692,6 +797,11 @@ class CutAlong implements Game {
     this.curls.forEach((c) => c.destroy());
     this.curls = [];
     this.marks.forEach((_, i) => { if (this.snipped.has(i)) this.curl(i); });
+    // A piece waiting to be carried moves with the paper.
+    if (this.held && !this.held.handle.dragging && this.held.handle.enabled) {
+      this.held.holder.position.set(paper.x + paper.w / 2, paper.y + paper.h * 0.4);
+      this.held.handle.home = { x: this.held.holder.x, y: this.held.holder.y };
+    }
   }
 
   update(dt: number) {
@@ -717,20 +827,29 @@ class CutAlong implements Game {
       const at = t.cut.orders[0][0];
       g.circle(at[0] * s, at[1] * s, RING_R * pulse).fill({ color: swatch.green.light, alpha: 0.45 }).stroke({ width: 7, color: swatch.green.fill });
     }
-    if (this.glow && this.active && this.plan.mode === 'cut') {
+    if (this.glow && this.active && this.lightsStretch) {
       for (const p of hintStretch(pathOf(this.active.cut, this.active.order), this.active.progress)) g.circle(p[0] * s, p[1] * s, 7).fill(swatch.yellow.fill);
     }
   }
 
   askForHint() {
+    if (this.held && !this.finished) return void this.ctx.say('cut.place');
     if (this.busy || this.finished) return;
-    if (this.plan.mode === 'snip' || !countsStrays(this.level)) return void this.ctx.say(this.instructLine());
+    if (this.plan.mode === 'snip' || !countsStrays(this.level) || this.choosing) return void this.ctx.say(this.instructLine());
     if (!this.glow) { this.glow = true; this.hints++; this.beeShown = false; this.drawPaper(); }
   }
 
   /** The ghost finger: the next mark at level 1, otherwise the cut from where the scissors wait (circles counterclockwise). */
   autotouch(): TouchIntent | null {
-    if (this.busy || this.finished || this.drag) return null;
+    if (this.finished) return null;
+    if (this.held) {
+      // Level 11: carry the piece to this piece's seeded spot in the picture.
+      if (this.held.handle.dragging || !this.held.handle.enabled) return null;
+      const pic = this.layout.picture, spot = this.spots[Math.min(this.index, this.spots.length - 1)];
+      return { drag: { on: this.held.holder, x: 0, y: 0 }, to: { on: this.picture, x: spot.x * pic.w, y: spot.y * pic.h }, pause: 0.4 };
+    }
+    if (this.busy || this.drag) return null;
+    if (this.choosing) return { tap: { on: this.paper, x: OWN_XS[0] * this.s, y: OWN_Y * this.s }, receiver: this.layer, pause: 0.4 };
     if (this.plan.mode === 'snip') {
       const m = this.marks.findIndex((_, i) => !this.snipped.has(i));
       if (m < 0) return null;
@@ -747,6 +866,8 @@ class CutAlong implements Game {
   destroy() {
     this.drag = null;
     this.layer.removeAllListeners();
+    this.held?.handle.destroy();
+    this.held = null;
   }
 }
 

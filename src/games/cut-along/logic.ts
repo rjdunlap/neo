@@ -16,7 +16,7 @@ export const PAPER_W = 4 / 3;
 /** Sample spacing along a cut, in paper units: about 11 logical units on the smallest paper. */
 export const SPACING = 0.025;
 
-export type Mode = 'snip' | 'cut' | 'fits' | 'two';
+export type Mode = 'snip' | 'cut' | 'fits' | 'two' | 'own';
 
 export interface CutPlan {
   mode: Mode;
@@ -36,13 +36,14 @@ export const PLANS: readonly CutPlan[] = [
   { mode: 'fits', name: 'The piece that fits: choose the outline for the gap, then cut it', count: 3 },
   { mode: 'cut', name: 'Round and round: spirals for a snail, a snake and a curly tail', count: 3 },
   { mode: 'two', name: 'Cut it in two: choose the line that makes the two pieces the picture needs, then cut it edge to edge', count: 3 },
+  { mode: 'own', name: 'My own picture: choose a shape to cut, then put it anywhere in the picture', count: 3 },
 ];
 
 export const LEVELS: BandLevels = {
   toddler: { min: 1, max: 2 },
   preschool: { min: 2, max: 5 },
-  prek: { min: 4, max: 7 },
-  school: { min: 6, max: 10 },
+  prek: { min: 4, max: 11, order: [4, 5, 6, 7, 11] },
+  school: { min: 6, max: 11 },
 };
 
 export const levelOf = (level: number): number => Math.max(1, Math.min(PLANS.length, Math.floor(level)));
@@ -78,9 +79,25 @@ const MAX_S = 560;
 export const homeCorner = (): Rect => ({ x: 0, y: 0, w: 130, h: 210 });
 export const petCorner = (v: { h: number }): Rect => ({ x: 0, y: v.h - 230, w: 170, h: 230 });
 
-/** Where the paper and the picture go: the picture top-right, the paper beside it or under it, whichever is bigger. */
-export function layoutFor(v: { w: number; h: number }): Layout {
-  const P = Math.max(200, Math.min(280, Math.min(v.w, v.h) * 0.26));
+/** At level 11 she places the pieces herself, so the picture grows towards this, as far as the paper keeps its 420. */
+export const OWN_PICTURE = 280;
+const MIN_PAPER = 420;
+
+/**
+ * Where the paper and the picture go: the picture top-right, the paper beside it or under it, whichever is bigger. At level 11
+ * the picture is the biggest up to `OWN_PICTURE` that leaves the paper at least 420 (280 upright, about 244 on a landscape iPad).
+ */
+export function layoutFor(v: { w: number; h: number }, level = 1): Layout {
+  const base = Math.max(200, Math.min(280, Math.min(v.w, v.h) * 0.26));
+  if (levelOf(level) !== 11) return arrange(v, base);
+  for (let P = OWN_PICTURE; P > base; P -= 4) {
+    const l = arrange(v, P);
+    if (l.paper.s >= MIN_PAPER) return l;
+  }
+  return arrange(v, base);
+}
+
+function arrange(v: { w: number; h: number }, P: number): Layout {
   const picture = { x: v.w - PAD - P, y: PAD, w: P, h: P };
   const left = 170 + EDGE, bottom = v.h - EDGE;
   const fit = (x0: number, x1: number, y0: number, y1: number) => {
@@ -302,16 +319,18 @@ export function cutsFor(level: number, rng: Rng): Cut[] {
         spiralCut('snake', mid + 0.04, 0.53, 2),
         flip() ? spiralCut('cat-tail', mid + 0.06, 0.42, 1) : spiralCut('coil', mid - 0.04, 0.53, 2, true),
       ];
-    default: {
-      const kinds = rng.shuffle<PictureShape>([...PICTURE_SHAPES]).slice(0, 3);
-      return kinds.map((k) => shapeCut(k, k, mid, 0.42, k === 'cloud' ? 0.42 : k === 'star' ? 0.36 : 0.34));
-    }
+    default:
+      return rng.shuffle<PictureShape>([...PICTURE_SHAPES]).slice(0, 3).map(pictureCut);
   }
 }
 
+/** A level-7 picture shape at full size in the middle of the paper; level 11 cuts the one she chooses the same way. */
+export const pictureCut = (k: PictureShape): Cut =>
+  shapeCut(k, k, PAPER_W / 2, 0.42, k === 'cloud' ? 0.42 : k === 'star' ? 0.36 : 0.34);
+
 /** Level 7's outlines; a round cuts three of them. */
 export const PICTURE_SHAPES = ['heart', 'house', 'leaf', 'fish', 'cloud', 'star', 'moon'] as const;
-type PictureShape = (typeof PICTURE_SHAPES)[number];
+export type PictureShape = (typeof PICTURE_SHAPES)[number];
 
 /** The sheet's edge the ring sits on is where the path starts. */
 export const startOf = (cut: Cut): Point => cut.orders[0][0];
@@ -365,9 +384,9 @@ export function botRoute(cut: Cut, points: readonly Point[], progress: number): 
  */
 export type Theme =
   | 'meadow' | 'hedgehog' | 'kite' | 'gift' | 'fence' | 'raft' | 'mountains' | 'river' | 'day' | 'night'
-  | 'harbour' | 'pond' | 'garland' | 'boats' | 'garden' | 'twos';
+  | 'harbour' | 'pond' | 'garland' | 'boats' | 'garden' | 'twos' | 'own';
 export const THEMES: readonly (readonly Theme[])[] = [
-  ['meadow', 'hedgehog'], ['kite', 'gift'], ['fence', 'raft'], ['mountains', 'river'], ['day', 'night'], ['harbour'], ['pond', 'garland'], ['boats'], ['garden'], ['twos'],
+  ['meadow', 'hedgehog'], ['kite', 'gift'], ['fence', 'raft'], ['mountains', 'river'], ['day', 'night'], ['harbour'], ['pond', 'garland'], ['boats'], ['garden'], ['twos'], ['own'],
 ];
 export const themeFor = (level: number, rng: Rng): Theme => rng.pick(THEMES[levelOf(level) - 1]);
 
@@ -412,6 +431,9 @@ export function slotsFor(level: number, theme: Theme, pieces: readonly PieceId[]
         shell: { x: 0.1, y: 0.48, w: 0.24, h: 0.24 }, snake: { x: 0.36, y: 0.74, w: 0.26, h: 0.2 },
         coil: { x: 0.68, y: 0.74, w: 0.26, h: 0.2 }, 'cat-tail': { x: 0.8, y: 0.3, w: 0.16, h: 0.3 },
       });
+    case 11:
+      // She places level 11's pieces herself, so the picture starts empty.
+      return [];
     case 10:
       // Two windows in the house, two sails on the boats, two boards in the fence; each board fills one pair.
       return [
@@ -626,6 +648,45 @@ export function splitSheet(sheet: Rect, line: SplitLine): [Point[], Point[]] {
     return out;
   };
   return [clip(1), clip(-1)];
+}
+
+/* ---------------------------------------------------------------- level 11 */
+
+/** Where level 11's three offered shapes sit across the sheet, and half the side of each one's touch box (paper units). */
+export const OWN_XS = [0.22, PAPER_W / 2, PAPER_W - 0.22] as const;
+export const OWN_Y = 0.45;
+export const OWN_BOX = 0.2;
+/** A shape drawn small on its tile, before she chooses it. */
+export const OWN_R = 0.13;
+
+/** Level 11's three sheets: each offers three of level 7's shapes side by side. */
+export function ownChoicesFor(rng: Rng): PictureShape[][] {
+  return Array.from({ length: 3 }, () => rng.shuffle<PictureShape>([...PICTURE_SHAPES]).slice(0, 3));
+}
+
+/** The offered shape under a touch at `p` (paper units), or null; a touch between them chooses nothing and is never wrong. */
+export function choiceAt(p: Point): number | null {
+  const i = OWN_XS.findIndex((x) => Math.abs(p[0] - x) <= OWN_BOX && Math.abs(p[1] - OWN_Y) <= OWN_BOX);
+  return i < 0 ? null : i;
+}
+
+/** A placed piece's side in the picture, as a share of the picture's side. */
+export const OWN_SIZE = 0.26;
+const OWN_MARGIN = 0.03;
+
+/**
+ * Where a piece let go at (x, y) lands, in the picture's 0–1 units: its centre, nudged so the whole piece stays inside. A
+ * drop off the picture floats to the middle of it. No drop is ever wrong.
+ */
+export function placeIn(x: number, y: number): { x: number; y: number } {
+  if (!(x >= 0 && x <= 1 && y >= 0 && y <= 1)) return { x: 0.5, y: 0.5 };
+  const lo = OWN_SIZE / 2 + OWN_MARGIN, hi = 1 - lo;
+  return { x: Math.min(hi, Math.max(lo, x)), y: Math.min(hi, Math.max(lo, y)) };
+}
+
+/** The ghost finger's drops: one seeded spot for each piece, a column each, so a demonstration spreads them out. */
+export function botSpots(rng: Rng): { x: number; y: number }[] {
+  return rng.shuffle([0.24, 0.5, 0.76]).map((x) => ({ x, y: rng.range(0.28, 0.72) }));
 }
 
 /* ---------------------------------------------------------------- feel */

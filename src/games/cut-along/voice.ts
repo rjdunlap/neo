@@ -63,5 +63,7 @@ export const VOICE = {
   'cut.piece.twos.sail': ['Two triangles, for the two sails!'],
   'cut.piece.twos.window': ['Two squares, for the two windows!'],
   'cut.piece.twos.plank': ['Two long strips, for the fence!'],
+  'cut.instruct.own': ['Which shape would you like to cut? Tap it.'],
+  'cut.place': ['Now carry it into the picture. Put it anywhere you like!'],
   'cut.done': ['The picture is all done. Look what you made!'],
 } satisfies Record<string, string[]>;

@@ -7,6 +7,7 @@ import {
   DIFFERS, EDGE, botRoute, LEVELS, MARK_HIT, PAPER_W, PLANS, RING_R, STRIP, boardsFor, chooseOrder, countsStrays, cutsFor, differsLine,
   fringeMarks, hintStretch, homeCorner, judgeOutline, layoutFor, markAt, markBox, pathOf, petCorner, planFor, startOf, tolerance,
   lengthTo, wrongReached, INNER_R, RING_GAP, SPACING, OUTLINES, PICTURE_SHAPES, THEMES, pieceColor, pieceLine, slotsFor, themeFor, type Cut, type PieceId, type Rect,
+  OWN_BOX, OWN_SIZE, OWN_XS, OWN_Y, botSpots, choiceAt, ownChoicesFor, pictureCut, placeIn,
   MAKES, PAIR_PIECE, judgeLine, lineOfCut, makesLine, splitBoardsFor, splitSheet, twinOf, type Pair,
 } from './logic';
 import { swatch } from '../../art/palette';
@@ -25,6 +26,7 @@ const dist = (a: Point, b: Point) => Math.hypot(a[0] - b[0], a[1] - b[1]);
 function allCuts(level: number, seed: number): Cut[] {
   if (level === 8) return boardsFor(new Rng(seed)).flatMap((b) => b.cuts);
   if (level === 10) return splitBoardsFor(new Rng(seed)).flatMap((b) => b.cuts);
+  if (level === 11) return ownChoicesFor(new Rng(seed)).flat().map(pictureCut);
   return cutsFor(level, new Rng(seed));
 }
 
@@ -44,9 +46,12 @@ function walk(points: readonly Point[], tol: number, from = 0): number {
 }
 
 describe('Cut Along ladder', () => {
-  it('has ten levels and the defined bands', () => {
-    expect(PLANS).toHaveLength(10);
-    expect(LEVELS).toEqual({ toddler: { min: 1, max: 2 }, preschool: { min: 2, max: 5 }, prek: { min: 4, max: 7 }, school: { min: 6, max: 10 } });
+  it('has eleven levels and the defined bands', () => {
+    expect(PLANS).toHaveLength(11);
+    expect(LEVELS).toEqual({
+      toddler: { min: 1, max: 2 }, preschool: { min: 2, max: 5 }, prek: { min: 4, max: 11, order: [4, 5, 6, 7, 11] }, school: { min: 6, max: 11 },
+    });
+    expect(planFor(11).mode).toBe('own');
     expect(planFor(10).mode).toBe('two');
     expect(planFor(1).mode).toBe('snip');
     expect(planFor(8).mode).toBe('fits');
@@ -64,9 +69,9 @@ describe('Cut Along ladder', () => {
 });
 
 describe('Cut Along layout', () => {
-  for (const [name, v] of Object.entries(VIEWS)) {
-    it(`fits the paper, rings and picture in the ${name} view`, () => {
-      const { paper, picture } = layoutFor(v);
+  for (const [name, v] of Object.entries(VIEWS)) for (const level of [1, 11]) {
+    it(`fits the paper, rings and picture in the ${name} view at level ${level}`, () => {
+      const { paper, picture } = layoutFor(v, level);
       expect(paper.s).toBeGreaterThanOrEqual(420);
       expect(paper.w).toBeGreaterThanOrEqual(560);
       expect(picture.w).toBeGreaterThanOrEqual(200);
@@ -82,9 +87,8 @@ describe('Cut Along layout', () => {
       expect(overlaps(picture, homeCorner())).toBe(false);
     });
 
-    it(`keeps the corridor at least 30 units wide in the ${name} view`, () => {
-      const { paper } = layoutFor(v);
-      for (let l = 2; l <= PLANS.length; l++) expect(tolerance(l) * paper.s).toBeGreaterThanOrEqual(30);
+    it(`keeps the corridor at least 30 units wide in the ${name} view at level ${level}`, () => {
+      for (let l = 2; l <= PLANS.length; l++) expect(tolerance(l) * layoutFor(v, level === 11 ? l : level).paper.s).toBeGreaterThanOrEqual(30);
     });
   }
 });
@@ -603,5 +607,77 @@ describe('Cut Along level 10 lines', () => {
 
   it('gives the same boards for the same seed', () => {
     expect(JSON.stringify(splitBoardsFor(new Rng(42)))).toBe(JSON.stringify(splitBoardsFor(new Rng(42))));
+  });
+});
+
+describe('Cut Along level 11 my own picture', () => {
+  it('offers three different picture shapes on each of three sheets, and shows all seven across seeds', () => {
+    const seen = new Set<string>();
+    for (const seed of SEEDS) {
+      const sheets = ownChoicesFor(new Rng(seed));
+      expect(sheets).toHaveLength(3);
+      for (const offer of sheets) {
+        expect(new Set(offer).size).toBe(3);
+        for (const k of offer) { expect(PICTURE_SHAPES).toContain(k); seen.add(k); }
+      }
+    }
+    expect(seen.size).toBe(PICTURE_SHAPES.length);
+    expect(ownChoicesFor(new Rng(5))).toEqual(ownChoicesFor(new Rng(5)));
+  });
+
+  it('cuts whichever shape she chooses at level 7’s size, so every offer is cuttable both ways', () => {
+    for (const k of PICTURE_SHAPES) {
+      const cut = pictureCut(k);
+      expect(cut.closed).toBe(true);
+      for (const order of cut.orders) expect(walk(order, tolerance(11)), k).toBe(order.length - 1);
+    }
+  });
+
+  for (const [name, v] of Object.entries(VIEWS)) {
+    it(`gives each offered shape a touch box at least 110 units across that never overlaps another, on the paper, in the ${name} view`, () => {
+      const s = layoutFor(v, 11).paper.s;
+      expect(2 * OWN_BOX * s).toBeGreaterThanOrEqual(110);
+      for (let i = 1; i < OWN_XS.length; i++) expect(OWN_XS[i] - OWN_XS[i - 1]).toBeGreaterThan(2 * OWN_BOX);
+      expect(OWN_XS[0] - OWN_BOX).toBeGreaterThanOrEqual(0);
+      expect(OWN_XS[2] + OWN_BOX).toBeLessThanOrEqual(PAPER_W);
+      expect(OWN_Y - OWN_BOX).toBeGreaterThanOrEqual(0);
+      expect(OWN_Y + OWN_BOX).toBeLessThanOrEqual(1);
+    });
+  }
+
+  it('chooses the shape under a touch, and nothing (never a miss) between them', () => {
+    OWN_XS.forEach((x, i) => {
+      expect(choiceAt([x, OWN_Y])).toBe(i);
+      expect(choiceAt([x + OWN_BOX * 0.9, OWN_Y - OWN_BOX * 0.9])).toBe(i);
+    });
+    expect(choiceAt([(OWN_XS[0] + OWN_XS[1]) / 2, OWN_Y])).toBe(null);
+    expect(choiceAt([OWN_XS[1], 0.95])).toBe(null);
+  });
+
+  it('grows the picture to 280 upright and keeps it at least as big as the other levels’ in every view', () => {
+    expect(layoutFor(VIEWS.portrait, 11).picture.w).toBeGreaterThanOrEqual(280);
+    for (const v of Object.values(VIEWS)) expect(layoutFor(v, 11).picture.w).toBeGreaterThanOrEqual(layoutFor(v, 1).picture.w);
+  });
+
+  it('lands every drop with the whole piece inside the picture, and a drop off it in the middle', () => {
+    const lo = OWN_SIZE / 2;
+    for (let x = -0.5; x <= 1.5; x += 0.05) for (let y = -0.5; y <= 1.5; y += 0.05) {
+      const p = placeIn(x, y);
+      expect(p.x - lo).toBeGreaterThanOrEqual(0); expect(p.x + lo).toBeLessThanOrEqual(1);
+      expect(p.y - lo).toBeGreaterThanOrEqual(0); expect(p.y + lo).toBeLessThanOrEqual(1);
+      if (x < 0 || x > 1 || y < 0 || y > 1) expect(p).toEqual({ x: 0.5, y: 0.5 });
+    }
+    // A drop well inside stays exactly where she let go.
+    expect(placeIn(0.4, 0.6)).toEqual({ x: 0.4, y: 0.6 });
+  });
+
+  it('gives the ghost finger three spread-out drops inside the picture, the same for a seed', () => {
+    for (const seed of SEEDS) {
+      const spots = botSpots(new Rng(seed));
+      expect(spots).toHaveLength(3);
+      expect(new Set(spots.map((p) => p.x)).size).toBe(3);
+      for (const p of spots) expect(placeIn(p.x, p.y)).toEqual(p);
+    }
+    expect(botSpots(new Rng(8))).toEqual(botSpots(new Rng(8)));
   });
 });
