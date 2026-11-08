@@ -52,13 +52,16 @@ function stone(g: Graphics, pitch: number) {
  * reads by shape as well as colour; the gem's own shape stays visible underneath.
  */
 function frost(g: Graphics, pitch: number) {
-  const r = pitch / 2 - 9;
+  const r = pitch / 2 - 10;
   g.roundRect(-r, -r, r * 2, r * 2, r * 0.35)
-    .fill({ color: swatch.white.light, alpha: 0.3 })
-    .stroke({ width: 6, color: swatch.blue.light });
-  const fx = r * 0.62,
-    fy = -r * 0.62,
-    arm = r * 0.3;
+    .fill({ color: swatch.white.fill, alpha: 0.4 })
+    .stroke({ width: 7, color: swatch.teal.light })
+    .roundRect(-r, -r, r * 2, r * 2, r * 0.35)
+    .stroke({ width: 2, color: swatch.teal.line });
+  const fx = r * 0.6,
+    fy = -r * 0.6,
+    arm = r * 0.36;
+  g.circle(fx, fy, arm + 4).fill(swatch.white.fill);
   for (let k = 0; k < 3; k++) {
     const a = (k * Math.PI) / 3;
     g.moveTo(fx - Math.cos(a) * arm, fy - Math.sin(a) * arm).lineTo(
@@ -66,7 +69,7 @@ function frost(g: Graphics, pitch: number) {
       fy + Math.sin(a) * arm,
     );
   }
-  g.stroke({ width: 4, color: swatch.blue.line });
+  g.stroke({ width: 4, color: swatch.teal.line });
 }
 
 /** A seeded look for the tray: cell tint, cell rim and the plate behind it. Cells and rims avoid the hint (orange) and selection (blue) rings. */
