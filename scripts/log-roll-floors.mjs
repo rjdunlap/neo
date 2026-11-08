@@ -7,7 +7,7 @@
 import { writeFileSync } from 'node:fs';
 import { Rng } from '../src/engine/random.ts';
 import { FLOORS } from '../src/games/log-roll/floors.ts';
-import { mirror, PLANS, startsAt } from '../src/games/log-roll/logic.ts';
+import { mirror, PLANS, startsAt, solutionStep, roll, footprint } from '../src/games/log-roll/logic.ts';
 
 const PER_LEVEL = 4,
   SIZES = [
@@ -21,6 +21,61 @@ const PER_LEVEL = 4,
 
 const rng = new Rng(2026_11_07);
 const out = PLANS.map((plan, level) => {
+  if (level >= 5) {
+    const special = new Rng(2026_11_08 + level),
+      kept = [],
+      seen = new Set();
+    for (let tries = 0; kept.length < PER_LEVEL; tries++) {
+      if (tries > 2000) throw new Error(`No special floors for ${level + 1}`);
+      const cells =
+        level === 5
+          ? Array.from({ length: 5 }, () => Array(6).fill('.'))
+          : ['... ...', '...B...', '...B...', '... ...', '... ...'].map((row) => [...row]);
+      const gy = special.int(0, 4);
+      cells[gy][cells[0].length - 1] = 'G';
+      if (level === 5) {
+        for (let m = 0; m < 3;) {
+          const x = special.int(1, 4),
+            y = special.int(0, 4);
+          if (cells[y][x] === '.') {
+            cells[y][x] = 'M';
+            m++;
+          }
+        }
+        for (let g = 0; g < 2;) {
+          const x = special.int(1, 4),
+            y = special.int(1, 3);
+          if (cells[y][x] === '.') {
+            cells[y][x] = ' ';
+            g++;
+          }
+        }
+      } else cells[special.int(0, 4)][special.int(0, 2)] = 'S';
+      const floor = cells.map((row) => row.join('')),
+        shape = floor.join('/');
+      if (seen.has(shape)) continue;
+      const starts = startsAt(floor, plan.depth);
+      if (starts.length < MIN_STARTS) continue;
+      if (
+        level === 5 &&
+        !starts.every((start) => {
+          let state = start,
+            crossed = false;
+          while (true) {
+            const hint = solutionStep(state, floor);
+            if (!hint?.next) return crossed;
+            state = roll(state, hint.next, floor);
+            crossed ||= footprint(state).some(([x, y]) => floor[y][x] === 'M');
+          }
+        })
+      )
+        continue;
+      seen.add(shape);
+      seen.add(mirror(floor).join('/'));
+      kept.push(floor);
+    }
+    return kept;
+  }
   const { depth } = plan,
     cradle = 'cradle' in plan && plan.cradle;
   const [w, h, gaps] = SIZES[level],
@@ -62,7 +117,7 @@ writeFileSync(
   new URL('../src/games/log-roll/floors.ts', import.meta.url),
   `// Frozen floors, written by \`node scripts/log-roll-floors.mjs\`: the first floor of levels 1–3 is the hand-made original.
 // '.' is a stone, 'G' the hollow (a stone the log must finish standing on), 'C' a cradle stone (the log finishes lying
-// across both) and ' ' open water.
+// across both), 'M' soft moss, 'S' a standing switch, 'B' a bridge stone (only raised after a press), and ' ' water.
 export const FLOORS: readonly (readonly (readonly string[])[])[] = [
 ${body}
 ];
