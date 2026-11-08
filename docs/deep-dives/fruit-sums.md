@@ -117,7 +117,7 @@ The game's point is the second way: many routes to one number. The ladder grows 
 1. **Trees, moods, the drop and a hint that follows through** (built, PR #1362; all levels; typecheck, rule tests for the partner hint, one filtered `fruitsums` play at level 3 with one hint and one portrait screenshot in the cove sunset look; no `fingerdemo`, since the bot path is unchanged; build only if shared art files change).
 2. **Level 4 *Same as the sign*** (built, PR #1413; new level on the existing interaction: typecheck, rule tests, one browser play of level 4, `fingerdemo` at 4).
 3. **Level 5 *Clear the tree*** with the school `order` (built, PR #1419; same interaction with a basket; typecheck, rule tests including the no-dead-end invariant, registry/how-to tests, one browser play of level 5 with one wrong pair, one portrait screenshot, `fingerdemo` at 5).
-4. **Level 6 *Three fruit*** (new interaction, a third box: layout probe at 768×1024 first, unit tests, one scripted play with a two-fruit check and one hint, one portrait screenshot, `fingerdemo` at 6).
+4. **Level 6 *Three fruit*** (in progress on `claude/fruit-sums-three-fruit`; new interaction, a third box: layout probe at 768×1024 first, unit tests, one scripted play with a two-fruit check and one hint, one portrait screenshot, `fingerdemo` at 6).
 5. **Level 7 *A times leaf*** after slice 4's layout work is merged only if the leaves row needs it (new level on the sign-choice interaction: typecheck, rule tests, one browser play of 7, `fingerdemo` at 7).
 
 ## What was built in this session
