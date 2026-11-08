@@ -1,5 +1,7 @@
 # Needs a person or a device
 
+- [ ] **Log Roll levels 6–7 (2026-11-08, PR #1429):** on an iPad, do the green moss and purple-ringed switch make their lying/standing rules clear? Does the bridge rising read as two new supporting stones, and does Undo lowering it make sense? Check spoken moss/switch feedback and grown-up enjoyment; browser play does not establish these.
+
 - [ ] **Number Trails (dive, 2026-11-06; proposed slices, nothing built):** can a three-year-old stay inside the 0.1 corridor in portrait? On an iPad, how is the speech of "zero" and the single digits? Does the flying hint read as help, and do dotted and start-only trails (level 6) stay clear to a four-year-old?
 - [ ] **Playdate Workshop (levels 1–3, 2026-11-06):** does a three-year-old understand passing the pad from the pictured requests? Do pre-K children compare the plans or pick the first card?
 - [ ] **Playdate Workshop:** are the co-play roles (one chooses, one operates) wanted by families? How does iPad speech say the first-person lines?
@@ -748,7 +750,7 @@ Then record the date and build in the newest [VERIFICATION](VERIFICATION.md) ent
 
 - [ ] **How-computers-work proposals, when defined/built:** observe whether a child follows input → rule → output, distinguishes false from an incomplete machine and uses a counterexample to revise; check all-visible state, sound-off traces, replayable iPad speech, 100-unit controls, selected-slot editing and pet clearance in both layouts. Try Festival Signals with tweens/parents and swap builder/tester roles; do they choose and enjoy it? Check Picture Bytes row order/key and Memory Desk live/stored contrast. Automation cannot establish independent understanding or transfer. Practical cards retain named review ([study](deep-dives/subjects/how-computers-work.md)).
 
-- [ ] **Recovered grown-up puzzles:** Marble Jump (six levels, Puzzle Peaks), Log Roll (three, Tinker Lab) and Snowball Merge (three, Lantern Lake) need real-iPad touch, device speech and adult enjoyment checks. Inspect controls/pet clearance in both orientations and the ghost finger; can a player understand blocked-route recovery, upright goal and once-per-slide merges? [Integration evidence](archive/SESSION-CLEANUP-2026-10-14.md).
+- [ ] **Recovered grown-up puzzles:** Marble Jump (six levels, Puzzle Peaks), Log Roll (seven, Tinker Lab) and Snowball Merge (three, Lantern Lake) need real-iPad touch, device speech and adult enjoyment checks. Inspect controls/pet clearance in both orientations and the ghost finger; can a player understand blocked-route recovery, upright goal and once-per-slide merges? [Integration evidence](archive/SESSION-CLEANUP-2026-10-14.md).
 
 Part of the [roadmap](ROADMAP.md), split into its own file on 2026-10-13 so the roadmap can be read in one piece; the same rules apply (statuses, what to add where: see [AGENTS.md](../AGENTS.md#documentation-and-git)).
 

@@ -16,6 +16,9 @@ import {
   footprint,
   goal,
   isCradle,
+  hasBridge,
+  liesOnSwitch,
+  refusesMoss,
   makePuzzle,
   planFor,
   roll,
@@ -123,6 +126,9 @@ class LogRoll implements Game {
   queued: Direction | null = null;
   lean: { d: Direction; t: number } | null = null;
   private ripple = -1;
+  private bridgeRise = 0;
+  readonly bridge: boolean;
+  readonly moss: boolean;
   hinted: Direction | null = null;
   finished = false;
   misses = 0;
@@ -134,7 +140,15 @@ class LogRoll implements Game {
     this.puzzle = makePuzzle(ctx.level, ctx.rng);
     this.state = { ...this.puzzle.start };
     this.cradle = isCradle(this.puzzle.plan.floor);
-    this.heading.text = this.cradle ? 'Lay the log in the cradle' : 'Stand the log in the hollow';
+    this.bridge = hasBridge(this.puzzle.plan.floor);
+    this.moss = this.puzzle.plan.floor.some((row) => row.includes('M'));
+    this.heading.text = this.bridge
+      ? 'Stand on the ring to raise the bridge'
+      : this.moss
+        ? 'Cross soft moss lying down'
+        : this.cradle
+          ? 'Lay the log in the cradle'
+          : 'Stand the log in the hollow';
     this.look = ctx.rng.pick(LOOKS);
     const floor = this.puzzle.plan.floor;
     floor.forEach((row, y) =>
@@ -185,7 +199,9 @@ class LogRoll implements Game {
     this.resize(ctx.view);
   }
   start() {
-    void this.ctx.instruct(this.cradle ? 'log.go.cradle' : 'log.go');
+    void this.ctx.instruct(
+      this.bridge ? 'log.go.bridge' : this.moss ? 'log.go.moss' : this.cradle ? 'log.go.cradle' : 'log.go',
+    );
   }
   choose(d: Direction) {
     if (this.finished || !this.ctx.alive) return;
@@ -198,20 +214,28 @@ class LogRoll implements Game {
     if (!next) {
       this.failed++;
       sfx.boing();
-      void this.ctx.say('log.edge');
+      const moss = refusesMoss(this.state, d, this.puzzle.plan.floor);
+      void this.ctx.say(moss ? 'log.moss' : 'log.edge');
       this.lean = { d, t: 0 };
       if (this.failed % 2 === 0) this.showHint(false);
-      this.status.text = 'Both ends need stones. Try another direction.';
+      this.status.text = moss
+        ? 'Moss is too soft to stand on · cross it lying down'
+        : 'Both ends need stones. Try another direction.';
       return;
     }
     this.tip = { from: boxOf(this.state), t: 0 };
     this.history.push({ ...this.state });
+    const raised = !this.state.bridge && next.bridge;
     this.state = next;
+    if (raised) this.bridgeRise = 0;
     this.moves++;
     this.hinted = null;
     this.failed = 0;
     sfx.pop(3);
     if (solved(this.state, this.puzzle.plan.floor)) this.finished = true;
+    else if (raised) void this.ctx.say('log.raised');
+    else if (liesOnSwitch(this.state, this.puzzle.plan.floor) && !this.state.bridge)
+      void this.ctx.say('log.switch');
     else if (standsOnCradle(this.state, this.puzzle.plan.floor)) void this.ctx.say('log.cradle');
     this.draw();
   }
@@ -232,9 +256,11 @@ class LogRoll implements Game {
     }
     this.ripple = 0;
     this.status.text = `Finished in ${this.moves} ${this.moves === 1 ? 'roll' : 'rolls'} · the shortest route is ${this.puzzle.plan.depth}`;
-    void this.ctx.say(this.cradle ? 'log.done.cradle' : 'log.done').then(() => {
-      if (this.ctx.alive) this.ctx.finish({ misses: 0, hints: this.hints });
-    });
+    void this.ctx
+      .say(this.bridge ? 'log.done.bridge' : this.cradle ? 'log.done.cradle' : 'log.done')
+      .then(() => {
+        if (this.ctx.alive) this.ctx.finish({ misses: 0, hints: this.hints });
+      });
   }
   private draw() {
     const c = this.cell,
@@ -263,12 +289,39 @@ class LogRoll implements Game {
       [...row].forEach((v, x) => {
         if (v === ' ') return;
         const sx = this.bx + x * c,
-          sy = this.by + y * c;
+          sy = this.by + y * c + (v === 'B' && this.state.bridge ? (1 - this.bridgeRise) * c * 0.3 : 0);
+        if (v === 'B' && !this.state.bridge) {
+          this.board
+            .roundRect(sx + 9, sy + 12, c - 18, c - 22, 12)
+            .fill({ color: under, alpha: 0.2 })
+            .stroke({ width: 2, color: under, alpha: 0.5 });
+          return;
+        }
         this.board.roundRect(sx + 3, sy + 7, c - 6, c - 8, 14).fill(under);
         this.board
           .roundRect(sx + 3, sy + 3, c - 6, c - 8, 14)
-          .fill(stone)
-          .stroke({ width: 2, color: under });
+          .fill(v === 'M' ? swatch.green.light : stone)
+          .stroke({ width: 2, color: v === 'M' ? swatch.green.line : under });
+        if (v === 'M') {
+          for (const [dx, dy] of [
+            [0.3, 0.3],
+            [0.65, 0.45],
+            [0.4, 0.7],
+          ])
+            this.board.ellipse(sx + c * dx, sy + c * dy, c * 0.16, c * 0.1).fill(swatch.green.fill);
+        }
+        if (v === 'S') {
+          const mx = sx + c * 0.5,
+            my = sy + c * 0.5;
+          this.board.circle(mx, my, c * 0.32).stroke({ width: 5, color: swatch.purple.line });
+          this.board
+            .circle(mx, my, c * 0.18)
+            .fill(this.state.bridge ? swatch.green.fill : swatch.purple.fill);
+          this.board
+            .moveTo(mx, my - c * 0.1)
+            .lineTo(mx, my + c * 0.1)
+            .stroke({ width: 4, color: ink });
+        }
       }),
     );
     const finish = goal(floor);
@@ -280,9 +333,11 @@ class LogRoll implements Game {
         .stroke({ width: 4, color: swatch.yellow.fill });
     this.drawLog();
     if (!this.finished)
-      this.status.text = standsOnCradle(this.state, floor)
-        ? 'Standing does not fit · lie it across both cradle stones'
-        : `${this.moves} ${this.moves === 1 ? 'roll' : 'rolls'} · ${this.state.pose === 'up' ? 'standing on one stone' : 'lying across two stones'}`;
+      this.status.text = this.bridge
+        ? `${this.moves} rolls · ${this.state.bridge ? 'Bridge raised · roll across to the hollow' : liesOnSwitch(this.state, floor) ? 'A lying log does not press · stand on the ring' : 'Stand on the purple ring to raise the bridge'}`
+        : standsOnCradle(this.state, floor)
+          ? 'Standing does not fit · lie it across both cradle stones'
+          : `${this.moves} ${this.moves === 1 ? 'roll' : 'rolls'} · ${this.state.pose === 'up' ? 'standing on one stone' : 'lying across two stones'}`;
     for (const d of DIRECTIONS) {
       const node = this.directions[d];
       const old = node.getChildByLabel('hint');
@@ -358,7 +413,10 @@ class LogRoll implements Game {
     if (countsAsHint(this.hinted, next)) this.hints++;
     this.hinted = next;
     this.draw();
-    if (spoken) void this.ctx.say(this.cradle ? 'log.hint.cradle' : 'log.hint');
+    if (spoken)
+      void this.ctx.say(
+        this.bridge && !this.state.bridge ? 'log.hint.bridge' : this.cradle ? 'log.hint.cradle' : 'log.hint',
+      );
   }
   askForHint() {
     if (!this.finished) {
@@ -372,6 +430,7 @@ class LogRoll implements Game {
     const before = this.history.pop();
     if (before) {
       this.state = before;
+      this.bridgeRise = before.bridge ? 1 : 0;
       this.hinted = null;
       this.failed = 0;
       sfx.tick();
@@ -382,6 +441,7 @@ class LogRoll implements Game {
     if (this.finished) return;
     this.settle();
     this.state = { ...this.puzzle.start };
+    this.bridgeRise = 0;
     this.history = [];
     this.hinted = null;
     this.failed = 0;
@@ -410,6 +470,10 @@ class LogRoll implements Game {
       : null;
   }
   update(dt: number) {
+    if (this.state.bridge && this.bridgeRise < 1) {
+      this.bridgeRise = Math.min(1, this.bridgeRise + dt / 0.35);
+      this.draw();
+    }
     if (this.tip) {
       this.tip.t += dt;
       if (this.tip.t >= TIP + LAND) {
