@@ -16,9 +16,12 @@ export const PLANS = [
   { size: 5, gems: 18, name: 'Eighteen gems: plan four swaps and cascades' },
   { size: 6, gems: 24, name: 'Twenty-four gems: plan five swaps on a six-by-six tray' },
   { size: 5, gems: 20, name: 'One swap, a long line: find the swap that clears four or more' },
+  { size: 5, gems: 15, name: 'Stones that stay: gems above a grey stone rest on it' },
 ];
 
-export const LEVELS: BandLevels = { grownup: { min: 1, max: 6 } };
+/** A grey stone (level 7): it never moves, swaps or clears, and the gems above it rest on it. -1 is an empty cell. */
+export const STONE = -2;
+export const LEVELS: BandLevels = { grownup: { min: 1, max: 7 } };
 export const planFor = (level: number) => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 export const clear = (b: Board) => b.every((k) => k < 0);
 export const neighbors = (a: number, b: number, size: number) =>
@@ -43,20 +46,27 @@ export function matches(board: Board, size: number): number[] {
   return [...out].sort((a, b) => a - b);
 }
 
-/** Fixed holes at the top, no new gems: gravity only moves what is already in the tray. */
+/**
+ * Fixed holes at the top, no new gems: gravity only moves what is already in the tray. A stone stays where it is and
+ * splits its column, so the gems above it settle onto it in their order.
+ */
 export function fall(board: Board, size: number): number[] {
   const out = Array<number>(size * size).fill(-1);
   for (let x = 0; x < size; x++) {
-    const column = Array.from({ length: size }, (_, y) => board[y * size + x]).filter((k) => k >= 0);
-    column.forEach((k, y) => {
-      out[(size - column.length + y) * size + x] = k;
-    });
+    let floor = size - 1;
+    for (let y = size - 1; y >= 0; y--) {
+      const k = board[y * size + x];
+      if (k === STONE) {
+        out[y * size + x] = STONE;
+        floor = y - 1;
+      } else if (k >= 0) out[floor-- * size + x] = k;
+    }
   }
   return out;
 }
 /**
  * For each cell after `removed` goes and the rest falls, the row its gem fell from (-1 for an empty cell), so the
- * fall can be shown: gravity keeps each column's order, so the k-th survivor from the bottom lands k rows up.
+ * fall can be shown: gravity keeps each column's order, so the k-th survivor above the floor or a stone lands k rows up.
  */
 export function drops(board: Board, removed: readonly number[], size: number): number[] {
   const out = Array<number>(size * size).fill(-1);
@@ -64,7 +74,8 @@ export function drops(board: Board, removed: readonly number[], size: number): n
     let y = size - 1;
     for (let from = size - 1; from >= 0; from--) {
       const i = from * size + x;
-      if (board[i] >= 0 && !removed.includes(i)) out[y-- * size + x] = from;
+      if (board[i] === STONE) y = from - 1;
+      else if (board[i] >= 0 && !removed.includes(i)) out[y-- * size + x] = from;
     }
   }
   return out;
@@ -119,7 +130,7 @@ export function solve(board: Board, size: number, stats?: { nodes: number }): Sw
   };
   return visit(board);
 }
-/** Board choice, left/right reflection and shape/color permutation preserve gravity and exact par. */
+/** Board choice, left/right reflection and shape/color permutation preserve gravity, stones and exact par. */
 export function makePuzzle(level: number, rng: Rng): Puzzle {
   const index = Math.max(0, Math.min(PLANS.length - 1, level - 1));
   const source = rng.pick(POOLS[index]),
@@ -128,7 +139,7 @@ export function makePuzzle(level: number, rng: Rng): Puzzle {
     mirror = rng.chance(0.5);
   const board = source.board.map((_, i) => {
     const k = source.board[Math.floor(i / size) * size + (mirror ? size - 1 - (i % size) : i % size)];
-    return k < 0 ? -1 : colors[k];
+    return k < 0 ? k : colors[k];
   });
   return { board, size, par: source.par };
 }

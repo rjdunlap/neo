@@ -20,6 +20,7 @@ import {
   neighbors,
   planFor,
   solve,
+  STONE,
   swap,
   type Step,
   type Swap,
@@ -28,6 +29,20 @@ import {
 function gem(g: Graphics, kind: number, size: number) {
   const color = swatch[RAINBOW[kind]];
   shapePath(g, SHAPES[kind], size).fill(color.fill).stroke({ width: 4, color: color.line });
+}
+
+/** A grey stone: a rounded boulder with a darker rim and two cracks, plainly not a gem (no colour, no shape of the six). */
+function stone(g: Graphics, pitch: number) {
+  const r = pitch / 2 - 8;
+  g.roundRect(-r, -r, r * 2, r * 2, r * 0.45)
+    .fill(swatch.white.line)
+    .stroke({ width: 4, color: ink });
+  g.moveTo(-r * 0.5, -r * 0.2)
+    .lineTo(-r * 0.15, r * 0.1)
+    .lineTo(-r * 0.3, r * 0.45)
+    .moveTo(r * 0.25, -r * 0.55)
+    .lineTo(r * 0.45, -r * 0.2)
+    .stroke({ width: 3, color: ink, alpha: 0.5 });
 }
 
 /** A seeded look for the tray: cell tint, cell rim and the plate behind it. Cells and rims avoid the hint (orange) and selection (blue) rings. */
@@ -74,6 +89,7 @@ class GemSwap implements Game {
   private view: View;
   private dead = false;
   private sinceMatch = 0;
+  private stoneSaid = false;
   private botWait = 0.4;
   /** Touch layout (buttons, tappable gems) until a key or pad is used; couch play never has it. */
   private touch: boolean;
@@ -124,7 +140,13 @@ class GemSwap implements Game {
   }
   start() {
     void this.ctx.instruct(
-      !this.touch ? 'couch.how.gem-swap' : this.ctx.level === 6 ? 'gem-swap.long' : 'gem-swap.go',
+      !this.touch
+        ? 'couch.how.gem-swap'
+        : this.ctx.level === 6
+          ? 'gem-swap.long'
+          : this.ctx.level === 7
+            ? 'gem-swap.stones'
+            : 'gem-swap.go',
     );
   }
   resize(v: View) {
@@ -169,6 +191,7 @@ class GemSwap implements Game {
     this.nodes.forEach((_, i) => {
       const g = this.pictures[i].clear();
       if (board[i] >= 0) gem(g, board[i], this.pitch * 0.29);
+      else if (board[i] === STONE) stone(g, this.pitch);
       g.alpha = !falling && shown?.removed.includes(i) ? 0.35 + 0.3 * Math.sin(this.clock * 10) : 1;
       const rows = from && from[i] >= 0 ? Math.floor(i / size) - from[i] : 0;
       g.y = -rows * this.pitch * (1 - fell * fell);
@@ -194,10 +217,23 @@ class GemSwap implements Game {
         ? 'No clearing route · Undo or Restart to revise'
         : this.ctx.level === 6
           ? 'Swap neighbours · one swap makes a long line'
-          : 'Swap neighbours · make a line of three';
+          : this.ctx.level === 7
+            ? 'Swap neighbours · gems rest on the grey stones'
+            : 'Swap neighbours · make a line of three';
   }
   private choose(i: number) {
-    if (this.busy || this.finished || this.dead || this.board[i] < 0) return;
+    if (this.busy || this.finished || this.dead) return;
+    // A stone is not a gem she could swap: a spoken reason, no miss, and the selection stays.
+    if (this.board[i] === STONE) {
+      this.cursor = i;
+      sfx.tick();
+      // Said once until the next swap, so tapping a stone again does not stack the line.
+      if (!this.stoneSaid) void this.ctx.say('gem-swap.stone');
+      this.stoneSaid = true;
+      this.draw();
+      return;
+    }
+    if (this.board[i] < 0) return;
     this.cursor = i;
     if (this.selected === i) {
       this.selected = null;
@@ -225,6 +261,7 @@ class GemSwap implements Game {
     this.history.push([...this.board]);
     this.presses++;
     this.sinceMatch = 0;
+    this.stoneSaid = false;
     this.hinted = null;
     this.pending = step;
     this.wave = 0;

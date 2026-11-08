@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| grown-up | 1–6 |
+| grown-up | 1–7 |
 
 | Level | Plays like |
 | --- | --- |
@@ -18,14 +18,17 @@
 | 4 | Eighteen gems: plan four swaps and cascades |
 | 5 | Twenty-four gems: plan five swaps on a six-by-six tray |
 | 6 | One swap, a long line: find the swap that clears four or more |
+| 7 | Stones that stay: gems above a grey stone rest on it |
 
 <!-- end generated -->
 
 **Starts as:** swap occupied neighbours to make matching lines of three and clear a finite tray
 
-**Grows into:** five untimed levels with 6/12/15/18/24 gems (the last on a 6×6 tray), falling cascades, 20 solver-checked trays per step, three seeded looks, exact shortest-route hints, Undo and Restart; couch score is swaps over par; no refill or turn limit
+**Grows into:** seven untimed levels with 6/12/15/18/24 gems (level 5 on a 6×6 tray), a level 6 of one swap with a long line, and a level 7 where grey stones stay put and gems rest on them, falling cascades, 20 solver-checked trays per step, three seeded looks, exact shortest-route hints, Undo and Restart; couch score is swaps over par; no refill or turn limit
 
 ## Design notes
+
+*Stones (level 7).* A grey stone never moves, clears or swaps; it is a floor that splits its column, so gems above it rest on it and gems below fall separately. Tapping a stone ticks, says the stone line once until the next swap, keeps the selection, and is not a miss or a hint. Levels 1–6 have no stones and fall exactly as before.
 
 *Touch and controller · after match-three swap puzzles.* Clear a finite tray by swapping two occupied neighbours into horizontal or vertical lines of at least three matching shapes. Colors also have distinct shapes. Lines disappear together, gems fall straight down, and falling lines clear in visible cascades. No gems refill the tray, no turn limit ends it, and an exact shortest route is shown as “best”. One cleared tray is a round and earns one shell sticker.
 

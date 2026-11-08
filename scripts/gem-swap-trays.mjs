@@ -4,12 +4,15 @@
 // is settled with no starting line, and (levels 2–6) one accepted first swap is a dead end and some shortest route has a
 // falling line; at level 5 every column starts with a gem. Level 6 (ten trays at par 3, ten at par 4) drops in a long piece
 // (a line of five, an L/T/cross of five, or two lines of four) and keeps a tray only when every shortest route (enumerated)
-// has a swap whose first wave makes a run of four or more or two crossing runs. Trays equal under mirroring or recolouring count once. Reproducible:
+// has a swap whose first wave makes a run of four or more or two crossing runs. Level 7 (par 4) places two grey stones
+// in the middle rows of different columns and drops its lines into the segments the stones make; it keeps a tray only
+// when a gem rests on each stone and some column holds gems both above and below its stone. Trays equal under mirroring
+// or recolouring count once. Reproducible:
 //   node scripts/gem-swap-trays.mjs
 import { writeFileSync } from 'node:fs';
 import { Rng } from '../src/engine/random.ts';
 import { POOLS } from '../src/games/gem-swap/boards.ts';
-import { clear, fall, matches, moves, PLANS, swap } from '../src/games/gem-swap/logic.ts';
+import { clear, fall, matches, moves, PLANS, STONE, swap } from '../src/games/gem-swap/logic.ts';
 
 const PER_LEVEL = 20;
 
@@ -63,6 +66,7 @@ function canonical(board, size) {
       return board
         .map((_, i) => {
           const k = board[Math.floor(i / size) * size + (mirror ? size - 1 - (i % size) : i % size)];
+          if (k === STONE) return 's';
           if (k < 0) return '.';
           if (!names.has(k)) names.set(k, names.size);
           return names.get(k);
@@ -157,6 +161,86 @@ function unswap(board, size, rng) {
     }
   return pairs.length ? rng.pick(pairs) : null;
 }
+/**
+ * Level 7: each column is split by its stones into segments (top row, bottom row and the gems resting there, bottom
+ * first). Dropping a gem into a segment pushes the gems above it up inside that segment, the inverse of a segment's fall.
+ */
+function segmentsOf(board, size) {
+  return Array.from({ length: size }, (_, x) => {
+    const out = [];
+    let seg = null;
+    for (let y = size - 1; y >= 0; y--) {
+      const k = board[y * size + x];
+      if (k === STONE) seg = null;
+      else {
+        if (!seg) out.push((seg = { top: y, bottom: y, gems: [] }));
+        seg.top = y;
+        if (k >= 0) seg.gems.push(k);
+      }
+    }
+    return out;
+  });
+}
+function boardOfSegments(segments, size, stones) {
+  const out = Array(size * size).fill(-1);
+  stones.forEach((i) => (out[i] = STONE));
+  segments.forEach((col, x) =>
+    col.forEach((seg) =>
+      seg.gems.forEach((k, h) => {
+        out[(seg.bottom - h) * size + x] = k;
+      }),
+    ),
+  );
+  return out;
+}
+const room = (seg) => seg.bottom - seg.top + 1 - seg.gems.length;
+/** Drop a line of three into a settled tray with stones: a vertical line in one segment, or a row across three segments. */
+function insertLineStones(board, size, rng, stones) {
+  const segments = segmentsOf(board, size),
+    kind = rng.int(0, 5);
+  const options = [];
+  for (let x = 0; x < size; x++)
+    for (const seg of segments[x])
+      if (room(seg) >= 3) for (let h = 0; h <= seg.gems.length; h++) options.push({ vertical: true, seg, h });
+  for (let y = 0; y < size; y++)
+    for (let x = 0; x <= size - 3; x++) {
+      const at = [0, 1, 2].map((o) => segments[x + o].find((s) => s.top <= y && y <= s.bottom));
+      if (at.every((seg) => seg && room(seg) > 0 && seg.bottom - y <= seg.gems.length))
+        options.push({ vertical: false, at, y });
+    }
+  if (!options.length) return null;
+  const o = rng.pick(options);
+  if (o.vertical) o.seg.gems.splice(o.h, 0, kind, kind, kind);
+  else o.at.forEach((seg) => seg.gems.splice(seg.bottom - o.y, 0, kind));
+  return boardOfSegments(segments, size, stones);
+}
+function candidateStones(plan, swaps, rng) {
+  const lines = plan.gems / 3;
+  const groups = Array(swaps).fill(1);
+  for (let extra = lines - swaps; extra > 0; extra--) groups[rng.int(0, swaps - 1)]++;
+  const [a, b] = rng.shuffle([0, 1, 2, 3, 4]);
+  const stones = [rng.int(2, 3) * plan.size + a, rng.int(2, 3) * plan.size + b];
+  let board = Array(plan.size * plan.size).fill(-1);
+  stones.forEach((i) => (board[i] = STONE));
+  for (const count of groups) {
+    for (let i = 0; i < count; i++) {
+      board = insertLineStones(board, plan.size, rng, stones);
+      if (!board) return null;
+    }
+    board = unswap(board, plan.size, rng);
+    if (!board) return null;
+  }
+  return board;
+}
+/** Level 7 is about where gems land on a stone: a gem rests on each one, and some column has gems on both sides of its stone. */
+function stonesMatter(board, size) {
+  const stones = board.flatMap((k, i) => (k === STONE ? [i] : []));
+  const below = (i) => {
+    for (let j = i + size; j < board.length; j += size) if (board[j] >= 0) return true;
+    return false;
+  };
+  return stones.every((i) => board[i - size] >= 0) && stones.some(below);
+}
 /** The six-by-six level is about planning across a wider tray, so every column starts with a gem in it. */
 const spansWidth = (board, size) => columnsOf(board, size).every((col) => col.length > 0);
 function candidate(plan, swaps, rng) {
@@ -248,19 +332,25 @@ function distances(size) {
 
 const pools = PLANS.map((plan, index) => {
   // Levels 1–4 open with their hand-made originals; levels 5–6 are all generated. Levels 1–5's par is their number; level 6
-  // alternates par 3 and par 4, ten of each.
+  // alternates par 3 and par 4, ten of each; level 7's par is 4.
   const level = index + 1;
   const kept = (level <= 4 ? POOLS[index] : []).slice(0, 3).map((t) => ({ par: t.par, board: [...t.board] }));
   const seen = new Set(kept.map((t) => canonical(t.board, plan.size)));
   const rng = new Rng(20261107 + level * 1009);
   for (let tries = 0; kept.length < PER_LEVEL && tries < 200000; tries++) {
-    const target = level === 6 ? 3 + (kept.length % 2) : level;
-    const board = level === 6 ? candidateLong(plan, target, rng) : candidate(plan, target, rng);
+    const target = level === 6 ? 3 + (kept.length % 2) : level === 7 ? 4 : level;
+    const board =
+      level === 7
+        ? candidateStones(plan, target, rng)
+        : level === 6
+          ? candidateLong(plan, target, rng)
+          : candidate(plan, target, rng);
     if (!board) continue;
     const name = canonical(board, plan.size);
     if (seen.has(name) || matches(board, plan.size).length || fall(board, plan.size).join() !== board.join())
       continue;
     if (level === 5 && !spansWidth(board, plan.size)) continue;
+    if (level === 7 && !stonesMatter(board, plan.size)) continue;
     if (par(board, plan.size) !== target) continue;
     if (level === 6 ? !longOnly(board, plan.size, target) : !interesting(board, plan.size, target, level))
       continue;
@@ -280,7 +370,7 @@ writeFileSync(
   new URL('../src/games/gem-swap/boards.ts', import.meta.url),
   `// Frozen puzzle pool, written by \`node scripts/gem-swap-trays.mjs\`: the first three trays of each level are the hand-made
 // originals; the rest were built backwards and kept only when an exact breadth-first par matched the level's. Exact pars are
-// checked again independently in logic.test.ts. -1 is an empty cell.
+// checked again independently in logic.test.ts. -1 is an empty cell; -2 (level 7) is a grey stone.
 export const POOLS: readonly (readonly { board: readonly number[]; par: number }[])[] = [
 ${pools.map((pool, i) => `  [\n${pool.map((t) => tray(t, PLANS[i].size)).join('\n')}\n  ],`).join('\n')}
 ];

@@ -39,7 +39,7 @@ export function createSuite({
           L = await import('/src/games/gem-swap/logic.ts');
         return L.hintFor(g.board, g.puzzle.size);
       });
-    for (const level of [1, 6]) {
+    for (const level of [1, 7]) {
       const before = await page.evaluate(() => kit.store.data.stickers.length);
       await launch('gem-swap', level);
       await page.waitForTimeout(400);
@@ -70,7 +70,21 @@ export function createSuite({
       assert.equal((await state()).selected, s.hinted[0]);
       await tapCell(s.hinted[0]);
       assert.equal((await state()).selected, null, 'tap again cancels');
-      if (level === 6) {
+      if (level === 7) {
+        // A grey stone is refused like a hole: no miss, no hint, the tray and the selection unchanged.
+        const stoneCell = initial.board.indexOf(-2),
+          gemCell = initial.board.findIndex((k) => k >= 0);
+        assert.ok(stoneCell >= 0, 'level 7 has a stone');
+        await tapCell(gemCell);
+        await tapCell(stoneCell);
+        s = await state();
+        assert.deepEqual(s.board, initial.board);
+        assert.equal(s.misses, 2, 'a stone tap is not a miss');
+        assert.equal(s.hints, 1);
+        assert.equal(s.selected, gemCell, 'the selection stays');
+        await tapCell(gemCell);
+      }
+      if (level === 7) {
         await page.setViewportSize({ width: 768, height: 1024 });
         await page.waitForTimeout(250);
         const geometry = await page.evaluate(() =>
@@ -89,7 +103,7 @@ export function createSuite({
           assert.ok(r.w >= 64 && r.h >= 64);
           assert.ok(r.x >= 0 && r.y >= 0 && r.x + r.w <= view.w + 1 && r.y + r.h <= view.h + 1);
         }
-        await screenshot('gem-swap-6-portrait');
+        await screenshot('gem-swap-7-portrait');
         const pair = await next();
         await tapCell(pair[0]);
         await tapCell(pair[1]);
@@ -118,7 +132,7 @@ export function createSuite({
           const r = kit.store.stats('gem-swap').history.at(-1);
           return [r.misses, r.hints];
         }),
-        [2, level === 6 ? 2 : 1],
+        [2, level === 7 ? 2 : 1],
       );
     }
     await page.evaluate(() => {
@@ -139,7 +153,7 @@ export function createSuite({
     await page.waitForTimeout(600);
     assert.deepEqual(errors, []);
     log(
-      'Gem Swap: first/last, two rejected swaps, hint once, cancel, Undo/Restart accounting, portrait targets, shell sticker, Lantern Lake and leave mid-clear passed',
+      'Gem Swap: first/last, two rejected swaps, a refused stone tap, hint once, cancel, Undo/Restart accounting, portrait targets, shell sticker, Lantern Lake and leave mid-clear passed',
     );
   }
 

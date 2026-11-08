@@ -12,10 +12,15 @@ export const HOW_TO: GameHowTo = {
     {
       text: 'Make lines of matching shapes; gems above fall and none arrive. Every shortest route needs one swap that makes four or five in a line, or two lines crossing.',
       from: 6,
+      to: 6,
+    },
+    {
+      text: 'Make lines of matching shapes; no new gems arrive. Grey stones never move or clear: the gems above a stone fall onto it, not past it.',
+      from: 7,
     },
     'Tap Undo to revise a swap, or Restart to bring back the starting tray.',
     'Tap Hint to outline a swap that starts a clearing route.',
   ],
-  finish: 'The round ends when every gem is cleared; there is no turn limit.',
-  note: 'A swap that makes no line stays put and counts as a miss. Undo keeps your swap count; Restart counts as help. If no clearing route remains, revise with Undo or Restart.',
+  finish: 'The round ends when every gem is cleared (the stones stay); there is no turn limit.',
+  note: 'A swap that makes no line stays put and counts as a miss; tapping a stone is not a miss. Undo keeps your swap count; Restart counts as help. If no clearing route remains, revise with Undo or Restart.',
 };
