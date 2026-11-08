@@ -205,3 +205,9 @@ Not run: full `npm test` locally (CI runs it), offline, `world`, device; whether
 ## 2026-11-07 — Cut Along slice 3: level 10 Cut it in two (PR #1394)
 
 Changed: school's range is now 6–10; level 10 (mode `two`) is choose-then-cut on a sheet with crossing lines, a ring at both ends of each, a wrong pair costing one miss per line, a `twos` picture, `cut.instruct.two.*`, `cut.makes.*` and `cut.piece.twos.*` lines, how-to step, level-10 block in `cutalong`. Ran: typecheck; `npm test` (327 files, 6,138 passed, 1 skipped; rule tests for piece kinds, one working line, rings apart, one track per drag, 20 % rule, orders); `npm run build`; `BROWSER_SUITE=cutalong CUT_LEVELS=10` at 768×1024 (one wrong line = one miss, both ends closed, hint glows the working line, 1 miss 1 hint, portrait screenshot); `fingerdemo` `FINGER_ONLY=cut-along FINGER_LEVELS=10` (6.5 s). `game-reviewer`: no findings. Not run: `cutalong` at levels 1–9, offline, world, any device. Open: iPad check that crossing lines and two rings per line read clearly to a finger.
+
+## 2026-11-07 — Domino Run slice 4: level 11 Under the pier (PR #1395)
+
+Changed: school range now 4–11; low pier sockets (`Lane.low`, `fits`, `P` in pictures) that only a small fits, pier-first generator, `passes` case 11, drop handler that knocks and springs back a tall or giant (never a miss), pier art, voice ids `domino-run.pier` and `too-tall`, how-to steps, eight rule tests (35).
+Ran: `npm run typecheck`; `npm test` (327 files, 6,146 passed, 1 skipped); `npm run build`; `BROWSER_SUITE=dominorun DOMINO_LEVELS=11` passed (tall under the pier springs back, 0 misses, 0 hints, 0 stalls; hint to the gong; sticker; portrait screenshot); `FINGER_ONLY=domino-run FINGER_LEVELS=11` `fingerdemo` passed (12.5 s).
+Not run: other `dominorun` levels (unchanged), offline, `world`; no iPad check (the pier reading as "too low" is open in DEVICE-CHECKS).
