@@ -1,5 +1,7 @@
 # Block Garden, levels 1–8 (definition)
 
+**Built:** levels 1–11 (PRs #655, #1390, #1421, #1426); to build level 12, read “Build slices, in order” in the [deep dive](../deep-dives/block-garden.md#build-slices-in-order).
+
 Defined 2026-10-17 for [chunk 26](../ROADMAP.md#chunks) (gaps against popular mobile games), from the [IDEAS candidate](../IDEAS.md#candidates). **Built 2026-10-20 ([PR #655](https://github.com/rjdunlap/neo/pull/655)), levels 1–8, on every default in [Open decisions](#open-decisions); [build note](../archive/COMPLETED-2026-10-09.md#block-garden-levels-18-2026-10-20).** Deviations: generation templates and the eight symmetries, and a 30,000 generated-state search cap, are recorded in the build note.
 
 **Fun action and purpose:** drag a shaped seed tray onto a garden bed. When a row or a column is completely planted, it bursts into flowers and the flowers are picked, which empties that line again. Sleeping buds sit in some squares of the bed, and **every bud has to bloom**. The learning goal is **spatial planning with shapes that do not turn**: seeing which gap a shape fills, choosing which of several shapes to use, and placing things in an order that leaves room. Nothing falls and there is no clock. Every garden is a finite puzzle with a goal and a known solution, so the genre's usual ending ("nothing fits, game over") never happens. A stuck bed is met with an undo.
