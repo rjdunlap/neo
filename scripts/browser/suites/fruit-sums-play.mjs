@@ -32,14 +32,15 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       if (way.op) await tap(`kit.tapOn(neo.scene.game.leaves.get('${way.op}'))`);
       await tap('kit.tapOn(neo.scene.game.check)');
     };
-    // FROM_LEVEL=4 starts at level 4; FROM_LEVEL=5 plays only the newest level.
+    // FROM_LEVEL=4 starts at level 4; FROM_LEVEL=6 plays only the newest level.
     const from = Number(process.env.FROM_LEVEL ?? 1);
     if (from <= 3) await levelsOneToThree();
     if (from <= 4) await levelFour();
-    await levelFive();
+    if (from <= 5) await levelFive();
+    await levelSix();
     assert.deepEqual(errors, []);
     log(
-      `Fruit Sums: ${from <= 3 ? 'levels 1 and 3, no-pick check, two misses and one hint that glows the start fruit, its partner and the check, the same sum the other way round, two ways to finish, a take away by leaf, portrait in the cove look; ' : ''}${from <= 4 ? 'level 4 with the sum on the sign, one wrong total, the sign\'s own pair as the same way when the tray holds it, two ways written "x + y = p + q", portrait; ' : ''}level 5 portrait, one wrong pair as a miss, three pairs into the basket until the tree is empty; one sticker per round passed`,
+      `Fruit Sums: ${from <= 3 ? 'levels 1 and 3, no-pick check, two misses and one hint that glows the start fruit, its partner and the check, the same sum the other way round, two ways to finish, a take away by leaf, portrait in the cove look; ' : ''}${from <= 4 ? 'level 4 with the sum on the sign, one wrong total, the sign\'s own pair as the same way when the tray holds it, two ways written "x + y = p + q", portrait; ' : ''}${from <= 5 ? 'level 5 portrait, one wrong pair as a miss, three pairs into the basket until the tree is empty; ' : ''}level 6 portrait with three boxes, a two-fruit check as no miss, two wrong totals and one hint that glows a pair making ten, its third fruit and the check, the same three in another order as the same way, two ways; one sticker per round passed`,
     );
 
     async function levelsOneToThree() {
@@ -206,6 +207,78 @@ export function createSuite({ page, errors, log, scene, tap, screenshot, launch,
       }
       await finished('fruit-sums');
       log(`Fruit Sums level 5: make ${t5[0]}, tray ${t5[1].join(',')}, cleared in three pairs`);
+    }
+
+    async function levelSix() {
+      // Level 6: three boxes and two plus signs. A check with two fruit asks for a third and is no miss; two wrong threes are two
+      // misses and one hint, whose glow leads through a pair that makes ten, then the third fruit, then the check; the same three
+      // numbers in another order are the same way; a second, different three ends the round with one sticker.
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await launch('fruit-sums', 6);
+      await landed();
+      const g6 = await page.evaluate(() => {
+        const g = neo.scene.game,
+          t = g.tray,
+          right = [],
+          wrong = [];
+        for (let i = 0; i < t.length; i++)
+          for (let j = i + 1; j < t.length; j++)
+            for (let k = j + 1; k < t.length; k++)
+              (t[i] + t[j] + t[k] === g.target ? right : wrong).push([i, j, k]);
+        return { three: g.three, target: g.target, tray: t, right, wrong };
+      });
+      assert.equal(g6.three, true, 'level 6 has three boxes');
+      const unslot = async () => {
+        for (const kk of ['slotA', 'slotB', 'slotC'])
+          if (await page.evaluate((kk) => neo.scene.game[kk] !== null, kk))
+            await tap(`kit.tapOn(neo.scene.game.tiles[neo.scene.game['${kk}']])`);
+      };
+      const build3 = async (w) => {
+        for (const i of w) await tap(`kit.tapOn(neo.scene.game.tiles[${i}])`);
+        await tap('kit.tapOn(neo.scene.game.check)');
+      };
+      await tap(`kit.tapOn(neo.scene.game.tiles[${g6.wrong[0][0]}])`);
+      await tap(`kit.tapOn(neo.scene.game.tiles[${g6.wrong[0][1]}])`);
+      await tap('kit.tapOn(neo.scene.game.check)');
+      assert.deepEqual(await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.slotC]), [0, null]);
+      await unslot();
+      for (let i = 0; i < 2; i++) {
+        await unslot();
+        await build3(g6.wrong[i]);
+        assert.equal(await page.evaluate(() => neo.scene.game.checkMade.visible), true);
+      }
+      assert.deepEqual(
+        await page.evaluate(() => [neo.scene.game.misses, neo.scene.game.hints, neo.scene.game.hinted]),
+        [2, 1, true],
+      );
+      await unslot();
+      await page.waitForTimeout(300);
+      await screenshot('fruit-sums-6-portrait-hint');
+      const glowing = () => page.evaluate(() => neo.scene.game.glowing());
+      const followed = [];
+      for (let step = 0; step < 3; step++) {
+        const g = await glowing();
+        assert.ok(g && 'tile' in g, `step ${step + 1} glows a fruit`);
+        followed.push(g.tile);
+        await tap(`kit.tapOn(neo.scene.game.tiles[${g.tile}])`);
+      }
+      assert.equal(g6.tray[followed[0]] + g6.tray[followed[1]], 10, 'the glow starts with a pair that makes ten');
+      assert.ok('check' in (await glowing()), 'then the check glows');
+      assert.equal(await page.evaluate(() => neo.scene.game.hints), 1, 'the whole glow is one hint');
+      await tap('kit.tapOn(neo.scene.game.check)');
+      await idle();
+      assert.equal(await page.evaluate(() => neo.scene.game.found.length), 1);
+      await build3([followed[2], followed[0], followed[1]]);
+      assert.deepEqual(await page.evaluate(() => [neo.scene.game.found.length, neo.scene.game.misses]), [1, 2]);
+      const key = (w) => w.map((i) => g6.tray[i]).sort((x, y) => x - y).join();
+      const second = g6.right.find((w) => key(w) !== key(followed));
+      assert.ok(second, 'a second three exists');
+      await build3(second);
+      await idle();
+      const text = await page.evaluate(() => neo.scene.game.foundText.text);
+      assert.match(text, /^\d+ \+ \d+ \+ \d+ = \d+ +\d+ \+ \d+ \+ \d+ = \d+$/, `found line: ${text}`);
+      await finished('fruit-sums');
+      log(`Fruit Sums level 6: make ${g6.target}, tray ${g6.tray.join(',')}, found ${text}`);
     }
   }
 
