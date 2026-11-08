@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
+import { rangeFor } from '../../progress/difficulty';
 import { FLOORS } from './floors';
 import {
   countsAsHint,
@@ -9,6 +10,7 @@ import {
   footprint,
   goal,
   key,
+  LEVELS,
   makePuzzle,
   mirror,
   PLANS,
@@ -24,7 +26,7 @@ const ALL = FLOORS.flatMap((pool, i) =>
 
 describe('Log Roll', () => {
   it('provides seeded upright starts at each exact planned depth', () => {
-    for (let level = 1; level <= 3; level++)
+    for (let level = 1; level <= PLANS.length; level++)
       for (let seed = 0; seed < 40; seed++) {
         const p = makePuzzle(level, new Rng(seed));
         expect(p).toEqual(makePuzzle(level, new Rng(seed)));
@@ -38,9 +40,9 @@ describe('Log Roll', () => {
         expect(solved(state, p.plan.floor)).toBe(true);
       }
   });
-  it('freezes four floors a level, the original first, of the level’s size, each with one hollow and two or more starts', () => {
+  it('freezes four floors a level, the original first on levels 1–3, of the level’s size, each with one hollow and two or more starts', () => {
     expect(FLOORS[0][0]).toEqual(['.....', '.....', '.....', '.....', '....G']);
-    for (let level = 1; level <= 3; level++) {
+    for (let level = 1; level <= PLANS.length; level++) {
       const pool = floorsFor(level),
         [w, h] = [pool[0][0].length, pool[0].length];
       expect(pool).toHaveLength(4);
@@ -60,8 +62,17 @@ describe('Log Roll', () => {
       8,
     );
   });
+  it('makes level 4 the long way round: 8×6 floors at depth 16 whose gaps add at least eight rolls', () => {
+    expect(PLANS[3].depth).toBe(16);
+    expect(rangeFor(LEVELS, 'grownup')).toEqual({ min: 1, max: 4 });
+    for (const floor of floorsFor(4)) {
+      expect([floor[0].length, floor.length]).toEqual([8, 6]);
+      const open = distances(floor.map((row) => row.replace(/ /g, '.')));
+      for (const start of startsAt(floor, 16)) expect(open.get(key(start))!.distance).toBeLessThanOrEqual(8);
+    }
+  });
   it('reaches every floor and both mirrors across seeds, and the mirror moves the hollow', () => {
-    for (let level = 1; level <= 3; level++) {
+    for (let level = 1; level <= PLANS.length; level++) {
       const seen = new Set<string>();
       for (let seed = 0; seed < 200; seed++) seen.add(makePuzzle(level, new Rng(seed)).plan.floor.join('/'));
       expect(seen.size).toBe(8);

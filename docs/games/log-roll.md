@@ -8,13 +8,14 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| grown-up | 1–3 |
+| grown-up | 1–4 |
 
 | Level | Plays like |
 | --- | --- |
 | 1 | Open stones: learn to tip and stand |
 | 2 | Two gaps: plan the log’s footprint |
 | 3 | Broken path: weave around three gaps |
+| 4 | The long way round: loop past the dead ends |
 
 <!-- end generated -->
 
