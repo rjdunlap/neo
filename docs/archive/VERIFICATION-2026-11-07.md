@@ -169,3 +169,7 @@ Not run: `world`, offline, device or child play; no navigation, persistence or a
 
 Changed: level 9 (two straight lines cover every fruit of a still board; `coverLines`, `coverHint` and friends in `logic.ts`), five voice lines, a how-to step, a level 9 segment in `fruitslice`. Ran: typecheck; 45 fruit-slice rule tests (six new); `npm test` (327 files, 6,098 passed); `BROWSER_SUITE=fruitslice` (level 9 upright: one stranding first line = 1 miss, one requested hint, portrait screenshot, four boards, sticker); `fingerdemo` `FINGER_ONLY=fruit-slice FINGER_LEVELS=9` (5.3 s); build.
 Late follow-up (0.8 s wait before the next level 9 board): only typecheck and the rule tests were rerun. Not run: offline, `world`, couch, device; a six-year-old drawing two lines is open.
+
+## 2026-11-07 — Lift It slice 1: looks, parcels, three more friends, varied lines at 1–3
+
+Changed: four seeded looks, six parcels by weight, cat/dog/pig friends, widened lines at levels 1–3, `pawSpots` for paw prints, two level-2 voice lines. Ran: typecheck; 21 lift-it rule tests (authored lines unchanged, parcel group matches stones, all values appear over 500 seeds, paw prints clear at four views); `BROWSER_SUITE=liftit` (level 1 by strokes, level 6 wrong rig + hint, level 3 portrait screenshot in the autumn look with two wheels). Not run: `fingerdemo` (bot unchanged), build, offline, `world`, device; whether the parcels read as apples and pumpkins to a child is open.

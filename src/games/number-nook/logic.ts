@@ -1,14 +1,17 @@
 import type { BandLevels } from '../../progress/difficulty';
 import type { Rng } from '../../engine/random';
 
+/** Each level draws a board whose shortest route is `near`..`far` slides, so the small boards have a pool, not one puzzle. */
 export const PLANS = [
-  { rows: 2, cols: 2, depth: 4, name: 'Four spaces: one small loop' },
-  { rows: 2, cols: 3, depth: 8, name: 'Six spaces: plan around two rows' },
-  { rows: 3, cols: 3, depth: 14, name: 'Nine spaces: weave rows and columns' },
+  { rows: 2, cols: 2, near: 3, far: 5, name: 'Four spaces: one small loop' },
+  { rows: 2, cols: 3, near: 7, far: 9, name: 'Six spaces: plan around two rows' },
+  { rows: 3, cols: 3, near: 14, far: 14, name: 'Nine spaces: weave rows and columns' },
 ] as const;
 export const planFor = (level: number) => PLANS[Math.max(0, Math.min(2, level - 1))];
 export const goal = (rows: number, cols: number) => Array.from({ length: rows * cols }, (_, i) => (i + 1) % (rows * cols));
 export const solved = (board: readonly number[]) => board.every((v, i) => v === (i + 1) % board.length);
+/** How many numbered tiles sit in their goal place; the in-place note rises and falls with it. */
+export const inPlace = (board: readonly number[]) => board.filter((v, i) => v !== 0 && v === i + 1).length;
 export function neighbours(board: readonly number[], cols: number): number[] {
   const z = board.indexOf(0), r = Math.floor(z / cols), c = z % cols;
   return [z - cols, z + cols, z - 1, z + 1].filter(i => i >= 0 && i < board.length && Math.abs(Math.floor(i / cols) - r) + Math.abs(i % cols - c) === 1);
@@ -20,6 +23,12 @@ export function slide(board: readonly number[], cols: number, at: number): numbe
   return next;
 }
 
+/** The boards a level draws from, every one at an exact shortest distance inside its range. */
+export function pool(level: number): number[][] {
+  const p = planFor(level);
+  return [...distances(p.rows, p.cols)].filter(([, info]) => info.distance >= p.near && info.distance <= p.far)
+    .map(([k]) => k.split('').map(Number));
+}
 /** Reverse breadth-first search: all reachable positions, with exact distances and a next slide.
  * Small boards have 12/360 states; the nine-space board has 181,440. Cached per shape.
  * This proves every hint decreases distance, even after arbitrary exploratory slides. */
@@ -45,9 +54,7 @@ export function solutionStep(board: readonly number[], cols: number) {
   return distances(board.length / cols, cols).get(key(board)) ?? null;
 }
 export function makeBoard(level: number, rng: Rng): number[] {
-  const p = planFor(level);
-  const candidates = [...distances(p.rows, p.cols)].filter(([, info]) => info.distance === p.depth);
-  return rng.pick(candidates)[0].split('').map(Number);
+  return rng.pick(pool(level)).slice();
 }
 
 /**
