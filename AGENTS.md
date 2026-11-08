@@ -41,6 +41,8 @@ Check the working tree before editing. Local work, recorded verification and dep
 
 ## Adding or extending a minigame
 
+Start a claimed new game with the [scaffold command](docs/NEW-GAME.md); its placeholders still need the implementation and checks below.
+
 1. **Define a small complete experience:** fun action, learning goal, bands, first round, deeper modes, completion and response to mistakes (for creative play, a gentle finish without one correct creation). Check [GAMES.md](docs/GAMES.md) and [IDEAS.md](docs/IDEAS.md) for overlap.
 2. **Keep rules inspectable** in the game's `logic.ts`, using the seeded RNG, with tests of meaningful properties: solvable, valid targets, fair quantities, accepted alternatives, hints that lead somewhere (subagent `rules-tester` where available).
 3. **Implement the contract:** `src/games/<id>/index.ts` exports a `GameModule` (stable ID, grown-up name, spoken title, `region`, `challenge`, skills, bands, levels and descriptions, music, hub icon, sticker art, co-play/off-screen suggestions, and `create(ctx)` with `start`, `update`, `resize`, `destroy`). The folder is named by the ID; the registry finds it.

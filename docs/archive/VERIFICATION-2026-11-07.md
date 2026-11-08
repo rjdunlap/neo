@@ -135,3 +135,10 @@ Open: Letter Trails/tracing and Critter Sort remain queued. Offline, `world`, de
 ## 2026-11-07 — Fruit Slice slice 1: more fruit, beach not-fruit and moods (PR #1382)
 
 Changed: strawberry, banana and plum (drawn by `smallFruit()` in `src/art/props.ts`, moved from Bolt Boards), beach ball and shell as not-fruit, a seeded morning, picnic or sunset look, six voice lines. Ran: typecheck; vitest for fruit-slice, bolt-boards and art (350 passed); `BROWSER_SUITE=fruitslice` (levels 1, 3 with misses and glow, 7 upright, new 3 upright at sunset with a banana, 8); `BROWSER_SUITE=boltboards` (regression, its fruit drawing moved); `npm run build`; a one-off picnic level 4 screenshot. Not run: `fingerdemo` (bot unchanged), full `npm test` (CI), offline, any device. Open: iPad checks.
+
+## 2026-11-07 — Shared tracing and sorting helpers (codebase item 6 complete, PR #1383)
+
+Changed: shared tracing/feedback, sorting predicates/types, name normalization and letter vocabulary in `src/learning/`; letter-picture, sorting-sign and plant art in `src/art/`; game/journal callers and woods harness imports updated. The nine moved bodies/data match exactly; game-specific rules remain local. Tested base `dcc001e4` plus working diff.
+Ran: `npm run typecheck`; `npm test` (325 files, 6,068 passed, 5 skipped, 67.51 s); `npm run build`; source review (caught and fixed the woods level-9 dynamic predicate import).
+Browser: `GAME_URL=http://localhost:5196 BROWSER_SUITE=fingerdemo FINGER_ONLY=number-trails,critter-crossing FINGER_LEVELS=1` passed (Number Trails preschool 5.0 s; Critter Crossing pre-K 7.1 s). Same URL: `BROWSER_SUITE=woods WOODS_ONLY=sort FROM_LEVEL=9 TO_LEVEL=9` passed (both/neither predicates, free bare grass, misses/glow, saved score and sticker). Server stopped.
+Not run: offline, `world`, device and child play; no behavior, assets, persistence or navigation changed.

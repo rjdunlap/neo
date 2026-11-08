@@ -1,10 +1,16 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### New-game scaffold (codebase item 11, 2026-11-07)
+
+[PR #1399](https://github.com/rjdunlap/neo/pull/1399) adds `npm run new-game`, with templates for the typed module/lifecycle, Pixi-free ladder, pending rule tests, voice/how-to, browser test stub and game page. It validates source-defined metadata, appends one land entry and refreshes the content barrels; the registry discovers the folder. Dry-run writes nothing, existing files and symlinks are refused, voice alias collisions are checked, and failed writes roll back. The starter explicitly throws until implemented; it adds no production game. [Contributor guide](../NEW-GAME.md).
+
+Validation: 20 focused generator tests; a temporary generated game passed typecheck, docs generation and six barrel/doc checks, then was removed. Full units (328 files, 6,187 passed / 5 skipped, before two added CLI/formatting cases) and build passed; the final focused tests cover those added cases and rollback changes. No browser/offline run: app behavior, assets and navigation are unchanged. [Verification](../VERIFICATION.md#2026-11-07--new-game-scaffold-codebase-item-11-pr-1399).
+
 ### Shared tracing and sorting helpers (codebase item 6 complete, 2026-11-07)
 
 [PR #1383](https://github.com/rjdunlap/neo/pull/1383) completes [pilot #1381](https://github.com/rjdunlap/neo/pull/1381). Shared strokes and tracing feedback move to `src/learning/tracing/`, name normalization and letter-picture vocabulary to `src/learning/words/`, and sorting predicates/types to `src/learning/sorting/rules.ts`. Letter-picture, sorting-sign and plant art move to `src/art/`; games and journal callers import the shared modules. The woods browser harness imports the moved sorting predicate from its new path, including its level-9 case. Game-specific plans and rules remain local. Direct comparisons confirmed all nine moved bodies/data unchanged; no behavior, asset, persistence or navigation changes.
 
-Typecheck, full units (325 files; 6,068 passed, 5 skipped, 67.51 s) and build passed on base `dcc001e4` plus working diff; source review caught the browser-harness import before closeout. Number Trails and Critter Crossing level-1 ghost-finger demos passed (5.0 s and 7.1 s); filtered woods sort9 passed its predicate, free-grass, miss/glow, saved-score and sticker checks. Server stopped; offline, world and device checks not run. [Verification](../VERIFICATION.md#2026-11-07--shared-tracing-and-sorting-helpers-codebase-item-6-complete-pr-1383).
+Typecheck, full units (325 files; 6,068 passed, 5 skipped, 67.51 s) and build passed on base `dcc001e4` plus working diff; source review caught the browser-harness import before closeout. Number Trails and Critter Crossing level-1 ghost-finger demos passed (5.0 s and 7.1 s); filtered woods sort9 passed its predicate, free-grass, miss/glow, saved-score and sticker checks. Server stopped; offline, world and device checks not run. [Verification](VERIFICATION-2026-11-07.md#2026-11-07--shared-tracing-and-sorting-helpers-codebase-item-6-complete-pr-1383).
 
 ### Shared word-learning helpers pilot (codebase item 6, 2026-11-07)
 
