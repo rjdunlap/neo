@@ -8,7 +8,7 @@
 
 | Band | Levels, easiest first |
 | --- | --- |
-| grown-up | 1–4 |
+| grown-up | 1–5 |
 
 | Level | Plays like |
 | --- | --- |
@@ -16,6 +16,7 @@
 | 2 | Two gaps: plan the log’s footprint |
 | 3 | Broken path: weave around three gaps |
 | 4 | The long way round: loop past the dead ends |
+| 5 | Lay it in the cradle: finish lying across two stones |
 
 <!-- end generated -->
 

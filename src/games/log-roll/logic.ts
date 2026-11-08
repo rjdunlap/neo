@@ -16,17 +16,28 @@ export const PLANS = [
   { depth: 8, name: 'Two gaps: plan the log’s footprint' },
   { depth: 12, name: 'Broken path: weave around three gaps' },
   { depth: 16, name: 'The long way round: loop past the dead ends' },
+  { depth: 10, name: 'Lay it in the cradle: finish lying across two stones', cradle: true },
 ] as const;
 export const planFor = (level: number) => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
 export const floorsFor = (level: number) => FLOORS[Math.max(0, Math.min(FLOORS.length - 1, level - 1))];
 /** A left-right mirror; the hollow moves with its row. */
 export const mirror = (floor: readonly string[]) => floor.map((row) => [...row].reverse().join(''));
-const stone = (v: string | undefined) => v === '.' || v === 'G';
+const stone = (v: string | undefined) => v === '.' || v === 'G' || v === 'C';
+/** The finish: standing in the hollow `G`, or lying across the two cradle stones `C` (side by side: across; one above the other: along). */
 export function goal(floor: readonly string[]): State {
   const y = floor.findIndex((row) => row.includes('G'));
-  if (y < 0) throw new Error('A Log Roll floor needs a hollow');
-  return { x: floor[y].indexOf('G'), y, pose: 'up' };
+  if (y >= 0) return { x: floor[y].indexOf('G'), y, pose: 'up' };
+  const cy = floor.findIndex((row) => row.includes('C'));
+  if (cy < 0) throw new Error('A Log Roll floor needs a hollow or a cradle');
+  const cx = floor[cy].indexOf('C');
+  if (floor[cy][cx + 1] === 'C') return { x: cx, y: cy, pose: 'across' };
+  if (floor[cy + 1]?.[cx] === 'C') return { x: cx, y: cy, pose: 'along' };
+  throw new Error('A Log Roll cradle needs two neighbouring stones');
 }
+export const isCradle = (floor: readonly string[]) => goal(floor).pose !== 'up';
+/** Standing on one cradle stone: close, but the cradle only takes a lying log. */
+export const standsOnCradle = (s: State, floor: readonly string[]) =>
+  s.pose === 'up' && floor[s.y]?.[s.x] === 'C';
 export const key = (s: State) => `${s.x},${s.y},${s.pose}`;
 export const solved = (s: State, floor: readonly string[]) => key(s) === key(goal(floor));
 export function footprint(s: State): [number, number][] {
@@ -106,5 +117,5 @@ export function makePuzzle(level: number, rng: Rng) {
 }
 
 export const LEVELS: BandLevels = {
-  grownup: { min: 1, max: 4 },
+  grownup: { min: 1, max: 5 },
 };

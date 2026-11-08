@@ -1,5 +1,6 @@
 // Frozen floors, written by `node scripts/log-roll-floors.mjs`: the first floor of levels 1–3 is the hand-made original.
-// '.' is a stone, 'G' the hollow (a stone the log must finish standing on) and ' ' open water.
+// '.' is a stone, 'G' the hollow (a stone the log must finish standing on), 'C' a cradle stone (the log finishes lying
+// across both) and ' ' open water.
 export const FLOORS: readonly (readonly (readonly string[])[])[] = [
   [
     ['.....', '.....', '.....', '.....', '....G'],
@@ -24,5 +25,11 @@ export const FLOORS: readonly (readonly (readonly string[])[])[] = [
     ['......G.', '... ....', '.. ..  .', '.... ...', '. .. ...', '........'],
     ['........', '.    ...', '...... .', '.. .....', '...... G', '........'],
     ['........', '.. .....', '... ....', 'G.   . .', '..... ..', '........'],
+  ],
+  [
+    ['..CC..', '... ..', '......', '... ..', '......'],
+    ['..C...', '..C...', '.. ...', '.. ...', '......'],
+    ['......', '.. ...', '......', '.. ...', 'CC....'],
+    ['......', '... ..', '......', '... .C', '.....C'],
   ],
 ];
