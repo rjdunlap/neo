@@ -1,4 +1,3 @@
-import { fileURLToPath } from 'node:url';
 import tseslint from 'typescript-eslint';
 
 export default [
@@ -9,7 +8,7 @@ export default [
       parser: tseslint.parser,
       parserOptions: {
         projectService: true,
-        tsconfigRootDir: fileURLToPath(new URL('../..', import.meta.url)),
+        tsconfigRootDir: import.meta.dirname,
       },
     },
     plugins: { '@typescript-eslint': tseslint.plugin },

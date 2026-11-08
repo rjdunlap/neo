@@ -191,3 +191,8 @@ Changed: school's range is now 6–9; level 9 is a spiral cut (snail shell, snak
 Changed: school range now 4–10; puddle-first level (a two-wide puddle only a giant reaches over), `puddleGiantSlot`, `lane()` reads `~`, one voice id, how-to step, six rule tests (27); `dominorun` gained a `DOMINO_LEVELS` filter.
 Ran: `npm run typecheck`; domino-run rule tests 27/27; `npm test` (327 files, 6,116 passed, 1 skipped); `npm run build`; `BROWSER_SUITE=dominorun DOMINO_LEVELS=10` passed (level 10 upright: stall not a miss, hint, fix, 0 misses, 1 hint, sticker; portrait screenshot); `FINGER_ONLY=domino-run FINGER_LEVELS=10` `fingerdemo` passed (10.0 s).
 Not run: levels 1, 5, 6, 8, 9 of `dominorun` (unchanged), offline, `world`, other suites; no iPad or child check.
+
+## 2026-11-07 — Fruit Slice slice 3: level 10 Twos and threes (PR #1393)
+
+Changed: level 10 (apples 2 pieces, oranges 3; put-back strip of fruit tokens; `piecesFor`, `stuck`, `putBack`, `mixedHint`, `tokenAt` and friends in `logic.ts`), four voice lines, how-to steps, a level 10 segment and `FRUIT_LEVELS` filter in `fruitslice`. Ran: typecheck; 55 fruit-slice rule tests (ten new); `npm test` (6,126 passed); `BROWSER_SUITE=fruitslice` at level 10 (stuck total, bowl tap, requested hint on a token, put-back, overshoot miss, finish, portrait screenshot); `fingerdemo` at 10 (11.2 s); build. game-reviewer findings applied (double-tap lock, slot order, strip cleared on send).
+Not run: offline, `world`, couch, device; whether a seven-year-old finds the put-back unaided is open.

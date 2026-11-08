@@ -7,6 +7,3 @@ package-lock.json
 # Documentation includes generated inventories and archived source material.
 **/*.md
 # Only tracked maintained code is selected by the npm scripts.
-
-# Tool package lock is also npm-generated.
-tooling/lint/package-lock.json

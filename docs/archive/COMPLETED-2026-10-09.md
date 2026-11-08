@@ -1,8 +1,14 @@
 # Completed work, moved out of the roadmap and idea notebook (2026-10-09)
 
+### Root compiler aliases and ESLint (2026-11-07)
+
+[PR #1408](https://github.com/rjdunlap/neo/pull/1408) replaces the isolated lint package from item 10 with Microsoft’s supported root npm aliases: the TypeScript 7.0.2 CLI and TypeScript 6.0.3 API (through compatibility package 6.0.2), with ESLint 10.14.0 / typescript-eslint 8.72.1. One manifest/lockfile and a root config replace the nested postinstall; lint rules and baseline are unchanged. [Contributor guide](../CODE-QUALITY.md).
+
+Clean installation, compiler routing, dependency compatibility, lint, formatting, 329 unit files (6,204 passed / 5 skipped), build/typecheck, links and whitespace passed. Browser/offline/device checks not run; app code is unchanged. [Verification](../VERIFICATION.md#2026-11-07--supported-compiler-aliases-and-root-eslint-pr-1408).
+
 ### Prettier and minimal ESLint (codebase item 10, 2026-11-07)
 
-[PR #1405](https://github.com/rjdunlap/neo/pull/1405) adds formatting commands and pull-request gates, plus minimal typed lint for assertions to `any`, floating promises and unmanaged native game listeners. Existing floating-promise counts (32 across 11 files) are recorded in ESLint's baseline; new counts fail. Lint dependencies and their supported compiler are isolated from the app's TypeScript 7. The 1,500-file mechanical formatting commit is listed in `.git-blame-ignore-revs`; generated content barrels/manifests, npm locks and Markdown keep their existing layout. [Tooling guide](../../tooling/lint/README.md).
+[PR #1405](https://github.com/rjdunlap/neo/pull/1405) adds formatting commands and pull-request gates, plus minimal typed lint for assertions to `any`, floating promises and unmanaged native game listeners. Existing floating-promise counts (32 across 11 files) are recorded in ESLint's baseline; new counts fail. Lint dependencies and their supported compiler are isolated from the app's TypeScript 7. The 1,500-file mechanical formatting commit is listed in `.git-blame-ignore-revs`; generated content barrels/manifests, npm locks and Markdown keep their existing layout. [Tooling guide](../CODE-QUALITY.md).
 
 Clean locked installation, typecheck, all 329 unit files (6,201 passed / 5 skipped), build, lint, format check and focused tooling checks passed. An exact comparison against formatted prior contents established that the formatting commit contains only formatter output. No browser/offline/device checks; no intended runtime changes. [Verification](../VERIFICATION.md#2026-11-07--prettier-and-minimal-eslint-codebase-item-10-pr-1405).
 

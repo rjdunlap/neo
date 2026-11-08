@@ -6,6 +6,13 @@ Changed: level 12 *Two pails* (school 5–12, order adds 12): two pails, pour by
 Ran: `npm run typecheck`; `npm test` (passing after `npm run game-docs`); `npm run build`; `BROWSER_SUITE=puddlegobble PUDDLE_ONLY=12` (upright 1024×1365: wrong-pail lead, refused overshoot of the 7 = 1 miss, pour 1+2+3 into the 9, tip back, requested hint = 1 hint, finished to a sticker; screenshot `puddle-gobble-12-portrait`); `BROWSER_SUITE=fingerdemo FINGER_ONLY=puddle-gobble FINGER_LEVELS=12` (finished in 19.3 s, after the re-arm fix it found).
 Not run: the rest of the puddlegobble suite (levels 1–11 unchanged), other suites, offline. Open: whether a full pail is tipped back unaided and whether an accidental tip happens on an iPad ([DEVICE-CHECKS.md](DEVICE-CHECKS.md)).
 
+## 2026-11-07 — Supported compiler aliases and root ESLint (PR #1408)
+
+Changed: Microsoft’s supported npm aliases keep the TypeScript 7.0.2 CLI alongside the TypeScript 6 API; ESLint 10.14.0 / typescript-eslint 8.72.1 now share the root manifest and lockfile. Removed the nested package/postinstall; moved the config and updated the existing lint-gate tests. Rules and suppression baseline unchanged.
+Ran on `99f8d597` plus the feature diff: clean `npm ci`; `npm ls` compatibility check; native `tsc` 7.0.2 executable routing; `tsc6` and imported API 6.0.3 (compatibility package 6.0.2); lint; formatting check; full `npm test` (329 files, 6,204 passed / 5 skipped); `npm run build` including native typecheck; links and whitespace. All passed.
+The lockfile keeps existing package versions unchanged except the intentional root `typescript` alias; the native compiler remains 7.0.2. Contributor instructions moved to [Code quality](CODE-QUALITY.md).
+Not run: browser, ghost finger, offline or device checks; no game, asset, save or navigation changes.
+
 ## 2026-11-07 — Gem Swap slice 3: level 6 One swap, a long line (PR #1407)
 
 Changed: level 6 (`PLANS[5]`, 5×5, 20 gems; grown-up 1–6) with 20 generated trays from `scripts/gem-swap-trays.mjs` (ten at par 3, ten at par 4; levels 1–5 unchanged byte for byte); new rule test (independent long-line predicate, every shortest route enumerated, dead-end first swap, hint budget under 2000 nodes from every route state, worst 425); own instruction, voice line `gem-swap.long`, caption and level-scoped how-to step.
@@ -81,18 +88,13 @@ Changed: school's range is now 6–10; level 10 (mode `two`) is choose-then-cut 
 Changed: level 11 (plan on level 5's path: two aloft, signs 2, 3, 3; `FEW`), preschool 2–11 and pre-K 3–11 with new `order`s, `entryLevels: [11]`, how-to steps, five rule tests, a level 11 segment in `fruitslice`. Ran: typecheck; vitest fruit-slice (60), registry, content, progress; `BROWSER_SUITE=fruitslice FRUIT_LEVELS=11` (two aloft, sign 2, free early bowl tap, overshoot miss, signs 3 and 3, portrait screenshot); `fingerdemo` at 11 in preschool (11.1 s); build. game-reviewer: no blocking issues.
 Not run: full `npm test` locally (CI runs it), offline, `world`, device; whether a preschooler stops at 2 unprompted is open.
 
-## 2026-11-07 — Fruit Slice slice 3: level 10 Twos and threes (PR #1393)
-
-Changed: level 10 (apples 2 pieces, oranges 3; put-back strip of fruit tokens; `piecesFor`, `stuck`, `putBack`, `mixedHint`, `tokenAt` and friends in `logic.ts`), four voice lines, how-to steps, a level 10 segment and `FRUIT_LEVELS` filter in `fruitslice`. Ran: typecheck; 55 fruit-slice rule tests (ten new); `npm test` (6,126 passed); `BROWSER_SUITE=fruitslice` at level 10 (stuck total, bowl tap, requested hint on a token, put-back, overshoot miss, finish, portrait screenshot); `fingerdemo` at 10 (11.2 s); build. game-reviewer findings applied (double-tap lock, slot order, strip cleared on send).
-Not run: offline, `world`, couch, device; whether a seven-year-old finds the put-back unaided is open.
-
 ## Coverage summary
 
 One row per suite or area, overwritten with its latest pass (suite names and filters are in the [README](../README.md#browser-checks)). Only the newest dated entries stay in this file; `scripts/archive-verification.mjs` moves older ones into dated files in `docs/archive/` (the earliest are [the archived log](archive/VERIFICATION-2026-10-07-13.md) and [the 2026-10-05/06 log](archive/VERIFICATION-2026-10-05-06.md)), so a row's link may point there. Re-check this table before re-running a suite.
 
 | Suite | Last recorded pass | Where | Caveats |
 | --- | --- | --- | --- |
-| Formatting / minimal lint | 2026-11-07: clean install, typecheck, 329-file units (6,201 passed / 5 skipped), build, lint, format check, 25 focused checks, 1,500-file mechanical formatting comparison | [Tooling](#2026-11-07--prettier-and-minimal-eslint-codebase-item-10-pr-1405) | 32 existing floating promises baselined; no browser/offline/device checks |
+| Formatting / minimal lint | 2026-11-07: clean root install, compiler routing (CLI 7.0.2 / API 6.0.3), lint, format, 329-file units (6,204 passed / 5 skipped), build/typecheck | [Compiler aliases](#2026-11-07--supported-compiler-aliases-and-root-eslint-pr-1408); [original formatting proof](#2026-11-07--prettier-and-minimal-eslint-codebase-item-10-pr-1405) | Baseline unchanged (32 existing floating promises); no browser/offline/device checks |
 | New-game scaffold tooling | 2026-11-07: 20 focused tests, temporary generated-game typecheck/docs/barrels, full units (6,187 passed / 5 skipped), build | [Scaffold](#2026-11-07--new-game-scaffold-codebase-item-11-pr-1399) | Browser/offline not run; generated starters still require implementation and game verification |
 | Round cleanup / native global listeners | 2026-11-07: typecheck, full 327-file units (6,084 passed, 5 skipped), final 61 targeted tests and build; standard `early` paint level 3 and `blocktopple` level 3 passed; 296 demo restart/destruction checks across 46 games retained no native listeners | [Cleanup migration](archive/VERIFICATION-2026-11-07.md#2026-11-07--scene-owned-cleanup-migration-codebase-item-7-follow-up-pr-1387); [original pilots](archive/VERIFICATION-2026-11-07.md#2026-11-07--scene-owned-cleanup-helpers-codebase-item-7-pr-1385) | Draw the Pattern level 5 demo constructor fails on unchanged code too; no world, offline, device or child checks. Paint harness now waits on the game clock; bot actions unchanged. |
 | Ladder scan (`src/games/ladders.test.ts`) | 2026-11-07: typecheck; full units, 6,057 passed / 5 skipped | [Complete sweep](archive/VERIFICATION-2026-11-07.md#2026-11-07--level-ladders-into-logicts-complete-codebase-item-5-pr-1379) | No allowlists; 133 table and ten inline-ladder equivalence probes passed; browser/build/offline not run |

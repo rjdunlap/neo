@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { ESLint } from '../tooling/lint/node_modules/eslint/lib/api.js';
+import { ESLint } from 'eslint';
 
-const eslint = new ESLint({ overrideConfigFile: 'tooling/lint/eslint.config.mjs' });
+const eslint = new ESLint();
 // An existing included file gives the parser a real project without writing a fixture.
 const filePath = 'src/games/fill-dump/index.ts';
 async function messages(code) {
