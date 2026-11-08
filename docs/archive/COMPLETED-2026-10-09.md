@@ -10,7 +10,7 @@ Typecheck, full units (325 files; 6,068 passed, 5 skipped, 67.51 s) and build pa
 
 [PR #1381](https://github.com/rjdunlap/neo/pull/1381) moves shared word themes and blocked words into `src/learning/words/`, separates the picture vocabulary from Pixi in `picture-words.ts`, and promotes the picture-clue renderer to `src/art/word-pictures.ts`. Word Search, Pond Typing and Crossword import those shared modules; data, art and game behavior are unchanged. Letter Trails/tracing and Critter Sort remain ready, including `letterPicture` and `nameLetters` dependencies.
 
-Typecheck, build, source review and both level-1 ghost-finger demos passed. Full units: 6,056 passed, 5 skipped; one unchanged Secret Code performance assertion passed on its sole rerun (24 tests). [Verification](../VERIFICATION.md#2026-11-07--shared-word-learning-helpers-pilot-codebase-item-6-pr-1381). No offline, navigation or device checks; the server is stopped.
+Typecheck, build, source review and both level-1 ghost-finger demos passed. Full units: 6,056 passed, 5 skipped; one unchanged Secret Code performance assertion passed on its sole rerun (24 tests). [Verification](VERIFICATION-2026-11-07.md#2026-11-07--shared-word-learning-helpers-pilot-codebase-item-6-pr-1381). No offline, navigation or device checks; the server is stopped.
 
 ### Level ladders into `logic.ts` (codebase item 5, 2026-11-07)
 

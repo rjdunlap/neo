@@ -15,16 +15,16 @@ A grown-up clears a finite tray of coloured shapes by swapping two occupied neig
 
 `BandLevels`: `grownup 1–4`, no `order`, no `entryLevels`.
 
-**Content pools.** `boards.ts` holds **three frozen trays per level** (twelve in all), each tested for no starting match, settled gravity, the stated gem count and an exact par checked by an independent breadth-first search (`logic.test.ts`). `makePuzzle` picks one, mirrors it left/right half the time and permutes the six shape/colour kinds (`RAINBOW` colours with matching `SHAPES`, so colour is never the only cue). Mirroring and recolouring change how a tray looks but not its structure: a frequent player meets the **same six layouts** a level and will start recognising them within a session or two. The tray has **one look** (light purple cells) and one sound pair (`sfx.pop(2)` on the swap, `pop(3)` on each wave).
+**Content pools.** `boards.ts` (written by `node scripts/gem-swap-trays.mjs`, reproducible) holds **20 frozen trays per level** at 1–4 (80 in all): the first three per level are the hand-made originals, the rest are built backwards (drop a line of three, undo a swap) and kept only when an exact breadth-first par equals the level's par, the tray is settled with no starting match, it is distinct from the others under mirror/recolour, and at levels 2–4 it has a dead-end first swap and a falling line on some shortest route (`logic.test.ts` checks all of this with an independent search). `makePuzzle` picks one, mirrors it left/right half the time and permutes the six shape/colour kinds (`RAINBOW` colours with matching `SHAPES`, so colour is never the only cue). Each round also draws one of **three looks** (lantern night, autumn, first snow: cell tint, rim and a plate behind the tray, from `swatch`) from `ctx.rng` after `makePuzzle`. Sound: `sfx.pop(2)` on the swap, then `pop(3 + wave)` so cascade waves climb the pentatonic steps.
 
 **Rules today.** A swap must be between occupied neighbours of different kinds and must make a line at once; otherwise it stays put, boings, says `gem-swap.miss` and counts a miss. Two rejected swaps in a row show one hint. Hint outlines the first swap of a shortest route from the *current* board (`solve`, a memoised exact search), so it follows alternative routes and revisions. When no clearing route remains, the line says so and offers Undo or Restart; Hint then restarts. Undo is free and unlimited; Restart counts as help. `finish` reports misses, hints and `score = swaps − par`.
 
 **Couch.** `COUCH_INFO['gem-swap']`: turns, twin face-off on identical seeded trays, lower "swaps over the best route" wins, trip stops map to levels 2–4, demo at 2. There is no frozen course, which the roadmap's [step 8b](../ROADMAP.md) still lists as a proposal beside a "Zen refill mode".
 
 **Known gaps.**
-- **Variety:** six layouts a level, one look, cascades that blink in place rather than fall.
+- **Variety (closed by slice 1):** 20 layouts a level and three looks; a frequent player will still meet repeats after many trays, and levels 1–4 are the only ones with pools.
 - **A short ladder:** four levels, the last only 18 gems on 5×5. A grown-up who enjoys it reaches the top in one sitting.
-- **The fall is not shown.** `draw()` pulses the removed gems' alpha, then the next wave's board simply replaces the last. The game is about predicting the fall, and the fall itself is invisible.
+- **The fall (closed by slice 1, readability still a person check):** each wave pulses 0.35 s, survivors fall 0.25 s accelerating to their landing row (`drops()` in `logic.ts`, tested against `fall`) with a 0.1 s landing squash. Whether it reads at a glance is in `DEVICE-CHECKS.md`.
 - **Solver budget.** `solve` explores every accepted swap with memoisation. That is instant at 18 gems on 5×5; larger trays need the par frozen offline and the hint search shown to stay bounded from every reachable state.
 - **Layout.** Cells are `min(108, (w − 180)/size, (h − 290)/size)`: 108 units on 4×4 and about 95 on 5×5 at 1024×768; a 6×6 tray would be about 80 (fine for grown-up's 64, not for a child's 100).
 - **No person has judged it:** device speech, enjoyment and real controllers are open, as for every Lantern Lake puzzle.
@@ -115,7 +115,7 @@ None needed for grown-ups: 6 → 12 → 15 → 18 gems is already a gentle slope
 
 ## Build slices, in order
 
-1. **More trays, looks and a visible fall.** The tray generator script and 20 frozen trays a level at 1–4; three seeded looks; the falling tween, landing squash and rising cascade steps. Checks: typecheck, rule tests, one filtered `gemswap` play at level 4 with one portrait screenshot in a new look; no `fingerdemo` (the bot's actions do not change); build only if shared files change.
+1. **More trays, looks and a visible fall (built 2026-11-07, PR #1398).** The tray generator script and 20 frozen trays a level at 1–4; three seeded looks; the falling tween, landing squash and rising cascade steps. Checks: typecheck, rule tests, one filtered `gemswap` play at level 4 with one portrait screenshot in a new look; no `fingerdemo` (the bot's actions do not change); build only if shared files change.
 2. **Level 5 *Six by six: five swaps*.** Frozen 6×6 trays with offline pars, the node-budget test, grown-up range 1–5; the couch trip mapping is unchanged. Checks: new level on the existing interaction: typecheck, rule and registry/how-to tests, one browser play of 5, `fingerdemo` at 5.
 3. **Level 6 *One swap, a long line*.** Content-tagged trays and the enumerated-route test; range 1–6. Checks: typecheck, rule tests, one browser play of 6, `fingerdemo` at 6.
 4. **Level 7 *Stones that stay*.** The stone model, drawing and voice; range 1–7. Checks: model change: typecheck, rule tests with levels 1–6 unchanged, one browser play of 7 with one refused stone tap, one portrait screenshot, `fingerdemo` at 7, build.
@@ -125,4 +125,4 @@ The school opening (decision 1) and the couch course (decision 3) are gated and 
 
 ## What was built in this session
 
-Nothing: research and design only. Ran `node scripts/check-links.mjs` and `git diff --check`.
+Research and design (PR #1367), then slice 1 (PR #1398): the generator script and 20 trays a level, three looks, the visible fall with landing squash and rising cascade steps; `logic.ts` now imports `./boards.ts` so the node script can load it. Checks are in [VERIFICATION.md](../VERIFICATION.md). Slices 2–5 are open.
