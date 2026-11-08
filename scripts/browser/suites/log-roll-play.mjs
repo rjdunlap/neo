@@ -31,15 +31,19 @@ async function logRollPlay() {
     await tap('neo.scene.game.againButton');
     assert.deepEqual(await page.evaluate(() => neo.scene.game.state), original);
     await tap('neo.scene.game.hintButton');
-    assert.equal(await page.evaluate(() => neo.scene.game.hints), 1);
+    await tap('neo.scene.game.hintButton');
+    assert.equal(await page.evaluate(() => neo.scene.game.hints), 1, 'a glowing hint counts once');
     await page.evaluate(() => { const g = neo.scene.game; kit.tapOn(g.directions[g.hinted]); });
-    await page.waitForTimeout(180);
+    assert.ok(await page.evaluate(() => neo.scene.game.tip !== null), 'the log tips rather than jumping');
+    assert.equal(await page.evaluate(() => neo.scene.game.autotouch()), null, 'the bot waits for the tip');
+    await page.waitForTimeout(400);
     await tap('neo.scene.game.undoButton');
     assert.deepEqual(await page.evaluate(() => neo.scene.game.state), original);
     assert.equal(await page.evaluate(() => neo.scene.game.hints), 1);
     if (level === 3) {
       await page.setViewportSize({ width: 768, height: 1024 }); await page.waitForTimeout(300);
       assert.ok(await page.evaluate(() => neo.scene.game.cell >= 64));
+      log(`Log Roll level 3 look: ${await page.evaluate(() => neo.scene.game.look.name)}`);
       await screenshot('log-roll-portrait');
       await page.setViewportSize({ width: 1024, height: 768 }); await page.waitForTimeout(300);
       await screenshot('log-roll-landscape');
@@ -51,7 +55,7 @@ async function logRollPlay() {
       for (let guard = 0; guard < 40 && !g.finished; guard++) {
         const d = solutionStep(g.state, g.puzzle.plan.floor)?.next;
         if (!d) throw new Error('No Log Roll route');
-        kit.tapOn(g.directions[d]); await kit.sleep(170);
+        kit.tapOn(g.directions[d]); await kit.sleep(330);
       }
     });
     await finished('log-roll');
