@@ -290,3 +290,11 @@ Not run: the rest of the puddlegobble suite (levels 1–11 unchanged), other sui
 Changed: level 4 (grown-up range 1–4): four frozen 8×6 floors at depth 16 (5, 3, 5, 3 upright starts); `scripts/log-roll-floors.mjs` now generates from `PLANS`, levels 1–3 byte-identical; a rule test that each start is 2–8 rolls away with the gaps filled; `logroll` suite plays levels 1 and 4.
 Ran: `npm run typecheck`; `npm test` (329 files, 6,219 passed / 1 skipped); `BROWSER_SUITE=logroll` (levels 1 and 4: refused edge roll, double hint counted once, tip, undo, start over, one sticker each, portrait screenshot at level 4, cell 96); `fingerdemo` with `FINGER_ONLY=log-roll FINGER_LEVELS=4` (23.4 s).
 Not run: build (no shared files or assets changed), offline. Open: whether the long loops feel fair to a grown-up and device speech.
+
+## 2026-11-07 — Light Lab art split (codebase item 9, PR #1411)
+
+Changed: drawing helpers, `Bloom`, hub icon, seeded sticker art and visual constants moved from `src/games/light-lab/index.ts` to `art.ts`; the game class and module are unchanged. All 27 non-import declarations match by token comparison, ignoring added exports, formatting and trailing commas.
+Ran on base `9132176c` plus the feature diff: clean `npm ci`, typecheck, 42 Light Lab tests in two files, build, targeted ESLint and Prettier; `game-reviewer` found no defects.
+`BROWSER_SUITE=woods WOODS_ONLY=materials GAME_URL=http://localhost:5199` passed level 11: a free mismatched guess, shadow/dim beam, two wrong things then a glow, saved 2 misses/1 hint and one sticker. Portrait `test-results/browser/woods/light-lab-11-portrait.png` visually checked.
+PR CI passed full units, formatting, lint and build at `ccdd598c`; integrated unrelated Log Roll `92f27bcb` with only this log conflicting. Light Lab source and prior play proof are unchanged.
+Not run: full units locally (PR CI runs them), `fingerdemo` (bot unchanged), other browser suites, offline or device checks. Rules, levels, input, rendering and lifecycle are unchanged.

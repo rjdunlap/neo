@@ -4,7 +4,7 @@
 
 [PR #1411](https://github.com/rjdunlap/neo/pull/1411) moves Light Lab's drawing helpers, `Bloom`, hub icon, seeded sticker art and visual constants to `src/games/light-lab/art.ts`. Its entry point shrinks from 1,540 to 1,263 lines (58,867 to 48,315 bytes), keeping game state, input and layout together. All 27 non-import declarations match by token comparison ignoring added exports, formatting and trailing commas; the game class and module are unchanged. Item 9 remains open for other large files, one per session.
 
-Clean installation, typecheck, 42 Light Lab tests, build, targeted lint/format and `game-reviewer` passed. Filtered `woods` materials play at level 11 passed the free guess, shadow/dim beam, two misses then glow, saved 2/1 and one sticker; its portrait screenshot was visually checked. Full units locally, ghost finger, other suites, offline and device checks were not run. [Verification](../VERIFICATION.md#2026-11-07--light-lab-art-split-codebase-item-9-pr-1411).
+Clean installation, typecheck, 42 Light Lab tests, build, targeted lint/format and `game-reviewer` passed. Filtered `woods` materials play at level 11 passed the free guess, shadow/dim beam, two misses then glow, saved 2/1 and one sticker; its portrait screenshot was visually checked. Full units locally, ghost finger, other suites, offline and device checks were not run. [Verification](VERIFICATION-2026-11-07.md#2026-11-07--light-lab-art-split-codebase-item-9-pr-1411).
 
 ### Root compiler aliases and ESLint (2026-11-07)
 

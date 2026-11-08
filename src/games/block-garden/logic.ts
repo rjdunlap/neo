@@ -137,6 +137,8 @@ export interface Bed {
   stones: number[];
   /** Sleeping buds. A subset of `stones`. */
   buds: number[];
+  /** Stones a snail lives on (level 11): never picked, so a planting that would empty one is not allowed. A subset of `stones`, never a bud. */
+  keep?: number[];
 }
 
 export interface Anchor {
@@ -167,8 +169,13 @@ export function emptyBed(n: number): Bed {
 }
 
 export function cloneBed(b: Bed): Bed {
-  return { n: b.n, filled: b.filled.slice(), stones: b.stones.slice(), buds: b.buds.slice() };
+  const out: Bed = { n: b.n, filled: b.filled.slice(), stones: b.stones.slice(), buds: b.buds.slice() };
+  if (b.keep) out.keep = b.keep.slice();
+  return out;
 }
+
+/** True when the bed has a snail anywhere. */
+export const hasKeep = (b: Bed) => !!b.keep && b.keep.some((m) => m !== 0);
 
 export const has = (rows: readonly number[], r: number, c: number) => ((rows[r] >> c) & 1) === 1;
 
@@ -186,6 +193,8 @@ export interface Placed {
   cols: number[];
   /** Buds that bloomed, as [row, column]. */
   bloomed: Cell[];
+  /** Snail stones in the emptied lines, as [row, column]: a placement with any is not allowed. */
+  snails: Cell[];
 }
 
 /** The bed after a placement that fits: the piece is planted, then every full row and column empties at once. The old bed is untouched. */
@@ -204,20 +213,32 @@ export function place(bed: Bed, shapeId: string, a: Anchor): Placed {
   const cols: number[] = [];
   for (let c = 0; c < n; c++) if ((colAnd >> c) & 1) cols.push(c);
   const colMask = colAnd;
-  const bloomed: Cell[] = [];
+  const bloomed: Cell[] = [],
+    snails: Cell[] = [];
   const clear = (r: number) => (rows.includes(r) ? full : colMask);
   const next: Bed = { n, filled, stones: bed.stones.slice(), buds: bed.buds.slice() };
+  if (bed.keep) next.keep = bed.keep.slice();
   if (rows.length || cols.length) {
     for (let r = 0; r < n; r++) {
       const m = clear(r);
       if (!m) continue;
-      for (let c = 0; c < n; c++) if ((m >> c) & 1 && (next.buds[r] >> c) & 1) bloomed.push([r, c]);
+      for (let c = 0; c < n; c++) {
+        if ((m >> c) & 1 && (next.buds[r] >> c) & 1) bloomed.push([r, c]);
+        if (next.keep && (m >> c) & 1 && (next.keep[r] >> c) & 1) snails.push([r, c]);
+      }
       next.filled[r] &= ~m;
       next.stones[r] &= ~m;
       next.buds[r] &= ~m;
+      if (next.keep) next.keep[r] &= ~m;
     }
   }
-  return { bed: next, rows, cols, bloomed };
+  return { bed: next, rows, cols, bloomed, snails };
+}
+
+/** A placement she may make: it fits, and no row or column it fills holds a snail's stone. `fits` alone still places the shadow. */
+export function allowed(bed: Bed, shapeId: string, a: Anchor): boolean {
+  if (!fits(bed, shapeId, a)) return false;
+  return !hasKeep(bed) || !place(bed, shapeId, a).snails.length;
 }
 
 export function goalMet(bed: Bed, goal: Goal): boolean {
@@ -368,11 +389,14 @@ const stateKey = (s: State) => s.bed.filled.join(',') + '|' + s.bed.buds.join(',
 export function placements(g: Pick<Garden, 'pieces' | 'traySize'>, s: State): Placement[] {
   const out: Placement[] = [];
   const seen = new Set<string>();
+  // Only a bed with a snail pays for the extra check (levels 1–10 search exactly as before).
+  const snail = hasKeep(s.bed);
   for (const i of trayNow(g, s.used)) {
     const id = g.pieces[i];
     if (seen.has(id)) continue;
     seen.add(id);
-    for (const a of anchors(s.bed, id)) out.push({ piece: i, ...a });
+    for (const a of anchors(s.bed, id))
+      if (!snail || !place(s.bed, id, a).snails.length) out.push({ piece: i, ...a });
   }
   return out;
 }
@@ -521,6 +545,8 @@ export interface GardenPlan {
   like?: number;
   /** The next tray shows faded beside the one in front of her, and cannot be lifted (level 10). */
   preview?: boolean;
+  /** Snails on stones that must never be picked (level 11). */
+  snails?: number;
 }
 
 const SMALL: Family[] = ['domino', 'I3', 'corner3', 'square2'];
@@ -695,6 +721,22 @@ export const PLANS: GardenPlan[] = [
     like: 6,
     preview: true,
   },
+  {
+    id: 11,
+    name: 'Mind the snail',
+    n: 6,
+    cell: 100,
+    goal: 'buds',
+    pieces: 6,
+    traySize: 3,
+    buds: [3, 4],
+    par: [4, 6],
+    gardens: 1,
+    tinted: false,
+    refusalCounts: true,
+    families: MID,
+    snails: 1,
+  },
 ];
 
 /** The level a plan's gardens are built and filtered as. */
@@ -703,9 +745,10 @@ export const kindOf = (plan: Pick<GardenPlan, 'id' | 'like'>): number => plan.li
 export const LEVELS: BandLevels = {
   // Level 9 is level 3's corner gardens with the stripes on and refused drops free: a gentler step between 2 and 3.
   // Level 10 is level 6's two trays with the next one shown: a step before the blind tray at 6.
+  // Level 11 is a two-tray garden with a snail's line that must never fill: school's top, a grown-up's last.
   prek: { min: 1, max: 9, order: [1, 2, 9, 3] },
-  school: { min: 2, max: 10, order: [2, 9, 3, 4, 5, 10, 6] },
-  grownup: { min: 5, max: 10, order: [5, 10, 6, 7, 8] },
+  school: { min: 2, max: 11, order: [2, 9, 3, 4, 5, 10, 6, 11] },
+  grownup: { min: 5, max: 11, order: [5, 10, 6, 7, 8, 11] },
 };
 
 /** Easy levels with high IDs, placed earlier by a band's `order`. */
@@ -741,14 +784,21 @@ export function flowerAt(garden: number, r: number, c: number): FlowerKind {
 /* ---------------------------------------------------------------------------------------------- */
 
 /**
- * A garden as text: the bed one row per `/` (`.` empty, `o` stone, `*` stone with a bud), then `:` and the pieces in arrival
+ * A garden as text: the bed one row per `/` (`.` empty, `o` stone, `*` stone with a bud, `s` stone with a snail), then `:` and the pieces in arrival
  * order, then `:` and the stored solution as `piece@row,col` steps. `"..o../..*../...:domino-0,I3-0:0@1,2"`.
  */
 export function encode(g: Garden): string {
   const rows = [];
   for (let r = 0; r < g.n; r++) {
     let s = '';
-    for (let c = 0; c < g.n; c++) s += has(g.bed.buds, r, c) ? '*' : has(g.bed.filled, r, c) ? 'o' : '.';
+    for (let c = 0; c < g.n; c++)
+      s += has(g.bed.buds, r, c)
+        ? '*'
+        : g.bed.keep && has(g.bed.keep, r, c)
+          ? 's'
+          : has(g.bed.filled, r, c)
+            ? 'o'
+            : '.';
     rows.push(s);
   }
   return `${rows.join('/')}:${g.pieces.join(',')}:${g.solution.map((p) => `${p.piece}@${p.r},${p.c}`).join(' ')}`;
@@ -765,6 +815,7 @@ export function decode(text: string, plan: Pick<GardenPlan, 'goal' | 'traySize'>
       bed.filled[r] |= 1 << c;
       bed.stones[r] |= 1 << c;
       if (ch === '*') bed.buds[r] |= 1 << c;
+      if (ch === 's') (bed.keep ??= Array(n).fill(0))[r] |= 1 << c;
     }),
   );
   const pieces = piecesText.split(',');
@@ -821,7 +872,13 @@ export function transformGarden(g: Garden, t: number): Garden {
   });
   return {
     ...g,
-    bed: { n, filled: mapRows(g.bed.filled), stones: mapRows(g.bed.stones), buds: mapRows(g.bed.buds) },
+    bed: {
+      n,
+      filled: mapRows(g.bed.filled),
+      stones: mapRows(g.bed.stones),
+      buds: mapRows(g.bed.buds),
+      ...(g.bed.keep ? { keep: mapRows(g.bed.keep) } : {}),
+    },
     pieces,
     solution,
   };
@@ -839,6 +896,8 @@ interface Draft {
   n: number;
   stones: number[];
   buds: number[];
+  /** Snail stones (level 11). */
+  keep: number[];
   plan: { shape: string; r: number; c: number }[];
   extras: string[];
 }
@@ -847,6 +906,7 @@ const draft = (n: number): Draft => ({
   n,
   stones: Array(n).fill(0),
   buds: Array(n).fill(0),
+  keep: Array(n).fill(0),
   plan: [],
   extras: [],
 });
@@ -920,6 +980,7 @@ function toGarden(
   bed.filled = d.stones.slice();
   bed.stones = d.stones.slice();
   bed.buds = d.buds.map((m, r) => m & d.stones[r]);
+  if (d.keep.some((m) => m)) bed.keep = d.keep.map((m, r) => m & d.stones[r] & ~bed.buds[r]);
   return {
     n: d.n,
     goal: plan.goal,
@@ -1069,7 +1130,7 @@ function blockGarden(plan: GardenPlan, rng: Rng): Draft | null {
   const spec =
     plan.id === 4
       ? { m: 2, k: 2, density: 0.15 }
-      : kindOf(plan) === 6
+      : kindOf(plan) === 6 || plan.snails
         ? { m: rng.int(2, 3), k: rng.int(2, 3), density: 0.2 }
         : plan.id === 7
           ? { m: rng.int(3, 4), k: rng.int(3, 5), density: 0.2 }
@@ -1168,6 +1229,54 @@ function roomGarden(plan: GardenPlan, rng: Rng): Draft | null {
   return d;
 }
 
+/**
+ * Level 11: level 6's two-tray block, plus one other row of stones with a straight gap a tray piece fills, and a snail on one of
+ * its stones. Filling that row would pick the snail's house, so its gap is the easy place she must leave alone.
+ */
+function snailGarden(plan: GardenPlan, rng: Rng): Draft | null {
+  const d = blockGarden(plan, rng);
+  if (!d || !d.extras.length) return null;
+  const n = d.n;
+  const blockRows = new Set<number>();
+  for (let r = 0; r < n; r++) if (d.buds[r]) blockRows.add(r);
+  const free = Array.from({ length: n }, (_, i) => i).filter((r) => !blockRows.has(r));
+  if (!free.length) return null;
+  const r = rng.pick(free);
+  const len = rng.int(2, 3);
+  const g = rng.int(0, n - len);
+  d.stones[r] = fullMask(n) & ~(((1 << len) - 1) << g);
+  d.buds[r] = 0;
+  // The snail sits on a stone of that row whose column holds no bud.
+  const budCols = d.buds.reduce((a, m) => a | m, 0);
+  const spots = Array.from({ length: n }, (_, c) => c).filter(
+    (c) => has(d.stones, r, c) && !((budCols >> c) & 1),
+  );
+  if (!spots.length) return null;
+  setCell(d.keep, r, rng.pick(spots));
+  // One of the extras is the piece that would fill the gap.
+  d.extras[0] = len === 2 ? 'domino-0' : 'I3-0';
+  return d;
+}
+
+/** Snail squares a solution's placements would empty (none in a legal one). */
+function snailsCleared(g: Garden, sol: Placement[]): number {
+  let bed = g.bed,
+    k = 0;
+  for (const p of sol) {
+    const out = place(bed, g.pieces[p.piece], p);
+    k += out.snails.length;
+    bed = out.bed;
+  }
+  return k;
+}
+
+/** The same garden with its snails gone (for the filter: the snail has to change the plan). */
+export function withoutSnails(g: Garden): Garden {
+  const bed = cloneBed(g.bed);
+  delete bed.keep;
+  return { ...g, bed };
+}
+
 function pickShapes(plan: GardenPlan, rng: Rng, k: number): string[] {
   return Array.from({ length: k }, () => rng.pick(FAMILY_SHAPES[rng.pick(plan.families)]));
 }
@@ -1253,6 +1362,27 @@ export function passesFilter(plan: GardenPlan, g: Garden, par: number): boolean 
       const stones = g.bed.filled.reduce((a, m) => a + popcount(m), 0);
       return budCount === 0 && stones >= plan.stones![0] && stones <= plan.stones![1];
     }
+    case 11: {
+      // One snail, on a stone that is not a bud, with no bud in its row or column.
+      const keep = g.bed.keep ?? [];
+      const spots: Cell[] = [];
+      for (let r = 0; r < g.n; r++) for (let c = 0; c < g.n; c++) if (has(keep, r, c)) spots.push([r, c]);
+      if (spots.length !== plan.snails) return false;
+      const budCols = g.bed.buds.reduce((a, m) => a | m, 0);
+      if (spots.some(([r, c]) => g.bed.buds[r] || (budCols >> c) & 1 || !has(g.bed.stones, r, c)))
+        return false;
+      // Needs the second tray, and a piece in front of her fits where it would pick the snail's house.
+      if (par <= g.traySize) return false;
+      const tempting = trayNow(g, 0).some((i) =>
+        anchors(g.bed, g.pieces[i]).some((a) => !allowed(g.bed, g.pieces[i], a)),
+      );
+      if (!tempting) return false;
+      // Without the snail, some shortest way empties its stone: the snail changes the plan.
+      const free = withoutSnails(g);
+      const freePar = solve(free, startState(free), SEARCH_CAP * 10)?.length;
+      if (freePar === undefined) return false;
+      return allShortest(free, startState(free), freePar).some((sol) => snailsCleared(g, sol) > 0);
+    }
   }
   return true;
 }
@@ -1268,13 +1398,15 @@ export function candidate(plan: GardenPlan, rng: Rng, cap = SEARCH_CAP): Garden 
           ? cornerGarden(plan, rng)
           : plan.id === 5
             ? roomGarden(plan, rng)
-            : blockGarden(plan, rng);
+            : plan.snails
+              ? snailGarden(plan, rng)
+              : blockGarden(plan, rng);
   if (!d) return null;
   while (d.plan.length + d.extras.length < plan.pieces) d.extras.push(pickShapes(plan, rng, 1)[0]);
   if (d.plan.length + d.extras.length > plan.pieces) return null;
   // At level 8 every planted piece has to empty again, so the planned pieces come first and the extras wait in the last tray.
   const order = plan.goal === 'clear' ? 'planned-first' : plan.traySize < plan.pieces ? 'trays' : 'shuffle';
-  let g = toGarden(d, plan, order, rng, kindOf(plan) >= 6 && kindOf(plan) <= 7);
+  let g = toGarden(d, plan, order, rng, (kindOf(plan) >= 6 && kindOf(plan) <= 7) || !!plan.snails);
   g = transformGarden(g, rng.int(0, 7));
   const sol = solve(g, startState(g), cap);
   if (!sol) return null;

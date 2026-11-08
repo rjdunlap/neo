@@ -9,8 +9,8 @@
 | Band | Levels, easiest first |
 | --- | --- |
 | pre-K | 1, 2, 9, 3 |
-| school | 2, 9, 3, 4, 5, 10, 6 |
-| grown-up | 5, 10, 6, 7, 8 |
+| school | 2, 9, 3, 4, 5, 10, 6, 11 |
+| grown-up | 5, 10, 6, 7, 8, 11 |
 
 | Level | Plays like |
 | --- | --- |
@@ -24,12 +24,13 @@
 | 8 | Clear the whole garden |
 | 9 | Corner with stripes |
 | 10 | See what comes next |
+| 11 | Mind the snail |
 
 <!-- end generated -->
 
 **Starts as:** drag shaped seed pieces onto a garden bed; a full row or column blooms and empties, until every bud blooms; a faint shadow shows where a piece will land
 
-**Grows into:** a bud on a line that needs two rows, then crossings, a corner gap and a decoy, then the corner gap again with stripes (level 9, a gentle step before level 3 for pre-K), then a look at the next tray before the two-tray level (level 10), then big frozen gardens where level 8 empties the whole bed; free undo, solver-checked gardens, no rotation
+**Grows into:** a bud on a line that needs two rows, then crossings, a corner gap and a decoy, then the corner gap again with stripes (level 9, a gentle step before level 3 for pre-K), then a look at the next tray before the two-tray level (level 10), then a snail whose stone a line must not empty (level 11), then big frozen gardens where level 8 empties the whole bed; free undo, solver-checked gardens, no rotation
 
 ## Design notes
 
