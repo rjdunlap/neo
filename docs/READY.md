@@ -51,7 +51,7 @@ Requested by the developer 2026-11-07 to make the code cheaper for AI to write a
 
 - **Split the largest game and shell files by mode and art** (one file per session, when it next comes up for work; that game's tier): [item 9](CODEBASE-REVIEW-2026-11-07.md#9-split-the-largest-files).
 - **Prettier and a minimal ESLint** (one reformat commit in `.git-blame-ignore-revs`; typecheck, unit tests, build): [item 10](CODEBASE-REVIEW-2026-11-07.md#10-a-formatter-and-a-minimal-lint).
-- **A new-game scaffold script or skill** (after items 1 and 2): [item 11](CODEBASE-REVIEW-2026-11-07.md#11-a-new-game-scaffold).
+- **A new-game scaffold script or skill** (after items 1 and 2; claimed on `codex/new-game-scaffold`, PR pending; `scripts/new-game.mjs`, templates/tests, package command and contributor docs): [item 11](CODEBASE-REVIEW-2026-11-07.md#11-a-new-game-scaffold).
 
 ### Study follow-ups (docs-only definitions)
 
