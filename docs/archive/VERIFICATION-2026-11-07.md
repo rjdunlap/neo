@@ -156,3 +156,11 @@ Not run: `world`, offline, device or child play (no navigation, persistence or a
 Changed: school range now 4–9; predict-then-fix level (guess flag, ring on the real stop, one-piece fix), `stopsAt`/`standing`, three voice ids, how-to step, four rule tests.
 Ran: `npm run typecheck`; `npm test` (325 files, 6,085 passed); `npm run build`; `BROWSER_SUITE=dominorun` passed (also level 9 upright: wrong guess, waiting hint, 0 misses, 1 hint, sticker; portrait screenshot kept); `FINGER_ONLY=domino-run FINGER_LEVELS=9` `fingerdemo` passed (11.5 s).
 Not run: iPad reading of the flag and ring (open in DEVICE-CHECKS), other suites, offline, `world`.
+
+## 2026-11-07 — Scene-owned cleanup migration (codebase item 7 follow-up, PR #1387)
+
+Changed: 92 native global-listener registrations in 42 game files now use `ctx.listen` with identical target/callback/options tuples; five scene-only guards use `ctx.alive`, two test fixtures use real lifetimes, and the paint harness waits for its game-clock cooldown. Branches, board-generation guards, short-lived cleanup and bot actions are unchanged. Fresh-context review found no concrete issues.
+Tested: base `88da9a39` plus diff, full `npm test` (327 files, 6,084 passed, 5 skipped); after integrating `5b3d39b2` as `0feda6bf`, typecheck, six targeted files (61 passed, 1 skipped) and production build passed.
+Browser at `http://localhost:5188`: `BROWSER_SUITE=early EARLY_ONLY=paint FROM_LEVEL=3 TO_LEVEL=3` passed two misses, hint, all pictures and sticker; `BROWSER_SUITE=blocktopple TOPPLE_LEVELS=3` passed portrait wrong/hill shots, two misses, hint, three tips and saved 2/1.
+The retained ignored `test-results/cleanup-sweep.mjs`, its results JSON and `migrated-listener-files.txt` record 296 level/mode demo restart/destruction checks across 46 games, with no retained native listeners or page errors in those checks. Draw the Pattern level 5 separately fails in its demo constructor reading an undefined piece; unchanged HEAD’s game module reproduces it (baseline script retained), so it remains a pre-existing gap outside this migration.
+Not run: `world`, offline, device or child play; no navigation, persistence or assets changed. Server stopped. No new gameplay or bot actions.

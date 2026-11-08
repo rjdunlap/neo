@@ -1,17 +1,27 @@
 import type { BandLevels } from '../../progress/difficulty';
 import type { Rng } from '../../engine/random';
+import { FLOORS } from './floors.ts';
 
 export type Pose = 'up' | 'across' | 'along';
 export interface State { x: number; y: number; pose: Pose }
 export const DIRECTIONS = ['up', 'down', 'left', 'right'] as const;
 export type Direction = typeof DIRECTIONS[number];
+/** Each level's exact start depth; its floors (several, frozen in floors.ts, and their mirrors) share the depth and size. */
 export const PLANS = [
-  { floor: ['.....', '.....', '.....', '.....', '.....'], depth: 4, name: 'Open stones: learn to tip and stand' },
-  { floor: ['......', '.. ...', '......', '... ..', '......'], depth: 8, name: 'Two gaps: plan the log’s footprint' },
-  { floor: ['.......', '. .....', '.... ..', '.. ....', '.......'], depth: 12, name: 'Broken path: weave around three gaps' },
+  { depth: 4, name: 'Open stones: learn to tip and stand' },
+  { depth: 8, name: 'Two gaps: plan the log’s footprint' },
+  { depth: 12, name: 'Broken path: weave around three gaps' },
 ] as const;
-export const planFor = (level: number) => PLANS[Math.max(0, Math.min(2, level - 1))];
-export const goal = (floor: readonly string[]): State => ({ x: floor[0].length - 1, y: floor.length - 1, pose: 'up' });
+export const planFor = (level: number) => PLANS[Math.max(0, Math.min(PLANS.length - 1, level - 1))];
+export const floorsFor = (level: number) => FLOORS[Math.max(0, Math.min(FLOORS.length - 1, level - 1))];
+/** A left-right mirror; the hollow moves with its row. */
+export const mirror = (floor: readonly string[]) => floor.map(row => [...row].reverse().join(''));
+const stone = (v: string | undefined) => v === '.' || v === 'G';
+export function goal(floor: readonly string[]): State {
+  const y = floor.findIndex(row => row.includes('G'));
+  if (y < 0) throw new Error('A Log Roll floor needs a hollow');
+  return { x: floor[y].indexOf('G'), y, pose: 'up' };
+}
 export const key = (s: State) => `${s.x},${s.y},${s.pose}`;
 export const solved = (s: State, floor: readonly string[]) => key(s) === key(goal(floor));
 export function footprint(s: State): [number, number][] {
@@ -30,7 +40,7 @@ export function roll(s: State, d: Direction, floor: readonly string[]): State | 
     else if (s.pose === 'along') { n.y += sign < 0 ? -1 : 2; n.pose = 'up'; }
     else n.y += sign;
   }
-  return footprint(n).every(([x, y]) => floor[y]?.[x] === '.') ? n : null;
+  return footprint(n).every(([x, y]) => stone(floor[y]?.[x])) ? n : null;
 }
 const opposite: Record<Direction, Direction> = { up: 'down', down: 'up', left: 'right', right: 'left' };
 const cache = new Map<string, Map<string, { state: State; distance: number; next: Direction | null }>>();
@@ -52,11 +62,17 @@ export function distances(floor: readonly string[]) {
   cache.set(shape, table); return table;
 }
 export const solutionStep = (s: State, floor: readonly string[]) => distances(floor).get(key(s)) ?? null;
+/** Upright poses exactly `depth` rolls from the hollow: the possible starts. */
+export const startsAt = (floor: readonly string[], depth: number) =>
+  [...distances(floor).values()].filter(v => v.distance === depth && v.state.pose === 'up').map(v => v.state);
+/** A glowing hint is counted once: asking again, or another refused roll, while the same arrow glows costs nothing. */
+export const countsAsHint = (glowing: Direction | null, next: Direction) => glowing !== next;
 export function makePuzzle(level: number, rng: Rng) {
-  const plan = planFor(level);
-  const candidates = [...distances(plan.floor).values()].filter(v => v.distance === plan.depth && v.state.pose === 'up');
+  const base = planFor(level), source = rng.pick(floorsFor(level)), flipped = rng.chance(0.5);
+  const plan = { ...base, floor: flipped ? mirror(source) : [...source] };
+  const candidates = startsAt(plan.floor, plan.depth);
   if (!candidates.length) throw new Error(`No Log Roll starts at depth ${plan.depth}`);
-  return { plan, start: { ...rng.pick(candidates).state } };
+  return { plan, flipped, start: { ...rng.pick(candidates) } };
 }
 
 export const LEVELS: BandLevels = {

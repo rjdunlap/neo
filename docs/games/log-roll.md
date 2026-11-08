@@ -20,8 +20,8 @@
 
 **Starts as:** tip a log across stones and stand it upright on the goal
 
-**Grows into:** three seeded puzzles with exact shortest-route hints, Undo, restart and ghost finger; touch only, in Tinker Lab
+**Grows into:** three levels of four frozen floors each (mirrored, so eight shapes a level) with exact shortest-route hints, a visible tip, three pond looks, Undo, restart and ghost finger; touch only, in Tinker Lab
 
 ## Design notes
 
-Grown-up, Tinker Lab; touch only. Use the directional controls to tip a log across stepping stones and stand it upright on the pictured goal. Three seeded puzzles have exact shortest-route hints. An invalid roll leaves the log in place with gentle feedback; Undo and restart remain available. Complete at the upright goal for one sticker, including with help; ghost-finger demonstration included.
+Grown-up, Tinker Lab; touch only. Use the directional controls to tip a log across stepping stones and stand it upright on the pictured goal. Each level has four frozen floors with a hollow ('G') and a seeded left-right mirror; layout derives from the floor size, and one of three seeded looks (spring pond, autumn leaves, evening water) dresses the pond. The log tips over in 0.22 s with at most one queued tap, a refused roll leans toward the missing stone, and finishing ripples the hollow and shows the roll count and the shortest route as information only. A glowing hint is counted once. Hints are exact shortest routes. An invalid roll leaves the log in place with gentle feedback; Undo and restart remain available. Complete at the upright goal for one sticker, including with help; ghost-finger demonstration included.
