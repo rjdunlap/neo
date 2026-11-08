@@ -250,8 +250,9 @@ class PuddleGobble implements Game {
   private readonly pailTaps = new Container();
   private pailTargets: (Container | null)[] = [];
   private pailArt: Container[] = [];
-  /** Level 12: a pail that refused a pour re-arms once the puddle has left it. */
+  /** Level 12: a pail that refused a pour (or was just tipped) re-arms once the puddle has left it or changed its number. */
   private readonly pailArmed = [true, true];
+  private readonly pailDisarmedAt = [0, 0];
 
   constructor(private readonly ctx: GameContext) {
     this.view = ctx.view;
@@ -724,8 +725,8 @@ class PuddleGobble implements Game {
       if (this.busy || this.state.filled[i] !== null) return;
       const d = Math.hypot(at.x - this.puddle.x, at.y - this.puddle.y);
       if (!this.pailArmed[i]) {
-        if (d > R + REARM) this.pailArmed[i] = true;
-        return;
+        if (d > R + REARM || this.state.puddle !== this.pailDisarmedAt[i]) this.pailArmed[i] = true;
+        else return;
       }
       if (d >= R) return;
       const r = pour(this.board, this.state, i);
@@ -734,6 +735,7 @@ class PuddleGobble implements Game {
         return;
       }
       this.pailArmed[i] = false;
+      this.pailDisarmedAt[i] = this.state.puddle;
       sfx.pop(9);
       this.speak('gobble.pail-wants', { p: this.state.puddle, t: this.board.pails![i] });
     });
@@ -791,6 +793,7 @@ class PuddleGobble implements Game {
     this.glow = null;
     this.missesSince = 0;
     this.pailArmed[i] = false;
+    this.pailDisarmedAt[i] = this.state.puddle;
     const at = pailSpots(this.plan, this.field)[i];
     for (const id of ids) {
       const it = this.items[id];
