@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '../../engine/random';
-import { distances, goal, makeBoard, neighbours, nookLayout, planFor, slide, solutionStep, solved } from './logic';
+import { distances, goal, inPlace, makeBoard, neighbours, nookLayout, planFor, pool, slide, solutionStep, solved } from './logic';
 import { square, uprightProblems, UPRIGHT_VIEWS } from '../upright-check';
 
 describe('Number Nook', () => {
@@ -10,14 +10,31 @@ describe('Number Nook', () => {
     expect(distances(3, 3).size).toBe(181440);
     expect(solutionStep([2, 1, 3, 4, 5, 6, 7, 8, 0], 3)).toBeNull();
   });
-  it('generates seeded boards at the stated shortest distance and solves them with legal hints', () => {
+  it('draws levels 1 and 2 from a pool of boards 3–5 and 7–9 slides from home, level 3 at 14', () => {
+    expect(pool(1).length).toBe(6);
+    expect(pool(2).length).toBe(40);
+    expect(pool(3).length).toBe(1893);
+    for (const [level, least] of [[1, 4], [2, 20]] as const) {
+      const seen = new Set<string>();
+      for (let seed = 1; seed <= 80; seed++) seen.add(makeBoard(level, new Rng(seed)).join(''));
+      expect(seen.size, `level ${level}`).toBeGreaterThanOrEqual(least);
+    }
+  });
+  it('counts the numbered tiles in their goal place', () => {
+    expect(inPlace(goal(3, 3))).toBe(8);
+    expect(inPlace([3, 1, 2, 0])).toBe(0);
+    expect(inPlace([1, 2, 0, 3])).toBe(2);
+  });
+  it('generates seeded boards at a shortest distance inside the level range and solves them with legal hints', () => {
     for (let level = 1; level <= 3; level++) for (let seed = 1; seed <= 25; seed++) {
       const p = planFor(level);
       let board = makeBoard(level, new Rng(seed));
       expect(board).toEqual(makeBoard(level, new Rng(seed)));
       expect(board.slice().sort((a, b) => a - b)).toEqual(Array.from({ length: p.rows * p.cols }, (_, i) => i));
-      expect(solutionStep(board, p.cols)!.distance).toBe(p.depth);
-      for (let remaining = p.depth; remaining > 0; remaining--) {
+      const start = solutionStep(board, p.cols)!.distance;
+      expect(start).toBeGreaterThanOrEqual(p.near);
+      expect(start).toBeLessThanOrEqual(p.far);
+      for (let remaining = start; remaining > 0; remaining--) {
         const step = solutionStep(board, p.cols)!;
         expect(step.distance).toBe(remaining);
         board = slide(board, p.cols, step.next)!;
